@@ -1,8 +1,8 @@
 {
-  "version": "2.11.0",
-  "major_minor": "2.11",
+  "version": "2.12.0",
+  "major_minor": "2.12",
   "platform_count": 0,
-  "skill_count": 44,
+  "skill_count": 50,
   "platforms": [],
   "skills": [
     {
@@ -132,6 +132,18 @@
       "path": "_localsetup/skills/localsetup-keepass-secrets/SKILL.md"
     },
     {
+      "id": "localsetup-kilo-boss-orchestrator",
+      "name": "localsetup-kilo-boss-orchestrator",
+      "version": "1.0",
+      "path": "_localsetup/skills/localsetup-kilo-boss-orchestrator/SKILL.md"
+    },
+    {
+      "id": "localsetup-kilo-visual-output",
+      "name": "localsetup-kilo-visual-output",
+      "version": "1.0",
+      "path": "_localsetup/skills/localsetup-kilo-visual-output/SKILL.md"
+    },
+    {
       "id": "localsetup-linux-patcher",
       "name": "localsetup-linux-patcher",
       "version": "1.1",
@@ -150,6 +162,12 @@
       "path": "_localsetup/skills/localsetup-mail-protocol-control/SKILL.md"
     },
     {
+      "id": "localsetup-markdown-reference-validator",
+      "name": "localsetup-markdown-reference-validator",
+      "version": "1.0",
+      "path": "_localsetup/skills/localsetup-markdown-reference-validator/SKILL.md"
+    },
+    {
       "id": "localsetup-mcp-builder",
       "name": "localsetup-mcp-builder",
       "version": "1.2",
@@ -162,6 +180,18 @@
       "path": "_localsetup/skills/localsetup-npm-management/SKILL.md"
     },
     {
+      "id": "localsetup-omniroute-admin-automation",
+      "name": "localsetup-omniroute-admin-automation",
+      "version": "1.0",
+      "path": "_localsetup/skills/localsetup-omniroute-admin-automation/SKILL.md"
+    },
+    {
+      "id": "localsetup-omniroute-proxy",
+      "name": "localsetup-omniroute-proxy",
+      "version": "1.0",
+      "path": "_localsetup/skills/localsetup-omniroute-proxy/SKILL.md"
+    },
+    {
       "id": "localsetup-pr-reviewer",
       "name": "localsetup-pr-reviewer",
       "version": "1.1",
@@ -172,6 +202,12 @@
       "name": "localsetup-public-repo-identity",
       "version": "1.2",
       "path": "_localsetup/skills/localsetup-public-repo-identity/SKILL.md"
+    },
+    {
+      "id": "localsetup-publish-workflow",
+      "name": "localsetup-publish-workflow",
+      "version": "1.0",
+      "path": "_localsetup/skills/localsetup-publish-workflow/SKILL.md"
     },
     {
       "id": "localsetup-receiving-code-review",

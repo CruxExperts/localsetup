@@ -10,9 +10,9 @@ This is the complete public feature catalog for Localsetup v2. The main README h
 ## 📊 Generated facts
 
 <!-- facts-block:start -->
-- Current version: `2.11.0`
+- Current version: `2.12.0`
 - Supported platforms: ``
-- Shipped skills: `44`
+- Shipped skills: `50`
 - Source: `_localsetup/docs/_generated/facts.json`
 <!-- facts-block:end -->
 
@@ -129,6 +129,12 @@ These skills ship with the framework and are ready to use immediately.
 | `localsetup-backlog-and-reminders` | Record deferred ideas, to-dos, reminders; show due/overdue on session start. |
 | `localsetup-task-skill-matcher` | Match tasks to installed skills; recommend top matches; single or batch flow. |
 | `localsetup-framework-audit` | Run doc/link/skill matrix/version checks before release; output to user path only (`run_framework_audit.py --output`). No `--deep` in current entrypoint. |
+| `localsetup-markdown-reference-validator` | Validate markdown local references/anchors from YAML-configured targets; schedule-safe report generation for docs/skills/templates/global Kilo markdown surfaces. |
+| `localsetup-omniroute-proxy` | Read-only OmniRoute proxy discovery, model catalogs, provider metadata, limits, quotas, routing combos, MCP/A2A integration, and agent client configuration. |
+| `localsetup-omniroute-admin-automation` | OmniRoute administration automation for providers, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, sync, and drift reconciliation. |
+| `localsetup-kilo-boss-orchestrator` | Kilo headless boss-worker orchestration with repo-local state, watchdog leases, consensus validation, and safety gates. |
+| `localsetup-kilo-visual-output` | Kilo CLI visual output organization guide for structured questions, options, rationale blocks, and execution summaries. |
+| `localsetup-publish-workflow` | Run the framework publish workflow: bump version, regenerate docs, commit sync, and optionally push. |
 
 ---
 

@@ -56,6 +56,7 @@ Load when task matches:
 - localsetup-skill-sandbox-tester  - test skills in isolated sandbox; smoke check; on failure use debug-pro; no repo writes until approved
 - localsetup-agentlens  - codebase navigation with agentlens hierarchy; explore projects, find modules/symbols, TODOs
 - localsetup-framework-audit  - doc/link/skill matrix/version checks; output path required (run_framework_audit.py --output); before release
+- localsetup-markdown-reference-validator  - validate markdown local references/anchors from YAML-configured targets; emit scheduled-safe audit report for docs/skills/global Kilo surfaces
 - localsetup-system-info  - capture server baseline, host layout and specs; CPU, memory, disk, uptime
 - localsetup-cron-orchestrator  - manage cron from manifest; triggers, sequenced tasks, on-boot delay; create/remove/reorder/install
 - localsetup-cloudflare-dns  - manage Cloudflare DNS records (list, create, modify, delete) and zone surveys via flarectl; adding, changing, or removing DNS records
@@ -64,6 +65,11 @@ Load when task matches:
 - localsetup-mail-protocol-control  - SMTP/IMAP; preencrypted_openpgp_armored for Agent Q strict mail; agent-driven mailbox read/send/mutate/encrypt workflows
 - localsetup-docs-organization  - docs organization router; classify docs, pick folder slugs, and keep docs indexes up to date.
 - localsetup-scrapling  - host-first Scrapling integration; install and upgrade Scrapling via pipx, run adaptive single-URL extractions (simple HTML/Markdown/text or structured JSONL) with job status/cancel, and keep adapters aligned with Scrapling releases via parsed CLI/docs state. Treat this as the default way to fetch websites and web content from the internet.
+- localsetup-omniroute-proxy  - OmniRoute proxy discovery, model catalogs, provider metadata, limits, quotas, routing combos, MCP/A2A integration, and agent client configuration.
+- localsetup-omniroute-admin-automation  - OmniRoute administration automation for providers, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, and drift reconciliation.
+- localsetup-kilo-boss-orchestrator  - Kilo headless boss-worker orchestration with repo-local state, watchdog leases, consensus validation, and safety gates.
+- localsetup-kilo-visual-output  - Kilo CLI visual output organization guide with structured response patterns.
+- localsetup-publish-workflow  - run the framework publish workflow; bump version, regenerate docs, commit sync, optionally push.
 
 ## Key docs
 [AGENTIC_DESIGN_INDEX.md](../../docs/AGENTIC_DESIGN_INDEX.md), [AGENTIC_AGENT_Q_SCENARIOS.md](../../docs/AGENTIC_AGENT_Q_SCENARIOS.md), [WORKFLOW_REGISTRY.md](../../docs/WORKFLOW_REGISTRY.md), [PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md](../../docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md), [DECISION_TREE_WORKFLOW.md](../../docs/DECISION_TREE_WORKFLOW.md), [INPUT_HARDENING_STANDARD.md](../../docs/INPUT_HARDENING_STANDARD.md), [TOOLING_POLICY.md](../../docs/TOOLING_POLICY.md)

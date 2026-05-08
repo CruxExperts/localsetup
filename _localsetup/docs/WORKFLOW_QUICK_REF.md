@@ -19,6 +19,7 @@ last_updated: "2026-03-09"
 | `ops-guarded` | Guarded ops (sudo/HITL) | lazy admin; manual execution | `localsetup-framework-compliance` (tmux ops requires `localsetup-tmux-shared-session-workflow`) | [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md) |
 | `ops-tmux-session` | Tmux ops session | tmux shared session | `localsetup-tmux-shared-session-workflow` | [ops/tmux-ops-remote.md](ops/tmux-ops-remote.md) |
 | `audit-framework` | Framework audit | run audit | `localsetup-framework-audit` | [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md) |
+| `audit-markdown-references` | Markdown reference audit | reference audit; link integrity audit | `localsetup-markdown-reference-validator` | [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md) |
 | `skills-index-refresh` | Skill index refresh + scrub | refresh skills; scrub index | `localsetup-skill-discovery` | [SKILL_DISCOVERY.md](SKILL_DISCOVERY.md) |
 | `tmux-terminal-mode` | Tmux terminal mode | tmux terminal mode | (tool) `_localsetup/tools/tmux_terminal_mode` | [TMUX_TERMINAL_MODE.md](TMUX_TERMINAL_MODE.md) |
 
@@ -59,5 +60,4 @@ These skills are high-value capabilities that usually appear as **steps** inside
 
 | Workflow ID | Name | Aliases | Skill(s) | Note |
 |------------|------|---------|----------|------|
-| `publish` | Publish workflow | publish; version bump; release | N/A | Procedure in `docs/WORKFLOW_INDEX.md` and `scripts/publish`. |
-
+| `publish` | Publish workflow | publish; version bump; release | `localsetup-publish-workflow` | Procedure in `docs/WORKFLOW_INDEX.md` and `scripts/publish`. |

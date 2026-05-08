@@ -72,6 +72,7 @@ Load the appropriate skill when the task matches. All skills live under .cursor/
 | localsetup-skill-sandbox-tester | Test skills in isolated sandbox; smoke check; on failure use debug-pro; no repo writes until approved |
 | localsetup-agentlens | Codebase navigation with agentlens hierarchy; explore projects, find modules/symbols, TODOs |
 | localsetup-framework-audit | Run doc/link/skill matrix/version checks; output user-specified path only (`run_framework_audit.py --output`); before release |
+| localsetup-markdown-reference-validator | Validate markdown local references/anchors from YAML-configured targets; emit scheduled-safe audit report for docs/skills/global Kilo surfaces |
 | localsetup-system-info | Capture server baseline, host layout and specs; CPU, memory, disk, uptime |
 | localsetup-cron-orchestrator | Manage cron from manifest; triggers, sequenced tasks, on-boot delay; create/remove/reorder/install |
 | localsetup-cloudflare-dns | Manage Cloudflare DNS records (list, create, modify, delete) and zone surveys via flarectl | Adding, changing, or removing DNS records; zone survey; DNS snapshots |
@@ -79,6 +80,11 @@ Load the appropriate skill when the task matches. All skills live under .cursor/
 | localsetup-keepass-secrets | KeePass-backed secrets via logical IDs; get/ensure credentials; bulk create or rotate; never embed in repo | User asks for logins, workflow needs credentials, or bulk account creation |
 | localsetup-docs-organization | Docs organization router for repo docs; classify doc work, choose folder slugs, and keep docs indexes in sync | Creating, moving, or significantly updating docs; deciding placement and index updates |
 | localsetup-scrapling | Host-first Scrapling integration; install/upgrade via pipx, run adaptive single-URL extractions (simple or structured) with job status/cancel, and keep adapters aligned with Scrapling releases via parsed CLI/docs state | **Default choice** for fetching websites and web content from the internet; use for web scraping and crawling tasks that should rely on Scrapling CLI or its MCP server, from quick single-URL fetches to Scrapling-backed services |
+| localsetup-omniroute-proxy | OmniRoute proxy discovery, model catalogs, provider metadata, limits, quotas, routing combos, MCP/A2A integration, and agent client configuration | OmniRoute catalogs, provider limits, routing combos, or configuring agents to use OmniRoute |
+| localsetup-omniroute-admin-automation | OmniRoute administration automation for providers, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, and drift reconciliation | OmniRoute admin changes, reconciliation, backup/restore, key and policy management |
+| localsetup-kilo-boss-orchestrator | Kilo headless boss-worker orchestration with repo-local state, watchdog leases, consensus validation, and safety gates | Multi-agent autonomous loops requiring planning, delegation, verification, and discrepancy adjudication |
+| localsetup-kilo-visual-output | Kilo CLI visual output organization guide with structured response patterns | Kilo output formatting, options, rationale blocks, and execution summaries |
+| localsetup-publish-workflow | Run the framework publish workflow: bump version, regenerate docs, commit sync, optionally push | Publishing Localsetup after committed framework changes |
 
 ## Framework docs index
 

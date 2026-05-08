@@ -24,9 +24,9 @@ Out of the box you get [all shipped skills](_localsetup/docs/SKILLS.md): debuggi
 <!-- facts-block:start -->
 | Fact | Value |
 |---|---|
-| Current version | `2.11.0` |
+| Current version | `2.12.0` |
 | Supported platforms | `` |
-| Shipped skills | `44` |
+| Shipped skills | `50` |
 | Source | `_localsetup/docs/_generated/facts.json` |
 <!-- facts-block:end -->
 

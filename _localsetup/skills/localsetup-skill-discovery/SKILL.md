@@ -31,12 +31,14 @@ metadata:
 
 ## Post-refresh scrub (mandatory)
 
+This is the named workflow `skills-index-refresh` in the workflow registry. Common trigger phrases include: "refresh skills", "update public skill index", "refresh and scrub", "scrub the index", and "scrub public skill index".
+
 After every index refresh, the scrub step **must** run before the index is considered ready for discovery. The scrub catches dead URLs, stub/placeholder descriptions, and schema gaps that the refresh tool introduces automatically (e.g. Anthropic skills get generated placeholder descriptions; OpenClaw entries often have minimal or truncated text).
 
 **Sequence (agent steps):**
 
 1. **Refresh** - Run `python3 _localsetup/tools/refresh_public_skill_index.py`. Wait for completion and confirm the skill count written to stdout.
-2. **Scrub dry-run** - Run `python3 _localsetup/tools/skill_index_scrub.py --skip-url-check`. This fetches real descriptions from upstream SKILL.md files for any stub entries and produces a GFM report. URL checking is skipped in normal flow to keep runtime short; run with full URL checking only when explicitly requested or before a public release.
+2. **Scrub dry-run** - Run `python3 _localsetup/tools/skill_index_scrub.py --skip-url-check`. This fetches real descriptions from upstream SKILL.md files for any stub entries and prints a GFM report to stdout. Add `--report FILE` when you need a saved markdown artifact. URL checking is skipped in normal flow to keep runtime short; run with full URL checking only when explicitly requested or before a public release.
 3. **Review report** - Check the summary table. If "Fixable (upstream desc found)" > 0, proceed to step 4. If "Stub or too-short descriptions" > 0 but fixable count is 0, note the unfixable entries (upstream had no usable content) and accept them.
 4. **Apply fixes** - Run `python3 _localsetup/tools/skill_index_scrub.py --skip-url-check --fix`. Confirm the "Applied fixes" count in the report.
 5. **Done** - The index is now ready. Report summary to the user: total skills, stubs fixed, stubs unfixable (if any), `updated` timestamp.

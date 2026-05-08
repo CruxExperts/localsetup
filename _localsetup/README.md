@@ -240,10 +240,16 @@ Skills are task-based instructions (SKILL.md with `name` and `description` front
 | `localsetup-skill-sandbox-tester` | Test skills in isolated sandbox; smoke check; on failure use debug-pro; no repo writes until user approves |
 | `localsetup-agentlens` | Codebase navigation with agentlens hierarchy; explore projects, find modules/symbols, TODOs |
 | `localsetup-framework-audit` | Doc/link/skill matrix/version checks; output path required (`run_framework_audit.py --output`); before release |
+| `localsetup-markdown-reference-validator` | Validate markdown local references and anchors across configured global+repo paths; scheduled-safe report generator with YAML sidecar config |
 | `localsetup-cloudflare-dns` | Manage Cloudflare DNS records (list, create, modify, delete) and zone surveys via flarectl |
 | `localsetup-npm-management` | Manage Nginx Proxy Manager proxy hosts via REST API; coordinate Docker + NPM deploy workflows |
 | `localsetup-keepass-secrets` | KeePass-backed secrets via logical IDs; get/ensure credentials; bulk create or rotate; use when user asks for logins or workflow needs credentials |
 | `localsetup-scrapling` | Host-first Scrapling integration; install and upgrade Scrapling via pipx, run single-URL extractions (simple HTML/Markdown/text or structured JSONL), and keep adapters aligned with Scrapling releases for web scraping and crawling tasks |
+| `localsetup-omniroute-proxy` | Read-only OmniRoute proxy discovery, catalogs, provider metadata, limits, quotas, routing combos, MCP/A2A integration, and agent client configuration |
+| `localsetup-omniroute-admin-automation` | OmniRoute administration automation for providers, nodes, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, sync, and drift reconciliation |
+| `localsetup-kilo-boss-orchestrator` | Kilo headless boss-worker orchestration with repo-local state, watchdog leases, consensus validation, and safety gates |
+| `localsetup-kilo-visual-output` | Kilo CLI visual output organization guide with structured question, option, rationale, and execution summary patterns |
+| `localsetup-publish-workflow` | Run the framework publish workflow: bump version, regenerate docs, commit sync, and optionally push |
 
 Skills follow the [Agent Skills](https://agentskills.io/specification) specification and are interchangeable with other spec-compliant hosts (import from URLs or local path; export framework skills for use elsewhere). See [SKILLS_AND_RULES.md](docs/SKILLS_AND_RULES.md), [PLATFORM_REGISTRY.md](docs/PLATFORM_REGISTRY.md), [SKILL_INTEROPERABILITY.md](docs/SKILL_INTEROPERABILITY.md), and [SKILL_IMPORTING.md](docs/SKILL_IMPORTING.md) for platform paths, loading behavior, and import/export.
 

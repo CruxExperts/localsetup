@@ -66,6 +66,7 @@ Load the appropriate skill when the task matches. All skills live under .kilocod
 | localsetup-skill-sandbox-tester | Test skills in isolated sandbox; smoke check; on failure use debug-pro; no repo writes until approved |
 | localsetup-agentlens | Codebase navigation with agentlens hierarchy; explore projects, find modules/symbols, TODOs |
 | localsetup-framework-audit | Doc/link/skill matrix/version checks; output path required (run_framework_audit.py --output); before release |
+| localsetup-markdown-reference-validator | Validate markdown local references/anchors from YAML-configured targets; emit scheduled-safe audit report for docs/skills/global Kilo surfaces |
 | localsetup-system-info | Capture server baseline, host layout and specs; CPU, memory, disk, uptime |
 | localsetup-cron-orchestrator | Manage cron from manifest; triggers, sequenced tasks, on-boot delay; create/remove/reorder/install |
 | localsetup-cloudflare-dns | Manage Cloudflare DNS records (list, create, modify, delete) and zone surveys via flarectl; adding, changing, or removing DNS records; zone survey; DNS snapshots |
@@ -73,6 +74,11 @@ Load the appropriate skill when the task matches. All skills live under .kilocod
 | localsetup-keepass-secrets | KeePass-backed secrets via logical IDs; get/ensure credentials; bulk create or rotate; never embed in repo; use when user asks for logins or workflow needs credentials |
 | localsetup-docs-organization | Docs organization router for repo docs; classify doc work, choose folder slugs, and keep docs indexes in sync |
 | localsetup-scrapling | Host-first Scrapling integration; install and upgrade Scrapling via pipx, run adaptive single-URL extractions (simple or structured) with job status/cancel, and keep adapters aligned with Scrapling releases via parsed CLI/docs state. Use this as the default method for fetching websites and web content from the internet. |
+| localsetup-omniroute-proxy | OmniRoute proxy discovery, model catalogs, provider metadata, limits, quotas, routing combos, MCP/A2A integration, and agent client configuration |
+| localsetup-omniroute-admin-automation | OmniRoute administration automation for providers, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, and drift reconciliation |
+| localsetup-kilo-boss-orchestrator | Kilo headless boss-worker orchestration with repo-local state, watchdog leases, consensus validation, and safety gates |
+| localsetup-kilo-visual-output | Kilo CLI visual output organization guide with structured response patterns |
+| localsetup-publish-workflow | Run the framework publish workflow: bump version, regenerate docs, commit sync, optionally push |
 
 ## Framework docs index
 

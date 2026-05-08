@@ -37,6 +37,7 @@
 | localsetup-skill-sandbox-tester | Test skills in isolated sandbox; smoke check; on failure use debug-pro; no repo writes until user approves | Validate skill after import, test skill in sandbox, ensure skill runs before production |
 | localsetup-agentlens | Codebase navigation with agentlens hierarchy (INDEX.md, modules, outline, memory) | Explore codebases, find modules/symbols, TODOs/warnings; large repos |
 | localsetup-framework-audit | Doc/link/skill matrix/version checks; output path required (`run_framework_audit.py --output`) | User says "run audit", "run framework audit", or before release |
+| localsetup-markdown-reference-validator | Validate markdown local references/anchors from YAML-configured targets and emit audit report | Validating docs/skills/global Kilo references; periodic archive integrity checks |
 | localsetup-system-info | Quick system diagnostics: CPU, memory, disk, uptime | Capture server baseline, host layout and specs for further operations |
 | localsetup-cron-orchestrator | Manage cron from manifest: triggers, sequenced tasks, on-boot delay | Create/remove/reorder cron tasks; install crontab fragment |
 | localsetup-cloudflare-dns | Manage Cloudflare DNS records (list, create, modify, delete) and run zone surveys via flarectl | Adding, changing, or removing DNS records; zone survey; automated DNS snapshots |
@@ -45,6 +46,11 @@
 | localsetup-mail-protocol-control | Manage delegated SMTP/IMAP accounts with attachment-first MIME handling, chunked attachment retrieval, and full-envelope encryption/decryption tools | Agent-driven mailbox read/send/mutate/encrypt workflows; preencrypted_openpgp_armored for Agent Q strict mail ship |
 | localsetup-agentq-transport | Agent Q bidirectional transport: file_drop ship/ingest, mail pull/ship (strict gpg), registry, queue-pending, archive-prune | Ship/ingest sealed PRD manifests between agents; see AGENTIC_AGENT_Q_SCENARIOS.md |
 | localsetup-docs-organization | Docs organization router for repo docs; classify doc work, choose folder slugs, and keep docs indexes in sync | Creating, moving, or significantly updating docs; deciding placement and index updates |
+| localsetup-omniroute-proxy | OmniRoute proxy discovery, model catalogs, provider metadata, limits, quotas, routing combos, MCP/A2A integration, and agent client configuration | OmniRoute catalogs, provider limits, routing combos, or configuring agents to use OmniRoute |
+| localsetup-omniroute-admin-automation | OmniRoute administration automation for providers, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, and drift reconciliation | OmniRoute admin changes, reconciliation, backup/restore, key and policy management |
+| localsetup-kilo-boss-orchestrator | Kilo headless boss-worker orchestration with repo-local state, watchdog leases, consensus validation, and safety gates | Multi-agent autonomous loops requiring planning, delegation, verification, and discrepancy adjudication |
+| localsetup-kilo-visual-output | Kilo CLI visual output organization guide with structured response patterns | Kilo output formatting, options, rationale blocks, and execution summaries |
+| localsetup-publish-workflow | Run the framework publish workflow: bump version, regenerate docs, commit sync, optionally push | Publishing Localsetup after committed framework changes |
 | localsetup-scrapling | Host-first Scrapling integration; install/upgrade via pipx, run single-URL extractions with adaptive fetch modes and job tracking, and keep adapters current via parsed CLI/docs state | **Default** web scraping and website fetching skill; use for most tasks that need content from public web pages |
 
 Framework docs: _localsetup/docs/ (AGENTIC_DESIGN_INDEX.md, WORKFLOW_REGISTRY.md, PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md).

@@ -21,7 +21,7 @@ _localsetup/config/mail_accounts.json
 .git-state-snapshots/
 
 # Repo maintenance scripts (local-only, not shipped)
-scripts/
+/scripts/
 
 # Internal/maintainer docs (not shipped; public docs live in _localsetup/docs/)
 docs/
