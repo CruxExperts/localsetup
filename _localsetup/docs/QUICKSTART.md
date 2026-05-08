@@ -88,6 +88,7 @@ curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | b
 
 | Platform | Global skills path | Global config |
 |----------|-------------------|---------------|
+| `codex` | `$CODEX_HOME/skills/` or `~/.codex/skills/` | User-level Codex CLI skills |
 | `kilo` | `~/.config/kilo/skills/` | `~/.config/kilo/instructions/localsetup.md` added to `instructions[]` |
 | `openclaw` | `~/.openclaw/skills/` | Auto-discovered |
 | `claude-code` | `~/.claude/skills/` | Auto-discovered |

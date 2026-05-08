@@ -54,7 +54,7 @@ For non-interactive one-liners (CI, automation, or when you already know the pla
 
 ## 🌐 Global installation (optional)
 
-Deploy the framework once to your user home directory and use it across ALL projects. Global deployment installs skills and rules to user-wide locations (`~/.config/kilo/`, `~/.openclaw/`, `~/.claude/`), making the framework available without per-repo installation.
+Deploy the framework once to your user home directory and use it across ALL projects. Global deployment installs skills and rules to user-wide locations (`~/.codex/skills/`, `~/.config/kilo/`, `~/.openclaw/`, `~/.claude/`), making the framework available without per-repo installation.
 
 ### Linux and macOS (Bash)
 
@@ -100,7 +100,7 @@ The installer runs a dependency preflight and prints missing items with copy-pas
 8. **Versioning** - VERSION at repo root; conventional commits; version and docs are maintained in a separate maintainer workflow (see [_localsetup/docs/VERSIONING.md](_localsetup/docs/VERSIONING.md)).
 9. **Skill metadata patching** - staged `SKILL.md` files get their `metadata.version` incremented automatically so skill docs stay accurate.
 10. **Platform registry and git-coupled traceability** - a single [Markdown table](_localsetup/docs/PLATFORM_REGISTRY.md) defines every supported host, context path, and skills path, and PRDs/specs/outcomes can reference commit hashes for audit. Context is code; changes are reviewable.
-11. **Global deployment (user-wide, cross-project)** - Install once, use the framework across all projects. Deploys skills to `~/.config/kilo/` (auto-discovered) and `~/.openclaw/`, and `~/.claude/` with auto-detection of installed agents.
+11. **Global deployment (user-wide, cross-project)** - Install once, use the framework across all projects. Deploys skills to `~/.codex/skills/`, `~/.config/kilo/` (auto-discovered), `~/.openclaw/`, and `~/.claude/` with auto-detection of installed agents.
 
 The full feature catalog contains additional capabilities. See [_localsetup/docs/FEATURES.md](_localsetup/docs/FEATURES.md) for details.
 

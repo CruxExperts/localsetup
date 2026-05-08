@@ -294,6 +294,11 @@ def _get_kilo_config_path() -> Path:
     return _expand_path("~/.config/kilo/kilo.jsonc")
 
 
+def _get_codex_home() -> Path:
+    """Return CODEX_HOME, defaulting to ~/.codex."""
+    return _expand_path(os.environ.get("CODEX_HOME", "~/.codex"))
+
+
 def _deploy_skills_to_dir(engine_dir: Path, dest_dir: Path) -> None:
     """Copy all localsetup-* skills to dest_dir."""
     dest_dir.mkdir(parents=True, exist_ok=True)
@@ -412,6 +417,20 @@ def deploy_opencode_global(engine_dir: Path) -> None:
     _deploy_skills_to_dir(engine_dir, skills_dir)
 
 
+def deploy_codex_global(engine_dir: Path) -> None:
+    """Deploy skills to the Codex CLI user-level skills location."""
+    codex_dir = _get_codex_home()
+    skills_dir = codex_dir / "skills"
+    codex_dir.mkdir(parents=True, exist_ok=True)
+    skills_dir.mkdir(parents=True, exist_ok=True)
+
+    templates = engine_dir / "templates" / "codex"
+    if (templates / "AGENT_MEMORY.md").exists():
+        _safe_copy2(templates / "AGENT_MEMORY.md", codex_dir / "AGENT_MEMORY.md")
+
+    _deploy_skills_to_dir(engine_dir, skills_dir)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Deploy platform context and skills.")
     ap.add_argument(
@@ -446,6 +465,7 @@ def main() -> int:
         "kilo": deploy_kilo,
     }
     global_deployers = {
+        "codex": deploy_codex_global,
         "kilo": deploy_kilo_global,
         "openclaw": deploy_openclaw_global,
         "claude-code": deploy_claude_code_global,

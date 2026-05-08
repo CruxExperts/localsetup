@@ -17,8 +17,8 @@
 #   --upgrade-policy   preserve | force | fail-on-conflict (default: preserve)
 #   --install-deps     Automatically install missing Python packages via pip after deploy.
 #                      Without this flag, missing deps are reported but install still completes.
-#   --global           Deploy skills/rules globally to user home (~/.kilo/, ~/.openclaw/, ~/.config/opencode/, etc.)
-#                      Auto-detects installed agents (kilo, openclaw, claude, opencode) if --tools not specified.
+#   --global           Deploy skills/rules globally to user home (~/.codex/skills, ~/.kilo/, ~/.openclaw/, ~/.config/opencode/, etc.)
+#                      Auto-detects installed agents (codex, kilo, openclaw, claude, opencode) if --tools not specified.
 #   --help, -h         Print this help and exit.
 #
 # Tools (valid values for --tools):
@@ -78,8 +78,8 @@ Options:
   --upgrade-policy   preserve | force | fail-on-conflict (default: preserve)
   --install-deps     Automatically install missing Python packages via pip after deploy.
                      Without this flag, missing deps are reported but install still completes.
-  --global           Deploy skills/rules globally to user home (~/.kilo/, ~/.openclaw/, ~/.config/opencode/, etc.).
-                     Auto-detects installed agents (kilo, openclaw, claude, opencode) if --tools not specified.
+  --global           Deploy skills/rules globally to user home (~/.codex/skills, ~/.kilo/, ~/.openclaw/, ~/.config/opencode/, etc.).
+                     Auto-detects installed agents (codex, kilo, openclaw, claude, opencode) if --tools not specified.
   --help, -h         Print this help and exit.
 
 Tools (valid values for --tools):
@@ -105,6 +105,7 @@ Note: "sudo curl ... | bash" only elevates curl; the install and deploy run as t
 On Windows: run install.ps1; or from Git Bash this script delegates to install.ps1.
 
 Global deploy deploys to:
+  codex:     ${CODEX_HOME:-~/.codex}/skills/
   kilo:       ~/.config/kilo/skills/ (auto-discovered) and ~/.config/kilo/instructions/localsetup.md
   openclaw:   ~/.openclaw/skills/
   claude:     ~/.claude/skills/ and ~/.claude/CLAUDE.md
@@ -141,6 +142,9 @@ version_ge() {
 
 detect_agents() {
   local agents=""
+  if command -v codex >/dev/null 2>&1 || [[ -d "${CODEX_HOME:-$HOME/.codex}" ]]; then
+    agents="${agents:+$agents,}codex"
+  fi
   if command -v kilo >/dev/null 2>&1; then
     agents="${agents:+$agents,}kilo"
   fi
@@ -349,7 +353,7 @@ if $GLOBAL_SCOPE; then
   if [[ -z "$TOOLS_CSV" ]]; then
     TOOLS_CSV="$(detect_agents)"
     if [[ -z "$TOOLS_CSV" ]]; then
-      echo "No supported CLI agents detected (kilo, openclaw, claude, opencode)."
+      echo "No supported CLI agents detected (codex, kilo, openclaw, claude, opencode)."
       echo "Install one of them first, then re-run with --global."
       exit 1
     fi

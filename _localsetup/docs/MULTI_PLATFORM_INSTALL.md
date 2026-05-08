@@ -76,6 +76,7 @@ Use `--global` / `-Global` to deploy the framework to user-wide locations. Skill
 ### Auto-detection
 
 If `--tools` / `-Tools` is not specified with `--global`, the installer auto-detects which agents are installed:
+- **codex** → `$CODEX_HOME/skills/` or `~/.codex/skills/`, plus `AGENT_MEMORY.md`
 - **kilo** → `~/.config/kilo/skills/`, `~/.config/kilo/instructions/localsetup.md`, and `~/.config/kilo/AGENT_MEMORY.md`
 - **openclaw** → `~/.openclaw/skills/` and `~/.openclaw/AGENT_MEMORY.md`
 - **claude-code** → `~/.claude/skills/`, `~/.claude/CLAUDE.md`, and `~/.claude/AGENT_MEMORY.md`

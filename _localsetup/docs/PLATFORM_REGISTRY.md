@@ -28,6 +28,7 @@ When deployed with `--scope global` (via `./install --global` or `install.ps1 -G
 
 | Platform | Global skills path | Memory file | Global config | Notes |
 |----------|-------------------|-------------|---------------|-------|
+| codex | `$CODEX_HOME/skills/` or `~/.codex/skills/` | `$CODEX_HOME/AGENT_MEMORY.md` or `~/.codex/AGENT_MEMORY.md` | N/A | User-level Codex CLI skills |
 | kilo | `~/.config/kilo/skills/` | `~/.config/kilo/AGENT_MEMORY.md` | `~/.config/kilo/kilo.json` or `kilo.jsonc` | Skills auto-discovered by Kilo |
 | openclaw | `~/.openclaw/skills/` | `~/.openclaw/AGENT_MEMORY.md` | `~/.openclaw/openclaw.json` | Skills auto-discovered |
 | claude-code | `~/.claude/skills/` | `~/.claude/AGENT_MEMORY.md` | N/A | Uses `~/.claude/CLAUDE.md` for global context |

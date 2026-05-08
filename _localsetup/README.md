@@ -78,7 +78,7 @@ On Windows, if you run the Bash `install` from Git Bash, it **detects the host**
 | `--directory PATH` | Client repo root (default: `.`) |
 | `--tools LIST` | Comma-separated: `cursor`, `claude-code`, `codex`, `openclaw`, `kilo`, `opencode` |
 | `--yes` | Non-interactive; no prompts (required when using `--tools`) |
-| `--global` | Deploy to user-wide locations (`~/.kilo/skills/`, `~/.openclaw/`, `~/.claude/`); auto-detects agents |
+| `--global` | Deploy to user-wide locations (`~/.codex/skills/`, `~/.config/kilo/skills/`, `~/.openclaw/`, `~/.claude/`); auto-detects agents |
 | `--help` | Print usage and exit |
 
 **Examples:**

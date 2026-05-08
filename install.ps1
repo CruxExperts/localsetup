@@ -78,8 +78,8 @@ Parameters:
   -UpgradePolicy    preserve | force | fail-on-conflict (default: preserve)
   -InstallDeps      Automatically install missing Python packages via pip after deploy.
                     Without this switch, missing deps are reported but install still completes.
-  -Global           Deploy skills/rules globally to user home (~/.kilo/, ~/.openclaw/, ~/.config/opencode/, etc.)
-                    Auto-detects installed agents (kilo, openclaw, claude, opencode) if -Tools not specified.
+  -Global           Deploy skills/rules globally to user home (~/.codex/skills, ~/.kilo/, ~/.openclaw/, ~/.config/opencode/, etc.)
+                    Auto-detects installed agents (codex, kilo, openclaw, claude, opencode) if -Tools not specified.
   -Help, -?, -h     Show this help and exit
 
 Tools (use with -Tools):
@@ -101,6 +101,7 @@ Note: Running elevated (Run as Administrator) creates files owned by that accoun
   user may then hit permission errors. Prefer running as the user who will own the repo.
 
 Global deploy deploys to:
+  codex:     $env:CODEX_HOME\skills or ~/.codex/skills
   kilo:       ~/.config/kilo/skills/ (auto-discovered) and ~/.config/kilo/instructions/localsetup.md
   openclaw:   ~/.openclaw/skills/
   claude:     ~/.claude/skills/ and ~/.claude/CLAUDE.md
@@ -139,6 +140,8 @@ function Get-GitVersion {
 
 function Detect-Agents {
     $agents = @()
+    $codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME '.codex' }
+    if ((Get-ToolVersion -ToolName 'codex') -or (Test-Path -LiteralPath $codexHome)) { $agents += 'codex' }
     if (Get-ToolVersion -ToolName 'kilo') { $agents += 'kilo' }
     if (Get-ToolVersion -ToolName 'openclaw') { $agents += 'openclaw' }
     if (Get-ToolVersion -ToolName 'claude') { $agents += 'claude-code' }
@@ -501,7 +504,7 @@ if ($Global) {
     if (-not $Tools) {
         $Tools = Detect-Agents
         if (-not $Tools) {
-            Write-Host 'No supported CLI agents detected (kilo, openclaw, claude, opencode).' -ForegroundColor Yellow
+            Write-Host 'No supported CLI agents detected (codex, kilo, openclaw, claude, opencode).' -ForegroundColor Yellow
             Write-Host 'Install one of them first, then re-run with -Global.'
             exit 1
         }
