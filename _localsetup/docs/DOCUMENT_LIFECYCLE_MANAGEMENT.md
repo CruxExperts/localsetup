@@ -1,9 +1,9 @@
 ---
 status: ACTIVE
-version: 2.12
+version: 3.0
 ---
 
-# Document lifecycle (Localsetup v2)
+# Document lifecycle (Localsetup v3)
 
 **Purpose:** Framework docs in `_localsetup/docs/` must have a defined status. Check status before assuming a feature is implemented.
 

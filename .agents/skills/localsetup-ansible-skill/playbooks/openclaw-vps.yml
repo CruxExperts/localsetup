@@ -17,10 +17,11 @@
   
   vars:
     # Override these in inventory/group_vars
-    deploy_user: asdbot
+    deploy_user: deploy
     deploy_user_groups: [sudo]
     deploy_ssh_pubkey: ""
-    timezone: Europe/Budapest
+    deploy_user_nopasswd_sudo: false
+    timezone: Etc/UTC
     
   pre_tasks:
     - name: Validate required variables
@@ -78,13 +79,14 @@
         state: present
         exclusive: no
         
-    - name: Allow deploy user passwordless sudo
+    - name: Allow deploy user passwordless sudo when explicitly enabled
       ansible.builtin.lineinfile:
         path: /etc/sudoers.d/{{ deploy_user }}
         line: "{{ deploy_user }} ALL=(ALL) NOPASSWD:ALL"
         create: yes
         mode: '0440'
         validate: 'visudo -cf %s'
+      when: deploy_user_nopasswd_sudo | default(false) | bool
 
     # === SSH Hardening ===
     - name: Harden SSH - Disable root login
@@ -187,7 +189,7 @@
   become: yes
   
   vars:
-    deploy_user: asdbot
+    deploy_user: deploy
     nodejs_version: "22"
     openclaw_version: "latest"
     openclaw_config_dir: "/home/{{ deploy_user }}/.config/openclaw"
@@ -301,7 +303,7 @@
   become: no
   
   vars:
-    deploy_user: asdbot
+    deploy_user: deploy
     
   tasks:
     - name: Test SSH as deploy user

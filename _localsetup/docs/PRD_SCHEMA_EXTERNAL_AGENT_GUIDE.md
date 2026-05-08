@@ -1,9 +1,9 @@
 ---
 status: ACTIVE
-version: 2.12
+version: 3.0
 ---
 
-# PRD schema and external agent guide (Localsetup v2)
+# PRD schema and external agent guide (Localsetup v3)
 
 **Purpose:** PRD/spec format, front matter, lifecycle, outcome template. When referencing repo artifacts, attach git hash (see GIT_TRACEABILITY.md).
 

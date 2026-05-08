@@ -1,25 +1,25 @@
 ---
 status: ACTIVE
-version: 2.12
+version: 3.0
 ---
 
 # 🚀 Quickstart
 
-Get Localsetup v2 running in your repo in under a minute. This page covers interactive installation, platform selection, verification, and non-interactive one-liners for CI and automation.
+Get Localsetup v3 running in your repo in under a minute. This page covers WSL2-aware installation, platform selection, verification, and non-interactive one-liners for CI and automation.
 
 ## Prerequisites
 
-- **Required:** `git >= 2.20.0`; on Linux/macOS also `rg` (ripgrep), which the Bash install script uses to build the manifest.
-- **Recommended for full framework tooling:** `python >= 3.10`, `pip`, and the Python packages in `_localsetup/requirements.txt` (PyYAML, requests, python-frontmatter, cryptography, PGPy). After install, run `python3 -m pip install -r _localsetup/requirements.txt`, or pass `--install-deps` / `-InstallDeps` to have the install script do it automatically.
-- **Linux/macOS:** Bash and curl.
-- **Windows:** PowerShell 5.1+ or PowerShell Core.
+- **Required:** `python >= 3.10`.
+- **Recommended for full framework tooling:** `git >= 2.20.0`, `rg` (ripgrep), `pip`, and the Python packages in `_localsetup/requirements.txt` (PyYAML, requests, python-frontmatter, cryptography, PGPy). After install, run `python3 -m pip install -r _localsetup/requirements.txt`, or pass `--install-deps` to have the install script do it automatically.
+- **Linux/macOS/WSL2:** Bash and curl.
+- **Windows:** WSL2. Native PowerShell install is not supported in v3.
 - **Any platform:** Network access to GitHub (or a local clone of this repo).
 
 The installer runs a dependency preflight and prints missing dependencies with install command hints before clone/deploy. Full list: [Multi-platform install – Dependency preflight](MULTI_PLATFORM_INSTALL.md#dependency-preflight).
 
-## 🎯 Interactive install (recommended)
+## Install
 
-The interactive installer prompts you for directory and platform. No flags required.
+The v3 installer is explicit and non-interactive.
 
 ### Linux and macOS (Bash)
 
@@ -27,74 +27,30 @@ The interactive installer prompts you for directory and platform. No flags requi
 curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | bash
 ```
 
-`sudo curl ... | bash` only elevates curl; install and deploy run as the current user. For a full install as root: `curl -sSL <url> -o /tmp/install.sh && sudo bash /tmp/install.sh`.
-
-### Windows (PowerShell)
-
-```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/cptnfren/localsetup/main/install.ps1)))
+```bash
+./install --directory . --yes
 ```
 
-The installer asks:
-
-1. **Directory:** Where to create `_localsetup/` (default: current directory).
-2. **Platform(s):** Which agent host(s) to deploy context and skills for.
-
-After install completes, it prints a verification command. Run it to confirm context loaded.
+Omit `--tools` or `--platforms` to install every platform in `_localsetup/config/platforms.yaml`.
 
 ## 🔧 Platform IDs
 
-When prompted (or when using `--tools` / `-Tools`), use one or more of these IDs:
+When using `--tools` or `--platforms`, use one or more of these IDs:
 
 | ID | Agent host | Context path | Skills path | Memory file |
 |----|------------|--------------|-------------|-------------|
-| `cursor` | Cursor IDE | `.cursor/rules/localsetup-context.mdc` | `.agents/skills/localsetup-*/` via `.cursor/skills` | `.cursor/rules/agent-memory.md` |
-| `claude-code` | Claude Code | `.claude/CLAUDE.md` | `.agents/skills/localsetup-*/` via `.claude/skills` | `.claude/AGENT_MEMORY.md` |
-| `codex` | OpenAI Codex CLI | `AGENTS.md` (repo root) | `.agents/skills/localsetup-*/` via `.codex/skills` | `.agents/AGENT_MEMORY.md` |
-| `openclaw` | OpenClaw | `_localsetup/docs/OPENCLAW_CONTEXT.md` | `skills/localsetup-*/` | `AGENT_MEMORY.md` (repo root) |
-| `kilo` | Kilo CLI | `.kilo/instructions.md` | `.agents/skills/localsetup-*/` via `.kilo/skills` | `.kilo/AGENT_MEMORY.md` |
-| `opencode` | OpenCode CLI | `AGENTS.md` (repo root) | `.agents/skills/localsetup-*/` via `.opencode/skills` | `.opencode/AGENT_MEMORY.md` |
+| `cursor` | Cursor IDE | `.cursor/skills` | `~/.local/share/agents/skills/localsetup` |
+| `claude-code` | Claude Code | `.claude/skills` | `~/.local/share/agents/skills/localsetup` |
+| `codex` | OpenAI Codex CLI | `.codex/skills` | `~/.local/share/agents/skills/localsetup` |
+| `openclaw` | OpenClaw | `.openclaw/skills` | `~/.local/share/agents/skills/localsetup` |
+| `kilo` | Kilo CLI | `.kilo/skills` | `~/.local/share/agents/skills/localsetup` |
+| `opencode` | OpenCode CLI | `.opencode/skills` | `~/.local/share/agents/skills/localsetup` |
 
 You can deploy to multiple platforms at once by comma-separating: `cursor,claude-code`.
 
-## 🌐 Global installation (optional)
+## Shared home library
 
-Deploy the framework once to your user home directory and use it across ALL projects.
-
-### Linux and macOS
-
-```bash
-# Auto-detect installed agents (kilo, openclaw, claude) and deploy globally
-curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | bash -s -- --global
-
-# Deploy to specific agents only
-curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | bash -s -- --global --tools kilo
-
-# From local clone
-./install --global
-```
-
-### Windows (PowerShell)
-
-```powershell
-# Auto-detect and deploy globally
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/cptnfren/localsetup/main/install.ps1))) -Global
-
-# Specific agents
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/cptnfren/localsetup/main/install.ps1))) -Global -Tools kilo
-```
-
-### Where things get deployed
-
-| Platform | Global skills path | Global config |
-|----------|-------------------|---------------|
-| `codex` | `$CODEX_HOME/skills/` or `~/.codex/skills/` | User-level Codex CLI skills |
-| `kilo` | `~/.config/kilo/skills/` | `~/.config/kilo/instructions/localsetup.md` added to `instructions[]` |
-| `openclaw` | `~/.openclaw/skills/` | Auto-discovered |
-| `claude-code` | `~/.claude/skills/` | Auto-discovered |
-| `opencode` | `~/.config/opencode/skills/` | Auto-discovered |
-
-**Note:** Repo-local installation takes precedence over global. Project-specific skills/rules override global ones.
+V3 installs managed skills under `~/.local/share/agents/skills/localsetup` and attaches repo adapter paths to that library by symlink. Use `--mode portable` to copy managed skills into each adapter path instead.
 
 ## ✅ Verify installation
 
@@ -107,18 +63,11 @@ After install, run the verification scripts to confirm everything deployed corre
 ./_localsetup/tools/verify_rules
 ```
 
-### Windows
-
-```powershell
-.\_localsetup\tools\verify_context.ps1
-.\_localsetup\tools\verify_rules.ps1
-```
-
 Expected output: confirmation that context file exists and skills directory is present.
 
 ## ⚡ Non-interactive one-liners
 
-For CI pipelines, automation, or when you already know your platform, use flags to skip prompts. One command per box; pick the one that matches your OS and platform.
+For CI pipelines, automation, or when you already know your platform, use flags to skip prompts. Localsetup v3 installs through Bash on Linux, macOS, or WSL2.
 
 ### Linux and macOS
 
@@ -170,54 +119,14 @@ Install into the current directory and deploy context and skills for Kilo CLI on
 curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | bash -s -- --directory . --tools kilo --yes
 ```
 
-### Windows (PowerShell)
+### Windows
 
-#### Cursor
+Localsetup v3 supports Windows through WSL2 only. Open WSL, change to the repo path, and run the Linux command:
 
-Install into the current directory and deploy context and skills for Cursor only.
-
-```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/cptnfren/localsetup/main/install.ps1))) -Directory . -Tools cursor -Yes
-```
-
-#### Claude Code
-
-Install into the current directory and deploy context and skills for Claude Code only.
-
-```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/cptnfren/localsetup/main/install.ps1))) -Directory . -Tools claude-code -Yes
-```
-
-#### Codex CLI
-
-Install into the current directory and deploy context and skills for OpenAI Codex CLI only.
-
-```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/cptnfren/localsetup/main/install.ps1))) -Directory . -Tools codex -Yes
-```
-
-#### OpenClaw
-
-Install into the current directory and deploy context and skills for OpenClaw only.
-
-```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/cptnfren/localsetup/main/install.ps1))) -Directory . -Tools openclaw -Yes
-```
-
-#### OpenCode
-
-Install into the current directory and deploy context and skills for OpenCode CLI only.
-
-```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/cptnfren/localsetup/main/install.ps1))) -Directory . -Tools opencode -Yes
-```
-
-#### Kilo CLI
-
-Install into the current directory and deploy context and skills for Kilo CLI only (local repo deploy to `.kilo/`).
-
-```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/cptnfren/localsetup/main/install.ps1))) -Directory . -Tools kilo -Yes
+```bash
+wsl
+cd /path/to/repo
+./install --directory . --tools codex --yes
 ```
 
 ### From a local clone
@@ -274,81 +183,23 @@ Install from a local clone into the target directory for Kilo CLI only (local re
 ./install --directory /path/to/your/project --tools kilo --yes
 ```
 
-#### Windows (PowerShell)
+#### Windows
 
-**Cursor**
-
-Install from a local clone into the target directory for Cursor only.
-
-```powershell
-.\install.ps1 -Directory "C:\path\to\your\project" -Tools cursor -Yes
-```
-
-**Claude Code**
-
-Install from a local clone into the target directory for Claude Code only.
-
-```powershell
-.\install.ps1 -Directory "C:\path\to\your\project" -Tools claude-code -Yes
-```
-
-**Codex CLI**
-
-Install from a local clone into the target directory for Codex CLI only.
-
-```powershell
-.\install.ps1 -Directory "C:\path\to\your\project" -Tools codex -Yes
-```
-
-**OpenClaw**
-
-Install from a local clone into the target directory for OpenClaw only.
-
-```powershell
-.\install.ps1 -Directory "C:\path\to\your\project" -Tools openclaw -Yes
-```
-
-**OpenCode**
-
-Install from a local clone into the target directory for OpenCode CLI only.
-
-```powershell
-.\install.ps1 -Directory "C:\path\to\your\project" -Tools opencode -Yes
-```
-
-**Kilo CLI**
-
-Install from a local clone into the target directory for Kilo CLI only (local repo deploy to `.kilo/`).
-
-```powershell
-.\install.ps1 -Directory "C:\path\to\your\project" -Tools kilo -Yes
-```
+Native PowerShell install was removed for v3. Use WSL2 and run the Linux/macOS commands from inside the WSL filesystem or a mounted project path.
 
 ## 🔄 Updating
 
-Re-run the install command with the same `--directory` and `--tools` (or `-Directory` and `-Tools` on Windows). Two policies:
-
-**Update with default policy (preserve local customizations)**
-
-Use this when you have customized context or rules and want to keep them. The installer merges framework updates but does not overwrite your local changes when it can avoid it.
+Re-run the install command with the same `--directory` and `--tools`.
 
 ```bash
-./install --directory . --tools cursor --yes --upgrade-policy preserve
+./install --directory . --tools cursor --yes
 ```
 
-**Update and fail if there are conflicts**
-
-Use this in CI or when you want the run to exit with an error if the framework and your local changes conflict, instead of overwriting.
-
-```bash
-./install --directory . --tools cursor --yes --upgrade-policy fail-on-conflict
-```
-
-On Windows (PowerShell), use `.\install.ps1 -Directory . -Tools cursor -Yes -UpgradePolicy preserve` or `-UpgradePolicy FailOnConflict` for the same behavior.
+`--upgrade-policy` is accepted for v2 compatibility; v3 uses managed install metadata and `localsetup.lock.json`.
 
 ## If dependencies are missing
 
-If preflight reports missing **ripgrep (rg)** on Linux/macOS, install it or install will abort:
+If tooling reports missing **ripgrep (rg)**, install it for search-heavy workflows:
 
 ```bash
 # Debian/Ubuntu
@@ -374,13 +225,7 @@ sudo pacman -S --needed python python-pip python-yaml
 python3 -m pip install -r _localsetup/requirements.txt
 ```
 
-```powershell
-# Windows
-winget install Python.Python.3.12
-py -m pip install -r _localsetup\requirements.txt
-```
-
-Alternatively, re-run install with `--install-deps` (Bash) or `-InstallDeps` (PowerShell) to have the script run `pip install` automatically after deploying the framework.
+Alternatively, re-run install with `--install-deps` to have the script run `pip install` before applying the v3 plan.
 
 ## 📖 Next steps
 

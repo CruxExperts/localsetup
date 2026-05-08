@@ -1,0 +1,104 @@
+pack_id: localsetup
+namespace: ls
+version: 3
+
+global:
+  root: ~/.local/share/agents/skills/localsetup
+  registry: ~/.local/share/agents/skills/localsetup/.localsetup-registry.json
+
+repo:
+  lockfile: localsetup.lock.json
+
+alias_policy:
+  mode: metadata_only
+  legacy_prefix: localsetup-
+  new_prefix: ls-
+
+optional_packs:
+  - core
+  - dev
+  - ops
+  - integrations
+  - publishing
+  - experimental
+
+packs:
+  core:
+    - localsetup-context
+    - localsetup-communication-and-tools
+    - localsetup-script-and-docs-quality
+    - localsetup-safety-and-backup
+    - localsetup-task-skill-matcher
+    - localsetup-test-runner
+    - localsetup-tdd-guide
+  dev:
+    - localsetup-agentlens
+    - localsetup-debug-pro
+    - localsetup-docs-organization
+    - localsetup-framework-audit
+    - localsetup-framework-compliance
+    - localsetup-git-workflows
+    - localsetup-markdown-reference-validator
+    - localsetup-receiving-code-review
+    - localsetup-unfuck-my-git-state
+  ops:
+    - localsetup-ansible-skill
+    - localsetup-backlog-and-reminders
+    - localsetup-cron-orchestrator
+    - localsetup-linux-patcher
+    - localsetup-linux-service-triage
+    - localsetup-system-info
+    - localsetup-tmux-shared-session-workflow
+  integrations:
+    - localsetup-agentq-transport
+    - localsetup-cloudflare-dns
+    - localsetup-keepass-secrets
+    - localsetup-mail-protocol-control
+    - localsetup-mcp-builder
+    - localsetup-npm-management
+    - localsetup-omniroute-admin-automation
+    - localsetup-omniroute-proxy
+    - localsetup-scrapling
+  publishing:
+    - localsetup-automatic-versioning
+    - localsetup-github-publishing-workflow
+    - localsetup-pr-reviewer
+    - localsetup-public-repo-identity
+    - localsetup-publish-workflow
+  experimental:
+    - localsetup-agentic-prd-batch
+    - localsetup-agentic-umbrella-queue
+    - localsetup-arbiter
+    - localsetup-decision-tree-workflow
+    - localsetup-humanizer
+    - localsetup-kilo-boss-orchestrator
+    - localsetup-kilo-visual-output
+    - localsetup-skill-creator
+    - localsetup-skill-discovery
+    - localsetup-skill-importer
+    - localsetup-skill-normalizer
+    - localsetup-skill-sandbox-tester
+    - localsetup-skill-vetter
+
+distribution_channels:
+  - git
+  - shell_installer
+  - python_cli
+
+public_private:
+  public_paths:
+    - README.md
+    - AGENTS.md
+    - install
+    - install.ps1
+    - .github
+    - _localsetup
+  private_paths:
+    - scripts
+    - docs
+    - .localsetup-maint
+    - _localsetup/.cache
+    - _localsetup/docs/local-context
+    - _localsetup/logs
+    - _internal_docs
+    - state

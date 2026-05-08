@@ -1,42 +1,30 @@
 ---
 status: ACTIVE
-version: 2.12
+version: 3.0
 ---
 
-# Platform registry (Localsetup v2)
+# Platform registry (Localsetup v3)
 
 **Purpose:** Single source of truth for which AI agent platforms the framework supports. When you need to list supported platforms, reference this file instead of scattering names across docs. When adding a new platform, add it here first; when registering a new skill, use the "Skill registration (new skills)" list below so no platform is missed.
 
-**Deploy flag:** The install/deploy scripts use platform **IDs** (e.g. `cursor`, `claude-code`, `codex`, `openclaw`, `kilo`, `opencode`) in the `--tools` / `-Tools` option. Values must match the **ID** column.
+**Manifest source:** V3 installer behavior is controlled by `_localsetup/config/platforms.yaml`. This page is a human-readable summary. The root `--tools` flag remains a compatibility alias for v3 `--platforms`.
 
 ## Supported platforms
 
-| ID | Display name | Context loader (path in client repo) | Skills path (path in client repo) | Memory file |
-|----|--------------|--------------------------------------|------------------------------------|-------------|
-| cursor | Cursor | .cursor/rules/localsetup-context.mdc (and .cursor/rules/localsetup-context-index.md) | .agents/skills/localsetup-*/ (with .cursor/skills compatibility link) | .cursor/rules/agent-memory.md |
-| claude-code | Claude Code | .claude/CLAUDE.md | .agents/skills/localsetup-*/ (with .claude/skills compatibility link) | .claude/AGENT_MEMORY.md |
-| codex | OpenAI Codex CLI | AGENTS.md (repo root) | .agents/skills/localsetup-*/ (with .codex/skills compatibility link) | .agents/AGENT_MEMORY.md |
-| openclaw | OpenClaw | [OPENCLAW_CONTEXT.md](../templates/openclaw/OPENCLAW_CONTEXT.md) (merge into workspace MEMORY.md if desired) | skills/localsetup-*/ (repo root) | AGENT_MEMORY.md (repo root) |
-| kilo | Kilo CLI | .kilo/instructions.md | .agents/skills/localsetup-*/ (with .kilo/skills compatibility link) | .kilo/AGENT_MEMORY.md |
-| opencode | OpenCode CLI | AGENTS.md (repo root) | .agents/skills/localsetup-*/ (with .opencode/skills compatibility link) | .opencode/AGENT_MEMORY.md |
+| ID | Display name | Repo adapter path | Managed skill library |
+|----|--------------|-------------------|-----------------------|
+| cursor | Cursor | .cursor/skills | ~/.local/share/agents/skills/localsetup |
+| claude-code | Claude Code | .claude/skills | ~/.local/share/agents/skills/localsetup |
+| codex | OpenAI Codex CLI | .codex/skills | ~/.local/share/agents/skills/localsetup |
+| openclaw | OpenClaw | .openclaw/skills | ~/.local/share/agents/skills/localsetup |
+| kilo | Kilo CLI | .kilo/skills | ~/.local/share/agents/skills/localsetup |
+| opencode | OpenCode CLI | .opencode/skills | ~/.local/share/agents/skills/localsetup |
 
 *More platforms may be added later. Update this table and the "Skill registration (new skills)" section when adding one.*
 
-## Global deployment (user-wide, cross-project)
+## Shared home library
 
-When deployed with `--scope global` (via `./install --global` or `install.ps1 -Global`), the framework installs skills and rules to user-wide locations. This makes the framework available across all projects without per-repo installation.
-
-| Platform | Global skills path | Memory file | Global config | Notes |
-|----------|-------------------|-------------|---------------|-------|
-| codex | `$CODEX_HOME/skills/` or `~/.codex/skills/` | `$CODEX_HOME/AGENT_MEMORY.md` or `~/.codex/AGENT_MEMORY.md` | N/A | User-level Codex CLI skills |
-| kilo | `~/.config/kilo/skills/` | `~/.config/kilo/AGENT_MEMORY.md` | `~/.config/kilo/kilo.json` or `kilo.jsonc` | Skills auto-discovered by Kilo |
-| openclaw | `~/.openclaw/skills/` | `~/.openclaw/AGENT_MEMORY.md` | `~/.openclaw/openclaw.json` | Skills auto-discovered |
-| claude-code | `~/.claude/skills/` | `~/.claude/AGENT_MEMORY.md` | N/A | Uses `~/.claude/CLAUDE.md` for global context |
-| opencode | `~/.config/opencode/skills/` | `~/.config/opencode/AGENT_MEMORY.md` | N/A | Skills auto-discovered |
-
-**Precedence:** Repo-local deployment wins over global. Project-local skills/rules override global ones, allowing projects to customize without affecting the global install.
-
-**Kilo-specific:** Global skills go to `~/.config/kilo/skills/` which Kilo auto-discovers. Memory file goes to `~/.config/kilo/AGENT_MEMORY.md`. Context file is deployed to `~/.config/kilo/instructions/localsetup.md` and is idempotently added to the `instructions[]` array in `kilo.json`/`kilo.jsonc`. This is a one-time setup; subsequent global deploys update the skill and context files.
+V3 installs selected skills to `~/.local/share/agents/skills/localsetup` and attaches repo adapter paths to that library by symlink. `--mode portable` creates managed copies instead. Rollback uses `localsetup.lock.json` and removes only managed paths.
 
 ## Skill registration (new skills)
 
@@ -60,8 +48,9 @@ Add one row or bullet per new skill with a short "When to use" description. Use 
 
 ## Reference
 
-- Deploy script: `_localsetup/tools/deploy` (Bash) / `deploy.ps1` (PowerShell); accepts `--tools "cursor,claude-code,codex,openclaw,kilo,opencode"` and `--scope local|global`.
-- Global install: root `install` (Bash) / `install.ps1` (PowerShell) with `--global` / `-Global` flag. Auto-detects installed agents (kilo, openclaw, claude). Skills go to `~/.config/kilo/skills/` (auto-discovered), context goes to `~/.config/kilo/instructions/localsetup.md`.
+- V3 CLI: `_localsetup/tools/localsetup_v3.py plan|install|verify|rollback`.
+- Root wrapper: `./install --directory . --yes`; use `--tools cursor,codex` or `--platforms cursor codex` to select adapters.
+- Windows: WSL2-only. `install.ps1` is a guidance stub, not a native installer.
 - Skills and rules (paths and model): [SKILLS_AND_RULES.md](SKILLS_AND_RULES.md).
 - Release and publish (including packaging and sync checks) are maintained in a separate maintainer repository.
 

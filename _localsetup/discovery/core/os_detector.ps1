@@ -1,4 +1,4 @@
-# Localsetup v2 - OS detection. Thin wrapper; logic in os_detector.py.
+# Localsetup v3 - OS detection. Thin wrapper; logic in os_detector.py.
 # Output: os_type|os_version|architecture (same as os_detector.py).
 $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path

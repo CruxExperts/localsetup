@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 2.12
+version: 3.0
 ---
 
 # Tmux-default terminal mode

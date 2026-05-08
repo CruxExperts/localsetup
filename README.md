@@ -1,7 +1,7 @@
-# Localsetup v2
+# Localsetup v3
 
 <p align="center">
-  <img src="assets/localsetup-v2-logo.png" alt="Localsetup v2" width="160">
+  <img src="assets/localsetup-v3-logo.png" alt="Localsetup v3" width="160">
 </p>
 
 <p align="center">
@@ -10,12 +10,12 @@
   <a href="_localsetup/docs/PLATFORM_REGISTRY.md"><img src="https://img.shields.io/badge/platforms-cursor%20%7C%20claude--code%20%7C%20codex%20%7C%20openclaw%20%7C%20kilo%20%7C%20opencode-1f6feb" alt="Supported platforms"></a>
 </p>
 
-**Version:** 2.12.0  
-**Last updated:** 2026-04-01
+**Version:** 3<br>
+**Last updated:** 2026-05-07
 
-Agentic setups often share the same headaches: indeterministic outcomes, memory that compresses or decays, hallucinations, agents that drop context or ignore instructions, and difficulty scaling beyond a certain code size. Coordinating multiple agents so they follow patterns and run workflows reliably is harder still. Localsetup v2 targets these problems without adding much overhead.
+Agentic setups often share the same headaches: indeterministic outcomes, memory that compresses or decays, hallucinations, agents that drop context or ignore instructions, and difficulty scaling beyond a certain code size. Coordinating multiple agents so they follow patterns and run workflows reliably is harder still. Localsetup v3 targets these problems without adding much overhead.
 
-The framework is repo-local: context, skills, and docs live in one folder in your project. Clone or move the repo and the setup moves with it. No home-directory state, no cloud dependency. Context is code, so you can audit what changed and tie specs and outcomes to git commits. It installs with one command and works the same across Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, and OpenCode (add more via [one registry file](_localsetup/docs/PLATFORM_REGISTRY.md)). Safety and sandboxing are built in; when you import third-party skills, the framework runs security checks and heuristics before anything touches your agent. Tooling can be refactored or rewritten in Python and standardized even when sources disagree, and you can adapt it to your stack. The [public skill index](_localsetup/docs/PUBLIC_SKILL_INDEX.yaml) grows over time; you can add your own registry sources and combine or adapt skills as you like. One folder in every project, no namespace collisions with existing code. It just works.
+The framework source is repo-local: context, skills, docs, and v3 install manifests live under `_localsetup/`. V3 installs a managed shared skill library in your home directory and attaches repo adapter paths such as `.codex/skills` or `.kilo/skills` to that library. Context is code, so you can audit what changed and tie specs and outcomes to git commits. It installs with one command and works across Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode. Safety and sandboxing are built in; when you import third-party skills, the framework runs security checks and heuristics before anything touches your agent. Tooling can be refactored or rewritten in Python and standardized even when sources disagree, and you can adapt it to your stack.
 
 Out of the box you get [all shipped skills](_localsetup/docs/SKILLS.md): debugging, TDD, PR review, git recovery, Linux patching, Ansible, and more. Skills follow the [Agent Skills](https://agentskills.io/specification) spec, so you can import from other ecosystems (e.g. Anthropic's public repo) and export yours. Version and docs are maintained in a separate maintainer workflow; see [_localsetup/docs/VERSIONING.md](_localsetup/docs/VERSIONING.md). Run one install command, verify with one script, then use the workflows. The result is a single, auditable agent setup that stays accurate over time.
 
@@ -24,15 +24,15 @@ Out of the box you get [all shipped skills](_localsetup/docs/SKILLS.md): debuggi
 <!-- facts-block:start -->
 | Fact | Value |
 |---|---|
-| Current version | `2.12.0` |
-| Supported platforms | `` |
+| Current version | `3.0.0` |
+| Supported platforms | `cursor, claude-code, codex, openclaw, kilo, opencode` |
 | Shipped skills | `50` |
 | Source | `_localsetup/docs/_generated/facts.json` |
 <!-- facts-block:end -->
 
 ## 🚀 60-second quickstart
 
-Run from your project root. The installer prompts for directory and platform, so you do not need to memorize flags.
+Run from your project root in Linux, macOS, or WSL2. V3 install is explicit and non-interactive.
 
 ### Linux and macOS (Bash)
 
@@ -40,51 +40,26 @@ Run from your project root. The installer prompts for directory and platform, so
 curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | bash
 ```
 
-`sudo curl ... | bash` only elevates curl; the install and deploy run as the current user. For a full install as root (e.g. to avoid root-owned files when re-running upgrades later): `curl -sSL <url> -o /tmp/install.sh && sudo bash /tmp/install.sh`.
-
-### Windows (PowerShell)
-
-```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/cptnfren/localsetup/main/install.ps1)))
-```
-
-The installer asks which platform(s) to deploy: Cursor, Claude Code, Codex CLI, OpenClaw, Kilo, or OpenCode. After install, run the verification script printed at the end to confirm context loaded correctly.
-
-For non-interactive one-liners (CI, automation, or when you already know the platform), see the collapsed **Full install reference** below or [_localsetup/docs/QUICKSTART.md](_localsetup/docs/QUICKSTART.md).
-
-## 🌐 Global installation (optional)
-
-Deploy the framework once to your user home directory and use it across ALL projects. Global deployment installs skills and rules to user-wide locations (`~/.codex/skills/`, `~/.config/kilo/`, `~/.openclaw/`, `~/.claude/`), making the framework available without per-repo installation.
-
-### Linux and macOS (Bash)
-
 ```bash
-# Auto-detect installed agents (kilo, openclaw, claude) and deploy globally
-curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | bash -s -- --global
-
-# Deploy to specific agents only
-curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | bash -s -- --global --tools kilo
-
-# From local clone
-./install --global
+./install --directory . --yes
 ```
 
-### Windows (PowerShell)
+By default, v3 installs every platform listed in `_localsetup/config/platforms.yaml`. Use `--tools codex,kilo` or `--platforms codex kilo` to limit adapter creation.
 
-```powershell
-# Auto-detect and deploy globally
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/cptnfren/localsetup/main/install.ps1))) -Global
+### Windows
 
-# Specific agents
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/cptnfren/localsetup/main/install.ps1))) -Global -Tools kilo
-```
+Localsetup v3 supports Windows through WSL2 only. Run `wsl`, change to the repo path, and run `./install --directory . --yes`. `install.ps1` is a compatibility stub that prints WSL2 guidance and exits.
 
-**Note:** Repo-local installation takes precedence over global. Project-specific skills and rules override global ones.
+For one-liners and platform-specific examples, see [_localsetup/docs/QUICKSTART.md](_localsetup/docs/QUICKSTART.md).
+
+## Shared home library
+
+V3 installs managed skills to `~/.local/share/agents/skills/localsetup` and writes `localsetup.lock.json` in the repo. Roll back with `python3 _localsetup/tools/localsetup_v3.py rollback`.
 
 ### Minimum requirements
 
-- **Required:** `git >= 2.20.0`; on Linux/macOS, `rg` (ripgrep) is also required for the install script.
-- **Recommended:** `python >= 3.10`, `pip`, and the packages in `_localsetup/requirements.txt` (PyYAML, requests, python-frontmatter). After install: `python3 -m pip install -r _localsetup/requirements.txt`, or pass `--install-deps` / `-InstallDeps` to install them automatically.
+- **Required:** `python >= 3.10`.
+- **Recommended:** `git >= 2.20.0`, `rg` (ripgrep), `pip`, and the packages in `_localsetup/requirements.txt`. After install: `python3 -m pip install -r _localsetup/requirements.txt`, or pass `--install-deps` to install them automatically.
 
 The installer runs a dependency preflight and prints missing items with copy-paste install suggestions before proceeding. Full list: [_localsetup/docs/MULTI_PLATFORM_INSTALL.md](_localsetup/docs/MULTI_PLATFORM_INSTALL.md#dependency-preflight).
 
@@ -92,15 +67,14 @@ The installer runs a dependency preflight and prints missing items with copy-pas
 
 1. **Secure skill import with safety checks** - import any external skill or freeform text, run automatic prompt-injection detection, foreign-language screening, and heuristic security analysis before it touches your agent. Use the framework as a sandbox to build and adapt workflows however you see fit.
 2. **Repo-local engine** - the entire framework lives at `_localsetup/`; clone or move your repo and everything travels together. No home-directory state, no cloud sync, no hidden drift.
-3. **Multi-platform install** - one command deploys context and skills for Cursor, Claude Code, Codex CLI, OpenClaw, or OpenCode. Add platforms later by editing one registry file.
+3. **Multi-platform install** - one command installs adapters for Cursor, Claude Code, Codex CLI, OpenClaw, Kilo, and OpenCode. Add platforms later by editing `_localsetup/config/platforms.yaml`.
 4. **Agent Skills spec compatible** - skills follow the open Agent Skills specification, so you can import from Anthropic's public repo, awesome lists, or your own library and export yours for others.
 5. **Shipped skills** - debugging, TDD, PR review, git recovery, Linux patching, Ansible orchestration, codebase navigation (agentlens), tmux ops (pick/probe/send), system-info, cron-orchestrator, PRD batching, decision trees, and more, ready to use out of the box. See [_localsetup/docs/SKILLS.md](_localsetup/docs/SKILLS.md) for the full catalog.
 6. **Workflow registry and quick-ref** - named workflow IDs, human-readable names, and aliases in [_localsetup/docs/WORKFLOW_REGISTRY.md](_localsetup/docs/WORKFLOW_REGISTRY.md), plus an agent-facing quick reference and composite pipelines (PR feedback loop, git repair and hygiene, server triage and patch, repo polish) in [_localsetup/docs/WORKFLOW_QUICK_REF.md](_localsetup/docs/WORKFLOW_QUICK_REF.md). Agents can invoke multi-step workflows by intent instead of chaining skills manually.
 7. **Human-in-the-loop gates and Always-On-TMUX** - tmux shared sessions via tmux_ops (pick, probe, send with 1 s delay), sudo discovery and approval flow before destructive ops, and a tmux-default terminal mode that can run as an \"always-on tmux\" layer for this repo or machine. The agent pauses and waits for you when it matters.
 8. **Versioning** - VERSION at repo root; conventional commits; version and docs are maintained in a separate maintainer workflow (see [_localsetup/docs/VERSIONING.md](_localsetup/docs/VERSIONING.md)).
 9. **Skill metadata patching** - staged `SKILL.md` files get their `metadata.version` incremented automatically so skill docs stay accurate.
-10. **Platform registry and git-coupled traceability** - a single [Markdown table](_localsetup/docs/PLATFORM_REGISTRY.md) defines every supported host, context path, and skills path, and PRDs/specs/outcomes can reference commit hashes for audit. Context is code; changes are reviewable.
-11. **Global deployment (user-wide, cross-project)** - Install once, use the framework across all projects. Deploys skills to `~/.codex/skills/`, `~/.config/kilo/` (auto-discovered), `~/.openclaw/`, and `~/.claude/` with auto-detection of installed agents.
+10. **Platform manifests and git-coupled traceability** - `_localsetup/config/platforms.yaml` defines supported adapter paths, and PRDs/specs/outcomes can reference commit hashes for audit. Context is code; changes are reviewable.
 
 The full feature catalog contains additional capabilities. See [_localsetup/docs/FEATURES.md](_localsetup/docs/FEATURES.md) for details.
 
@@ -133,15 +107,13 @@ The generated shipped skills catalog lists all skills with descriptions and vers
 <details>
 <summary>Full install reference</summary>
 
-### Interactive installers
+### Installer
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | bash
+./install --directory . --yes
 ```
 
-```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/cptnfren/localsetup/main/install.ps1)))
-```
+Windows support is WSL2-only in Localsetup v3. Run `./install` inside WSL; `install.ps1` prints WSL2 guidance and exits.
 
 ### Non-interactive tool IDs
 
@@ -151,14 +123,10 @@ curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | b
 - `openclaw`
 - `kilo`
 
-### Global installation
+### Shared home library
 
 ```bash
-./install --global
-```
-
-```powershell
-.\install.ps1 -Global
+./install --directory . --yes
 ```
 
 ### Examples
@@ -167,24 +135,14 @@ curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | b
 ./install --directory . --tools cursor,claude-code --yes
 ```
 
-```powershell
-.\install.ps1 -Directory . -Tools "cursor,claude-code" -Yes
-```
-
 ### Update behavior
 
-Re-run install with the same tool selection. Installer fetches latest framework source, performs an upgrade-aware sync in `_localsetup/`, writes an upgrade report under `_localsetup/.localsetup-meta/`, then deploys platform files again.
-
-Upgrade policy (optional):
-
-- `--upgrade-policy preserve` (default): keep local customizations when possible.
-- `--upgrade-policy force`: overwrite managed files with upstream.
-- `--upgrade-policy fail-on-conflict`: abort upgrade if both local and upstream changed the same managed file.
+Re-run install with the same platform selection. The v3 installer refreshes the managed shared skill library, adapter links or portable copies, and `localsetup.lock.json`.
 
 Example:
 
 ```bash
-./install --directory . --tools cursor --yes --upgrade-policy fail-on-conflict
+./install --directory . --tools cursor --yes
 ```
 
 </details>

@@ -1,4 +1,4 @@
-# Localsetup v2 - Context verification. Thin wrapper; logic in verify_context.py.
+# Localsetup v3 - Context verification. Thin wrapper; logic in verify_context.py.
 $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $EngineDir = (Get-Item (Join-Path $ScriptDir '..')).FullName

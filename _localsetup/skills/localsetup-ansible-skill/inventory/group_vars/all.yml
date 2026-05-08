@@ -2,15 +2,15 @@
 # Global variables for all hosts
 
 # Timezone
-common_timezone: Europe/Budapest
+common_timezone: Etc/UTC
 
 # Packages
 common_upgrade_packages: true
 
 # User setup
-common_deploy_user: asdbot
+common_deploy_user: deploy
 common_deploy_user_groups: [sudo]
-common_deploy_user_nopasswd_sudo: true
+common_deploy_user_nopasswd_sudo: false
 
 # Security
 security_ssh_permit_root: "no"

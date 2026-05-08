@@ -1,4 +1,4 @@
-# Localsetup v2 - Scan directory for Agent Skills. Thin wrapper; logic in skill_importer_scan.py.
+# Localsetup v3 - Scan directory for Agent Skills. Thin wrapper; logic in skill_importer_scan.py.
 param([string]$Path = '')
 if (-not $Path) { Write-Error 'Usage: .\skill_importer_scan.ps1 -Path <directory>'; exit 1 }
 if (-not (Test-Path -LiteralPath $Path -PathType Container)) { Write-Error "Not a directory: $Path"; exit 1 }

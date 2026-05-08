@@ -1,0 +1,54 @@
+# Skill Packs
+
+| Pack | v2 Skill | v3 Alias |
+|---|---|---|
+| `experimental` | `localsetup-agentic-prd-batch` | `ls-agentic-prd-batch` |
+| `experimental` | `localsetup-agentic-umbrella-queue` | `ls-agentic-umbrella-queue` |
+| `dev` | `localsetup-agentlens` | `ls-agentlens` |
+| `integrations` | `localsetup-agentq-transport` | `ls-agentq-transport` |
+| `ops` | `localsetup-ansible-skill` | `ls-ansible-skill` |
+| `experimental` | `localsetup-arbiter` | `ls-arbiter` |
+| `publishing` | `localsetup-automatic-versioning` | `ls-automatic-versioning` |
+| `ops` | `localsetup-backlog-and-reminders` | `ls-backlog-and-reminders` |
+| `integrations` | `localsetup-cloudflare-dns` | `ls-cloudflare-dns` |
+| `core` | `localsetup-communication-and-tools` | `ls-communication-and-tools` |
+| `core` | `localsetup-context` | `ls-context` |
+| `ops` | `localsetup-cron-orchestrator` | `ls-cron-orchestrator` |
+| `dev` | `localsetup-debug-pro` | `ls-debug-pro` |
+| `experimental` | `localsetup-decision-tree-workflow` | `ls-decision-tree-workflow` |
+| `dev` | `localsetup-docs-organization` | `ls-docs-organization` |
+| `dev` | `localsetup-framework-audit` | `ls-framework-audit` |
+| `dev` | `localsetup-framework-compliance` | `ls-framework-compliance` |
+| `dev` | `localsetup-git-workflows` | `ls-git-workflows` |
+| `publishing` | `localsetup-github-publishing-workflow` | `ls-github-publishing-workflow` |
+| `experimental` | `localsetup-humanizer` | `ls-humanizer` |
+| `integrations` | `localsetup-keepass-secrets` | `ls-keepass-secrets` |
+| `experimental` | `localsetup-kilo-boss-orchestrator` | `ls-kilo-boss-orchestrator` |
+| `experimental` | `localsetup-kilo-visual-output` | `ls-kilo-visual-output` |
+| `ops` | `localsetup-linux-patcher` | `ls-linux-patcher` |
+| `ops` | `localsetup-linux-service-triage` | `ls-linux-service-triage` |
+| `integrations` | `localsetup-mail-protocol-control` | `ls-mail-protocol-control` |
+| `dev` | `localsetup-markdown-reference-validator` | `ls-markdown-reference-validator` |
+| `integrations` | `localsetup-mcp-builder` | `ls-mcp-builder` |
+| `integrations` | `localsetup-npm-management` | `ls-npm-management` |
+| `integrations` | `localsetup-omniroute-admin-automation` | `ls-omniroute-admin-automation` |
+| `integrations` | `localsetup-omniroute-proxy` | `ls-omniroute-proxy` |
+| `publishing` | `localsetup-pr-reviewer` | `ls-pr-reviewer` |
+| `publishing` | `localsetup-public-repo-identity` | `ls-public-repo-identity` |
+| `publishing` | `localsetup-publish-workflow` | `ls-publish-workflow` |
+| `dev` | `localsetup-receiving-code-review` | `ls-receiving-code-review` |
+| `core` | `localsetup-safety-and-backup` | `ls-safety-and-backup` |
+| `integrations` | `localsetup-scrapling` | `ls-scrapling` |
+| `core` | `localsetup-script-and-docs-quality` | `ls-script-and-docs-quality` |
+| `experimental` | `localsetup-skill-creator` | `ls-skill-creator` |
+| `experimental` | `localsetup-skill-discovery` | `ls-skill-discovery` |
+| `experimental` | `localsetup-skill-importer` | `ls-skill-importer` |
+| `experimental` | `localsetup-skill-normalizer` | `ls-skill-normalizer` |
+| `experimental` | `localsetup-skill-sandbox-tester` | `ls-skill-sandbox-tester` |
+| `experimental` | `localsetup-skill-vetter` | `ls-skill-vetter` |
+| `ops` | `localsetup-system-info` | `ls-system-info` |
+| `core` | `localsetup-task-skill-matcher` | `ls-task-skill-matcher` |
+| `core` | `localsetup-tdd-guide` | `ls-tdd-guide` |
+| `core` | `localsetup-test-runner` | `ls-test-runner` |
+| `ops` | `localsetup-tmux-shared-session-workflow` | `ls-tmux-shared-session-workflow` |
+| `dev` | `localsetup-unfuck-my-git-state` | `ls-unfuck-my-git-state` |

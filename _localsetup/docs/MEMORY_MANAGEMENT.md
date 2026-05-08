@@ -1,15 +1,15 @@
 ---
 status: ACTIVE
-version: 2.12
+version: 3.0
 ---
 
-# Agent Memory Management (Localsetup v2)
+# Agent Memory Management (Localsetup v3)
 
 **Purpose:** How to use the persistent memory file for AI agent learnings, with strict curation to prevent file bloat.
 
 ## Overview
 
-Localsetup v2 includes a persistent **Agent Memory Bank** for each supported platform. This memory file stores AI agent learnings, patterns, and troubleshooting solutions across sessions. Unlike `AGENTS.md` (which is write-protected), the memory file is freely writable by the AI agent.
+Localsetup v3 includes a persistent **Agent Memory Bank** for each supported platform. This memory file stores AI agent learnings, patterns, and troubleshooting solutions across sessions. Unlike `AGENTS.md` (which is write-protected), the memory file is freely writable by the AI agent.
 
 ## Core Principle: Curation Over Accumulation
 
@@ -94,37 +94,28 @@ When you discover something valuable:
 - Patterns that should be documented as invariants
 - Anything that belongs in `AGENTS.md` or skill files
 
-## Deployment: Global vs Repo-Local
+## Deployment: V3 Memory Paths
 
-### Repo-Local Deployment (Default)
+V3 declares memory paths in `_localsetup/config/platforms.yaml`. The installer focuses on managed skill adapters; memory files remain project or platform state and should stay curated by the agent host using them.
 
-When deploying with `--tools <platform>` (without `--global`):
+### Repo-local memory
 
-- Memory file deploys to the **project directory**
-- Each project has its own isolated memory
-- Memory is versioned with the project (travels with git)
+- Each project can keep its own isolated memory where the platform expects it.
+- Repo-local memory may be versioned only when it contains no secrets or private state.
+- Project-specific memory takes precedence for that project.
 
-### Global Deployment (Cross-Project)
+### Home-scoped memory
 
-When deploying with `--global`:
+Home-scoped memory paths are allowed only under `~/` in `platforms.yaml`. They are useful for durable user-level conventions, but must not contain repo secrets or generated private state.
 
-- Memory file deploys to **user home directory**
-- Memory is shared across all projects
-- Useful for universal patterns and conventions
-
-| Platform | Global Memory Path |
+| Platform | Default memory path |
 |----------|------------------|
-| Kilo CLI | `~/.config/kilo/AGENT_MEMORY.md` |
-| OpenCode CLI | `~/.config/opencode/AGENT_MEMORY.md` |
-| Claude Code | `~/.claude/AGENT_MEMORY.md` |
-| OpenClaw | `~/.openclaw/AGENT_MEMORY.md` |
-
-### Precedence Rules
-
-**Repo-local takes precedence over global.** This means:
-- Project-specific memory is not overwritten by global memory
-- Each project can have its own curated memory
-- Global memory supplements (doesn't replace) project memory
+| Codex | `~/.codex/memories` |
+| Claude Code | `~/.claude/memories` |
+| Cursor | `~/.cursor/memories` |
+| Kilo CLI | `~/.kilo/memories` |
+| OpenCode CLI | `~/.opencode/memories` |
+| OpenClaw | `~/.openclaw/memories` |
 
 ## Platform-Specific Notes
 

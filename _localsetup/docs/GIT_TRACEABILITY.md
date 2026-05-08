@@ -1,9 +1,9 @@
 ---
 status: ACTIVE
-version: 2.12
+version: 3.0
 ---
 
-# Git traceability (Localsetup v2)
+# Git traceability (Localsetup v3)
 
 **Purpose:** When referencing a repo artifact (file, PRD, document) in PRDs, specs, outcomes, or handoffs, **attach the git hash** so the reference is immutable and point-in-time.
 

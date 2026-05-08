@@ -1,9 +1,9 @@
 ---
 status: ACTIVE
-version: 2.12
+version: 3.0
 ---
 
-# Agentic design index (Localsetup v2)
+# Agentic design index (Localsetup v3)
 
 **Purpose:** Index of agentic-design documentation. Paths are relative to _localsetup/docs/ (repo-local). Audience: humans and AI agents.
 

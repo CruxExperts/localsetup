@@ -1,4 +1,4 @@
-# Localsetup v2 - Path resolution (PowerShell)
+# Localsetup v3 - Path resolution (PowerShell)
 # Purpose: Repo-local path resolution; mirrors data_paths.sh.
 # When deployed, framework is at _localsetup/framework; set LOCALSETUP_PROJECT_ROOT for client repo root.
 

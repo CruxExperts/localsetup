@@ -1,9 +1,9 @@
 ---
 status: ACTIVE
-version: 2.12
+version: 3.0
 ---
 
-# Repo and data separation (Localsetup v2)
+# Repo and data separation (Localsetup v3)
 
 **Purpose:** The framework lives in the client repo at `_localsetup/`. Only modify local context (e.g. `.cursor/rules/local-*.mdc`) or propose changes via PRD; do not edit framework engine files in place for one-off overrides.
 

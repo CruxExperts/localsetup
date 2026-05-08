@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Localsetup v2 - Context verification. Thin wrapper; logic in verify_context.py.
+# Localsetup v3 - Context verification. Thin wrapper; logic in verify_context.py.
 # On Windows (Git Bash): delegates to verify_context.ps1.
 set -euo pipefail
 if [[ -n "${WINDIR:-}" ]] || [[ "${OSTYPE:-}" == "msys" ]] || [[ "${OSTYPE:-}" == "cygwin" ]]; then

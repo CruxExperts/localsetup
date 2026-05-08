@@ -1,4 +1,4 @@
-# Localsetup v2 - Deploy step. Thin wrapper; logic in deploy.py.
+# Localsetup v3 - Deploy step. Thin wrapper; logic in deploy.py.
 $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $EngineDir = (Get-Item (Join-Path $ScriptDir '..')).FullName

@@ -1,9 +1,9 @@
 ---
 status: ACTIVE
-version: 2.12
+version: 3.0
 ---
 
-# Skill interoperability (Localsetup v2)
+# Skill interoperability (Localsetup v3)
 
 **Purpose:** Framework skills are [Agent Skills](https://agentskills.io/specification)–compliant so they can be used in any spec-compliant host. External skills (e.g. from [Anthropic’s skills](https://github.com/anthropics/skills)) can be used in this framework with minimal adaptation. Skills are interchangeable across ecosystems that follow the same spec.
 

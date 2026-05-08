@@ -1,7 +1,7 @@
-# Localsetup v2  - Agent context (OpenCode)
+# Localsetup v3  - Agent context (OpenCode)
 
 ## Overview
-Localsetup v2 is deployed into this repo at `_localsetup/`. Framework and context are repo-local (mobile, backup-able). Engine = _localsetup/; user data = repo-local. Attach git hash when referencing PRDs/specs (see [_localsetup/docs/GIT_TRACEABILITY.md](../_localsetup/docs/GIT_TRACEABILITY.md)).
+Localsetup v3 is deployed into this repo at `_localsetup/`. Framework and context are repo-local (mobile, backup-able). Engine = _localsetup/; user data = repo-local. Attach git hash when referencing PRDs/specs (see [_localsetup/docs/GIT_TRACEABILITY.md](../_localsetup/docs/GIT_TRACEABILITY.md)).
 
 OpenCode uses `AGENTS.md` as the project initialization file. This context is loaded automatically when OpenCode initializes in this repo.
 
@@ -18,6 +18,12 @@ OpenCode uses `AGENTS.md` as the project initialization file. This context is lo
 - If capability is unknown, default to `markdown-basic`.
 - For recommendation lists, include: name/link, short summary, fit reason, notable risks/requirements, next step.
 - Use tables only when capability clearly supports readable tables.
+
+## Agent orchestration and model budget
+- Inventory and scouting: use `gpt-5.4-mini` for cheap repo/file inventory, low-risk search, and parallel subagent scouting.
+- Critical review: use `gpt-5.5` at medium reasoning for security, release blockers, architecture, and high-risk review findings.
+- Bounded coding: use `gpt-5.3-codex` for scoped implementation tasks with clear write ownership and tests.
+- Credit freshness: as of 2026-05-07, the official Codex rate card lists per 1M token credits as `gpt-5.4-mini` 18.75/1.875/113, `gpt-5.3-codex` 43.75/4.375/350, and `gpt-5.5` 125/12.50/750 for input/cached/output. Re-check https://help.openai.com/en/articles/20001106-codex-rate-card before changing model guidance.
 
 ## Skills (load when task matches)
 - localsetup-decision-tree-workflow: "decision tree", "reverse prompt"; .agent/queue/**, PRD

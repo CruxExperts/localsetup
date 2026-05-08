@@ -1,9 +1,9 @@
 ---
 status: ACTIVE
-version: 2.12
+version: 3.0
 ---
 
-# Agent Q (queue) pattern (Localsetup v2)
+# Agent Q (queue) pattern (Localsetup v3)
 
 **Purpose:** Pattern for processing a queue of PRD/spec items: locate specs, implement per spec, update status, write outcome. Used when the user says "process PRDs" or "run batch from PRD folder".
 

@@ -119,7 +119,7 @@
 # Add line if not exists
 - ansible.builtin.lineinfile:
     path: /etc/hosts
-    line: '192.168.1.100 myserver'
+    line: '203.0.113.10 example-host'
     state: present
 
 # Remove line

@@ -49,11 +49,11 @@ TOOLING_POLICY_MARKERS = {
     ),
     "install_bash": (
         Path("install"),
-        'MIN_PYTHON_VERSION="3.10.0"',
+        "_localsetup/tools/localsetup_v3.py",
     ),
     "install_ps1": (
         Path("install.ps1"),
-        "$MinPythonVersion = [Version]'3.10.0'",
+        "Localsetup v3 supports Windows through WSL2 only.",
     ),
 }
 
@@ -126,8 +126,8 @@ def validate_markers(engine_dir: Path, errors: list[str]) -> None:
         / "AGENTS.md": "## Output contract (low token, always apply)",
         engine_dir
         / "templates"
-        / "kilocode"
-        / "localsetup-context.md": "## Output contract (low token, always apply)",
+        / "kilo"
+        / "AGENTS.md": "## Output contract (low token, always apply)",
         engine_dir
         / "templates"
         / "kilo"

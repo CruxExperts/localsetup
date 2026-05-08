@@ -1,9 +1,9 @@
-# Localsetup v2 Framework
+# Localsetup v3 Framework
 
-**Version:** 2.12.0  
-**Last updated:** 2026-02-19
+**Version:** 3.0.0<br>
+**Last updated:** 2026-05-07
 
-This directory is the engine of Localsetup v2: a universal, cross-platform agentic workflow framework for DevOps, local and remote servers, network configuration, and any workflow that benefits from AI agent assistance on your chosen platform (see [Platform registry](docs/PLATFORM_REGISTRY.md) for the canonical list: Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, OpenCode). For first-time setup and overview, see the [root README](../../README.md). Deployed into your repo, the framework and context live inside the repo so the setup is mobile and backup-able, with no home-directory dependency.
+This directory is the engine of Localsetup v3: a universal, cross-platform agentic workflow framework for DevOps, local and remote servers, network configuration, and any workflow that benefits from AI agent assistance on your chosen platform (see [Platform registry](docs/PLATFORM_REGISTRY.md) for the canonical list: Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, OpenCode). For first-time setup and overview, see the [root README](../../README.md). Deployed into your repo, the framework and context live inside the repo so the setup is mobile and backup-able, with no home-directory dependency.
 
 The framework is for anyone who wants to execute tasks with agents: it provides a convenient, contained place for workflows and skills. It is **lightweight**, **does not interfere with existing projects**, and works for a **wide variety of tasks**; it is **compatible with all agentic design patterns** and **platform-independent** -the same skills and workflows run on any supported host.
 
@@ -31,9 +31,9 @@ The emphasis is on **transparency**, **security**, and **high-quality operations
 
 ## Overview
 
-**Summary of features:** One-line install (Bash/PowerShell); multi-platform deploy (cursor, claude-code, codex, openclaw, kilo, opencode); always-loaded context per platform; built-in skills (decision tree, PRD batch, safety, tmux, versioning, publishing, skill-creator, skill-importer, skill-discovery, agentlens, and more); duplicate/overlap/namespace checks when creating or importing; heuristic security screening on import; public skill registry and index with refresh and top-5 similar recommendations; versioning (VERSION, conventional commits, per-skill metadata.version); cross-platform tools (deploy, verify_context, verify_rules, skill_importer_scan); docs under [docs/](docs/) and [AGENTIC_DESIGN_INDEX.md](docs/AGENTIC_DESIGN_INDEX.md).
+**Summary of features:** One-line Bash install for Linux, macOS, and WSL2; multi-platform deploy (cursor, claude-code, codex, openclaw, kilo, opencode); always-loaded context per platform; built-in skills (decision tree, PRD batch, safety, tmux, versioning, publishing, skill-creator, skill-importer, skill-discovery, agentlens, and more); duplicate/overlap/namespace checks when creating or importing; heuristic security screening on import; public skill registry and index with refresh and top-5 similar recommendations; versioning (VERSION, conventional commits, per-skill metadata.version); Python-first tools (localsetup_v3.py, verify_context, verify_rules, skill_importer_scan); docs under [docs/](docs/) and [AGENTIC_DESIGN_INDEX.md](docs/AGENTIC_DESIGN_INDEX.md).
 
-Localsetup v2 provides:
+Localsetup v3 provides:
 
 - **One always-loaded context** per supported platform (canonical list: [docs/PLATFORM_REGISTRY.md](docs/PLATFORM_REGISTRY.md)) with invariants, skills index, and docs index.
 - **Skills** (task-based instructions) that agents load when the task matches -e.g. decision tree, PRD batch, safety, tmux, versioning, publishing. Create new skills from workflows or docs (skill-creator); import external skills from a URL or path with validation and security screening (skill-importer). Skills are [Agent Skills](https://agentskills.io/specification)–compliant and interchangeable with other spec-compliant hosts.
@@ -59,17 +59,13 @@ curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | b
 curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | bash -s -- --directory . --tools cursor --yes
 ```
 
-**Windows (PowerShell):** After cloning or downloading the repo, from the repo root:
+**Windows:** Localsetup v3 supports Windows through WSL2 only. Open WSL2, change to the repository path, and run the Bash installer there:
 
-```powershell
-# Interactive
-.\install.ps1
-
-# Non-interactive
-.\install.ps1 -Directory . -Tools cursor -Yes
+```bash
+./install --directory . --tools cursor --yes
 ```
 
-On Windows, if you run the Bash `install` from Git Bash, it **detects the host** and delegates to `install.ps1` automatically. See [Multi-platform install](docs/MULTI_PLATFORM_INSTALL.md) for full cross-platform details.
+The root `install.ps1` file is a compatibility guidance stub. It prints WSL2 instructions and exits; native PowerShell installation and Git Bash delegation are intentionally not supported in v3. See [Multi-platform install](docs/MULTI_PLATFORM_INSTALL.md) for full details.
 
 **Options:**
 
@@ -78,7 +74,7 @@ On Windows, if you run the Bash `install` from Git Bash, it **detects the host**
 | `--directory PATH` | Client repo root (default: `.`) |
 | `--tools LIST` | Comma-separated: `cursor`, `claude-code`, `codex`, `openclaw`, `kilo`, `opencode` |
 | `--yes` | Non-interactive; no prompts (required when using `--tools`) |
-| `--global` | Deploy to user-wide locations (`~/.codex/skills/`, `~/.config/kilo/skills/`, `~/.openclaw/`, `~/.claude/`); auto-detects agents |
+| `--global` | Accepted for v2 compatibility; v3 installs the managed home library by default |
 | `--help` | Print usage and exit |
 
 **Examples:**
@@ -105,7 +101,8 @@ See [Multi-platform install](docs/MULTI_PLATFORM_INSTALL.md) for details.
 
 ## Requirements
 
-- **Linux/macOS:** Bash (for install, deploy, and framework scripts). **Windows:** PowerShell 5.1+ or PowerShell Core (for `install.ps1` and `*.ps1` tools).
+- **Linux/macOS/WSL2:** Bash for bootstrap and Python `>= 3.10` for v3 framework tooling.
+- **Windows:** WSL2. Native PowerShell install is not supported; `install.ps1` is a guidance stub.
 - **Git** (for install clone/update; optional for `verify_rules`).
 - One or more platforms from the [platform registry](docs/PLATFORM_REGISTRY.md) (e.g. cursor, claude-code, codex, openclaw), selected via `--tools` / `-Tools`.
 - **Recommended (Python tooling):** For full skill validation/discovery tooling, public skill index refresh, scrub, and Python client skills (including secure mail crypto flows), use Python `>= 3.10` with the packages in `_localsetup/requirements.txt` (PyYAML>=6.0, requests>=2.28, python-frontmatter>=1.1, cryptography>=42.0, PGPy>=0.6.0). Run `python3 -m pip install -r _localsetup/requirements.txt`, or pass `--install-deps` to the install script to do it automatically.
@@ -146,7 +143,7 @@ _localsetup/
 │   ├── cursor/
 │   ├── claude-code/
 │   ├── codex/
-│   ├── kilocode/
+│   ├── kilo/
 │   ├── openclaw/
 │   └── opencode/
 ├── tests/
@@ -257,11 +254,12 @@ Skills follow the [Agent Skills](https://agentskills.io/specification) specifica
 
 ## Tools
 
-Run from **client repo root** (so that `_localsetup/` is present). Tools live under `_localsetup/tools/`. On **Linux/macOS** use the Bash scripts; on **Windows** use the `.ps1` scripts (or run the Bash scripts from Git Bash -they detect Windows and delegate to the `.ps1` versions).
+Run from **client repo root** (so that `_localsetup/` is present). Tools live under `_localsetup/tools/`. Use Bash from Linux, macOS, or WSL2 for bootstrap wrappers; v3 framework logic lives in Python under `_localsetup/tools/localsetup_v3.py` and `_localsetup/v3/`.
 
 | Tool | Purpose |
 |------|---------|
-| `deploy` / `deploy.ps1` | Write platform-specific context loaders and skills. Usage: `deploy --tools "cursor,claude-code,codex,openclaw" --root /path/to/client/repo` (Bash) or `deploy.ps1 -Tools "cursor,claude-code" -Root "C:\path"` (PowerShell). Normally invoked by the install script. |
+| `localsetup_v3.py` | Plan, install, update, verify, rollback, generate docs, and build packages. Usage: `python3 _localsetup/tools/localsetup_v3.py plan --platforms codex,kilo`. |
+| `deploy` / `deploy.ps1` | Legacy compatibility wrappers for platform context deployment. New v3 flows should use `localsetup_v3.py`. |
 | `verify_context` / `verify_context.ps1` | Verify Cursor context file exists (`.cursor/rules/localsetup-context.mdc`). |
 | `verify_rules` / `verify_rules.ps1` | Check git repo, data_paths (sh/ps1), and skills directory. |
 | `skill_importer_scan` / `skill_importer_scan.ps1` | Scan a directory for Agent Skills; output per-skill brief (what it does, what it has, code types) and heuristic security flags. Use after fetching a URL or for a local path; then use skill-importer workflow to let the user select which skills to import. |
@@ -306,12 +304,7 @@ From **client repo root**:
 ./_localsetup/tests/automated_test.sh
 ```
 
-**PowerShell (Windows):**
-```powershell
-.\_localsetup\tools\verify_context.ps1
-.\_localsetup\tools\verify_rules.ps1
-.\_localsetup\tests\automated_test.ps1
-```
+**Windows:** Use WSL2 and run the Bash/Linux commands above.
 
 The automated test runs path resolution, OS detection, and checks for `lib/`, `tools/deploy`, and `skills/` under the engine directory.
 

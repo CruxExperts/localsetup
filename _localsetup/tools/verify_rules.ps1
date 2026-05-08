@@ -1,4 +1,4 @@
-# Localsetup v2 - Rule compliance check. Thin wrapper; logic in verify_rules.py.
+# Localsetup v3 - Rule compliance check. Thin wrapper; logic in verify_rules.py.
 $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $EngineDir = (Get-Item (Join-Path $ScriptDir '..')).FullName

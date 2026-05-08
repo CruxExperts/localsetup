@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# Localsetup v2  - commit-msg hook (disabled).
-# Version bump and doc sync are done by scripts/publish after you commit.
-# This hook is a no-op so normal commits are not amended.
+set -euo pipefail
 
-exit 0
+msg_file="$1"
+if ! rg -q '^(feat|fix|chore|revert)(\(.+\))?: .+' "$msg_file"; then
+  echo "commit message must use Conventional Commit format"
+  exit 1
+fi

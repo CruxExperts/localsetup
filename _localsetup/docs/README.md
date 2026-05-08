@@ -1,17 +1,17 @@
 ---
 status: ACTIVE
-version: 2.12
+version: 3.0
 ---
 
 # 📚 Framework docs index
 
-This is the public documentation index for Localsetup v2. Use it to navigate framework behavior, skills, platform support, and agentic workflows.
+This is the public documentation index for Localsetup v3. Use it to navigate framework behavior, skills, platform support, and agentic workflows.
 
 ## 📊 Generated facts
 
 <!-- facts-block:start -->
-- Current version: `2.12.0`
-- Supported platforms: ``
+- Current version: `3.0.0`
+- Supported platforms: `cursor, claude-code, codex, openclaw, kilo, opencode`
 - Shipped skills: `50`
 - Source: `_localsetup/docs/_generated/facts.json`
 <!-- facts-block:end -->

@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This repository packages Localsetup v2, a repo-local framework for agent context, skills, and install workflows. Root files include the cross-platform installers (`install`, `install.ps1`), top-level docs, `VERSION`, and support files. The main engine lives in `_localsetup/`: reusable code is under `_localsetup/lib/`, OS discovery helpers under `_localsetup/discovery/`, shipped skills under `_localsetup/skills/`, platform templates under `_localsetup/templates/`, and framework docs under `_localsetup/docs/`. Tests live in `_localsetup/tests/`; static assets live in `assets/`.
+This repository packages Localsetup v3, a repo-local framework for agent context, skills, and install workflows. Root files include the cross-platform installers (`install`, `install.ps1`), top-level docs, `VERSION`, and support files. The main engine lives in `_localsetup/`: reusable code is under `_localsetup/lib/`, OS discovery helpers under `_localsetup/discovery/`, shipped skills under `_localsetup/skills/`, platform templates under `_localsetup/templates/`, and framework docs under `_localsetup/docs/`. Tests live in `_localsetup/tests/`; static assets live in `assets/`.
 
 ## Build, Test, and Development Commands
 
@@ -11,7 +11,7 @@ This repository packages Localsetup v2, a repo-local framework for agent context
 - `pwsh ./_localsetup/tests/automated_test.ps1`: run the PowerShell test wrapper where PowerShell is available.
 - `python3 -m pytest _localsetup/tests`: run the Python pytest tests directly.
 - `./install --directory . --tools codex --yes`: test a local non-interactive install path for one platform.
-- `scripts/generate-doc-artifacts`: refresh generated docs artifacts when documentation inputs change.
+- `python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .` and `python3 _localsetup/tools/localsetup_v3.py --repo . generate-docs`: refresh generated docs artifacts when documentation inputs change.
 
 ## Coding Style & Naming Conventions
 

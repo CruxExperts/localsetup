@@ -1,9 +1,9 @@
 ---
 status: ACTIVE
-version: 2.12
+version: 3.0
 ---
 
-# Skills and rules (Localsetup v2)
+# Skills and rules (Localsetup v3)
 
 **Purpose:** How the master rule (or platform context loader) and skills interact; when to load which skill; cross-platform paths.
 

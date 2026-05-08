@@ -1,7 +1,7 @@
 ---
 # Common role defaults
 
-common_timezone: Europe/Budapest
+common_timezone: Etc/UTC
 
 common_upgrade_packages: true
 
@@ -20,10 +20,10 @@ common_packages:
   - apt-transport-https
 
 # Deploy user (optional - set in inventory)
-# common_deploy_user: asdbot
+# common_deploy_user: deploy
 # common_deploy_user_groups: [sudo]
 # common_deploy_ssh_pubkey: "ssh-ed25519 AAAA..."
-# common_deploy_user_nopasswd_sudo: true
+# common_deploy_user_nopasswd_sudo: false
 
 # Hostname (optional - set in inventory)
-# common_hostname: myserver
+# common_hostname: example-host

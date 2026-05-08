@@ -1,0 +1,54 @@
+platforms:
+  - id: codex
+    repo_paths: [".codex/skills"]
+    global_paths: ["~/.codex/skills"]
+    memory_paths: ["~/.codex/memories"]
+    native_config: symlink_or_reference
+    smoke_test_level: filesystem
+    verify_rules: ["skills_visible", "namespace_ls"]
+    rollback_targets: [".codex/skills"]
+
+  - id: claude-code
+    repo_paths: [".claude/skills"]
+    global_paths: ["~/.claude/skills"]
+    memory_paths: ["~/.claude/memories"]
+    native_config: symlink_or_reference
+    smoke_test_level: filesystem
+    verify_rules: ["skills_visible", "namespace_ls"]
+    rollback_targets: [".claude/skills"]
+
+  - id: cursor
+    repo_paths: [".cursor/skills"]
+    global_paths: ["~/.cursor/skills"]
+    memory_paths: ["~/.cursor/memories"]
+    native_config: symlink_or_reference
+    smoke_test_level: filesystem
+    verify_rules: ["skills_visible", "namespace_ls"]
+    rollback_targets: [".cursor/skills"]
+
+  - id: kilo
+    repo_paths: [".kilo/skills"]
+    global_paths: ["~/.kilo/skills"]
+    memory_paths: ["~/.kilo/memories"]
+    native_config: symlink_or_reference
+    smoke_test_level: filesystem
+    verify_rules: ["skills_visible", "namespace_ls"]
+    rollback_targets: [".kilo/skills"]
+
+  - id: opencode
+    repo_paths: [".opencode/skills"]
+    global_paths: ["~/.opencode/skills"]
+    memory_paths: ["~/.opencode/memories"]
+    native_config: symlink_or_reference
+    smoke_test_level: filesystem
+    verify_rules: ["skills_visible", "namespace_ls"]
+    rollback_targets: [".opencode/skills"]
+
+  - id: openclaw
+    repo_paths: [".openclaw/skills"]
+    global_paths: ["~/.openclaw/skills"]
+    memory_paths: ["~/.openclaw/memories"]
+    native_config: symlink_or_reference
+    smoke_test_level: filesystem
+    verify_rules: ["skills_visible", "namespace_ls"]
+    rollback_targets: [".openclaw/skills"]

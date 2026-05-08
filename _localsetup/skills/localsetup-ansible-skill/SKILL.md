@@ -75,18 +75,14 @@ all:
   children:
     vps:
       hosts:
-        eva:
-          ansible_host: 217.13.104.208
-          ansible_user: root
-          ansible_ssh_pass: "{{ vault_eva_password }}"
-        plane:
-          ansible_host: 217.13.104.99
-          ansible_user: asdbot
-          ansible_ssh_private_key_file: ~/.ssh/id_ed25519_plane
+        example_vps:
+          ansible_host: 203.0.113.10
+          ansible_user: deploy
+          ansible_ssh_private_key_file: "~/.ssh/id_ed25519_example"
     
     openclaw:              # Example agent-host group; rename in inventory as needed
       hosts:
-        eva:
+        example_openclaw:
 ```
 
 ### Playbooks
@@ -174,22 +170,22 @@ Bundled playbook `openclaw-vps.yml` is one example; adapt or rename for your set
 ```bash
 # 1. Add host to inventory
 cat >> inventory/hosts.yml << 'EOF'
-        newserver:
-          ansible_host: 1.2.3.4
-          ansible_user: root
-          ansible_ssh_pass: "initial_password"
-          deploy_user: asdbot
-          deploy_ssh_pubkey: "ssh-ed25519 AAAA... asdbot"
+        new_server:
+          ansible_host: 203.0.113.20
+          ansible_user: deploy
+          ansible_ssh_private_key_file: "~/.ssh/id_ed25519_example"
+          deploy_user: deploy
+          deploy_ssh_pubkey: "ssh-ed25519 AAAA... user@example"
 EOF
 
 # 2. Run VPS/agent-host playbook (example: openclaw-vps.yml)
 ansible-playbook -i inventory/hosts.yml playbooks/openclaw-vps.yml \
-  --limit newserver \
+  --limit new_server \
   --ask-vault-pass
 
 # 3. After initial setup, update inventory to use key auth
-# ansible_user: asdbot
-# ansible_ssh_private_key_file: ~/.ssh/id_ed25519
+# ansible_user: deploy
+# ansible_ssh_private_key_file: ~/.ssh/id_ed25519_example
 ```
 
 ### Pattern 2: Security Hardening Only
@@ -228,8 +224,8 @@ ansible all -i inventory/hosts.yml -m copy -a "src=./file.txt dest=/tmp/"
 ```yaml
 # inventory/group_vars/all.yml
 ---
-timezone: Europe/Budapest
-deploy_user: asdbot
+timezone: Etc/UTC
+deploy_user: deploy
 ssh_port: 22
 
 # Security
@@ -266,11 +262,8 @@ Vault file structure:
 ```yaml
 # inventory/group_vars/all/vault.yml
 ---
-vault_eva_password: "y8UGHR1qH"
-vault_deploy_ssh_key: |
-  -----BEGIN OPENSSH PRIVATE KEY-----
-  ...
-  -----END OPENSSH PRIVATE KEY-----
+vault_example_password: "replace-with-vaulted-value"
+vault_api_token: "replace-with-vaulted-value"
 ```
 
 ## Common Modules
@@ -282,8 +275,8 @@ vault_deploy_ssh_key: |
 | `copy` | Copy files | `copy: src=file dest=/path/` |
 | `template` | Template files (Jinja2) | `template: src=nginx.conf.j2 dest=/etc/nginx/nginx.conf` |
 | `file` | File/directory management | `file: path=/dir state=directory mode=0755` |
-| `user` | User management | `user: name=asdbot groups=sudo shell=/bin/bash` |
-| `authorized_key` | SSH keys | `authorized_key: user=asdbot key="{{ ssh_key }}"` |
+| `user` | User management | `user: name=deploy groups=sudo shell=/bin/bash` |
+| `authorized_key` | SSH keys | `authorized_key: user=deploy key="{{ ssh_key }}"` |
 | `systemd` | Service management | `systemd: name=nginx state=started enabled=yes` |
 | `ufw` | Firewall (Ubuntu) | `ufw: rule=allow port=22 proto=tcp` |
 | `lineinfile` | Edit single line | `lineinfile: path=/etc/ssh/sshd_config regexp='^PermitRootLogin' line='PermitRootLogin no'` |

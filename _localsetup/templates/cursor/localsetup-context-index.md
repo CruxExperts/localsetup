@@ -1,4 +1,4 @@
-# Localsetup v2  - Context and skills index
+# Localsetup v3  - Context and skills index
 
 | Asset | Description | When applied |
 |-------|-------------|--------------|

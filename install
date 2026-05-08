@@ -1,325 +1,119 @@
 #!/usr/bin/env bash
-# Localsetup v2  - Front-end install script
-# Purpose: Deploy Localsetup v2 into a client repo at _localsetup/ and write
-#   platform-specific context loaders and skills per selected tools.
-#
-# Usage:
-#   Interactive:   curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | bash
-#   Non-interactive: curl ... | bash -s -- --directory . --tools cursor --yes
-#   Help:          install --help  or  install -h
-#   Note: sudo curl ... | bash only elevates curl; install/deploy run as current user.
-#   For full install as root: curl -sSL <url> -o /tmp/install.sh && sudo bash /tmp/install.sh [args]
-#
-# Options:
-#   --directory PATH   Client repo root (default: . or prompt). Must exist.
-#   --tools LIST       Comma-separated tools (required with --yes). See below.
-#   --yes              Non-interactive; no prompts. Requires --tools.
-#   --upgrade-policy   preserve | force | fail-on-conflict (default: preserve)
-#   --install-deps     Automatically install missing Python packages via pip after deploy.
-#                      Without this flag, missing deps are reported but install still completes.
-#   --global           Deploy skills/rules globally to user home (~/.codex/skills, ~/.kilo/, ~/.openclaw/, ~/.config/opencode/, etc.)
-#                      Auto-detects installed agents (codex, kilo, openclaw, claude, opencode) if --tools not specified.
-#   --help, -h         Print this help and exit.
-#
-# Tools (valid values for --tools):
-#   cursor       Cursor IDE (.cursor/rules, .agents/skills with .cursor/skills link)
-#   claude-code  Claude Code (.claude/CLAUDE.md, .agents/skills with .claude/skills link)
-#   codex        OpenAI Codex CLI (AGENTS.md, .agents/skills with .codex/skills link)
-#   openclaw     OpenClaw (skills/, _localsetup/templates/openclaw/OPENCLAW_CONTEXT.md)
-#   opencode     OpenCode CLI (AGENTS.md, .agents/skills with .opencode/skills link)
-#
-# Examples:
-#   install --directory . --tools cursor --yes
-#   install --tools cursor,claude-code --yes
-#   install --tools cursor --yes --upgrade-policy fail-on-conflict
-#   install
-#
-# On Windows: run install.ps1; or from Git Bash this script delegates to install.ps1.
+# Localsetup v3 front-end installer.
+# Purpose: keep the stable shell entrypoint while delegating framework work to
+# _localsetup/tools/localsetup_v3.py.
 
 set -euo pipefail
 
-# Delegate to PowerShell on Windows when run from Git Bash / MSYS / Cygwin
-if [[ -n "${WINDIR:-}" ]] || [[ "${OSTYPE:-}" == "msys" ]] || [[ "${OSTYPE:-}" == "cygwin" ]]; then
-  INSTALL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  if command -v pwsh >/dev/null 2>&1; then
-    exec pwsh -NoProfile -ExecutionPolicy Bypass -File "$INSTALL_DIR/install.ps1" "$@"
-  else
-    exec powershell -NoProfile -ExecutionPolicy Bypass -File "$INSTALL_DIR/install.ps1" "$@"
-  fi
-fi
-
-REPO_URL="${LOCALSETUP_2_REPO:-https://github.com/cptnfren/localsetup.git}"
-FRAMEWORK_DIRNAME="_localsetup"
-TARGET_DIR=""
-TOOLS_CSV=""
-NONINTERACTIVE=false
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TARGET_DIR="."
+HOME_DIR="${HOME}"
+PLATFORMS_CSV=""
+PACKS_CSV="core"
+MODE="symlink"
+YES=false
 INSTALL_DEPS=false
-MIN_GIT_VERSION="2.20.0"
 MIN_PYTHON_VERSION="3.10.0"
-UPGRADE_POLICY="preserve"
-GLOBAL_SCOPE=false
 
-# Help text inline so it works when script is piped (curl | bash); $0 is not the script then.
 usage() {
-  cat << 'USAGE_END'
-Localsetup v2  - Front-end install script
-Purpose: Deploy Localsetup v2 into a client repo at _localsetup/ and write
-  platform-specific context loaders and skills per selected tools.
+  cat <<'USAGE_END'
+Localsetup v3 installer
 
 Usage:
-  Interactive:   curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | bash
-  Non-interactive: curl ... | bash -s -- --directory . --tools cursor --yes
-  Help:          install --help  or  install -h
+  ./install --directory . --yes
+  ./install --directory . --tools codex,kilo --yes
+  ./install --directory . --home /tmp/localsetup-home --yes
+  ./install --directory . --platforms codex kilo --yes
 
 Options:
-  --directory PATH   Client repo root (default: . or prompt). Must exist.
-  --tools LIST       Comma-separated tools (required with --yes). See below.
-  --yes              Non-interactive; no prompts. Requires --tools.
-  --upgrade-policy   preserve | force | fail-on-conflict (default: preserve)
-  --install-deps     Automatically install missing Python packages via pip after deploy.
-                     Without this flag, missing deps are reported but install still completes.
-  --global           Deploy skills/rules globally to user home (~/.codex/skills, ~/.kilo/, ~/.openclaw/, ~/.config/opencode/, etc.).
-                     Auto-detects installed agents (codex, kilo, openclaw, claude, opencode) if --tools not specified.
-  --help, -h         Print this help and exit.
+  --directory PATH      Repo root containing _localsetup/ (default: .)
+  --home PATH           Home directory for the managed shared skill library (default: $HOME)
+  --yes                Non-interactive apply. Required for install.
+  --tools LIST         Compatibility alias for --platforms. Comma-separated.
+  --platforms LIST     Platform adapter ids. Defaults to every platform in platforms.yaml.
+  --packs LIST         Skill packs to install. Comma-separated. Default: core.
+  --mode MODE          symlink or portable. Default: symlink.
+  --install-deps       Install Python dependencies from _localsetup/requirements.txt first.
+  --upgrade-policy     Accepted for v2 compatibility; v3 uses managed install metadata.
+  --global             Accepted for v2 compatibility; v3 installs the shared home library by default.
+  --help, -h           Show this help.
 
-Tools (valid values for --tools):
-  cursor       Cursor IDE (.cursor/rules, .agents/skills with .cursor/skills link)
-  claude-code  Claude Code (.claude/CLAUDE.md, .agents/skills with .claude/skills link)
-  codex        OpenAI Codex CLI (AGENTS.md, .agents/skills with .codex/skills link)
-  openclaw     OpenClaw (skills/, _localsetup/templates/openclaw/OPENCLAW_CONTEXT.md)
-  opencode     OpenCode CLI (AGENTS.md, .agents/skills with .opencode/skills link)
-  kilo         Kilo CLI (.kilo/instructions.md, .agents/skills with .kilo/skills link)
-
-Examples:
-  install --directory . --tools cursor --yes
-  install --tools cursor,claude-code --yes
-  install --tools cursor --yes --upgrade-policy fail-on-conflict
-  install --global                Deploy globally to all detected agents
-  install --global --tools kilo  Deploy globally to kilo only
-  install
-
-Note: "sudo curl ... | bash" only elevates curl; the install and deploy run as the current user.
-  For a full install as root (e.g. to avoid root-owned files when re-running upgrades later):
-  curl -sSL <url> -o /tmp/install.sh && sudo bash /tmp/install.sh [args]
-
-On Windows: run install.ps1; or from Git Bash this script delegates to install.ps1.
-
-Global deploy deploys to:
-  codex:     ${CODEX_HOME:-~/.codex}/skills/
-  kilo:       ~/.config/kilo/skills/ (auto-discovered) and ~/.config/kilo/instructions/localsetup.md
-  openclaw:   ~/.openclaw/skills/
-  claude:     ~/.claude/skills/ and ~/.claude/CLAUDE.md
-  opencode:   ~/.config/opencode/skills/
-
-Local kilo deploy uses: .kilo/instructions.md, .agents/skills with .kilo/skills link, .kilo/command/, .kilo/agent/
+Windows note:
+  Localsetup v3 supports Windows through WSL2 only. Run this script inside WSL.
 USAGE_END
 }
 
-show_help_and_exit() {
-  usage
-  exit 0
-}
-
-show_usage_and_exit() {
-  echo "Error: $1" >&2
-  usage >&2
+die() {
+  echo "Error: $*" >&2
   exit 1
 }
 
-version_ge() {
-  # Returns 0 when $1 >= $2 for semantic-ish x.y.z versions.
-  local a b i
-  IFS='.' read -r -a a <<< "${1:-0.0.0}"
-  IFS='.' read -r -a b <<< "${2:-0.0.0}"
-  for i in 0 1 2; do
-    local av="${a[$i]:-0}"
-    local bv="${b[$i]:-0}"
-    ((10#$av > 10#$bv)) && return 0
-    ((10#$av < 10#$bv)) && return 1
+csv_to_args() {
+  local csv="$1"
+  local -n out_ref="$2"
+  local item trimmed
+  IFS=',' read -r -a out_ref <<< "$csv"
+  for i in "${!out_ref[@]}"; do
+    item="${out_ref[$i]}"
+    trimmed="${item#"${item%%[![:space:]]*}"}"
+    trimmed="${trimmed%"${trimmed##*[![:space:]]}"}"
+    [[ -n "$trimmed" ]] || die "empty value in comma-separated list: $csv"
+    out_ref[$i]="$trimmed"
   done
-  return 0
 }
 
-detect_agents() {
-  local agents=""
-  if command -v codex >/dev/null 2>&1 || [[ -d "${CODEX_HOME:-$HOME/.codex}" ]]; then
-    agents="${agents:+$agents,}codex"
-  fi
-  if command -v kilo >/dev/null 2>&1; then
-    agents="${agents:+$agents,}kilo"
-  fi
-  if command -v openclaw >/dev/null 2>&1; then
-    agents="${agents:+$agents,}openclaw"
-  fi
-  if command -v claude >/dev/null 2>&1; then
-    agents="${agents:+$agents,}claude-code"
-  fi
-  if command -v opencode >/dev/null 2>&1; then
-    agents="${agents:+$agents,}opencode"
-  fi
-  echo "$agents"
-}
+check_python() {
+  command -v python3 >/dev/null 2>&1 || die "python3 is required"
+  python3 - "$MIN_PYTHON_VERSION" <<'PY' || die "python3 >= 3.10 is required"
+from __future__ import annotations
 
-preflight_checks() {
-  local required_fail=0
-  local recommend_fail=0
-  local git_status="MISSING"
-  local rg_status="MISSING (required for install manifest build on Linux/macOS)"
-  local python_status="MISSING (recommended for Python-first framework tooling)"
-  local pip_status="MISSING (recommended to install _localsetup/requirements.txt)"
-  local pyyaml_status="MISSING (python module 'yaml')"
-  local requests_status="MISSING (python module 'requests')"
-  local frontmatter_status="MISSING (python module 'frontmatter')"
-  local git_version=""
-  local python_bin=""
-  local python_version=""
+import sys
 
-  if command -v git >/dev/null 2>&1; then
-    git_version="$(git --version 2>/dev/null | sed -E 's/^git version ([0-9]+(\.[0-9]+){0,2}).*/\1/')"
-    if [[ -z "$git_version" ]]; then
-      git_status="FOUND (version unknown)"
-    elif version_ge "$git_version" "$MIN_GIT_VERSION"; then
-      git_status="OK ($git_version)"
-    else
-      git_status="TOO OLD ($git_version, need >= $MIN_GIT_VERSION)"
-      required_fail=1
-    fi
-  else
-    required_fail=1
-  fi
-
-  if command -v rg >/dev/null 2>&1; then
-    rg_status="OK (ripgrep)"
-  else
-    required_fail=1
-  fi
-
-  if command -v python3 >/dev/null 2>&1; then
-    python_bin="python3"
-  elif command -v python >/dev/null 2>&1; then
-    python_bin="python"
-  fi
-
-  if [[ -n "$python_bin" ]]; then
-    python_version="$("$python_bin" --version 2>&1 | awk '{print $2}')"
-    if [[ -n "$python_version" ]] && version_ge "$python_version" "$MIN_PYTHON_VERSION"; then
-      python_status="OK ($python_version)"
-    elif [[ -n "$python_version" ]]; then
-      python_status="TOO OLD ($python_version, recommend >= $MIN_PYTHON_VERSION)"
-      recommend_fail=1
-    else
-      python_status="FOUND (version unknown)"
-    fi
-
-    if "$python_bin" - <<'PY' >/dev/null 2>&1
-import yaml
+required = tuple(int(part) for part in sys.argv[1].split("."))
+current = sys.version_info[:3]
+raise SystemExit(0 if current >= required else 1)
 PY
-    then
-      pyyaml_status="OK (import yaml)"
-    else
-      pyyaml_status="MISSING (python module 'yaml')"
-      recommend_fail=1
-    fi
-
-    if "$python_bin" - <<'PY' >/dev/null 2>&1
-import requests
-PY
-    then
-      requests_status="OK (import requests)"
-    else
-      requests_status="MISSING (python module 'requests')"
-      recommend_fail=1
-    fi
-
-    if "$python_bin" - <<'PY' >/dev/null 2>&1
-import frontmatter
-PY
-    then
-      frontmatter_status="OK (import frontmatter)"
-    else
-      frontmatter_status="MISSING (python module 'frontmatter')"
-      recommend_fail=1
-    fi
-
-    if command -v pip3 >/dev/null 2>&1 || command -v pip >/dev/null 2>&1; then
-      pip_status="OK"
-    else
-      recommend_fail=1
-    fi
-  fi
-
-  echo "Dependency preflight:"
-  echo "  Required:"
-  echo "    - git: $git_status"
-  echo "    - rg (ripgrep): $rg_status"
-  echo "  Recommended for full Python framework tooling:"
-  echo "    - python: $python_status"
-  echo "    - pip: $pip_status"
-  echo "    - pyyaml module: $pyyaml_status"
-  echo "    - requests module: $requests_status"
-  echo "    - frontmatter module: $frontmatter_status"
-
-  if [[ "$required_fail" -ne 0 ]]; then
-    echo
-    echo "Cannot continue: required dependencies are missing or incompatible."
-    echo "Install/upgrade the required tools, then run install again."
-    case "$(uname -s 2>/dev/null || true)" in
-      Linux)
-        echo "Install ripgrep (rg):"
-        echo "  Debian/Ubuntu: sudo apt-get update && sudo apt-get install -y ripgrep"
-        echo "  Fedora/RHEL:   sudo dnf install -y ripgrep"
-        echo "  Arch:          sudo pacman -S --needed ripgrep"
-        ;;
-      Darwin)
-        echo "Install ripgrep: brew install ripgrep"
-        ;;
-      *)
-        echo "Install ripgrep (rg) from https://github.com/BurntSushi/ripgrep#installation"
-        ;;
-    esac
-    exit 1
-  fi
-
-  if [[ "$recommend_fail" -ne 0 ]]; then
-    echo
-    echo "Notice: install can continue, but some skill tooling may fail until recommended dependencies are installed."
-    echo "Python packages: install with  python3 -m pip install -r _localsetup/requirements.txt  (after clone)."
-    echo "Or re-run install with --install-deps to have this script install them automatically."
-    case "$(uname -s 2>/dev/null || true)" in
-      Linux)
-        echo "System packages:"
-        echo "  Debian/Ubuntu: sudo apt-get update && sudo apt-get install -y python3 python3-pip python3-yaml"
-        echo "  Fedora/RHEL:   sudo dnf install -y python3 python3-pip python3-pyyaml"
-        echo "  Arch:          sudo pacman -S --needed python python-pip python-yaml"
-        ;;
-      Darwin)
-        echo "  Homebrew: brew install python  (pip ships with python)"
-        ;;
-      *)
-        echo "  python3 -m pip install -r _localsetup/requirements.txt"
-        ;;
-    esac
-  fi
 }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --directory)
-      if [[ $# -lt 2 ]]; then
-        show_usage_and_exit "Missing value for --directory"
-      fi
+      [[ $# -ge 2 ]] || die "missing value for --directory"
       TARGET_DIR="$2"
       shift 2
       ;;
+    --home)
+      [[ $# -ge 2 ]] || die "missing value for --home"
+      HOME_DIR="$2"
+      shift 2
+      ;;
     --tools)
-      if [[ $# -lt 2 ]]; then
-        show_usage_and_exit "Missing value for --tools"
-      fi
-      TOOLS_CSV="$2"
+      [[ $# -ge 2 ]] || die "missing value for --tools"
+      PLATFORMS_CSV="$2"
+      shift 2
+      ;;
+    --platforms)
+      shift
+      platform_values=()
+      while [[ $# -gt 0 && "$1" != --* ]]; do
+        platform_values+=("$1")
+        shift
+      done
+      [[ ${#platform_values[@]} -gt 0 ]] || die "missing value for --platforms"
+      PLATFORMS_CSV="$(IFS=,; echo "${platform_values[*]}")"
+      ;;
+    --packs)
+      [[ $# -ge 2 ]] || die "missing value for --packs"
+      PACKS_CSV="$2"
+      shift 2
+      ;;
+    --mode)
+      [[ $# -ge 2 ]] || die "missing value for --mode"
+      MODE="$2"
       shift 2
       ;;
     --yes)
-      NONINTERACTIVE=true
+      YES=true
       shift
       ;;
     --install-deps)
@@ -327,517 +121,50 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     --upgrade-policy)
-      if [[ $# -lt 2 ]]; then
-        show_usage_and_exit "Missing value for --upgrade-policy"
-      fi
-      UPGRADE_POLICY="$2"
+      [[ $# -ge 2 ]] || die "missing value for --upgrade-policy"
       shift 2
       ;;
     --global)
-      GLOBAL_SCOPE=true
       shift
       ;;
     --help|-h)
-      show_help_and_exit
+      usage
+      exit 0
       ;;
     *)
-      show_usage_and_exit "Unknown option: $1"
+      die "unknown option: $1"
       ;;
   esac
 done
 
-# --- Global scope handling (skip target directory prompt) ---
-if $GLOBAL_SCOPE; then
-  preflight_checks
+[[ "$YES" == true ]] || die "v3 install requires --yes. Use _localsetup/tools/localsetup_v3.py plan to preview."
+[[ -d "$TARGET_DIR" ]] || die "directory does not exist: $TARGET_DIR"
+TARGET_DIR="$(cd "$TARGET_DIR" && pwd)"
+mkdir -p "$HOME_DIR"
+HOME_DIR="$(cd "$HOME_DIR" && pwd)"
+[[ -f "$TARGET_DIR/_localsetup/tools/localsetup_v3.py" ]] || die "missing v3 tool at $TARGET_DIR/_localsetup/tools/localsetup_v3.py"
+check_python
 
-  if [[ -z "$TOOLS_CSV" ]]; then
-    TOOLS_CSV="$(detect_agents)"
-    if [[ -z "$TOOLS_CSV" ]]; then
-      echo "No supported CLI agents detected (codex, kilo, openclaw, claude, opencode)."
-      echo "Install one of them first, then re-run with --global."
-      exit 1
-    fi
-    echo "Detected agents: $TOOLS_CSV"
-  fi
-
-  ENGINE_SRC=""
-  detect_engine_dir() {
-    local base="$1"
-    if [[ -x "$base/_localsetup/tools/deploy" ]]; then
-      echo "$base/_localsetup"
-      return 0
-    fi
-    if [[ -x "$base/tools/deploy" ]]; then
-      echo "$base"
-      return 0
-    fi
-    if [[ -x "$base/framework/tools/deploy" ]]; then
-      echo "$base/framework"
-      return 0
-    fi
-    return 1
-  }
-
-  if [[ -x "$PWD/_localsetup/tools/deploy" ]]; then
-    ENGINE_SRC="$PWD/_localsetup"
-  elif [[ -x "$PWD/tools/deploy" ]]; then
-    ENGINE_SRC="$PWD"
-  else
-    for dir in "$PWD" "$HOME"; do
-      ENGINE_SRC="$(detect_engine_dir "$dir" 2>/dev/null || true)"
-      [[ -n "$ENGINE_SRC" ]] && break
-    done
-  fi
-
-  if [[ -z "$ENGINE_SRC" ]]; then
-    echo "Error: Cannot find framework engine. Run install first without --global."
-    exit 1
-  fi
-
-  DEPLOY_SCRIPT="$ENGINE_SRC/tools/deploy"
-  if [[ ! -x "$DEPLOY_SCRIPT" ]]; then
-    echo "Error: Deploy script not found at $DEPLOY_SCRIPT"
-    exit 1
-  fi
-
-  echo "Deploying framework skills/rules globally for: $TOOLS_CSV"
-  "$DEPLOY_SCRIPT" --scope global --tools "$TOOLS_CSV" || { echo "Global deploy failed." >&2; exit 1; }
-  echo "Done. Framework deployed globally."
-  exit 0
-fi
-
-case "$UPGRADE_POLICY" in
-  preserve|force|fail-on-conflict) ;;
-  *)
-    show_usage_and_exit "Invalid --upgrade-policy: '$UPGRADE_POLICY'. Valid values: preserve, force, fail-on-conflict"
-    ;;
+case "$MODE" in
+  symlink|portable) ;;
+  *) die "invalid --mode: $MODE" ;;
 esac
 
-# Resolve target directory (client repo root)
-if [[ -z "$TARGET_DIR" ]]; then
-  if $NONINTERACTIVE; then
-    TARGET_DIR="."
-  else
-    echo "Enter client repo root directory (default: .):"
-    if [[ -e /dev/tty ]]; then
-      read -r TARGET_DIR < /dev/tty
-    else
-      TARGET_DIR="."
-      echo "(using current directory)"
-    fi
-    TARGET_DIR="${TARGET_DIR:-.}"
-  fi
-fi
-if [[ ! -d "$TARGET_DIR" ]]; then
-  show_usage_and_exit "Directory does not exist: $TARGET_DIR"
-fi
-if [[ "$TARGET_DIR" != /* ]]; then
-  TARGET_DIR="$(cd "$TARGET_DIR" && pwd)"
-fi
-FRAMEWORK_DIR="$TARGET_DIR/$FRAMEWORK_DIRNAME"
-
-preflight_checks
-
-detect_engine_dir() {
-  local base="$1"
-  if [[ -x "$base/_localsetup/tools/deploy" ]]; then
-    echo "$base/_localsetup"
-    return 0
-  fi
-  if [[ -x "$base/tools/deploy" ]]; then
-    echo "$base"
-    return 0
-  fi
-  if [[ -x "$base/framework/tools/deploy" ]]; then
-    echo "$base/framework"
-    return 0
-  fi
-  return 1
-}
-
-hash_file() {
-  local f="$1"
-  if command -v sha256sum >/dev/null 2>&1; then
-    sha256sum "$f" | awk '{print $1}'
-  elif command -v shasum >/dev/null 2>&1; then
-    shasum -a 256 "$f" | awk '{print $1}'
-  else
-    openssl dgst -sha256 "$f" | awk '{print $2}'
-  fi
-}
-
-build_manifest() {
-  local root="$1"
-  local out="$2"
-  : > "$out"
-  (
-    cd "$root"
-    rg --files -g "*" . | sed 's#^\./##' | while IFS= read -r rel; do
-      [[ -f "$root/$rel" ]] || continue
-      printf "%s\t%s\n" "$rel" "$(hash_file "$root/$rel")"
-    done | sort -u
-  ) > "$out"
-}
-
-manifest_get_sha() {
-  local manifest="$1"
-  local rel="$2"
-  awk -F '\t' -v p="$rel" '$1==p {print $2; exit}' "$manifest"
-}
-
-manifest_has_path() {
-  local manifest="$1"
-  local rel="$2"
-  awk -F '\t' -v p="$rel" '$1==p {found=1; exit} END {exit !found}' "$manifest"
-}
-
-copy_with_parents() {
-  local src="$1"
-  local dst="$2"
-  mkdir -p "$(dirname "$dst")"
-  cp -f "$src" "$dst"
-}
-
-json_escape() {
-  local s="$1"
-  s="${s//\\/\\\\}"
-  s="${s//\"/\\\"}"
-  s="${s//$'\n'/\\n}"
-  s="${s//$'\r'/}"
-  printf '%s' "$s"
-}
-
-write_upgrade_report() {
-  local meta_dir="$1"
-  local ts="$2"
-  local report_json="$meta_dir/upgrade-report-$ts.json"
-  local report_txt="$meta_dir/upgrade-report-$ts.txt"
-  local policy="$3"
-  local source_commit="$4"
-  local source_url="$5"
-  local target_dir="$6"
-
-  {
-    echo "upgrade_timestamp=$ts"
-    echo "upgrade_policy=$policy"
-    echo "source_repo=$source_url"
-    echo "source_commit=$source_commit"
-    echo "target=$target_dir"
-    echo "added=$(wc -l < "$ACTIONS_ADDED" | tr -d ' ')"
-    echo "updated=$(wc -l < "$ACTIONS_UPDATED" | tr -d ' ')"
-    echo "removed=$(wc -l < "$ACTIONS_REMOVED" | tr -d ' ')"
-    echo "preserved=$(wc -l < "$ACTIONS_PRESERVED" | tr -d ' ')"
-    echo "conflicts=$(wc -l < "$ACTIONS_CONFLICTS" | tr -d ' ')"
-  } > "$report_txt"
-
-  {
-    echo "{"
-    echo "  \"timestamp\": \"$(json_escape "$ts")\","
-    echo "  \"policy\": \"$(json_escape "$policy")\","
-    echo "  \"source_repo\": \"$(json_escape "$source_url")\","
-    echo "  \"source_commit\": \"$(json_escape "$source_commit")\","
-    echo "  \"target\": \"$(json_escape "$target_dir")\","
-    echo "  \"counts\": {"
-    echo "    \"added\": $(wc -l < "$ACTIONS_ADDED" | tr -d ' '),"
-    echo "    \"updated\": $(wc -l < "$ACTIONS_UPDATED" | tr -d ' '),"
-    echo "    \"removed\": $(wc -l < "$ACTIONS_REMOVED" | tr -d ' '),"
-    echo "    \"preserved\": $(wc -l < "$ACTIONS_PRESERVED" | tr -d ' '),"
-    echo "    \"conflicts\": $(wc -l < "$ACTIONS_CONFLICTS" | tr -d ' ')"
-    echo "  }"
-    echo "}"
-  } > "$report_json"
-
-  cp -f "$report_json" "$meta_dir/upgrade-report-latest.json"
-  cp -f "$report_txt" "$meta_dir/upgrade-report-latest.txt"
-  echo "$report_json"
-}
-
-apply_upgrade() {
-  local src="$1"
-  local dst="$2"
-  local policy="$3"
-  local source_repo_url="$4"
-  local source_commit="$5"
-  local ts="$6"
-
-  local meta_dir="$dst/.localsetup-meta"
-  local backup_dir="$meta_dir/backups/$ts"
-  local old_manifest="$meta_dir/managed-manifest.tsv"
-  local new_manifest="$meta_dir/new-managed-manifest.tsv"
-  local state_file="$meta_dir/install-state.json"
-
-  mkdir -p "$meta_dir"
-  [[ -f "$old_manifest" ]] || : > "$old_manifest"
-  build_manifest "$src" "$new_manifest"
-
-  local has_old_manifest=false
-  [[ -s "$old_manifest" ]] && has_old_manifest=true
-
-  ACTIONS_ADDED="$meta_dir/actions-added.tmp"
-  ACTIONS_UPDATED="$meta_dir/actions-updated.tmp"
-  ACTIONS_REMOVED="$meta_dir/actions-removed.tmp"
-  ACTIONS_PRESERVED="$meta_dir/actions-preserved.tmp"
-  ACTIONS_CONFLICTS="$meta_dir/actions-conflicts.tmp"
-  : > "$ACTIONS_ADDED"; : > "$ACTIONS_UPDATED"; : > "$ACTIONS_REMOVED"; : > "$ACTIONS_PRESERVED"; : > "$ACTIONS_CONFLICTS"
-
-  while IFS=$'\t' read -r rel new_sha; do
-    [[ -n "$rel" ]] || continue
-    local target_path="$dst/$rel"
-    local source_path="$src/$rel"
-    local old_sha
-    old_sha="$(manifest_get_sha "$old_manifest" "$rel")"
-
-    if [[ ! -e "$target_path" ]]; then
-      echo "$rel" >> "$ACTIONS_ADDED"
-      continue
-    fi
-
-    local local_sha
-    local_sha="$(hash_file "$target_path")"
-
-    if [[ -n "$old_sha" ]]; then
-      if [[ "$local_sha" == "$old_sha" ]]; then
-        if [[ "$new_sha" != "$old_sha" ]]; then
-          echo "$rel" >> "$ACTIONS_UPDATED"
-        fi
-      else
-        if [[ "$new_sha" == "$old_sha" ]]; then
-          if [[ "$policy" == "force" ]]; then
-            echo "$rel" >> "$ACTIONS_UPDATED"
-          else
-            echo "$rel" >> "$ACTIONS_PRESERVED"
-          fi
-        else
-          if [[ "$policy" == "force" ]]; then
-            echo "$rel" >> "$ACTIONS_UPDATED"
-          else
-            echo "$rel" >> "$ACTIONS_CONFLICTS"
-          fi
-        fi
-      fi
-    else
-      # First upgrade after legacy install: preserve unknown local changes by default.
-      if [[ "$local_sha" != "$new_sha" ]]; then
-        if [[ "$policy" == "force" ]]; then
-          echo "$rel" >> "$ACTIONS_UPDATED"
-        else
-          echo "$rel" >> "$ACTIONS_CONFLICTS"
-        fi
-      fi
-    fi
-  done < "$new_manifest"
-
-  if $has_old_manifest; then
-    while IFS=$'\t' read -r rel old_sha; do
-      [[ -n "$rel" ]] || continue
-      manifest_has_path "$new_manifest" "$rel" && continue
-      local target_path="$dst/$rel"
-      [[ -f "$target_path" ]] || continue
-      local local_sha
-      local_sha="$(hash_file "$target_path")"
-      if [[ "$local_sha" == "$old_sha" ]]; then
-        echo "$rel" >> "$ACTIONS_REMOVED"
-      else
-        if [[ "$policy" == "force" ]]; then
-          echo "$rel" >> "$ACTIONS_REMOVED"
-        else
-          echo "$rel" >> "$ACTIONS_CONFLICTS"
-        fi
-      fi
-    done < "$old_manifest"
-  fi
-
-  local conflict_count
-  conflict_count="$(wc -l < "$ACTIONS_CONFLICTS" | tr -d ' ')"
-  if [[ "$conflict_count" -gt 0 ]] && [[ "$policy" == "fail-on-conflict" ]]; then
-    echo "Upgrade conflicts detected ($conflict_count). No changes applied due to --upgrade-policy fail-on-conflict."
-    echo "Re-run with --upgrade-policy preserve to keep local changes, or --upgrade-policy force to overwrite."
-    echo "Conflicted paths:"
-    sed -n '1,50p' "$ACTIONS_CONFLICTS"
-    exit 2
-  fi
-
-  mkdir -p "$backup_dir"
-  if $has_old_manifest; then
-    while IFS=$'\t' read -r rel old_sha; do
-      [[ -f "$dst/$rel" ]] || continue
-      mkdir -p "$backup_dir/$(dirname "$rel")"
-      cp -a "$dst/$rel" "$backup_dir/$rel"
-    done < "$old_manifest"
-  fi
-
-  while IFS= read -r rel; do
-    [[ -n "$rel" ]] || continue
-    copy_with_parents "$src/$rel" "$dst/$rel"
-  done < "$ACTIONS_ADDED"
-
-  while IFS= read -r rel; do
-    [[ -n "$rel" ]] || continue
-    copy_with_parents "$src/$rel" "$dst/$rel"
-  done < "$ACTIONS_UPDATED"
-
-  while IFS= read -r rel; do
-    [[ -n "$rel" ]] || continue
-    rm -f "$dst/$rel"
-  done < "$ACTIONS_REMOVED"
-
-  # Clean legacy source-repo leftovers from old layouts.
-  rm -rf "$dst/_localsetup" "$dst/framework" "$dst/.github" "$dst/.git"
-
-  cp -f "$new_manifest" "$old_manifest"
-
-  cat > "$state_file" <<EOF
-{
-  "installed_at": "$ts",
-  "source_repo": "$(json_escape "$source_repo_url")",
-  "source_commit": "$(json_escape "$source_commit")",
-  "upgrade_policy": "$(json_escape "$policy")",
-  "manifest": "managed-manifest.tsv"
-}
-EOF
-
-  local report_path
-  report_path="$(write_upgrade_report "$meta_dir" "$ts" "$policy" "$source_commit" "$source_repo_url" "$dst")"
-  echo "Upgrade report: $report_path"
-  echo "Upgrade summary: added $(wc -l < "$ACTIONS_ADDED" | tr -d ' '), updated $(wc -l < "$ACTIONS_UPDATED" | tr -d ' '), removed $(wc -l < "$ACTIONS_REMOVED" | tr -d ' '), preserved $(wc -l < "$ACTIONS_PRESERVED" | tr -d ' '), conflicts $(wc -l < "$ACTIONS_CONFLICTS" | tr -d ' ')."
-  if [[ "$conflict_count" -gt 0 ]]; then
-    echo "Conflicts were preserved. Review: $meta_dir/actions-conflicts.tmp"
-  fi
-}
-
-# Resolve tools
-if [[ -z "$TOOLS_CSV" ]]; then
-  if $NONINTERACTIVE; then
-    show_usage_and_exit "--tools is required when using --yes"
-  fi
-  echo "Select platform(s) to install (comma-separated):"
-  echo "  1) cursor"
-  echo "  2) claude-code"
-  echo "  3) codex"
-  echo "  4) openclaw"
-  echo "  5) opencode"
-  echo "  6) kilo"
-  echo "Example: 1,2 for Cursor and Claude Code"
-  if [[ -e /dev/tty ]]; then
-    read -r TOOLS_CSV < /dev/tty
-  else
-    TOOLS_CSV="cursor"
-    echo "(using cursor)"
-  fi
-fi
-# Normalize: allow "cursor" or "1" etc.
-TOOLS_CSV="$(echo "$TOOLS_CSV" | tr '[:upper:]' '[:lower:]' | sed 's/1/cursor/g; s/2/claude-code/g; s/3/codex/g; s/4/openclaw/g; s/5/opencode/g; s/6/kilo/g' | tr -d ' ')"
-# Validate: each tool must be one of the supported six
-VALID_TOOLS="cursor,claude-code,codex,openclaw,opencode,kilo"
-for t in ${TOOLS_CSV//,/ }; do
-  case "$t" in
-    cursor|claude-code|codex|openclaw|opencode|kilo) ;;
-    *)
-      show_usage_and_exit "Invalid tool: '$t'. Valid values: cursor, claude-code, codex, openclaw, opencode, kilo"
-      ;;
-  esac
-done
-[[ -z "$TOOLS_CSV" ]] && show_usage_and_exit "At least one tool must be specified (e.g. --tools cursor)"
-
-# Prepare framework source and perform upgrade-aware sync to single-level _localsetup.
-WORK_DIR=""
-cleanup() {
-  if [[ -n "$WORK_DIR" ]] && [[ -d "$WORK_DIR" ]]; then
-    rm -rf "$WORK_DIR"
-  fi
-}
-trap cleanup EXIT
-
-SOURCE_BASE=""
-SOURCE_REPO_URL="$REPO_URL"
-SOURCE_COMMIT="unknown"
-echo "Fetching Localsetup v2 source..."
-mkdir -p "$TARGET_DIR" || { echo "Error: Cannot create directory $TARGET_DIR" >&2; exit 1; }
-WORK_DIR="$(mktemp -d)"
-SOURCE_BASE="$WORK_DIR/localsetup-source"
-if ! git clone "$REPO_URL" "$SOURCE_BASE" 2>/dev/null; then
-  if detect_engine_dir "$FRAMEWORK_DIR" >/dev/null 2>&1; then
-    echo "Warning: Remote fetch failed; using existing local framework copy as source."
-    SOURCE_BASE="$FRAMEWORK_DIR"
-    SOURCE_REPO_URL="local-existing"
-  else
-    echo "Error: Clone failed. Check network and repo URL (set LOCALSETUP_2_REPO to override)." >&2
-    exit 1
-  fi
+if "$INSTALL_DEPS"; then
+  python3 -m pip install -r "$TARGET_DIR/_localsetup/requirements.txt"
 fi
 
-ENGINE_SRC="$(detect_engine_dir "$SOURCE_BASE" || true)"
-if [[ -z "$ENGINE_SRC" ]]; then
-  echo "Error: Could not locate framework engine in source." >&2
-  echo "Checked for: tools/deploy, _localsetup/tools/deploy, framework/tools/deploy" >&2
-  exit 1
+pack_args=()
+csv_to_args "$PACKS_CSV" pack_args
+
+platform_args=()
+if [[ -n "$PLATFORMS_CSV" ]]; then
+  csv_to_args "$PLATFORMS_CSV" platform_args
 fi
 
-if [[ -d "$SOURCE_BASE/.git" ]]; then
-  SOURCE_COMMIT="$(git -C "$SOURCE_BASE" rev-parse --short HEAD 2>/dev/null || echo unknown)"
+cmd=(python3 "$TARGET_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --repo "$TARGET_DIR" install --apply --mode "$MODE" --packs "${pack_args[@]}")
+if [[ ${#platform_args[@]} -gt 0 ]]; then
+  cmd+=(--platforms "${platform_args[@]}")
 fi
 
-echo "Preparing single-level framework at $FRAMEWORK_DIR..."
-TIMESTAMP="$(date -u +%Y%m%dT%H%M%SZ)"
-apply_upgrade "$ENGINE_SRC" "$FRAMEWORK_DIR" "$UPGRADE_POLICY" "$SOURCE_REPO_URL" "$SOURCE_COMMIT" "$TIMESTAMP"
-
-# Run deploy step from flattened install path.
-DEPLOY_SCRIPT="$FRAMEWORK_DIR/tools/deploy"
-if [[ -x "$DEPLOY_SCRIPT" ]]; then
-  "$DEPLOY_SCRIPT" --tools "$TOOLS_CSV" --root "$TARGET_DIR" || { echo "Error: Deploy failed." >&2; exit 1; }
-else
-  echo "Error: Deploy script not found at $DEPLOY_SCRIPT" >&2
-  exit 1
-fi
-
-echo "Done. Framework at $FRAMEWORK_DIR; platform files written to $TARGET_DIR."
-
-# --- Python dependency notice / auto-install ---
-# Determine python binary (reuse same logic as preflight)
-_PYTHON_BIN=""
-if command -v python3 >/dev/null 2>&1; then
-  _PYTHON_BIN="python3"
-elif command -v python >/dev/null 2>&1; then
-  _PYTHON_BIN="python"
-fi
-
-_SENTINEL="$FRAMEWORK_DIR/.deps-missing"
-_REQUIREMENTS="$FRAMEWORK_DIR/requirements.txt"
-
-if [[ -n "$_PYTHON_BIN" ]]; then
-  _missing_pkgs=()
-  for _pkg_check in "yaml:PyYAML" "requests:requests" "frontmatter:python-frontmatter"; do
-    _import="${_pkg_check%%:*}"
-    _pip="${_pkg_check##*:}"
-    if ! "$_PYTHON_BIN" - <<PY >/dev/null 2>&1
-import $_import
-PY
-    then
-      _missing_pkgs+=("$_pip")
-    fi
-  done
-
-  if [[ "${#_missing_pkgs[@]}" -gt 0 ]]; then
-    if $INSTALL_DEPS; then
-      echo "Installing missing Python packages: ${_missing_pkgs[*]}"
-      "$_PYTHON_BIN" -m pip install "${_missing_pkgs[@]}"
-      # Clear sentinel if it existed from a previous run
-      rm -f "$_SENTINEL"
-    else
-      # Write sentinel as a notice-only file for tooling to advise users
-      # Tools NEVER read this file as a gate; they always do live import checks.
-      printf '%s\n' "${_missing_pkgs[@]}" > "$_SENTINEL"
-      echo
-      echo "Notice: The following Python packages are not installed: ${_missing_pkgs[*]}"
-      echo "  Some framework tools will not work until they are installed."
-      echo "  Install manually: $_PYTHON_BIN -m pip install ${_missing_pkgs[*]}"
-      if [[ -f "$_REQUIREMENTS" ]]; then
-        echo "  Or install all at once: $_PYTHON_BIN -m pip install -r $FRAMEWORK_DIR/requirements.txt"
-      fi
-      echo "  Re-run install with --install-deps to install automatically."
-    fi
-  else
-    # All packages present; clear any stale sentinel from a prior run
-    rm -f "$_SENTINEL"
-  fi
-fi
+exec "${cmd[@]}"

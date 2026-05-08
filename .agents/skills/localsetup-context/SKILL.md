@@ -1,14 +1,14 @@
 ---
 name: localsetup-context
-description: "Localsetup v2 framework context  - overview, invariants, and skills index. Load first when working in a repo that uses Localsetup v2. Use when starting work in this repo or when user asks about framework rules."
+description: "Localsetup v3 framework context  - overview, invariants, and skills index. Load first when working in a repo that uses Localsetup v3. Use when starting work in this repo or when user asks about framework rules."
 metadata:
   version: "1.5"
 ---
 
-# Localsetup v2 - Framework context (skill)
+# Localsetup v3 - Framework context (skill)
 
 ## Overview
-Localsetup v2 is deployed at `_localsetup/`. Framework and context are repo-local (mobile, backup-able). Engine = _localsetup/; user data = repo-local. Use Git hashes for PRDs/specs (see [GIT_TRACEABILITY.md](../../docs/GIT_TRACEABILITY.md)).
+Localsetup v3 is deployed at `_localsetup/`. Framework and context are repo-local (mobile, backup-able). Engine = _localsetup/; user data = repo-local. Use Git hashes for PRDs/specs (see [GIT_TRACEABILITY.md](../../docs/GIT_TRACEABILITY.md)).
 
 ## Invariants
 - **Engine/repo separation:** Never commit repo-local secrets or PII. Use _localsetup/lib/data_paths.sh (or equivalent) for path resolution. Framework lives at _localsetup/; upgrades replace that folder.
@@ -23,6 +23,12 @@ Localsetup v2 is deployed at `_localsetup/`. Framework and context are repo-loca
 - If unknown, default to `markdown-basic`.
 - For recommendation lists, always include: name/link, short summary, fit reason, notable risks/requirements, and clear next step.
 - Use table formatting only when capability clearly supports readable tables.
+
+## Agent orchestration and model budget
+- Inventory and scouting: use `gpt-5.4-mini` for cheap repo/file inventory, low-risk search, and parallel subagent scouting.
+- Critical review: use `gpt-5.5` at medium reasoning for security, release blockers, architecture, and high-risk review findings.
+- Bounded coding: use `gpt-5.3-codex` for scoped implementation tasks with clear write ownership and tests.
+- Escalate only when uncertainty, risk, or complexity blocks the task. As of 2026-05-07, the official Codex rate card lists per 1M token credits as `gpt-5.4-mini` 18.75/1.875/113, `gpt-5.3-codex` 43.75/4.375/350, and `gpt-5.5` 125/12.50/750 for input/cached/output. Re-check https://help.openai.com/en/articles/20001106-codex-rate-card before changing model guidance.
 
 ## Skills index (load when task matches)
 - localsetup-decision-tree-workflow  - "decision tree", "reverse prompt"; .agent/queue/**, PRD

@@ -25,7 +25,7 @@ metadata:
 ## 9. Temporary file management
 
 - **Platform:** Linux /tmp; macOS /tmp or $TMPDIR; Windows %TEMP% or %TMP%.
-- **Cleanup:** Clean up immediately; use trap (Bash) or try/finally (PowerShell). Repo-local temp: under _localsetup/ or repo temp dir when v2 repo-local.
+- **Cleanup:** Clean up immediately; use trap (Bash) or try/finally (PowerShell). Repo-local temp: under `_localsetup/` or the repo temp directory.
 - **Naming:** Framework naming + descriptive name + timestamp. Use mktemp or New-TemporaryFile.
 
 ## 5a. Firewall management (for services)

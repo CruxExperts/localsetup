@@ -1,9 +1,46 @@
 {
-  "version": "2.12.0",
-  "major_minor": "2.12",
-  "platform_count": 0,
+  "version": "3.0.0",
+  "major_minor": "3.0",
+  "platform_count": 6,
   "skill_count": 50,
-  "platforms": [],
+  "platforms": [
+    {
+      "id": "cursor",
+      "display_name": "Cursor",
+      "context_loader": ".cursor/skills",
+      "skills_path": "~/.local/share/agents/skills/localsetup"
+    },
+    {
+      "id": "claude-code",
+      "display_name": "Claude Code",
+      "context_loader": ".claude/skills",
+      "skills_path": "~/.local/share/agents/skills/localsetup"
+    },
+    {
+      "id": "codex",
+      "display_name": "OpenAI Codex CLI",
+      "context_loader": ".codex/skills",
+      "skills_path": "~/.local/share/agents/skills/localsetup"
+    },
+    {
+      "id": "openclaw",
+      "display_name": "OpenClaw",
+      "context_loader": ".openclaw/skills",
+      "skills_path": "~/.local/share/agents/skills/localsetup"
+    },
+    {
+      "id": "kilo",
+      "display_name": "Kilo CLI",
+      "context_loader": ".kilo/skills",
+      "skills_path": "~/.local/share/agents/skills/localsetup"
+    },
+    {
+      "id": "opencode",
+      "display_name": "OpenCode CLI",
+      "context_loader": ".opencode/skills",
+      "skills_path": "~/.local/share/agents/skills/localsetup"
+    }
+  ],
   "skills": [
     {
       "id": "localsetup-agentic-prd-batch",

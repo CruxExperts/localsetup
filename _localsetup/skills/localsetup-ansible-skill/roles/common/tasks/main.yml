@@ -45,7 +45,7 @@
     - common_deploy_ssh_pubkey is defined
   tags: [common, users, ssh]
 
-- name: Allow deploy user passwordless sudo
+- name: Allow deploy user passwordless sudo when explicitly enabled
   ansible.builtin.lineinfile:
     path: "/etc/sudoers.d/{{ common_deploy_user }}"
     line: "{{ common_deploy_user }} ALL=(ALL) NOPASSWD:ALL"
@@ -54,7 +54,7 @@
     validate: 'visudo -cf %s'
   when: 
     - common_deploy_user is defined
-    - common_deploy_user_nopasswd_sudo | default(true) | bool
+    - common_deploy_user_nopasswd_sudo | default(false) | bool
   tags: [common, users, sudo]
 
 - name: Set hostname

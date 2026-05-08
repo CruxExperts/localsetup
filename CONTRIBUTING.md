@@ -1,4 +1,4 @@
-# Contributing to Localsetup v2
+# Contributing to Localsetup v3
 
 Thank you for your interest in contributing. Here’s how to get started.
 

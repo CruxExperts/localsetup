@@ -2,7 +2,7 @@
   "version": 1,
   "generated_at": "2026-05-08T01:12:36Z",
   "canonical_skills_path": "./.agents/skills",
-  "source": "state/audit/skill-consolidation/20260508T011236Z/winners/skills",
+  "source": "_localsetup/skills",
   "skill_count": 50,
   "skills": [
     {
@@ -89,9 +89,9 @@
       "name": "localsetup-context",
       "directory": "localsetup-context",
       "path": "./.agents/skills/localsetup-context/SKILL.md",
-      "description": "Localsetup v2 framework context  - overview, invariants, and skills index. Load first when working in a repo that uses Localsetup v2. Use when starting work in this repo or when user asks about framework rules.",
+      "description": "Localsetup v3 framework context  - overview, invariants, and skills index. Load first when working in a repo that uses Localsetup v3. Use when starting work in this repo or when user asks about framework rules.",
       "version": "1.5",
-      "sha256": "01180ee977999a99d3a928231e504e92cf72f7b337e40b9b86181302f6a0839c"
+      "sha256": "da0327200502ec80ad5f32d629b785643e4ad7b509d03b7193ce95f7d5154611"
     },
     {
       "name": "localsetup-cron-orchestrator",

@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+python3 _localsetup/tools/localsetup_v3.py hook-gate --out /tmp/localsetup-v3-public.tar.gz >/tmp/localsetup-v3-hook.json
+
+if python3 - <<'PY'
+import json
+from pathlib import Path
+
+payload = json.loads(Path("/tmp/localsetup-v3-hook.json").read_text(encoding="utf-8"))
+raise SystemExit(0 if payload.get("ok") else 1)
+PY
+then
+  :
+else
+  echo "[localsetup-v3] private path leak detected in package output"
+  exit 1
+fi
+
+generated_paths=(
+  _localsetup/docs/SKILLS.md
+  _localsetup/docs/_generated/facts.json
+  _localsetup/docs/_generated/implementation-file-map.md
+  _localsetup/docs/_generated/platform-adapters.md
+  _localsetup/docs/_generated/skill-packs.md
+  _localsetup/docs/_generated/skill_aliases.json
+  _localsetup/docs/migration/v2-to-v3-skill-map.md
+)
+
+if ! git diff --quiet -- "${generated_paths[@]}"; then
+  if [[ "${LOCALSETUP_HOOK_NO_STAGE:-0}" == "1" ]]; then
+    echo "[localsetup-v3] generated docs changed"
+    exit 1
+  fi
+  git add "${generated_paths[@]}"
+fi

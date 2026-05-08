@@ -5,7 +5,7 @@ metadata:
   version: "1.0"
 ---
 
-# Publish workflow (Localsetup v2)
+# Publish workflow (Localsetup v3)
 
 **Purpose:** When the user asks to run the publish workflow (or equivalent), run it from repo root so version and generated docs stay in sync and are committed (and optionally pushed).
 

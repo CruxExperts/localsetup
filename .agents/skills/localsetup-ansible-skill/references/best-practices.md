@@ -128,8 +128,8 @@ Always specify state:
 ansible-vault create group_vars/all/vault.yml
 
 # Structure: prefix vault variables
-vault_db_password: "secret123"
-vault_api_key: "key123"
+vault_db_password: "replace-with-vaulted-value"
+vault_api_key: "replace-with-vaulted-value"
 
 # Reference in vars file
 db_password: "{{ vault_db_password }}"

@@ -25,7 +25,7 @@ def main() -> int:
     engine_dir = get_engine_dir()
     pass_count = 0
     fail_count = 0
-    print("Localsetup v2 - Automated tests")
+    print("Localsetup v3 - Automated tests")
     print("===============================")
     if run_test(bool(get_engine_dir()), "get_engine_dir"):
         pass_count += 1

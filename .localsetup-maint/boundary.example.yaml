@@ -1,0 +1,19 @@
+public_paths:
+  - README.md
+  - AGENTS.md
+  - .github/
+  - _localsetup/
+
+private_paths:
+  - scripts/
+  - docs/
+  - .localsetup-maint/
+  - _internal_docs/
+  - state/
+  - reports/
+
+leak_patterns:
+  - "*.secret*"
+  - "*.pem"
+  - "*token*"
+  - "*password*"

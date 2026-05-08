@@ -1,9 +1,9 @@
 ---
 status: ACTIVE
-version: 2.12
+version: 3.0
 ---
 
-# Task-to-skill matching (Localsetup v2)
+# Task-to-skill matching (Localsetup v3)
 
 **Purpose:** Define how agents map user tasks to installed skills with minimal interruption, plus complementary recommendations from the public skill index.
 

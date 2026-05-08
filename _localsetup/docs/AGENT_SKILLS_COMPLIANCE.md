@@ -1,9 +1,9 @@
 ---
 status: ACTIVE
-version: 2.12
+version: 3.0
 ---
 
-# Agent Skills compliance (Localsetup v2)
+# Agent Skills compliance (Localsetup v3)
 
 **Purpose:** Confirm framework skills conform to the [Agent Skills](https://agentskills.io/specification) specification and document versioning and validation.
 

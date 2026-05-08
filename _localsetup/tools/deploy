@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Localsetup v2 - Deploy step. Thin wrapper; logic in deploy.py.
+# Localsetup v3 - Deploy step. Thin wrapper; logic in deploy.py.
 # On Windows (Git Bash): delegates to deploy.ps1.
 set -euo pipefail
 if [[ -n "${WINDIR:-}" ]] || [[ "${OSTYPE:-}" == "msys" ]] || [[ "${OSTYPE:-}" == "cygwin" ]]; then

@@ -5,7 +5,7 @@
 openclaw_version: "latest"
 
 # User to run OpenClaw as
-openclaw_user: asdbot
+openclaw_user: deploy
 
 # Config directory
 openclaw_config_dir: "/home/{{ openclaw_user }}/.config/openclaw"

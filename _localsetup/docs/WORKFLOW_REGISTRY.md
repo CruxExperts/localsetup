@@ -1,9 +1,9 @@
 ---
 status: ACTIVE
-version: 2.12
+version: 3.0
 ---
 
-# Workflow and module registry (Localsetup v2)
+# Workflow and module registry (Localsetup v3)
 
 **Purpose:** Registry of named workflows and when to use them; impact review when required. For the full agentic doc index, see [AGENTIC_DESIGN_INDEX.md](AGENTIC_DESIGN_INDEX.md).
 

@@ -1,9 +1,9 @@
 ---
 status: ACTIVE
-version: 2.12
+version: 3.0
 ---
 
-# Agentic umbrella workflows (Localsetup v2)
+# Agentic umbrella workflows (Localsetup v3)
 
 **Purpose:** Definition of umbrella workflows: single kickoff, no mid-run stop, PHC (pre-human-confirmation) gates, single final webhook. Framework-wide umbrella workflows (if any) are listed in [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md); repo-local umbrella names live only in `.agent/` queue files or PRDs.
 

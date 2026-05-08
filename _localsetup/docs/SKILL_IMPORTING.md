@@ -1,9 +1,9 @@
 ---
 status: ACTIVE
-version: 2.12
+version: 3.0
 ---
 
-# Skill importing (Localsetup v2)
+# Skill importing (Localsetup v3)
 
 **Purpose:** How to import external skills from a URL (e.g. GitHub) or local path: discover skills, validate and screen for safety, summarize for the user, and let them choose which to import. Compatible with [Agent Skills](https://agentskills.io/specification) and sources like [Anthropic's skills](https://github.com/anthropics/skills).
 

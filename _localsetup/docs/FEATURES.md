@@ -1,17 +1,17 @@
 ---
 status: ACTIVE
-version: 2.12
+version: 3.0
 ---
 
 # ⚡ Features
 
-This is the complete public feature catalog for Localsetup v2. The main README highlights the top 10; this page covers everything.
+This is the complete public feature catalog for Localsetup v3. The main README highlights the top 10; this page covers everything.
 
 ## 📊 Generated facts
 
 <!-- facts-block:start -->
-- Current version: `2.12.0`
-- Supported platforms: ``
+- Current version: `3.0.0`
+- Supported platforms: `cursor, claude-code, codex, openclaw, kilo, opencode`
 - Shipped skills: `50`
 - Source: `_localsetup/docs/_generated/facts.json`
 <!-- facts-block:end -->
@@ -22,12 +22,12 @@ This is the complete public feature catalog for Localsetup v2. The main README h
 
 | Capability | Description |
 |---|---|
-| **Repo-local engine** | The entire framework lives at `_localsetup/` inside your project. Clone or move the repo and everything travels together. No home-directory state, no cloud dependency. |
-| **Cross-platform installers** | Bash installer for Linux and macOS; PowerShell installer for Windows. Both support interactive and non-interactive modes. |
-| **Multi-host deployment** | Deploy context and skills to Cursor, Claude Code, OpenAI Codex CLI, or OpenClaw from a single install command. |
-| **Idempotent updates** | Re-running install updates the framework (via git pull) and redeploys context. Safe to run repeatedly. Deploy can overwrite root-owned destination files (content is updated; a metadata warning may appear). |
-| **Platform registry** | A single Markdown table ([PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md)) defines every supported platform ID, context path, skills path, and memory file location. Add new platforms by editing one file. |
-| **Global deployment** | Deploy once to user-wide locations (`~/.config/kilo/`, `~/.openclaw/`, `~/.claude/`) and use the framework across all projects. Auto-detects installed agents when `--global` is used without `--tools`. Repo-local installation takes precedence over global. |
+| **Repo-local framework source** | Framework source, docs, manifests, and shipped skills live at `_localsetup/` inside your project. Installed managed skill copies can be recreated from the repo. |
+| **V3 installer** | Bash wrapper for Linux, macOS, and WSL2 delegates to `_localsetup/tools/localsetup_v3.py install --apply`. Native PowerShell install is intentionally removed. |
+| **Multi-platform adapters** | Install adapters for Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, or OpenCode from one command. |
+| **Managed reinstall and rollback** | Re-running install refreshes managed skill copies, adapter links or portable copies, and `localsetup.lock.json`. Rollback removes only managed paths. |
+| **Platform manifest** | `_localsetup/config/platforms.yaml` defines every supported platform ID, repo adapter path, verification rule, and rollback target. |
+| **Shared skill library** | Managed skills install to `~/.local/share/agents/skills/localsetup`; repo adapters point there by symlink or use portable managed copies. |
 
 ---
 
@@ -38,7 +38,7 @@ This is the complete public feature catalog for Localsetup v2. The main README h
 | **Persistent memory bank** | Each platform deploys with a writable memory file for AI agent learnings. Unlike `AGENTS.md` (which is write-protected), the memory file is freely writable. |
 | **Platform-specific locations** | Memory files at `.kilo/AGENT_MEMORY.md`, `.claude/AGENT_MEMORY.md`, `.opencode/AGENT_MEMORY.md`, `.cursor/rules/agent-memory.md`, `.agents/AGENT_MEMORY.md`, and `AGENT_MEMORY.md` (OpenClaw root). |
 | **Strict curation rules** | Maximum 20 entries per section; revise existing entries don't append; stale entries (>30 days) are deleted; only record patterns confirmed in 2+ sessions. |
-| **Global and repo-local memory** | Memory can be deployed globally (shared across projects) or repo-locally (versioned with the project). Repo-local takes precedence. |
+| **Memory path manifesting** | Platform memory paths are declared in `_localsetup/config/platforms.yaml`; projects can keep repo-local memory where the agent host expects it. |
 | **Memory references in context** | Each platform's context file references its memory file with curation rules, prompting the AI to actively manage memory. |
 | **Documentation:** | Full guide at [MEMORY_MANAGEMENT.md](MEMORY_MANAGEMENT.md). |
 

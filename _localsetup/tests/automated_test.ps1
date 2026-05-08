@@ -1,4 +1,4 @@
-# Localsetup v2 - Automated tests. Thin wrapper; logic in automated_test.py.
+# Localsetup v3 - Automated tests. Thin wrapper; logic in automated_test.py.
 $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $EngineDir = (Get-Item (Join-Path $ScriptDir '..')).FullName

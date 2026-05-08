@@ -2,17 +2,17 @@
 
 ## Reporting a vulnerability
 
-If you believe you have found a security vulnerability in Localsetup v2, please report it responsibly:
+If you believe you have found a security vulnerability in Localsetup v3, please report it responsibly:
 
 1. **Do not** open a public Issue for security-sensitive findings.
-2. Open a **[private vulnerability report](https://github.com/cptnfren/localsetup/security/advisories/new)** (if enabled) or contact the maintainer via the [Contact Us](https://www.cruxexperts.com/) form at Crux Experts LLC, referencing "Localsetup v2 security."
+2. Open a **[private vulnerability report](https://github.com/cptnfren/localsetup/security/advisories/new)** (if enabled) or contact the maintainer via the [Contact Us](https://www.cruxexperts.com/) form at Crux Experts LLC, referencing "Localsetup v3 security."
 3. Include a clear description, steps to reproduce, and impact if possible.
 
 We will acknowledge receipt and work with you to understand and address the issue. We ask that you allow reasonable time for a fix before any public disclosure.
 
 ## Scope
 
-- This policy applies to the Localsetup v2 framework (this repository): install scripts, deploy and verification tools, skills, and documentation.
+- This policy applies to the Localsetup v3 framework (this repository): install scripts, deploy and verification tools, skills, and documentation.
 - Out-of-scope: vulnerabilities in third-party tools (Cursor, Claude Code, Codex, OpenClaw, Git, Bash, PowerShell) or in code that users add when using the framework.
 
 ## Security practices in the framework

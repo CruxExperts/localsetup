@@ -14,4 +14,4 @@ nodejs_npm_global_packages: []
 
 # PM2 Process Manager
 nodejs_pm2_enabled: false
-# nodejs_pm2_user: asdbot
+# nodejs_pm2_user: deploy

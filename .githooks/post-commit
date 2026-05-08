@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Localsetup v2  - post-commit hook (disabled).
-# This hook is a no-op.
+set -euo pipefail
 
-exit 0
+echo "[localsetup-v3] post-commit: report-only hook completed"

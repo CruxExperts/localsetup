@@ -1,9 +1,9 @@
-# Localsetup v2  - Context for OpenClaw workspace
+# Localsetup v3  - Context for OpenClaw workspace
 
 Copy or merge this into your OpenClaw workspace MEMORY.md (or reference it) so the agent has framework context.
 
 ## Overview
-Localsetup v2 lives in this repo at `_localsetup/`. All context is repo-local (mobile, backup-able). Engine = _localsetup/; user/context data = repo-local.
+Localsetup v3 lives in this repo at `_localsetup/`. All context is repo-local (mobile, backup-able). Engine = _localsetup/; user/context data = repo-local.
 
 ## Invariants
 - Engine/repo separation: no secrets/PII in commits. Paths via _localsetup/lib/data_paths.sh.
@@ -18,6 +18,12 @@ Localsetup v2 lives in this repo at `_localsetup/`. All context is repo-local (m
 - If capability is unknown, default to `markdown-basic`.
 - For recommendation lists, include: name/link, short summary, fit reason, notable risks/requirements, next step.
 - Use tables only when capability clearly supports readable tables.
+
+## Agent orchestration and model budget
+- Inventory and scouting: use `gpt-5.4-mini` for cheap repo/file inventory, low-risk search, and parallel subagent scouting.
+- Critical review: use `gpt-5.5` at medium reasoning for security, release blockers, architecture, and high-risk review findings.
+- Bounded coding: use `gpt-5.3-codex` for scoped implementation tasks with clear write ownership and tests.
+- Credit freshness: as of 2026-05-07, the official Codex rate card lists per 1M token credits as `gpt-5.4-mini` 18.75/1.875/113, `gpt-5.3-codex` 43.75/4.375/350, and `gpt-5.5` 125/12.50/750 for input/cached/output. Re-check https://help.openai.com/en/articles/20001106-codex-rate-card before changing model guidance.
 
 ## Skills (in project skills/)
 Load when task matches:

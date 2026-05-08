@@ -33,3 +33,11 @@ metadata:
 - **Context updates:** Full discovery (e.g. 24h); network (e.g. 5 min); tool detection (e.g. 30 min). Non-intrusive.
 - **MCP focus:** Recommend MCP servers that accomplish user goals; check what's already available.
 - **Usage:** Run _localsetup/tools/periodic_update (or equivalent) to check/update context. Use lib/context_freshness.sh, lib/ai_tool_recommender.sh when available.
+
+## Agent orchestration and model budget
+
+- **Inventory:** Use `gpt-5.4-mini` for cheap repo/file inventory, low-risk search, and parallel subagent scouting.
+- **Critical review:** Use `gpt-5.5` at medium reasoning for security, release blockers, architecture, and high-risk review findings.
+- **Bounded coding:** Use `gpt-5.3-codex` for scoped implementation tasks with clear write ownership and tests.
+- **Escalation:** Start with the lowest model that can answer safely, then escalate only when the task is blocked by uncertainty, risk, or complexity.
+- **Credit weights:** As of 2026-05-07, the official Codex rate card lists per 1M token credits as `gpt-5.4-mini` input/cached/output 18.75/1.875/113, `gpt-5.3-codex` 43.75/4.375/350, and `gpt-5.5` 125/12.50/750. Re-check https://help.openai.com/en/articles/20001106-codex-rate-card before changing model guidance.

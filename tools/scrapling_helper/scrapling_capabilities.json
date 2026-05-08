@@ -1,0 +1,34 @@
+{
+  "scrapling_status": {
+    "cli": "scrapling --help",
+    "description": "Detect Scrapling availability, environment type, and basic health."
+  },
+  "extract_url_simple": {
+    "cli": "scrapling extract <mode> <url> <output_path>",
+    "description": "Single URL extraction to HTML/Markdown/text using modes like get, fetch, or stealthy-fetch."
+  },
+  "extract_url_structured": {
+    "cli": "scrapling extract <mode> <url> <output_path>",
+    "description": "Single URL structured extraction to JSONL based on a selector schema."
+  },
+  "run_spider": {
+    "cli": "scrapling spider <name> [options]",
+    "description": "Run a named Scrapling spider in a project directory."
+  },
+  "scrapling_job_status": {
+    "cli": "n/a (filesystem-backed job registry)",
+    "description": "Inspect the status of recorded Scrapling jobs."
+  },
+  "scrapling_cancel_job": {
+    "cli": "n/a (filesystem-backed job registry)",
+    "description": "Attempt to cancel a running Scrapling job by job_id."
+  },
+  "upgrade_scrapling": {
+    "cli": "pipx upgrade scrapling",
+    "description": "Upgrade the Scrapling CLI via pipx or Docker."
+  },
+  "refresh_adapters": {
+    "cli": "scrapling --help; scrapling extract --help; scrapling spider --help",
+    "description": "Parse current CLI help output and refresh the adapter state model."
+  }
+}

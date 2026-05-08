@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 2.12
+version: 3.0
 ---
 
 # Shipped skills catalog
@@ -21,7 +21,7 @@ Total shipped skills: 50
 | `localsetup-backlog-and-reminders` | `localsetup-backlog-and-reminders` | `1.1` | Record deferred ideas, to-dos, and reminders (with optional due date or 'whenever'); show due/overdue when user starts a session or asks. Use when user says 'add to backlog', 'remind me', 'I'll do this later', 'what's due?', 'show my backlog', 'start my session', or wants to capture ideas for later. |
 | `localsetup-cloudflare-dns` | `localsetup-cloudflare-dns` | `1.0` | Manage Cloudflare DNS records (list, create, modify, delete) and run zone surveys via the flarectl CLI and a Python wrapper. Use when adding, changing, or removing DNS records, surveying zones, or scheduling automated DNS snapshots. |
 | `localsetup-communication-and-tools` | `localsetup-communication-and-tools` | `1.2` | Communication and response guidelines, tool selection and enhancement, periodic context updates. Use for user communication style, choosing tools, MCP/context updates. |
-| `localsetup-context` | `localsetup-context` | `1.5` | Localsetup v2 framework context  - overview, invariants, and skills index. Load first when working in a repo that uses Localsetup v2. Use when starting work in this repo or when user asks about framework rules. |
+| `localsetup-context` | `localsetup-context` | `1.5` | Localsetup v3 framework context  - overview, invariants, and skills index. Load first when working in a repo that uses Localsetup v3. Use when starting work in this repo or when user asks about framework rules. |
 | `localsetup-cron-orchestrator` | `localsetup-cron-orchestrator` | `1.0` | Manage cron from a repo-local manifest: time triggers, on-boot-with-delay, sequenced tasks; create, remove, reorder, install. |
 | `localsetup-debug-pro` | `localsetup-debug-pro` | `1.1` | Systematic debugging methodology and language-specific debugging commands (Node, Python, Swift, network, git bisect). |
 | `localsetup-decision-tree-workflow` | `localsetup-decision-tree-workflow` | `1.1` | Decision tree / reverse prompt workflow  - AI prompts user one question at a time with 4 options (A-D), preferred choice + rationale; build context for maximum impact. Use when user says 'decision tree', 'run the decision tree', 'reverse prompt', or 'reverse prompt workflow'; or when editing .agent/queue/**, PRD.md, *.prd.md. |

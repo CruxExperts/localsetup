@@ -1,5 +1,5 @@
 """
-Purpose: Helpers for integrating Scrapling with Localsetup v2 (public API re-export).
+Purpose: Helpers for integrating Scrapling with Localsetup v3 (public API re-export).
 Created: 2026-03-16
 Last Updated: 2026-03-16
 """
@@ -19,4 +19,3 @@ __all__ = [
     "ensure_available",
     "show_status",
 ]
-
