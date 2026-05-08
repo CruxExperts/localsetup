@@ -41,7 +41,7 @@ Localsetup v2 provides:
 - **Bidirectional Agent Q + PRD integration**: PRD schema, queue pattern, and agent-to-agent protocol are wired together. See [docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md](docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md) for PRD shape and outcome blocks, [docs/AGENTIC_AGENT_Q_PATTERN.md](docs/AGENTIC_AGENT_Q_PATTERN.md) for queue layout, and [docs/AGENTIC_AGENT_TO_AGENT_PROTOCOL.md](docs/AGENTIC_AGENT_TO_AGENT_PROTOCOL.md) plus [docs/AGENTIC_AGENT_Q_SCENARIOS.md](docs/AGENTIC_AGENT_Q_SCENARIOS.md) for transport behavior.
 - **Repo-local everything**: engine at `_localsetup/`, user/context data under the repo; [git traceability](docs/GIT_TRACEABILITY.md) for PRDs, specs, and outcomes so operations stay transparent and auditable.
 
-After installation, the client repo contains `_localsetup/` (this framework plus docs) and platform-specific paths at repo root (e.g. `.cursor/rules/`, `.cursor/skills/` for Cursor). Version displayed in READMEs and framework docs is kept in sync with the repo **VERSION** file; release and publish are maintained in a separate maintainer repository.
+After installation, the client repo contains `_localsetup/` (this framework plus docs), canonical repo-local skills in `.agents/skills/`, and platform-specific context paths at repo root (e.g. `.cursor/rules/` for Cursor). Version displayed in READMEs and framework docs is kept in sync with the repo **VERSION** file; release and publish are maintained in a separate maintainer repository.
 
 ---
 
@@ -139,7 +139,7 @@ _localsetup/
 │   ├── data_paths.sh            # Path resolution (Bash)
 │   ├── data_paths.ps1           # Path resolution (PowerShell)
 │   └── json_formatter.sh        # JSON formatting helpers
-├── skills/                      # Source of truth for skills (deploy copies to platform paths)
+├── skills/                      # Source of truth for skills (deploy refreshes .agents/skills)
 │   └── localsetup-*/
 │       └── SKILL.md
 ├── templates/                   # Platform-specific context loaders (deploy copies to repo root)
@@ -200,7 +200,7 @@ All docs live under `docs/` and are copied to `_localsetup/docs/` on deploy so t
 
 ## Skills
 
-Skills are task-based instructions (SKILL.md with `name` and `description` frontmatter). Agents load the appropriate skill when the task matches. Same skill content is used across all platforms; the deploy step copies from `_localsetup/skills/` to the platform path (e.g. `.cursor/skills/` for Cursor).
+Skills are task-based instructions (SKILL.md with `name` and `description` frontmatter). Agents load the appropriate skill when the task matches. Same skill content is used across all platforms; local deploy copies from `_localsetup/skills/` to `.agents/skills/` and links dot-agent compatibility paths such as `.codex/skills/`, `.cursor/skills/`, `.kilo/skills/`, and `.opencode/skills/` to that canonical runtime.
 
 | Skill | When to use |
 |-------|--------------|

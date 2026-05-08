@@ -48,12 +48,12 @@ When prompted (or when using `--tools` / `-Tools`), use one or more of these IDs
 
 | ID | Agent host | Context path | Skills path | Memory file |
 |----|------------|--------------|-------------|-------------|
-| `cursor` | Cursor IDE | `.cursor/rules/localsetup-context.mdc` | `.cursor/skills/localsetup-*/` | `.cursor/rules/agent-memory.md` |
-| `claude-code` | Claude Code | `.claude/CLAUDE.md` | `.claude/skills/localsetup-*/` | `.claude/AGENT_MEMORY.md` |
-| `codex` | OpenAI Codex CLI | `AGENTS.md` (repo root) | `.agents/skills/localsetup-*/` | `.agents/AGENT_MEMORY.md` |
+| `cursor` | Cursor IDE | `.cursor/rules/localsetup-context.mdc` | `.agents/skills/localsetup-*/` via `.cursor/skills` | `.cursor/rules/agent-memory.md` |
+| `claude-code` | Claude Code | `.claude/CLAUDE.md` | `.agents/skills/localsetup-*/` via `.claude/skills` | `.claude/AGENT_MEMORY.md` |
+| `codex` | OpenAI Codex CLI | `AGENTS.md` (repo root) | `.agents/skills/localsetup-*/` via `.codex/skills` | `.agents/AGENT_MEMORY.md` |
 | `openclaw` | OpenClaw | `_localsetup/docs/OPENCLAW_CONTEXT.md` | `skills/localsetup-*/` | `AGENT_MEMORY.md` (repo root) |
-| `kilo` | Kilo CLI | `.kilo/instructions.md` | `.kilo/skills/localsetup-*/` | `.kilo/AGENT_MEMORY.md` |
-| `opencode` | OpenCode CLI | `AGENTS.md` (repo root) | `.opencode/skills/localsetup-*/` | `.opencode/AGENT_MEMORY.md` |
+| `kilo` | Kilo CLI | `.kilo/instructions.md` | `.agents/skills/localsetup-*/` via `.kilo/skills` | `.kilo/AGENT_MEMORY.md` |
+| `opencode` | OpenCode CLI | `AGENTS.md` (repo root) | `.agents/skills/localsetup-*/` via `.opencode/skills` | `.opencode/AGENT_MEMORY.md` |
 
 You can deploy to multiple platforms at once by comma-separating: `cursor,claude-code`.
 

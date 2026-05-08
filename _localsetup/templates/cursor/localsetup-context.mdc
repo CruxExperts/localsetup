@@ -32,7 +32,7 @@ Localsetup v2 is a universal, cross-platform agentic workflow engine. It is **de
 
 ## Skills index
 
-Load the appropriate skill when the task matches. All skills live under .cursor/skills/localsetup-* (or platform equivalent).
+Load the appropriate skill when the task matches. Runtime skills live under `.agents/skills/localsetup-*`; `.cursor/skills` may be a compatibility link.
 
 | Skill | When to use |
 |-------|--------------|

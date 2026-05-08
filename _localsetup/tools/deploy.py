@@ -6,10 +6,12 @@
 
 import argparse
 import errno
+import hashlib
 import json
 import os
 import shutil
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 _ENGINE = Path(__file__).resolve().parents[1]
@@ -38,11 +40,126 @@ def _safe_copy2(src: Path, dst: Path) -> None:
             )
 
 
+def _copy_tree_files(src_dir: Path, dest_dir: Path) -> None:
+    """Copy a directory tree while skipping generated runtime/cache files."""
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    for f in src_dir.rglob("*"):
+        if not f.is_file():
+            continue
+        if "__pycache__" in f.parts or f.suffix == ".pyc" or f.suffix == ".log":
+            continue
+        rel = f.relative_to(src_dir)
+        (dest_dir / rel).parent.mkdir(parents=True, exist_ok=True)
+        _safe_copy2(f, dest_dir / rel)
+
+
+def _read_skill_frontmatter(skill_md: Path) -> dict:
+    """Read the small YAML-like frontmatter subset used by shipped skills."""
+    text = skill_md.read_text(encoding="utf-8")
+    if not text.startswith("---\n"):
+        return {}
+    end = text.find("\n---", 4)
+    if end == -1:
+        return {}
+    meta: dict[str, object] = {}
+    parent: str | None = None
+    for line in text[4:end].splitlines():
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        if not line.startswith((" ", "\t")) and ":" in line:
+            key, value = line.split(":", 1)
+            key = key.strip()
+            value = value.strip().strip("\"'")
+            if value:
+                meta[key] = value
+                parent = None
+            else:
+                meta[key] = {}
+                parent = key
+        elif parent and ":" in line and isinstance(meta.get(parent), dict):
+            key, value = line.split(":", 1)
+            meta[parent][key.strip()] = value.strip().strip("\"'")
+    return meta
+
+
+def _write_agents_registry(root: Path, source: str) -> None:
+    skills_dir = root / ".agents" / "skills"
+    skills = []
+    for skill_dir in sorted(p for p in skills_dir.iterdir() if p.is_dir()):
+        skill_md = skill_dir / "SKILL.md"
+        if not skill_md.exists():
+            continue
+        meta = _read_skill_frontmatter(skill_md)
+        metadata = meta.get("metadata") if isinstance(meta.get("metadata"), dict) else {}
+        skills.append(
+            {
+                "name": meta.get("name", skill_dir.name),
+                "directory": skill_dir.name,
+                "path": f"./.agents/skills/{skill_dir.name}/SKILL.md",
+                "description": meta.get("description", ""),
+                "version": metadata.get("version", "") if metadata else "",
+                "sha256": hashlib.sha256(skill_md.read_bytes()).hexdigest(),
+            }
+        )
+    registry = {
+        "version": 1,
+        "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "canonical_skills_path": "./.agents/skills",
+        "source": source,
+        "skill_count": len(skills),
+        "skills": skills,
+    }
+    registry_path = root / ".agents" / "registry.json"
+    registry_path.parent.mkdir(parents=True, exist_ok=True)
+    registry_path.write_text(json.dumps(registry, indent=2) + "\n", encoding="utf-8")
+
+
+def _deploy_repo_canonical_skills(engine_dir: Path, root: Path) -> Path:
+    """Deploy repo-local skills once to the Codex-compatible canonical path."""
+    skills_dir = root / ".agents" / "skills"
+    skills_dir.mkdir(parents=True, exist_ok=True)
+    skills_src = engine_dir / "skills"
+    for skill_dir in sorted(skills_src.glob("localsetup-*")):
+        if skill_dir.is_dir():
+            _copy_tree_files(skill_dir, skills_dir / skill_dir.name)
+    try:
+        source = f"./{skills_src.relative_to(root)}"
+    except ValueError:
+        source = str(skills_src)
+    _write_agents_registry(root, source)
+    return skills_dir
+
+
+def _ensure_platform_skills_path(engine_dir: Path, root: Path, dest_dir: Path) -> None:
+    """Point platform skill folders at .agents/skills when safe, otherwise sync."""
+    canonical = _deploy_repo_canonical_skills(engine_dir, root)
+    if dest_dir.resolve() == canonical.resolve():
+        return
+    dest_dir.parent.mkdir(parents=True, exist_ok=True)
+    rel_target = os.path.relpath(canonical, dest_dir.parent)
+    if dest_dir.is_symlink():
+        if os.readlink(dest_dir) != rel_target:
+            dest_dir.unlink()
+            dest_dir.symlink_to(rel_target, target_is_directory=True)
+        return
+    if not dest_dir.exists():
+        try:
+            dest_dir.symlink_to(rel_target, target_is_directory=True)
+            return
+        except OSError:
+            print(
+                f"Warning: could not symlink {dest_dir} to {rel_target}; copying skills instead.",
+                file=sys.stderr,
+            )
+    for skill_dir in sorted(canonical.glob("localsetup-*")):
+        if skill_dir.is_dir():
+            _copy_tree_files(skill_dir, dest_dir / skill_dir.name)
+
+
 def deploy_cursor(engine_dir: Path, root: Path) -> None:
     rules_dir = root / ".cursor" / "rules"
     skills_dir = root / ".cursor" / "skills"
     rules_dir.mkdir(parents=True, exist_ok=True)
-    skills_dir.mkdir(parents=True, exist_ok=True)
     templates = engine_dir / "templates" / "cursor"
     if (templates / "localsetup-context.mdc").exists():
         _safe_copy2(
@@ -54,16 +171,7 @@ def deploy_cursor(engine_dir: Path, root: Path) -> None:
         )
     if (templates / "AGENT_MEMORY.md").exists():
         _safe_copy2(templates / "AGENT_MEMORY.md", rules_dir / "agent-memory.md")
-    skills_src = engine_dir / "skills"
-    for skill_dir in sorted(skills_src.glob("localsetup-*")):
-        if skill_dir.is_dir():
-            dest = skills_dir / skill_dir.name
-            dest.mkdir(parents=True, exist_ok=True)
-            for f in skill_dir.rglob("*"):
-                if f.is_file():
-                    rel = f.relative_to(skill_dir)
-                    (dest / rel).parent.mkdir(parents=True, exist_ok=True)
-                    _safe_copy2(f, dest / rel)
+    _ensure_platform_skills_path(engine_dir, root, skills_dir)
 
 
 def deploy_kilo(engine_dir: Path, root: Path) -> None:
@@ -72,7 +180,6 @@ def deploy_kilo(engine_dir: Path, root: Path) -> None:
     command_dir = kilo_dir / "command"
     agent_dir = kilo_dir / "agent"
     kilo_dir.mkdir(parents=True, exist_ok=True)
-    skills_dir.mkdir(parents=True, exist_ok=True)
     command_dir.mkdir(parents=True, exist_ok=True)
     agent_dir.mkdir(parents=True, exist_ok=True)
     templates = engine_dir / "templates" / "kilo"
@@ -80,58 +187,29 @@ def deploy_kilo(engine_dir: Path, root: Path) -> None:
         _safe_copy2(templates / "instructions.md", kilo_dir / "instructions.md")
     if (templates / "AGENT_MEMORY.md").exists():
         _safe_copy2(templates / "AGENT_MEMORY.md", kilo_dir / "AGENT_MEMORY.md")
-    skills_src = engine_dir / "skills"
-    for skill_dir in sorted(skills_src.glob("localsetup-*")):
-        if skill_dir.is_dir():
-            dest = skills_dir / skill_dir.name
-            dest.mkdir(parents=True, exist_ok=True)
-            for f in skill_dir.rglob("*"):
-                if f.is_file():
-                    rel = f.relative_to(skill_dir)
-                    (dest / rel).parent.mkdir(parents=True, exist_ok=True)
-                    _safe_copy2(f, dest / rel)
+    _ensure_platform_skills_path(engine_dir, root, skills_dir)
 
 
 def deploy_claude_code(engine_dir: Path, root: Path) -> None:
     claude_dir = root / ".claude"
     skills_dir = claude_dir / "skills"
     claude_dir.mkdir(parents=True, exist_ok=True)
-    skills_dir.mkdir(parents=True, exist_ok=True)
     templates = engine_dir / "templates" / "claude-code"
     if (templates / "CLAUDE.md").exists():
         _safe_copy2(templates / "CLAUDE.md", claude_dir / "CLAUDE.md")
     if (templates / "AGENT_MEMORY.md").exists():
         _safe_copy2(templates / "AGENT_MEMORY.md", claude_dir / "AGENT_MEMORY.md")
-    skills_src = engine_dir / "skills"
-    for skill_dir in sorted(skills_src.glob("localsetup-*")):
-        if skill_dir.is_dir():
-            dest = skills_dir / skill_dir.name
-            dest.mkdir(parents=True, exist_ok=True)
-            for f in skill_dir.rglob("*"):
-                if f.is_file():
-                    rel = f.relative_to(skill_dir)
-                    (dest / rel).parent.mkdir(parents=True, exist_ok=True)
-                    _safe_copy2(f, dest / rel)
+    _ensure_platform_skills_path(engine_dir, root, skills_dir)
 
 
 def deploy_codex(engine_dir: Path, root: Path) -> None:
-    skills_dir = root / ".agents" / "skills"
-    skills_dir.mkdir(parents=True, exist_ok=True)
+    _deploy_repo_canonical_skills(engine_dir, root)
+    _ensure_platform_skills_path(engine_dir, root, root / ".codex" / "skills")
     templates = engine_dir / "templates" / "codex"
     if (templates / "AGENTS.md").exists():
         _safe_copy2(templates / "AGENTS.md", root / "AGENTS.md")
     if (templates / "AGENT_MEMORY.md").exists():
         _safe_copy2(templates / "AGENT_MEMORY.md", root / ".agents" / "AGENT_MEMORY.md")
-    skills_src = engine_dir / "skills"
-    for skill_dir in sorted(skills_src.glob("localsetup-*")):
-        if skill_dir.is_dir():
-            dest = skills_dir / skill_dir.name
-            dest.mkdir(parents=True, exist_ok=True)
-            for f in skill_dir.rglob("*"):
-                if f.is_file():
-                    rel = f.relative_to(skill_dir)
-                    (dest / rel).parent.mkdir(parents=True, exist_ok=True)
-                    _safe_copy2(f, dest / rel)
 
 
 def deploy_openclaw(engine_dir: Path, root: Path) -> None:
@@ -161,22 +239,12 @@ def deploy_opencode(engine_dir: Path, root: Path) -> None:
     opencode_dir = root / ".opencode"
     skills_dir = opencode_dir / "skills"
     opencode_dir.mkdir(parents=True, exist_ok=True)
-    skills_dir.mkdir(parents=True, exist_ok=True)
     templates = engine_dir / "templates" / "opencode"
     if (templates / "AGENTS.md").exists():
         _safe_copy2(templates / "AGENTS.md", root / "AGENTS.md")
     if (templates / "AGENT_MEMORY.md").exists():
         _safe_copy2(templates / "AGENT_MEMORY.md", opencode_dir / "AGENT_MEMORY.md")
-    skills_src = engine_dir / "skills"
-    for skill_dir in sorted(skills_src.glob("localsetup-*")):
-        if skill_dir.is_dir():
-            dest = skills_dir / skill_dir.name
-            dest.mkdir(parents=True, exist_ok=True)
-            for f in skill_dir.rglob("*"):
-                if f.is_file():
-                    rel = f.relative_to(skill_dir)
-                    (dest / rel).parent.mkdir(parents=True, exist_ok=True)
-                    _safe_copy2(f, dest / rel)
+    _ensure_platform_skills_path(engine_dir, root, skills_dir)
 
 
 def _parse_jsonc(path: Path) -> dict:
@@ -232,13 +300,7 @@ def _deploy_skills_to_dir(engine_dir: Path, dest_dir: Path) -> None:
     skills_src = engine_dir / "skills"
     for skill_dir in sorted(skills_src.glob("localsetup-*")):
         if skill_dir.is_dir():
-            dest = dest_dir / skill_dir.name
-            dest.mkdir(parents=True, exist_ok=True)
-            for f in skill_dir.rglob("*"):
-                if f.is_file():
-                    rel = f.relative_to(skill_dir)
-                    (dest / rel).parent.mkdir(parents=True, exist_ok=True)
-                    _safe_copy2(f, dest / rel)
+            _copy_tree_files(skill_dir, dest_dir / skill_dir.name)
 
 
 def _ensure_kilo_config_instructions(
@@ -285,16 +347,7 @@ def deploy_kilo_global(engine_dir: Path) -> None:
             kilo_config_base / "AGENT_MEMORY.md",
         )
 
-    skills_src = engine_dir / "skills"
-    for skill_dir in sorted(skills_src.glob("localsetup-*")):
-        if skill_dir.is_dir():
-            dest = skills_dir / skill_dir.name
-            dest.mkdir(parents=True, exist_ok=True)
-            for f in skill_dir.rglob("*"):
-                if f.is_file():
-                    rel = f.relative_to(skill_dir)
-                    (dest / rel).parent.mkdir(parents=True, exist_ok=True)
-                    _safe_copy2(f, dest / rel)
+    _deploy_skills_to_dir(engine_dir, skills_dir)
 
     config_path_json = _expand_path("~/.config/kilo/kilo.json")
     config_path_jsonc = _expand_path("~/.config/kilo/kilo.jsonc")

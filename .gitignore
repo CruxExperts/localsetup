@@ -33,9 +33,13 @@ contributions/
 __pycache__/
 *.pyc
 
-# Kilo Code (migrated from Cursor)
+# Kilo Code (migrated from Cursor): track only the shared skills link.
 .kilocode/
-.kilo/
+.kilo/*
+!.kilo/skills
+_localsetup/.kilo/
 
-# Codex CLI context (local-only agent instructions)
-AGENTS.md
+# Codex CLI context: track the repo guide and shared skills link.
+!.codex/
+!.codex/skills
+!AGENTS.md

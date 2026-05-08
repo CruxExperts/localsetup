@@ -102,7 +102,7 @@ Execute in order. Skip only when a step is already satisfied.
 
 | Step | Action | Input | Output |
 |------|--------|-------|--------|
-| 1 | Align skill-importer with mandatory normalization | [SKILL_IMPORTING.md](SKILL_IMPORTING.md) step 6b | Updated `_localsetup/skills/localsetup-skill-importer/SKILL.md`. **Deploy:** use [MULTI_PLATFORM_INSTALL.md](MULTI_PLATFORM_INSTALL.md) or your repo’s deploy entrypoint so `.cursor/skills/` (and other platform paths) match `_localsetup/skills/` after edit. |
+| 1 | Align skill-importer with mandatory normalization | [SKILL_IMPORTING.md](SKILL_IMPORTING.md) step 6b | Updated `_localsetup/skills/localsetup-skill-importer/SKILL.md`. **Deploy:** use [MULTI_PLATFORM_INSTALL.md](MULTI_PLATFORM_INSTALL.md) or your repo’s deploy entrypoint so `.agents/skills/` and compatibility platform paths match `_localsetup/skills/` after edit. |
 | 2 | Create quick-ref file | Canonical mapping + pipelines + Quick-ref requirements | `WORKFLOW_QUICK_REF.md` (or `WORKFLOW_IDS.md`) — must exist before step 5 links it. |
 | 2b | Optional: skill/workflow matrix | [SKILLS.md](SKILLS.md) or `_localsetup/skills/*/SKILL.md` list | `WORKFLOW_SKILL_MATRIX.md` (or appendix inside quick-ref): skill ID, registry row yes/no, pipeline step yes/no — makes gaps visible without requiring every skill to have a row. |
 | 3 | Refactor WORKFLOW_REGISTRY | Canonical mapping; move long commands to SKILL_DISCOVERY | Registry table with ID/display/aliases; shortened cells; Pipelines section; Umbrella subsection or explicit “no framework-wide umbrella names”; Usage footnote from Non-ACTIVE inventory. |

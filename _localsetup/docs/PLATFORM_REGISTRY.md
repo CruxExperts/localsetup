@@ -13,12 +13,12 @@ version: 2.12
 
 | ID | Display name | Context loader (path in client repo) | Skills path (path in client repo) | Memory file |
 |----|--------------|--------------------------------------|------------------------------------|-------------|
-| cursor | Cursor | .cursor/rules/localsetup-context.mdc (and .cursor/rules/localsetup-context-index.md) | .cursor/skills/localsetup-*/ | .cursor/rules/agent-memory.md |
-| claude-code | Claude Code | .claude/CLAUDE.md | .claude/skills/localsetup-*/ | .claude/AGENT_MEMORY.md |
-| codex | OpenAI Codex CLI | AGENTS.md (repo root) | .agents/skills/localsetup-*/ | .agents/AGENT_MEMORY.md |
+| cursor | Cursor | .cursor/rules/localsetup-context.mdc (and .cursor/rules/localsetup-context-index.md) | .agents/skills/localsetup-*/ (with .cursor/skills compatibility link) | .cursor/rules/agent-memory.md |
+| claude-code | Claude Code | .claude/CLAUDE.md | .agents/skills/localsetup-*/ (with .claude/skills compatibility link) | .claude/AGENT_MEMORY.md |
+| codex | OpenAI Codex CLI | AGENTS.md (repo root) | .agents/skills/localsetup-*/ (with .codex/skills compatibility link) | .agents/AGENT_MEMORY.md |
 | openclaw | OpenClaw | [OPENCLAW_CONTEXT.md](../templates/openclaw/OPENCLAW_CONTEXT.md) (merge into workspace MEMORY.md if desired) | skills/localsetup-*/ (repo root) | AGENT_MEMORY.md (repo root) |
-| kilo | Kilo CLI | .kilo/instructions.md | .kilo/skills/localsetup-*/ | .kilo/AGENT_MEMORY.md |
-| opencode | OpenCode CLI | AGENTS.md (repo root) | .opencode/skills/localsetup-*/ | .opencode/AGENT_MEMORY.md |
+| kilo | Kilo CLI | .kilo/instructions.md | .agents/skills/localsetup-*/ (with .kilo/skills compatibility link) | .kilo/AGENT_MEMORY.md |
+| opencode | OpenCode CLI | AGENTS.md (repo root) | .agents/skills/localsetup-*/ (with .opencode/skills compatibility link) | .opencode/AGENT_MEMORY.md |
 
 *More platforms may be added later. Update this table and the "Skill registration (new skills)" section when adding one.*
 

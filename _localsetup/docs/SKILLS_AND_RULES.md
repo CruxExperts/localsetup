@@ -10,7 +10,7 @@ version: 2.12
 ## Model
 
 - **One always-loaded context** per platform: Cursor uses `.cursor/rules/localsetup-context.mdc`; Claude Code uses `.claude/CLAUDE.md`; Codex uses `AGENTS.md`; OpenClaw uses a context skill + optional doc template in _localsetup/docs/; OpenCode uses `AGENTS.md`; Kilo CLI uses `.kilo/instructions.md` (repo root, local deploy) or `~/.config/kilo/instructions/localsetup.md` (global deploy).
-- **Skills:** Same SKILL.md content across platforms; installer/deploy copies from `_localsetup/skills/` to platform path (`.cursor/skills/`, `.claude/skills/`, `.agents/skills/`, `skills/` for OpenClaw, `.opencode/skills/` for OpenCode, or `.kilo/skills/` for Kilo). Edit only in _localsetup; deploy overwrites platform paths.
+- **Skills:** Same SKILL.md content across platforms; local deploy copies from `_localsetup/skills/` to canonical `.agents/skills/` and uses compatibility links for dot-agent platform folders (`.codex/skills/`, `.cursor/skills/`, `.claude/skills/`, `.opencode/skills/`, `.kilo/skills/`). OpenClaw still uses root `skills/`. Edit only in `_localsetup`; deploy refreshes runtime paths.
 - **Memory file:** Each platform has a writable memory file for agent learnings (`.kilo/AGENT_MEMORY.md`, `.claude/AGENT_MEMORY.md`, etc.). See [MEMORY_MANAGEMENT.md](MEMORY_MANAGEMENT.md) for curation rules.
 - **When to load a skill:** Load when the task matches the skill's description (e.g. user says "decision tree" -> localsetup-decision-tree-workflow). The master rule/context includes an index of skills and when to use them.
 
@@ -30,12 +30,12 @@ version: 2.12
 
 | Platform | Context loader | Skills | Memory file |
 |----------|----------------|--------|-------------|
-| Cursor | .cursor/rules/localsetup-context.mdc | .cursor/skills/localsetup-*/ | .cursor/rules/agent-memory.md |
-| Claude Code | .claude/CLAUDE.md | .claude/skills/localsetup-*/ | .claude/AGENT_MEMORY.md |
-| Codex | AGENTS.md (repo root) | .agents/skills/localsetup-*/ | .agents/AGENT_MEMORY.md |
+| Cursor | .cursor/rules/localsetup-context.mdc | .agents/skills/localsetup-*/ via .cursor/skills | .cursor/rules/agent-memory.md |
+| Claude Code | .claude/CLAUDE.md | .agents/skills/localsetup-*/ via .claude/skills | .claude/AGENT_MEMORY.md |
+| Codex | AGENTS.md (repo root) | .agents/skills/localsetup-*/ via .codex/skills | .agents/AGENT_MEMORY.md |
 | OpenClaw | _localsetup/docs/OPENCLAW_CONTEXT.md | skills/localsetup-*/ (repo root) | AGENT_MEMORY.md (repo root) |
-| OpenCode | AGENTS.md (repo root) | .opencode/skills/localsetup-*/ | .opencode/AGENT_MEMORY.md |
-| Kilo CLI | .kilo/instructions.md | .kilo/skills/localsetup-*/ | .kilo/AGENT_MEMORY.md |
+| OpenCode | AGENTS.md (repo root) | .agents/skills/localsetup-*/ via .opencode/skills | .opencode/AGENT_MEMORY.md |
+| Kilo CLI | .kilo/instructions.md | .agents/skills/localsetup-*/ via .kilo/skills | .kilo/AGENT_MEMORY.md |
 
 ## Format
 

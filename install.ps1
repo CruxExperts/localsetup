@@ -83,12 +83,12 @@ Parameters:
   -Help, -?, -h     Show this help and exit
 
 Tools (use with -Tools):
-  cursor       Cursor IDE (.cursor/rules, .cursor/skills)
-  claude-code  Claude Code (.claude/CLAUDE.md, .claude/skills)
-  codex        OpenAI Codex CLI (AGENTS.md, .agents/skills)
+  cursor       Cursor IDE (.cursor/rules, .agents/skills with .cursor/skills link)
+  claude-code  Claude Code (.claude/CLAUDE.md, .agents/skills with .claude/skills link)
+  codex        OpenAI Codex CLI (AGENTS.md, .agents/skills with .codex/skills link)
   openclaw     OpenClaw (skills/, _localsetup/templates/openclaw/OPENCLAW_CONTEXT.md)
-  opencode     OpenCode CLI (AGENTS.md, .opencode/skills/)
-  kilo         Kilo CLI (.kilo/instructions.md, .kilo/skills/, .kilo/command/, .kilo/agent/)
+  opencode     OpenCode CLI (AGENTS.md, .agents/skills with .opencode/skills link)
+  kilo         Kilo CLI (.kilo/instructions.md, .agents/skills with .kilo/skills link)
 
 Examples:
   .\install.ps1 -Directory C:\repos\myapp -Tools "cursor,claude-code" -Yes
@@ -106,7 +106,7 @@ Global deploy deploys to:
   claude:     ~/.claude/skills/ and ~/.claude/CLAUDE.md
   opencode:   ~/.config/opencode/skills/
 
-Local kilo deploy uses: .kilo/instructions.md, .kilo/skills/, .kilo/command/, .kilo/agent/
+Local kilo deploy uses: .kilo/instructions.md, .agents/skills with .kilo/skills link, .kilo/command/, .kilo/agent/
 '@
 }
 

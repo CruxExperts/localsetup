@@ -1,0 +1,30 @@
+# Repository Guidelines
+
+## Project Structure & Module Organization
+
+This repository packages Localsetup v2, a repo-local framework for agent context, skills, and install workflows. Root files include the cross-platform installers (`install`, `install.ps1`), top-level docs, `VERSION`, and support files. The main engine lives in `_localsetup/`: reusable code is under `_localsetup/lib/`, OS discovery helpers under `_localsetup/discovery/`, shipped skills under `_localsetup/skills/`, platform templates under `_localsetup/templates/`, and framework docs under `_localsetup/docs/`. Tests live in `_localsetup/tests/`; static assets live in `assets/`.
+
+## Build, Test, and Development Commands
+
+- `python3 -m pip install -r _localsetup/requirements.txt`: install Python dependencies used by helper scripts and tests.
+- `./_localsetup/tests/automated_test.sh`: run the core Linux/macOS smoke test suite.
+- `pwsh ./_localsetup/tests/automated_test.ps1`: run the PowerShell test wrapper where PowerShell is available.
+- `python3 -m pytest _localsetup/tests`: run the Python pytest tests directly.
+- `./install --directory . --tools codex --yes`: test a local non-interactive install path for one platform.
+- `scripts/generate-doc-artifacts`: refresh generated docs artifacts when documentation inputs change.
+
+## Coding Style & Naming Conventions
+
+Keep scripts portable and explicit: Bash files should use `set -euo pipefail`; PowerShell should prefer clear parameter names and non-interactive modes for automation. Python code uses 4-space indentation, standard-library path handling via `pathlib` where practical, and small helper functions in `_localsetup/lib/`. Skill directories use `localsetup-<topic>` naming and each skill must include a spec-compatible `SKILL.md` with `name` and `description` frontmatter. Markdown should use clear headings, relative links, and concise task-oriented language.
+
+## Testing Guidelines
+
+Add or update tests under `_localsetup/tests/` for changes to path resolution, discovery, parsing, deploy behavior, or skill tooling. Name Python tests `test_<feature>.py` and keep shell/PowerShell wrappers thin. Before opening a PR, run `./_localsetup/tests/automated_test.sh` and `python3 -m pytest _localsetup/tests`; include the PowerShell wrapper result when touching Windows behavior.
+
+## Commit & Pull Request Guidelines
+
+Use the existing conventional commit style: `feat:`, `fix:`, `chore:`, or `revert:` followed by a short imperative summary. Keep PRs focused, target `main`, describe what changed and why, link related issues, and include test results. For framework, skill, or workflow changes, include a brief rationale and note compatibility impact across supported agent platforms. Do not add AI tools or assistants as co-authors or contributors.
+
+## Security & Configuration Tips
+
+Do not commit local secrets, generated private state, or machine-specific agent data. Treat imported third-party skills as untrusted until reviewed with the repository’s safety and validation workflows. Keep version and generated documentation sync changes deliberate; maintainers handle official version bumps.

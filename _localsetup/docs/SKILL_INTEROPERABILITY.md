@@ -22,7 +22,7 @@ version: 2.12
 
 ## Using a framework skill elsewhere (export)
 
-- **Copy the skill directory**  - Use `_localsetup/skills/<name>/`. After deploy, the skill is also at the platform's skills path (e.g. `.cursor/skills/<name>/` for Cursor).
+- **Copy the skill directory**  - Use `_localsetup/skills/<name>/`. After local deploy, the skill is also in the canonical runtime path `.agents/skills/<name>/`; dot-agent platform paths such as `.cursor/skills/<name>` may be compatibility links.
 - **Use in any Agent Skills host**  - The directory is a valid Agent Skills skill. The host only needs to support the [Agent Skills](https://agentskills.io/specification) format (SKILL.md with `name` and `description`, optional dirs). No need to change the skill; `localsetup-*` is a naming choice and does not affect spec validity.
 - **Optional**  - If the target host expects a different name, rename the directory and the `name` field so they match (spec requirement). Paths inside the skill (e.g. `_localsetup/docs/...`) may be framework-specific; the host can ignore or map them as needed.
 
@@ -37,7 +37,7 @@ version: 2.12
 | Direction | Action |
 |-----------|--------|
 | **External → Framework** | Copy skill dir into `_localsetup/skills/`; optionally rename to `localsetup-*`; add `metadata.version` if missing; register per PLATFORM_REGISTRY. |
-| **Framework → External** | Copy `_localsetup/skills/<name>/` (or `.cursor/skills/<name>/`); use as-is in any Agent Skills host; optionally rename dir and `name` to match host conventions. |
+| **Framework → External** | Copy `_localsetup/skills/<name>/` (or `.agents/skills/<name>/` after local deploy); use as-is in any Agent Skills host; optionally rename dir and `name` to match host conventions. |
 
 Skills that follow the Agent Skills spec are interchangeable; this framework adds placement, registration, and optional `metadata.version` for versioning, without breaking spec compliance.
 

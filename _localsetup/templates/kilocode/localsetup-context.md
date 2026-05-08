@@ -26,7 +26,7 @@ Localsetup v2 is a universal, cross-platform agentic workflow engine. It is **de
 
 ## Skills index
 
-Load the appropriate skill when the task matches. All skills live under .kilocode/skills/localsetup-* (or platform equivalent).
+Load the appropriate skill when the task matches. Runtime skills live under `.agents/skills/localsetup-*`; platform skill folders may be compatibility links.
 
 | Skill | When to use |
 |-------|--------------|
