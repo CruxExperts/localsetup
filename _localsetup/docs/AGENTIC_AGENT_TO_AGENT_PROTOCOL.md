@@ -52,18 +52,11 @@ Tool-generated PRDs must set `localsetup_framework_version` from repo VERSION; o
 
 ## Implemented commands (client CLI)
 
-- **ship-file-drop** – Seal manifest with recipient pubkey; write `stem.agentq.asc` then `stem.agentq.ready`.
-- **ingest-blob** – Decrypt armored file; promote to `in/<id>/`.
-- **mail-pull** – Policy-gated UNSEEN fetch, decrypt, promote, move to `LocalsetupAgentQ/Processed` (or `--post-mailbox`).
-- **ship-mail** – `mail_send_encrypted` with `agentq_outer` envelope; requires recipient pubkey in account crypto env.
+- **ship-file-drop** - Seal manifest with recipient pubkey; write `stem.agentq.asc` then `stem.agentq.ready`.
+- **ingest-blob** - Decrypt armored file; promote to `in/<id>/`.
+- **mail-pull** - Policy-gated UNSEEN fetch, decrypt, promote, move to `LocalsetupAgentQ/Processed` (or `--post-mailbox`).
+- **ship-mail** - `mail_send_encrypted` with `agentq_outer` envelope; requires recipient pubkey in account crypto env.
 
 ## Documentation
 
 USER_GUIDE and ADMIN_GUIDE beside client package; cross-links from mail-protocol-control and AGENTIC_AGENT_Q_PATTERN.
-
----
-
-<p align="center">
-<strong>Author:</strong> <a href="https://github.com/cptnfren">Slavic Kozyuk</a><br>
-<strong>Copyright</strong> 2026 <a href="https://www.cruxexperts.com/">Crux Experts LLC</a>
-</p>

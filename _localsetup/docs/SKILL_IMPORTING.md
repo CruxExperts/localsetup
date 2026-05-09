@@ -37,7 +37,7 @@ If the agent cannot create a temp directory (permissions, no space), report that
    - **What it does**  - From `description` (and first paragraph of body if helpful).
    - **What it has**  - File count and types (scripts, references, assets); list script languages and notable files.
    - **Code / behavior**  - Kinds of code (Python, Bash, etc.) and any compatibility or dependency notes.
-   - **Security screening**  - Pass / flags (e.g. "no concerns" or "Security: Review …" with file/line). Do not auto-block; present so the user can choose.
+   - **Security screening**  - Pass / flags (e.g. "no concerns" or "Security: Review ..." with file/line). Do not auto-block; present so the user can choose.
    - **Content safety**  - "No concerns" or "Content safety: REVIEW" with references (file, line, column, pattern, description from index). Do not read or display the flagged content; state that the user should open the file at the given position(s) and review, then offer: skip skill, proceed after review, or ignore and continue. Do not auto-block.
 5. **User selects**  - Present the list and briefs; ask the user which skills to import (by name or "all"). Use AskQuestion or clear prompt so they can approve or skip.
 6. **Duplicate, overlap, and namespace check**  - Before importing each selected skill, compare it to existing framework skills (list `_localsetup/skills/` and read each existing SKILL.md `name` and `description`). For each candidate:
@@ -68,7 +68,7 @@ If the agent cannot create a temp directory (permissions, no space), report that
 
 ## Compatibility
 
-- Imported skills must be [Agent Skills](https://agentskills.io/specification)–compliant (SKILL.md with `name`, `description`). The scan tool checks for this. After import, they work like any framework skill and are interchangeable (see [SKILL_INTEROPERABILITY.md](SKILL_INTEROPERABILITY.md)).
+- Imported skills must be [Agent Skills](https://agentskills.io/specification)-compliant (SKILL.md with `name`, `description`). The scan tool checks for this. After import, they work like any framework skill and are interchangeable (see [SKILL_INTEROPERABILITY.md](SKILL_INTEROPERABILITY.md)).
 
 ## Reference
 
@@ -77,10 +77,3 @@ If the agent cannot create a temp directory (permissions, no space), report that
 - [SKILL_INTEROPERABILITY.md](SKILL_INTEROPERABILITY.md)  - Import/export and spec alignment.
 - [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md)  - Where to register newly imported skills.
 - Load skill **ls-skill-importer** when the user wants to import skills from a URL or local path, or when screening and selecting external skills.
-
----
-
-<p align="center">
-<strong>Author:</strong> <a href="https://github.com/cptnfren">Slavic Kozyuk</a><br>
-<strong>Copyright</strong> © 2026 <a href="https://www.cruxexperts.com/">Crux Experts LLC</a> – Innovate, Automate, Dominate.
-</p>

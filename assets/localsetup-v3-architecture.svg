@@ -44,7 +44,7 @@
   <path d="M828 426 C947 486 1042 458 1178 502" class="line" stroke="#253e20" opacity="0.7"/>
 
   <text x="60" y="66" class="title">Localsetup v3 Architecture</text>
-  <text x="60" y="94" class="small">Repo-local source stays canonical. Install output is generated, managed, and reversible.</text>
+  <text x="60" y="94" class="small">Repo-local source stays canonical. Managed outputs are generated and reversible.</text>
 
   <g filter="url(#shadow)">
     <rect x="58" y="144" width="280" height="246" rx="22" class="box"/>
@@ -58,14 +58,15 @@
   </g>
 
   <g filter="url(#shadow)">
-    <rect x="424" y="126" width="352" height="280" rx="28" fill="#0b171a" stroke="url(#teal)" stroke-width="2"/>
-    <text x="466" y="176" class="label">Resolved config truth</text>
-    <text x="466" y="210" class="tiny">CLI flags &gt; config file &gt; defaults</text>
-    <rect x="466" y="238" width="268" height="46" rx="12" fill="#102427" stroke="#2fe4d2" opacity="0.85"/>
-    <text x="492" y="268" class="mono">doctor | configure | context</text>
-    <rect x="466" y="302" width="268" height="46" rx="12" fill="#171b14" stroke="#f8c14a" opacity="0.85"/>
-    <text x="511" y="332" class="mono">plan | install | verify</text>
-    <text x="466" y="374" class="tiny">Thin shell wrapper delegates preflight and deps to Python.</text>
+    <rect x="404" y="126" width="392" height="280" rx="28" fill="#0b171a" stroke="url(#teal)" stroke-width="2"/>
+    <text x="446" y="176" class="label">Resolved config truth</text>
+    <text x="446" y="210" class="tiny">Flags &gt; config &gt; defaults</text>
+    <rect x="446" y="238" width="308" height="46" rx="12" fill="#102427" stroke="#2fe4d2" opacity="0.85"/>
+    <text x="474" y="268" class="mono">doctor | configure | context</text>
+    <rect x="446" y="302" width="308" height="46" rx="12" fill="#171b14" stroke="#f8c14a" opacity="0.85"/>
+    <text x="506" y="332" class="mono">plan | install | verify</text>
+    <text x="446" y="370" class="tiny">Python handles preflight and dependencies.</text>
+    <text x="446" y="392" class="tiny">Plans, installs, verifies, and rolls back.</text>
   </g>
 
   <g filter="url(#shadow)">
@@ -86,14 +87,15 @@
   </g>
 
   <g filter="url(#shadow)">
-    <rect x="418" y="448" width="364" height="70" rx="18" fill="#111814" stroke="url(#amber)" stroke-width="1.6"/>
-    <text x="446" y="490" class="mono">localsetup.lock.json + reports + rollback metadata</text>
+    <rect x="360" y="438" width="480" height="92" rx="18" fill="#111814" stroke="url(#amber)" stroke-width="1.6"/>
+    <text x="414" y="478" class="mono">localsetup.lock.json + reports</text>
+    <text x="426" y="504" class="mono">rollback metadata + managed paths</text>
   </g>
 
-  <path d="M338 260 C376 260 386 260 424 260" class="line" stroke="url(#teal)" marker-end="url(#arrow-teal)"/>
-  <path d="M776 218 C808 188 822 174 858 170" class="line" stroke="url(#amber)" marker-end="url(#arrow-amber)"/>
-  <path d="M776 318 C807 350 824 376 858 396" class="line" stroke="url(#teal)" marker-end="url(#arrow-teal)"/>
-  <path d="M602 406 C602 424 602 432 602 446" class="line" stroke="url(#amber)" marker-end="url(#arrow-amber)"/>
+  <path d="M338 260 C366 260 376 260 404 260" class="line" stroke="url(#teal)" marker-end="url(#arrow-teal)"/>
+  <path d="M796 218 C818 188 830 174 858 170" class="line" stroke="url(#amber)" marker-end="url(#arrow-amber)"/>
+  <path d="M796 318 C817 350 828 376 858 396" class="line" stroke="url(#teal)" marker-end="url(#arrow-teal)"/>
+  <path d="M602 406 C602 420 602 428 602 436" class="line" stroke="url(#amber)" marker-end="url(#arrow-amber)"/>
 
   <circle cx="370" cy="260" r="7" fill="#42e7d6"/>
   <circle cx="826" cy="178" r="7" fill="#f8c14a"/>

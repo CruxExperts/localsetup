@@ -147,17 +147,17 @@ See client **ADMIN_GUIDE** and mail skill for policy tokens.
 
 Use this flow to pick transport:
 
-1. **Can B read the same directory as A writes?** (same host path, NFS, or sync)  
-   - Yes → **file_drop**: `ship-file-drop` + `ingest-blob` or `file-drop-poll`.  
-   - No → **mail** (or add sync first).
+1. **Can B read the same directory as A writes?** (same host path, NFS, or sync)
+   - Yes -> **file_drop**: `ship-file-drop` + `ingest-blob` or `file-drop-poll`.
+   - No -> **mail** (or add sync first).
 
-2. **Must outer blob be gpg sign-then-encrypt?**  
-   - Yes → A: `--signer-gnupghome` on ship-file-drop; B: `--strict-gpg` on ingest; or `ship-mail-strict` + B mail-pull with decrypt compatible with inner JSON.
+2. **Must outer blob be gpg sign-then-encrypt?**
+   - Yes -> A: `--signer-gnupghome` on ship-file-drop; B: `--strict-gpg` on ingest; or `ship-mail-strict` + B mail-pull with decrypt compatible with inner JSON.
 
-3. **Multiple recipients?**  
+3. **Multiple recipients?**
    - Manifest `to_agent_ids` + `ship-file-drop-multi` + registry pubkeys per id.
 
-4. **Ack workflow?**  
+4. **Ack workflow?**
    - Manifest `ack_required`; use `queue-pending` to move `in/*` to `pending/` after promote.
 
 ---
@@ -183,10 +183,3 @@ Use this flow to pick transport:
 | **Promote** | Atomic move from staging to `in/<transport_id>/`. |
 | **Ledger** | Append-only JSONL idempotency log under queue `inbox/` and `out/`. |
 | **Strict gpg** | Outer blob is gpg sign+encrypt of raw JSON manifest; ingest verifies Good signature vs registry. |
-
----
-
-<p align="center">
-<strong>Author:</strong> <a href="https://github.com/cptnfren">Slavic Kozyuk</a><br>
-<strong>Copyright</strong> 2026 <a href="https://www.cruxexperts.com/">Crux Experts LLC</a>
-</p>

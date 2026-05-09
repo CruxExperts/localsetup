@@ -26,10 +26,3 @@ version: 3.0
 ## Scope
 
 - Applies to all PRDs, queue specs, outcomes, and messages that reference repo files. Does not replace normal use of paths for "current" context; hash is required when the reference must be stable across time.
-
----
-
-<p align="center">
-<strong>Author:</strong> <a href="https://github.com/cptnfren">Slavic Kozyuk</a><br>
-<strong>Copyright</strong> © 2026 <a href="https://www.cruxexperts.com/">Crux Experts LLC</a> – Innovate, Automate, Dominate.
-</p>

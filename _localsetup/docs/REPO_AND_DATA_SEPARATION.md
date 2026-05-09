@@ -17,10 +17,3 @@ version: 3.0
 
 - [GIT_TRACEABILITY.md](GIT_TRACEABILITY.md)  - Attach git hash when referencing PRDs, specs, outcomes.
 - [AGENTIC_DESIGN_INDEX.md](AGENTIC_DESIGN_INDEX.md)  - Index of framework docs.
-
----
-
-<p align="center">
-<strong>Author:</strong> <a href="https://github.com/cptnfren">Slavic Kozyuk</a><br>
-<strong>Copyright</strong> © 2026 <a href="https://www.cruxexperts.com/">Crux Experts LLC</a> – Innovate, Automate, Dominate.
-</p>

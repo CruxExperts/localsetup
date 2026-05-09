@@ -57,7 +57,7 @@ cd /path/to/repo
 - `--tools LIST`  - Compatibility alias for comma-separated platforms: cursor, claude-code, codex, openclaw, kilo, opencode
 - `--platforms LIST`  - Space-separated v3 platform ids. Omit to install all platforms in `platforms.yaml`.
 - `--yes`  - Non-interactive apply
-- `--global`  - Accepted for v2 compatibility; v3 installs the managed home library by default
+- `--global`  - Legacy no-op compatibility flag; v3 installs the managed home library by default
 - `--install-deps`  - Create/update the managed `.localsetup/venv` and install `_localsetup/requirements.txt`
 - `--help`  - Print usage and exit
 
@@ -106,8 +106,7 @@ python3 _localsetup/tools/localsetup_v3.py configure --platforms codex --packs c
 To install dependencies automatically during install, add the `--install-deps` flag:
 
 ```bash
-# Bash
-install --directory . --tools cursor --yes --install-deps
+./install --directory . --tools cursor --yes --install-deps
 ```
 
 Without `--install-deps`, the root wrapper runs doctor in `prompt-only` mode and applies the v3 install without mutating Python dependencies. Direct Python CLI installs default to `--dependency-mode managed-venv`; use `--dependency-mode prompt-only` when you only want adapter installation.
@@ -118,7 +117,7 @@ Do not use `--break-system-packages`. If virtualenv creation is unavailable, ins
 
 On re-run, the v3 installer refreshes the managed shared skill library, rewrites the global registry, updates selected adapter links or portable copies, and writes `localsetup.lock.json`.
 
-`--upgrade-policy` is accepted by the root wrapper for v2 compatibility, but v3 uses managed install metadata and refuses to overwrite unmanaged skill paths.
+`--upgrade-policy` is accepted by the root wrapper as a legacy compatibility flag, but v3 uses managed install metadata and refuses to overwrite unmanaged skill paths.
 
 ## What gets deployed
 
@@ -144,10 +143,3 @@ Framework install logic is Python-first. Shell is limited to the bootstrap wrapp
 ## Repo-local
 
 Framework source and repo-local context live in the repo. Installed skill copies live in the managed home library and can be recreated from the repo with `./install --directory . --yes`.
-
----
-
-<p align="center">
-<strong>Author:</strong> <a href="https://github.com/cptnfren">Slavic Kozyuk</a><br>
-<strong>Copyright</strong> © 2026 <a href="https://www.cruxexperts.com/">Crux Experts LLC</a> – Innovate, Automate, Dominate.
-</p>

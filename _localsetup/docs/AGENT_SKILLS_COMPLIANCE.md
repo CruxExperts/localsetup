@@ -18,7 +18,7 @@ version: 3.0
 | Requirement | Framework behavior |
 |-------------|--------------------|
 | **Directory structure** | Each skill is a directory with `SKILL.md`; optional `scripts/`, `references/`, `assets/` per spec. |
-| **name** (required) | Present in every skill; lowercase, hyphens, 1–64 chars; matches parent directory (e.g. `ls-context`). |
+| **name** (required) | Present in every skill; lowercase, hyphens, 1-64 chars; matches parent directory (e.g. `ls-context`). |
 | **description** (required) | Present; what the skill does and when to use it; under 1024 chars. |
 | **metadata.version** (optional) | Used for skill document versioning; bumped automatically when the skill file is updated (see below). |
 | **Body** | Markdown instructions after frontmatter; progressive disclosure; keep under ~500 lines per spec. |
@@ -26,7 +26,7 @@ version: 3.0
 
 ## Skill document versioning
 
-- Each framework skill includes **metadata.version** (e.g. `"1.0"`) in SKILL.md frontmatter per the spec’s optional `metadata` field.
+- Each framework skill includes **metadata.version** (e.g. `"1.0"`) in SKILL.md frontmatter per the spec's optional `metadata` field.
 - Skill version bumps are tracked separately from the framework release version. Patch is incremented (e.g. 1.0 -> 1.1) for non-breaking updates.
 
 ## Validation
@@ -36,7 +36,7 @@ version: 3.0
 
 ## Interoperability
 
-- **Framework skills are valid Agent Skills.** They use only spec-defined fields and layout; they can be copied into any Agent Skills–compatible host (e.g. [Anthropic’s skills](https://github.com/anthropics/skills), Claude Code) and used as-is.
+- **Framework skills are valid Agent Skills.** They use only spec-defined fields and layout; they can be copied into any Agent Skills-compatible host (e.g. [Anthropic's skills](https://github.com/anthropics/skills), Claude Code) and used as-is.
 - **External spec-compliant skills can be used in this framework.** Copy the skill directory into `_localsetup/skills/`, add `metadata.version` if missing, register per [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md), and deploy. No body or structure changes required for spec compliance.
 - Full import/export steps: [SKILL_INTEROPERABILITY.md](SKILL_INTEROPERABILITY.md).
 
@@ -46,10 +46,3 @@ version: 3.0
 - [SKILLS_AND_RULES.md](SKILLS_AND_RULES.md)  - How skills are loaded and platform paths.
 - [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md)  - Supported platforms and registration file list.
 - Repo VERSION and conventional commits: [VERSIONING.md](VERSIONING.md). Skill versioning is per-skill (metadata.version), not the repo VERSION.
-
----
-
-<p align="center">
-<strong>Author:</strong> <a href="https://github.com/cptnfren">Slavic Kozyuk</a><br>
-<strong>Copyright</strong> © 2026 <a href="https://www.cruxexperts.com/">Crux Experts LLC</a> – Innovate, Automate, Dominate.
-</p>

@@ -3,11 +3,11 @@ status: ACTIVE
 version: 3.0
 ---
 
-# ⚡ Features
+# Features
 
-This is the complete public feature catalog for Localsetup v3. The main README highlights the top 10; this page covers everything.
+This is the full public capability catalog for Localsetup v3. The [root README](../../README.md) explains the pitch; this page lists what the framework actually provides.
 
-## 📊 Generated facts
+## Generated Facts
 
 <!-- facts-block:start -->
 - Current version: `3.0.1`
@@ -16,162 +16,80 @@ This is the complete public feature catalog for Localsetup v3. The main README h
 - Source: `_localsetup/docs/_generated/facts.json`
 <!-- facts-block:end -->
 
----
+## Engine And Install
 
-## 📦 Engine and deployment
-
-| Capability | Description |
+| Capability | What it gives you |
 |---|---|
-| **Repo-local framework source** | Framework source, docs, manifests, and shipped skills live at `_localsetup/` inside your project. Installed managed skill copies can be recreated from the repo. |
-| **V3 installer** | Bash wrapper for Linux, macOS, and WSL2 delegates to `_localsetup/tools/localsetup_v3.py install --apply`. Native PowerShell install is intentionally removed. |
-| **Multi-platform adapters** | Install adapters for Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, or OpenCode from one command. |
-| **Managed reinstall and rollback** | Re-running install refreshes managed skill copies, adapter links or portable copies, and `localsetup.lock.json`. Rollback removes only managed paths. |
-| **Platform manifest** | `_localsetup/config/platforms.yaml` defines every supported platform ID, repo adapter path, verification rule, and rollback target. |
-| **Shared skill library** | Managed skills install to `~/.local/share/agents/skills/localsetup`; repo adapters point there by symlink or use portable managed copies. |
+| Repo-local framework source | `_localsetup/` carries the framework, docs, config, templates, tools, tests, and shipped skill source. |
+| Python-first v3 installer | Bash bootstrap delegates planning, dependency handling, install, verify, and rollback to `_localsetup/tools/localsetup_v3.py`. |
+| Multi-platform adapters | One install can attach Cursor, Claude Code, Codex CLI, OpenClaw, Kilo, and OpenCode to the same managed skill library. |
+| Managed home library | Skills install to `~/.local/share/agents/skills/localsetup`; adapters point there by symlink or use portable copies. |
+| Lock and rollback metadata | `localsetup.lock.json` and managed-path reports make installs inspectable and reversible. |
+| Platform manifest | `_localsetup/config/platforms.yaml` is the source of truth for platform IDs, adapter paths, and verification rules. |
 
----
+## Skills And Interoperability
 
-## 🧠 Agent memory management
-
-| Capability | Description |
+| Capability | What it gives you |
 |---|---|
-| **Persistent memory bank** | Each platform deploys with a writable memory file for AI agent learnings. Unlike `AGENTS.md` (which is write-protected), the memory file is freely writable. |
-| **Platform-specific locations** | Memory files at `.kilo/AGENT_MEMORY.md`, `.claude/AGENT_MEMORY.md`, `.opencode/AGENT_MEMORY.md`, `.cursor/rules/agent-memory.md`, `.agents/AGENT_MEMORY.md`, and `AGENT_MEMORY.md` (OpenClaw root). |
-| **Strict curation rules** | Maximum 20 entries per section; revise existing entries don't append; stale entries (>30 days) are deleted; only record patterns confirmed in 2+ sessions. |
-| **Memory path manifesting** | Platform memory paths are declared in `_localsetup/config/platforms.yaml`; projects can keep repo-local memory where the agent host expects it. |
-| **Memory references in context** | Each platform's context file references its memory file with curation rules, prompting the AI to actively manage memory. |
-| **Documentation:** | Full guide at [MEMORY_MANAGEMENT.md](MEMORY_MANAGEMENT.md). |
+| Agent Skills compliance | Shipped skills use spec-compatible `SKILL.md` packages with `name`, `description`, and `metadata.version`. |
+| 49 shipped skills | Practical workflows for debugging, tests, PR review, git recovery, service triage, patching, docs, MCP building, and more. |
+| Skill import | Import skills from a URL or local path with discovery, validation, heuristic security screening, and summaries. |
+| Skill vetting | Treat third-party skills as untrusted before they can influence agent behavior. |
+| Skill normalization | Clean imported or in-tree skills for spec compliance, platform-neutral wording, and framework tooling standards. |
+| Skill discovery | Maintain a public registry/index and recommend similar skills when creating or importing. |
 
----
+## Workflow Control
 
-## 🛠️ Skills and interoperability
-
-| Capability | Description |
+| Capability | What it gives you |
 |---|---|
-| **Agent Skills spec compliance** | All shipped skills follow the [Agent Skills specification](https://agentskills.io/specification). Import skills from Anthropic's repo or any spec-compliant source. |
-| **Shipped skills** | Debugging, TDD, PR review, git recovery, Linux triage, Linux patching, Ansible orchestration, codebase navigation (agentlens), tmux ops (pick/probe/send), system-info, cron-orchestrator, PRD batching, decision trees, humanizer, KeePass secrets, and more. See [SKILLS.md](SKILLS.md) for the full catalog. |
-| **Skill importing** | Import external skills from a GitHub URL or local path. The importer discovers, validates, runs a heuristic security screen, and summarizes each skill before you decide to add it. Imported skills are always normalized per [SKILL_IMPORTING.md](SKILL_IMPORTING.md) and the `ls-skill-importer` skill. |
-| **Skill discovery** | Maintain a public skill registry ([PUBLIC_SKILL_REGISTRY.urls](PUBLIC_SKILL_REGISTRY.urls)) and index ([PUBLIC_SKILL_INDEX.yaml](PUBLIC_SKILL_INDEX.yaml)). Get recommendations for similar public skills when creating or importing. The discovery workflow includes a mandatory post-refresh scrub step that catches dead URLs, stub/placeholder descriptions, and schema gaps automatically. |
-| **Skill version metadata** | Each `SKILL.md` carries a `metadata.version` field. The commit hook auto-increments patch version on staged skill changes so skill docs stay accurate. |
-| **Skill normalization** | Normalize imported or in-tree skills: Phase 1 (documents) offers a choice when the skill is platform-specific (keep as is, keep platform-specific but normalized, or fully normalize); Phase 2 (tooling) rewrites bundled scripts to the framework standard unless the user requests an exception. Normalization is mandatory for imported skills (run as part of the import flow) and available as a standalone step via the `ls-skill-normalizer` skill. |
+| Workflow registry | Named workflows, aliases, and impact expectations for repeatable agent behavior. |
+| Decision tree workflow | A reverse-prompt planning loop that asks one focused question at a time. |
+| PRD batch workflow | Queue-driven spec execution with status updates and outcome records. |
+| Agent Q transport | Bidirectional PRD/spec exchange over file_drop or mail with sealed payloads, registry checks, and ledgering. |
+| Composite pipelines | Higher-level flows such as PR feedback, git repair, server triage, and repo polish built from existing skills. |
+| Git traceability | Specs, outcomes, and decisions can reference commits so work is auditable later. |
 
----
+## Safety And Operations
 
-## 🔄 Workflow and quality controls
-
-| Capability | Description |
+| Capability | What it gives you |
 |---|---|
-| **Decision tree workflow** | A reverse-prompt process where the agent asks one question at a time with four options, a preferred choice, and rationale. Builds context before implementation. |
-| **PRD batch workflow** | Process specs from `.agent/queue/` (or structured `in/`); implement per spec, update status, write outcomes, and reference the PRD schema. |
-| **Workflow registry and quick reference** | Central registry of named workflows with IDs, names, aliases, and impact review expectations in [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md), plus an agent-facing quick reference in [WORKFLOW_QUICK_REF.md](WORKFLOW_QUICK_REF.md) with common-phrase mapping and composite pipelines so agents can invoke multi-step workflows by intent. |
-| **Composite pipelines (built from skills)** | Predefined multi-step flows that reuse existing skills: PR feedback loop (`pipeline-pr-feedback-loop`), git repair and hygiene (`pipeline-git-repair-hygiene`), server triage and patch (`pipeline-server-triage-patch`), and repo polish (`pipeline-repo-polish`). Documented in [WORKFLOW_QUICK_REF.md](WORKFLOW_QUICK_REF.md) and the workflow build spec, they provide higher-level workflows without new engine code. |
-| **Agent Q bidirectional** | Bidirectional PRD exchange over file_drop or mail: file_drop ingest of OpenPGP outer blobs, registry validation, ledger, quarantine on failure, key generation via gpg batch, mail adapter post-ingest move via mail skill. PRD schema, queue pattern, and protocol are explicitly wired together: see [PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md](PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md) for PRD shape and field mapping, [AGENTIC_AGENT_Q_PATTERN.md](AGENTIC_AGENT_Q_PATTERN.md) for queue layout, and [AGENTIC_AGENT_TO_AGENT_PROTOCOL.md](AGENTIC_AGENT_TO_AGENT_PROTOCOL.md) plus [AGENTIC_AGENT_Q_SCENARIOS.md](AGENTIC_AGENT_Q_SCENARIOS.md) for transport behavior. Client: `_localsetup/tools/agentq_transport_client/`. |
-| **Framework compliance** | Checklist-based workflow for framework-safe modifications: certainty assessment, context load, document status, testing, git checkpoints. |
-| **Script and docs quality** | Markdown encoding standards, script generation quality rules, file creation discipline, and documentation discipline enforced by the `ls-script-and-docs-quality` skill. |
-| **Human-in-the-loop ops** | The tmux shared-session workflow uses the tmux_ops tool (pick, probe, send, wait). Pylon-guard delay prevents command racing; `send --wait` or standalone `wait --timeout N` provides adaptive idle polling. Human can attach and provide sudo; agent captures output via log files. Supports REMOTE_TMUX_HOST for VMs/remote/Docker. See [ops/tmux-ops-remote.md](ops/tmux-ops-remote.md). Use for privileged or risky operations. |
-| **Tmux-default terminal mode (Always-On-TMUX)** | Toggleable feature (`tmux_terminal_mode enable/disable/status`) that makes new terminals open inside a tmux session automatically and injects a mandatory tmux + sudo gate rule for agents. Two modes: `--mode ide` (Cursor/VS Code terminal profile) and `--mode shell` (bashrc/bash_profile auto-attach). Can be used as an \"always-on tmux\" layer for this repo or machine. Single command to enable or disable; backups created before any file is modified; idempotent. See [TMUX_TERMINAL_MODE.md](TMUX_TERMINAL_MODE.md). |
-| **Arbiter workflow** | Push decisions to Arbiter Zebu for async human review when you need approval before proceeding. |
-| **Framework audit** | Single entrypoint runs doc checks, link checks, skill matrix (sandbox smoke from `skill_smoke_commands.yaml`), version/facts. Output only to user-specified path; no in-repo default. Entrypoint: `run_framework_audit.py --output /path`. Deep Analysis (`--deep`) is not implemented in the current script; see [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md) and skill `ls-framework-audit`. |
-| **Public skill index maintenance** | Named workflow (trigger: \"refresh skills\", \"refresh and scrub\", \"update public skill index\") that runs the full three-step sequence: (1) refresh from registries, (2) dry-run scrub to detect stubs and dead URLs, (3) apply fixes. Implemented by `refresh_public_skill_index.py` and `skill_index_scrub.py`. See [SKILL_DISCOVERY.md](SKILL_DISCOVERY.md). |
+| Human-in-the-loop tmux ops | Privileged or risky operations stay visible in tmux with sudo readiness checks and resumable output. |
+| Safety and backup guidance | Skills route destructive ops through conservative backup, temp-file, firewall, and approval practices. |
+| Input hardening | Framework docs and tooling policy require hostile-input treatment for CLI args, files, network payloads, and imported content. |
+| Security-aware skill import | Prompt-injection and suspicious-pattern heuristics run before imported skills become part of the library. |
+| Markdown/reference validation | Public docs and skill references can be checked for broken local links and anchors. |
 
----
+## Release And Maintenance
 
-## 🔢 Git, versioning, and traceability
-
-| Capability | Description |
+| Capability | What it gives you |
 |---|---|
-| **Conventional commit bumping** | Version bump is inferred from commit messages and changed paths (`!`/`BREAKING CHANGE` -> major, user-facing capability -> minor, internal automation/docs/CI/tests -> patch). Pre-push tooling creates the version-sync commit before release. |
-| **README and docs sync** | Version values are synchronized to `VERSION`, `pyproject.toml`, `README.md`, `_localsetup/README.md`, generated facts, and YAML frontmatter in `_localsetup/docs/*.md`. |
-| **Attribution guardrails** | The commit hook strips `Co-authored-by` trailers for AI agents and bots. Only humans appear in commit history. |
-| **Git traceability model** | PRDs, specs, and outcomes can reference git commit hashes for audit. See [GIT_TRACEABILITY.md](GIT_TRACEABILITY.md). |
-| **Maintenance workflow** | `release-push` computes the outgoing bump, syncs docs, commits the release version, and pushes. GitHub validates, tags `vX.Y.Z`, and publishes the package artifact. |
-| **Skill metadata versioning** | Skill `metadata.version` in SKILL.md is tracked separately from the framework version and surfaced in generated skill docs; see [AGENT_SKILLS_COMPLIANCE.md](AGENT_SKILLS_COMPLIANCE.md). |
+| Conventional Commit versioning | Version bumps are inferred from commits, with explicit override trailers when needed. |
+| Generated facts sync | README and docs facts blocks stay aligned with `VERSION`, platform count, and skill count. |
+| Skill metadata versions | Skill versions are tracked separately from framework release versions. |
+| Framework audit | Doc, link, skill matrix, version, facts, and smoke checks before release. |
+| Public package boundary | Packaging and scan commands keep generated/runtime artifacts out of source releases. |
 
----
+## High-Value Shipped Skills
 
-## 🖥️ Developer and ops skills
-
-These skills ship with the framework and are ready to use immediately.
-
-| Skill | Purpose |
+| Skill | Use it for |
 |---|---|
-| `ls-debug-pro` | Systematic debugging methodology with language-specific commands (Node, Python, Swift, network, git bisect). |
-| `ls-test-runner` | Write and run tests across frameworks: pytest, Jest, Vitest, XCTest, Playwright. TDD workflow and coverage patterns. |
-| `ls-tdd-guide` | Test-driven development workflow with test generation, coverage analysis, and red-green-refactor guidance. |
-| `ls-pr-reviewer` | Automated GitHub PR review with diff analysis, lint integration, and structured reports. Requires `gh` CLI. |
-| `ls-git-workflows` | Advanced git operations: rebase, bisect, worktree, reflog, subtree, conflict resolution, cherry-pick, monorepo patterns. |
-| `ls-unfuck-my-git-state` | Diagnose and recover broken Git state: detached HEAD, phantom worktrees, missing refs, orphaned entries. |
-| `ls-linux-service-triage` | Diagnose common Linux service issues using logs, systemd/PM2, file permissions, Nginx checks, DNS sanity checks. |
-| `ls-linux-patcher` | Automated server patching and Docker container updates across Ubuntu, Debian, RHEL, AlmaLinux, Rocky, CentOS, Amazon Linux, SUSE. |
-| `ls-ansible-skill` | Ansible playbook-driven provisioning, configuration management, and multi-host orchestration. Includes example playbooks. |
-| `ls-agentlens` | Codebase navigation using agentlens hierarchy (INDEX.md, modules, outline, memory); explore projects, find modules/symbols, TODOs. |
-| `ls-mcp-builder` | Guide for creating high-quality MCP servers that enable LLMs to interact with external services. Python and Node/TypeScript. |
-| `ls-system-info` | Quick system diagnostics: CPU, memory, disk, uptime. Capture server baseline or host layout for further operations. |
-| `ls-cron-orchestrator` | Manage cron from a repo-local manifest: time triggers, on-boot-with-delay, sequenced tasks; create, remove, reorder, install. |
-| `ls-cloudflare-dns` | Manage Cloudflare DNS records (list, create, modify, delete) and run zone surveys via flarectl; Python wrapper, no shell dependencies. |
-| `ls-npm-management` | Manage Nginx Proxy Manager proxy hosts via REST API using the native Python client; covers create, modify, diagnose, remove, cleanup, and backup workflows; coordinates Docker + NPM deployments. |
-| `ls-keepass-secrets` | KeePass-backed secrets via logical IDs; get/ensure credentials; bulk create or rotate; use when user asks for logins, workflow needs credentials, or bulk account creation. |
+| `ls-agentlens` | Codebase navigation and module discovery. |
+| `ls-debug-pro` | Systematic debugging across languages and failure types. |
+| `ls-test-runner` | Writing and running test suites across common frameworks. |
+| `ls-pr-reviewer` | Risk-focused PR review and missing-test detection. |
+| `ls-mcp-builder` | Building MCP servers for agent/tool interoperability. |
+| `ls-skill-importer` | Bringing in skills from external sources safely. |
+| `ls-skill-vetter` | Reviewing third-party skills before install. |
+| `ls-tmux-shared-session-workflow` | Visible human-gated operations on local or remote machines. |
+| `ls-linux-service-triage` | Diagnosing Linux service, reverse proxy, process, and DNS failures. |
+| `ls-automatic-versioning` | Keeping framework version, generated docs, and release behavior aligned. |
 
----
+Full catalog: [SKILLS.md](SKILLS.md).
 
-## 🤖 Workflow and meta skills
+## Next Steps
 
-| Skill | Purpose |
-|---|---|
-| `ls-decision-tree-workflow` | Reverse-prompt process: one question at a time, four options, preferred choice, rationale. |
-| `ls-agentic-prd-batch` | Process PRDs from queue; implement per spec; update status; write outcome. |
-| `ls-agentic-umbrella-queue` | Named workflows with impact summary and user confirmation before big/destructive runs. |
-| `ls-framework-compliance` | Pre-task workflow, certainty assessment, context load, document status, testing, git checkpoints. |
-| `ls-automatic-versioning` | Manage VERSION, Conventional Commits, release-push, sync to READMEs and docs, and GitHub tag/release publishing. |
-| `ls-github-publishing-workflow` | Publishing checklist: doc structure, licensing, PII/secrets scrub, repo readiness. |
-| `ls-tmux-shared-session-workflow` | Human-in-the-loop ops via tmux_ops (pick/probe/send/wait); sudo gate on probe; adaptive idle polling (`send --wait` or `wait --timeout N`); REMOTE_TMUX_HOST for remote. |
-| `ls-arbiter` | Push decisions to Arbiter Zebu for async human review. |
-| `ls-backlog-and-reminders` | Record deferred ideas, to-dos, reminders; show due/overdue on session start. |
-| `ls-task-skill-matcher` | Match tasks to installed skills; recommend top matches; single or batch flow. |
-| `ls-framework-audit` | Run doc/link/skill matrix/version checks before release; output to user path only (`run_framework_audit.py --output`). No `--deep` in current entrypoint. |
-| `ls-markdown-reference-validator` | Validate markdown local references/anchors from YAML-configured targets; schedule-safe report generation for docs/skills/templates/global Kilo markdown surfaces. |
-| `ls-omniroute-proxy` | Read-only OmniRoute proxy discovery, model catalogs, provider metadata, limits, quotas, routing combos, MCP/A2A integration, and agent client configuration. |
-| `ls-omniroute-admin-automation` | OmniRoute administration automation for providers, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, sync, and drift reconciliation. |
-| `ls-kilo-boss-orchestrator` | Kilo headless boss-worker orchestration with repo-local state, watchdog leases, consensus validation, and safety gates. |
-| `ls-kilo-visual-output` | Kilo CLI visual output organization guide for structured questions, options, rationale blocks, and execution summaries. |
-
----
-
-## ✍️ Quality and communication skills
-
-| Skill | Purpose |
-|---|---|
-| `ls-humanizer` | Remove AI-writing patterns from text based on Wikipedia's "Signs of AI writing" guide. |
-| `ls-script-and-docs-quality` | Markdown/encoding standards, script quality, file and docs discipline. |
-| `ls-communication-and-tools` | Communication guidelines, tool selection, periodic context updates. |
-| `ls-public-repo-identity` | Public identity rules for README and published repos. |
-| `ls-receiving-code-review` | Verify before implementing code review feedback; avoid blind agreement. |
-
----
-
-## 🔐 Security and skill vetting
-
-| Skill | Purpose |
-|---|---|
-| `ls-safety-and-backup` | Conservative security, backup management, temp files, firewall rules. |
-| `ls-skill-vetter` | Security-first vetting for external skills before install. |
-| `ls-skill-importer` | Import from URL or path with discovery, validation, and security screening. |
-| `ls-skill-creator` | Create Agent Skills-compliant skills; import from Anthropic or elsewhere; export yours. |
-| `ls-skill-discovery` | Discover public skills from registries; recommend similar; in-depth summary. |
-| `ls-skill-normalizer` | Normalize skills: Phase 1 (documents, with platform choice when platform-specific); Phase 2 (tooling rewrite to framework standard, or exception). |
-
----
-
-## 📖 Next steps
-
-- [Shipped skills catalog](SKILLS.md) - generated list of all shipped skills with descriptions and versions
-- [Platform registry](PLATFORM_REGISTRY.md) - canonical platform definitions
-- [Workflow registry](WORKFLOW_REGISTRY.md) - named workflows and when to use them
-- [Agentic design index](AGENTIC_DESIGN_INDEX.md) - index of agentic design docs
-
----
-
-<p align="center">
-<strong>Author:</strong> <a href="https://github.com/cptnfren">Slavic Kozyuk</a><br>
-<strong>Copyright</strong> © 2026 <a href="https://www.cruxexperts.com/">Crux Experts LLC</a> – Innovate, Automate, Dominate.
-</p>
+- [Quickstart](QUICKSTART.md)
+- [Platform registry](PLATFORM_REGISTRY.md)
+- [Workflow registry](WORKFLOW_REGISTRY.md)
+- [Skill importing](SKILL_IMPORTING.md)
+- [Versioning](VERSIONING.md)

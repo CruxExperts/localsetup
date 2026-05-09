@@ -29,16 +29,16 @@ Depending on the user's choice, perform only the corresponding action; then **Ph
 Apply these checks and fixes so SKILL.md frontmatter satisfies the Agent Skills spec:
 
 1. **name** (required)
-   - Must be 1–64 characters.
-   - Only lowercase letters (a–z), numbers, and hyphens.
+   - Must be 1-64 characters.
+   - Only lowercase letters (a-z), numbers, and hyphens.
    - Must not start or end with a hyphen; no consecutive hyphens (`--`).
    - Must match the parent directory name (e.g. `ls-ansible-skill` for `_localsetup/skills/ls-ansible-skill/`).
    - If the skill is imported with a different dir name (e.g. `ls-<name>`), set `name` in frontmatter to that directory name.
 
 2. **description** (required)
-   - Must be 1–1024 characters, non-empty.
+   - Must be 1-1024 characters, non-empty.
    - Should describe what the skill does and when to use it; include keywords that help agents match the task.
-   - Remove or generalize platform-specific phrasing (e.g. "OpenClaw VPS setup" → "VPS setup (including optional agent-host examples)" or similar).
+   - Remove or generalize platform-specific phrasing (e.g. "OpenClaw VPS setup" -> "VPS setup (including optional agent-host examples)" or similar).
 
 3. **compatibility** (optional)
    - Use for runtime or environment requirements (e.g. required binaries, system packages, network).
@@ -54,7 +54,7 @@ Apply these checks and fixes so SKILL.md frontmatter satisfies the Agent Skills 
 
 ## Before/after frontmatter examples
 
-### Platform-specific metadata → compatibility
+### Platform-specific metadata -> compatibility
 
 **Before:**
 
@@ -89,7 +89,7 @@ compatibility: "Requires ansible, ansible-playbook (e.g. pip install ansible or 
 
 Optional: in the body, add one line such as "Install Ansible via your package manager or `pip install ansible` if not present."
 
-### Description: platform-specific → generic
+### Description: platform-specific -> generic
 
 **Before:** `"Includes playbooks for OpenClaw VPS setup, security hardening, and common server configurations."`
 
@@ -97,7 +97,7 @@ Optional: in the body, add one line such as "Install Ansible via your package ma
 
 ## Platform-neutralization rules (body)
 
-Apply these in order. Detection is **product-agnostic**: look for patterns like "Integration with …", "From … Agent", "Run via … exec/tool", regardless of which product name appears.
+Apply these in order. Detection is **product-agnostic**: look for patterns like "Integration with ...", "From ... Agent", "Run via ... exec/tool", regardless of which product name appears.
 
 ### 1. Integration / "From X Agent" sections
 
@@ -123,7 +123,7 @@ If the original section mentioned a specific product's secret integration (e.g. 
 
 ### 2. Platform-specific command examples in body
 
-- **Detect:** Inline or block examples that show a single platform's invocation (e.g. `exec command="..."`, or "Run in OpenClaw: …").
+- **Detect:** Inline or block examples that show a single platform's invocation (e.g. `exec command="..."`, or "Run in OpenClaw: ...").
 - **Replace with:** Generic wording. Use "Run via your platform's command or terminal:" followed by the underlying command (e.g. `ansible-playbook ...`) without the platform wrapper. If the example is valuable for one platform, keep it as a short "Example (PlatformName):" subsection after the generic version.
 
 ### 3. Product-named host groups, playbooks, roles in prose
@@ -165,7 +165,7 @@ If the original section mentioned a specific product's secret integration (e.g. 
 **Phase 1 (SKILL.md and documents)**
 
 1. **Determine if the skill is platform-specific**  - Check for references to a specific platform or context (e.g. OpenClaw, Cursor, product-named sections, "Integration with X", platform-specific metadata). If **not** platform-specific, go to step 4 (apply full spec + platform-neutralization, then approve and write). If **platform-specific**, go to step 2.
-2. **Offer the user a choice**  - Present: "This skill references [platform/context]. How would you like to handle it? (1) Keep as is – no platform wording changes; (2) Keep platform-specific but normalized – spec compliance and standardized wording, platform references stay; (3) Fully normalize – make it adaptable for any platform." Get the user's choice.
+2. **Offer the user a choice**  - Present: "This skill references [platform/context]. How would you like to handle it? (1) Keep as is - no platform wording changes; (2) Keep platform-specific but normalized - spec compliance and standardized wording, platform references stay; (3) Fully normalize - make it adaptable for any platform." Get the user's choice.
 3. **Apply the chosen action**  - (1) Keep as is: only ensure `name` matches directory and `metadata.version` present if missing; no other edits. (2) Platform-specific but normalized: apply spec-compliance checklist only; do not apply platform-neutralization rules (leave platform names and sections). (3) Fully normalize: apply full spec-compliance checklist and platform-neutralization rules. Produce a **summary** and **concrete list of key edits** for (2) or (3); present and get approval; if approved, write the normalized SKILL.md. For (1), no summary needed; proceed to Phase 2.
 4. **When skill is not platform-specific**  - Apply the spec-compliance checklist and platform-neutralization rules to SKILL.md (in memory or a temp copy). Produce a **summary** and **concrete list of key edits**; present to the user and get explicit approval. If approved, write the normalized SKILL.md. If not, skip (during import: copy as-is and warn; standalone: do not write).
 5. Proceed to Phase 2.
@@ -184,10 +184,3 @@ If the original section mentioned a specific product's secret integration (e.g. 
 - [INPUT_HARDENING_STANDARD.md](INPUT_HARDENING_STANDARD.md)  - Mandatory input sanitization, validation, error handling, and observability for tooling.
 - [SKILL_IMPORTING.md](SKILL_IMPORTING.md) for the import workflow (normalization is mandatory after security is verified)
 - [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md) for supported platforms and skill registration
-
----
-
-<p align="center">
-<strong>Author:</strong> <a href="https://github.com/cptnfren">Slavic Kozyuk</a><br>
-<strong>Copyright</strong> © 2026 <a href="https://www.cruxexperts.com/">Crux Experts LLC</a> – Innovate, Automate, Dominate.
-</p>

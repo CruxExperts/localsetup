@@ -13,8 +13,8 @@ last_updated: "2026-03-09"
 3. Run **Verification gate** last; required audit must pass or findings triaged before done.
 4. **Canonical mapping** is the source for Workflow ID, display name, and aliases when editing [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md) and the quick-ref file.
 
-**Audience:** Maintainers and agents executing the review.  
-**Scope:** Framework repo only.  
+**Audience:** Maintainers and agents executing the review.
+**Scope:** Framework repo only.
 **Overrides:** A PRD may override this spec; otherwise this is the build contract.
 
 ---
@@ -58,12 +58,12 @@ Use this table when adding **Workflow ID**, **Display name**, and **Aliases** co
 
 | Pipeline ID | Display name | Steps (in order) | After last step |
 |-------------|--------------|------------------|-----------------|
-| `pipeline-skill-onboard` | Skill onboarding | `ls-skill-vetter` (optional) → `ls-skill-importer` → `ls-skill-normalizer` → `ls-skill-sandbox-tester`; optional `ls-framework-audit` | N/A |
-| `pipeline-pre-publish` | Pre-publish | `ls-github-publishing-workflow` → `ls-automatic-versioning` → `ls-framework-audit` | Release automation in scripts/ |
-| `pipeline-pr-feedback-loop` | PR feedback improvement loop | `ls-receiving-code-review` → `ls-tdd-guide` (or `ls-test-runner` where tests already exist) → `ls-pr-reviewer` | N/A |
-| `pipeline-git-repair-hygiene` | Git repair and hygiene | `ls-unfuck-my-git-state` → `ls-git-workflows` → `ls-framework-compliance` | N/A |
-| `pipeline-server-triage-patch` | Server triage and patch | `ls-system-info` → `ls-linux-service-triage` → `ls-linux-patcher` | Ops-only; apply PHC before patching hosts. |
-| `pipeline-repo-polish` | Repo polish (docs + scripts) | `ls-script-and-docs-quality` → `ls-humanizer` → `ls-github-publishing-workflow` | For \"make this repo presentable\" even when not doing full public release. |
+| `pipeline-skill-onboard` | Skill onboarding | `ls-skill-vetter` (optional) -> `ls-skill-importer` -> `ls-skill-normalizer` -> `ls-skill-sandbox-tester`; optional `ls-framework-audit` | N/A |
+| `pipeline-pre-publish` | Pre-publish | `ls-github-publishing-workflow` -> `ls-automatic-versioning` -> `ls-framework-audit` | Release automation in scripts/ |
+| `pipeline-pr-feedback-loop` | PR feedback improvement loop | `ls-receiving-code-review` -> `ls-tdd-guide` (or `ls-test-runner` where tests already exist) -> `ls-pr-reviewer` | N/A |
+| `pipeline-git-repair-hygiene` | Git repair and hygiene | `ls-unfuck-my-git-state` -> `ls-git-workflows` -> `ls-framework-compliance` | N/A |
+| `pipeline-server-triage-patch` | Server triage and patch | `ls-system-info` -> `ls-linux-service-triage` -> `ls-linux-patcher` | Ops-only; apply PHC before patching hosts. |
+| `pipeline-repo-polish` | Repo polish (docs + scripts) | `ls-script-and-docs-quality` -> `ls-humanizer` -> `ls-github-publishing-workflow` | For \"make this repo presentable\" even when not doing full public release. |
 
 **PHC (pre-human confirmation) for pipelines**
 
@@ -74,7 +74,7 @@ Use this table when adding **Workflow ID**, **Display name**, and **Aliases** co
 
 - After step 1, importer aligns with SKILL_IMPORTING: normalize is mandatory before copy when importing. **`ls-skill-normalizer` in the pipeline then means:** batch-normalize skills already in the tree that were imported without normalize, or run Phase 2 tooling normalization; **skip** the normalizer step when the importer just normalized on import and no legacy dirs need a pass.
 
-**Deferred (pass 2):** `pipeline-server-routing`, `pipeline-pr-lifecycle` — do not add to registry until pass 1 IDs are stable.
+**Deferred (pass 2):** `pipeline-server-routing`, `pipeline-pr-lifecycle` - do not add to registry until pass 1 IDs are stable.
 
 ---
 
@@ -92,7 +92,7 @@ Create `_localsetup/docs/WORKFLOW_QUICK_REF.md` (preferred) in the **same change
    |-------------|--------------|---------|----------|------------|
    | `publish` | Publish workflow | publish, version bump, release | N/A | Procedure in `docs/WORKFLOW_INDEX.md` and `scripts/publish`. |
 
-4. **Capabilities without a registry row (optional appendix):** Table or bullet list of high-traffic skills that stay capability-only (e.g. `ls-npm-management`, `ls-cloudflare-dns`, `ls-mail-protocol-control` when not doing strict handoff) so agents do not assume every skill needs a workflow row. Reduces false “missing workflow” reports.
+4. **Capabilities without a registry row (optional appendix):** Table or bullet list of high-traffic skills that stay capability-only (e.g. `ls-npm-management`, `ls-cloudflare-dns`, `ls-mail-protocol-control` when not doing strict handoff) so agents do not assume every skill needs a workflow row. Reduces false "missing workflow" reports.
 
 ---
 
@@ -102,14 +102,14 @@ Execute in order. Skip only when a step is already satisfied.
 
 | Step | Action | Input | Output |
 |------|--------|-------|--------|
-| 1 | Align skill-importer with mandatory normalization | [SKILL_IMPORTING.md](SKILL_IMPORTING.md) step 6b | Updated `_localsetup/skills/ls-skill-importer/SKILL.md`. **Deploy:** use [MULTI_PLATFORM_INSTALL.md](MULTI_PLATFORM_INSTALL.md) or your repo’s deploy entrypoint so `.agents/skills/` and compatibility platform paths match `_localsetup/skills/` after edit. |
-| 2 | Create quick-ref file | Canonical mapping + pipelines + Quick-ref requirements | `WORKFLOW_QUICK_REF.md` (or `WORKFLOW_IDS.md`) — must exist before step 5 links it. |
-| 2b | Optional: skill/workflow matrix | [SKILLS.md](SKILLS.md) or `_localsetup/skills/*/SKILL.md` list | `WORKFLOW_SKILL_MATRIX.md` (or appendix inside quick-ref): skill ID, registry row yes/no, pipeline step yes/no — makes gaps visible without requiring every skill to have a row. |
-| 3 | Refactor WORKFLOW_REGISTRY | Canonical mapping; move long commands to SKILL_DISCOVERY | Registry table with ID/display/aliases; shortened cells; Pipelines section; Umbrella subsection or explicit “no framework-wide umbrella names”; Usage footnote from Non-ACTIVE inventory. |
+| 1 | Align skill-importer with mandatory normalization | [SKILL_IMPORTING.md](SKILL_IMPORTING.md) step 6b | Updated `_localsetup/skills/ls-skill-importer/SKILL.md`. **Deploy:** use [MULTI_PLATFORM_INSTALL.md](MULTI_PLATFORM_INSTALL.md) or your repo's deploy entrypoint so the managed home skill library and platform adapter paths match `_localsetup/skills/` after edit. |
+| 2 | Create quick-ref file | Canonical mapping + pipelines + Quick-ref requirements | `WORKFLOW_QUICK_REF.md` (or `WORKFLOW_IDS.md`) - must exist before step 5 links it. |
+| 2b | Optional: skill/workflow matrix | [SKILLS.md](SKILLS.md) or `_localsetup/skills/*/SKILL.md` list | `WORKFLOW_SKILL_MATRIX.md` (or appendix inside quick-ref): skill ID, registry row yes/no, pipeline step yes/no - makes gaps visible without requiring every skill to have a row. |
+| 3 | Refactor WORKFLOW_REGISTRY | Canonical mapping; move long commands to SKILL_DISCOVERY | Registry table with ID/display/aliases; shortened cells; Pipelines section; Umbrella subsection or explicit "no framework-wide umbrella names"; Usage footnote from Non-ACTIVE inventory. |
 | 4 | Update umbrella doc | Registry as source | [AGENTIC_UMBRELLA_WORKFLOWS.md](AGENTIC_UMBRELLA_WORKFLOWS.md): pointer to registry; repo-local names in `.agent/` / PRD only if no framework list shipped. |
 | 5 | Link quick-ref from index + context | Quick-ref path | [AGENTIC_DESIGN_INDEX.md](AGENTIC_DESIGN_INDEX.md) Core docs or Quick reference. **Master rule:** add one line under Key files in `.cursor/rules/ls-context.mdc`: Workflow IDs and aliases live in `WORKFLOW_QUICK_REF.md` (and WORKFLOW_REGISTRY), so always-loaded context stays small without duplicating the full table. |
 | 6 | Regenerate skills catalog | Any change under `_localsetup/skills/*/SKILL.md` | [SKILLS.md](SKILLS.md) per framework procedure. **If adding a new skill:** extend `_localsetup/tests/skill_smoke_commands.yaml` in the same PR when the skill has runnable tooling (audit uses this list). |
-| 7 | Optional: Workflow ID in decision tree doc | Canonical mapping | Under H1 in [DECISION_TREE_WORKFLOW.md](DECISION_TREE_WORKFLOW.md), add one line: `Workflow ID: spec-clarify-reverse` — aligns search and agents without renaming the file or breaking links. |
+| 7 | Optional: Workflow ID in decision tree doc | Canonical mapping | Under H1 in [DECISION_TREE_WORKFLOW.md](DECISION_TREE_WORKFLOW.md), add one line: `Workflow ID: spec-clarify-reverse` - aligns search and agents without renaming the file or breaking links. |
 
 ---
 
@@ -152,7 +152,7 @@ python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --ou
 
 | Doc | Status | Note |
 |-----|--------|------|
-| [AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md](AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md) | ACTIVE | Part 19 = backlog; deferred list in DEFERRED.md — do not treat Part 19 as shipped until spec says so |
+| [AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md](AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md) | ACTIVE | Part 19 = backlog; deferred list in DEFERRED.md - do not treat Part 19 as shipped until spec says so |
 
 See [DOCUMENT_LIFECYCLE_MANAGEMENT.md](DOCUMENT_LIFECYCLE_MANAGEMENT.md) for status meanings.
 
@@ -170,10 +170,3 @@ See [DOCUMENT_LIFECYCLE_MANAGEMENT.md](DOCUMENT_LIFECYCLE_MANAGEMENT.md) for sta
 | [AGENTIC_UMBRELLA_WORKFLOWS.md](AGENTIC_UMBRELLA_WORKFLOWS.md) | Target for step 4 |
 | [GIT_TRACEABILITY.md](GIT_TRACEABILITY.md) | Hash on outcome |
 | External workflow index | `docs/WORKFLOW_INDEX.md` - historical pointer only |
-
----
-
-<p align="center">
-<strong>Author:</strong> <a href="https://github.com/cptnfren">Slavic Kozyuk</a><br>
-<strong>Copyright</strong> © 2026 <a href="https://www.cruxexperts.com/">Crux Experts LLC</a> – Innovate, Automate, Dominate.
-</p>

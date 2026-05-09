@@ -18,10 +18,3 @@ version: 3.0
 
 - [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md)  - Named workflows, when to use, impact review, and any framework-wide umbrella IDs.
 - [PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md](PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md)  - Spec format and outcome template.
-
----
-
-<p align="center">
-<strong>Author:</strong> <a href="https://github.com/cptnfren">Slavic Kozyuk</a><br>
-<strong>Copyright</strong> © 2026 <a href="https://www.cruxexperts.com/">Crux Experts LLC</a> – Innovate, Automate, Dominate.
-</p>

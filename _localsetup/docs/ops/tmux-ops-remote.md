@@ -4,8 +4,8 @@
 
 ## Config
 
-- **REMOTE_TMUX_HOST** – Hostname or IP of the machine where tmux runs. When set, the `tmux_ops` wrapper runs the Python tool over SSH on that host and returns the same JSON.
-- **REMOTE_TMUX_CWD** – (Optional) Repo path on the remote. Default: `/opt/devzone/devops`.
+- **REMOTE_TMUX_HOST** - Hostname or IP of the machine where tmux runs. When set, the `tmux_ops` wrapper runs the Python tool over SSH on that host and returns the same JSON.
+- **REMOTE_TMUX_CWD** - (Optional) Repo path on the remote. Default: `/opt/devzone/devops`.
 
 ## Usage
 

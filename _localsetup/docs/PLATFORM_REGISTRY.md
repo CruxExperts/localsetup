@@ -28,7 +28,7 @@ V3 installs selected skills to `~/.local/share/agents/skills/localsetup` and att
 
 ## Skill registration (new skills)
 
-When adding a new framework skill, register it in **every** file below so the skill appears in each platform’s context and in the framework README. Paths are relative to the **framework source root** (the directory that contains `templates/`, `skills/`, `docs/`).
+When adding a new framework skill, register it in **every** file below so the skill appears in each platform's context and in the framework README. Paths are relative to the **framework source root** (the directory that contains `templates/`, `skills/`, `docs/`).
 
 Add one row or bullet per new skill with a short "When to use" description. Use the same phrasing everywhere.
 
@@ -41,10 +41,10 @@ Add one row or bullet per new skill with a short "When to use" description. Use 
 | OpenClaw | _localsetup/templates/openclaw/OPENCLAW_CONTEXT.md |
 | OpenCode | _localsetup/templates/opencode/AGENTS.md |
 | Kilo (templates) | _localsetup/templates/kilo/instructions.md |
-| Framework README | _localsetup/README.md (Skills table) |
+| Framework docs index | _localsetup/docs/README.md |
 | Context skill (source) | _localsetup/skills/ls-context/SKILL.md |
 
-**If you add a new platform:** extend the Supported platforms table above, add the platform’s context/skills paths, and add the corresponding registration file(s) to this table so the skill-creator and maintainers keep all platforms in sync.
+**If you add a new platform:** extend the Supported platforms table above, add the platform's context/skills paths, and add the corresponding registration file(s) to this table so the skill-creator and maintainers keep all platforms in sync.
 
 ## Reference
 
@@ -53,10 +53,3 @@ Add one row or bullet per new skill with a short "When to use" description. Use 
 - Windows: WSL2-only. `install.ps1` is a guidance stub, not a native installer.
 - Skills and rules (paths and model): [SKILLS_AND_RULES.md](SKILLS_AND_RULES.md).
 - Release and publish are handled by this repo's automatic versioning hooks and GitHub workflow.
-
----
-
-<p align="center">
-<strong>Author:</strong> <a href="https://github.com/cptnfren">Slavic Kozyuk</a><br>
-<strong>Copyright</strong> © 2026 <a href="https://www.cruxexperts.com/">Crux Experts LLC</a> – Innovate, Automate, Dominate.
-</p>

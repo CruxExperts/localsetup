@@ -15,6 +15,21 @@ from pathlib import Path
 FRONTMATTER_BOUNDARY = re.compile(r"^---\s*$", re.MULTILINE)
 VERSION_RE = re.compile(r'^\s*version:\s*["\']?([0-9.]+)["\']?\s*$')
 
+ASCII_REPLACEMENTS = {
+    "–": "-",
+    "—": "-",
+    "…": "...",
+    "’": "'",
+    "“": '"',
+    "”": '"',
+}
+
+
+def ascii_clean(value: str) -> str:
+    for old, new in ASCII_REPLACEMENTS.items():
+        value = value.replace(old, new)
+    return value
+
 
 def read_frontmatter(md_path: Path) -> dict[str, str]:
     text = md_path.read_text(encoding="utf-8")
@@ -78,7 +93,7 @@ def collect_skills(skills_dir: Path) -> list[dict[str, str]]:
         fm = read_frontmatter(skill_md)
         skill_id = skill_md.parent.name
         name = fm.get("name", "") or skill_id
-        description = fm.get("description", "").replace("\n", " ").strip()
+        description = ascii_clean(fm.get("description", "").replace("\n", " ").strip())
         version = fm.get("version", "")
         skills.append(
             {
@@ -148,19 +163,7 @@ def write_skills_md(path: Path, major_minor: str, skills: list[dict[str, str]]) 
             f"| `{skill['id']}` | `{skill['name']}` | `{skill['version'] or 'n/a'}` | {desc} |"
         )
 
-    year = datetime.now(timezone.utc).year
-    lines.extend(
-        [
-            "",
-            "---",
-            "",
-            '<p align="center">',
-            '<strong>Author:</strong> <a href="https://github.com/cptnfren">Slavic Kozyuk</a><br>',
-            f'<strong>Copyright</strong> © {year} <a href="https://www.cruxexperts.com/">Crux Experts LLC</a> – Innovate, Automate, Dominate.',
-            "</p>",
-            "",
-        ]
-    )
+    lines.append("")
 
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines), encoding="utf-8")

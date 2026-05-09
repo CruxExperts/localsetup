@@ -73,10 +73,3 @@ The skill **ls-skill-discovery** (SKILL.md) contains the full format and an exam
 ## Reference
 
 - Load skill **ls-skill-discovery** when the user is creating a new skill, importing a skill, or asking to discover/recommend public skills. Use in conjunction with ls-skill-creator and ls-skill-importer.
-
----
-
-<p align="center">
-<strong>Author:</strong> <a href="https://github.com/cptnfren">Slavic Kozyuk</a><br>
-<strong>Copyright</strong> © 2026 <a href="https://www.cruxexperts.com/">Crux Experts LLC</a> – Innovate, Automate, Dominate.
-</p>

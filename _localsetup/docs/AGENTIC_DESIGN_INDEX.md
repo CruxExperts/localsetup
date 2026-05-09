@@ -7,7 +7,7 @@ version: 3.0
 
 **Purpose:** Index of agentic-design documentation. Paths are relative to _localsetup/docs/ (repo-local). Audience: humans and AI agents.
 
-Copyright (c) 2026 Crux Experts LLC. MIT License  - see repository root [LICENSE](../../LICENSE).
+Released under the MIT License. See the repository root [LICENSE](../../LICENSE).
 
 ## Core docs
 
@@ -58,10 +58,3 @@ Copyright (c) 2026 Crux Experts LLC. MIT License  - see repository root [LICENSE
 - **Run framework audit:** Load ls-framework-audit; run from repo root: `python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /path/to/report.md` (or set `LOCALSETUP_AUDIT_OUTPUT`). No `--deep` in the current script; if docs elsewhere mention Deep Analysis, treat as backlog until the audit skill ships it. See [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md).
 - **Run markdown reference audit:** Load ls-markdown-reference-validator; run `python _localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py --force --reason manual` (uses YAML sidecar config and writes markdown report). Use this for periodic integrity checks across docs/skills/templates/global Kilo markdown surfaces.
  - **Route docs creation and updates:** Load ls-docs-organization; see `_localsetup/skills/ls-docs-organization/SKILL.md` and `.cursor/rules/docs-organization.mdc`. Use it to classify docs, choose folder slugs, and keep `docs/index.yaml` and `docs/INDEX.md` in sync.
-
----
-
-<p align="center">
-<strong>Author:</strong> <a href="https://github.com/cptnfren">Slavic Kozyuk</a><br>
-<strong>Copyright</strong> © 2026 <a href="https://www.cruxexperts.com/">Crux Experts LLC</a> – Innovate, Automate, Dominate.
-</p>

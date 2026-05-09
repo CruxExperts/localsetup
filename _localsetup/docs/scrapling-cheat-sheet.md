@@ -24,9 +24,9 @@ A comprehensive quick-reference for the Scrapling web scraping framework.
 
 | Scenario | Fetcher | Speed | Stealth |
 |----------|---------|-------|---------|
-| Simple HTTP requests | `Fetcher` | ⚡⚡⚡⚡⚡ | ⭐⭐ |
-| Dynamic/JS content | `DynamicFetcher` | ⚡⚡⚡ | ⭐⭐⭐ |
-| Protected sites, Cloudflare | `StealthyFetcher` | ⚡⚡⚡ | ⭐⭐⭐⭐⭐ |
+| Simple HTTP requests | `Fetcher` |  | ** |
+| Dynamic/JS content | `DynamicFetcher` |  | *** |
+| Protected sites, Cloudflare | `StealthyFetcher` |  | ***** |
 
 ### Import Pattern
 
@@ -50,7 +50,7 @@ from scrapling.fetchers import (
 ### Extract Commands
 
 ```bash
-# Basic GET → markdown
+# Basic GET -> markdown
 scrapling extract get "https://example.com" output.md
 
 # With CSS selector
@@ -111,9 +111,9 @@ page = Fetcher.post('https://example.com', data={'key': 'value'})
 page = Fetcher.post('https://example.com', json={'key': 'value'})
 
 # Proxy and retries
-page = Fetcher.get('https://example.com', 
+page = Fetcher.get('https://example.com',
     proxy='http://user:pass@host:8080',
-    retries=3, 
+    retries=3,
     retry_delay=2
 )
 ```
@@ -315,7 +315,7 @@ page.find_all({'href$': '.pdf'})       # Ends with
 
 # By regex
 import re
-page.find_all(re.compile(r'£[\d\.]+'))
+page.find_all(re.compile(r'GBP[\d\.]+'))
 
 # Combine filters
 page.find_all('div', {'class': 'quote'}, lambda e: 'world' in e.text)
@@ -331,8 +331,8 @@ element = page.find_by_text('Product Name')
 results = page.find_by_text('Name', partial=True, first_match=False)
 
 # Regex
-price = page.find_by_regex(r'£[\d\.]+')
-prices = page.find_by_regex(r'£[\d\.]+', first_match=False)
+price = page.find_by_regex(r'GBP[\d\.]+')
+prices = page.find_by_regex(r'GBP[\d\.]+', first_match=False)
 ```
 
 ### Find Similar Elements
@@ -386,12 +386,12 @@ xpath = element.generate_xpath_selector
 
 ```
 scraped_assets/
-├── images/           # .jpg, .png, .gif, .svg, .webp
-├── documents/        # .pdf, .doc, .docx, .txt, .csv
-├── videos/           # .mp4, .webm, .mov
-├── audio/            # .mp3, .wav, .ogg
-├── data/             # .json, .xml
-└── misc/             # Other types
+|-- images/           # .jpg, .png, .gif, .svg, .webp
+|-- documents/        # .pdf, .doc, .docx, .txt, .csv
+|-- videos/           # .mp4, .webm, .mov
+|-- audio/            # .mp3, .wav, .ogg
+|-- data/             # .json, .xml
+`-- misc/             # Other types
 ```
 
 ### Download Functions
@@ -404,28 +404,28 @@ from scrapling.fetchers import Fetcher
 def download_asset(url, asset_type='misc', base_folder='scraped_assets'):
     """Download any asset with organized folder structure."""
     import mimetypes
-    
+
     folder = os.path.join(base_folder, asset_type)
     os.makedirs(folder, exist_ok=True)
-    
+
     # Fetch with appropriate timeout
     timeout = 300 if asset_type in ['videos', 'audio'] else 30
     page = Fetcher.get(url, timeout=timeout)
-    
+
     # Determine filename
     parsed = urlparse(url)
     filename = os.path.basename(parsed.path)
-    
+
     if not filename or '.' not in filename:
         content_type = page.headers.get('content-type', '').split(';')[0]
         ext = mimetypes.guess_extension(content_type) or '.bin'
         filename = f"asset{ext}"
-    
+
     filepath = os.path.join(folder, filename)
-    
+
     with open(filepath, 'wb') as f:
         f.write(page.body)
-    
+
     return filepath
 
 # Download all images from a page
@@ -448,19 +448,19 @@ for link in page.css('a[href$=".pdf"]'):
 def extract_all_assets(page, base_folder='scraped_assets'):
     """Extract and download all assets from a page."""
     downloads = []
-    
+
     # Images
     for img in page.css('img'):
         src = img.attrib.get('src')
         if src:
             url = page.urljoin(src)
             downloads.append(download_asset(url, 'images', base_folder))
-    
+
     # PDFs
     for link in page.css('a[href$=".pdf"]'):
         url = page.urljoin(link.attrib['href'])
         downloads.append(download_asset(url, 'documents', base_folder))
-    
+
     return downloads
 ```
 
@@ -476,17 +476,17 @@ from scrapling.spiders import Spider, Response, Request
 class MySpider(Spider):
     name = "my_spider"
     start_urls = ["https://example.com"]
-    
+
     async def parse(self, response: Response):
         yield {
             'title': response.css('h1::text').get(''),
             'url': response.url
         }
-        
+
         # Follow links
         for link in response.css('a::attr(href)').getall():
             yield response.follow(link, callback=self.parse_page)
-    
+
     async def parse_page(self, response: Response):
         yield {
             'title': response.css('h1::text').get(''),
@@ -508,13 +508,13 @@ from scrapling.fetchers import FetcherSession, AsyncStealthySession
 class MySpider(Spider):
     name = "my_spider"
     concurrent_requests = 8
-    
+
     def configure_sessions(self, manager: SessionManager):
         manager.add('requests', FetcherSession(impersonate='chrome'))
         manager.add('browser', AsyncStealthySession(
             block_webrtc=True, solve_cloudflare=True
         ), lazy=True)
-    
+
     async def parse(self, response: Response):
         yield {'title': response.css('h1::text').get('')}
 ```
@@ -524,13 +524,13 @@ class MySpider(Spider):
 ```python
 class MySpider(Spider):
     max_blocked_retries = 3
-    
+
     async def is_blocked(self, response: Response) -> bool:
         if response.status in {403, 429, 503}:
             return True
         body = response.body.decode('utf-8', errors='ignore')
         return 'access denied' in body.lower()
-    
+
     async def retry_blocked_request(self, request, response):
         request.sid = 'stealth'
         return request

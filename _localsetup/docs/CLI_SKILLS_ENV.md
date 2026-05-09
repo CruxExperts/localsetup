@@ -114,4 +114,3 @@ Scrapling is the reference implementation of this policy and adds a few concrete
   - On each, verify:
     - `ensure_available(dry_run=True)` returns a sane install or upgrade plan.
     - `scrapling_self_test(mode="offline")` succeeds and writes a `*.status.json` artifact.
-

@@ -88,7 +88,7 @@ All framework tooling that produces reports or structured output intended for hu
 **Avoid:**
 
 - Raw triple backticks inside content that is inside a fenced block (use a different fence, e.g. `~~~`, for the outer block so inner backticks do not close it).
-- Non-GFM or non–CommonMark markdown that GitHub does not render (e.g. custom HTML for layout; prefer standard markdown).
+- Non-GFM or non-CommonMark markdown that GitHub does not render (e.g. custom HTML for layout; prefer standard markdown).
 - Unstructured walls of text; break content into sections and use the formatting above so importance and hierarchy are visually clear.
 
 Scripts and skills that generate reports (e.g. [framework audit](WORKFLOW_REGISTRY.md), PR review, validation summaries) must follow this section. New tooling must adopt it by default.

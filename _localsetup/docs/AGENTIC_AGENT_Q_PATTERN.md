@@ -36,10 +36,3 @@ When using agent-to-agent transports, a **structured** layout may exist under th
 
 - [PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md](PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md) - Spec format, front matter, outcome template.
 - [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md) - When to use Agent Q and impact review.
-
----
-
-<p align="center">
-<strong>Author:</strong> <a href="https://github.com/cptnfren">Slavic Kozyuk</a><br>
-<strong>Copyright</strong> 2026 <a href="https://www.cruxexperts.com/">Crux Experts LLC</a> – Innovate, Automate, Dominate.
-</p>

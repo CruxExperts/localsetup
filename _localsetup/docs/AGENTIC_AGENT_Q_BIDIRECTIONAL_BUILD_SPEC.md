@@ -12,7 +12,7 @@ remaining_build: "Part 19"
 
 ---
 
-## Part 0 – Purpose and assumptions
+## Part 0 - Purpose and assumptions
 
 **Purpose:** Agent Q bidirectional handoff over **pluggable transports** (mail, shared drive, Google Drive, Dropbox, network share, future Telegram/IM). **OpenPGP sign-then-encrypt** makes payloads authentic and confidential even when the pipe is public.
 
@@ -27,16 +27,16 @@ remaining_build: "Part 19"
 
 ---
 
-## Part 1 – Locked decisions (constraints)
+## Part 1 - Locked decisions (constraints)
 
 | # | Topic | Decision |
 |---|--------|----------|
-| 1 | Topology | **D** – One protocol for same-machine, git-only sync, and fully remote. |
-| 2 | Ingest | **A** – Everything on disk first. Transport only moves bytes into inbox/staging. |
-| 3 | Ack | **B** – Only when `ack_required: true`. |
-| 4 | Return path | **C** – `delivery` and `deliverable` per request; transport per request or config. |
+| 1 | Topology | **D** - One protocol for same-machine, git-only sync, and fully remote. |
+| 2 | Ingest | **A** - Everything on disk first. Transport only moves bytes into inbox/staging. |
+| 3 | Ack | **B** - Only when `ack_required: true`. |
+| 4 | Return path | **C** - `delivery` and `deliverable` per request; transport per request or config. |
 | 5 | Crypto | **Mandatory OpenPGP sign-then-encrypt** for automated adapter ingest. Plaintext or encrypt-without-sign out of spec for adapter path. Signature = legitimacy gate. Optional PSK additional only. |
-| 6 | Who pulls/sends | **A** – Python client + transport adapters; batch never opens transport. |
+| 6 | Who pulls/sends | **A** - Python client + transport adapters; batch never opens transport. |
 | 7 | Tooling | Mail stack = mail adapter backend only. |
 | 8 | Transports | **Mail | file_drop | future IM**. Same pipeline per adapter. |
 
@@ -51,25 +51,25 @@ remaining_build: "Part 19"
 
 ---
 
-## Part 2 – Build order (do this sequence)
+## Part 2 - Build order (do this sequence)
 
-1. **Registry YAML** – Example `agent_trust_registry.yaml` + **startup validator fail-closed** (no empty allowlist; paths exist; OpenPGP parseable).
-2. **Outer format** – One **canonical armored OpenPGP** blob for both mail body and file_drop file; single `verify_then_decrypt` / `encrypt_then_sign` module.
-3. **Inner manifest** – `manifest_version` + **manifest.schema.json** with bounds (max attachments, path length, total bytes).
-4. **Key tooling** – Module + CLI: generate, export-pub, import-pub, fingerprint, doctor; support **multiple keys per agent** for rotation (19.3).
-5. **Mail adapter** – IMAP fetch / SMTP push via **policy_engine** façade only; mandatory post-ingest move to **LocalsetupAgentQ/Processed** (config override per account).
-6. **file_drop adapter** – Scan **allowed_inbound_roots** only; **sealed_extension** default `.agentq.asc`; **ready marker** sibling `stem.ready`; **writer order** payload complete then ready last; **ignore_globs** `*conflicted copy*`, `*.tmp`, `~*`; after success move to **processed/<iso8601_utc>_<shortid>/** + prune CLI; **processing/** exclusive lock before verify.
-7. **Client orchestration** – pull_new / push on adapter interface; staging `.staging/<uuid>/` then atomic promote; **ledger after promote and processed move** when possible; **idempotency** by UID or blob id.
-8. **Quarantine + force ingest** – `.quarantine/<id>/` + force CLI with ledger audit line.
-9. **Sidecar archive** – Ship bundle checksum manifest + outer sign-then-encrypt; recipient verify then decrypt then checksum files.
-10. **Pre-ship gate** – Sandbox-tester / test-runner / PRD `pre_ship_checks` or documented skip.
-11. **Tests** – Ephemeral keyring in tmp_path; fixture registry path; file_drop + mail fixtures.
-12. **Docs** – USER_GUIDE, ADMIN_GUIDE, API_EXAMPLES, TROUBLESHOOTING; framework audit pass.
-13. **Ship gate checklist** – Part 10.
+1. **Registry YAML** - Example `agent_trust_registry.yaml` + **startup validator fail-closed** (no empty allowlist; paths exist; OpenPGP parseable).
+2. **Outer format** - One **canonical armored OpenPGP** blob for both mail body and file_drop file; single `verify_then_decrypt` / `encrypt_then_sign` module.
+3. **Inner manifest** - `manifest_version` + **manifest.schema.json** with bounds (max attachments, path length, total bytes).
+4. **Key tooling** - Module + CLI: generate, export-pub, import-pub, fingerprint, doctor; support **multiple keys per agent** for rotation (19.3).
+5. **Mail adapter** - IMAP fetch / SMTP push via **policy_engine** facade only; mandatory post-ingest move to **LocalsetupAgentQ/Processed** (config override per account).
+6. **file_drop adapter** - Scan **allowed_inbound_roots** only; **sealed_extension** default `.agentq.asc`; **ready marker** sibling `stem.ready`; **writer order** payload complete then ready last; **ignore_globs** `*conflicted copy*`, `*.tmp`, `~*`; after success move to **processed/<iso8601_utc>_<shortid>/** + prune CLI; **processing/** exclusive lock before verify.
+7. **Client orchestration** - pull_new / push on adapter interface; staging `.staging/<uuid>/` then atomic promote; **ledger after promote and processed move** when possible; **idempotency** by UID or blob id.
+8. **Quarantine + force ingest** - `.quarantine/<id>/` + force CLI with ledger audit line.
+9. **Sidecar archive** - Ship bundle checksum manifest + outer sign-then-encrypt; recipient verify then decrypt then checksum files.
+10. **Pre-ship gate** - Sandbox-tester / test-runner / PRD `pre_ship_checks` or documented skip.
+11. **Tests** - Ephemeral keyring in tmp_path; fixture registry path; file_drop + mail fixtures.
+12. **Docs** - USER_GUIDE, ADMIN_GUIDE, API_EXAMPLES, TROUBLESHOOTING; framework audit pass.
+13. **Ship gate checklist** - Part 10.
 
 ---
 
-## Part 3 – Queue layout and backwards compatibility
+## Part 3 - Queue layout and backwards compatibility
 
 **Structured:**
 
@@ -87,7 +87,7 @@ remaining_build: "Part 19"
 
 ---
 
-## Part 4 – Registry (normative schema)
+## Part 4 - Registry (normative schema)
 
 ```yaml
 version: 1
@@ -114,7 +114,7 @@ agents:
 
 ---
 
-## Part 5 – Payload and manifest contracts
+## Part 5 - Payload and manifest contracts
 
 **Outer:** One armored OpenPGP sign-then-encrypt message (same bytes for mail and file_drop).
 
@@ -133,7 +133,7 @@ agents:
 
 ---
 
-## Part 6 – file_drop conventions (defaults)
+## Part 6 - file_drop conventions (defaults)
 
 | Topic | Convention |
 |--------|------------|
@@ -146,14 +146,14 @@ agents:
 
 ---
 
-## Part 7 – Mail conventions
+## Part 7 - Mail conventions
 
 - Post-ingest **mandatory** move to **LocalsetupAgentQ/Processed** (or config `post_ingest_mailbox`) so UNSEEN cannot replay without ledger.
 - Mutating IMAP only through policy_engine; CONFIRMATION_REQUIRED -> non-zero exit + stderr; ADMIN_GUIDE covers automation profile.
 
 ---
 
-## Part 8 – Inbound flow (step by step)
+## Part 8 - Inbound flow (step by step)
 
 1. Adapter lists candidates (UNSEEN or glob under allowed roots ignoring ignore_globs).
 2. file_drop: exclusive claim blob (processing dir or lock).
@@ -169,18 +169,18 @@ agents:
 
 ---
 
-## Part 9 – Outbound flow
+## Part 9 - Outbound flow
 
 1. Pre-ship gate passes or skip documented in outcome.
 2. Build inner manifest + checksums; **encrypt_then_sign** with recipient pubkey from registry.
-3. Mail: send via façade. file_drop: temp write -> rename -> **ready last** under allowed_outbound_roots.
+3. Mail: send via facade. file_drop: temp write -> rename -> **ready last** under allowed_outbound_roots.
 4. Local archive + sidecar; prune if over quota; disk space check before large write.
 
 ---
 
-## Part 10 – Ship gate (definition of done)
+## Part 10 - Ship gate (definition of done)
 
-1. Code + config implement Parts 2–9; deferred items explicitly documented (e.g. multi-recipient phase 2).
+1. Code + config implement Parts 2-9; deferred items explicitly documented (e.g. multi-recipient phase 2).
 2. AGENTIC_AGENT_TO_AGENT_PROTOCOL.md **ACTIVE** with front matter.
 3. Full doc set: protocol + client USER_GUIDE, ADMIN_GUIDE, API_EXAMPLES, TROUBLESHOOTING.
 4. Framework doc standards (GFM, script-and-docs-quality, no EM dash in user-facing text).
@@ -191,7 +191,7 @@ agents:
 
 ---
 
-## Part 11 – Transport adapter interface
+## Part 11 - Transport adapter interface
 
 ```text
 pull_new() -> iterable of (raw_blob_bytes, metadata)
@@ -202,13 +202,13 @@ Implementations: **mail**, **file_drop**, **manual** (CLI verify only), **im_fil
 
 ---
 
-## Part 12 – Pre-ship gate (Agent B)
+## Part 12 - Pre-ship gate (Agent B)
 
 Before ship: sandbox-tester smoke where applicable; debug-pro on failure; test-runner if code PRD; PRD **pre_ship_checks** list run with exit codes in outcome; optional framework-audit. No ship without pass or **skip_pre_ship_checks** + reason.
 
 ---
 
-## Part 13 – Hardening summary
+## Part 13 - Hardening summary
 
 - **Staging + ledger:** At-most-once per transport id; ledger JSONL; crash-safe re-run.
 - **Registry:** Fail closed at load; schema validate.
@@ -221,7 +221,7 @@ Before ship: sandbox-tester smoke where applicable; debug-pro on failure; test-r
 
 ---
 
-## Part 14 – Edge cases
+## Part 14 - Edge cases
 
 | Case | Handling |
 |------|----------|
@@ -235,7 +235,7 @@ Before ship: sandbox-tester smoke where applicable; debug-pro on failure; test-r
 
 ---
 
-## Part 15 – Skills and framework touchpoints
+## Part 15 - Skills and framework touchpoints
 
 - mail-protocol-control: sign-then-encrypt for Agent Q payloads; link to this spec.
 - prd-batch / umbrella: transport-agnostic; promotion; version mismatch warning; pre-ship when shipping to agent.
@@ -243,7 +243,7 @@ Before ship: sandbox-tester smoke where applicable; debug-pro on failure; test-r
 
 ---
 
-## Part 16 – Files to create
+## Part 16 - Files to create
 
 | Item |
 |------|
@@ -259,7 +259,7 @@ Before ship: sandbox-tester smoke where applicable; debug-pro on failure; test-r
 
 ---
 
-## Part 17 – Out of scope / future
+## Part 17 - Out of scope / future
 
 - Full Google Drive API (use sync folder).
 - Telegram/IM adapter until scheduled; same pipeline when added.
@@ -270,15 +270,15 @@ Before ship: sandbox-tester smoke where applicable; debug-pro on failure; test-r
 
 ---
 
-## Part 18 – Documentation deliverables
+## Part 18 - Documentation deliverables
 
 USER_GUIDE / ADMIN_GUIDE must cover: transport choice, registry edit, key pre-share and rotation, conflict filenames, insecure location rationale, force ingest audit, automation profile for mail.
 
 ---
 
-## Part 19 – Remaining build list (backlog)
+## Part 19 - Remaining build list (backlog)
 
-Ordered for minimal blockers. Rows 1–2, 3, 6–8 **implemented** (see front matter `implemented` and DEFERRED.md).
+Ordered for minimal blockers. Rows 1-2, 3, 6-8 **implemented** (see front matter `implemented` and DEFERRED.md).
 
 | # | Build item | Status | Notes |
 |---|------------|--------|--------|
@@ -292,10 +292,3 @@ Ordered for minimal blockers. Rows 1–2, 3, 6–8 **implemented** (see front ma
 | 8 | Part 18 doc pass | **Done** | ADMIN_GUIDE expanded |
 
 **Optional next:** gpg subprocess decrypt in mail skill when PGPy fails on gpg-signed packet; cloud OAuth adapters.
-
----
-
-<p align="center">
-<strong>Author:</strong> <a href="https://github.com/cptnfren">Slavic Kozyuk</a><br>
-<strong>Copyright</strong> 2026 <a href="https://www.cruxexperts.com/">Crux Experts LLC</a>
-</p>

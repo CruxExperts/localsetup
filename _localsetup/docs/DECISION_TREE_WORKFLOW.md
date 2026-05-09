@@ -40,10 +40,3 @@ Workflow ID: `spec-clarify-reverse`
 ## Checklist
 
 - One question per turn only. Four options (A-D); preferred stated; rationale. Accept A/B/C/D or free-form; use all feedback.
-
----
-
-<p align="center">
-<strong>Author:</strong> <a href="https://github.com/cptnfren">Slavic Kozyuk</a><br>
-<strong>Copyright</strong> © 2026 <a href="https://www.cruxexperts.com/">Crux Experts LLC</a> – Innovate, Automate, Dominate.
-</p>

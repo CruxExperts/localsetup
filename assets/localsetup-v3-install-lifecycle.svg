@@ -35,7 +35,7 @@
 
   <rect width="1200" height="430" rx="26" fill="url(#bg)"/>
   <text x="58" y="64" class="title">Install Lifecycle</text>
-  <text x="58" y="92" class="small">Every command reads the same resolved configuration and leaves rollback evidence behind.</text>
+  <text x="58" y="92" class="small">Every command uses the same resolved config and leaves rollback evidence behind.</text>
 
   <path d="M156 220 H1038" class="line" marker-end="url(#arrow)"/>
   <path d="M996 252 C974 324 874 360 742 354 C600 348 504 340 386 354 C288 366 220 342 194 286" fill="none" stroke="#335f53" stroke-width="2" stroke-dasharray="8 12" opacity="0.95" marker-end="url(#arrow)"/>
@@ -84,7 +84,8 @@
   </g>
 
   <g filter="url(#shadow)">
-    <rect x="394" y="330" width="410" height="54" rx="18" fill="#101914" stroke="#8af5c9" stroke-width="1.4"/>
-    <text x="438" y="363" class="mono">rollback uses localsetup.lock.json and managed-path metadata</text>
+    <rect x="360" y="322" width="480" height="74" rx="18" fill="#101914" stroke="#8af5c9" stroke-width="1.4"/>
+    <text x="438" y="352" class="mono">rollback uses localsetup.lock.json</text>
+    <text x="434" y="376" class="mono">plus managed-path metadata</text>
   </g>
 </svg>

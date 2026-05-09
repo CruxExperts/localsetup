@@ -1,43 +1,47 @@
 # Contributing to Localsetup v3
 
-Thank you for your interest in contributing. Here’s how to get started.
+Thanks for helping improve Localsetup v3. This project is built for people who want agent workflows to be portable, reviewable, and safe enough to use on real repositories.
 
-## How to contribute
+## Best ways to contribute
 
-- **Bug reports and feature requests**  - Open an [Issue](https://github.com/cptnfren/localsetup/issues).
-- **Questions and ideas**  - Use [Discussions](https://github.com/cptnfren/localsetup/discussions).
-- **Code or docs changes**  - Open a Pull Request against `main`. Please keep the scope focused and reference any related Issues.
+- **Report bugs:** Open a GitHub Issue with the command you ran, expected behavior, actual behavior, OS/WSL details, and relevant logs.
+- **Suggest features:** Open an Issue or Discussion with the workflow you are trying to improve and why it belongs in the framework.
+- **Improve docs:** Keep changes focused, practical, and linked to the source docs they clarify.
+- **Add or improve skills:** Follow the Agent Skills spec and the framework normalization rules before proposing a new skill.
 
-## What to expect
+## Pull request expectations
 
-- We’ll review your Issue or PR and respond when we can.
-- For framework changes (new skills, tools, or workflow behavior), we may ask for a short rationale or use case so we can keep the project consistent.
-- By contributing, you agree that your contributions will be licensed under the same [MIT License](LICENSE) as the project.
+- Target `main`.
+- Keep the PR focused on one problem or one closely related set of docs.
+- Use Conventional Commit style for commits: `feat:`, `fix:`, `docs:`, `chore:`, `test:`, `ci:`, or `type!:`.
+- Explain what changed, why it changed, and any compatibility impact across supported agent platforms.
+- Include verification results when touching install behavior, path resolution, generated docs, skills, release tooling, or platform templates.
 
 ## Repository layout
 
-- **Root**  - Install scripts (`install`, `install.ps1`), README, LICENSE, and docs.
-- **`_localsetup/`**  - The engine: `tools/`, `lib/`, `skills/`, `templates/`, `docs/`. Changes here affect what gets deployed into a client's `_localsetup/`.
-- **Version and docs:** Framework version is defined in VERSION and displayed in READMEs; see [_localsetup/docs/VERSIONING.md](_localsetup/docs/VERSIONING.md). Conventional Commits drive automatic version and doc sync before push.
+- Root files contain the public README, install entrypoints, license, contribution guide, and security policy.
+- `_localsetup/` contains the framework engine: tools, configuration, templates, docs, tests, and shipped skills.
+- `_localsetup/skills/ls-*` is the source of truth for shipped skills.
+- `_localsetup/docs/` is the public framework documentation set.
+- `assets/` contains public README and docs visuals.
 
-For detailed structure and conventions, see [_localsetup/README.md](_localsetup/README.md) and the docs under `_localsetup/docs/`.
+## Standards
 
-## Attribution and contributors
+- Keep public docs ASCII-first and GitHub-friendly.
+- Do not add machine-specific paths, private hostnames, personal contact details, secrets, or generated private state.
+- Do not edit generated docs by hand when a generator owns the content. Update the generator or source data instead.
+- Treat imported third-party skills as untrusted until vetted, normalized, and tested.
+- Preserve platform-specific differences when they are real. Do not flatten Cursor, Claude Code, Codex, OpenClaw, Kilo, and OpenCode into one imaginary host.
 
-**Only humans are listed as contributors.** Do not add AI assistants, IDEs, or tools (e.g. Cursor, Copilot, Claude, ChatGPT) as co-authors in commit messages or in any contributor/credit list in the repo. We do not credit every tool in the chain; authorship and contributor attribution are human-only.
+## Attribution
 
-## Code and docs standards
+Only humans are listed as contributors. Do not add AI assistants, IDEs, or tools as co-authors in commits or contributor lists.
 
-- **Scripts:** Bash and PowerShell; keep cross-platform in mind where relevant.
-- **Skills:** Follow the [Agent Skills](https://agentskills.io/specification) spec (SKILL.md with `name` and `description` frontmatter).
-- **Docs:** Markdown; use clear headings and relative links. Framework docs live under `_localsetup/docs/` and are copied to `_localsetup/docs/` on deploy.
+## Useful references
 
-If you have questions, open a Discussion and we’ll be happy to clarify.
-
-
----
-
-<p align="center">
-<strong>Author:</strong> <a href="https://github.com/cptnfren">Slavic Kozyuk</a><br>
-<strong>Copyright</strong> © 2026 <a href="https://www.cruxexperts.com/">Crux Experts LLC</a> – Innovate, Automate, Dominate.
-</p>
+- [Root README](README.md)
+- [Framework README](_localsetup/README.md)
+- [Quickstart](_localsetup/docs/QUICKSTART.md)
+- [Skill importing](_localsetup/docs/SKILL_IMPORTING.md)
+- [Versioning](_localsetup/docs/VERSIONING.md)
+- [Security](SECURITY.md)

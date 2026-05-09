@@ -142,7 +142,7 @@ Reports all layers unconditionally regardless of which mode was used at enable t
 tmux-default terminal mode status
   Mode detected:           ide
   Session name:            ops
-  Layer 1a (IDE profile):  ACTIVE   [tmux-session → ops, settings: ~/.cursor-server/...]
+  Layer 1a (IDE profile):  ACTIVE   [tmux-session -> ops, settings: ~/.cursor-server/...]
   Layer 1b (shell RC):     INACTIVE
   Layer 2  (agent rule):   ACTIVE   [rules: .cursor/rules/operator-memory.mdc]
   Layer 3  (tmux_ops):     PRESENT  [_localsetup/tools/tmux_ops]
@@ -164,8 +164,8 @@ cp ~/.cursor-server/data/Machine/settings.json.tmux-mode.bak \
    ~/.cursor-server/data/Machine/settings.json
 
 # Option B: remove the two keys from settings.json with any editor:
-#   "terminal.integrated.profiles.linux" -> remove the "tmux-session" entry
-#   "terminal.integrated.defaultProfile.linux" -> remove the key
+# "terminal.integrated.profiles.linux" -> remove the "tmux-session" entry
+# "terminal.integrated.defaultProfile.linux" -> remove the key
 ```
 
 **Shell mode (Layer 1b):**
@@ -208,10 +208,3 @@ The session name is written into the Layer 1 block and the Layer 2 rule at enabl
 Layer 3 is the `_localsetup/tools/tmux_ops` tool already present in the framework. Enable does not modify it. The agent rule (Layer 2) references it for pick, probe, and send operations. Status reports whether the tool is present.
 
 For full tmux_ops documentation see the `ls-tmux-shared-session-workflow` skill and `ops/tmux-ops-remote.md`.
-
----
-
-<p align="center">
-<strong>Author:</strong> <a href="https://github.com/cptnfren">Slavic Kozyuk</a><br>
-<strong>Copyright</strong> © 2026 <a href="https://www.cruxexperts.com/">Crux Experts LLC</a> – Innovate, Automate, Dominate.
-</p>

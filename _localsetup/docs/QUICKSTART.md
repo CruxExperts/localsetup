@@ -3,241 +3,123 @@ status: ACTIVE
 version: 3.0
 ---
 
-# 🚀 Quickstart
+# Quickstart
 
-Get Localsetup v3 running in your repo in under a minute. This page covers WSL2-aware installation, platform selection, verification, and non-interactive one-liners for CI and automation.
+Use this page to install Localsetup v3, choose agent platforms, verify the install, and update later. For the product pitch, see the [root README](../../README.md).
 
-## Prerequisites
+## Requirements
 
-- **Required:** `python >= 3.10`.
-- **Recommended for full framework tooling:** `git >= 2.20.0`, `rg` (ripgrep), `pip`, and the Python packages in `_localsetup/requirements.txt` (PyYAML, requests, python-frontmatter, cryptography, PGPy). Pass `--install-deps` to create/update the managed `.localsetup/venv` without touching system packages.
-- **Linux/macOS/WSL2:** Bash and curl.
-- **Windows:** WSL2. Native PowerShell install is not supported in v3.
-- **Any platform:** Network access to GitHub (or a local clone of this repo).
+- Python `>= 3.10`
+- Bash on Linux, macOS, or WSL2
+- Network access to GitHub, unless installing from a local clone
+- Recommended: Git, `rg`, `pip`, and the packages in `_localsetup/requirements.txt`
 
-The installer runs `doctor` before applying. For a read-only check, run `python3 _localsetup/tools/localsetup_v3.py doctor`; for agent handoff context, run `python3 _localsetup/tools/localsetup_v3.py context --markdown`.
+Windows is WSL2-only in Localsetup v3. Native PowerShell install is intentionally not supported; `install.ps1` prints WSL2 guidance.
 
-## Install
+## Install In One Command
 
-The v3 installer is explicit and non-interactive.
-
-### Linux and macOS (Bash)
+From a project root:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | bash
 ```
 
+From a local checkout:
+
 ```bash
 ./install --directory . --yes
 ```
 
-Omit `--tools` or `--platforms` to install every platform in `_localsetup/config/platforms.yaml`.
+Install only selected agent hosts:
 
-## 🔧 Platform IDs
+```bash
+./install --directory . --tools codex,kilo --yes
+```
 
-When using `--tools` or `--platforms`, use one or more of these IDs:
+If Python dependencies are missing or you want the managed venv prepared:
 
-| ID | Agent host | Context path | Skills path | Memory file |
-|----|------------|--------------|-------------|-------------|
-| `cursor` | Cursor IDE | `.cursor/skills` | `~/.local/share/agents/skills/localsetup` |
+```bash
+./install --directory . --yes --install-deps
+```
+
+Localsetup v3 does not require `--break-system-packages`.
+
+## Platform IDs
+
+| ID | Agent host | Adapter path | Managed skill library |
+|---|---|---|---|
+| `cursor` | Cursor | `.cursor/skills` | `~/.local/share/agents/skills/localsetup` |
 | `claude-code` | Claude Code | `.claude/skills` | `~/.local/share/agents/skills/localsetup` |
 | `codex` | OpenAI Codex CLI | `.codex/skills` | `~/.local/share/agents/skills/localsetup` |
 | `openclaw` | OpenClaw | `.openclaw/skills` | `~/.local/share/agents/skills/localsetup` |
 | `kilo` | Kilo CLI | `.kilo/skills` | `~/.local/share/agents/skills/localsetup` |
 | `opencode` | OpenCode CLI | `.opencode/skills` | `~/.local/share/agents/skills/localsetup` |
 
-You can deploy to multiple platforms at once by comma-separating: `cursor,claude-code`.
+Comma-separate multiple IDs:
 
-## Shared home library
+```bash
+./install --directory . --tools cursor,claude-code,codex --yes
+```
 
-V3 installs managed skills under `~/.local/share/agents/skills/localsetup` and attaches repo adapter paths to that library by symlink. Use `--mode portable` to copy managed skills into each adapter path instead.
+Omit `--tools` to install every platform listed in `_localsetup/config/platforms.yaml`.
 
-## ✅ Verify installation
+## What Gets Installed
 
-After install, run the verification scripts to confirm everything deployed correctly.
+- `_localsetup/` framework source in the repo
+- Managed skills under `~/.local/share/agents/skills/localsetup`
+- Platform adapter paths such as `.codex/skills` or `.kilo/skills`
+- `localsetup.lock.json` and reports that support verification and rollback
 
-### Linux and macOS
+By default, adapters point to the managed home library by symlink. Use portable mode when symlinks are not suitable:
+
+```bash
+./install --directory . --tools codex --yes --mode portable
+```
+
+## Verify
+
+Run the core repo checks:
 
 ```bash
 ./_localsetup/tools/verify_context
 ./_localsetup/tools/verify_rules
+python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
 ```
 
-Expected output: confirmation that context file exists and skills directory is present.
-
-## ⚡ Non-interactive one-liners
-
-For CI pipelines, automation, or when you already know your platform, use flags to skip prompts. Localsetup v3 installs through Bash on Linux, macOS, or WSL2.
-
-### Linux and macOS
-
-#### Cursor
-
-Install into the current directory and deploy context and skills for Cursor only.
+Read-only preflight:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | bash -s -- --directory . --tools cursor --yes
+python3 _localsetup/tools/localsetup_v3.py doctor
 ```
 
-#### Claude Code
-
-Install into the current directory and deploy context and skills for Claude Code only.
+Agent-readable install context:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | bash -s -- --directory . --tools claude-code --yes
+python3 _localsetup/tools/localsetup_v3.py --repo . context --markdown
 ```
 
-#### Codex CLI
+## Update
 
-Install into the current directory and deploy context and skills for OpenAI Codex CLI only.
+Re-run install with the same directory and platform selection:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | bash -s -- --directory . --tools codex --yes
+./install --directory . --tools codex,kilo --yes
 ```
 
-#### OpenClaw
+The installer refreshes managed skills, adapter links or portable copies, lock metadata, and reports.
 
-Install into the current directory and deploy context and skills for OpenClaw only.
+## Roll Back Managed Paths
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | bash -s -- --directory . --tools openclaw --yes
+python3 _localsetup/tools/localsetup_v3.py --repo . rollback
 ```
 
-#### OpenCode
+Rollback only acts on managed paths recorded by Localsetup metadata.
 
-Install into the current directory and deploy context and skills for OpenCode CLI only.
+## Next Steps
 
-```bash
-curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | bash -s -- --directory . --tools opencode --yes
-```
-
-#### Kilo CLI
-
-Install into the current directory and deploy context and skills for Kilo CLI only (local repo deploy to `.kilo/`).
-
-```bash
-curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | bash -s -- --directory . --tools kilo --yes
-```
-
-### Windows
-
-Localsetup v3 supports Windows through WSL2 only. Open WSL, change to the repo path, and run the Linux command:
-
-```bash
-wsl
-cd /path/to/repo
-./install --directory . --tools codex --yes
-```
-
-### From a local clone
-
-If you already have the repo on disk, run from the repo root. One command per box.
-
-#### Linux and macOS
-
-**Cursor**
-
-Install from a local clone into the target directory for Cursor only.
-
-```bash
-./install --directory /path/to/your/project --tools cursor --yes
-```
-
-**Claude Code**
-
-Install from a local clone into the target directory for Claude Code only.
-
-```bash
-./install --directory /path/to/your/project --tools claude-code --yes
-```
-
-**Codex CLI**
-
-Install from a local clone into the target directory for Codex CLI only.
-
-```bash
-./install --directory /path/to/your/project --tools codex --yes
-```
-
-**OpenClaw**
-
-Install from a local clone into the target directory for OpenClaw only.
-
-```bash
-./install --directory /path/to/your/project --tools openclaw --yes
-```
-
-**OpenCode**
-
-Install from a local clone into the target directory for OpenCode CLI only.
-
-```bash
-./install --directory /path/to/your/project --tools opencode --yes
-```
-
-**Kilo CLI**
-
-Install from a local clone into the target directory for Kilo CLI only (local repo deploy to `.kilo/`).
-
-```bash
-./install --directory /path/to/your/project --tools kilo --yes
-```
-
-#### Windows
-
-Native PowerShell install was removed for v3. Use WSL2 and run the Linux/macOS commands from inside the WSL filesystem or a mounted project path.
-
-## 🔄 Updating
-
-Re-run the install command with the same `--directory` and `--tools`.
-
-```bash
-./install --directory . --tools cursor --yes
-```
-
-`--upgrade-policy` is accepted for v2 compatibility; v3 uses managed install metadata and `localsetup.lock.json`.
-
-## If dependencies are missing
-
-If tooling reports missing **ripgrep (rg)**, install it for search-heavy workflows:
-
-```bash
-# Debian/Ubuntu
-sudo apt-get install -y ripgrep
-# Fedora/RHEL: sudo dnf install -y ripgrep
-# Arch: sudo pacman -S --needed ripgrep
-# macOS: brew install ripgrep
-```
-
-If preflight reports missing **Python/pip/venv**, install the OS packages first:
-
-```bash
-# Debian/Ubuntu
-sudo apt-get update && sudo apt-get install -y python3 python3-pip python3-yaml
-
-# Fedora/RHEL
-sudo dnf install -y python3 python3-pip python3-pyyaml
-
-# Arch
-sudo pacman -S --needed python python-pip python-yaml
-
-# Debian/Ubuntu venv support
-sudo apt-get install -y python3-venv
-```
-
-Then re-run install with `--install-deps` to install requirements into the managed venv. Localsetup v3 never requires `--break-system-packages`.
-
-## 📖 Next steps
-
-- **Agent-to-agent PRD handoff (PROPOSAL):** Stamp PRDs with `python _localsetup/tools/agentq_transport_client/agentq_cli.py stamp-prd <path>`. Protocol: [AGENTIC_AGENT_TO_AGENT_PROTOCOL.md](AGENTIC_AGENT_TO_AGENT_PROTOCOL.md). Client docs: `_localsetup/tools/agentq_transport_client/docs/USER_GUIDE.md`.
-- [Features](FEATURES.md) - full capability list
-- [Shipped skills catalog](SKILLS.md) - all shipped skills
-- [Platform registry](PLATFORM_REGISTRY.md) - canonical platform definitions
-- [Multi-platform install](MULTI_PLATFORM_INSTALL.md) - detailed cross-platform docs
-
----
-
-<p align="center">
-<strong>Author:</strong> <a href="https://github.com/cptnfren">Slavic Kozyuk</a><br>
-<strong>Copyright</strong> © 2026 <a href="https://www.cruxexperts.com/">Crux Experts LLC</a> – Innovate, Automate, Dominate.
-</p>
+- [Features](FEATURES.md)
+- [Shipped skills catalog](SKILLS.md)
+- [Platform registry](PLATFORM_REGISTRY.md)
+- [Multi-platform install](MULTI_PLATFORM_INSTALL.md)
+- [Workflow registry](WORKFLOW_REGISTRY.md)
