@@ -186,11 +186,8 @@ ssh admin@targethost sudo reboot       # Should ask for password (not allowed)
 ### Step 4: Configure PatchMon Credentials (Optional but Recommended)
 
 ```bash
-# Copy template
-cp ~/.agent-host/workspace/skills/linux-patcher/scripts/patchmon-credentials.example.conf \
-   ~/.patchmon-credentials.conf
-
-# Edit with your credentials
+# Create a local gitignored credential file only if you add a tested PatchMon API client
+install -m 600 /dev/null ~/.patchmon-credentials.conf
 nano ~/.patchmon-credentials.conf
 ```
 

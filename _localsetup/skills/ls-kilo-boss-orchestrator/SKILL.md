@@ -88,7 +88,7 @@ Recommended trigger strategy:
 - every minute: watchdog lease recovery tick
 - every 5 minutes: heartbeat and queue health summary
 
-Use `ls-cron-orchestrator` and keep manifest in `cron/manifest.yaml`.
+Use `ls-cron-orchestrator` with a user-created manifest, commonly `cron/manifest.yaml` in the target repo.
 
 ## Consensus policy integration
 

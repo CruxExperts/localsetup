@@ -44,12 +44,9 @@ cat references/setup.md
 ssh-keygen -t ed25519 -C "agent-host-patching" -f ~/.ssh/id_agent-host
 ssh-copy-id -i ~/.ssh/id_agent-host.pub admin@targethost
 
-# 3. Configure PatchMon credentials
-cp scripts/patchmon-credentials.example.conf ~/.patchmon-credentials.conf
-nano ~/.patchmon-credentials.conf
-chmod 600 ~/.patchmon-credentials.conf
+# 3. Collect PatchMon URL/credentials out of band if you plan to add a tested API client
 
-# 4. Test with dry-run
+# 4. Generate a dry-run plan
 python scripts/patch_cli.py auto --dry-run
 ```
 

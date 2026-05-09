@@ -235,6 +235,19 @@ def test_v3_docs_and_package(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     (root / "_localsetup" / "cached.pyo").write_bytes(b"bytecode")
+    npm_token_dir = (
+        root
+        / "_localsetup"
+        / "skills"
+        / "ls-npm-management"
+        / "scripts"
+        / "data"
+        / "127_0_0_1_81"
+        / "token"
+    )
+    npm_token_dir.mkdir(parents=True, exist_ok=True)
+    (npm_token_dir / "token.txt").write_text("runtime-token\n", encoding="utf-8")
+    (npm_token_dir / "expiry.txt").write_text("2099-01-01T00:00:00Z\n", encoding="utf-8")
     (root / "state").mkdir()
     (root / "state" / "inventory.yml").write_text("private inventory\n", encoding="utf-8")
     docs = generate_alias_outputs(root)
@@ -249,6 +262,8 @@ def test_v3_docs_and_package(tmp_path: Path) -> None:
     assert "_localsetup/docs/local-context/SECRETS_OVERVIEW.md" not in package["files"]
     assert "_localsetup/.ruff_cache/cache.bin" not in package["files"]
     assert "_localsetup/cached.pyo" not in package["files"]
+    assert "_localsetup/skills/ls-npm-management/scripts/data/127_0_0_1_81/token/token.txt" not in package["files"]
+    assert "_localsetup/skills/ls-npm-management/scripts/data/127_0_0_1_81/token/expiry.txt" not in package["files"]
     assert "state/inventory.yml" not in package["files"]
 
 

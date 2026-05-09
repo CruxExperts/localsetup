@@ -21,4 +21,4 @@ When the user says **process PRDs**, **run batch from PRD folder**, **process th
 - [_localsetup/docs/AGENTIC_AGENT_Q_PATTERN.md](../../docs/AGENTIC_AGENT_Q_PATTERN.md)  - queue pattern (flat and structured layout).
 - [_localsetup/docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md](../../docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md)  - spec format, front matter, outcome template, clarification protocol.
 - [_localsetup/docs/AGENTIC_AGENT_TO_AGENT_PROTOCOL.md](../../docs/AGENTIC_AGENT_TO_AGENT_PROTOCOL.md)  - agent-to-agent handoff (ACTIVE); pre-ship gate before ship to peer.
-- [_localsetup/tools/agentq_transport_client/](../../tools/agentq_transport_client/)  - version stamp CLI: `python agentq_cli.py stamp-prd <path>`.
+- [_localsetup/tools/agentq_transport_client/](../../tools/agentq_transport_client/)  - version stamp CLI from repo root: `python _localsetup/tools/agentq_transport_client/agentq_cli.py stamp-prd <path>`.

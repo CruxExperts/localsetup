@@ -24,8 +24,8 @@ Framework and ops docs evolve quickly. Broken references waste agent cycles and 
 
 ## Inputs and outputs
 
-- **Input config (YAML):** `scripts/ops/markdown_reference_audit.yaml`
-- **Repo entrypoint:** `scripts/ops/markdown_reference_audit.py`
+- **Input config (YAML):** `templates/markdown_reference_audit.yaml` from this skill, or a repo-local copy adapted from it.
+- **Skill entrypoint:** `scripts/markdown_reference_audit.py`
 - **Engine script:** `_localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_validator.py`
 - **Default report:** `docs/reference/markdown-reference-audit.md`
 - **Default run-state marker:** `.kilo/state/markdown_reference_audit_last_run_epoch`
@@ -35,13 +35,14 @@ Framework and ops docs evolve quickly. Broken references waste agent cycles and 
 Run once manually:
 
 ```bash
-python3 scripts/ops/markdown_reference_audit.py --force --reason manual
+python3 scripts/markdown_reference_audit.py --config templates/markdown_reference_audit.yaml --force --reason manual
 ```
 
 Run with login jitter (3-5 min):
 
 ```bash
-python3 scripts/ops/markdown_reference_audit.py \
+python3 scripts/markdown_reference_audit.py \
+  --config templates/markdown_reference_audit.yaml \
   --reason login-autostart \
   --jitter-min-seconds 180 \
   --jitter-max-seconds 300
@@ -54,7 +55,7 @@ Recommended defaults:
 - **Periodic:** every 12 hours (cron trigger).
 - **Login:** run once at user login with random delay 3-5 minutes.
 
-Use `ls-cron-orchestrator` with `cron/manifest.yaml` for periodic trigger, and XDG autostart desktop entry for login trigger.
+Use `ls-cron-orchestrator` with a user-created manifest (for example `cron/manifest.yaml` in the target repo) for periodic trigger, and XDG autostart desktop entry for login trigger. This skill does not ship a cron manifest.
 
 ## Config model (YAML sidecar)
 

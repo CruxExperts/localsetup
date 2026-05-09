@@ -91,10 +91,7 @@ python scripts/patch_cli.py multiple config-file.conf
 
 Configure PatchMon credentials for automatic host detection:
 
-```bash
-cp scripts/patchmon-credentials.example.conf ~/.patchmon-credentials.conf
-nano ~/.patchmon-credentials.conf
-```
+Create a local, gitignored credentials file such as `~/.patchmon-credentials.conf` if you later add a tested PatchMon API client. The bundled helper is currently plan-only and does not read credentials.
 
 Set your credentials:
 ```bash
@@ -108,10 +105,7 @@ Then simply run:
 python scripts/patch_cli.py auto
 ```
 
-The script will:
-1. Query PatchMon for hosts needing updates
-2. Auto-detect Docker on each host
-3. Apply appropriate updates (host-only or full)
+The helper will emit a guidance-only plan for collecting PatchMon URL, credentials, target hosts, and a maintenance window. It does not query PatchMon or apply updates.
 
 ### Option 2: Single Host (Quick Manual)
 
@@ -119,27 +113,13 @@ Run scripts directly with command-line arguments (no config file needed).
 
 ### Option 3: Multiple Hosts (Manual Config)
 
-Create a config file based on `scripts/patch-hosts-config.example.sh`:
-
-```bash
-cp scripts/patch-hosts-config.example.sh my-servers.conf
-nano my-servers.conf
-```
+Create a simple local config file with one host per line. Use `host` for package-only plans or `host,/absolute/docker/path` for full package-plus-Docker plans.
 
 Example config:
 ```bash
-# Host definitions: hostname,ssh_user,docker_path
-HOSTS=(
-  "webserver.example.com,ubuntu,/opt/docker"
-  "database.example.com,root,/home/admin/compose"
-  "monitor.example.com,docker,/srv/monitoring"
-)
-
-# Update mode: "host-only" or "full"
-UPDATE_MODE="full"
-
-# Dry run mode (set to "false" to apply changes)
-DRY_RUN="true"
+ubuntu@webserver.example.com
+root@database.example.com,/home/admin/compose
+docker@monitor.example.com,/srv/monitoring
 ```
 
 Then run:
@@ -219,9 +199,8 @@ brew install curl jq
 3. Configure the control machine to access PatchMon API:
 
 ```bash
-cp scripts/patchmon-credentials.example.conf ~/.patchmon-credentials.conf
-nano ~/.patchmon-credentials.conf  # Set PatchMon server URL
-chmod 600 ~/.patchmon-credentials.conf
+install -m 600 /dev/null ~/.patchmon-credentials.conf
+nano ~/.patchmon-credentials.conf  # Set PatchMon server URL if you later add a tested API client
 ```
 
 **Detailed setup:**
@@ -341,11 +320,7 @@ python scripts/patch_cli.py host-full user@host /custom/path
 
 ### Example 1: Automatic update via PatchMon (recommended)
 ```bash
-# First time: configure credentials
-cp scripts/patchmon-credentials.example.conf ~/.patchmon-credentials.conf
-nano ~/.patchmon-credentials.conf
-
-# Run automatic updates
+# First time: collect PatchMon details and maintenance window
 python scripts/patch_cli.py auto
 ```
 
@@ -392,9 +367,7 @@ Run the scripts via your platform's command or terminal; use automatic mode (`py
 ### PatchMon Integration Issues
 
 #### "PatchMon credentials not found"
-- Create credentials file: `cp scripts/patchmon-credentials.example.conf ~/.patchmon-credentials.conf`
-- Edit with your PatchMon URL and credentials
-- Or set `PATCHMON_CONFIG` environment variable to custom location
+- The bundled helper is plan-only and does not read credentials. If you add a tested PatchMon API client later, create a local gitignored credentials file and document the exact path it reads.
 
 #### "Failed to authenticate with PatchMon"
 - Verify PatchMon URL is correct (without trailing slash)
