@@ -15,11 +15,11 @@
     - role: security
       tags: [security, hardening]
 
-- name: OpenClaw servers
-  hosts: openclaw
+- name: Agent host servers
+  hosts: agent_hosts
   become: yes
   roles:
     - role: nodejs
       tags: [nodejs, runtime]
-    - role: openclaw
-      tags: [openclaw, app]
+    - role: agent-host
+      tags: [agent-host, app]

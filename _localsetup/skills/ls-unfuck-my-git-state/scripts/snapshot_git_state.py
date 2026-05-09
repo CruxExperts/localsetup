@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# Purpose: Capture Git repo state to a timestamped directory for diagnosis. Replaces snapshot_git_state.sh.
+# Purpose: Capture Git repo state to a timestamped directory for diagnosis.
 # Created: 2026-02-20
-# Last updated: 2026-02-20
+# Last updated: 2026-05-09
 
 """
 Capture Git work tree state to .git-state-snapshots/<stamp>/ for safe diagnosis.
@@ -9,8 +9,6 @@ Usage: snapshot_git_state.py [REPO_PATH]
 REPO_PATH defaults to current directory. Must be inside a Git work tree.
 """
 
-import os
-import re
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -42,25 +40,31 @@ def _run_git(repo: Path, *args: str) -> str:
         text=True,
         timeout=60,
     )
-    return r.stdout or "" if r.returncode == 0 else ""
+    return (r.stdout or "") if r.returncode == 0 else ""
 
 
-def _run_capture(repo: Path, out_dir: Path, name: str, *git_args: str) -> None:
+def _format_cmd(cmd: list[str]) -> str:
+    return " ".join(cmd)
+
+
+def _run_capture(repo: Path, out_dir: Path, name: str, *git_args: str) -> bool:
     cmd = ["git", "-C", str(repo)] + list(git_args)
     out_file = out_dir / f"{name}.txt"
     try:
         r = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-        content = f"# {name}\n# command: {' '.join(cmd)}\n\n"
+        content = f"# {name}\n# command: {_format_cmd(cmd)}\n# exit_code: {r.returncode}\n\n"
         content += r.stdout or ""
         if r.stderr:
             content += r.stderr
         out_file.write_text(content, encoding="utf-8", errors="replace")
+        return r.returncode == 0
     except Exception as e:
         out_file.write_text(
-            f"# {name}\n# command: {' '.join(cmd)}\n# error: {e}\n",
+            f"# {name}\n# command: {_format_cmd(cmd)}\n# error: {type(e).__name__}: {e}\n",
             encoding="utf-8",
             errors="replace",
         )
+        return False
 
 
 def main() -> int:
@@ -102,6 +106,7 @@ def main() -> int:
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
     out_dir = Path(toplevel) / ".git-state-snapshots" / stamp
     out_dir.mkdir(parents=True, exist_ok=True)
+    partial_failures: list[str] = []
 
     (out_dir / "context.txt").write_text(
         f"snapshot_time={stamp}\ntarget={repo}\ntoplevel={toplevel}\ngit_dir={git_dir_abs}\n"
@@ -123,24 +128,36 @@ def main() -> int:
             text=True,
             timeout=5,
         )
+        if r.returncode != 0:
+            partial_failures.append("worktrees-dir-listing")
         (out_dir / "worktrees-dir-listing.txt").write_text(
             r.stdout or r.stderr or "",
             encoding="utf-8",
             errors="replace",
         )
 
-    _run_capture(repo, out_dir, "status", "status", "--porcelain=v2", "--branch")
-    _run_capture(repo, out_dir, "branch_current", "branch", "--show-current")
-    _run_capture(repo, out_dir, "symbolic_ref_head", "symbolic-ref", "-q", "HEAD")
-    _run_capture(repo, out_dir, "worktree_list", "worktree", "list", "--porcelain")
-    _run_capture(repo, out_dir, "branch_all_verbose", "branch", "-vv", "--all")
-    _run_capture(repo, out_dir, "remote_verbose", "remote", "-v")
-    _run_capture(repo, out_dir, "show_ref", "show-ref", "--head")
-    _run_capture(repo, out_dir, "reflog_head", "reflog", "--date=iso", "-n", "50", "HEAD")
-    _run_capture(repo, out_dir, "fsck", "fsck", "--full", "--no-reflogs")
+    captures = [
+        ("status", ("status", "--porcelain=v2", "--branch")),
+        ("branch_current", ("branch", "--show-current")),
+        ("symbolic_ref_head", ("symbolic-ref", "-q", "HEAD")),
+        ("worktree_list", ("worktree", "list", "--porcelain")),
+        ("branch_all_verbose", ("branch", "-vv", "--all")),
+        ("remote_verbose", ("remote", "-v")),
+        ("show_ref", ("show-ref", "--head")),
+        ("reflog_head", ("reflog", "--date=iso", "-n", "50", "HEAD")),
+        ("fsck", ("fsck", "--full", "--no-reflogs")),
+    ]
+    for name, git_args in captures:
+        if not _run_capture(repo, out_dir, name, *git_args):
+            partial_failures.append(name)
 
     print("Git state snapshot captured.")
     print(f"Directory: {out_dir}")
+    if partial_failures:
+        failure_list = ", ".join(partial_failures)
+        print(f"Warning: partial snapshot; failed capture(s): {failure_list}", file=sys.stderr)
+        print("Use the captured files plus warning list before changing refs or worktrees.")
+        return 1
     print("Use these files to diagnose before changing refs or worktrees.")
     return 0
 

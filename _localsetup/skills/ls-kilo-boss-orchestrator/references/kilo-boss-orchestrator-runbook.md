@@ -47,19 +47,39 @@ python3 scripts/boss_ctl.py status
 python3 scripts/boss_ctl.py consensus --task-id <task-id>
 ```
 
-6. Finalize task if gate passed:
+6. Finalize task after consensus passes:
 
 ```bash
 python3 scripts/boss_ctl.py finalize --task-id <task-id>
 ```
 
+Finalize refuses to complete a task unless the consensus verdict has `gate_passed: true` and `requires_tiebreaker: false`.
+
 ## Watchdog
 
-Run periodically to reclaim orphan lease files:
+Run periodically to reclaim orphan and expired lease files:
 
 ```bash
 python3 scripts/boss_ctl.py watchdog
 ```
+
+Expired leases are determined from `start_ts + ttl_seconds`. The watchdog requeues a running task until `max_attempts`; after that it marks the task failed and writes a deadletter entry.
+
+## Command execution policy
+
+Task templates must use structured argv:
+
+```yaml
+command_argv:
+  - kilo
+  - run
+  - --auto
+  - --agent
+  - sidekick
+  - Summarize current repo risks in 8 bullets
+```
+
+The runner only allows `kilo run ...`, rejects free-form shell command strings, and executes with `shell=False`. Shell-looking text inside later argv entries is treated as literal argument data because no shell parses it.
 
 ## Phase-1 deterministic retry recovery (offline-safe)
 

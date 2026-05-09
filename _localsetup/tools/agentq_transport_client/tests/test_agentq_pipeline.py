@@ -124,6 +124,33 @@ def test_extract_attachments_checksum_fail(tmp_path):
     assert ex.value.code == "ingest_checksum_fail"
 
 
+def test_pre_ship_checks_run_structured_argv():
+    from agentq_transport_client.preship import run_pre_ship_checks
+
+    result = run_pre_ship_checks({"pre_ship_checks": [["python3", "--version"]]})
+    assert result["ok"] is True, result
+    assert result["results"][0]["cmd"] == "python3 --version"
+
+
+def test_pre_ship_checks_reject_shell_metacharacters():
+    from agentq_transport_client.preship import run_pre_ship_checks
+
+    result = run_pre_ship_checks(
+        {"pre_ship_checks": ["python3 --version; touch should-not-run"]}
+    )
+    assert result["ok"] is False
+    assert result["code"] == "PRE_SHIP_CHECK_REJECTED"
+    assert result["results"] == []
+
+
+def test_pre_ship_checks_reject_python_command_mode():
+    from agentq_transport_client.preship import run_pre_ship_checks
+
+    result = run_pre_ship_checks({"pre_ship_checks": [["python3", "-c", "print(1)"]]})
+    assert result["ok"] is False
+    assert result["code"] == "PRE_SHIP_CHECK_REJECTED"
+
+
 def _gpg_batch_gen(home: Path, name: str, email: str) -> None:
     import os
     import subprocess
@@ -221,18 +248,101 @@ def test_gpg_strict_ship_ingest(tmp_path):
     blob = out_dir / "s1.agentq.asc"
     assert blob.is_file()
 
-    ingest_file_drop_blob._strict_gpg = True  # type: ignore[attr-defined]
     priv = bob_sec.read_text()
-    r = ingest_file_drop_blob(
-        blob,
-        queue_root=queue,
-        recipient_private_armored=priv,
-        passphrase="",
-        sealed_extension=".agentq.asc",
-        registry_path=reg_path,
-        recipient_gnupghome=gpg_b,
-    )
+    ingest_file_drop_blob._strict_gpg = True  # type: ignore[attr-defined]
+    try:
+        r = ingest_file_drop_blob(
+            blob,
+            queue_root=queue,
+            recipient_private_armored=priv,
+            passphrase="",
+            sealed_extension=".agentq.asc",
+            registry_path=reg_path,
+            recipient_gnupghome=gpg_b,
+        )
+    finally:
+        del ingest_file_drop_blob._strict_gpg  # type: ignore[attr-defined]
     assert r.get("status") == "ok", r
+
+
+def test_strict_gpg_requires_registry(keypair, tmp_path):
+    from agentq_transport_client.crypto_pipeline import seal_inner_json
+    from agentq_transport_client.ingest import ingest_file_drop_blob
+
+    pub, priv = keypair
+    queue = tmp_path / "queue"
+    (queue / "inbox").mkdir(parents=True)
+    manifest = {"manifest_version": "1", "from_agent_id": "agent-test", "prd_body": "x"}
+    blob = tmp_path / "drop" / "a.agentq.asc"
+    blob.parent.mkdir(parents=True)
+    blob.write_text(seal_inner_json(manifest, pub), encoding="utf-8")
+
+    ingest_file_drop_blob._strict_gpg = True  # type: ignore[attr-defined]
+    try:
+        result = ingest_file_drop_blob(
+            blob,
+            queue_root=queue,
+            recipient_private_armored=priv,
+            passphrase="",
+            sealed_extension=".agentq.asc",
+        )
+    finally:
+        del ingest_file_drop_blob._strict_gpg  # type: ignore[attr-defined]
+    assert result["status"] == "reject"
+    assert result["code"] == "STRICT_GPG_REGISTRY_REQUIRED"
+    assert not (queue / "in").exists()
+
+
+@pytest.mark.skipif(os.system("which gpg >/dev/null 2>&1") != 0, reason="gpg missing")
+def test_strict_gpg_does_not_fall_back_to_encrypt_only(keypair, tmp_path):
+    import yaml
+
+    from agentq_transport_client.crypto_pipeline import seal_inner_json
+    from agentq_transport_client.ingest import ingest_file_drop_blob
+
+    pub, priv = keypair
+    pub_path = tmp_path / "agent-test.pub.asc"
+    pub_path.write_text(pub, encoding="utf-8")
+    registry = tmp_path / "registry.yaml"
+    registry.write_text(
+        yaml.dump(
+            {
+                "version": 1,
+                "local_agent_id": "recipient",
+                "agents": {
+                    "agent-test": {
+                        "display_name": "Agent Test",
+                        "public_key_path": str(pub_path),
+                        "allowed_transports": ["file_drop"],
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    queue = tmp_path / "queue"
+    (queue / "inbox").mkdir(parents=True)
+    manifest = {"manifest_version": "1", "from_agent_id": "agent-test", "prd_body": "x"}
+    blob = tmp_path / "drop" / "a.agentq.asc"
+    blob.parent.mkdir(parents=True)
+    blob.write_text(seal_inner_json(manifest, pub), encoding="utf-8")
+
+    ingest_file_drop_blob._strict_gpg = True  # type: ignore[attr-defined]
+    try:
+        result = ingest_file_drop_blob(
+            blob,
+            queue_root=queue,
+            recipient_private_armored=priv,
+            passphrase="",
+            sealed_extension=".agentq.asc",
+            registry_path=registry,
+        )
+    finally:
+        del ingest_file_drop_blob._strict_gpg  # type: ignore[attr-defined]
+    assert result["status"] == "quarantine"
+    assert result["code"] != "STRICT_GPG_REGISTRY_REQUIRED"
+    assert (Path(result["quarantine"]) / "error.txt").is_file()
+    assert not (queue / "in").exists()
 
 
 def test_ready_marker_sha256_mismatch_rejects(keypair, tmp_path):

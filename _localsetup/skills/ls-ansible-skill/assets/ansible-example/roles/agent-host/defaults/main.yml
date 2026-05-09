@@ -1,24 +1,27 @@
 ---
-# OpenClaw role defaults
+# Agent-host role defaults.
+# These defaults use OpenClaw as a concrete npm-based example.
 
-# Version to install ('latest' or specific version)
-openclaw_version: "latest"
+agent_host_package_name: openclaw
+agent_host_package_version: latest
+agent_host_command: openclaw
+agent_host_command_args: "gateway start --foreground"
+agent_host_service_name: openclaw
+agent_host_service_description: "OpenClaw Gateway"
 
-# User to run OpenClaw as
-openclaw_user: deploy
+agent_host_user: deploy
 
-# Config directory
-openclaw_config_dir: "/home/{{ openclaw_user }}/.config/openclaw"
+agent_host_config_dir: "/home/{{ agent_host_user }}/.config/{{ agent_host_service_name }}"
 
 # Workspace directory (optional)
-# openclaw_workspace: "/home/{{ openclaw_user }}/clawd"
+# agent_host_workspace: "/home/{{ agent_host_user }}/agent-workspace"
 
 # Systemd service
-openclaw_service_enabled: false   # Enable on boot
-openclaw_service_started: false   # Start immediately (only if config exists)
+agent_host_service_enabled: false   # Enable on boot
+agent_host_service_started: false   # Start immediately after provisioning
 
 # Environment variables for service
-openclaw_env_vars: {}
+agent_host_env_vars:
+  NODE_ENV: production
 # Example:
-#   NODE_ENV: production
 #   ANTHROPIC_API_KEY: "{{ vault_anthropic_key }}"

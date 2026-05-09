@@ -5,8 +5,11 @@ Generates realistic test data, mock objects, and fixtures for various scenarios.
 """
 
 from typing import Dict, List, Any, Optional
+import argparse
 import json
 import random
+
+from cli_support import SkillCliError, emit_json, fail, read_json
 
 
 class FixtureGenerator:
@@ -407,34 +410,78 @@ class FixtureGenerator:
 """
 
         elif format == "yaml":
-            # Simple YAML generation (for basic structures)
-            return self._dict_to_yaml(data)
+            try:
+                import yaml
+            except ImportError as exc:
+                raise RuntimeError(
+                    "PyYAML is required for YAML fixture output. Install framework "
+                    "dependencies with `python3 -m pip install -r _localsetup/requirements.txt`."
+                ) from exc
+            return yaml.safe_dump(data, sort_keys=False).rstrip()
 
         else:
             return str(data)
 
-    def _dict_to_yaml(self, data: Any, indent: int = 0) -> str:
-        """Simple YAML generator."""
-        lines = []
-        indent_str = "  " * indent
 
-        if isinstance(data, dict):
-            for key, value in data.items():
-                if isinstance(value, (dict, list)):
-                    lines.append(f"{indent_str}{key}:")
-                    lines.append(self._dict_to_yaml(value, indent + 1))
-                else:
-                    lines.append(f"{indent_str}{key}: {value}")
+def build_parser() -> argparse.ArgumentParser:
+    """Build the command-line parser."""
+    parser = argparse.ArgumentParser(
+        description="Generate boundary values, edge cases, mock data, or fixture content."
+    )
+    parser.add_argument("--seed", type=int, help="Random seed for reproducible mock data.")
+    subparsers = parser.add_subparsers(dest="command", required=True)
 
-        elif isinstance(data, list):
-            for item in data:
-                if isinstance(item, dict):
-                    lines.append(f"{indent_str}-")
-                    lines.append(self._dict_to_yaml(item, indent + 1))
-                else:
-                    lines.append(f"{indent_str}- {item}")
+    boundaries = subparsers.add_parser("boundaries", help="Generate boundary values.")
+    boundaries.add_argument("--type", required=True, help="Data type, such as int or string.")
+    boundaries.add_argument("--constraints-json", help="Inline constraints JSON.")
+    boundaries.add_argument("--constraints-file", help="Path to constraints JSON.")
 
-        else:
-            return str(data)
+    edges = subparsers.add_parser("edge-cases", help="Generate edge-case scenarios.")
+    edges.add_argument("--scenario", required=True, help="Scenario name, such as auth or api.")
+    edges.add_argument("--context-json", help="Inline context JSON.")
+    edges.add_argument("--context-file", help="Path to context JSON.")
 
-        return "\n".join(lines)
+    mock = subparsers.add_parser("mock-data", help="Generate mock objects from a schema.")
+    mock.add_argument("--schema-json", help="Inline schema JSON.")
+    mock.add_argument("--schema-file", help="Path to schema JSON.")
+    mock.add_argument("--count", type=int, default=1, help="Number of objects to generate.")
+
+    fixture = subparsers.add_parser("fixture", help="Render fixture content.")
+    fixture.add_argument("--name", required=True, help="Fixture variable/name.")
+    fixture.add_argument("--data-json", help="Inline data JSON.")
+    fixture.add_argument("--data-file", help="Path to data JSON.")
+    fixture.add_argument("--format", choices=["json", "yaml", "python"], default="json")
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Run the command-line interface."""
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    generator = FixtureGenerator(seed=args.seed)
+
+    try:
+        if args.command == "boundaries":
+            constraints = read_json(args.constraints_file, args.constraints_json) if (
+                args.constraints_file or args.constraints_json
+            ) else {}
+            emit_json(generator.generate_boundary_values(args.type, constraints))
+        elif args.command == "edge-cases":
+            context = read_json(args.context_file, args.context_json) if (
+                args.context_file or args.context_json
+            ) else {}
+            emit_json(generator.generate_edge_cases(args.scenario, context))
+        elif args.command == "mock-data":
+            schema = read_json(args.schema_file, args.schema_json)
+            emit_json(generator.generate_mock_data(schema, args.count))
+        elif args.command == "fixture":
+            data = read_json(args.data_file, args.data_json)
+            content = generator.generate_fixture_file(args.name, data, args.format)
+            print(content)
+        return 0
+    except (SkillCliError, RuntimeError, ValueError, TypeError) as exc:
+        return fail(str(exc))
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -6,6 +6,7 @@
 1. Read .agentlens/INDEX.md
    → Get list of all modules
    → Note entry points and hub modules
+   → Read .agentlens/AGENT.md if it exists for generated repo-local guidance
 
 2. Pick relevant module from INDEX
    → Read modules/{slug}/MODULE.md
@@ -59,3 +60,9 @@
 - **Read only relevant sections** of source code
 - **Navigate hierarchically**: INDEX → MODULE → outline → source
 - **Estimated savings**: 80-96% fewer tokens than reading raw source
+
+## Staleness and Regeneration
+
+This skill does not provide a regeneration command. If `.agentlens/` appears stale, first verify the claim against source files. Regenerate only when the target repository or an external AgentLens installation documents the exact command to run.
+
+Localsetup v3 does not include an `agentlens` executable, and this skill should not imply that one is available from the repo or `PATH`.

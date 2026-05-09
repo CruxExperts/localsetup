@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Purpose: Automated GitHub PR code review (check, review, post, status, list-unreviewed). Replaces pr-review.sh.
 # Created: 2026-02-20
-# Last updated: 2026-02-20
+# Last updated: 2026-05-09
 
 """
 PR review CLI. Requires gh CLI. Uses PR_REVIEW_REPO, PR_REVIEW_DIR, PR_REVIEW_STATE, PR_REVIEW_OUTDIR.
@@ -17,8 +17,9 @@ import time
 from pathlib import Path
 
 PATH_MAX = 4096
-PR_NUM_MAX = 10
+PR_NUM_MAX = 999999
 REPO_MAX = 256
+REPO_PATTERN = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 
 # Pattern lists: (regex, category, message)
 SECRET_PATTERNS = [
@@ -54,7 +55,18 @@ GENERAL_PATTERNS = [
     (r"^\+.{200,}", "STYLE", "Very long line (>200 chars)"),
 ]
 
-CAT_ICONS = {"SECURITY": "[FAIL]", "ERROR_HANDLING": "[WARNING]", "RISK": "[WARNING]", "STYLE": "[NOTE]", "TODO": "[NOTE]", "TYPING": "[NOTE]"}
+CAT_ICONS = {
+    "SECURITY": "[FAIL]",
+    "ERROR_HANDLING": "[WARNING]",
+    "RISK": "[WARNING]",
+    "STYLE": "[NOTE]",
+    "TODO": "[NOTE]",
+    "TYPING": "[NOTE]",
+}
+
+
+class ReviewInputError(RuntimeError):
+    """Raised when required review input cannot be loaded reliably."""
 
 
 def _sanitize(s: str, max_len: int, name: str) -> str:
@@ -66,19 +78,73 @@ def _sanitize(s: str, max_len: int, name: str) -> str:
     return s
 
 
+def _sanitize_repo(repo: str, *, allow_dot: bool = False) -> str:
+    repo = _sanitize(repo, REPO_MAX, "repo")
+    if allow_dot and repo == ".":
+        return repo
+    if not REPO_PATTERN.fullmatch(repo):
+        raise ValueError("repo must be in owner/repo format")
+    return repo
+
+
+def _sanitize_pr_num(pr_num: int) -> int:
+    if not isinstance(pr_num, int) or pr_num < 1 or pr_num > PR_NUM_MAX:
+        raise ValueError(f"PR number must be between 1 and {PR_NUM_MAX}")
+    return pr_num
+
+
+def _sanitize_path(path: Path, name: str) -> Path:
+    resolved = path.expanduser().resolve()
+    if len(str(resolved)) > PATH_MAX:
+        raise ValueError(f"{name}: path length exceeds {PATH_MAX}")
+    return resolved
+
+
 def _log(msg: str) -> None:
     print(f"[pr-review] {msg}", file=sys.stderr)
 
 
 def _gh(repo: str, *args: str, stdin: str | None = None) -> subprocess.CompletedProcess:
+    repo = _sanitize_repo(repo, allow_dot=True)
     cmd = ["gh"] + list(args) + ["--repo", repo]
-    return subprocess.run(
-        cmd,
-        capture_output=True,
-        text=True,
-        timeout=120,
-        input=stdin,
-    )
+    try:
+        return subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=120,
+            input=stdin,
+        )
+    except FileNotFoundError as exc:
+        raise ReviewInputError("gh CLI is required but was not found on PATH") from exc
+    except subprocess.TimeoutExpired as exc:
+        raise ReviewInputError(f"gh command timed out: {' '.join(cmd[:4])} ...") from exc
+
+
+def _gh_error(label: str, r: subprocess.CompletedProcess) -> ReviewInputError:
+    detail = (r.stderr or r.stdout or "").strip()
+    if detail:
+        detail = f": {detail[:500]}"
+    return ReviewInputError(f"Could not load {label}; gh exited {r.returncode}{detail}")
+
+
+def _require_gh_text(repo: str, label: str, *args: str) -> str:
+    r = _gh(repo, *args)
+    if r.returncode != 0:
+        raise _gh_error(label, r)
+    return r.stdout or ""
+
+
+def _require_json(label: str, text: str, expected_type: type) -> object:
+    if not text.strip():
+        raise ReviewInputError(f"Could not load {label}; gh returned empty JSON output")
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise ReviewInputError(f"Could not parse {label} JSON: {exc.msg}") from exc
+    if not isinstance(data, expected_type):
+        raise ReviewInputError(f"Could not parse {label} JSON: expected {expected_type.__name__}")
+    return data
 
 
 def get_repo_and_dirs() -> tuple[str, Path | None, Path, Path]:
@@ -90,19 +156,21 @@ def get_repo_and_dirs() -> tuple[str, Path | None, Path, Path]:
         if not repo:
             print("Error: Could not detect repo. Set PR_REVIEW_REPO=owner/repo", file=sys.stderr)
             sys.exit(1)
-    if len(repo) > REPO_MAX:
-        print("Error: PR_REVIEW_REPO too long", file=sys.stderr)
+    try:
+        repo = _sanitize_repo(repo)
+    except ValueError as exc:
+        print(f"Error: invalid PR_REVIEW_REPO: {exc}", file=sys.stderr)
         sys.exit(2)
     local_dir = os.environ.get("PR_REVIEW_DIR", "").strip()
-    local_path = Path(local_dir).resolve() if local_dir else None
+    local_path = _sanitize_path(Path(local_dir), "PR_REVIEW_DIR") if local_dir else None
     if local_dir and (not local_path.exists() or not local_path.is_dir()):
         local_path = None
     if not local_path:
         r = subprocess.run(["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True, timeout=5)
         if r.returncode == 0 and r.stdout:
-            local_path = Path(r.stdout.strip()).resolve()
-    state_path = Path(os.environ.get("PR_REVIEW_STATE", "./data/pr-reviews.json")).resolve()
-    outdir = Path(os.environ.get("PR_REVIEW_OUTDIR", "./data/pr-reviews")).resolve()
+            local_path = _sanitize_path(Path(r.stdout.strip()), "git root")
+    state_path = _sanitize_path(Path(os.environ.get("PR_REVIEW_STATE", "./data/pr-reviews.json")), "PR_REVIEW_STATE")
+    outdir = _sanitize_path(Path(os.environ.get("PR_REVIEW_OUTDIR", "./data/pr-reviews")), "PR_REVIEW_OUTDIR")
     outdir.mkdir(parents=True, exist_ok=True)
     if not state_path.exists():
         state_path.parent.mkdir(parents=True, exist_ok=True)
@@ -111,65 +179,101 @@ def get_repo_and_dirs() -> tuple[str, Path | None, Path, Path]:
 
 
 def get_open_prs(repo: str) -> list[dict]:
-    r = _gh(repo, "pr", "list", "--state", "open", "--json",
-            "number,title,author,createdAt,headRefName,additions,deletions,changedFiles,labels,baseRefName,headRefOid")
-    if r.returncode != 0:
-        return []
-    try:
-        return json.loads(r.stdout or "[]")
-    except json.JSONDecodeError:
-        return []
+    text = _require_gh_text(
+        repo,
+        "open PR list",
+        "pr",
+        "list",
+        "--state",
+        "open",
+        "--json",
+        "number,title,author,createdAt,headRefName,additions,deletions,changedFiles,labels,baseRefName,headRefOid",
+    )
+    return _require_json("open PR list", text, list)  # type: ignore[return-value]
 
 
 def get_pr_diff(repo: str, pr_num: int) -> str:
-    r = _gh(repo, "pr", "diff", str(pr_num))
-    return r.stdout or "" if r.returncode == 0 else ""
+    pr_num = _sanitize_pr_num(pr_num)
+    return _require_gh_text(repo, f"PR #{pr_num} diff", "pr", "diff", str(pr_num))
 
 
 def get_pr_files(repo: str, pr_num: int) -> list[str]:
-    r = _gh(repo, "pr", "view", str(pr_num), "--json", "files", "-q", ".files[].path")
-    if r.returncode != 0:
-        return []
-    return [f.strip() for f in (r.stdout or "").splitlines() if f.strip()]
+    pr_num = _sanitize_pr_num(pr_num)
+    text = _require_gh_text(
+        repo,
+        f"PR #{pr_num} files",
+        "pr",
+        "view",
+        str(pr_num),
+        "--json",
+        "files",
+        "-q",
+        ".files[].path",
+    )
+    return [f.strip() for f in text.splitlines() if f.strip()]
 
 
 def get_pr_commits(repo: str, pr_num: int) -> str:
-    r = _gh(repo, "pr", "view", str(pr_num), "--json", "commits")
-    if r.returncode != 0:
-        return ""
-    try:
-        data = json.loads(r.stdout or "{}")
-        commits = data.get("commits", [])
-        return "\n".join(f"{c.get('oid', '')[:8]} {c.get('messageHeadline', '')}" for c in commits)
-    except (json.JSONDecodeError, TypeError):
-        return ""
+    pr_num = _sanitize_pr_num(pr_num)
+    text = _require_gh_text(repo, f"PR #{pr_num} commits", "pr", "view", str(pr_num), "--json", "commits")
+    data = _require_json(f"PR #{pr_num} commits", text, dict)
+    commits = data.get("commits", [])
+    if not isinstance(commits, list):
+        raise ReviewInputError(f"Could not parse PR #{pr_num} commits JSON: commits must be a list")
+    return "\n".join(f"{c.get('oid', '')[:8]} {c.get('messageHeadline', '')}" for c in commits if isinstance(c, dict))
 
 
-def get_pr_view(repo: str, pr_num: int) -> dict | None:
-    r = _gh(repo, "pr", "view", str(pr_num), "--json",
-            "title,author,headRefName,headRefOid,baseRefName,additions,deletions,body,createdAt,labels")
-    if r.returncode != 0:
-        return None
-    try:
-        return json.loads(r.stdout or "{}")
-    except json.JSONDecodeError:
-        return None
+def get_pr_view(repo: str, pr_num: int) -> dict:
+    pr_num = _sanitize_pr_num(pr_num)
+    text = _require_gh_text(
+        repo,
+        f"PR #{pr_num} metadata",
+        "pr",
+        "view",
+        str(pr_num),
+        "--json",
+        "title,author,headRefName,headRefOid,baseRefName,additions,deletions,body,createdAt,labels",
+    )
+    data = _require_json(f"PR #{pr_num} metadata", text, dict)
+    return data  # type: ignore[return-value]
 
 
 def load_state(state_path: Path) -> dict:
-    try:
-        return json.loads(state_path.read_text(encoding="utf-8", errors="replace"))
-    except Exception:
+    if not state_path.exists():
         return {}
+    try:
+        state = json.loads(state_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ReviewInputError(f"Could not parse review state JSON at {state_path}: {exc.msg}") from exc
+    except OSError as exc:
+        raise ReviewInputError(f"Could not read review state at {state_path}: {exc}") from exc
+    if not isinstance(state, dict):
+        raise ReviewInputError(f"Could not parse review state JSON at {state_path}: expected object")
+    return state
 
 
 def save_state(state_path: Path, state: dict) -> None:
-    state_path.write_text(json.dumps(state, indent=2), encoding="utf-8", errors="replace")
+    try:
+        state_path.write_text(json.dumps(state, indent=2), encoding="utf-8")
+    except OSError as exc:
+        raise ReviewInputError(f"Could not write review state at {state_path}: {exc}") from exc
 
 
 def is_reviewed(repo: str, pr_num: int, state_path: Path) -> bool:
-    head_r = _gh(repo, "pr", "view", str(pr_num), "--json", "headRefOid", "-q", ".headRefOid")
-    head_sha = (head_r.stdout or "").strip() if head_r.returncode == 0 else ""
+    pr_num = _sanitize_pr_num(pr_num)
+    head_sha = _require_gh_text(
+        repo,
+        f"PR #{pr_num} head SHA",
+        "pr",
+        "view",
+        str(pr_num),
+        "--json",
+        "headRefOid",
+        "-q",
+        ".headRefOid",
+    ).strip()
+    if not head_sha:
+        raise ReviewInputError(f"Could not load PR #{pr_num} head SHA; gh returned empty output")
     state = load_state(state_path)
     pr = state.get(str(pr_num), {})
     return pr.get("head_sha") == head_sha and pr.get("status") == "reviewed"
@@ -440,11 +544,12 @@ def cmd_check(repo: str, state_path: Path, outdir: Path, local_dir: Path | None)
 
 
 def cmd_review(repo: str, pr_num: int, state_path: Path, outdir: Path, local_dir: Path | None) -> int:
-    if pr_num < 1 or pr_num > 999999:
-        print("Error: Invalid PR number", file=sys.stderr)
+    try:
+        pr_num = _sanitize_pr_num(pr_num)
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
         return 2
-    generate_report(repo, pr_num, state_path, outdir, local_dir, True)
-    return 0
+    return 0 if generate_report(repo, pr_num, state_path, outdir, local_dir, True) else 1
 
 
 def cmd_post(repo: str, pr_num: int, outdir: Path) -> int:
@@ -503,32 +608,36 @@ def main() -> int:
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         return 2
-    if sub == "check":
-        return cmd_check(repo, state_path, outdir, local_dir)
-    if sub == "review":
-        if len(sys.argv) < 3:
-            print("Error: PR number required", file=sys.stderr)
-            return 2
-        try:
-            pr_num = int(sys.argv[2])
-        except ValueError:
-            print("Error: PR number must be an integer", file=sys.stderr)
-            return 2
-        return cmd_review(repo, pr_num, state_path, outdir, local_dir)
-    if sub == "post":
-        if len(sys.argv) < 3:
-            print("Error: PR number required", file=sys.stderr)
-            return 2
-        try:
-            pr_num = int(sys.argv[2])
-        except ValueError:
-            print("Error: PR number must be an integer", file=sys.stderr)
-            return 2
-        return cmd_post(repo, pr_num, outdir)
-    if sub == "status":
-        return cmd_status(repo, state_path)
-    if sub == "list-unreviewed":
-        return cmd_list_unreviewed(repo, state_path)
+    try:
+        if sub == "check":
+            return cmd_check(repo, state_path, outdir, local_dir)
+        if sub == "review":
+            if len(sys.argv) < 3:
+                print("Error: PR number required", file=sys.stderr)
+                return 2
+            try:
+                pr_num = int(sys.argv[2])
+            except ValueError:
+                print("Error: PR number must be an integer", file=sys.stderr)
+                return 2
+            return cmd_review(repo, pr_num, state_path, outdir, local_dir)
+        if sub == "post":
+            if len(sys.argv) < 3:
+                print("Error: PR number required", file=sys.stderr)
+                return 2
+            try:
+                pr_num = int(sys.argv[2])
+            except ValueError:
+                print("Error: PR number must be an integer", file=sys.stderr)
+                return 2
+            return cmd_post(repo, pr_num, outdir)
+        if sub == "status":
+            return cmd_status(repo, state_path)
+        if sub == "list-unreviewed":
+            return cmd_list_unreviewed(repo, state_path)
+    except ReviewInputError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 2
     print("Usage: pr_review.py {check|review <PR#>|post <PR#>|status|list-unreviewed}", file=sys.stderr)
     return 1
 

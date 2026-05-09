@@ -9,6 +9,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote, urlsplit
 
 MAX_TEXT = 2000
 SENSITIVE_KEY_TOKENS = {
@@ -45,6 +46,39 @@ def sanitize_path(raw: str) -> Path:
     if "\x00" in raw:
         raise ValueError("path contains null byte")
     return path
+
+
+def encode_path_segment(raw: object, label: str = "identifier") -> str:
+    """Validate and percent-encode one user-controlled URL path segment."""
+    if not isinstance(raw, str):
+        raise ValueError(f"{label} must be a string")
+    value = raw.strip()
+    if not value:
+        raise ValueError(f"{label} must be a non-empty string")
+    if "\x00" in value:
+        raise ValueError(f"{label} contains null byte")
+    if any(ord(ch) < 32 or ord(ch) == 127 for ch in value):
+        raise ValueError(f"{label} contains control characters")
+    return quote(value, safe="")
+
+
+def build_api_path(endpoint: object, identifier: object | None = None) -> str:
+    """Validate a repo-known API endpoint and append an encoded identifier."""
+    if not isinstance(endpoint, str):
+        raise ValueError("endpoint must be a string")
+    parts = urlsplit(endpoint)
+    if parts.scheme or parts.netloc or parts.query or parts.fragment:
+        raise ValueError(
+            "endpoint must be a relative API path without query or fragment"
+        )
+    path = parts.path
+    if not path.startswith("/api/"):
+        raise ValueError("endpoint must start with /api/")
+    if "\x00" in path or any(ord(ch) < 32 or ord(ch) == 127 for ch in path):
+        raise ValueError("endpoint contains control characters")
+    if identifier is None:
+        return path
+    return f"{path.rstrip('/')}/{encode_path_segment(identifier)}"
 
 
 def ensure_parent_dir(path: Path) -> None:

@@ -1,0 +1,12 @@
+[DEFAULT]
+bantime = {{ security_fail2ban_bantime | default('1h') }}
+findtime = {{ security_fail2ban_findtime | default('10m') }}
+maxretry = {{ security_fail2ban_maxretry | default(5) }}
+
+[sshd]
+enabled = true
+port = {{ security_ssh_port | default(22) }}
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = {{ security_fail2ban_ssh_maxretry | default(3) }}
+bantime = {{ security_fail2ban_ssh_bantime | default('1d') }}

@@ -6,7 +6,10 @@ Supports multiple testing frameworks with intelligent test scaffolding.
 """
 
 from typing import Dict, List, Any, Optional
+import argparse
 from enum import Enum
+
+from cli_support import SkillCliError, emit_json, fail, read_json
 
 
 class TestFramework(Enum):
@@ -436,3 +439,69 @@ import static org.junit.jupiter.api.Assertions.*;
             if keyword_lower in test_lower:
                 return True
         return False
+
+
+def build_parser() -> argparse.ArgumentParser:
+    """Build the command-line parser."""
+    parser = argparse.ArgumentParser(
+        description="Generate test case specs or test stubs from requirements JSON."
+    )
+    parser.add_argument("--input", help="Path to requirements JSON.")
+    parser.add_argument("--input-json", help="Inline requirements JSON.")
+    parser.add_argument(
+        "--framework",
+        choices=[framework.value for framework in TestFramework],
+        default=TestFramework.PYTEST.value,
+        help="Target test framework.",
+    )
+    parser.add_argument(
+        "--language",
+        default="python",
+        help="Target language, such as python, javascript, typescript, or java.",
+    )
+    parser.add_argument(
+        "--test-type",
+        choices=[test_type.value for test_type in TestType],
+        default=TestType.UNIT.value,
+    )
+    parser.add_argument("--module", help="Generate a complete test file for this module.")
+    parser.add_argument(
+        "--existing-tests-json",
+        help="Inline JSON list of existing test names for scenario suggestions.",
+    )
+    parser.add_argument(
+        "--code-analysis-json",
+        help="Inline code-analysis JSON for scenario suggestions.",
+    )
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Run the command-line interface."""
+    parser = build_parser()
+    args = parser.parse_args(argv)
+
+    try:
+        generator = TestGenerator(TestFramework(args.framework), args.language)
+
+        if args.existing_tests_json or args.code_analysis_json:
+            existing = read_json(inline=args.existing_tests_json or "[]")
+            analysis = read_json(inline=args.code_analysis_json or "{}")
+            emit_json(generator.suggest_missing_scenarios(existing, analysis))
+            return 0
+
+        requirements = read_json(args.input, args.input_json)
+        cases = generator.generate_from_requirements(
+            requirements, TestType(args.test_type)
+        )
+        if args.module:
+            print(generator.generate_test_file(args.module, cases))
+        else:
+            emit_json({"test_cases": cases})
+        return 0
+    except (SkillCliError, ValueError, KeyError, TypeError) as exc:
+        return fail(str(exc))
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

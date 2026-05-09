@@ -6,6 +6,9 @@ Implements progressive disclosure and token-efficient reporting.
 """
 
 from typing import Dict, List, Any, Optional
+import argparse
+
+from cli_support import SkillCliError, fail, read_json
 
 
 class OutputFormatter:
@@ -352,3 +355,56 @@ class OutputFormatter:
         remaining = len(lines) - max_lines
 
         return f"{truncated}\n\n... ({remaining} more lines, use --verbose for full output)"
+
+
+def build_parser() -> argparse.ArgumentParser:
+    """Build the command-line parser."""
+    parser = argparse.ArgumentParser(
+        description="Format TDD guide JSON data for terminal, markdown, or API output."
+    )
+    parser.add_argument(
+        "--kind",
+        choices=["coverage", "recommendations", "results", "summary"],
+        required=True,
+    )
+    parser.add_argument("--input", help="Path to JSON input.")
+    parser.add_argument("--input-json", help="Inline JSON input.")
+    parser.add_argument(
+        "--environment",
+        choices=["cli", "desktop", "api"],
+        default="cli",
+    )
+    parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--detailed", action="store_true")
+    parser.add_argument("--max-items", type=int)
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Run the command-line interface."""
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    formatter = OutputFormatter(environment=args.environment, verbose=args.verbose)
+
+    try:
+        payload = read_json(args.input, args.input_json)
+        if args.kind == "coverage":
+            print(formatter.format_coverage_summary(payload, detailed=args.detailed))
+        elif args.kind == "recommendations":
+            print(formatter.format_recommendations(payload, max_items=args.max_items))
+        elif args.kind == "results":
+            print(formatter.format_test_results(payload, show_details=args.detailed))
+        elif args.kind == "summary":
+            output = formatter.create_summary_report(
+                payload.get("coverage", {}),
+                payload.get("metrics", {}),
+                payload.get("recommendations", []),
+            )
+            print(output)
+        return 0
+    except (SkillCliError, ValueError, KeyError, TypeError) as exc:
+        return fail(str(exc))
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

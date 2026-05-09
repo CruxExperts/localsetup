@@ -1,6 +1,6 @@
 ---
 name: ls-task-skill-matcher
-description: "Match user tasks to installed Localsetup skills, recommend top matches, and run single-task or batch skill-selection flow with minimal interruption. Includes top-3 complementary public-skill suggestions and public-index refresh handling."
+description: "Match user tasks to installed Localsetup skills, recommend top matches, and run single-task or batch skill-selection flow with minimal interruption. Delegates complementary public-skill discovery to ls-skill-discovery."
 metadata:
   version: "1.1"
 ---
@@ -21,12 +21,12 @@ metadata:
 
 ## Sources and scope
 
-- Read installed-skill candidates from the **current platform's context loader/index** (see `_localsetup/docs/PLATFORM_REGISTRY.md`).
-- Cursor: `.cursor/rules/ls-context-index.md` (or skills section of `.cursor/rules/ls-context.mdc`).
-- Claude Code: `.claude/CLAUDE.md`.
-- Codex: `AGENTS.md`.
-- Other platforms: workspace context per platform registry (see PLATFORM_REGISTRY.md).
-- Use public-skill suggestions from `_localsetup/docs/PUBLIC_SKILL_INDEX.yaml`.
+- Read installed-skill candidates from the **current platform's context loader/index**. Use the platform registry documentation when available.
+- Cursor: the workspace Cursor context index or skills section.
+- Claude Code: the workspace Claude context file.
+- Codex: the workspace `AGENTS.md`.
+- Other platforms: the workspace context source identified by the platform registry.
+- For complementary public-skill suggestions, load `ls-skill-discovery` and follow its public-index check, refresh prompt, and recommendation flow.
 
 ## Mode detection
 
@@ -46,8 +46,8 @@ metadata:
 
 3. **Single-task flow**
    - If one clear installed match exists, ask once: **"Use this skill?"**
-   - Same turn: include up to 3 complementary public skills (one-line reason each).
-   - If public index is missing or stale, still show match and "Use this skill?" first, then ask: **"Complementary suggestions need the public index. Want me to refresh it now so I can recommend installable skills?"**
+   - Same turn: include up to 3 complementary public skills from `ls-skill-discovery` when its index is ready.
+   - If the public index is missing, has no `updated` value, or is stale, still show the installed match and **"Use this skill?"** first. Then load `ls-skill-discovery` and follow its required prompt behavior, including the last refresh date, computed age reminder, 7-day stale threshold, and full refresh-and-scrub sequence before returning public suggestions.
 
 4. **Batch / long-running flow**
    - Prompt once at start with options:
@@ -59,13 +59,14 @@ metadata:
 
 5. **No installed fit**
    - State that no installed skill is a good fit.
-   - Offer up to 3 complementary public skills to import.
+   - Offer up to 3 complementary public skills to import by delegating discovery to `ls-skill-discovery`.
    - Optionally suggest creating a new skill with `ls-skill-creator`.
 
 ## Public index rules
 
-- Stale definition: `_localsetup/docs/PUBLIC_SKILL_INDEX.yaml` missing, missing `updated`, or `updated` older than 7 days.
-- For complementary suggestions: return up to 3 public skills, each with one-line fit reason.
+- Do not implement a separate stale-index policy in this matcher. `ls-skill-discovery` owns the public index, the standard last-refresh reminder, stale detection, user prompt, refresh, and scrub behavior.
+- When invoking `ls-skill-discovery`, preserve its required status line: `Last index refresh: YYYY-MM-DD (X days/weeks/years ago).` If the index is missing or never refreshed, use its "not built yet" prompt. If the index is at least 7 days old, include its stale refresh prompt before relying on public recommendations.
+- For complementary suggestions: return up to 3 public skills from the discovery result, each with one-line fit reason.
 - To import suggestions, point user to `ls-skill-importer` (or run it if user asks).
 
 ## Output style
@@ -73,7 +74,7 @@ metadata:
 - Keep outputs short, actionable, and consistently structured.
 - For uncertain match: show top 3 installed candidates, each with one-line reason, then ask user to choose or say "pick the best".
 - For single clear match: ask once, then show complementary public options in the same response.
-- For public complementary suggestions, use available enriched fields from `_localsetup/docs/PUBLIC_SKILL_INDEX.yaml`:
+- For public complementary suggestions, use available enriched fields from the public index entries returned by `ls-skill-discovery`:
   - Prefer `summary_short` over raw description.
   - Include notable `requirements` or `risk_flags` in one short line.
 - Rendering fallback:
@@ -82,9 +83,10 @@ metadata:
 
 ## References
 
-- `_localsetup/docs/TASK_SKILL_MATCHING.md`
-- `_localsetup/docs/SKILLS_AND_RULES.md`
-- `_localsetup/docs/PLATFORM_REGISTRY.md`
-- `_localsetup/docs/PUBLIC_SKILL_INDEX.yaml`
+- Framework task-skill matching guidance
+- Framework skills and rules documentation
+- Framework platform registry documentation
+- Public skill index managed by `ls-skill-discovery`
+- `ls-skill-discovery`
 - `ls-skill-importer`
 - `ls-skill-creator`

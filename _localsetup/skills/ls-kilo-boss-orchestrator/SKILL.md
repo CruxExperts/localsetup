@@ -33,6 +33,9 @@ Use this skill when you need:
 
 - Destructive/high-impact actions are gate-controlled and require approval.
 - Guarded execution applies safe operations and skips destructive operations.
+- Worker task commands must be structured `command_argv` lists beginning with `kilo run`; shell command strings are rejected.
+- Finalization requires `gate_passed: true` and `requires_tiebreaker: false`.
+- Watchdog checks enforce lease TTL by reclaiming expired locks and requeueing or deadlettering tasks.
 - All results and errors are redacted for sensitive material before persistence.
 - Mutable state is repo-local under `.kilo/state/orchestrator/`.
 
@@ -92,8 +95,6 @@ Use `ls-cron-orchestrator` with a user-created manifest, commonly `cron/manifest
 
 ## Consensus policy integration
 
-This skill follows `docs/reference/consensus-validation-workflow.md`:
-
 - Primary + verifier always for substantive tasks.
 - Tiebreaker mandatory for High/Critical discrepancies.
 - Write validation record for each adjudicated task.
@@ -102,5 +103,5 @@ This skill follows `docs/reference/consensus-validation-workflow.md`:
 
 - `references/kilo-boss-orchestrator-runbook.md`
 - `references/kilo-boss-state-schema.md`
+- `references/kilo-headless-boss-worker-gentle-loop-architecture.md`
 - `references/examples/task.sample.yaml`
-- `docs/reference/kilo-headless-boss-worker-gentle-loop-architecture.md`

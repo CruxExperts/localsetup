@@ -6,99 +6,113 @@
 from __future__ import annotations
 
 import argparse
+import shlex
 import sys
 from pathlib import Path
 
-import yaml
+from _cron_manifest import (
+    MAX_CMD_LEN,
+    MAX_ID_LEN,
+    MAX_TRIGGER_LEN,
+    ManifestError,
+    dump_manifest,
+    load_manifest,
+    normalize_command,
+    validate_identifier,
+    validate_manifest,
+)
 
 MANIFEST_DEFAULT = "cron/manifest.yaml"
-MAX_ID_LEN = 128
-MAX_TRIGGER_LEN = 128
-MAX_CMD_LEN = 8192
 
 
-def _sanitize(s: str, max_len: int) -> str:
-    if not isinstance(s, str):
-        return ""
-    out = "".join(c for c in s if ord(c) >= 0x20 and ord(c) != 0x7F)
-    out = " ".join(out.split()).strip()
-    return out[:max_len] if len(out) > max_len else out
-
-
-def _load_manifest(path: Path) -> tuple[dict, int]:
-    if not path.is_file():
-        print(f"[cron_ctl] Not a file: {path}", file=sys.stderr)
-        return {}, 1
+def _load_manifest(path: Path, *, validate: bool = True) -> tuple[dict, dict, int]:
     try:
-        raw = path.read_text(encoding="utf-8", errors="replace")
-        data = yaml.safe_load(raw)
-    except Exception as e:
-        print(f"[cron_ctl] Failed to load manifest: {e}", file=sys.stderr)
-        return {}, 1
-    if not isinstance(data, dict):
-        print("[cron_ctl] Manifest root must be a dict", file=sys.stderr)
-        return {}, 1
-    return data, 0
+        data = load_manifest(path)
+        normalized = validate_manifest(data) if validate else {}
+    except ManifestError as exc:
+        print(f"[cron_ctl] {exc}", file=sys.stderr)
+        return {}, {}, 1
+    return data, normalized, 0
 
 
 def _save_manifest(path: Path, data: dict) -> int:
-    path.parent.mkdir(parents=True, exist_ok=True)
     try:
-        with path.open("w", encoding="utf-8") as f:
-            yaml.safe_dump(data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
-    except Exception as e:
-        print(f"[cron_ctl] Failed to write manifest: {e}", file=sys.stderr)
+        dump_manifest(path, data)
+    except ManifestError as exc:
+        print(f"[cron_ctl] {exc}", file=sys.stderr)
         return 1
     return 0
 
 
+def _command_preview(command: object) -> str:
+    if isinstance(command, list):
+        command_text = shlex.join(str(part) for part in command)
+    else:
+        command_text = str(command or "")
+    return command_text[:60] + ("..." if len(command_text) > 60 else "")
+
+
+def _trigger_tasks(tasks: list[dict], trigger: str) -> list[dict]:
+    return [task for task in tasks if task["trigger"] == trigger]
+
+
+def _runner_command(run_trigger: Path, manifest_abs: Path, repo_root: Path, trigger: str, delay_seconds: int = 0) -> str:
+    argv = ["python3", str(run_trigger), "--manifest", str(manifest_abs), "--repo-root", str(repo_root)]
+    if delay_seconds:
+        argv.extend(["--delay-seconds", str(delay_seconds)])
+    argv.append(trigger)
+    return shlex.join(argv).replace("%", r"\%")
+
+
 def cmd_validate(manifest_path: Path) -> int:
-    data, code = _load_manifest(manifest_path)
+    _, _, code = _load_manifest(manifest_path)
     if code != 0:
         return code
-    triggers = data.get("triggers") or {}
-    tasks = [t for t in (data.get("tasks") or []) if isinstance(t, dict)]
-    for t in tasks:
-        tr = _sanitize(str(t.get("trigger", "")), MAX_TRIGGER_LEN)
-        if tr and tr not in triggers:
-            print(f"[cron_ctl] Task {t.get('id')} references unknown trigger: {tr}", file=sys.stderr)
-            return 1
     print("OK")
     return 0
 
 
 def cmd_list(manifest_path: Path, trigger_filter: str | None) -> int:
-    data, code = _load_manifest(manifest_path)
+    _, normalized, code = _load_manifest(manifest_path)
     if code != 0:
         return code
-    triggers = data.get("triggers") or {}
-    tasks = [t for t in (data.get("tasks") or []) if isinstance(t, dict)]
+    tasks = normalized["tasks"]
     if trigger_filter:
-        tasks = [t for t in tasks if _sanitize(str(t.get("trigger", "")), MAX_TRIGGER_LEN) == trigger_filter]
-    tasks.sort(key=lambda t: (_sanitize(str(t.get("trigger", "")), MAX_TRIGGER_LEN), int(t.get("sequence_order", 0))))
-    for t in tasks:
-        tid = t.get("id", "?")
-        tr = t.get("trigger", "?")
-        order = t.get("sequence_order", 0)
-        en = t.get("enabled", True)
-        cmd = (t.get("command") or "")[:60] + ("..." if len(t.get("command") or "") > 60 else "")
-        print(f"  {tid}  trigger={tr}  order={order}  enabled={en}  command={cmd}")
+        try:
+            trigger_filter = validate_identifier(trigger_filter, "trigger", MAX_TRIGGER_LEN)
+        except ManifestError as exc:
+            print(f"[cron_ctl] {exc}", file=sys.stderr)
+            return 1
+        tasks = [task for task in tasks if task["trigger"] == trigger_filter]
+    tasks.sort(key=lambda task: (task["trigger"], task["sequence_order"]))
+    for task in tasks:
+        print(
+            f"  {task['id']}  trigger={task['trigger']}  order={task['sequence_order']}  "
+            f"enabled={task['enabled']}  command={_command_preview(task['command'])}"
+        )
     return 0
 
 
 def cmd_add_task(manifest_path: Path, trigger: str, command: str, sequence_order: int | None, task_id: str | None) -> int:
-    data, code = _load_manifest(manifest_path)
+    data, normalized, code = _load_manifest(manifest_path)
     if code != 0:
         return code
-    triggers = data.get("triggers") or {}
-    tr = _sanitize(trigger, MAX_TRIGGER_LEN)
-    if tr not in triggers:
+    try:
+        tr = validate_identifier(trigger, "trigger", MAX_TRIGGER_LEN)
+        normalize_command(command, "command")
+        if task_id:
+            tid = validate_identifier(task_id, "id", MAX_ID_LEN)
+        else:
+            tid = ""
+    except ManifestError as exc:
+        print(f"[cron_ctl] {exc}", file=sys.stderr)
+        return 1
+    if tr not in normalized["triggers"]:
         print(f"[cron_ctl] Unknown trigger: {tr}", file=sys.stderr)
         return 1
     tasks = data.get("tasks") or []
     existing_ids = {str(t.get("id", "")) for t in tasks if isinstance(t, dict)}
-    if task_id:
-        tid = _sanitize(task_id, MAX_ID_LEN)
+    if tid:
         if tid in existing_ids:
             print(f"[cron_ctl] Task id already exists: {tid}", file=sys.stderr)
             return 1
@@ -109,10 +123,16 @@ def cmd_add_task(manifest_path: Path, trigger: str, command: str, sequence_order
             n += 1
         tid = f"{base}-{n}"
     if sequence_order is None:
-        same_trigger = [t for t in tasks if isinstance(t, dict) and _sanitize(str(t.get("trigger", "")), MAX_TRIGGER_LEN) == tr]
+        same_trigger = _trigger_tasks(normalized["tasks"], tr)
         sequence_order = max((int(t.get("sequence_order", 0)) for t in same_trigger), default=0) + 1
-    cmd_san = _sanitize(command, MAX_CMD_LEN)
-    tasks.append({"id": tid, "trigger": tr, "sequence_order": sequence_order, "command": cmd_san, "enabled": True})
+    elif sequence_order < 0:
+        print("[cron_ctl] sequence_order must be greater than or equal to 0", file=sys.stderr)
+        return 1
+    command_text = command.strip()
+    if len(command_text) > MAX_CMD_LEN:
+        print(f"[cron_ctl] command exceeds {MAX_CMD_LEN} characters", file=sys.stderr)
+        return 1
+    tasks.append({"id": tid, "trigger": tr, "sequence_order": sequence_order, "command": command_text, "enabled": True})
     data["tasks"] = tasks
     return _save_manifest(manifest_path, data)
 
@@ -121,29 +141,50 @@ def cmd_remove_task(manifest_path: Path, task_id: str | None, trigger: str | Non
     if not task_id and not trigger:
         print("[cron_ctl] Specify --id ID or --trigger NAME", file=sys.stderr)
         return 1
-    data, code = _load_manifest(manifest_path)
+    data, _, code = _load_manifest(manifest_path)
     if code != 0:
         return code
     tasks = [t for t in (data.get("tasks") or []) if isinstance(t, dict)]
     if task_id:
+        try:
+            task_id = validate_identifier(task_id, "id", MAX_ID_LEN)
+        except ManifestError as exc:
+            print(f"[cron_ctl] {exc}", file=sys.stderr)
+            return 1
         tasks = [t for t in tasks if str(t.get("id", "")) != task_id]
         if len(tasks) == len(data.get("tasks") or []):
             print(f"[cron_ctl] No task with id: {task_id}", file=sys.stderr)
             return 1
     if trigger:
-        tr = _sanitize(trigger, MAX_TRIGGER_LEN)
-        tasks = [t for t in tasks if _sanitize(str(t.get("trigger", "")), MAX_TRIGGER_LEN) != tr]
+        try:
+            tr = validate_identifier(trigger, "trigger", MAX_TRIGGER_LEN)
+        except ManifestError as exc:
+            print(f"[cron_ctl] {exc}", file=sys.stderr)
+            return 1
+        tasks = [t for t in tasks if str(t.get("trigger", "")) != tr]
     data["tasks"] = tasks
     return _save_manifest(manifest_path, data)
 
 
 def cmd_reorder(manifest_path: Path, trigger: str, order_ids: list[str]) -> int:
-    data, code = _load_manifest(manifest_path)
+    data, normalized, code = _load_manifest(manifest_path)
     if code != 0:
         return code
-    tr = _sanitize(trigger, MAX_TRIGGER_LEN)
+    try:
+        tr = validate_identifier(trigger, "trigger", MAX_TRIGGER_LEN)
+        order_ids = [validate_identifier(task_id, "order id", MAX_ID_LEN) for task_id in order_ids if task_id]
+    except ManifestError as exc:
+        print(f"[cron_ctl] {exc}", file=sys.stderr)
+        return 1
+    if tr not in normalized["triggers"]:
+        print(f"[cron_ctl] Unknown trigger: {tr}", file=sys.stderr)
+        return 1
     tasks = list(data.get("tasks") or [])
-    by_trigger = {t["id"]: t for t in tasks if isinstance(t, dict) and _sanitize(str(t.get("trigger", "")), MAX_TRIGGER_LEN) == tr}
+    by_trigger = {t["id"]: t for t in tasks if isinstance(t, dict) and str(t.get("trigger", "")) == tr}
+    unknown_ids = [task_id for task_id in order_ids if task_id not in by_trigger]
+    if unknown_ids:
+        print(f"[cron_ctl] Unknown task id(s) for trigger {tr}: {', '.join(unknown_ids)}", file=sys.stderr)
+        return 1
     other = [t for t in tasks if isinstance(t, dict) and t.get("id") not in by_trigger]
     ordered = []
     for i, tid in enumerate(order_ids):
@@ -159,9 +200,14 @@ def cmd_reorder(manifest_path: Path, trigger: str, order_ids: list[str]) -> int:
 
 
 def cmd_enable_disable(manifest_path: Path, task_id: str, enable: bool) -> int:
-    data, code = _load_manifest(manifest_path)
+    data, _, code = _load_manifest(manifest_path)
     if code != 0:
         return code
+    try:
+        task_id = validate_identifier(task_id, "id", MAX_ID_LEN)
+    except ManifestError as exc:
+        print(f"[cron_ctl] {exc}", file=sys.stderr)
+        return 1
     tasks = data.get("tasks") or []
     for t in tasks:
         if isinstance(t, dict) and str(t.get("id", "")) == task_id:
@@ -172,10 +218,13 @@ def cmd_enable_disable(manifest_path: Path, task_id: str, enable: bool) -> int:
 
 
 def cmd_install(manifest_path: Path, repo_root: Path, output_path: Path | None, script_dir: Path) -> int:
-    data, code = _load_manifest(manifest_path)
+    _, normalized, code = _load_manifest(manifest_path)
     if code != 0:
         return code
     repo_root = repo_root.resolve()
+    if not repo_root.is_dir():
+        print(f"[cron_ctl] Not a directory: {repo_root}", file=sys.stderr)
+        return 1
     run_trigger = (script_dir / "run_trigger.py").resolve()
     if not run_trigger.is_file():
         print(f"[cron_ctl] Runner not found: {run_trigger}", file=sys.stderr)
@@ -187,21 +236,16 @@ def cmd_install(manifest_path: Path, repo_root: Path, output_path: Path | None, 
         f"# Manifest: {manifest_abs}",
         "",
     ]
-    triggers = data.get("triggers") or {}
-    tasks = [t for t in (data.get("tasks") or []) if isinstance(t, dict) and t.get("enabled", True)]
+    triggers = normalized["triggers"]
     for name, cfg in triggers.items():
-        if not isinstance(cfg, dict):
-            continue
         if "schedule" in cfg:
-            cron_expr = _sanitize(str(cfg["schedule"]), 64)
-            if cron_expr:
-                lines.append(f"# Trigger: {name}")
-                lines.append(f"{cron_expr}\tcd {repo_root} && python3 {run_trigger} --manifest {manifest_abs} --repo-root {repo_root} {name}")
-                lines.append("")
+            lines.append(f"# Trigger: {name}")
+            lines.append(f"{cfg['schedule']}\t{_runner_command(run_trigger, manifest_abs, repo_root, name)}")
+            lines.append("")
         elif "on_boot_delay_minutes" in cfg:
-            delay = max(0, int(cfg.get("on_boot_delay_minutes", 0)))
+            delay = cfg.get("on_boot_delay_minutes", 0)
             lines.append(f"# Trigger: {name} (after boot, delay {delay} min)")
-            lines.append(f"@reboot\tsleep {delay * 60} && cd {repo_root} && python3 {run_trigger} --manifest {manifest_abs} --repo-root {repo_root} {name}")
+            lines.append(f"@reboot\t{_runner_command(run_trigger, manifest_abs, repo_root, name, delay * 60)}")
             lines.append("")
     out = "\n".join(lines)
     if output_path:

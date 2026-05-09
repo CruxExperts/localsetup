@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 import os
-import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -16,12 +15,12 @@ from deps import require_deps  # noqa: E402
 require_deps(["yaml"])
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lib.boss_orchestrator.command import command_display, normalize_command  # noqa: E402
 from lib.boss_orchestrator.state import StateStore  # noqa: E402
 from lib.boss_orchestrator.util import now_iso  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 ROUTER_SCRIPT = REPO_ROOT / "scripts" / "ops" / "agent_failure_backoff_router.py"
-MAX_CMD_LEN = 8192
 MAX_TIMEOUT_SECONDS = 86400
 
 
@@ -31,41 +30,16 @@ def _safe_task_id(raw: str) -> str:
     return raw
 
 
-def _sanitize(value: object, max_len: int = MAX_CMD_LEN) -> str:
+def _sanitize(value: object, max_len: int = 8192) -> str:
     text = str(value)
     cleaned = "".join(ch for ch in text if ord(ch) >= 0x20 and ord(ch) != 0x7F)
     cleaned = " ".join(cleaned.split()).strip()
     return cleaned[:max_len] if len(cleaned) > max_len else cleaned
 
 
-def _contains_shell_operators(command: str) -> bool:
-    return any(
-        token in command for token in ("&&", "||", ";", "|", ">", "<", "`", "\n", "\r")
-    )
-
-
 def _normalize_command(raw: object) -> tuple[list[str], str | None]:
-    if isinstance(raw, list):
-        argv = [_sanitize(part) for part in raw]
-        argv = [part for part in argv if part]
-        if not argv:
-            return [], "command list is empty after sanitization"
-        return argv, None
-
-    if not isinstance(raw, str):
-        return [], "task command must be a string or argv list"
-    command = _sanitize(raw)
-    if not command:
-        return [], "task command missing"
-    if _contains_shell_operators(command):
-        return [], "task command contains unsupported shell operators; provide argv list for literal args"
-    try:
-        argv = shlex.split(command, posix=True)
-    except ValueError as exc:
-        return [], f"invalid task command quoting: {type(exc).__name__}: {exc}"
-    if not argv:
-        return [], "task command is empty after parsing"
-    return argv, None
+    """Compatibility wrapper for older tests/importers."""
+    return normalize_command(raw)
 
 
 def _normalize_timeout(raw: object) -> tuple[int, str | None]:
@@ -159,11 +133,12 @@ def run_worker(task_id: str, worker_id: str, session_id: str) -> int:
         print(f"[worker] task not found: {task_id}", file=sys.stderr)
         return 1
 
-    command_raw = task.get("command", "")
-    command_argv, command_error = _normalize_command(command_raw)
+    command_raw = task.get("command_argv", task.get("command", ""))
+    command_argv, command_error = normalize_command(command_raw)
     if command_error:
         print(f"[worker] {command_error}", file=sys.stderr)
         return 1
+    command_text = command_display(command_argv)
 
     repo_root = str(task.get("repo_root", "."))
     timeout_seconds, timeout_error = _normalize_timeout(task.get("timeout_seconds", 600))
@@ -213,7 +188,7 @@ def run_worker(task_id: str, worker_id: str, session_id: str) -> int:
             worker_id=worker_id,
             task_id=task_id,
             session_id=session_id,
-            command=" ".join(command_argv),
+            command=command_text,
             exit_code=proc.returncode,
             stdout=proc.stdout,
             stderr=proc.stderr,
@@ -242,7 +217,7 @@ def run_worker(task_id: str, worker_id: str, session_id: str) -> int:
             worker_id=worker_id,
             task_id=task_id,
             session_id=session_id,
-            command=" ".join(command_argv),
+            command=command_text,
             exit_code=1,
             stdout="",
             stderr=error_text,
@@ -270,7 +245,7 @@ def run_worker(task_id: str, worker_id: str, session_id: str) -> int:
             worker_id=worker_id,
             task_id=task_id,
             session_id=session_id,
-            command=" ".join(command_argv),
+            command=command_text,
             exit_code=124,
             stdout="",
             stderr=f"timed out after {timeout_seconds}s",

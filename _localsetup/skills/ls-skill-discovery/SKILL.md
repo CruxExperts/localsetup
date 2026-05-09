@@ -81,6 +81,26 @@ Presentation fallback by platform capability:
 - Basic markdown: ranked blocks only.
 - Plain text/ascii: ranked blocks with labeled lines (`Skill:`, `Summary:`, `Risks:`), no table.
 
+## Recommendation example
+
+Example query: "I need a skill for importing public skills from GitHub and validating them before use."
+
+Found 2 public-skill recommendations for GitHub skill import and validation.
+
+1. [skill-importer](https://example.com/skills/skill-importer)
+   Summary: Imports a skill from a repository URL, inspects its manifest and documentation, and prepares it for local use. It includes validation steps for frontmatter, required files, and basic safety checks before installation.
+   Why it fits: The query asks for GitHub import plus validation; this skill already covers fetch, scan, and acceptance review.
+   Constraints/risks: Requires network access and writes files during the import step; review fetched content before enabling it.
+   Recommendation status: import now
+
+2. [skill-vetter](https://example.com/skills/skill-vetter)
+   Summary: Reviews third-party skills for suspicious instructions, overbroad permissions, unsafe shell commands, and missing provenance. It is a good companion when importing from public registries.
+   Why it fits: It strengthens the validation phase but does not perform the import itself.
+   Constraints/risks: Requires human judgment for ambiguous safety findings.
+   Recommendation status: evaluate later
+
+Would you like: **(1) In-depth summary** of each, **(2) Use a public skill** (I'll pull it from the source and run it through our import process so it's compliant), **(3) Continue on your own** (ignore these and keep creating/importing as planned), or **(4) Adapt from one** (use one as a base and customize)?
+
 ## Options summary
 
 | Option | Action |

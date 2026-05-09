@@ -39,13 +39,13 @@ webservers.yml             # Webserver playbook
 Every task should be safe to run multiple times:
 
 ```yaml
-# ✅ Good - idempotent
+# Good - idempotent
 - name: Ensure nginx is installed
   ansible.builtin.apt:
     name: nginx
     state: present
 
-# ❌ Bad - not idempotent
+# Bad - not idempotent
 - name: Install nginx
   ansible.builtin.shell: apt-get install nginx
 ```
@@ -55,7 +55,7 @@ Every task should be safe to run multiple times:
 Don't restart services inline:
 
 ```yaml
-# ✅ Good - use handlers
+# Good - use handlers
 - name: Update SSH config
   ansible.builtin.template:
     src: sshd_config.j2
@@ -68,7 +68,7 @@ Don't restart services inline:
     name: sshd
     state: restarted
 
-# ❌ Bad - inline restart
+# Bad - inline restart
 - name: Update SSH config
   ansible.builtin.template:
     src: sshd_config.j2
@@ -85,11 +85,11 @@ Don't restart services inline:
 Always use Fully Qualified Collection Names:
 
 ```yaml
-# ✅ Good
+# Good
 - ansible.builtin.apt:
     name: nginx
 
-# ⚠️ Acceptable but less clear
+# Acceptable but less clear
 - apt:
     name: nginx
 ```
@@ -99,12 +99,12 @@ Always use Fully Qualified Collection Names:
 Always specify state:
 
 ```yaml
-# ✅ Good
+# Good
 - ansible.builtin.apt:
     name: nginx
     state: present
 
-# ⚠️ Implicit (depends on module default)
+# Implicit (depends on module default)
 - ansible.builtin.apt:
     name: nginx
 ```

@@ -5,7 +5,7 @@ schema_version: 2
 sources:
 - https://github.com/VoltAgent/awesome-openclaw-skills
 - https://github.com/anthropics/skills/tree/main/skills
-updated: '2026-04-08T16:56:44Z'
+updated: '2026-05-09T19:16:13Z'
 skills:
 - name: agent-commons
   description: Consult, commit, extend, and challenge reasoning chains.
@@ -877,6 +877,44 @@ skills:
     has_category: true
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
+- name: skywork-ppt
+  description: Generate, imitate, and edit PowerPoint presentations with skywork.
+  url: https://github.com/openclaw/skills/blob/main/skills/gxcun17/skywork-ppt/SKILL.md
+  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+  category: Table of Contents
+  summary_short: Generate, imitate, and edit PowerPoint presentations with skywork.
+  summary_long: 'Generate, imitate, and edit PowerPoint presentations with skywork. Primary capabilities: github. May require network access.'
+  capabilities:
+  - github
+  requirements: []
+  risk_flags:
+  - external_network
+  - file_write
+  quality_signals:
+    has_description: true
+    description_length: 66
+    has_category: true
+    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+    url_domain_hint: github
+- name: skywork-music-maker
+  description: Create professional music with Mureka AI.
+  url: https://github.com/openclaw/skills/blob/main/skills/gxcun17/skywork-music-maker/SKILL.md
+  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+  category: Table of Contents
+  summary_short: Create professional music with Mureka AI.
+  summary_long: 'Create professional music with Mureka AI. Primary capabilities: github. May require network access.'
+  capabilities:
+  - github
+  requirements: []
+  risk_flags:
+  - external_network
+  - file_write
+  quality_signals:
+    has_description: true
+    description_length: 41
+    has_category: true
+    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+    url_domain_hint: github
 - name: 1p-shortlink
   description: Create short URLs and submit feature requests using 1p.io.
   url: https://clawskills.sh/skills/tuanpmt-1p-shortlink
@@ -1344,6 +1382,45 @@ skills:
     has_category: true
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
+- name: adspower-browser
+  description: Use when the user asks to create or manage AdsPower browsers, groups, tags, proxies, or check status via AdsPower Local API.
+  url: https://github.com/openclaw/skills/tree/main/skills/adspower/adspower-browser
+  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+  category: Table of Contents
+  summary_short: Use when the user asks to create or manage AdsPower browsers, groups, tags, proxies, or check status via AdsPower Local API.
+  summary_long: 'Use when the user asks to create or manage AdsPower browsers, groups, tags, proxies, or check status via AdsPower Local API. Primary capabilities: github, data. Likely requirements: external_service. May require network access.'
+  capabilities:
+  - github
+  - data
+  requirements:
+  - external_service
+  risk_flags:
+  - external_network
+  - file_write
+  quality_signals:
+    has_description: true
+    description_length: 124
+    has_category: true
+    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+    url_domain_hint: github
+- name: duoplus-agent
+  description: Control DuoPlus cloud phones via ADB.
+  url: https://github.com/openclaw/skills/tree/main/skills/duoplusofficial/duoplus-agent/SKILL.md
+  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+  category: Table of Contents
+  summary_short: Control DuoPlus cloud phones via ADB.
+  summary_long: 'Control DuoPlus cloud phones via ADB. Likely requirements: external_service. May require network access.'
+  capabilities: []
+  requirements:
+  - external_service
+  risk_flags:
+  - external_network
+  quality_signals:
+    has_description: true
+    description_length: 37
+    has_category: true
+    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+    url_domain_hint: github
 - name: 0xwork
   description: Find and complete paid tasks on the 0xWork decentralized marketplace (Base chain, USDC escrow)
   url: https://clawskills.sh/skills/jkillr-0xwork
@@ -2798,6 +2875,41 @@ skills:
     has_category: true
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
+- name: skywork-design
+  description: Generate and edit images via Skywork Image for posters, logos and more.
+  url: https://github.com/openclaw/skills/blob/main/skills/gxcun17/skywork-design/SKILL.md
+  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+  category: Table of Contents
+  summary_short: Generate and edit images via Skywork Image for posters, logos and more.
+  summary_long: Generate and edit images via Skywork Image for posters, logos and more. May require network access.
+  capabilities: []
+  requirements: []
+  risk_flags:
+  - external_network
+  - file_write
+  quality_signals:
+    has_description: true
+    description_length: 71
+    has_category: true
+    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+    url_domain_hint: github
+- name: ai-video-remix
+  description: AI-driven video remix from local library using ShotAI.
+  url: https://github.com/openclaw/skills/tree/main/skills/abu-shotai/ai-video-remix/SKILL.md
+  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+  category: Table of Contents
+  summary_short: AI-driven video remix from local library using ShotAI.
+  summary_long: AI-driven video remix from local library using ShotAI. May require network access.
+  capabilities: []
+  requirements: []
+  risk_flags:
+  - external_network
+  quality_signals:
+    has_description: true
+    description_length: 54
+    has_category: true
+    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+    url_domain_hint: github
 - name: alter-actions
   description: Trigger Alter macOS app actions via x-callback-urls.
   url: https://clawskills.sh/skills/olivieralter-alter-actions
@@ -3871,6 +3983,24 @@ skills:
     has_category: true
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
+- name: skywork-search
+  description: AI-powered web search for real-time information — retrieve up-to-date content.
+  url: https://github.com/openclaw/skills/blob/main/skills/gxcun17/skywork-search/SKILL.md
+  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+  category: Table of Contents
+  summary_short: AI-powered web search for real-time information — retrieve up-to-date content.
+  summary_long: 'AI-powered web search for real-time information — retrieve up-to-date content. Primary capabilities: search. May require network access.'
+  capabilities:
+  - search
+  requirements: []
+  risk_flags:
+  - external_network
+  quality_signals:
+    has_description: true
+    description_length: 78
+    has_category: true
+    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+    url_domain_hint: github
 - name: adhd-assistant
   description: ADHD-friendly life management assistant for OpenClaw.
   url: https://clawskills.sh/skills/thinktankmachine-adhd-assistant
@@ -5307,6 +5437,45 @@ skills:
     has_category: true
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
+- name: socialecho-social-media-management-agent
+  description: SocialEcho API team account article report queries.
+  url: https://github.com/openclaw/skills/tree/main/skills/socialecho-net/socialecho-social-media-management-agent/SKILL.md
+  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+  category: Table of Contents
+  summary_short: SocialEcho API team account article report queries.
+  summary_long: 'SocialEcho API team account article report queries. Primary capabilities: pdf, automation, data. Likely requirements: external_service. May require network access.'
+  capabilities:
+  - pdf
+  - automation
+  - data
+  requirements:
+  - external_service
+  risk_flags:
+  - external_network
+  quality_signals:
+    has_description: true
+    description_length: 51
+    has_category: true
+    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+    url_domain_hint: github
+- name: postiz
+  description: Schedule social media posts and threads across 28+ platforms.
+  url: https://github.com/openclaw/skills/tree/main/skills/nevo-david/postiz/SKILL.md
+  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+  category: Table of Contents
+  summary_short: Schedule social media posts and threads across 28+ platforms.
+  summary_long: 'Schedule social media posts and threads across 28+ platforms. Primary capabilities: automation. May require network access.'
+  capabilities:
+  - automation
+  requirements: []
+  risk_flags:
+  - external_network
+  quality_signals:
+    has_description: true
+    description_length: 61
+    has_category: true
+    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+    url_domain_hint: github
 - name: 4to1-planner
   description: AI planning coach using the 4To1 Method™ — turn 4-year vision into daily action.
   url: https://clawskills.sh/skills/qingxuantang-4to1-planner
@@ -6573,6 +6742,25 @@ skills:
     has_category: true
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
+- name: skywork-excel
+  description: AI-powered spreadsheet operations for creating, analyzing and generating reports.
+  url: https://github.com/openclaw/skills/blob/main/skills/gxcun17/skywork-excel/SKILL.md
+  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+  category: Table of Contents
+  summary_short: AI-powered spreadsheet operations for creating, analyzing and generating reports.
+  summary_long: 'AI-powered spreadsheet operations for creating, analyzing and generating reports. Primary capabilities: pdf, github. May require network access.'
+  capabilities:
+  - pdf
+  - github
+  requirements: []
+  risk_flags:
+  - external_network
+  quality_signals:
+    has_description: true
+    description_length: 81
+    has_category: true
+    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+    url_domain_hint: github
 - name: alexa-control
   description: Control Alexa devices via CLI - set alarms, play music, flash briefings, smart home commands.
   url: https://clawskills.sh/skills/ignito-pg-alexa-control
@@ -6887,6 +7075,23 @@ skills:
   quality_signals:
     has_description: true
     description_length: 60
+    has_category: true
+    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+    url_domain_hint: other
+- name: chords-fetcher
+  description: Fetch clean guitar chords and lyrics from mychords.net, amdm.ru, ultimate-guitar.com.
+  url: https://clawskills.sh/skills/flobo3-chords-fetcher
+  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+  category: Table of Contents
+  summary_short: Fetch clean guitar chords and lyrics from mychords.net, amdm.ru, ultimate-guitar.com.
+  summary_long: Fetch clean guitar chords and lyrics from mychords.net, amdm.ru, ultimate-guitar.com. May require network access.
+  capabilities: []
+  requirements: []
+  risk_flags:
+  - external_network
+  quality_signals:
+    has_description: true
+    description_length: 85
     has_category: true
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
@@ -12255,6 +12460,26 @@ skills:
     has_category: true
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: github
+- name: skywork-document
+  description: Generate professional documents from prompts with automatic web search for up-to-date content.
+  url: https://github.com/openclaw/skills/blob/main/skills/gxcun17/skywork-document/SKILL.md
+  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+  category: Table of Contents
+  summary_short: Generate professional documents from prompts with automatic web search for up-to-date content.
+  summary_long: 'Generate professional documents from prompts with automatic web search for up-to-date content. Primary capabilities: search, github. May require network access.'
+  capabilities:
+  - search
+  - github
+  requirements: []
+  risk_flags:
+  - external_network
+  - file_write
+  quality_signals:
+    has_description: true
+    description_length: 94
+    has_category: true
+    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+    url_domain_hint: github
 - name: beacon
   description: Agent-to-agent protocol for social coordination, crypto payments, and P2P mesh.
   url: https://clawskills.sh/skills/scottcjn-beacon
@@ -13260,6 +13485,24 @@ skills:
     has_category: true
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
+- name: skill-provenance
+  description: Version tracking and integrity verification for skill bundles
+  url: https://clawskills.sh/skills/snapsynapse-skill-provenance
+  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+  category: Table of Contents
+  summary_short: Version tracking and integrity verification for skill bundles
+  summary_long: 'Version tracking and integrity verification for skill bundles Primary capabilities: github. May require network access.'
+  capabilities:
+  - github
+  requirements: []
+  risk_flags:
+  - external_network
+  quality_signals:
+    has_description: true
+    description_length: 61
+    has_category: true
+    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+    url_domain_hint: other
 - name: agent-relay-digest
   description: Create curated digests of agent conversations.
   url: https://clawskills.sh/skills/orosha-ai-agent-relay-digest
@@ -13996,59 +14239,59 @@ skills:
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
 - name: algorithmic-art
-  description: 'Anthropic skill: Algorithmic Art'
+  description: Creating algorithmic art using p5.js with seeded randomness and interactive parameter exploration. Use this when users request creating art using code, generative art, algorithmic art, flow fields, or particle systems. Create original algorithmic art rather than copying existing artists' work to avo
   url: https://github.com/anthropics/skills/tree/main/skills/algorithmic-art
   source_registry: https://github.com/anthropics/skills/tree/main/skills
-  summary_short: 'Anthropic skill: Algorithmic Art'
-  summary_long: 'Anthropic skill: Algorithmic Art May require network access.'
+  summary_short: Creating algorithmic art using p5.js with seeded randomness and interactive parameter exploration. Use this when users r
+  summary_long: Creating algorithmic art using p5.js with seeded randomness and interactive parameter exploration. Use this when users request creating art using code, generative art, algorithmic art, flow fields, or particle systems. Create original algorithmic art rather than copying existing artists' work to avo
   capabilities: []
   requirements: []
   risk_flags:
   - external_network
   quality_signals:
     has_description: true
-    description_length: 32
+    description_length: 300
     has_category: false
     source_registry: https://github.com/anthropics/skills/tree/main/skills
     url_domain_hint: github
 - name: brand-guidelines
-  description: 'Anthropic skill: Brand Guidelines'
+  description: Applies Anthropic's official brand colors and typography to any sort of artifact that may benefit from having Anthropic's look-and-feel. Use it when brand colors or style guidelines, visual formatting, or company design standards apply.
   url: https://github.com/anthropics/skills/tree/main/skills/brand-guidelines
   source_registry: https://github.com/anthropics/skills/tree/main/skills
-  summary_short: 'Anthropic skill: Brand Guidelines'
-  summary_long: 'Anthropic skill: Brand Guidelines May require network access.'
+  summary_short: Applies Anthropic's official brand colors and typography to any sort of artifact that may benefit from having Anthropic'
+  summary_long: Applies Anthropic's official brand colors and typography to any sort of artifact that may benefit from having Anthropic's look-and-feel. Use it when brand colors or style guidelines, visual formatting, or company design standards apply.
   capabilities: []
   requirements: []
   risk_flags:
   - external_network
   quality_signals:
     has_description: true
-    description_length: 33
+    description_length: 236
     has_category: false
     source_registry: https://github.com/anthropics/skills/tree/main/skills
     url_domain_hint: github
 - name: canvas-design
-  description: 'Anthropic skill: Canvas Design'
+  description: Create beautiful visual art in .png and .pdf documents using design philosophy. You should use this skill when the user asks to create a poster, piece of art, design, or other static piece. Create original visual designs, never copying existing artists' work to avoid copyright violations.
   url: https://github.com/anthropics/skills/tree/main/skills/canvas-design
   source_registry: https://github.com/anthropics/skills/tree/main/skills
-  summary_short: 'Anthropic skill: Canvas Design'
-  summary_long: 'Anthropic skill: Canvas Design May require network access.'
+  summary_short: 'Create beautiful visual art in .png and .pdf documents using design philosophy. You should use this skill when the user '
+  summary_long: Create beautiful visual art in .png and .pdf documents using design philosophy. You should use this skill when the user asks to create a poster, piece of art, design, or other static piece. Create original visual designs, never copying existing artists' work to avoid copyright violations.
   capabilities: []
   requirements: []
   risk_flags:
   - external_network
   quality_signals:
     has_description: true
-    description_length: 30
+    description_length: 289
     has_category: false
     source_registry: https://github.com/anthropics/skills/tree/main/skills
     url_domain_hint: github
 - name: claude-api
-  description: 'Anthropic skill: Claude Api'
+  description: 'Build, debug, and optimize Claude API / Anthropic SDK apps. Apps built with this skill should include prompt caching. Also handles migrating existing Claude API code between Claude model versions (4.5 → 4.6, 4.6 → 4.7, retired-model replacements). TRIGGER when: code imports `anthropic`/`@anthropic-a'
   url: https://github.com/anthropics/skills/tree/main/skills/claude-api
   source_registry: https://github.com/anthropics/skills/tree/main/skills
-  summary_short: 'Anthropic skill: Claude Api'
-  summary_long: 'Anthropic skill: Claude Api Primary capabilities: data. Likely requirements: external_service. May require network access.'
+  summary_short: Build, debug, and optimize Claude API / Anthropic SDK apps. Apps built with this skill should include prompt caching. Al
+  summary_long: 'Build, debug, and optimize Claude API / Anthropic SDK apps. Apps built with this skill should include prompt caching. Also handles migrating existing Claude API code between Claude model versions (4.5 → 4.6, 4.6 → 4.7, retired-model replacements). TRIGGER when: code imports `anthropic`/`@anthropic-a'
   capabilities:
   - data
   requirements:
@@ -14057,16 +14300,16 @@ skills:
   - external_network
   quality_signals:
     has_description: true
-    description_length: 27
+    description_length: 300
     has_category: false
     source_registry: https://github.com/anthropics/skills/tree/main/skills
     url_domain_hint: github
 - name: doc-coauthoring
-  description: 'Anthropic skill: Doc Coauthoring'
+  description: Guide users through a structured workflow for co-authoring documentation. Use when user wants to write documentation, proposals, technical specs, decision docs, or similar structured content. This workflow helps users efficiently transfer context, refine content through iteration, and verify the doc
   url: https://github.com/anthropics/skills/tree/main/skills/doc-coauthoring
   source_registry: https://github.com/anthropics/skills/tree/main/skills
-  summary_short: 'Anthropic skill: Doc Coauthoring'
-  summary_long: 'Anthropic skill: Doc Coauthoring Likely requirements: api_key. May require network access.'
+  summary_short: Guide users through a structured workflow for co-authoring documentation. Use when user wants to write documentation, pr
+  summary_long: Guide users through a structured workflow for co-authoring documentation. Use when user wants to write documentation, proposals, technical specs, decision docs, or similar structured content. This workflow helps users efficiently transfer context, refine content through iteration, and verify the doc
   capabilities: []
   requirements:
   - api_key
@@ -14075,16 +14318,16 @@ skills:
   - credential_usage
   quality_signals:
     has_description: true
-    description_length: 32
+    description_length: 300
     has_category: false
     source_registry: https://github.com/anthropics/skills/tree/main/skills
     url_domain_hint: github
 - name: docx
-  description: 'Anthropic skill: Docx'
+  description: 'Use this skill whenever the user wants to create, read, edit, or manipulate Word documents (.docx files). Triggers include: any mention of ''Word doc'', ''word document'', ''.docx'', or requests to produce professional documents with formatting like tables of contents, headings, page numbers, or letterhea'
   url: https://github.com/anthropics/skills/tree/main/skills/docx
   source_registry: https://github.com/anthropics/skills/tree/main/skills
-  summary_short: 'Anthropic skill: Docx'
-  summary_long: 'Anthropic skill: Docx Primary capabilities: pdf. May require network access.'
+  summary_short: Use this skill whenever the user wants to create, read, edit, or manipulate Word documents (.docx files). Triggers inclu
+  summary_long: 'Use this skill whenever the user wants to create, read, edit, or manipulate Word documents (.docx files). Triggers include: any mention of ''Word doc'', ''word document'', ''.docx'', or requests to produce professional documents with formatting like tables of contents, headings, page numbers, or letterhea'
   capabilities:
   - pdf
   requirements: []
@@ -14092,64 +14335,64 @@ skills:
   - external_network
   quality_signals:
     has_description: true
-    description_length: 21
+    description_length: 300
     has_category: false
     source_registry: https://github.com/anthropics/skills/tree/main/skills
     url_domain_hint: github
 - name: frontend-design
-  description: 'Anthropic skill: Frontend Design'
+  description: Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautify
   url: https://github.com/anthropics/skills/tree/main/skills/frontend-design
   source_registry: https://github.com/anthropics/skills/tree/main/skills
-  summary_short: 'Anthropic skill: Frontend Design'
-  summary_long: 'Anthropic skill: Frontend Design May require network access.'
+  summary_short: 'Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to '
+  summary_long: Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautify
   capabilities: []
   requirements: []
   risk_flags:
   - external_network
   quality_signals:
     has_description: true
-    description_length: 32
+    description_length: 300
     has_category: false
     source_registry: https://github.com/anthropics/skills/tree/main/skills
     url_domain_hint: github
 - name: internal-comms
-  description: 'Anthropic skill: Internal Comms'
+  description: A set of resources to help me write all kinds of internal communications, using the formats that my company likes to use. Claude should use this skill whenever asked to write some sort of internal communications (status reports, leadership updates, 3P updates, company newsletters, FAQs, incident rep
   url: https://github.com/anthropics/skills/tree/main/skills/internal-comms
   source_registry: https://github.com/anthropics/skills/tree/main/skills
-  summary_short: 'Anthropic skill: Internal Comms'
-  summary_long: 'Anthropic skill: Internal Comms May require network access.'
+  summary_short: A set of resources to help me write all kinds of internal communications, using the formats that my company likes to use
+  summary_long: A set of resources to help me write all kinds of internal communications, using the formats that my company likes to use. Claude should use this skill whenever asked to write some sort of internal communications (status reports, leadership updates, 3P updates, company newsletters, FAQs, incident rep
   capabilities: []
   requirements: []
   risk_flags:
   - external_network
   quality_signals:
     has_description: true
-    description_length: 31
+    description_length: 300
     has_category: false
     source_registry: https://github.com/anthropics/skills/tree/main/skills
     url_domain_hint: github
 - name: mcp-builder
-  description: 'Anthropic skill: Mcp Builder'
+  description: Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services through well-designed tools. Use when building MCP servers to integrate external APIs or services, whether in Python (FastMCP) or Node/TypeScript (MCP SDK).
   url: https://github.com/anthropics/skills/tree/main/skills/mcp-builder
   source_registry: https://github.com/anthropics/skills/tree/main/skills
-  summary_short: 'Anthropic skill: Mcp Builder'
-  summary_long: 'Anthropic skill: Mcp Builder May require network access.'
+  summary_short: Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services
+  summary_long: Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services through well-designed tools. Use when building MCP servers to integrate external APIs or services, whether in Python (FastMCP) or Node/TypeScript (MCP SDK).
   capabilities: []
   requirements: []
   risk_flags:
   - external_network
   quality_signals:
     has_description: true
-    description_length: 28
+    description_length: 277
     has_category: false
     source_registry: https://github.com/anthropics/skills/tree/main/skills
     url_domain_hint: github
 - name: pdf
-  description: 'Anthropic skill: Pdf'
+  description: Use this skill whenever the user wants to do anything with PDF files. This includes reading or extracting text/tables from PDFs, combining or merging multiple PDFs into one, splitting PDFs apart, rotating pages, adding watermarks, creating new PDFs, filling PDF forms, encrypting/decrypting PDFs, ext
   url: https://github.com/anthropics/skills/tree/main/skills/pdf
   source_registry: https://github.com/anthropics/skills/tree/main/skills
-  summary_short: 'Anthropic skill: Pdf'
-  summary_long: 'Anthropic skill: Pdf Primary capabilities: pdf. May require network access.'
+  summary_short: Use this skill whenever the user wants to do anything with PDF files. This includes reading or extracting text/tables fr
+  summary_long: Use this skill whenever the user wants to do anything with PDF files. This includes reading or extracting text/tables from PDFs, combining or merging multiple PDFs into one, splitting PDFs apart, rotating pages, adding watermarks, creating new PDFs, filling PDF forms, encrypting/decrypting PDFs, ext
   capabilities:
   - pdf
   requirements: []
@@ -14157,96 +14400,96 @@ skills:
   - external_network
   quality_signals:
     has_description: true
-    description_length: 20
+    description_length: 300
     has_category: false
     source_registry: https://github.com/anthropics/skills/tree/main/skills
     url_domain_hint: github
 - name: pptx
-  description: 'Anthropic skill: Pptx'
+  description: 'Use this skill any time a .pptx file is involved in any way — as input, output, or both. This includes: creating slide decks, pitch decks, or presentations; reading, parsing, or extracting text from any .pptx file (even if the extracted content will be used elsewhere, like in an email or summary); e'
   url: https://github.com/anthropics/skills/tree/main/skills/pptx
   source_registry: https://github.com/anthropics/skills/tree/main/skills
-  summary_short: 'Anthropic skill: Pptx'
-  summary_long: 'Anthropic skill: Pptx May require network access.'
+  summary_short: 'Use this skill any time a .pptx file is involved in any way — as input, output, or both. This includes: creating slide d'
+  summary_long: 'Use this skill any time a .pptx file is involved in any way — as input, output, or both. This includes: creating slide decks, pitch decks, or presentations; reading, parsing, or extracting text from any .pptx file (even if the extracted content will be used elsewhere, like in an email or summary); e'
   capabilities: []
   requirements: []
   risk_flags:
   - external_network
   quality_signals:
     has_description: true
-    description_length: 21
+    description_length: 300
     has_category: false
     source_registry: https://github.com/anthropics/skills/tree/main/skills
     url_domain_hint: github
 - name: skill-creator
-  description: 'Anthropic skill: Skill Creator'
+  description: Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit, or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better t
   url: https://github.com/anthropics/skills/tree/main/skills/skill-creator
   source_registry: https://github.com/anthropics/skills/tree/main/skills
-  summary_short: 'Anthropic skill: Skill Creator'
-  summary_long: 'Anthropic skill: Skill Creator May require network access.'
+  summary_short: Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a sk
+  summary_long: Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit, or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better t
   capabilities: []
   requirements: []
   risk_flags:
   - external_network
   quality_signals:
     has_description: true
-    description_length: 30
+    description_length: 300
     has_category: false
     source_registry: https://github.com/anthropics/skills/tree/main/skills
     url_domain_hint: github
 - name: slack-gif-creator
-  description: 'Anthropic skill: Slack Gif Creator'
+  description: Knowledge and utilities for creating animated GIFs optimized for Slack. Provides constraints, validation tools, and animation concepts. Use when users request animated GIFs for Slack like "make me a GIF of X doing Y for Slack."
   url: https://github.com/anthropics/skills/tree/main/skills/slack-gif-creator
   source_registry: https://github.com/anthropics/skills/tree/main/skills
-  summary_short: 'Anthropic skill: Slack Gif Creator'
-  summary_long: 'Anthropic skill: Slack Gif Creator May require network access.'
+  summary_short: Knowledge and utilities for creating animated GIFs optimized for Slack. Provides constraints, validation tools, and anim
+  summary_long: Knowledge and utilities for creating animated GIFs optimized for Slack. Provides constraints, validation tools, and animation concepts. Use when users request animated GIFs for Slack like "make me a GIF of X doing Y for Slack."
   capabilities: []
   requirements: []
   risk_flags:
   - external_network
   quality_signals:
     has_description: true
-    description_length: 34
+    description_length: 227
     has_category: false
     source_registry: https://github.com/anthropics/skills/tree/main/skills
     url_domain_hint: github
 - name: theme-factory
-  description: 'Anthropic skill: Theme Factory'
+  description: Toolkit for styling artifacts with a theme. These artifacts can be slides, docs, reportings, HTML landing pages, etc. There are 10 pre-set themes with colors/fonts that you can apply to any artifact that has been creating, or can generate a new theme on-the-fly.
   url: https://github.com/anthropics/skills/tree/main/skills/theme-factory
   source_registry: https://github.com/anthropics/skills/tree/main/skills
-  summary_short: 'Anthropic skill: Theme Factory'
-  summary_long: 'Anthropic skill: Theme Factory May require network access.'
+  summary_short: Toolkit for styling artifacts with a theme. These artifacts can be slides, docs, reportings, HTML landing pages, etc. Th
+  summary_long: Toolkit for styling artifacts with a theme. These artifacts can be slides, docs, reportings, HTML landing pages, etc. There are 10 pre-set themes with colors/fonts that you can apply to any artifact that has been creating, or can generate a new theme on-the-fly.
   capabilities: []
   requirements: []
   risk_flags:
   - external_network
   quality_signals:
     has_description: true
-    description_length: 30
+    description_length: 262
     has_category: false
     source_registry: https://github.com/anthropics/skills/tree/main/skills
     url_domain_hint: github
 - name: web-artifacts-builder
-  description: 'Anthropic skill: Web Artifacts Builder'
+  description: Suite of tools for creating elaborate, multi-component claude.ai HTML artifacts using modern frontend web technologies (React, Tailwind CSS, shadcn/ui). Use for complex artifacts requiring state management, routing, or shadcn/ui components - not for simple single-file HTML/JSX artifacts.
   url: https://github.com/anthropics/skills/tree/main/skills/web-artifacts-builder
   source_registry: https://github.com/anthropics/skills/tree/main/skills
-  summary_short: 'Anthropic skill: Web Artifacts Builder'
-  summary_long: 'Anthropic skill: Web Artifacts Builder May require network access.'
+  summary_short: Suite of tools for creating elaborate, multi-component claude.ai HTML artifacts using modern frontend web technologies (
+  summary_long: Suite of tools for creating elaborate, multi-component claude.ai HTML artifacts using modern frontend web technologies (React, Tailwind CSS, shadcn/ui). Use for complex artifacts requiring state management, routing, or shadcn/ui components - not for simple single-file HTML/JSX artifacts.
   capabilities: []
   requirements: []
   risk_flags:
   - external_network
   quality_signals:
     has_description: true
-    description_length: 38
+    description_length: 288
     has_category: false
     source_registry: https://github.com/anthropics/skills/tree/main/skills
     url_domain_hint: github
 - name: webapp-testing
-  description: 'Anthropic skill: Webapp Testing'
+  description: Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs.
   url: https://github.com/anthropics/skills/tree/main/skills/webapp-testing
   source_registry: https://github.com/anthropics/skills/tree/main/skills
-  summary_short: 'Anthropic skill: Webapp Testing'
-  summary_long: 'Anthropic skill: Webapp Testing Primary capabilities: testing. May require network access.'
+  summary_short: Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functional
+  summary_long: Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs.
   capabilities:
   - testing
   requirements: []
@@ -14254,23 +14497,23 @@ skills:
   - external_network
   quality_signals:
     has_description: true
-    description_length: 31
+    description_length: 204
     has_category: false
     source_registry: https://github.com/anthropics/skills/tree/main/skills
     url_domain_hint: github
 - name: xlsx
-  description: 'Anthropic skill: Xlsx'
+  description: 'Use this skill any time a spreadsheet file is the primary input or output. This means any task where the user wants to: open, read, edit, or fix an existing .xlsx, .xlsm, .csv, or .tsv file (e.g., adding columns, computing formulas, formatting, charting, cleaning messy data); create a new spreadshee'
   url: https://github.com/anthropics/skills/tree/main/skills/xlsx
   source_registry: https://github.com/anthropics/skills/tree/main/skills
-  summary_short: 'Anthropic skill: Xlsx'
-  summary_long: 'Anthropic skill: Xlsx May require network access.'
+  summary_short: 'Use this skill any time a spreadsheet file is the primary input or output. This means any task where the user wants to: '
+  summary_long: 'Use this skill any time a spreadsheet file is the primary input or output. This means any task where the user wants to: open, read, edit, or fix an existing .xlsx, .xlsm, .csv, or .tsv file (e.g., adding columns, computing formulas, formatting, charting, cleaning messy data); create a new spreadshee'
   capabilities: []
   requirements: []
   risk_flags:
   - external_network
   quality_signals:
     has_description: true
-    description_length: 21
+    description_length: 300
     has_category: false
     source_registry: https://github.com/anthropics/skills/tree/main/skills
     url_domain_hint: github

@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import time
 from typing import Any
+from urllib.parse import urlsplit
 
 import requests
+
+from .util import build_api_path, redact_payload, sanitize_text
 
 TRANSIENT_STATUS = {408, 425, 429, 500, 502, 503, 504}
 
@@ -56,6 +59,11 @@ class OmniRouteAdminClient:
     ) -> dict[str, Any]:
         if not isinstance(path, str) or not path.startswith("/"):
             raise ValueError("path must start with '/'")
+        parts = urlsplit(path)
+        if parts.scheme or parts.netloc:
+            raise ValueError("path must be a relative URL path")
+        if "\x00" in path or any(ord(ch) < 32 or ord(ch) == 127 for ch in path):
+            raise ValueError("path contains control characters")
 
         url = f"{self.base_url}{path}"
         last_error: str | None = None
@@ -86,8 +94,9 @@ class OmniRouteAdminClient:
                 payload = {"raw": response.text}
 
             if response.status_code >= 400:
+                summary = self._error_summary(payload)
                 raise RuntimeError(
-                    f"HTTP {response.status_code} on {method} {path}: {payload}"
+                    f"HTTP {response.status_code} on {method} {path}: {summary}"
                 )
 
             if isinstance(payload, dict):
@@ -95,6 +104,25 @@ class OmniRouteAdminClient:
             return {"data": payload}
 
         raise RuntimeError(last_error or "request failed")
+
+    @staticmethod
+    def _error_summary(payload: Any) -> str:
+        """Return a compact, redacted error summary without dumping raw bodies."""
+        redacted = redact_payload(payload)
+        if isinstance(redacted, dict):
+            for key in ("error", "message", "detail", "title"):
+                value = redacted.get(key)
+                if isinstance(value, str) and value.strip():
+                    return sanitize_text(value, limit=240)
+            keys = ", ".join(sorted(str(key) for key in redacted.keys())[:8])
+            if keys:
+                return f"error payload omitted; keys={keys}"
+            return "empty error body"
+        if isinstance(redacted, list):
+            return f"error payload omitted; list_length={len(redacted)}"
+        if redacted:
+            return sanitize_text(redacted, limit=240)
+        return "empty error body"
 
     def get(self, path: str) -> dict[str, Any]:
         return self._request("GET", path, include_json=False)
@@ -160,7 +188,7 @@ class OmniRouteAdminClient:
         return self.get("/api/providers")
 
     def get_provider(self, provider_id: str) -> dict[str, Any]:
-        return self.get(f"/api/providers/{provider_id}")
+        return self.get(build_api_path("/api/providers", provider_id))
 
     def create_provider(self, payload: dict[str, Any]) -> dict[str, Any]:
         return self.post("/api/providers", payload)
@@ -168,25 +196,25 @@ class OmniRouteAdminClient:
     def update_provider(
         self, provider_id: str, payload: dict[str, Any]
     ) -> dict[str, Any]:
-        return self.put(f"/api/providers/{provider_id}", payload)
+        return self.put(build_api_path("/api/providers", provider_id), payload)
 
     def delete_provider(self, provider_id: str) -> dict[str, Any]:
-        return self.delete(f"/api/providers/{provider_id}")
+        return self.delete(build_api_path("/api/providers", provider_id))
 
     def list_combos(self) -> dict[str, Any]:
         return self.get("/api/combos")
 
     def get_combo(self, combo_id: str) -> dict[str, Any]:
-        return self.get(f"/api/combos/{combo_id}")
+        return self.get(build_api_path("/api/combos", combo_id))
 
     def create_combo(self, payload: dict[str, Any]) -> dict[str, Any]:
         return self.post("/api/combos", payload)
 
     def update_combo(self, combo_id: str, payload: dict[str, Any]) -> dict[str, Any]:
-        return self.patch(f"/api/combos/{combo_id}", payload)
+        return self.patch(build_api_path("/api/combos", combo_id), payload)
 
     def delete_combo(self, combo_id: str) -> dict[str, Any]:
-        return self.delete(f"/api/combos/{combo_id}")
+        return self.delete(build_api_path("/api/combos", combo_id))
 
     def list_aliases(self) -> dict[str, Any]:
         return self.get("/api/models/alias")
@@ -195,10 +223,10 @@ class OmniRouteAdminClient:
         return self.post("/api/models/alias", payload)
 
     def update_alias(self, alias_id: str, payload: dict[str, Any]) -> dict[str, Any]:
-        return self.patch(f"/api/models/alias/{alias_id}", payload)
+        return self.patch(build_api_path("/api/models/alias", alias_id), payload)
 
     def delete_alias(self, alias_id: str) -> dict[str, Any]:
-        return self.delete(f"/api/models/alias/{alias_id}")
+        return self.delete(build_api_path("/api/models/alias", alias_id))
 
     def get_budget(self) -> dict[str, Any]:
         return self.get("/api/usage/budget")
@@ -213,4 +241,4 @@ class OmniRouteAdminClient:
         return self.post("/api/keys", payload)
 
     def delete_key(self, key_id: str) -> dict[str, Any]:
-        return self.delete(f"/api/keys/{key_id}")
+        return self.delete(build_api_path("/api/keys", key_id))

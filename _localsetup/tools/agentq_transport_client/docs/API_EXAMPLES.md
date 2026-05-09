@@ -25,6 +25,6 @@ ensure_prd_stamp(Path(".agent/queue/my.prd.md"), add_hash=True)
 ## CLI equivalents
 
 ```bash
-python _localsetup/tools/agentq_transport_client/agentq_cli.py version
-python _localsetup/tools/agentq_transport_client/agentq_cli.py stamp-prd .agent/queue/my.prd.md --hash
+python3 _localsetup/tools/agentq_transport_client/agentq_cli.py version
+python3 _localsetup/tools/agentq_transport_client/agentq_cli.py stamp-prd .agent/queue/my.prd.md --hash
 ```

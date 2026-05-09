@@ -1,95 +1,90 @@
 ---
-# OpenClaw role - Install and configure OpenClaw
+# Agent-host role - install and configure an npm-based agent service.
 
-- name: Install OpenClaw globally
+- name: Install agent-host package globally
   community.general.npm:
-    name: openclaw
+    name: "{{ agent_host_package_name }}"
     global: yes
-    state: "{{ 'latest' if openclaw_version == 'latest' else 'present' }}"
-    version: "{{ omit if openclaw_version == 'latest' else openclaw_version }}"
-  tags: [openclaw]
+    state: "{{ 'latest' if agent_host_package_version == 'latest' else 'present' }}"
+    version: "{{ omit if agent_host_package_version == 'latest' else agent_host_package_version }}"
+  tags: [agent-host]
 
-- name: Verify OpenClaw installation
-  ansible.builtin.command: openclaw --version
-  register: openclaw_installed_version
+- name: Verify agent-host command
+  ansible.builtin.command: "{{ agent_host_command }} --version"
+  register: agent_host_installed_version
   changed_when: false
   failed_when: false
-  tags: [openclaw]
+  tags: [agent-host]
 
-- name: Display OpenClaw version
+- name: Display agent-host version
   ansible.builtin.debug:
-    msg: "OpenClaw {{ openclaw_installed_version.stdout | default('not installed') }}"
-  tags: [openclaw]
+    msg: "{{ agent_host_package_name }} {{ agent_host_installed_version.stdout | default('not installed') }}"
+  tags: [agent-host]
 
 # === Config Directory ===
-- name: Create OpenClaw config directory
+- name: Create agent-host config directory
   ansible.builtin.file:
-    path: "{{ openclaw_config_dir }}"
+    path: "{{ agent_host_config_dir }}"
     state: directory
-    owner: "{{ openclaw_user }}"
-    group: "{{ openclaw_user }}"
+    owner: "{{ agent_host_user }}"
+    group: "{{ agent_host_user }}"
     mode: '0700'
-  tags: [openclaw, config]
+  tags: [agent-host, config]
 
-- name: Create OpenClaw workspace directory
+- name: Create agent-host workspace directory
   ansible.builtin.file:
-    path: "{{ openclaw_workspace }}"
+    path: "{{ agent_host_workspace }}"
     state: directory
-    owner: "{{ openclaw_user }}"
-    group: "{{ openclaw_user }}"
+    owner: "{{ agent_host_user }}"
+    group: "{{ agent_host_user }}"
     mode: '0755'
-  when: openclaw_workspace is defined
-  tags: [openclaw, config]
+  when: agent_host_workspace is defined
+  tags: [agent-host, config]
 
 # === Systemd Service ===
-- name: Create OpenClaw systemd service
+- name: Create agent-host systemd service
   ansible.builtin.template:
-    src: openclaw.service.j2
-    dest: /etc/systemd/system/openclaw.service
+    src: agent-host.service.j2
+    dest: "/etc/systemd/system/{{ agent_host_service_name }}.service"
     mode: '0644'
   notify: Reload systemd
-  tags: [openclaw, systemd]
+  tags: [agent-host, systemd]
 
-- name: Enable OpenClaw service
+- name: Enable agent-host service
   ansible.builtin.systemd:
-    name: openclaw
+    name: "{{ agent_host_service_name }}"
     enabled: yes
-  when: openclaw_service_enabled | default(false) | bool
-  tags: [openclaw, systemd]
+  when: agent_host_service_enabled | default(false) | bool
+  tags: [agent-host, systemd]
 
-- name: Start OpenClaw service
+- name: Start agent-host service
   ansible.builtin.systemd:
-    name: openclaw
+    name: "{{ agent_host_service_name }}"
     state: started
   when: 
-    - openclaw_service_enabled | default(false) | bool
-    - openclaw_service_started | default(false) | bool
-  tags: [openclaw, systemd]
+    - agent_host_service_enabled | default(false) | bool
+    - agent_host_service_started | default(false) | bool
+  tags: [agent-host, systemd]
 
 # === Post-install Notes ===
-- name: Check if OpenClaw is configured
+- name: Check if agent host is configured
   ansible.builtin.stat:
-    path: "{{ openclaw_config_dir }}/config.json"
-  register: openclaw_config_exists
-  tags: [openclaw]
+    path: "{{ agent_host_config_dir }}/config.json"
+  register: agent_host_config_exists
+  tags: [agent-host]
 
 - name: Display setup instructions
   ansible.builtin.debug:
     msg: |
-      
-      ╔══════════════════════════════════════════════════════════════════╗
-      ║                    OpenClaw Installation Complete                 ║
-      ╠══════════════════════════════════════════════════════════════════╣
-      ║                                                                  ║
-      ║  Next Steps:                                                     ║
-      ║  1. SSH to server: ssh {{ openclaw_user }}@{{ ansible_host }}
-      ║  2. Initialize:    openclaw init                                 ║
-      ║  3. Configure API keys and channels                              ║
-      ║  4. Enable service: sudo systemctl enable --now openclaw         ║
-      ║                                                                  ║
-      ║  Config location: {{ openclaw_config_dir }}
-      ║  Workspace: {{ openclaw_workspace | default('~/' + openclaw_user + '/clawd') }}
-      ║                                                                  ║
-      ╚══════════════════════════════════════════════════════════════════╝
-  when: not openclaw_config_exists.stat.exists
-  tags: [openclaw]
+      Agent-host package installed: {{ agent_host_package_name }}
+
+      Next steps:
+      1. SSH to server: ssh {{ agent_host_user }}@{{ ansible_host }}
+      2. Initialize: {{ agent_host_command }} init
+      3. Configure credentials and channels for your environment.
+      4. Enable service: sudo systemctl enable --now {{ agent_host_service_name }}
+
+      Config location: {{ agent_host_config_dir }}
+      Workspace: {{ agent_host_workspace | default('/home/' + agent_host_user) }}
+  when: not agent_host_config_exists.stat.exists
+  tags: [agent-host]

@@ -5,9 +5,12 @@ Parse and analyze test coverage reports in multiple formats (LCOV, JSON, XML).
 Identify gaps, calculate metrics, and provide actionable recommendations.
 """
 
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any, Optional
+import argparse
 import json
 import xml.etree.ElementTree as ET
+
+from cli_support import SkillCliError, emit_json, fail, read_text
 
 
 class CoverageFormat:
@@ -424,11 +427,63 @@ class CoverageAnalyzer:
             try:
                 json.loads(content_stripped)
                 return CoverageFormat.JSON
-            except:
-                pass
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"Content looks like JSON but is invalid: {exc}") from exc
 
         # Check for XML format
         if content_stripped.startswith('<?xml') or content_stripped.startswith('<coverage'):
             return CoverageFormat.XML
 
         raise ValueError("Unable to detect coverage report format")
+
+
+def build_parser() -> argparse.ArgumentParser:
+    """Build the command-line parser."""
+    parser = argparse.ArgumentParser(
+        description="Parse coverage reports and emit summary, gaps, and recommendations."
+    )
+    parser.add_argument("--report", required=True, help="Coverage report path.")
+    parser.add_argument(
+        "--format",
+        choices=[CoverageFormat.LCOV, CoverageFormat.JSON, CoverageFormat.XML, "auto"],
+        default="auto",
+        help="Coverage report format (default: auto).",
+    )
+    parser.add_argument(
+        "--threshold",
+        type=float,
+        default=80.0,
+        help="Minimum acceptable line/branch coverage percentage.",
+    )
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Run the command-line interface."""
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    analyzer = CoverageAnalyzer()
+
+    try:
+        content = read_text(path=args.report)
+        format_type = analyzer.detect_format(content) if args.format == "auto" else args.format
+        analyzer.parse_coverage_report(content, format_type)
+        summary = analyzer.calculate_summary()
+        gaps = analyzer.identify_gaps(args.threshold)
+        recommendations = analyzer.generate_recommendations()
+        emit_json(
+            {
+                "format": format_type,
+                "threshold": args.threshold,
+                "summary": summary,
+                "gaps": gaps,
+                "recommendations": recommendations,
+            }
+        )
+        return 0
+    except (SkillCliError, ValueError, KeyError, TypeError) as exc:
+        return fail(str(exc))
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

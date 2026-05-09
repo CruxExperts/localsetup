@@ -4,15 +4,6 @@ description: Test-driven development workflow with test generation, coverage ana
 metadata:
   version: "1.1"
 compatibility: "Python 3.10+. Scripts in scripts/ follow framework tooling standard (input validation, actionable stderr). See [TOOLING_POLICY.md](../../docs/TOOLING_POLICY.md) and [INPUT_HARDENING_STANDARD.md](../../docs/INPUT_HARDENING_STANDARD.md)."
-triggers:
-  - generate tests
-  - analyze coverage
-  - TDD workflow
-  - red green refactor
-  - Jest tests
-  - Pytest tests
-  - JUnit tests
-  - coverage report
 ---
 
 # TDD Guide
@@ -73,16 +64,18 @@ Test-driven development skill for generating tests, analyzing coverage, and guid
 
 ## Tools
 
+Scripts are both importable Python modules and command-line tools. Run examples from the skill root (`_localsetup/skills/ls-tdd-guide`) or adjust paths for your checkout.
+
 | Tool | Purpose | Usage |
 |------|---------|-------|
-| `test_generator.py` | Generate test cases from code/requirements | `python scripts/test_generator.py --input source.py --framework pytest` |
+| `test_generator.py` | Generate test cases from requirements JSON | `python scripts/test_generator.py --input requirements.json --framework pytest --module auth` |
 | `coverage_analyzer.py` | Parse and analyze coverage reports | `python scripts/coverage_analyzer.py --report lcov.info --threshold 80` |
-| `tdd_workflow.py` | Guide red-green-refactor cycles | `python scripts/tdd_workflow.py --phase red --test test_auth.py` |
-| `framework_adapter.py` | Convert tests between frameworks | `python scripts/framework_adapter.py --from jest --to pytest` |
-| `fixture_generator.py` | Generate test data and mocks | `python scripts/fixture_generator.py --entity User --count 5` |
-| `metrics_calculator.py` | Calculate test quality metrics | `python scripts/metrics_calculator.py --tests tests/` |
+| `tdd_workflow.py` | Guide red-green-refactor cycles | `python scripts/tdd_workflow.py --phase red --requirement "user can sign in"` |
+| `framework_adapter.py` | Generate framework-specific snippets | `python scripts/framework_adapter.py --framework pytest --action imports` |
+| `fixture_generator.py` | Generate test data and mocks | `python scripts/fixture_generator.py mock-data --schema-file schema.json --count 5` |
+| `metrics_calculator.py` | Calculate test quality metrics | `python scripts/metrics_calculator.py --source app.py --tests test_app.py` |
 | `format_detector.py` | Detect language and framework | `python scripts/format_detector.py --file source.ts` |
-| `output_formatter.py` | Format output for CLI/desktop/CI | `python scripts/output_formatter.py --format markdown` |
+| `output_formatter.py` | Format JSON output for CLI/desktop/API | `python scripts/output_formatter.py --kind coverage --input summary.json` |
 
 ---
 

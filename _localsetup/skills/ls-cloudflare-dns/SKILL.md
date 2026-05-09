@@ -2,7 +2,8 @@
 name: ls-cloudflare-dns
 description: Manage Cloudflare DNS records with the flarectl CLI and guidance for safe zone surveys. Use when adding, changing, removing, listing, or auditing DNS records.
 metadata:
-  version: "1.0"
+  version: "1.1"
+compatibility: "Guidance-only skill. Requires flarectl on PATH, outbound network access to Cloudflare, and a scoped Cloudflare API token. Future bundled helpers must use Python 3.10+ and approved requests/PyYAML dependencies when relevant."
 ---
 
 # Cloudflare DNS management
@@ -11,7 +12,7 @@ metadata:
 
 Give an AI agent a safe workflow for managing DNS records in a Cloudflare account from the terminal. Covers list, create, modify, and delete operations across multiple zones, plus guidance for zone surveys.
 
-This skill does not ship active Cloudflare tooling. Use `flarectl` directly, or add a reviewed Python helper in a future change before advertising wrapper commands. No browser or Cloudflare UI is required for `flarectl` operations.
+This skill does not ship active Cloudflare tooling. It provides a safe operating workflow for using the external `flarectl` command directly. Add a reviewed Python helper in a future change before advertising wrapper commands such as `cf_dns.py`, `survey_dns_zones.py`, or `setup_survey_schedule.py`.
 
 ## When to use
 
@@ -24,9 +25,14 @@ Do not use for Cloudflare Pages, Workers, or any Cloudflare service beyond DNS.
 
 ## Tooling (framework standard)
 
-Current package mode is guidance-only plus external `flarectl` usage. If a helper is added later, it must be Python 3.10+, use approved dependencies, and include tests before the skill advertises it.
+Current package mode is guidance-only plus external `flarectl` usage.
 
-External binary: `flarectl` (Go binary). Install it on PATH. See `references/flarectl-install.md` for install methods.
+Requirements:
+- Python 3.10+ only if a future helper script is added.
+- Approved Python dependencies for future helpers: `requests` for Cloudflare HTTP API calls and PyYAML for YAML survey output.
+- External binary: `flarectl` on PATH. See `references/flarectl-install.md`.
+- Network access to Cloudflare API endpoints from the machine running `flarectl`.
+- Cloudflare API token exposed through `flarectl`'s supported authentication environment.
 
 ## Inputs required
 
@@ -50,9 +56,9 @@ No `scripts/` directory is currently bundled with this skill. Keep local tokens 
 
 ### 2. List records
 
-```python
-# Verify exact flags with the installed flarectl version first.
-# Example shape: flarectl dns list --zone=<domain>
+```bash
+flarectl dns --help
+# Then use the installed version's list syntax for the target zone.
 ```
 
 - Do not assume a default zone. Always ask the user which domain to list or infer from context.
@@ -99,13 +105,13 @@ Steps:
 
 ### 6. Zone survey
 
-No survey script is bundled in this skill. For a survey, use `flarectl` read-only list commands per zone and store the report in a gitignored location. If automation is needed, create a tested Python helper using `requests` and PyYAML before scheduling it.
+No survey script is bundled in this skill. For a survey, use `flarectl` read-only list commands per zone and store any report in a gitignored location. If automation is needed, create a tested Python 3.10+ helper using `requests` for Cloudflare API calls and PyYAML for optional YAML output before documenting or scheduling it.
 
-Output files (default: `~/.localsetup/context/dns/`):
-- `cloudflare_dns_survey.json` (always written)
-- `cloudflare_dns_survey.yaml` (written if PyYAML is installed)
+Suggested report location: `~/.localsetup/context/dns/`.
 
-Suggested output location: `~/.localsetup/context/dns/`.
+Suggested report names, if a future helper or manual process writes them:
+- `cloudflare_dns_survey.json`
+- `cloudflare_dns_survey.yaml` when YAML output is intentionally produced
 
 The agent may read the survey for read-only context (e.g. "what records point to this host"), but must always use a live `dns list` call for any modify or delete to get current record IDs.
 
@@ -136,4 +142,4 @@ Use `ls-cron-orchestrator` only after a real survey command exists and has been 
 
 - references/flarectl-install.md - flarectl install methods (Go, Homebrew, manual build)
 - references/api-token-setup.md - Cloudflare API token creation guide
-- references/survey-schema.md - Zone survey output schema
+- references/survey-schema.md - Suggested zone survey report schema

@@ -22,6 +22,11 @@ security_autoupdate_enabled: true
 # Node.js
 nodejs_version: "22"
 
-# OpenClaw
-openclaw_version: "latest"
-openclaw_user: "{{ common_deploy_user }}"
+# Agent-host sample application.
+# Defaults install OpenClaw as an example npm-based agent service.
+agent_host_package_name: openclaw
+agent_host_package_version: latest
+agent_host_command: openclaw
+agent_host_service_name: openclaw
+agent_host_user: "{{ common_deploy_user }}"
+agent_host_config_dir: "/home/{{ agent_host_user }}/.config/{{ agent_host_service_name }}"

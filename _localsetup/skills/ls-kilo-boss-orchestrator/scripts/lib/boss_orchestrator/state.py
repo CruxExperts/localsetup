@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -56,6 +57,8 @@ class StateStore:
         if not path.exists():
             return None
         data = load_json(path)
+        if isinstance(data, dict):
+            data["id"] = task_id
         return data if isinstance(data, dict) else None
 
     def write_result(self, task_id: str, result: dict[str, Any]) -> None:
@@ -67,9 +70,20 @@ class StateStore:
         if not path.exists():
             return None
         data = load_json(path)
+        if isinstance(data, dict):
+            data["task_id"] = task_id
         return data if isinstance(data, dict) else None
 
     def claim_lease(self, task_id: str, worker_id: str, ttl_seconds: int) -> bool:
+        path = self.lease_path(task_id)
+        if path.exists():
+            lease = self.read_lease(task_id)
+            if lease is not None and self.lease_expired(lease):
+                path.unlink()
+                self.log_event("lease_reclaim_expired", {"task_id": task_id})
+            else:
+                return False
+
         lease = {
             "task_id": task_id,
             "worker_id": worker_id,
@@ -77,12 +91,73 @@ class StateStore:
             "ttl_seconds": int(ttl_seconds),
             "status": "leased",
         }
-        path = self.lease_path(task_id)
-        if path.exists():
-            return False
         write_json(path, lease)
         self.log_event("lease_claim", {"task_id": task_id, "worker_id": worker_id})
         return True
+
+    def read_lease(self, task_id: str) -> dict[str, Any] | None:
+        path = self.lease_path(task_id)
+        if not path.exists():
+            return None
+        try:
+            data = load_json(path)
+        except ValueError:
+            return None
+        if isinstance(data, dict):
+            data["task_id"] = task_id
+        return data if isinstance(data, dict) else None
+
+    def lease_expired(self, lease: dict[str, Any]) -> bool:
+        try:
+            ttl_seconds = int(lease.get("ttl_seconds", 0))
+        except (TypeError, ValueError):
+            return True
+        if ttl_seconds <= 0:
+            return True
+
+        raw_start = str(lease.get("start_ts", ""))
+        if not raw_start:
+            return True
+        try:
+            started = datetime.fromisoformat(raw_start.replace("Z", "+00:00"))
+        except ValueError:
+            return True
+        if started.tzinfo is None:
+            started = started.replace(tzinfo=timezone.utc)
+        age_seconds = (datetime.now(timezone.utc) - started).total_seconds()
+        return age_seconds > ttl_seconds
+
+    def reclaim_leases(self) -> dict[str, int]:
+        counts = {"orphan": 0, "expired": 0}
+        for lease_file in sorted((self.root / "leases").glob("*.lock")):
+            task_id = lease_file.stem
+            lease = self.read_lease(task_id)
+            task = self.read_task(task_id)
+            if lease is None or task is None:
+                lease_file.unlink(missing_ok=True)
+                counts["orphan"] += 1
+                self.log_event("lease_reclaim_orphan", {"task_id": task_id})
+                continue
+            if not self.lease_expired(lease):
+                continue
+
+            attempts = int(task.get("attempts", 0)) + 1
+            max_attempts = int(task.get("max_attempts", 3))
+            task["attempts"] = attempts
+            task["lease_expired_at"] = now_iso()
+            if attempts >= max_attempts:
+                task["status"] = "failed"
+                self.deadletter(task, "lease ttl expired")
+            else:
+                task["status"] = "pending"
+            self.write_task(task)
+            lease_file.unlink(missing_ok=True)
+            counts["expired"] += 1
+            self.log_event(
+                "lease_reclaim_expired",
+                {"task_id": task_id, "attempts": attempts, "max_attempts": max_attempts},
+            )
+        return counts
 
     def release_lease(self, task_id: str) -> None:
         path = self.lease_path(task_id)
@@ -101,6 +176,13 @@ class StateStore:
         payload["task_id"] = task_id
         payload["decided_at"] = now_iso()
         write_json(self.consensus_path(task_id), payload)
+
+    def read_consensus(self, task_id: str) -> dict[str, Any] | None:
+        path = self.consensus_path(task_id)
+        if not path.exists():
+            return None
+        data = load_json(path)
+        return data if isinstance(data, dict) else None
 
     def write_session(self, session_id: str, payload: dict[str, Any]) -> None:
         body = dict(payload)

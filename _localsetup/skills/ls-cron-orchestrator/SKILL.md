@@ -8,7 +8,7 @@ compatibility: "Linux cron; Python 3.10+ and PyYAML (framework). Manifest at cro
 
 # Cron orchestrator
 
-Define triggers and tasks in a single YAML manifest. One trigger (e.g. midnight) runs multiple tasks in sequence; supports on-boot with delay. Tooling: create, remove, reorder, enable/disable, install (generate crontab fragment).
+Define triggers and tasks in a single YAML manifest. One trigger (for example, `midnight-utc`) runs multiple tasks in sequence; on-boot triggers can delay before execution. Tooling creates, removes, reorders, enables, disables, validates, and installs generated crontab fragments.
 
 ## Manifest (cron/manifest.yaml)
 
@@ -22,20 +22,26 @@ tasks:
   - id: snapshot-daily
     trigger: midnight-utc
     sequence_order: 1
-    command: "python3 _localsetup/skills/ls-system-info/scripts/system_snapshot.py --output-basename \"reports/system-snapshots/$(hostname)/$(date -u +%Y%m%dT%H%M%SZ)\""
+    command:
+      - python3
+      - _localsetup/skills/ls-system-info/scripts/system_snapshot.py
+      - --output-basename
+      - reports/system-snapshots/daily
     enabled: true
+    timeout_seconds: 3600
 ```
 
-- **Triggers:** `schedule` = cron expression; `on_boot_delay_minutes` = run N minutes after reboot (single @reboot + sleep).
-- **Tasks:** `trigger`, `sequence_order` (order within trigger), `command` (one line, shell-expanded), `enabled`.
+- **Triggers:** use either `schedule` with exactly five cron fields or `on_boot_delay_minutes` from 0 to 1440.
+- **Tasks:** require `id`, `trigger`, `sequence_order`, `command`, and optional `enabled` plus `timeout_seconds`.
+- **Commands:** prefer an argv list. String commands are split with `shlex` and reject shell operators such as `&&`, `|`, redirects, backticks, and command substitution. Shell expansion is not performed.
 
 ## Commands (from repo root)
 
-All use `--manifest cron/manifest.yaml` (default).
+Use `python3 _localsetup/skills/ls-cron-orchestrator/scripts/cron_ctl.py --manifest cron/manifest.yaml <command>`.
 
 | Command | Purpose |
 |---------|---------|
-| `validate` | Check manifest and trigger refs |
+| `validate` | Check manifest schema, trigger refs, command shape, timeouts, and schedules |
 | `list` [--trigger NAME] | List tasks (optionally for one trigger) |
 | `add-task --trigger NAME --command "..."` [--sequence-order N] [--id ID] | Add task |
 | `remove-task --id ID` or `--trigger NAME` | Remove by id or all for trigger |
@@ -43,11 +49,13 @@ All use `--manifest cron/manifest.yaml` (default).
 | `enable --id ID` / `disable --id ID` | Toggle task |
 | `install` [--repo-root PATH] [--output PATH] | Generate crontab fragment (or write to file) |
 
-Runner (used by cron): `run_trigger.py --manifest PATH --repo-root PATH TRIGGER` runs that trigger's tasks in sequence.
+Runner (used by cron): `python3 _localsetup/skills/ls-cron-orchestrator/scripts/run_trigger.py --manifest PATH --repo-root PATH TRIGGER` runs that trigger's tasks in sequence using `subprocess.run(..., shell=False)`.
+
+See `references/manifest.md` for the accepted manifest schema and security model.
 
 ## Patterns for agents
 
-1. **Add a daily snapshot at midnight:** `add-task --trigger midnight-utc --command "python3 _localsetup/skills/ls-system-info/scripts/system_snapshot.py --output-basename \"reports/system-snapshots/$(hostname)/$(date -u +%Y%m%dT%H%M%SZ)\""`.
+1. **Add a daily snapshot at midnight:** `add-task --trigger midnight-utc --command "python3 _localsetup/skills/ls-system-info/scripts/system_snapshot.py --output-basename reports/system-snapshots/daily"`.
 2. **Add on-boot trigger:** In manifest, add trigger with `on_boot_delay_minutes: 5`; then add tasks to it.
 3. **Reorder:** `reorder --trigger midnight-utc --order snapshot-daily,cleanup,notify`.
 4. **Remove one task:** `remove-task --id snapshot-daily`. Remove all for a trigger: `remove-task --trigger midnight-utc`.

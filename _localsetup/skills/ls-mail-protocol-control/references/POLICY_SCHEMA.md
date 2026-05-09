@@ -37,5 +37,7 @@ profiles:
 - Unknown wildcard tokens are rejected.
 - Wildcards expand to canonical action IDs before evaluation.
 - `deny_actions` wins over `allow_actions` at the same merge level.
+- Count thresholds must be integers from `0` through `1000000`.
+- Confirmation booleans must be JSON/YAML booleans, not truthy strings.
+- Profile and account threshold overrides are validated before startup completes.
 - Invalid policy fails startup with actionable error text.
-

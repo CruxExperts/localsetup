@@ -112,8 +112,8 @@ ansible-vault rekey group_vars/all/vault.yml
 # Wrong: ufw
 # Right: community.general.ufw
 
-# Install missing collection
-ansible-galaxy collection install community.general
+# Install required example collections
+ansible-galaxy collection install -r collections/requirements.yml
 
 # List installed collections
 ansible-galaxy collection list

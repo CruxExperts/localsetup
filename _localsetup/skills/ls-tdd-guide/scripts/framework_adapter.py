@@ -5,8 +5,11 @@ Provides multi-framework support with adapters for Jest, Pytest, JUnit, Vitest, 
 Handles framework-specific patterns, imports, and test structure.
 """
 
-from typing import Dict, List, Any, Optional
+from typing import Optional
+import argparse
 from enum import Enum
+
+from cli_support import SkillCliError, emit_json, fail, read_text
 
 
 class Framework(Enum):
@@ -426,3 +429,67 @@ public void tearDown() {{
             return Framework.MOCHA
 
         return None
+
+
+def build_parser() -> argparse.ArgumentParser:
+    """Build the command-line parser."""
+    parser = argparse.ArgumentParser(
+        description="Generate framework-specific test snippets and detect test frameworks."
+    )
+    parser.add_argument(
+        "--framework",
+        choices=[framework.value for framework in Framework],
+        default=Framework.PYTEST.value,
+    )
+    parser.add_argument(
+        "--language",
+        choices=[language.value for language in Language],
+        default=Language.PYTHON.value,
+    )
+    parser.add_argument(
+        "--action",
+        choices=["imports", "assertion", "test-function", "suite", "detect"],
+        default="imports",
+    )
+    parser.add_argument("--test-name", default="should handle expected behavior")
+    parser.add_argument("--test-body", default="assert result == expected")
+    parser.add_argument("--description", default="")
+    parser.add_argument("--suite-name", default="GeneratedSuite")
+    parser.add_argument("--actual", default="result")
+    parser.add_argument("--expected", default="expected")
+    parser.add_argument(
+        "--assertion-type",
+        choices=["equals", "not_equals", "true", "false", "throws"],
+        default="equals",
+    )
+    parser.add_argument("--code-file", help="Path to test code for --action detect.")
+    parser.add_argument("--code", help="Inline test code for --action detect.")
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Run the command-line interface."""
+    parser = build_parser()
+    args = parser.parse_args(argv)
+
+    try:
+        adapter = FrameworkAdapter(Framework(args.framework), Language(args.language))
+        if args.action == "imports":
+            print(adapter.generate_imports())
+        elif args.action == "assertion":
+            print(adapter.generate_assertion(args.actual, args.expected, args.assertion_type))
+        elif args.action == "test-function":
+            print(adapter.generate_test_function(args.test_name, args.test_body, args.description))
+        elif args.action == "suite":
+            print(adapter.generate_test_suite_wrapper(args.suite_name, args.test_body))
+        elif args.action == "detect":
+            code = read_text(path=args.code_file, inline=args.code)
+            detected = adapter.detect_framework(code)
+            emit_json({"framework": detected.value if detected else "unknown"})
+        return 0
+    except (SkillCliError, ValueError, KeyError, TypeError) as exc:
+        return fail(str(exc))
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

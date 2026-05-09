@@ -36,6 +36,7 @@ def make_conf(tmp: Path, **overrides) -> Path:
         "NGINX_PORT": "81",
         "API_USER": "admin@test.local",
         "API_PASS": "testpass",
+        "DATA_DIR": str(tmp / "data"),
     }
     fields.update(overrides)
     conf = tmp / "npm-api.conf"
@@ -211,6 +212,30 @@ class TestValidateHostId(unittest.TestCase):
     def test_float_truncated_correctly(self):
         # int("5.0") raises, but int(5.0) works
         self.assertEqual(npm_api._validate_host_id(5.0), 5)
+
+
+# ---------------------------------------------------------------------------
+# Input hardening: _validate_access_list_id
+# ---------------------------------------------------------------------------
+
+class TestValidateAccessListId(unittest.TestCase):
+
+    def test_positive_id_accepted(self):
+        self.assertEqual(npm_api._validate_access_list_id("5"), 5)
+
+    def test_zero_means_none(self):
+        self.assertIsNone(npm_api._validate_access_list_id(0))
+
+    def test_empty_means_none(self):
+        self.assertIsNone(npm_api._validate_access_list_id(""))
+
+    def test_non_numeric_rejected(self):
+        with self.assertRaises(SystemExit):
+            npm_api._validate_access_list_id("not-an-id")
+
+    def test_negative_rejected(self):
+        with self.assertRaises(SystemExit):
+            npm_api._validate_access_list_id(-1)
 
 
 # ---------------------------------------------------------------------------
@@ -607,6 +632,25 @@ class TestHostUpdateSanitization(unittest.TestCase):
             client = self._make_client(Path(td))
             with self.assertRaises(SystemExit):
                 client.host_update(0, {"forward_port": 80})
+
+    def test_bad_access_list_id_rejected(self):
+        with tempfile.TemporaryDirectory() as td:
+            client = self._make_client(Path(td))
+            with self.assertRaises(SystemExit):
+                client.host_update(1, {"access_list_id": "not-an-id"})
+
+    def test_access_list_id_zero_clears_value(self):
+        with tempfile.TemporaryDirectory() as td:
+            client = self._make_client(Path(td))
+            captured = {}
+
+            def fake_request(method, path, body=None):
+                captured.update(body or {})
+                return captured
+
+            client.request = fake_request
+            result = client.host_update(1, {"access_list_id": "0"})
+            self.assertIsNone(result["access_list_id"])
 
 
 # ---------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 ---
 name: ls-github-publishing-workflow
-description: "Prepare a repository for public GitHub publishing: doc best practices, README structure, licensing, scrub for PII and secrets, publishing checklist. Use when publishing to GitHub, preparing a public release, or when the user asks about publishing workflow or repo readiness."
+description: "Use when publishing to GitHub, preparing a public release, or reviewing repo readiness. Covers public-doc structure, licensing, PII/secrets/path scrub, version checks, and repository settings."
 metadata:
   version: "1.1"
 ---
@@ -54,12 +54,12 @@ Run a quick scrub command (e.g. grep for password, secret, api_key, token, /home
 - **Issues and Discussions:** Enable if you want contact via GitHub.
 - **Security:** Enable "Private vulnerability reporting" if desired; SECURITY.md should explain how to report.
 
-## Publishing checklist (baseline)
+## Publishing Checklist Baseline
 
-- Use a single checklist doc (e.g. docs/PUBLISHING_CHECKLIST.md) that covers: documentation and structure, scrub (PII/secrets/paths/URLs/artifacts), version and release, and repository settings.
-- Before going public, work through the checklist and optionally run the scrub command. When all items are checked, the repo is ready for public publish.
+- Treat this section as the source checklist for the skill. If the target repo maintains a publishing checklist, create or update its repo-local `docs/PUBLISHING_CHECKLIST.md` from these same categories: documentation and structure, scrub (PII/secrets/paths/URLs/artifacts), version and release, and repository settings.
+- Before going public, work through the checklist and optionally run the scrub command. When all items are checked, the repo is ready for public publishing.
 
 ## Reference
 
-- A fuller checklist may exist outside this public repo. The sections above serve as the baseline; follow them for your own publishing workflow.
+- Checklist source: use `Publishing Checklist Baseline` in this skill unless the target repo has its own tracked checklist.
 - Versioning: load ls-automatic-versioning when changing or explaining version behavior.

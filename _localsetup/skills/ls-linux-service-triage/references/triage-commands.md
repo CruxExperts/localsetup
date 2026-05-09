@@ -7,8 +7,8 @@
 
 ## Status
 - systemd: `systemctl status <service> --no-pager`
-- ports: `ss -ltnp | grep <port>`
-- processes: `ps aux | grep <name>`
+- ports: `ss -H -ltnp 'sport = :<port>'`
+- processes: `pgrep -af '<name>'`
 
 ## Permissions
 - `ls -la <path>`

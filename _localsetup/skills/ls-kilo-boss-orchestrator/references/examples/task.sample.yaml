@@ -2,7 +2,15 @@ id: task-sample-001
 priority: 50
 attempts: 0
 max_attempts: 3
-command: "kilo run --auto --agent sidekick --format json \"Summarize current repo risks in 8 bullets\""
+command_argv:
+  - kilo
+  - run
+  - --auto
+  - --agent
+  - sidekick
+  - --format
+  - json
+  - Summarize current repo risks in 8 bullets
 repo_root: "/home/cptnfren/myrig"
 timeout_seconds: 600
 destructive: false

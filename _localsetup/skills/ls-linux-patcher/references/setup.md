@@ -1,482 +1,162 @@
-# Linux Patcher - Setup Guide
+# Linux Patcher Setup
 
-Complete setup instructions for getting the Linux Patcher skill running securely.
+This setup guide reflects the current v3 implementation: `scripts/patch_cli.py` generates plans only. It does not execute SSH, package manager, Docker, or PatchMon API operations.
 
-## ⚠️ Important Disclaimers
+## Prerequisites
 
-**Distribution Support:**
-- ✅ **Ubuntu** - Fully tested end-to-end
-- ⚠️ **Untested but supported:** Amazon Linux, Debian, RHEL, AlmaLinux, CentOS, Rocky Linux, SUSE
-- Update commands for untested distributions are based on official documentation
-- **Always test in a non-production environment first**
-- Verify updates manually after first run
+- Python 3.10+ on the control machine.
+- SSH client on the control machine if you intend to run generated commands.
+- SSH key access to each target host.
+- A maintenance window, backup plan, and rollback path.
+- Target-host package manager: `apt`, `dnf`, `yum`, or `zypper`.
+- Docker and Docker Compose only for `host-full` plans.
 
-**Security Notice:**
-- This skill requires passwordless sudo access
-- This skill uses SSH key authentication
-- Review all security implications before deployment
-- Follow principle of least privilege
+PatchMon is optional for dashboard visibility. The bundled helper does not read PatchMon credentials or query its API.
 
-## Prerequisites Checklist
+## Install Location
 
-Before starting, ensure you have:
-- [ ] agent host installed and running
-- [ ] SSH client installed on agent host host
-- [ ] `jq` and `curl` installed (for PatchMon integration)
-- [ ] Root/sudo access on all target hosts
-- [ ] **PatchMon installed** (required to check which hosts need updating)
-  - **Important:** PatchMon does NOT need to be on the same server as agent host
-  - Install on any server accessible via HTTPS from your agent host host
-  - Download: https://github.com/PatchMon/PatchMon
-  - Docs: https://docs.patchmon.net
+In Localsetup v3, the canonical source path is:
 
-## Setup Steps
-
-### Step 1: Install the Skill
-
-```bash
-# Option A: Install from file
-agent-host skill install linux-patcher.skill
-
-# Option B: Install from ClawHub
-install this skill through your agent skill manager
-
-# Verify installation
-ls -la ~/.agent-host/workspace/skills/linux-patcher
+```text
+_localsetup/skills/ls-linux-patcher/
 ```
 
-### Step 2: Configure SSH Key Authentication
+Generated platform adapter paths may differ. Run the commands from wherever your installed skill directory contains `scripts/patch_cli.py`.
 
-**On agent host host (control machine):**
+## Configure SSH
+
+Create a dedicated key for the maintenance user when possible:
 
 ```bash
-# Generate SSH key if you don't have one
-ssh-keygen -t ed25519 -C "agent-host-patching" -f ~/.ssh/id_agent-host
-
-# Copy public key to each target host
-ssh-copy-id -i ~/.ssh/id_agent-host.pub admin@targethost.example.com
-
-# Test SSH access (should not prompt for password)
-ssh -i ~/.ssh/id_agent-host admin@targethost.example.com echo "SSH OK"
+ssh-keygen -t ed25519 -C "linux-patcher-maintenance" -f ~/.ssh/id_linux_patcher
+ssh-copy-id -i ~/.ssh/id_linux_patcher.pub patchbot@targethost.example.com
+ssh -i ~/.ssh/id_linux_patcher patchbot@targethost.example.com echo "SSH OK"
 ```
 
-**Configure SSH config for convenience:**
+Optional SSH config:
 
-```bash
-# Edit ~/.ssh/config
-cat >> ~/.ssh/config << 'EOF'
-
-# Linux Patcher hosts
-Host webserver
+```sshconfig
+Host webserver-maint
     HostName webserver.example.com
-    User admin
-    IdentityFile ~/.ssh/id_agent-host
-
-Host database
-    HostName database.example.com
-    User admin
-    IdentityFile ~/.ssh/id_agent-host
-EOF
-
-# Test with hostname alias
-ssh webserver echo "Alias works"
+    User patchbot
+    IdentityFile ~/.ssh/id_linux_patcher
 ```
 
-### Step 3: Configure Passwordless Sudo (CRITICAL SECURITY STEP)
+## Configure Sudo Safely
 
-**⚠️ Security Warning:**
-Passwordless sudo is required for automation but poses security risks. We configure it with **minimal permissions** - only for specific commands needed for patching.
+Passwordless sudo is sensitive. Do not use broad examples as final policy. Generate a plan first, inspect the exact commands, then grant only the approved command paths for a dedicated user.
 
-**On each target host, run as root or with sudo:**
+Example Ubuntu/Debian pattern:
 
-#### For Ubuntu/Debian Systems:
-
-```bash
-# Create sudoers file with restricted permissions
-cat > /etc/sudoers.d/linux-patcher << 'EOF'
-# Linux Patcher - Restricted sudo access
-# Only allows specific commands needed for patching
-# Replace 'admin' with your SSH username
-
-# Package management only
-admin ALL=(ALL) NOPASSWD: /usr/bin/apt update
-admin ALL=(ALL) NOPASSWD: /usr/bin/apt upgrade
-admin ALL=(ALL) NOPASSWD: /usr/bin/apt autoremove
-admin ALL=(ALL) NOPASSWD: /usr/bin/apt-get update
-admin ALL=(ALL) NOPASSWD: /usr/bin/apt-get upgrade
-admin ALL=(ALL) NOPASSWD: /usr/bin/apt-get autoremove
-
-# Docker management only (if using Docker updates)
-admin ALL=(ALL) NOPASSWD: /usr/bin/docker system prune
-admin ALL=(ALL) NOPASSWD: /usr/bin/docker pull *
-admin ALL=(ALL) NOPASSWD: /usr/bin/docker compose pull
-admin ALL=(ALL) NOPASSWD: /usr/bin/docker compose up
-admin ALL=(ALL) NOPASSWD: /usr/bin/docker images
-EOF
-
-# Set correct permissions (CRITICAL)
-chmod 0440 /etc/sudoers.d/linux-patcher
-
-# Verify syntax
-visudo -c -f /etc/sudoers.d/linux-patcher
+```sudoers
+# /etc/sudoers.d/linux-patcher
+patchbot ALL=(root) NOPASSWD: /usr/bin/apt update
+patchbot ALL=(root) NOPASSWD: /usr/bin/apt upgrade
+patchbot ALL=(root) NOPASSWD: /usr/bin/apt autoremove
 ```
 
-#### For RHEL/CentOS/Rocky/Alma/Amazon Linux:
+Example Docker additions only when needed:
 
-```bash
-# Create sudoers file with restricted permissions
-cat > /etc/sudoers.d/linux-patcher << 'EOF'
-# Linux Patcher - Restricted sudo access
-
-# Package management (yum)
-admin ALL=(ALL) NOPASSWD: /usr/bin/yum check-update
-admin ALL=(ALL) NOPASSWD: /usr/bin/yum update
-admin ALL=(ALL) NOPASSWD: /usr/bin/yum autoremove
-
-# Package management (dnf - for RHEL 8+, Rocky, Alma)
-admin ALL=(ALL) NOPASSWD: /usr/bin/dnf check-update
-admin ALL=(ALL) NOPASSWD: /usr/bin/dnf update
-admin ALL=(ALL) NOPASSWD: /usr/bin/dnf autoremove
-
-# Docker management
-admin ALL=(ALL) NOPASSWD: /usr/bin/docker system prune
-admin ALL=(ALL) NOPASSWD: /usr/bin/docker pull *
-admin ALL=(ALL) NOPASSWD: /usr/bin/docker compose pull
-admin ALL=(ALL) NOPASSWD: /usr/bin/docker compose up
-admin ALL=(ALL) NOPASSWD: /usr/bin/docker images
-EOF
-
-chmod 0440 /etc/sudoers.d/linux-patcher
-visudo -c -f /etc/sudoers.d/linux-patcher
+```sudoers
+patchbot ALL=(root) NOPASSWD: /usr/bin/docker compose pull
+patchbot ALL=(root) NOPASSWD: /usr/bin/docker compose up
+patchbot ALL=(root) NOPASSWD: /usr/bin/docker compose ps
 ```
 
-#### For SUSE/OpenSUSE:
+Validate the file:
 
 ```bash
-# Create sudoers file with restricted permissions
-cat > /etc/sudoers.d/linux-patcher << 'EOF'
-# Linux Patcher - Restricted sudo access
-
-# Package management
-admin ALL=(ALL) NOPASSWD: /usr/bin/zypper refresh
-admin ALL=(ALL) NOPASSWD: /usr/bin/zypper update
-admin ALL=(ALL) NOPASSWD: /usr/bin/zypper packages
-admin ALL=(ALL) NOPASSWD: /usr/bin/zypper remove
-
-# Docker management
-admin ALL=(ALL) NOPASSWD: /usr/bin/docker system prune
-admin ALL=(ALL) NOPASSWD: /usr/bin/docker pull *
-admin ALL=(ALL) NOPASSWD: /usr/bin/docker compose pull
-admin ALL=(ALL) NOPASSWD: /usr/bin/docker compose up
-admin ALL=(ALL) NOPASSWD: /usr/bin/docker images
-EOF
-
-chmod 0440 /etc/sudoers.d/linux-patcher
-visudo -c -f /etc/sudoers.d/linux-patcher
+sudo chmod 0440 /etc/sudoers.d/linux-patcher
+sudo visudo -c -f /etc/sudoers.d/linux-patcher
+ssh patchbot@targethost.example.com 'sudo -n true'
 ```
 
-**Test sudo access:**
+If `sudo -n true` fails, fix sudo policy before any maintenance window.
+
+## Check CLI Status
 
 ```bash
-# From agent host host, test sudo without password prompt
-ssh admin@targethost sudo apt update  # Should run without password
-ssh admin@targethost sudo reboot       # Should ask for password (not allowed)
+python scripts/patch_cli.py status
+python scripts/patch_cli.py --json status
 ```
 
-### Step 4: Configure PatchMon Credentials (Optional but Recommended)
+Expected result: `Mode: plan-only` and a list of unavailable live-execution features.
+
+## Generate Plans
+
+Single host, packages only:
 
 ```bash
-# Create a local gitignored credential file only if you add a tested PatchMon API client
-install -m 600 /dev/null ~/.patchmon-credentials.conf
-nano ~/.patchmon-credentials.conf
+python scripts/patch_cli.py host-only patchbot@webserver.example.com
 ```
 
-**Set the following values:**
+Single host with Docker Compose:
 
 ```bash
-PATCHMON_URL=https://patchmon.example.com  # Your PatchMon server URL
-PATCHMON_USERNAME=your-username             # Your PatchMon username
-PATCHMON_PASSWORD=your-secure-password      # Your PatchMon password
+python scripts/patch_cli.py host-full patchbot@app.example.com /opt/docker
 ```
 
-**Secure the credentials file:**
+Multiple hosts:
 
-```bash
-chmod 600 ~/.patchmon-credentials.conf
+```text
+# hosts.conf
+patchbot@webserver.example.com
+patchbot@app.example.com,/opt/docker
 ```
 
-**Test PatchMon connectivity:**
-
 ```bash
-cd ~/.agent-host/workspace/skills/linux-patcher
-scripts/patchmon-query.sh
+python scripts/patch_cli.py multiple hosts.conf
 ```
 
-### Step 5: Test the Setup
-
-#### Test 1: Host-Only Update (Dry-Run)
+Automatic/PatchMon mode boundary:
 
 ```bash
-cd ~/.agent-host/workspace/skills/linux-patcher
-
-# Test on one host first
-python scripts/patch_cli.py host-only admin@webserver.example.com
-```
-
-#### Test 2: Full Update (Dry-Run with Docker)
-
-```bash
-# Test with Docker path auto-detection
-python scripts/patch_cli.py host-only admin@webserver.example.com
-
-# Or specify Docker path
-DRY_RUN=true python scripts/patch_cli.py host-full admin@webserver.example.com /opt/docker
-```
-
-#### Test 3: Automatic Mode (Dry-Run via PatchMon)
-
-```bash
-# Queries PatchMon, detects hosts, but doesn't apply changes
 python scripts/patch_cli.py auto --dry-run
 ```
 
-#### Test 4: Apply Real Updates (Single Host)
+This reports that PatchMon automatic execution is unavailable and guidance-only. It will not query PatchMon or run updates.
+
+## Verify After Manual Updates
+
+After running approved commands manually:
 
 ```bash
-# Remove DRY_RUN flag to actually apply updates
-python scripts/patch_cli.py host-only admin@webserver.example.com
+# Ubuntu/Debian
+ssh patchbot@host 'tail -100 /var/log/apt/history.log'
+
+# RHEL-family
+ssh patchbot@host 'tail -100 /var/log/dnf.log 2>/dev/null || tail -100 /var/log/yum.log'
+
+# Reboot check
+ssh patchbot@host '[ -f /var/run/reboot-required ] && echo reboot-required || echo no-reboot-flag'
+
+# Docker
+ssh patchbot@host 'cd /opt/docker && sudo docker compose ps'
 ```
 
-### Step 6: Verify Results
+## Troubleshooting
 
-After first real update:
+### Invalid Host Input
 
-1. **SSH into the updated host:**
-   ```bash
-   ssh admin@webserver.example.com
-   ```
+`patch_cli.py` rejects shell operators and control characters in host arguments. Use `user@host`, host aliases from SSH config, or `host:port`.
 
-2. **Check update logs:**
-   ```bash
-   # Ubuntu/Debian
-   tail -100 /var/log/apt/history.log
+### Docker Path Rejected
 
-   # RHEL/CentOS
-   tail -100 /var/log/yum.log  # or dnf.log
+`host-full` requires an absolute remote path:
 
-   # SUSE
-   tail -100 /var/log/zypper.log
-   ```
-
-3. **Verify Docker containers (if applicable):**
-   ```bash
-   docker ps
-   docker compose ps
-   docker logs container-name
-   ```
-
-4. **Check for reboot requirement:**
-   ```bash
-   # Ubuntu/Debian
-   [ -f /var/run/reboot-required ] && echo "Reboot needed" || echo "No reboot needed"
-
-   # Any distro - check kernel
-   uname -r  # Running kernel
-   ls -t /boot/vmlinuz-* | head -n1  # Latest installed
-   ```
-
-## Security Best Practices
-
-### 1. Principle of Least Privilege
-
-✅ **DO:**
-- Create separate user for patching (e.g., `patchbot`)
-- Grant sudo only for specific commands
-- Use sudoers.d files (easier to manage)
-- Set file permissions to 0440
-
-❌ **DON'T:**
-- Use `NOPASSWD: ALL` (grants too much access)
-- Share SSH keys between users
-- Run patches as root directly
-
-### 2. SSH Key Protection
-
-✅ **DO:**
-- Use passphrase-protected SSH keys when possible
-- Store keys with permissions 0600
-- Use dedicated keys for automation
-- Rotate keys periodically
-- Use SSH agent for passphrase management
-
-❌ **DON'T:**
-- Share private keys
-- Store keys in version control
-- Use the same key for multiple purposes
-
-### 3. PatchMon Credentials
-
-✅ **DO:**
-- Store credentials in `~/.patchmon-credentials.conf` with 0600 permissions
-- Use strong, unique password
-- Rotate passwords regularly
-- Use HTTPS for PatchMon URL
-
-❌ **DON'T:**
-- Hardcode credentials in scripts
-- Share credentials file
-- Use weak passwords
-- Access PatchMon over HTTP
-
-### 4. Network Security
-
-✅ **DO:**
-- Use firewall rules to restrict SSH access
-- Use VPN for remote patching
-- Enable SSH key-only authentication
-- Disable password authentication for SSH
-
-❌ **DON'T:**
-- Expose SSH to public internet without restrictions
-- Use default SSH port without firewall
-- Allow password authentication
-
-### 5. Audit and Monitoring
-
-✅ **DO:**
-- Review `/var/log/auth.log` regularly
-- Monitor sudo usage
-- Enable PatchMon agents for tracking
-- Set up alerts for failed updates
-- Keep update logs
-
-❌ **DON'T:**
-- Ignore failed login attempts
-- Skip log reviews
-- Disable auditing
-
-## Troubleshooting Setup
-
-### Issue: SSH Key Authentication Not Working
-
-**Symptoms:**
-- Password prompts appear
-- "Permission denied (publickey)" errors
-
-**Solutions:**
 ```bash
-# 1. Verify key is added to target host
-ssh admin@target "cat ~/.ssh/authorized_keys"
-
-# 2. Check SSH key permissions
-ls -la ~/.ssh/id_agent-host
-chmod 600 ~/.ssh/id_agent-host  # Fix if needed
-
-# 3. Check target host SSH config
-ssh admin@target "grep -E '(PubkeyAuthentication|PasswordAuthentication)' /etc/ssh/sshd_config"
-
-# 4. Enable SSH debugging
-ssh -vvv admin@target
+python scripts/patch_cli.py host-full patchbot@app.example.com /opt/docker
 ```
 
-### Issue: Sudo Still Asking for Password
+### Sudo Still Prompts
 
-**Symptoms:**
-- "sudo: a password is required" errors
-- Updates fail with permission denied
+Check the sudoers file and command paths:
 
-**Solutions:**
 ```bash
-# 1. Verify sudoers file exists and is valid
-ssh admin@target "sudo visudo -c -f /etc/sudoers.d/linux-patcher"
-
-# 2. Check file permissions
-ssh admin@target "ls -la /etc/sudoers.d/linux-patcher"
-# Should be: -r--r----- root root
-
-# 3. Test specific command
-ssh admin@target "sudo apt update"  # Should not prompt
-
-# 4. Check sudo logs for errors
-ssh admin@target "sudo grep sudo /var/log/auth.log | tail -20"
+ssh patchbot@host 'sudo -l'
+ssh patchbot@host 'command -v apt dnf yum zypper docker'
 ```
 
-### Issue: PatchMon Connection Failed
+### PatchMon Automation Needed
 
-**Symptoms:**
-- "Failed to authenticate with PatchMon"
-- Connection timeout errors
-
-**Solutions:**
-```bash
-# 1. Test PatchMon connectivity
-curl -k https://patchmon.example.com/api/health
-
-# 2. Verify credentials
-cat ~/.patchmon-credentials.conf
-
-# 3. Test authentication manually
-curl -k -X POST https://patchmon.example.com/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"user","password":"pass"}'
-
-# 4. Check firewall rules
-telnet patchmon.example.com 443
-```
-
-### Issue: Docker Detection Fails
-
-**Symptoms:**
-- "Docker Compose not found"
-- Auto-detection fails
-
-**Solutions:**
-```bash
-# 1. Verify Docker is installed
-ssh admin@target "command -v docker"
-
-# 2. Check Docker Compose file exists
-ssh admin@target "find /home /opt /srv -name docker-compose.yml 2>/dev/null"
-
-# 3. Specify path manually
-python scripts/patch_cli.py host-full admin@target /full/path/to/docker
-
-# 4. Check permissions
-ssh admin@target "ls -la /path/to/docker/docker-compose.yml"
-```
-
-## Next Steps
-
-After successful setup:
-
-1. **Schedule automated updates:**
-   ```bash
-   cron add --name "Nightly Patching" \
-     --schedule "0 2 * * *" \
-     --task "cd ~/.agent-host/workspace/skills/linux-patcher && python scripts/patch_cli.py auto"
-   ```
-
-2. **Set up notifications:**
-   - Configure PatchMon alerts
-   - Add Telegram/Discord webhooks
-   - Monitor cron job logs
-
-3. **Document your infrastructure:**
-   - Create host inventory
-   - Note Docker paths
-   - Track update schedules
-
-4. **Test disaster recovery:**
-   - Practice rolling back updates
-   - Document manual procedures
-   - Test backup restoration
-
-## Support
-
-If you encounter issues:
-
-1. Check the troubleshooting section above
-2. Review skill logs
-3. Test each component individually
-4. Read SKILL.md for detailed documentation
-5. Ask agent host: "Help me troubleshoot linux-patcher skill"
+Add and test a Python PatchMon API client before documenting credentials, live API queries, or automatic host selection. Until then, use `multiple` with a reviewed local host list.

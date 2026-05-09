@@ -114,11 +114,12 @@ def _sanitize_reason(value: str) -> str:
 def _read_epoch(path: Path) -> int:
     if not path.is_file():
         return 0
-    try:
-        raw = path.read_text(encoding="utf-8", errors="replace").strip()
-        return int(raw) if raw.isdigit() else 0
-    except OSError:
+    raw = path.read_text(encoding="utf-8", errors="replace").strip()
+    if not raw:
         return 0
+    if not raw.isdigit():
+        raise ValidationError(f"State file must contain an epoch integer: {path}")
+    return int(raw)
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:
@@ -134,6 +135,76 @@ def _load_yaml(path: Path) -> dict[str, Any]:
     return data
 
 
+def _require_mapping(value: Any, field: str) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise ValidationError(f"{field} must be a map")
+    return value
+
+
+def _optional_mapping(raw: dict[str, Any], key: str) -> dict[str, Any]:
+    value = raw.get(key, {})
+    if value is None:
+        return {}
+    return _require_mapping(value, key)
+
+
+def _optional_string(
+    raw: dict[str, Any], key: str, default: str, field: str
+) -> str:
+    value = raw.get(key, default)
+    if value is None:
+        value = default
+    if not isinstance(value, str):
+        raise ValidationError(f"{field} must be a string")
+    text = _sanitize_text(value)
+    return text or default
+
+
+def _string_list(
+    value: Any, field: str, *, required: bool = False, max_items: int = 200
+) -> list[str]:
+    if value is None:
+        value = []
+    if not isinstance(value, list):
+        raise ValidationError(f"{field} must be a list of strings")
+    out: list[str] = []
+    for index, item in enumerate(value[:max_items]):
+        if not isinstance(item, str):
+            raise ValidationError(f"{field}[{index}] must be a string")
+        text = _sanitize_text(item)
+        if text:
+            out.append(text)
+    if required and not out:
+        raise ValidationError(f"{field} must contain at least one non-empty string")
+    return out
+
+
+def _optional_bool(raw: dict[str, Any], key: str, field: str) -> bool | None:
+    if key not in raw or raw[key] is None:
+        return None
+    value = raw[key]
+    if not isinstance(value, bool):
+        raise ValidationError(f"{field} must be true or false")
+    return value
+
+
+def _optional_int(
+    raw: dict[str, Any], key: str, default: int, field: str, *, minimum: int = 0
+) -> int:
+    value = raw.get(key, default)
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        raise ValidationError(f"{field} must be an integer")
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError) as exc:
+        raise ValidationError(f"{field} must be an integer") from exc
+    if parsed < minimum:
+        return minimum
+    return parsed
+
+
 def _expand_template(text: str, *, repo_root: Path) -> str:
     return text.replace("{repo_root}", str(repo_root))
 
@@ -145,17 +216,6 @@ def _normalize_path(value: str, *, cwd: Path, repo_root: Path) -> Path:
     if not p.is_absolute():
         p = (cwd / p).resolve()
     return p
-
-
-def _sanitize_string_list(value: Any, *, max_items: int = 200) -> list[str]:
-    if not isinstance(value, list):
-        return []
-    out: list[str] = []
-    for item in value[:max_items]:
-        text = _sanitize_text(item)
-        if text:
-            out.append(text)
-    return out
 
 
 def _compile_regexes(patterns: list[str]) -> list[Pattern[str]]:
@@ -170,39 +230,82 @@ def _compile_regexes(patterns: list[str]) -> list[Pattern[str]]:
     return compiled
 
 
+def _validate_targets(targets: Any) -> list[dict[str, Any]]:
+    if not isinstance(targets, list) or not targets:
+        raise ValidationError("targets must be a non-empty list")
+
+    validated: list[dict[str, Any]] = []
+    for index, target in enumerate(targets):
+        if not isinstance(target, dict):
+            raise ValidationError(f"targets[{index}] must be a map")
+        name = _optional_string(
+            target, "name", f"target-{index + 1}", f"targets[{index}].name"
+        )
+        base_dir = _optional_string(
+            target, "base_dir", "{repo_root}", f"targets[{index}].base_dir"
+        )
+        include_globs = _string_list(
+            target.get("include_globs"),
+            f"targets[{index}].include_globs",
+            required=True,
+        )
+        exclude_globs = _string_list(
+            target.get("exclude_globs", []), f"targets[{index}].exclude_globs"
+        )
+        validated.append(
+            {
+                "name": name,
+                "base_dir": base_dir,
+                "include_globs": include_globs,
+                "exclude_globs": exclude_globs,
+            }
+        )
+    return validated
+
+
 def _load_config(config_path: Path) -> Config:
     raw = _load_yaml(config_path)
-    fallback_root = config_path.resolve().parents[2]
-    repo_root_raw = _sanitize_text(raw.get("repo_root"), fallback=str(fallback_root))
+    fallback_root = Path.cwd().resolve()
+    repo_root_raw = _optional_string(raw, "repo_root", str(fallback_root), "repo_root")
     repo_root_raw = _expand_template(repo_root_raw, repo_root=fallback_root)
     repo_root = Path(os.path.expandvars(os.path.expanduser(repo_root_raw))).resolve()
 
-    report_path_raw = _sanitize_text(
-        raw.get("report", {}).get(
-            "output_path", "{repo_root}/docs/reference/markdown-reference-audit.md"
-        )
+    report = _optional_mapping(raw, "report")
+    report_path_raw = _optional_string(
+        report,
+        "output_path",
+        "{repo_root}/docs/reference/markdown-reference-audit.md",
+        "report.output_path",
     )
-    state_path_raw = _sanitize_text(
-        raw.get("report", {}).get(
-            "state_file",
-            "{repo_root}/.kilo/state/markdown_reference_audit_last_run_epoch",
-        )
+    state_path_raw = _optional_string(
+        report,
+        "state_file",
+        "{repo_root}/.kilo/state/markdown_reference_audit_last_run_epoch",
+        "report.state_file",
     )
-    max_findings = int(raw.get("report", {}).get("max_findings", DEFAULT_MAX_FINDINGS))
-    if max_findings < 10:
-        max_findings = 10
+    max_findings = _optional_int(
+        report,
+        "max_findings",
+        DEFAULT_MAX_FINDINGS,
+        "report.max_findings",
+        minimum=10,
+    )
 
-    targets = raw.get("targets", [])
-    if not isinstance(targets, list) or not targets:
-        raise ValidationError("Config must define non-empty targets list")
+    targets = _validate_targets(raw.get("targets"))
 
-    manifests = raw.get("kilo_manifest_discovery", {}).get("manifests", [])
-    if not isinstance(manifests, list):
-        manifests = []
+    manifest_discovery = _optional_mapping(raw, "kilo_manifest_discovery")
+    manifests = _string_list(
+        manifest_discovery.get("manifests", []),
+        "kilo_manifest_discovery.manifests",
+    )
 
-    extraction = raw.get("extraction", {})
-    include_inline_flag = extraction.get("include_inline_code_paths", None)
-    inline_code_mode_raw = _sanitize_text(extraction.get("inline_code_mode", ""))
+    extraction = _optional_mapping(raw, "extraction")
+    include_inline_flag = _optional_bool(
+        extraction, "include_inline_code_paths", "extraction.include_inline_code_paths"
+    )
+    inline_code_mode_raw = _optional_string(
+        extraction, "inline_code_mode", "", "extraction.inline_code_mode"
+    )
     if include_inline_flag is not None and not inline_code_mode_raw:
         inline_code_mode = "smart" if bool(include_inline_flag) else "off"
     else:
@@ -212,13 +315,20 @@ def _load_config(config_path: Path) -> Config:
             f"extraction.inline_code_mode must be one of {sorted(VALID_INLINE_CODE_MODES)}"
         )
 
-    ignore = raw.get("ignore", {}) if isinstance(raw.get("ignore"), dict) else {}
-    source_file_globs = _sanitize_string_list(ignore.get("source_file_globs", []))
-    target_regex_strings = _sanitize_string_list(ignore.get("target_regexes", []))
+    ignore = _optional_mapping(raw, "ignore")
+    source_file_globs = _string_list(
+        ignore.get("source_file_globs", []), "ignore.source_file_globs"
+    )
+    target_regex_strings = _string_list(
+        ignore.get("target_regexes", []), "ignore.target_regexes"
+    )
     path_prefixes = [
-        p.lower() for p in _sanitize_string_list(ignore.get("path_prefixes", []))
+        p.lower()
+        for p in _string_list(ignore.get("path_prefixes", []), "ignore.path_prefixes")
     ]
-    placeholder_tokens = _sanitize_string_list(ignore.get("placeholder_tokens", []))
+    placeholder_tokens = _string_list(
+        ignore.get("placeholder_tokens", []), "ignore.placeholder_tokens"
+    )
     if not placeholder_tokens:
         placeholder_tokens = list(DEFAULT_PLACEHOLDER_TOKENS)
 
@@ -232,7 +342,7 @@ def _load_config(config_path: Path) -> Config:
         ),
         max_findings=max_findings,
         targets=targets,
-        kilo_manifests=[_sanitize_text(m) for m in manifests if _sanitize_text(m)],
+        kilo_manifests=manifests,
         inline_code_mode=inline_code_mode,
         ignore=IgnoreRules(
             source_file_globs=source_file_globs,
@@ -268,6 +378,112 @@ def _collect_glob_files(
     return found
 
 
+def _strip_jsonc(text: str) -> str:
+    out: list[str] = []
+    in_string = False
+    escape = False
+    line_comment = False
+    block_comment = False
+    i = 0
+
+    while i < len(text):
+        char = text[i]
+        nxt = text[i + 1] if i + 1 < len(text) else ""
+
+        if line_comment:
+            if char in "\r\n":
+                line_comment = False
+                out.append(char)
+            i += 1
+            continue
+
+        if block_comment:
+            if char == "*" and nxt == "/":
+                block_comment = False
+                i += 2
+            else:
+                if char in "\r\n":
+                    out.append(char)
+                i += 1
+            continue
+
+        if in_string:
+            out.append(char)
+            if escape:
+                escape = False
+            elif char == "\\":
+                escape = True
+            elif char == '"':
+                in_string = False
+            i += 1
+            continue
+
+        if char == '"':
+            in_string = True
+            out.append(char)
+            i += 1
+            continue
+        if char == "/" and nxt == "/":
+            line_comment = True
+            i += 2
+            continue
+        if char == "/" and nxt == "*":
+            block_comment = True
+            i += 2
+            continue
+
+        out.append(char)
+        i += 1
+
+    return "".join(out)
+
+
+def _strip_trailing_json_commas(text: str) -> str:
+    out: list[str] = []
+    in_string = False
+    escape = False
+    i = 0
+
+    while i < len(text):
+        char = text[i]
+        if in_string:
+            out.append(char)
+            if escape:
+                escape = False
+            elif char == "\\":
+                escape = True
+            elif char == '"':
+                in_string = False
+            i += 1
+            continue
+
+        if char == '"':
+            in_string = True
+            out.append(char)
+            i += 1
+            continue
+
+        if char == ",":
+            j = i + 1
+            while j < len(text) and text[j].isspace():
+                j += 1
+            if j < len(text) and text[j] in "}]":
+                i += 1
+                continue
+
+        out.append(char)
+        i += 1
+
+    return "".join(out)
+
+
+def _load_json_or_jsonc(path: Path) -> Any:
+    raw = path.read_text(encoding="utf-8", errors="replace")
+    if path.suffix.lower() == ".jsonc":
+        raw = _strip_trailing_json_commas(_strip_jsonc(raw))
+    return json.loads(raw)
+
+
 def _discover_manifest_targets(
     manifest_path: Path, repo_root: Path
 ) -> tuple[set[Path], list[str]]:
@@ -279,12 +495,16 @@ def _discover_manifest_targets(
         return discovered, notes
 
     try:
-        data = json.loads(manifest_path.read_text(encoding="utf-8", errors="replace"))
+        data = _load_json_or_jsonc(manifest_path)
     except json.JSONDecodeError as exc:
-        notes.append(f"manifest-invalid-json:{manifest_path} ({exc})")
+        notes.append(f"manifest-invalid-json-or-jsonc:{manifest_path} ({exc})")
         return discovered, notes
     except OSError as exc:
         notes.append(f"manifest-read-error:{manifest_path} ({exc})")
+        return discovered, notes
+
+    if not isinstance(data, dict):
+        notes.append(f"manifest-invalid-schema:{manifest_path} (root must be object)")
         return discovered, notes
 
     instructions = data.get("instructions", [])
@@ -324,24 +544,28 @@ def _slugify_heading(text: str) -> str:
     return cleaned
 
 
-def _anchors_for_file(path: Path, cache: dict[Path, set[str]]) -> set[str]:
+def _anchors_for_file(
+    path: Path, cache: dict[Path, tuple[set[str], str | None]]
+) -> tuple[set[str], str | None]:
     if path in cache:
         return cache[path]
 
     anchors: set[str] = set()
     try:
         text = path.read_text(encoding="utf-8", errors="replace")
-    except OSError:
-        cache[path] = anchors
-        return anchors
+    except OSError as exc:
+        result = (anchors, str(exc))
+        cache[path] = result
+        return result
 
     for line in text.splitlines():
         m = HEADING_RE.match(line)
         if m:
             anchors.add(_slugify_heading(m.group(1)))
 
-    cache[path] = anchors
-    return anchors
+    result = (anchors, None)
+    cache[path] = result
+    return result
 
 
 def _parse_link_target(raw_target: str) -> str:
@@ -515,7 +739,7 @@ def _extract_findings(
     findings: list[Finding] = []
     checked_refs = 0
     seen: set[tuple[str, int, str, str]] = set()
-    anchor_cache: dict[Path, set[str]] = {}
+    anchor_cache: dict[Path, tuple[set[str], str | None]] = {}
 
     for file_path in files:
         if _is_ignored_source(file_path, ignore):
@@ -523,7 +747,20 @@ def _extract_findings(
 
         try:
             content = file_path.read_text(encoding="utf-8", errors="replace")
-        except OSError:
+        except OSError as exc:
+            key = (str(file_path), 0, str(file_path), "unreadable-source")
+            if key not in seen and len(findings) < max_findings:
+                seen.add(key)
+                findings.append(
+                    Finding(
+                        source_file=str(file_path),
+                        line=0,
+                        category="unreadable_source",
+                        target=str(file_path),
+                        resolved_path=str(file_path),
+                        detail=f"Could not read source markdown: {exc}",
+                    )
+                )
             continue
 
         for line_no, line in enumerate(content.splitlines(), 1):
@@ -580,7 +817,27 @@ def _extract_findings(
                     and resolved.suffix.lower() in {".md", ".mdc"}
                 ):
                     slug = _slugify_heading(anchor)
-                    anchors = _anchors_for_file(resolved, anchor_cache)
+                    anchors, anchor_read_error = _anchors_for_file(
+                        resolved, anchor_cache
+                    )
+                    if anchor_read_error:
+                        key = (str(file_path), line_no, target, "unreadable-anchor")
+                        if key not in seen and len(findings) < max_findings:
+                            seen.add(key)
+                            findings.append(
+                                Finding(
+                                    source_file=str(file_path),
+                                    line=line_no,
+                                    category="unreadable_anchor_target",
+                                    target=target,
+                                    resolved_path=resolved_text,
+                                    detail=(
+                                        "Could not read target markdown for anchor "
+                                        f"validation: {anchor_read_error}"
+                                    ),
+                                )
+                            )
+                        continue
                     if slug and slug not in anchors:
                         key = (str(file_path), line_no, target, "missing-anchor")
                         if key not in seen and len(findings) < max_findings:
@@ -613,6 +870,7 @@ def _render_report(
 
     missing_paths = sum(1 for f in findings if f.category == "missing_path")
     missing_anchors = sum(1 for f in findings if f.category == "missing_anchor")
+    read_issues = sum(1 for f in findings if f.category.startswith("unreadable_"))
 
     lines: list[str] = [
         "# Markdown Reference Audit",
@@ -629,6 +887,7 @@ def _render_report(
         f"- Findings: **{len(findings)}**",
         f"- Missing paths: **{missing_paths}**",
         f"- Missing anchors: **{missing_anchors}**",
+        f"- Read issues: **{read_issues}**",
         "",
         "## Config",
         "",
@@ -806,7 +1065,11 @@ def main() -> int:
 
     now_epoch = int(datetime.now().timestamp())
     if not args.force:
-        last_epoch = _read_epoch(config.state_file)
+        try:
+            last_epoch = _read_epoch(config.state_file)
+        except (OSError, ValidationError) as exc:
+            print(f"[ERROR] Could not read state file: {exc}", file=sys.stderr)
+            return 2
         if (now_epoch - last_epoch) < args.min_interval_seconds:
             return 0
 

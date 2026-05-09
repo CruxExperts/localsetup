@@ -3,6 +3,7 @@ name: ls-omniroute-proxy
 description: Guide agents through read-only OmniRoute proxy discovery, model catalogs, provider metadata, context windows, rate limits, quotas, routing combos, MCP/A2A integration, and agent client configuration. Use when working with OmniRoute, OmniRoute proxy, AI gateway discovery, model catalogs, provider limits, context windows, routing combos, MCP/A2A integration, or configuring agents to use OmniRoute.
 metadata:
   version: "1.0"
+compatibility: "Requires Python 3.10+, repo-installed requests, and network reachability to an OmniRoute HTTP(S) proxy. API keys must be supplied through environment variables. HTTP_PROXY, HTTPS_PROXY, and NO_PROXY behavior follows requests."
 ---
 
 # OmniRoute proxy
@@ -21,6 +22,13 @@ Use this skill when the task involves OmniRoute, an OmniRoute proxy, AI gateway 
 - Default to read-only discovery. Do not modify providers, provider nodes, model aliases, combos, fallback chains, rate limits, budgets, keys, or settings unless the user explicitly asks for that mutation.
 - Auth behavior can vary by server configuration. `/v1/*` and management routes may or may not require bearer auth depending on settings such as `REQUIRE_API_KEY`.
 - Report missing, partial, or inconsistent metadata as unknown. Do not normalize provider capabilities, rate limits, or quotas from guesses.
+
+## Runtime assumptions
+
+- The bundled probe requires Python 3.10+ and `requests` from `_localsetup/requirements.txt`.
+- The host running the probe must have network reachability to the OmniRoute proxy base URL.
+- If the environment sets `HTTP_PROXY`, `HTTPS_PROXY`, or `NO_PROXY`, `requests` applies those proxy settings to the probe.
+- The probe accepts only `http` or `https` base URLs and rejects URLs with embedded credentials.
 
 ## Base URL
 
@@ -97,4 +105,4 @@ If MCP is available, prefer purpose-built tools for quota and cost summaries, su
 ## Bundled helpers
 
 - Endpoint cheat sheet: `references/omniroute-endpoints.md`.
-- Read-only local probe: `scripts/omniroute_discover.py`. It reads credentials from an environment variable, probes safe endpoints, and emits JSON or Markdown.
+- Read-only local probe: `scripts/omniroute_discover.py`. It reads credentials from an environment variable, probes safe endpoints with `requests`, and emits JSON or Markdown with per-endpoint status, failure reason, and repair hints.

@@ -24,7 +24,7 @@ Do not use for NPM access lists, TCP/UDP streams, or redirection hosts (extend a
 
 ## Tooling (framework standard)
 
-The framework default is **Python 3.10+**. This skill uses `npm_api.py`, a native Python client that talks directly to the NPM REST API using only Python standard library (`urllib`, `json`, `configparser`). No Bash, no curl, no jq, no third-party packages required.
+The framework default is **Python 3.10+**. This skill uses `npm_api.py`, a native Python client that talks directly to the NPM REST API with `requests` plus Python standard library modules. No Bash, curl, or jq is required.
 
 `npm_api.py` handles:
 - Config loading from `npm-api.conf` with hostile-input sanitization.
@@ -36,7 +36,7 @@ The framework default is **Python 3.10+**. This skill uses `npm_api.py`, a nativ
 
 ## Prerequisites
 
-- Python 3.10+ on the target machine (no other dependencies).
+- Python 3.10+ on the target machine with `requests` installed from `_localsetup/requirements.txt`.
 - Docker and Docker Compose running.
 - NPM deployed in a container; admin API reachable (default: `http://127.0.0.1:81`).
 - A shared Docker network (e.g. `npm_default`) that NPM and all public-facing containers are attached to.
@@ -48,11 +48,10 @@ The framework default is **Python 3.10+**. This skill uses `npm_api.py`, a nativ
 <TOOLS_DIR>/npm-api/
     npm_api.py          # Native Python client (primary tool)
     npm-api.conf        # Local config (gitignored, chmod 600)
-    npm-api.conf.example  # Template (safe to commit)
-    data/               # Token cache and backup directory (auto-created)
+    data/               # Token cache and backup directory (auto-created, ignored)
 ```
 
-Default `<TOOLS_DIR>`: `~/.localsetup/tools`. Adapt to environment.
+Default `<TOOLS_DIR>`: `~/.localsetup/tools`. Adapt to environment. The config template is maintained in `references/npm-api-conf-example.md`.
 
 ## Config file (npm-api.conf)
 
@@ -66,7 +65,7 @@ DATA_DIR=<TOOLS_DIR>/npm-api/data   # optional; defaults to data/ next to script
 
 Set permissions: `chmod 600 <TOOLS_DIR>/npm-api/npm-api.conf`. Gitignore this file.
 
-`npm_api.py` loads the config, fetches a bearer token, and caches it under `data/<IP_PORT>/token/`. Token refresh is automatic.
+`npm_api.py` loads the config, fetches a bearer token, and caches it under `data/<IP_PORT>/token/`. Token refresh is automatic. Do not commit generated `data/` contents.
 
 ## Architecture rule
 

@@ -22,11 +22,13 @@ metadata:
 
 ## Backlog file location
 
-- Prefer: `_localsetup/backlog.md` (when the framework is deployed and `_localsetup/` exists).
-- Fallback: `BACKLOG.md` at repo root.
-- If the file does not exist, create it with the structure below.
+- Canonical path: `_localsetup/backlog.md`.
+- Legacy fallback: `BACKLOG.md` at the repo root, only when `_localsetup/backlog.md` does not exist.
+- If both files exist, read and update `_localsetup/backlog.md`; mention that root `BACKLOG.md` is legacy and should be merged or removed when the user is ready.
+- If neither file exists, create `_localsetup/backlog.md` with the structure below.
+- If `_localsetup/` is unavailable because the skill is being used outside a Localsetup repo, create `BACKLOG.md` in the current repo root and say that `_localsetup/backlog.md` remains the canonical Localsetup location.
 
-## File format (backlog.md / BACKLOG.md)
+## File format
 
 Use Markdown with these sections. Preserve any extra sections or comments the user (or you) added.
 
@@ -50,7 +52,18 @@ Use Markdown with these sections. Preserve any extra sections or comments the us
 - **No date (whenever):** Items with no due date; do when convenient or when user asks "what should I work on?".
 - **Done:** Completed items; move here when user marks done; optional to trim old entries periodically.
 
-Use today's date in the repo's normal timezone (or ask once if ambiguous). For "due soon" classification, compute from the same timezone.
+## Timezone and due-date rules
+
+- Store due dates as date-only values in `YYYY-MM-DD` form.
+- Resolve relative dates such as "today", "tomorrow", "next Friday", and "in two weeks" using one consistent timezone.
+- Timezone precedence:
+  1. Use the explicit timezone from the user's message or environment context when provided.
+  2. Otherwise use `LOCALSETUP_TIMEZONE` if set.
+  3. Otherwise use `TZ` if set.
+  4. Otherwise use the host system local timezone.
+  5. If none is available or the date would be ambiguous, ask once before writing the item.
+- If the user includes a clock time but no timezone and the due date could shift across timezones, ask once for the timezone or convert the reminder to a date-only item with the user's confirmation.
+- For overdue and due-soon classification, compute "today" and the next 7 days from the same timezone used to resolve the due date.
 
 ## Adding items
 
@@ -91,5 +104,6 @@ Example: "I want to add a dark mode toggle and also fix the login bug by next we
 
 ## References
 
-- Backlog file: `_localsetup/backlog.md` or repo root `BACKLOG.md`.
+- Backlog template and precedence notes: [references/backlog-template.md](references/backlog-template.md).
+- Backlog file: `_localsetup/backlog.md`; root `BACKLOG.md` is a legacy fallback.
 - No external services required; everything is file-based and git-friendly.

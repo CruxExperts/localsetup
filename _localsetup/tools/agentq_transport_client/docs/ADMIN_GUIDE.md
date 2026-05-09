@@ -13,6 +13,12 @@
 - **Mail:** `ship-mail` uses encrypt-only outer; **`ship-mail-strict`** sends gpg sign-then-encrypt blob via `preencrypted_openpgp_armored` (mail skill bypass). Recipient **pull** must decrypt with PGPy-compatible key (or gpg-generated key usable by PGPy decrypt).
 - **drive_sync / dropbox_sync:** Use `FileDropAdapter` / `StubDriveAdapter` with sync folder roots only; no cloud API in v1.
 
+## Strict gpg failure handling
+
+- `ingest-blob --strict-gpg` requires `--registry`; otherwise ingest rejects with `STRICT_GPG_REGISTRY_REQUIRED`.
+- Decrypt, signature, signer binding, and registry lookup failures are ledgered as `ingest_verify_fail` and copied to `inbox/.quarantine/<transport_id>/error.txt`.
+- Strict mode does not fall back to the encrypt-only PGPy path. Re-run after fixing key material or registry bindings.
+
 ## Registry edit
 
 - Edit `agent_trust_registry.yaml`; run `registry-validate` with keys on disk before production.

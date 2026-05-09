@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Run markdown reference audit for myrig using framework skill tooling.
+Run markdown reference audit using framework skill tooling.
 
 Purpose:
 - Provide a repo-level entrypoint that uses the Localsetup markdown-reference-validator skill.
@@ -15,7 +15,10 @@ import sys
 from pathlib import Path
 
 
-DEFAULT_CONFIG = "_localsetup/skills/ls-markdown-reference-validator/markdown_reference_audit.yaml"
+DEFAULT_CONFIG = (
+    "_localsetup/skills/ls-markdown-reference-validator/templates/"
+    "markdown_reference_audit.yaml"
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -36,6 +39,18 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _resolve_config_path(config: str, *, repo_root: Path) -> Path:
+    raw = Path(config).expanduser()
+    if raw.is_absolute():
+        return raw.resolve()
+
+    cwd_candidate = (Path.cwd() / raw).resolve()
+    if cwd_candidate.is_file():
+        return cwd_candidate
+
+    return (repo_root / raw).resolve()
+
+
 def main() -> int:
     args = parse_args()
 
@@ -52,11 +67,7 @@ def main() -> int:
         sys.executable,
         str(validator),
         "--config",
-        str(
-            (repo_root / args.config).resolve()
-            if not Path(args.config).is_absolute()
-            else Path(args.config).resolve()
-        ),
+        str(_resolve_config_path(args.config, repo_root=repo_root)),
         "--reason",
         args.reason,
         "--min-interval-seconds",

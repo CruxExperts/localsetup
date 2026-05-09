@@ -1,8 +1,8 @@
 ---
 name: ls-decision-tree-workflow
-description: "Decision tree / reverse prompt workflow  - AI prompts user one question at a time with 4 options (A-D), preferred choice + rationale; build context for maximum impact. Use when user says 'decision tree', 'run the decision tree', 'reverse prompt', or 'reverse prompt workflow'; or when editing .agent/queue/**, PRD.md, *.prd.md."
+description: "Decision tree / reverse prompt workflow - AI prompts user one question at a time with 4 options (A-D), preferred choice + rationale. Use only when the user asks for 'decision tree', 'run the decision tree', 'reverse prompt', 'reverse prompt workflow', or structured Q&A to clarify a draft PRD/spec."
 metadata:
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Decision tree workflow (reverse prompt)

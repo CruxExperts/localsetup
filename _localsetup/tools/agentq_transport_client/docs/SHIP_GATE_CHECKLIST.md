@@ -6,7 +6,7 @@ Use before declaring the feature complete for a release.
 |---|-----------|-------|
 | 1 | Protocol doc ACTIVE | AGENTIC_AGENT_TO_AGENT_PROTOCOL.md front matter |
 | 2 | Client docs present | USER_GUIDE, ADMIN_GUIDE, API_EXAMPLES, TROUBLESHOOTING |
-| 3 | Tests pass | `pytest _localsetup/tools/agentq_transport_client/tests/` |
+| 3 | Tests pass | `python3 -m pytest _localsetup/tools/agentq_transport_client/tests/` |
 | 4 | No plaintext adapter ingest | ingest only armored blobs; manual PRD drop to `in/` still OK |
 | 5 | Ledger events | ingest_log + ship_log JSONL present when using queue |
 | 6 | Registry optional but fail-closed when set | unknown from_agent_id rejected with REGISTRY_SENDER_DENIED |
@@ -17,6 +17,7 @@ Use before declaring the feature complete for a release.
 
 - **file_drop strict path:** `ship-file-drop --signer-gnupghome` + `ingest-blob --strict-gpg` gives gpg sign-then-encrypt and signer fingerprint binding to `from_agent_id`. Use this when the spec requires signature as legitimacy gate on the adapter path.
 - **file_drop default path:** PGPy encrypt-only outer (`agentq_outer`) remains for backward compatibility and mail parity.
-- **Mail path:** Still encrypt-only outer via mail stack; deferred to phase when mail_send can wrap gpg-signed payload (see DEFERRED.md).
+- **Strict failure path:** `--strict-gpg` requires `--registry` and fails closed on decrypt, signature, signer binding, and registry errors. It records an actionable ledger code and quarantines the blob when key verification fails.
+- **Mail strict path:** `ship-mail-strict` sends a gpg sign-then-encrypt blob through the mail stack using `preencrypted_openpgp_armored`.
 
-Deferred by design (see DEFERRED.md): mail outer gpg sign-then-encrypt, multi-recipient phase 2, Drive API, Telegram adapter, full tar bundle without size cap.
+Deferred by design (see DEFERRED.md): PGPy decrypt of gpg-only strict blobs on mail pull, Drive API, Telegram adapter, full tar bundle without size cap.

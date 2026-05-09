@@ -21,8 +21,8 @@ Provide agents with a host-first, high-level interface to the Scrapling CLI so t
 ## Capabilities (summary)
 
 - Host-first Scrapling management:
-  - Detect whether Scrapling is available on the host and which environment is used (pipx, venv, or system).
-  - Install Scrapling via pipx in an isolated environment, with a venv-based fallback when pipx is unavailable.
+  - Detect whether Scrapling is available on the host and which environment is used (pipx or system, with Docker availability reported separately).
+  - Install Scrapling via pipx in an isolated environment, surfacing pipx bootstrap plans when pipx is unavailable.
   - Upgrade Scrapling on the host or in Docker, always using confirmed, guided actions.
 - Single-URL scraping workflows:
   - Simple extraction: whole page or a single selector to HTML, Markdown, or plain text.
@@ -38,36 +38,38 @@ Provide agents with a host-first, high-level interface to the Scrapling CLI so t
 
 ## Agent-facing verbs
 
-Agents should typically work through a small set of verbs that this skill makes available, backed by the `scrapling_helper` tooling:
+Agents should typically work through the public helper functions in `_localsetup.tools.scrapling_helper.main`:
 
-- `scrapling_status(project_id?)`:
-  - Return host versus Docker status, detected Scrapling version, environment type (pipx, venv, system, or docker), and any recent health-check notes.
-- `scrapling_extract_simple(url, output_format, selector?, project_id?, mode_hint?, dry_run?)`:
-  - Run a single-URL extraction into HTML, Markdown, or text, optionally scoped by a single selector.
+- `scrapling_status()`:
+  - Return host environment type, Scrapling availability, Docker availability, basic health, and a `version` field that is an availability marker (`"available"` or `null`) because the Scrapling CLI does not expose a structured version flag.
+- `extract_url_simple(url, output_path, selector?, mode_hint?, use_docker?)`:
+  - Run a single-URL extraction to the requested output path, optionally scoped by a single selector.
   - Uses an opinionated adaptive mode strategy by default:
     - First attempt with a cheap `"get"` mode.
     - On failure (non-zero return code), a second attempt with a dynamic `"fetch"` mode.
   - Callers can override the mode by passing a `mode_hint`, in which case only that mode is used.
-  - Returns a payload that includes the final `mode`, an `attempts` list describing each try, the `output_path`, and a `status_path` pointing to a JSON status file on disk.
-- `scrapling_extract_structured(url, selectors_schema, project_id?, mode_hint?, dry_run?)`:
-  - Run a single-URL structured extraction into JSONL based on a simple selectors schema describing fields, selectors, and multiplicity.
+  - Returns a payload that includes the final `mode`, an `attempts` list describing each try, the `output_path`, a `status_path` pointing to a JSON status file on disk, and a `status_write` object describing whether that file was written.
+- `extract_url_structured(url, output_path, selectors_schema, mode_hint?, use_docker?)`:
+  - Run a single-URL structured extraction to the requested JSONL path based on a simple selectors schema describing fields, selectors, and multiplicity.
   - Reuses the same adaptive strategy but only escalates when the initial `"get"` attempt clearly fails.
-  - Returns the final `mode`, the `attempts` list, echoes back the `selectors_schema`, and includes `output_path` plus `status_path` for a JSON status file on disk.
+  - Returns the final `mode`, the `attempts` list, echoes back the `selectors_schema`, and includes `output_path`, `status_path`, and `status_write`.
+- `run_spider(project_dir, spider_name, crawl_dir?, extra_args?, use_docker?)`:
+  - Run a named Scrapling spider, record a file-backed job entry, and return the Scrapling command result with `job_id`.
 - `scrapling_job_status(job_id)`:
   - Check the status of long-running jobs such as spiders or heavy dynamic fetches, including output paths and any error information.
-  - Returns a structured record with fields such as `job_id`, `kind`, `status`, timestamps, command, optional `output_path`, and `error`.
+  - Returns a structured record with fields such as `job_id`, `kind`, `status`, timestamps, command, optional `output_path`, and `error`; malformed registry entries return `found: false`, `reason`, path, and error details.
 - `scrapling_cancel_job(job_id)`:
   - Attempt to cancel a previously started job using a file-backed job registry.
-  - Returns whether cancellation was attempted and any relevant reason when it cannot proceed.
-- `scrapling_refresh_adapters(dry_run?)`:
+  - Sends `SIGTERM` to the recorded `pid` when available and returns whether cancellation was attempted plus a reason when it cannot proceed.
+- `refresh_adapters(dry_run?)`:
   - Scan Scrapling docs and CLI help for feature changes, compute a diff against adapter state, and optionally apply safe adapter updates with explicit confirmation.
   - Diffs include new or removed commands and flags and highlight deprecated or experimental options.
-- `scrapling_upgrade(mode: "host"|"docker"|"auto", dry_run?)`:
-  - Propose or apply Scrapling upgrades via pipx or Docker, reporting versions before and after.
+- `upgrade_scrapling(host?, dry_run?, auto_confirm?)`:
+  - Propose or apply a host pipx upgrade by default, or a Docker image pull when `host=False`; version fields are availability markers, not semantic versions.
 - `scrapling_self_test(mode: "auto"|"offline"|"online")`:
   - Run a CLI-only self-test that checks environment status, prints an install or upgrade plan (including pipx bootstrap commands when needed), and performs a tiny extraction against a local HTML fixture by default (offline).
 
-The helper functions are also summarized in a machine-readable capability index written to `tools/scrapling_helper/scrapling_capabilities.json` so other agents can discover them quickly.
+The helper functions are also summarized in a machine-readable capability index written to `_localsetup/tools/scrapling_helper/scrapling_capabilities.json` by `refresh_adapters()` so other agents can discover them quickly.
 
 The exact verb signatures and response shapes are defined in the Scrapling integration plan; implementations should keep them stable so other skills can depend on them.
 
@@ -75,13 +77,14 @@ The exact verb signatures and response shapes are defined in the Scrapling integ
 
 | Verb | Category | Key params | Summary |
 |------|----------|------------|---------|
-| `scrapling_status` | status / install | `project_id?` | Report env type (pipx/system/docker), basic health, and any notes from recent checks. |
-| `scrapling_extract_simple` | single-URL extraction | `url`, `output_format`, `selector?`, `mode_hint?` | Extract one page or region to HTML/Markdown/text with adaptive `"get" -> "fetch"` behavior and a `*.status.json` artifact. |
-| `scrapling_extract_structured` | structured extraction | `url`, `selectors_schema`, `mode_hint?` | Extract structured data to JSONL using a simple field schema, with the same adaptive mode pattern and a `*.status.json` artifact. |
+| `scrapling_status` | status / install | none | Report env type, availability, basic health, Docker availability, and an availability marker in `version`. |
+| `extract_url_simple` | single-URL extraction | `url`, `output_path`, `selector?`, `mode_hint?`, `use_docker?` | Extract one page or region with adaptive `"get" -> "fetch"` behavior and a `*.status.json` artifact. |
+| `extract_url_structured` | structured extraction | `url`, `output_path`, `selectors_schema`, `mode_hint?`, `use_docker?` | Extract structured data to JSONL using a simple field schema, with the same adaptive mode pattern and a `*.status.json` artifact. |
+| `run_spider` | spiders | `project_dir`, `spider_name`, `crawl_dir?`, `extra_args?`, `use_docker?` | Run a named spider and record a job entry. |
 | `scrapling_job_status` | jobs and monitoring | `job_id` | Inspect a recorded job (for example, a spider run) including status, timestamps, command, and error. |
 | `scrapling_cancel_job` | jobs and monitoring | `job_id` | Attempt to cancel a running job; returns a clear reason when cancellation is not possible. |
-| `scrapling_refresh_adapters` | adapters and upgrades | `dry_run?` | Parse current Scrapling CLI help, compute a diff against adapter state, and optionally update it. |
-| `scrapling_upgrade` | adapters and upgrades | `mode`, `dry_run?` | Propose or apply Scrapling upgrades via pipx or Docker and report versions before/after. |
+| `refresh_adapters` | adapters and upgrades | `dry_run?` | Parse current Scrapling CLI help, compute a diff against adapter state, and optionally update it. |
+| `upgrade_scrapling` | adapters and upgrades | `host?`, `dry_run?`, `auto_confirm?` | Propose or apply a host pipx upgrade or Docker image pull and report availability markers before/after. |
 | `scrapling_self_test` | status / install | `mode?` | Run an offline-first self-test and emit a summary/status file that agents can read from disk. |
 
 ## Single-URL scraping workflows
@@ -105,7 +108,7 @@ This skill assumes the host Python environment is the primary place to run Scrap
 
 - Host-first:
   - Prefer installing Scrapling via pipx into an isolated environment so dependencies stay contained.
-  - If pipx is unavailable and cannot be installed, fall back to a dedicated venv location under `_localsetup/.venv/` or another configured path.
+  - If pipx is unavailable, return explicit pipx bootstrap plans for the caller to review before installation.
   - Follow the shared CLI skills environment policy in `_localsetup/docs/CLI_SKILLS_ENV.md` for pipx usage, PATH handling, and health checks.
 - Docker as escape hatch:
   - When the host environment is constrained or incompatible, allow jobs to run via the official Scrapling Docker image with well-scoped volume mounts.
@@ -184,4 +187,3 @@ This skill is designed to be a foundation for higher-level workflows:
   - The internal `fetch -> extract -> normalize -> emit` stages make it easier to attach post-processing steps later without changing the scraping core.
 
 When new workflows depend heavily on web data, prefer building them on top of this skill so that installation, upgrades, and adapter maintenance remain centralized. For any task that needs to fetch or scrape website content, call this skill first unless there is a clear reason to use a different engine.
-

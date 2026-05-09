@@ -1,142 +1,63 @@
-# Arbiter Skill
+# Arbiter Filesystem Queue Overview
 
-Agent-side CLI for pushing decisions to [Arbiter Zebu](https://github.com/5hanth/arbiter-zebu). Works with Clawdbot/OpenClaw agents or standalone.
+`ls-arbiter` provides an agent-side Python helper for creating and reading Arbiter Zebu decision plans. The helper is intentionally local and file-based: it writes markdown plans into an Arbiter queue and reads completed plan metadata after a reviewer or bot records answers.
 
-## Install
+## Lifecycle
 
-**Via ClawHub (for Clawdbot/OpenClaw):**
-```bash
-clawhub install arbiter
+```text
+agent pushes plan JSON
+  -> scripts/arbiter_cli.py writes ~/.arbiter/queue/pending/<plan>.md
+  -> Arbiter Zebu bot or human reviewer reads the pending plan
+  -> reviewer records answers and marks the plan complete
+  -> completed answers are available through get, await, or heartbeat polling
 ```
 
-**Via npm/bun (standalone CLI):**
-```bash
-bun add -g arbiter-skill
+The CLI does not send chat messages, run the Arbiter Zebu bot, or perform external notification delivery. Notification files under `~/.arbiter/queue/notify/` are optional coordination inputs for the agent heartbeat.
+
+## Queue Layout
+
+| Path | Meaning |
+|---|---|
+| `~/.arbiter/queue/pending/` | Plans waiting for review |
+| `~/.arbiter/queue/completed/` | Plans that have answers |
+| `~/.arbiter/queue/notify/` | Session notification markers consumed by heartbeat logic |
+
+Use `--queue-dir <path>` on any subcommand to test against a temporary queue without touching the user queue.
+
+## Generated Plan Shape
+
+The generated markdown file has YAML frontmatter with plan metadata and a `decisions` list. The body repeats the same decisions in a reviewer-friendly format.
+
+Important frontmatter fields:
+
+| Field | Meaning |
+|---|---|
+| `planId` / `id` | Unique plan identifier |
+| `tag` | Project or topic lookup key |
+| `status` | `pending` or `completed` |
+| `total`, `answered`, `remaining` | Decision counts |
+| `decisions[].answer` | Completed answer value |
+
+`status` and `get` read the frontmatter first. If an external reviewer uses a different answer format, normalize it back into the frontmatter before relying on the bundled CLI.
+
+## Minimal Completion Convention
+
+A completed plan should either be moved into `completed/` or have `status: completed` in frontmatter. Each answered decision should include:
+
+```yaml
+status: answered
+answer: selected-option-key
+answered_at: "2026-05-09T18:00:00Z"
 ```
 
-## Prerequisites
+When all decisions have answers, `get` returns a JSON `answers` object keyed by decision ID.
 
-- [Arbiter Zebu](https://github.com/5hanth/arbiter-zebu) bot running (`bunx arbiter-zebu`)
-- `~/.arbiter/queue/` directory (created automatically by the bot)
+## Heartbeat Reference
 
-## CLI Commands
-
-### arbiter-push
-
-Push a decision plan for human review:
-
-```bash
-arbiter-push '{
-  "title": "API Design Decisions",
-  "tag": "my-project",
-  "priority": "high",
-  "notify": "agent:swe1:main",
-  "decisions": [
-    {
-      "id": "auth",
-      "title": "Auth Method",
-      "context": "How to authenticate users",
-      "options": [
-        {"key": "jwt", "label": "JWT tokens"},
-        {"key": "session", "label": "Server sessions"},
-        {"key": "oauth", "label": "OAuth provider"}
-      ]
-    },
-    {
-      "id": "database",
-      "title": "Database Choice",
-      "context": "Primary datastore",
-      "options": [
-        {"key": "pg", "label": "PostgreSQL"},
-        {"key": "mongo", "label": "MongoDB"}
-      ]
-    }
-  ]
-}'
-```
-
-Returns:
-```json
-{
-  "planId": "abc123",
-  "file": "~/.arbiter/queue/pending/ceo-api-design-abc123.md",
-  "total": 2,
-  "status": "pending"
-}
-```
-
-### arbiter-status
-
-Check plan status:
+Agent heartbeat or session-resume logic should check `notify/` for local notification files, then call:
 
 ```bash
-arbiter-status '{"planId": "abc123"}'
-# or by tag
-arbiter-status '{"tag": "my-project"}'
+python3 scripts/arbiter_cli.py get <plan-id>
 ```
 
-### arbiter-get
-
-Get answers from a completed plan:
-
-```bash
-arbiter-get '{"planId": "abc123"}'
-```
-
-Returns:
-```json
-{
-  "planId": "abc123",
-  "status": "completed",
-  "answers": {
-    "auth": "jwt",
-    "database": "pg"
-  }
-}
-```
-
-## How It Works
-
-```
-arbiter-push writes markdown → ~/.arbiter/queue/pending/
-                                      ↓
-                    Arbiter Zebu bot detects new file
-                                      ↓
-                    Human reviews & answers in Telegram
-                                      ↓
-                    On completion, notification written to
-                    ~/.arbiter/queue/notify/
-                                      ↓
-                    Agent picks up answers (heartbeat or poll)
-```
-
-## JSON Fields
-
-### Push args
-
-| Field | Required | Description |
-|-------|----------|-------------|
-| `title` | Yes | Plan title |
-| `tag` | No | Project tag for filtering |
-| `context` | No | Background for the reviewer |
-| `priority` | No | `low` / `normal` / `high` / `urgent` |
-| `notify` | No | Session key to notify on completion |
-| `decisions` | Yes | Array of decision objects |
-
-### Decision object
-
-| Field | Required | Description |
-|-------|----------|-------------|
-| `id` | Yes | Unique ID within the plan |
-| `title` | Yes | Human-readable title |
-| `context` | No | Explanation for the reviewer |
-| `options` | Yes | Array of `{key, label}` |
-| `allowCustom` | No | Allow free-text answers |
-
-## Usage with Clawdbot
-
-See [SKILL.md](./SKILL.md) for full agent integration docs.
-
-## License
-
-MIT
+If no notification file is present, the agent may still poll with `status --tag <tag>` for known blockers.

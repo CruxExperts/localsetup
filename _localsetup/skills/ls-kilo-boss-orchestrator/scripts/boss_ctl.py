@@ -14,9 +14,10 @@ from deps import require_deps  # noqa: E402
 require_deps(["yaml"])
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lib.boss_orchestrator.command import command_display, normalize_command  # noqa: E402
 from lib.boss_orchestrator.consensus import consensus_verdict  # noqa: E402
 from lib.boss_orchestrator.state import StateStore  # noqa: E402
-from lib.boss_orchestrator.util import now_iso, load_yaml, sanitize_path, write_yaml  # noqa: E402
+from lib.boss_orchestrator.util import now_iso, load_yaml, sanitize_path  # noqa: E402
 
 
 def cmd_init(_: argparse.Namespace) -> int:
@@ -48,13 +49,20 @@ def cmd_enqueue(args: argparse.Namespace) -> int:
     if not session_visibility:
         raise ValueError("session_visibility cannot be empty")
 
+    command_argv, command_error = normalize_command(
+        template.get("command_argv", template.get("command"))
+    )
+    if command_error:
+        raise ValueError(command_error)
+
     task = {
         "id": task_id,
         "status": "pending",
         "priority": int(template.get("priority", 100)),
         "attempts": int(template.get("attempts", 0)),
         "max_attempts": int(template.get("max_attempts", 3)),
-        "command": str(template.get("command", "")).strip(),
+        "command_argv": command_argv,
+        "command": command_display(command_argv),
         "repo_root": str(template.get("repo_root", ".")),
         "timeout_seconds": int(template.get("timeout_seconds", 600)),
         "destructive": bool(template.get("destructive", False)),
@@ -67,9 +75,6 @@ def cmd_enqueue(args: argparse.Namespace) -> int:
         "created_at": now_iso(),
         "updated_at": now_iso(),
     }
-
-    if not task["command"]:
-        raise ValueError("task command cannot be empty")
 
     store.enqueue(task)
     store.write_task(task)
@@ -230,10 +235,16 @@ def cmd_finalize(args: argparse.Namespace) -> int:
         print("[ERROR] task not found", file=sys.stderr)
         return 1
 
-    consensus = store.consensus_path(args.task_id)
-    if not consensus.exists():
+    consensus = store.read_consensus(args.task_id)
+    if consensus is None:
         print("[ERROR] consensus verdict missing", file=sys.stderr)
         return 1
+    if consensus.get("requires_tiebreaker") is True:
+        print("[ERROR] consensus requires tiebreaker; refusing finalize", file=sys.stderr)
+        return 2
+    if consensus.get("gate_passed") is not True:
+        print("[ERROR] consensus gate did not pass; refusing finalize", file=sys.stderr)
+        return 2
 
     task["status"] = "done"
     task["completed_at"] = now_iso()
@@ -246,15 +257,12 @@ def cmd_finalize(args: argparse.Namespace) -> int:
 
 def cmd_watchdog(_: argparse.Namespace) -> int:
     store = StateStore()
-    reclaimed = 0
-    for lease_file in sorted((store.root / "leases").glob("*.lock")):
-        lease = store.read_task(lease_file.stem)
-        if lease is None:
-            # orphan lock; reclaim safely
-            lease_file.unlink(missing_ok=True)
-            reclaimed += 1
-
-    print(f"[OK] watchdog reclaimed {reclaimed} orphan lease(s)")
+    reclaimed = store.reclaim_leases()
+    print(
+        "[OK] watchdog reclaimed "
+        f"{reclaimed['orphan']} orphan lease(s), "
+        f"{reclaimed['expired']} expired lease(s)"
+    )
     return 0
 
 
@@ -294,7 +302,7 @@ def build_parser() -> argparse.ArgumentParser:
     finalize.add_argument("--task-id", required=True)
     finalize.set_defaults(func=cmd_finalize)
 
-    sub.add_parser("watchdog", help="reclaim orphan leases").set_defaults(
+    sub.add_parser("watchdog", help="reclaim orphan and expired leases").set_defaults(
         func=cmd_watchdog
     )
 

@@ -33,6 +33,10 @@ if __package__ in (None, ""):
 else:
     from .crypto_types import EncryptedPayload
 
+PBKDF2_ITERATIONS_DEFAULT = 390000
+PBKDF2_ITERATIONS_MIN = 100000
+PBKDF2_ITERATIONS_MAX = 2000000
+
 
 class CryptoError(RuntimeError):
     def __init__(self, code: str, message: str):
@@ -41,9 +45,36 @@ class CryptoError(RuntimeError):
         self.message = message
 
 
+def _parse_pbkdf2_iterations(value: Any, default: int) -> int:
+    if value in (None, ""):
+        return default
+    if isinstance(value, bool):
+        raise CryptoError(
+            "INVALID_CRYPTO_PARAMETER", "PBKDF2 iterations must be an integer."
+        )
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError) as exc:
+        raise CryptoError(
+            "INVALID_CRYPTO_PARAMETER", "PBKDF2 iterations must be an integer."
+        ) from exc
+    if not PBKDF2_ITERATIONS_MIN <= parsed <= PBKDF2_ITERATIONS_MAX:
+        message = (
+            "PBKDF2 iterations must be between "
+            f"{PBKDF2_ITERATIONS_MIN} and {PBKDF2_ITERATIONS_MAX}."
+        )
+        raise CryptoError(
+            "INVALID_CRYPTO_PARAMETER",
+            message,
+        )
+    return parsed
+
+
 class CryptoEngine:
-    def __init__(self, pbkdf2_iterations: int = 390000):
-        self.pbkdf2_iterations = pbkdf2_iterations
+    def __init__(self, pbkdf2_iterations: int = PBKDF2_ITERATIONS_DEFAULT):
+        self.pbkdf2_iterations = _parse_pbkdf2_iterations(
+            pbkdf2_iterations, PBKDF2_ITERATIONS_DEFAULT
+        )
 
     def _serialize_envelope(self, envelope: dict[str, Any]) -> bytes:
         try:
@@ -153,7 +184,9 @@ class CryptoEngine:
             raise CryptoError(
                 "DECRYPTION_FAILED", f"Invalid salt encoding: {exc}"
             ) from exc
-        iterations = int(encrypted.get("iterations", self.pbkdf2_iterations))
+        iterations = _parse_pbkdf2_iterations(
+            encrypted.get("iterations"), self.pbkdf2_iterations
+        )
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
             length=32,

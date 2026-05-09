@@ -5,11 +5,10 @@ import subprocess
 import sys
 from pathlib import Path
 
-LIB_ROOT = Path(__file__).resolve().parents[1] / "scripts" / "lib" / "omniroute_admin"
-UTIL_PATH = LIB_ROOT / "util.py"
-
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "omniroute_admin.py"
+LIB_ROOT = ROOT / "scripts" / "lib" / "omniroute_admin"
+UTIL_PATH = LIB_ROOT / "util.py"
 CLIENT_PATH = ROOT / "scripts" / "lib" / "omniroute_admin" / "client.py"
 VALIDATE_PATH = ROOT / "scripts" / "lib" / "omniroute_admin" / "validate.py"
 RECONCILE_PATH = ROOT / "scripts" / "lib" / "omniroute_admin" / "reconcile.py"
@@ -19,6 +18,18 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 
 def _load_module(path: Path, name: str):
+    module_names = {
+        CLIENT_PATH: "lib.omniroute_admin.client",
+        RECONCILE_PATH: "lib.omniroute_admin.reconcile",
+        UTIL_PATH: "lib.omniroute_admin.util",
+        VALIDATE_PATH: "lib.omniroute_admin.validate",
+    }
+    if path in module_names:
+        module_name = module_names[path]
+        if module_name in sys.modules:
+            return importlib.reload(sys.modules[module_name])
+        return importlib.import_module(module_name)
+
     spec = importlib.util.spec_from_file_location(name, path)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"unable to load module at {path}")
@@ -96,6 +107,82 @@ def test_client_rejects_invalid_base_url():
         assert False, "expected ValueError"
     except ValueError:
         pass
+
+
+def test_url_path_segment_encoder_validates_and_encodes_ids():
+    util_mod = _load_module(UTIL_PATH, "util_mod_url")
+    assert util_mod.encode_path_segment("provider/a b?c") == "provider%2Fa%20b%3Fc"
+    try:
+        util_mod.encode_path_segment("bad\nid")
+        assert False, "expected ValueError"
+    except ValueError as exc:
+        assert "control" in str(exc)
+
+
+def test_client_domain_methods_encode_user_ids():
+    client_mod = _load_module(CLIENT_PATH, "client_mod_encode")
+
+    class DummyResponse:
+        status_code = 200
+        text = "{}"
+
+        def json(self):
+            return {}
+
+    class DummySession:
+        def __init__(self):
+            self.urls = []
+
+        def request(self, **kwargs):
+            self.urls.append(kwargs["url"])
+            return DummyResponse()
+
+    client = client_mod.OmniRouteAdminClient(
+        base_url="http://localhost:20128",
+        api_key=None,
+        management_cookie=None,
+        retries=0,
+    )
+    client.session = DummySession()
+
+    client.delete_key("key/with space?")
+
+    assert client.session.urls == [
+        "http://localhost:20128/api/keys/key%2Fwith%20space%3F"
+    ]
+
+
+def test_client_error_omits_raw_api_body():
+    client_mod = _load_module(CLIENT_PATH, "client_mod_error")
+
+    class DummyResponse:
+        status_code = 500
+        text = "token=secret-value database trace"
+
+        def json(self):
+            raise ValueError("not json")
+
+    class DummySession:
+        def request(self, **kwargs):
+            return DummyResponse()
+
+    client = client_mod.OmniRouteAdminClient(
+        base_url="http://localhost:20128",
+        api_key=None,
+        management_cookie=None,
+        retries=0,
+    )
+    client.session = DummySession()
+
+    try:
+        client.health()
+        assert False, "expected RuntimeError"
+    except RuntimeError as exc:
+        message = str(exc)
+        assert "HTTP 500" in message
+        assert "error payload omitted" in message
+        assert "secret-value" not in message
+        assert "database trace" not in message
 
 
 def test_cli_help_runs():
@@ -241,6 +328,45 @@ def test_guarded_mode_keeps_safe_ops_when_destructive_present():
     assert result["status"] == "partial_success"
     assert any(item[0] in {"update", "patch", "post"} for item in client.calls)
     assert not any(item[0] == "delete" for item in client.calls)
+
+
+def test_apply_plan_encodes_plan_ids_before_building_resource_paths():
+    reconcile_mod = importlib.import_module("lib.omniroute_admin.reconcile")
+
+    class DummyClient:
+        def __init__(self):
+            self.calls = []
+
+        def patch(self, endpoint, payload):
+            self.calls.append(("patch", endpoint, payload))
+            return {"ok": True}
+
+    plan = {
+        "blocked": False,
+        "operations": [
+            {
+                "resource": "aliases",
+                "endpoint": "/api/models/alias",
+                "action": "update",
+                "id": "alias/with space?",
+                "payload": {"alias": "alias/with space?"},
+                "destructive": False,
+                "method": "PATCH",
+            }
+        ],
+    }
+
+    client = DummyClient()
+    result = reconcile_mod.apply_plan(client, plan, allow_destructive=False)
+
+    assert result["status"] == "success"
+    assert client.calls == [
+        (
+            "patch",
+            "/api/models/alias/alias%2Fwith%20space%3F",
+            {"alias": "alias/with space?"},
+        )
+    ]
 
 
 def test_cli_validate_bad_json(tmp_path: Path):

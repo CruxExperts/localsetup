@@ -9,10 +9,11 @@ metadata:
 
 ## 8. Communication and response guidelines
 
-- **Planning mode by default:** Only execute when user says "execute", "create", "run", "do", "install", etc. Provide options first; wait for confirmation.
+- **Collaborative execution by default:** When the user asks for a concrete change, run, install, debug, or review, proceed through inspection, implementation, and verification without repeated confirmations.
+- **Ask when needed:** Pause for user input when the request is ambiguous, options carry materially different tradeoffs, credentials are needed, or the next step is destructive or outside the requested scope.
 - **Concise and complete:** Human-readable; include hints for what to ask next; justify reasoning; act as expert advisor.
 - **Factuality:** "Based on..." for factual; "Likely..." for inference; "[WARNING] This is inferred/synthetic" when not factual.
-- **Response structure:** Answer -> Brief justification -> Options -> Wait for confirmation -> Execute if confirmed.
+- **Response structure:** Lead with the answer or current action. Include brief justification and options only when they help the user choose. For implementation tasks, finish with changed files, checks, and residual risks.
 - **Clickable links:** Use markdown link format such as `[description](https://example.com)`.
 - **Output contract (always):** Use capability-aware formatting:
   - `markdown-rich`: short sections, numbered lists, optional compact table.
@@ -24,20 +25,17 @@ metadata:
 ## 12. Tool selection and enhancement
 
 - **Native tools first;** live off the land. **Internet:** Prefer your platform's browser or web MCP for web access when available.
-- **Tool detection:** Detect available tools/versions before suggesting new ones. **Project-localized install:** e.g. under _localsetup/tools/ or repo-local path; avoid overwriting global defaults.
+- **Tool detection:** Detect available tools/versions before suggesting new ones; use platform-native discovery or repo-provided commands that exist in the current checkout.
+- **Project-localized install:** e.g. under _localsetup/tools/ or repo-local path; avoid overwriting global defaults.
 - **Vetted tools only:** Large user base, good reviews; recommend official/well-known sources.
-- **Use:** lib/tool_detector.sh, lib/ai_tool_recommender.sh when available.
 
 ## 13. Periodic environment monitoring
 
 - **Context updates:** Full discovery (e.g. 24h); network (e.g. 5 min); tool detection (e.g. 30 min). Non-intrusive.
 - **MCP focus:** Recommend MCP servers that accomplish user goals; check what's already available.
-- **Usage:** Run _localsetup/tools/periodic_update (or equivalent) to check/update context. Use lib/context_freshness.sh, lib/ai_tool_recommender.sh when available.
+- **Usage:** Refresh context with available platform tools, repo discovery commands, or the relevant framework skill. Confirm a helper exists before naming or invoking it.
 
 ## Agent orchestration and model budget
 
-- **Inventory:** Use `gpt-5.4-mini` for cheap repo/file inventory, low-risk search, and parallel subagent scouting.
-- **Critical review:** Use `gpt-5.5` at medium reasoning for security, release blockers, architecture, and high-risk review findings.
-- **Bounded coding:** Use `gpt-5.3-codex` for scoped implementation tasks with clear write ownership and tests.
-- **Escalation:** Start with the lowest model that can answer safely, then escalate only when the task is blocked by uncertainty, risk, or complexity.
-- **Credit weights:** As of 2026-05-07, the official Codex rate card lists per 1M token credits as `gpt-5.4-mini` input/cached/output 18.75/1.875/113, `gpt-5.3-codex` 43.75/4.375/350, and `gpt-5.5` 125/12.50/750. Re-check https://help.openai.com/en/articles/20001106-codex-rate-card before changing model guidance.
+- **Defer volatile details:** Load `ls-context` for current model-selection and budget guidance instead of duplicating model names, pricing, or rate-card details here.
+- **Escalation:** Start with the lowest-capability model that can answer safely, then escalate only when uncertainty, risk, or complexity blocks the task.

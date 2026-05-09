@@ -5,39 +5,84 @@ metadata:
   version: "1.2"
 ---
 
-# Framework compliance (pre-task, checkpoints, document maintenance)
+# Framework Compliance
 
-## 0. MANDATORY PRE-TASK WORKFLOW (CRITICAL)
+Use this skill when a task affects Localsetup framework behavior, shipped skills, installer/runtime rules, repo documentation, PRDs, or any workflow where rule compliance and traceability matter.
 
-Before executing ANY task:
+## Pre-Task Flow
 
-1. **IDENTIFY TASK TYPE**  - file_creation, code_modification, framework_modification, git_operation, etc.
-2. **CHECK CORE RULES** (BLOCKS EXECUTION IF VIOLATED): Engine/user data separation; Git checkpoints after framework modifications; Markdown compatibility; Testing after changes; Backup management.
-3. **ASSESS CERTAINTY**  - HIGH/MEDIUM/LOW/CRITICAL LOW; if &lt;70% lookup docs; if &lt;50% on core rules get user confirmation.
-4. **PRE-EXECUTION CHECKLIST**  - Use `source lib/rule_enforcer_enhanced.sh && pre_execution_checklist "$task_type" "$task_description"` (when available).
-5. **EXECUTE TASK** with rule compliance monitoring.
-6. **POST-EXECUTION VERIFICATION**  - Use `post_execution_verification "$task_type" "$task_context"`; verify checkpoints and backups.
+Before changing files:
 
-**Documentation lookup:** Check _localsetup/docs/, your platform's rules path (e.g. .cursor/rules/ on Cursor), _localsetup/config/rules_index.yaml. Never proceed with CRITICAL LOW certainty on core rules without user confirmation.
+1. Identify the task type: documentation, skill, framework code, installer, tests, git operation, PRD/queue work, or release workflow.
+2. Load the active repo context from the repository instructions and the relevant documents under `_localsetup/docs/`.
+3. Run or request the context check when framework state is uncertain:
 
-## 1. Context load and repo role
+```bash
+./_localsetup/tools/verify_context
+```
 
-- **VERIFY:** Context is loaded. If unsure, ask user to run `./_localsetup/tools/verify_context`.
-- **Repo role:** Framework lives in client repo at _localsetup/. Only modify local context (e.g. your platform's local rules, such as .cursor/rules/local-*.mdc on Cursor) or propose changes via PRD. See [REPO_AND_DATA_SEPARATION.md](../../docs/REPO_AND_DATA_SEPARATION.md).
+4. Check core constraints before acting: repo/data separation, user-owned worktree edits, secret/private state exclusion, platform compatibility, and required tests.
+5. Assess certainty. If the active docs do not answer a core-rule question, pause for clarification before making a risky change.
 
-## 6. Document status and testing
+## Current Sources Of Truth
 
-- **Document status:** Before referencing any document, check status (ACTIVE/PROPOSAL/DRAFT/DEPRECATED/ARCHIVED). If PROPOSAL, do not assume implemented. Use `check_document_status()` or _localsetup/docs/DOCUMENT_INDEX.yaml.
-- **Testing:** Run _localsetup/tests/automated_test.sh after changes; maintain 100% test pass rate.
+Use active v3 sources only:
 
-## 14. Git checkpoints (CRITICAL)
+- `_localsetup/docs/AGENTIC_DESIGN_INDEX.md` for agent-facing design and workflow doc navigation.
+- `_localsetup/docs/WORKFLOW_REGISTRY.md` for named workflows and their triggers.
+- `_localsetup/docs/DOCUMENT_LIFECYCLE_MANAGEMENT.md` for document status meanings.
+- `_localsetup/docs/SKILLS_AND_RULES.md` and `_localsetup/docs/AGENT_SKILLS_COMPLIANCE.md` for skill format and loading rules.
+- `_localsetup/docs/REPO_AND_DATA_SEPARATION.md` for framework source versus repo-local data boundaries.
+- `_localsetup/docs/QUICKSTART.md` for supported verification commands.
+- `_localsetup/config/platforms.yaml` and `_localsetup/docs/PLATFORM_REGISTRY.md` for supported platform paths.
 
-- **MANDATORY:** Create Git checkpoints IMMEDIATELY after framework modifications. Use `_localsetup/tools/verify_rules` to verify.
-- **Checkpoint creation:** Stage and commit with messages like "Checkpoint: <operation> - <description>". Never commit user/repo-local data that should stay private.
-- **Rollback:** `git reset --hard <commit-hash>` (with confirmation). List: `git log --oneline`.
+Do not reference removed v2/v3-draft helper files or indexes. In particular, do not call missing rule-enforcer or document-maintenance shell helpers, and do not rely on non-existent YAML document/rule indexes.
 
-## 16. Document maintenance after major task
+## Document Status Check
 
-- **Trigger:** After major task completion, user validation, and Git commit.
-- **Workflow:** Document scrub first (update _localsetup/docs/ that reference the task), then create workflow docs if needed. Use `lib/document_maintenance.sh` when available.
-- **Major task:** Framework modifications, new tools, new features, significant config changes. Not: simple bug fixes, test-only changes.
+Before relying on a framework document:
+
+1. Open the actual Markdown file under `_localsetup/docs/`.
+2. Read its YAML frontmatter.
+3. Treat `status: ACTIVE` as current guidance.
+4. Treat `status: PROPOSAL`, `DRAFT`, `DEPRECATED`, or `ARCHIVED` as non-authoritative unless the user explicitly asks you to work from it.
+5. If `status:` is missing, treat the document as uncertain and cross-check against an active index or ask before relying on it for core behavior.
+6. When adding or materially changing a framework doc, include `status:` and, where applicable, `version:` frontmatter.
+
+The status meanings are defined in [DOCUMENT_LIFECYCLE_MANAGEMENT.md](../../docs/DOCUMENT_LIFECYCLE_MANAGEMENT.md).
+
+## Implementation Guardrails
+
+- Preserve unrelated work. If the worktree is dirty, identify your owned files and do not revert edits made by others.
+- Keep framework source in `_localsetup/`; do not put generated private state, local secrets, or machine-specific agent data into tracked files.
+- For skill changes, keep `SKILL.md` Agent Skills compatible with `name` and `description` frontmatter, and keep auxiliary files scoped to the skill directory.
+- Prefer the repo's active Python and shell tooling over ad hoc helpers.
+- Use relative links for repo docs and verify they still resolve.
+- For PRD or workflow queue work, update status/outcome fields only in the relevant active queue or PRD files.
+
+## Verification
+
+Choose checks based on the surface changed:
+
+```bash
+./_localsetup/tools/verify_context
+./_localsetup/tools/verify_rules
+python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
+python3 _localsetup/tools/localsetup_v3.py --repo . scan-migration
+./_localsetup/tests/automated_test.sh
+python3 -m pytest _localsetup/tests
+git diff --check
+```
+
+- Run `verify_context` when validating that the framework context is present.
+- Run `verify_rules` after framework or rule-related changes.
+- Run `validate-catalog` after skill, catalog, platform, or registry changes.
+- Run `scan-migration` when migration, installer, adapter, generated-artifact, or source-boundary behavior may be affected.
+- Run focused tests for narrow changes; run the full smoke and pytest suites before release or broad framework changes.
+
+## Git And Handoff
+
+- Create commits only when the user asked for commits or the workflow explicitly requires a checkpoint.
+- Use Conventional Commit style for normal commits.
+- Never stage broad unrelated work from a dirty worktree.
+- In the final handoff, report changed files, checks run and results, and any residual risk or skipped checks.

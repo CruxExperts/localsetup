@@ -1,0 +1,29 @@
+---
+# Rolling package update playbook.
+#
+# Usage:
+#   ansible-playbook -i inventory/hosts.yml playbooks/update.yml --serial 1
+
+- name: Apply package updates
+  hosts: all
+  become: yes
+  serial: "{{ update_serial | default(1) }}"
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+      tags: [updates]
+
+    - name: Upgrade packages
+      ansible.builtin.apt:
+        upgrade: safe
+      when: ansible_os_family == "Debian"
+      tags: [updates]
+
+    - name: Reboot when requested
+      ansible.builtin.reboot:
+        reboot_timeout: 600
+      when: update_reboot | default(false) | bool
+      tags: [updates, reboot]

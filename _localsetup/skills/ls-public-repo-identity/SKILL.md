@@ -5,11 +5,12 @@ metadata:
   version: "1.2"
 ---
 
-# Public repo identity (stub)
+# Public repo identity
 
-Use a **local identity file** or the **framework template** so the framework repo stays generic (no PII).
+Use a **local identity file** and this committed stub so the framework repo stays generic (no PII).
 
-- **This repo (machine):** Use your platform's rules path for a local identity file (e.g. `.cursor/rules/local-identity.mdc` on Cursor) with your real name and org. That file is gitignored; your platform loads it. Keep this stub so the rule is still referenced; the actual identity comes from the local-identity file.
-- **Framework template:** Copy from `_localsetup/config/templates/public-repo-identity.template.mdc`, fill in placeholders, and save as local-identity.mdc or use in another repo.
+- **Canonical committed source:** This skill is the committed public identity stub for Localsetup v3. Keep it generic so README, CONTRIBUTING, and published repo files do not inherit maintainer-specific names, contact details, or organization data.
+- **Canonical local source:** Put real identity details in a local-only file loaded by your agent platform, such as `.cursor/rules/local-identity.mdc` for Cursor-style rules or the equivalent local rules/instructions path for another platform. If that path is not already ignored by the repo, add it to `.git/info/exclude` or another local-only ignore file before writing personal details.
+- **Template guidance:** Localsetup v3 does not ship a separate public identity template. To create a local identity file, copy the fields you need from this stub and fill them in only in the local-only file.
 
 Do not put real names, contact info, or org details in this file; they belong in local-identity.mdc (not committed).

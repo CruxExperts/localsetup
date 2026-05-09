@@ -3,6 +3,7 @@ name: ls-linux-service-triage
 description: Diagnoses common Linux service issues using logs, systemd/PM2, file permissions, Nginx reverse proxy checks, and DNS sanity checks. Use when a server app is failing, unreachable, or misconfigured.
 metadata:
   version: "1.1"
+compatibility: "Linux hosts. Uses systemd, PM2, Nginx, ss, journalctl, and dig only when those tools are present in the target stack; verify the service manager, proxy, DNS, and privilege model before suggesting commands."
 ---
 
 # Linux & service basics: logs, systemd/PM2, permissions, Nginx reverse proxy, DNS checks
@@ -42,7 +43,8 @@ Success = service runs, listens on expected port, and reverse proxy/DNS path is 
 
 ## WORKFLOW
 1. Confirm scope and safety:
-   - identify service name and whether changes are permitted.
+   - identify the host OS, service manager, process runner, reverse proxy, and whether changes are permitted.
+   - do not assume systemd, PM2, Nginx, DNS control, or TLS tooling until the user confirms they apply.
 2. Gather evidence:
    - status output + recent logs (see `references/triage-commands.md`).
 3. Classify failure:
@@ -72,6 +74,7 @@ TRIAGE REPORT
 
 ## SAFETY & EDGE CASES
 - Read-only by default: diagnose from provided outputs; do not assume you can run commands.
+- Treat systemd, PM2, and Nginx commands as stack-specific examples; adapt for other Linux init systems, process managers, or proxies.
 - Avoid destructive changes; require explicit confirmation for anything risky.
 - Prefer `nginx -t` before reload and verify ports with `ss`.
 

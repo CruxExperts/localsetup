@@ -24,7 +24,7 @@ Framework and ops docs evolve quickly. Broken references waste agent cycles and 
 
 ## Inputs and outputs
 
-- **Input config (YAML):** `templates/markdown_reference_audit.yaml` from this skill, or a repo-local copy adapted from it.
+- **Input config (YAML):** `_localsetup/skills/ls-markdown-reference-validator/templates/markdown_reference_audit.yaml`, or a repo-local copy adapted from it.
 - **Skill entrypoint:** `scripts/markdown_reference_audit.py`
 - **Engine script:** `_localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_validator.py`
 - **Default report:** `docs/reference/markdown-reference-audit.md`
@@ -35,14 +35,15 @@ Framework and ops docs evolve quickly. Broken references waste agent cycles and 
 Run once manually:
 
 ```bash
-python3 scripts/markdown_reference_audit.py --config templates/markdown_reference_audit.yaml --force --reason manual
+python3 _localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py \
+  --force \
+  --reason manual
 ```
 
 Run with login jitter (3-5 min):
 
 ```bash
-python3 scripts/markdown_reference_audit.py \
-  --config templates/markdown_reference_audit.yaml \
+python3 _localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py \
   --reason login-autostart \
   --jitter-min-seconds 180 \
   --jitter-max-seconds 300
@@ -62,7 +63,7 @@ Use `ls-cron-orchestrator` with a user-created manifest (for example `cron/manif
 The sidecar config defines:
 
 - `targets[]`: each with `base_dir`, `include_globs`, optional `exclude_globs`.
-- `kilo_manifest_discovery.manifests[]`: kilo.json/kilo.jsonc paths to discover additional instruction/skills markdown surfaces.
+- `kilo_manifest_discovery.manifests[]`: `kilo.json` or `kilo.jsonc` paths to discover additional instruction/skills markdown surfaces. JSONC manifests may use comments and trailing commas.
 - `report.output_path`, `report.state_file`, and `report.max_findings`.
 - `extraction.inline_code_mode`: `off | smart | all` (`smart` is default and recommended).
 - `ignore.*` blocks to reduce false positives from templates/examples while keeping strict checks for concrete links.
@@ -123,9 +124,13 @@ kilo_manifest_discovery:
 - Resolves relative targets from the source file's directory.
 - Also tries repo-root resolution for repo-absolute style links like `_localsetup/...` or `docs/...`.
 - Applies ignore controls in this order: source glob skip -> placeholder/prefix/regex/pseudo-path skip -> strict path/anchor checks.
+- Validates config section shapes up front and reports schema errors instead of raw tracebacks.
+- Reports unreadable source markdown, anchor targets, and state files instead of treating them as clean results.
 - Flags:
   - `missing_path`
   - `missing_anchor`
+  - `unreadable_source`
+  - `unreadable_anchor_target`
 - Includes Kilo manifest discovery notes in report for observability.
 
 ## Safety and hardening

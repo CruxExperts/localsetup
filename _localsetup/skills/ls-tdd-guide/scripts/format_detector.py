@@ -4,8 +4,12 @@ Format detection module.
 Automatically detects programming language, testing framework, and file formats.
 """
 
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any
+import argparse
+import json
 import re
+
+from cli_support import SkillCliError, emit_json, fail, read_text
 
 
 class FormatDetector:
@@ -165,11 +169,10 @@ class FormatDetector:
         # JSON format
         if content_stripped.startswith('{'):
             try:
-                import json
                 json.loads(content_stripped)
                 return "json"
-            except:
-                pass
+            except json.JSONDecodeError:
+                return "unknown"
 
         # XML format
         if content_stripped.startswith('<?xml') or content_stripped.startswith('<coverage'):
@@ -382,3 +385,66 @@ class FormatDetector:
             'environment': 'cli',  # Could be 'desktop', 'api'
             'output_preference': 'terminal-friendly'  # Could be 'rich-markdown', 'json'
         }
+
+
+def build_parser() -> argparse.ArgumentParser:
+    """Build the command-line parser."""
+    parser = argparse.ArgumentParser(
+        description="Detect source language, test framework, coverage format, or file metadata."
+    )
+    input_group = parser.add_mutually_exclusive_group()
+    input_group.add_argument("--file", help="Read content from this file and detect its format.")
+    input_group.add_argument("--text", help="Inline source/test/coverage content to inspect.")
+    parser.add_argument(
+        "--file-info",
+        help="Inspect a path string without reading the file.",
+    )
+    parser.add_argument(
+        "--project-files",
+        nargs="+",
+        help="Analyze project structure from a list of file paths.",
+    )
+    parser.add_argument(
+        "--suggest-test-name",
+        metavar="SOURCE_FILE",
+        help="Suggest a test filename for a source file.",
+    )
+    parser.add_argument(
+        "--framework",
+        default="pytest",
+        help="Framework used with --suggest-test-name (default: pytest).",
+    )
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Run the command-line interface."""
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    detector = FormatDetector()
+
+    try:
+        if args.file_info:
+            emit_json(detector.extract_file_info(args.file_info))
+        elif args.project_files:
+            emit_json(detector.analyze_project_structure(args.project_files))
+        elif args.suggest_test_name:
+            emit_json(
+                {
+                    "source_file": args.suggest_test_name,
+                    "framework": args.framework,
+                    "test_file": detector.suggest_test_file_name(
+                        args.suggest_test_name, args.framework
+                    ),
+                }
+            )
+        else:
+            content = read_text(path=args.file, inline=args.text)
+            emit_json(detector.detect_input_format(content))
+        return 0
+    except SkillCliError as exc:
+        return fail(str(exc))
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

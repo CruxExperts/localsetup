@@ -20,11 +20,19 @@
 | `ENCRYPTION_MODE_UNSUPPORTED` | Mode not allowed or dependency missing | Verify policy mode allowlist and dependencies |
 | `KEY_MATERIAL_NOT_FOUND` | Missing crypto key material | Set required env variables |
 | `DECRYPTION_FAILED` | Wrong key or malformed encrypted payload | Verify mode, key ref, and payload integrity |
+| `INVALID_CRYPTO_PARAMETER` | Crypto envelope parameter is malformed or out of bounds | Validate PBKDF2 iteration metadata before retry |
+| `ACCOUNT_CONFIG_NOT_FOUND` | Account JSON file is missing | Create `_localsetup/config/mail_accounts.json` |
+| `ACCOUNT_CONFIG_INVALID_JSON` | Account JSON cannot be parsed | Fix JSON syntax |
+| `ACCOUNT_CONFIG_INVALID_ROOT` | Account JSON root is not an array | Use the canonical array schema |
+| `ACCOUNT_CONFIG_INVALID_ENTRY` | Account row is missing required fields or is not an object | Validate each account row |
+| `ACCOUNT_CONFIG_INVALID_FIELD` | Account field has the wrong type or range | Check port and boolean fields |
+| `ACCOUNT_CONFIG_DUPLICATE_ACCOUNT` | Account IDs collide after sanitization | Make `account_id` values unique |
+| `ACCOUNT_CONFIG_EMPTY` | No account rows were available | Add at least one account row |
 
 ## Quick diagnostic checks
 
 1. Validate policy file structure.
-2. Validate account definitions.
+2. Validate account definitions against [Account config schema](ACCOUNT_CONFIG_SCHEMA.md).
 3. Check SMTP and IMAP capability call for one account.
 4. Run a safe query action before testing mutation actions.
 5. Run a controlled encrypt and decrypt round-trip before production rollout.
@@ -35,4 +43,3 @@
 2. Switch account profile to read-only.
 3. Verify mailbox state from `mail_query` and `mail_get`.
 4. Execute rollback or reconciliation actions manually with explicit approvals.
-

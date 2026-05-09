@@ -4,15 +4,33 @@
 # Last updated: 2026-02-24
 #
 # Uses only stdlib and commands/files typically readable by unprivileged users.
-# No network, no write. Emits GFM markdown to stdout; errors to stderr.
+# No network. Emits GFM markdown to stdout by default, or writes a timestamped
+# markdown file when --output-basename is provided; warnings/errors go to stderr.
 
 from __future__ import annotations
 
 import argparse
 import os
+import re
+import shlex
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
+
+
+_SAFE_BASENAME_RE = re.compile(r"^[A-Za-z0-9._/-]+$")
+
+
+def _warn(message: str) -> None:
+    print(f"[system_snapshot] WARNING: {message}", file=sys.stderr)
+
+
+def _summarize(text: str, limit: int = 240) -> str:
+    cleaned = " ".join(text.split())
+    if len(cleaned) <= limit:
+        return cleaned
+    return cleaned[: limit - 3] + "..."
 
 
 def _run(cmd: list[str], timeout: int = 10) -> str:
@@ -24,9 +42,14 @@ def _run(cmd: list[str], timeout: int = 10) -> str:
             timeout=timeout,
             env={**os.environ, "LANG": "C"},
         )
-        return (r.stdout or "").strip() if r.returncode == 0 else ""
+        if r.returncode == 0:
+            return (r.stdout or "").strip()
+
+        detail = _summarize(r.stderr or r.stdout or "no stderr/stdout")
+        _warn(f"{shlex.join(cmd)} exited {r.returncode}: {detail}")
+        return ""
     except (FileNotFoundError, subprocess.TimeoutExpired, OSError) as e:
-        print(f"[system_snapshot] {cmd[0]}: {type(e).__name__}: {e}", file=sys.stderr)
+        _warn(f"{shlex.join(cmd)} failed: {type(e).__name__}: {e}")
         return ""
 
 
@@ -36,7 +59,7 @@ def _read(path: Path, max_lines: int = 200) -> str:
             lines = f.readlines()
         return "".join(lines[:max_lines]).rstrip()
     except (OSError, PermissionError) as e:
-        print(f"[system_snapshot] {path}: {type(e).__name__}: {e}", file=sys.stderr)
+        _warn(f"{path}: {type(e).__name__}: {e}")
         return ""
 
 
@@ -46,8 +69,49 @@ def _section(title: str, body: str) -> str:
     return f"## {title}\n\n~~~text\n{body}\n~~~\n\n"
 
 
+def _output_path_from_basename(raw_basename: str) -> Path:
+    if not raw_basename or raw_basename.strip() != raw_basename:
+        raise ValueError("--output-basename must be non-empty with no leading or trailing whitespace")
+    if any(ord(char) < 32 or ord(char) == 127 for char in raw_basename):
+        raise ValueError("--output-basename must not contain control characters")
+    if not _SAFE_BASENAME_RE.fullmatch(raw_basename):
+        raise ValueError("--output-basename may contain only letters, numbers, '.', '_', '-', and '/'")
+
+    basename = Path(raw_basename)
+    if basename.is_absolute():
+        raise ValueError("--output-basename must be relative to the current working directory")
+    if ".." in basename.parts:
+        raise ValueError("--output-basename must not contain '..' path segments")
+    if basename.name in {"", "."}:
+        raise ValueError("--output-basename must include a file basename")
+
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stem = basename.with_suffix("") if basename.suffix == ".md" else basename
+    return stem.parent / f"{stem.name}-{timestamp}.md"
+
+
+def _write_output(raw_basename: str, content: str) -> Path:
+    output_path = _output_path_from_basename(raw_basename)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(content, encoding="utf-8")
+    return output_path
+
+
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Gather system baseline snapshot (no sudo, stdlib only).")
+    parser.add_argument(
+        "--output-basename",
+        metavar="PATH",
+        help=(
+            "write markdown to PATH-YYYYMMDDTHHMMSSZ.md relative to the current working directory; "
+            "parent directories are created"
+        ),
+    )
+    return parser.parse_args()
+
+
 def main() -> int:
-    argparse.ArgumentParser(description="Gather system baseline snapshot (no sudo, stdlib only).").parse_args()
+    args = _parse_args()
     out: list[str] = []
     out.append("# System snapshot (no sudo)\n\n")
 
@@ -118,7 +182,16 @@ def main() -> int:
     if runtimes:
         out.append(_section("Runtimes (PATH)", "\n".join(runtimes)))
 
-    print("".join(out), end="")
+    content = "".join(out)
+    if args.output_basename:
+        try:
+            output_path = _write_output(args.output_basename, content)
+        except (OSError, ValueError) as e:
+            print(f"[system_snapshot] ERROR: {type(e).__name__}: {e}", file=sys.stderr)
+            return 2
+        print(output_path)
+    else:
+        print(content, end="")
     return 0
 
 

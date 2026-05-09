@@ -34,36 +34,17 @@ A recovery skill for broken Git state:
 ## Included
 
 - `SKILL.md`: staged recovery playbooks and escalation flow
-- `scripts/snapshot_git_state.sh`: read-only diagnostics snapshot
-- `scripts/guided_repair_plan.sh`: non-destructive command planner by symptom
-- `scripts/regression_harness.sh`: disposable regression simulator for broken states
+- `scripts/snapshot_git_state.py`: read-only diagnostics snapshot
+- `scripts/guided_repair_plan.py`: non-destructive command planner by symptom
+- `scripts/regression_harness.py`: disposable regression simulator for broken states
 - `references/symptom-map.md`: symptom to fix routing
 - `references/recovery-checklist.md`: preflight and verification gate
 
-## Quick Start
+## Operating Entry Point
 
-From the target repo:
-
-```bash
-bash /home/delorenj/.agents/skills/unfuck-my-git-state/scripts/snapshot_git_state.sh .
-```
-
-Then:
-1. Match symptoms in `references/symptom-map.md`.
-2. Apply the smallest possible fix.
-3. Run the verification checklist before touching anything else.
-
-Quick plan generator:
-
-```bash
-bash /home/delorenj/.agents/skills/unfuck-my-git-state/scripts/guided_repair_plan.sh --repo .
-```
-
-Regression harness:
-
-```bash
-bash /home/delorenj/.agents/skills/unfuck-my-git-state/scripts/regression_harness.sh
-```
+Use `SKILL.md` as the operational source of truth. It contains the current
+Python entrypoints, playbooks, and verification gate; this reference stays
+high-level so command guidance does not drift in two places.
 
 ## Vibe Check
 

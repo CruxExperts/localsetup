@@ -6,7 +6,10 @@ test quality scoring, and test execution analysis.
 """
 
 from typing import Dict, List, Any, Optional
+import argparse
 import re
+
+from cli_support import SkillCliError, emit_json, fail, read_json, read_text
 
 
 class MetricsCalculator:
@@ -454,3 +457,57 @@ class MetricsCalculator:
                 lines.append("")
 
         return "\n".join(lines)
+
+
+def build_parser() -> argparse.ArgumentParser:
+    """Build the command-line parser."""
+    parser = argparse.ArgumentParser(
+        description="Calculate source complexity, test quality, and execution metrics."
+    )
+    parser.add_argument("--source", help="Path to source code.")
+    parser.add_argument("--source-code", help="Inline source code.")
+    parser.add_argument("--tests", help="Path to test code.")
+    parser.add_argument("--test-code", help="Inline test code.")
+    parser.add_argument("--coverage-json", help="Inline parsed coverage JSON.")
+    parser.add_argument("--coverage-file", help="Path to parsed coverage JSON.")
+    parser.add_argument("--execution-json", help="Inline execution result JSON.")
+    parser.add_argument("--execution-file", help="Path to execution result JSON.")
+    parser.add_argument(
+        "--format",
+        choices=["json", "markdown"],
+        default="json",
+        help="Output format.",
+    )
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Run the command-line interface."""
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    calculator = MetricsCalculator()
+
+    try:
+        source_code = read_text(path=args.source, inline=args.source_code)
+        test_code = read_text(path=args.tests, inline=args.test_code)
+        coverage_data = read_json(args.coverage_file, args.coverage_json) if (
+            args.coverage_file or args.coverage_json
+        ) else None
+        execution_data = read_json(args.execution_file, args.execution_json) if (
+            args.execution_file or args.execution_json
+        ) else None
+
+        metrics = calculator.calculate_all_metrics(
+            source_code, test_code, coverage_data, execution_data
+        )
+        if args.format == "markdown":
+            print(calculator.generate_metrics_summary())
+        else:
+            emit_json(metrics)
+        return 0
+    except (SkillCliError, ValueError, KeyError, TypeError) as exc:
+        return fail(str(exc))
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

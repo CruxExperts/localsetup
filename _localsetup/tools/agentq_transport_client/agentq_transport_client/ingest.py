@@ -139,6 +139,35 @@ def sanitize_transport_id(tid: str) -> str:
     return out or "unknown"
 
 
+def _quarantine_blob(
+    queue_root: Path,
+    sealed_path: Path,
+    transport_id: str,
+    *,
+    code: str,
+    message: str,
+    event_type: str,
+) -> dict[str, Any]:
+    quarantine = queue_root / "inbox" / ".quarantine" / transport_id
+    quarantine.mkdir(parents=True, exist_ok=True)
+    if sealed_path.is_file():
+        shutil.copy2(sealed_path, quarantine / sealed_path.name)
+    (quarantine / "error.txt").write_text(f"{code}: {message}\n", encoding="utf-8")
+    append_event(
+        queue_root,
+        event_type,
+        {"code": code, "message": message, "blob_id": transport_id},
+        transport_id=transport_id,
+    )
+    return {
+        "status": "quarantine",
+        "transport_id": transport_id,
+        "code": code,
+        "message": message,
+        "quarantine": str(quarantine),
+    }
+
+
 def ingest_file_drop_blob(
     sealed_path: Path,
     *,
@@ -182,7 +211,21 @@ def ingest_file_drop_blob(
     _strict_gpg = getattr(ingest_file_drop_blob, "_strict_gpg", False) or (
         _os.environ.get("AGENTQ_INGEST_STRICT_GPG", "").lower() in ("1", "true", "yes")
     )
-    if _strict_gpg and registry_path:
+    if _strict_gpg:
+        if not registry_path:
+            message = "strict gpg ingest requires --registry to bind signer to from_agent_id"
+            append_event(
+                queue_root,
+                "ingest_verify_fail",
+                {"code": "STRICT_GPG_REGISTRY_REQUIRED", "message": message, "blob_id": tid},
+                transport_id=tid,
+            )
+            return {
+                "status": "reject",
+                "transport_id": tid,
+                "code": "STRICT_GPG_REGISTRY_REQUIRED",
+                "message": message,
+            }
         try:
             from agentq_transport_client.crypto_pipeline import unseal_to_manifest_strict_gpg
             from agentq_transport_client.registry import (
@@ -261,10 +304,16 @@ def ingest_file_drop_blob(
                     pass
             return r
         except Exception as e:
-            if isinstance(e, CryptoPipelineError):
-                raise
-            # fall through to PGPy path
-            pass
+            code = str(getattr(e, "code", "STRICT_GPG_INGEST_FAILED"))
+            message = str(getattr(e, "message", str(e)))
+            return _quarantine_blob(
+                queue_root,
+                sealed_path,
+                tid,
+                code=code,
+                message=message,
+                event_type="ingest_verify_fail",
+            )
 
     max_blob = 50 * 1024 * 1024
     if len(armored.encode("utf-8")) > max_blob:
@@ -278,18 +327,14 @@ def ingest_file_drop_blob(
     try:
         manifest = unseal_to_manifest(armored, recipient_private_armored, passphrase)
     except CryptoPipelineError as e:
-        quarantine = queue_root / "inbox" / ".quarantine" / tid
-        quarantine.mkdir(parents=True, exist_ok=True)
-        if sealed_path.is_file():
-            shutil.copy2(sealed_path, quarantine / sealed_path.name)
-        (quarantine / "error.txt").write_text(f"{e.code}: {e.message}\n", encoding="utf-8")
-        append_event(
+        return _quarantine_blob(
             queue_root,
-            "ingest_decrypt_fail",
-            {"code": e.code, "message": e.message, "blob_id": tid},
-            transport_id=tid,
+            sealed_path,
+            tid,
+            code=e.code,
+            message=e.message,
+            event_type="ingest_decrypt_fail",
         )
-        return {"status": "quarantine", "transport_id": tid, "code": e.code}
 
     r = promote_manifest(
         queue_root,

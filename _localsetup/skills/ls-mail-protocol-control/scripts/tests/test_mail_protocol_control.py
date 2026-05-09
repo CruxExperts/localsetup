@@ -5,13 +5,20 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import sys
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from scripts import mcp_server
+from scripts.crypto_engine import CryptoEngine, CryptoError
 from scripts.mail_protocol_control import MailProtocolControl
 from scripts.mail_types import AccountConfig
+from scripts.mcp_server import BootstrapError, _load_accounts
+from scripts.policy_engine import PolicyError, load_policy
 
 
 class FakeCreds:
@@ -231,6 +238,34 @@ def test_unknown_tool(tmp_path: Path) -> None:
     assert result["code"] == "UNKNOWN_TOOL"
 
 
+def test_non_object_payload_returns_invalid_argument(tmp_path: Path) -> None:
+    control = _control(tmp_path)
+    result = control.dispatch(
+        "mail_query", ["not", "an", "object"]  # type: ignore[arg-type]
+    )
+    assert result["ok"] is False
+    assert result["code"] == "INVALID_ARGUMENT"
+    assert "JSON object" in result["message"]
+
+
+def test_malformed_threshold_count_returns_invalid_argument(tmp_path: Path) -> None:
+    control = _control(tmp_path)
+    result = control.dispatch(
+        "mail_mutate",
+        {
+            "acct": "acct1",
+            "mailbox": "INBOX",
+            "mutate_action": "move_messages",
+            "uids": ["1"],
+            "count": "many",
+            "target_mailbox": "Archive",
+        },
+    )
+    assert result["ok"] is False
+    assert result["code"] == "INVALID_ARGUMENT"
+    assert "count" in result["message"]
+
+
 def test_send_supports_attachments(tmp_path: Path) -> None:
     control = _control(tmp_path)
     result = control.dispatch(
@@ -368,3 +403,114 @@ accounts:
     )
     assert result["ok"] is False
     assert result["code"] == "ACTION_BLOCKED"
+
+
+def test_account_threshold_overrides_are_validated(tmp_path: Path) -> None:
+    policy = tmp_path / "policy-invalid-account-threshold.yaml"
+    policy.write_text(
+        """
+version: 1
+default_profile: restricted
+profiles:
+  restricted:
+    allow_actions:
+      - imap.*
+    deny_actions: []
+accounts:
+  acct1:
+    profile: restricted
+    thresholds:
+      delete_count_confirm: many
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(PolicyError) as excinfo:
+        load_policy(policy)
+    assert "account 'acct1'" in str(excinfo.value)
+    assert "delete_count_confirm" in str(excinfo.value)
+
+
+def test_load_accounts_rejects_malformed_port(tmp_path: Path) -> None:
+    accounts = tmp_path / "mail_accounts.json"
+    accounts.write_text(
+        json.dumps(
+            [
+                {
+                    "account_id": "support",
+                    "smtp_host": "smtp.example.com",
+                    "smtp_port": "not-a-port",
+                    "imap_host": "imap.example.com",
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(BootstrapError) as excinfo:
+        _load_accounts(accounts)
+    assert excinfo.value.code == "ACCOUNT_CONFIG_INVALID_FIELD"
+    assert "smtp_port" in excinfo.value.message
+
+
+def test_load_accounts_rejects_duplicate_account_ids(tmp_path: Path) -> None:
+    accounts = tmp_path / "mail_accounts.json"
+    accounts.write_text(
+        json.dumps(
+            [
+                {
+                    "account_id": "support",
+                    "smtp_host": "smtp.example.com",
+                    "imap_host": "imap.example.com",
+                },
+                {
+                    "account_id": "support",
+                    "smtp_host": "smtp2.example.com",
+                    "imap_host": "imap2.example.com",
+                },
+            ]
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(BootstrapError) as excinfo:
+        _load_accounts(accounts)
+    assert excinfo.value.code == "ACCOUNT_CONFIG_DUPLICATE_ACCOUNT"
+
+
+def test_mcp_bootstrap_reports_account_config_error(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    accounts = tmp_path / "mail_accounts.json"
+    accounts.write_text('{"not": "a list"}', encoding="utf-8")
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "mcp_server.py",
+            "--policy",
+            str(tmp_path / "missing-policy.yaml"),
+            "--accounts",
+            str(accounts),
+            "--tool",
+            "mail_accounts_list",
+        ],
+    )
+    assert mcp_server.main() == 1
+    output = json.loads(capsys.readouterr().out)
+    assert output["ok"] is False
+    assert output["code"] == "ACCOUNT_CONFIG_INVALID_ROOT"
+
+
+def test_password_decrypt_rejects_unbounded_pbkdf2_iterations() -> None:
+    engine = CryptoEngine()
+    encrypted = {
+        "mode": "password",
+        "salt_b64": "AAAAAAAAAAAAAAAAAAAAAA==",
+        "nonce_b64": "AAAAAAAAAAAAAAAA",
+        "ciphertext_b64": "AAAAAAAAAAAAAAAA",
+        "iterations": 999999999,
+    }
+    with pytest.raises(CryptoError) as excinfo:
+        engine.decrypt_password(encrypted, "secret")
+    assert excinfo.value.code == "INVALID_CRYPTO_PARAMETER"

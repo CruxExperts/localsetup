@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# Purpose: Print non-destructive Git recovery plans by symptom or snapshot. Replaces guided_repair_plan.sh.
+# Purpose: Print non-destructive Git recovery plans by symptom or snapshot.
 # Created: 2026-02-20
-# Last updated: 2026-02-20
+# Last updated: 2026-05-09
 
 """
 Print recommended Git recovery steps. Does not run fix commands.
@@ -198,6 +198,11 @@ def resolve_snapshot_from_repo(repo: Path) -> Path:
                 p = Path(d)
                 if p.is_dir():
                     return p
+    if r.returncode != 0:
+        if r.stdout:
+            print(r.stdout, file=sys.stderr)
+        print(f"Error: snapshot failed for repo '{repo}'", file=sys.stderr)
+        sys.exit(1)
     top = subprocess.run(
         ["git", "-C", str(repo), "rev-parse", "--show-toplevel"],
         capture_output=True,

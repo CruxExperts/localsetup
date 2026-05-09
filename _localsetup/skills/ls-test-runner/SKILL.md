@@ -3,6 +3,7 @@ name: ls-test-runner
 description: Write and run tests across languages and frameworks (Vitest, Jest, pytest, XCTest, Playwright). TDD workflow, coverage, and test patterns.
 metadata:
   version: "1.1"
+compatibility: "Examples assume the relevant local test runners are installed. Python ASGI API tests require pytest, pytest-asyncio, and httpx with ASGITransport support."
 ---
 
 # test-runner
@@ -134,12 +135,13 @@ vi.stubGlobal('fetch', mockFetch);
 ### Testing API Endpoints (Python)
 ```python
 import pytest
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from app.main import app
 
 @pytest.mark.asyncio
 async def test_get_users():
-    async with AsyncClient(app=app, base_url="http://test") as client:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
         response = await client.get("/users")
     assert response.status_code == 200
     assert isinstance(response.json(), list)

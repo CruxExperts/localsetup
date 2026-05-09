@@ -86,6 +86,24 @@ def join_url(base_url: str, path: str) -> str:
     return f"{base_url}{path}"
 
 
+def endpoint_hint(url: str) -> str:
+    """Return an operator-facing hint for endpoint failures."""
+    parsed = urllib.parse.urlparse(url)
+    path = parsed.path or "/"
+    if path == "/api/monitoring/health":
+        return "Confirm the OmniRoute proxy is running and reachable at --base-url."
+    if path.startswith("/v1") or path.startswith("/v1beta") or path == "/api/tags":
+        return "Confirm this compatibility route is enabled on the target OmniRoute proxy."
+    if path == "/.well-known/agent.json":
+        return "A2A discovery may be disabled or unsupported on this proxy version."
+    if path.startswith("/api/"):
+        return (
+            "Confirm the endpoint exists on this OmniRoute version "
+            "and check whether bearer auth is required."
+        )
+    return "Confirm the endpoint path is supported by the target OmniRoute proxy."
+
+
 def load_api_key(env_name: str | None) -> str | None:
     """Read API key from an environment variable name only."""
     if not env_name:
@@ -124,7 +142,12 @@ def fetch_json(
                     "ok": False,
                     "status": status,
                     "elapsed_ms": elapsed_ms,
-                    "error": "response exceeded size limit",
+                    "url": url,
+                    "error": f"response exceeded size limit of {MAX_BODY_BYTES} bytes",
+                    "hint": (
+                        "Use a narrower endpoint or inspect the proxy directly; "
+                        "this probe refuses large bodies."
+                    ),
                 }
             chunks.append(chunk)
         decoded = b"".join(chunks).decode("utf-8", errors="replace")
@@ -135,18 +158,26 @@ def fetch_json(
                 "ok": False,
                 "status": status,
                 "elapsed_ms": elapsed_ms,
+                "url": url,
                 "content_type": sanitize_text(content_type),
-                "error": f"invalid JSON: {exc.msg}",
+                "error": f"JSONDecodeError: invalid JSON at byte {exc.pos}: {exc.msg}",
                 "sample": sanitize_text(decoded),
+                "hint": (
+                    "Confirm the endpoint returns JSON and that --base-url points "
+                    "at the OmniRoute proxy, not a dashboard or reverse-proxy "
+                    "error page."
+                ),
             }
         if not response.ok:
             return {
                 "ok": False,
                 "status": status,
                 "elapsed_ms": elapsed_ms,
+                "url": url,
                 "content_type": sanitize_text(content_type),
-                "error": sanitize_text(response.reason or "HTTP error"),
+                "error": f"HTTP {status}: {sanitize_text(response.reason or 'HTTP error')}",
                 "sample": sanitize_text(decoded),
+                "hint": endpoint_hint(url),
             }
         return {
             "ok": True,
@@ -161,7 +192,12 @@ def fetch_json(
             "ok": False,
             "status": None,
             "elapsed_ms": elapsed_ms,
+            "url": url,
             "error": f"{type(exc).__name__}: {sanitize_text(exc)}",
+            "hint": (
+                "Check --base-url, local firewall or tunnel settings, DNS, "
+                "TLS certificates, and proxy reachability."
+            ),
         }
 
 
@@ -220,16 +256,21 @@ def render_markdown(report: dict[str, Any]) -> str:
         summary = (
             result.get("summary") if result.get("ok") else result.get("error", "failed")
         )
+        if not result.get("ok") and result.get("hint"):
+            summary = f"{summary}; hint: {result['hint']}"
         lines.append(
-            f"| `{sanitize_text(name)}` | {ok} | {status} | {elapsed} ms | {sanitize_text(summary)} |"
+            f"| `{sanitize_text(name)}` | {ok} | {status} | {elapsed} ms | "
+            f"{sanitize_text(summary)} |"
         )
     lines.extend(
         [
             "",
             "Notes:",
             "- This script only uses read-only endpoints.",
-            "- Missing endpoints may indicate server version differences, disabled features, or auth requirements.",
-            "- Capability and rate-limit fields should be treated as partial unless confirmed by the target server.",
+            "- Missing endpoints may indicate server version differences, "
+            "disabled features, or auth requirements.",
+            "- Capability and rate-limit fields should be treated as partial "
+            "unless confirmed by the target server.",
         ]
     )
     return "\n".join(lines)
@@ -274,7 +315,14 @@ def main() -> int:
         api_key = load_api_key(api_key_env)
         report = run_probe(base_url, api_key, args.timeout)
     except ValueError as exc:
-        print(f"error: {sanitize_text(exc)}", file=sys.stderr)
+        print(
+            "omniroute_discover.py: invalid input: "
+            f"{sanitize_text(exc)}. "
+            "Use --base-url with an http(s) URL that has no embedded credentials, "
+            "set --api-key-env to the name of an environment variable, and keep "
+            "--timeout within 0-60 seconds.",
+            file=sys.stderr,
+        )
         return 2
 
     if args.markdown:

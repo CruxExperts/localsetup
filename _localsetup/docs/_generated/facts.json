@@ -75,7 +75,7 @@
     {
       "id": "ls-arbiter",
       "name": "ls-arbiter",
-      "version": "1.2",
+      "version": "1.3",
       "path": "_localsetup/skills/ls-arbiter/SKILL.md"
     },
     {
@@ -93,7 +93,7 @@
     {
       "id": "ls-cloudflare-dns",
       "name": "ls-cloudflare-dns",
-      "version": "1.0",
+      "version": "1.1",
       "path": "_localsetup/skills/ls-cloudflare-dns/SKILL.md"
     },
     {
@@ -117,13 +117,13 @@
     {
       "id": "ls-debug-pro",
       "name": "ls-debug-pro",
-      "version": "1.1",
+      "version": "1.2",
       "path": "_localsetup/skills/ls-debug-pro/SKILL.md"
     },
     {
       "id": "ls-decision-tree-workflow",
       "name": "ls-decision-tree-workflow",
-      "version": "1.1",
+      "version": "1.2",
       "path": "_localsetup/skills/ls-decision-tree-workflow/SKILL.md"
     },
     {
@@ -147,7 +147,7 @@
     {
       "id": "ls-git-workflows",
       "name": "ls-git-workflows",
-      "version": "1.2",
+      "version": "1.3",
       "path": "_localsetup/skills/ls-git-workflows/SKILL.md"
     },
     {
@@ -231,7 +231,7 @@
     {
       "id": "ls-pr-reviewer",
       "name": "ls-pr-reviewer",
-      "version": "1.1",
+      "version": "1.2",
       "path": "_localsetup/skills/ls-pr-reviewer/SKILL.md"
     },
     {
@@ -261,7 +261,7 @@
     {
       "id": "ls-script-and-docs-quality",
       "name": "ls-script-and-docs-quality",
-      "version": "1.1",
+      "version": "1.2",
       "path": "_localsetup/skills/ls-script-and-docs-quality/SKILL.md"
     },
     {

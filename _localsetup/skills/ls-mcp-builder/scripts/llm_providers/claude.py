@@ -5,10 +5,11 @@
 """Claude provider: uses Anthropic SDK for the agent loop. Requires anthropic package and ANTHROPIC_API_KEY."""
 
 import asyncio
-import json
 import time
 import traceback
 from typing import Any
+
+from .serialization import serialize_tool_result
 
 EVALUATION_PROMPT = """You are an AI assistant with access to tools.
 
@@ -89,7 +90,7 @@ class ClaudeProvider:
             tool_start_ts = time.time()
             try:
                 tool_result = await connection.call_tool(tool_name, tool_input)
-                tool_response = json.dumps(tool_result) if isinstance(tool_result, (dict, list)) else str(tool_result)
+                tool_response = serialize_tool_result(tool_result)
             except Exception as e:
                 tool_response = f"Error executing tool {tool_name}: {str(e)}\n"
                 tool_response += traceback.format_exc()

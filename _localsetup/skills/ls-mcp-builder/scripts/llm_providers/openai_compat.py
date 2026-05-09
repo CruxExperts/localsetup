@@ -10,6 +10,8 @@ import time
 import traceback
 from typing import Any
 
+from .serialization import serialize_tool_result
+
 # Same system prompt as Claude for consistent evaluation behavior
 EVALUATION_PROMPT = """You are an AI assistant with access to tools.
 
@@ -147,7 +149,7 @@ class OpenAICompatibleProvider:
                 tool_start_ts = time.time()
                 try:
                     tool_result = await connection.call_tool(tool_name, arguments)
-                    tool_response = json.dumps(tool_result) if isinstance(tool_result, (dict, list)) else str(tool_result)
+                    tool_response = serialize_tool_result(tool_result)
                 except Exception as e:
                     tool_response = f"Error executing tool {tool_name}: {str(e)}\n"
                     tool_response += traceback.format_exc()

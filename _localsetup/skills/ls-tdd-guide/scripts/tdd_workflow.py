@@ -5,7 +5,10 @@ Provides step-by-step guidance through red-green-refactor cycles with validation
 """
 
 from typing import Dict, List, Any, Optional
+import argparse
 from enum import Enum
+
+from cli_support import SkillCliError, emit_json, fail, read_json, read_text
 
 
 class TDDPhase(Enum):
@@ -290,28 +293,57 @@ class TDDWorkflow:
 
     def _check_quality_improvement(self, original: str, refactored: str) -> bool:
         """Check if refactoring improved code quality."""
-        # Simple heuristics:
-        # - Reduced duplication
-        # - Better naming
-        # - Simpler structure
+        if not original.strip() or not refactored.strip():
+            return False
+        if original == refactored:
+            return False
 
-        # Check for reduced duplication (basic check)
-        original_lines = set(line.strip() for line in original.split('\n') if line.strip())
-        refactored_lines = set(line.strip() for line in refactored.split('\n') if line.strip())
+        original_duplicates = self._duplicate_line_count(original)
+        refactored_duplicates = self._duplicate_line_count(refactored)
+        original_nesting = self._max_nesting_depth(original)
+        refactored_nesting = self._max_nesting_depth(refactored)
+        original_lines = self._significant_line_count(original)
+        refactored_lines = self._significant_line_count(refactored)
 
-        # If unique lines increased proportionally, likely extracted duplicates
-        if len(refactored_lines) > len(original_lines):
-            return True
-
-        # Check for better naming (longer, more descriptive names)
         original_avg_identifier_length = self._avg_identifier_length(original)
         refactored_avg_identifier_length = self._avg_identifier_length(refactored)
 
-        if refactored_avg_identifier_length > original_avg_identifier_length:
-            return True
+        checks = [
+            refactored_duplicates < original_duplicates,
+            refactored_nesting < original_nesting,
+            (
+                refactored_avg_identifier_length > original_avg_identifier_length
+                and refactored_lines <= max(original_lines + 5, int(original_lines * 1.25))
+            ),
+            refactored_lines < original_lines and refactored_nesting <= original_nesting,
+        ]
+        return any(checks)
 
-        # If no clear improvement detected, assume refactoring was beneficial
-        return True
+    def _significant_line_count(self, code: str) -> int:
+        """Count non-empty, non-comment lines."""
+        return sum(
+            1 for line in code.split('\n')
+            if line.strip() and not line.strip().startswith(('#', '//'))
+        )
+
+    def _duplicate_line_count(self, code: str) -> int:
+        """Count repeated non-trivial lines."""
+        counts = {}
+        for line in code.split('\n'):
+            stripped = line.strip()
+            if len(stripped) > 10:
+                counts[stripped] = counts.get(stripped, 0) + 1
+        return sum(count - 1 for count in counts.values() if count > 1)
+
+    def _max_nesting_depth(self, code: str) -> int:
+        """Estimate maximum indentation-based nesting depth."""
+        max_depth = 0
+        for line in code.split('\n'):
+            stripped = line.lstrip()
+            if stripped:
+                indent = len(line) - len(stripped)
+                max_depth = max(max_depth, indent // 4)
+        return max_depth
 
     def _avg_identifier_length(self, code: str) -> float:
         """Calculate average identifier length (proxy for naming quality)."""
@@ -472,3 +504,74 @@ class TDDWorkflow:
             }
 
         return {}
+
+
+def build_parser() -> argparse.ArgumentParser:
+    """Build the command-line parser."""
+    parser = argparse.ArgumentParser(
+        description="Validate or summarize a TDD red-green-refactor workflow phase."
+    )
+    parser.add_argument(
+        "--phase",
+        choices=[phase.value for phase in TDDPhase],
+        help="Phase to validate or describe.",
+    )
+    parser.add_argument("--requirement", help="Requirement for starting a TDD cycle.")
+    parser.add_argument("--test-code-file", help="Path to test code.")
+    parser.add_argument("--test-code", help="Inline test code.")
+    parser.add_argument("--implementation-file", help="Path to implementation code.")
+    parser.add_argument("--implementation-code", help="Inline implementation code.")
+    parser.add_argument("--original-file", help="Path to original implementation.")
+    parser.add_argument("--original-code", help="Inline original implementation.")
+    parser.add_argument("--refactored-file", help="Path to refactored implementation.")
+    parser.add_argument("--refactored-code", help="Inline refactored implementation.")
+    parser.add_argument("--test-result-json", help="Inline test result JSON.")
+    parser.add_argument("--test-result-file", help="Path to test result JSON.")
+    parser.add_argument("--summary", action="store_true", help="Print workflow summary.")
+    parser.add_argument("--guidance", action="store_true", help="Print phase guidance.")
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Run the command-line interface."""
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    workflow = TDDWorkflow()
+
+    try:
+        if args.summary:
+            print(workflow.generate_workflow_summary())
+            return 0
+
+        phase = TDDPhase(args.phase) if args.phase else workflow.current_phase
+        if args.guidance or not args.phase:
+            emit_json(workflow.get_phase_guidance(phase))
+            return 0
+
+        if phase == TDDPhase.RED:
+            if args.requirement and not (args.test_code_file or args.test_code):
+                emit_json(workflow.start_cycle(args.requirement))
+                return 0
+            test_code = read_text(path=args.test_code_file, inline=args.test_code)
+            test_result = read_json(args.test_result_file, args.test_result_json) if (
+                args.test_result_file or args.test_result_json
+            ) else None
+            emit_json(workflow.validate_red_phase(test_code, test_result))
+        elif phase == TDDPhase.GREEN:
+            implementation = read_text(
+                path=args.implementation_file, inline=args.implementation_code
+            )
+            test_result = read_json(args.test_result_file, args.test_result_json)
+            emit_json(workflow.validate_green_phase(implementation, test_result))
+        elif phase == TDDPhase.REFACTOR:
+            original = read_text(path=args.original_file, inline=args.original_code)
+            refactored = read_text(path=args.refactored_file, inline=args.refactored_code)
+            test_result = read_json(args.test_result_file, args.test_result_json)
+            emit_json(workflow.validate_refactor_phase(original, refactored, test_result))
+        return 0
+    except (SkillCliError, ValueError, KeyError, TypeError) as exc:
+        return fail(str(exc))
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

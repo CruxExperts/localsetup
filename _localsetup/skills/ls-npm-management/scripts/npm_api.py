@@ -119,6 +119,19 @@ def _validate_host_id(value: Any) -> int:
     return hid
 
 
+def _validate_access_list_id(value: Any) -> int | None:
+    """Validate an NPM access list ID; 0/empty clears the access list."""
+    if value is None or value == "":
+        return None
+    try:
+        acl_id = int(value)
+    except (TypeError, ValueError):
+        _die(f"Invalid access_list_id: {value!r} (must be an integer)")
+    if acl_id < 0:
+        _die(f"Access list ID must be 0 or a positive integer, got {acl_id}")
+    return acl_id or None
+
+
 def _die(msg: str, exc: BaseException | None = None) -> None:
     """Emit actionable error to stderr and exit non-zero."""
     label = "[npm_api ERROR]"
@@ -151,7 +164,7 @@ class Config:
             _die(
                 f"Config file not found: {path}\n"
                 "  Create it with: NGINX_IP, NGINX_PORT, API_USER, API_PASS\n"
-                "  See npm-api.conf.example for a template."
+                "  See references/npm-api-conf-example.md for the current template."
             )
         if oct(path.stat().st_mode)[-3:] not in ("600", "400"):
             _warn(f"Config file {path} is world-readable; run: chmod 600 {path}")
@@ -394,6 +407,7 @@ class NPMClient:
         forward_host  = _sanitize_str(forward_host, 253, "forward_host")
         forward_port  = _validate_port(forward_port)
         forward_scheme = _validate_scheme(forward_scheme)
+        access_list_id = _validate_access_list_id(access_list_id)
         advanced_config = _sanitize_str(advanced_config, MAX_FIELD_LENGTH, "advanced_config")
 
         payload: dict[str, Any] = {
@@ -407,7 +421,7 @@ class NPMClient:
             "caching_enabled":        caching_enabled,
             "block_exploits":         block_exploits,
             "allow_websocket_upgrade": allow_websocket_upgrade,
-            "access_list_id":         access_list_id or None,
+            "access_list_id":         access_list_id,
             "certificate_id":         None,
             "advanced_config":        advanced_config,
             "meta":                   {"dns_challenge": None},
@@ -438,7 +452,7 @@ class NPMClient:
             elif key == "advanced_config":
                 sanitized[key] = _sanitize_str(val, MAX_FIELD_LENGTH, key)
             elif key == "access_list_id":
-                sanitized[key] = int(val) if val else None
+                sanitized[key] = _validate_access_list_id(val)
             else:
                 # Unknown field: pass through with basic string sanitization
                 sanitized[key] = _sanitize_str(str(val), MAX_FIELD_LENGTH, key)
@@ -690,7 +704,7 @@ def main() -> None:  # noqa: C901 (complexity acceptable for CLI dispatcher)
         print(f"**Domain:** `{domain}`  ")
         print(f"**ID:** {hid}  ")
         print(f"**Target:** `{args.scheme}://{args.forward_host}:{args.forward_port}`  ")
-        print(f"\n> Note: attach an SSL certificate via NPM UI or `--host-ssl-enable` if HTTPS is required.")
+        print("\n> Note: attach an SSL certificate in the NPM UI if HTTPS is required.")
         return
 
     # --host-update

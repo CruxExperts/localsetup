@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# Purpose: Disposable Git state regression scenarios. Replaces regression_harness.sh.
+# Purpose: Disposable Git state regression scenarios.
 # Created: 2026-02-20
-# Last updated: 2026-02-20
+# Last updated: 2026-05-09
 
 """
 Run regression scenarios that verify guided_repair_plan detection.
@@ -26,6 +26,10 @@ SCENARIOS = [
 NAME_MAX = 64
 
 
+class HarnessError(RuntimeError):
+    pass
+
+
 def _sanitize(s: str) -> str:
     if not isinstance(s, str) or len(s) > NAME_MAX:
         raise ValueError(f"scenario name invalid (max {NAME_MAX})")
@@ -36,13 +40,32 @@ def _sanitize(s: str) -> str:
 
 
 def run_cmd(cwd: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess:
-    return subprocess.run(
+    r = subprocess.run(
         list(args),
         cwd=str(cwd),
         capture_output=True,
         text=True,
         timeout=60,
     )
+    if check and r.returncode != 0:
+        cmd = " ".join(args)
+        detail = (r.stderr or r.stdout or "").strip()
+        raise HarnessError(f"command failed ({r.returncode}) in {cwd}: {cmd}\n{detail}")
+    return r
+
+
+def run_guided(*args: str, timeout: int = 120) -> subprocess.CompletedProcess:
+    r = subprocess.run(
+        [sys.executable, str(GUIDED_SCRIPT), *args],
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+        cwd=str(SCRIPT_DIR),
+    )
+    if r.returncode != 0:
+        detail = (r.stderr or r.stdout or "").strip()
+        raise HarnessError(f"guided_repair_plan.py failed ({r.returncode}) for {' '.join(args)}\n{detail}")
+    return r
 
 
 def make_repo(work_root: Path, name: str) -> Path:
@@ -68,13 +91,7 @@ def scenario_orphaned_worktree(work_root: Path) -> bool:
     run_cmd(repo, "git", "worktree", "add", "-q", str(wt), "repair-me")
     if wt.exists():
         shutil.rmtree(wt, ignore_errors=True)
-    r = subprocess.run(
-        [sys.executable, str(GUIDED_SCRIPT), "--repo", str(repo)],
-        capture_output=True,
-        text=True,
-        timeout=120,
-        cwd=str(SCRIPT_DIR),
-    )
+    r = run_guided("--repo", str(repo))
     out = r.stdout or ""
     return assert_contains(out, "[orphaned-worktree-metadata]") and assert_contains(out, "git worktree prune -v")
 
@@ -82,13 +99,7 @@ def scenario_orphaned_worktree(work_root: Path) -> bool:
 def scenario_detached_head(work_root: Path) -> bool:
     repo = make_repo(work_root, "detached-head")
     run_cmd(repo, "git", "checkout", "-q", "--detach")
-    r = subprocess.run(
-        [sys.executable, str(GUIDED_SCRIPT), "--repo", str(repo)],
-        capture_output=True,
-        text=True,
-        timeout=120,
-        cwd=str(SCRIPT_DIR),
-    )
+    r = run_guided("--repo", str(repo))
     out = r.stdout or ""
     return assert_contains(out, "[detached-head-state]") and assert_contains(out, "git reflog --date=iso -n 20")
 
@@ -104,25 +115,13 @@ def scenario_zero_hash_worktree(work_root: Path) -> bool:
             if d.is_dir():
                 (d / "HEAD").write_text("0000000000000000000000000000000000000000\n", encoding="utf-8")
                 break
-    r = subprocess.run(
-        [sys.executable, str(GUIDED_SCRIPT), "--repo", str(repo)],
-        capture_output=True,
-        text=True,
-        timeout=120,
-        cwd=str(SCRIPT_DIR),
-    )
+    r = run_guided("--repo", str(repo))
     out = r.stdout or ""
     return assert_contains(out, "[zero-hash-worktree-entry]")
 
 
 def scenario_manual_phantom_branch_lock(work_root: Path) -> bool:
-    r = subprocess.run(
-        [sys.executable, str(GUIDED_SCRIPT), "--symptom", "phantom-branch-lock"],
-        capture_output=True,
-        text=True,
-        timeout=30,
-        cwd=str(SCRIPT_DIR),
-    )
+    r = run_guided("--symptom", "phantom-branch-lock", timeout=30)
     out = r.stdout or ""
     return assert_contains(out, "[phantom-branch-lock]") and assert_contains(out, "git worktree list --porcelain")
 
@@ -172,7 +171,12 @@ def main() -> int:
         pass_count = 0
         fail_count = 0
         for scenario in scenarios:
-            if run_scenario(scenario, work_root):
+            try:
+                passed = run_scenario(scenario, work_root)
+            except (HarnessError, subprocess.TimeoutExpired) as e:
+                print(f"ERROR {scenario}: {e}", file=sys.stderr)
+                passed = False
+            if passed:
                 print(f"PASS {scenario}")
                 pass_count += 1
             else:

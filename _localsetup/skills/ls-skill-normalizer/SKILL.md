@@ -1,36 +1,47 @@
 ---
 name: ls-skill-normalizer
-description: "Normalize skills already in the tree for Agent Skills spec compliance and platform-neutral wording. Use when the user wants to normalize one or more skills in _localsetup/skills/ (e.g. after import, or after copying files in), or when batch-reviewing previously imported skills. Applies _localsetup/docs/SKILL_NORMALIZATION.md; shows summary and key edits, then applies on approval."
+description: "Normalize skills already in the tree using _localsetup/docs/SKILL_NORMALIZATION.md: documents first, tooling second, with user choice for platform-specific skills. Use when normalizing one or more skills in _localsetup/skills/ after import, copying, or batch review."
 metadata:
   version: "1.1"
 ---
 
 # Skill normalizer
 
-**Purpose:** Normalize any skill(s) already in the framework skill tree so each SKILL.md is spec-compliant and platform-neutral. Use this when skills were imported without normalization, dropped in by copying files, or when you want to batch-normalize previously imported skills.
+**Purpose:** Normalize any skill(s) already in the framework skill tree using the current two-phase standard: **Phase 1: documents first**, then **Phase 2: tooling**. Use this when skills were imported without normalization, dropped in by copying files, or when you want to batch-normalize previously imported skills.
 
 ## When to use this skill
 
-- User says "normalize this skill", "normalize the Ansible skill", "normalize all imported skills", or "make this skill spec-compliant and platform-neutral."
+- User says "normalize this skill", "normalize the Ansible skill", "normalize all imported skills", or "make this skill spec-compliant."
 - User copied a skill directory into `_localsetup/skills/` or `_localsetup/skills/` and wants it normalized.
 - Batch review: normalize several skills (e.g. ls-ansible-skill, ls-linux-service-triage, ls-linux-patcher) in one pass.
 
 ## Workflow (agent steps)
 
 1. **Identify target(s)**  - User specifies one skill (e.g. by name or path) or "all" (all skills under `_localsetup/skills/` or `_localsetup/skills/`). Resolve to a list of skill directories; each must contain SKILL.md.
-2. **Load rules**  - Read _localsetup/docs/SKILL_NORMALIZATION.md (or _localsetup/docs/SKILL_NORMALIZATION.md from framework source). Use the spec-compliance checklist, before/after frontmatter examples, and platform-neutralization rules (including the generic snippet for "Running from an agent").
-3. **For each skill**  - Apply the checklist and rules to SKILL.md only (in memory or a temp copy). Do not modify references, scripts, or playbooks. Produce:
-   - **Summary**  - Short prose (e.g. "Frontmatter: add compatibility, remove platform metadata; description generalized; replace 'Integration with X' with generic section.").
-   - **Key edits**  - Concrete list (e.g. "Remove metadata.openclaw"; "Replace lines 427-453 with generic snippet from SKILL_NORMALIZATION.md"; "Description: change 'OpenClaw VPS' to 'VPS (optional agent-host examples)'.").
-4. **Present and get approval**  - Show summary and key edits to the user. Ask: "Apply these changes to SKILL.md?" If **yes**, write the normalized SKILL.md to the skill directory. If **no**, skip that skill; do not write.
-5. **Confirm**  - Tell the user which skills were normalized and that they can run deploy if needed.
+2. **Load rules**  - Read `_localsetup/docs/SKILL_NORMALIZATION.md` from the current framework source. Treat it as the single source of truth for document normalization, platform-specific handling, tooling normalization, approval flow, and references to `TOOLING_POLICY.md` and `INPUT_HARDENING_STANDARD.md`.
+3. **Inventory the skill**  - List the files that normalization may need to touch:
+   - `SKILL.md` and any other skill documentation, including `references/`, README-style files, playbook notes, and usage examples.
+   - Tooling assets such as `scripts/`, executable entrypoints, helper libraries, tests, playbooks, templates, and files that the skill relies on for behavior.
+4. **Phase 1: document normalization**  - Normalize `SKILL.md` and any other relevant skill documents before changing tooling.
+   - **Not platform-specific:** Apply spec compliance and platform-neutralization rules by default. Produce a summary and concrete key edits, present them for approval, then write the document updates.
+   - **Platform-specific:** Do not assume full platform-neutralization. Present the user with the choices from `SKILL_NORMALIZATION.md`: keep as is, keep platform-specific but normalized, or fully normalize. Apply only the selected option, then present the summary and key edits required by that option before writing.
+   - Cover references, playbook documentation, and examples where they describe stale invocations, old paths, platform wrappers, or commands that will change in Phase 2.
+5. **Phase 2: tooling normalization**  - If the skill has scripts, playbooks, executable helpers, or other tooling, follow the tooling section in `SKILL_NORMALIZATION.md`.
+   - Identify the tooling to replace or retain.
+   - Present the tooling normalization plan: files to change, target framework tooling standard from `TOOLING_POLICY.md`, hardening expectations from `INPUT_HARDENING_STANDARD.md`, and documents that will be updated afterward.
+   - If approved, rewrite tooling to the framework standard and update every affected reference in `SKILL.md`, `references/`, playbook docs, examples, and other skill-local docs.
+   - If the user requests the keep-original-tooling exception, do not rewrite tooling; document that the user is responsible for that tooling and still complete the document normalization.
+6. **Validate and confirm**  - Run the relevant catalog, skill, and diff checks from the repo root. Tell the user which skills and files were normalized, which checks passed, and any residual risk.
 
 ## Scope
 
-- **Only SKILL.md** is modified. References, scripts, assets, and playbooks in the skill directory are unchanged.
-- The same rules as import-time normalization: product-agnostic detection of platform-specific sections (e.g. "Integration with ...", "From ... Agent"), replacement with generic wording from SKILL_NORMALIZATION.md.
+- **Phase 1 covers documents:** `SKILL.md` plus other skill-local markdown or documentation where appropriate, including `references/`, README-style docs, playbook notes, and examples.
+- **Phase 2 covers tooling:** scripts, executable helpers, behavior-bearing playbooks, templates, tests, and related files are normalized or explicitly retained under the keep-original-tooling exception.
+- The same rules as import-time normalization apply: product-agnostic detection of platform-specific sections (e.g. "Integration with ...", "From ... Agent") and user choice before changing platform-specific intent.
 
 ## Reference
 
-- _localsetup/docs/SKILL_NORMALIZATION.md  - Single source of truth: spec checklist, frontmatter examples, platform-neutralization rules and generic snippets.
-- _localsetup/docs/SKILL_IMPORTING.md  - Import workflow including the optional "Normalize before copy?" step; same rules apply there.
+- `_localsetup/docs/SKILL_NORMALIZATION.md`  - Single source of truth for the two-phase document/tooling workflow, platform-specific choices, approval flow, and validation expectations.
+- `_localsetup/docs/SKILL_IMPORTING.md`  - Import workflow that invokes the same normalization rules after security and content safety are verified.
+- `_localsetup/docs/TOOLING_POLICY.md`  - Framework tooling language and dependency rules.
+- `_localsetup/docs/INPUT_HARDENING_STANDARD.md`  - Input validation, error handling, and observability requirements for normalized tooling.

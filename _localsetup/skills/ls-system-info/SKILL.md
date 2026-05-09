@@ -33,7 +33,7 @@ For a single combined snapshot, run in order: `lscpu`, `free -h`, `df -h`, `upti
 
 ## Extended snapshot (maximum context, no sudo)
 
-To get maximum context without sudo or extra dependencies, use the bundled script. It uses only Python stdlib and commands/files readable by unprivileged users (no network, no write).
+To get maximum context without sudo or extra dependencies, use the bundled script. It uses only Python stdlib and commands/files readable by unprivileged users, with no network access. By default it writes only to stdout; `--output-basename` enables timestamped file output for unattended runs.
 
 From the repo root (or with the skill directory as cwd):
 
@@ -42,6 +42,14 @@ python3 _localsetup/skills/ls-system-info/scripts/system_snapshot.py
 ```
 
 Output is GFM markdown to stdout. It includes: identity and time, OS release, uptime and load, CPU, memory, disk and block devices, network (ip addr/route, resolv.conf), sessions (w/who), loaded kernel modules sample, and runtimes in PATH (e.g. python3, node). Redirect to a file to save a baseline, e.g. `... > baseline.md`.
+
+For cron or unattended runs, write a timestamped markdown file with a relative output basename:
+
+```bash
+python3 _localsetup/skills/ls-system-info/scripts/system_snapshot.py --output-basename reports/system-snapshots/daily
+```
+
+This creates parent directories as needed and writes `reports/system-snapshots/daily-YYYYMMDDTHHMMSSZ.md`. The script prints the written path to stdout and emits warnings to stderr when optional commands are unavailable or exit nonzero.
 
 If you prefer not to run the script, you can run these manually (all no sudo):
 
@@ -59,5 +67,3 @@ If you prefer not to run the script, you can run these manually (all no sudo):
 ## Install
 
 No installation needed. The quick commands use `free`, `df`, `uptime`, and `lscpu` (or `/proc`); the extended script uses Python 3.10+ stdlib only. On minimal images, install `util-linux` if `lscpu` or `lsblk` is missing.
-
-<!-- Import note: this skill was imported from openclaw/skills (xejrax/system-info). The source included _meta.json (OpenClaw registry metadata); it was not copied because this framework targets multiple platforms and does not use OpenClaw-specific manifest files. -->

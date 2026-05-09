@@ -91,8 +91,17 @@ THRESHOLD_ACTIONS: set[str] = {
     "imap.delete_mailbox",
 }
 
+COUNT_THRESHOLD_KEYS = {"delete_count_confirm", "move_count_confirm"}
+BOOL_THRESHOLD_KEYS = {"expunge_requires_confirm", "folder_delete_requires_confirm"}
+COUNT_MIN = 0
+COUNT_MAX = 1_000_000
+
 
 class PolicyError(RuntimeError):
+    pass
+
+
+class PolicyInputError(PolicyError):
     pass
 
 
@@ -136,7 +145,7 @@ def _load_yaml(path: Path) -> dict[str, Any]:
     return loaded
 
 
-def _validate_profile(name: str, profile: dict[str, Any]) -> None:
+def _validate_profile(name: str, profile: Any) -> None:
     if not isinstance(profile, dict):
         raise PolicyError(f"Profile '{name}' must be a mapping.")
     _expand_actions(profile.get("allow_actions", []))
@@ -149,29 +158,68 @@ def _validate_profile(name: str, profile: dict[str, Any]) -> None:
     constraints = profile.get("constraints", {})
     if constraints is not None and not isinstance(constraints, dict):
         raise PolicyError(f"Profile '{name}' constraints must be a mapping.")
-    for key in (
-        "delete_count_confirm",
-        "move_count_confirm",
-        "expunge_requires_confirm",
-        "folder_delete_requires_confirm",
-    ):
+    _validate_thresholds(thresholds, f"profile '{name}'")
+
+
+def _parse_int(
+    value: Any,
+    field_name: str,
+    min_value: int,
+    max_value: int,
+    error_cls: type[PolicyError],
+) -> int:
+    if isinstance(value, bool):
+        raise error_cls(f"{field_name} must be an integer.")
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError) as exc:
+        raise error_cls(f"{field_name} must be an integer.") from exc
+    if not min_value <= parsed <= max_value:
+        raise error_cls(
+            f"{field_name} must be between {min_value} and {max_value}."
+        )
+    return parsed
+
+
+def _parse_bool(value: Any, field_name: str, error_cls: type[PolicyError]) -> bool:
+    if isinstance(value, bool):
+        return value
+    raise error_cls(f"{field_name} must be boolean.")
+
+
+def _validate_thresholds(thresholds: dict[str, Any], owner: str) -> dict[str, Any]:
+    normalized = dict(thresholds)
+    for key in COUNT_THRESHOLD_KEYS | BOOL_THRESHOLD_KEYS:
         if key not in thresholds:
             continue
         value = thresholds[key]
-        if key in ("delete_count_confirm", "move_count_confirm") and isinstance(
-            value, bool
-        ):
-            raise PolicyError(f"Threshold '{key}' in profile '{name}' must be integer.")
-        if key in ("delete_count_confirm", "move_count_confirm"):
-            if not isinstance(value, int) or value < 0:
-                raise PolicyError(
-                    f"Threshold '{key}' in profile '{name}' must be integer >= 0."
-                )
-        if key in (
-            "expunge_requires_confirm",
-            "folder_delete_requires_confirm",
-        ) and not isinstance(value, bool):
-            raise PolicyError(f"Threshold '{key}' in profile '{name}' must be boolean.")
+        field_name = f"Threshold '{key}' in {owner}"
+        if key in COUNT_THRESHOLD_KEYS:
+            normalized[key] = _parse_int(
+                value, field_name, COUNT_MIN, COUNT_MAX, PolicyError
+            )
+        else:
+            normalized[key] = _parse_bool(value, field_name, PolicyError)
+    return normalized
+
+
+def _validate_account(name: str, account: Any, profiles: dict[str, Any]) -> None:
+    if not isinstance(account, dict):
+        raise PolicyError(f"Account '{name}' must be a mapping.")
+    profile = sanitize_text(account.get("profile"), 64)
+    if profile and profile not in profiles:
+        raise PolicyError(f"Account '{name}' references unknown profile: {profile}")
+    _expand_actions(account.get("allow_actions", []))
+    _expand_actions(account.get("deny_actions", []))
+    thresholds = account.get("thresholds", {})
+    if thresholds is None:
+        thresholds = {}
+    if not isinstance(thresholds, dict):
+        raise PolicyError(f"Account '{name}' thresholds must be a mapping.")
+    _validate_thresholds(thresholds, f"account '{name}'")
+    constraints = account.get("constraints", {})
+    if constraints is not None and not isinstance(constraints, dict):
+        raise PolicyError(f"Account '{name}' constraints must be a mapping.")
 
 
 def load_policy(path: Path) -> dict[str, Any]:
@@ -193,9 +241,11 @@ def load_policy(path: Path) -> dict[str, Any]:
     if not isinstance(accounts, dict):
         raise PolicyError("accounts must be a mapping.")
     for name, profile in profiles.items():
-        _validate_profile(str(name), profile if isinstance(profile, dict) else {})
+        _validate_profile(str(name), profile)
     if policy["default_profile"] not in profiles:
         raise PolicyError("default_profile must exist in profiles map.")
+    for name, account in accounts.items():
+        _validate_account(str(name), account, profiles)
     return policy
 
 
@@ -214,6 +264,27 @@ def _merged_thresholds(
     for key, value in override.items():
         merged[key] = value
     return merged
+
+
+def _effective_thresholds(thresholds: dict[str, Any]) -> dict[str, Any]:
+    try:
+        return _validate_thresholds(thresholds, "effective policy")
+    except PolicyError as exc:
+        raise PolicyInputError(str(exc)) from exc
+
+
+def _message_count(params: dict[str, Any], action: str) -> int:
+    count_value = params.get("count")
+    if count_value in (None, ""):
+        uids = params.get("uids") or []
+        if not isinstance(uids, list):
+            raise PolicyInputError(
+                f"{action} uids must be a list when count is absent."
+            )
+        return len(uids)
+    return _parse_int(
+        count_value, f"{action} count", COUNT_MIN, COUNT_MAX, PolicyInputError
+    )
 
 
 def _merged_constraints(
@@ -316,22 +387,26 @@ def evaluate_action(
     requires_confirmation = False
     if action in THRESHOLD_ACTIONS:
         if action == "imap.move_messages":
-            count = int(p.get("count") or len(p.get("uids") or []))
-            requires_confirmation = count >= int(
-                thresholds.get("move_count_confirm", 100)
+            effective_thresholds = _effective_thresholds(thresholds)
+            count = _message_count(p, action)
+            requires_confirmation = count >= effective_thresholds.get(
+                "move_count_confirm", 100
             )
         elif action == "imap.delete_messages":
-            count = int(p.get("count") or len(p.get("uids") or []))
-            requires_confirmation = count >= int(
-                thresholds.get("delete_count_confirm", 50)
+            effective_thresholds = _effective_thresholds(thresholds)
+            count = _message_count(p, action)
+            requires_confirmation = count >= effective_thresholds.get(
+                "delete_count_confirm", 50
             )
         elif action == "imap.expunge_mailbox":
-            requires_confirmation = bool(
-                thresholds.get("expunge_requires_confirm", True)
+            effective_thresholds = _effective_thresholds(thresholds)
+            requires_confirmation = effective_thresholds.get(
+                "expunge_requires_confirm", True
             )
         elif action == "imap.delete_mailbox":
-            requires_confirmation = bool(
-                thresholds.get("folder_delete_requires_confirm", True)
+            effective_thresholds = _effective_thresholds(thresholds)
+            requires_confirmation = effective_thresholds.get(
+                "folder_delete_requires_confirm", True
             )
     return PolicyDecision(
         allowed=True,

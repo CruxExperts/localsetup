@@ -1,13 +1,15 @@
 ---
 name: ls-debug-pro
-description: Systematic debugging methodology and language-specific debugging commands (Node, Python, Swift, network, git bisect).
+description: Systematic debugging methodology and language-specific debugging commands (Node, Python, Swift, CSS/layout, network, git bisect).
 metadata:
-  version: "1.1"
+  version: "1.2"
 ---
 
-# debug-pro
+# Debug Pro
 
-Systematic debugging methodology and language-specific debugging commands.
+Systematic debugging methodology and language-specific debugging commands for application code, CSS/layout, network issues, and git bisect workflows.
+
+Source note: imported from `debug-pro` by cmanfre7; provenance was previously recorded in release-only `_meta.json` metadata with upstream version `1.0.0`.
 
 ## The 7-Step Debugging Protocol
 

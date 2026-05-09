@@ -7,72 +7,40 @@ from __future__ import annotations
 
 import argparse
 import os
-import shlex
 import subprocess
 import sys
+import time
 from pathlib import Path
 
-import yaml
-
-MAX_CMD_LEN = 8192
-MAX_TRIGGER_LEN = 128
-MAX_TASK_ID_LEN = 128
-DEFAULT_TIMEOUT_SECONDS = 3600
-MAX_TIMEOUT_SECONDS = 86400
-
-
-def _sanitize(s: str, max_len: int) -> str:
-    if not isinstance(s, str):
-        return ""
-    out = "".join(c for c in s if ord(c) >= 0x20 and ord(c) != 0x7F)
-    out = " ".join(out.split()).strip()
-    return out[:max_len] if len(out) > max_len else out
+from _cron_manifest import (
+    MAX_DELAY_SECONDS,
+    MAX_TRIGGER_LEN,
+    ManifestError,
+    clean_display,
+    load_manifest,
+    normalize_delay_seconds,
+    validate_identifier,
+    validate_manifest,
+)
 
 
-def _contains_shell_operators(command: str) -> bool:
-    # We execute with shell=False; reject shell-only operator shapes explicitly.
-    return any(token in command for token in ("&&", "||", ";", "|", ">", "<", "`", "\n", "\r"))
-
-
-def _normalize_command(task: dict) -> tuple[list[str], str | None]:
-    raw = task.get("command")
-    if isinstance(raw, list):
-        argv = [_sanitize(str(part), MAX_CMD_LEN) for part in raw]
-        argv = [part for part in argv if part]
-        if not argv:
-            return [], "command list is empty after sanitization"
-        return argv, None
-    if not isinstance(raw, str):
-        return [], "command must be a string or list"
-    cmd = _sanitize(raw, MAX_CMD_LEN)
-    if not cmd:
-        return [], None
-    if _contains_shell_operators(cmd):
-        return [], "command contains unsupported shell operators; provide argv list for literal args"
+def _load_validated_manifest(manifest_path: Path) -> dict:
     try:
-        argv = shlex.split(cmd, posix=True)
-    except ValueError as e:
-        return [], f"invalid command quoting: {type(e).__name__}: {e}"
-    if not argv:
-        return [], "command is empty after parsing"
-    return argv, None
-
-
-def _normalize_timeout(task: dict) -> tuple[int, str | None]:
-    value = task.get("timeout_seconds", DEFAULT_TIMEOUT_SECONDS)
-    try:
-        timeout = int(value)
-    except (TypeError, ValueError):
-        return DEFAULT_TIMEOUT_SECONDS, f"invalid timeout_seconds: {value!r}"
-    if timeout < 1 or timeout > MAX_TIMEOUT_SECONDS:
-        return DEFAULT_TIMEOUT_SECONDS, f"timeout_seconds out of bounds (1..{MAX_TIMEOUT_SECONDS}): {timeout}"
-    return timeout, None
+        return validate_manifest(load_manifest(manifest_path))
+    except ManifestError as exc:
+        print(f"[run_trigger] {exc}", file=sys.stderr)
+        raise SystemExit(1) from exc
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run tasks for a trigger in sequence.")
     parser.add_argument("--manifest", required=True, help="Path to manifest.yaml")
     parser.add_argument("--repo-root", help="Working directory for commands (default: manifest parent)")
+    parser.add_argument(
+        "--delay-seconds",
+        default=0,
+        help=f"Delay execution before running tasks, for @reboot cron entries (0..{MAX_DELAY_SECONDS})",
+    )
     parser.add_argument("trigger", help="Trigger name")
     args = parser.parse_args()
 
@@ -85,47 +53,30 @@ def main() -> int:
         print(f"[run_trigger] Not a directory: {repo_root}", file=sys.stderr)
         return 1
 
-    trigger_name = _sanitize(args.trigger, MAX_TRIGGER_LEN)
-    if not trigger_name:
-        print("[run_trigger] Empty trigger name", file=sys.stderr)
-        return 1
-
     try:
-        raw = manifest_path.read_text(encoding="utf-8", errors="replace")
-        data = yaml.safe_load(raw)
-    except Exception as e:
-        print(f"[run_trigger] Failed to load manifest: {e}", file=sys.stderr)
+        trigger_name = validate_identifier(args.trigger, "trigger", MAX_TRIGGER_LEN)
+        delay_seconds = normalize_delay_seconds(args.delay_seconds, "delay_seconds")
+    except ManifestError as exc:
+        print(f"[run_trigger] {exc}", file=sys.stderr)
         return 1
+    if delay_seconds:
+        time.sleep(delay_seconds)
 
-    if not isinstance(data, dict):
-        print("[run_trigger] Manifest root must be a dict", file=sys.stderr)
-        return 1
+    data = _load_validated_manifest(manifest_path)
 
     triggers = data.get("triggers") or {}
     if trigger_name not in triggers:
         print(f"[run_trigger] Unknown trigger: {trigger_name}", file=sys.stderr)
         return 1
 
-    tasks = [t for t in (data.get("tasks") or []) if isinstance(t, dict)]
-    tasks_for_trigger = [t for t in tasks if _sanitize(str(t.get("trigger", "")), MAX_TRIGGER_LEN) == trigger_name and t.get("enabled", True)]
-    tasks_for_trigger.sort(key=lambda t: int(t.get("sequence_order", 0)))
+    tasks = data.get("tasks") or []
+    tasks_for_trigger = [task for task in tasks if task["trigger"] == trigger_name and task["enabled"]]
+    tasks_for_trigger.sort(key=lambda task: task["sequence_order"])
 
     for task in tasks_for_trigger:
-        task_id = _sanitize(str(task.get("id", "?")), MAX_TASK_ID_LEN) or "?"
-        cmd = task.get("command")
-        if isinstance(cmd, str) and len(cmd) > MAX_CMD_LEN:
-            print(f"[run_trigger] Task {task.get('id', '?')}: command too long", file=sys.stderr)
-            continue
-        argv, cmd_error = _normalize_command(task)
-        if cmd_error:
-            print(f"[run_trigger] Task {task_id}: {cmd_error}", file=sys.stderr)
-            return 1
-        if not argv:
-            continue
-        timeout, timeout_error = _normalize_timeout(task)
-        if timeout_error:
-            print(f"[run_trigger] Task {task_id}: {timeout_error}", file=sys.stderr)
-            return 1
+        task_id = clean_display(task["id"], 128)
+        argv = task["argv"]
+        timeout = task["timeout_seconds"]
         try:
             r = subprocess.run(
                 argv,

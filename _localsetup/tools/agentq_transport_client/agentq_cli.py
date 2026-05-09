@@ -3,7 +3,7 @@
 # Created: 2026-03-09
 # Last updated: 2026-03-09
 
-"""Run from repo root: python _localsetup/tools/agentq_transport_client/agentq_cli.py <cmd>"""
+"""Run from repo root: python3 _localsetup/tools/agentq_transport_client/agentq_cli.py <cmd>"""
 
 from __future__ import annotations
 

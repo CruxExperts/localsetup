@@ -1,0 +1,20 @@
+[Unit]
+Description={{ agent_host_service_description }}
+After=network.target
+
+[Service]
+Type=simple
+User={{ agent_host_user }}
+WorkingDirectory={{ agent_host_workspace | default('/home/' + agent_host_user) }}
+ExecStart=/usr/bin/{{ agent_host_command }} {{ agent_host_command_args }}
+Restart=on-failure
+RestartSec=10
+{% for key, value in agent_host_env_vars.items() %}
+Environment={{ key }}={{ value }}
+{% endfor %}
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier={{ agent_host_service_name }}
+
+[Install]
+WantedBy=multi-user.target

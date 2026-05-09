@@ -21,23 +21,42 @@ def parse_evaluation_file(file_path: Path) -> list[dict[str, Any]]:
     """Parse XML evaluation file with qa_pair elements."""
     try:
         tree = ET.parse(file_path)
-        root = tree.getroot()
-        evaluations = []
+    except ET.ParseError as e:
+        raise ValueError(
+            f"Invalid XML in evaluation file {file_path}: {e}. "
+            "Fix the malformed XML and retry."
+        ) from e
+    except OSError as e:
+        raise ValueError(f"Could not read evaluation file {file_path}: {e}") from e
 
-        for qa_pair in root.findall(".//qa_pair"):
-            question_elem = qa_pair.find("question")
-            answer_elem = qa_pair.find("answer")
+    root = tree.getroot()
+    evaluations = []
 
-            if question_elem is not None and answer_elem is not None:
-                evaluations.append({
-                    "question": (question_elem.text or "").strip(),
-                    "answer": (answer_elem.text or "").strip(),
-                })
+    for index, qa_pair in enumerate(root.findall(".//qa_pair"), start=1):
+        question_elem = qa_pair.find("question")
+        answer_elem = qa_pair.find("answer")
 
-        return evaluations
-    except Exception as e:
-        print(f"Error parsing evaluation file {file_path}: {e}")
-        return []
+        if question_elem is None or answer_elem is None:
+            raise ValueError(
+                f"Evaluation file {file_path} has qa_pair #{index} without both "
+                "<question> and <answer> elements."
+            )
+
+        question = (question_elem.text or "").strip()
+        answer = (answer_elem.text or "").strip()
+        if not question or not answer:
+            raise ValueError(
+                f"Evaluation file {file_path} has qa_pair #{index} with an empty "
+                "question or answer."
+            )
+        evaluations.append({"question": question, "answer": answer})
+
+    if not evaluations:
+        raise ValueError(
+            f"Evaluation file {file_path} contains no complete <qa_pair> entries."
+        )
+
+    return evaluations
 
 
 def extract_xml_content(text: str | None, tag: str) -> str | None:
@@ -134,15 +153,17 @@ async def run_evaluation(
     eval_path: Path,
     connection: Any,
     provider: Any,
+    qa_pairs: list[dict[str, Any]] | None = None,
 ) -> str:
     """Run evaluation with MCP server tools and the given provider."""
     print("Starting Evaluation")
 
+    if qa_pairs is None:
+        qa_pairs = parse_evaluation_file(eval_path)
+    print(f"Loaded {len(qa_pairs)} evaluation tasks")
+
     tools = await connection.list_tools()
     print(f"Loaded {len(tools)} tools from MCP server")
-
-    qa_pairs = parse_evaluation_file(eval_path)
-    print(f"Loaded {len(qa_pairs)} evaluation tasks")
 
     # Emulation: validate task count alignment (Gap 3)
     if hasattr(provider, "tasks"):
@@ -266,6 +287,11 @@ Examples:
     if not eval_path.exists() or not eval_path.is_file():
         print(f"Error: Evaluation file not found: {args.eval_file}", file=sys.stderr)
         sys.exit(1)
+    try:
+        qa_pairs = parse_evaluation_file(eval_path)
+    except ValueError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
     if args.url and len(args.url) > 2048:
         print("Error: URL length exceeds 2048", file=sys.stderr)
         sys.exit(2)
@@ -308,15 +334,19 @@ Examples:
 
     print(f"Connecting to MCP server via {args.transport}...", file=sys.stderr)
 
-    async with connection:
-        print("Connected successfully", file=sys.stderr)
-        report = await run_evaluation(eval_path, connection, provider)
+    try:
+        async with connection:
+            print("Connected successfully", file=sys.stderr)
+            report = await run_evaluation(eval_path, connection, provider, qa_pairs)
 
-        if args.output:
-            args.output.write_text(report, encoding="utf-8", errors="replace")
-            print(f"\nReport saved to {args.output}", file=sys.stderr)
-        else:
-            print("\n" + report)
+            if args.output:
+                args.output.write_text(report, encoding="utf-8", errors="replace")
+                print(f"\nReport saved to {args.output}", file=sys.stderr)
+            else:
+                print("\n" + report)
+    except ValueError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

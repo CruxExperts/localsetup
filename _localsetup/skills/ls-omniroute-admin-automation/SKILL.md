@@ -43,7 +43,7 @@ Use this skill when a task requires any of the following:
   3) `http://localhost:20128`
 - Management auth options:
   - Bearer key from environment variable name passed via `--api-key-env` (default `OMNIROUTE_API_KEY`)
-  - Session cookie loaded from `--cookie-file` if management cookie mode is required.
+  - Session cookie from the environment variable name passed via `--management-cookie-env` (default `OMNIROUTE_MGMT_COOKIE`).
 
 ## Tooling layout
 
@@ -118,4 +118,3 @@ Recommended loop for unattended maintenance:
 - `references/omniroute-endpoint-matrix.md`
 - `references/omniroute-auth-and-safety.md`
 - `references/omniroute-automation-runbook.md`
-- `docs/reference/omniroute-admin-api-guide.md` (repo-level published guide)

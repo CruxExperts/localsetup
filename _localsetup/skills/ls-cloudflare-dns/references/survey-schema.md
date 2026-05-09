@@ -1,4 +1,6 @@
-# Zone survey output schema
+# Suggested zone survey report schema
+
+This skill does not ship `survey_dns_zones.py` or any other survey generator. Use this schema only when manually writing a survey or when a future reviewed Python helper is added.
 
 ```yaml
 survey_generated_at: <ISO8601 timestamp>
@@ -18,10 +20,10 @@ zones:
 
 `points_to_this_host` is `true` if the record is an A record pointing to this machine's public IP, or a CNAME whose target resolves to such an A record.
 
-Output files:
-- `cloudflare_dns_survey.json` (always written)
-- `cloudflare_dns_survey.yaml` (written if Python PyYAML is installed)
+Suggested output files:
+- `cloudflare_dns_survey.json`
+- `cloudflare_dns_survey.yaml` if YAML output is intentionally produced
 
-Default output directory: `~/.localsetup/context/dns/`
+Suggested output directory: `~/.localsetup/context/dns/`
 
 Treat these files as sensitive (they contain record IDs and content). Store in a gitignored location.

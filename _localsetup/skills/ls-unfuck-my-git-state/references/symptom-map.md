@@ -1,6 +1,6 @@
 # Symptom Map
 
-Use this map after running `scripts/snapshot_git_state.sh`.
+Use this map after running `scripts/snapshot_git_state.py`.
 
 | Symptom | Evidence to Confirm | Lowest-Risk First Move | Escalation |
 | --- | --- | --- | --- |

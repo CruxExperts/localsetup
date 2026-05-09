@@ -29,12 +29,29 @@ Questions to answer:
 - [ ] Are there reviews from other agents?
 ```
 
-### Step 2: Code Review (MANDATORY)
+### Step 2: Spec and Metadata Validation (MANDATORY)
+
+Verify the candidate skill is a valid Agent Skill before reviewing behavior:
+
+```
+Required checks:
+- [ ] Skill directory contains SKILL.md.
+- [ ] Frontmatter includes name and description.
+- [ ] name matches the skill directory and uses lowercase letters, numbers, and hyphens.
+- [ ] description explains what the skill does and when to use it.
+- [ ] metadata.version is present or the absence is documented.
+- [ ] Optional sidecars such as _meta.json match SKILL.md metadata, or drift is reported.
+- [ ] Optional validation command was run when available: skills-ref validate <skill-dir>.
+```
+
+Treat `SKILL.md` frontmatter as the canonical local metadata. Sidecars are provenance or export metadata only; they must not override the local skill/catalog version.
+
+### Step 3: Code Review (MANDATORY)
 
 Read ALL files in the skill. Check for these **RED FLAGS**:
 
 ```
- REJECT IMMEDIATELY IF YOU SEE:
+REJECT IMMEDIATELY IF YOU SEE:
 
 - curl/wget to unknown URLs
 - Sends data to external servers
@@ -53,7 +70,7 @@ Read ALL files in the skill. Check for these **RED FLAGS**:
 
 ```
 
-### Step 3: Permission Scope
+### Step 4: Permission Scope
 
 ```
 Evaluate:
@@ -64,14 +81,14 @@ Evaluate:
 - [ ] Is the scope minimal for its stated purpose?
 ```
 
-### Step 4: Risk Classification
+### Step 5: Risk Classification
 
 | Risk Level | Examples | Action |
 |------------|----------|--------|
-|  LOW | Notes, weather, formatting | Basic review, install OK |
-|  MEDIUM | File ops, browser, APIs | Full code review required |
-|  HIGH | Credentials, trading, system | Human approval required |
-|  EXTREME | Security configs, root access | Do NOT install |
+| LOW | Notes, weather, formatting | Basic review, install OK |
+| MEDIUM | File ops, browser, APIs | Full code review required |
+| HIGH | Credentials, trading, system | Human approval required |
+| EXTREME | Security configs, root access | Do NOT install |
 
 ## Output Format
 
@@ -92,14 +109,18 @@ METRICS:
 
 RED FLAGS: [None / List them]
 
+SPEC VALIDATION:
+- Status: [PASS / FAIL / NOT RUN]
+- Metadata drift: [None / List mismatches]
+
 PERMISSIONS NEEDED:
 - Files: [list or "None"]
 - Network: [list or "None"]
 - Commands: [list or "None"]
 
-RISK LEVEL: [ LOW /  MEDIUM /  HIGH /  EXTREME]
+RISK LEVEL: [LOW / MEDIUM / HIGH / EXTREME]
 
-VERDICT: [ SAFE TO INSTALL / WARNING INSTALL WITH CAUTION /  DO NOT INSTALL]
+VERDICT: [SAFE TO INSTALL / WARNING INSTALL WITH CAUTION / DO NOT INSTALL]
 
 NOTES: [Any observations]
 
@@ -121,11 +142,11 @@ curl -s "https://raw.githubusercontent.com/OWNER/REPO/main/skills/SKILL_NAME/SKI
 
 ## Trust Hierarchy
 
-1. **Official skills from a trusted registry or vendor** -> Lower scrutiny (still review)
-2. **High-star repos (1000+)** -> Moderate scrutiny
-3. **Known authors** -> Moderate scrutiny
-4. **New/unknown sources** -> Maximum scrutiny
-5. **Skills requesting credentials** -> Human approval always
+1. **Official skills from a trusted registry or vendor** - Lower scrutiny (still review)
+2. **High-star repos (1000+)** - Moderate scrutiny
+3. **Known authors** - Moderate scrutiny
+4. **New/unknown sources** - Maximum scrutiny
+5. **Skills requesting credentials** - Human approval always
 
 ## Remember
 
@@ -136,4 +157,4 @@ curl -s "https://raw.githubusercontent.com/OWNER/REPO/main/skills/SKILL_NAME/SKI
 
 ---
 
-*Paranoia is a feature.*
+Security bias is intentional.

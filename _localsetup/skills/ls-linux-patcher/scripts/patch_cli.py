@@ -24,6 +24,19 @@ class InputError(ValueError):
     """Raised when user-provided input is malformed or unsafe."""
 
 
+CAPABILITIES = {
+    "mode": "plan-only",
+    "available": ["status", "auto", "host-only", "host-full", "multiple"],
+    "unavailable": [
+        "PatchMon API querying",
+        "remote SSH execution",
+        "package manager execution",
+        "Docker execution",
+        "parallel host updates",
+    ],
+}
+
+
 def _clean_text(value: str, *, max_len: int, label: str) -> str:
     if not isinstance(value, str):
         raise InputError(f"{label}: expected string")
@@ -115,10 +128,30 @@ def _emit_plan(title: str, steps: list[dict[str, str]], *, json_output: bool) ->
     return 0
 
 
+def _emit_status(*, json_output: bool) -> int:
+    if json_output:
+        print(json.dumps(CAPABILITIES, indent=2))
+        return 0
+    print("# Linux Patcher Status")
+    print()
+    print("Mode: plan-only. This helper never opens SSH sessions or applies updates.")
+    print()
+    print("Available modes:")
+    for item in CAPABILITIES["available"]:
+        print(f"- `{item}`")
+    print()
+    print("Unavailable until a tested Python implementation is added:")
+    for item in CAPABILITIES["unavailable"]:
+        print(f"- {item}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Create safe Linux patching plans.")
     parser.add_argument("--json", action="store_true", help="Emit JSON instead of markdown")
     sub = parser.add_subparsers(dest="cmd", required=True)
+
+    sub.add_parser("status", help="Show available and unavailable capabilities")
 
     auto = sub.add_parser("auto", help="Explain PatchMon automatic mode requirements")
     auto.add_argument("--skip-docker", action="store_true", help="Plan packages-only behavior")
@@ -140,10 +173,14 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     try:
+        if args.cmd == "status":
+            return _emit_status(json_output=args.json)
         if args.cmd == "auto":
             mode = "packages only" if args.skip_docker else "packages and Docker where configured"
+            dry_run_note = "The --dry-run flag was accepted for compatibility; all shipped modes are already plan-only." if args.dry_run else "Use --dry-run if callers require an explicit preview flag; behavior is unchanged."
             steps = [
-                {"phase": "status", "command": "PatchMon automatic execution is guidance-only in v3 until a tested Python API client is added."},
+                {"phase": "status", "command": "PatchMon automatic execution is unavailable and guidance-only in v3 until a tested Python API client is added."},
+                {"phase": "dry-run", "command": dry_run_note},
                 {"phase": "inputs", "command": f"Collect PatchMon URL, credentials, target host list, and maintenance window for {mode}."},
                 {"phase": "fallback", "command": "Use `python scripts/patch_cli.py host-only HOST` or `host-full HOST /compose/path` for auditable per-host plans."},
             ]

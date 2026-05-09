@@ -32,7 +32,12 @@ if __package__ in (None, ""):
         sanitize_list,
         sanitize_text,
     )  # type: ignore
-    from policy_engine import PolicyError, evaluate_action, load_policy  # type: ignore
+    from policy_engine import (  # type: ignore
+        PolicyError,
+        PolicyInputError,
+        evaluate_action,
+        load_policy,
+    )
 else:
     from .crypto_engine import CryptoEngine, CryptoError
     from .mail_types import AccountConfig, AttachmentItem, MailResult, MessageEnvelope
@@ -45,7 +50,12 @@ else:
         sanitize_list,
         sanitize_text,
     )
-    from .policy_engine import PolicyError, evaluate_action, load_policy
+    from .policy_engine import (
+        PolicyError,
+        PolicyInputError,
+        evaluate_action,
+        load_policy,
+    )
 
 
 class MailControlError(RuntimeError):
@@ -1134,6 +1144,12 @@ class MailProtocolControl:
 
     def dispatch(self, tool: str, payload: dict[str, Any]) -> dict[str, Any]:
         try:
+            if not isinstance(payload, dict):
+                return MailResult(
+                    ok=False,
+                    code="INVALID_ARGUMENT",
+                    message="Tool payload must be a JSON object.",
+                ).to_dict()
             if tool == "mail_accounts_list":
                 return self.accounts_list().to_dict()
             if tool == "mail_capabilities_get":
@@ -1169,10 +1185,18 @@ class MailProtocolControl:
             ).to_dict()
         except MailControlError as exc:
             return MailResult(ok=False, code=exc.code, message=exc.message).to_dict()
+        except PolicyInputError as exc:
+            return MailResult(
+                ok=False, code="INVALID_ARGUMENT", message=str(exc)
+            ).to_dict()
         except PolicyError as exc:
             return MailResult(ok=False, code="POLICY_ERROR", message=str(exc)).to_dict()
         except CryptoError as exc:
             return MailResult(ok=False, code=exc.code, message=exc.message).to_dict()
+        except (KeyError, TypeError, ValueError) as exc:
+            return MailResult(
+                ok=False, code="INVALID_ARGUMENT", message=str(exc)
+            ).to_dict()
         except Exception as exc:  # noqa: BLE001
             return MailResult(
                 ok=False, code="UNHANDLED_ERROR", message=str(exc)

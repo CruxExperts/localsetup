@@ -2,11 +2,11 @@
 
 ## stamp-prd fails with ImportError
 
-Install frontmatter: `pip install python-frontmatter` (or full framework install with deps).
+Install frontmatter: `python3 -m pip install python-frontmatter` (or full framework install with deps).
 
 ## key-fingerprint fails
 
-Install PGPy: `pip install PGPy`. Key file must be armored OpenPGP.
+Install PGPy: `python3 -m pip install PGPy`. Key file must be armored OpenPGP.
 
 ## version shows 0.0.0
 
@@ -15,7 +15,8 @@ VERSION file missing at repo root. Ensure you run from project root or set paths
 ## Decrypt or verify fails on ingest
 
 - Confirm sender public key is in registry and path is readable.
-- Quarantine blob then use force ingest with reason after fixing keys (see build spec Part 8).
+- In strict mode, missing registry returns `STRICT_GPG_REGISTRY_REQUIRED`; signature or decrypt failures quarantine the blob under `inbox/.quarantine/<transport_id>/`.
+- Use force ingest with reason only after fixing keys and confirming the sender out of band (see build spec Part 8).
 
 ## Duplicate processing
 

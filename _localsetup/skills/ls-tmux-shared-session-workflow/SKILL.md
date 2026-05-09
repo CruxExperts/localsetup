@@ -1,17 +1,18 @@
 ---
 name: ls-tmux-shared-session-workflow
-description: Server/ops in tmux; use tmux_ops to pick a managed session, probe sudo, and run commands with captured logs. Supports REMOTE_TMUX_HOST for VMs/remote/Docker.
+description: Server/ops in tmux; use tmux_ops when host work should be operator-visible, sudo-gated, or resumable with captured logs. Supports REMOTE_TMUX_HOST for SSH-accessible remote hosts/VMs; container targets must be reachable as SSH hosts with this repo/tooling installed.
 metadata:
   version: "5.1"
+compatibility: "Requires tmux and bash on the host running the managed session. Sudo probing is used for privileged host work. SSH is required when REMOTE_TMUX_HOST is set; container/Docker targets are supported only when reachable as SSH hosts with this repo/tooling installed."
 ---
 
 # tmux shared session workflow (ops)
 
-**Rule:** Any request that involves running commands on the host uses this workflow. Sudo is always assumed required. Use `tmux_ops`; do not infer busy state from `tmux ls` or parse pane capture yourself.
+**Rule:** Use this workflow for operator-visible host operations that may require sudo, change services/packages/system state, or need resumable logs in a managed tmux session. Harmless read-only commands that do not require tmux visibility or sudo gating can use ordinary command execution. Use `tmux_ops`; do not infer busy state from `tmux ls` or parse pane capture yourself.
 
 ## Tool
 
-From repo root, run `./_localsetup/tools/tmux_ops`. If tmux is on another host, set `REMOTE_TMUX_HOST`; the wrapper runs the same tool over SSH.
+From repo root, run `./_localsetup/tools/tmux_ops`. If tmux is on another SSH-accessible host, set `REMOTE_TMUX_HOST`; the wrapper runs the same tool over SSH.
 
 Full implementation reference: [_localsetup/docs/ops/tmux-ops-managed.md](../../docs/ops/tmux-ops-managed.md). Remote behavior: [_localsetup/docs/ops/tmux-ops-remote.md](../../docs/ops/tmux-ops-remote.md).
 
@@ -60,11 +61,12 @@ Timeouts are not command failures. A timeout returns `status: "running"` and kee
 
 ## Remote
 
-When the tmux server runs on a different host:
+When the tmux server runs on a different SSH-accessible host, such as a VM or remote server:
 
 - Set `REMOTE_TMUX_HOST` to that host.
 - Optionally set `REMOTE_TMUX_CWD` to the repo path on the remote. Default: `/opt/devzone/devops`.
 - Use the same `pick`, `probe`, `run`, `status`, and `cancel` commands. Session names, state paths, and logs are on the remote host.
+- Docker/container targets are in scope only when the target is reachable as an SSH host and has the repo/tooling installed; this workflow does not attach to containers through Docker APIs.
 
 ## Hard Rules
 

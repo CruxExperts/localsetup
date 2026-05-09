@@ -1,534 +1,104 @@
-# Linux Patcher - Workflow Diagrams
+# Linux Patcher Workflows
 
-Visual representation of how the Linux Patcher skill operates.
+The current workflow is plan-only. Every path ends with a reviewed plan; no shipped command applies updates.
 
-## Overview: Automatic Mode (Recommended)
+## Capability Check
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    User Interaction                         │
-└─────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌─────────────────────────────────────────┐
-        │  Ask agent host: "Update my servers"      │
-        └─────────────────────────────────────────┘
-                            │
-                            ▼
-┌─────────────────────────────────────────────────────────────┐
-│              Linux Patcher Skill Activated                  │
-│                  (python scripts/patch_cli.py auto)                            │
-└─────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Step 1: Query PatchMon API            │
-        │  • Authenticate with credentials       │
-        │  • Get list of hosts needing updates   │
-        │  • Parse host details (user, paths)    │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Any hosts need updates?                │
-        └────────────────────────────────────────┘
-                    │                   │
-            ┌───────┴───────┐           │
-            │ YES           │ NO        │
-            │               └───────────┘
-            ▼                           │
-  ┌─────────────────────┐              │
-  │  Step 2: For Each   │              │
-  │  Host That Needs    │              │
-  │  Updates            │              │
-  └─────────────────────┘              │
-            │                           │
-            ▼                           │
-  ┌─────────────────────┐              │
-  │  Detect OS:         │              │
-  │  Ubuntu/Debian      │              │
-  │  RHEL/Rocky/Alma    │              │
-  │  Amazon Linux       │              │
-  │  CentOS/SUSE        │              │
-  └─────────────────────┘              │
-            │                           │
-            ▼                           │
-  ┌─────────────────────┐              │
-  │  Docker Installed?  │              │
-  └─────────────────────┘              │
-      │           │                     │
-  ┌───┴───┐   ┌───┴───┐                │
-  │ YES   │   │ NO    │                │
-  └───┬───┘   └───┬───┘                │
-      │           │                     │
-      ▼           │                     │
-  ┌────────────┐  │                     │
-  │ --skip-    │  │                     │
-  │ docker     │  │                     │
-  │ flag?      │  │                     │
-  └────────────┘  │                     │
-      │     │     │                     │
-  ┌───┴───┐ │     │                     │
-  │ YES   │ │ NO  │                     │
-  └───┬───┘ │     │                     │
-      │     ▼     │                     │
-      │  ┌─────────────────┐            │
-      │  │ Find Docker     │            │
-      │  │ Compose Path    │            │
-      │  └─────────────────┘            │
-      │     │                            │
-      │     ▼                            │
-      │  ┌─────────────────┐            │
-      │  │ Path Found?     │            │
-      │  └─────────────────┘            │
-      │     │         │                 │
-      │  ┌──┴──┐   ┌──┴──┐             │
-      │  │ YES │   │ NO  │             │
-      │  └──┬──┘   └──┬──┘             │
-      │     │         │                 │
-      │     ▼         │                 │
-      │  ┌─────────────────────┐       │
-      │  │  FULL UPDATE        │       │
-      │  │  • apt/yum update   │       │
-      │  │  • apt/yum upgrade  │       │
-      │  │  • docker prune     │       │
-      │  │  • docker pull      │       │
-      │  │  • compose up -d    │       │
-      │  └─────────────────────┘       │
-      │          │                      │
-      └──────────┼──────────────────────┘
-                 ▼
-      ┌─────────────────────┐
-      │  HOST-ONLY UPDATE   │
-      │  • apt/yum update   │
-      │  • apt/yum upgrade  │
-      │  • apt/yum autoremove│
-      └─────────────────────┘
-                 │
-                 ▼
-      ┌─────────────────────┐
-      │  Check Reboot Status│
-      └─────────────────────┘
-                 │
-                 ▼
-      ┌─────────────────────┐
-      │  Report Results     │
-      │  • Success/Failure  │
-      │  • Packages updated │
-      │  • Reboot needed?   │
-      └─────────────────────┘
-                 │
-                 ▼
-      ┌─────────────────────┐
-      │  Next Host?         │
-      └─────────────────────┘
-          │           │
-      ┌───┴───┐   ┌───┴───┐
-      │ YES   │   │ NO    │
-      └───┬───┘   └───┬───┘
-          │           │
-          │           ▼
-          │  ┌─────────────────────┐
-          │  │  Summary Report     │
-          │  │  • Total hosts      │
-          │  │  • Successful       │
-          │  │  • Failed           │
-          │  └─────────────────────┘
-          │           │
-          └───────────┘
-                      ▼
-                ┌─────────┐
-                │  Done   │
-                └─────────┘
+```text
+operator or agent
+  -> python scripts/patch_cli.py status
+  -> review available modes
+  -> confirm unavailable live execution features
 ```
 
-## Manual Mode: Single Host Update
+Use this first when automation needs to decide whether it can safely continue.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  User runs: python scripts/patch_cli.py host-only admin@webserver      │
-└─────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  SSH to webserver as admin             │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Detect OS Distribution                │
-        │  (detect-os.sh)                        │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Select Package Manager:               │
-        │  • apt (Ubuntu/Debian)                 │
-        │  • yum/dnf (RHEL/CentOS/Rocky/Alma)   │
-        │  • zypper (SUSE)                       │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Execute Updates:                      │
-        │  1. sudo {pkg_manager} update          │
-        │  2. sudo {pkg_manager} upgrade -y      │
-        │  3. sudo {pkg_manager} autoremove -y   │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Check if Reboot Needed                │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Report Results to User                │
-        └────────────────────────────────────────┘
+## Host-Only Plan
+
+```text
+operator or agent
+  -> python scripts/patch_cli.py host-only user@host
+  -> CLI validates host text
+  -> CLI emits package preflight, package update placeholder, reboot check
+  -> operator reviews and runs approved commands manually
+  -> operator verifies logs and reboot status
 ```
 
-## OS Detection Logic
+The helper does not detect the remote distribution. The generated package command is intentionally a placeholder that points back to `SKILL.md` and local policy.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  SSH to Target Host                                         │
-└─────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Read: cat /etc/os-release             │
-        │  Parse: ID field                       │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Match Distribution ID:                │
-        └────────────────────────────────────────┘
-                    │
-        ┌───────────┼───────────┬───────────┬──────────┐
-        │           │           │           │          │
-        ▼           ▼           ▼           ▼          ▼
-  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
-  │ ubuntu   │ │ rhel     │ │ amzn     │ │ centos   │ │ suse     │
-  │ debian   │ │ rocky    │ │ amazon   │ │          │ │ opensuse │
-  │          │ │ almalinux│ │          │ │          │ │          │
-  └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘
-        │           │           │           │          │
-        ▼           ▼           ▼           ▼          ▼
-  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
-  │   apt    │ │ Check:   │ │ Check:   │ │ Check:   │ │ zypper   │
-  │          │ │ dnf or   │ │ dnf or   │ │ dnf or   │ │          │
-  │          │ │ yum      │ │ yum      │ │ yum      │ │          │
-  └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘
-        │           │           │           │          │
-        └───────────┴───────────┴───────────┴──────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Return Package Manager Commands:      │
-        │  • UPDATE_CMD                          │
-        │  • UPGRADE_CMD                         │
-        │  • AUTOREMOVE_CMD                      │
-        │  • TESTED flag (true/false)           │
-        └────────────────────────────────────────┘
+## Host-Full Plan
+
+```text
+operator or agent
+  -> python scripts/patch_cli.py host-full user@host /absolute/docker/path
+  -> CLI validates host and Docker path text
+  -> CLI emits host-only steps
+  -> CLI adds Docker directory, pull, up, and ps checks
+  -> operator reviews service impact and runs approved commands manually
 ```
 
-## Docker Detection & Full Update Flow
+Use this only during a maintenance window. Docker Compose refreshes can restart services.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  python scripts/patch_cli.py host-full admin@webserver /opt/docker             │
-└─────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Docker Path Provided?                 │
-        └────────────────────────────────────────┘
-                    │           │
-                ┌───┴───┐   ┌───┴───┐
-                │ YES   │   │ NO    │
-                └───┬───┘   └───┬───┘
-                    │           │
-                    │           ▼
-                    │  ┌────────────────────────────┐
-                    │  │  Search Common Paths:      │
-                    │  │  • /home/user/Docker       │
-                    │  │  • /opt/docker             │
-                    │  │  • /srv/docker             │
-                    │  │  • $HOME/Docker            │
-                    │  └────────────────────────────┘
-                    │           │
-                    │           ▼
-                    │  ┌────────────────────────────┐
-                    │  │  docker-compose.yml found? │
-                    │  └────────────────────────────┘
-                    │       │           │
-                    │   ┌───┴───┐   ┌───┴───┐
-                    │   │ YES   │   │ NO    │
-                    │   └───┬───┘   └───┬───┘
-                    │       │           │
-                    │       │           ▼
-                    │       │  ┌────────────────┐
-                    │       │  │  ERROR: Path   │
-                    │       │  │  not found     │
-                    │       │  └────────────────┘
-                    │       │
-                    └───────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Step 1: Update System Packages        │
-        │  (same as host-only mode)              │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Step 2: Docker Cleanup                │
-        │  sudo docker system prune -af          │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Step 3: Pull Individual Images        │
-        │  For each image in `docker images`:    │
-        │  sudo docker pull image:tag            │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Step 4: Pull Compose Images           │
-        │  cd /docker/path                       │
-        │  sudo docker compose pull              │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Step 5: Recreate Containers           │
-        │  sudo docker compose up -d             │
-        │  (Recreates only changed containers)   │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Check Reboot Status                   │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Report Results                        │
-        └────────────────────────────────────────┘
+## Multiple Host Plan
+
+Input file:
+
+```text
+# host or host,/absolute/docker/path
+patchbot@webserver.example.com
+patchbot@app.example.com,/opt/docker
 ```
 
-## PatchMon Integration Flow
+Flow:
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  User: "Update my servers"                                  │
-└─────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Load PatchMon Credentials             │
-        │  ~/.patchmon-credentials.conf          │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  POST /api/auth/login                  │
-        │  {username, password}                  │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Receive JWT Token                     │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  GET /api/v1/dashboard/hosts           │
-        │  Authorization: Bearer {token}         │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Parse Response:                       │
-        │  [{                                    │
-        │    hostname: "webserver",              │
-        │    needsUpdates: true,                 │
-        │    outdatedPackages: 26,               │
-        │    securityUpdates: 9,                 │
-        │    sshUser: "admin",                   │
-        │    dockerPath: "/opt/docker"           │
-        │  }, ...]                               │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Filter: Only hosts with               │
-        │  needsUpdates == true OR               │
-        │  outdatedPackages > 0                  │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Generate Temporary Config             │
-        │  HOSTS=(                               │
-        │    "webserver,admin,/opt/docker"       │
-        │    "database,root,/srv/docker"         │
-        │  )                                     │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Process Each Host                     │
-        │  (Follow Automatic Mode workflow)      │
-        └────────────────────────────────────────┘
+```text
+operator or agent
+  -> python scripts/patch_cli.py multiple hosts.conf
+  -> CLI validates each row
+  -> CLI emits one combined markdown or JSON plan
+  -> operator batches work manually according to risk and maintenance windows
 ```
 
-## Error Handling Flow
+The helper does not run hosts in parallel. Stagger production updates unless the service owner explicitly approves a batch.
 
-```
-                ┌────────────────┐
-                │  Execute Step  │
-                └────────────────┘
-                        │
-                        ▼
-                ┌────────────────┐
-                │  Success?      │
-                └────────────────┘
-                    │       │
-            ┌───────┴───┐   │
-            │ YES       │ NO│
-            └───┬───────┘   │
-                │           │
-                ▼           ▼
-    ┌────────────────┐  ┌──────────────────────┐
-    │  Continue to   │  │  Is step critical?   │
-    │  next step     │  └──────────────────────┘
-    └────────────────┘          │       │
-                            ┌───┴───┐   │
-                            │ YES   │ NO│
-                            └───┬───┘   │
-                                │       │
-                                ▼       ▼
-                    ┌────────────────┐  ┌──────────────────┐
-                    │  Log error     │  │  Log warning     │
-                    │  Stop updates  │  │  Continue        │
-                    │  Report failure│  │                  │
-                    └────────────────┘  └──────────────────┘
-                                │               │
-                                ▼               ▼
-                    ┌────────────────────────────────┐
-                    │  Add to Failed Hosts List      │
-                    └────────────────────────────────┘
-                                │
-                                ▼
-                    ┌────────────────────────────────┐
-                    │  Continue with Next Host?      │
-                    └────────────────────────────────┘
-                            │           │
-                        ┌───┴───┐   ┌───┴───┐
-                        │ YES   │   │ NO    │
-                        └───┬───┘   └───┬───┘
-                            │           │
-                            ▼           ▼
-                    ┌───────────────────────┐
-                    │  Final Summary Report │
-                    └───────────────────────┘
+## Automatic/PatchMon Boundary
+
+```text
+operator or agent
+  -> python scripts/patch_cli.py auto --dry-run
+  -> CLI reports PatchMon automatic execution is unavailable
+  -> CLI lists required future inputs
+  -> operator uses host-only, host-full, or multiple instead
 ```
 
-## Security Flow: Sudo Execution
+`--dry-run` is accepted for compatibility. Because all modes are plan-only, it does not change behavior.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  agent host wants to run: apt upgrade                         │
-└─────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  SSH to target host with key auth      │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Execute: sudo apt upgrade -y          │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Sudo checks /etc/sudoers.d/           │
-        │  linux-patcher                         │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Is command in NOPASSWD list?          │
-        └────────────────────────────────────────┘
-                    │           │
-                ┌───┴───┐   ┌───┴───┐
-                │ YES   │   │ NO    │
-                └───┬───┘   └───┬───┘
-                    │           │
-                    ▼           ▼
-    ┌──────────────────────┐  ┌──────────────────────┐
-    │  Execute command     │  │  Request password    │
-    │  without password    │  │  (Will fail for SSH) │
-    └──────────────────────┘  └──────────────────────┘
-                    │                   │
-                    ▼                   ▼
-    ┌──────────────────────┐  ┌──────────────────────┐
-    │  Command runs        │  │  ERROR: Permission   │
-    │  Return output       │  │  denied              │
-    └──────────────────────┘  └──────────────────────┘
+## JSON Workflow
+
+```bash
+python scripts/patch_cli.py --json status
+python scripts/patch_cli.py --json multiple hosts.conf
 ```
 
-## Legend
+Use JSON when another tool needs to inspect `mode`, `steps`, or unavailable capabilities.
 
-```
-┌─────┐
-│ Box │  = Process or Action
-└─────┘
+## Manual Execution Checklist
 
-    │
-    ▼      = Flow direction
+Before running any generated command:
 
-┌───┴───┐
-│ YES/NO│  = Decision point
-└───┬───┘
-```
+1. Confirm host identity and environment.
+2. Confirm backups and rollback path.
+3. Confirm maintenance window and owner approval.
+4. Confirm sudo policy is narrow and validated.
+5. Run one low-risk host first.
+6. Check package logs, container health, and reboot requirements.
 
-## Dry-Run Mode
+## Failure Handling
 
-When `DRY_RUN=true` or `--dry-run` flag is used:
+If a generated command fails during manual execution:
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  User runs with --dry-run flag                              │
-└─────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Detect OS (normal)                    │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Detect Docker (normal)                │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  Display what WOULD be executed:       │
-        │  • apt update                          │
-        │  • apt upgrade -y                      │
-        │  • docker prune -af                    │
-        │  • docker compose up -d                │
-        └────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌────────────────────────────────────────┐
-        │  EXIT - No changes made                │
-        └────────────────────────────────────────┘
-```
-
-All commands are shown but **not executed** in dry-run mode. This allows safe testing of configuration and detection logic without making any changes to systems.
+1. Stop on that host.
+2. Capture stdout, stderr, exit status, and package logs.
+3. Do not continue to a larger batch until the failure is understood.
+4. Use rollback or service recovery procedures if health checks fail.
+5. Update the host list or command plan before retrying.

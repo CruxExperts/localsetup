@@ -37,7 +37,7 @@ import re
 import sys
 import time
 import traceback
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -105,6 +105,62 @@ def _sanitize(value: str, max_len: int = MAX_FIELD_LEN) -> str:
     cleaned = _CTRL_RE.sub("", value)
     cleaned = " ".join(cleaned.split()).strip()
     return cleaned[:max_len] if max_len else cleaned
+
+
+def _parse_index_updated(value: object) -> Optional[datetime]:
+    """Parse PUBLIC_SKILL_INDEX.yaml updated values into UTC datetimes."""
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        dt = value
+    elif isinstance(value, date):
+        dt = datetime(value.year, value.month, value.day, tzinfo=timezone.utc)
+    elif isinstance(value, str):
+        raw = value.strip()
+        if not raw:
+            return None
+        if raw.endswith("Z"):
+            raw = f"{raw[:-1]}+00:00"
+        try:
+            dt = datetime.fromisoformat(raw)
+        except ValueError:
+            return None
+    else:
+        return None
+
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
+def _format_age(days: int) -> str:
+    if days < 14:
+        unit = "day" if days == 1 else "days"
+        return f"{days} {unit}"
+    if days < 365:
+        weeks = days // 7
+        unit = "week" if weeks == 1 else "weeks"
+        return f"{weeks} {unit}"
+    years = days // 365
+    unit = "year" if years == 1 else "years"
+    return f"{years} {unit}"
+
+
+def index_refresh_status(updated: object, now: datetime) -> tuple[str, Optional[int], bool]:
+    """Return display text, age in days, and whether the index is stale."""
+    parsed = _parse_index_updated(updated)
+    if parsed is None:
+        if updated:
+            raw = _sanitize(str(updated), max_len=120)
+            return f"unparseable ({raw})", None, True
+        return "missing / never refreshed", None, True
+
+    age_days = (now.date() - parsed.date()).days
+    if age_days < 0:
+        future_days = abs(age_days)
+        unit = "day" if future_days == 1 else "days"
+        return f"{parsed.strftime('%Y-%m-%d')} ({future_days} {unit} in the future)", age_days, True
+    return f"{parsed.strftime('%Y-%m-%d')} ({_format_age(age_days)} ago)", age_days, age_days >= 7
 
 
 # ---------------------------------------------------------------------------
@@ -329,18 +385,26 @@ def audit_skill(
 # Report generation (GFM)
 # ---------------------------------------------------------------------------
 
-def build_report(results: list[dict], args: argparse.Namespace) -> str:
+def build_report(
+    results: list[dict],
+    args: argparse.Namespace,
+    index_updated_status: str,
+    index_stale: bool,
+) -> str:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     dead = [r for r in results if r["url_live"] is False]
     stubs = [r for r in results if r["desc_stub"]]
     fixable = [r for r in results if r["action"] == "fixable"]
+    worker_errors = [r for r in results if r["action"] == "error"]
     ok = [r for r in results if r["action"] == "ok"]
 
     lines = [
         f"# Public skill index scrub report",
         f"",
         f"Generated: {now}  ",
+        f"Index refresh: {index_updated_status}  ",
+        f"Refresh threshold: 7 days  ",
         f"Total skills audited: {len(results)}  ",
         f"URL check: {'skipped' if args.skip_url_check else 'enabled'}  ",
         f"Description fetch: {'skipped' if args.skip_desc_fetch else 'enabled'}  ",
@@ -353,9 +417,32 @@ def build_report(results: list[dict], args: argparse.Namespace) -> str:
         f"| Dead / unreachable URLs | {len(dead)} |",
         f"| Stub or too-short descriptions | {len(stubs)} |",
         f"| Fixable (upstream desc found) | {len(fixable)} |",
+        f"| Worker errors | {len(worker_errors)} |",
         f"| Clean | {len(ok)} |",
         f"",
     ]
+
+    if index_stale:
+        lines += [
+            f"## Index Refresh Warning",
+            f"",
+            f"The public skill index is stale or has an invalid `updated` value: {index_updated_status}. Refresh and scrub it before relying on discovery recommendations.",
+            f"",
+        ]
+
+    if worker_errors:
+        lines += [
+            f"## Worker Errors ({len(worker_errors)})",
+            f"",
+            f"| Name | URL | Error |",
+            f"|---|---|---|",
+        ]
+        for r in worker_errors:
+            name = _sanitize(r["name"])[:60]
+            url = _sanitize(r["url"], max_len=100)
+            error = _sanitize(r.get("error", ""), max_len=160).replace("|", "/")
+            lines.append(f"| `{name}` | {url} | {error} |")
+        lines.append("")
 
     if dead and not args.skip_url_check:
         lines += [
@@ -428,17 +515,19 @@ def apply_fixes(index_path: Path, results: list[dict]) -> int:
         data = yaml.safe_load(f)
 
     skills = data.get("skills", [])
-    # Build lookup by name (names can repeat across registries)
-    fix_map: dict[str, str] = {}
+    # Build lookup by stable entry identity; names can repeat across registries.
+    fix_map: dict[tuple[str, str], str] = {}
     for r in results:
         if r["action"] == "fixable" and r["fetched_desc"]:
-            fix_map[r["name"]] = r["fetched_desc"]
+            fix_map[(r["name"], r["url"])] = r["fetched_desc"]
 
     updated_count = 0
     for s in skills:
         name = s.get("name", "")
-        if name in fix_map:
-            new_desc = fix_map[name]
+        url = s.get("url", "")
+        key = (name, url)
+        if key in fix_map:
+            new_desc = fix_map[key]
             s["description"] = new_desc
             s["summary_short"] = new_desc[:120]
             s["summary_long"] = new_desc
@@ -541,6 +630,17 @@ def main() -> int:
     if not isinstance(data, dict):
         _die(f"Index is not a valid YAML mapping: {index_path}")
 
+    index_updated_status, _, index_stale = index_refresh_status(
+        data.get("updated"),
+        datetime.now(timezone.utc),
+    )
+    print(f"[INFO]  Index refresh: {index_updated_status}", file=sys.stderr)
+    if index_stale:
+        _warn(
+            "PUBLIC_SKILL_INDEX.yaml is stale or has an invalid updated value; "
+            "refresh and scrub before relying on discovery recommendations."
+        )
+
     skills = data.get("skills", [])
     if not isinstance(skills, list):
         _die("Index 'skills' field is not a list.")
@@ -601,16 +701,24 @@ def main() -> int:
     print(f"[INFO]  Audit complete in {elapsed:.1f}s", file=sys.stderr)
 
     # Apply fixes if requested
+    worker_errors = [r for r in results if r["action"] == "error"]
+
     if args.fix:
         fixable = [r for r in results if r["action"] == "fixable"]
-        if fixable:
+        if worker_errors:
+            _warn("Skipping --fix because one or more audit workers failed.")
+        elif fixable:
             count = apply_fixes(index_path, results)
             print(f"[INFO]  Applied {count} description fix(es) to {index_path}", file=sys.stderr)
+            index_updated_status, _, index_stale = index_refresh_status(
+                datetime.now(timezone.utc),
+                datetime.now(timezone.utc),
+            )
         else:
             print("[INFO]  No fixable entries found; index unchanged.", file=sys.stderr)
 
     # Build and emit report
-    report = build_report(results, args)
+    report = build_report(results, args, index_updated_status, index_stale)
     print(report)
 
     if args.report:
@@ -624,6 +732,8 @@ def main() -> int:
     stubs = [r for r in results if r["desc_stub"] and r["action"] != "fixable"]
     unfixed_stubs = [r for r in stubs if not args.fix]
 
+    if worker_errors:
+        return 1
     if (dead or unfixed_stubs) and not args.fix:
         return 1
     return 0

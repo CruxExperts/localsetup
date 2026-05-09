@@ -1,4 +1,5 @@
 import importlib.util
+import os
 import sys
 from pathlib import Path
 
@@ -44,21 +45,51 @@ def _write_task(monkeypatch, tmp_path: Path, task_payload: dict, session_payload
         store.write_session(task_payload["session_id"], session_payload)
 
 
-def test_rejects_shell_operator_command() -> None:
+def _install_fake_kilo(monkeypatch, tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    kilo = bin_dir / "kilo"
+    kilo.write_text(
+        """#!/usr/bin/env python3
+import sys
+import time
+
+if len(sys.argv) < 3 or sys.argv[1] != "run":
+    print("expected kilo run <mode>", file=sys.stderr)
+    raise SystemExit(64)
+
+mode = sys.argv[2]
+if mode == "sleep":
+    time.sleep(2)
+elif mode == "fail":
+    print("boom", file=sys.stderr)
+    raise SystemExit(7)
+elif mode == "echo-arg":
+    print(sys.argv[-1])
+else:
+    print("ok")
+""",
+        encoding="utf-8",
+    )
+    kilo.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{bin_dir}{os.pathsep}{os.environ.get('PATH', '')}")
+
+
+def test_rejects_free_form_string_command() -> None:
     argv, error = runner._normalize_command("echo ok && echo bad")
     assert argv == []
     assert error is not None
-    assert "unsupported shell operators" in error
+    assert "command_argv YAML list" in error
 
 
-def test_rejects_malformed_command_quoting() -> None:
-    argv, error = runner._normalize_command('echo "unterminated')
-    assert argv == []
-    assert error is not None
-    assert "invalid task command quoting" in error
+def test_accepts_literal_shell_like_argv_argument() -> None:
+    argv, error = runner._normalize_command(["kilo", "run", "echo-arg", "a&&b;still-literal"])
+    assert error is None
+    assert argv[-1] == "a&&b;still-literal"
 
 
 def test_run_worker_timeout_records_timed_out_result(monkeypatch, tmp_path: Path) -> None:
+    _install_fake_kilo(monkeypatch, tmp_path)
     task_id = "task-timeout"
     session_id = "session-timeout"
     _write_task(
@@ -67,7 +98,7 @@ def test_run_worker_timeout_records_timed_out_result(monkeypatch, tmp_path: Path
         {
             "id": task_id,
             "session_id": session_id,
-            "command": [sys.executable, "-c", "import time; time.sleep(2)"],
+            "command": ["kilo", "run", "sleep"],
             "timeout_seconds": 1,
             "repo_root": str(ROOT),
         },
@@ -86,6 +117,7 @@ def test_run_worker_timeout_records_timed_out_result(monkeypatch, tmp_path: Path
 
 
 def test_run_worker_failure_surfaces_exit_code_and_stderr(monkeypatch, tmp_path: Path) -> None:
+    _install_fake_kilo(monkeypatch, tmp_path)
     task_id = "task-fail"
     session_id = "session-fail"
     _write_task(
@@ -94,11 +126,7 @@ def test_run_worker_failure_surfaces_exit_code_and_stderr(monkeypatch, tmp_path:
         {
             "id": task_id,
             "session_id": session_id,
-            "command": [
-                sys.executable,
-                "-c",
-                "import sys; print('boom', file=sys.stderr); raise SystemExit(7)",
-            ],
+            "command": ["kilo", "run", "fail"],
             "timeout_seconds": 10,
             "repo_root": str(ROOT),
         },
@@ -117,6 +145,7 @@ def test_run_worker_failure_surfaces_exit_code_and_stderr(monkeypatch, tmp_path:
 
 
 def test_run_worker_executes_safe_argv_without_shell(monkeypatch, tmp_path: Path) -> None:
+    _install_fake_kilo(monkeypatch, tmp_path)
     task_id = "task-ok"
     session_id = "session-ok"
     _write_task(
@@ -125,7 +154,7 @@ def test_run_worker_executes_safe_argv_without_shell(monkeypatch, tmp_path: Path
         {
             "id": task_id,
             "session_id": session_id,
-            "command": [sys.executable, "-c", "import sys; print(sys.argv[1])", "a&&b"],
+            "command": ["kilo", "run", "echo-arg", "a&&b"],
             "timeout_seconds": 10,
             "repo_root": str(ROOT),
         },

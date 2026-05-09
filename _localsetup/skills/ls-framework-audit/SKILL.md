@@ -3,7 +3,7 @@ name: ls-framework-audit
 description: "Run doc, link, skill matrix, and version/facts checks before release. Single entrypoint script; output to user-specified path only; no in-repo default. Use when user says 'run audit', 'run framework audit', or before release."
 metadata:
   version: "1.0"
-compatibility: "Python 3.10+. Depends on ls-skill-sandbox-tester tooling (create_sandbox.py, run_smoke.py) for skill matrix; both ship with the framework (framework invariant)."
+compatibility: "Python 3.10+ and PyYAML via the framework dependency helper. Depends on ls-skill-sandbox-tester tooling (create_sandbox.py, run_smoke.py) for skill matrix; both ship with the framework (framework invariant)."
 ---
 
 # Framework audit
@@ -30,6 +30,7 @@ compatibility: "Python 3.10+. Depends on ls-skill-sandbox-tester tooling (create
 
 ## Dependencies (framework invariant)
 
+- **PyYAML:** The entrypoint calls the shared `lib.deps.require_deps(["yaml"])` helper at startup, so a missing dependency exits with an actionable install message instead of a bare import failure. Install framework dependencies with `python3 -m pip install -r _localsetup/requirements.txt` or rerun install with dependency management enabled.
 - **Sandbox tooling:** The audit may call `_localsetup/skills/ls-skill-sandbox-tester/scripts/create_sandbox.py` and `run_smoke.py` to run skill smoke commands in an isolated copy. Both the audit skill and the sandbox-tester skill ship with the framework; no external dependency.
 
 ## Tooling

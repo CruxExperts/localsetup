@@ -10,7 +10,7 @@ git rev-parse --show-toplevel
 ```
 2. Capture a snapshot:
 ```bash
-bash scripts/snapshot_git_state.sh .
+python scripts/snapshot_git_state.py .
 ```
 3. If history looks fragile, back up metadata:
 ```bash

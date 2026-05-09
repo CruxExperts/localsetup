@@ -3,7 +3,7 @@ name: ls-ansible-skill
 description: "Infrastructure automation with Ansible. Use for server provisioning, configuration management, application deployment, and multi-host orchestration. Includes example playbooks for VPS setup, security hardening, and common server configurations. Bundled examples may reference one platform; adapt paths and commands for your environment."
 metadata:
   version: "1.1"
-compatibility: "Requires ansible, ansible-playbook (e.g. pip install ansible or system package)."
+compatibility: "Requires Ansible 8+ or ansible-core 2.15+, ansible-playbook, ansible-galaxy, and collections community.general 8+ plus ansible.posix 1.5+."
 ---
 
 # Ansible Skill
@@ -11,6 +11,13 @@ compatibility: "Requires ansible, ansible-playbook (e.g. pip install ansible or 
 Infrastructure as Code automation for server provisioning, configuration management, and orchestration.
 
 ## Quick Start
+
+## Compatibility
+
+The bundled example targets Ansible 8+ or ansible-core 2.15+ and requires these collections:
+
+- `community.general` 8.0.0 or newer
+- `ansible.posix` 1.5.0 or newer
 
 ### Prerequisites
 
@@ -23,6 +30,13 @@ brew install ansible
 
 # Verify
 ansible --version
+```
+
+From `assets/ansible-example`, install the required collections:
+
+```bash
+cd assets/ansible-example
+ansible-galaxy collection install -r collections/requirements.yml
 ```
 
 ### Run Your First Playbook
@@ -44,24 +58,32 @@ ansible-playbook -i inventory/hosts.yml playbooks/site.yml --tags "security,node
 ## Directory Structure
 
 ```
-skills/ansible/
- SKILL.md              # This file
- inventory/            # Host inventories
-    hosts.yml         # Main inventory
-    group_vars/       # Group variables
- playbooks/            # Runnable playbooks
-    site.yml          # Master playbook
-    openclaw-vps.yml  # Example VPS/agent-host playbook (adapt as needed)
-    security.yml      # Security hardening
- roles/                # Reusable roles
-    common/           # Base system setup
-    security/         # Hardening (SSH, fail2ban, UFW)
-    nodejs/           # Node.js installation
-    openclaw/         # Example agent-host role (adapt as needed)
- references/           # Documentation
-     best-practices.md
-     modules-cheatsheet.md
-     troubleshooting.md
+assets/ansible-example/
+  ansible.cfg
+  collections/
+    requirements.yml  # community.general and ansible.posix
+  inventory/
+    hosts.yml
+    group_vars/
+      all.yml
+  playbooks/
+    site.yml
+    agent-host-vps.yml
+    security.yml
+    update.yml
+  roles/
+    common/
+    security/
+      templates/
+        jail.local.j2
+    nodejs/
+    agent-host/
+      templates/
+        agent-host.service.j2
+references/
+  best-practices.md
+  modules-cheatsheet.md
+  troubleshooting.md
 ```
 
 ## Core Concepts
@@ -80,9 +102,9 @@ all:
           ansible_user: deploy
           ansible_ssh_private_key_file: "~/.ssh/id_ed25519_example"
     
-    openclaw:              # Example agent-host group; rename in inventory as needed
+    agent_hosts:
       hosts:
-        example_openclaw:
+        example_agent_host:
 ```
 
 ### Playbooks
@@ -99,12 +121,12 @@ Entry points for automation:
     - common
     - security
 
-- name: Setup agent-host servers (example playbook uses openclaw group/role)
-  hosts: openclaw
+- name: Agent host servers
+  hosts: agent_hosts
   become: yes
   roles:
     - nodejs
-    - openclaw
+    - agent-host
 ```
 
 ### Roles
@@ -154,18 +176,14 @@ Node.js installation via NodeSource:
 - npm global packages
 - pm2 process manager (optional)
 
-### 4. openclaw (example agent-host role)
-Example role for one platform; adapt for your setup:
-- Node.js (via nodejs role)
-- Agent npm installation
-- Systemd service
-- Configuration file setup
+### 4. agent-host
+Generic agent-host role. The bundled defaults install OpenClaw as a sample npm-based agent service, but the role name, playbook, group, and variables are intentionally generic so you can change the package, command, config path, and service name without renaming files.
 
 ## Usage Patterns
 
 ### Pattern 1: New VPS setup (example: agent host)
 
-Bundled playbook `openclaw-vps.yml` is one example; adapt or rename for your setup.
+Bundled playbook `agent-host-vps.yml` is the verified VPS/agent-host example.
 
 ```bash
 # 1. Add host to inventory
@@ -178,8 +196,8 @@ cat >> inventory/hosts.yml << 'EOF'
           deploy_ssh_pubkey: "ssh-ed25519 AAAA... user@example"
 EOF
 
-# 2. Run VPS/agent-host playbook (example: openclaw-vps.yml)
-ansible-playbook -i inventory/hosts.yml playbooks/openclaw-vps.yml \
+# 2. Run VPS/agent-host playbook
+ansible-playbook -i inventory/hosts.yml playbooks/agent-host-vps.yml \
   --limit new_server \
   --ask-vault-pass
 
@@ -210,8 +228,8 @@ ansible-playbook -i inventory/hosts.yml playbooks/update.yml \
 # Check disk space on all servers
 ansible all -i inventory/hosts.yml -m shell -a "df -h"
 
-# Restart service (openclaw is example service/group name; use your inventory)
-ansible openclaw -i inventory/hosts.yml -m systemd -a "name=openclaw state=restarted"
+# Restart the sample agent-host service
+ansible agent_hosts -i inventory/hosts.yml -m systemd -a "name=openclaw state=restarted"
 
 # Copy file
 ansible all -i inventory/hosts.yml -m copy -a "src=./file.txt dest=/tmp/"
@@ -240,6 +258,11 @@ security_ufw_allowed_ports:
 
 # Node.js
 nodejs_version: "22.x"
+
+# Agent-host sample defaults
+agent_host_package_name: openclaw
+agent_host_command: openclaw
+agent_host_service_name: openclaw
 ```
 
 ### Vault for Secrets
@@ -392,7 +415,7 @@ ansible-inventory -i inventory --list
 
 **"Module not found"**
 - Use FQCN: `ansible.builtin.apt` instead of `apt`
-- Install collection: `ansible-galaxy collection install community.general`
+- Install collections: `ansible-galaxy collection install -r collections/requirements.yml`
 
 ### Debugging Playbooks
 

@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -62,8 +63,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--base-url",
-        default="http://localhost:20128",
-        help="OmniRoute base URL (default: http://localhost:20128)",
+        default=os.environ.get("OMNIROUTE_BASE_URL", "http://localhost:20128"),
+        help=(
+            "OmniRoute base URL "
+            "(default: OMNIROUTE_BASE_URL or http://localhost:20128)"
+        ),
     )
     parser.add_argument(
         "--api-key-env",

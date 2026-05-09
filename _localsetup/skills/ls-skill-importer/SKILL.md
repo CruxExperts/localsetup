@@ -5,9 +5,9 @@ metadata:
   version: "1.4"
 ---
 
-# Skill importer (framework)
+# Skill importer
 
-**Purpose:** Let the user point at a **URL** (e.g. GitHub repo) or **local path** containing skills; discover and validate them; run a heuristic security screen (no execution); produce a **per-skill brief** (what it does, what it has, what kind of code); then let the user **choose which to import** and complete registration.
+**Purpose:** Let the user point at a **URL** or **local path** containing skills; discover and validate them; run heuristic security and content-safety screening without executing candidate code; summarize each candidate; then let the user choose what to import.
 
 ## When to use this skill
 
@@ -17,48 +17,35 @@ metadata:
 
 ## Workflow (agent steps)
 
-0. **Ensure skill validation pattern file**  - The scan tool uses `_localsetup/docs/SKILL_VALIDATION_PATTERNS.yaml` (or fetches it if missing). If the tool reports that the file is stale (7+ days old), prompt the user: "(1) Pull latest from repo, (2) Do nothing, (3) Use existing file." Act on their choice; if they choose pull latest, fetch the canonical URL (see SKILL_VALIDATION_PATTERNS.md) and overwrite the local file, then re-run the scan.
-1. **Get source**  - URL or local path. If URL: clone or download to a temp dir (e.g. `git clone --depth 1 <url> /tmp/skills-src`); then use that path as scan root. If local path: use as scan root.
-2. **Scan**  - Run `_localsetup/tools/skill_importer_scan <path>` (or `.ps1` on Windows). It discovers skill dirs (containing SKILL.md with valid frontmatter), validates format, lists contents and code types, runs heuristic security checks, and content-safety checks (pattern file + English-only on body). Output: per-skill summary including "Security" and "Content safety" sections.
-3. **Summarize for user**  - For each skill present a brief:
-   - **What it does**  - From description (and body if needed).
-   - **What it has**  - Scripts, references, assets; file types and languages.
-   - **Code**  - Kinds of code (Python, Bash, etc.); any deps or compatibility notes.
-   - **Security**  - Screening result: no concerns, or "Review: ..." with file/line (heuristic flags in scripts/assets). Do not auto-block; let the user decide.
-   - **Content safety**  - If the scan shows "Content safety: REVIEW", present the trigger keyword(s) and **file, line, and column** for each hit, plus the short description from the pattern index (plain language). Do **not** read or display the actual content at those positions. State: "For safety reasons we are not reading or displaying that content here. Please open the file at the indicated position(s) and review it yourself." Then offer: (1) Do not import / skip this skill, (2) I have reviewed the file; proceed with import, (3) I will ignore and continue anyway.
-4. **User selects**  - Ask which skills to import (by name or "all"). Use AskQuestion or a clear list with instructions (e.g. "Reply with names or 'all'").
-4b. **Public skill discovery (optional)**  - For each selected candidate, optionally load **ls-skill-discovery**: check PUBLIC_SKILL_INDEX.yaml for similar public skills; if relevant matches exist, suggest "Similar public skills are available; would you like in-depth summaries or to pull one instead?" and offer the same four options (in-depth summary, use public skill, continue, adapt).
-5. **Duplicate, overlap, and namespace check**  - Before importing each selected skill, compare to existing framework skills. List existing skills from `_localsetup/skills/` (each dir name and SKILL.md `name` + `description`). For each candidate: (a) **Namespace collision**  - same `name` or directory as an existing skill: warn and offer **Ignore new**, **Replace existing**, **Merge** (combine best of both), or **Create as new** (different name). (b) **High overlap**  - no name match but description/purpose/triggers very similar to an existing skill: warn and offer the same four options. Do not auto-replace or auto-merge; get explicit user choice. For **Merge**, combine content from both into one skill and replace the existing; do not add the candidate as a second copy.
-5b. **Normalize (mandatory)**  - For each selected skill, after security and content-safety have been verified (user has chosen to proceed), **always** run normalization. Use _localsetup/docs/SKILL_NORMALIZATION.md as the single source of truth. When the skill is platform-specific, offer the user a choice (keep as is, keep platform-specific but normalized, or fully normalize); when not platform-specific, apply the full spec-compliance and platform-neutralization rules. Produce a short **summary** and a **concrete list of key edits**, present both to the user, get explicit approval, then use the normalized SKILL.md (and any normalized structure) for import. Normalization applies to SKILL.md and, when Phase 2 tooling is enabled, rewrites tooling to framework standard as described in SKILL_NORMALIZATION.md.
-6. **Import**  - For each selected, after user choice (and any merge/rename) and after the mandatory normalize step: copy dir to `_localsetup/skills/<name>/` (with **normalized** SKILL.md and tooling according to the user's Phase 1/Phase 2 choices); set `name` in frontmatter to match directory (e.g. `ls-<name>`); add `metadata.version: \"1.0\"` if missing; register in every file in _localsetup/docs/PLATFORM_REGISTRY.md  Skill registration (new skills); optionally run deploy.
-7. **Confirm**  - Tell the user what was imported and that they can run deploy.
+1. **Get source**  - For a repository or archive URL, fetch it into a temporary directory. For a local path, use that path as the scan root. For pasted content or a single-document URL, follow [SKILL_IMPORTING.md](../../docs/SKILL_IMPORTING.md#adding-a-skill-from-paste-or-url) before writing anything to `_localsetup/skills/`.
+2. **Scan**  - Run `_localsetup/tools/skill_importer_scan <path>` from the repo root, or use `_localsetup/tools/skill_importer_scan.ps1 -Path <path>` where PowerShell is required. The current importer scanner takes a directory path only and writes a human-readable summary to stdout.
+3. **Summarize and choose**  - Present each candidate's purpose, included files, code types, heuristic security result, and any content-safety review instructions emitted by validation tooling. Do not execute candidate code. Ask which candidates to import.
+4. **Check duplicates and overlap**  - Compare selected candidates with `_localsetup/skills/` by directory name, frontmatter `name`, description, purpose, and triggers. On collision or high overlap, offer **Ignore new**, **Replace existing**, **Merge**, or **Create as new**; get explicit user choice.
+5. **Normalize before copy**  - After the user chooses to proceed past security and content-safety review, run mandatory normalization using [SKILL_NORMALIZATION.md](../../docs/SKILL_NORMALIZATION.md) as the source of truth. Present the summary and key edits, get approval, and import the normalized result.
+6. **Import and confirm**  - Copy the normalized skill to `_localsetup/skills/<name>/`, align frontmatter `name` with the directory, add `metadata.version: "1.0"` if missing, register per [PLATFORM_REGISTRY.md](../../docs/PLATFORM_REGISTRY.md), and report what changed.
 
 ## Security and content safety screening (heuristic only)
 
 - Tool does **not** execute any skill code. It only scans file contents.
-- **Security:** Flags patterns in scripts/assets (e.g. `eval(`, `curl | sh`, `Invoke-Expression`). Output is "Security: Review ..." for the user; do not block import automatically.
-- **Content safety:** Scans SKILL.md body and scripts/assets using the pattern file (see [SKILL_VALIDATION_PATTERNS.md](../../docs/SKILL_VALIDATION_PATTERNS.md)). Also flags non-English body content. For pattern hits, only **references** are shown (file, line, column, pattern id, and description from the index); the actual content at those positions is not read or displayed so the user can open the file and review themselves. Present the three options (skip / proceed after review / ignore and continue); do not auto-block.
+- **Security:** Flags risky execution patterns in scripts/assets, including dynamic evaluation, remote installer pipelines, PowerShell expression execution, sensitive file access, and privilege escalation markers. Results are advisory; do not block import automatically.
+- **Content safety:** Use [SKILL_VALIDATION_PATTERNS.md](../../docs/SKILL_VALIDATION_PATTERNS.md) for the pattern file and review flow. For pattern hits, show references only: file, line, column, pattern id, and the pattern description. Do not display the matched candidate content.
 
 ## Sources
 
 - **URL**  - GitHub repo, archive link, or any fetchable URL. Agent fetches; then runs scan on the resulting path.
 - **Local path**  - Directory on disk with skill subdirs.
 - **Single markdown**  - Use the skill-creator workflow to create a new skill from a doc; that skill is then framework-compatible and can be used with this importer flow for batch consistency.
-- **Pasted content or URL to a single document**  - Follow the canonical flow in _localsetup/docs/SKILL_IMPORTING.md  "Adding a skill from paste or URL": write content to a temporary directory first, run the validation script on that path, present results and user choices, and only then copy to `_localsetup/skills/` if the user approves. Validation is always path-based; never pass skill content through the shell.
+- **Pasted content or URL to a single document**  - Follow [SKILL_IMPORTING.md](../../docs/SKILL_IMPORTING.md#adding-a-skill-from-paste-or-url). Validation is always path-based; never pass skill content through the shell.
 
 ## Compatibility
 
 - Only directories that contain a valid SKILL.md (Agent Skills spec: `name`, `description`) are considered skills. Imported skills remain spec-compliant and interchangeable (see [SKILL_INTEROPERABILITY.md](../../docs/SKILL_INTEROPERABILITY.md)).
 
-## Duplicate and overlap (user options)
-
-- Check each candidate against existing `_localsetup/skills/` (names and descriptions). On **namespace collision** (same name/dir) or **high overlap** (very similar purpose), warn and offer: **Ignore new**, **Replace existing**, **Merge** (best of both into one), **Create as new** (e.g. different name). User choice is final.
-
 ## Reference
 
-- _localsetup/docs/SKILL_IMPORTING.md  - Full workflow, duplicate/overlap checks, normalize step, tool usage, security notes.
-- _localsetup/docs/SKILL_NORMALIZATION.md  - Spec-compliance checklist, frontmatter examples, platform-neutralization rules and generic snippets; used when user accepts "Normalize before copy?"
-- _localsetup/docs/SKILL_VALIDATION_PATTERNS.md  - Pattern file location, fetch URL, 7-day refresh, content safety and user options.
-- _localsetup/docs/SKILL_DISCOVERY.md  - Public registries; use ls-skill-discovery to recommend similar public skills when importing.
-- _localsetup/docs/PLATFORM_REGISTRY.md  - Registration file list after import.
-- _localsetup/docs/SKILL_INTEROPERABILITY.md  - Import/export and spec.
+- [SKILL_IMPORTING.md](../../docs/SKILL_IMPORTING.md)  - Full workflow, duplicate/overlap checks, normalization, tool usage, security notes.
+- [SKILL_NORMALIZATION.md](../../docs/SKILL_NORMALIZATION.md)  - Mandatory normalization source of truth.
+- [SKILL_VALIDATION_PATTERNS.md](../../docs/SKILL_VALIDATION_PATTERNS.md)  - Pattern file location, refresh behavior, content-safety review flow.
+- [SKILL_DISCOVERY.md](../../docs/SKILL_DISCOVERY.md)  - Public registry discovery when importing.
+- [PLATFORM_REGISTRY.md](../../docs/PLATFORM_REGISTRY.md)  - Registration file list after import.
+- [SKILL_INTEROPERABILITY.md](../../docs/SKILL_INTEROPERABILITY.md)  - Import/export and spec alignment.

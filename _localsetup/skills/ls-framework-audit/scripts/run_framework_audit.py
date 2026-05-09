@@ -16,14 +16,18 @@ import subprocess
 import sys
 from pathlib import Path
 
-try:
-    import yaml
-except ImportError:
-    yaml = None  # type: ignore
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
+from deps import require_deps  # noqa: E402
+
+require_deps(["yaml"])
+
+import yaml  # noqa: E402
 
 # Limits and patterns (INPUT_HARDENING)
 OUTPUT_PATH_MAX = 4096
 PATH_COMPONENT_MAX = 256
+REPORT_SNIPPET_MAX = 2000
+CONTROL_CHARS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 # Plain "see docs/..." or "See _localsetup/..." that should be markdown links
 PLAIN_SEE_DOCS = re.compile(r"\b[Ss]ee\s+docs/[^\s\]\)\"']+")
 PLAIN_SEE_LOCALSETUP = re.compile(r"\b[Ss]ee\s+_localsetup/[^\s\]\)\"']+")
@@ -50,14 +54,50 @@ def _repo_root() -> Path:
 def _sanitize_output_path(s: str | None) -> Path | None:
     if s is None or (isinstance(s, str) and not s.strip()):
         return None
-    s = s.strip().strip("\x00")[:OUTPUT_PATH_MAX]
+    s = s.strip()
     if not s:
         return None
+    if len(s) > OUTPUT_PATH_MAX:
+        raise ValueError("output path too long")
+    if any(ord(ch) < 32 or ord(ch) == 127 for ch in s):
+        raise ValueError("output path contains unsupported control characters")
     p = Path(s).resolve()
     for part in p.parts:
         if len(part) > PATH_COMPONENT_MAX:
             raise ValueError(f"path component too long: {part[:32]}...")
     return p
+
+
+def _sanitize_report_text(text: str, limit: int = REPORT_SNIPPET_MAX) -> str:
+    normalized = text.replace("\r\n", "\n").replace("\r", "\n")
+    normalized = CONTROL_CHARS.sub(" ", normalized)
+    normalized = "\n".join(line.rstrip() for line in normalized.split("\n")).strip()
+    if len(normalized) <= limit:
+        return normalized
+    omitted = len(normalized) - limit
+    return f"{normalized[:limit].rstrip()}... [truncated {omitted} chars]"
+
+
+def _format_subprocess_failure(
+    context: str,
+    result: subprocess.CompletedProcess[str],
+) -> str:
+    parts = [f"{context} failed (exit {result.returncode})"]
+    stdout = _sanitize_report_text(result.stdout or "")
+    stderr = _sanitize_report_text(result.stderr or "")
+    if stdout:
+        parts.append(f"stdout:\n{stdout}")
+    if stderr:
+        parts.append(f"stderr:\n{stderr}")
+    return "\n".join(parts)
+
+
+def _append_report_items(report_lines: list[str], items: list[str]) -> None:
+    for item in items:
+        lines = item.splitlines() or [""]
+        report_lines.append(f"- {lines[0]}")
+        for line in lines[1:]:
+            report_lines.append(f"  {line}")
 
 
 def _read_version_file(root: Path) -> str | None:
@@ -145,9 +185,6 @@ def phase_skill_matrix(root: Path, fw: Path) -> tuple[list[str], list[str]]:
     if not smoke_file.is_file():
         errors.append("Missing skill_smoke_commands.yaml")
         return (errors, warnings)
-    if yaml is None:
-        errors.append("PyYAML required for skill matrix")
-        return (errors, warnings)
     try:
         data = yaml.safe_load(smoke_file.read_text(encoding="utf-8", errors="replace"))
     except (OSError, yaml.YAMLError) as e:
@@ -187,7 +224,10 @@ def phase_skill_matrix(root: Path, fw: Path) -> tuple[list[str], list[str]]:
             )
             if cp.returncode != 0:
                 errors.append(
-                    f"Skill matrix {skill_id}: create_sandbox failed: {cp.stderr or cp.stdout}"
+                    _format_subprocess_failure(
+                        f"Skill matrix {skill_id}: create_sandbox",
+                        cp,
+                    )
                 )
                 continue
             sandbox_dir = cp.stdout.strip().split("\n")[-1].strip()
@@ -210,7 +250,10 @@ def phase_skill_matrix(root: Path, fw: Path) -> tuple[list[str], list[str]]:
             )
             if cp2.returncode != 0:
                 errors.append(
-                    f"Skill matrix {skill_id}: smoke failed (exit {cp2.returncode})"
+                    _format_subprocess_failure(
+                        f"Skill matrix {skill_id}: smoke",
+                        cp2,
+                    )
                 )
         except subprocess.TimeoutExpired:
             errors.append(f"Skill matrix {skill_id}: timeout")
@@ -311,13 +354,11 @@ def main() -> int:
     report_lines.append("")
     if all_errors:
         report_lines.append("## Errors")
-        for e in all_errors:
-            report_lines.append(f"- {e}")
+        _append_report_items(report_lines, all_errors)
         report_lines.append("")
     if all_warnings:
         report_lines.append("## Warnings")
-        for w in all_warnings:
-            report_lines.append(f"- {w}")
+        _append_report_items(report_lines, all_warnings)
         report_lines.append("")
     report_lines.append("## requires_review / human_decision")
     report_lines.append(

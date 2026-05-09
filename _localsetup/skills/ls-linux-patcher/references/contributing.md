@@ -1,160 +1,45 @@
 # Contributing to Linux Patcher
 
-Thank you for considering contributing! This project welcomes contributions from the community.
+Contributions should preserve the current v3 boundary: Python tooling only, plan-only behavior unless a fully tested execution path is added, and platform-neutral documentation.
 
-## How to Contribute
+## Good First Contributions
 
-### 1. Testing on Untested Distributions
+- Improve wording in `SKILL.md` or `references/*.md`.
+- Add distribution-specific review notes without claiming live execution support.
+- Add tests for `scripts/patch_cli.py` validation and output.
+- Improve JSON output while keeping backward compatibility.
 
-**We need testers for:**
-- Debian
-- Amazon Linux (AL2 and AL2023)
-- RHEL (7 and 8+)
-- AlmaLinux
-- Rocky Linux
-- CentOS (7 and 8+)
-- SUSE/OpenSUSE
+## Tooling Rules
 
-**To contribute test results:**
+- Use Python 3.10+ for skill tooling.
+- Do not add shell helper wrappers for patching flows.
+- Validate all CLI input as hostile.
+- Return actionable stderr for invalid input.
+- Keep all generated command output plan-only unless the execution mode is fully designed, tested, and documented.
 
-1. Test the skill on your distribution:
-   ```bash
-   python scripts/patch_cli.py auto --dry-run
-   python scripts/patch_cli.py host-only user@testhost
-   ```
+## Local Checks
 
-2. Document your findings:
-   - Distribution and version
-   - Commands that worked/failed
-   - Any errors encountered
-   - Screenshots if applicable
-
-3. Open an issue with title: `[Testing] Distribution Name Version`
-
-4. If commands need adjustment, submit a PR with fixes
-
-### 2. Bug Reports
-
-Found a bug? Please open an issue with:
-
-- **Title:** Brief description of the bug
-- **Distribution:** OS and version where bug occurs
-- **Steps to reproduce:**
-  1. Step one
-  2. Step two
-  3. ...
-- **Expected behavior:** What should happen
-- **Actual behavior:** What actually happened
-- **Logs:** Include relevant error messages
-- **Environment:**
-  - agent host version
-  - Skill version
-  - SSH configuration
-
-### 3. Feature Requests
-
-Have an idea? Open an issue with:
-
-- **Title:** `[Feature Request] Your idea`
-- **Description:** What you'd like to see
-- **Use case:** Why this would be useful
-- **Possible implementation:** (optional)
-
-### 4. Pull Requests
-
-**Before submitting a PR:**
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Make your changes
-4. Test thoroughly on at least one distribution
-5. Update documentation if needed
-6. Commit with clear messages
-7. Push to your fork
-8. Open a PR with description of changes
-
-**PR Guidelines:**
-
-- Keep changes focused (one feature/fix per PR)
-- Follow existing code style
-- Update relevant documentation
-- Add comments for complex logic
-- Test on Ubuntu if possible
-
-### 5. Documentation Improvements
-
-Documentation improvements are always welcome:
-
-- Fix typos
-- Clarify confusing sections
-- Add examples
-- Improve formatting
-- Add translations (future)
-
-### 6. Distribution-Specific Contributions
-
-If you're familiar with a specific distribution:
-
-- Add distribution-specific tips to references/setup.md
-- Improve package manager commands in detect-os.sh
-- Test and verify commands work correctly
-- Document distribution quirks
-
-## Development Setup
+From the repository root:
 
 ```bash
-# Clone the repo
-git clone https://github.com/yourusername/linux-patcher-skill
-cd linux-patcher-skill
-
-# Make scripts executable
-chmod +x scripts/*.sh
-
-# Test detection
-./scripts/detect-os.sh user@testhost
-
-# Test dry-run
-DRY_RUN=true ./python scripts/patch_cli.py host-only user@testhost
+python3 -m py_compile _localsetup/skills/ls-linux-patcher/scripts/patch_cli.py
+python3 _localsetup/skills/ls-linux-patcher/scripts/patch_cli.py status
+python3 _localsetup/skills/ls-linux-patcher/scripts/patch_cli.py auto --dry-run
+python3 -m pytest -q _localsetup/tests/test_ls_linux_patcher_patch_cli.py
 ```
 
-## Code Style
+If you add skill-local tests, run them directly too:
 
-- Use Bash for shell scripts
-- Follow existing indentation (2 spaces)
-- Add comments for non-obvious logic
-- Use descriptive variable names
-- Include error handling
-- Validate inputs
+```bash
+python3 -m pytest -q _localsetup/skills/ls-linux-patcher/tests
+```
 
-## Testing Checklist
+## Pull Request Checklist
 
-Before submitting PR, verify:
-
-- [ ] Scripts are executable (`chmod +x`)
-- [ ] Dry-run mode works
-- [ ] Error handling works (test with invalid inputs)
-- [ ] Documentation updated
-- [ ] No sensitive data in commits
-- [ ] CHANGELOG.md updated (if applicable)
-
-## Community Guidelines
-
-- Be respectful and constructive
-- Help others when possible
-- Share knowledge
-- Report security issues privately (see SECURITY.md if created)
-
-## Questions?
-
-- Open a discussion on GitHub
-- Ask in agent host Discord: https://discord.com/invite/clawd
-- Check existing issues
-
-## Recognition
-
-Contributors will be:
-- Listed in CONTRIBUTORS.md (when created)
-- Mentioned in release notes
-- Acknowledged in documentation
-
-Thank you for contributing! 🎉
+- [ ] Documentation matches shipped files and commands.
+- [ ] No stale references to missing shell scripts.
+- [ ] No product-specific agent branding or generated adapter paths.
+- [ ] No broad sudo examples or unrestricted passwordless sudo guidance.
+- [ ] CLI output is explicit about unavailable modes.
+- [ ] Tests cover new behavior and failure modes.
+- [ ] No credentials, host inventories, or runtime state are committed.

@@ -15,24 +15,34 @@ Prints the skill copy path to stdout on success (one line). Use this path as --s
 """
 
 import argparse
+import os
 import re
 import shutil
 import sys
 import tempfile
 from pathlib import Path
 
-SKILL_NAME_MAX = 128
-SKILL_NAME_PATTERN = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9_-]*$")
+SKILL_NAME_MAX = 64
+SKILL_NAME_PATTERN = re.compile(r"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$")
 PATH_MAX = 4096
 BASE_DIR_MAX = 1024
+SKILL_ROOT_SUBPATHS = (
+    "_localsetup/skills",
+    ".cursor/skills",
+    ".claude/skills",
+    ".agents/skills",
+    "skills",
+)
 
 
 def _sanitize_skill_name(name: str) -> str:
     s = (name or "").strip().replace("\x00", "")
     if len(s) > SKILL_NAME_MAX:
         raise ValueError(f"skill name length exceeds {SKILL_NAME_MAX}")
-    if not SKILL_NAME_PATTERN.match(s):
-        raise ValueError("skill name must be alphanumeric with hyphens/underscores only")
+    if not SKILL_NAME_PATTERN.match(s) or "--" in s:
+        raise ValueError(
+            "skill name must use lowercase letters, numbers, and single hyphens only"
+        )
     return s
 
 
@@ -56,14 +66,24 @@ def _resolve_skill_dir_by_name(name: str, skills_root: Path | None) -> Path:
     if skills_root and skills_root.is_dir():
         roots.append(skills_root)
     cwd = Path.cwd()
-    for sub in ("_localsetup/skills", ".cursor/skills", ".claude/skills", ".agents/skills", "skills"):
-        r = cwd / sub
-        if r.is_dir():
-            roots.append(r)
-    env_fw = __import__("os").environ.get("LOCALSETUP_FRAMEWORK_DIR", "").strip()
+    if cwd.parent.name == "skills" and cwd.is_dir():
+        roots.append(cwd.parent)
+    if cwd.name == "skills" and cwd.is_dir():
+        roots.append(cwd)
+    for base in (cwd, *cwd.parents):
+        for sub in SKILL_ROOT_SUBPATHS:
+            r = base / sub
+            if r.is_dir():
+                roots.append(r)
+    env_fw = os.environ.get("LOCALSETUP_FRAMEWORK_DIR", "").strip()
     if env_fw:
         roots.insert(0, Path(env_fw).resolve() / "skills")
+    seen: set[Path] = set()
     for root in roots:
+        root = root.resolve()
+        if root in seen:
+            continue
+        seen.add(root)
         candidate = root / name
         if candidate.is_dir():
             return candidate

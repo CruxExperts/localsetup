@@ -3,6 +3,7 @@ name: ls-kilo-visual-output
 description: "Kilo CLI visual output organization guide. Defines structured, readable response patterns for questions, options, preferred choices, rationale blocks, and execution summaries without relying on unsupported inline color control."
 metadata:
   version: "1.0"
+compatibility: "Kilo CLI-oriented guidance. Uses plain Markdown/text only; no required binaries, scripts, or ANSI color support. Patterns can be adapted to other agent CLIs."
 ---
 
 # ls-kilo-visual-output
@@ -93,8 +94,6 @@ Your reply: Choose A/B/C/D or provide custom input.
 4. Use tables only if known renderer support is good.
 5. Never encode important meaning with color alone.
 
-## Reference document
+## Embedded templates
 
-For detailed research notes and examples, see:
-
-- `./_localsetup/docs/KILO_CLI_TEXT_GRAPHICS_AND_VISUAL_ORGANIZATION.md`
+This skill is self-contained. Use the templates above as the source examples for Kilo CLI output; if future `references/` or `templates/` files are added, link them here with paths relative to this skill directory.

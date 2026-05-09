@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from .util import load_json
+from .util import build_api_path, load_json, redact_payload
 
 SERVER_MANAGED_KEYS = {
     "createdAt",
@@ -339,6 +339,11 @@ def apply_plan(
         if not isinstance(endpoint, str) or not endpoint.startswith("/api/"):
             failed.append({"operation": op, "error": f"invalid endpoint: {endpoint}"})
             continue
+        try:
+            endpoint = build_api_path(endpoint)
+        except ValueError as exc:
+            failed.append({"operation": op, "error": str(exc)})
+            continue
         if action in {"create", "update"} and not isinstance(payload, dict):
             failed.append(
                 {"operation": op, "error": "payload must be object for create/update"}
@@ -359,7 +364,7 @@ def apply_plan(
                 result = client.create_resource(endpoint, payload)
             elif action == "update":
                 target = (
-                    f"{endpoint}/{rid}"
+                    build_api_path(endpoint, rid)
                     if rid and rid not in {"resilience", "usage_budget", "settings"}
                     else endpoint
                 )
@@ -370,12 +375,17 @@ def apply_plan(
                 else:
                     result = client.update_resource(target, payload)
             else:  # delete
-                target = f"{endpoint}/{rid}" if rid else endpoint
+                target = build_api_path(endpoint, rid) if rid else endpoint
                 result = client.delete_resource(target)
 
             applied.append({"operation": op, "result": result})
         except Exception as exc:
-            failed.append({"operation": op, "error": f"{type(exc).__name__}: {exc}"})
+            failed.append(
+                {
+                    "operation": op,
+                    "error": f"{type(exc).__name__}: {redact_payload(str(exc))}",
+                }
+            )
 
     status = (
         "failed"

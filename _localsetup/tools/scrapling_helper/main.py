@@ -24,7 +24,16 @@ from ..cli_helpers import augment_path_for_pipx_apps
 from .docker_env import DockerEnvStatus, build_scrapling_docker_command, detect_docker
 from .adapter_state import AdapterState, load_state, save_state, save_capability_index
 from .adapter_parser import parse_current_features
-from .job_registry import JobRecord, cancel_job, create_job, load_job, list_jobs, update_job, _utc_now_iso
+from .job_registry import (
+    JobRecord,
+    JobRegistryError,
+    cancel_job,
+    create_job,
+    load_job,
+    list_jobs_with_errors,
+    update_job,
+    _utc_now_iso,
+)
 
 
 @dataclass
@@ -195,6 +204,26 @@ def show_status() -> str:
     return json.dumps(payload, indent=2)
 
 
+def _write_status_json(status_path: Path, payload: Dict[str, Any]) -> None:
+    payload["status_path"] = str(status_path)
+    payload["status_write"] = {
+        "ok": True,
+        "path": str(status_path),
+    }
+    try:
+        text = json.dumps(payload, indent=2)
+        status_path.write_text(text, encoding="utf-8")
+    except (OSError, TypeError, ValueError) as exc:
+        error = {
+            "ok": False,
+            "path": str(status_path),
+            "error": str(exc),
+            "error_type": type(exc).__name__,
+        }
+        payload["status_write"] = error
+        payload["status_write_error"] = error
+
+
 def _build_scrapling_command(
     cfg: ScraplingConfig,
     args: Sequence[str],
@@ -274,12 +303,7 @@ def extract_url_simple(
     # inspection (for example, tmux-only flows) can reliably detect success,
     # failure, and failure reasons without needing live stdout/stderr.
     status_path = output_path.with_suffix(output_path.suffix + ".status.json")
-    try:
-        status_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-        payload["status_path"] = str(status_path)
-    except Exception as e:  # Best-effort: do not fail the main operation.
-        payload["status_path"] = str(status_path)
-        payload["status_write_error"] = str(e)
+    _write_status_json(status_path, payload)
 
     return payload
 
@@ -339,12 +363,7 @@ def extract_url_structured(
     }
 
     status_path = output_path.with_suffix(output_path.suffix + ".status.json")
-    try:
-        status_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-        payload["status_path"] = str(status_path)
-    except Exception as e:
-        payload["status_path"] = str(status_path)
-        payload["status_write_error"] = str(e)
+    _write_status_json(status_path, payload)
 
     return payload
 
@@ -405,9 +424,12 @@ def scrapling_job_status(job_id: str) -> Dict[str, Any]:
     Check the status of a previously recorded job.
     """
     cfg = load_config()
-    job = load_job(cfg, job_id)
+    try:
+        job = load_job(cfg, job_id)
+    except JobRegistryError as exc:
+        return {"job_id": job_id, "found": False, **exc.as_dict()}
     if job is None:
-        return {"job_id": job_id, "found": False}
+        return {"job_id": job_id, "found": False, "reason": "job_not_found"}
     return {
         "job_id": job.job_id,
         "kind": job.kind,
@@ -436,7 +458,7 @@ def scrapling_list_jobs(kind: Optional[str] = None) -> Dict[str, Any]:
     List known jobs, optionally filtered by kind.
     """
     cfg = load_config()
-    jobs = list_jobs(cfg, kind=kind)
+    jobs, errors = list_jobs_with_errors(cfg, kind=kind)
     return {
         "jobs": [
             {
@@ -447,7 +469,8 @@ def scrapling_list_jobs(kind: Optional[str] = None) -> Dict[str, Any]:
                 "updated_at": j.updated_at,
             }
             for j in jobs
-        ]
+        ],
+        "errors": errors,
     }
 
 
@@ -489,35 +512,48 @@ def refresh_adapters(dry_run: bool = True) -> Dict[str, Any]:
     capability_index = {
         "scrapling_status": {
             "cli": "scrapling --help",
-            "description": "Detect Scrapling availability, environment type, and basic health.",
+            "helper": "scrapling_status()",
+            "description": "Detect Scrapling availability, environment type, Docker availability, and basic health.",
         },
         "extract_url_simple": {
             "cli": "scrapling extract <mode> <url> <output_path>",
+            "helper": "extract_url_simple(url, output_path, selector=None, mode_hint=None, use_docker=False)",
             "description": "Single URL extraction to HTML/Markdown/text using modes like get, fetch, or stealthy-fetch.",
         },
         "extract_url_structured": {
             "cli": "scrapling extract <mode> <url> <output_path>",
+            "helper": "extract_url_structured(url, output_path, selectors_schema, mode_hint=None, use_docker=False)",
             "description": "Single URL structured extraction to JSONL based on a selector schema.",
         },
         "run_spider": {
             "cli": "scrapling spider <name> [options]",
+            "helper": "run_spider(project_dir, spider_name, crawl_dir=None, extra_args=None, use_docker=False)",
             "description": "Run a named Scrapling spider in a project directory.",
         },
         "scrapling_job_status": {
             "cli": "n/a (filesystem-backed job registry)",
+            "helper": "scrapling_job_status(job_id)",
             "description": "Inspect the status of recorded Scrapling jobs.",
         },
         "scrapling_cancel_job": {
             "cli": "n/a (filesystem-backed job registry)",
+            "helper": "scrapling_cancel_job(job_id)",
             "description": "Attempt to cancel a running Scrapling job by job_id.",
         },
         "upgrade_scrapling": {
             "cli": f"{cfg.pipx_binary} upgrade scrapling",
+            "helper": "upgrade_scrapling(host=True, dry_run=False, auto_confirm=False)",
             "description": "Upgrade the Scrapling CLI via pipx or Docker.",
         },
         "refresh_adapters": {
             "cli": "scrapling --help; scrapling extract --help; scrapling spider --help",
+            "helper": "refresh_adapters(dry_run=True)",
             "description": "Parse current CLI help output and refresh the adapter state model.",
+        },
+        "scrapling_self_test": {
+            "cli": "scrapling extract get <fixture> <output_path>",
+            "helper": "scrapling_self_test(mode='auto')",
+            "description": "Run an offline-first self-test and write a status file.",
         },
     }
     save_capability_index(cfg, capability_index)
@@ -583,11 +619,5 @@ def scrapling_self_test(mode: str = "auto") -> Dict[str, Any]:
         "self_test_result": test_result,
     }
     status_path = output_path.with_suffix(output_path.suffix + ".status.json")
-    try:
-        status_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
-        summary["status_path"] = str(status_path)
-    except Exception as exc:
-        summary["status_path"] = str(status_path)
-        summary["status_write_error"] = str(exc)
+    _write_status_json(status_path, summary)
     return summary
-
