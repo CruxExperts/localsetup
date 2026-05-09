@@ -10,7 +10,7 @@
   <a href="_localsetup/docs/PLATFORM_REGISTRY.md"><img src="https://img.shields.io/badge/platforms-cursor%20%7C%20claude--code%20%7C%20codex%20%7C%20openclaw%20%7C%20kilo%20%7C%20opencode-1f6feb" alt="Supported platforms"></a>
 </p>
 
-**Version:** 3.0.0<br>
+**Version:** 3.0.1<br>
 **Last updated:** 2026-05-07
 
 Agentic setups often share the same headaches: indeterministic outcomes, memory that compresses or decays, hallucinations, agents that drop context or ignore instructions, and difficulty scaling beyond a certain code size. Coordinating multiple agents so they follow patterns and run workflows reliably is harder still. Localsetup v3 targets these problems without adding much overhead.
@@ -32,7 +32,7 @@ Localsetup v3 keeps `_localsetup/` as the source of truth. The Python CLI resolv
 <!-- facts-block:start -->
 | Fact | Value |
 |---|---|
-| Current version | `3.0.0` |
+| Current version | `3.0.1` |
 | Supported platforms | `cursor, claude-code, codex, openclaw, kilo, opencode` |
 | Shipped skills | `49` |
 | Source | `_localsetup/docs/_generated/facts.json` |

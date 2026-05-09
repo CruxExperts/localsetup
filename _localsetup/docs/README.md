@@ -14,7 +14,7 @@ This is the public documentation index for Localsetup v3. Use it to navigate fra
 ## 📊 Generated facts
 
 <!-- facts-block:start -->
-- Current version: `3.0.0`
+- Current version: `3.0.1`
 - Supported platforms: `cursor, claude-code, codex, openclaw, kilo, opencode`
 - Shipped skills: `49`
 - Source: `_localsetup/docs/_generated/facts.json`

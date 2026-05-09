@@ -1,6 +1,6 @@
 # Localsetup v3 Framework
 
-**Version:** 3.0.0<br>
+**Version:** 3.0.1<br>
 **Last updated:** 2026-05-07
 
 This directory is the engine of Localsetup v3: a universal, cross-platform agentic workflow framework for DevOps, local and remote servers, network configuration, and any workflow that benefits from AI agent assistance on your chosen platform (see [Platform registry](docs/PLATFORM_REGISTRY.md) for the canonical list: Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode). For first-time setup and overview, see the [root README](../README.md). Deployed into your repo, the framework source and context live inside the repo so the setup is mobile and reviewable. Runtime skill copies live in the managed home library and can be recreated from repo source.
