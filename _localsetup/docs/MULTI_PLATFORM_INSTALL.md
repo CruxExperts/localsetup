@@ -7,6 +7,10 @@ version: 3.0
 
 **Purpose:** How to install Localsetup v3 for each supported AI agent platform. Supported platforms are listed in `_localsetup/config/platforms.yaml` and summarized in [_generated/platform-adapters.md](_generated/platform-adapters.md). Same framework; platform-specific adapter paths point at a shared managed skill library.
 
+<p align="center">
+  <img src="../../assets/localsetup-v3-install-lifecycle.svg" alt="Localsetup v3 install lifecycle: doctor, configure, context, plan, install, verify, ship, and rollback" width="960">
+</p>
+
 ## Platform detection and script selection
 
 - **Linux / macOS:** Use `./install`, which delegates to `_localsetup/tools/localsetup_v3.py install --apply`.

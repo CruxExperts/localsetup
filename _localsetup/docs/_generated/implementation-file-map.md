@@ -23,6 +23,7 @@
 | `keep` | `_localsetup/config/agent_queue.example.yaml` |
 | `keep` | `_localsetup/config/agent_trust_registry.example.yaml` |
 | `keep` | `_localsetup/config/defaults/system_config.yaml` |
+| `keep` | `_localsetup/config/install.schema.json` |
 | `keep` | `_localsetup/config/mail_protocol_policy.yaml` |
 | `keep` | `_localsetup/config/manifest.schema.json` |
 | `refactor` | `_localsetup/config/pack.yaml` |
@@ -64,6 +65,7 @@
 | `keep` | `_localsetup/docs/TASK_SKILL_MATCHING.md` |
 | `keep` | `_localsetup/docs/TMUX_TERMINAL_MODE.md` |
 | `keep` | `_localsetup/docs/TOOLING_POLICY.md` |
+| `keep` | `_localsetup/docs/VERSIONING.md` |
 | `keep` | `_localsetup/docs/WORKFLOW_QUICK_REF.md` |
 | `keep` | `_localsetup/docs/WORKFLOW_REGISTRY.md` |
 | `keep` | `_localsetup/docs/WORKFLOW_SKILLS_REVIEW_BUILD_SPEC.md` |
@@ -368,7 +370,11 @@
 | `refactor` | `_localsetup/v3/baseline.py` |
 | `refactor` | `_localsetup/v3/boundary.py` |
 | `refactor` | `_localsetup/v3/cli.py` |
+| `refactor` | `_localsetup/v3/config.py` |
+| `refactor` | `_localsetup/v3/context.py` |
+| `refactor` | `_localsetup/v3/dependencies.py` |
 | `refactor` | `_localsetup/v3/docs.py` |
+| `refactor` | `_localsetup/v3/doctor.py` |
 | `refactor` | `_localsetup/v3/hooks.py` |
 | `refactor` | `_localsetup/v3/lockfile.py` |
 | `refactor` | `_localsetup/v3/manifests.py` |
@@ -381,7 +387,10 @@
 | `refactor` | `_localsetup/v3/skills.py` |
 | `refactor` | `_localsetup/v3/source.py` |
 | `refactor` | `_localsetup/v3/verify.py` |
+| `keep` | `assets/localsetup-v3-architecture.svg` |
+| `keep` | `assets/localsetup-v3-install-lifecycle.svg` |
 | `keep` | `assets/localsetup-v3-logo.png` |
+| `keep` | `assets/localsetup-v3-readme-hero.png` |
 | `keep` | `docs.config.yaml` |
 | `keep` | `install` |
 | `refactor` | `install.ps1` |

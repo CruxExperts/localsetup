@@ -3,11 +3,15 @@
 **Version:** 3.0.0<br>
 **Last updated:** 2026-05-07
 
-This directory is the engine of Localsetup v3: a universal, cross-platform agentic workflow framework for DevOps, local and remote servers, network configuration, and any workflow that benefits from AI agent assistance on your chosen platform (see [Platform registry](docs/PLATFORM_REGISTRY.md) for the canonical list: Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, OpenCode). For first-time setup and overview, see the [root README](../../README.md). Deployed into your repo, the framework and context live inside the repo so the setup is mobile and backup-able, with no home-directory dependency.
+This directory is the engine of Localsetup v3: a universal, cross-platform agentic workflow framework for DevOps, local and remote servers, network configuration, and any workflow that benefits from AI agent assistance on your chosen platform (see [Platform registry](docs/PLATFORM_REGISTRY.md) for the canonical list: Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode). For first-time setup and overview, see the [root README](../README.md). Deployed into your repo, the framework source and context live inside the repo so the setup is mobile and reviewable. Runtime skill copies live in the managed home library and can be recreated from repo source.
 
 The framework is for anyone who wants to execute tasks with agents: it provides a convenient, contained place for workflows and skills. It is **lightweight**, **does not interfere with existing projects**, and works for a **wide variety of tasks**; it is **compatible with all agentic design patterns** and **platform-independent** -the same skills and workflows run on any supported host.
 
 The emphasis is on **transparency**, **security**, and **high-quality operations** with **traceability**. Use the built-in skills as-is, **create new skills** from your workflow or from existing docs (skill-creator), or **import external skills** from a URL (e.g. GitHub) or local path -the framework discovers and validates them, runs a heuristic security screen, and summarizes each so you choose which to import (skill-importer). Skills follow the [Agent Skills](https://agentskills.io/specification) specification and are **interchangeable**: use skills from ecosystems like [Anthropic's skills](https://github.com/anthropics/skills) in this framework, and use this framework's skills in any spec-compliant host. Agents load context and skills by task (decision trees, PRD batches, safety, tmux, versioning, publishing, and more), with human-in-the-loop where needed and git-coupled references for PRDs, specs, and outcomes.
+
+<p align="center">
+  <img src="../assets/localsetup-v3-architecture.svg" alt="Localsetup v3 architecture: repo source, resolved config, managed home library, adapters, and rollback metadata" width="960">
+</p>
 
 ---
 
@@ -42,6 +46,10 @@ Localsetup v3 provides:
 - **Repo-local everything**: engine at `_localsetup/`, user/context data under the repo; [git traceability](docs/GIT_TRACEABILITY.md) for PRDs, specs, and outcomes so operations stay transparent and auditable.
 
 After installation, the client repo contains `_localsetup/` (this framework plus docs), source skills in `_localsetup/skills/ls-*`, and managed adapter paths at repo root (for example `.codex/skills` or `.kilo/skills`) that point to the shared home library. Version displayed in READMEs and framework docs is kept in sync with the repo **VERSION** file; release and publish are maintained outside normal contributor workflows.
+
+<p align="center">
+  <img src="../assets/localsetup-v3-install-lifecycle.svg" alt="Localsetup v3 install lifecycle: doctor, configure, context, plan, install, verify, ship, and rollback" width="960">
+</p>
 
 ---
 

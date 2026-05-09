@@ -1,7 +1,7 @@
 # Localsetup v3
 
 <p align="center">
-  <img src="assets/localsetup-v3-logo.png" alt="Localsetup v3" width="160">
+  <img src="assets/localsetup-v3-readme-hero.png" alt="Localsetup v3 visual: repo-local agent workflow framework" width="960">
 </p>
 
 <p align="center">
@@ -18,6 +18,14 @@ Agentic setups often share the same headaches: indeterministic outcomes, memory 
 The framework source is repo-local: context, skills, docs, and v3 install manifests live under `_localsetup/`. V3 installs a managed shared skill library in your home directory and attaches repo adapter paths such as `.codex/skills` or `.kilo/skills` to that library. Context is code, so you can audit what changed and tie specs and outcomes to git commits. It installs with one command and works across Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode. Safety and sandboxing are built in; when you import third-party skills, the framework runs security checks and heuristics before anything touches your agent. Tooling can be refactored or rewritten in Python and standardized even when sources disagree, and you can adapt it to your stack.
 
 Out of the box you get [all shipped skills](_localsetup/docs/SKILLS.md): debugging, TDD, PR review, git recovery, Linux patching, Ansible, and more. Skills follow the [Agent Skills](https://agentskills.io/specification) spec, so you can import from other ecosystems (e.g. Anthropic's public repo) and export yours. Version and docs are maintained in a separate maintainer workflow; see [_localsetup/docs/VERSIONING.md](_localsetup/docs/VERSIONING.md). Run one install command, verify with one script, then use the workflows. The result is a single, auditable agent setup that stays accurate over time.
+
+## How it fits together
+
+<p align="center">
+  <img src="assets/localsetup-v3-architecture.svg" alt="Localsetup v3 architecture: repo source, resolved config, managed home library, adapters, and rollback metadata" width="960">
+</p>
+
+Localsetup v3 keeps `_localsetup/` as the source of truth. The Python CLI resolves configuration once, using CLI flags over config file values over defaults, then writes managed outputs: the shared skill library, repo adapter paths, reports, and `localsetup.lock.json`. Generated adapter trees are install output, not framework source.
 
 ## 📊 Current snapshot
 
@@ -51,6 +59,14 @@ By default, v3 installs every platform listed in `_localsetup/config/platforms.y
 Localsetup v3 supports Windows through WSL2 only. Run `wsl`, change to the repo path, and run `./install --directory . --yes`. `install.ps1` is a compatibility stub that prints WSL2 guidance and exits.
 
 For one-liners and platform-specific examples, see [_localsetup/docs/QUICKSTART.md](_localsetup/docs/QUICKSTART.md).
+
+## Install lifecycle
+
+<p align="center">
+  <img src="assets/localsetup-v3-install-lifecycle.svg" alt="Localsetup v3 install lifecycle: doctor, configure, context, plan, install, verify, ship, and rollback" width="960">
+</p>
+
+The Bash wrapper stays intentionally thin. For preflight, dependency handling, adapter planning, managed-venv setup, verification, and rollback, it delegates to `python3 _localsetup/tools/localsetup_v3.py`.
 
 ## Shared home library
 

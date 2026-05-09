@@ -7,6 +7,10 @@ version: 3.0
 
 This is the public documentation index for Localsetup v3. Use it to navigate framework behavior, skills, platform support, and agentic workflows.
 
+<p align="center">
+  <img src="../../assets/localsetup-v3-architecture.svg" alt="Localsetup v3 architecture: repo source, resolved config, managed home library, adapters, and rollback metadata" width="960">
+</p>
+
 ## 📊 Generated facts
 
 <!-- facts-block:start -->
