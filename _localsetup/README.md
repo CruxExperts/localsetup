@@ -1,6 +1,6 @@
 # Localsetup v3 Framework Engine
 
-**Version:** 3.0.1<br>
+**Version:** 3.0.2<br>
 
 `_localsetup/` is the engine that makes the public Localsetup v3 promise real. It stores the framework code, shipped skills, platform templates, docs, tests, and install manifests that turn a repository into a portable agent workspace.
 

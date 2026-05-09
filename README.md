@@ -10,7 +10,7 @@
   <a href="_localsetup/docs/PLATFORM_REGISTRY.md"><img src="https://img.shields.io/badge/platforms-cursor%20%7C%20claude--code%20%7C%20codex%20%7C%20openclaw%20%7C%20kilo%20%7C%20opencode-1f6feb" alt="Supported platforms"></a>
 </p>
 
-**Version:** 3.0.1<br>
+**Version:** 3.0.2<br>
 
 **Localsetup v3 gives coding agents a real operating layer inside your repo.**
 
@@ -46,7 +46,7 @@ That means your agent setup travels with the repo, survives context resets, and 
 <!-- facts-block:start -->
 | Fact | Value |
 |---|---|
-| Current version | `3.0.1` |
+| Current version | `3.0.2` |
 | Supported platforms | `cursor, claude-code, codex, openclaw, kilo, opencode` |
 | Shipped skills | `49` |
 | Source | `_localsetup/docs/_generated/facts.json` |
