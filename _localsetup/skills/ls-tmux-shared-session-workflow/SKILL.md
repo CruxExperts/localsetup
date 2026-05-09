@@ -2,7 +2,7 @@
 name: ls-tmux-shared-session-workflow
 description: Server/ops in tmux; use tmux_ops to pick a managed session, probe sudo, and run commands with captured logs. Supports REMOTE_TMUX_HOST for VMs/remote/Docker.
 metadata:
-  version: "5.0"
+  version: "5.1"
 ---
 
 # tmux shared session workflow (ops)
@@ -12,6 +12,8 @@ metadata:
 ## Tool
 
 From repo root, run `./_localsetup/tools/tmux_ops`. If tmux is on another host, set `REMOTE_TMUX_HOST`; the wrapper runs the same tool over SSH.
+
+Full implementation reference: [_localsetup/docs/ops/tmux-ops-managed.md](../../docs/ops/tmux-ops-managed.md). Remote behavior: [_localsetup/docs/ops/tmux-ops-remote.md](../../docs/ops/tmux-ops-remote.md).
 
 Primary commands:
 

@@ -78,6 +78,7 @@
 | `keep` | `_localsetup/docs/local-context/SECRETS_OVERVIEW.md` |
 | `keep` | `_localsetup/docs/migration/v2-to-v3-skill-map.md` |
 | `keep` | `_localsetup/docs/migration/v3-overview.md` |
+| `keep` | `_localsetup/docs/ops/tmux-ops-managed.md` |
 | `keep` | `_localsetup/docs/ops/tmux-ops-remote.md` |
 | `keep` | `_localsetup/docs/scrapling-cheat-sheet.md` |
 | `keep` | `_localsetup/lib/data_paths.ps1` |
@@ -305,6 +306,7 @@
 | `keep` | `_localsetup/tests/test_adapter_parser.py` |
 | `keep` | `_localsetup/tests/test_scrapling_helper.py` |
 | `keep` | `_localsetup/tests/test_scrapling_jobs.py` |
+| `keep` | `_localsetup/tests/test_tmux_ops.py` |
 | `keep` | `_localsetup/tests/test_v3_install_flow.py` |
 | `keep` | `_localsetup/tests/test_v3_manifests.py` |
 | `keep` | `_localsetup/tests/test_versioning.py` |

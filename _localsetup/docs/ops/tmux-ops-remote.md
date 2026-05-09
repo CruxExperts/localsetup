@@ -1,15 +1,22 @@
-# Tmux ops tool: remote (VMs, SSH, Docker)
+---
+status: ACTIVE
+version: 3.0
+---
 
-**Purpose:** Use the tmux_ops workflow when the tmux server runs on a different host than where you run the command.
+# Tmux ops tool: remote
 
-## Config
+**Purpose:** Use the managed `tmux_ops` workflow when the tmux server runs on a different host than the agent process.
 
-- **REMOTE_TMUX_HOST** - Hostname or IP of the machine where tmux runs. When set, the `tmux_ops` wrapper runs the Python tool over SSH and returns the same JSON.
-- **REMOTE_TMUX_CWD** - Optional repo path on the remote. Default: `/opt/devzone/devops`.
+For the local managed workflow, state layout, JSON examples, and agent script, see [tmux-ops-managed.md](tmux-ops-managed.md). This page only explains the remote wrapper behavior.
 
-## Usage
+## Configuration
 
-From repo root:
+- `REMOTE_TMUX_HOST` - Hostname or IP of the machine where tmux runs. When set, `_localsetup/tools/tmux_ops` runs the Python tool over SSH on that host and returns the same JSON.
+- `REMOTE_TMUX_CWD` - Optional repo path on the remote host. Default: `/opt/devzone/devops`.
+
+## Flow
+
+Use the same managed commands locally or remotely:
 
 ```bash
 export REMOTE_TMUX_HOST=sh0t
@@ -18,7 +25,9 @@ export REMOTE_TMUX_HOST=sh0t
 ./_localsetup/tools/tmux_ops run -t ops -- sudo apt update
 ```
 
-If a run returns `status: "running"`, keep watching it by run ID:
+The returned `attach_command`, `state_dir`, `log_path`, and `run_id` all refer to the remote host.
+
+If a run returns `status: "running"`, keep watching by run ID:
 
 ```bash
 ./_localsetup/tools/tmux_ops status -t ops --run-id <run_id> --wait --timeout 120
@@ -30,13 +39,13 @@ Interrupt only through the managed cancel path:
 ./_localsetup/tools/tmux_ops cancel -t ops --run-id <run_id>
 ```
 
-Session names, state paths, and log paths refer to the remote host.
+## Agent rules
+
+- Do not use raw SSH plus tmux commands.
+- Do not assume local `/tmp/localsetup-tmux-ops` contains remote status.
+- Do not start another `run` while the remote session has an active `run_id`.
+- If sudo returns `password_required`, ask the user to attach to the remote tmux session and enter the password there.
 
 ## When not to set it
 
-If you use Cursor Remote SSH and the agent runs on the same host as tmux, do **not** set REMOTE_TMUX_HOST. Run `tmux_ops` directly.
-
-## Reference
-
-- Skill: **ls-tmux-shared-session-workflow**
-- Tool: `_localsetup/tools/tmux_ops` (`pick`, `probe -t SESSION`, `run -t SESSION -- CMD`, `status -t SESSION`, `cancel -t SESSION --run-id ID`)
+If the agent process already runs on the same host as tmux, do not set `REMOTE_TMUX_HOST`. Run `_localsetup/tools/tmux_ops` directly.

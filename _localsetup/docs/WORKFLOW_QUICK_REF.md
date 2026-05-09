@@ -17,7 +17,7 @@ last_updated: "2026-03-09"
 | `transport-handoff` | Agent handoff (mail/file_drop) | Agent Q bidirectional | `ls-agentq-transport`; `ls-mail-protocol-control` (strict mail) | [AGENTIC_AGENT_TO_AGENT_PROTOCOL.md](AGENTIC_AGENT_TO_AGENT_PROTOCOL.md) |
 | `umbrella-run` | Umbrella run (multi-phase) | umbrella workflow | `ls-agentic-umbrella-queue` | [AGENTIC_UMBRELLA_WORKFLOWS.md](AGENTIC_UMBRELLA_WORKFLOWS.md) |
 | `ops-guarded` | Guarded ops (sudo/HITL) | lazy admin; manual execution | `ls-framework-compliance` (tmux ops requires `ls-tmux-shared-session-workflow`) | [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md) |
-| `ops-tmux-session` | Tmux ops session | tmux shared session | `ls-tmux-shared-session-workflow` | [ops/tmux-ops-remote.md](ops/tmux-ops-remote.md) |
+| `ops-tmux-session` | Tmux ops session | tmux shared session | `ls-tmux-shared-session-workflow` | [ops/tmux-ops-managed.md](ops/tmux-ops-managed.md) |
 | `audit-framework` | Framework audit | run audit | `ls-framework-audit` | [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md) |
 | `audit-markdown-references` | Markdown reference audit | reference audit; link integrity audit | `ls-markdown-reference-validator` | [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md) |
 | `skills-index-refresh` | Skill index refresh + scrub | refresh skills; scrub index | `ls-skill-discovery` | [SKILL_DISCOVERY.md](SKILL_DISCOVERY.md) |
