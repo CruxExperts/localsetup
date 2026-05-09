@@ -11,13 +11,13 @@ Systematic debugging methodology and language-specific debugging commands.
 
 ## The 7-Step Debugging Protocol
 
-1. **Reproduce** — Get it to fail consistently. Document exact steps, inputs, and environment.
-2. **Isolate** — Narrow scope. Comment out code, use binary search, check recent commits with `git bisect`.
-3. **Hypothesize** — Form a specific, testable theory about the root cause.
-4. **Instrument** — Add targeted logging, breakpoints, or assertions.
-5. **Verify** — Confirm root cause. If hypothesis was wrong, return to step 3.
-6. **Fix** — Apply the minimal correct fix. Resist the urge to refactor while debugging.
-7. **Regression Test** — Write a test that catches this bug. Verify it passes.
+1. **Reproduce** - Get it to fail consistently. Document exact steps, inputs, and environment.
+2. **Isolate** - Narrow scope. Comment out code, use binary search, check recent commits with `git bisect`.
+3. **Hypothesize** - Form a specific, testable theory about the root cause.
+4. **Instrument** - Add targeted logging, breakpoints, or assertions.
+5. **Verify** - Confirm root cause. If hypothesis was wrong, return to step 3.
+6. **Fix** - Apply the minimal correct fix. Resist the urge to refactor while debugging.
+7. **Regression Test** - Write a test that catches this bug. Verify it passes.
 
 ## Language-Specific Debugging
 
@@ -59,7 +59,7 @@ lldb ./MyApp
 (lldb) run
 (lldb) po myVariable
 
-# Xcode: Product → Profile (Instruments)
+# Xcode: Product -> Profile (Instruments)
 ```
 
 ### CSS / Layout
@@ -91,7 +91,7 @@ netstat -tlnp
 git bisect start
 git bisect bad              # Current commit is broken
 git bisect good abc1234     # Known good commit
-# Git checks out middle commit — test it, then:
+# Git checks out middle commit - test it, then:
 git bisect good  # or  git bisect bad
 # Repeat until root cause commit is found
 git bisect reset

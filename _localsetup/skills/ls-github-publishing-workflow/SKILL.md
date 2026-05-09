@@ -14,22 +14,22 @@ metadata:
 - **README:** Clear value proposition near the top; install instructions; layout of deployed content; optional contents table or TOC for navigation. Section headings that work as anchors. Consider light visual cues (e.g. section icons) for scanability; keep one H1 per doc.
 - **SECURITY.md:** How to report vulnerabilities (private advisory or contact). Link from repo Security tab. State scope (this repo only; third-party tools out of scope).
 - **CONTRIBUTING.md:** How to open Issues, Discussions, and PRs; repo layout; that contributions are licensed under the project license. Point to LICENSE.
-- **LICENSE:** Chosen license (e.g. MIT) with correct copyright holder. Single source for “can use, modify, distribute” terms.
+- **LICENSE:** Chosen license (e.g. MIT) with correct copyright holder. Single source for "can use, modify, distribute" terms.
 - **Framework README:** If the repo contains a framework subfolder, its README should describe the engine, tools, and docs and link to root README, SECURITY, CONTRIBUTING, and LICENSE.
 
 Use relative links and consistent heading levels. Avoid PII and machine-specific paths in all of the above.
 
 ## Licensing and copyright
 
-- **Copyright:** Attribute to the intended owner (e.g. company or author). Use a single line in LICENSE and, if desired, a short “License and copyright” section in README.
+- **Copyright:** Attribute to the intended owner (e.g. company or author). Use a single line in LICENSE and, if desired, a short "License and copyright" section in README.
 - **MIT:** Allows use, copy, modify, merge, publish, distribute, sublicense, and sell copies/derivatives, with copyright and permission notice preserved. See LICENSE for full text.
-- **Display:** README and framework README should state “Copyright (c) YEAR Owner” and “Released under the MIT License” (or chosen license) with a link to LICENSE.
+- **Display:** README and framework README should state "Copyright (c) YEAR Owner" and "Released under the MIT License" (or chosen license) with a link to LICENSE.
 
 ## Author and contact (without exposing personal email)
 
 - **Author:** Name and link to profile (e.g. GitHub). Do not embed a personal email in the repo if the goal is to avoid scraping and spam.
 - **Contact:** Direct users to GitHub Issues or Discussions in the repo so they can reach you without publishing an email. Optionally link to a company or contact page.
-- **Co-authored-by:** If the tooling adds a “Co-authored-by” trailer (e.g. from an IDE) and the maintainer does not want it in history, the commit-msg hook can strip that trailer before the commit is finalized.
+- **Co-authored-by:** If the tooling adds a "Co-authored-by" trailer (e.g. from an IDE) and the maintainer does not want it in history, the commit-msg hook can strip that trailer before the commit is finalized.
 
 ## Scrub before publishing (no PII or context-specific artifacts)
 
@@ -43,7 +43,7 @@ Run a quick scrub command (e.g. grep for password, secret, api_key, token, /home
 
 ## Version and release
 
-- **VERSION:** Set to the intended release version. README and any “Version” display must match (see ls-automatic-versioning skill).
+- **VERSION:** Set to the intended release version. README and any "Version" display must match (see ls-automatic-versioning skill).
 - **Versioning docs:** If the project uses automatic versioning, document it (e.g. docs/VERSIONING.md) and link from README.
 
 ## Repository settings (on GitHub)
@@ -52,7 +52,7 @@ Run a quick scrub command (e.g. grep for password, secret, api_key, token, /home
 - **Description and topics:** Short description and topics for discoverability.
 - **Default branch:** Align install/docs URLs with the default branch (e.g. main).
 - **Issues and Discussions:** Enable if you want contact via GitHub.
-- **Security:** Enable “Private vulnerability reporting” if desired; SECURITY.md should explain how to report.
+- **Security:** Enable "Private vulnerability reporting" if desired; SECURITY.md should explain how to report.
 
 ## Publishing checklist (baseline)
 

@@ -241,9 +241,9 @@ This skill does not expose a Python API directly; instead it describes how agent
     - Do not auto-create the DB or generate master passwords.
   - KDF settings:
     - When humans create a new DB they should configure Argon2id with:
-      - Memory cost on the order of 128–256 MiB.
-      - Time cost tuned for around 2–3 seconds on the current host.
-      - Parallelism of 2–4.
+      - Memory cost on the order of 128-256 MiB.
+      - Time cost tuned for around 2-3 seconds on the current host.
+      - Parallelism of 2-4.
     - This tuning is done once at DB creation time, not on each secret operation.
 - Missing host mapping file:
   - When the requested host map `secrets/<host>-secrets-map.yaml` is missing:

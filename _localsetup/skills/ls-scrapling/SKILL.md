@@ -32,7 +32,7 @@ Provide agents with a host-first, high-level interface to the Scrapling CLI so t
   - Helpers for running Scrapling spiders with persistent crawl directories.
   - File-backed job registry for querying and cancelling long-running jobs.
 - Self-refresh adapter support:
-  - Scan Scrapling’s README and docs for new or changed CLI features.
+  - Scan Scrapling's README and docs for new or changed CLI features.
   - Compare against a stored adapter state file and propose updates.
   - Apply safe adapter changes only after explicit confirmation.
 
@@ -76,7 +76,7 @@ The exact verb signatures and response shapes are defined in the Scrapling integ
 | Verb | Category | Key params | Summary |
 |------|----------|------------|---------|
 | `scrapling_status` | status / install | `project_id?` | Report env type (pipx/system/docker), basic health, and any notes from recent checks. |
-| `scrapling_extract_simple` | single-URL extraction | `url`, `output_format`, `selector?`, `mode_hint?` | Extract one page or region to HTML/Markdown/text with adaptive `"get" → "fetch"` behavior and a `*.status.json` artifact. |
+| `scrapling_extract_simple` | single-URL extraction | `url`, `output_format`, `selector?`, `mode_hint?` | Extract one page or region to HTML/Markdown/text with adaptive `"get" -> "fetch"` behavior and a `*.status.json` artifact. |
 | `scrapling_extract_structured` | structured extraction | `url`, `selectors_schema`, `mode_hint?` | Extract structured data to JSONL using a simple field schema, with the same adaptive mode pattern and a `*.status.json` artifact. |
 | `scrapling_job_status` | jobs and monitoring | `job_id` | Inspect a recorded job (for example, a spider run) including status, timestamps, command, and error. |
 | `scrapling_cancel_job` | jobs and monitoring | `job_id` | Attempt to cancel a running job; returns a clear reason when cancellation is not possible. |
@@ -144,7 +144,7 @@ Agents should call `scrapling_status` before heavy usage to understand how Scrap
 
 ## Adapter refresh and version updates
 
-To keep wrappers in sync with Scrapling’s evolving CLI and features, this skill exposes a guided refresh workflow:
+To keep wrappers in sync with Scrapling's evolving CLI and features, this skill exposes a guided refresh workflow:
 
 - Documentation scan:
   - Fetch the latest Scrapling README and any relevant docs from GitHub or the official docs site.
@@ -181,7 +181,7 @@ This skill is designed to be a foundation for higher-level workflows:
 - As a data source:
   - Other skills can consume the generated HTML, Markdown, or JSONL outputs for analysis, summarization, or content creation.
 - As a building block in pipelines:
-  - The internal `fetch → extract → normalize → emit` stages make it easier to attach post-processing steps later without changing the scraping core.
+  - The internal `fetch -> extract -> normalize -> emit` stages make it easier to attach post-processing steps later without changing the scraping core.
 
 When new workflows depend heavily on web data, prefer building them on top of this skill so that installation, upgrades, and adapter maintenance remain centralized. For any task that needs to fetch or scrape website content, call this skill first unless there is a clear reason to use a different engine.
 

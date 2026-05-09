@@ -21,14 +21,14 @@ metadata:
 2. **Load rules**  - Read _localsetup/docs/SKILL_NORMALIZATION.md (or _localsetup/docs/SKILL_NORMALIZATION.md from framework source). Use the spec-compliance checklist, before/after frontmatter examples, and platform-neutralization rules (including the generic snippet for "Running from an agent").
 3. **For each skill**  - Apply the checklist and rules to SKILL.md only (in memory or a temp copy). Do not modify references, scripts, or playbooks. Produce:
    - **Summary**  - Short prose (e.g. "Frontmatter: add compatibility, remove platform metadata; description generalized; replace 'Integration with X' with generic section.").
-   - **Key edits**  - Concrete list (e.g. "Remove metadata.openclaw"; "Replace lines 427–453 with generic snippet from SKILL_NORMALIZATION.md"; "Description: change 'OpenClaw VPS' to 'VPS (optional agent-host examples)'.").
+   - **Key edits**  - Concrete list (e.g. "Remove metadata.openclaw"; "Replace lines 427-453 with generic snippet from SKILL_NORMALIZATION.md"; "Description: change 'OpenClaw VPS' to 'VPS (optional agent-host examples)'.").
 4. **Present and get approval**  - Show summary and key edits to the user. Ask: "Apply these changes to SKILL.md?" If **yes**, write the normalized SKILL.md to the skill directory. If **no**, skip that skill; do not write.
 5. **Confirm**  - Tell the user which skills were normalized and that they can run deploy if needed.
 
 ## Scope
 
 - **Only SKILL.md** is modified. References, scripts, assets, and playbooks in the skill directory are unchanged.
-- The same rules as import-time normalization: product-agnostic detection of platform-specific sections (e.g. "Integration with …", "From … Agent"), replacement with generic wording from SKILL_NORMALIZATION.md.
+- The same rules as import-time normalization: product-agnostic detection of platform-specific sections (e.g. "Integration with ...", "From ... Agent"), replacement with generic wording from SKILL_NORMALIZATION.md.
 
 ## Reference
 

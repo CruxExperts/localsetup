@@ -19,8 +19,8 @@ Thank you for considering contributing! This project welcomes contributions from
 
 1. Test the skill on your distribution:
    ```bash
-   scripts/patch-auto.sh --dry-run
-   scripts/patch-host-only.sh user@testhost
+   python scripts/patch_cli.py auto --dry-run
+   python scripts/patch_cli.py host-only user@testhost
    ```
 
 2. Document your findings:
@@ -47,7 +47,7 @@ Found a bug? Please open an issue with:
 - **Actual behavior:** What actually happened
 - **Logs:** Include relevant error messages
 - **Environment:**
-  - OpenClaw version
+  - agent host version
   - Skill version
   - SSH configuration
 
@@ -95,7 +95,7 @@ Documentation improvements are always welcome:
 
 If you're familiar with a specific distribution:
 
-- Add distribution-specific tips to SETUP.md
+- Add distribution-specific tips to references/setup.md
 - Improve package manager commands in detect-os.sh
 - Test and verify commands work correctly
 - Document distribution quirks
@@ -114,7 +114,7 @@ chmod +x scripts/*.sh
 ./scripts/detect-os.sh user@testhost
 
 # Test dry-run
-DRY_RUN=true ./scripts/patch-host-only.sh user@testhost
+DRY_RUN=true ./python scripts/patch_cli.py host-only user@testhost
 ```
 
 ## Code Style
@@ -147,7 +147,7 @@ Before submitting PR, verify:
 ## Questions?
 
 - Open a discussion on GitHub
-- Ask in OpenClaw Discord: https://discord.com/invite/clawd
+- Ask in agent host Discord: https://discord.com/invite/clawd
 - Check existing issues
 
 ## Recognition

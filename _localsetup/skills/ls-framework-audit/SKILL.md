@@ -25,7 +25,7 @@ compatibility: "Python 3.10+. Depends on ls-skill-sandbox-tester tooling (create
 ## Smoke list (skill matrix)
 
 - **Path:** `_localsetup/tests/skill_smoke_commands.yaml`
-- **Schema:** YAML map: `skill_id` (directory name under _localsetup/skills/) → `command` string or `"N/A"`. Command is run with cwd = sandbox copy of the skill. `N/A` = doc-only; no runnable smoke; audit uses agent step summary only.
+- **Schema:** YAML map: `skill_id` (directory name under _localsetup/skills/) -> `command` string or `"N/A"`. Command is run with cwd = sandbox copy of the skill. `N/A` = doc-only; no runnable smoke; audit uses agent step summary only.
 - One entry per skill in `_localsetup/skills/*`. The audit script reads this file as single source of truth for which skills have tooling to smoke.
 
 ## Dependencies (framework invariant)

@@ -14,7 +14,7 @@ metadata:
 - **VERSION** (repo root): single line, semantic version `MAJOR.MINOR.PATCH` (e.g. `2.0.0`). This is the only canonical version value.
 - **Displayed version** must stay in sync: README and framework README show `**Version:** X.Y.Z`; framework docs use YAML front matter `version: X.Y` (major.minor). The repo tooling keeps these in sync when the release workflow runs.
 
-## Conventional Commits → bump type
+## Conventional Commits -> bump type
 
 - **MAJOR:** `BREAKING CHANGE:` in body, or type followed by `!` (e.g. `feat!: new API`).
 - **MINOR:** user-facing framework capability changes. `feat:` is minor unless all changed files are release automation, hooks, CI, docs, tests, validation, or packaging surfaces.

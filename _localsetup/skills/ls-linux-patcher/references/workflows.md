@@ -11,13 +11,13 @@ Visual representation of how the Linux Patcher skill operates.
                             │
                             ▼
         ┌─────────────────────────────────────────┐
-        │  Ask OpenClaw: "Update my servers"      │
+        │  Ask agent host: "Update my servers"      │
         └─────────────────────────────────────────┘
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
 │              Linux Patcher Skill Activated                  │
-│                  (patch-auto.sh)                            │
+│                  (python scripts/patch_cli.py auto)                            │
 └─────────────────────────────────────────────────────────────┘
                             │
                             ▼
@@ -146,7 +146,7 @@ Visual representation of how the Linux Patcher skill operates.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  User runs: scripts/patch-host-only.sh admin@webserver      │
+│  User runs: python scripts/patch_cli.py host-only admin@webserver      │
 └─────────────────────────────────────────────────────────────┘
                             │
                             ▼
@@ -237,7 +237,7 @@ Visual representation of how the Linux Patcher skill operates.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  patch-host-full.sh admin@webserver /opt/docker             │
+│  python scripts/patch_cli.py host-full admin@webserver /opt/docker             │
 └─────────────────────────────────────────────────────────────┘
                             │
                             ▼
@@ -441,7 +441,7 @@ Visual representation of how the Linux Patcher skill operates.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  OpenClaw wants to run: apt upgrade                         │
+│  agent host wants to run: apt upgrade                         │
 └─────────────────────────────────────────────────────────────┘
                             │
                             ▼

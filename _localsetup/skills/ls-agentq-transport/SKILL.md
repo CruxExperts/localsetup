@@ -29,8 +29,8 @@ Operate the **agentq_transport_client** CLI and related config so Agent A and Ag
 
 ## Skills to load with this
 
-- **ls-mail-protocol-control** – mail adapter backend; `preencrypted_openpgp_armored` for ship-mail-strict.
-- **ls-agentic-prd-batch** – batch reads `in/` only; version mismatch and structured queue.
+- **ls-mail-protocol-control** - mail adapter backend; `preencrypted_openpgp_armored` for ship-mail-strict.
+- **ls-agentic-prd-batch** - batch reads `in/` only; version mismatch and structured queue.
 
 ## Docs
 

@@ -18,7 +18,7 @@ compatibility: "Python 3.10+ for any bundled tooling. Sandbox paths follow platf
 
 ## How it actually works
 
-**Testing:** The skill does not run a built-in test suite. You (the agent) choose a **smoke command** that should succeed if the skill is healthy: for example run the skill’s main script with `--help`, or a dry-run/list mode, or whatever the skill’s SKILL.md says to run to verify. The tooling (1) copies the skill into a unique temp directory (the sandbox), then (2) runs that one command with the sandbox as the current working directory. **Pass** = the command exits 0. **Fail** = non-zero exit or crash. So "test" here means: run the chosen command in an isolated copy and treat exit code as the result.
+**Testing:** The skill does not run a built-in test suite. You (the agent) choose a **smoke command** that should succeed if the skill is healthy: for example run the skill's main script with `--help`, or a dry-run/list mode, or whatever the skill's SKILL.md says to run to verify. The tooling (1) copies the skill into a unique temp directory (the sandbox), then (2) runs that one command with the sandbox as the current working directory. **Pass** = the command exits 0. **Fail** = non-zero exit or crash. So "test" here means: run the chosen command in an isolated copy and treat exit code as the result.
 
 **Debugging:** When the smoke command fails, this skill does not implement the fix. You **load ls-debug-pro** and follow its 7-step protocol (reproduce, isolate, hypothesize, instrument, verify, fix, regression). The important rule: **all reproduction and edits happen in the sandbox copy only.** You run the failing command in the sandbox, inspect logs or add print/debugger, change code in the sandbox, then run the same smoke command again from the sandbox. Repeat until the smoke command exits 0. Only then do you summarize the changes and **ask the user** to approve copying those fixes from the sandbox into the real skill directory (e.g. `_localsetup/skills/<name>/`). No writes to the repo until the user says so.
 
@@ -134,7 +134,7 @@ Smoke passes if the command exits 0. On non-zero, use ls-debug-pro in the sandbo
 
 ## Reference
 
-- _localsetup/docs/PLATFORM_REGISTRY.md – Supported platforms and skills paths.
-- _localsetup/docs/TOOLING_POLICY.md – Python-first tooling, runtime target.
-- _localsetup/docs/INPUT_HARDENING_STANDARD.md – Mandatory input handling for any script.
-- _localsetup/docs/SKILLS_AND_RULES.md – How skills are loaded and where they live per platform.
+- _localsetup/docs/PLATFORM_REGISTRY.md - Supported platforms and skills paths.
+- _localsetup/docs/TOOLING_POLICY.md - Python-first tooling, runtime target.
+- _localsetup/docs/INPUT_HARDENING_STANDARD.md - Mandatory input handling for any script.
+- _localsetup/docs/SKILLS_AND_RULES.md - How skills are loaded and where they live per platform.

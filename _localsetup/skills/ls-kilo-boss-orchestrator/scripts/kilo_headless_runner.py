@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -20,12 +21,85 @@ from lib.boss_orchestrator.util import now_iso  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 ROUTER_SCRIPT = REPO_ROOT / "scripts" / "ops" / "agent_failure_backoff_router.py"
+MAX_CMD_LEN = 8192
+MAX_TIMEOUT_SECONDS = 86400
 
 
 def _safe_task_id(raw: str) -> str:
     if not raw or any(ch in raw for ch in ["/", "..", "\\"]):
         raise ValueError("invalid task id")
     return raw
+
+
+def _sanitize(value: object, max_len: int = MAX_CMD_LEN) -> str:
+    text = str(value)
+    cleaned = "".join(ch for ch in text if ord(ch) >= 0x20 and ord(ch) != 0x7F)
+    cleaned = " ".join(cleaned.split()).strip()
+    return cleaned[:max_len] if len(cleaned) > max_len else cleaned
+
+
+def _contains_shell_operators(command: str) -> bool:
+    return any(
+        token in command for token in ("&&", "||", ";", "|", ">", "<", "`", "\n", "\r")
+    )
+
+
+def _normalize_command(raw: object) -> tuple[list[str], str | None]:
+    if isinstance(raw, list):
+        argv = [_sanitize(part) for part in raw]
+        argv = [part for part in argv if part]
+        if not argv:
+            return [], "command list is empty after sanitization"
+        return argv, None
+
+    if not isinstance(raw, str):
+        return [], "task command must be a string or argv list"
+    command = _sanitize(raw)
+    if not command:
+        return [], "task command missing"
+    if _contains_shell_operators(command):
+        return [], "task command contains unsupported shell operators; provide argv list for literal args"
+    try:
+        argv = shlex.split(command, posix=True)
+    except ValueError as exc:
+        return [], f"invalid task command quoting: {type(exc).__name__}: {exc}"
+    if not argv:
+        return [], "task command is empty after parsing"
+    return argv, None
+
+
+def _normalize_timeout(raw: object) -> tuple[int, str | None]:
+    try:
+        timeout = int(raw)
+    except (TypeError, ValueError):
+        return 600, f"invalid timeout_seconds: {raw!r}"
+    if timeout < 1 or timeout > MAX_TIMEOUT_SECONDS:
+        return 600, f"timeout_seconds out of bounds (1..{MAX_TIMEOUT_SECONDS}): {timeout}"
+    return timeout, None
+
+
+def _result_base(
+    *,
+    task_id: str,
+    worker_id: str,
+    session_id: str,
+    session: dict,
+    task: dict,
+    started: str,
+) -> dict:
+    return {
+        "task_id": task_id,
+        "worker_id": worker_id,
+        "session_id": session_id,
+        "session_shared": bool(session.get("session_shared", True)),
+        "session_visibility": str(
+            session.get("session_visibility", "shared-authenticated")
+        ),
+        "role": task.get("role", "worker"),
+        "files_changed": [],
+        "started_at": started,
+        "completed_at": now_iso(),
+    }
 
 
 def _report_router(
@@ -85,13 +159,17 @@ def run_worker(task_id: str, worker_id: str, session_id: str) -> int:
         print(f"[worker] task not found: {task_id}", file=sys.stderr)
         return 1
 
-    command = str(task.get("command", "")).strip()
-    if not command:
-        print("[worker] task command missing", file=sys.stderr)
+    command_raw = task.get("command", "")
+    command_argv, command_error = _normalize_command(command_raw)
+    if command_error:
+        print(f"[worker] {command_error}", file=sys.stderr)
         return 1
 
     repo_root = str(task.get("repo_root", "."))
-    timeout_seconds = int(task.get("timeout_seconds", 600))
+    timeout_seconds, timeout_error = _normalize_timeout(task.get("timeout_seconds", 600))
+    if timeout_error:
+        print(f"[worker] {timeout_error}", file=sys.stderr)
+        return 1
 
     store.write_heartbeat(worker_id, {"current_task": task_id, "status": "running"})
 
@@ -105,31 +183,29 @@ def run_worker(task_id: str, worker_id: str, session_id: str) -> int:
     started = now_iso()
     try:
         proc = subprocess.run(
-            command,
-            shell=True,
+            command_argv,
+            shell=False,
             cwd=repo_root,
             capture_output=True,
             text=True,
+            errors="replace",
             timeout=timeout_seconds,
             env=env,
         )
         status = "completed" if proc.returncode == 0 else "failed"
         result = {
-            "task_id": task_id,
-            "worker_id": worker_id,
-            "session_id": session_id,
-            "session_shared": bool(session.get("session_shared", True)),
-            "session_visibility": str(
-                session.get("session_visibility", "shared-authenticated")
+            **_result_base(
+                task_id=task_id,
+                worker_id=worker_id,
+                session_id=session_id,
+                session=session,
+                task=task,
+                started=started,
             ),
-            "role": task.get("role", "worker"),
             "status": status,
             "exit_code": proc.returncode,
             "stdout": proc.stdout,
             "stderr": proc.stderr,
-            "files_changed": [],
-            "started_at": started,
-            "completed_at": now_iso(),
         }
         store.write_result(task_id, result)
         store.write_heartbeat(worker_id, {"current_task": None, "status": "idle"})
@@ -137,30 +213,56 @@ def run_worker(task_id: str, worker_id: str, session_id: str) -> int:
             worker_id=worker_id,
             task_id=task_id,
             session_id=session_id,
-            command=command,
+            command=" ".join(command_argv),
             exit_code=proc.returncode,
             stdout=proc.stdout,
             stderr=proc.stderr,
             ok=(status == "completed"),
         )
         return 0 if status == "completed" else 2
+    except (OSError, ValueError) as exc:
+        error_text = f"{type(exc).__name__}: {exc}"
+        result = {
+            **_result_base(
+                task_id=task_id,
+                worker_id=worker_id,
+                session_id=session_id,
+                session=session,
+                task=task,
+                started=started,
+            ),
+            "status": "failed",
+            "exit_code": 1,
+            "stdout": "",
+            "stderr": error_text,
+        }
+        store.write_result(task_id, result)
+        store.write_heartbeat(worker_id, {"current_task": None, "status": "failed"})
+        _report_router(
+            worker_id=worker_id,
+            task_id=task_id,
+            session_id=session_id,
+            command=" ".join(command_argv),
+            exit_code=1,
+            stdout="",
+            stderr=error_text,
+            ok=False,
+        )
+        return 1
     except subprocess.TimeoutExpired:
         result = {
-            "task_id": task_id,
-            "worker_id": worker_id,
-            "session_id": session_id,
-            "session_shared": bool(session.get("session_shared", True)),
-            "session_visibility": str(
-                session.get("session_visibility", "shared-authenticated")
+            **_result_base(
+                task_id=task_id,
+                worker_id=worker_id,
+                session_id=session_id,
+                session=session,
+                task=task,
+                started=started,
             ),
-            "role": task.get("role", "worker"),
             "status": "timed_out",
             "exit_code": 124,
             "stdout": "",
             "stderr": f"timed out after {timeout_seconds}s",
-            "files_changed": [],
-            "started_at": started,
-            "completed_at": now_iso(),
         }
         store.write_result(task_id, result)
         store.write_heartbeat(worker_id, {"current_task": None, "status": "timed_out"})
@@ -168,7 +270,7 @@ def run_worker(task_id: str, worker_id: str, session_id: str) -> int:
             worker_id=worker_id,
             task_id=task_id,
             session_id=session_id,
-            command=command,
+            command=" ".join(command_argv),
             exit_code=124,
             stdout="",
             stderr=f"timed out after {timeout_seconds}s",

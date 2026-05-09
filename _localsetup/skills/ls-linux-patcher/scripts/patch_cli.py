@@ -1,85 +1,171 @@
 #!/usr/bin/env python3
-# Purpose: CLI for Linux patcher (auto, host-only, host-full, multiple). Validates input and delegates to shell scripts.
-# Created: 2026-02-20
-# Last updated: 2026-02-20
+"""Linux patcher planning CLI.
 
+This helper intentionally emits an auditable plan instead of executing remote
+patch commands. Remote execution depends on site-specific SSH, sudo, package
+manager, Docker, and maintenance-window policy; the skill guides the operator
+through those checks without pretending a missing shell helper exists.
 """
-Patch CLI: run patch-auto, patch-host-only, patch-host-full, or patch-multiple with validated inputs.
-Delegates to the corresponding .sh scripts. Requires ssh, and for auto mode: PatchMon credentials.
-"""
+
+from __future__ import annotations
 
 import argparse
+import json
 import re
-import subprocess
 import sys
 from pathlib import Path
 
-SCRIPT_DIR = Path(__file__).resolve().parent
 HOST_MAX = 512
 PATH_MAX = 4096
+HOST_RE = re.compile(r"^[A-Za-z0-9_.@:-]+$")
 
 
-def _sanitize_host(s: str) -> str:
-    if not isinstance(s, str) or len(s) > HOST_MAX:
-        raise ValueError("host: invalid or too long")
-    s = s.strip()
-    if not s:
-        raise ValueError("host: empty")
-    if "\x00" in s or "\n" in s:
-        raise ValueError("host: invalid characters")
-    return s
+class InputError(ValueError):
+    """Raised when user-provided input is malformed or unsafe."""
 
 
-def _sanitize_path(s: str) -> str:
-    if not isinstance(s, str) or len(s) > PATH_MAX:
-        raise ValueError("path: invalid or too long")
-    s = s.strip()
-    if "\x00" in s:
-        raise ValueError("path: invalid characters")
-    return s
+def _clean_text(value: str, *, max_len: int, label: str) -> str:
+    if not isinstance(value, str):
+        raise InputError(f"{label}: expected string")
+    cleaned = value.strip()
+    if not cleaned:
+        raise InputError(f"{label}: empty value")
+    if len(cleaned) > max_len:
+        raise InputError(f"{label}: value exceeds {max_len} characters")
+    if any(ch in cleaned for ch in ("\x00", "\n", "\r")):
+        raise InputError(f"{label}: contains control characters")
+    return cleaned
 
 
-def main() -> int:
-    ap = argparse.ArgumentParser(description="Linux patcher: auto, host-only, host-full, multiple.")
-    sub = ap.add_subparsers(dest="cmd", required=True)
-    auto = sub.add_parser("auto", help="Patch all hosts from PatchMon")
-    auto.add_argument("--skip-docker", action="store_true", help="Skip Docker updates")
-    auto.add_argument("--dry-run", action="store_true", help="Do not apply changes")
-    ho = sub.add_parser("host-only", help="Update packages only on one host")
-    ho.add_argument("host", help="user@hostname")
-    hf = sub.add_parser("host-full", help="Update packages and Docker on one host")
-    hf.add_argument("host", help="user@hostname")
-    hf.add_argument("docker_path", help="Path to docker-compose on host")
-    mult = sub.add_parser("multiple", help="Patch multiple hosts from config file")
-    mult.add_argument("config", help="Path to config file")
-    args = ap.parse_args()
+def _validate_host(value: str) -> str:
+    host = _clean_text(value, max_len=HOST_MAX, label="host")
+    if not HOST_RE.fullmatch(host):
+        raise InputError("host: use only letters, numbers, dot, dash, underscore, colon, @")
+    return host
 
+
+def _validate_remote_path(value: str) -> str:
+    path = _clean_text(value, max_len=PATH_MAX, label="docker_path")
+    if not path.startswith("/"):
+        raise InputError("docker_path: provide an absolute path on the remote host")
+    return path
+
+
+def _validate_config(value: str) -> Path:
+    path = Path(_clean_text(value, max_len=PATH_MAX, label="config"))
+    if not path.is_file():
+        raise InputError(f"config: file not found: {path}")
+    return path
+
+
+def _host_only_steps(host: str) -> list[dict[str, str]]:
+    return [
+        {"phase": "preflight", "command": f"ssh {host} 'sudo -n true && command -v apt || command -v dnf || command -v yum || command -v zypper'"},
+        {"phase": "packages", "command": f"ssh {host} '<run the distro package update command from SKILL.md after confirming maintenance window>'"},
+        {"phase": "verify", "command": f"ssh {host} 'test -f /var/run/reboot-required && echo reboot-required || true'"},
+    ]
+
+
+def _host_full_steps(host: str, docker_path: str) -> list[dict[str, str]]:
+    steps = _host_only_steps(host)
+    steps.extend(
+        [
+            {"phase": "docker-preflight", "command": f"ssh {host} 'test -d {docker_path} && command -v docker'"},
+            {"phase": "docker-update", "command": f"ssh {host} 'cd {docker_path} && sudo docker compose pull && sudo docker compose up -d'"},
+            {"phase": "docker-verify", "command": f"ssh {host} 'cd {docker_path} && sudo docker compose ps'"},
+        ]
+    )
+    return steps
+
+
+def _load_hosts_config(path: Path) -> list[dict[str, str]]:
+    hosts: list[dict[str, str]] = []
+    for lineno, raw in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), start=1):
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        parts = [part.strip() for part in line.split(",")]
+        if len(parts) not in (1, 2):
+            raise InputError(f"config:{lineno}: expected host or host,docker_path")
+        host = _validate_host(parts[0])
+        entry = {"host": host}
+        if len(parts) == 2 and parts[1]:
+            entry["docker_path"] = _validate_remote_path(parts[1])
+        hosts.append(entry)
+    if not hosts:
+        raise InputError("config: no hosts found")
+    return hosts
+
+
+def _emit_plan(title: str, steps: list[dict[str, str]], *, json_output: bool) -> int:
+    if json_output:
+        print(json.dumps({"title": title, "mode": "plan-only", "steps": steps}, indent=2))
+        return 0
+    print(f"# {title}")
+    print()
+    print("Mode: plan-only. Review commands, confirm a maintenance window, then run manually.")
+    print()
+    for idx, step in enumerate(steps, start=1):
+        print(f"{idx}. **{step['phase']}**")
+        print()
+        print("```bash")
+        print(step["command"])
+        print("```")
+        print()
+    return 0
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Create safe Linux patching plans.")
+    parser.add_argument("--json", action="store_true", help="Emit JSON instead of markdown")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    auto = sub.add_parser("auto", help="Explain PatchMon automatic mode requirements")
+    auto.add_argument("--skip-docker", action="store_true", help="Plan packages-only behavior")
+    auto.add_argument("--dry-run", action="store_true", help="Keep output plan-only")
+
+    host_only = sub.add_parser("host-only", help="Plan package updates for one host")
+    host_only.add_argument("host", help="user@hostname")
+
+    host_full = sub.add_parser("host-full", help="Plan package and Docker updates for one host")
+    host_full.add_argument("host", help="user@hostname")
+    host_full.add_argument("docker_path", help="Absolute Docker Compose directory on the remote host")
+
+    multiple = sub.add_parser("multiple", help="Plan updates from a simple host config file")
+    multiple.add_argument("config", help="File with host or host,docker_path per line")
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
     try:
         if args.cmd == "auto":
-            cmd = [str(SCRIPT_DIR / "patch-auto.sh")]
-            if args.skip_docker:
-                cmd.append("--skip-docker")
-            if args.dry_run:
-                cmd.append("--dry-run")
-        elif args.cmd == "host-only":
-            _sanitize_host(args.host)
-            cmd = [str(SCRIPT_DIR / "patch-host-only.sh"), args.host]
-        elif args.cmd == "host-full":
-            _sanitize_host(args.host)
-            _sanitize_path(args.docker_path)
-            cmd = [str(SCRIPT_DIR / "patch-host-full.sh"), args.host, args.docker_path]
-        else:
-            config = Path(args.config)
-            if not config.is_file():
-                print(f"Error: config file not found: {config}", file=sys.stderr)
-                return 2
-            cmd = [str(SCRIPT_DIR / "patch-multiple.sh"), str(config)]
-    except ValueError as e:
-        print(f"Error: {e}", file=sys.stderr)
+            mode = "packages only" if args.skip_docker else "packages and Docker where configured"
+            steps = [
+                {"phase": "status", "command": "PatchMon automatic execution is guidance-only in v3 until a tested Python API client is added."},
+                {"phase": "inputs", "command": f"Collect PatchMon URL, credentials, target host list, and maintenance window for {mode}."},
+                {"phase": "fallback", "command": "Use `python scripts/patch_cli.py host-only HOST` or `host-full HOST /compose/path` for auditable per-host plans."},
+            ]
+            return _emit_plan("PatchMon Automatic Patching Plan", steps, json_output=args.json)
+        if args.cmd == "host-only":
+            host = _validate_host(args.host)
+            return _emit_plan(f"Host Package Patch Plan: {host}", _host_only_steps(host), json_output=args.json)
+        if args.cmd == "host-full":
+            host = _validate_host(args.host)
+            docker_path = _validate_remote_path(args.docker_path)
+            return _emit_plan(f"Host Full Patch Plan: {host}", _host_full_steps(host, docker_path), json_output=args.json)
+        config = _validate_config(args.config)
+        steps: list[dict[str, str]] = []
+        for entry in _load_hosts_config(config):
+            if "docker_path" in entry:
+                steps.extend(_host_full_steps(entry["host"], entry["docker_path"]))
+            else:
+                steps.extend(_host_only_steps(entry["host"]))
+        return _emit_plan(f"Multi-host Patch Plan: {config}", steps, json_output=args.json)
+    except InputError as exc:
+        print(f"Error: {type(exc).__name__}: {exc}", file=sys.stderr)
         return 2
-
-    r = subprocess.run(cmd)
-    return r.returncode
 
 
 if __name__ == "__main__":

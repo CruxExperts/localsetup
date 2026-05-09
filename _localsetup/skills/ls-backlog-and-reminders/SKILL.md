@@ -54,7 +54,7 @@ Use today's date in the repo's normal timezone (or ask once if ambiguous). For "
 
 ## Adding items
 
-1. **Parse user input:** Extract one or more distinct ideas, tasks, or reminders. If the user gives a long paragraph, condense into 1–3 clear items with short titles and optional notes.
+1. **Parse user input:** Extract one or more distinct ideas, tasks, or reminders. If the user gives a long paragraph, condense into 1-3 clear items with short titles and optional notes.
 2. **Due date:** If the user gives a date or time ("next Friday", "March 15", "in two weeks"), resolve to YYYY-MM-DD and put the item in the right section (or create Overdue/Due soon/No date). If no date, put in "No date (whenever)".
 3. **Write:** Append (or insert) each new item in the correct section. Update "Last updated" at the top. Do not remove or reorder existing items unless the user asks (e.g. "remove X", "mark Y done").
 4. **Confirm:** Reply briefly with what was added and, if applicable, the due date.
@@ -67,7 +67,7 @@ When the user asks to "start my session", "what should I work on?", "what's due?
 2. Summarize in this order:
    - **Overdue:** List items; say they are past due.
    - **Due soon:** List items and due dates.
-   - **No date:** Give the count and optionally 1–2 example titles; say they can ask to "show full backlog" or "work on something from backlog".
+   - **No date:** Give the count and optionally 1-2 example titles; say they can ask to "show full backlog" or "work on something from backlog".
 3. Suggest one next step (e.g. pick an overdue item, or "pick one from whenever").
 4. Keep the summary short (bullet list plus one line of guidance).
 
@@ -87,7 +87,7 @@ When the user dumps a long idea or list:
 - If they mention a date for part of it, attach that date to the relevant item only.
 - If nothing has a date, put all in "No date (whenever)".
 
-Example: "I want to add a dark mode toggle and also fix the login bug by next week, and someday refactor the API layer" → three items: (1) "Add dark mode toggle" (whenever), (2) "Fix login bug" (due: next week), (3) "Refactor API layer" (whenever).
+Example: "I want to add a dark mode toggle and also fix the login bug by next week, and someday refactor the API layer" -> three items: (1) "Add dark mode toggle" (whenever), (2) "Fix login bug" (due: next week), (3) "Refactor API layer" (whenever).
 
 ## References
 

@@ -5,7 +5,7 @@ metadata:
   version: "1.2"
 ---
 
-# Skill Vetter 🔒
+# Skill Vetter
 
 Security-first vetting protocol for AI agent skills. **Never install a skill without vetting it first.**
 
@@ -34,23 +34,23 @@ Questions to answer:
 Read ALL files in the skill. Check for these **RED FLAGS**:
 
 ```
-🚨 REJECT IMMEDIATELY IF YOU SEE:
-─────────────────────────────────────────
-• curl/wget to unknown URLs
-• Sends data to external servers
-• Requests credentials/tokens/API keys
-• Reads ~/.ssh, ~/.aws, ~/.config without clear reason
-• Accesses MEMORY.md, USER.md, SOUL.md, IDENTITY.md
-• Uses base64 decode on anything
-• Uses eval() or exec() with external input
-• Modifies system files outside workspace
-• Installs packages without listing them
-• Network calls to IPs instead of domains
-• Obfuscated code (compressed, encoded, minified)
-• Requests elevated/sudo permissions
-• Accesses browser cookies/sessions
-• Touches credential files
-─────────────────────────────────────────
+ REJECT IMMEDIATELY IF YOU SEE:
+
+- curl/wget to unknown URLs
+- Sends data to external servers
+- Requests credentials/tokens/API keys
+- Reads ~/.ssh, ~/.aws, ~/.config without clear reason
+- Accesses MEMORY.md, USER.md, SOUL.md, IDENTITY.md
+- Uses base64 decode on anything
+- Uses eval() or exec() with external input
+- Modifies system files outside workspace
+- Installs packages without listing them
+- Network calls to IPs instead of domains
+- Obfuscated code (compressed, encoded, minified)
+- Requests elevated/sudo permissions
+- Accesses browser cookies/sessions
+- Touches credential files
+
 ```
 
 ### Step 3: Permission Scope
@@ -68,10 +68,10 @@ Evaluate:
 
 | Risk Level | Examples | Action |
 |------------|----------|--------|
-| 🟢 LOW | Notes, weather, formatting | Basic review, install OK |
-| 🟡 MEDIUM | File ops, browser, APIs | Full code review required |
-| 🔴 HIGH | Credentials, trading, system | Human approval required |
-| ⛔ EXTREME | Security configs, root access | Do NOT install |
+|  LOW | Notes, weather, formatting | Basic review, install OK |
+|  MEDIUM | File ops, browser, APIs | Full code review required |
+|  HIGH | Credentials, trading, system | Human approval required |
+|  EXTREME | Security configs, root access | Do NOT install |
 
 ## Output Format
 
@@ -79,30 +79,30 @@ After vetting, produce this report:
 
 ```
 SKILL VETTING REPORT
-═══════════════════════════════════════
+
 Skill: [name]
 Source: [registry / GitHub / other]
 Author: [username]
 Version: [version]
-───────────────────────────────────────
+
 METRICS:
-• Downloads/Stars: [count]
-• Last Updated: [date]
-• Files Reviewed: [count]
-───────────────────────────────────────
+- Downloads/Stars: [count]
+- Last Updated: [date]
+- Files Reviewed: [count]
+
 RED FLAGS: [None / List them]
 
 PERMISSIONS NEEDED:
-• Files: [list or "None"]
-• Network: [list or "None"]  
-• Commands: [list or "None"]
-───────────────────────────────────────
-RISK LEVEL: [🟢 LOW / 🟡 MEDIUM / 🔴 HIGH / ⛔ EXTREME]
+- Files: [list or "None"]
+- Network: [list or "None"]
+- Commands: [list or "None"]
 
-VERDICT: [✅ SAFE TO INSTALL / ⚠️ INSTALL WITH CAUTION / ❌ DO NOT INSTALL]
+RISK LEVEL: [ LOW /  MEDIUM /  HIGH /  EXTREME]
+
+VERDICT: [ SAFE TO INSTALL / WARNING INSTALL WITH CAUTION /  DO NOT INSTALL]
 
 NOTES: [Any observations]
-═══════════════════════════════════════
+
 ```
 
 ## Quick Vet Commands
@@ -121,11 +121,11 @@ curl -s "https://raw.githubusercontent.com/OWNER/REPO/main/skills/SKILL_NAME/SKI
 
 ## Trust Hierarchy
 
-1. **Official skills from a trusted registry or vendor** → Lower scrutiny (still review)
-2. **High-star repos (1000+)** → Moderate scrutiny
-3. **Known authors** → Moderate scrutiny
-4. **New/unknown sources** → Maximum scrutiny
-5. **Skills requesting credentials** → Human approval always
+1. **Official skills from a trusted registry or vendor** -> Lower scrutiny (still review)
+2. **High-star repos (1000+)** -> Moderate scrutiny
+3. **Known authors** -> Moderate scrutiny
+4. **New/unknown sources** -> Maximum scrutiny
+5. **Skills requesting credentials** -> Human approval always
 
 ## Remember
 
@@ -136,4 +136,4 @@ curl -s "https://raw.githubusercontent.com/OWNER/REPO/main/skills/SKILL_NAME/SKI
 
 ---
 
-*Paranoia is a feature.* 🔒🦀
+*Paranoia is a feature.*

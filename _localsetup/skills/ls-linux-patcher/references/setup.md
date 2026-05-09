@@ -20,13 +20,13 @@ Complete setup instructions for getting the Linux Patcher skill running securely
 ## Prerequisites Checklist
 
 Before starting, ensure you have:
-- [ ] OpenClaw installed and running
-- [ ] SSH client installed on OpenClaw host
+- [ ] agent host installed and running
+- [ ] SSH client installed on agent host host
 - [ ] `jq` and `curl` installed (for PatchMon integration)
 - [ ] Root/sudo access on all target hosts
 - [ ] **PatchMon installed** (required to check which hosts need updating)
-  - **Important:** PatchMon does NOT need to be on the same server as OpenClaw
-  - Install on any server accessible via HTTPS from your OpenClaw host
+  - **Important:** PatchMon does NOT need to be on the same server as agent host
+  - Install on any server accessible via HTTPS from your agent host host
   - Download: https://github.com/PatchMon/PatchMon
   - Docs: https://docs.patchmon.net
 
@@ -36,28 +36,28 @@ Before starting, ensure you have:
 
 ```bash
 # Option A: Install from file
-openclaw skill install linux-patcher.skill
+agent-host skill install linux-patcher.skill
 
 # Option B: Install from ClawHub
-clawhub install linux-patcher
+install this skill through your agent skill manager
 
 # Verify installation
-ls -la ~/.openclaw/workspace/skills/linux-patcher
+ls -la ~/.agent-host/workspace/skills/linux-patcher
 ```
 
 ### Step 2: Configure SSH Key Authentication
 
-**On OpenClaw host (control machine):**
+**On agent host host (control machine):**
 
 ```bash
 # Generate SSH key if you don't have one
-ssh-keygen -t ed25519 -C "openclaw-patching" -f ~/.ssh/id_openclaw
+ssh-keygen -t ed25519 -C "agent-host-patching" -f ~/.ssh/id_agent-host
 
 # Copy public key to each target host
-ssh-copy-id -i ~/.ssh/id_openclaw.pub admin@targethost.example.com
+ssh-copy-id -i ~/.ssh/id_agent-host.pub admin@targethost.example.com
 
 # Test SSH access (should not prompt for password)
-ssh -i ~/.ssh/id_openclaw admin@targethost.example.com echo "SSH OK"
+ssh -i ~/.ssh/id_agent-host admin@targethost.example.com echo "SSH OK"
 ```
 
 **Configure SSH config for convenience:**
@@ -70,12 +70,12 @@ cat >> ~/.ssh/config << 'EOF'
 Host webserver
     HostName webserver.example.com
     User admin
-    IdentityFile ~/.ssh/id_openclaw
+    IdentityFile ~/.ssh/id_agent-host
 
 Host database
     HostName database.example.com
     User admin
-    IdentityFile ~/.ssh/id_openclaw
+    IdentityFile ~/.ssh/id_agent-host
 EOF
 
 # Test with hostname alias
@@ -178,7 +178,7 @@ visudo -c -f /etc/sudoers.d/linux-patcher
 **Test sudo access:**
 
 ```bash
-# From OpenClaw host, test sudo without password prompt
+# From agent host host, test sudo without password prompt
 ssh admin@targethost sudo apt update  # Should run without password
 ssh admin@targethost sudo reboot       # Should ask for password (not allowed)
 ```
@@ -187,7 +187,7 @@ ssh admin@targethost sudo reboot       # Should ask for password (not allowed)
 
 ```bash
 # Copy template
-cp ~/.openclaw/workspace/skills/linux-patcher/scripts/patchmon-credentials.example.conf \
+cp ~/.agent-host/workspace/skills/linux-patcher/scripts/patchmon-credentials.example.conf \
    ~/.patchmon-credentials.conf
 
 # Edit with your credentials
@@ -211,7 +211,7 @@ chmod 600 ~/.patchmon-credentials.conf
 **Test PatchMon connectivity:**
 
 ```bash
-cd ~/.openclaw/workspace/skills/linux-patcher
+cd ~/.agent-host/workspace/skills/linux-patcher
 scripts/patchmon-query.sh
 ```
 
@@ -220,34 +220,34 @@ scripts/patchmon-query.sh
 #### Test 1: Host-Only Update (Dry-Run)
 
 ```bash
-cd ~/.openclaw/workspace/skills/linux-patcher
+cd ~/.agent-host/workspace/skills/linux-patcher
 
 # Test on one host first
-DRY_RUN=true scripts/patch-host-only.sh admin@webserver.example.com
+python scripts/patch_cli.py host-only admin@webserver.example.com
 ```
 
 #### Test 2: Full Update (Dry-Run with Docker)
 
 ```bash
 # Test with Docker path auto-detection
-DRY_RUN=true scripts/patch-host-full.sh admin@webserver.example.com
+python scripts/patch_cli.py host-only admin@webserver.example.com
 
 # Or specify Docker path
-DRY_RUN=true scripts/patch-host-full.sh admin@webserver.example.com /opt/docker
+DRY_RUN=true python scripts/patch_cli.py host-full admin@webserver.example.com /opt/docker
 ```
 
 #### Test 3: Automatic Mode (Dry-Run via PatchMon)
 
 ```bash
 # Queries PatchMon, detects hosts, but doesn't apply changes
-scripts/patch-auto.sh --dry-run
+python scripts/patch_cli.py auto --dry-run
 ```
 
 #### Test 4: Apply Real Updates (Single Host)
 
 ```bash
 # Remove DRY_RUN flag to actually apply updates
-scripts/patch-host-only.sh admin@webserver.example.com
+python scripts/patch_cli.py host-only admin@webserver.example.com
 ```
 
 ### Step 6: Verify Results
@@ -263,10 +263,10 @@ After first real update:
    ```bash
    # Ubuntu/Debian
    tail -100 /var/log/apt/history.log
-   
+
    # RHEL/CentOS
    tail -100 /var/log/yum.log  # or dnf.log
-   
+
    # SUSE
    tail -100 /var/log/zypper.log
    ```
@@ -282,7 +282,7 @@ After first real update:
    ```bash
    # Ubuntu/Debian
    [ -f /var/run/reboot-required ] && echo "Reboot needed" || echo "No reboot needed"
-   
+
    # Any distro - check kernel
    uname -r  # Running kernel
    ls -t /boot/vmlinuz-* | head -n1  # Latest installed
@@ -372,8 +372,8 @@ After first real update:
 ssh admin@target "cat ~/.ssh/authorized_keys"
 
 # 2. Check SSH key permissions
-ls -la ~/.ssh/id_openclaw
-chmod 600 ~/.ssh/id_openclaw  # Fix if needed
+ls -la ~/.ssh/id_agent-host
+chmod 600 ~/.ssh/id_agent-host  # Fix if needed
 
 # 3. Check target host SSH config
 ssh admin@target "grep -E '(PubkeyAuthentication|PasswordAuthentication)' /etc/ssh/sshd_config"
@@ -442,7 +442,7 @@ ssh admin@target "command -v docker"
 ssh admin@target "find /home /opt /srv -name docker-compose.yml 2>/dev/null"
 
 # 3. Specify path manually
-scripts/patch-host-full.sh admin@target /full/path/to/docker
+python scripts/patch_cli.py host-full admin@target /full/path/to/docker
 
 # 4. Check permissions
 ssh admin@target "ls -la /path/to/docker/docker-compose.yml"
@@ -456,7 +456,7 @@ After successful setup:
    ```bash
    cron add --name "Nightly Patching" \
      --schedule "0 2 * * *" \
-     --task "cd ~/.openclaw/workspace/skills/linux-patcher && scripts/patch-auto.sh"
+     --task "cd ~/.agent-host/workspace/skills/linux-patcher && python scripts/patch_cli.py auto"
    ```
 
 2. **Set up notifications:**
@@ -482,4 +482,4 @@ If you encounter issues:
 2. Review skill logs
 3. Test each component individually
 4. Read SKILL.md for detailed documentation
-5. Ask OpenClaw: "Help me troubleshoot linux-patcher skill"
+5. Ask agent host: "Help me troubleshoot linux-patcher skill"

@@ -7,13 +7,7 @@ description: |
   inflated symbolism, promotional language, superficial -ing analyses, vague
   attributions, em dash overuse, rule of three, AI vocabulary words, negative
   parallelisms, and excessive conjunctive phrases.
-allowed-tools:
-  - Read
-  - Write
-  - Edit
-  - Grep
-  - Glob
-  - AskUserQuestion
+allowed-tools: "Read, Write, Edit, Grep, Glob, AskUserQuestion"
 metadata:
   version: "2.1.2"
 ---
@@ -236,10 +230,10 @@ Avoiding AI patterns is only half the job. Sterile, voiceless writing is just as
 
 ### 13. Em Dash Overuse
 
-**Problem:** LLMs use em dashes (—) more than humans, mimicking "punchy" sales writing.
+**Problem:** LLMs use em dashes (-) more than humans, mimicking "punchy" sales writing.
 
 **Before:**
-> The term is primarily promoted by Dutch institutions—not by the people themselves. You don't say "Netherlands, Europe" as an address—yet this mislabeling continues—even in official documents.
+> The term is primarily promoted by Dutch institutions-not by the people themselves. You don't say "Netherlands, Europe" as an address-yet this mislabeling continues-even in official documents.
 
 **After:**
 > The term is primarily promoted by Dutch institutions, not by the people themselves. You don't say "Netherlands, Europe" as an address, yet this mislabeling continues in official documents.
@@ -286,10 +280,10 @@ Avoiding AI patterns is only half the job. Sterile, voiceless writing is just as
 
 ### 17. Curly Quotation Marks
 
-**Problem:** ChatGPT uses curly quotes (“...”) instead of straight quotes ("...").
+**Problem:** ChatGPT uses curly quotes ("...") instead of straight quotes ("...").
 
 **Before:**
-> He said “the project is on track” but others disagreed.
+> He said "the project is on track" but others disagreed.
 
 **After:**
 > He said "the project is on track" but others disagreed.
@@ -342,13 +336,13 @@ Avoiding AI patterns is only half the job. Sterile, voiceless writing is just as
 
 ### 21. Filler Phrases
 
-**Before → After:**
-- "In order to achieve this goal" → "To achieve this"
-- "Due to the fact that it was raining" → "Because it was raining"
-- "At this point in time" → "Now"
-- "In the event that you need help" → "If you need help"
-- "The system has the ability to process" → "The system can process"
-- "It is important to note that the data shows" → "The data shows"
+**Before -> After:**
+- "In order to achieve this goal" -> "To achieve this"
+- "Due to the fact that it was raining" -> "Because it was raining"
+- "At this point in time" -> "Now"
+- "In the event that you need help" -> "If you need help"
+- "The system has the ability to process" -> "The system can process"
+- "It is important to note that the data shows" -> "The data shows"
 
 ---
 
@@ -400,7 +394,7 @@ Provide:
 ## Full Example
 
 **Before (AI-sounding):**
-> The new software update serves as a testament to the company's commitment to innovation. Moreover, it provides a seamless, intuitive, and powerful user experience—ensuring that users can accomplish their goals efficiently. It's not just an update, it's a revolution in how we think about productivity. Industry experts believe this will have a lasting impact on the entire sector, highlighting the company's pivotal role in the evolving technological landscape.
+> The new software update serves as a testament to the company's commitment to innovation. Moreover, it provides a seamless, intuitive, and powerful user experience-ensuring that users can accomplish their goals efficiently. It's not just an update, it's a revolution in how we think about productivity. Industry experts believe this will have a lasting impact on the entire sector, highlighting the company's pivotal role in the evolving technological landscape.
 
 **After (Humanized):**
 > The software update adds batch processing, keyboard shortcuts, and offline mode. Early feedback from beta testers has been positive, with most reporting faster task completion.

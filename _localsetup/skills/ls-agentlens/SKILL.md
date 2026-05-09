@@ -24,7 +24,7 @@ Always start by reading `.agentlens/INDEX.md` for the project map.
 ## Navigation Flow
 
 ```
-INDEX.md → Find module → MODULE.md → outline.md/memory.md → Source file
+INDEX.md -> Find module -> MODULE.md -> outline.md/memory.md -> Source file
 ```
 
 ## When To Read What

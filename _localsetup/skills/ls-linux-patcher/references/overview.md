@@ -1,9 +1,9 @@
-# Linux Patcher - OpenClaw Skill
+# Linux Patcher - agent host Skill
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../../LICENSE)
-[![OpenClaw](https://img.shields.io/badge/OpenClaw-Skill-orange)](https://openclaw.ai)
+[![agent host](https://img.shields.io/badge/agent host-Skill-orange)](https://agent-host.ai)
 
-Automated Linux server patching with PatchMon integration for OpenClaw.
+Automated Linux server patching with PatchMon integration for agent host.
 
 ## 🎯 Features
 
@@ -22,27 +22,27 @@ Automated Linux server patching with PatchMon integration for OpenClaw.
 
 ```bash
 # Option 1: Install from file
-openclaw skill install linux-patcher.skill
+agent-host skill install linux-patcher.skill
 
 # Option 2: Install from ClawHub (when published)
-clawhub install linux-patcher
+install this skill through your agent skill manager
 
 # Option 3: Install from this repo
 git clone https://github.com/JGM2025/linux-patcher-skill
 cd linux-patcher-skill
-openclaw skill install .
+agent-host skill install .
 ```
 
 ### Initial Setup
 
 ```bash
 # 1. Read the setup guide
-cd ~/.openclaw/workspace/skills/linux-patcher
-cat SETUP.md
+cd ~/.agent-host/workspace/skills/linux-patcher
+cat references/setup.md
 
 # 2. Configure SSH keys
-ssh-keygen -t ed25519 -C "openclaw-patching" -f ~/.ssh/id_openclaw
-ssh-copy-id -i ~/.ssh/id_openclaw.pub admin@targethost
+ssh-keygen -t ed25519 -C "agent-host-patching" -f ~/.ssh/id_agent-host
+ssh-copy-id -i ~/.ssh/id_agent-host.pub admin@targethost
 
 # 3. Configure PatchMon credentials
 cp scripts/patchmon-credentials.example.conf ~/.patchmon-credentials.conf
@@ -50,12 +50,12 @@ nano ~/.patchmon-credentials.conf
 chmod 600 ~/.patchmon-credentials.conf
 
 # 4. Test with dry-run
-scripts/patch-auto.sh --dry-run
+python scripts/patch_cli.py auto --dry-run
 ```
 
 ### Usage
 
-**Via OpenClaw chat (recommended):**
+**Via agent host chat (recommended):**
 
 ```
 You: "Update my servers"
@@ -72,38 +72,38 @@ You: "What servers need patching?"
 
 ```bash
 # Automatic mode (PatchMon)
-scripts/patch-auto.sh
+python scripts/patch_cli.py auto
 
 # Skip Docker updates
-scripts/patch-auto.sh --skip-docker
+python scripts/patch_cli.py auto --skip-docker
 
 # Dry-run (preview only)
-scripts/patch-auto.sh --dry-run
+python scripts/patch_cli.py auto --dry-run
 
 # Manual single host
-scripts/patch-host-only.sh admin@webserver.example.com
-scripts/patch-host-full.sh admin@webserver.example.com /opt/docker
+python scripts/patch_cli.py host-only admin@webserver.example.com
+python scripts/patch_cli.py host-full admin@webserver.example.com /opt/docker
 ```
 
 ## 📋 Prerequisites
 
 ### Required
 
-- **OpenClaw** installed and running
+- **agent host** installed and running
 - **SSH client** with key authentication
 - **curl** and **jq** for PatchMon integration
 - **Passwordless sudo** on target hosts (restricted to patching commands)
 - **PatchMon** installed (required to check which hosts need updating)
-  - Does NOT need to be on the OpenClaw host
+  - Does NOT need to be on the agent host host
   - Download: https://github.com/PatchMon/PatchMon
   - Docs: https://docs.patchmon.net
 
 ### For Automatic Host Detection
 
 - **PatchMon server** (required for automatic mode)
-  - **Important:** Does NOT need to be on the same server as OpenClaw
+  - **Important:** Does NOT need to be on the same server as agent host
   - Install on any accessible server (separate host recommended)
-  - OpenClaw queries PatchMon via HTTPS API
+  - agent host queries PatchMon via HTTPS API
   - Download: https://github.com/PatchMon/PatchMon
 
 ### Optional
@@ -118,8 +118,8 @@ scripts/patch-host-full.sh admin@webserver.example.com /opt/docker
 Complete documentation is included in the skill:
 
 - **[SKILL.md](SKILL.md)** - Main usage guide and features
-- **[SETUP.md](SETUP.md)** - Complete setup with security best practices
-- **[WORKFLOWS.md](WORKFLOWS.md)** - Visual workflow diagrams
+- **[references/setup.md](references/setup.md)** - Complete setup with security best practices
+- **[references/workflows.md](references/workflows.md)** - Visual workflow diagrams
 - **[references/patchmon-setup.md](references/patchmon-setup.md)** - PatchMon installation
 
 ## 🌍 Supported Distributions
@@ -150,35 +150,35 @@ This skill is designed with security as a priority:
 - **Audit trail** - All actions logged via syslog
 - **Safe testing** - Dry-run mode available
 
-See [SETUP.md](SETUP.md) for complete security configuration.
+See [references/setup.md](references/setup.md) for complete security configuration.
 
 ## 🎓 Examples
 
 ### Example 1: Automatic updates via PatchMon
 ```bash
 # Query PatchMon, detect hosts, update everything
-scripts/patch-auto.sh
+python scripts/patch_cli.py auto
 ```
 
 ### Example 2: Skip Docker updates
 ```bash
 # Update packages only, leave containers running
-scripts/patch-auto.sh --skip-docker
+python scripts/patch_cli.py auto --skip-docker
 ```
 
 ### Example 3: Test before applying
 ```bash
 # Preview what would be updated
-scripts/patch-auto.sh --dry-run
+python scripts/patch_cli.py auto --dry-run
 
 # Review output, then apply
-scripts/patch-auto.sh
+python scripts/patch_cli.py auto
 ```
 
-### Example 4: Via OpenClaw chat
+### Example 4: Via agent host chat
 ```
 You: "Update my servers"
-OpenClaw: Queries PatchMon → Updates 4 hosts → Reports "✓ All hosts updated successfully"
+agent host: Queries PatchMon → Updates 4 hosts → Reports "✓ All hosts updated successfully"
 ```
 
 ### Example 5: Schedule automated patching
@@ -186,7 +186,7 @@ OpenClaw: Queries PatchMon → Updates 4 hosts → Reports "✓ All hosts update
 # Run nightly at 2 AM
 cron add --name "Nightly Patching" \
   --schedule "0 2 * * *" \
-  --task "cd ~/.openclaw/workspace/skills/linux-patcher && scripts/patch-auto.sh"
+  --task "cd ~/.agent-host/workspace/skills/linux-patcher && python scripts/patch_cli.py auto"
 ```
 
 ## 🤝 Contributing
@@ -206,14 +206,14 @@ MIT License - See [LICENSE](../../../LICENSE) file for details.
 
 ## 🆘 Support
 
-- **Documentation:** See SKILL.md, SETUP.md, WORKFLOWS.md
+- **Documentation:** See SKILL.md, references/setup.md, references/workflows.md
 - **Issues:** https://github.com/JGM2025/linux-patcher-skill/issues
-- **OpenClaw Community:** https://discord.com/invite/clawd
+- **agent host Community:** https://discord.com/invite/clawd
 - **PatchMon:** https://github.com/PatchMon/PatchMon
 
 ## 🎉 Acknowledgments
 
-- Built for [OpenClaw](https://openclaw.ai)
+- Built for [agent host](https://agent-host.ai)
 - Integrates with [PatchMon](https://github.com/PatchMon/PatchMon)
 - Inspired by the need for simple, secure server patching
 

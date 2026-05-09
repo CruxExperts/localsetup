@@ -10,7 +10,7 @@ metadata:
 ## 15. Markdown compatibility (CRITICAL)
 
 - **ASCII-first:** No Unicode emoji, box-drawing, or arrow symbols in markdown. Use [OK], [FAIL], [WARNING], [YES], [NO]; use -> not arrow; use * or - for bullets.
-- **No EM dash:** Do not use the EM dash character (—, U+2014) in any user-facing text. Use a space and hyphen ( - ) or a plain hyphen instead.
+- **No EM dash:** Do not use the EM dash character (-, U+2014) in any user-facing text. Use a space and hyphen ( - ) or a plain hyphen instead.
 - **Encoding:** UTF-8; prefer pure ASCII. Verify in markdown preview before committing.
 
 ## 16. Script generation quality (all languages)

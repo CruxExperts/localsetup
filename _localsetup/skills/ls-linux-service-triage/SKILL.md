@@ -7,6 +7,8 @@ metadata:
 
 # Linux & service basics: logs, systemd/PM2, permissions, Nginx reverse proxy, DNS checks
 
+Source note: imported from `linux-service-triage` by kowl64, with provenance previously recorded in release-only `_meta.json` metadata.
+
 ## PURPOSE
 Diagnoses common Linux service issues using logs, systemd/PM2, file permissions, Nginx reverse proxy checks, and DNS sanity checks.
 
@@ -17,7 +19,7 @@ Diagnoses common Linux service issues using logs, systemd/PM2, file permissions,
   - Fix the permissions on this folder so the service can read and write safely.
   - Set up Nginx reverse proxy for this port and verify DNS and TLS are sane.
   - Create a systemd service for this script and make it survive reboots.
-- DO NOT USE WHEN…
+- DO NOT USE WHEN...
   - You need kernel debugging or deep performance profiling.
   - You want to exploit systems or bypass access controls.
 
@@ -47,7 +49,7 @@ Success = service runs, listens on expected port, and reverse proxy/DNS path is 
    - config error, dependency missing, permission denied, port conflict, upstream unreachable, DNS mismatch.
 4. Propose minimal fix + verification steps.
 5. Validate network path (if web service):
-   - app listens → Nginx proxies → DNS resolves → (TLS sanity if applicable).
+   - app listens -> Nginx proxies -> DNS resolves -> (TLS sanity if applicable).
 6. Provide restart/reload plan and confirm health checks.
 7. STOP AND ASK THE USER if:
    - logs/status output are missing,
@@ -75,9 +77,8 @@ TRIAGE REPORT
 
 
 ## EXAMPLES
-- Input: “journal shows permission denied on /var/app/uploads.”  
+- Input: "journal shows permission denied on /var/app/uploads."
   Output: path permission analysis + safe chown/chmod plan + verification.
 
-- Input: “App works locally but domain returns 502.”  
+- Input: "App works locally but domain returns 502."
   Output: upstream port checks + nginx error log interpretation + proxy_pass fix plan.
-

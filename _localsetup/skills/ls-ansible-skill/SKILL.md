@@ -45,23 +45,23 @@ ansible-playbook -i inventory/hosts.yml playbooks/site.yml --tags "security,node
 
 ```
 skills/ansible/
-├── SKILL.md              # This file
-├── inventory/            # Host inventories
-│   ├── hosts.yml         # Main inventory
-│   └── group_vars/       # Group variables
-├── playbooks/            # Runnable playbooks
-│   ├── site.yml          # Master playbook
-│   ├── openclaw-vps.yml  # Example VPS/agent-host playbook (adapt as needed)
-│   └── security.yml      # Security hardening
-├── roles/                # Reusable roles
-│   ├── common/           # Base system setup
-│   ├── security/         # Hardening (SSH, fail2ban, UFW)
-│   ├── nodejs/           # Node.js installation
-│   └── openclaw/         # Example agent-host role (adapt as needed)
-└── references/           # Documentation
-    ├── best-practices.md
-    ├── modules-cheatsheet.md
-    └── troubleshooting.md
+ SKILL.md              # This file
+ inventory/            # Host inventories
+    hosts.yml         # Main inventory
+    group_vars/       # Group variables
+ playbooks/            # Runnable playbooks
+    site.yml          # Master playbook
+    openclaw-vps.yml  # Example VPS/agent-host playbook (adapt as needed)
+    security.yml      # Security hardening
+ roles/                # Reusable roles
+    common/           # Base system setup
+    security/         # Hardening (SSH, fail2ban, UFW)
+    nodejs/           # Node.js installation
+    openclaw/         # Example agent-host role (adapt as needed)
+ references/           # Documentation
+     best-practices.md
+     modules-cheatsheet.md
+     troubleshooting.md
 ```
 
 ## Core Concepts

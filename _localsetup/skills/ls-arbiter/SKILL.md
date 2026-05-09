@@ -55,7 +55,7 @@ Set these in your agent's environment for automatic agent/session detection (var
 
 Create a decision plan for human review.
 
-**CLI:** `arbiter-push '<json>'` — takes a single JSON argument containing all fields.
+**CLI:** `arbiter-push '<json>'` - takes a single JSON argument containing all fields.
 
 ```bash
 arbiter-push '{
@@ -212,7 +212,7 @@ Polls every 30 seconds until complete or timeout.
 RESULT=$(arbiter-push '{"title":"Clean IT i18n Plan","tag":"clean-it","priority":"high","notify":"agent:swe3:main","decisions":[{"id":"library","title":"i18n Library","options":[{"key":"i18next","label":"i18next"},{"key":"formatjs","label":"FormatJS"}]},{"id":"keys","title":"Key Structure","options":[{"key":"flat","label":"Flat (login.button)"},{"key":"nested","label":"Nested ({login:{button}})"}]}]}')
 
 PLAN_ID=$(echo $RESULT | jq -r '.planId')
-echo "Pushed plan $PLAN_ID — waiting for human review"
+echo "Pushed plan $PLAN_ID - waiting for human review"
 ```
 
 ### Example 2: Check and Proceed
@@ -247,11 +247,11 @@ fi
 
 ## Best Practices
 
-1. **Batch related decisions** — Don't push one at a time
-2. **Provide context** — Human needs to understand tradeoffs
-3. **Use tags** — Makes filtering easy (`--tag project-name`)
-4. **Set notify** — So blocked agents get woken up
-5. **Use priority sparingly** — Reserve `urgent` for true blockers
+1. **Batch related decisions** - Don't push one at a time
+2. **Provide context** - Human needs to understand tradeoffs
+3. **Use tags** - Makes filtering easy (`--tag project-name`)
+4. **Set notify** - So blocked agents get woken up
+5. **Use priority sparingly** - Reserve `urgent` for true blockers
 
 ## File Locations
 

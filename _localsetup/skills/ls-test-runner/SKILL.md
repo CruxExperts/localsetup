@@ -91,19 +91,11 @@ npx playwright show-report             # View HTML report
 
 ## TDD Workflow
 
-1. **Red** — Write a failing test that describes the desired behavior.
-2. **Green** — Write the minimum code to make the test pass.
-3. **Refactor** — Clean up the code while keeping tests green.
+1. **Red** - Write a failing test that describes the desired behavior.
+2. **Green** - Write the minimum code to make the test pass.
+3. **Refactor** - Clean up the code while keeping tests green.
 
-```
-┌─────────┐     ┌─────────┐     ┌──────────┐
-│  Write   │────▶│  Write  │────▶│ Refactor │──┐
-│  Test    │     │  Code   │     │  Code    │  │
-│  (Red)   │     │ (Green) │     │          │  │
-└─────────┘     └─────────┘     └──────────┘  │
-     ▲                                          │
-     └──────────────────────────────────────────┘
-```
+Source note: imported from `test-runner` by cmanfre7, with provenance previously recorded in release-only `_meta.json` metadata.
 
 ## Test Patterns
 

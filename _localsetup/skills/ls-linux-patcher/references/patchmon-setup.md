@@ -180,7 +180,7 @@ PatchMon and this skill complement each other:
 - Web UI for non-technical users
 
 **Linux Patcher skill provides:**
-- OpenClaw integration
+- agent host integration
 - Ad-hoc updates via chat
 - Flexible scripting
 - Custom workflows
@@ -189,12 +189,12 @@ PatchMon and this skill complement each other:
 
 1. **Install PatchMon** for monitoring and dashboard
 2. **Use PatchMon agents** for automated scheduled updates
-3. **Use Linux Patcher skill** for manual/urgent updates via OpenClaw
+3. **Use Linux Patcher skill** for manual/urgent updates via agent host
 
 Example workflow:
 - PatchMon runs nightly updates automatically
-- User asks OpenClaw: "Update webserver immediately"
-- OpenClaw uses Linux Patcher skill for instant update
+- User asks agent host: "Update webserver immediately"
+- agent host uses Linux Patcher skill for instant update
 - Both systems log to PatchMon dashboard
 
 ## API Access (Advanced)

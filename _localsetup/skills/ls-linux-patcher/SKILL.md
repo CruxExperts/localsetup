@@ -3,7 +3,7 @@ name: ls-linux-patcher
 description: Automated Linux server patching and Docker container updates. Use when the user asks to update, patch, or upgrade Linux servers, apply security updates, update Docker containers, check for system updates, or manage server maintenance across multiple hosts. Supports Ubuntu, Debian, RHEL, AlmaLinux, Rocky Linux, CentOS, Amazon Linux, and SUSE. Includes PatchMon integration for automatic host detection and intelligent Docker handling.
 metadata:
   version: "1.1"
-compatibility: "Python 3.10+ for patch_cli.py; shell scripts (patch-auto.sh, patch-host-only.sh, etc.) for SSH and PatchMon. Use 'python scripts/patch_cli.py auto|host-only|host-full|multiple' for validated entrypoints."
+compatibility: "Python 3.10+ for patch_cli.py; plan-only Python helper. Use 'python scripts/patch_cli.py auto|host-only|host-full|multiple' to generate auditable commands; remote execution is manual."
 ---
 
 # Linux Patcher
@@ -36,7 +36,7 @@ This skill requires:
 - **SSH key authentication** - No passwords stored or transmitted
 - **PatchMon credentials** - Stored securely in user's home directory
 
-**Read `SETUP.md` for complete security configuration guide.**
+**Read `references/setup.md` for complete security configuration guide.**
 
 ## Quick Start
 
@@ -45,7 +45,6 @@ This skill requires:
 **Patch all hosts from PatchMon** (automatic detection):
 ```bash
 python scripts/patch_cli.py auto
-# or: scripts/patch-auto.sh
 ```
 
 **Skip Docker updates** (packages only):
@@ -63,7 +62,6 @@ python scripts/patch_cli.py auto --dry-run
 **Single host - packages only**:
 ```bash
 python scripts/patch_cli.py host-only user@hostname
-# or: scripts/patch-host-only.sh user@hostname
 ```
 
 **Single host - full update**:
@@ -107,7 +105,7 @@ PATCHMON_PASSWORD=your-password
 
 Then simply run:
 ```bash
-scripts/patch-auto.sh
+python scripts/patch_cli.py auto
 ```
 
 The script will:
@@ -146,7 +144,7 @@ DRY_RUN="true"
 
 Then run:
 ```bash
-scripts/patch-multiple.sh my-servers.conf
+python scripts/patch_cli.py multiple my-servers.conf
 ```
 
 ## Prerequisites
@@ -179,7 +177,7 @@ brew install curl jq
 
 - [ ] **SSH server** running and accessible
 - [ ] **SSH key authentication** configured (passwordless login)
-- [ ] **Passwordless sudo** configured for patching commands (see SETUP.md)
+- [ ] **Passwordless sudo** configured for patching commands (see references/setup.md)
 - [ ] **Docker** installed (optional, only for full updates)
 - [ ] **Docker Compose** installed (optional, only for full updates)
 - [ ] **PatchMon agent** installed and reporting (optional but recommended)
@@ -202,17 +200,17 @@ brew install curl jq
 
 **Architecture:**
 ```
-┌─────────────────┐      HTTPS API      ┌─────────────────┐
-│ Control / agent │ ──────────────────> │ PatchMon Server │
-│ host            │    Query updates    │ (separate host) │
-└─────────────────┘                     └─────────────────┘
-                                                  │
-                                                  │ Reports
-                                                  ▼
-                                         ┌─────────────────┐
-                                         │ Target Hosts    │
-                                         │ (with agents)   │
-                                         └─────────────────┘
+      HTTPS API
+ Control / agent  >  PatchMon Server
+ host                Query updates     (separate host)
+
+
+                                                   Reports
+
+
+                                          Target Hosts
+                                          (with agents)
+
 ```
 
 **Quick Start:**
@@ -287,7 +285,7 @@ Complete update cycle:
 
 ## Workflow
 
-### Automatic Workflow (patch-auto.sh)
+### Automatic Workflow (plan-only helper)
 
 1. **Query PatchMon** - Fetch hosts needing updates via API
 2. **For each host:**
@@ -319,10 +317,10 @@ Complete update cycle:
 ### Docker Detection Logic
 
 When using automatic mode:
-- **Docker installed + compose file found** → Full update
-- **Docker installed + no compose file** → Host-only update
-- **Docker not installed** → Host-only update
-- **--skip-docker flag set** → Host-only update (ignores Docker)
+- **Docker installed + compose file found** -> Full update
+- **Docker installed + no compose file** -> Host-only update
+- **Docker not installed** -> Host-only update
+- **--skip-docker flag set** -> Host-only update (ignores Docker)
 
 ## Docker Path Auto-Detection
 
@@ -336,7 +334,7 @@ When Docker path is not specified, the script checks these locations:
 
 **Override auto-detection:**
 ```bash
-scripts/patch-host-full.sh user@host /custom/path
+python scripts/patch_cli.py host-full user@host /custom/path
 ```
 
 ## Examples
@@ -348,37 +346,37 @@ cp scripts/patchmon-credentials.example.conf ~/.patchmon-credentials.conf
 nano ~/.patchmon-credentials.conf
 
 # Run automatic updates
-scripts/patch-auto.sh
+python scripts/patch_cli.py auto
 ```
 
 ### Example 2: Automatic with dry-run
 ```bash
 # Preview what would be updated
-scripts/patch-auto.sh --dry-run
+python scripts/patch_cli.py auto --dry-run
 
 # Review output, then apply
-scripts/patch-auto.sh
+python scripts/patch_cli.py auto
 ```
 
 ### Example 3: Skip Docker updates
 ```bash
 # Update packages only, even if Docker is detected
-scripts/patch-auto.sh --skip-docker
+python scripts/patch_cli.py auto --skip-docker
 ```
 
 ### Example 4: Manual single host, packages only
 ```bash
-scripts/patch-host-only.sh admin@webserver.example.com
+python scripts/patch_cli.py host-only admin@webserver.example.com
 ```
 
 ### Example 5: Manual single host, full update with custom Docker path
 ```bash
-scripts/patch-host-full.sh docker@app.example.com /home/docker/production
+python scripts/patch_cli.py host-full docker@app.example.com /home/docker/production
 ```
 
 ### Example 6: Manual multiple hosts from config
 ```bash
-scripts/patch-multiple.sh production-servers.conf
+python scripts/patch_cli.py multiple production-servers.conf
 ```
 
 ### Example 7: Via your agent or chat
@@ -387,7 +385,7 @@ If your platform supports natural language or chat, you can ask (e.g.):
 - "Patch all hosts that need updates"
 - "Update packages only, skip Docker"
 
-Run the scripts via your platform's command or terminal; use automatic mode (`scripts/patch-auto.sh`) to query PatchMon and report results.
+Run the scripts via your platform's command or terminal; use automatic mode (`python scripts/patch_cli.py auto`) to query PatchMon and report results.
 
 ## Troubleshooting
 
@@ -421,7 +419,7 @@ Run the scripts via your platform's command or terminal; use automatic mode (`sc
 - Verify hostname resolution
 
 #### Docker Compose not found
-- Specify full path: `scripts/patch-host-full.sh user@host /full/path`
+- Specify full path: `python scripts/patch_cli.py host-full user@host /full/path`
 - Or install Docker Compose on target host
 - Auto-detection searches: `/home/user/Docker`, `/opt/docker`, `/srv/docker`
 
@@ -430,87 +428,6 @@ Run the scripts via your platform's command or terminal; use automatic mode (`sc
 - Manually inspect: `ssh user@host "cd /docker/path && docker compose logs"`
 - Rollback if needed: `ssh user@host "cd /docker/path && docker compose down && docker compose up -d"`
 
-## PatchMon Integration (Optional)
+## Additional References
 
-For dashboard monitoring and scheduled patching, see `references/patchmon-setup.md`.
-
-PatchMon provides:
-- Web dashboard for update status
-- Per-host package tracking
-- Security update highlighting
-- Update history
-
-## Security Considerations
-
-- **Passwordless sudo** is required for automation
-  - Limit to specific commands (`apt`, `docker` only)
-  - Use `/etc/sudoers.d/` files (easier to manage)
-- **SSH keys** should be protected
-  - Use passphrase-protected keys when possible
-  - Restrict key permissions: `chmod 600 ~/.ssh/id_rsa`
-- **Review updates** before applying in production
-  - Use dry-run mode first
-  - Test on staging environment
-- **Schedule updates** during maintenance windows
-  - Use your platform's scheduler or cron for automation
-  - Coordinate with team for Docker updates (brief downtime)
-
-## Best Practices
-
-1. **Test first** - Run dry-run mode before applying changes
-2. **Stagger updates** - Don't update all hosts simultaneously (avoid full outage)
-3. **Monitor logs** - Check output for errors after updates
-4. **Backup configs** - Keep Docker Compose files in version control
-5. **Schedule wisely** - Update during low-traffic windows
-6. **Document paths** - Maintain config files for infrastructure
-7. **Reboot when needed** - Kernel updates require reboots (not automated)
-
-## Reboot Management
-
-The scripts do NOT automatically reboot hosts. After updates:
-
-1. Check if reboot required: `ssh user@host "[ -f /var/run/reboot-required ] && echo YES || echo NO"`
-2. Schedule manual reboots during maintenance windows
-3. Use PatchMon dashboard to track reboot requirements
-
-## Running patch scripts from an agent
-
-Use your platform's command or terminal to run the patch scripts. Paths are relative to the skill directory (e.g. `_localsetup/skills/ls-linux-patcher/` or `_localsetup/skills/ls-linux-patcher/`); adjust for your layout.
-
-- **Automatic mode:** Run `scripts/patch-auto.sh` (or `scripts/patch-auto.sh --skip-docker` for packages only). The script queries PatchMon for hosts needing updates, then runs package and optional Docker updates. Invoke via your platform's shell/exec/run capability.
-- **Scheduling:** Use your platform's scheduler or system cron. Example (Linux cron): `0 2 * * * cd /path/to/ls-linux-patcher && scripts/patch-auto.sh`.
-- **Manual mode:** For specific hosts, run `scripts/patch-host-only.sh user@host` or `scripts/patch-host-full.sh user@host /path/to/docker/compose` from your terminal or exec tool.
-- **Secrets:** Store PatchMon credentials in your platform's secret store or in `~/.patchmon-credentials.conf`; see `references/patchmon-setup.md`.
-
-**What automatic mode does:** Queries PatchMon for hosts needing updates, detects Docker on each host, updates system packages, and (unless `--skip-docker`) pulls Docker images and recreates containers. Docker updates are included by default; use `--skip-docker` to skip container updates.
-
-## Documentation Files
-
-This skill includes comprehensive documentation:
-
-- **SKILL.md** (this file) - Overview and usage guide
-- **SETUP.md** - Complete setup instructions with security best practices
-- **WORKFLOWS.md** - Visual workflow diagrams for all modes
-- **references/patchmon-setup.md** - PatchMon installation and integration
-
-**First time setup?** Read `SETUP.md` first - it provides step-by-step instructions for secure configuration.
-
-**Want to understand the flow?** Check `WORKFLOWS.md` for visual diagrams of how the skill operates.
-
-## Supported Linux Distributions
-
-| Distribution | Package Manager | Tested | Status |
-|--------------|-----------------|--------|--------|
-| Ubuntu | apt | [OK] Yes | Fully supported |
-| Debian | apt | [WARNING] No | Supported (untested) |
-| Amazon Linux 2 | yum | [WARNING] No | Supported (untested) |
-| Amazon Linux 2023 | dnf | [WARNING] No | Supported (untested) |
-| RHEL 7 | yum | [WARNING] No | Supported (untested) |
-| RHEL 8+ | dnf | [WARNING] No | Supported (untested) |
-| AlmaLinux | dnf | [WARNING] No | Supported (untested) |
-| Rocky Linux | dnf | [WARNING] No | Supported (untested) |
-| CentOS 7 | yum | [WARNING] No | Supported (untested) |
-| CentOS 8+ | dnf | [WARNING] No | Supported (untested) |
-| SUSE/OpenSUSE | zypper | [WARNING] No | Supported (untested) |
-
-The skill automatically detects the distribution and selects the appropriate package manager.
+- `references/patchmon-security-and-distributions.md` - PatchMon integration, security notes, best practices, reboot handling, agent execution guidance, and distribution support details.

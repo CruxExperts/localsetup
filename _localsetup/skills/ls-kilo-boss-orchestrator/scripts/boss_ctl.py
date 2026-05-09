@@ -80,17 +80,40 @@ def cmd_enqueue(args: argparse.Namespace) -> int:
 def _spawn_worker_task(task_id: str, worker_id: str, session_id: str) -> None:
     import subprocess
 
-    cmd = [
+    script_root = Path(__file__).resolve().parent
+    cmd: list[str] = [
         "python3",
         "scripts/kilo_headless_runner.py",
         "--task-id",
-        task_id,
+        str(task_id),
         "--worker-id",
-        worker_id,
+        str(worker_id),
         "--session-id",
-        session_id,
+        str(session_id),
     ]
-    subprocess.run(cmd, check=False, cwd=str(Path(__file__).resolve().parent))
+    try:
+        result = subprocess.run(
+            cmd,
+            check=False,
+            cwd=str(script_root),
+            shell=False,
+            capture_output=True,
+            text=True,
+            errors="replace",
+        )
+        if result.returncode != 0:
+            joined = " ".join(cmd)
+            stderr = (result.stderr or "").strip()
+            stdout = (result.stdout or "").strip()
+            detail = stderr or stdout or "no subprocess output"
+            raise RuntimeError(
+                f"worker task '{task_id}' exited {result.returncode} via '{joined}': {detail}"
+            )
+    except OSError as exc:
+        joined = " ".join(cmd)
+        raise RuntimeError(
+            f"failed to spawn worker task '{task_id}' via '{joined}': {type(exc).__name__}: {exc}"
+        ) from exc
 
 
 def cmd_dispatch(args: argparse.Namespace) -> int:
@@ -143,8 +166,17 @@ def cmd_dispatch(args: argparse.Namespace) -> int:
             },
         )
 
-        _spawn_worker_task(primary_task["id"], task["worker_primary"], session_id)
-        _spawn_worker_task(verifier_task["id"], task["worker_verifier"], session_id)
+        try:
+            _spawn_worker_task(primary_task["id"], task["worker_primary"], session_id)
+            _spawn_worker_task(verifier_task["id"], task["worker_verifier"], session_id)
+        except RuntimeError as exc:
+            task["status"] = "failed"
+            task["updated_at"] = now_iso()
+            store.write_task(task)
+            store.release_lease(task_id)
+            store.deadletter(task, str(exc))
+            print(f"[ERROR] {exc}", file=sys.stderr)
+            return 1
 
         dispatched += 1
         store.log_event("dispatch", {"task_id": task_id})

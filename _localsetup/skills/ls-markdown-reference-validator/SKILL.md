@@ -119,7 +119,7 @@ kilo_manifest_discovery:
 ## Validation behavior
 
 - Skips external URLs (`http`, `https`, `mailto`, etc.).
-- Resolves relative targets from the source file’s directory.
+- Resolves relative targets from the source file's directory.
 - Also tries repo-root resolution for repo-absolute style links like `_localsetup/...` or `docs/...`.
 - Applies ignore controls in this order: source glob skip -> placeholder/prefix/regex/pseudo-path skip -> strict path/anchor checks.
 - Flags:

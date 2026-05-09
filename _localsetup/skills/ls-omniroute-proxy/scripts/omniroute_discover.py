@@ -17,11 +17,20 @@ import json
 import os
 import sys
 import time
-import urllib.error
 import urllib.parse
-import urllib.request
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+LIB_DIR = SCRIPT_DIR.parents[2] / "lib"
+if str(LIB_DIR) not in sys.path:
+    sys.path.insert(0, str(LIB_DIR))
+
+from deps import require_deps  # noqa: E402
+
+require_deps(["requests"])
+import requests  # noqa: E402
 
 
 DEFAULT_BASE_URL = "http://localhost:20128"
@@ -91,57 +100,62 @@ def load_api_key(env_name: str | None) -> str | None:
     return value.strip()
 
 
-def fetch_json(url: str, api_key: str | None, timeout: float) -> dict[str, Any]:
+def fetch_json(
+    session: requests.Session, url: str, api_key: str | None, timeout: float
+) -> dict[str, Any]:
     """Fetch one endpoint and return a normalized probe result."""
     headers = {"Accept": "application/json"}
     if api_key:
         headers["Authorization"] = f"Bearer {api_key}"
-    request = urllib.request.Request(url, headers=headers, method="GET")
     started = time.monotonic()
 
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
-            status = getattr(response, "status", None) or response.getcode()
-            content_type = response.headers.get("Content-Type", "")
-            body = response.read(MAX_BODY_BYTES + 1)
-            elapsed_ms = int((time.monotonic() - started) * 1000)
-            if len(body) > MAX_BODY_BYTES:
+        response = session.get(url, headers=headers, timeout=timeout, stream=True)
+        elapsed_ms = int((time.monotonic() - started) * 1000)
+        status = response.status_code
+        content_type = response.headers.get("Content-Type", "")
+        chunks: list[bytes] = []
+        total = 0
+        for chunk in response.iter_content(chunk_size=65536):
+            total += len(chunk)
+            if total > MAX_BODY_BYTES:
+                response.close()
                 return {
                     "ok": False,
                     "status": status,
                     "elapsed_ms": elapsed_ms,
                     "error": "response exceeded size limit",
                 }
-            decoded = body.decode("utf-8", errors="replace")
-            try:
-                payload = json.loads(decoded) if decoded else None
-            except json.JSONDecodeError as exc:
-                return {
-                    "ok": False,
-                    "status": status,
-                    "elapsed_ms": elapsed_ms,
-                    "content_type": sanitize_text(content_type),
-                    "error": f"invalid JSON: {exc.msg}",
-                    "sample": sanitize_text(decoded),
-                }
+            chunks.append(chunk)
+        decoded = b"".join(chunks).decode("utf-8", errors="replace")
+        try:
+            payload = json.loads(decoded) if decoded else None
+        except json.JSONDecodeError as exc:
             return {
-                "ok": 200 <= int(status) < 300,
+                "ok": False,
                 "status": status,
                 "elapsed_ms": elapsed_ms,
                 "content_type": sanitize_text(content_type),
-                "summary": summarize_payload(payload),
+                "error": f"invalid JSON: {exc.msg}",
+                "sample": sanitize_text(decoded),
             }
-    except urllib.error.HTTPError as exc:
-        elapsed_ms = int((time.monotonic() - started) * 1000)
-        body = exc.read(2048).decode("utf-8", errors="replace")
+        if not response.ok:
+            return {
+                "ok": False,
+                "status": status,
+                "elapsed_ms": elapsed_ms,
+                "content_type": sanitize_text(content_type),
+                "error": sanitize_text(response.reason or "HTTP error"),
+                "sample": sanitize_text(decoded),
+            }
         return {
-            "ok": False,
-            "status": exc.code,
+            "ok": True,
+            "status": status,
             "elapsed_ms": elapsed_ms,
-            "error": sanitize_text(exc.reason),
-            "sample": sanitize_text(body),
+            "content_type": sanitize_text(content_type),
+            "summary": summarize_payload(payload),
         }
-    except (urllib.error.URLError, TimeoutError, OSError) as exc:
+    except requests.RequestException as exc:
         elapsed_ms = int((time.monotonic() - started) * 1000)
         return {
             "ok": False,
@@ -171,10 +185,11 @@ def summarize_payload(payload: Any) -> dict[str, Any]:
 def run_probe(base_url: str, api_key: str | None, timeout: float) -> dict[str, Any]:
     """Run all read-only probes."""
     endpoints = {}
-    for target in TARGETS:
-        endpoints[target.name] = fetch_json(
-            join_url(base_url, target.path), api_key, timeout
-        )
+    with requests.Session() as session:
+        for target in TARGETS:
+            endpoints[target.name] = fetch_json(
+                session, join_url(base_url, target.path), api_key, timeout
+            )
     return {
         "base_url": base_url,
         "authenticated": bool(api_key),

@@ -38,10 +38,10 @@ python scripts/pr_review.py list-unreviewed
 
 Set these environment variables or the script auto-detects from the current git repo:
 
-- `PR_REVIEW_REPO` — GitHub repo in `owner/repo` format (default: detected from `gh repo view`)
-- `PR_REVIEW_DIR` — Local checkout path for lint (default: git root of cwd)
-- `PR_REVIEW_STATE` — State file path (default: `./data/pr-reviews.json`)
-- `PR_REVIEW_OUTDIR` — Report output directory (default: `./data/pr-reviews/`)
+- `PR_REVIEW_REPO` - GitHub repo in `owner/repo` format (default: detected from `gh repo view`)
+- `PR_REVIEW_DIR` - Local checkout path for lint (default: git root of cwd)
+- `PR_REVIEW_STATE` - State file path (default: `./data/pr-reviews.json`)
+- `PR_REVIEW_OUTDIR` - Report output directory (default: `./data/pr-reviews/`)
 
 ## What It Checks
 
@@ -87,5 +87,5 @@ The analysis patterns in `pr_review.py` are organized by language. Add new patte
 
 ```python
 # Add a new Go pattern
-go_patterns.append((r'^\+.*os\.Exit\(', 'RISK', 'Direct os.Exit() — consider returning error'))
+go_patterns.append((r'^\+.*os\.Exit\(', 'RISK', 'Direct os.Exit() - consider returning error'))
 ```

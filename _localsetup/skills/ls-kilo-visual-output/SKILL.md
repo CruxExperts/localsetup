@@ -39,7 +39,7 @@ Use this skill when the user asks for:
 Use exactly one question per turn.
 
 ```md
-### Decision X/N — <topic>
+### Decision X/N - <topic>
 
 **Question:** <single question>
 

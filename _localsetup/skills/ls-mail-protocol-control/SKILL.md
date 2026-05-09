@@ -41,28 +41,28 @@ Give an AI agent full operational control of delegated SMTP and IMAP accounts wh
 
 ```
 _localsetup/skills/ls-mail-protocol-control/
-├── SKILL.md
-├── scripts/
-│   ├── mail_protocol_control.py
-│   ├── mail_types.py
-│   ├── mail_utils.py
-│   ├── policy_engine.py
-│   ├── crypto_types.py
-│   ├── crypto_engine.py
-│   ├── mcp_server.py
-│   └── tests/
-│       └── test_mail_protocol_control.py
-└── references/
-    ├── SMTP_IMAP_OPERATION_MATRIX.md
-    ├── MCP_TOOL_SCHEMA.md
-    ├── POLICY_SCHEMA.md
-    ├── CREDENTIAL_PROVIDER_CONTRACT.md
-    ├── USER_GUIDE.md
-    ├── ADMIN_GUIDE.md
-    ├── API_EXAMPLES.md
-    ├── TROUBLESHOOTING.md
-    ├── ENCRYPTION_MODEL.md
-    └── KEY_MANAGEMENT.md
+ SKILL.md
+ scripts/
+    mail_protocol_control.py
+    mail_types.py
+    mail_utils.py
+    policy_engine.py
+    crypto_types.py
+    crypto_engine.py
+    mcp_server.py
+    tests/
+        test_mail_protocol_control.py
+ references/
+     SMTP_IMAP_OPERATION_MATRIX.md
+     MCP_TOOL_SCHEMA.md
+     POLICY_SCHEMA.md
+     CREDENTIAL_PROVIDER_CONTRACT.md
+     USER_GUIDE.md
+     ADMIN_GUIDE.md
+     API_EXAMPLES.md
+     TROUBLESHOOTING.md
+     ENCRYPTION_MODEL.md
+     KEY_MANAGEMENT.md
 ```
 
 ## Admin controls
