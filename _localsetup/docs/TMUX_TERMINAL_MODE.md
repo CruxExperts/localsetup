@@ -103,7 +103,7 @@ The `exec` replaces the shell process so there is no double-shell overhead. The 
 
 **Both modes (Layer 2):**
 
-Appends a sentinel-wrapped mandatory tmux + sudo gate rule to the rules file. Agents following this rule will use `tmux_ops pick`, `tmux_ops probe`, and `tmux_ops send` for every host command.
+Appends a sentinel-wrapped mandatory tmux + sudo gate rule to the rules file. Agents following this rule will use `tmux_ops pick`, `tmux_ops probe`, and `tmux_ops run` for every host command.
 
 ### Idempotency
 
@@ -205,6 +205,6 @@ The session name is written into the Layer 1 block and the Layer 2 rule at enabl
 
 ## Layer 3: tmux_ops
 
-Layer 3 is the `_localsetup/tools/tmux_ops` tool already present in the framework. Enable does not modify it. The agent rule (Layer 2) references it for pick, probe, and send operations. Status reports whether the tool is present.
+Layer 3 is the `_localsetup/tools/tmux_ops` tool already present in the framework. Enable does not modify it. The agent rule (Layer 2) references it for pick, probe, run, status, and cancel operations. Status reports whether the tool is present.
 
 For full tmux_ops documentation see the `ls-tmux-shared-session-workflow` skill and `ops/tmux-ops-remote.md`.

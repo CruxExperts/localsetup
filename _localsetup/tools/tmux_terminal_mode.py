@@ -59,17 +59,19 @@ session from `tmux ls` or parse capture yourself.
 
 1. **Session.** Run `./_localsetup/tools/tmux_ops pick`. Use the returned
    `session`. Right away, show the join command in a copy-paste code block:
-   `tmux new-session -A -s <session>`. Do not wait for the user to confirm
-   they joined. Then run the probe.
+   the returned `attach_command`. Do not wait for the user to confirm they
+   joined. Then run the probe.
 
 2. **Gate.** Run `./_localsetup/tools/tmux_ops probe -t <session>`. If
    `"sudo": "password_required"`: stop. Ask user to attach, enter password,
-   reply "sudo ready". If `"sudo": "ready"`, proceed.
+   reply "sudo ready", then probe again. If `"sudo": "ready"`, proceed.
 
-3. **Run.** One logical step per send; wait and verify before the next.
-   Commands via `./_localsetup/tools/tmux_ops send -t <session> '<cmd>'`;
-   capture to `/tmp/agent-<session>-*.log`; read the log. If sudo expires,
-   probe again.
+3. **Run.** One logical step per managed run:
+   `./_localsetup/tools/tmux_ops run -t <session> -- <cmd>`. Read the returned
+   `tail` and `log_path`. If status is `"running"`, continue with
+   `status -t <session> --run-id <run_id> --wait --timeout <secs>` or interrupt
+   only with `cancel -t <session> --run-id <run_id>`. If sudo expires, probe
+   again.
 
 Full procedure: **ls-tmux-shared-session-workflow** skill.
 {sentinel_end}
