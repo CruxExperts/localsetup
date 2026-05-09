@@ -74,7 +74,7 @@ def read_frontmatter(md_path: Path) -> dict[str, str]:
 
 def collect_skills(skills_dir: Path) -> list[dict[str, str]]:
     skills = []
-    for skill_md in sorted(skills_dir.glob("localsetup-*/SKILL.md")):
+    for skill_md in sorted(skills_dir.glob("ls-*/SKILL.md")):
         fm = read_frontmatter(skill_md)
         skill_id = skill_md.parent.name
         name = fm.get("name", "") or skill_id

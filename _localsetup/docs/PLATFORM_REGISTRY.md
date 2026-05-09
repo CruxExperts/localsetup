@@ -34,15 +34,15 @@ Add one row or bullet per new skill with a short "When to use" description. Use 
 
 | Platform / scope | File to update |
 |-----------------|----------------|
-| Cursor (templates) | _localsetup/templates/cursor/localsetup-context-index.md |
-| Cursor (templates) | _localsetup/templates/cursor/localsetup-context.mdc |
+| Cursor (templates) | _localsetup/templates/cursor/ls-context-index.md |
+| Cursor (templates) | _localsetup/templates/cursor/ls-context.mdc |
 | Claude Code | _localsetup/templates/claude-code/CLAUDE.md |
 | Codex | _localsetup/templates/codex/AGENTS.md |
 | OpenClaw | _localsetup/templates/openclaw/OPENCLAW_CONTEXT.md |
 | OpenCode | _localsetup/templates/opencode/AGENTS.md |
 | Kilo (templates) | _localsetup/templates/kilo/instructions.md |
 | Framework README | _localsetup/README.md (Skills table) |
-| Context skill (source) | _localsetup/skills/localsetup-context/SKILL.md |
+| Context skill (source) | _localsetup/skills/ls-context/SKILL.md |
 
 **If you add a new platform:** extend the Supported platforms table above, add the platform’s context/skills paths, and add the corresponding registration file(s) to this table so the skill-creator and maintainers keep all platforms in sync.
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .aliases import collect_skill_aliases
+from .aliases import collect_skill_aliases, legacy_skill_name
 from .adapters import adapter_targets, validate_platform_selectors
 from .manifests import load_pack_config, load_platforms
 from .models import DeployPlan, PlanAction
@@ -26,13 +26,13 @@ def build_install_plan(
     selected_platforms = [p for p in platforms if not platform_ids or p.platform_id in platform_ids]
     global_root = expand_user_path(pack.global_root, home)
 
-    all_aliases = collect_skill_aliases(repo_root / "_localsetup" / "skills")
     selected_names = selected_skill_names(repo_root, packs)
-    install_aliases = {name: all_aliases[name] for name in selected_names}
+    legacy_aliases = collect_skill_aliases(repo_root / "_localsetup" / "skills")
+    selected_aliases = {legacy_skill_name(name): name for name in selected_names}
     actions: list[PlanAction] = [
         PlanAction("ensure_dir", global_root),
         PlanAction("write_registry", expand_user_path(pack.global_registry, home), {"pack_id": pack.pack_id}),
-        PlanAction("install_skills", global_root, {"aliases": install_aliases}),
+        PlanAction("install_skills", global_root, {"skills": selected_names}),
     ]
 
     for target in adapter_targets(repo_root, home, platform_ids=platform_ids):
@@ -50,7 +50,8 @@ def build_install_plan(
         "packs": packs or ["core"],
         "platforms": [platform.platform_id for platform in selected_platforms],
         "attach_mode": attach_mode,
-        "aliases": install_aliases,
-        "catalog_aliases": all_aliases,
+        "aliases": selected_aliases,
+        "catalog_aliases": legacy_aliases,
+        "skills": selected_names,
     }
     return DeployPlan(actions=actions, rollback_metadata=rollback)

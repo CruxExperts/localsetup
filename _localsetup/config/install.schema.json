@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://localsetup.dev/schemas/install.schema.json",
+  "title": "Localsetup v3 install config",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "platforms": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "packs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true,
+      "default": ["core"]
+    },
+    "attach_mode": {
+      "type": "string",
+      "enum": ["symlink", "portable"],
+      "default": "symlink"
+    },
+    "home": {
+      "type": "string",
+      "minLength": 1
+    },
+    "data_root": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional root for managed runtime state. Defaults to .localsetup under the repo."
+    },
+    "dependency_mode": {
+      "type": "string",
+      "enum": ["managed-venv", "user-pip", "prompt-only"],
+      "default": "managed-venv"
+    },
+    "migration_mode": {
+      "type": "string",
+      "enum": ["conservative-auto", "report-only"],
+      "default": "conservative-auto"
+    },
+    "backup_dir": {
+      "type": "string",
+      "minLength": 1
+    },
+    "backup_policy": {
+      "type": "string",
+      "enum": ["timestamped"],
+      "default": "timestamped"
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "json": { "type": "boolean", "default": true },
+        "report": { "type": "string", "minLength": 1 },
+        "markdown": { "type": "boolean", "default": false }
+      }
+    }
+  }
+}

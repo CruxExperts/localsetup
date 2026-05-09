@@ -54,9 +54,7 @@ def main() -> int:
         pass_count += 1
     else:
         fail_count += 1
-    deploy_sh = engine_dir / "tools" / "deploy"
-    deploy_ps1 = engine_dir / "tools" / "deploy.ps1"
-    if run_test(deploy_sh.exists() or deploy_ps1.exists(), "deploy"):
+    if run_test((engine_dir / "tools" / "localsetup_v3.py").is_file(), "localsetup_v3.py"):
         pass_count += 1
     else:
         fail_count += 1

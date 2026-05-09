@@ -10,14 +10,14 @@ from .paths import ensure_dir, repo_path
 from .source import source_commit
 
 
-def _install_managed_skills(repo_root: Path, global_root: Path, aliases: dict[str, str]) -> list[str]:
+def _install_managed_skills(repo_root: Path, global_root: Path, skill_names: list[str]) -> list[str]:
     ensure_dir(global_root)
     installed: list[str] = []
     skills_root = repo_root / "_localsetup" / "skills"
 
-    for old_name, new_name in sorted(aliases.items()):
-        src = skills_root / old_name
-        dest = global_root / new_name
+    for skill_name in sorted(skill_names):
+        src = skills_root / skill_name
+        dest = global_root / skill_name
         if dest.exists() and not (dest / ".localsetup-managed").exists():
             raise RuntimeError(f"refusing to overwrite unmanaged skill path: {dest}")
         if dest.exists() or dest.is_symlink():
@@ -26,13 +26,19 @@ def _install_managed_skills(repo_root: Path, global_root: Path, aliases: dict[st
             else:
                 shutil.rmtree(dest)
         shutil.copytree(src, dest)
-        (dest / ".localsetup-managed").write_text(f"source={old_name}\n", encoding="utf-8")
+        (dest / ".localsetup-managed").write_text(f"source={skill_name}\n", encoding="utf-8")
         installed.append(str(dest))
 
     return installed
 
 
-def apply_plan(repo_root: Path, plan: DeployPlan, home: Path, dry_run: bool = False) -> dict:
+def apply_plan(
+    repo_root: Path,
+    plan: DeployPlan,
+    home: Path,
+    dry_run: bool = False,
+    dependency_info: dict | None = None,
+) -> dict:
     executed: list[str] = []
     installed_skills: list[str] = []
     for action in plan.actions:
@@ -54,7 +60,7 @@ def apply_plan(repo_root: Path, plan: DeployPlan, home: Path, dry_run: bool = Fa
             executed.append(f"write_registry:{action.path}")
         elif action.kind == "install_skills":
             if not dry_run:
-                installed_skills = _install_managed_skills(repo_root, action.path, action.details["aliases"])
+                installed_skills = _install_managed_skills(repo_root, action.path, action.details["skills"])
             executed.append(f"install_skills:{action.path}")
         elif action.kind == "attach_repo_path":
             if not dry_run:
@@ -82,10 +88,13 @@ def apply_plan(repo_root: Path, plan: DeployPlan, home: Path, dry_run: bool = Fa
         "namespace": pack.namespace,
         "source_commit": source_commit(repo_root),
         "aliases": plan.rollback_metadata.get("aliases", {}),
+        "skills": plan.rollback_metadata.get("skills", []),
         "adapter_state": [s for s in plan.rollback_metadata.get("repo_links", [])],
         "platforms": plan.rollback_metadata.get("platforms", []),
         "attach_mode": plan.rollback_metadata.get("attach_mode", "symlink"),
         "installed_skills": installed_skills,
+        "dependency_mode": (dependency_info or {}).get("mode"),
+        "python_interpreter": (dependency_info or {}).get("interpreter"),
     }
     if not dry_run:
         save_json(lockfile_path, lock_payload)

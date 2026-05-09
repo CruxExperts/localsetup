@@ -54,7 +54,7 @@ cd /path/to/repo
 - `--platforms LIST`  - Space-separated v3 platform ids. Omit to install all platforms in `platforms.yaml`.
 - `--yes`  - Non-interactive apply
 - `--global`  - Accepted for v2 compatibility; v3 installs the managed home library by default
-- `--install-deps`  - Install Python dependencies from `_localsetup/requirements.txt` automatically
+- `--install-deps`  - Create/update the managed `.localsetup/venv` and install `_localsetup/requirements.txt`
 - `--help`  - Print usage and exit
 
 ## Shared home library
@@ -71,7 +71,7 @@ python3 _localsetup/tools/localsetup_v3.py rollback
 
 ## Dependency preflight
 
-Before install, use the dependency list below as the canonical source of truth. When adding or changing runtime dependencies, update the Bash wrapper, Python v3 tooling, and this section.
+Before install, use the dependency list below as the canonical source of truth. The Bash wrapper delegates preflight and dependency work to `localsetup_v3.py`; it does not call system pip directly.
 
 ### Canonical dependency list
 
@@ -80,17 +80,23 @@ Before install, use the dependency list below as the canonical source of truth. 
 | `git` >= 2.20.0 | Recommended | Source traceability and release workflows |
 | `rg` (ripgrep) | Recommended | Framework search and review workflows |
 | `python` >= 3.10 | Required | V3 installer, framework tools, tests, and Python-first policy |
-| `pip` | Recommended | Install `_localsetup/requirements.txt` |
+| `pip` | Recommended | Install `_localsetup/requirements.txt` inside the managed venv |
 | Python: `yaml` (PyYAML>=6.0) | Recommended | YAML parsing for skill index, config, and PRD files |
 | Python: `requests` (requests>=2.28) | Recommended | HTTP client used by index refresh and scrub tools |
 | Python: `frontmatter` (python-frontmatter>=1.1) | Recommended | YAML frontmatter parsing for skill and PRD markdown files |
 | Python: `cryptography` (cryptography>=42.0) | Recommended | Framework cryptographic primitives for secure envelope workflows |
 | Python: `pgpy` (PGPy>=0.6.0) | Recommended | Pure-Python OpenPGP support for secure mail workflows |
 
-Python packages are listed in `_localsetup/requirements.txt`. After install, run:
+Python packages are listed in `_localsetup/requirements.txt`. The conservative default for Python tooling is a managed virtualenv at `.localsetup/venv`, which avoids PEP 668 externally managed system-pip failures. To check the current machine without changing files, run:
 
 ```bash
-python3 -m pip install -r _localsetup/requirements.txt
+python3 _localsetup/tools/localsetup_v3.py doctor
+```
+
+To normalize install intent without changing files, run:
+
+```bash
+python3 _localsetup/tools/localsetup_v3.py configure --platforms codex --packs core
 ```
 
 To install dependencies automatically during install, add the `--install-deps` flag:
@@ -100,9 +106,9 @@ To install dependencies automatically during install, add the `--install-deps` f
 install --directory . --tools cursor --yes --install-deps
 ```
 
-Without `--install-deps`, install completes but prints a notice listing missing packages with copy-paste install commands. A `.deps-missing` file is written to `_localsetup/` as a reminder; it is cleared automatically the next time install runs and all packages are present.
+Without `--install-deps`, the root wrapper runs doctor in `prompt-only` mode and applies the v3 install without mutating Python dependencies. Direct Python CLI installs default to `--dependency-mode managed-venv`; use `--dependency-mode prompt-only` when you only want adapter installation.
 
-If any **required** dependency is missing or too old, install aborts with install hints. If only **recommended** ones are missing, install continues and prints copy-paste command hints for your OS.
+Do not use `--break-system-packages`. If virtualenv creation is unavailable, install the OS venv package first, for example `sudo apt-get install python3-venv` on Debian/Ubuntu.
 
 ## V3 reinstall behavior
 
@@ -121,6 +127,10 @@ On re-run, the v3 installer refreshes the managed shared skill library, rewrites
 | Tool | Linux/macOS | Windows |
 |------|-------------|---------|
 | Install | `./install` or `python3 _localsetup/tools/localsetup_v3.py install --apply` | WSL2 only |
+| Doctor | `python3 _localsetup/tools/localsetup_v3.py doctor` | WSL2 only |
+| Configure | `python3 _localsetup/tools/localsetup_v3.py configure` | WSL2 only |
+| Agent context | `python3 _localsetup/tools/localsetup_v3.py context --markdown` | WSL2 only |
+| Migrate | `python3 _localsetup/tools/localsetup_v3.py migrate` | WSL2 only |
 | Plan | `python3 _localsetup/tools/localsetup_v3.py plan` | WSL2 only |
 | Verify | `python3 _localsetup/tools/localsetup_v3.py verify` | WSL2 only |
 | Tests | `./_localsetup/tests/automated_test.sh` | WSL2 only |

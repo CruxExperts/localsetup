@@ -41,7 +41,7 @@ Localsetup v3 provides:
 - **Bidirectional Agent Q + PRD integration**: PRD schema, queue pattern, and agent-to-agent protocol are wired together. See [docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md](docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md) for PRD shape and outcome blocks, [docs/AGENTIC_AGENT_Q_PATTERN.md](docs/AGENTIC_AGENT_Q_PATTERN.md) for queue layout, and [docs/AGENTIC_AGENT_TO_AGENT_PROTOCOL.md](docs/AGENTIC_AGENT_TO_AGENT_PROTOCOL.md) plus [docs/AGENTIC_AGENT_Q_SCENARIOS.md](docs/AGENTIC_AGENT_Q_SCENARIOS.md) for transport behavior.
 - **Repo-local everything**: engine at `_localsetup/`, user/context data under the repo; [git traceability](docs/GIT_TRACEABILITY.md) for PRDs, specs, and outcomes so operations stay transparent and auditable.
 
-After installation, the client repo contains `_localsetup/` (this framework plus docs), canonical repo-local skills in `.agents/skills/`, and platform-specific context paths at repo root (e.g. `.cursor/rules/` for Cursor). Version displayed in READMEs and framework docs is kept in sync with the repo **VERSION** file; release and publish are maintained in a separate maintainer repository.
+After installation, the client repo contains `_localsetup/` (this framework plus docs), source skills in `_localsetup/skills/ls-*`, and managed adapter paths at repo root (for example `.codex/skills` or `.kilo/skills`) that point to the shared home library. Version displayed in READMEs and framework docs is kept in sync with the repo **VERSION** file; release and publish are maintained outside normal contributor workflows.
 
 ---
 
@@ -105,7 +105,7 @@ See [Multi-platform install](docs/MULTI_PLATFORM_INSTALL.md) for details.
 - **Windows:** WSL2. Native PowerShell install is not supported; `install.ps1` is a guidance stub.
 - **Git** (for install clone/update; optional for `verify_rules`).
 - One or more platforms from the [platform registry](docs/PLATFORM_REGISTRY.md) (e.g. cursor, claude-code, codex, openclaw), selected via `--tools` / `-Tools`.
-- **Recommended (Python tooling):** For full skill validation/discovery tooling, public skill index refresh, scrub, and Python client skills (including secure mail crypto flows), use Python `>= 3.10` with the packages in `_localsetup/requirements.txt` (PyYAML>=6.0, requests>=2.28, python-frontmatter>=1.1, cryptography>=42.0, PGPy>=0.6.0). Run `python3 -m pip install -r _localsetup/requirements.txt`, or pass `--install-deps` to the install script to do it automatically.
+- **Recommended (Python tooling):** For full skill validation/discovery tooling, public skill index refresh, scrub, and Python client skills (including secure mail crypto flows), use Python `>= 3.10` with the packages in `_localsetup/requirements.txt` (PyYAML>=6.0, requests>=2.28, python-frontmatter>=1.1, cryptography>=42.0, PGPy>=0.6.0). Pass `--install-deps` to create/update the managed `.localsetup/venv`; avoid system-pip overrides such as `--break-system-packages`.
 
 ---
 
@@ -136,10 +136,10 @@ _localsetup/
 │   ├── data_paths.sh            # Path resolution (Bash)
 │   ├── data_paths.ps1           # Path resolution (PowerShell)
 │   └── json_formatter.sh        # JSON formatting helpers
-├── skills/                      # Source of truth for skills (deploy refreshes .agents/skills)
-│   └── localsetup-*/
+├── skills/                      # Source of truth for ls-* skills
+│   └── ls-*/
 │       └── SKILL.md
-├── templates/                   # Platform-specific context loaders (deploy copies to repo root)
+├── templates/                   # Platform-specific context loaders used by install planning
 │   ├── cursor/
 │   ├── claude-code/
 │   ├── codex/
@@ -151,8 +151,7 @@ _localsetup/
 │   └── automated_test.ps1       # Minimal sanity tests (PowerShell)
 └── tools/
     ├── agentq_transport_client/ # Agent Q bidirectional CLI (ship-file-drop, ingest-blob, mail-pull, strict gpg)
-    ├── deploy                   # Write platform context + skills (Bash; on Windows delegates to .ps1)
-    ├── deploy.ps1               # Same (PowerShell)
+    ├── localsetup_v3.py         # Plan, install, verify, rollback, docs, package, migration
     ├── refresh_public_skill_index.py   # Refresh PUBLIC_SKILL_INDEX.yaml from registry URLs (requires PyYAML; see requirements.txt)
     ├── skill_index_scrub.py            # Audit index for dead URLs, stub descriptions, schema gaps; --fix fetches real descriptions upstream
     ├── tmux_terminal_mode              # Enable/disable/status tmux-default terminal mode (Bash wrapper)
@@ -197,56 +196,55 @@ All docs live under `docs/` and are copied to `_localsetup/docs/` on deploy so t
 
 ## Skills
 
-Skills are task-based instructions (SKILL.md with `name` and `description` frontmatter). Agents load the appropriate skill when the task matches. Same skill content is used across all platforms; local deploy copies from `_localsetup/skills/` to `.agents/skills/` and links dot-agent compatibility paths such as `.codex/skills/`, `.cursor/skills/`, `.kilo/skills/`, and `.opencode/skills/` to that canonical runtime.
+Skills are task-based instructions (SKILL.md with `name` and `description` frontmatter). Agents load the appropriate skill when the task matches. The source of truth is `_localsetup/skills/ls-*`; v3 install copies selected skills into the managed home library at `~/.local/share/agents/skills/localsetup` and attaches platform adapter paths such as `.codex/skills`, `.cursor/skills`, `.kilo/skills`, and `.opencode/skills` to that managed library.
 
 | Skill | When to use |
 |-------|--------------|
-| `localsetup-decision-tree-workflow` | User says "decision tree", "reverse prompt"; editing `.agent/queue/**`, PRD |
-| `localsetup-agentic-umbrella-queue` | Queue/PRD in scope; named workflows; impact summary + confirmation |
-| `localsetup-agentic-prd-batch` | "Process PRDs", "run batch from PRD folder"; implement per spec, outcome |
-| `localsetup-agentq-transport` | Ship/ingest sealed Agent Q blobs (file_drop/mail), registry, strict gpg; see AGENTIC_AGENT_Q_SCENARIOS.md |
-| `localsetup-mail-protocol-control` | SMTP/IMAP with preencrypted_openpgp_armored for Agent Q strict mail ship |
-| `localsetup-public-repo-identity` | Editing README*, CONTRIBUTING*; public identity |
-| `localsetup-framework-compliance` | Framework modifications, PRDs, checklist/checkpoints |
-| `localsetup-safety-and-backup` | Destructive ops, backups, temp files, firewall |
-| `localsetup-script-and-docs-quality` | Generating scripts, markdown/docs |
-| `localsetup-communication-and-tools` | Communication style, tool choice, MCP/context updates |
-| `localsetup-tmux-shared-session-workflow` | Server/ops in tmux via tmux_ops (pick, probe, send, wait); sudo gate via probe; adaptive idle polling (`send --wait` or `wait --timeout N`); REMOTE_TMUX_HOST for remote/VMs; human-in-the-loop ops |
-| `localsetup-automatic-versioning` | Version bumps, release workflow, conventional commits, versioning docs |
-| `localsetup-github-publishing-workflow` | Publishing to GitHub, public release prep, publishing checklist, repo readiness |
-| `localsetup-skill-creator` | Create new skill from workflow or existing doc/markdown/GitHub; capture workflow as framework skill |
-| `localsetup-skill-importer` | Import skills from URL or local path; discover, validate, screen, summarize; user picks which to import |
-| `localsetup-skill-discovery` | Discover public skills from registries; recommend top 5 similar when creating/importing; in-depth summary, use public, continue, or adapt |
-| `localsetup-task-skill-matcher` | Match task intent to installed skills; recommend top matches; single-task confirm once; batch auto-pick/parcel flow; complementary public-skill suggestions |
-| `localsetup-backlog-and-reminders` | Record deferred ideas, to-dos, reminders (optional due or "whenever"); show due/overdue on session start or when asked |
-| `localsetup-humanizer` | Humanize text; remove AI-writing patterns and add natural voice (rules-based, Wikipedia Signs of AI writing) |
-| `localsetup-test-runner` | Write and run tests across languages and frameworks; TDD, coverage |
-| `localsetup-tdd-guide` | TDD workflow, test generation, coverage analysis |
-| `localsetup-receiving-code-review` | Use when receiving code review feedback; verify before implementing |
-| `localsetup-pr-reviewer` | Automated GitHub PR code review with diff analysis, lint |
-| `localsetup-debug-pro` | Systematic debugging methodology and language-specific debugging |
-| `localsetup-git-workflows` | Advanced git (rebase, bisect, worktree, reflog) |
-| `localsetup-unfuck-my-git-state` | Diagnose and recover broken Git state and worktree |
-| `localsetup-skill-vetter` | Security-first skill vetting before installing external skills |
-| `localsetup-mcp-builder` | Guide for creating high-quality MCP servers |
-| `localsetup-arbiter` | Push decisions for async human review (Arbiter Zebu) |
-| `localsetup-ansible-skill` | Ansible playbooks, server provisioning, config management, multi-host orchestration |
-| `localsetup-linux-service-triage` | Diagnose Linux service issues (logs, systemd, PM2, Nginx, DNS); failing or misconfigured server apps |
-| `localsetup-linux-patcher` | Automated Linux patching and Docker container updates; multi-host server maintenance |
-| `localsetup-skill-normalizer` | Normalize skills: Phase 1 (documents, platform choice when platform-specific); Phase 2 (tooling rewrite to framework standard). One skill or all. |
-| `localsetup-skill-sandbox-tester` | Test skills in isolated sandbox; smoke check; on failure use debug-pro; no repo writes until user approves |
-| `localsetup-agentlens` | Codebase navigation with agentlens hierarchy; explore projects, find modules/symbols, TODOs |
-| `localsetup-framework-audit` | Doc/link/skill matrix/version checks; output path required (`run_framework_audit.py --output`); before release |
-| `localsetup-markdown-reference-validator` | Validate markdown local references and anchors across configured global+repo paths; scheduled-safe report generator with YAML sidecar config |
-| `localsetup-cloudflare-dns` | Manage Cloudflare DNS records (list, create, modify, delete) and zone surveys via flarectl |
-| `localsetup-npm-management` | Manage Nginx Proxy Manager proxy hosts via REST API; coordinate Docker + NPM deploy workflows |
-| `localsetup-keepass-secrets` | KeePass-backed secrets via logical IDs; get/ensure credentials; bulk create or rotate; use when user asks for logins or workflow needs credentials |
-| `localsetup-scrapling` | Host-first Scrapling integration; install and upgrade Scrapling via pipx, run single-URL extractions (simple HTML/Markdown/text or structured JSONL), and keep adapters aligned with Scrapling releases for web scraping and crawling tasks |
-| `localsetup-omniroute-proxy` | Read-only OmniRoute proxy discovery, catalogs, provider metadata, limits, quotas, routing combos, MCP/A2A integration, and agent client configuration |
-| `localsetup-omniroute-admin-automation` | OmniRoute administration automation for providers, nodes, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, sync, and drift reconciliation |
-| `localsetup-kilo-boss-orchestrator` | Kilo headless boss-worker orchestration with repo-local state, watchdog leases, consensus validation, and safety gates |
-| `localsetup-kilo-visual-output` | Kilo CLI visual output organization guide with structured question, option, rationale, and execution summary patterns |
-| `localsetup-publish-workflow` | Run the framework publish workflow: bump version, regenerate docs, commit sync, and optionally push |
+| `ls-decision-tree-workflow` | User says "decision tree", "reverse prompt"; editing `.agent/queue/**`, PRD |
+| `ls-agentic-umbrella-queue` | Queue/PRD in scope; named workflows; impact summary + confirmation |
+| `ls-agentic-prd-batch` | "Process PRDs", "run batch from PRD folder"; implement per spec, outcome |
+| `ls-agentq-transport` | Ship/ingest sealed Agent Q blobs (file_drop/mail), registry, strict gpg; see AGENTIC_AGENT_Q_SCENARIOS.md |
+| `ls-mail-protocol-control` | SMTP/IMAP with preencrypted_openpgp_armored for Agent Q strict mail ship |
+| `ls-public-repo-identity` | Editing README*, CONTRIBUTING*; public identity |
+| `ls-framework-compliance` | Framework modifications, PRDs, checklist/checkpoints |
+| `ls-safety-and-backup` | Destructive ops, backups, temp files, firewall |
+| `ls-script-and-docs-quality` | Generating scripts, markdown/docs |
+| `ls-communication-and-tools` | Communication style, tool choice, MCP/context updates |
+| `ls-tmux-shared-session-workflow` | Server/ops in tmux via tmux_ops (pick, probe, send, wait); sudo gate via probe; adaptive idle polling (`send --wait` or `wait --timeout N`); REMOTE_TMUX_HOST for remote/VMs; human-in-the-loop ops |
+| `ls-automatic-versioning` | Version bumps, release workflow, conventional commits, versioning docs |
+| `ls-github-publishing-workflow` | Publishing to GitHub, public release prep, publishing checklist, repo readiness |
+| `ls-skill-creator` | Create new skill from workflow or existing doc/markdown/GitHub; capture workflow as framework skill |
+| `ls-skill-importer` | Import skills from URL or local path; discover, validate, screen, summarize; user picks which to import |
+| `ls-skill-discovery` | Discover public skills from registries; recommend top 5 similar when creating/importing; in-depth summary, use public, continue, or adapt |
+| `ls-task-skill-matcher` | Match task intent to installed skills; recommend top matches; single-task confirm once; batch auto-pick/parcel flow; complementary public-skill suggestions |
+| `ls-backlog-and-reminders` | Record deferred ideas, to-dos, reminders (optional due or "whenever"); show due/overdue on session start or when asked |
+| `ls-humanizer` | Humanize text; remove AI-writing patterns and add natural voice (rules-based, Wikipedia Signs of AI writing) |
+| `ls-test-runner` | Write and run tests across languages and frameworks; TDD, coverage |
+| `ls-tdd-guide` | TDD workflow, test generation, coverage analysis |
+| `ls-receiving-code-review` | Use when receiving code review feedback; verify before implementing |
+| `ls-pr-reviewer` | Automated GitHub PR code review with diff analysis, lint |
+| `ls-debug-pro` | Systematic debugging methodology and language-specific debugging |
+| `ls-git-workflows` | Advanced git (rebase, bisect, worktree, reflog) |
+| `ls-unfuck-my-git-state` | Diagnose and recover broken Git state and worktree |
+| `ls-skill-vetter` | Security-first skill vetting before installing external skills |
+| `ls-mcp-builder` | Guide for creating high-quality MCP servers |
+| `ls-arbiter` | Push decisions for async human review (Arbiter Zebu) |
+| `ls-ansible-skill` | Ansible playbooks, server provisioning, config management, multi-host orchestration |
+| `ls-linux-service-triage` | Diagnose Linux service issues (logs, systemd, PM2, Nginx, DNS); failing or misconfigured server apps |
+| `ls-linux-patcher` | Automated Linux patching and Docker container updates; multi-host server maintenance |
+| `ls-skill-normalizer` | Normalize skills: Phase 1 (documents, platform choice when platform-specific); Phase 2 (tooling rewrite to framework standard). One skill or all. |
+| `ls-skill-sandbox-tester` | Test skills in isolated sandbox; smoke check; on failure use debug-pro; no repo writes until user approves |
+| `ls-agentlens` | Codebase navigation with agentlens hierarchy; explore projects, find modules/symbols, TODOs |
+| `ls-framework-audit` | Doc/link/skill matrix/version checks; output path required (`run_framework_audit.py --output`); before release |
+| `ls-markdown-reference-validator` | Validate markdown local references and anchors across configured global+repo paths; scheduled-safe report generator with YAML sidecar config |
+| `ls-cloudflare-dns` | Manage Cloudflare DNS records (list, create, modify, delete) and zone surveys via flarectl |
+| `ls-npm-management` | Manage Nginx Proxy Manager proxy hosts via REST API; coordinate Docker + NPM deploy workflows |
+| `ls-keepass-secrets` | KeePass-backed secrets via logical IDs; get/ensure credentials; bulk create or rotate; use when user asks for logins or workflow needs credentials |
+| `ls-scrapling` | Host-first Scrapling integration; install and upgrade Scrapling via pipx, run single-URL extractions (simple HTML/Markdown/text or structured JSONL), and keep adapters aligned with Scrapling releases for web scraping and crawling tasks |
+| `ls-omniroute-proxy` | Read-only OmniRoute proxy discovery, catalogs, provider metadata, limits, quotas, routing combos, MCP/A2A integration, and agent client configuration |
+| `ls-omniroute-admin-automation` | OmniRoute administration automation for providers, nodes, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, sync, and drift reconciliation |
+| `ls-kilo-boss-orchestrator` | Kilo headless boss-worker orchestration with repo-local state, watchdog leases, consensus validation, and safety gates |
+| `ls-kilo-visual-output` | Kilo CLI visual output organization guide with structured question, option, rationale, and execution summary patterns |
 
 Skills follow the [Agent Skills](https://agentskills.io/specification) specification and are interchangeable with other spec-compliant hosts (import from URLs or local path; export framework skills for use elsewhere). See [SKILLS_AND_RULES.md](docs/SKILLS_AND_RULES.md), [PLATFORM_REGISTRY.md](docs/PLATFORM_REGISTRY.md), [SKILL_INTEROPERABILITY.md](docs/SKILL_INTEROPERABILITY.md), and [SKILL_IMPORTING.md](docs/SKILL_IMPORTING.md) for platform paths, loading behavior, and import/export.
 
@@ -259,8 +257,7 @@ Run from **client repo root** (so that `_localsetup/` is present). Tools live un
 | Tool | Purpose |
 |------|---------|
 | `localsetup_v3.py` | Plan, install, update, verify, rollback, generate docs, and build packages. Usage: `python3 _localsetup/tools/localsetup_v3.py plan --platforms codex,kilo`. |
-| `deploy` / `deploy.ps1` | Legacy compatibility wrappers for platform context deployment. New v3 flows should use `localsetup_v3.py`. |
-| `verify_context` / `verify_context.ps1` | Verify Cursor context file exists (`.cursor/rules/localsetup-context.mdc`). |
+| `verify_context` / `verify_context.ps1` | Verify Cursor context file exists (`.cursor/rules/ls-context.mdc`). |
 | `verify_rules` / `verify_rules.ps1` | Check git repo, data_paths (sh/ps1), and skills directory. |
 | `skill_importer_scan` / `skill_importer_scan.ps1` | Scan a directory for Agent Skills; output per-skill brief (what it does, what it has, code types) and heuristic security flags. Use after fetching a URL or for a local path; then use skill-importer workflow to let the user select which skills to import. |
 | `tmux_ops` / `tmux_ops.py` | Tmux ops workflow: pick session (idle = prompt on current line), probe sudo (ready vs password_required), send with pylon-guard delay, `send --wait` for adaptive idle detection, standalone `wait --timeout N` for long ops. When REMOTE_TMUX_HOST is set, wrapper runs the Python tool over SSH. See [docs/ops/tmux-ops-remote.md](docs/ops/tmux-ops-remote.md). |
@@ -306,7 +303,7 @@ From **client repo root**:
 
 **Windows:** Use WSL2 and run the Bash/Linux commands above.
 
-The automated test runs path resolution, OS detection, and checks for `lib/`, `tools/deploy`, and `skills/` under the engine directory.
+The automated test runs path resolution, OS detection, and checks for `lib/`, the v3 CLI, `skills/`, and `templates/` under the engine directory.
 
 ---
 

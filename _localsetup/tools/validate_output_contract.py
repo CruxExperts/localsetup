@@ -94,20 +94,20 @@ def validate_markers(engine_dir: Path, errors: list[str]) -> None:
     required_markers = {
         engine_dir
         / "skills"
-        / "localsetup-context"
+        / "ls-context"
         / "SKILL.md": "## Output contract (low token, always apply)",
         engine_dir
         / "skills"
-        / "localsetup-communication-and-tools"
+        / "ls-communication-and-tools"
         / "SKILL.md": "**Output contract (always):**",
         engine_dir
         / "skills"
-        / "localsetup-skill-discovery"
+        / "ls-skill-discovery"
         / "SKILL.md": "Presentation fallback by platform capability:",
         engine_dir
         / "templates"
         / "cursor"
-        / "localsetup-context.mdc": "## Output contract (low token, always apply)",
+        / "ls-context.mdc": "## Output contract (low token, always apply)",
         engine_dir
         / "templates"
         / "claude-code"

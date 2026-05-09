@@ -24,61 +24,60 @@ optional_packs:
 
 packs:
   core:
-    - localsetup-context
-    - localsetup-communication-and-tools
-    - localsetup-script-and-docs-quality
-    - localsetup-safety-and-backup
-    - localsetup-task-skill-matcher
-    - localsetup-test-runner
-    - localsetup-tdd-guide
+    - ls-context
+    - ls-communication-and-tools
+    - ls-script-and-docs-quality
+    - ls-safety-and-backup
+    - ls-task-skill-matcher
+    - ls-test-runner
+    - ls-tdd-guide
   dev:
-    - localsetup-agentlens
-    - localsetup-debug-pro
-    - localsetup-docs-organization
-    - localsetup-framework-audit
-    - localsetup-framework-compliance
-    - localsetup-git-workflows
-    - localsetup-markdown-reference-validator
-    - localsetup-receiving-code-review
-    - localsetup-unfuck-my-git-state
+    - ls-agentlens
+    - ls-debug-pro
+    - ls-docs-organization
+    - ls-framework-audit
+    - ls-framework-compliance
+    - ls-git-workflows
+    - ls-markdown-reference-validator
+    - ls-receiving-code-review
+    - ls-unfuck-my-git-state
   ops:
-    - localsetup-ansible-skill
-    - localsetup-backlog-and-reminders
-    - localsetup-cron-orchestrator
-    - localsetup-linux-patcher
-    - localsetup-linux-service-triage
-    - localsetup-system-info
-    - localsetup-tmux-shared-session-workflow
+    - ls-ansible-skill
+    - ls-backlog-and-reminders
+    - ls-cron-orchestrator
+    - ls-linux-patcher
+    - ls-linux-service-triage
+    - ls-system-info
+    - ls-tmux-shared-session-workflow
   integrations:
-    - localsetup-agentq-transport
-    - localsetup-cloudflare-dns
-    - localsetup-keepass-secrets
-    - localsetup-mail-protocol-control
-    - localsetup-mcp-builder
-    - localsetup-npm-management
-    - localsetup-omniroute-admin-automation
-    - localsetup-omniroute-proxy
-    - localsetup-scrapling
+    - ls-agentq-transport
+    - ls-cloudflare-dns
+    - ls-keepass-secrets
+    - ls-mail-protocol-control
+    - ls-mcp-builder
+    - ls-npm-management
+    - ls-omniroute-admin-automation
+    - ls-omniroute-proxy
+    - ls-scrapling
   publishing:
-    - localsetup-automatic-versioning
-    - localsetup-github-publishing-workflow
-    - localsetup-pr-reviewer
-    - localsetup-public-repo-identity
-    - localsetup-publish-workflow
+    - ls-automatic-versioning
+    - ls-github-publishing-workflow
+    - ls-pr-reviewer
+    - ls-public-repo-identity
   experimental:
-    - localsetup-agentic-prd-batch
-    - localsetup-agentic-umbrella-queue
-    - localsetup-arbiter
-    - localsetup-decision-tree-workflow
-    - localsetup-humanizer
-    - localsetup-kilo-boss-orchestrator
-    - localsetup-kilo-visual-output
-    - localsetup-skill-creator
-    - localsetup-skill-discovery
-    - localsetup-skill-importer
-    - localsetup-skill-normalizer
-    - localsetup-skill-sandbox-tester
-    - localsetup-skill-vetter
+    - ls-agentic-prd-batch
+    - ls-agentic-umbrella-queue
+    - ls-arbiter
+    - ls-decision-tree-workflow
+    - ls-humanizer
+    - ls-kilo-boss-orchestrator
+    - ls-kilo-visual-output
+    - ls-skill-creator
+    - ls-skill-discovery
+    - ls-skill-importer
+    - ls-skill-normalizer
+    - ls-skill-sandbox-tester
+    - ls-skill-vetter
 
 distribution_channels:
   - git

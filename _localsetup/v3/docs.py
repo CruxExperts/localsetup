@@ -31,10 +31,11 @@ def generate_alias_outputs(repo_root: Path) -> dict:
     platforms_md.write_text("\n".join(platform_lines) + "\n", encoding="utf-8")
 
     packs_md = repo_root / "_localsetup" / "docs" / "_generated" / "skill-packs.md"
-    pack_lines = ["# Skill Packs", "", "| Pack | v2 Skill | v3 Alias |", "|---|---|---|"]
+    pack_lines = ["# Skill Packs", "", "| Pack | Skill | Legacy Alias |", "|---|---|---|"]
     for skill in load_skill_catalog(repo_root):
         packs = ", ".join(skill.packs) if skill.packs else "unassigned"
-        pack_lines.append(f"| `{packs}` | `{skill.legacy_name}` | `{skill.alias}` |")
+        legacy = skill.legacy_name or "n/a"
+        pack_lines.append(f"| `{packs}` | `{skill.name}` | `{legacy}` |")
     packs_md.write_text("\n".join(pack_lines) + "\n", encoding="utf-8")
 
     file_map_md = repo_root / "_localsetup" / "docs" / "_generated" / "implementation-file-map.md"

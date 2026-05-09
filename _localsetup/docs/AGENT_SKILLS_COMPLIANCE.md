@@ -18,7 +18,7 @@ version: 3.0
 | Requirement | Framework behavior |
 |-------------|--------------------|
 | **Directory structure** | Each skill is a directory with `SKILL.md`; optional `scripts/`, `references/`, `assets/` per spec. |
-| **name** (required) | Present in every skill; lowercase, hyphens, 1–64 chars; matches parent directory (e.g. `localsetup-context`). |
+| **name** (required) | Present in every skill; lowercase, hyphens, 1–64 chars; matches parent directory (e.g. `ls-context`). |
 | **description** (required) | Present; what the skill does and when to use it; under 1024 chars. |
 | **metadata.version** (optional) | Used for skill document versioning; bumped automatically when the skill file is updated (see below). |
 | **Body** | Markdown instructions after frontmatter; progressive disclosure; keep under ~500 lines per spec. |
@@ -31,8 +31,8 @@ version: 3.0
 
 ## Validation
 
-- Optionally run `skills-ref validate ./_localsetup/skills/localsetup-<name>` (after installing [skills-ref](https://github.com/agentskills/agentskills/tree/main/skills-ref)) to check frontmatter and naming.
-- Framework skill names use the `localsetup-*` prefix and match the directory name; descriptions include trigger terms for discovery.
+- Optionally run `skills-ref validate ./_localsetup/skills/ls-<name>` (after installing [skills-ref](https://github.com/agentskills/agentskills/tree/main/skills-ref)) to check frontmatter and naming.
+- Framework skill names use the `ls-*` prefix and match the directory name; descriptions include trigger terms for discovery.
 
 ## Interoperability
 
@@ -45,7 +45,7 @@ version: 3.0
 - [SKILL_INTEROPERABILITY.md](SKILL_INTEROPERABILITY.md)  - Import external skills; use our skills in other hosts; spec alignment for interchange.
 - [SKILLS_AND_RULES.md](SKILLS_AND_RULES.md)  - How skills are loaded and platform paths.
 - [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md)  - Supported platforms and registration file list.
-- Repo VERSION and conventional commits: docs/VERSIONING.md (repo root). Skill versioning is per-skill (metadata.version), not the repo VERSION.
+- Repo VERSION and conventional commits: [VERSIONING.md](VERSIONING.md). Skill versioning is per-skill (metadata.version), not the repo VERSION.
 
 ---
 

@@ -10,7 +10,7 @@
   <a href="_localsetup/docs/PLATFORM_REGISTRY.md"><img src="https://img.shields.io/badge/platforms-cursor%20%7C%20claude--code%20%7C%20codex%20%7C%20openclaw%20%7C%20kilo%20%7C%20opencode-1f6feb" alt="Supported platforms"></a>
 </p>
 
-**Version:** 3<br>
+**Version:** 3.0.0<br>
 **Last updated:** 2026-05-07
 
 Agentic setups often share the same headaches: indeterministic outcomes, memory that compresses or decays, hallucinations, agents that drop context or ignore instructions, and difficulty scaling beyond a certain code size. Coordinating multiple agents so they follow patterns and run workflows reliably is harder still. Localsetup v3 targets these problems without adding much overhead.
@@ -26,7 +26,7 @@ Out of the box you get [all shipped skills](_localsetup/docs/SKILLS.md): debuggi
 |---|---|
 | Current version | `3.0.0` |
 | Supported platforms | `cursor, claude-code, codex, openclaw, kilo, opencode` |
-| Shipped skills | `50` |
+| Shipped skills | `49` |
 | Source | `_localsetup/docs/_generated/facts.json` |
 <!-- facts-block:end -->
 
@@ -59,9 +59,9 @@ V3 installs managed skills to `~/.local/share/agents/skills/localsetup` and writ
 ### Minimum requirements
 
 - **Required:** `python >= 3.10`.
-- **Recommended:** `git >= 2.20.0`, `rg` (ripgrep), `pip`, and the packages in `_localsetup/requirements.txt`. After install: `python3 -m pip install -r _localsetup/requirements.txt`, or pass `--install-deps` to install them automatically.
+- **Recommended:** `git >= 2.20.0`, `rg` (ripgrep), `pip`, and the packages in `_localsetup/requirements.txt`. Use `./install --directory . --yes --install-deps` to create/update the managed `.localsetup/venv`; do not use `--break-system-packages`.
 
-The installer runs a dependency preflight and prints missing items with copy-paste install suggestions before proceeding. Full list: [_localsetup/docs/MULTI_PLATFORM_INSTALL.md](_localsetup/docs/MULTI_PLATFORM_INSTALL.md#dependency-preflight).
+Run `python3 _localsetup/tools/localsetup_v3.py doctor` for a read-only preflight, `configure` to normalize install intent, and `context --markdown` for an agent-readable install plan. Full list: [_localsetup/docs/MULTI_PLATFORM_INSTALL.md](_localsetup/docs/MULTI_PLATFORM_INSTALL.md#dependency-preflight).
 
 ## ⚡ Top 10 features
 
@@ -80,16 +80,16 @@ The full feature catalog contains additional capabilities. See [_localsetup/docs
 
 ## 🛠️ Top 10 shipped skills
 
-1. `localsetup-debug-pro` - systematic debugging methodology with language-specific commands.
-2. `localsetup-test-runner` - write and run tests across frameworks (pytest, Jest, Vitest, Playwright).
-3. `localsetup-pr-reviewer` - automated PR review with diff analysis, lint, and structured reports.
-4. `localsetup-unfuck-my-git-state` - staged recovery for broken HEAD, phantom worktrees, missing refs.
-5. `localsetup-linux-patcher` - automated server patching and Docker container updates.
-6. `localsetup-ansible-skill` - playbook-driven provisioning and multi-host orchestration.
-7. `localsetup-decision-tree-workflow` - reverse-prompt process: one question at a time, four options, rationale.
-8. `localsetup-tmux-shared-session-workflow` - human-in-the-loop ops via tmux_ops (pick/probe/send); REMOTE_TMUX_HOST for remote/VMs.
-9. `localsetup-skill-importer` - import external skills from URL or local path with security screening.
-10. `localsetup-humanizer` - remove AI-writing patterns from text based on Wikipedia cleanup guide.
+1. `ls-debug-pro` - systematic debugging methodology with language-specific commands.
+2. `ls-test-runner` - write and run tests across frameworks (pytest, Jest, Vitest, Playwright).
+3. `ls-pr-reviewer` - automated PR review with diff analysis, lint, and structured reports.
+4. `ls-unfuck-my-git-state` - staged recovery for broken HEAD, phantom worktrees, missing refs.
+5. `ls-linux-patcher` - automated server patching and Docker container updates.
+6. `ls-ansible-skill` - playbook-driven provisioning and multi-host orchestration.
+7. `ls-decision-tree-workflow` - reverse-prompt process: one question at a time, four options, rationale.
+8. `ls-tmux-shared-session-workflow` - human-in-the-loop ops via tmux_ops (pick/probe/send); REMOTE_TMUX_HOST for remote/VMs.
+9. `ls-skill-importer` - import external skills from URL or local path with security screening.
+10. `ls-humanizer` - remove AI-writing patterns from text based on Wikipedia cleanup guide.
 
 The generated shipped skills catalog lists all skills with descriptions and versions. See [_localsetup/docs/SKILLS.md](_localsetup/docs/SKILLS.md).
 

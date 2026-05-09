@@ -1,0 +1,137 @@
+from __future__ import annotations
+
+import os
+import platform
+from pathlib import Path
+import sys
+
+from .adapters import adapter_status, adapter_targets
+from .dependencies import dependency_status, has_venv_module, pip_available, tool_status
+from .manifests import load_pack_config, load_platforms
+from .migration import detect_legacy_artifacts, scan_legacy_references
+from .paths import expand_user_path
+from .skills import validate_skill_catalog
+
+
+def _is_wsl() -> bool:
+    try:
+        version = Path("/proc/version").read_text(encoding="utf-8", errors="ignore").lower()
+    except OSError:
+        return False
+    return "microsoft" in version or "wsl" in version
+
+
+def _writable_status(path: Path) -> dict:
+    probe = path
+    while not probe.exists() and probe.parent != probe:
+        probe = probe.parent
+    return {
+        "path": str(path),
+        "nearest_existing": str(probe),
+        "ok": probe.exists() and os.access(probe, os.W_OK),
+    }
+
+
+def run_doctor(
+    repo_root: Path,
+    *,
+    home: Path,
+    packs: list[str] | None = None,
+    platform_ids: list[str] | None = None,
+    dependency_mode: str = "managed-venv",
+    data_root: Path | None = None,
+) -> dict:
+    blockers: list[str] = []
+    warnings: list[str] = []
+
+    environment = {
+        "os": platform.system(),
+        "platform": platform.platform(),
+        "is_wsl": _is_wsl(),
+        "python": sys.executable,
+        "python_version": platform.python_version(),
+        "home": str(home),
+        "repo_root": str(repo_root),
+    }
+    if platform.system().lower().startswith("windows"):
+        blockers.append("native Windows is unsupported; run Localsetup v3 from WSL2")
+
+    try:
+        pack = load_pack_config(repo_root)
+        platforms = load_platforms(repo_root)
+        manifest = {"ok": True, "pack": pack.pack_id, "platforms": [p.platform_id for p in platforms]}
+    except Exception as exc:
+        blockers.append(f"manifest validation failed: {exc}")
+        return {
+            "ok": False,
+            "environment": environment,
+            "manifest": {"ok": False, "error": str(exc)},
+            "tools": [],
+            "dependencies": {},
+            "adapter_collisions": [],
+            "legacy": {},
+            "writable_paths": [],
+            "blockers": blockers,
+            "warnings": warnings,
+        }
+
+    catalog_issues = validate_skill_catalog(repo_root)
+    if catalog_issues:
+        blockers.extend(f"skill catalog: {issue}" for issue in catalog_issues)
+
+    tools = [tool_status("git"), tool_status("rg")]
+    if not tools[0]["ok"]:
+        blockers.append("missing required tool: git")
+    if not tools[1]["ok"]:
+        warnings.append("missing recommended tool: rg")
+
+    if not has_venv_module():
+        blockers.append("missing python venv module")
+    if not pip_available(sys.executable):
+        warnings.append("pip is unavailable for the current interpreter")
+
+    dep_status = dependency_status(repo_root, mode=dependency_mode, data_root=data_root).to_dict()
+    if dependency_mode != "prompt-only" and dep_status["warnings"]:
+        warnings.extend(dep_status["warnings"])
+
+    global_root = expand_user_path(pack.global_root, home)
+    adapters = adapter_status(repo_root, home, global_root, platform_ids=platform_ids)
+    collisions: list[dict] = []
+    for adapter in adapters:
+        path = Path(adapter["repo_path"])
+        unmanaged = adapter["exists"] and not adapter["is_symlink"] and not adapter["is_portable_copy"]
+        if unmanaged:
+            collision = {
+                "platform": adapter["platform"],
+                "path": adapter["repo_path"],
+                "reason": "unmanaged adapter directory",
+            }
+            collisions.append(collision)
+            blockers.append(f"unmanaged adapter collision: {adapter['repo_path']}")
+
+    writable_paths = [_writable_status(global_root), _writable_status(home)]
+    for target in adapter_targets(repo_root, home, platform_ids=platform_ids):
+        writable_paths.append(_writable_status(target["repo_path"].parent))
+    for item in writable_paths:
+        if not item["ok"]:
+            blockers.append(f"path is not writable: {item['path']}")
+
+    legacy = {
+        "artifacts": detect_legacy_artifacts(repo_root, home=home, platform_ids=platform_ids),
+        "references": scan_legacy_references(repo_root),
+    }
+    if legacy["artifacts"]:
+        warnings.append("legacy v2 artifacts detected; run migrate for a conservative report and backup")
+
+    return {
+        "ok": not blockers,
+        "environment": environment,
+        "manifest": manifest,
+        "tools": tools,
+        "dependencies": dep_status,
+        "adapter_collisions": collisions,
+        "legacy": legacy,
+        "writable_paths": writable_paths,
+        "blockers": blockers,
+        "warnings": warnings,
+    }

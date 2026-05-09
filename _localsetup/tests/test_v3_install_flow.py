@@ -1,5 +1,6 @@
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -7,9 +8,13 @@ import pytest
 from _localsetup.v3.apply import apply_plan
 from _localsetup.v3.boundary import scan_tar_for_leaks
 from _localsetup.v3.cli import _split_csv
+from _localsetup.v3.config import InstallConfig, load_install_config, merge_cli_config
+from _localsetup.v3.context import build_agent_context, render_markdown_report
+from _localsetup.v3.dependencies import ensure_dependencies
 from _localsetup.v3.docs import generate_alias_outputs
 from _localsetup.v3.hooks import run_maintainer_gate
-from _localsetup.v3.migration import scan_legacy_references
+from _localsetup.v3.lockfile import load_json
+from _localsetup.v3.migration import conservative_migrate, detect_legacy_artifacts, scan_legacy_references
 from _localsetup.v3.package import build_public_artifact
 from _localsetup.v3.plan import build_install_plan
 from _localsetup.v3.rollback import rollback
@@ -22,6 +27,7 @@ def make_temp_repo(tmp_path: Path) -> Path:
     (repo / "_localsetup").mkdir(parents=True)
     shutil.copytree(source / "_localsetup" / "config", repo / "_localsetup" / "config")
     shutil.copytree(source / "_localsetup" / "skills", repo / "_localsetup" / "skills")
+    shutil.copy2(source / "_localsetup" / "requirements.txt", repo / "_localsetup" / "requirements.txt")
     (repo / "_localsetup" / "docs" / "_generated").mkdir(parents=True)
     (repo / "_localsetup" / "docs" / "migration").mkdir(parents=True)
     (repo / ".github").mkdir()
@@ -122,6 +128,96 @@ def test_v3_cli_csv_selector_normalization() -> None:
     assert _split_csv(None) is None
 
 
+def test_v3_config_file_and_cli_precedence(tmp_path: Path) -> None:
+    config_path = tmp_path / "install.json"
+    config_path.write_text(
+        """{
+  "platforms": ["codex"],
+  "packs": ["dev"],
+  "attach_mode": "portable",
+  "dependency_mode": "prompt-only",
+  "migration_mode": "report-only",
+  "output": {"json": true}
+}
+""",
+        encoding="utf-8",
+    )
+
+    base = load_install_config(config_path)
+    merged = merge_cli_config(base, packs=["core"], attach_mode="symlink", dependency_mode="managed-venv")
+
+    assert base.platforms == ["codex"]
+    assert base.packs == ["dev"]
+    assert base.attach_mode == "portable"
+    assert merged.packs == ["core"]
+    assert merged.attach_mode == "symlink"
+    assert merged.dependency_mode == "managed-venv"
+
+
+def test_v3_managed_venv_commands_and_lock_interpreter(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    commands: list[list[str]] = []
+
+    def fake_runner(cmd: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        commands.append(cmd)
+        if cmd[1:3] == ["-m", "venv"]:
+            python_path = Path(cmd[3]) / "bin" / "python"
+            python_path.parent.mkdir(parents=True, exist_ok=True)
+            python_path.write_text("# fake python\n", encoding="utf-8")
+        return subprocess.CompletedProcess(cmd, 0, stdout="ok\n", stderr="")
+
+    deps = ensure_dependencies(root, mode="managed-venv", runner=fake_runner)
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"])
+    result = apply_plan(root, plan, home=home, dependency_info=deps)
+    lock = load_json(root / "localsetup.lock.json")
+
+    assert any(cmd[1:3] == ["-m", "venv"] for cmd in commands)
+    assert any(cmd[2:4] == ["pip", "install"] and "-r" in cmd for cmd in commands)
+    assert any(cmd[-2:] == ["pip", "check"] for cmd in commands)
+    assert deps["interpreter"].endswith(".localsetup/venv/bin/python")
+    assert lock["python_interpreter"] == deps["interpreter"]
+    assert result["lockfile"].endswith("localsetup.lock.json")
+
+
+def test_skill_smoke_runner_uses_current_python_without_shell(tmp_path: Path) -> None:
+    sandbox = tmp_path / "sandbox"
+    sandbox.mkdir()
+    script = Path(__file__).resolve().parents[2] / "_localsetup/skills/ls-skill-sandbox-tester/scripts/run_smoke.py"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(script),
+            "--sandbox-dir",
+            str(sandbox),
+            "--command",
+            "python -c 'import sys; print(sys.executable)'",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert completed.stdout.strip() == sys.executable
+
+
+def test_v3_agent_context_and_markdown_report(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    config = InstallConfig(platforms=["codex"], packs=["core"], dependency_mode="prompt-only")
+
+    context = build_agent_context(root, home=home, config=config)
+    markdown = render_markdown_report(context)
+
+    assert {"environment", "selected_platforms", "dependencies", "migration", "actions", "blockers", "warnings", "commands", "rollback", "verification"} <= set(context)
+    assert context["selected_platforms"] == ["codex"]
+    assert context["selected_packs"] == ["core"]
+    assert "# Localsetup v3 Install Context" in markdown
+    assert "python3 _localsetup/tools/localsetup_v3.py verify --platforms codex" in markdown
+
+
 def test_v3_docs_and_package(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     (root / "_localsetup" / "__pycache__").mkdir()
@@ -194,6 +290,38 @@ def test_v3_migration_scanner_and_hook_gate(tmp_path: Path) -> None:
     gate = run_maintainer_gate(root, tmp_path / "artifact.tar.gz")
     assert gate["ok"] is True
     assert gate["package"]["leaks"] == []
+
+
+def test_v3_conservative_migration_renames_managed_legacy_global_skill(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    legacy = home / ".local/share/agents/skills/localsetup/localsetup-context"
+    legacy.mkdir(parents=True)
+    (legacy / ".localsetup-managed").write_text("source=localsetup-context\n", encoding="utf-8")
+    (legacy / "SKILL.md").write_text("---\nname: localsetup-context\n---\n", encoding="utf-8")
+
+    artifacts = detect_legacy_artifacts(root, home=home)
+    report = conservative_migrate(root, home=home, backup_dir=tmp_path / "backup")
+
+    assert any(item["kind"] == "legacy_global_skill" for item in artifacts)
+    assert report["ok"] is True
+    assert not legacy.exists()
+    assert (home / ".local/share/agents/skills/localsetup/ls-context/.localsetup-managed").exists()
+    assert (tmp_path / "backup" / "migration-report.json").exists()
+
+
+def test_v3_conservative_migration_refuses_unmanaged_adapter(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    collision = root / ".codex" / "skills"
+    collision.mkdir(parents=True)
+    (collision / "custom.txt").write_text("user content\n", encoding="utf-8")
+
+    report = conservative_migrate(root, home=home, platform_ids=["codex"], backup_dir=tmp_path / "backup")
+
+    assert report["ok"] is False
+    assert report["blockers"]
+    assert "mv " in report["blockers"][0]["remediation"]
 
 
 def test_v3_hook_gate_accepts_mock_runner(tmp_path: Path) -> None:

@@ -41,23 +41,23 @@ Copyright (c) 2026 Crux Experts LLC. MIT License  - see repository root [LICENSE
 
 ## Skills index (in repo)
 
-- **Per platform:** See [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md) for context loader and skills paths. Cursor: `.cursor/rules/localsetup-context-index.md` lists master rule and all skills; same skills apply across platforms.
+- **Per platform:** See [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md) for context loader and skills paths. Cursor: `.cursor/rules/ls-context-index.md` lists master rule and all skills; same skills apply across platforms.
 
 ## Quick reference
 
-- **Run decision tree:** Load skill localsetup-decision-tree-workflow; see [DECISION_TREE_WORKFLOW.md](DECISION_TREE_WORKFLOW.md).
-- **Process queue / PRDs:** Load localsetup-agentic-prd-batch; see [PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md](PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md), [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md).
-- **Agent Q ship/ingest (file_drop or mail):** Load localsetup-agentq-transport; see [AGENTIC_AGENT_Q_SCENARIOS.md](AGENTIC_AGENT_Q_SCENARIOS.md), `_localsetup/tools/agentq_transport_client/docs/USER_GUIDE.md`; mail strict path uses localsetup-mail-protocol-control with `preencrypted_openpgp_armored`.
-- **Umbrella workflow:** Load localsetup-agentic-umbrella-queue; see [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md).
-- **Create a new skill:** Load localsetup-skill-creator; see [SKILL_INTEROPERABILITY.md](SKILL_INTEROPERABILITY.md).
-- **Import skills from URL or path:** Load localsetup-skill-importer; run `_localsetup/tools/skill_importer_scan <path>`; see [SKILL_IMPORTING.md](SKILL_IMPORTING.md).
-- **Discover similar public skills:** Load localsetup-skill-discovery when creating or importing; uses [PUBLIC_SKILL_REGISTRY.urls](PUBLIC_SKILL_REGISTRY.urls) and [PUBLIC_SKILL_INDEX.yaml](PUBLIC_SKILL_INDEX.yaml); see [SKILL_DISCOVERY.md](SKILL_DISCOVERY.md).
+- **Run decision tree:** Load skill ls-decision-tree-workflow; see [DECISION_TREE_WORKFLOW.md](DECISION_TREE_WORKFLOW.md).
+- **Process queue / PRDs:** Load ls-agentic-prd-batch; see [PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md](PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md), [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md).
+- **Agent Q ship/ingest (file_drop or mail):** Load ls-agentq-transport; see [AGENTIC_AGENT_Q_SCENARIOS.md](AGENTIC_AGENT_Q_SCENARIOS.md), `_localsetup/tools/agentq_transport_client/docs/USER_GUIDE.md`; mail strict path uses ls-mail-protocol-control with `preencrypted_openpgp_armored`.
+- **Umbrella workflow:** Load ls-agentic-umbrella-queue; see [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md).
+- **Create a new skill:** Load ls-skill-creator; see [SKILL_INTEROPERABILITY.md](SKILL_INTEROPERABILITY.md).
+- **Import skills from URL or path:** Load ls-skill-importer; run `_localsetup/tools/skill_importer_scan <path>`; see [SKILL_IMPORTING.md](SKILL_IMPORTING.md).
+- **Discover similar public skills:** Load ls-skill-discovery when creating or importing; uses [PUBLIC_SKILL_REGISTRY.urls](PUBLIC_SKILL_REGISTRY.urls) and [PUBLIC_SKILL_INDEX.yaml](PUBLIC_SKILL_INDEX.yaml); see [SKILL_DISCOVERY.md](SKILL_DISCOVERY.md).
 - **Audit and scrub the public skill index:** Run `python3 _localsetup/tools/skill_index_scrub.py` to check for dead URLs, stub/placeholder descriptions, and schema gaps. Add `--fix` to fetch real descriptions from upstream and write them back. Add `--report FILE` for a GFM report.
-- **Tmux shared session and sudo:** Load localsetup-tmux-shared-session-workflow; use tool `_localsetup/tools/tmux_ops` (pick, probe, send, wait). Skill defines sudo gate via probe (ready vs password_required); use `send --wait` for short commands or `wait --timeout N` for long ops; never use raw tmux send-keys. For remote/VMs: see [ops/tmux-ops-remote.md](ops/tmux-ops-remote.md) (REMOTE_TMUX_HOST). See WORKFLOW_REGISTRY.md.
+- **Tmux shared session and sudo:** Load ls-tmux-shared-session-workflow; use tool `_localsetup/tools/tmux_ops` (pick, probe, send, wait). Skill defines sudo gate via probe (ready vs password_required); use `send --wait` for short commands or `wait --timeout N` for long ops; never use raw tmux send-keys. For remote/VMs: see [ops/tmux-ops-remote.md](ops/tmux-ops-remote.md) (REMOTE_TMUX_HOST). See WORKFLOW_REGISTRY.md.
 - **Tmux-default terminal mode:** Run `_localsetup/tools/tmux_terminal_mode enable [--mode ide|shell]` to wire up automatic tmux session launch (IDE terminal profile or shell RC auto-attach) and inject the mandatory agent ops rule. `disable` restores originals from backup. `status` reports all layers. See [TMUX_TERMINAL_MODE.md](TMUX_TERMINAL_MODE.md).
-- **Run framework audit:** Load localsetup-framework-audit; run from repo root: `python _localsetup/skills/localsetup-framework-audit/scripts/run_framework_audit.py --output /path/to/report.md` (or set `LOCALSETUP_AUDIT_OUTPUT`). No `--deep` in the current script; if docs elsewhere mention Deep Analysis, treat as backlog until the audit skill ships it. See [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md).
-- **Run markdown reference audit:** Load localsetup-markdown-reference-validator; run `python _localsetup/skills/localsetup-markdown-reference-validator/scripts/markdown_reference_audit.py --force --reason manual` (uses YAML sidecar config and writes markdown report). Use this for periodic integrity checks across docs/skills/templates/global Kilo markdown surfaces.
- - **Route docs creation and updates:** Load localsetup-docs-organization; see `_localsetup/skills/localsetup-docs-organization/SKILL.md` and `.cursor/rules/docs-organization.mdc`. Use it to classify docs, choose folder slugs, and keep `docs/index.yaml` and `docs/INDEX.md` in sync.
+- **Run framework audit:** Load ls-framework-audit; run from repo root: `python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /path/to/report.md` (or set `LOCALSETUP_AUDIT_OUTPUT`). No `--deep` in the current script; if docs elsewhere mention Deep Analysis, treat as backlog until the audit skill ships it. See [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md).
+- **Run markdown reference audit:** Load ls-markdown-reference-validator; run `python _localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py --force --reason manual` (uses YAML sidecar config and writes markdown report). Use this for periodic integrity checks across docs/skills/templates/global Kilo markdown surfaces.
+ - **Route docs creation and updates:** Load ls-docs-organization; see `_localsetup/skills/ls-docs-organization/SKILL.md` and `.cursor/rules/docs-organization.mdc`. Use it to classify docs, choose folder slugs, and keep `docs/index.yaml` and `docs/INDEX.md` in sync.
 
 ---
 

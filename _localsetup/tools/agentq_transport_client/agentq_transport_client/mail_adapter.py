@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 _ENGINE = Path(__file__).resolve().parents[3]
-_MAIL_SCRIPTS = _ENGINE / "skills" / "localsetup-mail-protocol-control" / "scripts"
+_MAIL_SCRIPTS = _ENGINE / "skills" / "ls-mail-protocol-control" / "scripts"
 
 
 def _mail_controller(policy_path: Path, accounts_path: Path) -> Any:

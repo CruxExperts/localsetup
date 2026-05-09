@@ -10,12 +10,12 @@ Get Localsetup v3 running in your repo in under a minute. This page covers WSL2-
 ## Prerequisites
 
 - **Required:** `python >= 3.10`.
-- **Recommended for full framework tooling:** `git >= 2.20.0`, `rg` (ripgrep), `pip`, and the Python packages in `_localsetup/requirements.txt` (PyYAML, requests, python-frontmatter, cryptography, PGPy). After install, run `python3 -m pip install -r _localsetup/requirements.txt`, or pass `--install-deps` to have the install script do it automatically.
+- **Recommended for full framework tooling:** `git >= 2.20.0`, `rg` (ripgrep), `pip`, and the Python packages in `_localsetup/requirements.txt` (PyYAML, requests, python-frontmatter, cryptography, PGPy). Pass `--install-deps` to create/update the managed `.localsetup/venv` without touching system packages.
 - **Linux/macOS/WSL2:** Bash and curl.
 - **Windows:** WSL2. Native PowerShell install is not supported in v3.
 - **Any platform:** Network access to GitHub (or a local clone of this repo).
 
-The installer runs a dependency preflight and prints missing dependencies with install command hints before clone/deploy. Full list: [Multi-platform install – Dependency preflight](MULTI_PLATFORM_INSTALL.md#dependency-preflight).
+The installer runs `doctor` before applying. For a read-only check, run `python3 _localsetup/tools/localsetup_v3.py doctor`; for agent handoff context, run `python3 _localsetup/tools/localsetup_v3.py context --markdown`.
 
 ## Install
 
@@ -209,7 +209,7 @@ sudo apt-get install -y ripgrep
 # macOS: brew install ripgrep
 ```
 
-If preflight reports missing **Python/pip** or any Python modules, install and then install the framework requirements:
+If preflight reports missing **Python/pip/venv**, install the OS packages first:
 
 ```bash
 # Debian/Ubuntu
@@ -221,11 +221,11 @@ sudo dnf install -y python3 python3-pip python3-pyyaml
 # Arch
 sudo pacman -S --needed python python-pip python-yaml
 
-# Any: install all Python packages at once from repo root
-python3 -m pip install -r _localsetup/requirements.txt
+# Debian/Ubuntu venv support
+sudo apt-get install -y python3-venv
 ```
 
-Alternatively, re-run install with `--install-deps` to have the script run `pip install` before applying the v3 plan.
+Then re-run install with `--install-deps` to install requirements into the managed venv. Localsetup v3 never requires `--break-system-packages`.
 
 ## 📖 Next steps
 

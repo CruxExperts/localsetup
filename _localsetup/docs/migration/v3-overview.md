@@ -19,6 +19,10 @@ Windows support is WSL2-only in v3. Run agents inside WSL and use WSL filesystem
 ## Core Commands
 
 - `python3 _localsetup/tools/localsetup_v3.py plan`
+- `python3 _localsetup/tools/localsetup_v3.py doctor`
+- `python3 _localsetup/tools/localsetup_v3.py configure`
+- `python3 _localsetup/tools/localsetup_v3.py context --markdown`
+- `python3 _localsetup/tools/localsetup_v3.py migrate`
 - `python3 _localsetup/tools/localsetup_v3.py install --apply`
 - `python3 _localsetup/tools/localsetup_v3.py verify`
 - `python3 _localsetup/tools/localsetup_v3.py rollback`
@@ -54,3 +58,12 @@ uses `core`; optional packs can be requested with `--packs`.
 Migration scanning reports remaining `localsetup-*` references outside the
 source skill corpus so maintainers can decide whether each reference should stay
 as historical documentation or move to the v3 `ls-*` name.
+
+In the source-only v3 tree, expected remaining scan findings are limited to
+generated alias metadata and the v2-to-v3 skill map. Those entries are
+intentional historical references used by migration reports and compatibility
+docs; new source skills and user-facing setup docs should use `ls-*` names.
+
+`migrate` is conservative: it backs up first, renames only known managed
+`localsetup-*` global skill artifacts through the v2-to-v3 alias map, and
+refuses unmanaged adapter collisions with remediation commands in the report.

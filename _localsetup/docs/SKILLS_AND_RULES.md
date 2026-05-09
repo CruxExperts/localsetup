@@ -9,20 +9,20 @@ version: 3.0
 
 ## Model
 
-- **One always-loaded context** per platform: Cursor uses `.cursor/rules/localsetup-context.mdc`; Claude Code uses `.claude/CLAUDE.md`; Codex uses `AGENTS.md`; OpenClaw uses a context skill + optional doc template in _localsetup/docs/; OpenCode uses `AGENTS.md`; Kilo CLI uses `.kilo/instructions.md` (repo root, local deploy) or `~/.config/kilo/instructions/localsetup.md` (global deploy).
+- **One always-loaded context** per platform: Cursor uses `.cursor/rules/ls-context.mdc`; Claude Code uses `.claude/CLAUDE.md`; Codex uses `AGENTS.md`; OpenClaw uses a context skill + optional doc template in _localsetup/docs/; OpenCode uses `AGENTS.md`; Kilo CLI uses `.kilo/instructions.md` (repo root, local deploy) or `~/.config/kilo/instructions/localsetup.md` (global deploy).
 - **Skills:** Same SKILL.md content across platforms; local deploy copies from `_localsetup/skills/` to canonical `.agents/skills/` and uses compatibility links for dot-agent platform folders (`.codex/skills/`, `.cursor/skills/`, `.claude/skills/`, `.opencode/skills/`, `.kilo/skills/`). OpenClaw still uses root `skills/`. Edit only in `_localsetup`; deploy refreshes runtime paths.
 - **Memory file:** Each platform has a writable memory file for agent learnings (`.kilo/AGENT_MEMORY.md`, `.claude/AGENT_MEMORY.md`, etc.). See [MEMORY_MANAGEMENT.md](MEMORY_MANAGEMENT.md) for curation rules.
-- **When to load a skill:** Load when the task matches the skill's description (e.g. user says "decision tree" -> localsetup-decision-tree-workflow). The master rule/context includes an index of skills and when to use them.
+- **When to load a skill:** Load when the task matches the skill's description (e.g. user says "decision tree" -> ls-decision-tree-workflow). The master rule/context includes an index of skills and when to use them.
 
 ## Task-to-skill matching flow
 
 - **Mode detection:** Treat as **batch** when user request includes multiple distinct subtasks, or says "batch", "multiple steps", or "run the whole thing". Otherwise treat as **single task**.
 - **Named skill override:** If user names a specific skill, load that skill directly. Do not run task-skill-matcher.
-- **When to invoke matcher:** When uncertain which skill fits, or when user asks "what skill should I use?" / "pick the best", load `localsetup-task-skill-matcher`.
+- **When to invoke matcher:** When uncertain which skill fits, or when user asks "what skill should I use?" / "pick the best", load `ls-task-skill-matcher`.
 - **Single task behavior:** If one clear installed match exists, ask once "Use this skill?" before loading. In the same response, include up to 3 complementary public skills from [PUBLIC_SKILL_INDEX.yaml](PUBLIC_SKILL_INDEX.yaml) (one-line reason each). If index is missing or stale (`updated` older than 7 days), ask whether to refresh before complementary suggestions.
 - **Batch behavior:** Prompt once at start with options: auto-pick for whole job, parcel-by-parcel prompts, or parcel auto-pick. If auto-pick is chosen, state planned skill sequence first, then proceed without repeated skill prompts.
-- **No installed fit:** Say that no installed skill fits, offer up to 3 complementary public skills to import, and optionally suggest creating a skill via `localsetup-skill-creator`.
-- **Reference:** Full procedure and output format live in skill `localsetup-task-skill-matcher` and [TASK_SKILL_MATCHING.md](TASK_SKILL_MATCHING.md).
+- **No installed fit:** Say that no installed skill fits, offer up to 3 complementary public skills to import, and optionally suggest creating a skill via `ls-skill-creator`.
+- **Reference:** Full procedure and output format live in skill `ls-task-skill-matcher` and [TASK_SKILL_MATCHING.md](TASK_SKILL_MATCHING.md).
 
 ## Platform paths
 
@@ -30,12 +30,12 @@ version: 3.0
 
 | Platform | Context loader | Skills | Memory file |
 |----------|----------------|--------|-------------|
-| Cursor | .cursor/rules/localsetup-context.mdc | .agents/skills/localsetup-*/ via .cursor/skills | .cursor/rules/agent-memory.md |
-| Claude Code | .claude/CLAUDE.md | .agents/skills/localsetup-*/ via .claude/skills | .claude/AGENT_MEMORY.md |
-| Codex | AGENTS.md (repo root) | .agents/skills/localsetup-*/ via .codex/skills | .agents/AGENT_MEMORY.md |
-| OpenClaw | _localsetup/docs/OPENCLAW_CONTEXT.md | skills/localsetup-*/ (repo root) | AGENT_MEMORY.md (repo root) |
-| OpenCode | AGENTS.md (repo root) | .agents/skills/localsetup-*/ via .opencode/skills | .opencode/AGENT_MEMORY.md |
-| Kilo CLI | .kilo/instructions.md | .agents/skills/localsetup-*/ via .kilo/skills | .kilo/AGENT_MEMORY.md |
+| Cursor | .cursor/rules/ls-context.mdc | .agents/skills/ls-*/ via .cursor/skills | .cursor/rules/agent-memory.md |
+| Claude Code | .claude/CLAUDE.md | .agents/skills/ls-*/ via .claude/skills | .claude/AGENT_MEMORY.md |
+| Codex | AGENTS.md (repo root) | .agents/skills/ls-*/ via .codex/skills | .agents/AGENT_MEMORY.md |
+| OpenClaw | _localsetup/docs/OPENCLAW_CONTEXT.md | skills/ls-*/ (repo root) | AGENT_MEMORY.md (repo root) |
+| OpenCode | AGENTS.md (repo root) | .agents/skills/ls-*/ via .opencode/skills | .opencode/AGENT_MEMORY.md |
+| Kilo CLI | .kilo/instructions.md | .agents/skills/ls-*/ via .kilo/skills | .kilo/AGENT_MEMORY.md |
 
 ## Format
 

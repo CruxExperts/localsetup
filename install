@@ -13,6 +13,7 @@ PACKS_CSV="core"
 MODE="symlink"
 YES=false
 INSTALL_DEPS=false
+DEPENDENCY_MODE="prompt-only"
 MIN_PYTHON_VERSION="3.10.0"
 
 usage() {
@@ -33,7 +34,7 @@ Options:
   --platforms LIST     Platform adapter ids. Defaults to every platform in platforms.yaml.
   --packs LIST         Skill packs to install. Comma-separated. Default: core.
   --mode MODE          symlink or portable. Default: symlink.
-  --install-deps       Install Python dependencies from _localsetup/requirements.txt first.
+  --install-deps       Create/update the managed venv and install _localsetup/requirements.txt.
   --upgrade-policy     Accepted for v2 compatibility; v3 uses managed install metadata.
   --global             Accepted for v2 compatibility; v3 installs the shared home library by default.
   --help, -h           Show this help.
@@ -151,7 +152,7 @@ case "$MODE" in
 esac
 
 if "$INSTALL_DEPS"; then
-  python3 -m pip install -r "$TARGET_DIR/_localsetup/requirements.txt"
+  DEPENDENCY_MODE="managed-venv"
 fi
 
 pack_args=()
@@ -162,7 +163,19 @@ if [[ -n "$PLATFORMS_CSV" ]]; then
   csv_to_args "$PLATFORMS_CSV" platform_args
 fi
 
-cmd=(python3 "$TARGET_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --repo "$TARGET_DIR" install --apply --mode "$MODE" --packs "${pack_args[@]}")
+doctor_cmd=(python3 "$TARGET_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --repo "$TARGET_DIR" doctor --dependency-mode "$DEPENDENCY_MODE" --packs "${pack_args[@]}")
+if [[ ${#platform_args[@]} -gt 0 ]]; then
+  doctor_cmd+=(--platforms "${platform_args[@]}")
+fi
+
+if ! "${doctor_cmd[@]}" >/dev/null; then
+  echo "Localsetup doctor found blockers. Re-run for details:" >&2
+  printf ' %q' "${doctor_cmd[@]}" >&2
+  echo >&2
+  exit 1
+fi
+
+cmd=(python3 "$TARGET_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --repo "$TARGET_DIR" install --apply --dependency-mode "$DEPENDENCY_MODE" --mode "$MODE" --packs "${pack_args[@]}")
 if [[ ${#platform_args[@]} -gt 0 ]]; then
   cmd+=(--platforms "${platform_args[@]}")
 fi

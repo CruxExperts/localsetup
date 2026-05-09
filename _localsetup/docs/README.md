@@ -12,7 +12,7 @@ This is the public documentation index for Localsetup v3. Use it to navigate fra
 <!-- facts-block:start -->
 - Current version: `3.0.0`
 - Supported platforms: `cursor, claude-code, codex, openclaw, kilo, opencode`
-- Shipped skills: `50`
+- Shipped skills: `49`
 - Source: `_localsetup/docs/_generated/facts.json`
 <!-- facts-block:end -->
 
@@ -61,7 +61,7 @@ Agent-to-agent PRD exchange over file_drop or mail; OpenPGP sealed blobs; regist
 | Client [USER_GUIDE](../tools/agentq_transport_client/docs/USER_GUIDE.md) | agentq_cli commands |
 | Client [ADMIN_GUIDE](../tools/agentq_transport_client/docs/ADMIN_GUIDE.md) | Policy, rotation, force ingest |
 
-Skill: **localsetup-agentq-transport** (see [SKILLS.md](SKILLS.md)).
+Skill: **ls-agentq-transport** (see [SKILLS.md](SKILLS.md)).
 
 ---
 
@@ -99,7 +99,7 @@ How automatic versioning and maintenance workflows operate.
 
 | Page | What it covers |
 |---|---|
-| [Versioning](../../docs/VERSIONING.md) | VERSION as source of truth, conventional commits, how version is displayed; maintained by repo maintainers |
+| [Versioning](VERSIONING.md) | VERSION as source of truth, conventional commits, how version is displayed |
 
 ---
 

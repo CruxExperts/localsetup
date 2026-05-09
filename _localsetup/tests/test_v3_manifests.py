@@ -29,12 +29,12 @@ def test_catalog_validation_and_pack_selection() -> None:
     root = Path(__file__).resolve().parents[2]
 
     assert validate_skill_catalog(root) == []
-    assert "localsetup-context" in selected_skill_names(root, ["core"])
-    assert "localsetup-cloudflare-dns" not in selected_skill_names(root, ["core"])
+    assert "ls-context" in selected_skill_names(root, ["core"])
+    assert "ls-cloudflare-dns" not in selected_skill_names(root, ["core"])
 
 
 def test_baseline_file_classification() -> None:
-    assert classify_path("_localsetup/skills/localsetup-context/SKILL.md") == "migrate"
+    assert classify_path("_localsetup/skills/ls-context/SKILL.md") == "keep"
     assert classify_path("_localsetup/docs/_generated/skill_aliases.json") == "generate"
     assert classify_path("scripts/generate-doc-artifacts") == "private-maintainer"
 

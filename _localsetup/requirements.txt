@@ -14,15 +14,15 @@ requests>=2.28
 #
 # python-frontmatter: YAML frontmatter parsing for skill/PRD markdown files.
 #   Replaces fragile string-split frontmatter extraction.
-#   Used by: tools/skill_index_scrub.py, skills/localsetup-npm-management/scripts/npm_api.py
+#   Used by: tools/skill_index_scrub.py, skills/ls-npm-management/scripts/npm_api.py
 python-frontmatter>=1.1
 #
 # cryptography: envelope encryption primitives (AES-GCM, HKDF, PBKDF2) for secure mail payload handling.
-#   Used by: skills/localsetup-mail-protocol-control/scripts/crypto_engine.py
+#   Used by: skills/ls-mail-protocol-control/scripts/crypto_engine.py
 cryptography>=42.0
 #
 # PGPy: pure-Python OpenPGP encryption/decryption support for secure mail exchange.
-#   Used by: skills/localsetup-mail-protocol-control/scripts/crypto_engine.py
+#   Used by: skills/ls-mail-protocol-control/scripts/crypto_engine.py
 PGPy>=0.6.0
 #
 # jsonschema: optional runtime validation of Agent Q inner manifest against manifest.schema.json.

@@ -35,7 +35,7 @@ Each platform has its own memory file location:
 | **OpenCode CLI** | `.opencode/AGENT_MEMORY.md` | `AGENTS.md` (repo root) |
 | **Claude Code** | `.claude/AGENT_MEMORY.md` | `.claude/CLAUDE.md` |
 | **Codex CLI** | `.agents/AGENT_MEMORY.md` | `AGENTS.md` (repo root) |
-| **Cursor** | `.cursor/rules/agent-memory.md` | `.cursor/rules/localsetup-context.mdc` |
+| **Cursor** | `.cursor/rules/agent-memory.md` | `.cursor/rules/ls-context.mdc` |
 | **OpenClaw** | `AGENT_MEMORY.md` (repo root) | `OPENCLAW_CONTEXT.md` |
 
 ## Memory File Structure

@@ -36,7 +36,7 @@ version: 3.0
 
 ## Pre-ship gate (B)
 
-Before ship: localsetup-skill-sandbox-tester where applicable; localsetup-debug-pro on failure; localsetup-test-runner if code PRD; or PRD `pre_ship_checks`; or `skip_pre_ship_checks` + reason in outcome.
+Before ship: ls-skill-sandbox-tester where applicable; ls-debug-pro on failure; ls-test-runner if code PRD; or PRD `pre_ship_checks`; or `skip_pre_ship_checks` + reason in outcome.
 
 ## Framework version stamp
 

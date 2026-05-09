@@ -35,5 +35,5 @@ If you use Cursor Remote SSH and the agent runs on the same host as tmux, do **n
 
 ## Reference
 
-- Skill: **localsetup-tmux-shared-session-workflow**
+- Skill: **ls-tmux-shared-session-workflow**
 - Tool: `_localsetup/tools/tmux_ops` (pick, probe -t SESSION, send -t SESSION [--wait] 'cmd', wait -t SESSION [--timeout N])

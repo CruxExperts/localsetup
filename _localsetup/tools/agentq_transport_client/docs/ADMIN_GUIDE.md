@@ -64,5 +64,5 @@
 
 - [_localsetup/config/agent_queue.example.yaml](../../../config/agent_queue.example.yaml)
 - [_localsetup/config/agent_trust_registry.example.yaml](../../../config/agent_trust_registry.example.yaml)
-- [_localsetup/skills/localsetup-mail-protocol-control/SKILL.md](../../../skills/localsetup-mail-protocol-control/SKILL.md)
+- [_localsetup/skills/ls-mail-protocol-control/SKILL.md](../../../skills/ls-mail-protocol-control/SKILL.md)
 - [DEFERRED.md](DEFERRED.md) – short deferred list; Part 19 in build spec for ordered backlog

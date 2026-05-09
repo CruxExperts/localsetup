@@ -11,7 +11,7 @@ Key pieces:
 
 - `secrets/keepass-config.yaml` describes which KeePass database files the repo cares about (for example `secrets/infra.kdbx`) without embedding master passwords or keyfiles.
 - `secrets/*-secrets-map.yaml` files map logical IDs such as `mail.box03.cruxexperts.admin` to KeePass entry paths like `Servers/box03/Mail/admin@cruxexperts.com`.
-- The `.keepass_secrets/` helper and `localsetup-keepass-secrets` skill resolve those IDs on demand and call `keepassxc-cli` to read or write entries.
+- The `.keepass_secrets/` helper and `ls-keepass-secrets` skill resolve those IDs on demand and call `keepassxc-cli` to read or write entries.
 
 ### Referencing secrets in docs
 
@@ -20,7 +20,7 @@ When you need to mention credentials in documentation, reference the logical ID 
 - `Secret ID: mail.box03.cruxexperts.admin`
 - `Secret ID: postgres.box03.app1`
 
-When you or an agent need the actual values, run a workflow that calls the `localsetup-keepass-secrets` skill with that ID. The credentials are shown interactively and never written back into markdown.
+When you or an agent need the actual values, run a workflow that calls the `ls-keepass-secrets` skill with that ID. The credentials are shown interactively and never written back into markdown.
 
 ### Where the actual secrets live
 

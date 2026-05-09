@@ -7,7 +7,7 @@ version: 3.0
 
 Workflow ID: `spec-clarify-reverse`
 
-**Purpose:** AI prompts the user one question at a time with four options (A-D), preferred choice, and rationale. Used to build context before implementation (e.g. PRD/spec clarification). Load skill localsetup-decision-tree-workflow when user invokes it.
+**Purpose:** AI prompts the user one question at a time with four options (A-D), preferred choice, and rationale. Used to build context before implementation (e.g. PRD/spec clarification). Load skill ls-decision-tree-workflow when user invokes it.
 
 ## Principle
 

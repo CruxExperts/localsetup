@@ -5,7 +5,7 @@ version: 3.0
 
 # Skill normalization (spec compliance and platform-neutral)
 
-**Purpose:** When importing skills or normalizing skills already in the tree, apply this doc so each skill is (1) compliant with the [Agent Skills specification](https://agentskills.io/specification), (2) document-normalized with a **user choice** when the skill is platform-specific (keep as is, keep platform-specific but normalized, or fully normalize for any platform), and (3) **tooling-normalized** so any bundled scripts match the framework's tooling standard. Normalization runs in order: **Phase 1 (SKILL.md and documents)**, then **Phase 2 (tooling)**. We do not force full platform-neutralization when the user works with one platform exclusively; Phase 1 offers options when the skill references a specific platform. The skill-importer and the standalone normalizer (localsetup-skill-normalizer) both use this doc as the single source of truth.
+**Purpose:** When importing skills or normalizing skills already in the tree, apply this doc so each skill is (1) compliant with the [Agent Skills specification](https://agentskills.io/specification), (2) document-normalized with a **user choice** when the skill is platform-specific (keep as is, keep platform-specific but normalized, or fully normalize for any platform), and (3) **tooling-normalized** so any bundled scripts match the framework's tooling standard. Normalization runs in order: **Phase 1 (SKILL.md and documents)**, then **Phase 2 (tooling)**. We do not force full platform-neutralization when the user works with one platform exclusively; Phase 1 offers options when the skill references a specific platform. The skill-importer and the standalone normalizer (ls-skill-normalizer) both use this doc as the single source of truth.
 
 ## When normalization runs
 
@@ -32,8 +32,8 @@ Apply these checks and fixes so SKILL.md frontmatter satisfies the Agent Skills 
    - Must be 1–64 characters.
    - Only lowercase letters (a–z), numbers, and hyphens.
    - Must not start or end with a hyphen; no consecutive hyphens (`--`).
-   - Must match the parent directory name (e.g. `localsetup-ansible-skill` for `_localsetup/skills/localsetup-ansible-skill/`).
-   - If the skill is imported with a different dir name (e.g. `localsetup-<name>`), set `name` in frontmatter to that directory name.
+   - Must match the parent directory name (e.g. `ls-ansible-skill` for `_localsetup/skills/ls-ansible-skill/`).
+   - If the skill is imported with a different dir name (e.g. `ls-<name>`), set `name` in frontmatter to that directory name.
 
 2. **description** (required)
    - Must be 1–1024 characters, non-empty.
@@ -79,7 +79,7 @@ metadata:
 
 ```yaml
 ---
-name: localsetup-some-skill
+name: ls-some-skill
 description: "Does X. Use when you need Ansible for server provisioning and playbooks."
 metadata:
   version: "1.0"

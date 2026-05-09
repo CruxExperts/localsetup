@@ -37,7 +37,7 @@ class CryptoPipelineError(RuntimeError):
 
 
 def _engine_crypto():
-    skill_scripts = _ENGINE / "skills" / "localsetup-mail-protocol-control" / "scripts"
+    skill_scripts = _ENGINE / "skills" / "ls-mail-protocol-control" / "scripts"
     sys.path.insert(0, str(skill_scripts))
     from crypto_engine import CryptoEngine  # type: ignore
 

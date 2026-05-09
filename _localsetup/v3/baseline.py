@@ -32,8 +32,10 @@ def classify_path(path: str) -> str:
         return "private-maintainer"
     if path.startswith("_localsetup/docs/_generated/"):
         return "generate"
+    if path.startswith("_localsetup/skills/ls-"):
+        return "keep"
     if path.startswith("_localsetup/skills/localsetup-"):
-        return "migrate"
+        return "legacy-migration"
     if path == "install.ps1":
         return "refactor"
     if path.startswith("_localsetup/v3/") or path in {

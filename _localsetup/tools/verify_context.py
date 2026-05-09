@@ -13,17 +13,17 @@ from lib.path_resolution import get_project_root
 
 def main():
     root = get_project_root()
-    skill_md = root / "_localsetup" / "skills" / "localsetup-context" / "SKILL.md"
+    skill_md = root / "_localsetup" / "skills" / "ls-context" / "SKILL.md"
     print("Localsetup v3 - Context Verification")
     print("=====================================")
     if skill_md.is_file():
         print(
-            "[OK] _localsetup/skills/localsetup-context/SKILL.md exists (%s bytes)"
+            "[OK] _localsetup/skills/ls-context/SKILL.md exists (%s bytes)"
             % skill_md.stat().st_size
         )
     else:
         sys.stderr.write(
-            "[FAIL] No _localsetup/skills/localsetup-context/SKILL.md found. Framework not properly installed.\n"
+            "[FAIL] No _localsetup/skills/ls-context/SKILL.md found. Framework not properly installed.\n"
         )
         return 1
     print("[OK] Context verification complete.")

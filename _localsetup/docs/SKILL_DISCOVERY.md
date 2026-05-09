@@ -49,7 +49,7 @@ version: 3.0
 
 ## When discovery runs
 
-- **With skill-creator:** When the user starts creating a new skill (after gathering input and proposing name/triggers), load localsetup-skill-discovery: compare the proposed purpose/description to the public index; return top 5 similar skills; present options (see skill doc).
+- **With skill-creator:** When the user starts creating a new skill (after gathering input and proposing name/triggers), load ls-skill-discovery: compare the proposed purpose/description to the public index; return top 5 similar skills; present options (see skill doc).
 - **With skill-importer:** When the user is about to import from a URL or path, optionally check the public index for similar skills and suggest: "Similar public skills exist; would you like to consider one of these instead or in addition?"
 
 ## Recommendation flow
@@ -68,11 +68,11 @@ Discovery always presents the top 5 (or fewer) matches as a ranked structure. Do
 - **Rendering fallback:** use rich markdown when available; fallback to numbered blocks; fallback to plain text with labeled lines (`Skill:`, `Summary:`, `Risks:`) when markdown is limited.
 - **After the list:** provide the four options (in-depth summary, use public skill, continue on own, adapt from one).
 
-The skill **localsetup-skill-discovery** (SKILL.md) contains the full format and an example; agents must follow it when returning recommendations.
+The skill **ls-skill-discovery** (SKILL.md) contains the full format and an example; agents must follow it when returning recommendations.
 
 ## Reference
 
-- Load skill **localsetup-skill-discovery** when the user is creating a new skill, importing a skill, or asking to discover/recommend public skills. Use in conjunction with localsetup-skill-creator and localsetup-skill-importer.
+- Load skill **ls-skill-discovery** when the user is creating a new skill, importing a skill, or asking to discover/recommend public skills. Use in conjunction with ls-skill-creator and ls-skill-importer.
 
 ---
 

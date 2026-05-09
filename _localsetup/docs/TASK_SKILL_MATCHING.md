@@ -11,7 +11,7 @@ version: 3.0
 
 - Applies to normal task execution when user does not name a specific skill.
 - Complements (does not replace) [SKILLS_AND_RULES.md](SKILLS_AND_RULES.md).
-- Detailed execution procedure lives in skill `localsetup-task-skill-matcher`.
+- Detailed execution procedure lives in skill `ls-task-skill-matcher`.
 
 ## Core behavior
 
@@ -24,7 +24,7 @@ version: 3.0
    - Do not run task-skill-matcher in that case.
 
 3. **When to invoke matcher**
-   - Invoke `localsetup-task-skill-matcher` when skill choice is uncertain, or when user asks "what skill should I use?" / "pick the best".
+   - Invoke `ls-task-skill-matcher` when skill choice is uncertain, or when user asks "what skill should I use?" / "pick the best".
 
 4. **Single-task flow**
    - If one clear installed match exists, ask once: "Use this skill?"
@@ -38,7 +38,7 @@ version: 3.0
 6. **No installed fit**
    - Say no installed skill fits.
    - Offer up to 3 complementary public skills to import.
-   - Optionally suggest creating a new skill via `localsetup-skill-creator`.
+   - Optionally suggest creating a new skill via `ls-skill-creator`.
 
 ## Public index handling
 
@@ -52,7 +52,7 @@ version: 3.0
 
 Use the current platform context loader/index per [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md):
 
-- Cursor: `.cursor/rules/localsetup-context-index.md` (or skills section in `.cursor/rules/localsetup-context.mdc`)
+- Cursor: `.cursor/rules/ls-context-index.md` (or skills section in `.cursor/rules/ls-context.mdc`)
 - Claude Code: `.claude/CLAUDE.md`
 - Codex: `AGENTS.md`
 - OpenClaw: context path per platform registry
@@ -61,7 +61,7 @@ Use the current platform context loader/index per [PLATFORM_REGISTRY.md](PLATFOR
 
 - [SKILLS_AND_RULES.md](SKILLS_AND_RULES.md)
 - [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md)
-- Skill: `localsetup-task-skill-matcher`
+- Skill: `ls-task-skill-matcher`
 
 ---
 

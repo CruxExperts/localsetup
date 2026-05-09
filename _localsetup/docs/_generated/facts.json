@@ -2,7 +2,7 @@
   "version": "3.0.0",
   "major_minor": "3.0",
   "platform_count": 6,
-  "skill_count": 50,
+  "skill_count": 49,
   "platforms": [
     {
       "id": "cursor",
@@ -43,304 +43,298 @@
   ],
   "skills": [
     {
-      "id": "localsetup-agentic-prd-batch",
-      "name": "localsetup-agentic-prd-batch",
+      "id": "ls-agentic-prd-batch",
+      "name": "ls-agentic-prd-batch",
       "version": "1.3",
-      "path": "_localsetup/skills/localsetup-agentic-prd-batch/SKILL.md"
+      "path": "_localsetup/skills/ls-agentic-prd-batch/SKILL.md"
     },
     {
-      "id": "localsetup-agentic-umbrella-queue",
-      "name": "localsetup-agentic-umbrella-queue",
+      "id": "ls-agentic-umbrella-queue",
+      "name": "ls-agentic-umbrella-queue",
       "version": "1.1",
-      "path": "_localsetup/skills/localsetup-agentic-umbrella-queue/SKILL.md"
+      "path": "_localsetup/skills/ls-agentic-umbrella-queue/SKILL.md"
     },
     {
-      "id": "localsetup-agentlens",
-      "name": "localsetup-agentlens",
+      "id": "ls-agentlens",
+      "name": "ls-agentlens",
       "version": "1.0",
-      "path": "_localsetup/skills/localsetup-agentlens/SKILL.md"
+      "path": "_localsetup/skills/ls-agentlens/SKILL.md"
     },
     {
-      "id": "localsetup-agentq-transport",
-      "name": "localsetup-agentq-transport",
+      "id": "ls-agentq-transport",
+      "name": "ls-agentq-transport",
       "version": "1.0",
-      "path": "_localsetup/skills/localsetup-agentq-transport/SKILL.md"
+      "path": "_localsetup/skills/ls-agentq-transport/SKILL.md"
     },
     {
-      "id": "localsetup-ansible-skill",
-      "name": "localsetup-ansible-skill",
+      "id": "ls-ansible-skill",
+      "name": "ls-ansible-skill",
       "version": "1.1",
-      "path": "_localsetup/skills/localsetup-ansible-skill/SKILL.md"
+      "path": "_localsetup/skills/ls-ansible-skill/SKILL.md"
     },
     {
-      "id": "localsetup-arbiter",
-      "name": "localsetup-arbiter",
+      "id": "ls-arbiter",
+      "name": "ls-arbiter",
       "version": "1.2",
-      "path": "_localsetup/skills/localsetup-arbiter/SKILL.md"
+      "path": "_localsetup/skills/ls-arbiter/SKILL.md"
     },
     {
-      "id": "localsetup-automatic-versioning",
-      "name": "localsetup-automatic-versioning",
+      "id": "ls-automatic-versioning",
+      "name": "ls-automatic-versioning",
       "version": "1.1",
-      "path": "_localsetup/skills/localsetup-automatic-versioning/SKILL.md"
+      "path": "_localsetup/skills/ls-automatic-versioning/SKILL.md"
     },
     {
-      "id": "localsetup-backlog-and-reminders",
-      "name": "localsetup-backlog-and-reminders",
+      "id": "ls-backlog-and-reminders",
+      "name": "ls-backlog-and-reminders",
       "version": "1.1",
-      "path": "_localsetup/skills/localsetup-backlog-and-reminders/SKILL.md"
+      "path": "_localsetup/skills/ls-backlog-and-reminders/SKILL.md"
     },
     {
-      "id": "localsetup-cloudflare-dns",
-      "name": "localsetup-cloudflare-dns",
+      "id": "ls-cloudflare-dns",
+      "name": "ls-cloudflare-dns",
       "version": "1.0",
-      "path": "_localsetup/skills/localsetup-cloudflare-dns/SKILL.md"
+      "path": "_localsetup/skills/ls-cloudflare-dns/SKILL.md"
     },
     {
-      "id": "localsetup-communication-and-tools",
-      "name": "localsetup-communication-and-tools",
+      "id": "ls-communication-and-tools",
+      "name": "ls-communication-and-tools",
       "version": "1.2",
-      "path": "_localsetup/skills/localsetup-communication-and-tools/SKILL.md"
+      "path": "_localsetup/skills/ls-communication-and-tools/SKILL.md"
     },
     {
-      "id": "localsetup-context",
-      "name": "localsetup-context",
+      "id": "ls-context",
+      "name": "ls-context",
       "version": "1.5",
-      "path": "_localsetup/skills/localsetup-context/SKILL.md"
+      "path": "_localsetup/skills/ls-context/SKILL.md"
     },
     {
-      "id": "localsetup-cron-orchestrator",
-      "name": "localsetup-cron-orchestrator",
+      "id": "ls-cron-orchestrator",
+      "name": "ls-cron-orchestrator",
       "version": "1.0",
-      "path": "_localsetup/skills/localsetup-cron-orchestrator/SKILL.md"
+      "path": "_localsetup/skills/ls-cron-orchestrator/SKILL.md"
     },
     {
-      "id": "localsetup-debug-pro",
-      "name": "localsetup-debug-pro",
+      "id": "ls-debug-pro",
+      "name": "ls-debug-pro",
       "version": "1.1",
-      "path": "_localsetup/skills/localsetup-debug-pro/SKILL.md"
+      "path": "_localsetup/skills/ls-debug-pro/SKILL.md"
     },
     {
-      "id": "localsetup-decision-tree-workflow",
-      "name": "localsetup-decision-tree-workflow",
+      "id": "ls-decision-tree-workflow",
+      "name": "ls-decision-tree-workflow",
       "version": "1.1",
-      "path": "_localsetup/skills/localsetup-decision-tree-workflow/SKILL.md"
+      "path": "_localsetup/skills/ls-decision-tree-workflow/SKILL.md"
     },
     {
-      "id": "localsetup-docs-organization",
-      "name": "localsetup-docs-organization",
+      "id": "ls-docs-organization",
+      "name": "ls-docs-organization",
       "version": "0.1.0",
-      "path": "_localsetup/skills/localsetup-docs-organization/SKILL.md"
+      "path": "_localsetup/skills/ls-docs-organization/SKILL.md"
     },
     {
-      "id": "localsetup-framework-audit",
-      "name": "localsetup-framework-audit",
+      "id": "ls-framework-audit",
+      "name": "ls-framework-audit",
       "version": "1.0",
-      "path": "_localsetup/skills/localsetup-framework-audit/SKILL.md"
+      "path": "_localsetup/skills/ls-framework-audit/SKILL.md"
     },
     {
-      "id": "localsetup-framework-compliance",
-      "name": "localsetup-framework-compliance",
+      "id": "ls-framework-compliance",
+      "name": "ls-framework-compliance",
       "version": "1.2",
-      "path": "_localsetup/skills/localsetup-framework-compliance/SKILL.md"
+      "path": "_localsetup/skills/ls-framework-compliance/SKILL.md"
     },
     {
-      "id": "localsetup-git-workflows",
-      "name": "localsetup-git-workflows",
+      "id": "ls-git-workflows",
+      "name": "ls-git-workflows",
       "version": "1.2",
-      "path": "_localsetup/skills/localsetup-git-workflows/SKILL.md"
+      "path": "_localsetup/skills/ls-git-workflows/SKILL.md"
     },
     {
-      "id": "localsetup-github-publishing-workflow",
-      "name": "localsetup-github-publishing-workflow",
+      "id": "ls-github-publishing-workflow",
+      "name": "ls-github-publishing-workflow",
       "version": "1.1",
-      "path": "_localsetup/skills/localsetup-github-publishing-workflow/SKILL.md"
+      "path": "_localsetup/skills/ls-github-publishing-workflow/SKILL.md"
     },
     {
-      "id": "localsetup-humanizer",
-      "name": "localsetup-humanizer",
+      "id": "ls-humanizer",
+      "name": "ls-humanizer",
       "version": "2.1.2",
-      "path": "_localsetup/skills/localsetup-humanizer/SKILL.md"
+      "path": "_localsetup/skills/ls-humanizer/SKILL.md"
     },
     {
-      "id": "localsetup-keepass-secrets",
-      "name": "localsetup-keepass-secrets",
+      "id": "ls-keepass-secrets",
+      "name": "ls-keepass-secrets",
       "version": "1.0",
-      "path": "_localsetup/skills/localsetup-keepass-secrets/SKILL.md"
+      "path": "_localsetup/skills/ls-keepass-secrets/SKILL.md"
     },
     {
-      "id": "localsetup-kilo-boss-orchestrator",
-      "name": "localsetup-kilo-boss-orchestrator",
+      "id": "ls-kilo-boss-orchestrator",
+      "name": "ls-kilo-boss-orchestrator",
       "version": "1.0",
-      "path": "_localsetup/skills/localsetup-kilo-boss-orchestrator/SKILL.md"
+      "path": "_localsetup/skills/ls-kilo-boss-orchestrator/SKILL.md"
     },
     {
-      "id": "localsetup-kilo-visual-output",
-      "name": "localsetup-kilo-visual-output",
+      "id": "ls-kilo-visual-output",
+      "name": "ls-kilo-visual-output",
       "version": "1.0",
-      "path": "_localsetup/skills/localsetup-kilo-visual-output/SKILL.md"
+      "path": "_localsetup/skills/ls-kilo-visual-output/SKILL.md"
     },
     {
-      "id": "localsetup-linux-patcher",
-      "name": "localsetup-linux-patcher",
+      "id": "ls-linux-patcher",
+      "name": "ls-linux-patcher",
       "version": "1.1",
-      "path": "_localsetup/skills/localsetup-linux-patcher/SKILL.md"
+      "path": "_localsetup/skills/ls-linux-patcher/SKILL.md"
     },
     {
-      "id": "localsetup-linux-service-triage",
-      "name": "localsetup-linux-service-triage",
+      "id": "ls-linux-service-triage",
+      "name": "ls-linux-service-triage",
       "version": "1.1",
-      "path": "_localsetup/skills/localsetup-linux-service-triage/SKILL.md"
+      "path": "_localsetup/skills/ls-linux-service-triage/SKILL.md"
     },
     {
-      "id": "localsetup-mail-protocol-control",
-      "name": "localsetup-mail-protocol-control",
+      "id": "ls-mail-protocol-control",
+      "name": "ls-mail-protocol-control",
       "version": "1.2",
-      "path": "_localsetup/skills/localsetup-mail-protocol-control/SKILL.md"
+      "path": "_localsetup/skills/ls-mail-protocol-control/SKILL.md"
     },
     {
-      "id": "localsetup-markdown-reference-validator",
-      "name": "localsetup-markdown-reference-validator",
+      "id": "ls-markdown-reference-validator",
+      "name": "ls-markdown-reference-validator",
       "version": "1.0",
-      "path": "_localsetup/skills/localsetup-markdown-reference-validator/SKILL.md"
+      "path": "_localsetup/skills/ls-markdown-reference-validator/SKILL.md"
     },
     {
-      "id": "localsetup-mcp-builder",
-      "name": "localsetup-mcp-builder",
+      "id": "ls-mcp-builder",
+      "name": "ls-mcp-builder",
       "version": "1.2",
-      "path": "_localsetup/skills/localsetup-mcp-builder/SKILL.md"
+      "path": "_localsetup/skills/ls-mcp-builder/SKILL.md"
     },
     {
-      "id": "localsetup-npm-management",
-      "name": "localsetup-npm-management",
+      "id": "ls-npm-management",
+      "name": "ls-npm-management",
       "version": "1.0",
-      "path": "_localsetup/skills/localsetup-npm-management/SKILL.md"
+      "path": "_localsetup/skills/ls-npm-management/SKILL.md"
     },
     {
-      "id": "localsetup-omniroute-admin-automation",
-      "name": "localsetup-omniroute-admin-automation",
+      "id": "ls-omniroute-admin-automation",
+      "name": "ls-omniroute-admin-automation",
       "version": "1.0",
-      "path": "_localsetup/skills/localsetup-omniroute-admin-automation/SKILL.md"
+      "path": "_localsetup/skills/ls-omniroute-admin-automation/SKILL.md"
     },
     {
-      "id": "localsetup-omniroute-proxy",
-      "name": "localsetup-omniroute-proxy",
+      "id": "ls-omniroute-proxy",
+      "name": "ls-omniroute-proxy",
       "version": "1.0",
-      "path": "_localsetup/skills/localsetup-omniroute-proxy/SKILL.md"
+      "path": "_localsetup/skills/ls-omniroute-proxy/SKILL.md"
     },
     {
-      "id": "localsetup-pr-reviewer",
-      "name": "localsetup-pr-reviewer",
+      "id": "ls-pr-reviewer",
+      "name": "ls-pr-reviewer",
       "version": "1.1",
-      "path": "_localsetup/skills/localsetup-pr-reviewer/SKILL.md"
+      "path": "_localsetup/skills/ls-pr-reviewer/SKILL.md"
     },
     {
-      "id": "localsetup-public-repo-identity",
-      "name": "localsetup-public-repo-identity",
+      "id": "ls-public-repo-identity",
+      "name": "ls-public-repo-identity",
       "version": "1.2",
-      "path": "_localsetup/skills/localsetup-public-repo-identity/SKILL.md"
+      "path": "_localsetup/skills/ls-public-repo-identity/SKILL.md"
     },
     {
-      "id": "localsetup-publish-workflow",
-      "name": "localsetup-publish-workflow",
-      "version": "1.0",
-      "path": "_localsetup/skills/localsetup-publish-workflow/SKILL.md"
-    },
-    {
-      "id": "localsetup-receiving-code-review",
-      "name": "localsetup-receiving-code-review",
+      "id": "ls-receiving-code-review",
+      "name": "ls-receiving-code-review",
       "version": "1.2",
-      "path": "_localsetup/skills/localsetup-receiving-code-review/SKILL.md"
+      "path": "_localsetup/skills/ls-receiving-code-review/SKILL.md"
     },
     {
-      "id": "localsetup-safety-and-backup",
-      "name": "localsetup-safety-and-backup",
+      "id": "ls-safety-and-backup",
+      "name": "ls-safety-and-backup",
       "version": "1.1",
-      "path": "_localsetup/skills/localsetup-safety-and-backup/SKILL.md"
+      "path": "_localsetup/skills/ls-safety-and-backup/SKILL.md"
     },
     {
-      "id": "localsetup-scrapling",
-      "name": "localsetup-scrapling",
+      "id": "ls-scrapling",
+      "name": "ls-scrapling",
       "version": "1.0",
-      "path": "_localsetup/skills/localsetup-scrapling/SKILL.md"
+      "path": "_localsetup/skills/ls-scrapling/SKILL.md"
     },
     {
-      "id": "localsetup-script-and-docs-quality",
-      "name": "localsetup-script-and-docs-quality",
+      "id": "ls-script-and-docs-quality",
+      "name": "ls-script-and-docs-quality",
       "version": "1.1",
-      "path": "_localsetup/skills/localsetup-script-and-docs-quality/SKILL.md"
+      "path": "_localsetup/skills/ls-script-and-docs-quality/SKILL.md"
     },
     {
-      "id": "localsetup-skill-creator",
-      "name": "localsetup-skill-creator",
+      "id": "ls-skill-creator",
+      "name": "ls-skill-creator",
       "version": "1.3",
-      "path": "_localsetup/skills/localsetup-skill-creator/SKILL.md"
+      "path": "_localsetup/skills/ls-skill-creator/SKILL.md"
     },
     {
-      "id": "localsetup-skill-discovery",
-      "name": "localsetup-skill-discovery",
+      "id": "ls-skill-discovery",
+      "name": "ls-skill-discovery",
       "version": "1.4",
-      "path": "_localsetup/skills/localsetup-skill-discovery/SKILL.md"
+      "path": "_localsetup/skills/ls-skill-discovery/SKILL.md"
     },
     {
-      "id": "localsetup-skill-importer",
-      "name": "localsetup-skill-importer",
+      "id": "ls-skill-importer",
+      "name": "ls-skill-importer",
       "version": "1.4",
-      "path": "_localsetup/skills/localsetup-skill-importer/SKILL.md"
+      "path": "_localsetup/skills/ls-skill-importer/SKILL.md"
     },
     {
-      "id": "localsetup-skill-normalizer",
-      "name": "localsetup-skill-normalizer",
+      "id": "ls-skill-normalizer",
+      "name": "ls-skill-normalizer",
       "version": "1.1",
-      "path": "_localsetup/skills/localsetup-skill-normalizer/SKILL.md"
+      "path": "_localsetup/skills/ls-skill-normalizer/SKILL.md"
     },
     {
-      "id": "localsetup-skill-sandbox-tester",
-      "name": "localsetup-skill-sandbox-tester",
+      "id": "ls-skill-sandbox-tester",
+      "name": "ls-skill-sandbox-tester",
       "version": "1.0",
-      "path": "_localsetup/skills/localsetup-skill-sandbox-tester/SKILL.md"
+      "path": "_localsetup/skills/ls-skill-sandbox-tester/SKILL.md"
     },
     {
-      "id": "localsetup-skill-vetter",
-      "name": "localsetup-skill-vetter",
+      "id": "ls-skill-vetter",
+      "name": "ls-skill-vetter",
       "version": "1.2",
-      "path": "_localsetup/skills/localsetup-skill-vetter/SKILL.md"
+      "path": "_localsetup/skills/ls-skill-vetter/SKILL.md"
     },
     {
-      "id": "localsetup-system-info",
-      "name": "localsetup-system-info",
+      "id": "ls-system-info",
+      "name": "ls-system-info",
       "version": "1.1",
-      "path": "_localsetup/skills/localsetup-system-info/SKILL.md"
+      "path": "_localsetup/skills/ls-system-info/SKILL.md"
     },
     {
-      "id": "localsetup-task-skill-matcher",
-      "name": "localsetup-task-skill-matcher",
+      "id": "ls-task-skill-matcher",
+      "name": "ls-task-skill-matcher",
       "version": "1.1",
-      "path": "_localsetup/skills/localsetup-task-skill-matcher/SKILL.md"
+      "path": "_localsetup/skills/ls-task-skill-matcher/SKILL.md"
     },
     {
-      "id": "localsetup-tdd-guide",
-      "name": "localsetup-tdd-guide",
+      "id": "ls-tdd-guide",
+      "name": "ls-tdd-guide",
       "version": "1.1",
-      "path": "_localsetup/skills/localsetup-tdd-guide/SKILL.md"
+      "path": "_localsetup/skills/ls-tdd-guide/SKILL.md"
     },
     {
-      "id": "localsetup-test-runner",
-      "name": "localsetup-test-runner",
+      "id": "ls-test-runner",
+      "name": "ls-test-runner",
       "version": "1.1",
-      "path": "_localsetup/skills/localsetup-test-runner/SKILL.md"
+      "path": "_localsetup/skills/ls-test-runner/SKILL.md"
     },
     {
-      "id": "localsetup-tmux-shared-session-workflow",
-      "name": "localsetup-tmux-shared-session-workflow",
+      "id": "ls-tmux-shared-session-workflow",
+      "name": "ls-tmux-shared-session-workflow",
       "version": "4.0",
-      "path": "_localsetup/skills/localsetup-tmux-shared-session-workflow/SKILL.md"
+      "path": "_localsetup/skills/ls-tmux-shared-session-workflow/SKILL.md"
     },
     {
-      "id": "localsetup-unfuck-my-git-state",
-      "name": "localsetup-unfuck-my-git-state",
+      "id": "ls-unfuck-my-git-state",
+      "name": "ls-unfuck-my-git-state",
       "version": "1.2",
-      "path": "_localsetup/skills/localsetup-unfuck-my-git-state/SKILL.md"
+      "path": "_localsetup/skills/ls-unfuck-my-git-state/SKILL.md"
     }
   ]
 }
