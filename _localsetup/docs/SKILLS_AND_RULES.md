@@ -40,7 +40,7 @@ version: 3.0
 ## Format
 
 - Skills follow the [Agent Skills](https://agentskills.io/specification) specification: SKILL.md with required `name` and `description` frontmatter; optional `metadata.version` for skill document versioning; body = instructions. Same files work on all platforms.
-- **Skill document versioning:** Each skill includes `metadata.version` (e.g. `"1.0"`). Skill version bumps are performed by the repository maintainers when skill files change; see [AGENT_SKILLS_COMPLIANCE.md](AGENT_SKILLS_COMPLIANCE.md).
+- **Skill document versioning:** Each skill includes `metadata.version` (e.g. `"1.0"`). Skill versions are tracked separately from the framework release version; see [AGENT_SKILLS_COMPLIANCE.md](AGENT_SKILLS_COMPLIANCE.md).
 - When adding a platform or registering a new skill, use [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md) as the source of truth.
 - **Interoperability:** Skills are [Agent Skills](https://agentskills.io/specification)–compliant and interchangeable: our skills work in any spec-compliant host; external skills (e.g. [Anthropic’s](https://github.com/anthropics/skills)) can be used here with placement + registration. See [SKILL_INTEROPERABILITY.md](SKILL_INTEROPERABILITY.md).
 

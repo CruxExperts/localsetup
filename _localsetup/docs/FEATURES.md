@@ -80,12 +80,12 @@ This is the complete public feature catalog for Localsetup v3. The main README h
 
 | Capability | Description |
 |---|---|
-| **Conventional commit bumping** | Version bump is inferred from commit messages (feat: -> minor, fix:/docs: -> patch). Framework version and docs are maintained by repository owners; see [VERSIONING.md](VERSIONING.md). |
-| **README and docs sync** | Version values are synchronized to `README.md`, `_localsetup/README.md`, and YAML frontmatter in `_localsetup/docs/*.md` and `docs/*.md`. |
+| **Conventional commit bumping** | Version bump is inferred from commit messages and changed paths (`!`/`BREAKING CHANGE` -> major, user-facing capability -> minor, internal automation/docs/CI/tests -> patch). Pre-push tooling creates the version-sync commit before release. |
+| **README and docs sync** | Version values are synchronized to `VERSION`, `pyproject.toml`, `README.md`, `_localsetup/README.md`, generated facts, and YAML frontmatter in `_localsetup/docs/*.md`. |
 | **Attribution guardrails** | The commit hook strips `Co-authored-by` trailers for AI agents and bots. Only humans appear in commit history. |
 | **Git traceability model** | PRDs, specs, and outcomes can reference git commit hashes for audit. See [GIT_TRACEABILITY.md](GIT_TRACEABILITY.md). |
-| **Maintenance workflow** | Framework version and docs are maintained by the repository owners. See [VERSIONING.md](VERSIONING.md) for how version is defined and displayed. |
-| **Skill metadata patching** | Skill `metadata.version` in SKILL.md is updated by maintainers when skills change; see [AGENT_SKILLS_COMPLIANCE.md](AGENT_SKILLS_COMPLIANCE.md). |
+| **Maintenance workflow** | `release-push` computes the outgoing bump, syncs docs, commits the release version, and pushes. GitHub validates, tags `vX.Y.Z`, and publishes the package artifact. |
+| **Skill metadata versioning** | Skill `metadata.version` in SKILL.md is tracked separately from the framework version and surfaced in generated skill docs; see [AGENT_SKILLS_COMPLIANCE.md](AGENT_SKILLS_COMPLIANCE.md). |
 
 ---
 
@@ -122,7 +122,7 @@ These skills ship with the framework and are ready to use immediately.
 | `ls-agentic-prd-batch` | Process PRDs from queue; implement per spec; update status; write outcome. |
 | `ls-agentic-umbrella-queue` | Named workflows with impact summary and user confirmation before big/destructive runs. |
 | `ls-framework-compliance` | Pre-task workflow, certainty assessment, context load, document status, testing, git checkpoints. |
-| `ls-automatic-versioning` | Manage VERSION, conventional commits, sync to READMEs and docs; version maintained by repo maintainers. |
+| `ls-automatic-versioning` | Manage VERSION, Conventional Commits, release-push, sync to READMEs and docs, and GitHub tag/release publishing. |
 | `ls-github-publishing-workflow` | Publishing checklist: doc structure, licensing, PII/secrets scrub, repo readiness. |
 | `ls-tmux-shared-session-workflow` | Human-in-the-loop ops via tmux_ops (pick/probe/send/wait); sudo gate on probe; adaptive idle polling (`send --wait` or `wait --timeout N`); REMOTE_TMUX_HOST for remote. |
 | `ls-arbiter` | Push decisions to Arbiter Zebu for async human review. |

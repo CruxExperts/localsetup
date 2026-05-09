@@ -18,7 +18,7 @@ Thank you for your interest in contributing. Here’s how to get started.
 
 - **Root**  - Install scripts (`install`, `install.ps1`), README, LICENSE, and docs.
 - **`_localsetup/`**  - The engine: `tools/`, `lib/`, `skills/`, `templates/`, `docs/`. Changes here affect what gets deployed into a client's `_localsetup/`.
-- **Version and docs:** Framework version is defined in VERSION and displayed in READMEs; see [docs/VERSIONING.md](docs/VERSIONING.md). Version and doc sync are performed by the repository maintainers.
+- **Version and docs:** Framework version is defined in VERSION and displayed in READMEs; see [_localsetup/docs/VERSIONING.md](_localsetup/docs/VERSIONING.md). Conventional Commits drive automatic version and doc sync before push.
 
 For detailed structure and conventions, see [_localsetup/README.md](_localsetup/README.md) and the docs under `_localsetup/docs/`.
 

@@ -2,7 +2,19 @@
 set -euo pipefail
 
 msg_file="$1"
-if ! rg -q '^(feat|fix|chore|revert)(\(.+\))?: .+' "$msg_file"; then
-  echo "commit message must use Conventional Commit format"
-  exit 1
+first_line="$(head -n 1 "$msg_file")"
+
+if [[ "$first_line" =~ ^Revert\ \"(.+)\"$ ]]; then
+  exit 0
 fi
+
+if [[ "$first_line" =~ ^(feat|fix|docs|chore|style|refactor|perf|test|ci|build|revert)(\([^)]+\))?!?:\ .+ ]]; then
+  exit 0
+fi
+
+if [[ "$first_line" =~ ^chore:\ sync\ release\ version\ [0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  exit 0
+fi
+
+echo "commit message must use Conventional Commit format"
+exit 1

@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import subprocess
 import sys
 
 from .adapters import adapter_status
@@ -22,6 +23,16 @@ from .plan import build_install_plan
 from .rollback import rollback
 from .skills import load_skill_catalog, validate_skill_catalog
 from .verify import verify_install
+from .versioning import (
+    VERSION_SYNC_PREFIX,
+    check_version_files,
+    commit_version_sync,
+    plan_version,
+    print_json,
+    push_lines_to_plans,
+    stage_version_files,
+    sync_version_files,
+)
 
 
 def _repo_root() -> Path:
@@ -158,6 +169,25 @@ def _main(argv: list[str] | None = None) -> int:
     hook_p.add_argument("--out", default="/tmp/localsetup-v3-public.tar.gz")
     hook_p.add_argument("--runner")
 
+    version_plan_p = sub.add_parser("version-plan")
+    version_plan_p.add_argument("--base")
+    version_plan_p.add_argument("--head")
+    version_plan_p.add_argument("--ref")
+    version_plan_p.add_argument("--push-stdin", action="store_true")
+
+    version_sync_p = sub.add_parser("version-sync")
+    version_sync_p.add_argument("--base")
+    version_sync_p.add_argument("--head")
+    version_sync_p.add_argument("--target")
+    version_sync_p.add_argument("--check", action="store_true")
+    version_sync_p.add_argument("--stage", action="store_true")
+    version_sync_p.add_argument("--commit", action="store_true")
+
+    release_push_p = sub.add_parser("release-push")
+    release_push_p.add_argument("push_args", nargs=argparse.REMAINDER)
+
+    sub.add_parser("install-hooks")
+
     package_p = sub.add_parser("package")
     package_p.add_argument("--out", default="dist/localsetup-v3-public.tar.gz")
 
@@ -284,6 +314,57 @@ def _main(argv: list[str] | None = None) -> int:
         result = run_maintainer_gate(root, Path(args.out), runner=args.runner)
         print(json.dumps(result, indent=2))
         return 0 if result["ok"] else 1
+
+    if args.cmd == "version-plan":
+        if args.push_stdin:
+            plans = push_lines_to_plans(root, sys.stdin.read())
+            print_json({"ok": all(plan["ok"] for plan in plans), "plans": plans})
+            return 0 if all(plan["ok"] for plan in plans) else 1
+        payload = plan_version(root, base=args.base, head=args.head, ref=args.ref)
+        print_json(payload)
+        return 0 if payload["ok"] else 1
+
+    if args.cmd == "version-sync":
+        plan = None
+        target = args.target
+        if not target:
+            plan = plan_version(root, base=args.base, head=args.head)
+            target = plan["target_version"]
+        if args.check:
+            payload = check_version_files(root, target)
+            if plan:
+                payload["plan"] = plan
+            print_json(payload)
+            return 0 if payload["ok"] else 1
+        payload = sync_version_files(root, target)
+        if args.stage:
+            stage_version_files(root)
+            payload["staged"] = True
+        if args.commit:
+            payload["commit"] = commit_version_sync(root, target)
+            payload["commit_message"] = f"{VERSION_SYNC_PREFIX} {target}"
+        if plan:
+            payload["plan"] = plan
+        print_json(payload)
+        return 0
+
+    if args.cmd == "release-push":
+        plan = plan_version(root)
+        if plan["bump"] != "none" and not plan["ok"]:
+            sync_version_files(root, plan["target_version"])
+            commit_version_sync(root, plan["target_version"])
+            plan = plan_version(root)
+        push_args = args.push_args
+        if push_args and push_args[0] == "--":
+            push_args = push_args[1:]
+        cmd = ["git", "push", *push_args] if push_args else ["git", "push"]
+        completed = subprocess.run(cmd, cwd=root)
+        return completed.returncode
+
+    if args.cmd == "install-hooks":
+        subprocess.run(["git", "config", "core.hooksPath", ".githooks"], cwd=root, check=True)
+        print_json({"ok": True, "core.hooksPath": ".githooks"})
+        return 0
 
     if args.cmd == "package":
         out = Path(args.out)

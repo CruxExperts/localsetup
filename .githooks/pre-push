@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+payload="$(mktemp)"
+plan_json="$(mktemp)"
+trap 'rm -f "$payload" "$plan_json"' EXIT
+cat >"$payload"
+
+if python3 _localsetup/tools/localsetup_v3.py --repo . version-plan --push-stdin <"$payload" >"$plan_json"; then
+  exit 0
+fi
+
+python3 - "$payload" <<'PY'
+import sys
+from pathlib import Path
+
+from _localsetup.v3.versioning import (
+    commit_version_sync,
+    push_lines_to_plans,
+    sync_version_files,
+)
+
+repo_root = Path.cwd()
+payload_path = Path(sys.argv[1])
+plans = push_lines_to_plans(repo_root, payload_path.read_text(encoding="utf-8"))
+actionable = [p for p in plans if p["bump"] != "none" and not p["ok"]]
+if not actionable:
+    raise SystemExit(1)
+targets = {p["target_version"] for p in actionable}
+if len(targets) != 1:
+    print("[localsetup-v3] multiple pushed refs require different release versions; use release-push per ref.", file=sys.stderr)
+    raise SystemExit(2)
+target = actionable[0]["target_version"]
+sync_version_files(repo_root, target)
+commit_sha = commit_version_sync(repo_root, target)
+if commit_sha:
+    print(f"[localsetup-v3] created version-sync commit {commit_sha[:12]} for {target}", file=sys.stderr)
+else:
+    print(f"[localsetup-v3] version files already sync to {target}, but pushed ref is stale", file=sys.stderr)
+PY
+
+cat >&2 <<'EOF'
+[localsetup-v3] push stopped after preparing the version-sync commit.
+[localsetup-v3] Run the push again, or use:
+[localsetup-v3]   python3 _localsetup/tools/localsetup_v3.py release-push
+EOF
+exit 1

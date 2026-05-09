@@ -52,7 +52,7 @@ Add one row or bullet per new skill with a short "When to use" description. Use 
 - Root wrapper: `./install --directory . --yes`; use `--tools cursor,codex` or `--platforms cursor codex` to select adapters.
 - Windows: WSL2-only. `install.ps1` is a guidance stub, not a native installer.
 - Skills and rules (paths and model): [SKILLS_AND_RULES.md](SKILLS_AND_RULES.md).
-- Release and publish (including packaging and sync checks) are maintained in a separate maintainer repository.
+- Release and publish are handled by this repo's automatic versioning hooks and GitHub workflow.
 
 ---
 

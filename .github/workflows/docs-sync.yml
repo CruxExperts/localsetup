@@ -18,8 +18,13 @@ jobs:
         with:
           python-version: "3.x"
 
+      - name: Install dependencies
+        run: python3 -m pip install -r _localsetup/requirements.txt --quiet
+
       - name: Regenerate docs artifacts
-        run: python3 _localsetup/tools/generate_docs_artifacts.py
+        run: |
+          python3 _localsetup/tools/generate_docs_artifacts.py
+          python3 _localsetup/tools/localsetup_v3.py --repo . version-sync --check --target "$(cat VERSION)"
 
       - name: Verify generated files are committed
-        run: git diff --exit-code _localsetup/docs/SKILLS.md _localsetup/docs/_generated/facts.json
+        run: git diff --exit-code

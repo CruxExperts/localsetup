@@ -6,6 +6,7 @@
 | `keep` | `.githooks/commit-msg` |
 | `keep` | `.githooks/post-commit` |
 | `keep` | `.githooks/pre-commit` |
+| `keep` | `.githooks/pre-push` |
 | `keep` | `.github/ISSUE_TEMPLATE/bug_report.md` |
 | `keep` | `.github/ISSUE_TEMPLATE/feature_request.md` |
 | `keep` | `.github/workflows/docs-sync.yml` |
@@ -306,6 +307,7 @@
 | `keep` | `_localsetup/tests/test_scrapling_jobs.py` |
 | `keep` | `_localsetup/tests/test_v3_install_flow.py` |
 | `keep` | `_localsetup/tests/test_v3_manifests.py` |
+| `keep` | `_localsetup/tests/test_versioning.py` |
 | `keep` | `_localsetup/tools/agentq_transport_client/README.md` |
 | `keep` | `_localsetup/tools/agentq_transport_client/agentq_cli.py` |
 | `keep` | `_localsetup/tools/agentq_transport_client/agentq_transport_client/__init__.py` |
@@ -387,6 +389,7 @@
 | `refactor` | `_localsetup/v3/skills.py` |
 | `refactor` | `_localsetup/v3/source.py` |
 | `refactor` | `_localsetup/v3/verify.py` |
+| `refactor` | `_localsetup/v3/versioning.py` |
 | `keep` | `assets/localsetup-v3-architecture.svg` |
 | `keep` | `assets/localsetup-v3-install-lifecycle.svg` |
 | `keep` | `assets/localsetup-v3-logo.png` |

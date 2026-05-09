@@ -27,7 +27,7 @@ version: 3.0
 ## Skill document versioning
 
 - Each framework skill includes **metadata.version** (e.g. `"1.0"`) in SKILL.md frontmatter per the spec’s optional `metadata` field.
-- Skill version bumps and sync to deployed copies are performed by the repository maintainers when skills change. Patch is incremented (e.g. 1.0 → 1.1) for non-breaking updates.
+- Skill version bumps are tracked separately from the framework release version. Patch is incremented (e.g. 1.0 -> 1.1) for non-breaking updates.
 
 ## Validation
 
