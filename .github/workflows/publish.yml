@@ -17,13 +17,19 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.x"
+          python-version: "3.12"
 
       - name: Install dependencies
         run: |
-          python3 -m pip install pyyaml requests python-frontmatter --quiet
+          python3 -m pip install -r _localsetup/requirements.txt pytest --quiet
 
-      - name: Run publish workflow
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./scripts/publish --push
+      - name: Run publish validation
+        run: |
+          python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .
+          python3 _localsetup/tools/localsetup_v3.py --repo . generate-docs
+          git diff --exit-code
+          python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
+          python3 _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-v3-framework-audit.md
+          python3 -m pytest _localsetup/tests -q
+          ./_localsetup/tests/automated_test.sh
+          git diff --check
