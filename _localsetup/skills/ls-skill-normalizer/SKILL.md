@@ -12,12 +12,12 @@ metadata:
 ## When to use this skill
 
 - User says "normalize this skill", "normalize the Ansible skill", "normalize all imported skills", or "make this skill spec-compliant."
-- User copied a skill directory into `_localsetup/skills/` or `_localsetup/skills/` and wants it normalized.
+- User copied a skill directory into `_localsetup/skills/` and wants it normalized.
 - Batch review: normalize several skills (e.g. ls-ansible-skill, ls-linux-service-triage, ls-linux-patcher) in one pass.
 
 ## Workflow (agent steps)
 
-1. **Identify target(s)**  - User specifies one skill (e.g. by name or path) or "all" (all skills under `_localsetup/skills/` or `_localsetup/skills/`). Resolve to a list of skill directories; each must contain SKILL.md.
+1. **Identify target(s)**  - User specifies one skill (e.g. by name or path) or "all" (all skills under `_localsetup/skills/`). Resolve to a list of skill directories; each must contain SKILL.md.
 2. **Load rules**  - Read `_localsetup/docs/SKILL_NORMALIZATION.md` from the current framework source. Treat it as the single source of truth for document normalization, platform-specific handling, tooling normalization, approval flow, and references to `TOOLING_POLICY.md` and `INPUT_HARDENING_STANDARD.md`.
 3. **Inventory the skill**  - List the files that normalization may need to touch:
    - `SKILL.md` and any other skill documentation, including `references/`, README-style files, playbook notes, and usage examples.

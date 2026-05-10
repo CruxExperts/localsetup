@@ -1,5 +1,6 @@
 import subprocess
 import sys
+import os
 from pathlib import Path
 
 import yaml
@@ -14,10 +15,16 @@ def _write_manifest(path: Path, payload: dict) -> None:
     path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
 
 
-def _run_cron_ctl(manifest: Path, *args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
+def _run_cron_ctl(
+    manifest: Path,
+    *args: str,
+    cwd: Path | None = None,
+    env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [sys.executable, str(CRON_CTL), "--manifest", str(manifest), *args],
         cwd=cwd or ROOT,
+        env=env,
         capture_output=True,
         text=True,
         timeout=20,
@@ -84,3 +91,93 @@ def test_install_quotes_runner_args_without_shell_chaining(tmp_path: Path) -> No
     assert " && " not in proc.stdout
     assert "\tcd " not in proc.stdout
     assert "\tsleep " not in proc.stdout
+
+
+def test_reorder_rejects_duplicate_order_ids(tmp_path: Path) -> None:
+    manifest = tmp_path / "manifest.yaml"
+    _write_manifest(
+        manifest,
+        {
+            "triggers": {"nightly": {"schedule": "0 2 * * *"}},
+            "tasks": [
+                {
+                    "id": "a",
+                    "trigger": "nightly",
+                    "sequence_order": 1,
+                    "command": ["python3", "--version"],
+                },
+                {
+                    "id": "b",
+                    "trigger": "nightly",
+                    "sequence_order": 2,
+                    "command": ["python3", "--version"],
+                },
+            ],
+        },
+    )
+
+    proc = _run_cron_ctl(manifest, "reorder", "--trigger", "nightly", "--order", "a,a")
+
+    assert proc.returncode == 1
+    assert "Duplicate task id(s) in order for trigger nightly: a" in proc.stderr
+    data = yaml.safe_load(manifest.read_text(encoding="utf-8"))
+    assert [task["id"] for task in data["tasks"]] == ["a", "b"]
+
+
+def test_install_output_write_error_is_controlled(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    manifest = tmp_path / "manifest.yaml"
+    output_dir = tmp_path / "existing-dir"
+    output_dir.mkdir()
+    _write_manifest(
+        manifest,
+        {
+            "triggers": {"nightly": {"schedule": "0 2 * * *"}},
+            "tasks": [
+                {
+                    "id": "task",
+                    "trigger": "nightly",
+                    "sequence_order": 1,
+                    "command": ["python3", "--version"],
+                }
+            ],
+        },
+    )
+
+    proc = _run_cron_ctl(
+        manifest,
+        "install",
+        "--repo-root",
+        str(repo_root),
+        "--output",
+        str(output_dir),
+    )
+
+    assert proc.returncode == 1
+    assert "[cron_ctl] Failed to write output:" in proc.stderr
+    assert "Traceback" not in proc.stderr
+
+
+def test_missing_pyyaml_uses_shared_dependency_error(tmp_path: Path) -> None:
+    manifest = tmp_path / "manifest.yaml"
+    manifest.write_text("triggers: {}\n", encoding="utf-8")
+    sitecustomize = tmp_path / "sitecustomize.py"
+    sitecustomize.write_text(
+        "import importlib\n"
+        "_real_import_module = importlib.import_module\n"
+        "def _patched_import_module(name, package=None):\n"
+        "    if name == 'yaml':\n"
+        "        raise ImportError('simulated missing yaml')\n"
+        "    return _real_import_module(name, package)\n"
+        "importlib.import_module = _patched_import_module\n",
+        encoding="utf-8",
+    )
+    env = os.environ.copy()
+    env["PYTHONPATH"] = f"{tmp_path}{os.pathsep}{env.get('PYTHONPATH', '')}".rstrip(os.pathsep)
+
+    proc = _run_cron_ctl(manifest, "validate", env=env)
+
+    assert proc.returncode == 2
+    assert "[FATAL] Missing Python packages: yaml" in proc.stderr
+    assert "python3 -m pip install PyYAML" in proc.stderr

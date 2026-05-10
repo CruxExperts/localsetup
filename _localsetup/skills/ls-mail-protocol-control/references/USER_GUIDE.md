@@ -20,7 +20,7 @@ This skill gives an agent controlled access to delegated mail accounts over SMTP
 4. Call tools through `mcp_server.py`.
 
 See [Account config schema](ACCOUNT_CONFIG_SCHEMA.md) for the canonical
-`mail_accounts.json` structure and validation rules.
+`mail_accounts.json` structure, validation rules, and sample file.
 
 ## Architecture at a glance
 

@@ -11,7 +11,7 @@ version: 3.0
 
 - **Specification:** [agentskills.io/specification](https://agentskills.io/specification)
 - **Repo:** [github.com/agentskills/agentskills](https://github.com/agentskills/agentskills)
-- **Validation (optional):** Use [skills-ref](https://github.com/agentskills/agentskills/tree/main/skills-ref) to validate: `skills-ref validate path/to/skill`
+- **Validation (optional):** Install [skills-ref](https://github.com/agentskills/agentskills/tree/main/skills-ref) and use its current CLI entrypoint to validate: `agentskills validate path/to/skill`
 
 ## Compliance summary
 
@@ -21,6 +21,7 @@ version: 3.0
 | **name** (required) | Present in every skill; lowercase, hyphens, 1-64 chars; matches parent directory (e.g. `ls-context`). |
 | **description** (required) | Present; what the skill does and when to use it; under 1024 chars. |
 | **metadata.version** (optional) | Used for skill document versioning; bumped automatically when the skill file is updated (see below). |
+| **allowed-tools** (optional, experimental) | Permitted when a skill needs to declare pre-approved tool hints; support varies by host, so local checks treat it as reviewable rather than invalid. |
 | **Body** | Markdown instructions after frontmatter; progressive disclosure; keep under ~500 lines per spec. |
 | **File references** | Relative paths from skill root; one level deep where possible. |
 
@@ -31,7 +32,7 @@ version: 3.0
 
 ## Validation
 
-- Optionally run `skills-ref validate ./_localsetup/skills/ls-<name>` (after installing [skills-ref](https://github.com/agentskills/agentskills/tree/main/skills-ref)) to check frontmatter and naming.
+- Optionally run `agentskills validate ./_localsetup/skills/ls-<name>` (after installing [skills-ref](https://github.com/agentskills/agentskills/tree/main/skills-ref)) to check frontmatter and naming.
 - Framework skill names use the `ls-*` prefix and match the directory name; descriptions include trigger terms for discovery.
 
 ## Interoperability

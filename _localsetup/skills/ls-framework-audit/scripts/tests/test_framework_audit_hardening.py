@@ -3,6 +3,7 @@ from __future__ import annotations
 import subprocess
 import sys
 from pathlib import Path
+from textwrap import dedent
 
 SCRIPT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPT_ROOT))
@@ -54,3 +55,25 @@ def test_report_items_indent_multiline_evidence() -> None:
     audit._append_report_items(lines, ["smoke failed\nstdout:\nboom"])
 
     assert lines == ["- smoke failed", "  stdout:", "  boom"]
+
+
+def test_skill_matrix_requires_one_smoke_row_per_skill(tmp_path: Path) -> None:
+    fw = tmp_path / "_localsetup"
+    (fw / "skills" / "ls-present").mkdir(parents=True)
+    (fw / "skills" / "ls-missing").mkdir(parents=True)
+    (fw / "tests").mkdir(parents=True)
+    (fw / "tests" / "skill_smoke_commands.yaml").write_text(
+        dedent(
+            """\
+            ls-present: "N/A"
+            """
+        ),
+        encoding="utf-8",
+    )
+
+    errors, warnings = audit.phase_skill_matrix(tmp_path, fw)
+
+    assert warnings == []
+    assert errors == [
+        "skill_smoke_commands.yaml missing entries for skill dirs: ls-missing"
+    ]

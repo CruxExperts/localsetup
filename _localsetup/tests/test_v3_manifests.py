@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+import yaml
 
 from _localsetup.v3.baseline import classify_path
 from _localsetup.v3.manifests import load_pack_config, load_platforms
@@ -31,6 +32,24 @@ def test_catalog_validation_and_pack_selection() -> None:
     assert validate_skill_catalog(root) == []
     assert "ls-context" in selected_skill_names(root, ["core"])
     assert "ls-cloudflare-dns" not in selected_skill_names(root, ["core"])
+
+
+def test_skill_allowed_tools_frontmatter_is_space_separated() -> None:
+    root = Path(__file__).resolve().parents[2]
+
+    for skill_md in sorted((root / "_localsetup" / "skills").glob("ls-*/SKILL.md")):
+        text = skill_md.read_text(encoding="utf-8")
+        if not text.startswith("---\n"):
+            continue
+        frontmatter = text.split("---", 2)[1]
+        metadata = yaml.safe_load(frontmatter) or {}
+        allowed_tools = metadata.get("allowed-tools")
+        if allowed_tools is None:
+            continue
+
+        assert isinstance(allowed_tools, str), skill_md
+        assert "," not in allowed_tools, skill_md
+        assert allowed_tools.split(), skill_md
 
 
 def test_baseline_file_classification() -> None:

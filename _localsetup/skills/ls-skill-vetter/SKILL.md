@@ -41,7 +41,7 @@ Required checks:
 - [ ] description explains what the skill does and when to use it.
 - [ ] metadata.version is present or the absence is documented.
 - [ ] Optional sidecars such as _meta.json match SKILL.md metadata, or drift is reported.
-- [ ] Optional validation command was run when available: skills-ref validate <skill-dir>.
+- [ ] Optional validation command was run when available: `agentskills validate <skill-dir>`.
 ```
 
 Treat `SKILL.md` frontmatter as the canonical local metadata. Sidecars are provenance or export metadata only; they must not override the local skill/catalog version.

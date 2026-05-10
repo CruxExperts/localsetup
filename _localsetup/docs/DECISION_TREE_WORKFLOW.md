@@ -7,7 +7,7 @@ version: 3.0
 
 Workflow ID: `spec-clarify-reverse`
 
-**Purpose:** AI prompts the user one question at a time with four options (A-D), preferred choice, and rationale. Used to build context before implementation (e.g. PRD/spec clarification). Load skill ls-decision-tree-workflow when user invokes it.
+**Purpose:** AI prompts the user one question at a time with four options (A-D), preferred choice, and rationale. Used to build context before implementation only when the user explicitly invokes the decision-tree or reverse-prompt workflow.
 
 ## Principle
 
@@ -30,12 +30,12 @@ Workflow ID: `spec-clarify-reverse`
 
 ## Flow
 
-- One topic at a time. For each question: output in format above -> wait for answer -> next question or (if done) use answers to update PRD/spec/outcome.
+- One topic at a time. For each question: output in format above -> wait for answer -> next question or (if done) use answers as context for the requested follow-up work.
 
 ## When to use
 
-- User says: "decision tree", "decision tree workflow", "reverse prompt", "run the decision tree", or similar.
-- When clarifying a draft PRD or spec with structured Q&A.
+- User explicitly says: "decision tree", "decision tree workflow", "reverse prompt", "reverse prompt workflow", "run the decision tree", or equivalent.
+- Do not activate from ordinary PRD/spec edits unless the user names this workflow.
 
 ## Checklist
 

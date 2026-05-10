@@ -176,6 +176,18 @@ def cmd_reorder(manifest_path: Path, trigger: str, order_ids: list[str]) -> int:
     except ManifestError as exc:
         print(f"[cron_ctl] {exc}", file=sys.stderr)
         return 1
+    seen_ids: set[str] = set()
+    duplicate_ids: list[str] = []
+    for task_id in order_ids:
+        if task_id in seen_ids and task_id not in duplicate_ids:
+            duplicate_ids.append(task_id)
+        seen_ids.add(task_id)
+    if duplicate_ids:
+        print(
+            f"[cron_ctl] Duplicate task id(s) in order for trigger {tr}: {', '.join(duplicate_ids)}",
+            file=sys.stderr,
+        )
+        return 1
     if tr not in normalized["triggers"]:
         print(f"[cron_ctl] Unknown trigger: {tr}", file=sys.stderr)
         return 1
@@ -249,9 +261,13 @@ def cmd_install(manifest_path: Path, repo_root: Path, output_path: Path | None, 
             lines.append("")
     out = "\n".join(lines)
     if output_path:
-        output_path = Path(output_path).resolve()
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_text(out, encoding="utf-8")
+        try:
+            output_path = Path(output_path).resolve()
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text(out, encoding="utf-8")
+        except OSError as exc:
+            print(f"[cron_ctl] Failed to write output: {exc}", file=sys.stderr)
+            return 1
         print(f"Wrote {output_path}")
     else:
         print(out)

@@ -29,6 +29,20 @@ class BootstrapError(RuntimeError):
         self.message = message
 
 
+def _parse_args_json(raw: str) -> dict[str, Any]:
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise BootstrapError(
+            "ARGS_JSON_INVALID_JSON", f"Invalid args JSON: {exc}"
+        ) from exc
+    if not isinstance(payload, dict):
+        raise BootstrapError(
+            "ARGS_JSON_INVALID_ROOT", "args-json must decode to a JSON object."
+        )
+    return payload
+
+
 def _parse_port(value: Any, default: int, field_name: str, row_number: int) -> int:
     if value in (None, ""):
         return default
@@ -146,9 +160,7 @@ def main() -> int:
     )
     args = parser.parse_args()
     try:
-        payload = json.loads(args.args_json)
-        if not isinstance(payload, dict):
-            raise ValueError("args-json must decode to a JSON object.")
+        payload = _parse_args_json(args.args_json)
         server = MailMcpServer(Path(args.policy), Path(args.accounts))
         result = server.call_tool(args.tool, payload)
         print(json.dumps(result, ensure_ascii=False))

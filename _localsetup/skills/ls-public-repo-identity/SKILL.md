@@ -1,6 +1,6 @@
 ---
 name: ls-public-repo-identity
-description: "Public repo identity - use in README and published repos. For your identity, use local-identity (gitignored) or copy from framework template. Use when editing README*, CONTRIBUTING*."
+description: "Public repo identity - use in README and published repos. For real identity details, use a local-only identity file that is not committed. Use when editing README*, CONTRIBUTING*."
 metadata:
   version: "1.2"
 ---

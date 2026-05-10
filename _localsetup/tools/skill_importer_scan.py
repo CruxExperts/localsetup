@@ -63,8 +63,11 @@ def skill_brief(skill_dir, scan_root, validation_script):
                         for i, line in enumerate(f.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
                             if SECURITY_PATTERNS.search(line):
                                 hits.append("%s:%d" % (f, i))
-                    except Exception:
-                        pass
+                    except Exception as exc:
+                        sys.stderr.write(
+                            "Read error while scanning %s (%s: %s)\n"
+                            % (f, type(exc).__name__, exc)
+                        )
     if hits:
         print("Security: REVIEW (heuristic flags)")
         for h in hits[:5]:

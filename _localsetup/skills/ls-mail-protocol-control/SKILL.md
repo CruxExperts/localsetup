@@ -3,6 +3,7 @@ name: ls-mail-protocol-control
 description: Provide full SMTP and IMAP account control for delegated mailboxes with attachment-first MIME handling and full-envelope encryption. Use when an agent must read, send, organize, decrypt, and manage mailbox state with strict admin controls.
 metadata:
   version: "1.2"
+compatibility: "Python 3.10+ using stdlib SMTP/IMAP/MIME plus PyYAML and cryptography for policy and encryption helpers. Requires delegated SMTP/IMAP accounts, repo-local policy/account config, and environment-provided credentials; no shell commands or subprocess execution."
 ---
 
 # Mail protocol control
@@ -63,6 +64,7 @@ _localsetup/skills/ls-mail-protocol-control/
      TROUBLESHOOTING.md
      ENCRYPTION_MODEL.md
      KEY_MANAGEMENT.md
+     examples/mail_accounts.sample.json
 ```
 
 ## Admin controls
@@ -115,4 +117,3 @@ Agent-to-agent PRD handoff can use this skill as the **mail adapter** backend (S
 ## Documentation requirement
 
 All user-facing documentation and guidance for this skill must be written in GitHub Flavored Markdown, render correctly in preview, and follow the humanization workflow in `ls-humanizer`.
-

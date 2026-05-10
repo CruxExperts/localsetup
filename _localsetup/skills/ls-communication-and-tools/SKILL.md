@@ -37,5 +37,5 @@ metadata:
 
 ## Agent orchestration and model budget
 
-- **Defer volatile details:** Load `ls-context` for current model-selection and budget guidance instead of duplicating model names, pricing, or rate-card details here.
+- **Defer volatile details:** For current model names, routing preferences, pricing, limits, or rate-card details, verify the provider's official documentation or current product source before making cost-sensitive recommendations. Do not duplicate those values in this skill.
 - **Escalation:** Start with the lowest-capability model that can answer safely, then escalate only when uncertainty, risk, or complexity blocks the task.

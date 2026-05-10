@@ -16,7 +16,7 @@ require_deps(["yaml"])
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib.boss_orchestrator.command import command_display, normalize_command  # noqa: E402
 from lib.boss_orchestrator.consensus import consensus_verdict  # noqa: E402
-from lib.boss_orchestrator.state import StateStore  # noqa: E402
+from lib.boss_orchestrator.state import StateStore, validate_path_id  # noqa: E402
 from lib.boss_orchestrator.util import now_iso, load_yaml, sanitize_path  # noqa: E402
 
 
@@ -38,10 +38,24 @@ def cmd_enqueue(args: argparse.Namespace) -> int:
     store = StateStore()
     template = _task_from_template(args.task_file)
 
-    task_id = str(template.get("id") or f"task-{uuid.uuid4().hex[:12]}")
-    session_id = str(template.get("session_id", "")).strip()
-    if not session_id:
-        raise ValueError("task template must include non-empty session_id")
+    task_id = validate_path_id(
+        str(template.get("id") or f"task-{uuid.uuid4().hex[:12]}"),
+        field_name="task_id",
+    )
+    validate_path_id(f"{task_id}-primary", field_name="primary_task_id")
+    validate_path_id(f"{task_id}-verifier", field_name="verifier_task_id")
+    session_id = validate_path_id(
+        str(template.get("session_id", "")),
+        field_name="session_id",
+    )
+    worker_primary = validate_path_id(
+        str(template.get("worker_primary", "worker-primary")),
+        field_name="worker_primary",
+    )
+    worker_verifier = validate_path_id(
+        str(template.get("worker_verifier", "worker-verifier")),
+        field_name="worker_verifier",
+    )
 
     session_visibility = str(
         template.get("session_visibility", "shared-authenticated")
@@ -67,8 +81,8 @@ def cmd_enqueue(args: argparse.Namespace) -> int:
         "timeout_seconds": int(template.get("timeout_seconds", 600)),
         "destructive": bool(template.get("destructive", False)),
         "consensus_required": bool(template.get("consensus_required", True)),
-        "worker_primary": str(template.get("worker_primary", "worker-primary")),
-        "worker_verifier": str(template.get("worker_verifier", "worker-verifier")),
+        "worker_primary": worker_primary,
+        "worker_verifier": worker_verifier,
         "session_id": session_id,
         "session_shared": bool(template.get("session_shared", True)),
         "session_visibility": session_visibility,
@@ -121,19 +135,86 @@ def _spawn_worker_task(task_id: str, worker_id: str, session_id: str) -> None:
         ) from exc
 
 
+def _quarantine_task_file(store: StateStore, task_file: Path, reason: str) -> Path:
+    quarantine_dir = store.root / "deadlettered_tasks"
+    quarantine_dir.mkdir(parents=True, exist_ok=True)
+    quarantine_path = quarantine_dir / f"task-{uuid.uuid4().hex}.json"
+    task_file.replace(quarantine_path)
+    store.deadletter(
+        {
+            "id": task_file.stem,
+            "state_file": str(task_file),
+            "quarantine_file": str(quarantine_path),
+        },
+        reason,
+    )
+    return quarantine_path
+
+
 def cmd_dispatch(args: argparse.Namespace) -> int:
     store = StateStore()
     tasks_dir = store.root / "tasks"
 
     dispatched = 0
     for task_file in sorted(tasks_dir.glob("*.json")):
-        task = store.read_task(task_file.stem)
+        try:
+            task = store.read_task(task_file.stem)
+        except ValueError as exc:
+            quarantine_path = _quarantine_task_file(
+                store,
+                task_file,
+                f"invalid task state file: {exc}",
+            )
+            print(
+                f"[WARN] quarantined invalid task file {task_file} -> {quarantine_path}: {exc}",
+                file=sys.stderr,
+            )
+            continue
         if not task or task.get("status") != "pending":
             continue
         if dispatched >= args.max_dispatch:
             break
 
-        task_id = str(task["id"])
+        try:
+            task_id = validate_path_id(str(task["id"]), field_name="task_id")
+            primary_task_id = validate_path_id(
+                f"{task_id}-primary",
+                field_name="primary_task_id",
+            )
+            verifier_task_id = validate_path_id(
+                f"{task_id}-verifier",
+                field_name="verifier_task_id",
+            )
+        except ValueError as exc:
+            print(f"[ERROR] invalid task metadata: {exc}", file=sys.stderr)
+            return 2
+
+        try:
+            session_id = validate_path_id(
+                str(task.get("session_id", f"session-{task_id}")),
+                field_name="session_id",
+            )
+            worker_primary = validate_path_id(
+                str(task.get("worker_primary", "worker-primary")),
+                field_name="worker_primary",
+            )
+            worker_verifier = validate_path_id(
+                str(task.get("worker_verifier", "worker-verifier")),
+                field_name="worker_verifier",
+            )
+        except ValueError as exc:
+            task["status"] = "failed"
+            task["updated_at"] = now_iso()
+            store.write_task(task)
+            store.deadletter(task, f"invalid task metadata: {exc}")
+            print(f"[ERROR] invalid task metadata: {exc}", file=sys.stderr)
+            return 2
+
+        task["id"] = task_id
+        task["session_id"] = session_id
+        task["worker_primary"] = worker_primary
+        task["worker_verifier"] = worker_verifier
+
         if not store.claim_lease(
             task_id, "boss", ttl_seconds=task.get("timeout_seconds", 600)
         ):
@@ -144,16 +225,15 @@ def cmd_dispatch(args: argparse.Namespace) -> int:
         store.write_task(task)
 
         primary_task = dict(task)
-        primary_task["id"] = f"{task_id}-primary"
+        primary_task["id"] = primary_task_id
         primary_task["role"] = "primary"
         store.write_task(primary_task)
 
         verifier_task = dict(task)
-        verifier_task["id"] = f"{task_id}-verifier"
+        verifier_task["id"] = verifier_task_id
         verifier_task["role"] = "verifier"
         store.write_task(verifier_task)
 
-        session_id = str(task.get("session_id", f"session-{task_id}"))
         store.write_session(
             session_id,
             {
@@ -172,8 +252,8 @@ def cmd_dispatch(args: argparse.Namespace) -> int:
         )
 
         try:
-            _spawn_worker_task(primary_task["id"], task["worker_primary"], session_id)
-            _spawn_worker_task(verifier_task["id"], task["worker_verifier"], session_id)
+            _spawn_worker_task(primary_task["id"], worker_primary, session_id)
+            _spawn_worker_task(verifier_task["id"], worker_verifier, session_id)
         except RuntimeError as exc:
             task["status"] = "failed"
             task["updated_at"] = now_iso()
@@ -194,7 +274,11 @@ def cmd_status(_: argparse.Namespace) -> int:
     store = StateStore()
     total = 0
     for task_file in sorted((store.root / "tasks").glob("*.json")):
-        task = store.read_task(task_file.stem)
+        try:
+            task = store.read_task(task_file.stem)
+        except ValueError as exc:
+            print(f"[WARN] skipping invalid task file {task_file}: {exc}", file=sys.stderr)
+            continue
         if not task:
             continue
         total += 1
@@ -260,6 +344,7 @@ def cmd_watchdog(_: argparse.Namespace) -> int:
     reclaimed = store.reclaim_leases()
     print(
         "[OK] watchdog reclaimed "
+        f"{reclaimed['invalid']} invalid lease(s), "
         f"{reclaimed['orphan']} orphan lease(s), "
         f"{reclaimed['expired']} expired lease(s)"
     )
@@ -269,8 +354,9 @@ def cmd_watchdog(_: argparse.Namespace) -> int:
 def cmd_write_validation(args: argparse.Namespace) -> int:
     validation_dir = Path(".kilo/state/validation")
     validation_dir.mkdir(parents=True, exist_ok=True)
-    path = validation_dir / f"{args.task_id}.md"
-    content = f"""# Validation Record: {args.task_id}\n\n- Timestamp: {now_iso()}\n- Outcome: {args.outcome}\n- Notes: {args.notes}\n"""
+    task_id = validate_path_id(args.task_id, field_name="task_id")
+    path = validation_dir / f"{task_id}.md"
+    content = f"""# Validation Record: {task_id}\n\n- Timestamp: {now_iso()}\n- Outcome: {args.outcome}\n- Notes: {args.notes}\n"""
     path.write_text(content, encoding="utf-8")
     print(f"[OK] wrote validation record {path}")
     return 0
@@ -318,7 +404,11 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
-    return args.func(args)
+    try:
+        return args.func(args)
+    except ValueError as exc:
+        print(f"Error: {type(exc).__name__}: {exc}", file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":

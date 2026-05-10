@@ -4,6 +4,9 @@
 
 `_localsetup/config/mail_accounts.json`
 
+A checked-in sample lives at
+[`references/examples/mail_accounts.sample.json`](examples/mail_accounts.sample.json).
+
 ## Required shape
 
 The account file root is a JSON array. Each item defines one delegated mailbox account.

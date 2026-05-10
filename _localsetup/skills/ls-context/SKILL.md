@@ -26,7 +26,7 @@ Localsetup v3 is deployed at `_localsetup/`. Framework and context are repo-loca
 
 ## Agent orchestration and model budget
 - Use the smallest capable model for inventory and low-risk scouting; escalate for security, release blockers, architecture, and high-risk review findings only when uncertainty, risk, or complexity justifies it.
-- For current model names, routing preferences, and rate-card handling, load `ls-communication-and-tools` and verify provider documentation before making cost-sensitive decisions.
+- For current model names, routing preferences, pricing, limits, and rate-card handling, verify the provider's official documentation or current product source before making cost-sensitive decisions.
 
 ## Skills catalog
 - Current generated catalog: [SKILLS.md](../../docs/SKILLS.md).

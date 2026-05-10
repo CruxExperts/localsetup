@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -49,3 +50,48 @@ def test_host_input_rejects_shell_operator() -> None:
     assert result.returncode == 2
     assert "InputError" in result.stderr
     assert "host:" in result.stderr
+
+
+def _json_steps(result: subprocess.CompletedProcess[str]) -> list[dict[str, str]]:
+    assert result.returncode == 0, result.stderr
+    return json.loads(result.stdout)["steps"]
+
+
+def _command_for_phase(steps: list[dict[str, str]], phase: str) -> str:
+    for step in steps:
+        if step["phase"] == phase:
+            return step["command"]
+    raise AssertionError(f"phase not found: {phase}")
+
+
+def test_host_full_quotes_remote_path_with_spaces() -> None:
+    result = run_cli("--json", "host-full", "admin@example.com", "/opt/docker apps")
+    command = _command_for_phase(_json_steps(result), "docker-update")
+
+    argv = shlex.split(command)
+
+    assert argv[:2] == ["ssh", "admin@example.com"]
+    assert argv[2] == "cd '/opt/docker apps' && sudo docker compose pull && sudo docker compose up -d"
+
+
+def test_host_full_quotes_shell_metacharacters_in_remote_path() -> None:
+    result = run_cli("--json", "host-full", "admin@example.com", "/opt/docker;rm -rf tmp")
+    command = _command_for_phase(_json_steps(result), "docker-update")
+
+    argv = shlex.split(command)
+
+    assert argv[:2] == ["ssh", "admin@example.com"]
+    assert argv[2] == "cd '/opt/docker;rm -rf tmp' && sudo docker compose pull && sudo docker compose up -d"
+
+
+def test_multiple_quotes_remote_path_with_spaces(tmp_path: Path) -> None:
+    config = tmp_path / "hosts.csv"
+    config.write_text("admin@example.com,/srv/docker apps\n", encoding="utf-8")
+
+    result = run_cli("--json", "multiple", str(config))
+    command = _command_for_phase(_json_steps(result), "docker-verify")
+
+    argv = shlex.split(command)
+
+    assert argv[:2] == ["ssh", "admin@example.com"]
+    assert argv[2] == "cd '/srv/docker apps' && sudo docker compose ps"

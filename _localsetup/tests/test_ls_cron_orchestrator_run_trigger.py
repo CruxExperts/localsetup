@@ -23,6 +23,42 @@ def _write_manifest(path: Path, payload: dict) -> None:
     path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
 
 
+def test_default_repo_root_is_manifest_parent(tmp_path: Path) -> None:
+    manifest_dir = tmp_path / "manifest-home"
+    manifest_dir.mkdir()
+    output = manifest_dir / "cwd.txt"
+    manifest = manifest_dir / "manifest.yaml"
+    _write_manifest(
+        manifest,
+        {
+            "triggers": {"nightly": {"schedule": "0 2 * * *"}},
+            "tasks": [
+                {
+                    "id": "pwd",
+                    "trigger": "nightly",
+                    "sequence_order": 1,
+                    "command": [
+                        sys.executable,
+                        "-c",
+                        "from pathlib import Path; Path('cwd.txt').write_text(str(Path.cwd()))",
+                    ],
+                }
+            ],
+        },
+    )
+
+    proc = subprocess.run(
+        [sys.executable, str(TOOL), "--manifest", str(manifest), "nightly"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+
+    assert proc.returncode == 0
+    assert output.read_text(encoding="utf-8") == str(manifest_dir)
+
+
 def test_rejects_malformed_task_command_type(tmp_path: Path) -> None:
     manifest = tmp_path / "manifest.yaml"
     _write_manifest(

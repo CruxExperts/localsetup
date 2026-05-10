@@ -5,16 +5,15 @@ from __future__ import annotations
 
 import re
 import shlex
+import sys
 from pathlib import Path
 from typing import Any
 
-try:
-    import yaml
-except ImportError as exc:  # pragma: no cover - exercised only without PyYAML
-    yaml = None
-    YAML_IMPORT_ERROR: ImportError | None = exc
-else:
-    YAML_IMPORT_ERROR = None
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
+from deps import require_deps  # noqa: E402
+
+require_deps(["yaml"])
+import yaml  # noqa: E402
 
 
 MAX_CMD_LEN = 8192
@@ -35,14 +34,6 @@ class ManifestError(ValueError):
 
 
 def _require_yaml() -> Any:
-    if yaml is None:
-        detail = f" ({YAML_IMPORT_ERROR})" if YAML_IMPORT_ERROR else ""
-        raise ManifestError(
-            "PyYAML is required to read cron manifests. "
-            "Install repository dependencies with: "
-            "python3 -m pip install -r _localsetup/requirements.txt"
-            f"{detail}"
-        )
     return yaml
 
 

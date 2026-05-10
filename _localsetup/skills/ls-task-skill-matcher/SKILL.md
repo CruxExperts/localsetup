@@ -83,10 +83,10 @@ metadata:
 
 ## References
 
-- Framework task-skill matching guidance
-- Framework skills and rules documentation
-- Framework platform registry documentation
-- Public skill index managed by `ls-skill-discovery`
-- `ls-skill-discovery`
-- `ls-skill-importer`
-- `ls-skill-creator`
+- [TASK_SKILL_MATCHING.md](../../docs/TASK_SKILL_MATCHING.md) - Framework task-skill matching guidance.
+- [SKILLS_AND_RULES.md](../../docs/SKILLS_AND_RULES.md) - Framework skills and rules documentation.
+- [PLATFORM_REGISTRY.md](../../docs/PLATFORM_REGISTRY.md) - Framework platform registry documentation.
+- [SKILL_DISCOVERY.md](../../docs/SKILL_DISCOVERY.md) - Public skill index and discovery workflow managed by `ls-skill-discovery`.
+- [ls-skill-discovery](../ls-skill-discovery/SKILL.md) - Complementary public-skill recommendations.
+- [ls-skill-importer](../ls-skill-importer/SKILL.md) - Import selected public or local skills.
+- [ls-skill-creator](../ls-skill-creator/SKILL.md) - Create a new skill when no installed or public skill fits.

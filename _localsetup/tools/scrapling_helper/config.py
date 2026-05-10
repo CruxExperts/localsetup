@@ -23,7 +23,7 @@ class ScraplingConfig:
 
 def _detect_framework_root() -> Path:
     here = Path(__file__).resolve()
-    # _localsetup/tools/scrapling_helper/config.py -> _localsetup
+    # _localsetup/tools/scrapling_helper/config.py -> repository root
     return here.parents[3]
 
 
@@ -48,4 +48,3 @@ def load_config() -> ScraplingConfig:
         pipx_binary=pipx_binary,
         docker_image=docker_image,
     )
-

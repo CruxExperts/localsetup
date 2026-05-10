@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shlex
 import sys
 from pathlib import Path
 
@@ -45,7 +46,7 @@ def _clean_text(value: str, *, max_len: int, label: str) -> str:
         raise InputError(f"{label}: empty value")
     if len(cleaned) > max_len:
         raise InputError(f"{label}: value exceeds {max_len} characters")
-    if any(ch in cleaned for ch in ("\x00", "\n", "\r")):
+    if any(ord(ch) < 32 or ord(ch) == 127 for ch in cleaned):
         raise InputError(f"{label}: contains control characters")
     return cleaned
 
@@ -71,21 +72,62 @@ def _validate_config(value: str) -> Path:
     return path
 
 
+def _ssh_command(host: str, remote_script: str) -> str:
+    return f"ssh {shlex.quote(host)} {shlex.quote(remote_script)}"
+
+
 def _host_only_steps(host: str) -> list[dict[str, str]]:
     return [
-        {"phase": "preflight", "command": f"ssh {host} 'sudo -n true && command -v apt || command -v dnf || command -v yum || command -v zypper'"},
-        {"phase": "packages", "command": f"ssh {host} '<run the distro package update command from SKILL.md after confirming maintenance window>'"},
-        {"phase": "verify", "command": f"ssh {host} 'test -f /var/run/reboot-required && echo reboot-required || true'"},
+        {
+            "phase": "preflight",
+            "command": _ssh_command(
+                host,
+                "sudo -n true && command -v apt || command -v dnf || command -v yum || command -v zypper",
+            ),
+        },
+        {
+            "phase": "packages",
+            "command": _ssh_command(
+                host,
+                "<run the distro package update command from SKILL.md after confirming maintenance window>",
+            ),
+        },
+        {
+            "phase": "verify",
+            "command": _ssh_command(
+                host,
+                "test -f /var/run/reboot-required && echo reboot-required || true",
+            ),
+        },
     ]
 
 
 def _host_full_steps(host: str, docker_path: str) -> list[dict[str, str]]:
     steps = _host_only_steps(host)
+    docker_path_arg = shlex.quote(docker_path)
     steps.extend(
         [
-            {"phase": "docker-preflight", "command": f"ssh {host} 'test -d {docker_path} && command -v docker'"},
-            {"phase": "docker-update", "command": f"ssh {host} 'cd {docker_path} && sudo docker compose pull && sudo docker compose up -d'"},
-            {"phase": "docker-verify", "command": f"ssh {host} 'cd {docker_path} && sudo docker compose ps'"},
+            {
+                "phase": "docker-preflight",
+                "command": _ssh_command(
+                    host,
+                    f"test -d {docker_path_arg} && command -v docker",
+                ),
+            },
+            {
+                "phase": "docker-update",
+                "command": _ssh_command(
+                    host,
+                    f"cd {docker_path_arg} && sudo docker compose pull && sudo docker compose up -d",
+                ),
+            },
+            {
+                "phase": "docker-verify",
+                "command": _ssh_command(
+                    host,
+                    f"cd {docker_path_arg} && sudo docker compose ps",
+                ),
+            },
         ]
     )
     return steps

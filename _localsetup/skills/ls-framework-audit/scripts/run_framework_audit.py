@@ -194,6 +194,26 @@ def phase_skill_matrix(root: Path, fw: Path) -> tuple[list[str], list[str]]:
         errors.append("skill_smoke_commands.yaml must be a YAML map")
         return (errors, warnings)
     skills_dir = fw / "skills"
+    invalid_keys = [
+        repr(key) for key in data if not isinstance(key, str) or not key.strip()
+    ]
+    if invalid_keys:
+        errors.append(
+            "skill_smoke_commands.yaml keys must be non-empty skill ids: "
+            + ", ".join(invalid_keys)
+        )
+        return (errors, warnings)
+    skill_ids = sorted(p.name for p in skills_dir.iterdir() if p.is_dir())
+    smoke_ids = set(data)
+    missing_smoke_rows = [
+        skill_id for skill_id in skill_ids if skill_id not in smoke_ids
+    ]
+    if missing_smoke_rows:
+        errors.append(
+            "skill_smoke_commands.yaml missing entries for skill dirs: "
+            + ", ".join(missing_smoke_rows)
+        )
+        return (errors, warnings)
     create_sandbox = (
         fw
         / "skills"

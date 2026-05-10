@@ -15,6 +15,27 @@ from .util import (
     write_json,
 )
 
+MAX_PATH_ID_LEN = 180
+
+
+def validate_path_id(value: object, *, field_name: str = "id") -> str:
+    """Validate IDs that are used in filesystem path construction."""
+    if not isinstance(value, str):
+        raise ValueError(f"{field_name} must be a non-empty string")
+
+    text = value.strip()
+    if not text:
+        raise ValueError(f"{field_name} must be a non-empty string")
+    if len(text) > MAX_PATH_ID_LEN:
+        raise ValueError(f"{field_name} must be at most {MAX_PATH_ID_LEN} characters")
+    if ".." in text:
+        raise ValueError(f"{field_name} must not contain '..'")
+    if "/" in text or "\\" in text:
+        raise ValueError(f"{field_name} must not contain path separators")
+    if any(ord(ch) < 32 or ord(ch) == 127 for ch in text):
+        raise ValueError(f"{field_name} must not contain control characters")
+    return text
+
 
 class StateStore:
     """File-backed orchestrator state store."""
@@ -27,26 +48,34 @@ class StateStore:
         self.deadletter_file = root / "deadletter.jsonl"
 
     def task_path(self, task_id: str) -> Path:
-        return self.root / "tasks" / f"{task_id}.json"
+        safe_task_id = validate_path_id(task_id, field_name="task_id")
+        return self.root / "tasks" / f"{safe_task_id}.json"
 
     def result_path(self, task_id: str) -> Path:
-        return self.root / "results" / f"{task_id}.json"
+        safe_task_id = validate_path_id(task_id, field_name="task_id")
+        return self.root / "results" / f"{safe_task_id}.json"
 
     def lease_path(self, task_id: str) -> Path:
-        return self.root / "leases" / f"{task_id}.lock"
+        safe_task_id = validate_path_id(task_id, field_name="task_id")
+        return self.root / "leases" / f"{safe_task_id}.lock"
 
     def heartbeat_path(self, worker_id: str) -> Path:
-        return self.root / "heartbeats" / f"{worker_id}.json"
+        safe_worker_id = validate_path_id(worker_id, field_name="worker_id")
+        return self.root / "heartbeats" / f"{safe_worker_id}.json"
 
     def consensus_path(self, task_id: str) -> Path:
-        return self.root / "consensus" / f"{task_id}.json"
+        safe_task_id = validate_path_id(task_id, field_name="task_id")
+        return self.root / "consensus" / f"{safe_task_id}.json"
 
     def session_path(self, session_id: str) -> Path:
-        return self.root / "sessions" / f"{session_id}.json"
+        safe_session_id = validate_path_id(session_id, field_name="session_id")
+        return self.root / "sessions" / f"{safe_session_id}.json"
 
     def enqueue(self, task: dict[str, Any]) -> None:
+        task_id = validate_path_id(task.get("id"), field_name="task_id")
+        task["id"] = task_id
         append_jsonl(self.queue_file, task)
-        self.log_event("enqueue", {"task_id": task.get("id")})
+        self.log_event("enqueue", {"task_id": task_id})
 
     def write_task(self, task: dict[str, Any]) -> None:
         task["updated_at"] = now_iso()
@@ -128,11 +157,28 @@ class StateStore:
         return age_seconds > ttl_seconds
 
     def reclaim_leases(self) -> dict[str, int]:
-        counts = {"orphan": 0, "expired": 0}
+        counts = {"invalid": 0, "orphan": 0, "expired": 0}
         for lease_file in sorted((self.root / "leases").glob("*.lock")):
             task_id = lease_file.stem
-            lease = self.read_lease(task_id)
-            task = self.read_task(task_id)
+            try:
+                lease = self.read_lease(task_id)
+                task = self.read_task(task_id)
+            except ValueError as exc:
+                invalid_dir = self.root / "deadlettered_leases"
+                invalid_dir.mkdir(parents=True, exist_ok=True)
+                invalid_path = invalid_dir / f"lease-{datetime.now(timezone.utc).timestamp()}-{lease_file.name}"
+                lease_file.replace(invalid_path)
+                counts["invalid"] += 1
+                self.log_event(
+                    "lease_reclaim_invalid",
+                    {
+                        "task_id": task_id,
+                        "path": str(lease_file),
+                        "quarantine_file": str(invalid_path),
+                        "reason": str(exc),
+                    },
+                )
+                continue
             if lease is None or task is None:
                 lease_file.unlink(missing_ok=True)
                 counts["orphan"] += 1

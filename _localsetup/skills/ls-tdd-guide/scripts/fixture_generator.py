@@ -8,6 +8,14 @@ from typing import Dict, List, Any, Optional
 import argparse
 import json
 import random
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
+from deps import require_deps  # noqa: E402
+
+require_deps(["yaml"])
+import yaml  # noqa: E402
 
 from cli_support import SkillCliError, emit_json, fail, read_json
 
@@ -410,13 +418,6 @@ class FixtureGenerator:
 """
 
         elif format == "yaml":
-            try:
-                import yaml
-            except ImportError as exc:
-                raise RuntimeError(
-                    "PyYAML is required for YAML fixture output. Install framework "
-                    "dependencies with `python3 -m pip install -r _localsetup/requirements.txt`."
-                ) from exc
             return yaml.safe_dump(data, sort_keys=False).rstrip()
 
         else:

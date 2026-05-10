@@ -502,6 +502,79 @@ def test_mcp_bootstrap_reports_account_config_error(
     assert output["code"] == "ACCOUNT_CONFIG_INVALID_ROOT"
 
 
+def test_mcp_bootstrap_reports_invalid_args_json(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "mcp_server.py",
+            "--policy",
+            str(tmp_path / "missing-policy.yaml"),
+            "--accounts",
+            str(tmp_path / "missing-accounts.json"),
+            "--tool",
+            "mail_accounts_list",
+            "--args-json",
+            "{bad json",
+        ],
+    )
+
+    assert mcp_server.main() == 1
+    output = json.loads(capsys.readouterr().out)
+
+    assert output["ok"] is False
+    assert output["code"] == "ARGS_JSON_INVALID_JSON"
+
+
+def test_mcp_bootstrap_reports_non_object_args_json(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "mcp_server.py",
+            "--policy",
+            str(tmp_path / "missing-policy.yaml"),
+            "--accounts",
+            str(tmp_path / "missing-accounts.json"),
+            "--tool",
+            "mail_accounts_list",
+            "--args-json",
+            '["not", "object"]',
+        ],
+    )
+
+    assert mcp_server.main() == 1
+    output = json.loads(capsys.readouterr().out)
+
+    assert output["ok"] is False
+    assert output["code"] == "ARGS_JSON_INVALID_ROOT"
+
+
+def test_dispatch_unhandled_error_fallback_is_deterministic(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    control = _control(tmp_path)
+
+    def raise_unexpected() -> object:
+        raise RuntimeError("unexpected adapter failure")
+
+    monkeypatch.setattr(control, "accounts_list", raise_unexpected)
+
+    result = control.dispatch("mail_accounts_list", {})
+
+    assert result["ok"] is False
+    assert result["code"] == "UNHANDLED_ERROR"
+    assert "unexpected adapter failure" in result["message"]
+
+
 def test_password_decrypt_rejects_unbounded_pbkdf2_iterations() -> None:
     engine = CryptoEngine()
     encrypted = {

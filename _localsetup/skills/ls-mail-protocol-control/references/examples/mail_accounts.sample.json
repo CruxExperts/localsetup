@@ -1,0 +1,13 @@
+[
+  {
+    "account_id": "support",
+    "smtp_host": "smtp.example.com",
+    "smtp_port": 587,
+    "smtp_tls_mode": "starttls",
+    "imap_host": "imap.example.com",
+    "imap_port": 993,
+    "imap_tls": true,
+    "username_field": "username",
+    "password_field": "password"
+  }
+]

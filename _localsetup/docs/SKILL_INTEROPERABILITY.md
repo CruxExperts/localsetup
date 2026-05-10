@@ -30,7 +30,7 @@ version: 3.0
 
 - **Format (required for interchange):** [Agent Skills specification](https://agentskills.io/specification)  - [agentskills/agentskills](https://github.com/agentskills/agentskills).
 - **Design and authoring:** [Anthropic's skill-creator](https://github.com/anthropics/skills/tree/main/skills/skill-creator)  - principles (concise, degrees of freedom), anatomy (scripts/references/assets), progressive disclosure, what to include/avoid. Our skill-creator adds framework placement and registration; for structure and content design, follow the Agent Skills spec and Anthropic's guidance so skills remain portable.
-- **Validation:** [skills-ref](https://github.com/agentskills/agentskills/tree/main/skills-ref)  - `skills-ref validate path/to/skill` to check frontmatter and naming.
+- **Validation:** [skills-ref](https://github.com/agentskills/agentskills/tree/main/skills-ref)  - `agentskills validate path/to/skill` to check frontmatter and naming.
 
 ## Summary
 

@@ -48,7 +48,7 @@ def main() -> int:
     if not manifest_path.is_file():
         print(f"[run_trigger] Not a file: {manifest_path}", file=sys.stderr)
         return 1
-    repo_root = Path(args.repo_root).resolve() if args.repo_root else Path.cwd()
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else manifest_path.parent
     if not repo_root.is_dir():
         print(f"[run_trigger] Not a directory: {repo_root}", file=sys.stderr)
         return 1
