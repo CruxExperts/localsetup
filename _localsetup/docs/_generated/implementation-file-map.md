@@ -425,6 +425,7 @@
 | `refactor` | `_localsetup/v3/source.py` |
 | `refactor` | `_localsetup/v3/verify.py` |
 | `refactor` | `_localsetup/v3/versioning.py` |
+| `refactor` | `_localsetup/v3/wizard.py` |
 | `refactor` | `_localsetup/v3/workflows.py` |
 | `keep` | `_localsetup/workflows/ls-workflow-audit-framework/SKILL.md` |
 | `keep` | `_localsetup/workflows/ls-workflow-audit-framework/workflow.yaml` |
