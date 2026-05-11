@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 3.2
+version: 3.1
 ---
 
 # Framework Docs Index
@@ -14,7 +14,7 @@ This is the public documentation map for Localsetup v3. Start here when you want
 ## Generated Facts
 
 <!-- facts-block:start -->
-- Current version: `3.2.0`
+- Current version: `3.1.2`
 - Supported platforms: `cursor, claude-code, codex, openclaw, kilo, opencode`
 - Shipped skills: `45`
 - Workflow packages: `16`
