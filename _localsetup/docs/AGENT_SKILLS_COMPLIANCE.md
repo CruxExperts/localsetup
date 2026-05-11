@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 3.0
+version: 3.1
 ---
 
 # Agent Skills compliance (Localsetup v3)

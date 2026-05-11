@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 3.0
+version: 3.1
 ---
 
 # Skill validation pattern file
