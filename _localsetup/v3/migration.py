@@ -46,10 +46,17 @@ def _artifact(kind: str, path: Path, managed: bool, details: dict | None = None)
     return {"kind": kind, "path": str(path), "managed": managed, "details": details or {}}
 
 
-def detect_legacy_artifacts(repo_root: Path, *, home: Path, platform_ids: list[str] | None = None) -> list[dict]:
+def detect_legacy_artifacts(
+    repo_root: Path,
+    *,
+    home: Path,
+    platform_ids: list[str] | None = None,
+    target_root: Path | None = None,
+) -> list[dict]:
     artifacts: list[dict] = []
     pack = load_pack_config(repo_root)
     global_root = expand_user_path(pack.global_root, home)
+    attachment_root = target_root or repo_root
 
     skills_root = repo_root / "_localsetup" / "skills"
     if skills_root.exists():
@@ -60,7 +67,7 @@ def detect_legacy_artifacts(repo_root: Path, *, home: Path, platform_ids: list[s
         for path in sorted(global_root.glob("localsetup-*")):
             artifacts.append(_artifact("legacy_global_skill", path, (path / ".localsetup-managed").exists()))
 
-    for target in adapter_targets(repo_root, home, platform_ids=platform_ids):
+    for target in adapter_targets(repo_root, home, platform_ids=platform_ids, target_root=attachment_root):
         path = target["repo_path"]
         if not (path.exists() or path.is_symlink()):
             continue
@@ -72,7 +79,7 @@ def detect_legacy_artifacts(repo_root: Path, *, home: Path, platform_ids: list[s
         if path.exists() or path.is_symlink():
             artifacts.append(_artifact("legacy_runtime_file", path, False))
 
-    lock_path = repo_root / "localsetup.lock.json"
+    lock_path = attachment_root / "localsetup.lock.json"
     if lock_path.exists():
         artifacts.append(_artifact("lockfile", lock_path, True))
 
@@ -107,16 +114,18 @@ def conservative_migrate(
     *,
     home: Path,
     platform_ids: list[str] | None = None,
+    target_root: Path | None = None,
     backup_dir: Path | None = None,
     apply: bool = True,
 ) -> dict:
     aliases = collect_skill_aliases(repo_root / "_localsetup" / "skills")
     pack = load_pack_config(repo_root)
     global_root = expand_user_path(pack.global_root, home)
+    attachment_root = target_root or repo_root
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     backup_root = backup_dir or (repo_root / ".localsetup" / "backups" / f"migration-{stamp}")
     resolved_backup = backup_root.resolve(strict=False)
-    for target in adapter_targets(repo_root, home, platform_ids=platform_ids):
+    for target in adapter_targets(repo_root, home, platform_ids=platform_ids, target_root=attachment_root):
         adapter_root = target["repo_path"].resolve(strict=False)
         try:
             resolved_backup.relative_to(adapter_root)
@@ -124,7 +133,7 @@ def conservative_migrate(
             continue
         raise RuntimeError(f"backup directory must not be inside an adapter path: {backup_root}")
 
-    artifacts = detect_legacy_artifacts(repo_root, home=home, platform_ids=platform_ids)
+    artifacts = detect_legacy_artifacts(repo_root, home=home, platform_ids=platform_ids, target_root=attachment_root)
     blockers: list[dict] = []
     migrated: list[dict] = []
     backed_up: list[str] = []

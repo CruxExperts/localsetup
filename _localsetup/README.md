@@ -15,7 +15,7 @@ For the public product overview, start with the [root README](../README.md). Thi
 - **Framework source:** Python tooling, shared libraries, templates, config manifests, tests, docs, shipped skills, and workflow packages.
 - **Skill source of truth:** Every shipped capability skill lives under `skills/ls-*` as an Agent Skills-compatible `SKILL.md` package.
 - **Workflow source of truth:** Every first-class workflow package lives under `workflows/ls-workflow-*` with `SKILL.md` plus Localsetup `workflow.yaml` metadata.
-- **Platform adapters:** Templates and manifests define how supported agent hosts attach to the managed Localsetup package library.
+- **Platform adapters:** Templates and manifests define how explicitly selected agent hosts attach to the managed Localsetup package library.
 - **Public docs:** `docs/` explains install behavior, platform support, workflow registries, skill import, Agent Q transport, versioning, and release validation.
 - **Verification:** The v3 CLI and framework audit tools validate catalog shape, generated docs, migration state, and release readiness.
 
@@ -27,13 +27,14 @@ Generated adapter folders in consuming repositories are install output. Do not t
   <img src="../assets/localsetup-v3-install-lifecycle.svg" alt="Localsetup v3 install lifecycle: doctor, configure, context, plan, install, verify, ship, and rollback" width="960">
 </p>
 
-The root Bash installer delegates to the Python CLI. The CLI resolves platform intent, creates or refreshes the managed home package library, attaches repo adapter paths, writes lock/report metadata, and supports rollback for managed paths.
+The root Bash installer delegates to the Python CLI. The CLI resolves platform intent, creates or refreshes the managed home package library, attaches only explicitly selected repo adapter paths, writes lock/report metadata, and supports rollback for managed paths.
 
 Common commands from the repository root:
 
 ```bash
 ./install --directory . --yes
 ./install --directory . --tools codex,kilo --yes
+./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor --yes
 python3 _localsetup/tools/localsetup_v3.py doctor
 python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
 python3 _localsetup/tools/localsetup_v3.py --repo . rollback
@@ -67,11 +68,11 @@ The canonical list lives in [docs/PLATFORM_REGISTRY.md](docs/PLATFORM_REGISTRY.m
 - `kilo`
 - `opencode`
 
-Install with `--tools` or `--platforms` to limit adapter creation.
+Omitting `--tools` or `--platforms` installs the managed library only. Use `--tools` or `--platforms` to attach the selected repo adapter paths.
 
 ## Skill model
 
-Skills are task-focused instruction packages. Localsetup keeps the canonical source under `_localsetup/skills/`, installs managed copies to `~/.local/share/agents/skills/localsetup`, and attaches platform adapter paths to that library by symlink or portable copy.
+Skills are task-focused instruction packages. Localsetup keeps the canonical source under `_localsetup/skills/`, installs managed copies to `~/.local/share/agents/skills/localsetup`, and attaches selected platform adapter paths to that library by symlink or portable copy.
 
 Useful docs:
 

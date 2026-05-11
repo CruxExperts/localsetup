@@ -15,12 +15,14 @@ def _action_dicts(plan_actions) -> list[dict[str, Any]]:
 
 
 def build_agent_context(repo_root: Path, *, home: Path, config: InstallConfig) -> dict:
+    target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
     plan = build_install_plan(
         repo_root,
         home=home,
         packs=config.packs,
         attach_mode=config.attach_mode,
         platform_ids=config.platforms,
+        target_root=target_root,
     )
     doctor = run_doctor(
         repo_root,
@@ -28,11 +30,12 @@ def build_agent_context(repo_root: Path, *, home: Path, config: InstallConfig) -
         packs=config.packs,
         platform_ids=config.platforms,
         dependency_mode=config.dependency_mode,
+        target_root=target_root,
     )
     dependencies = dependency_status(repo_root, mode=config.dependency_mode).to_dict()
     selected_platforms = plan.rollback_metadata.get("platforms", [])
     selected_packs = plan.rollback_metadata.get("packs", config.packs)
-    migration_artifacts = detect_legacy_artifacts(repo_root, home=home, platform_ids=config.platforms)
+    migration_artifacts = detect_legacy_artifacts(repo_root, home=home, platform_ids=config.platforms, target_root=target_root)
 
     commands = {
         "doctor": "python3 _localsetup/tools/localsetup_v3.py doctor",
@@ -41,8 +44,13 @@ def build_agent_context(repo_root: Path, *, home: Path, config: InstallConfig) -
         "verify": "python3 _localsetup/tools/localsetup_v3.py verify",
         "rollback": "python3 _localsetup/tools/localsetup_v3.py rollback",
     }
+    suffix_parts: list[str] = []
+    if config.target_directory:
+        suffix_parts.extend(["--target-directory", config.target_directory])
     if config.platforms:
-        suffix = " --platforms " + " ".join(config.platforms)
+        suffix_parts.extend(["--platforms", *config.platforms])
+    if suffix_parts:
+        suffix = " " + " ".join(suffix_parts)
         commands = {key: value + suffix for key, value in commands.items()}
 
     return {

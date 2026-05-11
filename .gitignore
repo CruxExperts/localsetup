@@ -1,4 +1,4 @@
-# Localsetup v2 source repo
+# Localsetup framework source repo
 *.backup
 *.local
 .DS_Store
@@ -42,15 +42,22 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
-# Kilo Code (migrated from Cursor): track only the shared skills link.
+# Localsetup v3 install output (machine-local runtime state; never publish)
+.localsetup/
+localsetup.lock.json
+.codex/skills
+.claude/skills
+.cursor/skills
+.kilo/skills
+.opencode/skills
+.openclaw/skills
+
+# Kilo Code local state.
 .kilocode/
 .kilo/*
-!.kilo/skills
 _localsetup/.kilo/
 
-# Codex CLI context: track the repo guide and shared skills link.
-!.codex/
-!.codex/skills
+# Codex CLI context: track the repo guide; generated skills adapter is install output.
 !AGENTS.md
 
 # Localsetup v3 maintainer-private state

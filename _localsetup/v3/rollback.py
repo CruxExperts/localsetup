@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import shutil
 
-from .adapters import adapter_targets, validate_platform_selectors
+from .adapters import adapter_path_state, validate_platform_selectors
 from .lockfile import load_json
 from .manifests import load_pack_config
 from .paths import expand_user_path, repo_path
@@ -18,19 +18,31 @@ def _require_under_global_root(path: Path, global_root: Path) -> None:
         raise RuntimeError(f"refusing to rollback managed package outside global root: {path}") from exc
 
 
-def rollback(repo_root: Path, home: Path, platform_ids: list[str] | None = None) -> dict:
+def _require_adapter_under_target_root(path: Path, target_root: Path) -> None:
+    resolved_parent = path.parent.resolve(strict=False)
+    resolved_root = target_root.resolve(strict=False)
+    try:
+        resolved_parent.relative_to(resolved_root)
+    except ValueError as exc:
+        raise RuntimeError(f"refusing to rollback adapter outside target root: {path}") from exc
+
+
+def rollback(
+    repo_root: Path,
+    home: Path,
+    platform_ids: list[str] | None = None,
+    *,
+    target_root: Path | None = None,
+) -> dict:
     validate_platform_selectors(repo_root, platform_ids)
     if platform_ids:
         raise ValueError("platform-scoped rollback is not supported in v3; run full rollback to remove shared managed state")
 
+    attachment_root = target_root or repo_root
     pack = load_pack_config(repo_root)
-    lock_path = repo_path(repo_root, pack.lockfile, "repo.lockfile")
+    lock_path = repo_path(attachment_root, pack.lockfile, "repo.lockfile")
     lock = load_json(lock_path)
     removed: list[str] = []
-
-    if lock_path.exists():
-        lock_path.unlink()
-        removed.append(str(lock_path))
 
     registry = expand_user_path(pack.global_registry, home)
     if registry.exists():
@@ -45,14 +57,19 @@ def rollback(repo_root: Path, home: Path, platform_ids: list[str] | None = None)
             shutil.rmtree(skill_path)
             removed.append(str(skill_path))
 
-    selected_platforms = platform_ids or lock.get("platforms")
-    for target in adapter_targets(repo_root, home, platform_ids=selected_platforms):
-        p = target["repo_path"]
+    for adapter_path in lock.get("adapter_state", []):
+        p = Path(str(adapter_path))
+        if not p.is_absolute():
+            p = attachment_root / p
+        _require_adapter_under_target_root(p, attachment_root)
         if p.exists() or p.is_symlink():
+            state = adapter_path_state(p, global_root)
             if p.is_dir() and not p.is_symlink():
                 if (p / ".localsetup-portable").exists():
                     shutil.rmtree(p)
                     removed.append(str(p))
+                continue
+            if not state["points_to_global"]:
                 continue
             p.unlink()
             removed.append(str(p))
@@ -60,5 +77,9 @@ def rollback(repo_root: Path, home: Path, platform_ids: list[str] | None = None)
     if global_root.exists() and not any(global_root.iterdir()):
         global_root.rmdir()
         removed.append(str(global_root))
+
+    if lock_path.exists():
+        lock_path.unlink()
+        removed.append(str(lock_path))
 
     return {"removed": removed}

@@ -5,7 +5,7 @@ version: 3.1
 
 # Multi-platform install (Localsetup v3)
 
-**Purpose:** How to install Localsetup v3 for each supported AI agent platform. Supported platforms are listed in `_localsetup/config/platforms.yaml` and summarized in [_generated/platform-adapters.md](_generated/platform-adapters.md). Same framework; platform-specific adapter paths point at a shared managed package library.
+**Purpose:** How to install Localsetup v3 for each supported AI agent platform. Supported platforms are listed in `_localsetup/config/platforms.yaml` and summarized in [_generated/platform-adapters.md](_generated/platform-adapters.md). Same framework; explicitly selected platform adapter paths point at a shared managed package library.
 
 <p align="center">
   <img src="../../assets/localsetup-v3-install-lifecycle.svg" alt="Localsetup v3 install lifecycle: doctor, configure, context, plan, install, verify, ship, and rollback" width="960">
@@ -29,11 +29,13 @@ curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install 
 
 Note: `sudo curl ... | bash` only elevates curl; install and deploy run as the current user. For a full install as root: `curl -sSL <url> -o /tmp/install.sh && sudo bash /tmp/install.sh`.
 
-Non-interactive for every platform in `_localsetup/config/platforms.yaml`:
+Non-interactive global-only install:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --directory . --yes
 ```
+
+This installs or refreshes the managed Localsetup package library and creates no repo adapter paths.
 
 Selected platforms:
 
@@ -42,6 +44,12 @@ curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install 
 ```
 
 `--tools` is a compatibility alias for the v3 `--platforms` selector.
+
+Attach a selected adapter to another repo or directory:
+
+```bash
+./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor --yes
+```
 
 ### Windows (WSL2)
 
@@ -53,9 +61,10 @@ cd /path/to/repo
 
 ## Options
 
-- `--directory PATH` / `-Directory PATH`  - Client repo root (default: .)
+- `--directory PATH` / `-Directory PATH`  - Localsetup source checkout containing `_localsetup/` (default: .)
+- `--target-directory PATH`  - Directory where selected repo adapter links and `localsetup.lock.json` are written. Defaults to `--directory`.
 - `--tools LIST`  - Compatibility alias for comma-separated platforms: cursor, claude-code, codex, openclaw, kilo, opencode
-- `--platforms LIST`  - Space-separated v3 platform ids. Omit to install all platforms in `platforms.yaml`.
+- `--platforms LIST`  - Space-separated v3 platform ids. Omit for a global-only install with no repo adapters.
 - `--yes`  - Non-interactive apply
 - `--global`  - Legacy no-op compatibility flag; v3 installs the managed home library by default
 - `--install-deps`  - Create/update the managed `.localsetup/venv` and install `_localsetup/requirements.txt`
@@ -63,11 +72,11 @@ cd /path/to/repo
 
 ## Shared home library
 
-V3 installs managed skills and workflow packages to `~/.local/share/agents/skills/localsetup` and writes a registry beside them. Repo adapter paths such as `.codex/skills` and `.kilo/skills` point at that library by symlink, or receive a managed portable copy when `--mode portable` is used.
+V3 installs managed skills and workflow packages to `~/.local/share/agents/skills/localsetup` and writes a registry beside them. Explicitly selected repo adapter paths such as `.codex/skills` and `.kilo/skills` point at that library by symlink, or receive a managed portable copy when `--mode portable` is used.
 
 Workflow packages are sourced from `_localsetup/workflows/ls-workflow-*`. They install beside skills because every workflow package includes a valid `SKILL.md`, while its Localsetup-specific `workflow.yaml` stays in source for validation and generated docs.
 
-If `--tools` or `--platforms` is omitted, every platform in `platforms.yaml` is installed. Repo-local adapters take precedence because they live inside the project.
+If `--tools` or `--platforms` is omitted, no repo adapter is attached. This is the safe default for refreshing the managed library without touching project-owned `.codex`, `.cursor`, `.kilo`, `.claude`, `.opencode`, or `.openclaw` configuration.
 
 To remove a v3 install, run:
 
@@ -121,11 +130,13 @@ On re-run, the v3 installer refreshes the managed shared package library, rewrit
 
 `--upgrade-policy` is accepted by the root wrapper as a legacy compatibility flag, but v3 uses managed install metadata and refuses to overwrite unmanaged skill paths.
 
+Adapter paths are conservative. The installer creates only the selected adapter subpath, for example `.cursor/skills`, and preserves neighboring project configuration such as `.cursor/rules`. It refuses unmanaged adapter directories, regular files, dangling symlinks, and symlinks that point somewhere other than the managed Localsetup library. Re-running the same install is idempotent when an adapter already points at the intended managed library or is a Localsetup-managed portable copy.
+
 ## What gets deployed
 
 - **Shared library:** Managed skills under `~/.local/share/agents/skills/localsetup`.
 - **Workflow packages:** Managed copies of selected `_localsetup/workflows/ls-workflow-*` packages in the same library.
-- **Per-platform adapters:** Repo paths from `_localsetup/config/platforms.yaml`, such as `.codex/skills` and `.kilo/skills`.
+- **Per-platform adapters:** Explicitly selected repo paths from `_localsetup/config/platforms.yaml`, such as `.codex/skills` and `.kilo/skills`.
 - **Lock and registry:** `localsetup.lock.json` in the repo and `.localsetup-registry.json` in the managed home library.
 
 ## Framework tools
@@ -145,4 +156,4 @@ Framework install logic is Python-first. Shell is limited to the bootstrap wrapp
 
 ## Repo-local
 
-Framework source and repo-local context live in the repo. Installed skill and workflow package copies live in the managed home library and can be recreated from the repo with `./install --directory . --yes`.
+Framework source and repo-local context live in the repo. Installed skill and workflow package copies live in the managed home library and can be recreated from the repo with `./install --directory . --yes`. Add `--tools` or `--platforms` when you want to attach repo adapter paths.

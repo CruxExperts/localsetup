@@ -14,7 +14,7 @@ compatibility: "Python 3.10+ for any bundled tooling. Sandbox paths follow platf
 
 - User wants to "test this skill," "validate the skill after import," "run the skill in a sandbox," or "make sure the skill works before we use it."
 - After a skill has been vetted and normalized (not right after import), user wants to run it safely in a sandbox and fix any issues before production.
-- User wants to confirm a skill runs correctly on the current platform (Cursor, Claude Code, Codex, OpenClaw) without affecting the repo.
+- User wants to confirm a skill runs correctly on a supported platform listed in PLATFORM_REGISTRY without affecting the repo.
 
 ## How it actually works
 
@@ -45,17 +45,14 @@ This keeps a single source of truth for debugging (debug-pro) and a clear separa
 
 ## Supported platforms
 
-Skill paths and context loaders are defined in _localsetup/docs/PLATFORM_REGISTRY.md. The sandbox tester works on all supported platforms:
+Skill paths and context loaders are defined in [_localsetup/docs/PLATFORM_REGISTRY.md](../../docs/PLATFORM_REGISTRY.md) and `_localsetup/config/platforms.yaml`. The sandbox tester follows the current adapter model:
 
-| Platform | Skills path (canonical or deployed) |
+| Platform/runtime | Skills root model |
 |----------|-------------------------------------|
-| Framework source | _localsetup/skills/ls-*/ |
-| Cursor | .cursor/skills/ls-*/ |
-| Claude Code | .claude/skills/ls-*/ |
-| Codex | .agents/skills/ls-*/ |
-| OpenClaw | skills/ls-*/ (repo root) |
+| Framework source | `_localsetup/skills/ls-*/` (canonical source) |
+| Adapter-managed platforms | Use the adapter skills root declared in PLATFORM_REGISTRY/platforms.yaml (for example `.codex/skills/`, `.claude/skills/`, `.cursor/skills/`, `.kilo/skills/`, `.opencode/skills/`, `.openclaw/skills/`) |
 
-Resolve the skill directory from the current context: if working in the framework repo, use `_localsetup/skills/<name>/`; if the user refers to a deployed path, use the platform's skills path from PLATFORM_REGISTRY. Test using the same platform the user is on so behavior matches production.
+Resolve the skill directory from current context and registry mapping: if working in the framework repo, use `_localsetup/skills/<name>/`; if the user refers to a deployed path, use the adapter path from PLATFORM_REGISTRY/platforms.yaml. Do not assume a bare repo-root `skills/` directory as a default root. Test using the same platform the user is on so behavior matches production.
 
 ## Tooling
 

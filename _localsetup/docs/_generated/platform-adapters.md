@@ -1,5 +1,7 @@
 # Platform Adapters
 
+Repo adapter paths are attached only when selected with `--tools` or `--platforms`; a selector-free install is global-only.
+
 | Platform | Repo Paths | Verify Rules |
 |---|---|---|
 | `codex` | `.codex/skills` | `skills_visible, namespace_ls` |

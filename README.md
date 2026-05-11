@@ -40,7 +40,7 @@ That means your agent setup travels with the repo, survives context resets, and 
   <img src="assets/localsetup-v3-architecture.svg" alt="Localsetup v3 architecture: repo source, config resolver, managed home library, adapters, and rollback metadata" width="960">
 </p>
 
-`_localsetup/` is the canonical source. The installer resolves configuration, creates the managed home library for skills and workflow packages, attaches platform adapter paths, writes lock/report metadata, and leaves rollback evidence behind. Generated adapter trees are install output, not framework source.
+`_localsetup/` is the canonical source. The installer resolves configuration, creates the managed home library for skills and workflow packages, attaches only explicitly selected platform adapter paths, writes lock/report metadata, and leaves rollback evidence behind. Generated adapter trees are install output, not framework source.
 
 ## Skills and workflow packages
 
@@ -51,7 +51,7 @@ Localsetup v3 makes one important distinction explicit:
 | Capability skill | `_localsetup/skills/ls-*` | Agent Skills `SKILL.md` package | A reusable capability such as debugging, testing, skill import, PR review, service triage, or versioning. |
 | Workflow package | `_localsetup/workflows/ls-workflow-*` | Agent Skills `SKILL.md` package plus `workflow.yaml` | A named orchestration flow with aliases, required skills, gates, phases, validation, and expected outputs. |
 
-Both package types install into `~/.local/share/agents/skills/localsetup`, so agent hosts can invoke them through the same adapter paths. The split keeps portable skills clean while making workflow orchestration auditable and generated from source manifests.
+Both package types install into `~/.local/share/agents/skills/localsetup`, so agent hosts can invoke them through explicitly attached adapter paths. The split keeps portable skills clean while making workflow orchestration auditable and generated from source manifests.
 
 Start with the [workflow packages guide](_localsetup/docs/WORKFLOW_PACKAGES.md) for usage and the [workflow standard](_localsetup/docs/WORKFLOW_STANDARD.md) for authoring rules.
 
@@ -75,16 +75,22 @@ Run from a project root on Linux, macOS, or WSL2.
 curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash
 ```
 
-Or from a cloned checkout:
+Or from a cloned checkout, install the default `core` pack into the managed library:
 
 ```bash
 ./install --directory . --yes
 ```
 
-Limit adapter creation when you only want specific hosts:
+Attach adapters only for the hosts you choose:
 
 ```bash
 ./install --directory . --tools codex,kilo --yes
+```
+
+Attach a selected adapter to another repo while using this checkout as the source:
+
+```bash
+./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor --yes
 ```
 
 Windows support is WSL2-only in v3. Open WSL2, change to the repo path, and run the Bash installer. `install.ps1` is a compatibility guidance stub.
@@ -94,7 +100,7 @@ Full install docs: [_localsetup/docs/QUICKSTART.md](_localsetup/docs/QUICKSTART.
 ## 10 reasons to use Localsetup v3
 
 1. **Your agent context becomes code.** Instructions, skills, workflows, platform manifests, and docs live in the repo, so changes are visible in git instead of hidden in a local profile or a forgotten prompt.
-2. **One skill library reaches multiple agent hosts.** The shipped adapters let Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode attach to the same managed Localsetup skill library.
+2. **One skill library reaches multiple agent hosts.** When selected with `--tools` or `--platforms`, the shipped adapters let Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode attach to the same managed Localsetup skill library.
 3. **It leans into the Agent Skills standard.** Skills use spec-compatible `SKILL.md` frontmatter, which makes them easier to import, export, normalize, and share across ecosystems.
 4. **It tackles the trust gap directly.** The framework pushes agents toward repeatable workflows, explicit verification, documented assumptions, and human gates instead of one-off "looks good" responses.
 5. **It treats skill imports as supply-chain events.** External skills are discovered, validated, security-screened, summarized, and normalized before they become part of your library.

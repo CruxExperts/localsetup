@@ -28,10 +28,12 @@ PATH_MAX = 4096
 BASE_DIR_MAX = 1024
 SKILL_ROOT_SUBPATHS = (
     "_localsetup/skills",
+    ".codex/skills",
     ".cursor/skills",
     ".claude/skills",
-    ".agents/skills",
-    "skills",
+    ".kilo/skills",
+    ".opencode/skills",
+    ".openclaw/skills",
 )
 
 

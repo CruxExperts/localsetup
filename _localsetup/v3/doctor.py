@@ -41,9 +41,11 @@ def run_doctor(
     platform_ids: list[str] | None = None,
     dependency_mode: str = "managed-venv",
     data_root: Path | None = None,
+    target_root: Path | None = None,
 ) -> dict:
     blockers: list[str] = []
     warnings: list[str] = []
+    attachment_root = target_root or repo_root
 
     environment = {
         "os": platform.system(),
@@ -53,7 +55,10 @@ def run_doctor(
         "python_version": platform.python_version(),
         "home": str(home),
         "repo_root": str(repo_root),
+        "target_root": str(attachment_root),
     }
+    if target_root is not None and not platform_ids:
+        warnings.append("target directory was provided but no platforms were selected; install will be global-only with no repo adapters")
     if platform.system().lower().startswith("windows"):
         blockers.append("native Windows is unsupported; run Localsetup v3 from WSL2")
 
@@ -99,29 +104,27 @@ def run_doctor(
         warnings.extend(dep_status["warnings"])
 
     global_root = expand_user_path(pack.global_root, home)
-    adapters = adapter_status(repo_root, home, global_root, platform_ids=platform_ids)
+    adapters = adapter_status(repo_root, home, global_root, platform_ids=platform_ids, target_root=attachment_root)
     collisions: list[dict] = []
     for adapter in adapters:
-        path = Path(adapter["repo_path"])
-        unmanaged = adapter["exists"] and not adapter["is_symlink"] and not adapter["is_portable_copy"]
-        if unmanaged:
+        if adapter["collision_reason"]:
             collision = {
                 "platform": adapter["platform"],
                 "path": adapter["repo_path"],
-                "reason": "unmanaged adapter directory",
+                "reason": adapter["collision_reason"],
             }
             collisions.append(collision)
-            blockers.append(f"unmanaged adapter collision: {adapter['repo_path']}")
+            blockers.append(f"adapter collision ({adapter['collision_reason']}): {adapter['repo_path']}")
 
-    writable_paths = [_writable_status(global_root), _writable_status(home)]
-    for target in adapter_targets(repo_root, home, platform_ids=platform_ids):
+    writable_paths = [_writable_status(global_root), _writable_status(home), _writable_status(attachment_root)]
+    for target in adapter_targets(repo_root, home, platform_ids=platform_ids, target_root=attachment_root):
         writable_paths.append(_writable_status(target["repo_path"].parent))
     for item in writable_paths:
         if not item["ok"]:
             blockers.append(f"path is not writable: {item['path']}")
 
     legacy = {
-        "artifacts": detect_legacy_artifacts(repo_root, home=home, platform_ids=platform_ids),
+        "artifacts": detect_legacy_artifacts(repo_root, home=home, platform_ids=platform_ids, target_root=attachment_root),
         "references": scan_legacy_references(repo_root),
     }
     if legacy["artifacts"]:

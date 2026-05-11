@@ -2,15 +2,45 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .adapters import adapter_status
+from .adapters import adapter_path_state, adapter_status
 from .lockfile import load_json
 from .manifests import load_pack_config
 from .paths import expand_user_path, repo_path
 
 
-def verify_install(repo_root: Path, home: Path, platform_ids: list[str] | None = None) -> dict:
+def _recorded_adapter_status(lock: dict, global_root: Path) -> list[dict]:
+    recorded = lock.get("adapter_targets") if isinstance(lock, dict) else None
+    if not recorded:
+        recorded = [
+            {"platform": None, "path": path, "mode": lock.get("attach_mode", "symlink"), "global_root": str(global_root)}
+            for path in lock.get("adapter_state", [])
+        ]
+    statuses: list[dict] = []
+    for item in recorded:
+        path = Path(str(item["path"]))
+        expected_global = Path(str(item.get("global_root") or global_root))
+        statuses.append(
+            {
+                "platform": item.get("platform"),
+                "repo_path": str(path),
+                "expected_mode": item.get("mode", lock.get("attach_mode", "symlink")),
+                **adapter_path_state(path, expected_global),
+                "verify_rules": [],
+            }
+        )
+    return statuses
+
+
+def verify_install(
+    repo_root: Path,
+    home: Path,
+    platform_ids: list[str] | None = None,
+    *,
+    target_root: Path | None = None,
+) -> dict:
     pack = load_pack_config(repo_root)
-    lock = load_json(repo_path(repo_root, pack.lockfile, "repo.lockfile"))
+    attachment_root = target_root or repo_root
+    lock = load_json(repo_path(attachment_root, pack.lockfile, "repo.lockfile"))
     global_root = expand_user_path(pack.global_root, home)
 
     issues: list[str] = []
@@ -37,12 +67,18 @@ def verify_install(repo_root: Path, home: Path, platform_ids: list[str] | None =
         elif not (workflow_path / ".localsetup-managed").exists():
             issues.append(f"managed marker missing: {workflow_path}")
 
-    for adapter in adapter_status(repo_root, home, global_root, platform_ids=platform_ids):
+    adapters = (
+        adapter_status(repo_root, home, global_root, platform_ids=platform_ids, target_root=attachment_root)
+        if platform_ids is not None
+        else _recorded_adapter_status(lock, global_root)
+    )
+    for adapter in adapters:
+        expected_mode = adapter.get("expected_mode", attach_mode)
         if not adapter["exists"]:
             issues.append(f"missing adapter path: {adapter['repo_path']}")
-        elif attach_mode == "portable" and not adapter["is_portable_copy"]:
+        elif expected_mode == "portable" and not adapter["is_portable_copy"]:
             issues.append(f"adapter is not a managed portable copy: {adapter['repo_path']}")
-        elif attach_mode != "portable" and not adapter["points_to_global"]:
+        elif expected_mode != "portable" and not adapter["points_to_global"]:
             issues.append(f"adapter does not point at global library: {adapter['repo_path']}")
 
     registry_path = expand_user_path(pack.global_registry, home)
@@ -52,5 +88,5 @@ def verify_install(repo_root: Path, home: Path, platform_ids: list[str] | None =
     return {
         "ok": not issues,
         "issues": issues,
-        "adapters": adapter_status(repo_root, home, global_root, platform_ids=platform_ids),
+        "adapters": adapters,
     }

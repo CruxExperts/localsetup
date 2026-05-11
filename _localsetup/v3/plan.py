@@ -17,6 +17,7 @@ def build_install_plan(
     packs: list[str] | None = None,
     attach_mode: str = "symlink",
     platform_ids: list[str] | None = None,
+    target_root: Path | None = None,
 ) -> DeployPlan:
     if attach_mode not in {"symlink", "portable"}:
         raise ValueError(f"unsupported attach mode: {attach_mode}")
@@ -24,7 +25,9 @@ def build_install_plan(
     pack = load_pack_config(repo_root)
     platforms = load_platforms(repo_root)
     validate_platform_selectors(repo_root, platform_ids)
-    selected_platforms = [p for p in platforms if not platform_ids or p.platform_id in platform_ids]
+    selected_ids = set(platform_ids or [])
+    selected_platforms = [p for p in platforms if p.platform_id in selected_ids]
+    attachment_root = target_root or repo_root
     global_root = expand_user_path(pack.global_root, home)
 
     selected_names = selected_skill_names(repo_root, packs)
@@ -39,7 +42,7 @@ def build_install_plan(
     if selected_workflows:
         actions.append(PlanAction("install_workflows", global_root, {"workflows": selected_workflows}))
 
-    for target in adapter_targets(repo_root, home, platform_ids=platform_ids):
+    for target in adapter_targets(repo_root, home, platform_ids=platform_ids, target_root=attachment_root):
         actions.append(
             PlanAction(
                 "attach_repo_path",
@@ -53,6 +56,8 @@ def build_install_plan(
         "repo_links": [str(a.path) for a in actions if a.kind == "attach_repo_path"],
         "packs": packs or ["core"],
         "platforms": [platform.platform_id for platform in selected_platforms],
+        "target_root": str(attachment_root),
+        "global_only": not selected_platforms,
         "attach_mode": attach_mode,
         "aliases": selected_aliases,
         "catalog_aliases": legacy_aliases,

@@ -39,7 +39,7 @@ Localsetup v3 is a universal, cross-platform agentic workflow engine. It is **de
 
 ## Capability skills and workflow packages index
 
-Load the appropriate skill when the task matches. Runtime skills live under `.agents/skills/ls-*`; `.cursor/skills` may be a compatibility link.
+Load the appropriate skill when the task matches. Runtime skills are managed in `~/.local/share/agents/skills/localsetup` and exposed to Cursor through the `.cursor/skills` adapter path.
 
 | Package | When to use |
 |-------|--------------|

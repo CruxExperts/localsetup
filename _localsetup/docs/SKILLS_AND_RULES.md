@@ -34,7 +34,7 @@ Use [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) as the canonical definition of:
 
 ## Platform paths
 
-**Canonical list:** Supported platforms and their context/skills/memory paths are defined in [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md). Reference that file when listing platforms or adding a new one. Summary:
+**Canonical list:** Supported platforms and their context/skills/memory paths are defined in [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md). Reference that file when listing platforms or adding a new one. The skills paths below are created only when that platform adapter is explicitly selected; a global-only install does not create repo adapter paths. Summary:
 
 | Platform | Context loader | Skills | Memory file |
 |----------|----------------|--------|-------------|

@@ -30,7 +30,9 @@ From a local checkout:
 ./install --directory . --yes
 ```
 
-Install only selected agent hosts:
+This installs the default `core` pack into the managed library and does not create repo adapter paths.
+
+Attach selected agent hosts explicitly:
 
 ```bash
 ./install --directory . --tools codex,kilo --yes
@@ -61,17 +63,23 @@ Comma-separate multiple IDs:
 ./install --directory . --tools cursor,claude-code,codex --yes
 ```
 
-Omit `--tools` to install every platform listed in `_localsetup/config/platforms.yaml`.
+Omit `--tools` and `--platforms` for a global-only install. No omitted selector expands to every platform.
+
+Attach an adapter to another repo or directory while using this checkout as the source:
+
+```bash
+./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor --yes
+```
 
 ## What Gets Installed
 
 - `_localsetup/` framework source in the repo
 - Managed skills under `~/.local/share/agents/skills/localsetup`
 - Managed workflow packages under the same library; their source remains `_localsetup/workflows/ls-workflow-*`
-- Platform adapter paths such as `.codex/skills` or `.kilo/skills`
+- Explicitly selected platform adapter paths such as `.codex/skills` or `.kilo/skills`
 - `localsetup.lock.json` and reports that support verification and rollback
 
-By default, adapters point to the managed home library by symlink. Use portable mode when symlinks are not suitable:
+Selected adapters point to the managed home library by symlink. Use portable mode when symlinks are not suitable:
 
 ```bash
 ./install --directory . --tools codex --yes --mode portable
@@ -107,7 +115,7 @@ Re-run install with the same directory and platform selection:
 ./install --directory . --tools codex,kilo --yes
 ```
 
-The installer refreshes managed skills, adapter links or portable copies, lock metadata, and reports.
+The installer refreshes managed skills, selected adapter links or portable copies, lock metadata, and reports. A global-only re-run refreshes the managed library and records an empty platform list.
 
 Selected workflow packs also refresh their workflow packages and required capability skill dependencies. See [Workflow packages](WORKFLOW_PACKAGES.md) for canonical source/runtime and install details.
 

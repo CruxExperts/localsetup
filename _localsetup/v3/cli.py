@@ -56,6 +56,7 @@ def _split_csv(values: list[str] | None) -> list[str] | None:
 
 def _add_config_flags(parser: argparse.ArgumentParser, *, include_apply: bool = False) -> None:
     parser.add_argument("--config")
+    parser.add_argument("--target-directory", default=argparse.SUPPRESS)
     parser.add_argument("--json", action="store_true", default=None)
     parser.add_argument("--report")
     parser.add_argument("--backup-dir")
@@ -77,6 +78,7 @@ def _resolved_config(args: argparse.Namespace, default_home: Path) -> InstallCon
         packs=_split_csv(getattr(args, "packs", None)) if hasattr(args, "packs") else None,
         attach_mode=getattr(args, "mode", None),
         home=cli_home,
+        target_directory=getattr(args, "target_directory", None),
         dependency_mode=getattr(args, "dependency_mode", None),
         backup_dir=getattr(args, "backup_dir", None),
         report=getattr(args, "report", None),
@@ -107,6 +109,7 @@ def _main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="localsetup-v3")
     parser.add_argument("--home")
     parser.add_argument("--repo", default=str(_repo_root()))
+    parser.add_argument("--target-directory")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     plan_p = sub.add_parser("plan")
@@ -136,6 +139,7 @@ def _main(argv: list[str] | None = None) -> int:
     update_p.add_argument("--platforms", nargs="*")
 
     adapters_p = sub.add_parser("adapters")
+    adapters_p.add_argument("--target-directory", default=argparse.SUPPRESS)
     adapters_p.add_argument("--platforms", nargs="*")
     configure_p = sub.add_parser("configure")
     _add_config_flags(configure_p)
@@ -199,26 +203,45 @@ def _main(argv: list[str] | None = None) -> int:
     if args.cmd in {"plan", "install", "update"}:
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
+        target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
+        attachment_root = target_root or root
         plan = build_install_plan(
             root,
             home=home,
             packs=config.packs,
             attach_mode=config.attach_mode,
             platform_ids=config.platforms,
+            target_root=target_root,
         )
         if args.cmd == "plan" or (args.cmd == "install" and not args.apply):
+            warnings = []
+            if config.target_directory and not config.platforms:
+                warnings.append("target directory was provided but no platforms were selected; plan is global-only with no repo adapters")
             payload = {
                 "actions": [{"kind": a.kind, "path": str(a.path), "details": a.details} for a in plan.actions],
                 "config": config_to_dict(config),
+                "attachment": {
+                    "target_root": str(attachment_root),
+                    "platforms": plan.rollback_metadata.get("platforms", []),
+                    "global_only": plan.rollback_metadata.get("global_only", False),
+                },
+                "warnings": warnings,
                 "rollback": plan.rollback_metadata,
             }
             _write_report(config.output.report, payload)
             _print_payload(payload)
             return 0
         dependency_info = ensure_dependencies(root, mode=config.dependency_mode) if config.dependency_mode != "prompt-only" else None
-        result = apply_plan(root, plan, home=home, dry_run=False, dependency_info=dependency_info)
+        result = apply_plan(root, plan, home=home, dry_run=False, dependency_info=dependency_info, target_root=target_root)
         if dependency_info:
             result["dependencies"] = dependency_info
+        result["attachment"] = {
+            "target_root": str(attachment_root),
+            "platforms": plan.rollback_metadata.get("platforms", []),
+            "global_only": plan.rollback_metadata.get("global_only", False),
+        }
+        if config.target_directory and not config.platforms:
+            result["warnings"] = ["target directory was provided but no platforms were selected; install was global-only with no repo adapters"]
         _write_report(config.output.report, result)
         _print_payload(result)
         return 0
@@ -226,7 +249,8 @@ def _main(argv: list[str] | None = None) -> int:
     if args.cmd == "verify":
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
-        payload = verify_install(root, home=home, platform_ids=config.platforms)
+        target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
+        payload = verify_install(root, home=home, platform_ids=config.platforms, target_root=target_root)
         _write_report(config.output.report, payload)
         _print_payload(payload)
         return 0 if payload["ok"] else 1
@@ -234,16 +258,24 @@ def _main(argv: list[str] | None = None) -> int:
     if args.cmd == "rollback":
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
-        payload = rollback(root, home=home, platform_ids=config.platforms)
+        target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
+        payload = rollback(root, home=home, platform_ids=config.platforms, target_root=target_root)
         _write_report(config.output.report, payload)
         _print_payload(payload)
         return 0
 
     if args.cmd == "adapters":
         pack = load_pack_config(root)
+        target_root = Path(getattr(args, "target_directory", None)).expanduser().resolve() if getattr(args, "target_directory", None) else None
         print(
             json.dumps(
-                adapter_status(root, home, expand_user_path(pack.global_root, home), platform_ids=_split_csv(args.platforms)),
+                adapter_status(
+                    root,
+                    home,
+                    expand_user_path(pack.global_root, home),
+                    platform_ids=_split_csv(args.platforms),
+                    target_root=target_root,
+                ),
                 indent=2,
             )
         )
@@ -259,12 +291,14 @@ def _main(argv: list[str] | None = None) -> int:
     if args.cmd == "doctor":
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
+        target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
         payload = run_doctor(
             root,
             home=home,
             packs=config.packs,
             platform_ids=config.platforms,
             dependency_mode=config.dependency_mode,
+            target_root=target_root,
         )
         _write_report(config.output.report, payload)
         _print_payload(payload)
@@ -273,11 +307,13 @@ def _main(argv: list[str] | None = None) -> int:
     if args.cmd == "migrate":
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
+        target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
         apply_migration = not args.dry_run and config.migration_mode != "report-only"
         payload = conservative_migrate(
             root,
             home=home,
             platform_ids=config.platforms,
+            target_root=target_root,
             backup_dir=Path(config.backup_dir).expanduser().resolve() if config.backup_dir else None,
             apply=apply_migration,
         )

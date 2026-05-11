@@ -28,6 +28,7 @@ class InstallConfig:
     packs: list[str] = field(default_factory=lambda: ["core"])
     attach_mode: str = "symlink"
     home: str | None = None
+    target_directory: str | None = None
     data_root: str | None = None
     dependency_mode: str = "managed-venv"
     migration_mode: str = "conservative-auto"
@@ -76,6 +77,7 @@ def load_install_config(path: Path | None) -> InstallConfig:
         packs=_as_list(data.get("packs"), "packs") or ["core"],
         attach_mode=str(data.get("attach_mode", "symlink")),
         home=_as_str(data.get("home"), "home"),
+        target_directory=_as_str(data.get("target_directory"), "target_directory"),
         data_root=_as_str(data.get("data_root"), "data_root"),
         dependency_mode=str(data.get("dependency_mode", "managed-venv")),
         migration_mode=str(data.get("migration_mode", "conservative-auto")),
@@ -120,6 +122,7 @@ def validate_install_config(config: InstallConfig) -> None:
         raise ValueError(f"unsupported backup policy: {config.backup_policy}")
     for field_name, path_value in {
         "home": config.home,
+        "target_directory": config.target_directory,
         "data_root": config.data_root,
         "backup_dir": config.backup_dir,
         "output.report": config.output.report,
@@ -135,6 +138,7 @@ def merge_cli_config(
     packs: list[str] | None = None,
     attach_mode: str | None = None,
     home: str | None = None,
+    target_directory: str | None = None,
     dependency_mode: str | None = None,
     migration_mode: str | None = None,
     backup_dir: str | None = None,
@@ -147,6 +151,7 @@ def merge_cli_config(
         packs=packs if packs is not None else base.packs,
         attach_mode=attach_mode or base.attach_mode,
         home=home or base.home,
+        target_directory=target_directory or base.target_directory,
         data_root=base.data_root,
         dependency_mode=dependency_mode or base.dependency_mode,
         migration_mode=migration_mode or base.migration_mode,
@@ -168,6 +173,7 @@ def config_to_dict(config: InstallConfig) -> dict[str, Any]:
         "packs": config.packs,
         "attach_mode": config.attach_mode,
         "home": config.home,
+        "target_directory": config.target_directory,
         "data_root": config.data_root,
         "dependency_mode": config.dependency_mode,
         "migration_mode": config.migration_mode,

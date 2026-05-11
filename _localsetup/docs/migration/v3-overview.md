@@ -47,15 +47,16 @@ Windows support is WSL2-only in v3. Run agents inside WSL and use WSL filesystem
 ## Platform Adapters
 
 The adapter contract is generated from `_localsetup/config/platforms.yaml`.
-Each declared platform gets a repo-local attachment path that points at the
-shared global library. Verification checks that every attachment exists and
-resolves to the configured global library.
+Each selected platform gets a repo-local attachment path that points at the
+shared global library. Omitting platform selectors is global-only and creates no
+repo adapters. Verification without an explicit selector checks the recorded
+install state rather than assuming every declared platform was attached.
 
 ## Portable Mode
 
 Portable mode vendors managed copies into the repo adapter paths:
 
-- `python3 _localsetup/tools/localsetup_v3.py install --mode portable --apply`
+- `python3 _localsetup/tools/localsetup_v3.py install --mode portable --platforms codex --apply`
 
 Use portable mode for repos that must carry their selected packages without relying on
 the user's global library.

@@ -17,7 +17,7 @@ version: 3.1
 
 - `_localsetup/skills/` and `_localsetup/workflows/` are framework source.
 - `~/.local/share/agents/skills/localsetup` is managed runtime output and can be recreated by install.
-- Platform adapter paths such as `.codex/skills`, `.kilo/skills`, and `.cursor/skills` are attachments to the managed runtime library, not new source roots.
+- Explicitly selected platform adapter paths such as `.codex/skills`, `.kilo/skills`, and `.cursor/skills` are attachments to the managed runtime library, not new source roots. A global-only install creates no repo adapter paths.
 - Generated workflow docs come from `_localsetup/workflows/*/workflow.yaml`; do not treat generated registry rows as source edits.
 
 ## Reference

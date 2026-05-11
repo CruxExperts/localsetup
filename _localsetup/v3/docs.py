@@ -37,7 +37,14 @@ def generate_alias_outputs(repo_root: Path) -> dict:
     migration_md.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     platforms_md = repo_root / "_localsetup" / "docs" / "_generated" / "platform-adapters.md"
-    platform_lines = ["# Platform Adapters", "", "| Platform | Repo Paths | Verify Rules |", "|---|---|---|"]
+    platform_lines = [
+        "# Platform Adapters",
+        "",
+        "Repo adapter paths are attached only when selected with `--tools` or `--platforms`; a selector-free install is global-only.",
+        "",
+        "| Platform | Repo Paths | Verify Rules |",
+        "|---|---|---|",
+    ]
     for platform in load_platforms(repo_root):
         platform_lines.append(
             f"| `{platform.platform_id}` | `{', '.join(platform.repo_paths)}` | `{', '.join(platform.verify_rules)}` |"

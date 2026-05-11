@@ -23,8 +23,8 @@ This is the full public capability catalog for Localsetup v3. The [root README](
 |---|---|
 | Repo-local framework source | `_localsetup/` carries the framework, docs, config, templates, tools, tests, and shipped skill source. |
 | Python-first v3 installer | Bash bootstrap delegates planning, dependency handling, install, verify, and rollback to `_localsetup/tools/localsetup_v3.py`. |
-| Multi-platform adapters | One install can attach Cursor, Claude Code, Codex CLI, OpenClaw, Kilo, and OpenCode to the same managed package library. |
-| Managed home library | Skills and workflow packages install to `~/.local/share/agents/skills/localsetup`; adapters point there by symlink or use portable copies. |
+| Explicit multi-platform adapters | One install can attach selected Cursor, Claude Code, Codex CLI, OpenClaw, Kilo, and OpenCode adapter paths to the same managed package library. |
+| Managed home library | Skills and workflow packages install to `~/.local/share/agents/skills/localsetup`; explicitly selected adapters point there by symlink or use portable copies. |
 | Lock and rollback metadata | `localsetup.lock.json` and managed-path reports make installs inspectable and reversible. |
 | Platform manifest | `_localsetup/config/platforms.yaml` is the source of truth for platform IDs, adapter paths, and verification rules. |
 

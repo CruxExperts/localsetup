@@ -31,7 +31,7 @@ The installer copies selected skills and selected workflow packages into:
 ~/.local/share/agents/skills/localsetup
 ```
 
-Platform adapters such as `.codex/skills`, `.kilo/skills`, and `.cursor/skills` attach to that managed library by symlink or portable copy. A workflow package therefore appears beside normal skills at runtime, but its source and metadata stay separate in `_localsetup/workflows/`.
+When selected with `--tools` or `--platforms`, platform adapters such as `.codex/skills`, `.kilo/skills`, and `.cursor/skills` attach to that managed library by symlink or portable copy. A workflow package therefore appears beside normal skills at runtime, but its source and metadata stay separate in `_localsetup/workflows/`.
 
 Workflow pack selection also pulls in required capability skills. For example, a pre-publish workflow can require publishing, versioning, and audit skills without duplicating those instructions inside the workflow package.
 

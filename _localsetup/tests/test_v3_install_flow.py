@@ -12,6 +12,7 @@ from _localsetup.v3.cli import _split_csv
 from _localsetup.v3.config import InstallConfig, load_install_config, merge_cli_config
 from _localsetup.v3.context import build_agent_context, render_markdown_report
 from _localsetup.v3.dependencies import ensure_dependencies
+from _localsetup.v3.doctor import run_doctor
 from _localsetup.v3.docs import generate_alias_outputs
 from _localsetup.v3.hooks import run_maintainer_gate
 from _localsetup.v3.lockfile import load_json
@@ -50,7 +51,9 @@ def test_v3_plan_apply_verify_rollback(tmp_path: Path) -> None:
     home.mkdir(parents=True, exist_ok=True)
 
     plan = build_install_plan(root, home=home, packs=["core"])
-    assert any(a.kind == "attach_repo_path" for a in plan.actions)
+    assert not any(a.kind == "attach_repo_path" for a in plan.actions)
+    assert plan.rollback_metadata["platforms"] == []
+    assert plan.rollback_metadata["global_only"] is True
 
     result = apply_plan(root, plan, home=home, dry_run=False)
     assert result["dry_run"] is False
@@ -59,14 +62,12 @@ def test_v3_plan_apply_verify_rollback(tmp_path: Path) -> None:
     assert verify["ok"] is True
     assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
     assert not (home / ".local/share/agents/skills/localsetup/ls-cloudflare-dns").exists()
-    assert {adapter["platform"] for adapter in verify["adapters"]} == {
-        "codex",
-        "claude-code",
-        "cursor",
-        "kilo",
-        "opencode",
-        "openclaw",
-    }
+    assert verify["adapters"] == []
+    lock = load_json(root / "localsetup.lock.json")
+    assert lock["platforms"] == []
+    assert lock["adapter_state"] == []
+    for rel in (".codex/skills", ".claude/skills", ".cursor/skills", ".kilo/skills", ".opencode/skills", ".openclaw/skills"):
+        assert not (root / rel).exists()
 
     rolled = rollback(root, home)
     assert rolled["removed"]
@@ -101,13 +102,14 @@ def test_v3_portable_mode_uses_managed_copies(tmp_path: Path) -> None:
     home = tmp_path / "home"
     home.mkdir(parents=True, exist_ok=True)
 
-    plan = build_install_plan(root, home=home, packs=["core"], attach_mode="portable")
+    plan = build_install_plan(root, home=home, packs=["core"], attach_mode="portable", platform_ids=["codex"])
     result = apply_plan(root, plan, home=home, dry_run=False)
 
     assert result["dry_run"] is False
-    verify = verify_install(root, home)
+    verify = verify_install(root, home, platform_ids=["codex"])
     assert verify["ok"] is True
     assert all(adapter["is_portable_copy"] for adapter in verify["adapters"])
+    assert not (root / ".cursor" / "skills").exists()
 
     rolled = rollback(root, home)
     assert rolled["removed"]
@@ -124,12 +126,173 @@ def test_v3_platform_selector_limits_adapters(tmp_path: Path) -> None:
     assert result["dry_run"] is False
     assert (root / ".codex" / "skills").is_symlink()
     assert not (root / ".kilo" / "skills").exists()
+    assert not (root / ".cursor" / "skills").exists()
     verify = verify_install(root, home, platform_ids=["codex"])
     assert verify["ok"] is True
     assert {adapter["platform"] for adapter in verify["adapters"]} == {"codex"}
 
     with pytest.raises(ValueError, match="platform-scoped rollback"):
         rollback(root, home, platform_ids=["codex"])
+
+
+def test_v3_multi_platform_selector_attaches_only_requested_adapters(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    home.mkdir(parents=True, exist_ok=True)
+
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex", "kilo"])
+    result = apply_plan(root, plan, home=home, dry_run=False)
+    verify = verify_install(root, home)
+
+    assert result["dry_run"] is False
+    assert {Path(adapter["repo_path"]).parent.name for adapter in verify["adapters"]} == {".codex", ".kilo"}
+    assert {adapter["platform"] for adapter in verify["adapters"]} == {"codex", "kilo"}
+    assert (root / ".codex" / "skills").is_symlink()
+    assert (root / ".kilo" / "skills").is_symlink()
+    assert not (root / ".cursor" / "skills").exists()
+
+
+def test_v3_external_target_directory_attaches_selected_adapter(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "other-repo"
+    target.mkdir()
+    (target / "README.md").write_text("# Other repo\n", encoding="utf-8")
+
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["cursor"], target_root=target)
+    result = apply_plan(root, plan, home=home)
+    verify = verify_install(root, home, target_root=target)
+    lock = load_json(target / "localsetup.lock.json")
+
+    assert result["dry_run"] is False
+    assert (target / ".cursor" / "skills").is_symlink()
+    assert not (root / ".cursor" / "skills").exists()
+    assert verify["ok"] is True
+    assert {adapter["platform"] for adapter in verify["adapters"]} == {"cursor"}
+    assert lock["target_root"] == str(target)
+    assert lock["platforms"] == ["cursor"]
+    assert not (root / "localsetup.lock.json").exists()
+
+
+def test_v3_apply_rejects_target_root_that_differs_from_plan(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target-repo"
+    other = tmp_path / "other-target"
+    target.mkdir()
+    other.mkdir()
+
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["cursor"], target_root=target)
+
+    with pytest.raises(ValueError, match="target_root does not match install plan target_root"):
+        apply_plan(root, plan, home=home, target_root=other)
+
+
+def test_v3_legacy_detection_uses_external_target_lockfile(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target-repo"
+    target.mkdir()
+    (root / "localsetup.lock.json").write_text('{"source": true}\n', encoding="utf-8")
+    (target / "localsetup.lock.json").write_text('{"target": true}\n', encoding="utf-8")
+
+    artifacts = detect_legacy_artifacts(root, home=home, target_root=target)
+    lock_paths = [Path(item["path"]) for item in artifacts if item["kind"] == "lockfile"]
+
+    assert lock_paths == [target / "localsetup.lock.json"]
+
+
+def test_v3_target_directory_without_selector_is_global_only(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "other-repo"
+    target.mkdir()
+
+    plan = build_install_plan(root, home=home, packs=["core"], target_root=target)
+    result = apply_plan(root, plan, home=home, target_root=target)
+    verify = verify_install(root, home, target_root=target)
+    doctor = run_doctor(root, home=home, platform_ids=None, target_root=target)
+    lock = load_json(target / "localsetup.lock.json")
+
+    assert result["dry_run"] is False
+    assert verify["ok"] is True
+    assert verify["adapters"] == []
+    assert lock["platforms"] == []
+    assert lock["adapter_state"] == []
+    assert not (target / ".cursor" / "skills").exists()
+    assert any("no platforms were selected" in warning for warning in doctor["warnings"])
+
+
+def test_v3_preserves_existing_platform_config_when_attaching_skills(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    rules = root / ".cursor" / "rules"
+    rules.mkdir(parents=True)
+    (rules / "project.mdc").write_text("keep me\n", encoding="utf-8")
+
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["cursor"])
+    apply_plan(root, plan, home=home)
+
+    assert (root / ".cursor" / "skills").is_symlink()
+    assert (rules / "project.mdc").read_text(encoding="utf-8") == "keep me\n"
+
+
+@pytest.mark.parametrize("collision_kind", ["directory", "file", "wrong_symlink", "dangling_symlink"])
+def test_v3_refuses_unmanaged_adapter_collisions(tmp_path: Path, collision_kind: str) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    adapter = root / ".cursor" / "skills"
+    adapter.parent.mkdir(parents=True)
+    if collision_kind == "directory":
+        adapter.mkdir()
+        (adapter / "custom.txt").write_text("user content\n", encoding="utf-8")
+        expected = "unmanaged adapter directory"
+    elif collision_kind == "file":
+        adapter.write_text("not a directory\n", encoding="utf-8")
+        expected = "regular file"
+    elif collision_kind == "wrong_symlink":
+        wrong_target = tmp_path / "wrong-target"
+        wrong_target.mkdir()
+        adapter.symlink_to(wrong_target)
+        expected = "symlink points outside managed library"
+    else:
+        adapter.symlink_to(tmp_path / "missing-target")
+        expected = "dangling symlink"
+
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["cursor"])
+
+    with pytest.raises(RuntimeError, match=expected):
+        apply_plan(root, plan, home=home)
+
+
+def test_v3_rerun_with_correct_managed_symlink_is_idempotent(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"])
+    first = apply_plan(root, plan, home=home)
+    second = apply_plan(root, plan, home=home)
+    verify = verify_install(root, home)
+
+    assert first["dry_run"] is False
+    assert second["dry_run"] is False
+    assert verify["ok"] is True
+    assert (root / ".codex" / "skills").is_symlink()
+
+
+def test_v3_doctor_reports_selected_adapter_collisions_only(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    collision = root / ".cursor" / "skills"
+    collision.mkdir(parents=True)
+
+    global_only = run_doctor(root, home=home)
+    selected = run_doctor(root, home=home, platform_ids=["cursor"])
+
+    assert global_only["adapter_collisions"] == []
+    assert not any("adapter collision" in blocker for blocker in global_only["blockers"])
+    assert selected["ok"] is False
+    assert selected["adapter_collisions"][0]["reason"] == "unmanaged adapter directory"
 
 
 def test_cli_rejects_empty_csv_selectors() -> None:
@@ -166,6 +329,7 @@ def test_v3_config_file_and_cli_precedence(tmp_path: Path) -> None:
   "platforms": ["codex"],
   "packs": ["dev"],
   "attach_mode": "portable",
+  "target_directory": "/tmp/localsetup-target",
   "dependency_mode": "prompt-only",
   "migration_mode": "report-only",
   "output": {"json": true}
@@ -180,8 +344,10 @@ def test_v3_config_file_and_cli_precedence(tmp_path: Path) -> None:
     assert base.platforms == ["codex"]
     assert base.packs == ["dev"]
     assert base.attach_mode == "portable"
+    assert base.target_directory == "/tmp/localsetup-target"
     assert merged.packs == ["core"]
     assert merged.attach_mode == "symlink"
+    assert merged.target_directory == "/tmp/localsetup-target"
     assert merged.dependency_mode == "managed-venv"
 
 
@@ -247,6 +413,110 @@ def test_v3_agent_context_and_markdown_report(tmp_path: Path) -> None:
     assert context["selected_packs"] == ["core"]
     assert "# Localsetup v3 Install Context" in markdown
     assert "python3 _localsetup/tools/localsetup_v3.py verify --platforms codex" in markdown
+
+
+def test_v3_cli_doctor_target_warning_requires_explicit_target(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target-repo"
+    target.mkdir()
+    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+
+    plain = subprocess.run(
+        [
+            sys.executable,
+            str(tool),
+            "--repo",
+            str(root),
+            "--home",
+            str(home),
+            "doctor",
+            "--dependency-mode",
+            "prompt-only",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    explicit = subprocess.run(
+        [
+            sys.executable,
+            str(tool),
+            "--repo",
+            str(root),
+            "--home",
+            str(home),
+            "--target-directory",
+            str(target),
+            "doctor",
+            "--dependency-mode",
+            "prompt-only",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    plain_payload = json.loads(plain.stdout)
+    explicit_payload = json.loads(explicit.stdout)
+    assert not any("target directory was provided" in warning for warning in plain_payload["warnings"])
+    assert any("target directory was provided" in warning for warning in explicit_payload["warnings"])
+
+
+def test_v3_cli_context_target_warning_requires_explicit_target(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target-repo"
+    target.mkdir()
+    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+
+    plain = subprocess.run(
+        [
+            sys.executable,
+            str(tool),
+            "--repo",
+            str(root),
+            "--home",
+            str(home),
+            "context",
+            "--dependency-mode",
+            "prompt-only",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    explicit = subprocess.run(
+        [
+            sys.executable,
+            str(tool),
+            "--repo",
+            str(root),
+            "--home",
+            str(home),
+            "--target-directory",
+            str(target),
+            "context",
+            "--dependency-mode",
+            "prompt-only",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    plain_payload = json.loads(plain.stdout)
+    explicit_payload = json.loads(explicit.stdout)
+    assert not any("target directory was provided" in warning for warning in plain_payload["warnings"])
+    assert any("target directory was provided" in warning for warning in explicit_payload["warnings"])
+
+
+def test_docs_do_not_show_selector_free_portable_install() -> None:
+    root = Path(__file__).resolve().parents[2]
+    overview = (root / "_localsetup" / "docs" / "migration" / "v3-overview.md").read_text(encoding="utf-8")
+
+    assert "install --mode portable --apply" not in overview
+    assert "install --mode portable --platforms codex --apply" in overview
 
 
 def test_v3_docs_and_package(tmp_path: Path) -> None:
@@ -370,6 +640,56 @@ def test_root_installer_forwards_custom_home(tmp_path: Path) -> None:
     assert completed.returncode == 0, completed.stderr
     assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
     assert (root / ".codex" / "skills").is_symlink()
+
+
+def test_root_installer_supports_target_directory(tmp_path: Path) -> None:
+    source = Path(__file__).resolve().parents[2]
+    root = tmp_path / "source"
+    target = tmp_path / "target-repo"
+    shutil.copytree(source / "_localsetup", root / "_localsetup", ignore=shutil.ignore_patterns("__pycache__", ".cache"))
+    shutil.copy2(source / "install", root / "install")
+    target.mkdir()
+    home = tmp_path / "custom-home"
+
+    completed = subprocess.run(
+        [
+            str(root / "install"),
+            "--directory",
+            str(root),
+            "--target-directory",
+            str(target),
+            "--home",
+            str(home),
+            "--tools",
+            "cursor",
+            "--yes",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
+    assert (target / ".cursor" / "skills").is_symlink()
+    assert (target / "localsetup.lock.json").is_file()
+    assert not (root / ".cursor" / "skills").exists()
+
+
+def test_root_installer_help_mentions_target_directory_and_global_only_defaults() -> None:
+    install_path = Path(__file__).resolve().parents[2] / "install"
+
+    completed = subprocess.run(
+        [str(install_path), "--help"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0
+    assert "--target-directory PATH" in completed.stdout
+    assert "global-only install" in completed.stdout
+    assert "Omit for global-only install with no repo adapters" in completed.stdout
 
 
 def test_v3_migration_scanner_and_hook_gate(tmp_path: Path) -> None:

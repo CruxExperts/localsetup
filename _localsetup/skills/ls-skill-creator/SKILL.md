@@ -32,7 +32,7 @@ metadata:
 
 - **Spec:** Every skill must satisfy the [Agent Skills](https://agentskills.io/specification) spec so it remains usable in any spec-compliant host. Required: `name` (matches directory, 1-64 chars, lowercase, hyphens), `description` (1-1024 chars, what + when to use). Optional: `metadata.version`, `license`, `compatibility`; optional dirs: `scripts/`, `references/`, `assets/`.
 - **Name (framework convention):** `ls-<kebab-case>` when the skill lives in this framework; directory name must equal `name` per spec.
-- **Location (source):** `_localsetup/skills/<name>/SKILL.md`. This is the canonical skill; deploy copies to each platform's skills path (e.g. `.cursor/skills/` for Cursor; see PLATFORM_REGISTRY).
+- **Location (source):** `_localsetup/skills/<name>/SKILL.md`. This is the canonical skill; deploy maps to each platform's configured adapter skills root per [_localsetup/docs/PLATFORM_REGISTRY.md](../../docs/PLATFORM_REGISTRY.md) and `_localsetup/config/platforms.yaml`.
 - **Frontmatter:** `name`, `description` (required). Include `metadata.version: "1.0"` so our hook can auto-bump; description must state what the skill does and **when to use it** (trigger terms). Third person.
 - **Body:** Start with a **Purpose** line; clear sections (##). Keep under ~500 lines; use progressive disclosure; link to `references/` or `_localsetup/docs/` as needed. Follow [Anthropic's skill-creator](https://github.com/anthropics/skills/tree/main/skills/skill-creator) for structure and what to put in scripts/references/assets so the skill stays portable.
 
@@ -63,7 +63,7 @@ Use the same "When to use" phrasing across all files so indexes stay consistent.
 3. **Public skill discovery (recommended)**  - Load **ls-skill-discovery**: read PUBLIC_SKILL_REGISTRY.urls and PUBLIC_SKILL_INDEX.yaml (refresh index if empty/stale), match the proposed purpose/description to public skills, return top 5 similar. Present: "Similar public skills exist: [list]. Options: (1) In-depth summary of each, (2) Use a public skill (pull and run through import), (3) Continue on your own, (4) Adapt from one." If user chooses (2) or (4), run skill-importer for the chosen skill; then for (4) help adapt. If (3), proceed to step 4.
 4. **Duplicate, overlap, and namespace check**  - List existing skills from `_localsetup/skills/` (dir names and each SKILL.md `name` + `description`). If the proposed name already exists (**namespace collision**) or an existing skill has very similar purpose/triggers (**high overlap**): warn and offer **Keep existing** (do nothing, do not create), **Replace existing** (overwrite that skill with the new content), **Merge** (combine best of both into one skill), **Create as new** (use a different name). Get explicit user choice.
 5. **Draft SKILL.md**  - Spec-compliant frontmatter and body (Purpose, sections). Use [Agent Skills spec](https://agentskills.io/specification) and [Anthropic's skill-creator](https://github.com/anthropics/skills/tree/main/skills/skill-creator) for structure; keep body portable (no framework-only requirements in content).
-6. **Create file**  - Write `_localsetup/skills/<name>/SKILL.md` (or chosen name). Deploy will copy to each platform's skills path (e.g. .cursor/skills/ for Cursor); or copy manually if needed.
+6. **Create file**  - Write `_localsetup/skills/<name>/SKILL.md` (or chosen name). Deploy will copy to each platform's configured adapter skills root (see PLATFORM_REGISTRY and `_localsetup/config/platforms.yaml`); or copy manually to the adapter path if needed.
 7. **Register**  - Add to every file in [PLATFORM_REGISTRY.md](../../docs/PLATFORM_REGISTRY.md) under "Skill registration (new skills)."
 8. **Confirm**  - Skill is created, spec-compliant, and registered; user can run deploy. Skill can be reused in other Agent Skills hosts by copying the directory.
 
@@ -80,7 +80,7 @@ Use the same "When to use" phrasing across all files so indexes stay consistent.
 
 ## Using our skills in another host (export)
 
-- Copy the skill directory from `_localsetup/skills/<name>/` (or from the deployed path for your platform, e.g. `.cursor/skills/<name>/`). It is a valid Agent Skills skill; use it in any spec-compliant host without changes. Optionally rename directory and `name` to match the host's conventions. See [SKILL_INTEROPERABILITY.md](../../docs/SKILL_INTEROPERABILITY.md).
+- Copy the skill directory from `_localsetup/skills/<name>/` (or from your platform's deployed adapter path listed in [PLATFORM_REGISTRY.md](../../docs/PLATFORM_REGISTRY.md) and `_localsetup/config/platforms.yaml`). It is a valid Agent Skills skill; use it in any spec-compliant host without changes. Optionally rename directory and `name` to match the host's conventions. See [SKILL_INTEROPERABILITY.md](../../docs/SKILL_INTEROPERABILITY.md).
 
 ## Reference
 

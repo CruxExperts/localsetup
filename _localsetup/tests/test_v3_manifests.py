@@ -191,6 +191,20 @@ def test_old_workflow_skill_references_are_cut_over() -> None:
     assert offenders == []
 
 
+def test_active_templates_do_not_reference_old_agents_skill_root() -> None:
+    root = Path(__file__).resolve().parents[2]
+    scanned_suffixes = {".md", ".mdc", ".yaml", ".json", ".py", ".sh", ".ps1"}
+    offenders: list[str] = []
+    for base in (root / "_localsetup" / "templates", root / "_localsetup" / "skills"):
+        for path in base.rglob("*"):
+            if not path.is_file() or path.suffix not in scanned_suffixes:
+                continue
+            text = path.read_text(encoding="utf-8", errors="ignore")
+            if ".agents/skills" in text:
+                offenders.append(str(path.relative_to(root)))
+    assert offenders == []
+
+
 def test_baseline_file_classification() -> None:
     assert classify_path("_localsetup/skills/ls-context/SKILL.md") == "keep"
     assert classify_path("_localsetup/workflows/ls-workflow-ops-tmux-session/SKILL.md") == "keep"

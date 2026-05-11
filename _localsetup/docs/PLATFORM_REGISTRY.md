@@ -24,7 +24,7 @@ version: 3.1
 
 ## Shared home library
 
-V3 installs selected skills and workflow packages to `~/.local/share/agents/skills/localsetup` and attaches repo adapter paths to that library by symlink. `--mode portable` creates managed copies instead. Rollback uses `localsetup.lock.json` and removes only managed paths.
+V3 installs selected skills and workflow packages to `~/.local/share/agents/skills/localsetup`. Repo adapter paths attach to that library only when selected with `--tools` or `--platforms`; omitted selectors are global-only and create no adapters. `--mode portable` creates managed copies instead of symlinks. Rollback uses `localsetup.lock.json` and removes only managed paths recorded by that install.
 
 ## Skill registration (new skills)
 
@@ -55,7 +55,7 @@ Use [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) for the model and [WORKFLOW_STA
 ## Reference
 
 - V3 CLI: `_localsetup/tools/localsetup_v3.py plan|install|verify|rollback`.
-- Root wrapper: `./install --directory . --yes`; use `--tools cursor,codex` or `--platforms cursor codex` to select adapters.
+- Root wrapper: `./install --directory . --yes` for global-only; use `--tools cursor,codex` or `--platforms cursor codex` to select adapters. Use `--target-directory /path/to/project` to attach selected adapters outside the source checkout.
 - Windows: WSL2-only. `install.ps1` is a guidance stub, not a native installer.
 - Skills and rules (paths and model): [SKILLS_AND_RULES.md](SKILLS_AND_RULES.md).
 - Release and publish are handled by this repo's automatic versioning hooks and GitHub workflow.
