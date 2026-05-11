@@ -17,7 +17,20 @@ def generate_alias_outputs(repo_root: Path) -> dict:
     aliases_path.write_text(json.dumps(aliases, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     migration_md = repo_root / "_localsetup" / "docs" / "migration" / "v2-to-v3-skill-map.md"
-    lines = ["# v2 to v3 Skill Map", "", "| v2 | v3 |", "|---|---|"]
+    version_file = repo_root / "VERSION"
+    version = version_file.read_text(encoding="utf-8").strip() if version_file.exists() else "3.0.0"
+    major_minor = ".".join(version.split(".")[:2]) if "." in version else version
+    lines = [
+        "---",
+        "status: ACTIVE",
+        f"version: {major_minor}",
+        "---",
+        "",
+        "# v2 to v3 Skill Map",
+        "",
+        "| v2 | v3 |",
+        "|---|---|",
+    ]
     for old, new in sorted(aliases.items()):
         lines.append(f"| `{old}` | `{new}` |")
     migration_md.parent.mkdir(parents=True, exist_ok=True)

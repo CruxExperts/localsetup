@@ -10,18 +10,17 @@ version: 3.1
 ## Model
 
 - **One always-loaded context** per platform: Cursor uses `.cursor/rules/ls-context.mdc`; Claude Code uses `.claude/CLAUDE.md`; Codex uses `AGENTS.md`; OpenClaw uses its platform template; OpenCode uses `AGENTS.md`; Kilo CLI uses `.kilo/instructions.md`.
-- **Skills and workflows:** Capability skills live in `_localsetup/skills/`. First-class workflow packages live in `_localsetup/workflows/` and also contain `SKILL.md`, so v3 installs them into the managed skill library beside skills.
+- **Capability skills and workflow packages:** Capability skills live in `_localsetup/skills/`. Workflow packages live in `_localsetup/workflows/` and also contain `SKILL.md`, so v3 installs both package types into the managed package library.
 - **Memory file:** Each platform has a writable memory file for agent learnings (`.kilo/AGENT_MEMORY.md`, `.claude/AGENT_MEMORY.md`, etc.). See [MEMORY_MANAGEMENT.md](MEMORY_MANAGEMENT.md) for curation rules.
 - **When to load a skill or workflow:** Load when the task matches the package description (e.g. user says "decision tree" -> ls-workflow-spec-clarify-reverse). The master rule/context includes an index of key packages and when to use them.
 
 ## Skills vs workflow packages
 
-| Package type | Source root | Source metadata | Runtime behavior |
-|---|---|---|---|
-| Skill | `_localsetup/skills/ls-*` | Agent Skills `SKILL.md` | Provides a reusable capability. |
-| Workflow package | `_localsetup/workflows/ls-workflow-*` | Agent Skills `SKILL.md` plus Localsetup `workflow.yaml` | Orchestrates a named flow and composes required skills, docs, tools, gates, phases, validation, and outputs. |
+Use [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) as the canonical definition of:
 
-Adapters do not need separate workflow paths. The installer places selected workflow packages beside skills in the managed package library, and the platform context tells agents when to load the package.
+- capability skill vs workflow package semantics
+- source metadata (`SKILL.md` and `workflow.yaml`)
+- managed-library install shape and adapter behavior
 
 ## Task-to-skill matching flow
 

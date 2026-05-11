@@ -1,8 +1,8 @@
-# Localsetup v3  - Project context (Claude Code)
+# Localsetup v3 - Project context (Claude Code)
 
 ## Overview
 
-Localsetup v3 is deployed into this repo at `_localsetup/`. All framework and context are repo-local (mobile, backup-able with the repo). Engine = _localsetup/; user/context data = repo-local. Use Git hashes when referencing PRDs/specs/outcomes (see [_localsetup/docs/GIT_TRACEABILITY.md](../_localsetup/docs/GIT_TRACEABILITY.md)).
+Localsetup v3 is deployed into this repo at `_localsetup/`. All framework and context are repo-local (mobile, backup-able with the repo). Engine = _localsetup/; user/context data = repo-local. Use Git hashes when referencing PRDs/specs/outcomes (see [_localsetup/docs/GIT_TRACEABILITY.md](../../docs/GIT_TRACEABILITY.md)).
 
 ## Invariants
 
@@ -27,7 +27,7 @@ Localsetup v3 is deployed into this repo at `_localsetup/`. All framework and co
 - Bounded coding: use `gpt-5.3-codex` for scoped implementation tasks with clear write ownership and tests.
 - Credit freshness: as of 2026-05-07, the official Codex rate card lists per 1M token credits as `gpt-5.4-mini` 18.75/1.875/113, `gpt-5.3-codex` 43.75/4.375/350, and `gpt-5.5` 125/12.50/750 for input/cached/output. Re-check https://help.openai.com/en/articles/20001106-codex-rate-card before changing model guidance.
 
-## Skills and workflows index (load when task matches)
+## Capability skills and workflow packages index (load when task matches)
 
 - **ls-workflow-spec-clarify-reverse**  - User says "decision tree" or "reverse prompt"; editing .agent/queue/**, PRD
 - **ls-workflow-umbrella-run**  - Queue/PRD in scope; named workflows; impact + confirmation

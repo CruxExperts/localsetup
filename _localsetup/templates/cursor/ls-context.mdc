@@ -1,11 +1,11 @@
 ---
-description: "Localsetup v3 framework context  - index of skills and docs; engine/repo separation; always load this first."
+description: "Localsetup v3 framework context - index of skills and docs; engine/repo separation; always load this first."
 globs: "*"
 alwaysApply: true
 ---
 
 # @context
-# Localsetup v3  - Framework context (master rule)
+# Localsetup v3 - Framework context (master rule)
 
 [WARNING] Verify context is loaded: If you can read this, context IS loaded [OK]. If not, ask user to reload.
 
@@ -37,7 +37,7 @@ Localsetup v3 is a universal, cross-platform agentic workflow engine. It is **de
 - Bounded coding: use `gpt-5.3-codex` for scoped implementation tasks with clear write ownership and tests.
 - Credit freshness: as of 2026-05-07, the official Codex rate card lists per 1M token credits as `gpt-5.4-mini` 18.75/1.875/113, `gpt-5.3-codex` 43.75/4.375/350, and `gpt-5.5` 125/12.50/750 for input/cached/output. Re-check https://help.openai.com/en/articles/20001106-codex-rate-card before changing model guidance.
 
-## Skills index
+## Capability skills and workflow packages index
 
 Load the appropriate skill when the task matches. Runtime skills live under `.agents/skills/ls-*`; `.cursor/skills` may be a compatibility link.
 

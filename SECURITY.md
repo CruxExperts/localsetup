@@ -8,7 +8,7 @@ Localsetup v3 manages agent context, skills, install paths, and automation helpe
 2. Use GitHub private vulnerability reporting for this repository if it is enabled.
 3. If private reporting is not available, open a minimal public Issue asking for a security contact, but do not include vulnerability details.
 
-Include the affected file or command, reproduction steps, expected impact, and whether the issue affects install behavior, skill import, agent permissions, generated docs, or packaged release artifacts.
+Include the affected file or command, Localsetup version, platform ID if relevant, reproduction steps, expected impact, and whether the issue affects install behavior, skill import, agent permissions, generated docs, package boundaries, or release artifacts.
 
 ## Scope
 

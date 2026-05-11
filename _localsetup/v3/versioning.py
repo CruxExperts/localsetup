@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
+from .docs import generate_alias_outputs
+
 
 ZERO_SHA = "0" * 40
 VERSION_SYNC_PREFIX = "chore: sync release version"
@@ -24,9 +26,8 @@ KNOWN_PATCH_TYPES = {
     "build",
     "revert",
 }
-VERSIONED_DOC_GLOBS = (
-    "_localsetup/docs/*.md",
-)
+VERSIONED_DOC_GLOBS = ("_localsetup/docs/**/*.md",)
+VERSIONED_DOC_EXCLUDED_PARTS = {"_generated", "local-context"}
 INTERNAL_PATCH_PATHS = (
     ".githooks/",
     ".github/",
@@ -291,6 +292,8 @@ def _update_doc_frontmatter_versions(repo_root: Path, version: SemVer) -> list[s
     changed: list[str] = []
     for pattern in VERSIONED_DOC_GLOBS:
         for path in sorted(repo_root.glob(pattern)):
+            if any(part in VERSIONED_DOC_EXCLUDED_PARTS for part in path.relative_to(repo_root).parts):
+                continue
             text = path.read_text(encoding="utf-8")
             if not text.startswith("---\n"):
                 continue
@@ -354,6 +357,7 @@ def sync_version_files(repo_root: Path, target_version: str) -> dict:
         capture_output=True,
         check=True,
     )
+    generate_alias_outputs(repo_root)
 
     generated_paths = [
         "README.md",
@@ -364,6 +368,11 @@ def sync_version_files(repo_root: Path, target_version: str) -> dict:
         "_localsetup/docs/WORKFLOW_QUICK_REF.md",
         "_localsetup/docs/_generated/facts.json",
         "_localsetup/docs/_generated/workflow-catalog.json",
+        "_localsetup/docs/migration/v2-to-v3-skill-map.md",
+        "_localsetup/docs/_generated/platform-adapters.md",
+        "_localsetup/docs/_generated/skill-packs.md",
+        "_localsetup/docs/_generated/skill_aliases.json",
+        "_localsetup/docs/_generated/implementation-file-map.md",
     ]
     for rel_path in generated_paths:
         if rel_path not in changed:
@@ -391,8 +400,17 @@ def check_version_files(repo_root: Path, target_version: str) -> dict:
         repo_root / "_localsetup" / "docs" / "WORKFLOW_QUICK_REF.md",
         repo_root / "_localsetup" / "docs" / "_generated" / "facts.json",
         repo_root / "_localsetup" / "docs" / "_generated" / "workflow-catalog.json",
+        repo_root / "_localsetup" / "docs" / "_generated" / "implementation-file-map.md",
+        repo_root / "_localsetup" / "docs" / "_generated" / "platform-adapters.md",
+        repo_root / "_localsetup" / "docs" / "_generated" / "skill-packs.md",
+        repo_root / "_localsetup" / "docs" / "_generated" / "skill_aliases.json",
+        repo_root / "_localsetup" / "docs" / "migration" / "v2-to-v3-skill-map.md",
     }
-    candidates.update((repo_root / "_localsetup" / "docs").glob("*.md"))
+    candidates.update(
+        path
+        for path in (repo_root / "_localsetup" / "docs").glob("**/*.md")
+        if not any(part in VERSIONED_DOC_EXCLUDED_PARTS for part in path.relative_to(repo_root).parts)
+    )
     before_contents = {
         path: path.read_text(encoding="utf-8") if path.exists() else None
         for path in candidates
@@ -423,18 +441,28 @@ def check_version_files(repo_root: Path, target_version: str) -> dict:
 
 
 def stage_version_files(repo_root: Path) -> None:
-    paths = [
+    fixed_paths = [
         "VERSION",
         "pyproject.toml",
         "uv.lock",
         "README.md",
         "_localsetup/README.md",
         "_localsetup/docs/VERSIONING.md",
-        "_localsetup/docs/*.md",
         "_localsetup/docs/_generated/facts.json",
         "_localsetup/docs/_generated/workflow-catalog.json",
+        "_localsetup/docs/_generated/implementation-file-map.md",
+        "_localsetup/docs/_generated/platform-adapters.md",
+        "_localsetup/docs/_generated/skill-packs.md",
+        "_localsetup/docs/_generated/skill_aliases.json",
+        "_localsetup/docs/migration/v2-to-v3-skill-map.md",
         "_localsetup/docs/SKILLS.md",
     ]
+    doc_paths = [
+        str(path.relative_to(repo_root))
+        for path in (repo_root / "_localsetup" / "docs").glob("**/*.md")
+        if not any(part in VERSIONED_DOC_EXCLUDED_PARTS for part in path.relative_to(repo_root).parts)
+    ]
+    paths = sorted(set(fixed_paths + doc_paths))
     _run_git(repo_root, ["add", *paths])
 
 

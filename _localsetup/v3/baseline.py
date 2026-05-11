@@ -26,6 +26,7 @@ def classify_path(path: str) -> str:
         path.startswith(".agents/")
         or path.startswith(".localsetup-maint/")
         or path.startswith("docs/")
+        or path.startswith("_localsetup/docs/local-context/")
         or path.startswith("scripts/")
         or path.startswith("state/")
     ):
@@ -52,4 +53,10 @@ def classify_path(path: str) -> str:
 
 
 def implementation_file_map(repo_root: Path) -> list[dict]:
-    return [{"path": path, "classification": classify_path(path)} for path in tracked_files(repo_root)]
+    rows: list[dict] = []
+    for path in tracked_files(repo_root):
+        classification = classify_path(path)
+        if classification == "private-maintainer":
+            continue
+        rows.append({"path": path, "classification": classification})
+    return rows

@@ -1,3 +1,8 @@
+---
+status: ACTIVE
+version: 3.1
+---
+
 # Localsetup v3 Versioning
 
 Localsetup v3 uses the root `VERSION` file as the source of truth for the framework version. README files, generated facts, and release artifacts should display the same normalized semantic version.

@@ -14,9 +14,9 @@
 
 **Localsetup v3 gives coding agents a real operating layer inside your repo.**
 
-AI coding tools are everywhere now. GitHub reports fast growth in AI projects and coding-agent activity, LangChain's agent engineering survey calls out context engineering as a recurring pain point, and Stack Overflow's 2025 survey shows the awkward truth: developers are using AI more while trusting it less. That is the gap Localsetup is built for.
+Recent research signals from 2025 and 2026 show the same pressure from different angles: AI coding work is growing fast, agent teams still struggle with durable context and review, and developers remain cautious about AI accuracy. That is the gap Localsetup is built for.
 
-Localsetup v3 turns your repository into the source of truth for agent context, skills, workflows, safety gates, install state, and release evidence. It is not another chat prompt collection. It is a portable framework that lets Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode share a disciplined skill library and a predictable workflow model.
+Localsetup v3 turns your repository into the source of truth for agent context, skills, workflows, safety gates, install state, and release evidence. It is not another chat prompt collection. It is a portable framework with adapters for Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode, plus a disciplined skill library and predictable workflow model.
 
 Use it when you want agents to stop improvising and start working from auditable context.
 
@@ -26,7 +26,7 @@ Localsetup v3 packages:
 
 - Repo-local framework source under `_localsetup/`
 - 45 shipped capability skills plus 16 first-class workflow packages for debugging, testing, PR review, infrastructure, docs, git recovery, skill import, security vetting, and agent workflow control
-- Cross-platform adapters for Cursor, Claude Code, Codex CLI, OpenClaw, Kilo, and OpenCode
+- Cross-platform adapters for Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode
 - Agent Skills-compatible `SKILL.md` packages that can be imported, normalized, vetted, installed, and reused
 - Workflow packages under `_localsetup/workflows/` that stay executable as skills while carrying Localsetup `workflow.yaml` metadata for aliases, gates, dependencies, and generated registries
 - A Python-first installer with preflight, planning, verification, rollback metadata, and generated docs sync
@@ -72,7 +72,7 @@ Start with the [workflow packages guide](_localsetup/docs/WORKFLOW_PACKAGES.md) 
 Run from a project root on Linux, macOS, or WSL2.
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | bash
+curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash
 ```
 
 Or from a cloned checkout:
@@ -94,7 +94,7 @@ Full install docs: [_localsetup/docs/QUICKSTART.md](_localsetup/docs/QUICKSTART.
 ## 10 reasons to use Localsetup v3
 
 1. **Your agent context becomes code.** Instructions, skills, workflows, platform manifests, and docs live in the repo, so changes are visible in git instead of hidden in a local profile or a forgotten prompt.
-2. **One skill library reaches multiple agent hosts.** Cursor, Claude Code, Codex CLI, OpenClaw, Kilo, and OpenCode can all attach to the same managed Localsetup skill library.
+2. **One skill library reaches multiple agent hosts.** The shipped adapters let Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode attach to the same managed Localsetup skill library.
 3. **It leans into the Agent Skills standard.** Skills use spec-compatible `SKILL.md` frontmatter, which makes them easier to import, export, normalize, and share across ecosystems.
 4. **It tackles the trust gap directly.** The framework pushes agents toward repeatable workflows, explicit verification, documented assumptions, and human gates instead of one-off "looks good" responses.
 5. **It treats skill imports as supply-chain events.** External skills are discovered, validated, security-screened, summarized, and normalized before they become part of your library.
@@ -114,7 +114,7 @@ These are not toy prompts. They are practical skills and workflows from the ship
 | `ls-debug-pro` | Gives debugging a repeatable method across Node, Python, Swift, network issues, and git bisect. |
 | `ls-test-runner` | Guides test creation and execution across pytest, Jest, Vitest, Playwright, and XCTest. |
 | `ls-pr-reviewer` | Turns PR review into a structured risk hunt: diff analysis, security concerns, test gaps, and style issues. |
-| `ls-mcp-builder` | Helps build high-quality MCP servers, which matters as agent/tool interoperability becomes standard infrastructure. |
+| `ls-mcp-builder` | Helps build high-quality MCP servers for current agent/tool interoperability workflows. |
 | `ls-skill-importer` | Imports skills from URLs or local paths with discovery, validation, security screening, and summaries. |
 | `ls-skill-vetter` | Reviews third-party skills as untrusted inputs before they join your agent environment. |
 | `ls-workflow-ops-tmux-session` | Keeps human-controlled server operations visible, resumable, and sudo-aware. |
@@ -146,14 +146,14 @@ The 2025 agent tooling story is exciting, but the hard parts are not magic. Team
 
 Localsetup's opinion is simple: keep the agent operating model close to the code. Make it installable. Make it reviewable. Make it boring enough to trust.
 
-Research signals behind the design:
+Research signals behind the design, verified in May 2026:
 
-- [GitHub Octoverse 2025](https://github.blog/news-insights/octoverse/octoverse-a-new-developer-joins-github-every-second-as-ai-leads-typescript-to-1/) points to rapid AI project growth, coding-agent activity, and MCP adoption.
-- [LangChain State of Agent Engineering](https://www.langchain.com/state-of-agent-engineering) highlights context engineering, human review, evals, and everyday use of coding agents.
-- [Stack Overflow 2025 AI survey](https://survey.stackoverflow.co/2025/ai) shows that AI usage is high while trust in AI accuracy has fallen.
-- [Gartner](https://www.gartner.com/en/newsroom/press-releases/2025-05-22-gartner-survey-finds-77-percent-of-engineering-leaders-identify-ai-integration-in-apps-as-a-major-challenge) reports AI integration as a major challenge for engineering leaders.
+- [GitHub Octoverse 2025](https://github.blog/news-insights/octoverse/octoverse-a-new-developer-joins-github-every-second-as-ai-leads-typescript-to-1/) reports rapid growth in AI projects and LLM SDK use on GitHub.
+- [LangChain State of Agent Engineering](https://www.langchain.com/state-of-agent-engineering) highlights human review, evals, model/tool choices, and production agent patterns.
+- [Stack Overflow 2025 AI survey](https://survey.stackoverflow.co/2025/ai) reports high AI tool use alongside low trust in AI accuracy.
+- [Gartner's 2025 engineering leader survey](https://www.gartner.com/en/newsroom/press-releases/2025-05-22-gartner-survey-finds-77-percent-of-engineering-leaders-identify-ai-integration-in-apps-as-a-major-challenge) frames AI integration into applications as a significant engineering challenge.
 - [OWASP LLM Top 10 2025](https://owasp.org/www-project-top-10-for-large-language-model-applications/) keeps prompt injection, sensitive information disclosure, supply-chain issues, and excessive agency in view.
-- [Model Context Protocol](https://modelcontextprotocol.io/docs/getting-started/intro) and [Agent Skills](https://agentskills.io/specification) show the ecosystem moving toward interoperable agent capabilities instead of isolated prompt piles.
+- [Model Context Protocol](https://modelcontextprotocol.io/docs/getting-started/intro) and [Agent Skills](https://agentskills.io/specification) are current interoperability standards for tools, context, and skills.
 
 ## Requirements
 
@@ -186,4 +186,4 @@ Use managed dependency setup instead of system pip overrides:
 
 Localsetup is released under the [MIT License](LICENSE).
 
-For help, open a GitHub Issue or Discussion in this repository.
+For bugs, use the bug report template and include the Localsetup version, platform ID, command, expected result, actual result, and validation output. For feature requests, use the feature template and name the affected skill, workflow package, platform, or docs area. Report security-sensitive issues through private vulnerability reporting when available; otherwise open a minimal public issue asking for a secure contact without details.

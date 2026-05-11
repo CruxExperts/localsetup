@@ -1,3 +1,8 @@
+---
+status: ACTIVE
+version: 3.1
+---
+
 # Localsetup v3 Overview
 
 Localsetup v3 installs one global package library for skills and workflow packages, then attaches repositories to it.

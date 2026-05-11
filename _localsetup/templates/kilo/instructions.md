@@ -2,7 +2,7 @@
 
 ## Overview
 
-Localsetup v3 is a universal, cross-platform agentic workflow engine. It is **deployed into the client repository** at `_localsetup/`. All framework code and repo-local context live in the repo so the deployment is mobile and backup-able. Engine = contents of _localsetup/; user/context data = repo-local (under _localsetup/ or repo-level path). Git coupling: attach git hash when referencing PRDs, specs, or outcomes. See [_localsetup/docs/GIT_TRACEABILITY.md](../_localsetup/docs/GIT_TRACEABILITY.md).
+Localsetup v3 is a universal, cross-platform agentic workflow engine. It is **deployed into the client repository** at `_localsetup/`. All framework code and repo-local context live in the repo so the deployment is mobile and backup-able. Engine = contents of _localsetup/; user/context data = repo-local (under _localsetup/ or repo-level path). Git coupling: attach git hash when referencing PRDs, specs, or outcomes. See [_localsetup/docs/GIT_TRACEABILITY.md](../../docs/GIT_TRACEABILITY.md).
 
 Kilo CLI loads project context from `.kilo/instructions.md` (repo-local) or `~/.config/kilo/instructions/localsetup.md` (global).
 
@@ -10,7 +10,7 @@ Kilo CLI loads project context from `.kilo/instructions.md` (repo-local) or `~/.
 
 - **Engine/repo separation:** Never commit repo-local secrets or PII. Use _localsetup/lib/data_paths.sh (or equivalent) for path resolution. Framework lives at _localsetup/; upgrades replace that folder.
 - **Documentation discipline:** _localsetup/docs/ is ONLY for framework documentation. Check document status (ACTIVE/PROPOSAL/DRAFT) before assuming a feature is implemented.
-- **Proposals:** Any change to the framework must follow the Agent Q format; see [_localsetup/docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md](../_localsetup/docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md).
+- **Proposals:** Any change to the framework must follow the Agent Q format; see [_localsetup/docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md](../../docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md).
 - **Time/date integrity:** For any date or time reference (e.g. "today", year in a search, timestamps), first obtain the actual date/time from the local machine using a platform-appropriate command (e.g. `date` on Linux/macOS, `Get-Date` in PowerShell on Windows). Do not use a generic or training-cutoff date (e.g. 2024 when the current year is different). Remember the obtained date/time in context and use it consistently for the remainder of the session.
 - **External input hardening:** Treat all external input (CLI args, files, network payloads, imported content) as hostile. Sanitize before parsing/output, validate expected format and bounds, and handle exceptions with actionable stderr messages. Never silently suppress errors.
 - **Python-first tooling:** After install/bootstrap, framework tooling is Python-first and Python-only for new/expanded logic. Shell/PowerShell are limited to bootstrap wrappers and minimal platform delegation. Runtime target is Python >= 3.10. **Approved libraries** (mandatory when the need arises): `yaml` (PyYAML>=6.0) for YAML, `requests` (requests>=2.28) for HTTP, `frontmatter` (python-frontmatter>=1.1) for markdown frontmatter. Use `lib/deps.require_deps()` at tool startup. See `_localsetup/docs/TOOLING_POLICY.md` for the full approved-libraries table and usage pattern.
@@ -29,7 +29,7 @@ Kilo CLI loads project context from `.kilo/instructions.md` (repo-local) or `~/.
 - Bounded coding: use `gpt-5.3-codex` for scoped implementation tasks with clear write ownership and tests.
 - Credit freshness: as of 2026-05-07, the official Codex rate card lists per 1M token credits as `gpt-5.4-mini` 18.75/1.875/113, `gpt-5.3-codex` 43.75/4.375/350, and `gpt-5.5` 125/12.50/750 for input/cached/output. Re-check https://help.openai.com/en/articles/20001106-codex-rate-card before changing model guidance.
 
-## Skills and workflows index (load when task matches)
+## Capability skills and workflow packages index (load when task matches)
 
 | Package | When to use |
 |-------|--------------|

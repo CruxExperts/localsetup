@@ -12,7 +12,6 @@
 | `keep` | `.github/workflows/docs-sync.yml` |
 | `keep` | `.github/workflows/publish.yml` |
 | `keep` | `.gitignore` |
-| `private-maintainer` | `.localsetup-maint/boundary.example.yaml` |
 | `keep` | `AGENTS.md` |
 | `keep` | `CONTRIBUTING.md` |
 | `keep` | `LICENSE` |
@@ -79,7 +78,6 @@
 | `generate` | `_localsetup/docs/_generated/skill-packs.md` |
 | `generate` | `_localsetup/docs/_generated/skill_aliases.json` |
 | `generate` | `_localsetup/docs/_generated/workflow-catalog.json` |
-| `keep` | `_localsetup/docs/local-context/SECRETS_OVERVIEW.md` |
 | `keep` | `_localsetup/docs/migration/v2-to-v3-skill-map.md` |
 | `keep` | `_localsetup/docs/migration/v3-overview.md` |
 | `keep` | `_localsetup/docs/ops/tmux-ops-managed.md` |
@@ -324,6 +322,7 @@
 | `keep` | `_localsetup/tests/test_tmux_ops.py` |
 | `keep` | `_localsetup/tests/test_v3_install_flow.py` |
 | `keep` | `_localsetup/tests/test_v3_manifests.py` |
+| `keep` | `_localsetup/tests/test_validation_tooling.py` |
 | `keep` | `_localsetup/tests/test_versioning.py` |
 | `keep` | `_localsetup/tools/agentq_transport_client/README.md` |
 | `keep` | `_localsetup/tools/agentq_transport_client/agentq_cli.py` |

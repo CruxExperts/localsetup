@@ -1,3 +1,4 @@
+import json
 import shutil
 import subprocess
 import sys
@@ -19,6 +20,7 @@ from _localsetup.v3.package import build_public_artifact
 from _localsetup.v3.plan import build_install_plan
 from _localsetup.v3.rollback import rollback
 from _localsetup.v3.verify import verify_install
+from _localsetup.v3.workflows import workflow_catalog_payload
 
 
 def make_temp_repo(tmp_path: Path) -> Path:
@@ -26,11 +28,16 @@ def make_temp_repo(tmp_path: Path) -> Path:
     repo = tmp_path / "repo"
     (repo / "_localsetup").mkdir(parents=True)
     shutil.copytree(source / "_localsetup" / "config", repo / "_localsetup" / "config")
+    shutil.copytree(source / "_localsetup" / "v3", repo / "_localsetup" / "v3")
     shutil.copytree(source / "_localsetup" / "skills", repo / "_localsetup" / "skills")
     shutil.copytree(source / "_localsetup" / "workflows", repo / "_localsetup" / "workflows")
+    shutil.copytree(source / "_localsetup" / "tools", repo / "_localsetup" / "tools")
     shutil.copy2(source / "_localsetup" / "requirements.txt", repo / "_localsetup" / "requirements.txt")
+    shutil.copy2(source / "VERSION", repo / "VERSION")
     (repo / "_localsetup" / "docs" / "_generated").mkdir(parents=True)
     (repo / "_localsetup" / "docs" / "migration").mkdir(parents=True)
+    for rel_path in ("README.md", "FEATURES.md", "PLATFORM_REGISTRY.md"):
+        shutil.copy2(source / "_localsetup" / "docs" / rel_path, repo / "_localsetup" / "docs" / rel_path)
     (repo / ".github").mkdir()
     (repo / "README.md").write_text("# Localsetup\n", encoding="utf-8")
     (repo / "AGENTS.md").write_text("# Agents\n", encoding="utf-8")
@@ -301,6 +308,40 @@ def test_v3_docs_and_package(tmp_path: Path) -> None:
     assert "_localsetup/skills/ls-npm-management/scripts/data/127_0_0_1_81/token/expiry.txt" not in package["files"]
     assert "_localsetup/workflows/ls-workflow-ops-tmux-session/scripts/data/runtime.txt" not in package["files"]
     assert "state/inventory.yml" not in package["files"]
+
+
+def test_workflow_catalog_generation_parity_between_paths(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+
+    subprocess.run(
+        [sys.executable, str(root / "_localsetup/tools/generate_docs_artifacts.py"), "--repo-root", str(root)],
+        cwd=root,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    generated_by_script = json.loads(
+        (root / "_localsetup/docs/_generated/workflow-catalog.json").read_text(encoding="utf-8")
+    )
+
+    generate_alias_outputs(root)
+    generated_by_v3_docs = json.loads(
+        (root / "_localsetup/docs/_generated/workflow-catalog.json").read_text(encoding="utf-8")
+    )
+
+    assert generated_by_script == workflow_catalog_payload(root)
+    assert generated_by_v3_docs == workflow_catalog_payload(root)
+
+
+def test_lifecycle_status_for_deprecated_and_private_docs() -> None:
+    root = Path(__file__).resolve().parents[2]
+    review_spec = (root / "_localsetup/docs/WORKFLOW_SKILLS_REVIEW_BUILD_SPEC.md").read_text(encoding="utf-8")
+    assert "status: DEPRECATED" in review_spec
+
+    docs_config = (root / "docs.config.yaml").read_text(encoding="utf-8")
+    assert 'root: "_localsetup/docs/"' in docs_config
+    assert '- "local-context/**"' in docs_config
+    assert '- "version"' in docs_config
 
 
 def test_root_installer_forwards_custom_home(tmp_path: Path) -> None:

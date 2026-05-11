@@ -1,4 +1,4 @@
-# Localsetup v3  - Context for OpenClaw workspace
+# Localsetup v3 - Context for OpenClaw workspace
 
 Copy or merge this into your OpenClaw workspace MEMORY.md (or reference it) so the agent has framework context.
 
@@ -11,7 +11,7 @@ Localsetup v3 lives in this repo at `_localsetup/`. All context is repo-local (m
 - Proposals: framework changes follow Agent Q format ([PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md](../../docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md)).
 - Time/date integrity: for any date/time reference, first get actual date/time from the local machine (e.g. `date` on Linux/macOS, `Get-Date` in PowerShell on Windows). Do not use a generic or training-cutoff date; remember it and use it for the rest of the session.
 - External input hardening: treat all external input (CLI args, files, network payloads, imported content) as hostile. Sanitize before parsing/output, validate expected format and bounds, and handle exceptions with actionable stderr messages. Never silently suppress errors.
-- Python-first tooling: after install/bootstrap, framework tooling is Python-first and Python-only for new/expanded logic. Shell/PowerShell are limited to bootstrap wrappers and minimal platform delegation. Runtime target is Python >= 3.10. Approved libraries (mandatory when the need arises): yaml (PyYAML>=6.0) for YAML, requests (requests>=2.28) for HTTP, frontmatter (python-frontmatter>=1.1) for markdown frontmatter, cryptography (cryptography>=42.0) for framework cryptographic primitives, and pgpy (PGPy>=0.6.0) for pure-Python OpenPGP. Use lib/deps.require_deps() at tool startup. See [_localsetup/docs/TOOLING_POLICY.md](_localsetup/docs/TOOLING_POLICY.md).
+- Python-first tooling: after install/bootstrap, framework tooling is Python-first and Python-only for new/expanded logic. Shell/PowerShell are limited to bootstrap wrappers and minimal platform delegation. Runtime target is Python >= 3.10. Approved libraries (mandatory when the need arises): yaml (PyYAML>=6.0) for YAML, requests (requests>=2.28) for HTTP, frontmatter (python-frontmatter>=1.1) for markdown frontmatter, cryptography (cryptography>=42.0) for framework cryptographic primitives, and pgpy (PGPy>=0.6.0) for pure-Python OpenPGP. Use lib/deps.require_deps() at tool startup. See [TOOLING_POLICY.md](../../docs/TOOLING_POLICY.md).
 
 ## Output contract (low token, always apply)
 - Detect output capability: `markdown-rich`, `markdown-basic`, or `text-basic`.
@@ -25,7 +25,7 @@ Localsetup v3 lives in this repo at `_localsetup/`. All context is repo-local (m
 - Bounded coding: use `gpt-5.3-codex` for scoped implementation tasks with clear write ownership and tests.
 - Credit freshness: as of 2026-05-07, the official Codex rate card lists per 1M token credits as `gpt-5.4-mini` 18.75/1.875/113, `gpt-5.3-codex` 43.75/4.375/350, and `gpt-5.5` 125/12.50/750 for input/cached/output. Re-check https://help.openai.com/en/articles/20001106-codex-rate-card before changing model guidance.
 
-## Skills (in project skills/)
+## Capability skills and workflow packages (in project skills/)
 Load when task matches:
 - ls-workflow-spec-clarify-reverse  - "decision tree", "reverse prompt"; .agent/queue/**, PRD
 - ls-workflow-umbrella-run  - queue/PRD scope; named workflows; impact + confirmation

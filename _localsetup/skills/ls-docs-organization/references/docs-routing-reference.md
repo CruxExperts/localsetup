@@ -154,7 +154,7 @@ Use lifecycle values from the repo's documentation lifecycle guidance when prese
 ```markdown
 ## Runbooks
 
-- [Payments API key rotation runbook](incident-runbooks/payments/payments-api-key-rotation.md) - payments, api-keys
+- Payments API key rotation runbook (`incident-runbooks/payments/payments-api-key-rotation.md`) - payments, api-keys
 ```
 
 Choose one ordering rule within each category, usually alphabetical by title or descending by `last_updated`, and keep it consistent.

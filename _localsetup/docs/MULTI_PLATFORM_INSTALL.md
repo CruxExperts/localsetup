@@ -24,7 +24,7 @@ version: 3.1
 From your client repo root:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | bash
+curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash
 ```
 
 Note: `sudo curl ... | bash` only elevates curl; install and deploy run as the current user. For a full install as root: `curl -sSL <url> -o /tmp/install.sh && sudo bash /tmp/install.sh`.
@@ -32,13 +32,13 @@ Note: `sudo curl ... | bash` only elevates curl; install and deploy run as the c
 Non-interactive for every platform in `_localsetup/config/platforms.yaml`:
 
 ```bash
-curl -sSL .../install | bash -s -- --directory . --yes
+curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --directory . --yes
 ```
 
 Selected platforms:
 
 ```bash
-curl -sSL .../install | bash -s -- --directory . --tools cursor,claude-code --yes
+curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --directory . --tools cursor,claude-code --yes
 ```
 
 `--tools` is a compatibility alias for the v3 `--platforms` selector.

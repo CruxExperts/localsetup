@@ -538,9 +538,9 @@ def _discover_manifest_targets(
 
 def _slugify_heading(text: str) -> str:
     cleaned = text.strip().lower()
-    cleaned = re.sub(r"[`*_~\[\]().,:;!?\"'\\/]", "", cleaned)
-    cleaned = re.sub(r"\s+", "-", cleaned)
-    cleaned = re.sub(r"-+", "-", cleaned).strip("-")
+    cleaned = re.sub(r"[`*_~\[\]().,:;!?\"'\\/&]", "", cleaned)
+    cleaned = re.sub(r"\s", "-", cleaned)
+    cleaned = cleaned.strip("-")
     return cleaned
 
 

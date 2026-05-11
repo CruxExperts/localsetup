@@ -4,8 +4,8 @@ Thanks for helping improve Localsetup v3. This project is built for people who w
 
 ## Best ways to contribute
 
-- **Report bugs:** Open a GitHub Issue with the command you ran, expected behavior, actual behavior, OS/WSL details, and relevant logs.
-- **Suggest features:** Open an Issue or Discussion with the workflow you are trying to improve and why it belongs in the framework.
+- **Report bugs:** Open a GitHub Issue with the Localsetup version, install command, platform ID, OS/WSL2 context, expected behavior, actual behavior, validation output, and relevant short logs.
+- **Suggest features:** Open a feature request with the workflow you are trying to improve, the affected skill/workflow/platform/docs area, and why it belongs in the framework.
 - **Improve docs:** Keep changes focused, practical, and linked to the source docs they clarify.
 - **Add or improve skills:** Follow the Agent Skills spec and the framework normalization rules before proposing a new skill.
 

@@ -12,7 +12,7 @@ version: 3.1
 - **Default path (client repo):** `_localsetup/docs/SKILL_VALIDATION_PATTERNS.yaml`
 - **From framework source:** `_localsetup/docs/SKILL_VALIDATION_PATTERNS.yaml`
 - **Canonical GitHub raw URL (for fetch):**
-  `https://raw.githubusercontent.com/cptnfren/localsetup/main/_localsetup/docs/SKILL_VALIDATION_PATTERNS.yaml`
+  `https://raw.githubusercontent.com/CruxExperts/localsetup/main/_localsetup/docs/SKILL_VALIDATION_PATTERNS.yaml`
 
 If the file is missing, the scan tool fetches it from the URL above and writes it locally. If the file is older than 7 days, the tool reports that it may be outdated and offers three options: **(1) Pull latest from repo**, **(2) Do nothing**, **(3) Use existing file**. Choosing "Pull latest" overwrites the local file with the one from the URL. If you have customized the file, back it up first; "Pull latest" replaces your copy.
 

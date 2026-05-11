@@ -2,7 +2,10 @@
 # The docs-organization skill must work without this file.
 # When present, these settings take precedence over heuristics and the category manifest.
 
-root: "docs/"
+root: "_localsetup/docs/"
+exclude_globs:
+  - "_generated/**"
+  - "local-context/**"
 
 categories:
   runbook:
@@ -18,9 +21,7 @@ aliases:
 
 required_front_matter_fields:
   - "status"
-  - "last_updated"
-  - "doc_type"
-  - "tags"
+  - "version"
 
 # Optional configuration for the docs organization skill.
 #
@@ -28,8 +29,8 @@ required_front_matter_fields:
 # docs/.docs-classifications.yaml to choose categories and paths.
 #
 # Fields:
-# - root: docs root path. Default is "docs/" when unset.
+# - root: docs root path. Default is "docs/" when unset; this repo overrides it to "_localsetup/docs/".
+# - exclude_globs: paths under root that are generated or private and should not be routed.
 # - categories: map from category_label to slug and description.
 # - aliases: map from alternate labels to canonical labels.
 # - required_front_matter_fields: extra metadata fields required by this repo.
-

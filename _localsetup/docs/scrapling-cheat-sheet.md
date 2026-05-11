@@ -1,3 +1,8 @@
+---
+status: ACTIVE
+version: 3.1
+---
+
 # Scrapling Cheat Sheet
 
 A comprehensive quick-reference for the Scrapling web scraping framework.

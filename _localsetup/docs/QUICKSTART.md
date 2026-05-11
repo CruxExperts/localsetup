@@ -21,7 +21,7 @@ Windows is WSL2-only in Localsetup v3. Native PowerShell install is intentionall
 From a project root:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/cptnfren/localsetup/main/install | bash
+curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash
 ```
 
 From a local checkout:
@@ -109,7 +109,7 @@ Re-run install with the same directory and platform selection:
 
 The installer refreshes managed skills, adapter links or portable copies, lock metadata, and reports.
 
-Selected workflow packs also refresh their workflow packages and required capability-skill dependencies. See [Workflow packages](WORKFLOW_PACKAGES.md) for the source/runtime split.
+Selected workflow packs also refresh their workflow packages and required capability skill dependencies. See [Workflow packages](WORKFLOW_PACKAGES.md) for canonical source/runtime and install details.
 
 ## Roll Back Managed Paths
 

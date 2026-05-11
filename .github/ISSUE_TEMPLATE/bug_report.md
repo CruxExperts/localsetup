@@ -1,38 +1,68 @@
 ---
 name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
+about: Report an install, docs, skill, workflow, or packaging problem
+title: "bug: "
+labels: bug
 assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+## Summary
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+Describe the problem in one or two sentences.
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+## Localsetup version
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+- Version from `cat VERSION`:
+- Commit or release tag:
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+## Environment
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+- OS and version:
+- WSL2 context, if on Windows:
+- Shell:
+- Python version:
+- Git version:
 
-**Additional context**
-Add any other context about the problem here.
+## Localsetup target
+
+- Platform ID: `cursor`, `claude-code`, `codex`, `openclaw`, `kilo`, `opencode`, or `all`
+- Pack or workflow ID, if relevant:
+- Skill ID, if relevant:
+- Install mode: `symlink`, `portable`, managed venv, or other
+- Repo path shape: local clone, WSL path, remote/VM, or container
+
+## Command run
+
+```bash
+
+```
+
+## Expected behavior
+
+What should have happened?
+
+## Actual behavior
+
+What happened instead?
+
+## Validation output
+
+Paste the shortest relevant output from commands such as:
+
+```bash
+python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
+./_localsetup/tools/verify_context
+./_localsetup/tools/verify_rules
+python3 -m pytest _localsetup/tests -q
+```
+
+## Generated docs or package boundary
+
+- Does this involve generated docs? yes/no
+- Does this involve package contents, private paths, or leaks? yes/no
+- If yes, name the generated file or package artifact:
+
+## Additional context
+
+Add screenshots, short logs, or links to related issues only if they help reproduce the problem.

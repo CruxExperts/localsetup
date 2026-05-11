@@ -67,7 +67,7 @@ Output contract:
 
 1. Intro line naming the topic/query and the number of recommendations.
 2. Ranked recommendations (`1..N`), one block per skill:
-   - Skill name as clickable markdown link (`[name](url)`).
+   - Skill name as clickable markdown link, for example `[name](https://example.com/skill)`.
    - Summary (2-4 sentences) using index fields in this order: `summary_long`, fallback to `summary_short`, then `description`.
    - Why it fits this project or query (1-2 specific sentences).
    - Constraints/risks (use `requirements` and `risk_flags` when available).

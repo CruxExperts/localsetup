@@ -36,12 +36,11 @@ This is the public documentation map for Localsetup v3. Start here when you want
 
 ## Skills And Workflow Packages At A Glance
 
-| Package type | Canonical source | Installed shape | Generated docs |
-|---|---|---|---|
-| Capability skills | `_localsetup/skills/ls-*` | `SKILL.md` packages in the managed library | [SKILLS.md](SKILLS.md), [_generated/skill-packs.md](_generated/skill-packs.md) |
-| Workflow packages | `_localsetup/workflows/ls-workflow-*` | `SKILL.md` packages plus Localsetup `workflow.yaml` metadata in source | [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md), [WORKFLOW_QUICK_REF.md](WORKFLOW_QUICK_REF.md), [_generated/workflow-catalog.json](_generated/workflow-catalog.json) |
+Localsetup installs both capability skills and workflow packages into the managed package library. Keep [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) as the canonical reference for:
 
-Agents load both package types through the managed library. Maintainers edit skills for reusable capabilities and workflow packages for named, repeatable orchestration with gates and evidence.
+- source layout and runtime shape
+- installer behavior and dependency pull-in
+- validation and generated workflow docs
 
 ## Core Workflows
 

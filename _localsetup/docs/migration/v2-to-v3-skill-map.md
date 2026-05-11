@@ -1,3 +1,8 @@
+---
+status: ACTIVE
+version: 3.1
+---
+
 # v2 to v3 Skill Map
 
 | v2 | v3 |

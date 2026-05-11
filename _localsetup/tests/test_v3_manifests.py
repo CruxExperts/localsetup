@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 
 import pytest
 import yaml
@@ -8,6 +9,7 @@ from _localsetup.v3.manifests import load_pack_config, load_platforms
 from _localsetup.v3.paths import PathValidationError
 from _localsetup.v3.skills import selected_skill_names, validate_skill_catalog
 from _localsetup.v3.workflows import selected_workflow_names, validate_workflow_catalog
+from _localsetup.v3.workflows import load_workflow_catalog
 
 
 def make_workflow_validation_repo(tmp_path: Path) -> Path:
@@ -93,6 +95,46 @@ def test_platform_manifest_has_six_platforms() -> None:
     assert ids == {"codex", "claude-code", "cursor", "kilo", "opencode", "openclaw"}
 
 
+def test_facts_json_aligns_with_live_version_and_catalogs() -> None:
+    root = Path(__file__).resolve().parents[2]
+    facts = json.loads((root / "_localsetup" / "docs" / "_generated" / "facts.json").read_text(encoding="utf-8"))
+    version = (root / "VERSION").read_text(encoding="utf-8").strip()
+    platforms = load_platforms(root)
+    platform_ids = [p.platform_id for p in platforms]
+    skill_count = len(list((root / "_localsetup" / "skills").glob("ls-*/SKILL.md")))
+    workflow_count = len(load_workflow_catalog(root))
+
+    assert facts["version"] == version
+    assert facts["major_minor"] == ".".join(version.split(".")[:2])
+    assert facts["platform_count"] == len(platform_ids)
+    assert sorted(row["id"] for row in facts["platforms"]) == sorted(platform_ids)
+    assert facts["skill_count"] == skill_count
+    assert facts["workflow_count"] == workflow_count
+
+
+def test_framework_docs_lifecycle_frontmatter_is_recursive() -> None:
+    root = Path(__file__).resolve().parents[2]
+    missing: list[str] = []
+    stale: list[str] = []
+
+    for path in sorted((root / "_localsetup" / "docs").glob("**/*.md")):
+        rel = path.relative_to(root)
+        if any(part in {"_generated", "local-context"} for part in rel.parts):
+            continue
+        text = path.read_text(encoding="utf-8")
+        if not text.startswith("---\n"):
+            missing.append(str(rel))
+            continue
+        header = text.split("---", 2)[1]
+        if "status:" not in header or "version:" not in header:
+            missing.append(str(rel))
+        if "version: 3.0" in header:
+            stale.append(str(rel))
+
+    assert missing == []
+    assert stale == []
+
+
 def test_catalog_validation_and_pack_selection() -> None:
     root = Path(__file__).resolve().parents[2]
 
@@ -153,6 +195,7 @@ def test_baseline_file_classification() -> None:
     assert classify_path("_localsetup/skills/ls-context/SKILL.md") == "keep"
     assert classify_path("_localsetup/workflows/ls-workflow-ops-tmux-session/SKILL.md") == "keep"
     assert classify_path("_localsetup/docs/_generated/skill_aliases.json") == "generate"
+    assert classify_path("_localsetup/docs/local-context/SECRETS_OVERVIEW.md") == "private-maintainer"
     assert classify_path("scripts/generate-doc-artifacts") == "private-maintainer"
 
 
@@ -165,6 +208,8 @@ def test_generated_implementation_map_includes_workflow_sources() -> None:
     assert "_localsetup/config/workflow.schema.json" in file_map
     assert "_localsetup/docs/_generated/workflow-catalog.json" in file_map
     assert "_localsetup/workflows/ls-workflow-ops-tmux-session/SKILL.md" in file_map
+    assert "_localsetup/docs/local-context/" not in file_map
+    assert ".localsetup-maint/" not in file_map
 
 
 def test_workflow_catalog_rejects_alias_collision(tmp_path: Path) -> None:

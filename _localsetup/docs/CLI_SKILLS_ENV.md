@@ -1,10 +1,11 @@
-"""
-Purpose: Environment policy for CLI-based skills (pipx, PATH, health checks, and status artifacts).
-Created: 2026-03-16
-Last Updated: 2026-03-16
-"""
+---
+status: ACTIVE
+version: 3.1
+---
 
 # CLI-based skills environment policy
+
+**Purpose:** Environment policy for CLI-based skills, including pipx, PATH, health checks, and status artifacts.
 
 ## Scope
 

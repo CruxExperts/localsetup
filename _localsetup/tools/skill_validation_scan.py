@@ -29,7 +29,7 @@ except ImportError:
     sys.exit(1)
 
 # Canonical GitHub raw URL for the pattern file (documented in SKILL_VALIDATION_PATTERNS.md)
-PATTERN_FILE_RAW_URL = "https://raw.githubusercontent.com/cptnfren/localsetup/main/_localsetup/docs/SKILL_VALIDATION_PATTERNS.yaml"
+PATTERN_FILE_RAW_URL = "https://raw.githubusercontent.com/CruxExperts/localsetup/main/_localsetup/docs/SKILL_VALIDATION_PATTERNS.yaml"
 
 # Unicode code point ranges for non-Latin natural-language scripts (used to detect possible hidden prompts).
 # We do NOT include Latin, Latin-1 supplement, or Latin extended (accents, n-tilde, etc.); those are allowed.
