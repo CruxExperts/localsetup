@@ -17,8 +17,8 @@ metadata:
 ## Conventional Commits -> bump type
 
 - **MAJOR:** `BREAKING CHANGE:` in body, or type followed by `!` (e.g. `feat!: new API`).
-- **MINOR:** user-facing framework capability changes. `feat:` is minor unless all changed files are release automation, hooks, CI, docs, tests, validation, or packaging surfaces.
-- **PATCH:** `fix:`, `docs:`, `chore:`, `style:`, `refactor:`, `perf:`, `test:`, `ci:`, `build:`, plus internal release automation and maintenance-only changes; any other message defaults to PATCH.
+- **MINOR:** user-facing framework capability changes. `feat:` is minor unless all changed files are release automation, installer/platform-adapter maintenance, hooks, CI, docs, tests, validation, packaging, config, template, or existing skill surfaces.
+- **PATCH:** `fix:`, `docs:`, `chore:`, `style:`, `refactor:`, `perf:`, `test:`, `ci:`, `build:`, plus internal release automation, installer/adapter updates, and maintenance-only changes; any other message defaults to PATCH.
 - **Override:** add `Release-Type: major|minor|patch|none` in the commit body when the deterministic default is not the intended release impact.
 - **No bump:** Merge commits (message starts with `Merge `).
 

@@ -29,15 +29,22 @@ KNOWN_PATCH_TYPES = {
 VERSIONED_DOC_GLOBS = ("_localsetup/docs/**/*.md",)
 VERSIONED_DOC_EXCLUDED_PARTS = {"_generated", "local-context"}
 INTERNAL_PATCH_PATHS = (
+    ".gitignore",
     ".githooks/",
     ".github/",
     "AGENTS.md",
     "CONTRIBUTING.md",
     "README.md",
+    "install",
+    "install.ps1",
     "_localsetup/README.md",
+    "_localsetup/config/",
     "_localsetup/docs/",
+    "_localsetup/skills/",
     "_localsetup/skills/ls-automatic-versioning/",
+    "_localsetup/templates/",
     "_localsetup/tests/",
+    "_localsetup/v3/",
 )
 RELEASE_TOOLING_PATHS = (
     "_localsetup/v3/cli.py",

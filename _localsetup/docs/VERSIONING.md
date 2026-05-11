@@ -16,7 +16,8 @@ Localsetup v3 uses the root `VERSION` file as the source of truth for the framew
 ## Policy
 
 - Keep `VERSION`, the root README version line, and generated facts in sync.
-- Use Conventional Commits for release history. Breaking commits (`!` or `BREAKING CHANGE:`) bump major. User-facing framework capability changes bump minor. Internal release automation, hooks, CI, docs, tests, validation, and packaging changes bump patch even when their commit message uses `feat:`.
+- Use Conventional Commits for release history. Breaking commits (`!` or `BREAKING CHANGE:`) bump major. User-facing framework capability changes bump minor. Internal release automation, installer/platform-adapter maintenance, hooks, CI, docs, tests, validation, and packaging changes bump patch even when their commit message uses `feat:`.
+- Treat installer, adapter, template, existing skill, config, and framework runtime maintenance as patch by default. Use an explicit `Release-Type: minor` trailer when a change should be marketed as a new public capability.
 - Add an explicit `Release-Type: major|minor|patch|none` trailer when the default classification would be too broad or too narrow.
 - Version and documentation sync are automatic. Local hooks plan the bump from outgoing commits, update known version surfaces, regenerate docs artifacts, and create a version-sync commit before push.
 - Reverts of unreleased commits cancel the pending bump before push. Reverts of already-published commits are released as a monotonic patch version rather than decreasing `VERSION`.

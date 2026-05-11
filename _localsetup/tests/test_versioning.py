@@ -157,6 +157,37 @@ def test_internal_release_tooling_feat_is_patch(tmp_path: Path) -> None:
     assert plan["commits"][0]["raw_bump"] == "minor"
 
 
+def test_installer_adapter_maintenance_feat_is_patch(tmp_path: Path) -> None:
+    repo = copy_full_repo(tmp_path)
+    remote = tmp_path / "remote.git"
+    run(tmp_path, "git", "init", "--bare", str(remote))
+    init_git_repo(repo, remote)
+
+    touched = [
+        ".gitignore",
+        "install",
+        "_localsetup/v3/adapters.py",
+        "_localsetup/v3/apply.py",
+        "_localsetup/config/install.schema.json",
+        "_localsetup/templates/cursor/ls-context.mdc",
+        "_localsetup/skills/ls-skill-creator/SKILL.md",
+        "_localsetup/docs/MULTI_PLATFORM_INSTALL.md",
+        "_localsetup/tests/test_v3_install_flow.py",
+    ]
+    for rel_path in touched:
+        path = repo / rel_path
+        path.write_text(path.read_text(encoding="utf-8") + "\n# release classification fixture\n", encoding="utf-8")
+    run(repo, "git", "add", *touched)
+    run(repo, "git", "commit", "-m", "feat: require explicit adapter attachment", "--no-verify")
+
+    plan = plan_version(repo, base="origin/main", head="HEAD")
+    expected = repo_version(repo).bump("patch")
+
+    assert plan["commits"][0]["raw_bump"] == "minor"
+    assert plan["bump"] == "patch"
+    assert plan["target_version"] == str(expected)
+
+
 def test_release_push_commits_sync_and_pushes(tmp_path: Path) -> None:
     repo = copy_full_repo(tmp_path)
     remote = tmp_path / "remote.git"
