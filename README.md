@@ -63,7 +63,7 @@ Start with the [workflow packages guide](_localsetup/docs/WORKFLOW_PACKAGES.md) 
 | Current version | `3.1.2` |
 | Supported platforms | `cursor, claude-code, codex, openclaw, kilo, opencode` |
 | Shipped skills | `45` |
-| Workflow packages | `16` |
+| Workflow packages | `17` |
 | Source | `_localsetup/docs/_generated/facts.json` |
 <!-- facts-block:end -->
 
@@ -81,10 +81,18 @@ Or from a cloned checkout, install the default `core` pack into the managed libr
 ./install --directory . --yes
 ```
 
+The installer also creates a managed user command at `~/.local/bin/localsetup`. After registration, run Localsetup from any project:
+
+```bash
+localsetup install --tools codex --yes
+```
+
+When invoked through the managed command, Localsetup uses the registered framework checkout as the source and the nearest Git worktree root from your current directory as the target. Outside Git, it targets the current directory. Use `--target-directory /path/to/project` to override that target.
+
 Attach adapters only for the hosts you choose:
 
 ```bash
-./install --directory . --tools codex,kilo --yes
+localsetup install --tools codex,kilo --yes
 ```
 
 Install every shipped skill and workflow package for Codex, Kilo, and OpenCode, while preparing the managed Python dependency environment:
@@ -98,6 +106,15 @@ Attach a selected adapter to another repo while using this checkout as the sourc
 ```bash
 ./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor --yes
 ```
+
+To convert a repo that may contain old Localsetup files or adapter paths, start with a dry report and apply only after blockers are clear:
+
+```bash
+localsetup convert --tools codex --packs core
+localsetup convert --tools codex --packs core --yes
+```
+
+Conversion writes a timestamped backup and machine-readable report under `.localsetup/backups/conversion-*`, archives known managed or legacy Localsetup artifacts, blocks ambiguous unmanaged content, syncs the current framework source when needed, installs selected adapters, and verifies the result.
 
 Windows support is WSL2-only in v3. Open WSL2, change to the repo path, and run the Bash installer. `install.ps1` is a compatibility guidance stub.
 
@@ -146,6 +163,8 @@ The Bash wrapper stays thin. The Python CLI handles preflight, dependency setup,
 Useful commands:
 
 ```bash
+localsetup doctor
+localsetup verify --tools codex
 python3 _localsetup/tools/localsetup_v3.py doctor
 python3 _localsetup/tools/localsetup_v3.py --repo . context --markdown
 python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog

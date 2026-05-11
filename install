@@ -14,6 +14,7 @@ PACKS_CSV="core"
 MODE="symlink"
 YES=false
 INSTALL_DEPS=false
+REGISTER_SHELL=true
 DEPENDENCY_MODE="prompt-only"
 MIN_PYTHON_VERSION="3.10.0"
 
@@ -40,6 +41,7 @@ Options:
   --packs LIST         Skill packs to install. Comma-separated. Default: core.
   --mode MODE          symlink or portable. Default: symlink.
   --install-deps       Create/update the managed venv and install _localsetup/requirements.txt.
+  --no-register-shell  Do not create/update ~/.local/bin/localsetup.
   --upgrade-policy     Accepted for v2 compatibility; v3 uses managed install metadata.
   --global             Accepted for v2 compatibility; v3 installs the shared home library by default.
   --help, -h           Show this help.
@@ -131,6 +133,10 @@ while [[ $# -gt 0 ]]; do
       INSTALL_DEPS=true
       shift
       ;;
+    --no-register-shell)
+      REGISTER_SHELL=false
+      shift
+      ;;
     --upgrade-policy)
       [[ $# -ge 2 ]] || die "missing value for --upgrade-policy"
       shift 2
@@ -192,6 +198,24 @@ if ! "${doctor_cmd[@]}" >/dev/null; then
   printf ' %q' "${doctor_cmd[@]}" >&2
   echo >&2
   exit 1
+fi
+
+if "$REGISTER_SHELL"; then
+  register_cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --repo "$SOURCE_DIR" register-shell)
+  if ! "${register_cmd[@]}" >/dev/null; then
+    echo "Localsetup shell registration failed. Re-run for details:" >&2
+    printf ' %q' "${register_cmd[@]}" >&2
+    echo >&2
+    exit 1
+  fi
+  case ":${PATH:-}:" in
+    *":$HOME_DIR/.local/bin:"*) ;;
+    *) echo "Warning: $HOME_DIR/.local/bin is not on PATH; add it before using the global localsetup command." >&2 ;;
+  esac
+  resolved_localsetup="$(command -v localsetup 2>/dev/null || true)"
+  if [[ -n "$resolved_localsetup" && "$(cd "$(dirname "$resolved_localsetup")" && pwd)/$(basename "$resolved_localsetup")" != "$HOME_DIR/.local/bin/localsetup" ]]; then
+    echo "Warning: localsetup resolves to $resolved_localsetup before the managed shim at $HOME_DIR/.local/bin/localsetup." >&2
+  fi
 fi
 
 cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --repo "$SOURCE_DIR" "${target_args[@]}" install --apply --dependency-mode "$DEPENDENCY_MODE" --mode "$MODE" --packs "${pack_args[@]}")

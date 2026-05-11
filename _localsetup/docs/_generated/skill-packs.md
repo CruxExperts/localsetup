@@ -54,6 +54,7 @@
 | `bootstrap, dev` | `workflow` | `ls-workflow-pipeline-git-repair-hygiene` | `n/a` |
 | `dev` | `workflow` | `ls-workflow-pipeline-pr-feedback-loop` | `n/a` |
 | `publishing` | `workflow` | `ls-workflow-pipeline-pre-publish` | `n/a` |
+| `bootstrap, dev` | `workflow` | `ls-workflow-pipeline-repo-convert` | `n/a` |
 | `dev` | `workflow` | `ls-workflow-pipeline-repo-polish` | `n/a` |
 | `ops` | `workflow` | `ls-workflow-pipeline-server-triage-patch` | `n/a` |
 | `dev` | `workflow` | `ls-workflow-pipeline-skill-onboard` | `n/a` |

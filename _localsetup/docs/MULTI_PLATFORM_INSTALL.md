@@ -35,12 +35,12 @@ Non-interactive global-only install:
 curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --directory . --yes
 ```
 
-This installs or refreshes the managed Localsetup package library and creates no repo adapter paths.
+This installs or refreshes the managed Localsetup package library, registers `~/.local/bin/localsetup`, and creates no repo adapter paths. If that bin directory is not on `PATH`, the installer prints a warning; add it before using the global command.
 
 Selected platforms:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --directory . --tools cursor,claude-code --yes
+localsetup install --tools cursor,claude-code --yes
 ```
 
 `--tools` is a compatibility alias for the v3 `--platforms` selector.
@@ -59,6 +59,17 @@ Attach a selected adapter to another repo or directory:
 ./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor --yes
 ```
 
+The managed global command separates source from target. The source is the registered Localsetup checkout recorded in `~/.local/bin/localsetup`; the target is the nearest Git worktree root from the command CWD, or the exact CWD outside Git. `--target-directory` always overrides detection.
+
+Repo conversion uses the same target rules:
+
+```bash
+localsetup convert --tools codex --packs core
+localsetup convert --tools codex --packs core --yes
+```
+
+The dry report lists artifacts and blockers. Apply mode writes `.localsetup/backups/conversion-*/conversion-report.json`, archives known managed or legacy Localsetup content, refuses ambiguous unmanaged content, syncs current framework source when appropriate, installs selected adapters, and verifies.
+
 ### Windows (WSL2)
 
 ```bash
@@ -76,6 +87,7 @@ cd /path/to/repo
 - `--yes`  - Non-interactive apply
 - `--global`  - Legacy no-op compatibility flag; v3 installs the managed home library by default
 - `--install-deps`  - Create/update the managed `.localsetup/venv` and install `_localsetup/requirements.txt`
+- `--no-register-shell`  - Skip creating/updating `~/.local/bin/localsetup`
 - `--help`  - Print usage and exit
 
 ## Shared home library
@@ -154,12 +166,13 @@ Adapter paths are conservative. The installer creates only the selected adapter 
 | Tool | Linux/macOS | Windows |
 |------|-------------|---------|
 | Install | `./install` or `python3 _localsetup/tools/localsetup_v3.py install --apply` | WSL2 only |
-| Doctor | `python3 _localsetup/tools/localsetup_v3.py doctor` | WSL2 only |
+| Doctor | `localsetup doctor` or `python3 _localsetup/tools/localsetup_v3.py doctor` | WSL2 only |
 | Configure | `python3 _localsetup/tools/localsetup_v3.py configure` | WSL2 only |
 | Agent context | `python3 _localsetup/tools/localsetup_v3.py context --markdown` | WSL2 only |
 | Migrate | `python3 _localsetup/tools/localsetup_v3.py migrate` | WSL2 only |
-| Plan | `python3 _localsetup/tools/localsetup_v3.py plan` | WSL2 only |
-| Verify | `python3 _localsetup/tools/localsetup_v3.py verify` | WSL2 only |
+| Convert | `localsetup convert --tools codex --packs core` | WSL2 only |
+| Plan | `localsetup plan --tools codex` or `python3 _localsetup/tools/localsetup_v3.py plan` | WSL2 only |
+| Verify | `localsetup verify --tools codex` or `python3 _localsetup/tools/localsetup_v3.py verify` | WSL2 only |
 | Tests | `./_localsetup/tests/automated_test.sh` | WSL2 only |
 
 Framework install logic is Python-first. Shell is limited to the bootstrap wrapper, and PowerShell is not a native v3 install target.

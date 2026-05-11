@@ -92,6 +92,7 @@ workflow_packs:
     - ls-workflow-audit-framework
     - ls-workflow-ops-guarded
     - ls-workflow-pipeline-git-repair-hygiene
+    - ls-workflow-pipeline-repo-convert
   core: []
   dev:
     - ls-workflow-audit-framework
@@ -99,6 +100,7 @@ workflow_packs:
     - ls-workflow-ops-guarded
     - ls-workflow-pipeline-git-repair-hygiene
     - ls-workflow-pipeline-pr-feedback-loop
+    - ls-workflow-pipeline-repo-convert
     - ls-workflow-pipeline-repo-polish
     - ls-workflow-pipeline-skill-onboard
     - ls-workflow-skills-index-refresh

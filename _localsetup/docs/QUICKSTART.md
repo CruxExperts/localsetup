@@ -30,12 +30,20 @@ From a local checkout:
 ./install --directory . --yes
 ```
 
-This installs the default `core` pack into the managed library and does not create repo adapter paths.
+This installs the default `core` pack into the managed library, registers `~/.local/bin/localsetup`, and does not create repo adapter paths. If `~/.local/bin` is not on `PATH`, the installer warns and the command becomes available after you add that directory to your shell path.
+
+After registration, run Localsetup from any project:
+
+```bash
+localsetup install --tools codex --yes
+```
+
+The global command uses the registered Localsetup checkout as source. For repo-scoped commands, it targets the nearest Git worktree root from your current directory, or the exact current directory outside Git. Override that with `--target-directory`.
 
 Attach selected agent hosts explicitly:
 
 ```bash
-./install --directory . --tools codex,kilo --yes
+localsetup install --tools codex,kilo --yes
 ```
 
 For a full local setup with all shipped skill and workflow packs attached to Codex, Kilo, and OpenCode:
@@ -77,6 +85,15 @@ Attach an adapter to another repo or directory while using this checkout as the 
 ./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor --yes
 ```
 
+Convert a repo that may already contain old Localsetup files:
+
+```bash
+localsetup convert --tools codex --packs core
+localsetup convert --tools codex --packs core --yes
+```
+
+The first command is a dry report. Apply mode writes a timestamped backup and `conversion-report.json`, archives known managed or legacy Localsetup artifacts, blocks ambiguous unmanaged content, syncs the current framework source when the target is separate from the source checkout, installs selected adapters, and verifies the result.
+
 ## What Gets Installed
 
 - `_localsetup/` framework source in the repo
@@ -104,7 +121,7 @@ python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
 Read-only preflight:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py doctor
+localsetup doctor
 ```
 
 After using `--install-deps`, `doctor` verifies installed Python distributions from the managed venv interpreter, so packages whose distribution and import names differ, such as `PGPy` / `pgpy`, are reported accurately.

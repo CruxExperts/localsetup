@@ -16,7 +16,7 @@ This repository packages Localsetup v3, a repo-local framework for agent context
 
 ## Coding Style & Naming Conventions
 
-Keep scripts portable and explicit: Bash files should use `set -euo pipefail`; PowerShell should prefer clear parameter names and non-interactive modes for automation. Python code uses 4-space indentation, standard-library path handling via `pathlib` where practical, and small helper functions in `_localsetup/lib/`. Skill directories use `localsetup-<topic>` naming and each skill must include a spec-compatible `SKILL.md` with `name` and `description` frontmatter. Markdown should use clear headings, relative links, and concise task-oriented language.
+Keep scripts portable and explicit: Bash files should use `set -euo pipefail`; PowerShell should prefer clear parameter names and non-interactive modes for automation. Python code uses 4-space indentation, standard-library path handling via `pathlib` where practical, and small helper functions in `_localsetup/lib/`. Skill directories use `ls-<topic>` naming and each skill must include a spec-compatible `SKILL.md` with `name` and `description` frontmatter. Markdown should use clear headings, relative links, and concise task-oriented language.
 
 ## Testing Guidelines
 

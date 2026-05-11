@@ -1,5 +1,5 @@
 {
-  "count": 16,
+  "count": 17,
   "workflows": [
     {
       "aliases": [
@@ -161,6 +161,35 @@
       ],
       "required_tools": [],
       "workflow_id": "pipeline-pre-publish"
+    },
+    {
+      "aliases": [
+        "repo convert pipeline",
+        "convert repo",
+        "localsetup convert"
+      ],
+      "description": "Convert an existing repo to the current Localsetup v3 framework with backup, blocker, install, and verification gates.",
+      "display_name": "Pipeline Repo Convert",
+      "package": "ls-workflow-pipeline-repo-convert",
+      "packs": [
+        "bootstrap",
+        "dev"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-pipeline-repo-convert",
+      "required_docs": [
+        "_localsetup/docs/REPO_CONVERSION.md",
+        "_localsetup/docs/MULTI_PLATFORM_INSTALL.md"
+      ],
+      "required_skills": [
+        "ls-framework-compliance",
+        "ls-safety-and-backup",
+        "ls-git-workflows",
+        "ls-test-runner"
+      ],
+      "required_tools": [
+        "git"
+      ],
+      "workflow_id": "pipeline-repo-convert"
     },
     {
       "aliases": [

@@ -18,6 +18,7 @@ This page is generated from `_localsetup/workflows/*/workflow.yaml`.
 | `pipeline-git-repair-hygiene` | Pipeline Git Repair Hygiene | git repair pipeline | `ls-workflow-pipeline-git-repair-hygiene` | `ls-unfuck-my-git-state`; `ls-git-workflows`; `ls-framework-compliance` |
 | `pipeline-pr-feedback-loop` | Pipeline PR Feedback Loop | pr feedback pipeline | `ls-workflow-pipeline-pr-feedback-loop` | `ls-receiving-code-review`; `ls-tdd-guide`; `ls-pr-reviewer` |
 | `pipeline-pre-publish` | Pipeline Pre Publish | pre publish pipeline | `ls-workflow-pipeline-pre-publish` | `ls-github-publishing-workflow`; `ls-automatic-versioning`; `ls-framework-audit` |
+| `pipeline-repo-convert` | Pipeline Repo Convert | repo convert pipeline; convert repo; localsetup convert | `ls-workflow-pipeline-repo-convert` | `ls-framework-compliance`; `ls-safety-and-backup`; `ls-git-workflows`; `ls-test-runner` |
 | `pipeline-repo-polish` | Pipeline Repo Polish | repo polish pipeline | `ls-workflow-pipeline-repo-polish` | `ls-script-and-docs-quality`; `ls-humanizer`; `ls-github-publishing-workflow` |
 | `pipeline-server-triage-patch` | Pipeline Server Triage Patch | server triage patch pipeline | `ls-workflow-pipeline-server-triage-patch` | `ls-system-info`; `ls-linux-service-triage`; `ls-linux-patcher` |
 | `pipeline-skill-onboard` | Pipeline Skill Onboard | skill onboarding pipeline | `ls-workflow-pipeline-skill-onboard` | `ls-skill-vetter`; `ls-skill-importer`; `ls-skill-normalizer`; `ls-skill-sandbox-tester` |
@@ -40,6 +41,9 @@ This page is generated from `_localsetup/workflows/*/workflow.yaml`.
 - "git repair pipeline" -> `pipeline-git-repair-hygiene`
 - "pr feedback pipeline" -> `pipeline-pr-feedback-loop`
 - "pre publish pipeline" -> `pipeline-pre-publish`
+- "repo convert pipeline" -> `pipeline-repo-convert`
+- "convert repo" -> `pipeline-repo-convert`
+- "localsetup convert" -> `pipeline-repo-convert`
 - "repo polish pipeline" -> `pipeline-repo-polish`
 - "server triage patch pipeline" -> `pipeline-server-triage-patch`
 - "skill onboarding pipeline" -> `pipeline-skill-onboard`

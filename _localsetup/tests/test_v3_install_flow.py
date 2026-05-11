@@ -1,4 +1,5 @@
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -11,6 +12,7 @@ from _localsetup.v3.boundary import scan_tar_for_leaks
 from _localsetup.v3.cli import _split_csv
 from _localsetup.v3.config import InstallConfig, load_install_config, merge_cli_config
 from _localsetup.v3.context import build_agent_context, render_markdown_report
+from _localsetup.v3.conversion import convert_repo
 from _localsetup.v3.dependencies import ensure_dependencies, missing_requirements
 from _localsetup.v3.doctor import run_doctor
 from _localsetup.v3.docs import generate_alias_outputs
@@ -20,6 +22,7 @@ from _localsetup.v3.migration import conservative_migrate, detect_legacy_artifac
 from _localsetup.v3.package import build_public_artifact
 from _localsetup.v3.plan import build_install_plan
 from _localsetup.v3.rollback import rollback
+from _localsetup.v3.shell import detect_invocation_target, is_managed_shim, register_shell_command, shell_registration_status
 from _localsetup.v3.verify import verify_install
 from _localsetup.v3.workflows import workflow_catalog_payload
 
@@ -172,6 +175,154 @@ def test_v3_external_target_directory_attaches_selected_adapter(tmp_path: Path) 
     assert lock["target_root"] == str(target)
     assert lock["platforms"] == ["cursor"]
     assert not (root / "localsetup.lock.json").exists()
+
+
+def test_detect_invocation_target_prefers_git_root(tmp_path: Path) -> None:
+    project = tmp_path / "project"
+    nested = project / "a" / "b"
+    nested.mkdir(parents=True)
+    subprocess.run(["git", "init"], cwd=project, text=True, capture_output=True, check=True)
+
+    assert detect_invocation_target(nested) == project.resolve()
+
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    assert detect_invocation_target(outside) == outside.resolve()
+
+
+def test_shell_registration_writes_managed_idempotent_shim_and_blocks_collision(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+
+    first = register_shell_command(root, home=home, path_env="")
+    second = register_shell_command(root, home=home, path_env=str(home / ".local" / "bin"))
+    shim = home / ".local" / "bin" / "localsetup"
+
+    assert first["managed"] is True
+    assert first["path"]["on_path"] is False
+    assert second["path"]["on_path"] is True
+    assert is_managed_shim(shim)
+    assert shell_registration_status(root, home=home, path_env="")["source_root"] == str(root.resolve())
+
+    shim.write_text("#!/usr/bin/env bash\necho unmanaged\n", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="unmanaged localsetup"):
+        register_shell_command(root, home=home)
+
+
+def test_shell_registration_warns_when_path_precedence_hides_shim(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    earlier = tmp_path / "earlier"
+    earlier.mkdir()
+    fake = earlier / "localsetup"
+    fake.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    fake.chmod(0o755)
+
+    result = register_shell_command(root, home=home, path_env=f"{earlier}:{home / '.local' / 'bin'}")
+
+    assert result["path"]["on_path"] is True
+    assert result["which"] == str(fake)
+    assert any("before the managed shim" in warning for warning in result["warnings"])
+
+
+def test_custom_home_shim_invocation_uses_registered_home(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "custom-home"
+    target = tmp_path / "target"
+    target.mkdir()
+    register_shell_command(root, home=home, path_env=str(home / ".local" / "bin"))
+
+    completed = subprocess.run(
+        [
+            str(home / ".local" / "bin" / "localsetup"),
+            "--target-directory",
+            str(target),
+            "install",
+            "--yes",
+            "--dependency-mode",
+            "prompt-only",
+            "--tools",
+            "codex",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
+    assert (target / ".codex" / "skills").is_symlink()
+
+
+def test_v3_cli_tools_and_yes_aliases_install(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(tool),
+            "--repo",
+            str(root),
+            "--home",
+            str(home),
+            "install",
+            "--yes",
+            "--dependency-mode",
+            "prompt-only",
+            "--tools",
+            "codex",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(completed.stdout)
+    assert payload["attachment"]["platforms"] == ["codex"]
+    assert (root / ".codex" / "skills").is_symlink()
+
+
+def test_global_shim_invocation_installs_at_detected_git_root(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    nested = target / "nested" / "deeper"
+    nested.mkdir(parents=True)
+    subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=True)
+    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+    env = {**os.environ, "LOCALSETUP_GLOBAL_SHIM": "1"}
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(tool),
+            "--repo",
+            str(root),
+            "--home",
+            str(home),
+            "install",
+            "--yes",
+            "--dependency-mode",
+            "prompt-only",
+            "--tools",
+            "codex",
+        ],
+        cwd=nested,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(completed.stdout)
+    assert payload["attachment"]["target_root"] == str(target.resolve())
+    assert (target / ".codex" / "skills").is_symlink()
+    assert (target / "localsetup.lock.json").is_file()
+    assert not (root / ".codex" / "skills").exists()
 
 
 def test_v3_apply_rejects_target_root_that_differs_from_plan(tmp_path: Path) -> None:
@@ -663,6 +814,7 @@ def test_root_installer_forwards_custom_home(tmp_path: Path) -> None:
     assert completed.returncode == 0, completed.stderr
     assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
     assert (root / ".codex" / "skills").is_symlink()
+    assert (home / ".local" / "bin" / "localsetup").is_file()
 
 
 def test_root_installer_supports_target_directory(tmp_path: Path) -> None:
@@ -696,6 +848,7 @@ def test_root_installer_supports_target_directory(tmp_path: Path) -> None:
     assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
     assert (target / ".cursor" / "skills").is_symlink()
     assert (target / "localsetup.lock.json").is_file()
+    assert (home / ".local" / "bin" / "localsetup").is_file()
     assert not (root / ".cursor" / "skills").exists()
 
 
@@ -713,6 +866,7 @@ def test_root_installer_help_mentions_target_directory_and_global_only_defaults(
     assert "--target-directory PATH" in completed.stdout
     assert "global-only install" in completed.stdout
     assert "Omit for global-only install with no repo adapters" in completed.stdout
+    assert "--no-register-shell" in completed.stdout
 
 
 def test_v3_migration_scanner_and_hook_gate(tmp_path: Path) -> None:
@@ -757,6 +911,92 @@ def test_v3_conservative_migration_refuses_unmanaged_adapter(tmp_path: Path) -> 
     assert report["ok"] is False
     assert report["blockers"]
     assert "mv " in report["blockers"][0]["remediation"]
+
+
+def test_v3_convert_blocks_unmanaged_adapter_content(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    collision = target / ".codex" / "skills"
+    collision.mkdir(parents=True)
+    (collision / "custom.txt").write_text("keep\n", encoding="utf-8")
+
+    report = convert_repo(root, home=home, platform_ids=["codex"], target_root=target, apply=False)
+
+    assert report["ok"] is False
+    assert any(blocker["kind"] == "adapter_collision" for blocker in report["blockers"])
+    assert not (target / "localsetup.lock.json").exists()
+
+
+def test_v3_convert_archives_old_framework_and_installs_at_target(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    old_framework = target / "_localsetup"
+    old_framework.mkdir(parents=True)
+    (old_framework / "OLD.txt").write_text("legacy\n", encoding="utf-8")
+
+    report = convert_repo(
+        root,
+        home=home,
+        packs=["core"],
+        platform_ids=["codex"],
+        target_root=target,
+        backup_dir=tmp_path / "backup",
+        dependency_mode="prompt-only",
+        apply=True,
+    )
+
+    assert report["ok"] is True
+    assert report["applied"] is True
+    assert (tmp_path / "backup" / "repo" / "_localsetup" / "OLD.txt").is_file()
+    assert (target / "_localsetup" / "v3" / "cli.py").is_file()
+    assert (target / ".codex" / "skills").is_symlink()
+    assert (target / "localsetup.lock.json").is_file()
+    assert report["verify"]["ok"] is True
+
+
+def test_v3_convert_framework_sync_excludes_private_runtime_data(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    (root / "_localsetup" / "docs" / "local-context").mkdir(parents=True)
+    (root / "_localsetup" / "docs" / "local-context" / "SECRETS.md").write_text("secret\n", encoding="utf-8")
+    skill_data = root / "_localsetup" / "skills" / "ls-context" / "scripts" / "data"
+    skill_data.mkdir(parents=True)
+    (skill_data / "runtime.txt").write_text("runtime\n", encoding="utf-8")
+    workflow_data = root / "_localsetup" / "workflows" / "ls-workflow-pipeline-repo-convert" / "scripts" / "data"
+    workflow_data.mkdir(parents=True)
+    (workflow_data / "runtime.txt").write_text("runtime\n", encoding="utf-8")
+
+    report = convert_repo(root, home=home, platform_ids=["codex"], target_root=target, apply=True)
+
+    assert report["ok"] is True
+    assert not (target / "_localsetup" / "docs" / "local-context").exists()
+    assert not (target / "_localsetup" / "skills" / "ls-context" / "scripts" / "data").exists()
+    assert not (target / "_localsetup" / "workflows" / "ls-workflow-pipeline-repo-convert" / "scripts" / "data").exists()
+
+
+def test_v3_convert_late_migration_blocker_does_not_remove_target_framework(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    old_framework = target / "_localsetup"
+    old_framework.mkdir(parents=True)
+    (old_framework / "OLD.txt").write_text("legacy\n", encoding="utf-8")
+    legacy = home / ".local/share/agents/skills/localsetup/localsetup-context"
+    legacy.mkdir(parents=True)
+    (legacy / ".localsetup-managed").write_text("source=localsetup-context\n", encoding="utf-8")
+    collision = home / ".local/share/agents/skills/localsetup/ls-context"
+    collision.mkdir(parents=True)
+    (collision / "SKILL.md").write_text("unmanaged\n", encoding="utf-8")
+
+    report = convert_repo(root, home=home, platform_ids=["codex"], target_root=target, apply=True)
+
+    assert report["ok"] is False
+    assert any(blocker["kind"] == "global_skill_collision" for blocker in report["blockers"])
+    assert (old_framework / "OLD.txt").is_file()
+    assert not (target / ".codex" / "skills").exists()
 
 
 def test_v3_hook_gate_accepts_mock_runner(tmp_path: Path) -> None:

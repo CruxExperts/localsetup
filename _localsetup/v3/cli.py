@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import json
 from pathlib import Path
 import subprocess
@@ -10,6 +11,7 @@ from .adapters import adapter_status
 from .apply import apply_plan
 from .config import DEPENDENCY_MODES, InstallConfig, config_to_dict, load_install_config, merge_cli_config
 from .context import build_agent_context, render_markdown_report
+from .conversion import convert_repo
 from .dependencies import ensure_dependencies
 from .doctor import run_doctor
 from .docs import generate_alias_outputs
@@ -21,6 +23,7 @@ from .package import build_public_artifact
 from .paths import expand_user_path
 from .plan import build_install_plan
 from .rollback import rollback
+from .shell import SHIM_ENV, detect_invocation_target, register_shell_command, shell_registration_status
 from .skills import load_skill_catalog, validate_skill_catalog
 from .workflows import load_workflow_catalog, validate_workflow_catalog
 from .verify import verify_install
@@ -63,6 +66,36 @@ def _add_config_flags(parser: argparse.ArgumentParser, *, include_apply: bool = 
     parser.add_argument("--dependency-mode", choices=sorted(DEPENDENCY_MODES))
     if include_apply:
         parser.add_argument("--apply", action="store_true")
+        parser.add_argument("--yes", action="store_true", dest="apply", help=argparse.SUPPRESS)
+
+
+def _add_selector_flags(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--packs", nargs="*")
+    parser.add_argument("--mode", choices=["symlink", "portable"])
+    parser.add_argument("--platforms", "--tools", nargs="*", dest="platforms")
+
+
+def _is_global_shim_invocation() -> bool:
+    return os.environ.get(SHIM_ENV) == "1"
+
+
+def _has_target_directory(args: argparse.Namespace) -> bool:
+    return hasattr(args, "target_directory")
+
+
+def _target_directory_value(args: argparse.Namespace) -> str | None:
+    return getattr(args, "target_directory", None) if _has_target_directory(args) else None
+
+
+def _inject_global_target(args: argparse.Namespace) -> None:
+    if not _is_global_shim_invocation():
+        return
+    if args.cmd not in {"plan", "install", "update", "verify", "rollback", "adapters", "doctor", "migrate", "context", "convert"}:
+        return
+    if _target_directory_value(args):
+        return
+    setattr(args, "target_directory", str(detect_invocation_target()))
+    setattr(args, "detected_target_directory", True)
 
 
 def _resolved_config(args: argparse.Namespace, default_home: Path) -> InstallConfig:
@@ -114,56 +147,50 @@ def _main(argv: list[str] | None = None) -> int:
 
     plan_p = sub.add_parser("plan")
     _add_config_flags(plan_p)
-    plan_p.add_argument("--packs", nargs="*")
-    plan_p.add_argument("--mode", choices=["symlink", "portable"])
-    plan_p.add_argument("--platforms", nargs="*")
+    _add_selector_flags(plan_p)
 
     install_p = sub.add_parser("install")
     _add_config_flags(install_p, include_apply=True)
-    install_p.add_argument("--packs", nargs="*")
-    install_p.add_argument("--mode", choices=["symlink", "portable"])
-    install_p.add_argument("--platforms", nargs="*")
+    _add_selector_flags(install_p)
 
     verify_p = sub.add_parser("verify")
     _add_config_flags(verify_p)
-    verify_p.add_argument("--platforms", nargs="*")
+    verify_p.add_argument("--platforms", "--tools", nargs="*", dest="platforms")
 
     rollback_p = sub.add_parser("rollback")
     _add_config_flags(rollback_p)
-    rollback_p.add_argument("--platforms", nargs="*")
+    rollback_p.add_argument("--platforms", "--tools", nargs="*", dest="platforms")
 
     update_p = sub.add_parser("update")
     _add_config_flags(update_p)
-    update_p.add_argument("--packs", nargs="*")
-    update_p.add_argument("--mode", choices=["symlink", "portable"])
-    update_p.add_argument("--platforms", nargs="*")
+    _add_selector_flags(update_p)
 
     adapters_p = sub.add_parser("adapters")
     adapters_p.add_argument("--target-directory", default=argparse.SUPPRESS)
-    adapters_p.add_argument("--platforms", nargs="*")
+    adapters_p.add_argument("--platforms", "--tools", nargs="*", dest="platforms")
     configure_p = sub.add_parser("configure")
     _add_config_flags(configure_p)
-    configure_p.add_argument("--packs", nargs="*")
-    configure_p.add_argument("--mode", choices=["symlink", "portable"])
-    configure_p.add_argument("--platforms", nargs="*")
+    _add_selector_flags(configure_p)
     configure_p.add_argument("--home-override")
 
     doctor_p = sub.add_parser("doctor")
     _add_config_flags(doctor_p)
     doctor_p.add_argument("--packs", nargs="*")
-    doctor_p.add_argument("--platforms", nargs="*")
+    doctor_p.add_argument("--platforms", "--tools", nargs="*", dest="platforms")
 
     migrate_p = sub.add_parser("migrate")
     _add_config_flags(migrate_p)
-    migrate_p.add_argument("--platforms", nargs="*")
+    migrate_p.add_argument("--platforms", "--tools", nargs="*", dest="platforms")
     migrate_p.add_argument("--dry-run", action="store_true")
 
     context_p = sub.add_parser("context")
     _add_config_flags(context_p)
-    context_p.add_argument("--packs", nargs="*")
-    context_p.add_argument("--mode", choices=["symlink", "portable"])
-    context_p.add_argument("--platforms", nargs="*")
+    _add_selector_flags(context_p)
     context_p.add_argument("--markdown", action="store_true", default=None)
+
+    convert_p = sub.add_parser("convert")
+    _add_config_flags(convert_p, include_apply=True)
+    _add_selector_flags(convert_p)
 
     sub.add_parser("catalog")
     sub.add_parser("scan-migration")
@@ -192,11 +219,13 @@ def _main(argv: list[str] | None = None) -> int:
     release_push_p.add_argument("push_args", nargs=argparse.REMAINDER)
 
     sub.add_parser("install-hooks")
+    sub.add_parser("register-shell")
 
     package_p = sub.add_parser("package")
     package_p.add_argument("--out", default="dist/localsetup-v3-public.tar.gz")
 
     args = parser.parse_args(argv)
+    _inject_global_target(args)
     root = Path(args.repo).resolve()
     home = Path(args.home or Path.home()).expanduser().resolve()
 
@@ -213,9 +242,10 @@ def _main(argv: list[str] | None = None) -> int:
             platform_ids=config.platforms,
             target_root=target_root,
         )
+        detected_target = bool(getattr(args, "detected_target_directory", False))
         if args.cmd == "plan" or (args.cmd == "install" and not args.apply):
             warnings = []
-            if config.target_directory and not config.platforms:
+            if config.target_directory and not config.platforms and not detected_target:
                 warnings.append("target directory was provided but no platforms were selected; plan is global-only with no repo adapters")
             payload = {
                 "actions": [{"kind": a.kind, "path": str(a.path), "details": a.details} for a in plan.actions],
@@ -240,7 +270,7 @@ def _main(argv: list[str] | None = None) -> int:
             "platforms": plan.rollback_metadata.get("platforms", []),
             "global_only": plan.rollback_metadata.get("global_only", False),
         }
-        if config.target_directory and not config.platforms:
+        if config.target_directory and not config.platforms and not detected_target:
             result["warnings"] = ["target directory was provided but no platforms were selected; install was global-only with no repo adapters"]
         _write_report(config.output.report, result)
         _print_payload(result)
@@ -300,6 +330,9 @@ def _main(argv: list[str] | None = None) -> int:
             dependency_mode=config.dependency_mode,
             target_root=target_root,
         )
+        payload["shell_registration"] = shell_registration_status(root, home=home)
+        if payload["shell_registration"]["warnings"]:
+            payload["warnings"].extend(payload["shell_registration"]["warnings"])
         _write_report(config.output.report, payload)
         _print_payload(payload)
         return 0 if payload["ok"] else 1
@@ -316,6 +349,25 @@ def _main(argv: list[str] | None = None) -> int:
             target_root=target_root,
             backup_dir=Path(config.backup_dir).expanduser().resolve() if config.backup_dir else None,
             apply=apply_migration,
+        )
+        _write_report(config.output.report, payload)
+        _print_payload(payload)
+        return 0 if payload["ok"] else 1
+
+    if args.cmd == "convert":
+        config = _resolved_config(args, home)
+        home = Path(config.home or home).expanduser().resolve()
+        target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
+        payload = convert_repo(
+            root,
+            home=home,
+            packs=config.packs,
+            platform_ids=config.platforms,
+            attach_mode=config.attach_mode,
+            target_root=target_root,
+            backup_dir=Path(config.backup_dir).expanduser().resolve() if config.backup_dir else None,
+            dependency_mode=config.dependency_mode,
+            apply=bool(args.apply),
         )
         _write_report(config.output.report, payload)
         _print_payload(payload)
@@ -405,6 +457,11 @@ def _main(argv: list[str] | None = None) -> int:
     if args.cmd == "install-hooks":
         subprocess.run(["git", "config", "core.hooksPath", ".githooks"], cwd=root, check=True)
         print_json({"ok": True, "core.hooksPath": ".githooks"})
+        return 0
+
+    if args.cmd == "register-shell":
+        payload = register_shell_command(root, home=home)
+        _print_payload(payload)
         return 0
 
     if args.cmd == "package":

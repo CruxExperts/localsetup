@@ -55,6 +55,7 @@
 | `keep` | `_localsetup/docs/QUICKSTART.md` |
 | `keep` | `_localsetup/docs/README.md` |
 | `keep` | `_localsetup/docs/REPO_AND_DATA_SEPARATION.md` |
+| `keep` | `_localsetup/docs/REPO_CONVERSION.md` |
 | `keep` | `_localsetup/docs/SKILLS.md` |
 | `keep` | `_localsetup/docs/SKILLS_AND_RULES.md` |
 | `keep` | `_localsetup/docs/SKILL_DISCOVERY.md` |
@@ -406,6 +407,7 @@
 | `refactor` | `_localsetup/v3/cli.py` |
 | `refactor` | `_localsetup/v3/config.py` |
 | `refactor` | `_localsetup/v3/context.py` |
+| `refactor` | `_localsetup/v3/conversion.py` |
 | `refactor` | `_localsetup/v3/dependencies.py` |
 | `refactor` | `_localsetup/v3/docs.py` |
 | `refactor` | `_localsetup/v3/doctor.py` |
@@ -418,6 +420,7 @@
 | `refactor` | `_localsetup/v3/paths.py` |
 | `refactor` | `_localsetup/v3/plan.py` |
 | `refactor` | `_localsetup/v3/rollback.py` |
+| `refactor` | `_localsetup/v3/shell.py` |
 | `refactor` | `_localsetup/v3/skills.py` |
 | `refactor` | `_localsetup/v3/source.py` |
 | `refactor` | `_localsetup/v3/verify.py` |
@@ -437,6 +440,8 @@
 | `keep` | `_localsetup/workflows/ls-workflow-pipeline-pr-feedback-loop/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-pipeline-pre-publish/SKILL.md` |
 | `keep` | `_localsetup/workflows/ls-workflow-pipeline-pre-publish/workflow.yaml` |
+| `keep` | `_localsetup/workflows/ls-workflow-pipeline-repo-convert/SKILL.md` |
+| `keep` | `_localsetup/workflows/ls-workflow-pipeline-repo-convert/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-pipeline-repo-polish/SKILL.md` |
 | `keep` | `_localsetup/workflows/ls-workflow-pipeline-repo-polish/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-pipeline-server-triage-patch/SKILL.md` |

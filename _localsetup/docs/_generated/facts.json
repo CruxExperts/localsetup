@@ -3,7 +3,7 @@
   "major_minor": "3.1",
   "platform_count": 6,
   "skill_count": 45,
-  "workflow_count": 16,
+  "workflow_count": 17,
   "platforms": [
     {
       "id": "cursor",
@@ -356,6 +356,12 @@
       "package": "ls-workflow-pipeline-pre-publish",
       "name": "Pipeline Pre Publish",
       "path": "_localsetup/workflows/ls-workflow-pipeline-pre-publish/SKILL.md"
+    },
+    {
+      "id": "pipeline-repo-convert",
+      "package": "ls-workflow-pipeline-repo-convert",
+      "name": "Pipeline Repo Convert",
+      "path": "_localsetup/workflows/ls-workflow-pipeline-repo-convert/SKILL.md"
     },
     {
       "id": "pipeline-repo-polish",
