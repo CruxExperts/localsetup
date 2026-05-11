@@ -1,0 +1,76 @@
+schema_version: 1
+id: codex-agent-team
+display_name: Codex Agent Team Bootstrap
+status: audit-ready
+version: "1.0"
+primary_platform: codex
+future_platforms:
+  - opencode
+  - kilo
+  - cursor
+  - claude-code
+  - openclaw
+localsetup_pack: bootstrap
+description: Codex-first controller and subagent bootstrap pack with audit prompts, native config surfaces, and safe remediation boundaries.
+source_of_truth:
+  pack_membership: _localsetup/config/pack.yaml
+  generated_pack_index: _localsetup/docs/_generated/skill-packs.md
+  docs_index: _localsetup/docs/bootstrap-packs/INDEX.md
+  audit_prompt: _localsetup/docs/bootstrap-packs/codex-agent-team/AUDIT_PROMPT.md
+native_codex_surfaces:
+  global:
+    - $CODEX_HOME/config.toml or ~/.codex/config.toml
+    - $CODEX_HOME/AGENTS.md or ~/.codex/AGENTS.md
+    - $CODEX_HOME/agents/*.toml or ~/.codex/agents/*.toml
+    - $CODEX_HOME/AGENT_TEAM_RUNBOOK.md or ~/.codex/AGENT_TEAM_RUNBOOK.md
+  repo:
+    - AGENTS.md
+    - _localsetup/templates/codex/AGENTS.md
+included_skills:
+  - ls-context
+  - ls-communication-and-tools
+  - ls-docs-organization
+  - ls-framework-compliance
+  - ls-git-workflows
+  - ls-pr-reviewer
+  - ls-safety-and-backup
+  - ls-script-and-docs-quality
+  - ls-task-skill-matcher
+  - ls-test-runner
+effective_install_skills:
+  - ls-communication-and-tools
+  - ls-context
+  - ls-docs-organization
+  - ls-framework-audit
+  - ls-framework-compliance
+  - ls-git-workflows
+  - ls-pr-reviewer
+  - ls-safety-and-backup
+  - ls-script-and-docs-quality
+  - ls-task-skill-matcher
+  - ls-test-runner
+  - ls-unfuck-my-git-state
+skill_membership_note: included_skills lists direct pack.yaml membership; effective_install_skills also includes required skills from selected workflow packages.
+included_workflows:
+  - ls-workflow-audit-framework
+  - ls-workflow-ops-guarded
+  - ls-workflow-pipeline-git-repair-hygiene
+required_audit_artifacts:
+  - _localsetup/docs/audits/codex-bootstrap-pack/AUDIT_REPORT.md
+  - _localsetup/docs/audits/codex-bootstrap-pack/FINDINGS.yaml
+  - _localsetup/docs/audits/codex-bootstrap-pack/REMEDIATION_PLAN.md
+  - _localsetup/docs/audits/codex-bootstrap-pack/REMEDIATION_TASKS.yaml
+  - _localsetup/docs/audits/codex-bootstrap-pack/VALIDATION.md
+  - _localsetup/docs/audits/codex-bootstrap-pack/agent-reports/*.md
+approval_boundaries:
+  - home-directory writes
+  - sibling-repo writes
+  - global Codex config changes
+  - permission changes outside the current repo
+  - destructive replacement of legacy skills or prompts
+validation_commands:
+  - python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
+  - python3 _localsetup/tools/localsetup_v3.py --repo . plan --packs bootstrap
+  - python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .
+  - python3 _localsetup/tools/localsetup_v3.py --repo . generate-docs
+  - git diff --check

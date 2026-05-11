@@ -15,6 +15,7 @@ alias_policy:
   new_prefix: ls-
 
 optional_packs:
+  - bootstrap
   - core
   - dev
   - ops
@@ -23,6 +24,17 @@ optional_packs:
   - experimental
 
 packs:
+  bootstrap:
+    - ls-context
+    - ls-communication-and-tools
+    - ls-docs-organization
+    - ls-framework-compliance
+    - ls-git-workflows
+    - ls-pr-reviewer
+    - ls-safety-and-backup
+    - ls-script-and-docs-quality
+    - ls-task-skill-matcher
+    - ls-test-runner
   core:
     - ls-context
     - ls-communication-and-tools
@@ -76,6 +88,10 @@ packs:
     - ls-skill-vetter
 
 workflow_packs:
+  bootstrap:
+    - ls-workflow-audit-framework
+    - ls-workflow-ops-guarded
+    - ls-workflow-pipeline-git-repair-hygiene
   core: []
   dev:
     - ls-workflow-audit-framework

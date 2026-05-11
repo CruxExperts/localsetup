@@ -14,6 +14,7 @@ Released under the MIT License. See the repository root [LICENSE](../../LICENSE)
 | Doc | Description |
 |-----|-------------|
 | [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md) | Named workflows; when to use; impact review |
+| [bootstrap-packs/INDEX.md](bootstrap-packs/INDEX.md) | Reusable bootstrap-pack prompts, metadata, audit artifacts, and Codex-first adaptation path |
 | [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) | User and maintainer guide for first-class workflow packages |
 | [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md) | First-class workflow package standard and manifest rules |
 | [PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md](PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md) | PRD/spec format, outcome template, external confirmation; how PRDs interact with bidirectional Agent Q |

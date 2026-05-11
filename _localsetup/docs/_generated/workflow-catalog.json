@@ -10,6 +10,7 @@
       "display_name": "Audit Framework",
       "package": "ls-workflow-audit-framework",
       "packs": [
+        "bootstrap",
         "dev"
       ],
       "path": "_localsetup/workflows/ls-workflow-audit-framework",
@@ -58,6 +59,7 @@
       "display_name": "Ops Guarded",
       "package": "ls-workflow-ops-guarded",
       "packs": [
+        "bootstrap",
         "dev"
       ],
       "path": "_localsetup/workflows/ls-workflow-ops-guarded",
@@ -99,6 +101,7 @@
       "display_name": "Pipeline Git Repair Hygiene",
       "package": "ls-workflow-pipeline-git-repair-hygiene",
       "packs": [
+        "bootstrap",
         "dev"
       ],
       "path": "_localsetup/workflows/ls-workflow-pipeline-git-repair-hygiene",

@@ -29,6 +29,7 @@ This is the public documentation map for Localsetup v3. Start here when you want
 | [Quickstart](QUICKSTART.md) | How to install, select platforms, verify, and update. |
 | [Features](FEATURES.md) | Full capability catalog grouped by practical use. |
 | [Shipped skills catalog](SKILLS.md) | All shipped skills with IDs, versions, and descriptions. |
+| [Bootstrap packs](bootstrap-packs/INDEX.md) | Reusable Codex-first bootstrap prompts, pack metadata, audit boundaries, and future adapter entry points. |
 | [Workflow packages](WORKFLOW_PACKAGES.md) | How workflow packages differ from skills, install, validate, and generate docs. |
 | [Workflow package standard](WORKFLOW_STANDARD.md) | Rules for first-class workflow packages and `workflow.yaml`. |
 | [Platform registry](PLATFORM_REGISTRY.md) | Canonical platform IDs, paths, and adapter rules. |

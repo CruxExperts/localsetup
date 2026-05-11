@@ -23,6 +23,10 @@ Localsetup v3 is deployed into this repo at `_localsetup/`. Framework and contex
 - Bounded coding: use `gpt-5.3-codex` for scoped implementation tasks with clear write ownership and tests.
 - Credit freshness: as of 2026-05-07, the official Codex rate card lists per 1M token credits as `gpt-5.4-mini` 18.75/1.875/113, `gpt-5.3-codex` 43.75/4.375/350, and `gpt-5.5` 125/12.50/750 for input/cached/output. Re-check https://help.openai.com/en/articles/20001106-codex-rate-card before changing model guidance.
 
+## Bootstrap pack
+- Codex-first agent-team bootstrap materials live in `_localsetup/docs/bootstrap-packs/` and pack metadata is selected with the `bootstrap` pack in `_localsetup/config/pack.yaml`.
+- Treat writes to `$CODEX_HOME`, `~/.codex`, sibling repos, and runtime mirrors as approval-gated; bootstrap-pack audits may inspect those surfaces but must keep replacement plans non-destructive until approved.
+
 ## Capability skills and workflow packages (load when task matches)
 - ls-workflow-spec-clarify-reverse: "decision tree", "reverse prompt"; .agent/queue/**, PRD
 - ls-workflow-umbrella-run: queue/PRD scope; named workflows; impact + confirm

@@ -1,0 +1,148 @@
+schema_version: 1
+audit_id: codex-bootstrap-pack
+date: "2026-05-10"
+summary:
+  critical: 0
+  high: 0
+  medium: 6
+  low: 4
+  info: 4
+findings:
+  - id: CBA-001
+    severity: medium
+    area: global_codex_instructions
+    status: open
+    approval_required: true
+    evidence:
+      - /home/cptnfren/.codex/AGENTS.md lacks an explicit exception for user no-subagent constraints.
+      - agent-reports/codex-bootstrap-auditor.md
+    recommendation: Add a global instruction override clause that explicit user, developer, and tool constraints take precedence.
+  - id: CBA-002
+    severity: medium
+    area: global_file_permissions
+    status: open
+    approval_required: true
+    evidence:
+      - Group-writable modes were reported for persistent global Codex instruction/config surfaces.
+      - agent-reports/codex-bootstrap-auditor.md
+    recommendation: Harden ~/.codex directory and instruction/TOML file modes if no shared-group workflow requires them.
+  - id: CBA-003
+    severity: medium
+    area: agent_concurrency
+    status: open
+    approval_required: true
+    evidence:
+      - /home/cptnfren/.codex/config.toml uses agents.max_threads = 6.
+      - Global instructions strongly encourage team mode for non-trivial work.
+    recommendation: Add a normal 1-2 concurrent-agent guideline or lower max_threads after approval.
+  - id: CBA-004
+    severity: low
+    area: runbook_drift
+    status: open
+    approval_required: true
+    evidence:
+      - Runbook wording says high reasoning while config uses xhigh.
+      - agent-reports/codex-bootstrap-auditor.md
+    recommendation: Align global runbook wording with actual config or clarify it is descriptive.
+  - id: CBA-005
+    severity: info
+    area: global_run_ledger
+    status: accepted
+    approval_required: false
+    evidence:
+      - /home/cptnfren/.codex/runs was absent.
+      - Current repo instructions require repo-local ledgers for agent-team tasks.
+    recommendation: No action unless global bootstrap tasks should maintain global ledgers.
+  - id: CBR-001
+    severity: medium
+    area: codex_cli_schema
+    status: open
+    approval_required: false
+    evidence:
+      - Research did not find a complete official custom-agent TOML schema.
+      - agent-reports/codex-cli-researcher.md
+    recommendation: Keep custom-agent schema claims evidence-bound and re-check before changing role TOMLs.
+  - id: CBR-002
+    severity: medium
+    area: agents_md_precedence
+    status: open
+    approval_required: false
+    evidence:
+      - Global AGENTS.md merge behavior with repo-local AGENTS.md is not fully proven for every session type.
+      - Upstream issue evidence reports ambiguity.
+    recommendation: Treat prompt-load checks as session-specific; verify both global-only and repo-local contexts before changing docs.
+  - id: CBR-003
+    severity: low
+    area: goal_mode
+    status: open
+    approval_required: false
+    evidence:
+      - Research found upstream reports that goal behavior is still drift-prone.
+      - agent-reports/codex-cli-researcher.md
+    recommendation: Avoid relying on goal mode as the only completion mechanism for bootstrap-pack audits.
+  - id: RBP-001
+    severity: medium
+    area: repo_pack_structure
+    status: remediated
+    approval_required: false
+    evidence:
+      - No bootstrap pack existed before this audit.
+      - _localsetup/config/pack.yaml now includes bootstrap.
+      - _localsetup/docs/bootstrap-packs/INDEX.md exists.
+    recommendation: Maintain bootstrap membership through pack.yaml and generated indexes.
+  - id: RBP-002
+    severity: low
+    area: docs_duplication
+    status: remediated
+    approval_required: false
+    evidence:
+      - Existing generated pack map is the correct index surface.
+      - _localsetup/docs/_generated/skill-packs.md now includes bootstrap entries.
+    recommendation: Do not hand-maintain a second package catalog.
+  - id: LEG-001
+    severity: medium
+    area: legacy_skill_trees
+    status: open
+    approval_required: true
+    evidence:
+      - /mnt/data/devzone/localsetup/.agents/skills uses older localsetup-* names.
+      - ~/.codex/skills uses older localsetup-* names.
+      - agent-reports/legacy-inventory.md
+    recommendation: Build hash-based dry-run migration before touching either tree.
+  - id: LEG-002
+    severity: low
+    area: runtime_mirror
+    status: accepted
+    approval_required: true
+    evidence:
+      - ~/.local/share/agents/skills/localsetup sampled hashes matched current repo.
+      - agent-reports/legacy-inventory.md
+    recommendation: Treat runtime mirror updates as approval-gated external writes.
+  - id: DOC-001
+    severity: info
+    area: docs_index
+    status: remediated
+    approval_required: false
+    evidence:
+      - _localsetup/docs/README.md links bootstrap-packs/INDEX.md.
+      - _localsetup/docs/AGENTIC_DESIGN_INDEX.md links bootstrap-packs/INDEX.md.
+    recommendation: Keep bootstrap docs indexed through these existing docs.
+  - id: VAL-001
+    severity: info
+    area: validation
+    status: remediated
+    approval_required: false
+    evidence:
+      - validate-catalog passed.
+      - git diff --check passed.
+      - YAML/JSON/TOML parsing passed.
+    recommendation: Re-run final validation after any artifact changes.
+  - id: RVW-001
+    severity: low
+    area: ledger_bookkeeping
+    status: remediated
+    approval_required: false
+    evidence:
+      - Final reviewer found the ledger still listed S5 as pending before final acceptance.
+      - The ledger was updated to record final reviewer completion.
+    recommendation: Keep the ledger current before claiming final acceptance.
