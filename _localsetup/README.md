@@ -32,13 +32,16 @@ The root Bash installer delegates to the Python CLI. The CLI resolves platform i
 Common commands from the repository root:
 
 ```bash
-./install --directory . --yes
-./install --directory . --tools codex,kilo --yes
-./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor --yes
+./install --directory .
+./install --directory . --tools codex,kilo
+./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor
+./install --directory . --tools codex --non-interactive --yes
 python3 _localsetup/tools/localsetup_v3.py doctor
 python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
 python3 _localsetup/tools/localsetup_v3.py --repo . rollback
 ```
+
+The root wrapper opens the interactive wizard by default. Automation must use `--non-interactive --yes`.
 
 Use WSL2 for Windows. Native PowerShell installation is intentionally not supported in v3; `install.ps1` only points users to WSL2.
 

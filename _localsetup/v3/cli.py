@@ -27,6 +27,7 @@ from .shell import SHIM_ENV, detect_invocation_target, register_shell_command, s
 from .skills import load_skill_catalog, validate_skill_catalog
 from .workflows import load_workflow_catalog, validate_workflow_catalog
 from .verify import verify_install
+from .wizard import run_wizard
 from .versioning import (
     VERSION_SYNC_PREFIX,
     check_version_files,
@@ -221,6 +222,13 @@ def _main(argv: list[str] | None = None) -> int:
     sub.add_parser("install-hooks")
     sub.add_parser("register-shell")
 
+    wizard_p = sub.add_parser("wizard")
+    _add_config_flags(wizard_p)
+    _add_selector_flags(wizard_p)
+    wizard_p.add_argument("--caller-directory")
+    wizard_p.add_argument("--no-register-shell", action="store_true")
+    wizard_p.add_argument("--target-directory-origin", choices=["explicit", "inferred"], default="explicit")
+
     package_p = sub.add_parser("package")
     package_p.add_argument("--out", default="dist/localsetup-v3-public.tar.gz")
 
@@ -275,6 +283,24 @@ def _main(argv: list[str] | None = None) -> int:
         _write_report(config.output.report, result)
         _print_payload(result)
         return 0
+
+    if args.cmd == "wizard":
+        config = _resolved_config(args, home)
+        home = Path(config.home or home).expanduser().resolve()
+        target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
+        caller_directory = Path(args.caller_directory).expanduser().resolve() if args.caller_directory else None
+        return run_wizard(
+            repo_root=root,
+            home=home,
+            caller_directory=caller_directory,
+            target_directory=target_root,
+            target_directory_is_explicit=bool(target_root and args.target_directory_origin == "explicit"),
+            platforms=config.platforms,
+            packs=config.packs,
+            attach_mode=config.attach_mode,
+            dependency_mode=config.dependency_mode,
+            register_shell=not args.no_register_shell,
+        )
 
     if args.cmd == "verify":
         config = _resolved_config(args, home)

@@ -72,21 +72,31 @@ Start with the [workflow packages guide](_localsetup/docs/WORKFLOW_PACKAGES.md) 
 Global bootstrap from any directory on Linux, macOS, or WSL2:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --yes
+curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s --
 ```
 
-This creates or reuses the managed source checkout and installs the managed skill library only. It does not create `.codex`, `.cursor`, `.kilo`, or other repo adapter paths.
+This opens an interactive terminal wizard. It creates or reuses the managed source checkout, explains what will be changed, lets you choose whether to attach agent adapters, and asks for confirmation before applying.
 
-To bootstrap Localsetup and attach Codex to the current directory in one raw command:
+The legacy public form still opens the same wizard when a terminal is available:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --yes --tools codex
 ```
 
-Or from a cloned checkout, install the default `core` pack into the managed library:
+Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.codex/skills` to the chosen target. If you do not select tools, the install is global-library-only.
+
+For automation, opt in explicitly:
 
 ```bash
-./install --directory . --yes
+curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --non-interactive --yes
+```
+
+Automation mode preserves machine-readable output. Without a terminal, the installer asks you to rerun with a TTY or with `--non-interactive --yes`.
+
+From a cloned checkout, open the same wizard:
+
+```bash
+./install --directory .
 ```
 
 The local checkout command uses that checkout as the registered source. Like the raw global bootstrap, it installs the managed skill library and creates no repo adapter paths unless you pass `--tools` or `--platforms`. Both paths also create a managed user command at `~/.local/bin/localsetup`. After registration, run Localsetup from any project:
@@ -106,13 +116,13 @@ localsetup install --tools codex,kilo --yes
 Install every shipped skill and workflow package for Codex, Kilo, and OpenCode, while preparing the managed Python dependency environment:
 
 ```bash
-./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,experimental --install-deps --yes
+./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,experimental --install-deps
 ```
 
 Attach a selected adapter to another repo while using this checkout as the source:
 
 ```bash
-./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor --yes
+./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor
 ```
 
 To convert a repo that may contain old Localsetup files or adapter paths, start with a dry report and apply only after blockers are clear:
@@ -204,7 +214,7 @@ Research signals behind the design, verified in May 2026:
 Use managed dependency setup instead of system pip overrides:
 
 ```bash
-./install --directory . --yes --install-deps
+./install --directory . --install-deps
 ```
 
 ## Read more

@@ -10,7 +10,7 @@ This repository packages Localsetup v3, a repo-local framework for agent context
 - `./_localsetup/tests/automated_test.sh`: run the core Linux/macOS smoke test suite.
 - `pwsh ./_localsetup/tests/automated_test.ps1`: run the PowerShell test wrapper where PowerShell is available.
 - `python3 -m pytest _localsetup/tests`: run the Python pytest tests directly.
-- `./install --directory . --tools codex --yes`: test a local non-interactive install path for one platform.
+- `./install --directory . --tools codex --non-interactive --yes`: test a local non-interactive install path for one platform.
 - `python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .` and `python3 _localsetup/tools/localsetup_v3.py --repo . generate-docs`: refresh generated docs artifacts when documentation inputs change.
 - `python3 _localsetup/tools/localsetup_v3.py --repo . release-push`: compute the outgoing Conventional Commit version bump, sync versioned docs, create the release sync commit, and push.
 

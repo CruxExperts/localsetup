@@ -1,5 +1,7 @@
 import json
+import io
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -24,6 +26,7 @@ from _localsetup.v3.plan import build_install_plan
 from _localsetup.v3.rollback import rollback
 from _localsetup.v3.shell import detect_invocation_target, is_managed_shim, register_shell_command, shell_registration_status
 from _localsetup.v3.verify import verify_install
+from _localsetup.v3.wizard import TerminalWizard, choose_many, choose_one, run_wizard
 from _localsetup.v3.workflows import workflow_catalog_payload
 
 
@@ -804,6 +807,7 @@ def test_root_installer_forwards_custom_home(tmp_path: Path) -> None:
             str(home),
             "--tools",
             "codex",
+            "--non-interactive",
             "--yes",
         ],
         text=True,
@@ -837,6 +841,7 @@ def test_root_installer_supports_target_directory(tmp_path: Path) -> None:
             str(home),
             "--tools",
             "cursor",
+            "--non-interactive",
             "--yes",
         ],
         text=True,
@@ -850,6 +855,34 @@ def test_root_installer_supports_target_directory(tmp_path: Path) -> None:
     assert (target / "localsetup.lock.json").is_file()
     assert (home / ".local" / "bin" / "localsetup").is_file()
     assert not (root / ".cursor" / "skills").exists()
+
+
+def test_root_installer_non_interactive_no_register_shell_skips_shim(tmp_path: Path) -> None:
+    source = Path(__file__).resolve().parents[2]
+    root = tmp_path / "repo"
+    shutil.copytree(source / "_localsetup", root / "_localsetup", ignore=shutil.ignore_patterns("__pycache__", ".cache"))
+    shutil.copy2(source / "install", root / "install")
+    home = tmp_path / "custom-home"
+
+    completed = subprocess.run(
+        [
+            str(root / "install"),
+            "--directory",
+            str(root),
+            "--home",
+            str(home),
+            "--non-interactive",
+            "--yes",
+            "--no-register-shell",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
+    assert not (home / ".local" / "bin" / "localsetup").exists()
 
 
 def test_root_installer_help_mentions_target_directory_and_global_only_defaults() -> None:
@@ -866,6 +899,8 @@ def test_root_installer_help_mentions_target_directory_and_global_only_defaults(
     assert "--target-directory PATH" in completed.stdout
     assert "global-only install" in completed.stdout
     assert "Omit for global-only install with no repo adapters" in completed.stdout
+    assert "--non-interactive" in completed.stdout
+    assert "Automation mode" in completed.stdout
     assert "--no-register-shell" in completed.stdout
 
 
@@ -888,7 +923,23 @@ def make_bootstrap_git_repo(tmp_path: Path) -> Path:
     return repo
 
 
-def test_root_installer_stdin_requires_yes_without_bash_source_warning(tmp_path: Path) -> None:
+def run_installer_in_pty(command: list[str], *, input_text: str, cwd: Path) -> subprocess.CompletedProcess[str]:
+    script = shutil.which("script")
+    if script is None:
+        pytest.skip("script command is required for pseudo-terminal installer tests")
+    log_path = cwd / "installer-pty.log"
+    shell_command = " ".join(shlex.quote(part) for part in command)
+    return subprocess.run(
+        [script, "-q", "-e", "-c", shell_command, str(log_path)],
+        input=input_text,
+        cwd=cwd,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+
+def test_root_installer_stdin_without_tty_requires_interactive_or_automation(tmp_path: Path) -> None:
     install_path = Path(__file__).resolve().parents[2] / "install"
     outside = tmp_path / "outside"
     outside.mkdir()
@@ -905,7 +956,29 @@ def test_root_installer_stdin_requires_yes_without_bash_source_warning(tmp_path:
 
     stderr = completed.stderr.decode()
     assert completed.returncode != 0
-    assert stderr.strip() == "Error: v3 install requires --yes. Use _localsetup/tools/localsetup_v3.py plan to preview."
+    assert stderr.strip() == "Error: interactive installer requires a terminal. Run from a TTY, or use --non-interactive --yes for automation."
+    assert "BASH_SOURCE" not in stderr
+    assert "unbound variable" not in stderr
+
+
+def test_root_installer_non_interactive_requires_yes_without_bash_source_warning(tmp_path: Path) -> None:
+    install_path = Path(__file__).resolve().parents[2] / "install"
+    outside = tmp_path / "outside"
+    outside.mkdir()
+
+    with install_path.open("rb") as stdin:
+        completed = subprocess.run(
+            ["bash", "-s", "--", "--non-interactive"],
+            cwd=outside,
+            stdin=stdin,
+            text=False,
+            capture_output=True,
+            check=False,
+        )
+
+    stderr = completed.stderr.decode()
+    assert completed.returncode != 0
+    assert stderr.strip() == "Error: automation mode requires --non-interactive --yes"
     assert "BASH_SOURCE" not in stderr
     assert "unbound variable" not in stderr
 
@@ -928,7 +1001,8 @@ def test_root_installer_stdin_help_without_bash_source_warning(tmp_path: Path) -
     stderr = completed.stderr.decode()
     stdout = completed.stdout.decode()
     assert completed.returncode == 0
-    assert "curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --yes" in stdout
+    assert "curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s --" in stdout
+    assert "curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --non-interactive --yes" in stdout
     assert "--target-directory PATH" in stdout
     assert "BASH_SOURCE" not in stderr
     assert "unbound variable" not in stderr
@@ -950,7 +1024,7 @@ def test_root_installer_piped_bootstrap_global_only_uses_managed_source(tmp_path
 
     with install_path.open("rb") as stdin:
         completed = subprocess.run(
-            ["bash", "-s", "--", "--yes", "--home", str(home)],
+            ["bash", "-s", "--", "--non-interactive", "--yes", "--home", str(home)],
             cwd=outside,
             env=env,
             stdin=stdin,
@@ -983,7 +1057,7 @@ def test_root_installer_piped_bootstrap_selected_platform_attaches_caller_target
 
     with install_path.open("rb") as stdin:
         completed = subprocess.run(
-            ["bash", "-s", "--", "--yes", "--home", str(home), "--tools", "codex"],
+            ["bash", "-s", "--", "--non-interactive", "--yes", "--home", str(home), "--tools", "codex"],
             cwd=target,
             env=env,
             stdin=stdin,
@@ -1013,7 +1087,7 @@ def test_root_installer_explicit_bad_directory_does_not_bootstrap(tmp_path: Path
     }
 
     completed = subprocess.run(
-        [str(install_path), "--directory", str(tmp_path / "missing"), "--yes"],
+        [str(install_path), "--directory", str(tmp_path / "missing"), "--non-interactive", "--yes"],
         cwd=outside,
         env=env,
         text=True,
@@ -1024,6 +1098,208 @@ def test_root_installer_explicit_bad_directory_does_not_bootstrap(tmp_path: Path
     assert completed.returncode != 0
     assert "directory does not exist" in completed.stderr
     assert not managed_source.exists()
+
+
+def test_root_installer_interactive_preserves_explicit_target_and_no_register_shell(tmp_path: Path) -> None:
+    source = Path(__file__).resolve().parents[2]
+    root = tmp_path / "source"
+    target = tmp_path / "target-repo"
+    home = tmp_path / "home"
+    shutil.copytree(source / "_localsetup", root / "_localsetup", ignore=shutil.ignore_patterns("__pycache__", ".cache"))
+    shutil.copy2(source / "install", root / "install")
+    target.mkdir()
+
+    completed = run_installer_in_pty(
+        [
+            str(root / "install"),
+            "--directory",
+            str(root),
+            "--target-directory",
+            str(target),
+            "--home",
+            str(home),
+            "--tools",
+            "cursor",
+            "--no-register-shell",
+        ],
+        input_text="\n\n\n\n1\n1\n1\nyes\n",
+        cwd=tmp_path,
+    )
+
+    assert completed.returncode == 0, completed.stderr + completed.stdout
+    assert (target / ".cursor" / "skills").is_symlink()
+    assert (target / "localsetup.lock.json").is_file()
+    assert not (root / ".cursor" / "skills").exists()
+    assert not (home / ".local" / "bin" / "localsetup").exists()
+
+
+def test_root_installer_interactive_explicit_target_without_platforms_stays_global_only(tmp_path: Path) -> None:
+    source = Path(__file__).resolve().parents[2]
+    root = tmp_path / "source"
+    target = tmp_path / "target-repo"
+    home = tmp_path / "home"
+    shutil.copytree(source / "_localsetup", root / "_localsetup", ignore=shutil.ignore_patterns("__pycache__", ".cache"))
+    shutil.copy2(source / "install", root / "install")
+    target.mkdir()
+
+    completed = run_installer_in_pty(
+        [
+            str(root / "install"),
+            "--directory",
+            str(root),
+            "--target-directory",
+            str(target),
+            "--home",
+            str(home),
+            "--no-register-shell",
+        ],
+        input_text="\n\n\n\n1\n1\n1\nyes\n",
+        cwd=tmp_path,
+    )
+
+    assert completed.returncode == 0, completed.stderr + completed.stdout
+    assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
+    assert (target / "localsetup.lock.json").is_file()
+    assert not (target / ".codex").exists()
+    assert not (target / ".cursor").exists()
+
+
+def test_root_installer_interactive_cancel_does_not_create_home_or_target(tmp_path: Path) -> None:
+    source = Path(__file__).resolve().parents[2]
+    root = tmp_path / "source"
+    target = tmp_path / "target-repo"
+    home = tmp_path / "home"
+    shutil.copytree(source / "_localsetup", root / "_localsetup", ignore=shutil.ignore_patterns("__pycache__", ".cache"))
+    shutil.copy2(source / "install", root / "install")
+
+    completed = run_installer_in_pty(
+        [
+            str(root / "install"),
+            "--directory",
+            str(root),
+            "--target-directory",
+            str(target),
+            "--home",
+            str(home),
+            "--tools",
+            "cursor",
+            "--no-register-shell",
+        ],
+        input_text="q\n",
+        cwd=tmp_path,
+    )
+
+    assert completed.returncode == 130, completed.stderr + completed.stdout
+    assert not home.exists()
+    assert not target.exists()
+
+
+def test_wizard_selection_helpers_accept_numbers_and_back_cancel() -> None:
+    term = TerminalWizard(
+        input_stream=io.StringIO("2\nb\nq\n"),
+        output_stream=io.StringIO(),
+        color=False,
+    )
+
+    assert choose_one(term, "Mode", [("global", "Global"), ("current", "Current")], default="global") == "current"
+    assert choose_many(term, "Platforms", [("codex", "Codex")], default=["codex"]) == "__back__"
+    assert choose_one(term, "Mode", [("global", "Global")], default="global") == "__cancel__"
+
+
+def test_wizard_cancel_exits_without_applying(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    term = TerminalWizard(
+        input_stream=io.StringIO("q\n"),
+        output_stream=io.StringIO(),
+        color=False,
+    )
+
+    code = run_wizard(repo_root=root, home=home, terminal=term)
+
+    assert code == 130
+    assert not (home / ".local/share/agents/skills/localsetup").exists()
+
+
+def test_wizard_global_only_apply_with_scripted_confirmation(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    source = Path(__file__).resolve().parents[2]
+    shutil.copytree(source / "_localsetup" / "docs", root / "_localsetup" / "docs", dirs_exist_ok=True)
+    home = tmp_path / "home"
+    term = TerminalWizard(
+        input_stream=io.StringIO("\n\n1\n1\n1\n1\nyes\n"),
+        output_stream=io.StringIO(),
+        color=False,
+    )
+
+    code = run_wizard(repo_root=root, home=home, terminal=term, register_shell=False)
+
+    assert code == 0
+    assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
+    assert not (root / ".codex").exists()
+
+
+def test_wizard_explicit_target_is_default_when_provided(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    source = Path(__file__).resolve().parents[2]
+    shutil.copytree(source / "_localsetup" / "docs", root / "_localsetup" / "docs", dirs_exist_ok=True)
+    home = tmp_path / "home"
+    caller = tmp_path / "caller"
+    target = tmp_path / "target"
+    caller.mkdir()
+    target.mkdir()
+    term = TerminalWizard(
+        input_stream=io.StringIO("\n\n\n\n1\n1\n1\nyes\n"),
+        output_stream=io.StringIO(),
+        color=False,
+    )
+
+    code = run_wizard(
+        repo_root=root,
+        home=home,
+        caller_directory=caller,
+        target_directory=target,
+        target_directory_is_explicit=True,
+        platforms=["cursor"],
+        terminal=term,
+        register_shell=False,
+    )
+
+    assert code == 0
+    assert (target / ".cursor" / "skills").is_symlink()
+    assert (target / "localsetup.lock.json").is_file()
+    assert not (caller / ".cursor").exists()
+
+
+def test_wizard_explicit_target_without_platforms_defaults_global_only(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    source = Path(__file__).resolve().parents[2]
+    shutil.copytree(source / "_localsetup" / "docs", root / "_localsetup" / "docs", dirs_exist_ok=True)
+    home = tmp_path / "home"
+    caller = tmp_path / "caller"
+    target = tmp_path / "target"
+    caller.mkdir()
+    target.mkdir()
+    term = TerminalWizard(
+        input_stream=io.StringIO("\n\n\n\n1\n1\n1\nyes\n"),
+        output_stream=io.StringIO(),
+        color=False,
+    )
+
+    code = run_wizard(
+        repo_root=root,
+        home=home,
+        caller_directory=caller,
+        target_directory=target,
+        target_directory_is_explicit=True,
+        terminal=term,
+        register_shell=False,
+    )
+
+    assert code == 0
+    assert (target / "localsetup.lock.json").is_file()
+    assert not (target / ".codex").exists()
+    assert not (caller / ".codex").exists()
 
 
 def test_v3_migration_scanner_and_hook_gate(tmp_path: Path) -> None:

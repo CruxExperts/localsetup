@@ -13,6 +13,7 @@ PLATFORMS_CSV=""
 PACKS_CSV="core"
 MODE="symlink"
 YES=false
+NON_INTERACTIVE=false
 INSTALL_DEPS=false
 REGISTER_SHELL=true
 DEPENDENCY_MODE="prompt-only"
@@ -29,12 +30,14 @@ usage() {
 Localsetup v3 installer
 
 Usage:
+  curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s --
   curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --yes
-  ./install --directory . --yes
-  ./install --directory . --tools codex,kilo --yes
-  ./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor --yes
-  ./install --directory . --home /tmp/localsetup-home --yes
-  ./install --directory . --platforms codex kilo --yes
+  curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --non-interactive --yes
+  ./install --directory .
+  ./install --directory . --tools codex,kilo
+  ./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor
+  ./install --directory . --home /tmp/localsetup-home --non-interactive --yes
+  ./install --directory . --platforms codex kilo --non-interactive --yes
 
 Options:
   --directory PATH      Localsetup source checkout containing _localsetup/ (default: . when run
@@ -44,7 +47,9 @@ Options:
                        Defaults to --directory for explicit checkouts and to the caller's current
                        directory for piped bootstrap installs with --tools/--platforms.
   --home PATH           Home directory for the managed shared skill library (default: $HOME)
-  --yes                Non-interactive apply. Required for install.
+  --yes                Legacy accepted flag for interactive installs. For automation, combine
+                       with --non-interactive.
+  --non-interactive    Automation mode. Requires --yes and preserves JSON machine output.
   --tools LIST         Compatibility alias for --platforms. Comma-separated.
   --platforms LIST     Platform adapter ids. Omit for global-only install with no repo adapters.
   --packs LIST         Skill packs to install. Comma-separated. Default: core.
@@ -167,6 +172,10 @@ while [[ $# -gt 0 ]]; do
       YES=true
       shift
       ;;
+    --non-interactive)
+      NON_INTERACTIVE=true
+      shift
+      ;;
     --install-deps)
       INSTALL_DEPS=true
       shift
@@ -192,12 +201,15 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-[[ "$YES" == true ]] || die "v3 install requires --yes. Use _localsetup/tools/localsetup_v3.py plan to preview."
+if "$NON_INTERACTIVE" && [[ "$YES" != true ]]; then
+  die "automation mode requires --non-interactive --yes"
+fi
+if [[ "$NON_INTERACTIVE" != true && ! -t 1 && ! -t 2 ]]; then
+  die "interactive installer requires a terminal. Run from a TTY, or use --non-interactive --yes for automation."
+fi
 ensure_bootstrap_source
 [[ -d "$SOURCE_DIR" ]] || die "directory does not exist: $SOURCE_DIR"
 SOURCE_DIR="$(cd "$SOURCE_DIR" && pwd)"
-mkdir -p "$HOME_DIR"
-HOME_DIR="$(cd "$HOME_DIR" && pwd)"
 [[ -f "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" ]] || die "missing v3 tool at $SOURCE_DIR/_localsetup/tools/localsetup_v3.py"
 check_python
 
@@ -219,8 +231,10 @@ if [[ -n "$PLATFORMS_CSV" ]]; then
 fi
 target_args=()
 if [[ -n "$ATTACH_TARGET_DIR" ]]; then
-  mkdir -p "$ATTACH_TARGET_DIR"
-  ATTACH_TARGET_DIR="$(cd "$ATTACH_TARGET_DIR" && pwd)"
+  if [[ "$NON_INTERACTIVE" == true ]]; then
+    mkdir -p "$ATTACH_TARGET_DIR"
+    ATTACH_TARGET_DIR="$(cd "$ATTACH_TARGET_DIR" && pwd)"
+  fi
   target_args=(--target-directory "$ATTACH_TARGET_DIR")
 elif "$BOOTSTRAPPED_SOURCE" && ! "$EXPLICIT_TARGET_DIR" && [[ ${#platform_args[@]} -gt 0 ]]; then
   ATTACH_TARGET_DIR="$CALLER_DIR"
@@ -229,6 +243,27 @@ fi
 if [[ -n "$ATTACH_TARGET_DIR" && ${#platform_args[@]} -eq 0 ]]; then
   echo "Warning: --target-directory was provided without --tools/--platforms; installing the managed library only and creating no repo adapters." >&2
 fi
+
+if [[ "$NON_INTERACTIVE" != true ]]; then
+  wizard_target_args=()
+  if [[ -n "$ATTACH_TARGET_DIR" ]]; then
+    wizard_target_args=(--target-directory "$ATTACH_TARGET_DIR")
+  fi
+  wizard_cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --repo "$SOURCE_DIR" "${wizard_target_args[@]}" wizard --caller-directory "$CALLER_DIR" --dependency-mode "$DEPENDENCY_MODE" --mode "$MODE" --packs "${pack_args[@]}")
+  if [[ -n "$ATTACH_TARGET_DIR" && "$EXPLICIT_TARGET_DIR" != true ]]; then
+    wizard_cmd+=(--target-directory-origin inferred)
+  fi
+  if [[ ${#platform_args[@]} -gt 0 ]]; then
+    wizard_cmd+=(--platforms "${platform_args[@]}")
+  fi
+  if [[ "$REGISTER_SHELL" != true ]]; then
+    wizard_cmd+=(--no-register-shell)
+  fi
+  exec "${wizard_cmd[@]}"
+fi
+
+mkdir -p "$HOME_DIR"
+HOME_DIR="$(cd "$HOME_DIR" && pwd)"
 
 doctor_cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --repo "$SOURCE_DIR" "${target_args[@]}" doctor --dependency-mode "$DEPENDENCY_MODE" --packs "${pack_args[@]}")
 if [[ ${#platform_args[@]} -gt 0 ]]; then

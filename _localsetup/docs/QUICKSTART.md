@@ -21,21 +21,31 @@ Windows is WSL2-only in Localsetup v3. Native PowerShell install is intentionall
 Global bootstrap from any directory:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --yes
+curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s --
 ```
 
-This creates or reuses the managed source checkout and installs the managed skill library only. It does not create `.codex`, `.cursor`, `.kilo`, or other repo adapter paths.
+This opens a terminal wizard. It creates or reuses the managed source checkout, shows the source, target, managed skill library, selected platforms and packs, then asks for confirmation before applying.
 
-To bootstrap Localsetup and attach Codex to the current directory in one raw command:
+The old public command form still opens the wizard when a terminal is available:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --yes --tools codex
 ```
 
+Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.codex/skills` to the selected target. If no tools are selected, the install is global-library-only.
+
+For scripts and CI, use explicit automation mode:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --non-interactive --yes
+```
+
+Automation mode keeps machine-readable output. Without a terminal and without `--non-interactive --yes`, the installer exits with a short message explaining both choices.
+
 From a local checkout:
 
 ```bash
-./install --directory . --yes
+./install --directory .
 ```
 
 The local checkout command uses that checkout as the registered source. Like the raw global bootstrap, it installs the default `core` pack into the managed library, registers `~/.local/bin/localsetup`, and does not create repo adapter paths unless you pass `--tools` or `--platforms`. If `~/.local/bin` is not on `PATH`, the installer warns and the command becomes available after you add that directory to your shell path.
@@ -57,13 +67,13 @@ localsetup install --tools codex,kilo --yes
 For a full local setup with all shipped skill and workflow packs attached to Codex, Kilo, and OpenCode:
 
 ```bash
-./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,experimental --install-deps --yes
+./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,experimental --install-deps
 ```
 
 If Python dependencies are missing or you want the managed venv prepared:
 
 ```bash
-./install --directory . --yes --install-deps
+./install --directory . --install-deps
 ```
 
 Localsetup v3 does not require `--break-system-packages`.
@@ -82,7 +92,7 @@ Localsetup v3 does not require `--break-system-packages`.
 Comma-separate multiple IDs:
 
 ```bash
-./install --directory . --tools cursor,claude-code,codex --yes
+./install --directory . --tools cursor,claude-code,codex
 ```
 
 Omit `--tools` and `--platforms` for a global-only install. No omitted selector expands to every platform.
@@ -90,7 +100,7 @@ Omit `--tools` and `--platforms` for a global-only install. No omitted selector 
 Attach an adapter to another repo or directory while using this checkout as the source:
 
 ```bash
-./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor --yes
+./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor
 ```
 
 Convert a repo that may already contain old Localsetup files:
@@ -113,7 +123,7 @@ The first command is a dry report. Apply mode writes a timestamped backup and `c
 Selected adapters point to the managed home library by symlink. Use portable mode when symlinks are not suitable:
 
 ```bash
-./install --directory . --tools codex --yes --mode portable
+./install --directory . --tools codex --mode portable
 ```
 
 ## Verify
@@ -145,7 +155,7 @@ python3 _localsetup/tools/localsetup_v3.py --repo . context --markdown
 Re-run install with the same directory and platform selection:
 
 ```bash
-./install --directory . --tools codex,kilo --yes
+./install --directory . --tools codex,kilo
 ```
 
 The installer refreshes managed skills, selected adapter links or portable copies, lock metadata, and reports. A global-only re-run refreshes the managed library and records an empty platform list.

@@ -13,7 +13,7 @@ version: 3.2
 
 ## Platform detection and script selection
 
-- **Linux / macOS:** Use `./install`, which delegates to `_localsetup/tools/localsetup_v3.py install --apply`.
+- **Linux / macOS:** Use `./install`, which opens the interactive wizard by default. Automation uses `_localsetup/tools/localsetup_v3.py install --apply` through `--non-interactive --yes`.
 - **Windows:** Localsetup v3 supports Windows through WSL2 only. Native PowerShell installation was removed; `install.ps1` prints WSL2 guidance and exits.
 - **Git Bash (or MSYS/Cygwin) on Windows:** Open WSL2 and run the Bash installer from there.
 
@@ -24,18 +24,26 @@ version: 3.2
 Global bootstrap from any directory:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --yes
+curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s --
 ```
 
-Note: `sudo curl ... | bash -s -- --yes` only elevates curl; install and deploy run as the current user. For a full install as root: `curl -sSL <url> -o /tmp/install.sh && sudo bash /tmp/install.sh --yes`.
+This opens the interactive terminal wizard. It shows the source checkout, target directory, managed home library, selected platforms and packs, warnings, blockers, and planned actions before asking for final confirmation.
 
-Non-interactive global-only install:
+The legacy public form still opens the wizard when a terminal is available:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --yes
 ```
 
-This creates or reuses a managed Localsetup source checkout at `~/.local/share/localsetup/source`, installs the managed Localsetup package library, registers `~/.local/bin/localsetup`, and creates no repo adapter paths. If that bin directory is not on `PATH`, the installer prints a warning; add it before using the global command.
+Note: `sudo curl ... | bash -s --` only elevates curl; install and deploy run as the current user. For a full install as root: `curl -sSL <url> -o /tmp/install.sh && sudo bash /tmp/install.sh`.
+
+Automation global-only install:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --non-interactive --yes
+```
+
+Automation mode creates or reuses a managed Localsetup source checkout at `~/.local/share/localsetup/source`, installs the managed Localsetup package library, registers `~/.local/bin/localsetup`, creates no repo adapter paths unless selected, and preserves machine-readable output. If no terminal is available and `--non-interactive --yes` is not provided, the installer exits with an actionable message.
 
 Selected platforms for the current repo after global bootstrap:
 
@@ -46,17 +54,17 @@ localsetup install --tools cursor,claude-code --yes
 Or bootstrap Localsetup and attach selected adapters to the current directory in one raw command:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --yes --tools cursor,claude-code
+curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --tools cursor,claude-code
 ```
 
-When the raw installer is run with `--tools` or `--platforms` and no explicit `--target-directory`, adapters attach to the current directory where you launched the command. Without `--tools` or `--platforms`, the raw installer is global-only.
+When the raw installer is run with `--tools` or `--platforms` and no explicit `--target-directory`, the wizard defaults adapters to the current directory where you launched the command. Without selected tools or platforms, the install is global-library-only.
 
 `--tools` is a compatibility alias for the v3 `--platforms` selector.
 
 Full local setup for the Codex, Kilo, and OpenCode adapters:
 
 ```bash
-./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,experimental --install-deps --yes
+./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,experimental --install-deps
 ```
 
 That command installs every declared skill and workflow pack, attaches only `.codex/skills`, `.kilo/skills`, and `.opencode/skills`, and prepares the managed `.localsetup/venv` dependency environment.
@@ -64,7 +72,7 @@ That command installs every declared skill and workflow pack, attaches only `.co
 Attach a selected adapter to another repo or directory:
 
 ```bash
-./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor --yes
+./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor
 ```
 
 The managed global command separates source from target. The source is the registered Localsetup checkout recorded in `~/.local/bin/localsetup`; the target is the nearest Git worktree root from the command CWD, or the exact CWD outside Git. `--target-directory` always overrides detection.
@@ -83,7 +91,7 @@ The dry report lists artifacts and blockers. Apply mode writes `.localsetup/back
 ```bash
 wsl
 cd /path/to/repo
-./install --directory . --yes
+./install --directory .
 ```
 
 ## Options
@@ -92,7 +100,8 @@ cd /path/to/repo
 - `--target-directory PATH`  - Directory where selected repo adapter links and `localsetup.lock.json` are written. Defaults to the source checkout for explicit local installs and to the caller's current directory for raw bootstrap installs with selected platforms.
 - `--tools LIST`  - Compatibility alias for comma-separated platforms: cursor, claude-code, codex, openclaw, kilo, opencode
 - `--platforms LIST`  - Space-separated v3 platform ids. Omit for a global-only install with no repo adapters.
-- `--yes`  - Non-interactive apply
+- `--yes`  - Legacy accepted flag for interactive installs. For automation, combine with `--non-interactive`.
+- `--non-interactive`  - Automation mode. Requires `--yes` and preserves machine-readable output.
 - `--global`  - Legacy no-op compatibility flag; v3 installs the managed home library by default
 - `--install-deps`  - Create/update the managed `.localsetup/venv` and install `_localsetup/requirements.txt`
 - `--no-register-shell`  - Skip creating/updating `~/.local/bin/localsetup`
@@ -147,7 +156,7 @@ python3 _localsetup/tools/localsetup_v3.py configure --platforms codex --packs c
 To install dependencies automatically during install, add the `--install-deps` flag:
 
 ```bash
-./install --directory . --tools cursor --yes --install-deps
+./install --directory . --tools cursor --install-deps
 ```
 
 Without `--install-deps`, the root wrapper runs doctor in `prompt-only` mode and applies the v3 install without mutating Python dependencies. Direct Python CLI installs default to `--dependency-mode managed-venv`; use `--dependency-mode prompt-only` when you only want adapter installation.
@@ -187,4 +196,4 @@ Framework install logic is Python-first. Shell is limited to the bootstrap wrapp
 
 ## Repo-local
 
-Framework source and repo-local context live in the repo. Installed skill and workflow package copies live in the managed home library and can be recreated from the repo with `./install --directory . --yes`. Add `--tools` or `--platforms` when you want to attach repo adapter paths.
+Framework source and repo-local context live in the repo. Installed skill and workflow package copies live in the managed home library and can be recreated from the repo with `./install --directory .`. Add `--tools` or `--platforms` when you want to attach repo adapter paths.
