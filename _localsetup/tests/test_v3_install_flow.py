@@ -11,7 +11,7 @@ from _localsetup.v3.boundary import scan_tar_for_leaks
 from _localsetup.v3.cli import _split_csv
 from _localsetup.v3.config import InstallConfig, load_install_config, merge_cli_config
 from _localsetup.v3.context import build_agent_context, render_markdown_report
-from _localsetup.v3.dependencies import ensure_dependencies
+from _localsetup.v3.dependencies import ensure_dependencies, missing_requirements
 from _localsetup.v3.doctor import run_doctor
 from _localsetup.v3.docs import generate_alias_outputs
 from _localsetup.v3.hooks import run_maintainer_gate
@@ -375,6 +375,29 @@ def test_v3_managed_venv_commands_and_lock_interpreter(tmp_path: Path) -> None:
     assert deps["interpreter"].endswith(".localsetup/venv/bin/python")
     assert lock["python_interpreter"] == deps["interpreter"]
     assert result["lockfile"].endswith("localsetup.lock.json")
+
+
+def test_v3_missing_requirements_checks_selected_interpreter(tmp_path: Path) -> None:
+    req = tmp_path / "requirements.txt"
+    req.write_text("PGPy>=0.6.0\nDefinitely-Missing-Package>=1\n", encoding="utf-8")
+
+    def fake_runner(cmd: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        assert cmd[:2] == ["/tmp/venv/bin/python", "-c"]
+        return subprocess.CompletedProcess(cmd, 0, stdout='["PGPy"]\n', stderr="")
+
+    assert missing_requirements(req, python="/tmp/venv/bin/python", runner=fake_runner) == [
+        "Definitely-Missing-Package"
+    ]
+
+
+def test_v3_missing_requirements_probe_failure_does_not_fall_back(tmp_path: Path) -> None:
+    req = tmp_path / "requirements.txt"
+    req.write_text("pytest>=1\n", encoding="utf-8")
+
+    def fake_runner(cmd: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(cmd, 1, stdout="", stderr="probe failed")
+
+    assert missing_requirements(req, python="/tmp/venv/bin/python", runner=fake_runner) == ["pytest"]
 
 
 def test_skill_smoke_runner_uses_current_python_without_shell(tmp_path: Path) -> None:

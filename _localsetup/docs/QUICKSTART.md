@@ -38,6 +38,12 @@ Attach selected agent hosts explicitly:
 ./install --directory . --tools codex,kilo --yes
 ```
 
+For a full local setup with all shipped skill and workflow packs attached to Codex, Kilo, and OpenCode:
+
+```bash
+./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,experimental --install-deps --yes
+```
+
 If Python dependencies are missing or you want the managed venv prepared:
 
 ```bash
@@ -100,6 +106,8 @@ Read-only preflight:
 ```bash
 python3 _localsetup/tools/localsetup_v3.py doctor
 ```
+
+After using `--install-deps`, `doctor` verifies installed Python distributions from the managed venv interpreter, so packages whose distribution and import names differ, such as `PGPy` / `pgpy`, are reported accurately.
 
 Agent-readable install context:
 

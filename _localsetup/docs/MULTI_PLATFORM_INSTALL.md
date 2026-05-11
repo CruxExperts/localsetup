@@ -45,6 +45,14 @@ curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install 
 
 `--tools` is a compatibility alias for the v3 `--platforms` selector.
 
+Full local setup for the Codex, Kilo, and OpenCode adapters:
+
+```bash
+./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,experimental --install-deps --yes
+```
+
+That command installs every declared skill and workflow pack, attaches only `.codex/skills`, `.kilo/skills`, and `.opencode/skills`, and prepares the managed `.localsetup/venv` dependency environment.
+
 Attach a selected adapter to another repo or directory:
 
 ```bash
@@ -107,6 +115,8 @@ Python packages are listed in `_localsetup/requirements.txt`. The conservative d
 ```bash
 python3 _localsetup/tools/localsetup_v3.py doctor
 ```
+
+Dependency checks use installed Python distribution metadata from the selected interpreter. This keeps packages with different distribution and import names, such as `PGPy` / `pgpy`, from being misreported as missing after managed dependency installation.
 
 To normalize install intent without changing files, run:
 

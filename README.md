@@ -87,6 +87,12 @@ Attach adapters only for the hosts you choose:
 ./install --directory . --tools codex,kilo --yes
 ```
 
+Install every shipped skill and workflow package for Codex, Kilo, and OpenCode, while preparing the managed Python dependency environment:
+
+```bash
+./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,experimental --install-deps --yes
+```
+
 Attach a selected adapter to another repo while using this checkout as the source:
 
 ```bash

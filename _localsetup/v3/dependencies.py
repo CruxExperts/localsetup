@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 import importlib.util
 from importlib import metadata
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -76,12 +78,38 @@ def _requirement_names(path: Path) -> list[str]:
     return names
 
 
-def missing_requirements(req_path: Path) -> list[str]:
+def _normalize_distribution_name(name: str) -> str:
+    return re.sub(r"[-_.]+", "-", name).lower()
+
+
+def _installed_distribution_names(python: str | Path | None = None, runner: Runner | None = None) -> set[str]:
+    if python is None or Path(python) == Path(sys.executable):
+        return {_normalize_distribution_name(dist.metadata["Name"]) for dist in metadata.distributions()}
+
+    script = (
+        "import importlib.metadata as m, json; "
+        "print(json.dumps([d.metadata['Name'] for d in m.distributions()]))"
+    )
+    result = _run([str(python), "-c", script], runner=runner)
+    if result.returncode != 0:
+        return set()
+    try:
+        names = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return set()
+    return {_normalize_distribution_name(str(name)) for name in names}
+
+
+def missing_requirements(
+    req_path: Path,
+    *,
+    python: str | Path | None = None,
+    runner: Runner | None = None,
+) -> list[str]:
+    installed = _installed_distribution_names(python=python, runner=runner)
     missing: list[str] = []
     for name in _requirement_names(req_path):
-        try:
-            metadata.version(name)
-        except metadata.PackageNotFoundError:
+        if _normalize_distribution_name(name) not in installed:
             missing.append(name)
     return missing
 
@@ -107,7 +135,8 @@ def dependency_status(
     interpreter = venv_python(venv_path) if venv_path.exists() else None
     warnings: list[str] = []
     commands: list[list[str]] = []
-    missing = missing_requirements(req)
+    missing_python = interpreter if mode == "managed-venv" and interpreter is not None else None
+    missing = missing_requirements(req, python=missing_python, runner=runner)
 
     if not req.exists():
         warnings.append(f"missing requirements file: {req}")
