@@ -18,10 +18,18 @@ Windows is WSL2-only in Localsetup v3. Native PowerShell install is intentionall
 
 ## Install In One Command
 
-From a project root:
+Global bootstrap from any directory:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --yes
+```
+
+This creates or reuses the managed source checkout and installs the managed skill library only. It does not create `.codex`, `.cursor`, `.kilo`, or other repo adapter paths.
+
+To bootstrap Localsetup and attach Codex to the current directory in one raw command:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --yes --tools codex
 ```
 
 From a local checkout:
@@ -30,7 +38,7 @@ From a local checkout:
 ./install --directory . --yes
 ```
 
-The raw installer creates or reuses a managed Localsetup source checkout at `~/.local/share/localsetup/source`. This installs the default `core` pack into the managed library, registers `~/.local/bin/localsetup`, and does not create repo adapter paths. If `~/.local/bin` is not on `PATH`, the installer warns and the command becomes available after you add that directory to your shell path.
+The local checkout command uses that checkout as the registered source. Like the raw global bootstrap, it installs the default `core` pack into the managed library, registers `~/.local/bin/localsetup`, and does not create repo adapter paths unless you pass `--tools` or `--platforms`. If `~/.local/bin` is not on `PATH`, the installer warns and the command becomes available after you add that directory to your shell path.
 
 After registration, run Localsetup from any project:
 

@@ -37,13 +37,19 @@ curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install 
 
 This creates or reuses a managed Localsetup source checkout at `~/.local/share/localsetup/source`, installs the managed Localsetup package library, registers `~/.local/bin/localsetup`, and creates no repo adapter paths. If that bin directory is not on `PATH`, the installer prints a warning; add it before using the global command.
 
-Selected platforms for the current repo:
+Selected platforms for the current repo after global bootstrap:
 
 ```bash
 localsetup install --tools cursor,claude-code --yes
 ```
 
-When the raw installer is run with `--tools` or `--platforms` and no explicit `--target-directory`, adapters attach to the current directory where you launched the command.
+Or bootstrap Localsetup and attach selected adapters to the current directory in one raw command:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --yes --tools cursor,claude-code
+```
+
+When the raw installer is run with `--tools` or `--platforms` and no explicit `--target-directory`, adapters attach to the current directory where you launched the command. Without `--tools` or `--platforms`, the raw installer is global-only.
 
 `--tools` is a compatibility alias for the v3 `--platforms` selector.
 

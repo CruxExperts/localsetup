@@ -69,10 +69,18 @@ Start with the [workflow packages guide](_localsetup/docs/WORKFLOW_PACKAGES.md) 
 
 ## 60-second quickstart
 
-Run from a project root on Linux, macOS, or WSL2.
+Global bootstrap from any directory on Linux, macOS, or WSL2:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --yes
+```
+
+This creates or reuses the managed source checkout and installs the managed skill library only. It does not create `.codex`, `.cursor`, `.kilo`, or other repo adapter paths.
+
+To bootstrap Localsetup and attach Codex to the current directory in one raw command:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --yes --tools codex
 ```
 
 Or from a cloned checkout, install the default `core` pack into the managed library:
@@ -81,7 +89,7 @@ Or from a cloned checkout, install the default `core` pack into the managed libr
 ./install --directory . --yes
 ```
 
-The raw installer creates or reuses a managed Localsetup source checkout at `~/.local/share/localsetup/source`. The installer also creates a managed user command at `~/.local/bin/localsetup`. After registration, run Localsetup from any project:
+The local checkout command uses that checkout as the registered source. Like the raw global bootstrap, it installs the managed skill library and creates no repo adapter paths unless you pass `--tools` or `--platforms`. Both paths also create a managed user command at `~/.local/bin/localsetup`. After registration, run Localsetup from any project:
 
 ```bash
 localsetup install --tools codex --yes
@@ -190,7 +198,7 @@ Research signals behind the design, verified in May 2026:
 
 - Python `>= 3.10`
 - Bash on Linux, macOS, or WSL2
-- Git for clone/update workflows
+- Git and network access to GitHub for first-time raw bootstrap, unless installing from a local clone or reusing an existing managed source checkout
 - Recommended: `rg`, `pip`, and the packages in `_localsetup/requirements.txt`
 
 Use managed dependency setup instead of system pip overrides:
