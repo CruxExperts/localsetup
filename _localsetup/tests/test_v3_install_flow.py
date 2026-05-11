@@ -869,6 +869,163 @@ def test_root_installer_help_mentions_target_directory_and_global_only_defaults(
     assert "--no-register-shell" in completed.stdout
 
 
+def make_bootstrap_git_repo(tmp_path: Path) -> Path:
+    source = Path(__file__).resolve().parents[2]
+    repo = tmp_path / "repo"
+    shutil.copytree(source / "_localsetup", repo / "_localsetup", ignore=shutil.ignore_patterns("__pycache__", ".cache"))
+    shutil.copy2(source / "VERSION", repo / "VERSION")
+    (repo / "README.md").write_text("# Localsetup\n", encoding="utf-8")
+    (repo / "AGENTS.md").write_text("# Agents\n", encoding="utf-8")
+    subprocess.run(["git", "init", "-b", "main"], cwd=repo, text=True, capture_output=True, check=True)
+    subprocess.run(["git", "add", "."], cwd=repo, text=True, capture_output=True, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Localsetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "init"],
+        cwd=repo,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    return repo
+
+
+def test_root_installer_stdin_requires_yes_without_bash_source_warning(tmp_path: Path) -> None:
+    install_path = Path(__file__).resolve().parents[2] / "install"
+    outside = tmp_path / "outside"
+    outside.mkdir()
+
+    with install_path.open("rb") as stdin:
+        completed = subprocess.run(
+            ["bash"],
+            cwd=outside,
+            stdin=stdin,
+            text=False,
+            capture_output=True,
+            check=False,
+        )
+
+    stderr = completed.stderr.decode()
+    assert completed.returncode != 0
+    assert stderr.strip() == "Error: v3 install requires --yes. Use _localsetup/tools/localsetup_v3.py plan to preview."
+    assert "BASH_SOURCE" not in stderr
+    assert "unbound variable" not in stderr
+
+
+def test_root_installer_stdin_help_without_bash_source_warning(tmp_path: Path) -> None:
+    install_path = Path(__file__).resolve().parents[2] / "install"
+    outside = tmp_path / "outside"
+    outside.mkdir()
+
+    with install_path.open("rb") as stdin:
+        completed = subprocess.run(
+            ["bash", "-s", "--", "--help"],
+            cwd=outside,
+            stdin=stdin,
+            text=False,
+            capture_output=True,
+            check=False,
+        )
+
+    stderr = completed.stderr.decode()
+    stdout = completed.stdout.decode()
+    assert completed.returncode == 0
+    assert "curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --yes" in stdout
+    assert "--target-directory PATH" in stdout
+    assert "BASH_SOURCE" not in stderr
+    assert "unbound variable" not in stderr
+
+
+def test_root_installer_piped_bootstrap_global_only_uses_managed_source(tmp_path: Path) -> None:
+    install_path = Path(__file__).resolve().parents[2] / "install"
+    bootstrap_repo = make_bootstrap_git_repo(tmp_path / "bootstrap")
+    outside = tmp_path / "outside"
+    home = tmp_path / "home"
+    managed_source = tmp_path / "managed-source"
+    outside.mkdir()
+    env = {
+        **os.environ,
+        "LOCALSETUP_BOOTSTRAP_REPO": str(bootstrap_repo),
+        "LOCALSETUP_BOOTSTRAP_REF": "main",
+        "LOCALSETUP_BOOTSTRAP_SOURCE_DIR": str(managed_source),
+    }
+
+    with install_path.open("rb") as stdin:
+        completed = subprocess.run(
+            ["bash", "-s", "--", "--yes", "--home", str(home)],
+            cwd=outside,
+            env=env,
+            stdin=stdin,
+            text=False,
+            capture_output=True,
+            check=False,
+        )
+
+    assert completed.returncode == 0, completed.stderr.decode()
+    assert (managed_source / "_localsetup/tools/localsetup_v3.py").is_file()
+    assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
+    assert (home / ".local/bin/localsetup").is_file()
+    assert not (outside / ".codex").exists()
+    assert not (outside / "localsetup.lock.json").exists()
+
+
+def test_root_installer_piped_bootstrap_selected_platform_attaches_caller_target(tmp_path: Path) -> None:
+    install_path = Path(__file__).resolve().parents[2] / "install"
+    bootstrap_repo = make_bootstrap_git_repo(tmp_path / "bootstrap")
+    target = tmp_path / "target"
+    home = tmp_path / "home"
+    managed_source = tmp_path / "managed-source"
+    target.mkdir()
+    env = {
+        **os.environ,
+        "LOCALSETUP_BOOTSTRAP_REPO": str(bootstrap_repo),
+        "LOCALSETUP_BOOTSTRAP_REF": "main",
+        "LOCALSETUP_BOOTSTRAP_SOURCE_DIR": str(managed_source),
+    }
+
+    with install_path.open("rb") as stdin:
+        completed = subprocess.run(
+            ["bash", "-s", "--", "--yes", "--home", str(home), "--tools", "codex"],
+            cwd=target,
+            env=env,
+            stdin=stdin,
+            text=False,
+            capture_output=True,
+            check=False,
+        )
+
+    assert completed.returncode == 0, completed.stderr.decode()
+    assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
+    assert (target / ".codex" / "skills").is_symlink()
+    assert (target / "localsetup.lock.json").is_file()
+    assert not (managed_source / ".codex").exists()
+
+
+def test_root_installer_explicit_bad_directory_does_not_bootstrap(tmp_path: Path) -> None:
+    install_path = Path(__file__).resolve().parents[2] / "install"
+    bootstrap_repo = make_bootstrap_git_repo(tmp_path / "bootstrap")
+    outside = tmp_path / "outside"
+    managed_source = tmp_path / "managed-source"
+    outside.mkdir()
+    env = {
+        **os.environ,
+        "LOCALSETUP_BOOTSTRAP_REPO": str(bootstrap_repo),
+        "LOCALSETUP_BOOTSTRAP_REF": "main",
+        "LOCALSETUP_BOOTSTRAP_SOURCE_DIR": str(managed_source),
+    }
+
+    completed = subprocess.run(
+        [str(install_path), "--directory", str(tmp_path / "missing"), "--yes"],
+        cwd=outside,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode != 0
+    assert "directory does not exist" in completed.stderr
+    assert not managed_source.exists()
+
+
 def test_v3_migration_scanner_and_hook_gate(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     (root / "README.md").write_text("Use localsetup-context during migration.\n", encoding="utf-8")

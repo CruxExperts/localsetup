@@ -72,7 +72,7 @@ Start with the [workflow packages guide](_localsetup/docs/WORKFLOW_PACKAGES.md) 
 Run from a project root on Linux, macOS, or WSL2.
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash
+curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --yes
 ```
 
 Or from a cloned checkout, install the default `core` pack into the managed library:
@@ -81,7 +81,7 @@ Or from a cloned checkout, install the default `core` pack into the managed libr
 ./install --directory . --yes
 ```
 
-The installer also creates a managed user command at `~/.local/bin/localsetup`. After registration, run Localsetup from any project:
+The raw installer creates or reuses a managed Localsetup source checkout at `~/.local/share/localsetup/source`. The installer also creates a managed user command at `~/.local/bin/localsetup`. After registration, run Localsetup from any project:
 
 ```bash
 localsetup install --tools codex --yes

@@ -5,7 +5,7 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CALLER_DIR="$(pwd)"
 SOURCE_DIR="."
 ATTACH_TARGET_DIR=""
 HOME_DIR="${HOME}"
@@ -17,12 +17,19 @@ INSTALL_DEPS=false
 REGISTER_SHELL=true
 DEPENDENCY_MODE="prompt-only"
 MIN_PYTHON_VERSION="3.10.0"
+EXPLICIT_SOURCE_DIR=false
+EXPLICIT_TARGET_DIR=false
+BOOTSTRAPPED_SOURCE=false
+BOOTSTRAP_REPO="${LOCALSETUP_BOOTSTRAP_REPO:-https://github.com/CruxExperts/localsetup.git}"
+BOOTSTRAP_REF="${LOCALSETUP_BOOTSTRAP_REF:-main}"
+BOOTSTRAP_SOURCE_DIR="${LOCALSETUP_BOOTSTRAP_SOURCE_DIR:-${HOME}/.local/share/localsetup/source}"
 
 usage() {
   cat <<'USAGE_END'
 Localsetup v3 installer
 
 Usage:
+  curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --yes
   ./install --directory . --yes
   ./install --directory . --tools codex,kilo --yes
   ./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor --yes
@@ -30,10 +37,12 @@ Usage:
   ./install --directory . --platforms codex kilo --yes
 
 Options:
-  --directory PATH      Localsetup source checkout containing _localsetup/ (default: .)
+  --directory PATH      Localsetup source checkout containing _localsetup/ (default: . when run
+                       from a checkout; otherwise bootstraps a managed source checkout).
   --target-directory PATH
                        Directory where adapter links and localsetup.lock.json are written.
-                       Defaults to --directory. Omit --tools/--platforms for global-only install.
+                       Defaults to --directory for explicit checkouts and to the caller's current
+                       directory for piped bootstrap installs with --tools/--platforms.
   --home PATH           Home directory for the managed shared skill library (default: $HOME)
   --yes                Non-interactive apply. Required for install.
   --tools LIST         Compatibility alias for --platforms. Comma-separated.
@@ -83,16 +92,45 @@ raise SystemExit(0 if current >= required else 1)
 PY
 }
 
+ensure_bootstrap_source() {
+  if [[ -f "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" ]]; then
+    return
+  fi
+  if "$EXPLICIT_SOURCE_DIR"; then
+    [[ -d "$SOURCE_DIR" ]] || die "directory does not exist: $SOURCE_DIR"
+    die "missing v3 tool at $SOURCE_DIR/_localsetup/tools/localsetup_v3.py"
+  fi
+
+  SOURCE_DIR="$BOOTSTRAP_SOURCE_DIR"
+  if [[ -f "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" ]]; then
+    BOOTSTRAPPED_SOURCE=true
+    return
+  fi
+  if [[ -e "$SOURCE_DIR" ]]; then
+    die "bootstrap source exists but is not a Localsetup v3 checkout: $SOURCE_DIR"
+  fi
+  command -v git >/dev/null 2>&1 || die "git is required to bootstrap Localsetup from $BOOTSTRAP_REPO"
+  mkdir -p "$(dirname "$SOURCE_DIR")"
+  git clone --branch "$BOOTSTRAP_REF" --single-branch "$BOOTSTRAP_REPO" "$SOURCE_DIR" >/dev/null 2>&1 || {
+    rm -rf "$SOURCE_DIR"
+    die "failed to clone Localsetup bootstrap source from $BOOTSTRAP_REPO at ref $BOOTSTRAP_REF"
+  }
+  [[ -f "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" ]] || die "bootstrap clone is missing _localsetup/tools/localsetup_v3.py: $SOURCE_DIR"
+  BOOTSTRAPPED_SOURCE=true
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --directory)
       [[ $# -ge 2 ]] || die "missing value for --directory"
       SOURCE_DIR="$2"
+      EXPLICIT_SOURCE_DIR=true
       shift 2
       ;;
     --target-directory)
       [[ $# -ge 2 ]] || die "missing value for --target-directory"
       ATTACH_TARGET_DIR="$2"
+      EXPLICIT_TARGET_DIR=true
       shift 2
       ;;
     --home)
@@ -155,14 +193,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 [[ "$YES" == true ]] || die "v3 install requires --yes. Use _localsetup/tools/localsetup_v3.py plan to preview."
+ensure_bootstrap_source
 [[ -d "$SOURCE_DIR" ]] || die "directory does not exist: $SOURCE_DIR"
 SOURCE_DIR="$(cd "$SOURCE_DIR" && pwd)"
-target_args=()
-if [[ -n "$ATTACH_TARGET_DIR" ]]; then
-  mkdir -p "$ATTACH_TARGET_DIR"
-  ATTACH_TARGET_DIR="$(cd "$ATTACH_TARGET_DIR" && pwd)"
-  target_args=(--target-directory "$ATTACH_TARGET_DIR")
-fi
 mkdir -p "$HOME_DIR"
 HOME_DIR="$(cd "$HOME_DIR" && pwd)"
 [[ -f "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" ]] || die "missing v3 tool at $SOURCE_DIR/_localsetup/tools/localsetup_v3.py"
@@ -183,6 +216,15 @@ csv_to_args "$PACKS_CSV" pack_args
 platform_args=()
 if [[ -n "$PLATFORMS_CSV" ]]; then
   csv_to_args "$PLATFORMS_CSV" platform_args
+fi
+target_args=()
+if [[ -n "$ATTACH_TARGET_DIR" ]]; then
+  mkdir -p "$ATTACH_TARGET_DIR"
+  ATTACH_TARGET_DIR="$(cd "$ATTACH_TARGET_DIR" && pwd)"
+  target_args=(--target-directory "$ATTACH_TARGET_DIR")
+elif "$BOOTSTRAPPED_SOURCE" && ! "$EXPLICIT_TARGET_DIR" && [[ ${#platform_args[@]} -gt 0 ]]; then
+  ATTACH_TARGET_DIR="$CALLER_DIR"
+  target_args=(--target-directory "$ATTACH_TARGET_DIR")
 fi
 if [[ -n "$ATTACH_TARGET_DIR" && ${#platform_args[@]} -eq 0 ]]; then
   echo "Warning: --target-directory was provided without --tools/--platforms; installing the managed library only and creating no repo adapters." >&2

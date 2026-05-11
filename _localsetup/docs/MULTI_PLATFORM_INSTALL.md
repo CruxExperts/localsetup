@@ -21,27 +21,29 @@ version: 3.2
 
 ### Linux / macOS (Bash)
 
-From your client repo root:
+Global bootstrap from any directory:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash
+curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --yes
 ```
 
-Note: `sudo curl ... | bash` only elevates curl; install and deploy run as the current user. For a full install as root: `curl -sSL <url> -o /tmp/install.sh && sudo bash /tmp/install.sh`.
+Note: `sudo curl ... | bash -s -- --yes` only elevates curl; install and deploy run as the current user. For a full install as root: `curl -sSL <url> -o /tmp/install.sh && sudo bash /tmp/install.sh --yes`.
 
 Non-interactive global-only install:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --directory . --yes
+curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --yes
 ```
 
-This installs or refreshes the managed Localsetup package library, registers `~/.local/bin/localsetup`, and creates no repo adapter paths. If that bin directory is not on `PATH`, the installer prints a warning; add it before using the global command.
+This creates or reuses a managed Localsetup source checkout at `~/.local/share/localsetup/source`, installs the managed Localsetup package library, registers `~/.local/bin/localsetup`, and creates no repo adapter paths. If that bin directory is not on `PATH`, the installer prints a warning; add it before using the global command.
 
-Selected platforms:
+Selected platforms for the current repo:
 
 ```bash
 localsetup install --tools cursor,claude-code --yes
 ```
+
+When the raw installer is run with `--tools` or `--platforms` and no explicit `--target-directory`, adapters attach to the current directory where you launched the command.
 
 `--tools` is a compatibility alias for the v3 `--platforms` selector.
 
@@ -80,8 +82,8 @@ cd /path/to/repo
 
 ## Options
 
-- `--directory PATH` / `-Directory PATH`  - Localsetup source checkout containing `_localsetup/` (default: .)
-- `--target-directory PATH`  - Directory where selected repo adapter links and `localsetup.lock.json` are written. Defaults to `--directory`.
+- `--directory PATH` / `-Directory PATH`  - Localsetup source checkout containing `_localsetup/`. Defaults to `.` when run from a checkout; otherwise the raw Bash installer creates or reuses `~/.local/share/localsetup/source`.
+- `--target-directory PATH`  - Directory where selected repo adapter links and `localsetup.lock.json` are written. Defaults to the source checkout for explicit local installs and to the caller's current directory for raw bootstrap installs with selected platforms.
 - `--tools LIST`  - Compatibility alias for comma-separated platforms: cursor, claude-code, codex, openclaw, kilo, opencode
 - `--platforms LIST`  - Space-separated v3 platform ids. Omit for a global-only install with no repo adapters.
 - `--yes`  - Non-interactive apply
@@ -112,7 +114,7 @@ Before install, use the dependency list below as the canonical source of truth. 
 
 | Dependency | Required / Recommended | Used by |
 |------------|------------------------|---------|
-| `git` >= 2.20.0 | Recommended | Source traceability and release workflows |
+| `git` >= 2.20.0 | Required for first-time raw bootstrap; recommended otherwise | Cloning the managed source checkout, source traceability, and release workflows |
 | `rg` (ripgrep) | Recommended | Framework search and review workflows |
 | `python` >= 3.10 | Required | V3 installer, framework tools, tests, and Python-first policy |
 | `pip` | Recommended | Install `_localsetup/requirements.txt` inside the managed venv |

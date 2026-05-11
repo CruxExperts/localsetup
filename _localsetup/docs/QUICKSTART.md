@@ -11,8 +11,8 @@ Use this page to install Localsetup v3, choose agent platforms, verify the insta
 
 - Python `>= 3.10`
 - Bash on Linux, macOS, or WSL2
-- Network access to GitHub, unless installing from a local clone
-- Recommended: Git, `rg`, `pip`, and the packages in `_localsetup/requirements.txt`
+- Git and network access to GitHub for first-time raw bootstrap, unless installing from a local clone or reusing an existing managed source checkout
+- Recommended: `rg`, `pip`, and the packages in `_localsetup/requirements.txt`
 
 Windows is WSL2-only in Localsetup v3. Native PowerShell install is intentionally not supported; `install.ps1` prints WSL2 guidance.
 
@@ -21,7 +21,7 @@ Windows is WSL2-only in Localsetup v3. Native PowerShell install is intentionall
 From a project root:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash
+curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --yes
 ```
 
 From a local checkout:
@@ -30,7 +30,7 @@ From a local checkout:
 ./install --directory . --yes
 ```
 
-This installs the default `core` pack into the managed library, registers `~/.local/bin/localsetup`, and does not create repo adapter paths. If `~/.local/bin` is not on `PATH`, the installer warns and the command becomes available after you add that directory to your shell path.
+The raw installer creates or reuses a managed Localsetup source checkout at `~/.local/share/localsetup/source`. This installs the default `core` pack into the managed library, registers `~/.local/bin/localsetup`, and does not create repo adapter paths. If `~/.local/bin` is not on `PATH`, the installer warns and the command becomes available after you add that directory to your shell path.
 
 After registration, run Localsetup from any project:
 
