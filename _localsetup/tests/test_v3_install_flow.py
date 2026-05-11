@@ -26,7 +26,7 @@ from _localsetup.v3.plan import build_install_plan
 from _localsetup.v3.rollback import rollback
 from _localsetup.v3.shell import detect_invocation_target, is_managed_shim, register_shell_command, shell_registration_status
 from _localsetup.v3.verify import verify_install
-from _localsetup.v3.wizard import TerminalWizard, choose_many, choose_one, run_wizard
+from _localsetup.v3.wizard import Choice, TerminalWizard, choose_many, choose_one, run_wizard
 from _localsetup.v3.workflows import workflow_catalog_payload
 
 
@@ -1499,6 +1499,169 @@ def test_wizard_selection_helpers_accept_numbers_and_back_cancel() -> None:
     assert choose_one(term, "Mode", [("global", "Global"), ("current", "Current")], default="global") == "current"
     assert choose_many(term, "Platforms", [("codex", "Codex")], default=["codex"]) == "__back__"
     assert choose_one(term, "Mode", [("global", "Global")], default="global") == "__cancel__"
+
+
+def test_wizard_choice_detail_mode_renders_extended_context() -> None:
+    output = io.StringIO()
+    term = TerminalWizard(
+        input_stream=io.StringIO("1\n"),
+        output_stream=output,
+        color=False,
+    )
+    choice = Choice(
+        "global",
+        "Global library only",
+        "Safest default.",
+        "Updates the managed skill library.",
+        "You want a low-risk install.",
+        "No repo adapter paths are created.",
+    )
+
+    assert choose_one(term, "Mode", [choice], default="global", decides="Install scope.") == "global"
+    rendered = output.getvalue()
+    assert "Decides: Install scope." in rendered
+    assert "Safest default." in rendered
+    assert "Does: Updates the managed skill library." in rendered
+    assert "Choose when: You want a low-risk install." in rendered
+    assert "Tradeoff: No repo adapter paths are created." in rendered
+    assert "Enter number(s) | d details | b back | q quit | ? help" in rendered
+
+
+def test_wizard_choice_compact_mode_hides_extended_reasoning() -> None:
+    output = io.StringIO()
+    term = TerminalWizard(
+        input_stream=io.StringIO("1\n"),
+        output_stream=output,
+        color=False,
+    )
+    term.detail_mode = False
+    choice = Choice(
+        "core",
+        "core",
+        "Everyday skills.",
+        "Installs the core pack.",
+        "You want normal use.",
+        "Specialized packs stay out.",
+    )
+
+    assert choose_many(term, "Packs", [choice], default=["core"], allow_none=False) == ["core"]
+    rendered = output.getvalue()
+    assert "Everyday skills." in rendered
+    assert "Does: Installs the core pack." not in rendered
+    assert "Choose when: You want normal use." not in rendered
+    assert "Tradeoff: Specialized packs stay out." not in rendered
+    assert "Enter number(s) | d details | b back | q quit | ? help" in rendered
+
+
+def test_wizard_detail_toggle_rerenders_choices() -> None:
+    output = io.StringIO()
+    term = TerminalWizard(
+        input_stream=io.StringIO("d\n1\n"),
+        output_stream=output,
+        color=False,
+    )
+    choice = Choice(
+        "symlink",
+        "Symlink adapters",
+        "Points at managed skills.",
+        "Creates repo adapter symlinks.",
+        "You want easy updates.",
+        "Requires the managed library path.",
+    )
+
+    assert choose_one(term, "Adapter mode", [choice], default="symlink") == "symlink"
+    rendered = output.getvalue()
+    assert "Detail mode: compact." in rendered
+    assert rendered.count("Points at managed skills.") == 2
+    assert rendered.count("Does: Creates repo adapter symlinks.") == 1
+    assert term.detail_mode is False
+
+
+def test_wizard_help_prints_without_selecting() -> None:
+    output = io.StringIO()
+    term = TerminalWizard(
+        input_stream=io.StringIO("?\n2\n"),
+        output_stream=output,
+        color=False,
+    )
+
+    result = choose_one(
+        term,
+        "Mode",
+        [("global", "Global"), ("current", "Current")],
+        default="global",
+        help_text="Pick the install scope.",
+    )
+
+    assert result == "current"
+    rendered = output.getvalue()
+    assert "Pick the install scope." in rendered
+    assert rendered.count("1. Global") == 2
+
+
+def test_wizard_selection_helpers_accept_labels_and_comma_lists() -> None:
+    term = TerminalWizard(
+        input_stream=io.StringIO("Current\ncodex,cursor\nClaude Code\n"),
+        output_stream=io.StringIO(),
+        color=False,
+    )
+
+    assert choose_one(term, "Mode", [("global", "Global"), ("current", "Current")], default="global") == "current"
+    assert choose_many(
+        term,
+        "Platforms",
+        [("codex", "Codex"), ("cursor", "Cursor")],
+        default=["codex"],
+    ) == ["codex", "cursor"]
+    assert choose_many(
+        term,
+        "Platforms",
+        [("codex", "Codex"), ("claude-code", "Claude Code")],
+        default=["codex"],
+    ) == ["claude-code"]
+
+
+def test_wizard_full_flow_renders_guided_context_for_current_repo(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    source = Path(__file__).resolve().parents[2]
+    shutil.copytree(source / "_localsetup" / "docs", root / "_localsetup" / "docs", dirs_exist_ok=True)
+    home = tmp_path / "home"
+    caller = tmp_path / "caller"
+    caller.mkdir()
+    output = io.StringIO()
+    term = TerminalWizard(
+        input_stream=io.StringIO("\n\n2\n1\n1,3\n2\n1\nyes\n"),
+        output_stream=output,
+        color=False,
+    )
+
+    code = run_wizard(
+        repo_root=root,
+        home=home,
+        caller_directory=caller,
+        terminal=term,
+        register_shell=False,
+    )
+
+    rendered = output.getvalue()
+    assert code == 0
+    assert "Source" in rendered
+    assert "Install Mode" in rendered
+    assert "Platforms" in rendered
+    assert "Skill Packs" in rendered
+    assert "Options" in rendered
+    assert "Review" in rendered
+    assert "Result" in rendered
+    assert "Decides: Which Localsetup checkout provides the installer files and shipped skills." in rendered
+    assert "Suggested: Global library only" in rendered
+    assert "Writes adapter path .codex/skills." in rendered
+    assert "Code, docs, git, testing, markdown validation, and repo repair workflows." in rendered
+    assert "Portable adapter copies" in rendered
+    assert "Managed virtual environment" in rendered
+    assert "Does: Shows source, target, packs, adapter mode, dependency mode, and concrete filesystem actions before changes." in rendered
+    assert "Does: Verification checked the managed library and selected adapter paths after applying the plan." in rendered
+    assert "Enter number(s) | d details | b back | q quit | ? help" in rendered
+    assert (caller / ".codex" / "skills").exists()
 
 
 def test_wizard_cancel_exits_without_applying(tmp_path: Path) -> None:

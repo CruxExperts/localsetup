@@ -26,6 +26,8 @@ curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install 
 
 This opens a terminal wizard. It creates or refreshes the managed source checkout, shows the source, target, managed skill library, selected platforms and packs, then asks for confirmation before applying.
 
+The wizard uses guided choices on every step. Each prompt shows `Enter number(s) | d details | b back | q quit | ? help`; detailed mode is on by default and explains what each option does, when to choose it, and its tradeoff. Press `d` to switch to compact mode when you only want the one-line summaries.
+
 The old public command form still opens the wizard when a terminal is available:
 
 ```bash

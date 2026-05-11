@@ -29,6 +29,8 @@ curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install 
 
 This opens the interactive terminal wizard. It shows the source checkout, target directory, managed home library, selected platforms and packs, warnings, blockers, and planned actions before asking for final confirmation.
 
+Every wizard prompt shows the same shortcut footer: `Enter number(s) | d details | b back | q quit | ? help`. Detailed mode is on by default, so install mode, platform, pack, adapter, and dependency choices explain what they do, when to pick them, and their tradeoffs. Press `d` to toggle compact mode; compact mode still shows one-line summaries for each option.
+
 The legacy public form still opens the wizard when a terminal is available:
 
 ```bash
@@ -106,6 +108,15 @@ cd /path/to/repo
 - `--install-deps`  - Create/update the managed `.localsetup/venv` and install `_localsetup/requirements.txt`
 - `--no-register-shell`  - Skip creating/updating `~/.local/bin/localsetup`
 - `--help`  - Print usage and exit
+
+## Wizard choice guide
+
+The wizard keeps the install portable and line-oriented; it uses plain terminal output with optional ANSI styling and no curses/Textual dependency. Choices can be selected by number or label, and multi-select prompts accept comma-separated values.
+
+- **Install mode:** `Global library only` is the safest default and refreshes the shared Localsetup library without repo adapter paths. `Current directory` prepares the directory you launched from. `Another target directory` prepares a different repo while using this checkout as the source.
+- **Platforms:** each selected platform shows the adapter path it writes, such as `.codex/skills` for Codex or `.cursor/skills` for Cursor.
+- **Skill packs:** `core` is the suggested default for normal use. `bootstrap` adds agent-team startup and audit workflows. `dev` adds code, docs, git, test, and repo repair workflows. `ops` adds server and maintenance workflows. `integrations` adds external system connectors. `publishing` adds release and public-repo support. `experimental` adds advanced or less-conservative workflows.
+- **Options:** symlink adapters are easiest to update because they point repos at the managed library. Portable adapter copies are more self-contained, but updating requires copying again. Prompt-only dependency mode reports what is needed without installing dependencies. Managed virtual environment mode prepares Localsetup's managed Python environment.
 
 ## Shared home library
 

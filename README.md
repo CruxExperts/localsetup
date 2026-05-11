@@ -77,6 +77,8 @@ curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install 
 
 This opens an interactive terminal wizard. It creates or refreshes the managed source checkout, explains what will be changed, lets you choose whether to attach agent adapters, and asks for confirmation before applying.
 
+Every wizard step shows the same shortcuts before you answer: `Enter number(s) | d details | b back | q quit | ? help`. Detailed mode is on by default, so menu rows explain what each choice does, when to choose it, and the tradeoff. Press `d` at any prompt for compact mode; compact mode still keeps the one-line summary for each option.
+
 The legacy public form still opens the same wizard when a terminal is available:
 
 ```bash

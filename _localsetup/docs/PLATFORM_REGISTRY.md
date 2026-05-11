@@ -55,7 +55,7 @@ Use [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) for the model and [WORKFLOW_STA
 ## Reference
 
 - V3 CLI: `_localsetup/tools/localsetup_v3.py plan|install|verify|rollback`.
-- Root wrapper: `./install --directory .` opens the interactive wizard for global-only; use `--tools cursor,codex` or `--platforms cursor codex` to select adapters. Use `--target-directory /path/to/project` to attach selected adapters outside the source checkout. Automation must use `--non-interactive --yes`.
+- Root wrapper: `./install --directory .` opens the interactive guided-choice wizard for global-only; use `--tools cursor,codex` or `--platforms cursor codex` to select adapters. The wizard shows `Enter number(s) | d details | b back | q quit | ? help` on prompts and explains each platform's adapter path, such as `.codex/skills`. Use `--target-directory /path/to/project` to attach selected adapters outside the source checkout. Automation must use `--non-interactive --yes`.
 - Windows: WSL2-only. `install.ps1` is a guidance stub, not a native installer.
 - Skills and rules (paths and model): [SKILLS_AND_RULES.md](SKILLS_AND_RULES.md).
 - Release and publish are handled by this repo's automatic versioning hooks and GitHub workflow.
