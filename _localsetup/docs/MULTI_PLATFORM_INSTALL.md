@@ -43,7 +43,7 @@ Automation global-only install:
 curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --non-interactive --yes
 ```
 
-Automation mode creates or reuses a managed Localsetup source checkout at `~/.local/share/localsetup/source`, installs the managed Localsetup package library, registers `~/.local/bin/localsetup`, creates no repo adapter paths unless selected, and preserves machine-readable output. If no terminal is available and `--non-interactive --yes` is not provided, the installer exits with an actionable message.
+Automation mode creates or refreshes a managed Localsetup source checkout at `~/.local/share/localsetup/source`, installs the managed Localsetup package library, registers `~/.local/bin/localsetup`, creates no repo adapter paths unless selected, and preserves machine-readable output. If no terminal is available and `--non-interactive --yes` is not provided, the installer exits with an actionable message.
 
 Selected platforms for the current repo after global bootstrap:
 
@@ -96,7 +96,7 @@ cd /path/to/repo
 
 ## Options
 
-- `--directory PATH` / `-Directory PATH`  - Localsetup source checkout containing `_localsetup/`. Defaults to `.` when run from a checkout; otherwise the raw Bash installer creates or reuses `~/.local/share/localsetup/source`.
+- `--directory PATH` / `-Directory PATH`  - Localsetup source checkout containing `_localsetup/`. Defaults to `.` when run from a checkout; otherwise the raw Bash installer creates or refreshes `~/.local/share/localsetup/source`.
 - `--target-directory PATH`  - Directory where selected repo adapter links and `localsetup.lock.json` are written. Defaults to the source checkout for explicit local installs and to the caller's current directory for raw bootstrap installs with selected platforms.
 - `--tools LIST`  - Compatibility alias for comma-separated platforms: cursor, claude-code, codex, openclaw, kilo, opencode
 - `--platforms LIST`  - Space-separated v3 platform ids. Omit for a global-only install with no repo adapters.
@@ -129,7 +129,7 @@ Before install, use the dependency list below as the canonical source of truth. 
 
 | Dependency | Required / Recommended | Used by |
 |------------|------------------------|---------|
-| `git` >= 2.20.0 | Required for first-time raw bootstrap; recommended otherwise | Cloning the managed source checkout, source traceability, and release workflows |
+| `git` >= 2.20.0 | Required for raw bootstrap clone and refresh; recommended otherwise | Cloning or refreshing the managed source checkout, source traceability, and release workflows |
 | `rg` (ripgrep) | Recommended | Framework search and review workflows |
 | `python` >= 3.10 | Required | V3 installer, framework tools, tests, and Python-first policy |
 | `pip` | Recommended | Install `_localsetup/requirements.txt` inside the managed venv |

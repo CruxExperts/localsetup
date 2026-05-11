@@ -75,7 +75,7 @@ Global bootstrap from any directory on Linux, macOS, or WSL2:
 curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s --
 ```
 
-This opens an interactive terminal wizard. It creates or reuses the managed source checkout, explains what will be changed, lets you choose whether to attach agent adapters, and asks for confirmation before applying.
+This opens an interactive terminal wizard. It creates or refreshes the managed source checkout, explains what will be changed, lets you choose whether to attach agent adapters, and asks for confirmation before applying.
 
 The legacy public form still opens the same wizard when a terminal is available:
 
@@ -208,7 +208,7 @@ Research signals behind the design, verified in May 2026:
 
 - Python `>= 3.10`
 - Bash on Linux, macOS, or WSL2
-- Git and network access to GitHub for first-time raw bootstrap, unless installing from a local clone or reusing an existing managed source checkout
+- Git and network access to GitHub for raw bootstrap, unless installing from a local clone
 - Recommended: `rg`, `pip`, and the packages in `_localsetup/requirements.txt`
 
 Use managed dependency setup instead of system pip overrides:

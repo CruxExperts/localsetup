@@ -11,7 +11,7 @@ Use this page to install Localsetup v3, choose agent platforms, verify the insta
 
 - Python `>= 3.10`
 - Bash on Linux, macOS, or WSL2
-- Git and network access to GitHub for first-time raw bootstrap, unless installing from a local clone or reusing an existing managed source checkout
+- Git and network access to GitHub for raw bootstrap, unless installing from a local clone
 - Recommended: `rg`, `pip`, and the packages in `_localsetup/requirements.txt`
 
 Windows is WSL2-only in Localsetup v3. Native PowerShell install is intentionally not supported; `install.ps1` prints WSL2 guidance.
@@ -24,7 +24,7 @@ Global bootstrap from any directory:
 curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s --
 ```
 
-This opens a terminal wizard. It creates or reuses the managed source checkout, shows the source, target, managed skill library, selected platforms and packs, then asks for confirmation before applying.
+This opens a terminal wizard. It creates or refreshes the managed source checkout, shows the source, target, managed skill library, selected platforms and packs, then asks for confirmation before applying.
 
 The old public command form still opens the wizard when a terminal is available:
 

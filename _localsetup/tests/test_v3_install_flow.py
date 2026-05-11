@@ -923,7 +923,73 @@ def make_bootstrap_git_repo(tmp_path: Path) -> Path:
     return repo
 
 
-def run_installer_in_pty(command: list[str], *, input_text: str, cwd: Path) -> subprocess.CompletedProcess[str]:
+def make_bootstrap_git_repo_with_legacy_commit(tmp_path: Path) -> tuple[Path, str, str]:
+    source = Path(__file__).resolve().parents[2]
+    repo = tmp_path / "repo"
+    tool = repo / "_localsetup" / "tools" / "localsetup_v3.py"
+    tool.parent.mkdir(parents=True)
+    tool.write_text(
+        """#!/usr/bin/env python3
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--home")
+parser.add_argument("--repo")
+sub = parser.add_subparsers(dest="cmd", required=True)
+sub.add_parser("doctor")
+sub.add_parser("install")
+sub.add_parser("register-shell")
+parser.parse_args()
+""",
+        encoding="utf-8",
+    )
+    shutil.copy2(source / "VERSION", repo / "VERSION")
+    (repo / "README.md").write_text("# Localsetup\n", encoding="utf-8")
+    (repo / "AGENTS.md").write_text("# Agents\n", encoding="utf-8")
+    subprocess.run(["git", "init", "-b", "main"], cwd=repo, text=True, capture_output=True, check=True)
+    subprocess.run(["git", "add", "."], cwd=repo, text=True, capture_output=True, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Localsetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "legacy"],
+        cwd=repo,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    legacy_commit = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo,
+        text=True,
+        capture_output=True,
+        check=True,
+    ).stdout.strip()
+
+    shutil.rmtree(repo / "_localsetup")
+    shutil.copytree(source / "_localsetup", repo / "_localsetup", ignore=shutil.ignore_patterns("__pycache__", ".cache"))
+    subprocess.run(["git", "add", "."], cwd=repo, text=True, capture_output=True, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Localsetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "current"],
+        cwd=repo,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    current_commit = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo,
+        text=True,
+        capture_output=True,
+        check=True,
+    ).stdout.strip()
+    return repo, legacy_commit, current_commit
+
+
+def run_installer_in_pty(
+    command: list[str],
+    *,
+    input_text: str,
+    cwd: Path,
+    env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
     script = shutil.which("script")
     if script is None:
         pytest.skip("script command is required for pseudo-terminal installer tests")
@@ -933,6 +999,7 @@ def run_installer_in_pty(command: list[str], *, input_text: str, cwd: Path) -> s
         [script, "-q", "-e", "-c", shell_command, str(log_path)],
         input=input_text,
         cwd=cwd,
+        env=env,
         text=True,
         capture_output=True,
         check=False,
@@ -1041,6 +1108,191 @@ def test_root_installer_piped_bootstrap_global_only_uses_managed_source(tmp_path
     assert not (outside / "localsetup.lock.json").exists()
 
 
+def test_root_installer_refreshes_clean_stale_managed_source_before_wizard(tmp_path: Path) -> None:
+    install_path = Path(__file__).resolve().parents[2] / "install"
+    bootstrap_repo, legacy_commit, current_commit = make_bootstrap_git_repo_with_legacy_commit(tmp_path / "bootstrap")
+    outside = tmp_path / "outside"
+    home = tmp_path / "home"
+    managed_source = tmp_path / "managed-source"
+    outside.mkdir()
+    subprocess.run(["git", "clone", str(bootstrap_repo), str(managed_source)], text=True, capture_output=True, check=True)
+    subprocess.run(["git", "checkout", "--detach", legacy_commit], cwd=managed_source, text=True, capture_output=True, check=True)
+    env = {
+        **os.environ,
+        "LOCALSETUP_BOOTSTRAP_REPO": str(bootstrap_repo),
+        "LOCALSETUP_BOOTSTRAP_REF": "main",
+        "LOCALSETUP_BOOTSTRAP_SOURCE_DIR": str(managed_source),
+    }
+
+    completed = run_installer_in_pty(
+        [str(install_path), "--home", str(home), "--no-register-shell"],
+        input_text="q\n",
+        cwd=outside,
+        env=env,
+    )
+
+    combined = completed.stdout + completed.stderr
+    refreshed = subprocess.run(
+        ["git", "-C", str(managed_source), "rev-parse", "HEAD"],
+        text=True,
+        capture_output=True,
+        check=True,
+    ).stdout.strip()
+    assert completed.returncode == 130, combined
+    assert refreshed == current_commit
+    assert "invalid choice: 'wizard'" not in combined
+
+
+def test_root_installer_refreshes_clean_stale_managed_source_before_non_interactive_install(tmp_path: Path) -> None:
+    install_path = Path(__file__).resolve().parents[2] / "install"
+    bootstrap_repo, legacy_commit, current_commit = make_bootstrap_git_repo_with_legacy_commit(tmp_path / "bootstrap")
+    outside = tmp_path / "outside"
+    home = tmp_path / "home"
+    managed_source = tmp_path / "managed-source"
+    outside.mkdir()
+    subprocess.run(["git", "clone", str(bootstrap_repo), str(managed_source)], text=True, capture_output=True, check=True)
+    subprocess.run(["git", "checkout", "--detach", legacy_commit], cwd=managed_source, text=True, capture_output=True, check=True)
+    env = {
+        **os.environ,
+        "LOCALSETUP_BOOTSTRAP_REPO": str(bootstrap_repo),
+        "LOCALSETUP_BOOTSTRAP_REF": "main",
+        "LOCALSETUP_BOOTSTRAP_SOURCE_DIR": str(managed_source),
+    }
+
+    completed = subprocess.run(
+        [str(install_path), "--non-interactive", "--yes", "--home", str(home), "--no-register-shell"],
+        cwd=outside,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    refreshed = subprocess.run(
+        ["git", "-C", str(managed_source), "rev-parse", "HEAD"],
+        text=True,
+        capture_output=True,
+        check=True,
+    ).stdout.strip()
+    assert completed.returncode == 0, completed.stderr
+    assert refreshed == current_commit
+    assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
+
+
+def test_root_installer_dirty_managed_source_fails_before_refresh(tmp_path: Path) -> None:
+    install_path = Path(__file__).resolve().parents[2] / "install"
+    bootstrap_repo, legacy_commit, _current_commit = make_bootstrap_git_repo_with_legacy_commit(tmp_path / "bootstrap")
+    outside = tmp_path / "outside"
+    managed_source = tmp_path / "managed-source"
+    outside.mkdir()
+    subprocess.run(["git", "clone", str(bootstrap_repo), str(managed_source)], text=True, capture_output=True, check=True)
+    subprocess.run(["git", "checkout", "--detach", legacy_commit], cwd=managed_source, text=True, capture_output=True, check=True)
+    (managed_source / "local-edit.txt").write_text("do not overwrite\n", encoding="utf-8")
+    env = {
+        **os.environ,
+        "LOCALSETUP_BOOTSTRAP_REPO": str(bootstrap_repo),
+        "LOCALSETUP_BOOTSTRAP_REF": "main",
+        "LOCALSETUP_BOOTSTRAP_SOURCE_DIR": str(managed_source),
+    }
+
+    completed = subprocess.run(
+        [str(install_path), "--non-interactive", "--yes"],
+        cwd=outside,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode != 0
+    assert "cannot refresh managed bootstrap source because it has uncommitted or untracked changes" in completed.stderr
+    assert "--directory PATH" in completed.stderr
+    assert (managed_source / "local-edit.txt").read_text(encoding="utf-8") == "do not overwrite\n"
+
+
+def test_root_installer_non_git_managed_source_fails_actionably(tmp_path: Path) -> None:
+    install_path = Path(__file__).resolve().parents[2] / "install"
+    bootstrap_repo = make_bootstrap_git_repo(tmp_path / "bootstrap")
+    outside = tmp_path / "outside"
+    managed_source = tmp_path / "managed-source"
+    outside.mkdir()
+    (managed_source / "_localsetup" / "tools").mkdir(parents=True)
+    (managed_source / "_localsetup" / "tools" / "localsetup_v3.py").write_text("print('stale')\n", encoding="utf-8")
+    env = {
+        **os.environ,
+        "LOCALSETUP_BOOTSTRAP_REPO": str(bootstrap_repo),
+        "LOCALSETUP_BOOTSTRAP_REF": "main",
+        "LOCALSETUP_BOOTSTRAP_SOURCE_DIR": str(managed_source),
+    }
+
+    completed = subprocess.run(
+        [str(install_path), "--non-interactive", "--yes"],
+        cwd=outside,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode != 0
+    assert "managed bootstrap source exists but is not a Git checkout" in completed.stderr
+    assert "Move or remove it, or pass --directory PATH" in completed.stderr
+
+
+def test_root_installer_unrelated_clean_git_managed_source_fails_without_mutation(tmp_path: Path) -> None:
+    install_path = Path(__file__).resolve().parents[2] / "install"
+    bootstrap_repo = make_bootstrap_git_repo(tmp_path / "bootstrap")
+    outside = tmp_path / "outside"
+    managed_source = tmp_path / "managed-source"
+    outside.mkdir()
+    managed_source.mkdir()
+    (managed_source / "README.md").write_text("# Unrelated\n", encoding="utf-8")
+    subprocess.run(["git", "init", "-b", "main"], cwd=managed_source, text=True, capture_output=True, check=True)
+    subprocess.run(["git", "add", "."], cwd=managed_source, text=True, capture_output=True, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Localsetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "unrelated"],
+        cwd=managed_source,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    before_head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=managed_source,
+        text=True,
+        capture_output=True,
+        check=True,
+    ).stdout.strip()
+    env = {
+        **os.environ,
+        "LOCALSETUP_BOOTSTRAP_REPO": str(bootstrap_repo),
+        "LOCALSETUP_BOOTSTRAP_REF": "main",
+        "LOCALSETUP_BOOTSTRAP_SOURCE_DIR": str(managed_source),
+    }
+
+    completed = subprocess.run(
+        [str(install_path), "--non-interactive", "--yes"],
+        cwd=outside,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    after_head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=managed_source,
+        text=True,
+        capture_output=True,
+        check=True,
+    ).stdout.strip()
+    assert completed.returncode != 0
+    assert "managed bootstrap source exists but is not a Localsetup v3 checkout" in completed.stderr
+    assert before_head == after_head
+    assert (managed_source / "README.md").read_text(encoding="utf-8") == "# Unrelated\n"
+    assert not (managed_source / "_localsetup").exists()
+
+
 def test_root_installer_piped_bootstrap_selected_platform_attaches_caller_target(tmp_path: Path) -> None:
     install_path = Path(__file__).resolve().parents[2] / "install"
     bootstrap_repo = make_bootstrap_git_repo(tmp_path / "bootstrap")
@@ -1098,6 +1350,49 @@ def test_root_installer_explicit_bad_directory_does_not_bootstrap(tmp_path: Path
     assert completed.returncode != 0
     assert "directory does not exist" in completed.stderr
     assert not managed_source.exists()
+
+
+def test_root_installer_explicit_directory_ignores_managed_source_refresh(tmp_path: Path) -> None:
+    source = Path(__file__).resolve().parents[2]
+    install_path = source / "install"
+    explicit_source = tmp_path / "explicit-source"
+    outside = tmp_path / "outside"
+    managed_source = tmp_path / "managed-source"
+    home = tmp_path / "home"
+    shutil.copytree(source / "_localsetup", explicit_source / "_localsetup", ignore=shutil.ignore_patterns("__pycache__", ".cache"))
+    shutil.copy2(source / "VERSION", explicit_source / "VERSION")
+    outside.mkdir()
+    managed_source.mkdir()
+    (managed_source / "not-git.txt").write_text("ignored\n", encoding="utf-8")
+    env = {
+        **os.environ,
+        "LOCALSETUP_BOOTSTRAP_REPO": str(tmp_path / "missing-remote"),
+        "LOCALSETUP_BOOTSTRAP_REF": "main",
+        "LOCALSETUP_BOOTSTRAP_SOURCE_DIR": str(managed_source),
+    }
+
+    completed = subprocess.run(
+        [
+            str(install_path),
+            "--directory",
+            str(explicit_source),
+            "--home",
+            str(home),
+            "--non-interactive",
+            "--yes",
+            "--no-register-shell",
+        ],
+        cwd=outside,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert (managed_source / "not-git.txt").read_text(encoding="utf-8") == "ignored\n"
+    assert not (managed_source / ".git").exists()
+    assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
 
 
 def test_root_installer_interactive_preserves_explicit_target_and_no_register_shell(tmp_path: Path) -> None:
