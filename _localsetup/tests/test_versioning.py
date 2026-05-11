@@ -56,6 +56,10 @@ def repo_version(repo: Path) -> SemVer:
     return SemVer.parse((repo / "VERSION").read_text(encoding="utf-8").strip())
 
 
+def next_minor_version(repo: Path) -> str:
+    return str(repo_version(repo).bump("minor"))
+
+
 def test_semver_and_commit_classification() -> None:
     assert str(SemVer.parse("3.0.0").bump("major")) == "4.0.0"
     assert str(SemVer.parse("3.0.0").bump("minor")) == "3.1.0"
@@ -110,6 +114,7 @@ def test_pre_push_hook_creates_sync_commit_and_blocks_stale_push(tmp_path: Path)
     remote = tmp_path / "remote.git"
     run(tmp_path, "git", "init", "--bare", str(remote))
     init_git_repo(repo, remote)
+    expected_version = next_minor_version(repo)
 
     (repo / "feature.txt").write_text("feature\n", encoding="utf-8")
     run(repo, "git", "add", "feature.txt")
@@ -128,8 +133,8 @@ def test_pre_push_hook_creates_sync_commit_and_blocks_stale_push(tmp_path: Path)
 
     assert completed.returncode == 1
     assert "push stopped" in completed.stderr
-    assert run(repo, "git", "log", "-1", "--pretty=%s").stdout.strip() == "chore: sync release version 3.1.0"
-    assert (repo / "VERSION").read_text(encoding="utf-8").strip() == "3.1.0"
+    assert run(repo, "git", "log", "-1", "--pretty=%s").stdout.strip() == f"chore: sync release version {expected_version}"
+    assert (repo / "VERSION").read_text(encoding="utf-8").strip() == expected_version
 
 
 def test_internal_release_tooling_feat_is_patch(tmp_path: Path) -> None:
@@ -156,6 +161,7 @@ def test_release_push_commits_sync_and_pushes(tmp_path: Path) -> None:
     remote = tmp_path / "remote.git"
     run(tmp_path, "git", "init", "--bare", str(remote))
     init_git_repo(repo, remote)
+    expected_version = next_minor_version(repo)
 
     (repo / "feature.txt").write_text("feature\n", encoding="utf-8")
     run(repo, "git", "add", "feature.txt")
@@ -172,5 +178,5 @@ def test_release_push_commits_sync_and_pushes(tmp_path: Path) -> None:
     )
 
     assert completed.returncode == 0, completed.stderr
-    assert run(repo, "git", "show", "origin/main:VERSION").stdout.strip() == "3.1.0"
-    assert run(repo, "git", "log", "-1", "--pretty=%s", "origin/main").stdout.strip() == "chore: sync release version 3.1.0"
+    assert run(repo, "git", "show", "origin/main:VERSION").stdout.strip() == expected_version
+    assert run(repo, "git", "log", "-1", "--pretty=%s", "origin/main").stdout.strip() == f"chore: sync release version {expected_version}"
