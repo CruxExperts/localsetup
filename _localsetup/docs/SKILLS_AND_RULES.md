@@ -11,7 +11,7 @@ version: 3.2
 
 - **One always-loaded context** per platform: Cursor uses `.cursor/rules/ls-context.mdc`; Claude Code uses `.claude/CLAUDE.md`; Codex uses `AGENTS.md`; OpenClaw uses its platform template; OpenCode uses `AGENTS.md`; Kilo CLI uses `.kilo/instructions.md`.
 - **Capability skills and workflow packages:** Capability skills live in `_localsetup/skills/`. Workflow packages live in `_localsetup/workflows/` and also contain `SKILL.md`, so v3 installs both package types into the managed package library.
-- **Memory file:** Each platform has a writable memory file for agent learnings (`.kilo/AGENT_MEMORY.md`, `.claude/AGENT_MEMORY.md`, etc.). See [MEMORY_MANAGEMENT.md](MEMORY_MANAGEMENT.md) for curation rules.
+- **Memory file:** Each platform has a writable `MEMORY.md` file for agent learnings (`.kilo/MEMORY.md`, `.claude/MEMORY.md`, etc.). See [MEMORY_MANAGEMENT.md](MEMORY_MANAGEMENT.md) for curation rules.
 - **When to load a skill or workflow:** Load when the task matches the package description (e.g. user says "decision tree" -> ls-workflow-spec-clarify-reverse). The master rule/context includes an index of key packages and when to use them.
 
 ## Skills vs workflow packages
@@ -38,12 +38,12 @@ Use [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) as the canonical definition of:
 
 | Platform | Context loader | Skills | Memory file |
 |----------|----------------|--------|-------------|
-| Cursor | .cursor/rules/ls-context.mdc | .cursor/skills -> managed library | .cursor/rules/agent-memory.md |
-| Claude Code | .claude/CLAUDE.md | .claude/skills -> managed library | .claude/AGENT_MEMORY.md |
-| Codex | AGENTS.md (repo root) | .codex/skills -> managed library | .agents/AGENT_MEMORY.md |
-| OpenClaw | platform template | .openclaw/skills -> managed library | AGENT_MEMORY.md (repo root) |
-| OpenCode | AGENTS.md (repo root) | .opencode/skills -> managed library | .opencode/AGENT_MEMORY.md |
-| Kilo CLI | .kilo/instructions.md | .kilo/skills -> managed library | .kilo/AGENT_MEMORY.md |
+| Cursor | .cursor/rules/ls-context.mdc | .cursor/skills -> managed library | .cursor/rules/MEMORY.md |
+| Claude Code | .claude/CLAUDE.md | .claude/skills -> managed library | .claude/MEMORY.md |
+| Codex | AGENTS.md (repo root) | .codex/skills -> managed library | .agents/MEMORY.md |
+| OpenClaw | platform template | .openclaw/skills -> managed library | MEMORY.md (repo root) |
+| OpenCode | AGENTS.md (repo root) | .opencode/skills -> managed library | .opencode/MEMORY.md |
+| Kilo CLI | .kilo/instructions.md | .kilo/skills -> managed library | .kilo/MEMORY.md |
 
 ## Format
 

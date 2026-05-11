@@ -104,9 +104,9 @@ Localsetup v3 is deployed into this repo at `_localsetup/`. All framework and co
 - _localsetup/tests/automated_test.sh
 - From repo root: `./_localsetup/tools/verify_context`, `./_localsetup/tests/automated_test.sh`
 
-## Agent Memory Bank
+## Memory
 
-A persistent memory file exists at `.claude/AGENT_MEMORY.md`. You can write freely, but this file must remain curated.
+A persistent memory file exists at `.claude/MEMORY.md`. You can write freely, but this file must remain curated.
 
 **Curation Rules:**
 - Maximum 20 entries per section

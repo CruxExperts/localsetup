@@ -91,9 +91,9 @@ Load when task matches:
 ./_localsetup/tools/verify_context
 ./_localsetup/tests/automated_test.sh
 
-## Agent Memory Bank
+## Memory
 
-A persistent memory file exists at `AGENT_MEMORY.md` (repo root). You can write freely, but this file must remain curated.
+A persistent memory file exists at `MEMORY.md` (repo root). You can write freely, but this file must remain curated.
 
 **Curation Rules:**
 - Maximum 20 entries per section

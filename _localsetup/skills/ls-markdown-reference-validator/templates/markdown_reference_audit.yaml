@@ -84,7 +84,7 @@ targets:
     base_dir: "~"
     include_globs:
       - ".kilo/instructions/*.md"
-      - ".kilo/AGENT_MEMORY.md"
+      - ".kilo/memories/**/*.md"
       # Intentionally exclude broad global skill trees here; those are often mirrored/template
       # surfaces and produce high expected-noise. Validate them in their own repo context.
     exclude_globs:

@@ -92,9 +92,9 @@ Kilo CLI loads project context from `.kilo/instructions.md` (repo-local) or `~/.
 - _localsetup/docs/INPUT_HARDENING_STANDARD.md  - Mandatory hostile-input handling, sanitization, actionable error policy
 - _localsetup/docs/TOOLING_POLICY.md  - Python-first tooling language and dependency policy
 
-## Agent Memory Bank
+## Memory
 
-A persistent memory file exists at `.kilo/AGENT_MEMORY.md`. You can write freely, but this file must remain curated.
+A persistent memory file exists at `.kilo/MEMORY.md`. You can write freely, but this file must remain curated.
 
 **Curation Rules:**
 - Maximum 20 entries per section

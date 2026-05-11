@@ -3,13 +3,13 @@ status: ACTIVE
 version: 3.2
 ---
 
-# Agent Memory Management (Localsetup v3)
+# Memory Management (Localsetup v3)
 
 **Purpose:** How to use the persistent memory file for AI agent learnings, with strict curation to prevent file bloat.
 
 ## Overview
 
-Localsetup v3 includes a persistent **Agent Memory Bank** for each supported platform. This memory file stores AI agent learnings, patterns, and troubleshooting solutions across sessions. Unlike `AGENTS.md` (which is write-protected), the memory file is freely writable by the AI agent.
+Localsetup v3 includes a persistent **memory file** for each supported platform. This memory file stores AI agent learnings, patterns, and troubleshooting solutions across sessions. Unlike `AGENTS.md` (which is write-protected), the memory file is freely writable by the AI agent.
 
 ## Core Principle: Curation Over Accumulation
 
@@ -31,19 +31,19 @@ Each platform has its own memory file location:
 
 | Platform | Memory File Location | Context File |
 |----------|---------------------|--------------|
-| **Kilo CLI** | `.kilo/AGENT_MEMORY.md` | `.kilo/instructions.md` |
-| **OpenCode CLI** | `.opencode/AGENT_MEMORY.md` | `AGENTS.md` (repo root) |
-| **Claude Code** | `.claude/AGENT_MEMORY.md` | `.claude/CLAUDE.md` |
-| **Codex CLI** | `.agents/AGENT_MEMORY.md` | `AGENTS.md` (repo root) |
-| **Cursor** | `.cursor/rules/agent-memory.md` | `.cursor/rules/ls-context.mdc` |
-| **OpenClaw** | `AGENT_MEMORY.md` (repo root) | `OPENCLAW_CONTEXT.md` |
+| **Kilo CLI** | `.kilo/MEMORY.md` | `.kilo/instructions.md` |
+| **OpenCode CLI** | `.opencode/MEMORY.md` | `AGENTS.md` (repo root) |
+| **Claude Code** | `.claude/MEMORY.md` | `.claude/CLAUDE.md` |
+| **Codex CLI** | `.agents/MEMORY.md` | `AGENTS.md` (repo root) |
+| **Cursor** | `.cursor/rules/MEMORY.md` | `.cursor/rules/ls-context.mdc` |
+| **OpenClaw** | `MEMORY.md` (repo root) | `OPENCLAW_CONTEXT.md` |
 
 ## Memory File Structure
 
 Each memory file contains:
 
 ```markdown
-# Agent Memory Bank [Platform]
+# Memory [Platform]
 
 This file stores AI agent learnings. It is NOT protected - you can write freely.
 However, this file must remain CURATED and CONCISE. Bloat will be corrected.
@@ -121,17 +121,17 @@ Home-scoped memory paths are allowed only under `~/` in `platforms.yaml`. They a
 
 ### Kilo CLI
 
-Kilo CLI uses `.kilo/instructions.md` at repo root for framework context (local deploy) or `~/.config/kilo/instructions/localsetup.md` (global deploy). The memory file is at `.kilo/AGENT_MEMORY.md` (local) or `~/.config/kilo/AGENT_MEMORY.md` (global).
+Kilo CLI uses `.kilo/instructions.md` at repo root for framework context (local deploy) or `~/.config/kilo/instructions/localsetup.md` (global deploy). The repo-local memory file is at `.kilo/MEMORY.md`. Home-scoped memory uses the `~/.kilo/memories` root declared in `platforms.yaml`.
 
 **Setup for memory loading:** No additional configuration is required. The deploy script idempotently adds the context file to your `instructions[]` in `kilo.json`/`kilo.jsonc`.
 
 ### Cursor
 
-Cursor uses `.cursor/rules/agent-memory.md` (lowercase filename per Cursor conventions). The context file references this automatically.
+Cursor uses `.cursor/rules/MEMORY.md`. The context file references this automatically.
 
 ### Claude Code
 
-Claude Code uses `.claude/AGENT_MEMORY.md`. The `CLAUDE.md` context file references this automatically.
+Claude Code uses `.claude/MEMORY.md`. The `CLAUDE.md` context file references this automatically.
 
 ## Integration with Context Files
 

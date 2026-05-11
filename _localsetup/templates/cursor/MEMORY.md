@@ -1,4 +1,4 @@
-# Agent Memory Bank (Cursor)
+# Memory (Cursor)
 
 This file stores AI agent learnings. It is NOT protected - you can write freely.
 However, this file must remain CURATED and CONCISE. Bloat will be corrected.

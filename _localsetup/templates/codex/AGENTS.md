@@ -93,9 +93,9 @@ _localsetup/docs/AGENTIC_DESIGN_INDEX.md, WORKFLOW_REGISTRY.md, PRD_SCHEMA_EXTER
 ./_localsetup/tests/automated_test.sh
 ./_localsetup/tools/verify_rules
 
-## Agent Memory Bank
+## Memory
 
-A persistent memory file exists at `.agents/AGENT_MEMORY.md`. You can write freely, but this file must remain curated.
+A persistent memory file exists at `.agents/MEMORY.md`. You can write freely, but this file must remain curated.
 
 **Curation Rules:**
 - Maximum 20 entries per section

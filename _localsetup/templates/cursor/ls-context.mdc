@@ -132,9 +132,9 @@ For full procedures (pre-task workflow, script quality, safety), load the matchi
 
 Context and skills index: .cursor/rules/ls-context-index.md (or see master rule above).
 
-## Agent Memory Bank
+## Memory
 
-A persistent memory file exists at `.cursor/rules/agent-memory.md`. You can write freely, but this file must remain curated.
+A persistent memory file exists at `.cursor/rules/MEMORY.md`. You can write freely, but this file must remain curated.
 
 **Curation Rules:**
 - Maximum 20 entries per section
