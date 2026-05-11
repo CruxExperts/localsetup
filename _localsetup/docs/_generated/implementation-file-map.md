@@ -319,6 +319,7 @@
 | `keep` | `_localsetup/tests/test_ls_linux_patcher_patch_cli.py` |
 | `keep` | `_localsetup/tests/test_scrapling_helper.py` |
 | `keep` | `_localsetup/tests/test_scrapling_jobs.py` |
+| `keep` | `_localsetup/tests/test_skill_sandbox_tester.py` |
 | `keep` | `_localsetup/tests/test_tmux_ops.py` |
 | `keep` | `_localsetup/tests/test_v3_install_flow.py` |
 | `keep` | `_localsetup/tests/test_v3_manifests.py` |
