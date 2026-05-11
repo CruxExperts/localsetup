@@ -1,0 +1,31 @@
+workflow_id: pipeline-pr-feedback-loop
+display_name: Pipeline PR Feedback Loop
+aliases: [pr feedback pipeline]
+invocation: Use when review comments need implementation and revalidation.
+required_skills:
+  - ls-receiving-code-review
+  - ls-tdd-guide
+  - ls-pr-reviewer
+required_tools: []
+required_docs:
+  - _localsetup/docs/WORKFLOW_QUICK_REF.md
+gates:
+  - id: feedback_gate
+    rule: Confirm actionable comments before implementation.
+phases:
+  - id: triage_feedback
+    summary: Classify and prioritize review items.
+  - id: implement_with_tests
+    summary: Apply fixes with test updates.
+  - id: re_review
+    summary: Run follow-up automated review.
+validation:
+  - check: Feedback items map to implemented changes and tests.
+outputs:
+  - PR feedback closure summary
+smoke:
+  - id: quick_ref_present
+    check: _localsetup/docs/WORKFLOW_QUICK_REF.md exists
+migration:
+  source: _localsetup/docs/WORKFLOW_QUICK_REF.md
+  note: Details delegated to the underlying skills.

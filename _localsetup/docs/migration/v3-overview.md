@@ -1,12 +1,17 @@
 # Localsetup v3 Overview
 
-Localsetup v3 installs one global skill library and attaches repositories to it.
+Localsetup v3 installs one global package library for skills and workflow packages, then attaches repositories to it.
 
 ## Global Library
 
 Default global path:
 
 - `~/.local/share/agents/skills/localsetup/`
+
+The global library contains managed copies of selected capability skills and selected workflow packages. Source stays split:
+
+- Skills: `_localsetup/skills/ls-*`
+- Workflow packages: `_localsetup/workflows/ls-workflow-*`
 
 Repo attachment lockfile:
 
@@ -47,13 +52,15 @@ Portable mode vendors managed copies into the repo adapter paths:
 
 - `python3 _localsetup/tools/localsetup_v3.py install --mode portable --apply`
 
-Use portable mode for repos that must carry their skill pack without relying on
+Use portable mode for repos that must carry their selected packages without relying on
 the user's global library.
 
 ## Packs And Migration
 
 The pack contract lives in `_localsetup/config/pack.yaml`. The default install
 uses `core`; optional packs can be requested with `--packs`.
+
+Pack entries can select both skills and workflow packages. Workflow packages are listed under `workflow_packs` and may auto-include required capability skills through their `workflow.yaml` manifests.
 
 Migration scanning reports remaining `localsetup-*` references outside the
 source skill corpus so maintainers can decide whether each reference should stay

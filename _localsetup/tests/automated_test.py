@@ -66,6 +66,10 @@ def main() -> int:
         pass_count += 1
     else:
         fail_count += 1
+    if run_test((engine_dir / "workflows").is_dir(), "workflows dir"):
+        pass_count += 1
+    else:
+        fail_count += 1
     print("")
     print("Result: %d passed, %d failed" % (pass_count, fail_count))
     return 0 if fail_count == 0 else 1

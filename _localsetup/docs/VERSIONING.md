@@ -16,6 +16,7 @@ Localsetup v3 uses the root `VERSION` file as the source of truth for the framew
 - Version and documentation sync are automatic. Local hooks plan the bump from outgoing commits, update known version surfaces, regenerate docs artifacts, and create a version-sync commit before push.
 - Reverts of unreleased commits cancel the pending bump before push. Reverts of already-published commits are released as a monotonic patch version rather than decreasing `VERSION`.
 - Skill versions are separate from the framework version and live in each skill's `SKILL.md` frontmatter under `metadata.version`.
+- Workflow package catalog data is regenerated from `_localsetup/workflows/*/workflow.yaml`; version-sync checks include workflow registry, quick reference, and generated workflow catalog surfaces.
 
 ## Local workflow
 
@@ -56,5 +57,7 @@ python3 _localsetup/tools/localsetup_v3.py --repo . version-sync --check --targe
 python3 _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-v3-framework-audit.md
 python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
 python3 _localsetup/tools/localsetup_v3.py --repo . scan-migration
+python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .
+python3 _localsetup/tools/localsetup_v3.py --repo . generate-docs
 git diff --check
 ```

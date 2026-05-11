@@ -1,0 +1,32 @@
+workflow_id: pipeline-server-triage-patch
+display_name: Pipeline Server Triage Patch
+aliases: [server triage patch pipeline]
+invocation: Use for server diagnostics followed by patching.
+required_skills:
+  - ls-system-info
+  - ls-linux-service-triage
+  - ls-linux-patcher
+required_tools: []
+required_docs:
+  - _localsetup/docs/WORKFLOW_QUICK_REF.md
+  - _localsetup/docs/ops/tmux-ops-managed.md
+gates:
+  - id: ops_confirmation
+    rule: Confirm maintenance window before patch operations.
+phases:
+  - id: baseline
+    summary: Capture system baseline and service state.
+  - id: triage
+    summary: Diagnose service issues.
+  - id: patch
+    summary: Apply approved updates and verify service health.
+validation:
+  - check: Baseline and post-patch status are both recorded.
+outputs:
+  - Server triage and patch report
+smoke:
+  - id: tmux_ops_doc_present
+    check: _localsetup/docs/ops/tmux-ops-managed.md exists
+migration:
+  source: _localsetup/docs/WORKFLOW_QUICK_REF.md
+  note: Workflow remains a concise orchestration layer.

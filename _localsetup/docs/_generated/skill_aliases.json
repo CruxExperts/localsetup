@@ -1,6 +1,4 @@
 {
-  "localsetup-agentic-prd-batch": "ls-agentic-prd-batch",
-  "localsetup-agentic-umbrella-queue": "ls-agentic-umbrella-queue",
   "localsetup-agentlens": "ls-agentlens",
   "localsetup-agentq-transport": "ls-agentq-transport",
   "localsetup-ansible-skill": "ls-ansible-skill",
@@ -12,7 +10,6 @@
   "localsetup-context": "ls-context",
   "localsetup-cron-orchestrator": "ls-cron-orchestrator",
   "localsetup-debug-pro": "ls-debug-pro",
-  "localsetup-decision-tree-workflow": "ls-decision-tree-workflow",
   "localsetup-docs-organization": "ls-docs-organization",
   "localsetup-framework-audit": "ls-framework-audit",
   "localsetup-framework-compliance": "ls-framework-compliance",
@@ -32,7 +29,6 @@
   "localsetup-omniroute-proxy": "ls-omniroute-proxy",
   "localsetup-pr-reviewer": "ls-pr-reviewer",
   "localsetup-public-repo-identity": "ls-public-repo-identity",
-  "localsetup-publish-workflow": "ls-publish-workflow",
   "localsetup-receiving-code-review": "ls-receiving-code-review",
   "localsetup-safety-and-backup": "ls-safety-and-backup",
   "localsetup-scrapling": "ls-scrapling",
@@ -47,6 +43,5 @@
   "localsetup-task-skill-matcher": "ls-task-skill-matcher",
   "localsetup-tdd-guide": "ls-tdd-guide",
   "localsetup-test-runner": "ls-test-runner",
-  "localsetup-tmux-shared-session-workflow": "ls-tmux-shared-session-workflow",
   "localsetup-unfuck-my-git-state": "ls-unfuck-my-git-state"
 }

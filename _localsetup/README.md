@@ -2,7 +2,7 @@
 
 **Version:** 3.0.2<br>
 
-`_localsetup/` is the engine that makes the public Localsetup v3 promise real. It stores the framework code, shipped skills, platform templates, docs, tests, and install manifests that turn a repository into a portable agent workspace.
+`_localsetup/` is the engine that makes the public Localsetup v3 promise real. It stores the framework code, shipped skills, workflow packages, platform templates, docs, tests, and install manifests that turn a repository into a portable agent workspace.
 
 For the public product overview, start with the [root README](../README.md). This page is the contributor and maintainer map for the framework internals.
 
@@ -12,9 +12,10 @@ For the public product overview, start with the [root README](../README.md). Thi
 
 ## What this directory owns
 
-- **Framework source:** Python tooling, shared libraries, templates, config manifests, tests, docs, and shipped skills.
-- **Skill source of truth:** Every shipped skill lives under `skills/ls-*` as an Agent Skills-compatible `SKILL.md` package.
-- **Platform adapters:** Templates and manifests define how supported agent hosts attach to the managed Localsetup skill library.
+- **Framework source:** Python tooling, shared libraries, templates, config manifests, tests, docs, shipped skills, and workflow packages.
+- **Skill source of truth:** Every shipped capability skill lives under `skills/ls-*` as an Agent Skills-compatible `SKILL.md` package.
+- **Workflow source of truth:** Every first-class workflow package lives under `workflows/ls-workflow-*` with `SKILL.md` plus Localsetup `workflow.yaml` metadata.
+- **Platform adapters:** Templates and manifests define how supported agent hosts attach to the managed Localsetup package library.
 - **Public docs:** `docs/` explains install behavior, platform support, workflow registries, skill import, Agent Q transport, versioning, and release validation.
 - **Verification:** The v3 CLI and framework audit tools validate catalog shape, generated docs, migration state, and release readiness.
 
@@ -26,7 +27,7 @@ Generated adapter folders in consuming repositories are install output. Do not t
   <img src="../assets/localsetup-v3-install-lifecycle.svg" alt="Localsetup v3 install lifecycle: doctor, configure, context, plan, install, verify, ship, and rollback" width="960">
 </p>
 
-The root Bash installer delegates to the Python CLI. The CLI resolves platform intent, creates or refreshes the managed home skill library, attaches repo adapter paths, writes lock/report metadata, and supports rollback for managed paths.
+The root Bash installer delegates to the Python CLI. The CLI resolves platform intent, creates or refreshes the managed home package library, attaches repo adapter paths, writes lock/report metadata, and supports rollback for managed paths.
 
 Common commands from the repository root:
 
@@ -53,6 +54,7 @@ Use WSL2 for Windows. Native PowerShell installation is intentionally not suppor
 | `tests/` | Bash, PowerShell, and pytest coverage for framework behavior. |
 | `tools/` | v3 CLI, docs generation, validation, release, skill index, and Agent Q tooling. |
 | `v3/` | Planner, apply, verify, rollback, versioning, and CLI implementation modules. |
+| `workflows/` | Source packages for all shipped `ls-workflow-*` workflow packages. |
 
 ## Supported platforms
 
@@ -78,6 +80,19 @@ Useful docs:
 - [Skill importing](docs/SKILL_IMPORTING.md)
 - [Skill interoperability](docs/SKILL_INTEROPERABILITY.md)
 - [Skill normalization](docs/SKILL_NORMALIZATION.md)
+
+## Workflow package model
+
+Workflow packages are executable orchestration packages. They live under `_localsetup/workflows/ls-workflow-*`, include a valid Agent Skills `SKILL.md`, and add a Localsetup `workflow.yaml` manifest. The manifest is the source for workflow IDs, aliases, required skills, gates, phases, validation, outputs, and generated registry rows.
+
+The install planner selects workflows from `_localsetup/config/pack.yaml`, installs them beside skills in the managed home library, and auto-includes required capability skills. Generated workflow docs should come from manifests, not hand-edited tables.
+
+Useful docs:
+
+- [Workflow packages guide](docs/WORKFLOW_PACKAGES.md)
+- [Workflow package standard](docs/WORKFLOW_STANDARD.md)
+- [Workflow registry](docs/WORKFLOW_REGISTRY.md)
+- [Workflow quick reference](docs/WORKFLOW_QUICK_REF.md)
 
 ## Maintenance checks
 

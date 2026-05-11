@@ -46,7 +46,7 @@ Localsetup v3 does not require `--break-system-packages`.
 
 ## Platform IDs
 
-| ID | Agent host | Adapter path | Managed skill library |
+| ID | Agent host | Adapter path | Managed package library |
 |---|---|---|---|
 | `cursor` | Cursor | `.cursor/skills` | `~/.local/share/agents/skills/localsetup` |
 | `claude-code` | Claude Code | `.claude/skills` | `~/.local/share/agents/skills/localsetup` |
@@ -67,6 +67,7 @@ Omit `--tools` to install every platform listed in `_localsetup/config/platforms
 
 - `_localsetup/` framework source in the repo
 - Managed skills under `~/.local/share/agents/skills/localsetup`
+- Managed workflow packages under the same library; their source remains `_localsetup/workflows/ls-workflow-*`
 - Platform adapter paths such as `.codex/skills` or `.kilo/skills`
 - `localsetup.lock.json` and reports that support verification and rollback
 
@@ -108,6 +109,8 @@ Re-run install with the same directory and platform selection:
 
 The installer refreshes managed skills, adapter links or portable copies, lock metadata, and reports.
 
+Selected workflow packs also refresh their workflow packages and required capability-skill dependencies. See [Workflow packages](WORKFLOW_PACKAGES.md) for the source/runtime split.
+
 ## Roll Back Managed Paths
 
 ```bash
@@ -122,4 +125,5 @@ Rollback only acts on managed paths recorded by Localsetup metadata.
 - [Shipped skills catalog](SKILLS.md)
 - [Platform registry](PLATFORM_REGISTRY.md)
 - [Multi-platform install](MULTI_PLATFORM_INSTALL.md)
+- [Workflow packages](WORKFLOW_PACKAGES.md)
 - [Workflow registry](WORKFLOW_REGISTRY.md)

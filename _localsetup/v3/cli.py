@@ -22,6 +22,7 @@ from .paths import expand_user_path
 from .plan import build_install_plan
 from .rollback import rollback
 from .skills import load_skill_catalog, validate_skill_catalog
+from .workflows import load_workflow_catalog, validate_workflow_catalog
 from .verify import verify_install
 from .versioning import (
     VERSION_SYNC_PREFIX,
@@ -298,11 +299,15 @@ def _main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.cmd == "catalog":
-        print(json.dumps([skill.__dict__ | {"path": str(skill.path)} for skill in load_skill_catalog(root)], indent=2))
+        payload = {
+            "skills": [skill.__dict__ | {"path": str(skill.path)} for skill in load_skill_catalog(root)],
+            "workflows": [workflow.__dict__ | {"path": str(workflow.path)} for workflow in load_workflow_catalog(root)],
+        }
+        print(json.dumps(payload, indent=2))
         return 0
 
     if args.cmd == "validate-catalog":
-        issues = validate_skill_catalog(root)
+        issues = validate_skill_catalog(root) + validate_workflow_catalog(root)
         print(json.dumps({"ok": not issues, "issues": issues}, indent=2))
         return 0 if not issues else 1
 

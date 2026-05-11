@@ -360,7 +360,10 @@ def sync_version_files(repo_root: Path, target_version: str) -> dict:
         "_localsetup/docs/README.md",
         "_localsetup/docs/FEATURES.md",
         "_localsetup/docs/SKILLS.md",
+        "_localsetup/docs/WORKFLOW_REGISTRY.md",
+        "_localsetup/docs/WORKFLOW_QUICK_REF.md",
         "_localsetup/docs/_generated/facts.json",
+        "_localsetup/docs/_generated/workflow-catalog.json",
     ]
     for rel_path in generated_paths:
         if rel_path not in changed:
@@ -384,7 +387,10 @@ def check_version_files(repo_root: Path, target_version: str) -> dict:
         repo_root / "_localsetup" / "docs" / "README.md",
         repo_root / "_localsetup" / "docs" / "FEATURES.md",
         repo_root / "_localsetup" / "docs" / "SKILLS.md",
+        repo_root / "_localsetup" / "docs" / "WORKFLOW_REGISTRY.md",
+        repo_root / "_localsetup" / "docs" / "WORKFLOW_QUICK_REF.md",
         repo_root / "_localsetup" / "docs" / "_generated" / "facts.json",
+        repo_root / "_localsetup" / "docs" / "_generated" / "workflow-catalog.json",
     }
     candidates.update((repo_root / "_localsetup" / "docs").glob("*.md"))
     before_contents = {
@@ -426,6 +432,7 @@ def stage_version_files(repo_root: Path) -> None:
         "_localsetup/docs/VERSIONING.md",
         "_localsetup/docs/*.md",
         "_localsetup/docs/_generated/facts.json",
+        "_localsetup/docs/_generated/workflow-catalog.json",
         "_localsetup/docs/SKILLS.md",
     ]
     _run_git(repo_root, ["add", *paths])

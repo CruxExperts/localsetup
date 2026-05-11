@@ -54,6 +54,12 @@ def main() -> int:
     else:
         print("[FAIL] skills missing")
         return 1
+    workflows_dir = engine_dir / "workflows"
+    if workflows_dir.is_dir():
+        print("[OK] workflows dir")
+    else:
+        print("[FAIL] workflows missing")
+        return 1
 
     validator = engine_dir / "tools" / "validate_output_contract.py"
     if validator.exists():

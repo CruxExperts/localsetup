@@ -11,6 +11,7 @@ from .manifests import load_pack_config, load_platforms
 from .migration import detect_legacy_artifacts, scan_legacy_references
 from .paths import expand_user_path
 from .skills import validate_skill_catalog
+from .workflows import validate_workflow_catalog
 
 
 def _is_wsl() -> bool:
@@ -78,6 +79,9 @@ def run_doctor(
     catalog_issues = validate_skill_catalog(repo_root)
     if catalog_issues:
         blockers.extend(f"skill catalog: {issue}" for issue in catalog_issues)
+    workflow_issues = validate_workflow_catalog(repo_root)
+    if workflow_issues:
+        blockers.extend(f"workflow catalog: {issue}" for issue in workflow_issues)
 
     tools = [tool_status("git"), tool_status("rg")]
     if not tools[0]["ok"]:

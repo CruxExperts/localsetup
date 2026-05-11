@@ -4,9 +4,7 @@
 # N/A = doc-only skill; no runnable tooling to smoke. Audit uses agent step summary only.
 # Path and schema documented in ls-framework-audit SKILL.md.
 
-ls-agentic-prd-batch: "N/A"
 ls-agentq-transport: "N/A"
-ls-agentic-umbrella-queue: "N/A"
 ls-agentlens: "N/A"
 ls-ansible-skill: "N/A"
 ls-arbiter: "python3 scripts/arbiter_cli.py --help"
@@ -17,7 +15,6 @@ ls-communication-and-tools: "N/A"
 ls-context: "N/A"
 ls-cron-orchestrator: "python3 scripts/cron_ctl.py --help"
 ls-debug-pro: "N/A"
-ls-decision-tree-workflow: "N/A"
 ls-docs-organization: "N/A"
 ls-framework-compliance: "N/A"
 ls-git-workflows: "N/A"
@@ -47,7 +44,6 @@ ls-task-skill-matcher: "N/A"
 # Smoke covers the light detector CLI; scripts/test_cli_contract.py covers the workflow contract.
 ls-tdd-guide: "python3 scripts/format_detector.py --help"
 ls-test-runner: "N/A"
-ls-tmux-shared-session-workflow: "N/A"
 ls-unfuck-my-git-state: "python3 scripts/snapshot_git_state.py --help"
 ls-framework-audit: "python3 scripts/run_framework_audit.py --help"
 ls-kilo-boss-orchestrator: "python3 scripts/boss_ctl.py --help"

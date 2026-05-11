@@ -6,7 +6,7 @@ from pathlib import Path
 
 def tracked_files(repo_root: Path) -> list[str]:
     completed = subprocess.run(
-        ["git", "ls-files"],
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard"],
         cwd=repo_root,
         text=True,
         capture_output=True,
@@ -36,6 +36,8 @@ def classify_path(path: str) -> str:
         return "keep"
     if path.startswith("_localsetup/skills/localsetup-"):
         return "legacy-migration"
+    if path.startswith("_localsetup/workflows/ls-workflow-"):
+        return "keep"
     if path == "install.ps1":
         return "refactor"
     if path.startswith("_localsetup/v3/") or path in {

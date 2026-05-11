@@ -5,13 +5,13 @@ version: 3.0
 
 # Platform registry (Localsetup v3)
 
-**Purpose:** Single source of truth for which AI agent platforms the framework supports. When you need to list supported platforms, reference this file instead of scattering names across docs. When adding a new platform, add it here first; when registering a new skill, use the "Skill registration (new skills)" list below so no platform is missed.
+**Purpose:** Single source of truth for which AI agent platforms the framework supports. When you need to list supported platforms, reference this file instead of scattering names across docs. When adding a new platform, add it here first; when registering a new skill or workflow package, use the registration lists below so no platform is missed.
 
 **Manifest source:** V3 installer behavior is controlled by `_localsetup/config/platforms.yaml`. This page is a human-readable summary. The root `--tools` flag remains a compatibility alias for v3 `--platforms`.
 
 ## Supported platforms
 
-| ID | Display name | Repo adapter path | Managed skill library |
+| ID | Display name | Repo adapter path | Managed package library |
 |----|--------------|-------------------|-----------------------|
 | cursor | Cursor | .cursor/skills | ~/.local/share/agents/skills/localsetup |
 | claude-code | Claude Code | .claude/skills | ~/.local/share/agents/skills/localsetup |
@@ -24,11 +24,11 @@ version: 3.0
 
 ## Shared home library
 
-V3 installs selected skills to `~/.local/share/agents/skills/localsetup` and attaches repo adapter paths to that library by symlink. `--mode portable` creates managed copies instead. Rollback uses `localsetup.lock.json` and removes only managed paths.
+V3 installs selected skills and workflow packages to `~/.local/share/agents/skills/localsetup` and attaches repo adapter paths to that library by symlink. `--mode portable` creates managed copies instead. Rollback uses `localsetup.lock.json` and removes only managed paths.
 
 ## Skill registration (new skills)
 
-When adding a new framework skill, register it in **every** file below so the skill appears in each platform's context and in the framework README. Paths are relative to the **framework source root** (the directory that contains `templates/`, `skills/`, `docs/`).
+When adding a new framework skill, register it in **every** file below so the skill appears in each platform's context and in the framework README. Paths are relative to the **framework source root** (the directory that contains `templates/`, `skills/`, `workflows/`, and `docs/`).
 
 Add one row or bullet per new skill with a short "When to use" description. Use the same phrasing everywhere.
 
@@ -45,6 +45,12 @@ Add one row or bullet per new skill with a short "When to use" description. Use 
 | Context skill (source) | _localsetup/skills/ls-context/SKILL.md |
 
 **If you add a new platform:** extend the Supported platforms table above, add the platform's context/skills paths, and add the corresponding registration file(s) to this table so the skill-creator and maintainers keep all platforms in sync.
+
+## Workflow registration (new workflow packages)
+
+When adding a new workflow package, create `_localsetup/workflows/ls-workflow-<id>/SKILL.md` and `workflow.yaml`, then update the same platform context templates when the workflow should be visible as a common trigger. Generated workflow catalogs are refreshed from `workflow.yaml`.
+
+Use [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) for the model and [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md) for the manifest contract.
 
 ## Reference
 

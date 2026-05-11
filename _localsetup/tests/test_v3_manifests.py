@@ -7,6 +7,73 @@ from _localsetup.v3.baseline import classify_path
 from _localsetup.v3.manifests import load_pack_config, load_platforms
 from _localsetup.v3.paths import PathValidationError
 from _localsetup.v3.skills import selected_skill_names, validate_skill_catalog
+from _localsetup.v3.workflows import selected_workflow_names, validate_workflow_catalog
+
+
+def make_workflow_validation_repo(tmp_path: Path) -> Path:
+    root = tmp_path / "repo"
+    config = root / "_localsetup" / "config"
+    skills = root / "_localsetup" / "skills" / "ls-context"
+    workflow = root / "_localsetup" / "workflows" / "ls-workflow-demo"
+    docs = root / "_localsetup" / "docs"
+    config.mkdir(parents=True)
+    skills.mkdir(parents=True)
+    workflow.mkdir(parents=True)
+    docs.mkdir(parents=True)
+    (skills / "SKILL.md").write_text(
+        "---\nname: ls-context\ndescription: Context.\n---\n",
+        encoding="utf-8",
+    )
+    (docs / "README.md").write_text("# Docs\n", encoding="utf-8")
+    (config / "pack.yaml").write_text(
+        """
+pack_id: localsetup
+namespace: ls
+version: 3
+global:
+  root: ~/.local/share/agents/skills/localsetup
+  registry: ~/.local/share/agents/skills/localsetup/.localsetup-registry.json
+repo:
+  lockfile: localsetup.lock.json
+packs:
+  core:
+    - ls-context
+workflow_packs:
+  core:
+    - ls-workflow-demo
+public_private:
+  public_paths: []
+  private_paths: []
+""",
+        encoding="utf-8",
+    )
+    (workflow / "SKILL.md").write_text(
+        "---\nname: ls-workflow-demo\ndescription: Demo workflow.\n---\n",
+        encoding="utf-8",
+    )
+    (workflow / "workflow.yaml").write_text(
+        """
+workflow_id: demo
+display_name: Demo
+aliases: [demo flow]
+invocation: Demo only.
+required_skills: []
+required_tools: []
+required_docs:
+  - _localsetup/docs/README.md
+gates: []
+phases: []
+validation: []
+outputs:
+  - Demo output
+smoke:
+  - id: docs
+    check: _localsetup/docs/README.md exists
+migration: {}
+""",
+        encoding="utf-8",
+    )
+    return root
 
 
 def test_pack_manifest_loads() -> None:
@@ -30,8 +97,11 @@ def test_catalog_validation_and_pack_selection() -> None:
     root = Path(__file__).resolve().parents[2]
 
     assert validate_skill_catalog(root) == []
+    assert validate_workflow_catalog(root) == []
     assert "ls-context" in selected_skill_names(root, ["core"])
     assert "ls-cloudflare-dns" not in selected_skill_names(root, ["core"])
+    assert "ls-workflow-ops-tmux-session" in selected_workflow_names(root, ["ops"])
+    assert "ls-system-info" in selected_skill_names(root, ["ops"])
 
 
 def test_skill_allowed_tools_frontmatter_is_space_separated() -> None:
@@ -52,10 +122,158 @@ def test_skill_allowed_tools_frontmatter_is_space_separated() -> None:
         assert allowed_tools.split(), skill_md
 
 
+def test_old_workflow_skill_references_are_cut_over() -> None:
+    root = Path(__file__).resolve().parents[2]
+    stale = [
+        "ls-agentic-" + "prd-batch",
+        "ls-agentic-" + "umbrella-queue",
+        "ls-decision-tree-" + "workflow",
+        "ls-tmux-shared-session-" + "workflow",
+        "ls-publish-" + "workflow",
+        "localsetup-publish-" + "workflow",
+        "WORKFLOW_" + "INDEX.md",
+        "MAINTENANCE_" + "WORKFLOW.md",
+        "scripts/" + "publish",
+    ]
+    scanned_suffixes = {".md", ".mdc", ".yaml", ".json", ".py", ".sh", ".ps1"}
+    offenders: list[str] = []
+    for path in root.rglob("*"):
+        if not path.is_file() or path.suffix not in scanned_suffixes:
+            continue
+        if any(part in {".git", ".codex", ".localsetup-maint", ".venv", ".venv-codex", "__pycache__"} for part in path.parts):
+            continue
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for needle in stale:
+            if needle in text:
+                offenders.append(f"{path.relative_to(root)}:{needle}")
+    assert offenders == []
+
+
 def test_baseline_file_classification() -> None:
     assert classify_path("_localsetup/skills/ls-context/SKILL.md") == "keep"
+    assert classify_path("_localsetup/workflows/ls-workflow-ops-tmux-session/SKILL.md") == "keep"
     assert classify_path("_localsetup/docs/_generated/skill_aliases.json") == "generate"
     assert classify_path("scripts/generate-doc-artifacts") == "private-maintainer"
+
+
+def test_generated_implementation_map_includes_workflow_sources() -> None:
+    root = Path(__file__).resolve().parents[2]
+    file_map = (root / "_localsetup" / "docs" / "_generated" / "implementation-file-map.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "_localsetup/config/workflow.schema.json" in file_map
+    assert "_localsetup/docs/_generated/workflow-catalog.json" in file_map
+    assert "_localsetup/workflows/ls-workflow-ops-tmux-session/SKILL.md" in file_map
+
+
+def test_workflow_catalog_rejects_alias_collision(tmp_path: Path) -> None:
+    root = make_workflow_validation_repo(tmp_path)
+    manifest = root / "_localsetup" / "workflows" / "ls-workflow-demo" / "workflow.yaml"
+    text = manifest.read_text(encoding="utf-8")
+    manifest.write_text(text.replace("aliases: [demo flow]", "aliases: [ls-context]"), encoding="utf-8")
+
+    issues = validate_workflow_catalog(root)
+    assert any("workflow alias conflicts" in issue for issue in issues)
+
+
+def test_workflow_catalog_rejects_unsafe_required_paths(tmp_path: Path) -> None:
+    root = make_workflow_validation_repo(tmp_path)
+    manifest = root / "_localsetup" / "workflows" / "ls-workflow-demo" / "workflow.yaml"
+    text = manifest.read_text(encoding="utf-8")
+    manifest.write_text(
+        text.replace("required_tools: []", "required_tools: [/bin/sh, 'C:\\\\Windows\\\\cmd.exe']")
+        .replace("  - _localsetup/docs/README.md", "  - /etc/passwd\n  - ../escape.md\n  - ~/.ssh/config"),
+        encoding="utf-8",
+    )
+
+    issues = validate_workflow_catalog(root)
+    assert sum("workflow requires unsafe tool path" in issue for issue in issues) == 2
+    assert sum("workflow requires unsafe doc path" in issue for issue in issues) == 3
+
+
+def test_workflow_catalog_reports_missing_package_files(tmp_path: Path) -> None:
+    root = make_workflow_validation_repo(tmp_path)
+    workflow = root / "_localsetup" / "workflows" / "ls-workflow-demo"
+    (workflow / "SKILL.md").unlink()
+    (workflow / "workflow.yaml").unlink()
+
+    issues = validate_workflow_catalog(root)
+    assert any("missing workflow SKILL.md" in issue for issue in issues)
+    assert any("missing workflow.yaml" in issue for issue in issues)
+
+
+def test_workflow_catalog_rejects_missing_dependency_and_smoke(tmp_path: Path) -> None:
+    root = make_workflow_validation_repo(tmp_path)
+    manifest = root / "_localsetup" / "workflows" / "ls-workflow-demo" / "workflow.yaml"
+    text = manifest.read_text(encoding="utf-8")
+    manifest.write_text(
+        text.replace("required_skills: []", "required_skills: [ls-missing]")
+        .replace("smoke:\n  - id: docs\n    check: _localsetup/docs/README.md exists", "smoke: []"),
+        encoding="utf-8",
+    )
+
+    issues = validate_workflow_catalog(root)
+    assert any("workflow requires missing skill" in issue for issue in issues)
+    assert any("workflow missing smoke row" in issue for issue in issues)
+
+
+def test_workflow_catalog_rejects_duplicate_id_and_bad_package_name(tmp_path: Path) -> None:
+    root = make_workflow_validation_repo(tmp_path)
+    workflow2 = root / "_localsetup" / "workflows" / "ls-workflow-wrong"
+    workflow2.mkdir()
+    (workflow2 / "SKILL.md").write_text(
+        "---\nname: ls-workflow-wrong\ndescription: Wrong workflow.\n---\n",
+        encoding="utf-8",
+    )
+    (workflow2 / "workflow.yaml").write_text(
+        (root / "_localsetup" / "workflows" / "ls-workflow-demo" / "workflow.yaml").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+
+    issues = validate_workflow_catalog(root)
+    assert any("duplicate workflow_id" in issue for issue in issues)
+    assert any("workflow package/id mismatch" in issue for issue in issues)
+
+
+def test_workflow_catalog_rejects_alias_that_matches_later_workflow_id(tmp_path: Path) -> None:
+    root = make_workflow_validation_repo(tmp_path)
+    manifest = root / "_localsetup" / "workflows" / "ls-workflow-demo" / "workflow.yaml"
+    manifest.write_text(
+        manifest.read_text(encoding="utf-8").replace("aliases: [demo flow]", "aliases: [zeta]"),
+        encoding="utf-8",
+    )
+    workflow2 = root / "_localsetup" / "workflows" / "ls-workflow-zeta"
+    workflow2.mkdir()
+    (workflow2 / "SKILL.md").write_text(
+        "---\nname: ls-workflow-zeta\ndescription: Zeta workflow.\n---\n",
+        encoding="utf-8",
+    )
+    (workflow2 / "workflow.yaml").write_text(
+        """
+workflow_id: zeta
+display_name: Zeta
+aliases: [zeta flow]
+invocation: Zeta only.
+required_skills: []
+required_tools: []
+required_docs:
+  - _localsetup/docs/README.md
+gates: []
+phases: []
+validation: []
+outputs:
+  - Zeta output
+smoke:
+  - id: docs
+    check: _localsetup/docs/README.md exists
+migration: {}
+""",
+        encoding="utf-8",
+    )
+
+    issues = validate_workflow_catalog(root)
+    assert any("workflow alias conflicts with reserved name" in issue for issue in issues)
 
 
 def test_pack_manifest_rejects_absolute_public_path(tmp_path: Path) -> None:

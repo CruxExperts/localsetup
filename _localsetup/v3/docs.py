@@ -7,6 +7,7 @@ from .aliases import collect_skill_aliases
 from .baseline import implementation_file_map
 from .manifests import load_platforms
 from .skills import load_skill_catalog
+from .workflows import load_workflow_catalog, workflow_catalog_payload
 
 
 def generate_alias_outputs(repo_root: Path) -> dict:
@@ -31,12 +32,18 @@ def generate_alias_outputs(repo_root: Path) -> dict:
     platforms_md.write_text("\n".join(platform_lines) + "\n", encoding="utf-8")
 
     packs_md = repo_root / "_localsetup" / "docs" / "_generated" / "skill-packs.md"
-    pack_lines = ["# Skill Packs", "", "| Pack | Skill | Legacy Alias |", "|---|---|---|"]
+    pack_lines = ["# Skill And Workflow Packs", "", "| Pack | Type | Package | Legacy Alias |", "|---|---|---|---|"]
     for skill in load_skill_catalog(repo_root):
         packs = ", ".join(skill.packs) if skill.packs else "unassigned"
         legacy = skill.legacy_name or "n/a"
-        pack_lines.append(f"| `{packs}` | `{skill.name}` | `{legacy}` |")
+        pack_lines.append(f"| `{packs}` | `skill` | `{skill.name}` | `{legacy}` |")
+    for workflow in load_workflow_catalog(repo_root):
+        packs = ", ".join(workflow.packs) if workflow.packs else "unassigned"
+        pack_lines.append(f"| `{packs}` | `workflow` | `{workflow.package}` | `n/a` |")
     packs_md.write_text("\n".join(pack_lines) + "\n", encoding="utf-8")
+
+    workflow_catalog = repo_root / "_localsetup" / "docs" / "_generated" / "workflow-catalog.json"
+    workflow_catalog.write_text(json.dumps(workflow_catalog_payload(repo_root), indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     file_map_md = repo_root / "_localsetup" / "docs" / "_generated" / "implementation-file-map.md"
     map_lines = ["# Implementation File Map", "", "| Classification | Path |", "|---|---|"]
@@ -49,6 +56,7 @@ def generate_alias_outputs(repo_root: Path) -> dict:
         "migration": str(migration_md),
         "platforms": str(platforms_md),
         "packs": str(packs_md),
+        "workflow_catalog": str(workflow_catalog),
         "file_map": str(file_map_md),
         "count": len(aliases),
     }

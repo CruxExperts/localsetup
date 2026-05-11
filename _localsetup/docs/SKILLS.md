@@ -7,12 +7,10 @@ version: 3.0
 
 This page is generated from `_localsetup/skills/*/SKILL.md`.
 
-Total shipped skills: 49
+Total shipped skills: 45
 
 | Skill ID | Name | Version | Description |
 |---|---|---|---|
-| `ls-agentic-prd-batch` | `ls-agentic-prd-batch` | `1.3` | Agentic PRD batch: process ready PRDs from .agent/queue/**, configured PRD folders such as prds/**, or explicit *.prd.md files; implement per spec; update status; write an Outcome block; reference PRD schema + external-agent guide. |
-| `ls-agentic-umbrella-queue` | `ls-agentic-umbrella-queue` | `1.1` | Umbrella queue guardrails for named multi-phase workflows. Use only when editing queue/PRD inputs such as .agent/queue/**, PRD.md, or *.prd.md, or when the user explicitly invokes a named umbrella workflow. |
 | `ls-agentlens` | `ls-agentlens` | `1.0` | Navigate and understand codebases using agentlens hierarchical documentation. Use when exploring new projects, finding modules, locating symbols in large files, finding TODOs/warnings, or understanding code structure. |
 | `ls-agentq-transport` | `ls-agentq-transport` | `1.0` | Agent Q bidirectional transport client - file_drop ship/ingest, mail pull/ship (including strict gpg preencrypted), registry validation, queue-pending, archive-prune. Use when shipping or ingesting sealed PRD manifests between agents over shared folders or mail; when editing agent_trust_registry, manifest.schema.json, or agentq CLI. |
 | `ls-ansible-skill` | `ls-ansible-skill` | `1.1` | Infrastructure automation with Ansible. Use for server provisioning, configuration management, application deployment, and multi-host orchestration. Includes example playbooks for VPS setup, security hardening, and common server configurations. Bundled examples may reference one platform; adapt paths and commands for your environment. |
@@ -24,7 +22,6 @@ Total shipped skills: 49
 | `ls-context` | `ls-context` | `1.5` | Localsetup v3 framework context  - overview, invariants, and skills index. Load first when working in a repo that uses Localsetup v3. Use when starting work in this repo or when user asks about framework rules. |
 | `ls-cron-orchestrator` | `ls-cron-orchestrator` | `1.0` | Manage cron from a repo-local manifest: time triggers, on-boot-with-delay, sequenced tasks; create, remove, reorder, install. |
 | `ls-debug-pro` | `ls-debug-pro` | `1.2` | Systematic debugging methodology and language-specific debugging commands (Node, Python, Swift, CSS/layout, network, git bisect). |
-| `ls-decision-tree-workflow` | `ls-decision-tree-workflow` | `1.2` | Decision tree / reverse prompt workflow - AI prompts user one question at a time with 4 options (A-D), preferred choice + rationale. Use only when the user explicitly asks for 'decision tree', 'run the decision tree', 'reverse prompt', or 'reverse prompt workflow'. |
 | `ls-docs-organization` | `ls-docs-organization` | `0.1.0` | Repo-level docs router: classify documentation requests, propose paths and filenames, and keep indexes in sync. |
 | `ls-framework-audit` | `ls-framework-audit` | `1.0` | Run doc, link, skill matrix, and version/facts checks before release. Single entrypoint script; output to user-specified path only; no in-repo default. Use when user says 'run audit', 'run framework audit', or before release. |
 | `ls-framework-compliance` | `ls-framework-compliance` | `1.2` | Pre-task workflow, certainty assessment, context load, document status, testing, Git checkpoints, document maintenance. Use for framework modifications, PRDs, or any task that must follow checklist and checkpoints. |
@@ -58,5 +55,4 @@ Total shipped skills: 49
 | `ls-task-skill-matcher` | `ls-task-skill-matcher` | `1.1` | Match user tasks to installed Localsetup skills, recommend top matches, and run single-task or batch skill-selection flow with minimal interruption. Delegates complementary public-skill discovery to ls-skill-discovery. |
 | `ls-tdd-guide` | `ls-tdd-guide` | `1.1` | Test-driven development workflow with test generation, coverage analysis, and multi-framework support |
 | `ls-test-runner` | `ls-test-runner` | `1.1` | Write and run tests across languages and frameworks (Vitest, Jest, pytest, XCTest, Playwright). TDD workflow, coverage, and test patterns. |
-| `ls-tmux-shared-session-workflow` | `ls-tmux-shared-session-workflow` | `5.1` | Server/ops in tmux; use tmux_ops when host work should be operator-visible, sudo-gated, or resumable with captured logs. Supports REMOTE_TMUX_HOST for SSH-accessible remote hosts/VMs; container targets must be reachable as SSH hosts with this repo/tooling installed. |
 | `ls-unfuck-my-git-state` | `ls-unfuck-my-git-state` | `1.2` | Diagnose and recover broken Git state and worktree metadata with a staged, low-risk recovery flow. Use when Git reports detached or contradictory HEAD state, phantom worktree locks, orphaned worktree entries, missing refs, 0000000000000000000000000000000000000000 hashes, or branch operations fail with errors like already checked out, unknown revision, not a valid object name, or cannot lock ref. |

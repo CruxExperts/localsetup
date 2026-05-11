@@ -13,12 +13,12 @@ def build_public_artifact(repo_root: Path, output_path: Path) -> dict:
     pack = load_pack_config(repo_root)
     added: list[str] = []
 
-    def is_skill_runtime_data(path_parts: list[str]) -> bool:
-        """Exclude generated skill runtime state, not skill source assets."""
+    def is_package_runtime_data(path_parts: list[str]) -> bool:
+        """Exclude generated package runtime state, not source assets."""
         return (
             len(path_parts) >= 5
             and path_parts[0] == "_localsetup"
-            and path_parts[1] == "skills"
+            and path_parts[1] in {"skills", "workflows"}
             and path_parts[3:5] == ["scripts", "data"]
         )
 
@@ -35,7 +35,7 @@ def build_public_artifact(repo_root: Path, output_path: Path) -> dict:
             or name.endswith((".pyc", ".pyo"))
         ):
             return None
-        if is_skill_runtime_data(path_parts):
+        if is_package_runtime_data(path_parts):
             return None
         for private in pack.private_paths:
             private_name = private.rstrip("/")

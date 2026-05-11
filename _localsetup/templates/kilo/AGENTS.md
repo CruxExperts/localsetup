@@ -29,13 +29,13 @@ Kilo CLI uses `AGENTS.md` as the project initialization file at repo root.
 - Bounded coding: use `gpt-5.3-codex` for scoped implementation tasks with clear write ownership and tests.
 - Credit freshness: as of 2026-05-07, the official Codex rate card lists per 1M token credits as `gpt-5.4-mini` 18.75/1.875/113, `gpt-5.3-codex` 43.75/4.375/350, and `gpt-5.5` 125/12.50/750 for input/cached/output. Re-check https://help.openai.com/en/articles/20001106-codex-rate-card before changing model guidance.
 
-## Skills index (load when task matches)
+## Skills and workflows index (load when task matches)
 
-| Skill | When to use |
+| Package | When to use |
 |-------|--------------|
-| ls-decision-tree-workflow | User says "decision tree" or "reverse prompt"; editing .agent/queue/**, PRD |
-| ls-agentic-umbrella-queue | Queue/PRD in scope; named workflows; impact summary + confirmation |
-| ls-agentic-prd-batch | "Process PRDs", "run batch from PRD folder"; implement per spec, outcome |
+| ls-workflow-spec-clarify-reverse | User says "decision tree" or "reverse prompt"; editing .agent/queue/**, PRD |
+| ls-workflow-umbrella-run | Queue/PRD in scope; named workflows; impact summary + confirmation |
+| ls-workflow-queue-batch-implement | "Process PRDs", "run batch from PRD folder"; implement per spec, outcome |
 | ls-agentq-transport | Ship/ingest sealed Agent Q blobs (file_drop/mail), registry, strict gpg; see AGENTIC_AGENT_Q_SCENARIOS.md |
 | ls-mail-protocol-control | SMTP/IMAP; preencrypted_openpgp_armored for Agent Q strict mail |
 | ls-public-repo-identity | Editing README*, CONTRIBUTING*; public identity |
@@ -43,10 +43,10 @@ Kilo CLI uses `AGENTS.md` as the project initialization file at repo root.
 | ls-safety-and-backup | Destructive ops, backups, temp files, firewall |
 | ls-script-and-docs-quality | Generating scripts, markdown/docs |
 | ls-communication-and-tools | Communication style, tool choice, MCP/context updates |
-| ls-tmux-shared-session-workflow | Server/system commands, deployments, tmux, shared session, human-in-the-loop ops |
+| ls-workflow-ops-tmux-session | Server/system commands, deployments, tmux, shared session, human-in-the-loop ops |
 | ls-automatic-versioning | Version bumps, release workflow, conventional commits, versioning docs |
 | ls-github-publishing-workflow | Publishing to GitHub, public release prep, publishing checklist, repo readiness |
-| ls-skill-creator | Create new skill from workflow or existing doc/markdown/GitHub; capture workflow as framework skill |
+| ls-skill-creator | Create new capability skill from an existing doc/markdown/GitHub source; use workflow packages for named orchestration flows |
 | ls-skill-importer | Import skills from URL or local path; discover, validate, screen, summarize; user picks which to import |
 | ls-skill-discovery | Discover public skills from registries; recommend top 5 similar when creating/importing; in-depth summary, use public, continue, or adapt |
 | ls-task-skill-matcher | Match user tasks to installed skills; recommend top matches; single-task confirm once; batch auto-pick/parcel flow; complementary public-skill suggestions |
@@ -86,7 +86,7 @@ Kilo CLI uses `AGENTS.md` as the project initialization file at repo root.
 
 - _localsetup/docs/AGENTIC_DESIGN_INDEX.md  - Index of agentic design docs
 - _localsetup/docs/WORKFLOW_REGISTRY.md  - Named workflows, when to use, impact review
-- _localsetup/docs/WORKFLOW_QUICK_REF.md  - Workflow IDs, display names, aliases, primary skills/docs
+- _localsetup/docs/WORKFLOW_QUICK_REF.md  - Workflow IDs, package names, aliases, primary docs
 - _localsetup/docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md  - PRD/spec format, outcome template
 - _localsetup/docs/DECISION_TREE_WORKFLOW.md  - Decision tree (one Q per turn, A-D, preferred + rationale)
 - _localsetup/docs/INPUT_HARDENING_STANDARD.md  - Mandatory hostile-input handling, sanitization, actionable error policy

@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://localsetup.dev/schemas/workflow.schema.json",
+  "title": "Localsetup v3 workflow package manifest",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "workflow_id",
+    "display_name",
+    "aliases",
+    "invocation",
+    "required_skills",
+    "required_tools",
+    "required_docs",
+    "gates",
+    "phases",
+    "validation",
+    "outputs",
+    "smoke",
+    "migration"
+  ],
+  "properties": {
+    "workflow_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "aliases": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "invocation": {
+      "type": "string",
+      "minLength": 1
+    },
+    "required_skills": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "required_tools": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "required_docs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "gates": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "phases": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "validation": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "outputs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "smoke": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "object" }
+    },
+    "migration": {
+      "type": "object"
+    }
+  }
+}

@@ -2,7 +2,8 @@
   "version": "3.0.2",
   "major_minor": "3.0",
   "platform_count": 6,
-  "skill_count": 49,
+  "skill_count": 45,
+  "workflow_count": 16,
   "platforms": [
     {
       "id": "cursor",
@@ -42,18 +43,6 @@
     }
   ],
   "skills": [
-    {
-      "id": "ls-agentic-prd-batch",
-      "name": "ls-agentic-prd-batch",
-      "version": "1.3",
-      "path": "_localsetup/skills/ls-agentic-prd-batch/SKILL.md"
-    },
-    {
-      "id": "ls-agentic-umbrella-queue",
-      "name": "ls-agentic-umbrella-queue",
-      "version": "1.1",
-      "path": "_localsetup/skills/ls-agentic-umbrella-queue/SKILL.md"
-    },
     {
       "id": "ls-agentlens",
       "name": "ls-agentlens",
@@ -119,12 +108,6 @@
       "name": "ls-debug-pro",
       "version": "1.2",
       "path": "_localsetup/skills/ls-debug-pro/SKILL.md"
-    },
-    {
-      "id": "ls-decision-tree-workflow",
-      "name": "ls-decision-tree-workflow",
-      "version": "1.2",
-      "path": "_localsetup/skills/ls-decision-tree-workflow/SKILL.md"
     },
     {
       "id": "ls-docs-organization",
@@ -325,16 +308,108 @@
       "path": "_localsetup/skills/ls-test-runner/SKILL.md"
     },
     {
-      "id": "ls-tmux-shared-session-workflow",
-      "name": "ls-tmux-shared-session-workflow",
-      "version": "5.1",
-      "path": "_localsetup/skills/ls-tmux-shared-session-workflow/SKILL.md"
-    },
-    {
       "id": "ls-unfuck-my-git-state",
       "name": "ls-unfuck-my-git-state",
       "version": "1.2",
       "path": "_localsetup/skills/ls-unfuck-my-git-state/SKILL.md"
+    }
+  ],
+  "workflows": [
+    {
+      "id": "audit-framework",
+      "package": "ls-workflow-audit-framework",
+      "name": "Audit Framework",
+      "path": "_localsetup/workflows/ls-workflow-audit-framework/SKILL.md"
+    },
+    {
+      "id": "audit-markdown-references",
+      "package": "ls-workflow-audit-markdown-references",
+      "name": "Audit Markdown References",
+      "path": "_localsetup/workflows/ls-workflow-audit-markdown-references/SKILL.md"
+    },
+    {
+      "id": "ops-guarded",
+      "package": "ls-workflow-ops-guarded",
+      "name": "Ops Guarded",
+      "path": "_localsetup/workflows/ls-workflow-ops-guarded/SKILL.md"
+    },
+    {
+      "id": "ops-tmux-session",
+      "package": "ls-workflow-ops-tmux-session",
+      "name": "Ops Tmux Session",
+      "path": "_localsetup/workflows/ls-workflow-ops-tmux-session/SKILL.md"
+    },
+    {
+      "id": "pipeline-git-repair-hygiene",
+      "package": "ls-workflow-pipeline-git-repair-hygiene",
+      "name": "Pipeline Git Repair Hygiene",
+      "path": "_localsetup/workflows/ls-workflow-pipeline-git-repair-hygiene/SKILL.md"
+    },
+    {
+      "id": "pipeline-pr-feedback-loop",
+      "package": "ls-workflow-pipeline-pr-feedback-loop",
+      "name": "Pipeline PR Feedback Loop",
+      "path": "_localsetup/workflows/ls-workflow-pipeline-pr-feedback-loop/SKILL.md"
+    },
+    {
+      "id": "pipeline-pre-publish",
+      "package": "ls-workflow-pipeline-pre-publish",
+      "name": "Pipeline Pre Publish",
+      "path": "_localsetup/workflows/ls-workflow-pipeline-pre-publish/SKILL.md"
+    },
+    {
+      "id": "pipeline-repo-polish",
+      "package": "ls-workflow-pipeline-repo-polish",
+      "name": "Pipeline Repo Polish",
+      "path": "_localsetup/workflows/ls-workflow-pipeline-repo-polish/SKILL.md"
+    },
+    {
+      "id": "pipeline-server-triage-patch",
+      "package": "ls-workflow-pipeline-server-triage-patch",
+      "name": "Pipeline Server Triage Patch",
+      "path": "_localsetup/workflows/ls-workflow-pipeline-server-triage-patch/SKILL.md"
+    },
+    {
+      "id": "pipeline-skill-onboard",
+      "package": "ls-workflow-pipeline-skill-onboard",
+      "name": "Pipeline Skill Onboard",
+      "path": "_localsetup/workflows/ls-workflow-pipeline-skill-onboard/SKILL.md"
+    },
+    {
+      "id": "queue-batch-implement",
+      "package": "ls-workflow-queue-batch-implement",
+      "name": "Queue Batch Implement",
+      "path": "_localsetup/workflows/ls-workflow-queue-batch-implement/SKILL.md"
+    },
+    {
+      "id": "skills-index-refresh",
+      "package": "ls-workflow-skills-index-refresh",
+      "name": "Skills Index Refresh",
+      "path": "_localsetup/workflows/ls-workflow-skills-index-refresh/SKILL.md"
+    },
+    {
+      "id": "spec-clarify-reverse",
+      "package": "ls-workflow-spec-clarify-reverse",
+      "name": "Reverse Prompt Spec Clarify",
+      "path": "_localsetup/workflows/ls-workflow-spec-clarify-reverse/SKILL.md"
+    },
+    {
+      "id": "tmux-terminal-mode",
+      "package": "ls-workflow-tmux-terminal-mode",
+      "name": "Tmux Terminal Mode",
+      "path": "_localsetup/workflows/ls-workflow-tmux-terminal-mode/SKILL.md"
+    },
+    {
+      "id": "transport-handoff",
+      "package": "ls-workflow-transport-handoff",
+      "name": "Transport Handoff",
+      "path": "_localsetup/workflows/ls-workflow-transport-handoff/SKILL.md"
+    },
+    {
+      "id": "umbrella-run",
+      "package": "ls-workflow-umbrella-run",
+      "name": "Umbrella Run",
+      "path": "_localsetup/workflows/ls-workflow-umbrella-run/SKILL.md"
     }
   ]
 }

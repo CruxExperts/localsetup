@@ -48,7 +48,7 @@ IDE_SETTINGS_CANDIDATES = [
 ]
 
 # Agent rule block injected into the rules file (Layer 2)
-# Kept in sync with ls-tmux-shared-session-workflow skill.
+# Kept in sync with ls-workflow-ops-tmux-session.
 AGENT_RULE_BLOCK = """\
 {sentinel_begin}
 ## MANDATORY: Server/ops (tmux + sudo gate)
@@ -73,7 +73,7 @@ session from `tmux ls` or parse capture yourself.
    only with `cancel -t <session> --run-id <run_id>`. If sudo expires, probe
    again.
 
-Full procedure: **ls-tmux-shared-session-workflow** skill.
+Full procedure: **ls-workflow-ops-tmux-session** workflow package.
 {sentinel_end}
 """.format(sentinel_begin=SENTINEL_BEGIN, sentinel_end=SENTINEL_END)
 

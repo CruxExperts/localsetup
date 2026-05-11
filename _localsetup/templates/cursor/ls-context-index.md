@@ -3,18 +3,18 @@
 | Asset | Description | When applied |
 |-------|-------------|--------------|
 | ls-context.mdc | Master rule: overview, invariants, skills index, docs index | Always |
-| ls-decision-tree-workflow | Decision tree / reverse prompt; one Q per turn, 4 options A-D | User says "decision tree" or "reverse prompt"; editing .agent/queue/**, PRD |
-| ls-agentic-umbrella-queue | Umbrella/queue; named workflows; impact summary + confirmation | Queue/PRD in scope |
-| ls-agentic-prd-batch | Process PRDs; implement per spec; status; outcome | "Process PRDs", "run batch from PRD folder" |
+| ls-workflow-spec-clarify-reverse | Decision tree / reverse prompt; one Q per turn, 4 options A-D | User says "decision tree" or "reverse prompt"; editing .agent/queue/**, PRD |
+| ls-workflow-umbrella-run | Umbrella/queue; named workflows; impact summary + confirmation | Queue/PRD in scope |
+| ls-workflow-queue-batch-implement | Process PRDs; implement per spec; status; outcome | "Process PRDs", "run batch from PRD folder" |
 | ls-public-repo-identity | Public repo identity; use local-identity for PII | Editing README*, CONTRIBUTING* |
 | ls-framework-compliance | Pre-task workflow, checkpoints, document maintenance | Framework mods, PRDs, checklist tasks |
 | ls-safety-and-backup | Security, backup, temp files, firewall | Destructive ops, system config, backups |
 | ls-script-and-docs-quality | Markdown/encoding, script quality, file/docs discipline | Generating scripts, editing markdown/docs |
 | ls-communication-and-tools | Communication, tool selection, periodic updates | Communication style, tools, MCP |
-| ls-tmux-shared-session-workflow | Shared tmux session; sudo discovery and single-prompt gate (join session, trigger, batch until timeout); agent captures output; human can attach/sudo | Server commands, deployments, tmux, human-in-the-loop ops |
+| ls-workflow-ops-tmux-session | Shared tmux session; sudo discovery and single-prompt gate (join session, trigger, batch until timeout); agent captures output; human can attach/sudo | Server commands, deployments, tmux, human-in-the-loop ops |
 | ls-automatic-versioning | Automatic semantic versioning from conventional commits; VERSION, sync to READMEs/docs | Version bumps, release workflow, conventional commits, versioning docs |
 | ls-github-publishing-workflow | Publishing checklist, doc structure, licensing, scrub for PII/secrets | Publishing to GitHub, public release prep, publishing checklist, repo readiness |
-| ls-skill-creator | Create framework skill from workflow description or existing doc/markdown/GitHub | Create new skill, capture workflow as skill, adapt doc or skill into framework |
+| ls-skill-creator | Create framework capability skill from existing doc/markdown/GitHub source | Create new skill; use workflow packages for named orchestration flows; adapt doc or skill into framework |
 | ls-skill-importer | Import skills from URL (e.g. GitHub) or local path; discover, validate, screen, summarize; user picks which to import | Import skills from URL/path, screen external skills, add skills from repo |
 | ls-skill-discovery | Discover public skills from registries; recommend top 5 similar when creating/importing; in-depth summary, use public, continue, or adapt | Creating/importing skill; find similar public skills; PUBLIC_SKILL_REGISTRY.urls, PUBLIC_SKILL_INDEX.yaml |
 | ls-task-skill-matcher | Match task intent to installed skills; top-3 ranking, confirm/auto-pick flow, batch parcel options, and complementary public-skill suggestions | User asks "what skill should I use?", "pick the best", or task-to-skill match is unclear |

@@ -25,9 +25,10 @@ Use it when you want agents to stop improvising and start working from auditable
 Localsetup v3 packages:
 
 - Repo-local framework source under `_localsetup/`
-- 49 shipped skills for debugging, testing, PR review, infrastructure, docs, git recovery, skill import, security vetting, and agent workflow control
+- 45 shipped capability skills plus 16 first-class workflow packages for debugging, testing, PR review, infrastructure, docs, git recovery, skill import, security vetting, and agent workflow control
 - Cross-platform adapters for Cursor, Claude Code, Codex CLI, OpenClaw, Kilo, and OpenCode
-- Agent Skills-compatible `SKILL.md` files that can be imported, normalized, vetted, and reused
+- Agent Skills-compatible `SKILL.md` packages that can be imported, normalized, vetted, installed, and reused
+- Workflow packages under `_localsetup/workflows/` that stay executable as skills while carrying Localsetup `workflow.yaml` metadata for aliases, gates, dependencies, and generated registries
 - A Python-first installer with preflight, planning, verification, rollback metadata, and generated docs sync
 - Human-in-the-loop operations for risky commands, remote/server work, and sudo-aware tmux sessions
 
@@ -39,7 +40,20 @@ That means your agent setup travels with the repo, survives context resets, and 
   <img src="assets/localsetup-v3-architecture.svg" alt="Localsetup v3 architecture: repo source, config resolver, managed home library, adapters, and rollback metadata" width="960">
 </p>
 
-`_localsetup/` is the canonical source. The installer resolves configuration, creates the managed home skill library, attaches platform adapter paths, writes lock/report metadata, and leaves rollback evidence behind. Generated adapter trees are install output, not framework source.
+`_localsetup/` is the canonical source. The installer resolves configuration, creates the managed home library for skills and workflow packages, attaches platform adapter paths, writes lock/report metadata, and leaves rollback evidence behind. Generated adapter trees are install output, not framework source.
+
+## Skills and workflow packages
+
+Localsetup v3 makes one important distinction explicit:
+
+| Package type | Source root | Runtime shape | Use it for |
+|---|---|---|---|
+| Capability skill | `_localsetup/skills/ls-*` | Agent Skills `SKILL.md` package | A reusable capability such as debugging, testing, skill import, PR review, service triage, or versioning. |
+| Workflow package | `_localsetup/workflows/ls-workflow-*` | Agent Skills `SKILL.md` package plus `workflow.yaml` | A named orchestration flow with aliases, required skills, gates, phases, validation, and expected outputs. |
+
+Both package types install into `~/.local/share/agents/skills/localsetup`, so agent hosts can invoke them through the same adapter paths. The split keeps portable skills clean while making workflow orchestration auditable and generated from source manifests.
+
+Start with the [workflow packages guide](_localsetup/docs/WORKFLOW_PACKAGES.md) for usage and the [workflow standard](_localsetup/docs/WORKFLOW_STANDARD.md) for authoring rules.
 
 ## Current snapshot
 
@@ -48,7 +62,8 @@ That means your agent setup travels with the repo, survives context resets, and 
 |---|---|
 | Current version | `3.0.2` |
 | Supported platforms | `cursor, claude-code, codex, openclaw, kilo, opencode` |
-| Shipped skills | `49` |
+| Shipped skills | `45` |
+| Workflow packages | `16` |
 | Source | `_localsetup/docs/_generated/facts.json` |
 <!-- facts-block:end -->
 
@@ -85,15 +100,15 @@ Full install docs: [_localsetup/docs/QUICKSTART.md](_localsetup/docs/QUICKSTART.
 5. **It treats skill imports as supply-chain events.** External skills are discovered, validated, security-screened, summarized, and normalized before they become part of your library.
 6. **It helps with the work developers actually hand agents.** Debugging, tests, PR review, codebase navigation, docs cleanup, git recovery, MCP building, Linux service triage, patching, and release chores are covered out of the box.
 7. **It has safety rails for real machines.** Server and operations workflows route through tmux, sudo probing, backup/safety guidance, and explicit approval points for risky actions.
-8. **It gives long-running work a shape.** Decision trees, PRD queues, Agent Q handoffs, workflow registries, and outcome templates make multi-step agent work easier to restart, audit, and delegate.
+8. **It gives long-running work a shape.** First-class workflow packages, decision trees, PRD queues, Agent Q handoffs, generated registries, and outcome templates make multi-step agent work easier to restart, audit, and delegate.
 9. **It makes installs reversible.** The v3 installer plans, applies, verifies, writes lock metadata, and can roll back managed paths without treating generated adapter output as source.
 10. **It keeps releases tidy.** Version sync, generated facts, skill metadata versions, framework audit, and Conventional Commit release tooling reduce the drift that makes public repos feel abandoned.
 
-## 10 shipped skills worth starting with
+## 10 shipped packages worth starting with
 
-These are not toy prompts. They are practical workflows from the shipped library.
+These are not toy prompts. They are practical skills and workflows from the shipped library.
 
-| Skill | Why it matters |
+| Package | Why it matters |
 |---|---|
 | `ls-agentlens` | Helps agents explore larger codebases through structured navigation instead of blind file-hopping. |
 | `ls-debug-pro` | Gives debugging a repeatable method across Node, Python, Swift, network issues, and git bisect. |
@@ -102,11 +117,11 @@ These are not toy prompts. They are practical workflows from the shipped library
 | `ls-mcp-builder` | Helps build high-quality MCP servers, which matters as agent/tool interoperability becomes standard infrastructure. |
 | `ls-skill-importer` | Imports skills from URLs or local paths with discovery, validation, security screening, and summaries. |
 | `ls-skill-vetter` | Reviews third-party skills as untrusted inputs before they join your agent environment. |
-| `ls-tmux-shared-session-workflow` | Keeps human-controlled server operations visible, resumable, and sudo-aware. |
+| `ls-workflow-ops-tmux-session` | Keeps human-controlled server operations visible, resumable, and sudo-aware. |
 | `ls-linux-service-triage` | Diagnoses service failures with logs, systemd/PM2, file permissions, reverse proxy checks, and DNS sanity checks. |
 | `ls-automatic-versioning` | Keeps `VERSION`, README values, generated docs, and release behavior aligned with Conventional Commits. |
 
-See the generated catalog for all 49 skills: [_localsetup/docs/SKILLS.md](_localsetup/docs/SKILLS.md).
+See the generated catalogs for all shipped skills and workflows: [_localsetup/docs/SKILLS.md](_localsetup/docs/SKILLS.md) and [_localsetup/docs/WORKFLOW_QUICK_REF.md](_localsetup/docs/WORKFLOW_QUICK_REF.md).
 
 ## Install lifecycle
 
@@ -159,6 +174,8 @@ Use managed dependency setup instead of system pip overrides:
 - [Framework README](_localsetup/README.md)
 - [Feature catalog](_localsetup/docs/FEATURES.md)
 - [Platform registry](_localsetup/docs/PLATFORM_REGISTRY.md)
+- [Workflow packages](_localsetup/docs/WORKFLOW_PACKAGES.md)
+- [Workflow standard](_localsetup/docs/WORKFLOW_STANDARD.md)
 - [Workflow registry](_localsetup/docs/WORKFLOW_REGISTRY.md)
 - [Skill importing](_localsetup/docs/SKILL_IMPORTING.md)
 - [Skill discovery](_localsetup/docs/SKILL_DISCOVERY.md)

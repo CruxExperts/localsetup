@@ -10,26 +10,39 @@ from .paths import ensure_dir, repo_path
 from .source import source_commit
 
 
-def _install_managed_skills(repo_root: Path, global_root: Path, skill_names: list[str]) -> list[str]:
+def _install_managed_packages(
+    repo_root: Path,
+    global_root: Path,
+    package_names: list[str],
+    source_subdir: str,
+) -> list[str]:
     ensure_dir(global_root)
     installed: list[str] = []
-    skills_root = repo_root / "_localsetup" / "skills"
+    source_root = repo_root / "_localsetup" / source_subdir
 
-    for skill_name in sorted(skill_names):
-        src = skills_root / skill_name
-        dest = global_root / skill_name
+    for package_name in sorted(package_names):
+        src = source_root / package_name
+        dest = global_root / package_name
         if dest.exists() and not (dest / ".localsetup-managed").exists():
-            raise RuntimeError(f"refusing to overwrite unmanaged skill path: {dest}")
+            raise RuntimeError(f"refusing to overwrite unmanaged package path: {dest}")
         if dest.exists() or dest.is_symlink():
             if dest.is_symlink() or dest.is_file():
                 dest.unlink()
             else:
                 shutil.rmtree(dest)
         shutil.copytree(src, dest)
-        (dest / ".localsetup-managed").write_text(f"source={skill_name}\n", encoding="utf-8")
+        (dest / ".localsetup-managed").write_text(f"source={source_subdir}/{package_name}\n", encoding="utf-8")
         installed.append(str(dest))
 
     return installed
+
+
+def _install_managed_skills(repo_root: Path, global_root: Path, skill_names: list[str]) -> list[str]:
+    return _install_managed_packages(repo_root, global_root, skill_names, "skills")
+
+
+def _install_managed_workflows(repo_root: Path, global_root: Path, workflow_names: list[str]) -> list[str]:
+    return _install_managed_packages(repo_root, global_root, workflow_names, "workflows")
 
 
 def apply_plan(
@@ -41,6 +54,7 @@ def apply_plan(
 ) -> dict:
     executed: list[str] = []
     installed_skills: list[str] = []
+    installed_workflows: list[str] = []
     for action in plan.actions:
         if action.kind == "ensure_dir":
             if not dry_run:
@@ -62,6 +76,10 @@ def apply_plan(
             if not dry_run:
                 installed_skills = _install_managed_skills(repo_root, action.path, action.details["skills"])
             executed.append(f"install_skills:{action.path}")
+        elif action.kind == "install_workflows":
+            if not dry_run:
+                installed_workflows = _install_managed_workflows(repo_root, action.path, action.details["workflows"])
+            executed.append(f"install_workflows:{action.path}")
         elif action.kind == "attach_repo_path":
             if not dry_run:
                 ensure_dir(action.path.parent)
@@ -89,10 +107,12 @@ def apply_plan(
         "source_commit": source_commit(repo_root),
         "aliases": plan.rollback_metadata.get("aliases", {}),
         "skills": plan.rollback_metadata.get("skills", []),
+        "workflows": plan.rollback_metadata.get("workflows", []),
         "adapter_state": [s for s in plan.rollback_metadata.get("repo_links", [])],
         "platforms": plan.rollback_metadata.get("platforms", []),
         "attach_mode": plan.rollback_metadata.get("attach_mode", "symlink"),
         "installed_skills": installed_skills,
+        "installed_workflows": installed_workflows,
         "dependency_mode": (dependency_info or {}).get("mode"),
         "python_interpreter": (dependency_info or {}).get("interpreter"),
     }

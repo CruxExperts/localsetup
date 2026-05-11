@@ -27,6 +27,7 @@ def make_temp_repo(tmp_path: Path) -> Path:
     (repo / "_localsetup").mkdir(parents=True)
     shutil.copytree(source / "_localsetup" / "config", repo / "_localsetup" / "config")
     shutil.copytree(source / "_localsetup" / "skills", repo / "_localsetup" / "skills")
+    shutil.copytree(source / "_localsetup" / "workflows", repo / "_localsetup" / "workflows")
     shutil.copy2(source / "_localsetup" / "requirements.txt", repo / "_localsetup" / "requirements.txt")
     (repo / "_localsetup" / "docs" / "_generated").mkdir(parents=True)
     (repo / "_localsetup" / "docs" / "migration").mkdir(parents=True)
@@ -63,6 +64,29 @@ def test_v3_plan_apply_verify_rollback(tmp_path: Path) -> None:
     rolled = rollback(root, home)
     assert rolled["removed"]
     assert verify_install(root, home)["ok"] is False
+
+
+def test_v3_selected_workflows_install_as_skill_packages(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    home.mkdir(parents=True, exist_ok=True)
+
+    plan = build_install_plan(root, home=home, packs=["ops"], platform_ids=["codex"])
+    workflow_action = next(a for a in plan.actions if a.kind == "install_workflows")
+    assert "ls-workflow-ops-tmux-session" in workflow_action.details["workflows"]
+    assert "ls-workflow-pipeline-server-triage-patch" in workflow_action.details["workflows"]
+    assert "ls-linux-patcher" in plan.rollback_metadata["skills"]
+
+    result = apply_plan(root, plan, home=home, dry_run=False)
+    lock = load_json(root / "localsetup.lock.json")
+    global_root = home / ".local/share/agents/skills/localsetup"
+
+    assert result["dry_run"] is False
+    assert (global_root / "ls-workflow-ops-tmux-session" / "SKILL.md").is_file()
+    assert (global_root / "ls-workflow-ops-tmux-session" / "workflow.yaml").is_file()
+    assert "ls-workflow-ops-tmux-session" in lock["workflows"]
+    assert any(path.endswith("ls-workflow-ops-tmux-session") for path in lock["installed_workflows"])
+    assert verify_install(root, home, platform_ids=["codex"])["ok"] is True
 
 
 def test_v3_portable_mode_uses_managed_copies(tmp_path: Path) -> None:
@@ -248,10 +272,21 @@ def test_v3_docs_and_package(tmp_path: Path) -> None:
     npm_token_dir.mkdir(parents=True, exist_ok=True)
     (npm_token_dir / "token.txt").write_text("runtime-token\n", encoding="utf-8")
     (npm_token_dir / "expiry.txt").write_text("2099-01-01T00:00:00Z\n", encoding="utf-8")
+    workflow_data_dir = (
+        root
+        / "_localsetup"
+        / "workflows"
+        / "ls-workflow-ops-tmux-session"
+        / "scripts"
+        / "data"
+    )
+    workflow_data_dir.mkdir(parents=True, exist_ok=True)
+    (workflow_data_dir / "runtime.txt").write_text("workflow runtime\n", encoding="utf-8")
     (root / "state").mkdir()
     (root / "state" / "inventory.yml").write_text("private inventory\n", encoding="utf-8")
     docs = generate_alias_outputs(root)
     assert docs["count"] > 0
+    assert (root / "_localsetup/docs/_generated/workflow-catalog.json").is_file()
 
     artifact = tmp_path / "localsetup-v3-public.tar.gz"
     package = build_public_artifact(root, artifact)
@@ -264,6 +299,7 @@ def test_v3_docs_and_package(tmp_path: Path) -> None:
     assert "_localsetup/cached.pyo" not in package["files"]
     assert "_localsetup/skills/ls-npm-management/scripts/data/127_0_0_1_81/token/token.txt" not in package["files"]
     assert "_localsetup/skills/ls-npm-management/scripts/data/127_0_0_1_81/token/expiry.txt" not in package["files"]
+    assert "_localsetup/workflows/ls-workflow-ops-tmux-session/scripts/data/runtime.txt" not in package["files"]
     assert "state/inventory.yml" not in package["files"]
 
 
@@ -363,7 +399,7 @@ def test_v3_refuses_unmanaged_skill_collision(tmp_path: Path) -> None:
     try:
         apply_plan(root, plan, home=home, dry_run=False)
     except RuntimeError as exc:
-        assert "unmanaged skill path" in str(exc)
+        assert "unmanaged package path" in str(exc)
     else:
         raise AssertionError("expected unmanaged collision to fail")
 

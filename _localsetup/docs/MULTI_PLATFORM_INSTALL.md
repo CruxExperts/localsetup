@@ -5,7 +5,7 @@ version: 3.0
 
 # Multi-platform install (Localsetup v3)
 
-**Purpose:** How to install Localsetup v3 for each supported AI agent platform. Supported platforms are listed in `_localsetup/config/platforms.yaml` and summarized in [_generated/platform-adapters.md](_generated/platform-adapters.md). Same framework; platform-specific adapter paths point at a shared managed skill library.
+**Purpose:** How to install Localsetup v3 for each supported AI agent platform. Supported platforms are listed in `_localsetup/config/platforms.yaml` and summarized in [_generated/platform-adapters.md](_generated/platform-adapters.md). Same framework; platform-specific adapter paths point at a shared managed package library.
 
 <p align="center">
   <img src="../../assets/localsetup-v3-install-lifecycle.svg" alt="Localsetup v3 install lifecycle: doctor, configure, context, plan, install, verify, ship, and rollback" width="960">
@@ -63,7 +63,9 @@ cd /path/to/repo
 
 ## Shared home library
 
-V3 installs managed skills to `~/.local/share/agents/skills/localsetup` and writes a registry beside them. Repo adapter paths such as `.codex/skills` and `.kilo/skills` point at that library by symlink, or receive a managed portable copy when `--mode portable` is used.
+V3 installs managed skills and workflow packages to `~/.local/share/agents/skills/localsetup` and writes a registry beside them. Repo adapter paths such as `.codex/skills` and `.kilo/skills` point at that library by symlink, or receive a managed portable copy when `--mode portable` is used.
+
+Workflow packages are sourced from `_localsetup/workflows/ls-workflow-*`. They install beside skills because every workflow package includes a valid `SKILL.md`, while its Localsetup-specific `workflow.yaml` stays in source for validation and generated docs.
 
 If `--tools` or `--platforms` is omitted, every platform in `platforms.yaml` is installed. Repo-local adapters take precedence because they live inside the project.
 
@@ -115,13 +117,14 @@ Do not use `--break-system-packages`. If virtualenv creation is unavailable, ins
 
 ## V3 reinstall behavior
 
-On re-run, the v3 installer refreshes the managed shared skill library, rewrites the global registry, updates selected adapter links or portable copies, and writes `localsetup.lock.json`.
+On re-run, the v3 installer refreshes the managed shared package library, rewrites the global registry, updates selected adapter links or portable copies, and writes `localsetup.lock.json`.
 
 `--upgrade-policy` is accepted by the root wrapper as a legacy compatibility flag, but v3 uses managed install metadata and refuses to overwrite unmanaged skill paths.
 
 ## What gets deployed
 
 - **Shared library:** Managed skills under `~/.local/share/agents/skills/localsetup`.
+- **Workflow packages:** Managed copies of selected `_localsetup/workflows/ls-workflow-*` packages in the same library.
 - **Per-platform adapters:** Repo paths from `_localsetup/config/platforms.yaml`, such as `.codex/skills` and `.kilo/skills`.
 - **Lock and registry:** `localsetup.lock.json` in the repo and `.localsetup-registry.json` in the managed home library.
 
@@ -142,4 +145,4 @@ Framework install logic is Python-first. Shell is limited to the bootstrap wrapp
 
 ## Repo-local
 
-Framework source and repo-local context live in the repo. Installed skill copies live in the managed home library and can be recreated from the repo with `./install --directory . --yes`.
+Framework source and repo-local context live in the repo. Installed skill and workflow package copies live in the managed home library and can be recreated from the repo with `./install --directory . --yes`.

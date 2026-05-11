@@ -8,6 +8,7 @@ from .manifests import load_pack_config, load_platforms
 from .models import DeployPlan, PlanAction
 from .paths import expand_user_path
 from .skills import selected_skill_names
+from .workflows import selected_workflow_names
 
 
 def build_install_plan(
@@ -27,6 +28,7 @@ def build_install_plan(
     global_root = expand_user_path(pack.global_root, home)
 
     selected_names = selected_skill_names(repo_root, packs)
+    selected_workflows = selected_workflow_names(repo_root, packs)
     legacy_aliases = collect_skill_aliases(repo_root / "_localsetup" / "skills")
     selected_aliases = {legacy_skill_name(name): name for name in selected_names}
     actions: list[PlanAction] = [
@@ -34,6 +36,8 @@ def build_install_plan(
         PlanAction("write_registry", expand_user_path(pack.global_registry, home), {"pack_id": pack.pack_id}),
         PlanAction("install_skills", global_root, {"skills": selected_names}),
     ]
+    if selected_workflows:
+        actions.append(PlanAction("install_workflows", global_root, {"workflows": selected_workflows}))
 
     for target in adapter_targets(repo_root, home, platform_ids=platform_ids):
         actions.append(
@@ -53,5 +57,6 @@ def build_install_plan(
         "aliases": selected_aliases,
         "catalog_aliases": legacy_aliases,
         "skills": selected_names,
+        "workflows": selected_workflows,
     }
     return DeployPlan(actions=actions, rollback_metadata=rollback)

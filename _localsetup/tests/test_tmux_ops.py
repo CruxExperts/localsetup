@@ -173,13 +173,13 @@ esac
 
 
 def test_skill_documents_managed_run_path():
-    skill = (ROOT / "_localsetup" / "skills" / "ls-tmux-shared-session-workflow" / "SKILL.md").read_text(
+    skill = (ROOT / "_localsetup" / "workflows" / "ls-workflow-ops-tmux-session" / "SKILL.md").read_text(
         encoding="utf-8"
     )
 
     assert "tmux send-keys" not in skill
     assert "tmux_ops run" in skill
-    sequence = skill.split("## Sequence", 1)[1].split("## Output Contract", 1)[0]
+    sequence = skill.split("## Sequence", 1)[1]
     assert "pick" in sequence
     assert "probe" in sequence
     assert "run" in sequence

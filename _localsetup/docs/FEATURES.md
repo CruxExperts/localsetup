@@ -12,7 +12,8 @@ This is the full public capability catalog for Localsetup v3. The [root README](
 <!-- facts-block:start -->
 - Current version: `3.0.2`
 - Supported platforms: `cursor, claude-code, codex, openclaw, kilo, opencode`
-- Shipped skills: `49`
+- Shipped skills: `45`
+- Workflow packages: `16`
 - Source: `_localsetup/docs/_generated/facts.json`
 <!-- facts-block:end -->
 
@@ -22,8 +23,8 @@ This is the full public capability catalog for Localsetup v3. The [root README](
 |---|---|
 | Repo-local framework source | `_localsetup/` carries the framework, docs, config, templates, tools, tests, and shipped skill source. |
 | Python-first v3 installer | Bash bootstrap delegates planning, dependency handling, install, verify, and rollback to `_localsetup/tools/localsetup_v3.py`. |
-| Multi-platform adapters | One install can attach Cursor, Claude Code, Codex CLI, OpenClaw, Kilo, and OpenCode to the same managed skill library. |
-| Managed home library | Skills install to `~/.local/share/agents/skills/localsetup`; adapters point there by symlink or use portable copies. |
+| Multi-platform adapters | One install can attach Cursor, Claude Code, Codex CLI, OpenClaw, Kilo, and OpenCode to the same managed package library. |
+| Managed home library | Skills and workflow packages install to `~/.local/share/agents/skills/localsetup`; adapters point there by symlink or use portable copies. |
 | Lock and rollback metadata | `localsetup.lock.json` and managed-path reports make installs inspectable and reversible. |
 | Platform manifest | `_localsetup/config/platforms.yaml` is the source of truth for platform IDs, adapter paths, and verification rules. |
 
@@ -32,7 +33,7 @@ This is the full public capability catalog for Localsetup v3. The [root README](
 | Capability | What it gives you |
 |---|---|
 | Agent Skills compliance | Shipped skills use spec-compatible `SKILL.md` packages with `name`, `description`, and `metadata.version`. |
-| 49 shipped skills | Practical workflows for debugging, tests, PR review, git recovery, service triage, patching, docs, MCP building, and more. |
+| 45 shipped skills plus 16 workflow packages | Practical capabilities and orchestration flows for debugging, tests, PR review, git recovery, service triage, patching, docs, MCP building, and more. |
 | Skill import | Import skills from a URL or local path with discovery, validation, heuristic security screening, and summaries. |
 | Skill vetting | Treat third-party skills as untrusted before they can influence agent behavior. |
 | Skill normalization | Clean imported or in-tree skills for spec compliance, platform-neutral wording, and framework tooling standards. |
@@ -43,6 +44,7 @@ This is the full public capability catalog for Localsetup v3. The [root README](
 | Capability | What it gives you |
 |---|---|
 | Workflow registry | Named workflows, aliases, and impact expectations for repeatable agent behavior. |
+| First-class workflow packages | Workflow sources live under `_localsetup/workflows/ls-workflow-*`, include executable `SKILL.md` files, and carry Localsetup `workflow.yaml` metadata for dependencies, gates, phases, validation, and generated catalogs. |
 | Decision tree workflow | A reverse-prompt planning loop that asks one focused question at a time. |
 | PRD batch workflow | Queue-driven spec execution with status updates and outcome records. |
 | Agent Q transport | Bidirectional PRD/spec exchange over file_drop or mail with sealed payloads, registry checks, and ledgering. |
@@ -64,7 +66,7 @@ This is the full public capability catalog for Localsetup v3. The [root README](
 | Capability | What it gives you |
 |---|---|
 | Conventional Commit versioning | Version bumps are inferred from commits, with explicit override trailers when needed. |
-| Generated facts sync | README and docs facts blocks stay aligned with `VERSION`, platform count, and skill count. |
+| Generated facts sync | README and docs facts blocks stay aligned with `VERSION`, platform count, skill count, and workflow package count. |
 | Skill metadata versions | Skill versions are tracked separately from framework release versions. |
 | Framework audit | Doc, link, skill matrix, version, facts, and smoke checks before release. |
 | Public package boundary | Packaging and scan commands keep generated/runtime artifacts out of source releases. |
@@ -80,16 +82,17 @@ This is the full public capability catalog for Localsetup v3. The [root README](
 | `ls-mcp-builder` | Building MCP servers for agent/tool interoperability. |
 | `ls-skill-importer` | Bringing in skills from external sources safely. |
 | `ls-skill-vetter` | Reviewing third-party skills before install. |
-| `ls-tmux-shared-session-workflow` | Visible human-gated operations on local or remote machines. |
+| `ls-workflow-ops-tmux-session` | Visible human-gated operations on local or remote machines. |
 | `ls-linux-service-triage` | Diagnosing Linux service, reverse proxy, process, and DNS failures. |
 | `ls-automatic-versioning` | Keeping framework version, generated docs, and release behavior aligned. |
 
-Full catalog: [SKILLS.md](SKILLS.md).
+Full catalogs: [SKILLS.md](SKILLS.md), [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md), and [WORKFLOW_QUICK_REF.md](WORKFLOW_QUICK_REF.md).
 
 ## Next Steps
 
 - [Quickstart](QUICKSTART.md)
 - [Platform registry](PLATFORM_REGISTRY.md)
+- [Workflow packages](WORKFLOW_PACKAGES.md)
 - [Workflow registry](WORKFLOW_REGISTRY.md)
 - [Skill importing](SKILL_IMPORTING.md)
 - [Versioning](VERSIONING.md)

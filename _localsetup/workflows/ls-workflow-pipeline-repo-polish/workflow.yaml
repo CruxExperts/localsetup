@@ -1,0 +1,32 @@
+workflow_id: pipeline-repo-polish
+display_name: Pipeline Repo Polish
+aliases: [repo polish pipeline]
+invocation: Use to improve docs quality and publishing readiness.
+required_skills:
+  - ls-script-and-docs-quality
+  - ls-humanizer
+  - ls-github-publishing-workflow
+required_tools: []
+required_docs:
+  - _localsetup/docs/WORKFLOW_QUICK_REF.md
+  - _localsetup/docs/README.md
+gates:
+  - id: audience_gate
+    rule: Confirm target audience and publishing scope.
+phases:
+  - id: quality_pass
+    summary: Apply docs and script quality checks.
+  - id: readability_pass
+    summary: Improve human-facing copy quality.
+  - id: publish_ready
+    summary: Verify shareability and boundary checks.
+validation:
+  - check: Key docs and publishing checklist are reviewed.
+outputs:
+  - Repo polish summary
+smoke:
+  - id: docs_readme_present
+    check: _localsetup/docs/README.md exists
+migration:
+  source: _localsetup/docs/WORKFLOW_QUICK_REF.md
+  note: Detailed execution stays with referenced skills.

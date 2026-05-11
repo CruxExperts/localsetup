@@ -1,0 +1,361 @@
+{
+  "count": 16,
+  "workflows": [
+    {
+      "aliases": [
+        "run audit",
+        "framework audit"
+      ],
+      "description": "Run framework audit workflow with explicit report path and summarized findings.",
+      "display_name": "Audit Framework",
+      "package": "ls-workflow-audit-framework",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-audit-framework",
+      "required_docs": [
+        "_localsetup/docs/WORKFLOW_REGISTRY.md",
+        "_localsetup/docs/DOCUMENT_LIFECYCLE_MANAGEMENT.md"
+      ],
+      "required_skills": [
+        "ls-framework-audit"
+      ],
+      "required_tools": [
+        "_localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py"
+      ],
+      "workflow_id": "audit-framework"
+    },
+    {
+      "aliases": [
+        "reference audit",
+        "link integrity audit"
+      ],
+      "description": "Validate markdown references and anchors across configured documentation targets.",
+      "display_name": "Audit Markdown References",
+      "package": "ls-workflow-audit-markdown-references",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-audit-markdown-references",
+      "required_docs": [
+        "_localsetup/docs/WORKFLOW_REGISTRY.md",
+        "_localsetup/docs/SKILL_VALIDATION_PATTERNS.md"
+      ],
+      "required_skills": [
+        "ls-markdown-reference-validator"
+      ],
+      "required_tools": [
+        "_localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py"
+      ],
+      "workflow_id": "audit-markdown-references"
+    },
+    {
+      "aliases": [
+        "lazy admin",
+        "manual execution"
+      ],
+      "description": "Apply guarded operations protocol for risky commands with explicit checkpoints.",
+      "display_name": "Ops Guarded",
+      "package": "ls-workflow-ops-guarded",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-ops-guarded",
+      "required_docs": [
+        "_localsetup/docs/WORKFLOW_REGISTRY.md"
+      ],
+      "required_skills": [
+        "ls-framework-compliance"
+      ],
+      "required_tools": [],
+      "workflow_id": "ops-guarded"
+    },
+    {
+      "aliases": [
+        "tmux shared session"
+      ],
+      "description": "Run guarded operations through managed tmux sessions with explicit run tracking.",
+      "display_name": "Ops Tmux Session",
+      "package": "ls-workflow-ops-tmux-session",
+      "packs": [
+        "ops"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-ops-tmux-session",
+      "required_docs": [
+        "_localsetup/docs/ops/tmux-ops-managed.md",
+        "_localsetup/docs/ops/tmux-ops-remote.md"
+      ],
+      "required_skills": [],
+      "required_tools": [
+        "_localsetup/tools/tmux_ops"
+      ],
+      "workflow_id": "ops-tmux-session"
+    },
+    {
+      "aliases": [
+        "git repair pipeline"
+      ],
+      "description": "Recover Git state issues and enforce workflow hygiene checks.",
+      "display_name": "Pipeline Git Repair Hygiene",
+      "package": "ls-workflow-pipeline-git-repair-hygiene",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-pipeline-git-repair-hygiene",
+      "required_docs": [
+        "_localsetup/docs/WORKFLOW_QUICK_REF.md",
+        "_localsetup/docs/GIT_TRACEABILITY.md"
+      ],
+      "required_skills": [
+        "ls-unfuck-my-git-state",
+        "ls-git-workflows",
+        "ls-framework-compliance"
+      ],
+      "required_tools": [],
+      "workflow_id": "pipeline-git-repair-hygiene"
+    },
+    {
+      "aliases": [
+        "pr feedback pipeline"
+      ],
+      "description": "Turn PR feedback into fixes, tests, and follow-up review.",
+      "display_name": "Pipeline PR Feedback Loop",
+      "package": "ls-workflow-pipeline-pr-feedback-loop",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-pipeline-pr-feedback-loop",
+      "required_docs": [
+        "_localsetup/docs/WORKFLOW_QUICK_REF.md"
+      ],
+      "required_skills": [
+        "ls-receiving-code-review",
+        "ls-tdd-guide",
+        "ls-pr-reviewer"
+      ],
+      "required_tools": [],
+      "workflow_id": "pipeline-pr-feedback-loop"
+    },
+    {
+      "aliases": [
+        "pre publish pipeline"
+      ],
+      "description": "Run pre-publish checks, version sync, and framework audit before release actions.",
+      "display_name": "Pipeline Pre Publish",
+      "package": "ls-workflow-pipeline-pre-publish",
+      "packs": [
+        "publishing"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-pipeline-pre-publish",
+      "required_docs": [
+        "_localsetup/docs/VERSIONING.md",
+        "_localsetup/docs/WORKFLOW_QUICK_REF.md"
+      ],
+      "required_skills": [
+        "ls-github-publishing-workflow",
+        "ls-automatic-versioning",
+        "ls-framework-audit"
+      ],
+      "required_tools": [],
+      "workflow_id": "pipeline-pre-publish"
+    },
+    {
+      "aliases": [
+        "repo polish pipeline"
+      ],
+      "description": "Polish repository docs and scripts for sharing readiness.",
+      "display_name": "Pipeline Repo Polish",
+      "package": "ls-workflow-pipeline-repo-polish",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-pipeline-repo-polish",
+      "required_docs": [
+        "_localsetup/docs/WORKFLOW_QUICK_REF.md",
+        "_localsetup/docs/README.md"
+      ],
+      "required_skills": [
+        "ls-script-and-docs-quality",
+        "ls-humanizer",
+        "ls-github-publishing-workflow"
+      ],
+      "required_tools": [],
+      "workflow_id": "pipeline-repo-polish"
+    },
+    {
+      "aliases": [
+        "server triage patch pipeline"
+      ],
+      "description": "Capture server baseline, triage issues, and apply patch operations.",
+      "display_name": "Pipeline Server Triage Patch",
+      "package": "ls-workflow-pipeline-server-triage-patch",
+      "packs": [
+        "ops"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-pipeline-server-triage-patch",
+      "required_docs": [
+        "_localsetup/docs/WORKFLOW_QUICK_REF.md",
+        "_localsetup/docs/ops/tmux-ops-managed.md"
+      ],
+      "required_skills": [
+        "ls-system-info",
+        "ls-linux-service-triage",
+        "ls-linux-patcher"
+      ],
+      "required_tools": [],
+      "workflow_id": "pipeline-server-triage-patch"
+    },
+    {
+      "aliases": [
+        "skill onboarding pipeline"
+      ],
+      "description": "Run the skill onboarding pipeline from vetting through sandbox testing.",
+      "display_name": "Pipeline Skill Onboard",
+      "package": "ls-workflow-pipeline-skill-onboard",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-pipeline-skill-onboard",
+      "required_docs": [
+        "_localsetup/docs/WORKFLOW_QUICK_REF.md",
+        "_localsetup/docs/SKILL_IMPORTING.md"
+      ],
+      "required_skills": [
+        "ls-skill-vetter",
+        "ls-skill-importer",
+        "ls-skill-normalizer",
+        "ls-skill-sandbox-tester"
+      ],
+      "required_tools": [],
+      "workflow_id": "pipeline-skill-onboard"
+    },
+    {
+      "aliases": [
+        "Agent Q queue",
+        "process PRDs"
+      ],
+      "description": "Process queued PRD tasks in batch with status tracking and outcome reporting.",
+      "display_name": "Queue Batch Implement",
+      "package": "ls-workflow-queue-batch-implement",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-queue-batch-implement",
+      "required_docs": [
+        "_localsetup/docs/AGENTIC_AGENT_Q_PATTERN.md",
+        "_localsetup/docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md"
+      ],
+      "required_skills": [],
+      "required_tools": [],
+      "workflow_id": "queue-batch-implement"
+    },
+    {
+      "aliases": [
+        "refresh skills",
+        "scrub index"
+      ],
+      "description": "Refresh and scrub the public skill index in the required sequence.",
+      "display_name": "Skills Index Refresh",
+      "package": "ls-workflow-skills-index-refresh",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-skills-index-refresh",
+      "required_docs": [
+        "_localsetup/docs/SKILL_DISCOVERY.md",
+        "_localsetup/docs/WORKFLOW_REGISTRY.md"
+      ],
+      "required_skills": [
+        "ls-skill-discovery"
+      ],
+      "required_tools": [],
+      "workflow_id": "skills-index-refresh"
+    },
+    {
+      "aliases": [
+        "decision tree",
+        "reverse prompt"
+      ],
+      "description": "Run reverse-prompt spec clarification with one question per turn and bounded choices.",
+      "display_name": "Reverse Prompt Spec Clarify",
+      "package": "ls-workflow-spec-clarify-reverse",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-spec-clarify-reverse",
+      "required_docs": [
+        "_localsetup/docs/DECISION_TREE_WORKFLOW.md",
+        "_localsetup/docs/WORKFLOW_REGISTRY.md"
+      ],
+      "required_skills": [],
+      "required_tools": [],
+      "workflow_id": "spec-clarify-reverse"
+    },
+    {
+      "aliases": [
+        "tmux terminal mode",
+        "always-on tmux"
+      ],
+      "description": "Manage tmux terminal mode enable, disable, and status behavior.",
+      "display_name": "Tmux Terminal Mode",
+      "package": "ls-workflow-tmux-terminal-mode",
+      "packs": [
+        "ops"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-tmux-terminal-mode",
+      "required_docs": [
+        "_localsetup/docs/TMUX_TERMINAL_MODE.md",
+        "_localsetup/docs/WORKFLOW_REGISTRY.md"
+      ],
+      "required_skills": [],
+      "required_tools": [
+        "_localsetup/tools/tmux_terminal_mode"
+      ],
+      "workflow_id": "tmux-terminal-mode"
+    },
+    {
+      "aliases": [
+        "Agent Q bidirectional"
+      ],
+      "description": "Handle sealed Agent Q handoff payload transport over file_drop or mail adapters.",
+      "display_name": "Transport Handoff",
+      "package": "ls-workflow-transport-handoff",
+      "packs": [
+        "integrations"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-transport-handoff",
+      "required_docs": [
+        "_localsetup/docs/AGENTIC_AGENT_TO_AGENT_PROTOCOL.md",
+        "_localsetup/docs/AGENTIC_AGENT_Q_SCENARIOS.md",
+        "_localsetup/docs/AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md"
+      ],
+      "required_skills": [
+        "ls-agentq-transport",
+        "ls-mail-protocol-control"
+      ],
+      "required_tools": [
+        "_localsetup/tools/agentq_transport_client/agentq_cli.py"
+      ],
+      "workflow_id": "transport-handoff"
+    },
+    {
+      "aliases": [
+        "umbrella workflow"
+      ],
+      "description": "Execute a named multi-phase umbrella workflow with explicit pre-human-confirmation gates.",
+      "display_name": "Umbrella Run",
+      "package": "ls-workflow-umbrella-run",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-umbrella-run",
+      "required_docs": [
+        "_localsetup/docs/AGENTIC_UMBRELLA_WORKFLOWS.md",
+        "_localsetup/docs/WORKFLOW_REGISTRY.md"
+      ],
+      "required_skills": [],
+      "required_tools": [],
+      "workflow_id": "umbrella-run"
+    }
+  ]
+}

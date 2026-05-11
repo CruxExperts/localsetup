@@ -15,7 +15,7 @@ def _require_under_global_root(path: Path, global_root: Path) -> None:
     try:
         resolved_path.relative_to(resolved_root)
     except ValueError as exc:
-        raise RuntimeError(f"refusing to rollback managed skill outside global root: {path}") from exc
+        raise RuntimeError(f"refusing to rollback managed package outside global root: {path}") from exc
 
 
 def rollback(repo_root: Path, home: Path, platform_ids: list[str] | None = None) -> dict:
@@ -38,7 +38,7 @@ def rollback(repo_root: Path, home: Path, platform_ids: list[str] | None = None)
         removed.append(str(registry))
 
     global_root = expand_user_path(pack.global_root, home)
-    for skill_path_str in lock.get("installed_skills", []):
+    for skill_path_str in [*lock.get("installed_skills", []), *lock.get("installed_workflows", [])]:
         skill_path = Path(skill_path_str)
         _require_under_global_root(skill_path, global_root)
         if skill_path.exists() and (skill_path / ".localsetup-managed").exists():

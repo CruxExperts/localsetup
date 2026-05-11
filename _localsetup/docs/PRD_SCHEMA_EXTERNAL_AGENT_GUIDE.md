@@ -70,7 +70,7 @@ When shipping to another agent via mail or file_drop:
 
 - Specs in `.agent/queue/` (or configured path). Exclude README, INDEX, SPEC-TEMPLATE.
 - Filter by status; sort by priority then filename. Implement per spec; update status; write outcome.
-- **Clean-tree:** Before marking done, repo clean (commit or revert). See skill ls-agentic-prd-batch.
+- **Clean-tree:** Before marking done, repo clean (commit or revert). See workflow package ls-workflow-queue-batch-implement.
 - **Version mismatch:** If `localsetup_framework_version` differs from local VERSION, surface warning per protocol (do not silently ignore).
 - **Pre-ship:** When `to_agent` and deliverable ship, pre-ship gate must pass or skip documented in outcome.
 

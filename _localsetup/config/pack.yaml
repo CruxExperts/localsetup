@@ -48,7 +48,6 @@ packs:
     - ls-linux-patcher
     - ls-linux-service-triage
     - ls-system-info
-    - ls-tmux-shared-session-workflow
   integrations:
     - ls-agentq-transport
     - ls-cloudflare-dns
@@ -65,10 +64,7 @@ packs:
     - ls-pr-reviewer
     - ls-public-repo-identity
   experimental:
-    - ls-agentic-prd-batch
-    - ls-agentic-umbrella-queue
     - ls-arbiter
-    - ls-decision-tree-workflow
     - ls-humanizer
     - ls-kilo-boss-orchestrator
     - ls-kilo-visual-output
@@ -78,6 +74,30 @@ packs:
     - ls-skill-normalizer
     - ls-skill-sandbox-tester
     - ls-skill-vetter
+
+workflow_packs:
+  core: []
+  dev:
+    - ls-workflow-audit-framework
+    - ls-workflow-audit-markdown-references
+    - ls-workflow-ops-guarded
+    - ls-workflow-pipeline-git-repair-hygiene
+    - ls-workflow-pipeline-pr-feedback-loop
+    - ls-workflow-pipeline-repo-polish
+    - ls-workflow-pipeline-skill-onboard
+    - ls-workflow-skills-index-refresh
+  ops:
+    - ls-workflow-ops-tmux-session
+    - ls-workflow-pipeline-server-triage-patch
+    - ls-workflow-tmux-terminal-mode
+  integrations:
+    - ls-workflow-transport-handoff
+  publishing:
+    - ls-workflow-pipeline-pre-publish
+  experimental:
+    - ls-workflow-queue-batch-implement
+    - ls-workflow-spec-clarify-reverse
+    - ls-workflow-umbrella-run
 
 distribution_channels:
   - git

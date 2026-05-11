@@ -44,6 +44,9 @@ def selected_skill_names(repo_root: Path, requested_packs: list[str] | None) -> 
     selected: list[str] = []
     for pack_name in names:
         selected.extend(pack.packs.get(pack_name, []))
+    from .workflows import required_skills_for_workflows, selected_workflow_names
+
+    selected.extend(required_skills_for_workflows(repo_root, selected_workflow_names(repo_root, requested_packs)))
     return sorted(set(selected))
 
 

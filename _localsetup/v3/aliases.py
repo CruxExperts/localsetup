@@ -14,14 +14,17 @@ def skill_alias(skill_name: str) -> str:
 
 def collect_skill_aliases(skills_root: Path) -> dict[str, str]:
     aliases: dict[str, str] = {}
+    current_skill_names: set[str] = set()
     for skill_dir in sorted(skills_root.iterdir()):
         if not skill_dir.is_dir():
             continue
         canonical_name = skill_alias(skill_dir.name)
+        current_skill_names.add(canonical_name)
         aliases[legacy_skill_name(canonical_name)] = canonical_name
 
     migration_map = skills_root.parent / "docs" / "migration" / "v2-to-v3-skill-map.md"
     if migration_map.exists():
         for old_name, new_name in re.findall(r"`(localsetup-[^`]+)`\s*\|\s*`(ls-[^`]+)`", migration_map.read_text(encoding="utf-8")):
-            aliases.setdefault(old_name, new_name)
+            if new_name in current_skill_names:
+                aliases.setdefault(old_name, new_name)
     return aliases

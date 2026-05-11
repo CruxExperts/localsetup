@@ -10,9 +10,18 @@ version: 3.0
 ## Model
 
 - **One always-loaded context** per platform: Cursor uses `.cursor/rules/ls-context.mdc`; Claude Code uses `.claude/CLAUDE.md`; Codex uses `AGENTS.md`; OpenClaw uses its platform template; OpenCode uses `AGENTS.md`; Kilo CLI uses `.kilo/instructions.md`.
-- **Skills:** Same `SKILL.md` source content works across platforms. Canonical source lives in `_localsetup/skills/`; v3 installs managed copies to `~/.local/share/agents/skills/localsetup`; repo adapter paths such as `.codex/skills`, `.cursor/skills`, `.claude/skills`, `.opencode/skills`, `.openclaw/skills`, and `.kilo/skills` attach to that managed library by symlink or portable copy.
+- **Skills and workflows:** Capability skills live in `_localsetup/skills/`. First-class workflow packages live in `_localsetup/workflows/` and also contain `SKILL.md`, so v3 installs them into the managed skill library beside skills.
 - **Memory file:** Each platform has a writable memory file for agent learnings (`.kilo/AGENT_MEMORY.md`, `.claude/AGENT_MEMORY.md`, etc.). See [MEMORY_MANAGEMENT.md](MEMORY_MANAGEMENT.md) for curation rules.
-- **When to load a skill:** Load when the task matches the skill's description (e.g. user says "decision tree" -> ls-decision-tree-workflow). The master rule/context includes an index of skills and when to use them.
+- **When to load a skill or workflow:** Load when the task matches the package description (e.g. user says "decision tree" -> ls-workflow-spec-clarify-reverse). The master rule/context includes an index of key packages and when to use them.
+
+## Skills vs workflow packages
+
+| Package type | Source root | Source metadata | Runtime behavior |
+|---|---|---|---|
+| Skill | `_localsetup/skills/ls-*` | Agent Skills `SKILL.md` | Provides a reusable capability. |
+| Workflow package | `_localsetup/workflows/ls-workflow-*` | Agent Skills `SKILL.md` plus Localsetup `workflow.yaml` | Orchestrates a named flow and composes required skills, docs, tools, gates, phases, validation, and outputs. |
+
+Adapters do not need separate workflow paths. The installer places selected workflow packages beside skills in the managed package library, and the platform context tells agents when to load the package.
 
 ## Task-to-skill matching flow
 
@@ -40,6 +49,14 @@ version: 3.0
 ## Format
 
 - Skills follow the [Agent Skills](https://agentskills.io/specification) specification: SKILL.md with required `name` and `description` frontmatter; optional `metadata.version` for skill document versioning; body = instructions. Same files work on all platforms.
+- Workflow packages also include a spec-compatible `SKILL.md`; their Localsetup-only `workflow.yaml` is documented in [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md).
 - **Skill document versioning:** Each skill includes `metadata.version` (e.g. `"1.0"`). Skill versions are tracked separately from the framework release version; see [AGENT_SKILLS_COMPLIANCE.md](AGENT_SKILLS_COMPLIANCE.md).
 - When adding a platform or registering a new skill, use [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md) as the source of truth.
 - **Interoperability:** Skills are [Agent Skills](https://agentskills.io/specification)-compliant and interchangeable: our skills work in any spec-compliant host; external skills (e.g. [Anthropic's](https://github.com/anthropics/skills)) can be used here with placement + registration. See [SKILL_INTEROPERABILITY.md](SKILL_INTEROPERABILITY.md).
+
+## Maintainer references
+
+- [Workflow packages](WORKFLOW_PACKAGES.md)
+- [Workflow package standard](WORKFLOW_STANDARD.md)
+- [Workflow registry](WORKFLOW_REGISTRY.md)
+- [Workflow quick reference](WORKFLOW_QUICK_REF.md)

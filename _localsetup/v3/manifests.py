@@ -45,6 +45,7 @@ def load_pack_config(repo_root: Path) -> PackConfig:
         lockfile=lockfile,
         optional_packs=[str(v) for v in data.get("optional_packs", [])],
         packs={str(k): [str(v) for v in values] for k, values in data.get("packs", {}).items()},
+        workflow_packs={str(k): [str(v) for v in values] for k, values in data.get("workflow_packs", {}).items()},
         channels=[str(v) for v in data.get("distribution_channels", [])],
         public_paths=public_paths,
         private_paths=private_paths,

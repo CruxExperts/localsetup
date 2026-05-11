@@ -27,21 +27,21 @@ Localsetup v3 is deployed into this repo at `_localsetup/`. All framework and co
 - Bounded coding: use `gpt-5.3-codex` for scoped implementation tasks with clear write ownership and tests.
 - Credit freshness: as of 2026-05-07, the official Codex rate card lists per 1M token credits as `gpt-5.4-mini` 18.75/1.875/113, `gpt-5.3-codex` 43.75/4.375/350, and `gpt-5.5` 125/12.50/750 for input/cached/output. Re-check https://help.openai.com/en/articles/20001106-codex-rate-card before changing model guidance.
 
-## Skills index (load when task matches)
+## Skills and workflows index (load when task matches)
 
-- **ls-decision-tree-workflow**  - User says "decision tree" or "reverse prompt"; editing .agent/queue/**, PRD
-- **ls-agentic-umbrella-queue**  - Queue/PRD in scope; named workflows; impact + confirmation
-- **ls-agentic-prd-batch**  - "Process PRDs", "run batch from PRD folder"
+- **ls-workflow-spec-clarify-reverse**  - User says "decision tree" or "reverse prompt"; editing .agent/queue/**, PRD
+- **ls-workflow-umbrella-run**  - Queue/PRD in scope; named workflows; impact + confirmation
+- **ls-workflow-queue-batch-implement**  - "Process PRDs", "run batch from PRD folder"
 - **ls-agentq-transport**  - Ship/ingest sealed Agent Q blobs (file_drop/mail), registry, strict gpg; AGENTIC_AGENT_Q_SCENARIOS.md
 - **ls-public-repo-identity**  - Editing README*, CONTRIBUTING*
 - **ls-framework-compliance**  - Framework mods, PRDs, checkpoints
 - **ls-safety-and-backup**  - Destructive ops, backups, firewall
 - **ls-script-and-docs-quality**  - Scripts, markdown/docs
 - **ls-communication-and-tools**  - Communication, tools, MCP
-- **ls-tmux-shared-session-workflow**  - Server commands, deployments, tmux, human-in-the-loop ops
+- **ls-workflow-ops-tmux-session**  - Server commands, deployments, tmux, human-in-the-loop ops
 - **ls-automatic-versioning**  - Version bumps, release workflow, conventional commits, versioning docs
 - **ls-github-publishing-workflow**  - Publishing to GitHub, public release prep, publishing checklist, repo readiness
-- **ls-skill-creator**  - Create new skill from workflow or existing doc/markdown/GitHub; capture workflow as framework skill
+- **ls-skill-creator**  - Create new capability skill from an existing doc/markdown/GitHub source; use workflow packages for named orchestration flows
 - **ls-skill-importer**  - Import skills from URL or local path; discover, validate, screen, summarize; user picks which to import
 - **ls-skill-discovery**  - Discover public skills from registries; recommend top 5 similar when creating/importing; in-depth summary, use public skill, continue on own, or adapt
 - **ls-task-skill-matcher**  - Match tasks to installed skills; recommend top matches; single-task confirm once; batch auto-pick/parcel flow; complementary public-skill suggestions

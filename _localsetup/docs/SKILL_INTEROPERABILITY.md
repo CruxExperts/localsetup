@@ -11,6 +11,7 @@ version: 3.0
 
 - **Our skills** use only the Agent Skills spec: required `name` and `description`, optional `metadata.version`, optional `license` / `compatibility`. Directory layout is `SKILL.md` plus optional `scripts/`, `references/`, `assets/`. No framework-only required fields. They are valid Agent Skills and can be copied into another host (e.g. Claude Code, Anthropic's skills repo) as-is; the `ls-*` name is a convention, not a spec requirement.
 - **External skills** that comply with the Agent Skills spec can be used in this framework by copying them into `_localsetup/skills/`, optionally renaming to `ls-*` for consistency, adding `metadata.version` if missing, and registering them in our platform indexes (see below). No change to the skill body or structure is required for spec compliance.
+- **Workflow packages** under `_localsetup/workflows/ls-workflow-*` are executable Agent Skills packages because they include `SKILL.md`. Their `workflow.yaml` metadata is Localsetup-specific and is used for workflow validation, pack selection, generated registries, and install dependency inclusion.
 
 ## Using an external skill in this framework (import)
 
@@ -26,6 +27,15 @@ version: 3.0
 - **Use in any Agent Skills host**  - The directory is a valid Agent Skills skill. The host only needs to support the [Agent Skills](https://agentskills.io/specification) format (SKILL.md with `name` and `description`, optional dirs). No need to change the skill; `ls-*` is a naming choice and does not affect spec validity.
 - **Optional**  - If the target host expects a different name, rename the directory and the `name` field so they match (spec requirement). Paths inside the skill (e.g. `_localsetup/docs/...`) may be framework-specific; the host can ignore or map them as needed.
 
+## Using a workflow package elsewhere
+
+Workflow packages can be copied to another Agent Skills-compatible host as executable `SKILL.md` packages, but only Localsetup understands the full `workflow.yaml` contract.
+
+- Copy `_localsetup/workflows/<name>/` when you want the workflow instructions plus metadata.
+- Copy only the `SKILL.md` package content when the target host only needs executable instructions.
+- Preserve the directory name and `name` field match.
+- Treat `workflow.yaml` as advisory metadata outside Localsetup unless the target host has explicit support for it.
+
 ## Specification and design references
 
 - **Format (required for interchange):** [Agent Skills specification](https://agentskills.io/specification)  - [agentskills/agentskills](https://github.com/agentskills/agentskills).
@@ -38,5 +48,6 @@ version: 3.0
 |-----------|--------|
 | **External -> Framework** | Copy skill dir into `_localsetup/skills/`; optionally rename to `ls-*`; add `metadata.version` if missing; register per PLATFORM_REGISTRY. |
 | **Framework -> External** | Copy `_localsetup/skills/<name>/` from source, or copy the managed installed skill from `~/.local/share/agents/skills/localsetup`; use as-is in any Agent Skills host; optionally rename dir and `name` to match host conventions. |
+| **Workflow package -> External** | Copy `_localsetup/workflows/<name>/`; use `SKILL.md` as the portable execution surface and treat `workflow.yaml` as Localsetup metadata. |
 
-Skills that follow the Agent Skills spec are interchangeable; this framework adds placement, registration, and optional `metadata.version` for versioning, without breaking spec compliance.
+Skills that follow the Agent Skills spec are interchangeable; this framework adds placement, registration, and optional `metadata.version` for versioning, without breaking spec compliance. Workflow packages keep that executable shape while adding Localsetup-specific orchestration metadata.

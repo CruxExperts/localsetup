@@ -10,6 +10,14 @@ import json
 import re
 from datetime import datetime, timezone
 from pathlib import Path
+import sys
+
+
+_ROOT = Path(__file__).resolve().parents[2]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+from _localsetup.v3.workflows import load_workflow_catalog, workflow_catalog_payload
 
 
 FRONTMATTER_BOUNDARY = re.compile(r"^---\s*$", re.MULTILINE)
@@ -107,6 +115,26 @@ def collect_skills(skills_dir: Path) -> list[dict[str, str]]:
     return skills
 
 
+def collect_workflows(repo_root: Path) -> list[dict[str, object]]:
+    workflows = []
+    for workflow in load_workflow_catalog(repo_root):
+        workflows.append(
+            {
+                "id": workflow.workflow_id,
+                "package": workflow.package,
+                "name": workflow.display_name,
+                "description": ascii_clean(workflow.description.replace("\n", " ").strip()),
+                "aliases": workflow.aliases,
+                "required_skills": workflow.required_skills,
+                "required_tools": workflow.required_tools,
+                "required_docs": workflow.required_docs,
+                "packs": workflow.packs,
+                "path": str((workflow.path / "SKILL.md").relative_to(repo_root)),
+            }
+        )
+    return workflows
+
+
 def collect_platforms(platform_registry: Path) -> list[dict[str, str]]:
     rows = []
     in_supported_platforms = False
@@ -169,10 +197,104 @@ def write_skills_md(path: Path, major_minor: str, skills: list[dict[str, str]]) 
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
+def write_workflow_registry(path: Path, major_minor: str, workflows: list[dict[str, object]]) -> None:
+    lines = [
+        "---",
+        "status: ACTIVE",
+        f"version: {major_minor}",
+        "---",
+        "",
+        "# Workflow and module registry (Localsetup v3)",
+        "",
+        "This page is generated from `_localsetup/workflows/*/workflow.yaml`.",
+        "",
+        "For the framework rules, see [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md).",
+        "",
+        "## Core",
+        "",
+        "| Name | Description | When to use | Impact review |",
+        "|------|-------------|-------------|---------------|",
+        "| Master rule / context | Always-loaded framework context | Always | No |",
+        "| Skills index | List of capability skills and when to use | When discovering which skill to load | No |",
+        "",
+        "## Workflows",
+        "",
+        "| Workflow ID | Package | Name | Description | Aliases | Required skills | Primary docs/tools |",
+        "|-------------|---------|------|-------------|---------|-----------------|--------------------|",
+    ]
+    for workflow in workflows:
+        aliases = "; ".join(workflow["aliases"]) if workflow["aliases"] else "n/a"
+        required_skills = "; ".join(f"`{name}`" for name in workflow["required_skills"]) or "n/a"
+        docs = "; ".join(f"[{Path(doc).name}]({doc.removeprefix('_localsetup/docs/')})" for doc in workflow["required_docs"])
+        tools = "; ".join(f"`{tool}`" for tool in workflow["required_tools"])
+        primary = "; ".join(part for part in [docs, tools] if part) or "n/a"
+        description = str(workflow["description"]).replace("|", "\\|") or "No description in frontmatter."
+        lines.append(
+            f"| `{workflow['id']}` | `{workflow['package']}` | {workflow['name']} | {description} | {aliases} | {required_skills} | {primary} |"
+        )
+
+    lines.extend(
+        [
+            "",
+            "## Usage",
+            "",
+            "- Agents load the workflow package when a user invokes a workflow ID, package name, or alias.",
+            "- Workflow packages install into the managed skill library because every package includes a valid `SKILL.md`.",
+            "- Required skills listed in `workflow.yaml` are automatically selected when a workflow's pack is selected.",
+            "- Historical publish workflow pointers are retired; use `ls-github-publishing-workflow` plus `ls-automatic-versioning`.",
+            "",
+        ]
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def write_workflow_quick_ref(path: Path, major_minor: str, workflows: list[dict[str, object]]) -> None:
+    lines = [
+        "---",
+        "status: ACTIVE",
+        f"version: {major_minor}",
+        "---",
+        "",
+        "# Workflow quick reference",
+        "",
+        "This page is generated from `_localsetup/workflows/*/workflow.yaml`.",
+        "",
+        "## Workflows",
+        "",
+        "| Workflow ID | Name | Aliases | Package | Required skills |",
+        "|------------|------|---------|---------|-----------------|",
+    ]
+    for workflow in workflows:
+        aliases = "; ".join(workflow["aliases"]) if workflow["aliases"] else "n/a"
+        required_skills = "; ".join(f"`{name}`" for name in workflow["required_skills"]) or "n/a"
+        lines.append(
+            f"| `{workflow['id']}` | {workflow['name']} | {aliases} | `{workflow['package']}` | {required_skills} |"
+        )
+    lines.extend(
+        [
+            "",
+            "## Common Phrases",
+            "",
+        ]
+    )
+    for workflow in workflows:
+        for alias in workflow["aliases"]:
+            lines.append(f"- \"{alias}\" -> `{workflow['id']}`")
+    lines.append("")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
 def write_facts_json(path: Path, facts: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     output = {k: v for k, v in facts.items() if k != "generated_at"}
     path.write_text(json.dumps(output, indent=2) + "\n", encoding="utf-8")
+
+
+def write_workflow_catalog_json(path: Path, repo_root: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(workflow_catalog_payload(repo_root), indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def write_internal_snapshot(path: Path, facts: dict) -> None:
@@ -186,6 +308,7 @@ def write_internal_snapshot(path: Path, facts: dict) -> None:
         f"- version: {facts['version']}",
         f"- platform_count: {facts['platform_count']}",
         f"- skill_count: {facts['skill_count']}",
+        f"- workflow_count: {facts['workflow_count']}",
         "",
         "## Platforms",
     ]
@@ -195,6 +318,10 @@ def write_internal_snapshot(path: Path, facts: dict) -> None:
     lines.append("## Skills")
     for skill in facts["skills"]:
         lines.append(f"- {skill['id']}")
+    lines.append("")
+    lines.append("## Workflows")
+    for workflow in facts["workflows"]:
+        lines.append(f"- {workflow['id']}")
     lines.append("")
     path.write_text("\n".join(lines), encoding="utf-8")
 
@@ -221,6 +348,7 @@ def update_facts_blocks(repo_root: Path, facts: dict) -> None:
             f"| Current version | `{facts['version']}` |",
             f"| Supported platforms | `{platforms}` |",
             f"| Shipped skills | `{facts['skill_count']}` |",
+            f"| Workflow packages | `{facts['workflow_count']}` |",
             "| Source | `_localsetup/docs/_generated/facts.json` |",
         ]
     )
@@ -229,6 +357,7 @@ def update_facts_blocks(repo_root: Path, facts: dict) -> None:
             f"- Current version: `{facts['version']}`",
             f"- Supported platforms: `{platforms}`",
             f"- Shipped skills: `{facts['skill_count']}`",
+            f"- Workflow packages: `{facts['workflow_count']}`",
             "- Source: `_localsetup/docs/_generated/facts.json`",
         ]
     )
@@ -275,6 +404,7 @@ def main() -> int:
     platform_registry = docs_dir / "PLATFORM_REGISTRY.md"
 
     skills = collect_skills(skills_dir)
+    workflows = collect_workflows(repo_root)
     platforms = collect_platforms(platform_registry)
 
     facts = {
@@ -283,6 +413,7 @@ def main() -> int:
         "major_minor": major_minor,
         "platform_count": len(platforms),
         "skill_count": len(skills),
+        "workflow_count": len(workflows),
         "platforms": platforms,
         "skills": [
             {
@@ -293,16 +424,31 @@ def main() -> int:
             }
             for s in skills
         ],
+        "workflows": [
+            {
+                "id": str(w["id"]),
+                "package": str(w["package"]),
+                "name": str(w["name"]),
+                "path": str(w["path"]),
+            }
+            for w in workflows
+        ],
     }
 
     write_skills_md(docs_dir / "SKILLS.md", major_minor, skills)
+    write_workflow_registry(docs_dir / "WORKFLOW_REGISTRY.md", major_minor, workflows)
+    write_workflow_quick_ref(docs_dir / "WORKFLOW_QUICK_REF.md", major_minor, workflows)
     write_facts_json(docs_dir / "_generated" / "facts.json", facts)
+    write_workflow_catalog_json(docs_dir / "_generated" / "workflow-catalog.json", repo_root)
     if args.internal_output:
         write_internal_snapshot(repo_root / args.internal_output, facts)
     update_facts_blocks(repo_root, facts)
 
     print("Generated: _localsetup/docs/SKILLS.md")
+    print("Generated: _localsetup/docs/WORKFLOW_REGISTRY.md")
+    print("Generated: _localsetup/docs/WORKFLOW_QUICK_REF.md")
     print("Generated: _localsetup/docs/_generated/facts.json")
+    print("Generated: _localsetup/docs/_generated/workflow-catalog.json")
     if args.internal_output:
         print(f"Generated: {args.internal_output}")
     return 0

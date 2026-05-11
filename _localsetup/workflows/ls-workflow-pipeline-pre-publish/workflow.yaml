@@ -1,0 +1,32 @@
+workflow_id: pipeline-pre-publish
+display_name: Pipeline Pre Publish
+aliases: [pre publish pipeline]
+invocation: Use before release push or public publishing.
+required_skills:
+  - ls-github-publishing-workflow
+  - ls-automatic-versioning
+  - ls-framework-audit
+required_tools: []
+required_docs:
+  - _localsetup/docs/VERSIONING.md
+  - _localsetup/docs/WORKFLOW_QUICK_REF.md
+gates:
+  - id: release_gate
+    rule: Confirm publish target and release type assumptions.
+phases:
+  - id: prep
+    summary: Run publishing readiness checks.
+  - id: sync_version
+    summary: Ensure version surfaces are consistent.
+  - id: audit
+    summary: Run framework audit and review findings.
+validation:
+  - check: Version and audit outputs are consistent.
+outputs:
+  - Pre-publish readiness summary
+smoke:
+  - id: versioning_doc_present
+    check: _localsetup/docs/VERSIONING.md exists
+migration:
+  source: _localsetup/docs/WORKFLOW_QUICK_REF.md
+  note: Package keeps concise sequence contract.

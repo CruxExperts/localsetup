@@ -29,6 +29,14 @@ def verify_install(repo_root: Path, home: Path, platform_ids: list[str] | None =
         elif not (skill_path / ".localsetup-managed").exists():
             issues.append(f"managed marker missing: {skill_path}")
 
+    workflows = lock.get("workflows", []) if isinstance(lock, dict) else []
+    for workflow_name in sorted(set(workflows)):
+        workflow_path = global_root / workflow_name
+        if not workflow_path.is_dir():
+            issues.append(f"missing managed workflow: {workflow_path}")
+        elif not (workflow_path / ".localsetup-managed").exists():
+            issues.append(f"managed marker missing: {workflow_path}")
+
     for adapter in adapter_status(repo_root, home, global_root, platform_ids=platform_ids):
         if not adapter["exists"]:
             issues.append(f"missing adapter path: {adapter['repo_path']}")

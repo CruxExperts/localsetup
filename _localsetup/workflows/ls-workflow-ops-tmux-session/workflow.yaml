@@ -1,0 +1,29 @@
+workflow_id: ops-tmux-session
+display_name: Ops Tmux Session
+aliases: [tmux shared session]
+invocation: Use when commands must run through managed tmux sessions.
+required_skills: []
+required_tools: [_localsetup/tools/tmux_ops]
+required_docs:
+  - _localsetup/docs/ops/tmux-ops-managed.md
+  - _localsetup/docs/ops/tmux-ops-remote.md
+gates:
+  - id: probe_gate
+    rule: Probe session and sudo readiness before run.
+phases:
+  - id: pick_session
+    summary: Select active session target.
+  - id: probe
+    summary: Verify readiness and permission state.
+  - id: run_and_watch
+    summary: Run command with run_id and status tracking.
+validation:
+  - check: Run status captured with log path.
+outputs:
+  - Tmux run evidence
+smoke:
+  - id: tmux_ops_exists
+    check: _localsetup/tools/tmux_ops exists
+migration:
+  source: _localsetup/docs/ops/tmux-ops-managed.md
+  note: Package references managed and remote guidance.

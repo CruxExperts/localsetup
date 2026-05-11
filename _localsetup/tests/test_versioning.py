@@ -83,6 +83,8 @@ def test_sync_version_files_updates_known_surfaces(tmp_path: Path) -> None:
     assert "- Current value: `3.2.0`" in (repo / "_localsetup/docs/VERSIONING.md").read_text(encoding="utf-8")
     assert "version: 3.2" in (repo / "_localsetup/docs/README.md").read_text(encoding="utf-8")
     assert '"version": "3.2.0"' in (repo / "_localsetup/docs/_generated/facts.json").read_text(encoding="utf-8")
+    assert '"count":' in (repo / "_localsetup/docs/_generated/workflow-catalog.json").read_text(encoding="utf-8")
+    assert "version: 3.2" in (repo / "_localsetup/docs/WORKFLOW_REGISTRY.md").read_text(encoding="utf-8")
 
 
 def test_revert_before_push_cancels_unreleased_bump(tmp_path: Path) -> None:

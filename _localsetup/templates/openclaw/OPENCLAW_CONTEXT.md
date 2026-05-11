@@ -27,19 +27,19 @@ Localsetup v3 lives in this repo at `_localsetup/`. All context is repo-local (m
 
 ## Skills (in project skills/)
 Load when task matches:
-- ls-decision-tree-workflow  - "decision tree", "reverse prompt"; .agent/queue/**, PRD
-- ls-agentic-umbrella-queue  - queue/PRD scope; named workflows; impact + confirmation
-- ls-agentic-prd-batch  - "process PRDs", "run batch from PRD folder"
+- ls-workflow-spec-clarify-reverse  - "decision tree", "reverse prompt"; .agent/queue/**, PRD
+- ls-workflow-umbrella-run  - queue/PRD scope; named workflows; impact + confirmation
+- ls-workflow-queue-batch-implement  - "process PRDs", "run batch from PRD folder"
 - ls-agentq-transport  - ship/ingest sealed Agent Q blobs (file_drop/mail), registry, strict gpg; AGENTIC_AGENT_Q_SCENARIOS.md
 - ls-public-repo-identity  - README*, CONTRIBUTING*
 - ls-framework-compliance  - framework mods, PRDs, checkpoints
 - ls-safety-and-backup  - destructive ops, backups, firewall
 - ls-script-and-docs-quality  - scripts, markdown/docs
 - ls-communication-and-tools  - communication, tools, MCP
-- ls-tmux-shared-session-workflow  - server commands, deployments, tmux, human-in-the-loop ops
+- ls-workflow-ops-tmux-session  - server commands, deployments, tmux, human-in-the-loop ops
 - ls-automatic-versioning  - version bumps, release workflow, conventional commits, versioning docs
 - ls-github-publishing-workflow  - publishing to GitHub, public release prep, publishing checklist, repo readiness
-- ls-skill-creator  - create new skill from workflow or existing doc/markdown/GitHub; capture workflow as framework skill
+- ls-skill-creator  - create new capability skill from an existing doc/markdown/GitHub source; use workflow packages for named orchestration flows
 - ls-skill-importer  - import skills from URL or local path; discover, validate, screen, summarize; user picks which to import
 - ls-skill-discovery  - discover public skills from registries; recommend top 5 similar when creating/importing; in-depth summary, use public, continue, or adapt
 - ls-task-skill-matcher  - match tasks to installed skills; recommend top matches; single-task confirm once; batch auto-pick/parcel flow; complementary public-skill suggestions

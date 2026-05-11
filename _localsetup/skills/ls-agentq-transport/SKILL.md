@@ -30,10 +30,10 @@ Pre-ship checks accept argv-only `pytest` or `python3 -m pytest` commands and ru
 | `_localsetup/config/agent_trust_registry.example.yaml` | Registry template |
 | `_localsetup/config/manifest.schema.json` | Inner manifest schema |
 
-## Skills to load with this
+## Related packages
 
 - **ls-mail-protocol-control** - mail adapter backend; `preencrypted_openpgp_armored` for ship-mail-strict.
-- **ls-agentic-prd-batch** - batch reads `in/` only; version mismatch and structured queue.
+- **ls-workflow-queue-batch-implement** - batch reads `in/` only; version mismatch and structured queue.
 
 ## Docs
 

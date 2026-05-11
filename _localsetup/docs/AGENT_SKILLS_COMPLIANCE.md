@@ -25,6 +25,12 @@ version: 3.0
 | **Body** | Markdown instructions after frontmatter; progressive disclosure; keep under ~500 lines per spec. |
 | **File references** | Relative paths from skill root; one level deep where possible. |
 
+## Workflow packages and Agent Skills
+
+Workflow packages under `_localsetup/workflows/ls-workflow-*` also include valid Agent Skills `SKILL.md` files. That keeps them executable by agent hosts through the same managed library as skills.
+
+The extra `workflow.yaml` file is Localsetup metadata, not part of the Agent Skills specification. It records workflow ID, aliases, required skills, docs, tools, gates, phases, validation, outputs, smoke rows, and migration notes. See [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) and [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md).
+
 ## Skill document versioning
 
 - Each framework skill includes **metadata.version** (e.g. `"1.0"`) in SKILL.md frontmatter per the spec's optional `metadata` field.
@@ -33,11 +39,14 @@ version: 3.0
 ## Validation
 
 - Optionally run `agentskills validate ./_localsetup/skills/ls-<name>` (after installing [skills-ref](https://github.com/agentskills/agentskills/tree/main/skills-ref)) to check frontmatter and naming.
+- Optionally run `agentskills validate ./_localsetup/workflows/ls-workflow-<name>` for workflow packages. The Agent Skills validator checks `SKILL.md`; Localsetup `validate-catalog` checks `workflow.yaml`.
 - Framework skill names use the `ls-*` prefix and match the directory name; descriptions include trigger terms for discovery.
+- Framework workflow package names use the `ls-workflow-*` prefix and match the `SKILL.md` frontmatter `name`.
 
 ## Interoperability
 
 - **Framework skills are valid Agent Skills.** They use only spec-defined fields and layout; they can be copied into any Agent Skills-compatible host (e.g. [Anthropic's skills](https://github.com/anthropics/skills), Claude Code) and used as-is.
+- **Framework workflow packages are executable Agent Skills packages.** Their `SKILL.md` files are portable; their `workflow.yaml` files are Localsetup-specific and may be ignored by hosts that do not understand Localsetup workflow metadata.
 - **External spec-compliant skills can be used in this framework.** Copy the skill directory into `_localsetup/skills/`, add `metadata.version` if missing, register per [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md), and deploy. No body or structure changes required for spec compliance.
 - Full import/export steps: [SKILL_INTEROPERABILITY.md](SKILL_INTEROPERABILITY.md).
 

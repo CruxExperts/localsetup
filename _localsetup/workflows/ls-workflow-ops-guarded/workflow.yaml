@@ -1,0 +1,28 @@
+workflow_id: ops-guarded
+display_name: Ops Guarded
+aliases: [lazy admin, manual execution]
+invocation: Use for operations that require human checkpoints.
+required_skills: [ls-framework-compliance]
+required_tools: []
+required_docs:
+  - _localsetup/docs/WORKFLOW_REGISTRY.md
+gates:
+  - id: impact_review
+    rule: Present impact summary before destructive steps.
+phases:
+  - id: gather_context
+    summary: Collect required system and task facts.
+  - id: checkpoint
+    summary: Request explicit approval for risky actions.
+  - id: execute
+    summary: Run approved operation set.
+validation:
+  - check: Approval and command evidence recorded.
+outputs:
+  - Guarded ops decision record
+smoke:
+  - id: workflow_registry_present
+    check: _localsetup/docs/WORKFLOW_REGISTRY.md exists
+migration:
+  source: _localsetup/docs/WORKFLOW_REGISTRY.md
+  note: This package defines concise guardrail metadata.
