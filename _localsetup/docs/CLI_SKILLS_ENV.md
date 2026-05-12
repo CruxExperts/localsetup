@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 3.2
+version: 3.3
 ---
 
 # CLI-based skills environment policy

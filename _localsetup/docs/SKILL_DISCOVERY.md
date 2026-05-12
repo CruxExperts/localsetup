@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 3.2
+version: 3.3
 ---
 
 # Skill discovery (public registries)

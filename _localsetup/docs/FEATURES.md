@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 3.2
+version: 3.3
 ---
 
 # Features
@@ -10,7 +10,7 @@ This is the full public capability catalog for Localsetup v3. The [root README](
 ## Generated Facts
 
 <!-- facts-block:start -->
-- Current version: `3.2.6`
+- Current version: `3.3.0`
 - Supported platforms: `cursor, claude-code, codex, openclaw, kilo, opencode`
 - Shipped skills: `47`
 - Workflow packages: `17`
