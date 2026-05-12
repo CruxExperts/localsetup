@@ -1,5 +1,5 @@
 {
-  "count": 19,
+  "count": 21,
   "workflows": [
     {
       "aliases": [
@@ -78,6 +78,51 @@
         "_localsetup/skills/ls-cron-orchestrator/scripts/cron_ctl.py"
       ],
       "workflow_id": "codex-heartbeat"
+    },
+    {
+      "aliases": [
+        "query context index",
+        "context search"
+      ],
+      "description": "Query context index with vector-first retrieval and deterministic preflight/logging controls.",
+      "display_name": "Context Index Query",
+      "package": "ls-workflow-context-index-query",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-context-index-query",
+      "required_docs": [
+        "_localsetup/skills/ls-context-index/docs/agent-usage.md",
+        "_localsetup/skills/ls-context-index/docs/security-and-privacy.md"
+      ],
+      "required_skills": [
+        "ls-context-index"
+      ],
+      "required_tools": [],
+      "workflow_id": "context-index-query"
+    },
+    {
+      "aliases": [
+        "context refresh",
+        "refresh context index"
+      ],
+      "description": "Run deterministic context-index refresh lifecycle checks and choose reset/rebuild/vector-rebuild paths.",
+      "display_name": "Context Index Refresh",
+      "package": "ls-workflow-context-index-refresh",
+      "packs": [
+        "dev",
+        "harness"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-context-index-refresh",
+      "required_docs": [
+        "_localsetup/skills/ls-context-index/README.md",
+        "_localsetup/skills/ls-context-index/docs/architecture.md"
+      ],
+      "required_skills": [
+        "ls-context-index"
+      ],
+      "required_tools": [],
+      "workflow_id": "context-index-refresh"
     },
     {
       "aliases": [

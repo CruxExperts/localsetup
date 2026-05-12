@@ -70,6 +70,7 @@ Kilo CLI uses `AGENTS.md` as the project initialization file at repo root.
 | ls-skill-normalizer | Normalize skills for spec compliance and platform-neutral wording; one skill or all |
 | ls-skill-sandbox-tester | Test skills in isolated sandbox; smoke check; on failure use debug-pro; no repo writes until approved |
 | ls-agentlens | Codebase navigation with agentlens hierarchy; explore projects, find modules/symbols, TODOs |
+| ls-context-index | SQLite-backed context index and vector-first search; use preflight/freshness before broad recursive reads |
 | ls-framework-audit | Doc/link/skill matrix/version checks; output path required (`run_framework_audit.py --output`); before release |
 | ls-markdown-reference-validator | Validate markdown local references/anchors from YAML-configured targets; emit scheduled-safe audit report for docs/skills/global Kilo surfaces |
 | ls-system-info | Capture server baseline, host layout and specs; CPU, memory, disk, uptime |

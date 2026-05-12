@@ -105,7 +105,7 @@ def _target_directory_value(args: argparse.Namespace) -> str | None:
 def _inject_global_target(args: argparse.Namespace) -> None:
     if not _is_global_shim_invocation():
         return
-    if args.cmd not in {"plan", "install", "update", "verify", "rollback", "adapters", "doctor", "migrate", "context", "convert", "harness"}:
+    if args.cmd not in {"plan", "install", "update", "verify", "rollback", "adapters", "doctor", "migrate", "context", "convert", "harness", "context-index"}:
         return
     if _target_directory_value(args):
         return
@@ -318,6 +318,9 @@ def _main(argv: list[str] | None = None) -> int:
     run_p.add_argument("--force", action="store_true")
     docs_align_p = sub.add_parser("docs-align")
     docs_align_p.add_argument("docs_align_args", nargs=argparse.REMAINDER)
+
+    context_index_p = sub.add_parser("context-index")
+    context_index_p.add_argument("context_index_args", nargs=argparse.REMAINDER)
 
     hook_p = sub.add_parser("hook-gate")
     hook_p.add_argument("--out", default="/tmp/localsetup-v3-public.tar.gz")
@@ -566,6 +569,12 @@ def _main(argv: list[str] | None = None) -> int:
         tool = root / "_localsetup" / "tools" / "docs_alignment.py"
         command = [sys.executable, str(tool), "--repo-root", str(root), *args.docs_align_args]
         return subprocess.run(command, cwd=root).returncode
+
+    if args.cmd == "context-index":
+        tool = root / "_localsetup" / "tools" / "context_index.py"
+        target_root = Path(getattr(args, "target_directory", None) or root).expanduser().resolve()
+        command = [sys.executable, str(tool), "--repo", str(target_root), "--home", str(home), *args.context_index_args]
+        return subprocess.run(command, cwd=target_root).returncode
 
     if args.cmd == "catalog":
         payload = {

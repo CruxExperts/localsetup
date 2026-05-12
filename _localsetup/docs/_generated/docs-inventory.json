@@ -71,6 +71,7 @@
     "codex-heartbeat",
     "configure",
     "context",
+    "context-index",
     "convert",
     "docs-align",
     "doctor",
@@ -96,14 +97,14 @@
     "wizard"
   ],
   "counts": {
-    "docs": 334,
+    "docs": 344,
     "framework_docs": 57,
     "generated_docs": 4,
     "platforms": 6,
     "public_docs": 6,
-    "skills": 51,
-    "workflow_packs": 24,
-    "workflows": 19
+    "skills": 52,
+    "workflow_packs": 27,
+    "workflows": 21
   },
   "docs": [
     {
@@ -981,6 +982,70 @@
       "has_frontmatter": true,
       "managed_blocks": [],
       "path": "_localsetup/skills/ls-context/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "path": "_localsetup/skills/ls-context-index/README.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "path": "_localsetup/skills/ls-context-index/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "path": "_localsetup/skills/ls-context-index/docs/agent-usage.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "path": "_localsetup/skills/ls-context-index/docs/architecture.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "path": "_localsetup/skills/ls-context-index/docs/memory-curation.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "path": "_localsetup/skills/ls-context-index/docs/platform-evaluation.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "path": "_localsetup/skills/ls-context-index/docs/security-and-privacy.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "path": "_localsetup/skills/ls-context-index/docs/source-ledger.md",
       "status": "",
       "version": ""
     },
@@ -2652,6 +2717,22 @@
       "class": "skill",
       "has_frontmatter": true,
       "managed_blocks": [],
+      "path": "_localsetup/workflows/ls-workflow-context-index-query/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "path": "_localsetup/workflows/ls-workflow-context-index-refresh/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
       "path": "_localsetup/workflows/ls-workflow-documentation-alignment/SKILL.md",
       "status": "",
       "version": ""
@@ -2897,6 +2978,14 @@
         "core"
       ],
       "path": "_localsetup/skills/ls-context"
+    },
+    {
+      "name": "ls-context-index",
+      "packs": [
+        "core",
+        "dev"
+      ],
+      "path": "_localsetup/skills/ls-context-index"
     },
     {
       "name": "ls-cron-orchestrator",
@@ -3221,6 +3310,23 @@
       ],
       "path": "_localsetup/workflows/ls-workflow-codex-heartbeat",
       "workflow_id": "codex-heartbeat"
+    },
+    {
+      "package": "ls-workflow-context-index-query",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-context-index-query",
+      "workflow_id": "context-index-query"
+    },
+    {
+      "package": "ls-workflow-context-index-refresh",
+      "packs": [
+        "dev",
+        "harness"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-context-index-refresh",
+      "workflow_id": "context-index-refresh"
     },
     {
       "package": "ls-workflow-documentation-alignment",

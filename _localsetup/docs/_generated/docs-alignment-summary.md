@@ -10,9 +10,9 @@ This page is generated from repository inventory, source-truth manifests, asset 
 | Signal | Value |
 |---|---:|
 | Version | `3.5.1` |
-| Public/framework docs scanned | 334 |
-| Shipped skills | 51 |
-| Workflow packages | 19 |
+| Public/framework docs scanned | 344 |
+| Shipped skills | 52 |
+| Workflow packages | 21 |
 | Supported platforms | 6 |
 | Audit findings | 0 |
 | Critical findings | 0 |

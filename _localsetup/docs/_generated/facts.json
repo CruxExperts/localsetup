@@ -2,8 +2,8 @@
   "version": "3.5.1",
   "major_minor": "3.5",
   "platform_count": 6,
-  "skill_count": 51,
-  "workflow_count": 19,
+  "skill_count": 52,
+  "workflow_count": 21,
   "platforms": [
     {
       "id": "cursor",
@@ -102,6 +102,12 @@
       "name": "ls-context",
       "version": "1.5",
       "path": "_localsetup/skills/ls-context/SKILL.md"
+    },
+    {
+      "id": "ls-context-index",
+      "name": "ls-context-index",
+      "version": "0.1",
+      "path": "_localsetup/skills/ls-context-index/SKILL.md"
     },
     {
       "id": "ls-cron-orchestrator",
@@ -368,6 +374,18 @@
       "package": "ls-workflow-codex-heartbeat",
       "name": "Codex Heartbeat",
       "path": "_localsetup/workflows/ls-workflow-codex-heartbeat/SKILL.md"
+    },
+    {
+      "id": "context-index-query",
+      "package": "ls-workflow-context-index-query",
+      "name": "Context Index Query",
+      "path": "_localsetup/workflows/ls-workflow-context-index-query/SKILL.md"
+    },
+    {
+      "id": "context-index-refresh",
+      "package": "ls-workflow-context-index-refresh",
+      "name": "Context Index Refresh",
+      "path": "_localsetup/workflows/ls-workflow-context-index-refresh/SKILL.md"
     },
     {
       "id": "documentation-alignment",

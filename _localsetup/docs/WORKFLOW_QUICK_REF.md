@@ -14,6 +14,8 @@ This page is generated from `_localsetup/workflows/*/workflow.yaml`.
 | `audit-framework` | Audit Framework | run audit; framework audit | `ls-workflow-audit-framework` | `ls-framework-audit` |
 | `audit-markdown-references` | Audit Markdown References | reference audit; link integrity audit | `ls-workflow-audit-markdown-references` | `ls-markdown-reference-validator` |
 | `codex-heartbeat` | Codex Heartbeat | codex heartbeat; heartbeat harness; harness heartbeat | `ls-workflow-codex-heartbeat` | `ls-codex-heartbeat`; `ls-cron-orchestrator`; `ls-framework-compliance` |
+| `context-index-query` | Context Index Query | query context index; context search | `ls-workflow-context-index-query` | `ls-context-index` |
+| `context-index-refresh` | Context Index Refresh | context refresh; refresh context index | `ls-workflow-context-index-refresh` | `ls-context-index` |
 | `documentation-alignment` | Documentation Alignment | docs alignment; documentation sync; repo docs audit | `ls-workflow-documentation-alignment` | `ls-documentation-alignment`; `ls-docs-organization`; `ls-markdown-reference-validator`; `ls-script-and-docs-quality`; `ls-test-runner` |
 | `ops-guarded` | Ops Guarded | lazy admin; manual execution | `ls-workflow-ops-guarded` | `ls-framework-compliance` |
 | `ops-tmux-session` | Ops Tmux Session | tmux shared session | `ls-workflow-ops-tmux-session` | n/a |
@@ -40,6 +42,10 @@ This page is generated from `_localsetup/workflows/*/workflow.yaml`.
 - "codex heartbeat" -> `codex-heartbeat`
 - "heartbeat harness" -> `codex-heartbeat`
 - "harness heartbeat" -> `codex-heartbeat`
+- "query context index" -> `context-index-query`
+- "context search" -> `context-index-query`
+- "context refresh" -> `context-index-refresh`
+- "refresh context index" -> `context-index-refresh`
 - "docs alignment" -> `documentation-alignment`
 - "documentation sync" -> `documentation-alignment`
 - "repo docs audit" -> `documentation-alignment`

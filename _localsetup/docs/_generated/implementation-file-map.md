@@ -195,6 +195,15 @@
 | `keep` | `_localsetup/skills/ls-codex-heartbeat/templates/HEARTBEAT.md` |
 | `keep` | `_localsetup/skills/ls-codex-heartbeat/templates/codex_heartbeat.yaml` |
 | `keep` | `_localsetup/skills/ls-communication-and-tools/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-context-index/README.md` |
+| `keep` | `_localsetup/skills/ls-context-index/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-context-index/docs/agent-usage.md` |
+| `keep` | `_localsetup/skills/ls-context-index/docs/architecture.md` |
+| `keep` | `_localsetup/skills/ls-context-index/docs/memory-curation.md` |
+| `keep` | `_localsetup/skills/ls-context-index/docs/platform-evaluation.md` |
+| `keep` | `_localsetup/skills/ls-context-index/docs/security-and-privacy.md` |
+| `keep` | `_localsetup/skills/ls-context-index/docs/source-ledger.md` |
+| `keep` | `_localsetup/skills/ls-context-index/schemas/config.schema.json` |
 | `keep` | `_localsetup/skills/ls-context/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-cron-orchestrator/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-cron-orchestrator/references/manifest.md` |
@@ -517,6 +526,7 @@
 | `keep` | `_localsetup/tests/skill_smoke_commands.yaml` |
 | `keep` | `_localsetup/tests/test_adapter_parser.py` |
 | `keep` | `_localsetup/tests/test_codex_heartbeat.py` |
+| `keep` | `_localsetup/tests/test_context_index.py` |
 | `keep` | `_localsetup/tests/test_docs_alignment.py` |
 | `keep` | `_localsetup/tests/test_github_starredrepos_skill.py` |
 | `keep` | `_localsetup/tests/test_keepass_secrets_cli_json.py` |
@@ -566,6 +576,8 @@
 | `keep` | `_localsetup/tools/agentq_transport_client/docs/USER_GUIDE.md` |
 | `keep` | `_localsetup/tools/agentq_transport_client/tests/test_agentq_pipeline.py` |
 | `keep` | `_localsetup/tools/cli_helpers.py` |
+| `keep` | `_localsetup/tools/context_index.py` |
+| `keep` | `_localsetup/tools/context_mcp_server.py` |
 | `keep` | `_localsetup/tools/docs_alignment.py` |
 | `keep` | `_localsetup/tools/generate_docs_artifacts.py` |
 | `refactor` | `_localsetup/tools/localsetup_v3.py` |
@@ -631,6 +643,10 @@
 | `keep` | `_localsetup/workflows/ls-workflow-audit-markdown-references/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-codex-heartbeat/SKILL.md` |
 | `keep` | `_localsetup/workflows/ls-workflow-codex-heartbeat/workflow.yaml` |
+| `keep` | `_localsetup/workflows/ls-workflow-context-index-query/SKILL.md` |
+| `keep` | `_localsetup/workflows/ls-workflow-context-index-query/workflow.yaml` |
+| `keep` | `_localsetup/workflows/ls-workflow-context-index-refresh/SKILL.md` |
+| `keep` | `_localsetup/workflows/ls-workflow-context-index-refresh/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-documentation-alignment/SKILL.md` |
 | `keep` | `_localsetup/workflows/ls-workflow-documentation-alignment/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-ops-guarded/SKILL.md` |

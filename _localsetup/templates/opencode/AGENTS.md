@@ -62,6 +62,7 @@ OpenCode uses `AGENTS.md` as the project initialization file. This context is lo
 - ls-skill-normalizer: normalize skills for spec compliance and platform-neutral wording; one skill or all
 - ls-skill-sandbox-tester: test skills in isolated sandbox; smoke check; on failure use debug-pro; no repo writes until approved
 - ls-agentlens: codebase navigation with agentlens hierarchy; explore projects, find modules/symbols, TODOs
+- ls-context-index: SQLite-backed context index and vector-first search; use preflight/freshness before broad recursive reads
 - ls-framework-audit: doc/link/skill matrix/version checks; output path required (run_framework_audit.py --output); before release
 - ls-markdown-reference-validator: validate markdown local references/anchors from YAML-configured targets; emit scheduled-safe audit report for docs/skills/global Kilo surfaces
 - ls-system-info: capture server baseline, host layout and specs; CPU, memory, disk, uptime

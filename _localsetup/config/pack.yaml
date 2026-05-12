@@ -38,6 +38,7 @@ packs:
     - ls-test-runner
   core:
     - ls-context
+    - ls-context-index
     - ls-communication-and-tools
     - ls-script-and-docs-quality
     - ls-safety-and-backup
@@ -46,6 +47,7 @@ packs:
     - ls-tdd-guide
   dev:
     - ls-agentlens
+    - ls-context-index
     - ls-debug-pro
     - ls-documentation-alignment
     - ls-docs-organization
@@ -107,6 +109,8 @@ workflow_packs:
   dev:
     - ls-workflow-audit-framework
     - ls-workflow-audit-markdown-references
+    - ls-workflow-context-index-query
+    - ls-workflow-context-index-refresh
     - ls-workflow-documentation-alignment
     - ls-workflow-ops-guarded
     - ls-workflow-pipeline-git-repair-hygiene
@@ -126,6 +130,7 @@ workflow_packs:
     - ls-workflow-pipeline-pre-publish
   harness:
     - ls-workflow-codex-heartbeat
+    - ls-workflow-context-index-refresh
   experimental:
     - ls-workflow-queue-batch-implement
     - ls-workflow-spec-clarify-reverse

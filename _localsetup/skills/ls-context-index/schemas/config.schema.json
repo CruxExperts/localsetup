@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Localsetup context index config",
+  "type": "object",
+  "required": ["context_index"],
+  "properties": {
+    "context_index": {
+      "type": "object",
+      "required": ["enabled", "identity", "storage", "scopes", "freshness", "chunking", "embeddings", "retrieval", "worker", "memory", "logging"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "identity": {
+          "type": "object",
+          "properties": {
+            "tenant_slug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+            "namespace_slug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+            "corpus_slug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" }
+          },
+          "additionalProperties": false
+        },
+        "storage": {
+          "type": "object",
+          "required": ["mode", "repo_database", "global_database", "sqlite"],
+          "properties": {
+            "mode": { "enum": ["repo_plus_global", "repo", "global", "central_sqlite"] },
+            "repo_database": {
+              "type": "object",
+              "required": ["enabled", "path"],
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "path": { "type": "string" }
+              },
+              "additionalProperties": false
+            },
+            "global_database": {
+              "type": "object",
+              "required": ["enabled", "path"],
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "path": { "type": "string" }
+              },
+              "additionalProperties": false
+            },
+            "sqlite": {
+              "type": "object",
+              "properties": {
+                "busy_timeout_ms": { "type": "integer", "minimum": 0 },
+                "journal_mode": { "enum": ["WAL", "DELETE", "TRUNCATE", "PERSIST", "MEMORY", "OFF"] },
+                "synchronous": { "enum": ["OFF", "NORMAL", "FULL", "EXTRA"] }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "scopes": {
+          "type": "object",
+          "required": ["default_query", "include_global_memory_by_default", "definitions"],
+          "properties": {
+            "default_query": {
+              "type": "array",
+              "items": { "enum": ["repo", "framework", "global"] },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "include_global_memory_by_default": { "type": "boolean" },
+            "definitions": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "required": ["type", "roots", "include", "exclude", "max_file_bytes"],
+                "properties": {
+                  "type": { "enum": ["repo", "framework", "global"] },
+                  "roots": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+                  "include": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+                  "exclude": { "type": "array", "items": { "type": "string" } },
+                  "max_file_bytes": { "type": "integer", "minimum": 1 }
+                },
+                "additionalProperties": true
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "freshness": {
+          "type": "object",
+          "properties": {
+            "default_mode": { "enum": ["quick", "deep"] },
+            "hash_when_quick_fields_change": { "type": "boolean" },
+            "deep_hash_all_files": { "type": "boolean" },
+            "git_blob_check": { "type": "boolean" },
+            "fail_closed_on_unknown": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        },
+        "chunking": {
+          "type": "object",
+          "properties": {
+            "target_lines": { "type": "integer", "minimum": 1 },
+            "overlap_lines": { "type": "integer", "minimum": 0 },
+            "max_chunks_per_file": { "type": "integer", "minimum": 1 }
+          },
+          "additionalProperties": false
+        },
+        "embeddings": {
+          "type": "object",
+          "required": ["enabled", "provider", "model", "dimensions"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "provider": { "type": "string" },
+            "model": { "type": "string" },
+            "dimensions": { "type": "integer", "minimum": 1 },
+            "document_prefix": { "type": "string" },
+            "query_prefix": { "type": "string" },
+            "endpoint": { "type": "string" },
+            "api_key_env": { "type": "string" },
+            "timeout_seconds": { "type": "integer", "minimum": 1 }
+          },
+          "additionalProperties": true
+        },
+        "retrieval": {
+          "type": "object",
+          "properties": {
+            "default_top_k": { "type": "integer", "minimum": 1 },
+            "max_top_k": { "type": "integer", "minimum": 1 },
+            "hybrid": {
+              "type": "object",
+              "properties": {
+                "lexical_weight": { "type": "number", "minimum": 0 },
+                "vector_weight": { "type": "number", "minimum": 0 }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": true
+        },
+        "worker": {
+          "type": "object",
+          "properties": {
+            "max_runtime_seconds": { "type": "integer", "minimum": 1 },
+            "batch_file_limit": { "type": "integer", "minimum": 1 },
+            "batch_vector_limit": { "type": "integer", "minimum": 1 }
+          },
+          "additionalProperties": false
+        },
+        "memory": {
+          "type": "object",
+          "properties": {
+            "track_usage": { "type": "boolean" },
+            "promotion_enabled": { "type": "boolean" },
+            "promotion_requires_apply": { "type": "boolean" },
+            "min_uses_for_promotion": { "type": "integer", "minimum": 1 },
+            "protect_recent_days": { "type": "integer", "minimum": 0 }
+          },
+          "additionalProperties": false
+        },
+        "logging": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "level": { "enum": ["debug", "info", "warning", "error"] },
+            "max_bytes": { "type": "integer", "minimum": 1 },
+            "max_files": { "type": "integer", "minimum": 1 }
+          },
+          "additionalProperties": false
+        },
+        "security": {
+          "type": "object",
+          "properties": {
+            "deny_secret_files": { "type": "boolean" },
+            "redact_patterns": { "type": "boolean" },
+            "allow_env_files": { "type": "boolean" },
+            "allow_vault_files": { "type": "boolean" }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

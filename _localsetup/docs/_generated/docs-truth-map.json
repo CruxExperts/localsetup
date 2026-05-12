@@ -40,7 +40,7 @@
         "skills_path": "~/.local/share/agents/skills/localsetup"
       }
     ],
-    "skill_count": 51,
+    "skill_count": 52,
     "skills": [
       {
         "id": "ls-agentlens",
@@ -101,6 +101,12 @@
         "name": "ls-context",
         "path": "_localsetup/skills/ls-context/SKILL.md",
         "version": "1.5"
+      },
+      {
+        "id": "ls-context-index",
+        "name": "ls-context-index",
+        "path": "_localsetup/skills/ls-context-index/SKILL.md",
+        "version": "0.1"
       },
       {
         "id": "ls-cron-orchestrator",
@@ -350,7 +356,7 @@
       }
     ],
     "version": "3.5.1",
-    "workflow_count": 19,
+    "workflow_count": 21,
     "workflows": [
       {
         "id": "audit-framework",
@@ -369,6 +375,18 @@
         "name": "Codex Heartbeat",
         "package": "ls-workflow-codex-heartbeat",
         "path": "_localsetup/workflows/ls-workflow-codex-heartbeat/SKILL.md"
+      },
+      {
+        "id": "context-index-query",
+        "name": "Context Index Query",
+        "package": "ls-workflow-context-index-query",
+        "path": "_localsetup/workflows/ls-workflow-context-index-query/SKILL.md"
+      },
+      {
+        "id": "context-index-refresh",
+        "name": "Context Index Refresh",
+        "package": "ls-workflow-context-index-refresh",
+        "path": "_localsetup/workflows/ls-workflow-context-index-refresh/SKILL.md"
       },
       {
         "id": "documentation-alignment",
@@ -486,7 +504,7 @@
       "sources": [
         "_localsetup/skills/ls-*/SKILL.md"
       ],
-      "value": 51
+      "value": 52
     },
     "version": {
       "facts_version": "3.5.1",
@@ -503,7 +521,7 @@
         "_localsetup/workflows/*/workflow.yaml"
       ],
       "value": {
-        "count": 19,
+        "count": 21,
         "workflows": [
           {
             "aliases": [
@@ -582,6 +600,51 @@
               "_localsetup/skills/ls-cron-orchestrator/scripts/cron_ctl.py"
             ],
             "workflow_id": "codex-heartbeat"
+          },
+          {
+            "aliases": [
+              "query context index",
+              "context search"
+            ],
+            "description": "Query context index with vector-first retrieval and deterministic preflight/logging controls.",
+            "display_name": "Context Index Query",
+            "package": "ls-workflow-context-index-query",
+            "packs": [
+              "dev"
+            ],
+            "path": "_localsetup/workflows/ls-workflow-context-index-query",
+            "required_docs": [
+              "_localsetup/skills/ls-context-index/docs/agent-usage.md",
+              "_localsetup/skills/ls-context-index/docs/security-and-privacy.md"
+            ],
+            "required_skills": [
+              "ls-context-index"
+            ],
+            "required_tools": [],
+            "workflow_id": "context-index-query"
+          },
+          {
+            "aliases": [
+              "context refresh",
+              "refresh context index"
+            ],
+            "description": "Run deterministic context-index refresh lifecycle checks and choose reset/rebuild/vector-rebuild paths.",
+            "display_name": "Context Index Refresh",
+            "package": "ls-workflow-context-index-refresh",
+            "packs": [
+              "dev",
+              "harness"
+            ],
+            "path": "_localsetup/workflows/ls-workflow-context-index-refresh",
+            "required_docs": [
+              "_localsetup/skills/ls-context-index/README.md",
+              "_localsetup/skills/ls-context-index/docs/architecture.md"
+            ],
+            "required_skills": [
+              "ls-context-index"
+            ],
+            "required_tools": [],
+            "workflow_id": "context-index-refresh"
           },
           {
             "aliases": [
@@ -961,7 +1024,7 @@
       "sources": [
         "_localsetup/workflows/ls-workflow-*/workflow.yaml"
       ],
-      "value": 19
+      "value": 21
     }
   }
 }

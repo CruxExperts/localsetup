@@ -17,6 +17,7 @@ version: 3.5
 | `localsetup-codex-heartbeat` | `ls-codex-heartbeat` |
 | `localsetup-communication-and-tools` | `ls-communication-and-tools` |
 | `localsetup-context` | `ls-context` |
+| `localsetup-context-index` | `ls-context-index` |
 | `localsetup-cron-orchestrator` | `ls-cron-orchestrator` |
 | `localsetup-debug-pro` | `ls-debug-pro` |
 | `localsetup-docs-organization` | `ls-docs-organization` |

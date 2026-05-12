@@ -7,7 +7,7 @@ version: 3.5
 
 This page is generated from `_localsetup/skills/*/SKILL.md`.
 
-Total shipped skills: 51
+Total shipped skills: 52
 
 | Skill ID | Name | Version | Description |
 |---|---|---|---|
@@ -21,6 +21,7 @@ Total shipped skills: 51
 | `ls-codex-heartbeat` | `ls-codex-heartbeat` | `1.0` | Opt-in Codex heartbeat harness for target repositories: initialize config, run transaction-safe heartbeat checks, preserve artifacts, and wire cron only after explicit activation. |
 | `ls-communication-and-tools` | `ls-communication-and-tools` | `1.2` | Communication and response guidelines, tool selection and enhancement, periodic context updates. Use for user communication style, choosing tools, MCP/context updates. |
 | `ls-context` | `ls-context` | `1.5` | Localsetup v3 framework context  - overview, invariants, and skills index. Load first when working in a repo that uses Localsetup v3. Use when starting work in this repo or when user asks about framework rules. |
+| `ls-context-index` | `ls-context-index` | `0.1` | Build and query the Localsetup context index with vector-first SQLite RAG, deterministic freshness/worklist surfaces, and agent-preflight checks. |
 | `ls-cron-orchestrator` | `ls-cron-orchestrator` | `1.0` | Manage cron from a repo-local manifest: time triggers, on-boot-with-delay, sequenced tasks; create, remove, reorder, install. |
 | `ls-debug-pro` | `ls-debug-pro` | `1.2` | Systematic debugging methodology and language-specific debugging commands (Node, Python, Swift, CSS/layout, network, git bisect). |
 | `ls-docs-organization` | `ls-docs-organization` | `0.1.0` | Repo-level docs router: classify documentation requests, propose paths and filenames, and keep indexes in sync. |
