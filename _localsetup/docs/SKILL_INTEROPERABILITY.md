@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 3.6
+version: 3.7
 ---
 
 # Skill interoperability (Localsetup v3)

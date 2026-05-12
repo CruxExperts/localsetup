@@ -1,6 +1,6 @@
 ---
 status: DEPRECATED
-version: 3.6
+version: 3.7
 ---
 
 # Workflow Skills Review Build Spec

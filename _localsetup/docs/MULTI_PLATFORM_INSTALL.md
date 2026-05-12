@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 3.6
+version: 3.7
 ---
 
 # Multi-platform install (Localsetup v3)

@@ -180,7 +180,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -188,7 +188,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/AGENTIC_AGENT_Q_PATTERN.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -196,7 +196,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/AGENTIC_AGENT_Q_SCENARIOS.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -204,7 +204,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/AGENTIC_AGENT_TO_AGENT_PROTOCOL.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -212,7 +212,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/AGENTIC_DESIGN_INDEX.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -220,7 +220,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/AGENTIC_UMBRELLA_WORKFLOWS.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -228,7 +228,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/AGENT_SKILLS_COMPLIANCE.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -236,7 +236,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/CLI_SKILLS_ENV.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -244,7 +244,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/DECISION_TREE_WORKFLOW.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -252,7 +252,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/DOCUMENT_LIFECYCLE_MANAGEMENT.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -262,7 +262,7 @@
       ],
       "path": "_localsetup/docs/FEATURES.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -270,7 +270,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/GIT_TRACEABILITY.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -278,7 +278,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/HARNESS_AUTOMATION.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -286,7 +286,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/INPUT_HARDENING_STANDARD.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -294,7 +294,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/MEMORY_MANAGEMENT.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -302,7 +302,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/MULTI_PLATFORM_INSTALL.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -310,7 +310,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/OUTPUT_AND_DOC_GENERATION.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -318,7 +318,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/PLATFORM_REGISTRY.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -326,7 +326,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -334,7 +334,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/QUICKSTART.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -344,7 +344,7 @@
       ],
       "path": "_localsetup/docs/README.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -352,7 +352,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/REPO_AND_DATA_SEPARATION.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -360,7 +360,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/REPO_CONVERSION.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -368,7 +368,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/REPO_MAINTENANCE.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -376,7 +376,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/SKILLS.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -384,7 +384,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/SKILLS_AND_RULES.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -392,7 +392,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/SKILL_DISCOVERY.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -400,7 +400,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/SKILL_IMPORTING.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -408,7 +408,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/SKILL_INTEROPERABILITY.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -416,7 +416,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/SKILL_NORMALIZATION.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -424,7 +424,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/SKILL_VALIDATION_PATTERNS.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -432,7 +432,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/TASK_SKILL_MATCHING.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -440,7 +440,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/TMUX_TERMINAL_MODE.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -448,7 +448,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/TOOLING_POLICY.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -456,7 +456,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/VERSIONING.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -464,7 +464,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/WORKFLOW_PACKAGES.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -472,7 +472,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/WORKFLOW_QUICK_REF.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -480,7 +480,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/WORKFLOW_REGISTRY.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -488,7 +488,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/WORKFLOW_SKILLS_REVIEW_BUILD_SPEC.md",
       "status": "DEPRECATED",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -496,7 +496,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/WORKFLOW_STANDARD.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "generated",
@@ -504,7 +504,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/_generated/docs-alignment-summary.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "generated",
@@ -536,7 +536,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/audits/codex-bootstrap-pack/AUDIT_REPORT.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -544,7 +544,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/audits/codex-bootstrap-pack/REMEDIATION_PLAN.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -552,7 +552,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/audits/codex-bootstrap-pack/VALIDATION.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -560,7 +560,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/audits/codex-bootstrap-pack/agent-reports/codex-bootstrap-auditor.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -568,7 +568,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/audits/codex-bootstrap-pack/agent-reports/codex-cli-researcher.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -576,7 +576,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/audits/codex-bootstrap-pack/agent-reports/final-reviewer.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -584,7 +584,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/audits/codex-bootstrap-pack/agent-reports/legacy-inventory.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -592,7 +592,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/audits/codex-bootstrap-pack/agent-reports/repo-bootstrap-pack-explorer.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -600,7 +600,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/bootstrap-packs/INDEX.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -608,7 +608,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/bootstrap-packs/codex-agent-team/AUDIT_PROMPT.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -616,7 +616,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/bootstrap-packs/codex-agent-team/README.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -632,7 +632,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/migration/v2-to-v3-skill-map.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -640,7 +640,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/migration/v3-overview.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -648,7 +648,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/ops/tmux-ops-managed.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -656,7 +656,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/ops/tmux-ops-remote.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "framework",
@@ -664,7 +664,7 @@
       "managed_blocks": [],
       "path": "_localsetup/docs/scrapling-cheat-sheet.md",
       "status": "ACTIVE",
-      "version": "3.6"
+      "version": "3.7"
     },
     {
       "class": "skill",
