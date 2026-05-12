@@ -1,0 +1,123 @@
+name: pr-validation
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  merge_group:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  generated-docs-and-version:
+    name: generated docs and version sync
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python3 -m pip install -r _localsetup/requirements.txt --quiet
+
+      - name: Check version and generated docs
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+          MERGE_GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+
+          base_sha=""
+          for candidate in "$PR_BASE_SHA" "$MERGE_GROUP_BASE_SHA" "$BEFORE_SHA"; do
+            if [[ -n "$candidate" && "$candidate" != "0000000000000000000000000000000000000000" ]]; then
+              if git cat-file -e "${candidate}^{commit}" 2>/dev/null; then
+                base_sha="$candidate"
+                break
+              fi
+            fi
+          done
+
+          if [[ -z "$base_sha" ]]; then
+            git fetch origin main --depth=1
+            base_sha="$(git merge-base HEAD origin/main)"
+          fi
+
+          echo "Checking version plan from ${base_sha} to ${HEAD_SHA}"
+          python3 _localsetup/tools/localsetup_v3.py --repo . version-plan --base "$base_sha" --head "$HEAD_SHA"
+          python3 _localsetup/tools/localsetup_v3.py --repo . version-sync --check --base "$base_sha" --head "$HEAD_SHA"
+          python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .
+          python3 _localsetup/tools/localsetup_v3.py --repo . generate-docs
+          git diff --exit-code
+
+  framework-validation:
+    name: framework validation py${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - "3.10"
+          - "3.12"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: python3 -m pip install -r _localsetup/requirements.txt pytest --quiet
+
+      - name: Verify framework context
+        run: |
+          ./_localsetup/tools/verify_context
+          ./_localsetup/tools/verify_rules
+
+      - name: Validate catalogs and migration boundaries
+        run: |
+          python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
+          python3 _localsetup/tools/localsetup_v3.py --repo . scan-migration
+
+      - name: Run pytest
+        run: python3 -m pytest _localsetup/tests -q
+
+  shell-smoke-and-audit:
+    name: shell smoke and framework audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python3 -m pip install -r _localsetup/requirements.txt pytest --quiet
+
+      - name: Run framework audit
+        run: python3 _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-v3-framework-audit.md
+
+      - name: Run shell smoke tests
+        run: ./_localsetup/tests/automated_test.sh
+
+      - name: Check whitespace-safe diff
+        run: git diff --check

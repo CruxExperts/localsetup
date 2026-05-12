@@ -1,0 +1,102 @@
+name: Bug report
+description: Report an install, docs, skill, workflow, or packaging problem.
+title: "fix: "
+labels:
+  - status/needs-triage
+  - type/bug
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the problem in one or two sentences.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Localsetup version
+      description: Paste the value from `cat VERSION`, commit, or release tag.
+      placeholder: "3.2.x / v3.2.x / commit SHA"
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform ID
+      options:
+        - cursor
+        - claude-code
+        - codex
+        - openclaw
+        - kilo
+        - opencode
+        - all
+        - not platform-specific
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include OS, WSL2 context if relevant, shell, Python version, and Git version.
+      placeholder: |
+        OS:
+        WSL2:
+        Shell:
+        Python:
+        Git:
+    validations:
+      required: true
+  - type: textarea
+    id: target
+    attributes:
+      label: Localsetup target
+      description: Include pack/workflow/skill ID, install mode, and repo path shape when relevant.
+      placeholder: |
+        Pack/workflow:
+        Skill:
+        Install mode:
+        Repo path shape:
+  - type: textarea
+    id: command
+    attributes:
+      label: Command run
+      description: Paste the exact command that reproduces the issue.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation output
+      description: Paste the shortest relevant output from validation commands.
+      render: shell
+  - type: checkboxes
+    id: impact
+    attributes:
+      label: Impact area
+      options:
+        - label: Generated docs are involved.
+        - label: Public package contents or private path boundaries are involved.
+        - label: Install or rollback behavior is involved.
+        - label: Platform-specific behavior is involved.
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Add screenshots, short logs, or related links only if they help reproduce the issue.

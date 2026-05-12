@@ -5,9 +5,19 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+  merge_group:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   verify-generated-docs:
+    name: generated docs drift
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -23,7 +33,8 @@ jobs:
 
       - name: Regenerate docs artifacts
         run: |
-          python3 _localsetup/tools/generate_docs_artifacts.py
+          python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .
+          python3 _localsetup/tools/localsetup_v3.py --repo . generate-docs
           python3 _localsetup/tools/localsetup_v3.py --repo . version-sync --check --target "$(cat VERSION)"
 
       - name: Verify generated files are committed

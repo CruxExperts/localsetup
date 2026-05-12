@@ -10,7 +10,7 @@
   <a href="_localsetup/docs/PLATFORM_REGISTRY.md"><img src="https://img.shields.io/badge/platforms-cursor%20%7C%20claude--code%20%7C%20codex%20%7C%20openclaw%20%7C%20kilo%20%7C%20opencode-1f6feb" alt="Supported platforms"></a>
 </p>
 
-**Version:** 3.2.3<br>
+**Version:** 3.2.4<br>
 
 **Localsetup v3 gives coding agents a real operating layer inside your repo.**
 
@@ -60,7 +60,7 @@ Start with the [workflow packages guide](_localsetup/docs/WORKFLOW_PACKAGES.md) 
 <!-- facts-block:start -->
 | Fact | Value |
 |---|---|
-| Current version | `3.2.3` |
+| Current version | `3.2.4` |
 | Supported platforms | `cursor, claude-code, codex, openclaw, kilo, opencode` |
 | Shipped skills | `45` |
 | Workflow packages | `17` |
@@ -231,10 +231,16 @@ Use managed dependency setup instead of system pip overrides:
 - [Skill importing](_localsetup/docs/SKILL_IMPORTING.md)
 - [Skill discovery](_localsetup/docs/SKILL_DISCOVERY.md)
 - [Contributing](CONTRIBUTING.md)
+- [Support](SUPPORT.md)
+- [Code of conduct](CODE_OF_CONDUCT.md)
 - [Security](SECURITY.md)
 
 ## License
 
 Localsetup is released under the [MIT License](LICENSE).
 
-For bugs, use the bug report template and include the Localsetup version, platform ID, command, expected result, actual result, and validation output. For feature requests, use the feature template and name the affected skill, workflow package, platform, or docs area. Report security-sensitive issues through private vulnerability reporting when available; otherwise open a minimal public issue asking for a secure contact without details.
+## Community and Support
+
+For bugs, use the bug report form and include the Localsetup version, platform ID, command, expected result, actual result, and validation output. For feature requests, use the feature form and name the affected skill, workflow package, platform, or docs area. For version-sync, generated-doc, publish, or package-artifact problems, use the maintenance form.
+
+Use [GitHub Discussions](https://github.com/CruxExperts/localsetup/discussions) for usage questions and early design conversation. Report security-sensitive issues through private vulnerability reporting when available; otherwise open a minimal public issue asking for a secure contact without details.

@@ -6,7 +6,7 @@ Localsetup v3 manages agent context, skills, install paths, and automation helpe
 
 1. Do not open a public Issue with exploit details, secrets, hostnames, logs, or private paths.
 2. Use GitHub private vulnerability reporting for this repository if it is enabled.
-3. If private reporting is not available, open a minimal public Issue asking for a security contact, but do not include vulnerability details.
+3. If private reporting is not available, use the security contact request issue form, but do not include vulnerability details, exploit steps, secrets, hostnames, private paths, or sensitive logs.
 
 Include the affected file or command, Localsetup version, platform ID if relevant, reproduction steps, expected impact, and whether the issue affects install behavior, skill import, agent permissions, generated docs, package boundaries, or release artifacts.
 
@@ -37,3 +37,7 @@ Out of scope:
 ## Public disclosure
 
 Please allow reasonable time for triage and a fix before publishing technical details. Security fixes should include verification steps and, when relevant, docs updates that explain the safer workflow.
+
+## Repository security settings
+
+Maintainers should keep Dependabot security updates, secret scanning, push protection, CodeQL default setup, and private vulnerability reporting enabled when GitHub makes those settings available for this repository. The maintainer checklist lives in [_localsetup/docs/REPO_MAINTENANCE.md](_localsetup/docs/REPO_MAINTENANCE.md).

@@ -1,0 +1,67 @@
+name: Feature request
+description: Suggest a Localsetup capability, workflow, docs, or platform improvement.
+title: "feat: "
+labels:
+  - status/needs-triage
+  - type/feature
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the request in one or two sentences.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or workflow
+      description: What workflow is hard today, and who is blocked?
+    validations:
+      required: true
+  - type: textarea
+    id: affected-area
+    attributes:
+      label: Affected area
+      description: Name the platform, skill, workflow package, pack, docs page, or template.
+      placeholder: |
+        Platform:
+        Skill:
+        Workflow package:
+        Pack:
+        Docs/template:
+    validations:
+      required: true
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed behavior
+      description: What should Localsetup do after this change?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What workarounds or simpler options have you tried?
+  - type: checkboxes
+    id: compatibility
+    attributes:
+      label: Compatibility impact
+      options:
+        - label: Changes install behavior.
+        - label: Changes generated docs.
+        - label: Changes package boundaries or private/public paths.
+        - label: Affects WSL2 or platform-specific behavior.
+        - label: Requires a versioning or release-policy decision.
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation ideas
+      description: List commands or checks that would prove the change works.
+      render: shell
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Add links, diagrams, or short examples only if they clarify the request.

@@ -14,7 +14,7 @@ This is the public documentation map for Localsetup v3. Start here when you want
 ## Generated Facts
 
 <!-- facts-block:start -->
-- Current version: `3.2.3`
+- Current version: `3.2.4`
 - Supported platforms: `cursor, claude-code, codex, openclaw, kilo, opencode`
 - Shipped skills: `45`
 - Workflow packages: `17`
@@ -83,6 +83,7 @@ Agent Q is the bidirectional handoff layer for PRD/spec exchange over file_drop 
 | Page | What it covers |
 |---|---|
 | [Versioning](VERSIONING.md) | VERSION source of truth, Conventional Commits, and release sync. |
+| [Repository maintenance](REPO_MAINTENANCE.md) | GitHub rulesets, required checks, labels, triage, security settings, and release-maintenance gates. |
 | [Document lifecycle](DOCUMENT_LIFECYCLE_MANAGEMENT.md) | ACTIVE, DRAFT, PROPOSAL, and deprecation rules. |
 | [Repo and data separation](REPO_AND_DATA_SEPARATION.md) | What belongs in source vs. local/generated state. |
 | [Tooling policy](TOOLING_POLICY.md) | Python-first tooling expectations and public docs constraints. |
@@ -91,4 +92,6 @@ Agent Q is the bidirectional handoff layer for PRD/spec exchange over file_drop 
 
 - [Contributing](../../CONTRIBUTING.md)
 - [Security](../../SECURITY.md)
+- [Support](../../SUPPORT.md)
+- [Code of conduct](../../CODE_OF_CONDUCT.md)
 - [License](../../LICENSE)

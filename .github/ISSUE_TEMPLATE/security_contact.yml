@@ -1,0 +1,26 @@
+name: Security contact request
+description: Ask maintainers for a secure reporting path without posting vulnerability details.
+title: "security: contact request"
+labels:
+  - status/needs-triage
+  - security
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form only when GitHub private vulnerability reporting is unavailable. Do not include vulnerability details, exploit steps, secrets, hostnames, private paths, or sensitive logs.
+  - type: textarea
+    id: contact-request
+    attributes:
+      label: Contact request
+      description: Ask for a secure contact path in one or two sentences. Do not describe the vulnerability.
+      placeholder: "Private vulnerability reporting is unavailable. Please provide a secure contact path."
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety-confirmation
+    attributes:
+      label: Safety confirmation
+      options:
+        - label: This issue does not include vulnerability details, exploit steps, secrets, hostnames, private paths, or sensitive logs.
+          required: true

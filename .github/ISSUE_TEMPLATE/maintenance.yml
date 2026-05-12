@@ -1,0 +1,72 @@
+name: Maintenance or release issue
+description: Report version-sync, generated-doc, workflow, publish, or package-artifact maintenance problems.
+title: "chore: "
+labels:
+  - status/needs-triage
+  - type/maintenance
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for repository maintenance issues such as version-sync failures, generated-doc drift, GitHub Actions failures, release publishing, or public package boundaries.
+  - type: input
+    id: version
+    attributes:
+      label: Localsetup version
+      description: Paste the value from `cat VERSION` or the release tag.
+      placeholder: "3.2.x"
+    validations:
+      required: true
+  - type: input
+    id: workflow-run
+    attributes:
+      label: Workflow run or command
+      description: Link the failing GitHub Actions run or paste the exact local command.
+      placeholder: "https://github.com/CruxExperts/localsetup/actions/runs/..."
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - version sync
+        - generated docs
+        - publish workflow
+        - package artifact
+        - branch/ruleset setting
+        - labels/project automation
+        - other maintenance
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+      description: What should the maintenance or release path have done?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+      description: What happened instead? Include the shortest relevant output.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: refs
+    attributes:
+      label: Version, refs, or artifacts
+      description: Include base/head SHA, tag, artifact path, or generated file names when relevant.
+      placeholder: |
+        base:
+        head:
+        tag:
+        artifact:
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation already tried
+      description: Paste command names and pass/fail result, not long logs.
+      render: shell

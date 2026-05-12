@@ -1,0 +1,117 @@
+name: triage
+
+on:
+  workflow_dispatch:
+  issues:
+    types:
+      - opened
+      - reopened
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - ready_for_review
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  bootstrap-labels:
+    name: bootstrap labels
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure maintainer labels exist
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          while IFS='|' read -r label color description; do
+            [[ -z "$label" || "$label" == \#* ]] && continue
+            gh label create "$label" --repo "$REPOSITORY" --color "$color" --description "$description" --force >/dev/null 2>&1 || true
+          done <<'LABELS'
+          status/needs-triage|c5def5|Needs maintainer triage
+          status/blocked|b60205|Blocked by an external dependency or decision
+          status/accepted|0e8a16|Accepted for implementation
+          status/ready|0e8a16|Ready for review or merge
+          type/bug|d73a4a|Confirmed or suspected defect
+          type/feature|a2eeef|Feature request or enhancement
+          type/maintenance|ededed|Repository maintenance or release work
+          type/pr|d4c5f9|Pull request
+          type/support|bfdadc|Support or usage question
+          area/docs|fef2c0|Documentation or generated docs
+          area/installer|fef2c0|Installer, bootstrap, conversion, or rollback
+          area/skills|fef2c0|Skills, workflows, or packs
+          area/release|fef2c0|Versioning, publishing, tags, or artifacts
+          area/automation|fef2c0|GitHub Actions, bots, or automation
+          area/python|fef2c0|Python dependencies or runtime behavior
+          priority/high|b60205|High priority
+          priority/normal|fbca04|Normal priority
+          priority/low|c2e0c6|Low priority
+          good first issue|7057ff|Good for a first contribution
+          help wanted|008672|Extra maintainer or contributor help wanted
+          security|b60205|Security-sensitive report or hardening
+          release|5319e7|Release-related work
+          docs|0075ca|Documentation work
+          needs-repro|d876e3|Needs reproduction details
+          dependencies|0366d6|Dependency update
+          LABELS
+
+  metadata-labels:
+    name: metadata labels
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    needs:
+      - bootstrap-labels
+    steps:
+      - name: Apply triage labels
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+          REPOSITORY: ${{ github.repository }}
+          TITLE: ${{ github.event.issue.title || github.event.pull_request.title }}
+          BODY: ${{ github.event.issue.body || github.event.pull_request.body || '' }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+
+          labels=(status/needs-triage)
+          text="$(printf '%s\n%s\n' "$TITLE" "$BODY" | tr '[:upper:]' '[:lower:]')"
+
+          if [[ "$EVENT_NAME" == "pull_request_target" ]]; then
+            labels+=(type/pr)
+          elif grep -Eq '\bbug|error|fail|broken|regression\b' <<<"$text"; then
+            labels+=(type/bug)
+          elif grep -Eq '\bfeat|feature|request|enhancement\b' <<<"$text"; then
+            labels+=(type/feature)
+          else
+            labels+=(type/support)
+          fi
+
+          grep -Eq '\bdocs?|readme|generated docs?\b' <<<"$text" && labels+=(area/docs)
+          grep -Eq '\binstall|installer|wizard|bootstrap|convert\b' <<<"$text" && labels+=(area/installer)
+          grep -Eq '\bskill|workflow|pack\b' <<<"$text" && labels+=(area/skills)
+          grep -Eq '\brelease|version|publish|tag|artifact\b' <<<"$text" && labels+=(area/release)
+          grep -Eq '\bsecurity|vulnerab|secret|token|credential\b' <<<"$text" && labels+=(security)
+
+          for label in "${labels[@]}"; do
+            color="ededed"
+            description="Repository triage label"
+            case "$label" in
+              status/*) color="c5def5"; description="Triage status" ;;
+              type/*) color="d4c5f9"; description="Issue or PR type" ;;
+              area/*) color="fef2c0"; description="Affected repository area" ;;
+              security) color="b60205"; description="Security-sensitive report" ;;
+            esac
+            gh label create "$label" --repo "$REPOSITORY" --color "$color" --description "$description" --force >/dev/null 2>&1 || true
+          done
+
+          args=()
+          for label in "${labels[@]}"; do
+            args+=("-f" "labels[]=${label}")
+          done
+
+          gh api "repos/${REPOSITORY}/issues/${ISSUE_NUMBER}/labels" "${args[@]}"

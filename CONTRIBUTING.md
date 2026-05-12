@@ -6,6 +6,7 @@ Thanks for helping improve Localsetup v3. This project is built for people who w
 
 - **Report bugs:** Open a GitHub Issue with the Localsetup version, install command, platform ID, OS/WSL2 context, expected behavior, actual behavior, validation output, and relevant short logs.
 - **Suggest features:** Open a feature request with the workflow you are trying to improve, the affected skill/workflow/platform/docs area, and why it belongs in the framework.
+- **Report maintenance problems:** Use the maintenance issue form for version-sync failures, generated-doc drift, publish workflow failures, or package-artifact issues.
 - **Improve docs:** Keep changes focused, practical, and linked to the source docs they clarify.
 - **Add or improve skills:** Follow the Agent Skills spec and the framework normalization rules before proposing a new skill.
 
@@ -16,6 +17,21 @@ Thanks for helping improve Localsetup v3. This project is built for people who w
 - Use Conventional Commit style for commits: `feat:`, `fix:`, `docs:`, `chore:`, `test:`, `ci:`, or `type!:`.
 - Explain what changed, why it changed, and any compatibility impact across supported agent platforms.
 - Include verification results when touching install behavior, path resolution, generated docs, skills, release tooling, or platform templates.
+- Fill out the pull request template. If the change needs a version-sync commit, include it before asking for review.
+
+## Release and maintenance checks
+
+Use the versioning policy in [_localsetup/docs/VERSIONING.md](_localsetup/docs/VERSIONING.md). For automation, branch rules, required checks, labels, and triage behavior, use [_localsetup/docs/REPO_MAINTENANCE.md](_localsetup/docs/REPO_MAINTENANCE.md).
+
+Before opening a release-impacting PR, run the relevant subset of:
+
+```bash
+python3 _localsetup/tools/localsetup_v3.py --repo . version-plan
+python3 _localsetup/tools/localsetup_v3.py --repo . version-sync --check --target "$(cat VERSION)"
+python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
+python3 -m pytest _localsetup/tests -q
+git diff --check
+```
 
 ## Repository layout
 
@@ -44,4 +60,6 @@ Only humans are listed as contributors. Do not add AI assistants, IDEs, or tools
 - [Quickstart](_localsetup/docs/QUICKSTART.md)
 - [Skill importing](_localsetup/docs/SKILL_IMPORTING.md)
 - [Versioning](_localsetup/docs/VERSIONING.md)
+- [Repository maintenance](_localsetup/docs/REPO_MAINTENANCE.md)
+- [Support](SUPPORT.md)
 - [Security](SECURITY.md)

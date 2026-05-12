@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security-sensitive report
+    url: https://github.com/CruxExperts/localsetup/security/advisories/new
+    about: Report vulnerabilities privately. Do not include exploit details or secrets in a public issue.
+  - name: Security contact fallback
+    url: https://github.com/CruxExperts/localsetup/issues/new?template=security_contact.yml
+    about: Use only if private vulnerability reporting is unavailable. Do not include vulnerability details.
+  - name: Questions and discussions
+    url: https://github.com/CruxExperts/localsetup/discussions
+    about: Use discussions for usage questions, ideas that are not yet actionable, and design conversation.
+  - name: Release and maintenance guidance
+    url: https://github.com/CruxExperts/localsetup/blob/main/_localsetup/docs/REPO_MAINTENANCE.md
+    about: Read the maintainer checklist for branch rules, required checks, labels, release policy, and security settings.
