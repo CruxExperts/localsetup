@@ -43,12 +43,11 @@ jobs:
         run: |
           set -euo pipefail
           base_sha="$BEFORE_SHA"
+          if git log -1 --pretty=%s | grep -q '^chore: sync release version '; then
+            base_sha="$(git rev-parse HEAD~2)"
+          fi
           if [[ -z "$base_sha" || "$base_sha" == "0000000000000000000000000000000000000000" ]] || ! git cat-file -e "${base_sha}^{commit}" 2>/dev/null; then
-            if git log -1 --pretty=%s | grep -q '^chore: sync release version '; then
-              base_sha="$(git rev-parse HEAD~2)"
-            else
-              base_sha="$(git rev-parse HEAD^)"
-            fi
+            base_sha="$(git rev-parse HEAD^)"
           fi
           echo "base-sha=${base_sha}" >>"$GITHUB_OUTPUT"
           echo "head-sha=${HEAD_SHA}" >>"$GITHUB_OUTPUT"

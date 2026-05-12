@@ -44,7 +44,13 @@ jobs:
           set -euo pipefail
 
           base_sha=""
+          if git log -1 --pretty=%s | grep -q '^chore: sync release version '; then
+            base_sha="$(git rev-parse HEAD~2)"
+          fi
           for candidate in "$PR_BASE_SHA" "$MERGE_GROUP_BASE_SHA" "$BEFORE_SHA"; do
+            if [[ -n "$base_sha" ]]; then
+              break
+            fi
             if [[ -n "$candidate" && "$candidate" != "0000000000000000000000000000000000000000" ]]; then
               if git cat-file -e "${candidate}^{commit}" 2>/dev/null; then
                 base_sha="$candidate"
