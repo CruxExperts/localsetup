@@ -12,13 +12,13 @@ Audit the prior global Codex agent-team bootstrap, verify current Codex CLI beha
 
 ## Scope
 
-Repo root: `/mnt/data/devzone/localsetup-v3`
+Repo root: `<repo-root>`
 
 Artifact root: `_localsetup/docs/audits/codex-bootstrap-pack/`
 
 Bootstrap pack root: `_localsetup/docs/bootstrap-packs/codex-agent-team/`
 
-Global Codex home: `/home/cptnfren/.codex` because `CODEX_HOME` was unset.
+Global Codex home: `<codex-home>` because `CODEX_HOME` was unset.
 
 ## Mission Answers
 

@@ -284,6 +284,8 @@ def _main(argv: list[str] | None = None) -> int:
     sub.add_parser("scan-migration")
     sub.add_parser("validate-catalog")
     sub.add_parser("generate-docs")
+    docs_align_p = sub.add_parser("docs-align")
+    docs_align_p.add_argument("docs_align_args", nargs=argparse.REMAINDER)
 
     hook_p = sub.add_parser("hook-gate")
     hook_p.add_argument("--out", default="/tmp/localsetup-v3-public.tar.gz")
@@ -504,6 +506,11 @@ def _main(argv: list[str] | None = None) -> int:
     if args.cmd == "generate-docs":
         print(json.dumps(generate_alias_outputs(root), indent=2))
         return 0
+
+    if args.cmd == "docs-align":
+        tool = root / "_localsetup" / "tools" / "docs_alignment.py"
+        command = [sys.executable, str(tool), "--repo-root", str(root), *args.docs_align_args]
+        return subprocess.run(command, cwd=root).returncode
 
     if args.cmd == "catalog":
         payload = {

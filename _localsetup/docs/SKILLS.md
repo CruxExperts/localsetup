@@ -7,7 +7,7 @@ version: 3.3
 
 This page is generated from `_localsetup/skills/*/SKILL.md`.
 
-Total shipped skills: 49
+Total shipped skills: 50
 
 | Skill ID | Name | Version | Description |
 |---|---|---|---|
@@ -23,6 +23,7 @@ Total shipped skills: 49
 | `ls-cron-orchestrator` | `ls-cron-orchestrator` | `1.0` | Manage cron from a repo-local manifest: time triggers, on-boot-with-delay, sequenced tasks; create, remove, reorder, install. |
 | `ls-debug-pro` | `ls-debug-pro` | `1.2` | Systematic debugging methodology and language-specific debugging commands (Node, Python, Swift, CSS/layout, network, git bisect). |
 | `ls-docs-organization` | `ls-docs-organization` | `0.1.0` | Repo-level docs router: classify documentation requests, propose paths and filenames, and keep indexes in sync. |
+| `ls-documentation-alignment` | `ls-documentation-alignment` | `1.0` | Run automated repo documentation alignment: discover source truth, audit public/internal docs, refresh generated artifacts, coordinate subagent research, and verify docs in one pass. |
 | `ls-framework-audit` | `ls-framework-audit` | `1.0` | Run doc, link, skill matrix, and version/facts checks before release. Single entrypoint script; output to user-specified path only; no in-repo default. Use when user says 'run audit', 'run framework audit', or before release. |
 | `ls-framework-compliance` | `ls-framework-compliance` | `1.2` | Pre-task workflow, certainty assessment, context load, document status, testing, Git checkpoints, document maintenance. Use for framework modifications, PRDs, or any task that must follow checklist and checkpoints. |
 | `ls-git-workflows` | `ls-git-workflows` | `1.3` | Advanced git operations beyond add/commit/push. Use when rebasing, bisecting bugs, using worktrees for parallel development, recovering with reflog, managing subtrees/submodules, resolving merge conflicts, cherry-picking across branches, or working with monorepos. |

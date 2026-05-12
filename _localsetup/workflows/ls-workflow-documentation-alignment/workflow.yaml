@@ -1,0 +1,53 @@
+workflow_id: documentation-alignment
+display_name: Documentation Alignment
+aliases: [docs alignment, documentation sync, repo docs audit]
+invocation: Use when repo docs should be audited and updated against current source truth in one coordinated pass.
+required_skills:
+  - ls-documentation-alignment
+  - ls-docs-organization
+  - ls-markdown-reference-validator
+  - ls-script-and-docs-quality
+  - ls-test-runner
+required_tools:
+  - _localsetup/tools/docs_alignment.py
+  - _localsetup/tools/generate_docs_artifacts.py
+required_docs:
+  - _localsetup/skills/ls-documentation-alignment/SKILL.md
+  - _localsetup/docs/OUTPUT_AND_DOC_GENERATION.md
+  - _localsetup/docs/DOCUMENT_LIFECYCLE_MANAGEMENT.md
+gates:
+  - id: ledger_gate
+    rule: Create or resume a `.codex/runs/` ledger before broad documentation edits.
+  - id: source_truth_gate
+    rule: Verify source-of-truth files before rewriting public claims.
+  - id: research_gate
+    rule: Use current primary sources for external documentation standards or API behavior.
+  - id: final_review_gate
+    rule: Inspect diff, validation, and reviewer findings before claiming completion.
+phases:
+  - id: inventory
+    summary: Discover public docs, internal docs, generated docs, assets, CI, commands, skills, and workflows.
+  - id: scout
+    summary: Delegate independent source-truth, docs, generated-doc, CI/asset, convention, and external-research lanes when broad.
+  - id: audit
+    summary: Run docs-alignment audit and rank findings by scope and severity.
+  - id: apply
+    summary: Refresh generated artifacts and apply only supported public-doc rewrites.
+  - id: validate
+    summary: Regenerate docs, run catalog/version/docs checks, and record evidence.
+  - id: review
+    summary: Run a read-only review and resolve or document findings.
+validation:
+  - check: python3 _localsetup/tools/docs_alignment.py --repo-root . check --ci
+  - check: python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
+outputs:
+  - Run ledger with checkpoints
+  - Documentation alignment audit summary
+  - Generated inventory, truth map, audit result, asset manifest, and summary
+  - Validation and reviewer evidence
+smoke:
+  - id: docs_alignment_tool_exists
+    check: _localsetup/tools/docs_alignment.py exists
+migration:
+  source: user-defined documentation alignment workflow
+  note: Generic workflow uses Localsetup truth sources by default and can be adapted to other repos.

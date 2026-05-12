@@ -31,9 +31,9 @@ Status: approval required.
 
 Tasks:
 
-- Add explicit override language to `/home/cptnfren/.codex/AGENTS.md`.
+- Add explicit override language to `<codex-home>/AGENTS.md`.
 - Decide whether `agents.max_threads = 6` is headroom or policy, then update docs or config.
-- Align `/home/cptnfren/.codex/AGENT_TEAM_RUNBOOK.md` wording with `xhigh` reasoning.
+- Align `<codex-home>/AGENT_TEAM_RUNBOOK.md` wording with `xhigh` reasoning.
 - Tighten global Codex file permissions if no shared-group workflow requires current group-write modes.
 
 Validation:
@@ -51,7 +51,7 @@ Tasks:
 - Build a canonical manifest from `_localsetup/skills`, `_localsetup/templates`, and `_localsetup/config`.
 - Generate `localsetup-*` to `ls-*` alias mapping from the current repo.
 - Compare candidate legacy trees by hash:
-  - `/mnt/data/devzone/localsetup/.agents/skills`
+  - `<legacy-localsetup-repo>/.agents/skills`
   - `~/.codex/skills`
   - runtime mirror under `~/.local/share/agents/skills/localsetup`
 - Emit a dry-run report with no file mutations.
@@ -76,8 +76,8 @@ Tasks:
 
 Stop and request approval before:
 
-- Writing outside `/mnt/data/devzone/localsetup-v3`.
-- Changing `/home/cptnfren/.codex` or any `$CODEX_HOME` path.
+- Writing outside `<repo-root>`.
+- Changing `<codex-home>` or any `$CODEX_HOME` path.
 - Replacing or deleting legacy skills/prompts/configs.
 - Changing permissions outside the current repo.
 - Performing network-mutating or global install operations.

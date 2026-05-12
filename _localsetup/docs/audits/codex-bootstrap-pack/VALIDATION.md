@@ -145,7 +145,7 @@ PY
 | Save all audit artifacts | Required top-level artifacts plus subagent reports exist under `_localsetup/docs/audits/codex-bootstrap-pack/` | met |
 | Implement only low-risk docs/prompt/index/metadata fixes | Changes are repo-local docs, generated docs, pack metadata, and Codex template pointer | met |
 | Do not make destructive changes | No delete/rename/reset/chmod operations were used | met |
-| Do not change external folders or global config | No writes outside `/mnt/data/devzone/localsetup-v3` | met |
+| Do not change external folders or global config | No writes outside `<repo-root>` | met |
 | Audit prior global Codex bootstrap | `agent-reports/codex-bootstrap-auditor.md` | met |
 | Verify current Codex CLI behavior | `agent-reports/codex-cli-researcher.md`, local `codex --version`, `codex debug` checks, official OpenAI docs URLs | met |
 | Create reusable bootstrap-pack structure | `_localsetup/docs/bootstrap-packs/INDEX.md`, `codex-agent-team/metadata.yaml`, `AUDIT_PROMPT.md`, and `pack.yaml` bootstrap pack | met |

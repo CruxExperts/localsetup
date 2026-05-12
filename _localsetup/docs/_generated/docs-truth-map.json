@@ -1,0 +1,926 @@
+{
+  "generated_facts": {
+    "major_minor": "3.3",
+    "platform_count": 6,
+    "platforms": [
+      {
+        "context_loader": ".cursor/skills",
+        "display_name": "Cursor",
+        "id": "cursor",
+        "skills_path": "~/.local/share/agents/skills/localsetup"
+      },
+      {
+        "context_loader": ".claude/skills",
+        "display_name": "Claude Code",
+        "id": "claude-code",
+        "skills_path": "~/.local/share/agents/skills/localsetup"
+      },
+      {
+        "context_loader": ".codex/skills",
+        "display_name": "OpenAI Codex CLI",
+        "id": "codex",
+        "skills_path": "~/.local/share/agents/skills/localsetup"
+      },
+      {
+        "context_loader": ".openclaw/skills",
+        "display_name": "OpenClaw",
+        "id": "openclaw",
+        "skills_path": "~/.local/share/agents/skills/localsetup"
+      },
+      {
+        "context_loader": ".kilo/skills",
+        "display_name": "Kilo CLI",
+        "id": "kilo",
+        "skills_path": "~/.local/share/agents/skills/localsetup"
+      },
+      {
+        "context_loader": ".opencode/skills",
+        "display_name": "OpenCode CLI",
+        "id": "opencode",
+        "skills_path": "~/.local/share/agents/skills/localsetup"
+      }
+    ],
+    "skill_count": 50,
+    "skills": [
+      {
+        "id": "ls-agentlens",
+        "name": "ls-agentlens",
+        "path": "_localsetup/skills/ls-agentlens/SKILL.md",
+        "version": "1.0"
+      },
+      {
+        "id": "ls-agentq-transport",
+        "name": "ls-agentq-transport",
+        "path": "_localsetup/skills/ls-agentq-transport/SKILL.md",
+        "version": "1.0"
+      },
+      {
+        "id": "ls-ansible-skill",
+        "name": "ls-ansible-skill",
+        "path": "_localsetup/skills/ls-ansible-skill/SKILL.md",
+        "version": "1.1"
+      },
+      {
+        "id": "ls-arbiter",
+        "name": "ls-arbiter",
+        "path": "_localsetup/skills/ls-arbiter/SKILL.md",
+        "version": "1.3"
+      },
+      {
+        "id": "ls-automatic-versioning",
+        "name": "ls-automatic-versioning",
+        "path": "_localsetup/skills/ls-automatic-versioning/SKILL.md",
+        "version": "1.1"
+      },
+      {
+        "id": "ls-backlog-and-reminders",
+        "name": "ls-backlog-and-reminders",
+        "path": "_localsetup/skills/ls-backlog-and-reminders/SKILL.md",
+        "version": "1.1"
+      },
+      {
+        "id": "ls-cloudflare-dns",
+        "name": "ls-cloudflare-dns",
+        "path": "_localsetup/skills/ls-cloudflare-dns/SKILL.md",
+        "version": "2.0"
+      },
+      {
+        "id": "ls-communication-and-tools",
+        "name": "ls-communication-and-tools",
+        "path": "_localsetup/skills/ls-communication-and-tools/SKILL.md",
+        "version": "1.2"
+      },
+      {
+        "id": "ls-context",
+        "name": "ls-context",
+        "path": "_localsetup/skills/ls-context/SKILL.md",
+        "version": "1.5"
+      },
+      {
+        "id": "ls-cron-orchestrator",
+        "name": "ls-cron-orchestrator",
+        "path": "_localsetup/skills/ls-cron-orchestrator/SKILL.md",
+        "version": "1.0"
+      },
+      {
+        "id": "ls-debug-pro",
+        "name": "ls-debug-pro",
+        "path": "_localsetup/skills/ls-debug-pro/SKILL.md",
+        "version": "1.2"
+      },
+      {
+        "id": "ls-docs-organization",
+        "name": "ls-docs-organization",
+        "path": "_localsetup/skills/ls-docs-organization/SKILL.md",
+        "version": "0.1.0"
+      },
+      {
+        "id": "ls-documentation-alignment",
+        "name": "ls-documentation-alignment",
+        "path": "_localsetup/skills/ls-documentation-alignment/SKILL.md",
+        "version": "1.0"
+      },
+      {
+        "id": "ls-framework-audit",
+        "name": "ls-framework-audit",
+        "path": "_localsetup/skills/ls-framework-audit/SKILL.md",
+        "version": "1.0"
+      },
+      {
+        "id": "ls-framework-compliance",
+        "name": "ls-framework-compliance",
+        "path": "_localsetup/skills/ls-framework-compliance/SKILL.md",
+        "version": "1.2"
+      },
+      {
+        "id": "ls-git-workflows",
+        "name": "ls-git-workflows",
+        "path": "_localsetup/skills/ls-git-workflows/SKILL.md",
+        "version": "1.3"
+      },
+      {
+        "id": "ls-github-publishing-workflow",
+        "name": "ls-github-publishing-workflow",
+        "path": "_localsetup/skills/ls-github-publishing-workflow/SKILL.md",
+        "version": "1.1"
+      },
+      {
+        "id": "ls-github-starredrepos",
+        "name": "ls-github-starredrepos",
+        "path": "_localsetup/skills/ls-github-starredrepos/SKILL.md",
+        "version": "1.0"
+      },
+      {
+        "id": "ls-humanizer",
+        "name": "ls-humanizer",
+        "path": "_localsetup/skills/ls-humanizer/SKILL.md",
+        "version": "2.1.2"
+      },
+      {
+        "id": "ls-keepass-secrets",
+        "name": "ls-keepass-secrets",
+        "path": "_localsetup/skills/ls-keepass-secrets/SKILL.md",
+        "version": "1.1"
+      },
+      {
+        "id": "ls-kilo-boss-orchestrator",
+        "name": "ls-kilo-boss-orchestrator",
+        "path": "_localsetup/skills/ls-kilo-boss-orchestrator/SKILL.md",
+        "version": "1.0"
+      },
+      {
+        "id": "ls-kilo-visual-output",
+        "name": "ls-kilo-visual-output",
+        "path": "_localsetup/skills/ls-kilo-visual-output/SKILL.md",
+        "version": "1.0"
+      },
+      {
+        "id": "ls-linux-patcher",
+        "name": "ls-linux-patcher",
+        "path": "_localsetup/skills/ls-linux-patcher/SKILL.md",
+        "version": "1.1"
+      },
+      {
+        "id": "ls-linux-service-triage",
+        "name": "ls-linux-service-triage",
+        "path": "_localsetup/skills/ls-linux-service-triage/SKILL.md",
+        "version": "1.1"
+      },
+      {
+        "id": "ls-mail-protocol-control",
+        "name": "ls-mail-protocol-control",
+        "path": "_localsetup/skills/ls-mail-protocol-control/SKILL.md",
+        "version": "1.2"
+      },
+      {
+        "id": "ls-markdown-reference-validator",
+        "name": "ls-markdown-reference-validator",
+        "path": "_localsetup/skills/ls-markdown-reference-validator/SKILL.md",
+        "version": "1.0"
+      },
+      {
+        "id": "ls-mcp-builder",
+        "name": "ls-mcp-builder",
+        "path": "_localsetup/skills/ls-mcp-builder/SKILL.md",
+        "version": "1.2"
+      },
+      {
+        "id": "ls-nodejs-nextjs",
+        "name": "ls-nodejs-nextjs",
+        "path": "_localsetup/skills/ls-nodejs-nextjs/SKILL.md",
+        "version": "1.0"
+      },
+      {
+        "id": "ls-npm-management",
+        "name": "ls-npm-management",
+        "path": "_localsetup/skills/ls-npm-management/SKILL.md",
+        "version": "1.0"
+      },
+      {
+        "id": "ls-omniroute-admin-automation",
+        "name": "ls-omniroute-admin-automation",
+        "path": "_localsetup/skills/ls-omniroute-admin-automation/SKILL.md",
+        "version": "1.0"
+      },
+      {
+        "id": "ls-omniroute-proxy",
+        "name": "ls-omniroute-proxy",
+        "path": "_localsetup/skills/ls-omniroute-proxy/SKILL.md",
+        "version": "1.0"
+      },
+      {
+        "id": "ls-pr-reviewer",
+        "name": "ls-pr-reviewer",
+        "path": "_localsetup/skills/ls-pr-reviewer/SKILL.md",
+        "version": "1.2"
+      },
+      {
+        "id": "ls-public-repo-identity",
+        "name": "ls-public-repo-identity",
+        "path": "_localsetup/skills/ls-public-repo-identity/SKILL.md",
+        "version": "1.2"
+      },
+      {
+        "id": "ls-receiving-code-review",
+        "name": "ls-receiving-code-review",
+        "path": "_localsetup/skills/ls-receiving-code-review/SKILL.md",
+        "version": "1.2"
+      },
+      {
+        "id": "ls-safety-and-backup",
+        "name": "ls-safety-and-backup",
+        "path": "_localsetup/skills/ls-safety-and-backup/SKILL.md",
+        "version": "1.1"
+      },
+      {
+        "id": "ls-scrapling",
+        "name": "ls-scrapling",
+        "path": "_localsetup/skills/ls-scrapling/SKILL.md",
+        "version": "1.0"
+      },
+      {
+        "id": "ls-script-and-docs-quality",
+        "name": "ls-script-and-docs-quality",
+        "path": "_localsetup/skills/ls-script-and-docs-quality/SKILL.md",
+        "version": "1.2"
+      },
+      {
+        "id": "ls-shadcn-ui",
+        "name": "ls-shadcn-ui",
+        "path": "_localsetup/skills/ls-shadcn-ui/SKILL.md",
+        "version": "1.0"
+      },
+      {
+        "id": "ls-skill-creator",
+        "name": "ls-skill-creator",
+        "path": "_localsetup/skills/ls-skill-creator/SKILL.md",
+        "version": "1.3"
+      },
+      {
+        "id": "ls-skill-discovery",
+        "name": "ls-skill-discovery",
+        "path": "_localsetup/skills/ls-skill-discovery/SKILL.md",
+        "version": "1.4"
+      },
+      {
+        "id": "ls-skill-importer",
+        "name": "ls-skill-importer",
+        "path": "_localsetup/skills/ls-skill-importer/SKILL.md",
+        "version": "1.4"
+      },
+      {
+        "id": "ls-skill-normalizer",
+        "name": "ls-skill-normalizer",
+        "path": "_localsetup/skills/ls-skill-normalizer/SKILL.md",
+        "version": "1.1"
+      },
+      {
+        "id": "ls-skill-sandbox-tester",
+        "name": "ls-skill-sandbox-tester",
+        "path": "_localsetup/skills/ls-skill-sandbox-tester/SKILL.md",
+        "version": "1.0"
+      },
+      {
+        "id": "ls-skill-vetter",
+        "name": "ls-skill-vetter",
+        "path": "_localsetup/skills/ls-skill-vetter/SKILL.md",
+        "version": "1.2"
+      },
+      {
+        "id": "ls-system-info",
+        "name": "ls-system-info",
+        "path": "_localsetup/skills/ls-system-info/SKILL.md",
+        "version": "1.1"
+      },
+      {
+        "id": "ls-task-skill-matcher",
+        "name": "ls-task-skill-matcher",
+        "path": "_localsetup/skills/ls-task-skill-matcher/SKILL.md",
+        "version": "1.1"
+      },
+      {
+        "id": "ls-tdd-guide",
+        "name": "ls-tdd-guide",
+        "path": "_localsetup/skills/ls-tdd-guide/SKILL.md",
+        "version": "1.1"
+      },
+      {
+        "id": "ls-test-runner",
+        "name": "ls-test-runner",
+        "path": "_localsetup/skills/ls-test-runner/SKILL.md",
+        "version": "1.1"
+      },
+      {
+        "id": "ls-typescript-code-quality",
+        "name": "ls-typescript-code-quality",
+        "path": "_localsetup/skills/ls-typescript-code-quality/SKILL.md",
+        "version": "1.0"
+      },
+      {
+        "id": "ls-unfuck-my-git-state",
+        "name": "ls-unfuck-my-git-state",
+        "path": "_localsetup/skills/ls-unfuck-my-git-state/SKILL.md",
+        "version": "1.2"
+      }
+    ],
+    "version": "3.3.5",
+    "workflow_count": 18,
+    "workflows": [
+      {
+        "id": "audit-framework",
+        "name": "Audit Framework",
+        "package": "ls-workflow-audit-framework",
+        "path": "_localsetup/workflows/ls-workflow-audit-framework/SKILL.md"
+      },
+      {
+        "id": "audit-markdown-references",
+        "name": "Audit Markdown References",
+        "package": "ls-workflow-audit-markdown-references",
+        "path": "_localsetup/workflows/ls-workflow-audit-markdown-references/SKILL.md"
+      },
+      {
+        "id": "documentation-alignment",
+        "name": "Documentation Alignment",
+        "package": "ls-workflow-documentation-alignment",
+        "path": "_localsetup/workflows/ls-workflow-documentation-alignment/SKILL.md"
+      },
+      {
+        "id": "ops-guarded",
+        "name": "Ops Guarded",
+        "package": "ls-workflow-ops-guarded",
+        "path": "_localsetup/workflows/ls-workflow-ops-guarded/SKILL.md"
+      },
+      {
+        "id": "ops-tmux-session",
+        "name": "Ops Tmux Session",
+        "package": "ls-workflow-ops-tmux-session",
+        "path": "_localsetup/workflows/ls-workflow-ops-tmux-session/SKILL.md"
+      },
+      {
+        "id": "pipeline-git-repair-hygiene",
+        "name": "Pipeline Git Repair Hygiene",
+        "package": "ls-workflow-pipeline-git-repair-hygiene",
+        "path": "_localsetup/workflows/ls-workflow-pipeline-git-repair-hygiene/SKILL.md"
+      },
+      {
+        "id": "pipeline-pr-feedback-loop",
+        "name": "Pipeline PR Feedback Loop",
+        "package": "ls-workflow-pipeline-pr-feedback-loop",
+        "path": "_localsetup/workflows/ls-workflow-pipeline-pr-feedback-loop/SKILL.md"
+      },
+      {
+        "id": "pipeline-pre-publish",
+        "name": "Pipeline Pre Publish",
+        "package": "ls-workflow-pipeline-pre-publish",
+        "path": "_localsetup/workflows/ls-workflow-pipeline-pre-publish/SKILL.md"
+      },
+      {
+        "id": "pipeline-repo-convert",
+        "name": "Pipeline Repo Convert",
+        "package": "ls-workflow-pipeline-repo-convert",
+        "path": "_localsetup/workflows/ls-workflow-pipeline-repo-convert/SKILL.md"
+      },
+      {
+        "id": "pipeline-repo-polish",
+        "name": "Pipeline Repo Polish",
+        "package": "ls-workflow-pipeline-repo-polish",
+        "path": "_localsetup/workflows/ls-workflow-pipeline-repo-polish/SKILL.md"
+      },
+      {
+        "id": "pipeline-server-triage-patch",
+        "name": "Pipeline Server Triage Patch",
+        "package": "ls-workflow-pipeline-server-triage-patch",
+        "path": "_localsetup/workflows/ls-workflow-pipeline-server-triage-patch/SKILL.md"
+      },
+      {
+        "id": "pipeline-skill-onboard",
+        "name": "Pipeline Skill Onboard",
+        "package": "ls-workflow-pipeline-skill-onboard",
+        "path": "_localsetup/workflows/ls-workflow-pipeline-skill-onboard/SKILL.md"
+      },
+      {
+        "id": "queue-batch-implement",
+        "name": "Queue Batch Implement",
+        "package": "ls-workflow-queue-batch-implement",
+        "path": "_localsetup/workflows/ls-workflow-queue-batch-implement/SKILL.md"
+      },
+      {
+        "id": "skills-index-refresh",
+        "name": "Skills Index Refresh",
+        "package": "ls-workflow-skills-index-refresh",
+        "path": "_localsetup/workflows/ls-workflow-skills-index-refresh/SKILL.md"
+      },
+      {
+        "id": "spec-clarify-reverse",
+        "name": "Reverse Prompt Spec Clarify",
+        "package": "ls-workflow-spec-clarify-reverse",
+        "path": "_localsetup/workflows/ls-workflow-spec-clarify-reverse/SKILL.md"
+      },
+      {
+        "id": "tmux-terminal-mode",
+        "name": "Tmux Terminal Mode",
+        "package": "ls-workflow-tmux-terminal-mode",
+        "path": "_localsetup/workflows/ls-workflow-tmux-terminal-mode/SKILL.md"
+      },
+      {
+        "id": "transport-handoff",
+        "name": "Transport Handoff",
+        "package": "ls-workflow-transport-handoff",
+        "path": "_localsetup/workflows/ls-workflow-transport-handoff/SKILL.md"
+      },
+      {
+        "id": "umbrella-run",
+        "name": "Umbrella Run",
+        "package": "ls-workflow-umbrella-run",
+        "path": "_localsetup/workflows/ls-workflow-umbrella-run/SKILL.md"
+      }
+    ]
+  },
+  "schema_version": "1.0",
+  "truths": {
+    "major_minor": {
+      "sources": [
+        "VERSION"
+      ],
+      "value": "3.3"
+    },
+    "platform_count": {
+      "sources": [
+        "_localsetup/config/platforms.yaml"
+      ],
+      "value": 6
+    },
+    "skill_count": {
+      "sources": [
+        "_localsetup/skills/ls-*/SKILL.md"
+      ],
+      "value": 50
+    },
+    "version": {
+      "facts_version": "3.3.5",
+      "pyproject_version": "3.3.5",
+      "sources": [
+        "VERSION",
+        "pyproject.toml",
+        "_localsetup/docs/_generated/facts.json"
+      ],
+      "value": "3.3.5"
+    },
+    "workflow_catalog": {
+      "sources": [
+        "_localsetup/workflows/*/workflow.yaml"
+      ],
+      "value": {
+        "count": 18,
+        "workflows": [
+          {
+            "aliases": [
+              "run audit",
+              "framework audit"
+            ],
+            "description": "Run framework audit workflow with explicit report path and summarized findings.",
+            "display_name": "Audit Framework",
+            "package": "ls-workflow-audit-framework",
+            "packs": [
+              "bootstrap",
+              "dev"
+            ],
+            "path": "_localsetup/workflows/ls-workflow-audit-framework",
+            "required_docs": [
+              "_localsetup/docs/WORKFLOW_REGISTRY.md",
+              "_localsetup/docs/DOCUMENT_LIFECYCLE_MANAGEMENT.md"
+            ],
+            "required_skills": [
+              "ls-framework-audit"
+            ],
+            "required_tools": [
+              "_localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py"
+            ],
+            "workflow_id": "audit-framework"
+          },
+          {
+            "aliases": [
+              "reference audit",
+              "link integrity audit"
+            ],
+            "description": "Validate markdown references and anchors across configured documentation targets.",
+            "display_name": "Audit Markdown References",
+            "package": "ls-workflow-audit-markdown-references",
+            "packs": [
+              "dev"
+            ],
+            "path": "_localsetup/workflows/ls-workflow-audit-markdown-references",
+            "required_docs": [
+              "_localsetup/docs/WORKFLOW_REGISTRY.md",
+              "_localsetup/docs/SKILL_VALIDATION_PATTERNS.md"
+            ],
+            "required_skills": [
+              "ls-markdown-reference-validator"
+            ],
+            "required_tools": [
+              "_localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py"
+            ],
+            "workflow_id": "audit-markdown-references"
+          },
+          {
+            "aliases": [
+              "docs alignment",
+              "documentation sync",
+              "repo docs audit"
+            ],
+            "description": "Run automated repo documentation alignment with source-truth scouting, current-doc research, generated artifacts, CI checks, and final review.",
+            "display_name": "Documentation Alignment",
+            "package": "ls-workflow-documentation-alignment",
+            "packs": [
+              "dev",
+              "publishing"
+            ],
+            "path": "_localsetup/workflows/ls-workflow-documentation-alignment",
+            "required_docs": [
+              "_localsetup/skills/ls-documentation-alignment/SKILL.md",
+              "_localsetup/docs/OUTPUT_AND_DOC_GENERATION.md",
+              "_localsetup/docs/DOCUMENT_LIFECYCLE_MANAGEMENT.md"
+            ],
+            "required_skills": [
+              "ls-documentation-alignment",
+              "ls-docs-organization",
+              "ls-markdown-reference-validator",
+              "ls-script-and-docs-quality",
+              "ls-test-runner"
+            ],
+            "required_tools": [
+              "_localsetup/tools/docs_alignment.py",
+              "_localsetup/tools/generate_docs_artifacts.py"
+            ],
+            "workflow_id": "documentation-alignment"
+          },
+          {
+            "aliases": [
+              "lazy admin",
+              "manual execution"
+            ],
+            "description": "Apply guarded operations protocol for risky commands with explicit checkpoints.",
+            "display_name": "Ops Guarded",
+            "package": "ls-workflow-ops-guarded",
+            "packs": [
+              "bootstrap",
+              "dev"
+            ],
+            "path": "_localsetup/workflows/ls-workflow-ops-guarded",
+            "required_docs": [
+              "_localsetup/docs/WORKFLOW_REGISTRY.md"
+            ],
+            "required_skills": [
+              "ls-framework-compliance"
+            ],
+            "required_tools": [],
+            "workflow_id": "ops-guarded"
+          },
+          {
+            "aliases": [
+              "tmux shared session"
+            ],
+            "description": "Run guarded operations through managed tmux sessions with explicit run tracking.",
+            "display_name": "Ops Tmux Session",
+            "package": "ls-workflow-ops-tmux-session",
+            "packs": [
+              "ops"
+            ],
+            "path": "_localsetup/workflows/ls-workflow-ops-tmux-session",
+            "required_docs": [
+              "_localsetup/docs/ops/tmux-ops-managed.md",
+              "_localsetup/docs/ops/tmux-ops-remote.md"
+            ],
+            "required_skills": [],
+            "required_tools": [
+              "_localsetup/tools/tmux_ops"
+            ],
+            "workflow_id": "ops-tmux-session"
+          },
+          {
+            "aliases": [
+              "git repair pipeline"
+            ],
+            "description": "Recover Git state issues and enforce workflow hygiene checks.",
+            "display_name": "Pipeline Git Repair Hygiene",
+            "package": "ls-workflow-pipeline-git-repair-hygiene",
+            "packs": [
+              "bootstrap",
+              "dev"
+            ],
+            "path": "_localsetup/workflows/ls-workflow-pipeline-git-repair-hygiene",
+            "required_docs": [
+              "_localsetup/docs/WORKFLOW_QUICK_REF.md",
+              "_localsetup/docs/GIT_TRACEABILITY.md"
+            ],
+            "required_skills": [
+              "ls-unfuck-my-git-state",
+              "ls-git-workflows",
+              "ls-framework-compliance"
+            ],
+            "required_tools": [],
+            "workflow_id": "pipeline-git-repair-hygiene"
+          },
+          {
+            "aliases": [
+              "pr feedback pipeline"
+            ],
+            "description": "Turn PR feedback into fixes, tests, and follow-up review.",
+            "display_name": "Pipeline PR Feedback Loop",
+            "package": "ls-workflow-pipeline-pr-feedback-loop",
+            "packs": [
+              "dev"
+            ],
+            "path": "_localsetup/workflows/ls-workflow-pipeline-pr-feedback-loop",
+            "required_docs": [
+              "_localsetup/docs/WORKFLOW_QUICK_REF.md"
+            ],
+            "required_skills": [
+              "ls-receiving-code-review",
+              "ls-tdd-guide",
+              "ls-pr-reviewer"
+            ],
+            "required_tools": [],
+            "workflow_id": "pipeline-pr-feedback-loop"
+          },
+          {
+            "aliases": [
+              "pre publish pipeline"
+            ],
+            "description": "Run pre-publish checks, version sync, and framework audit before release actions.",
+            "display_name": "Pipeline Pre Publish",
+            "package": "ls-workflow-pipeline-pre-publish",
+            "packs": [
+              "publishing"
+            ],
+            "path": "_localsetup/workflows/ls-workflow-pipeline-pre-publish",
+            "required_docs": [
+              "_localsetup/docs/VERSIONING.md",
+              "_localsetup/docs/WORKFLOW_QUICK_REF.md"
+            ],
+            "required_skills": [
+              "ls-github-publishing-workflow",
+              "ls-automatic-versioning",
+              "ls-framework-audit"
+            ],
+            "required_tools": [],
+            "workflow_id": "pipeline-pre-publish"
+          },
+          {
+            "aliases": [
+              "repo convert pipeline",
+              "convert repo",
+              "localsetup convert"
+            ],
+            "description": "Convert an existing repo to the current Localsetup v3 framework with backup, blocker, install, and verification gates.",
+            "display_name": "Pipeline Repo Convert",
+            "package": "ls-workflow-pipeline-repo-convert",
+            "packs": [
+              "bootstrap",
+              "dev"
+            ],
+            "path": "_localsetup/workflows/ls-workflow-pipeline-repo-convert",
+            "required_docs": [
+              "_localsetup/docs/REPO_CONVERSION.md",
+              "_localsetup/docs/MULTI_PLATFORM_INSTALL.md"
+            ],
+            "required_skills": [
+              "ls-framework-compliance",
+              "ls-safety-and-backup",
+              "ls-git-workflows",
+              "ls-test-runner"
+            ],
+            "required_tools": [
+              "git"
+            ],
+            "workflow_id": "pipeline-repo-convert"
+          },
+          {
+            "aliases": [
+              "repo polish pipeline"
+            ],
+            "description": "Polish repository docs and scripts for sharing readiness.",
+            "display_name": "Pipeline Repo Polish",
+            "package": "ls-workflow-pipeline-repo-polish",
+            "packs": [
+              "dev"
+            ],
+            "path": "_localsetup/workflows/ls-workflow-pipeline-repo-polish",
+            "required_docs": [
+              "_localsetup/docs/WORKFLOW_QUICK_REF.md",
+              "_localsetup/docs/README.md"
+            ],
+            "required_skills": [
+              "ls-script-and-docs-quality",
+              "ls-humanizer",
+              "ls-github-publishing-workflow"
+            ],
+            "required_tools": [],
+            "workflow_id": "pipeline-repo-polish"
+          },
+          {
+            "aliases": [
+              "server triage patch pipeline"
+            ],
+            "description": "Capture server baseline, triage issues, and apply patch operations.",
+            "display_name": "Pipeline Server Triage Patch",
+            "package": "ls-workflow-pipeline-server-triage-patch",
+            "packs": [
+              "ops"
+            ],
+            "path": "_localsetup/workflows/ls-workflow-pipeline-server-triage-patch",
+            "required_docs": [
+              "_localsetup/docs/WORKFLOW_QUICK_REF.md",
+              "_localsetup/docs/ops/tmux-ops-managed.md"
+            ],
+            "required_skills": [
+              "ls-system-info",
+              "ls-linux-service-triage",
+              "ls-linux-patcher"
+            ],
+            "required_tools": [],
+            "workflow_id": "pipeline-server-triage-patch"
+          },
+          {
+            "aliases": [
+              "skill onboarding pipeline"
+            ],
+            "description": "Run the skill onboarding pipeline from vetting through sandbox testing.",
+            "display_name": "Pipeline Skill Onboard",
+            "package": "ls-workflow-pipeline-skill-onboard",
+            "packs": [
+              "dev"
+            ],
+            "path": "_localsetup/workflows/ls-workflow-pipeline-skill-onboard",
+            "required_docs": [
+              "_localsetup/docs/WORKFLOW_QUICK_REF.md",
+              "_localsetup/docs/SKILL_IMPORTING.md"
+            ],
+            "required_skills": [
+              "ls-skill-vetter",
+              "ls-skill-importer",
+              "ls-skill-normalizer",
+              "ls-skill-sandbox-tester"
+            ],
+            "required_tools": [],
+            "workflow_id": "pipeline-skill-onboard"
+          },
+          {
+            "aliases": [
+              "Agent Q queue",
+              "process PRDs"
+            ],
+            "description": "Process queued PRD tasks in batch with status tracking and outcome reporting.",
+            "display_name": "Queue Batch Implement",
+            "package": "ls-workflow-queue-batch-implement",
+            "packs": [
+              "experimental"
+            ],
+            "path": "_localsetup/workflows/ls-workflow-queue-batch-implement",
+            "required_docs": [
+              "_localsetup/docs/AGENTIC_AGENT_Q_PATTERN.md",
+              "_localsetup/docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md"
+            ],
+            "required_skills": [],
+            "required_tools": [],
+            "workflow_id": "queue-batch-implement"
+          },
+          {
+            "aliases": [
+              "refresh skills",
+              "scrub index"
+            ],
+            "description": "Refresh and scrub the public skill index in the required sequence.",
+            "display_name": "Skills Index Refresh",
+            "package": "ls-workflow-skills-index-refresh",
+            "packs": [
+              "dev"
+            ],
+            "path": "_localsetup/workflows/ls-workflow-skills-index-refresh",
+            "required_docs": [
+              "_localsetup/docs/SKILL_DISCOVERY.md",
+              "_localsetup/docs/WORKFLOW_REGISTRY.md"
+            ],
+            "required_skills": [
+              "ls-skill-discovery"
+            ],
+            "required_tools": [],
+            "workflow_id": "skills-index-refresh"
+          },
+          {
+            "aliases": [
+              "decision tree",
+              "reverse prompt"
+            ],
+            "description": "Run reverse-prompt spec clarification with one question per turn and bounded choices.",
+            "display_name": "Reverse Prompt Spec Clarify",
+            "package": "ls-workflow-spec-clarify-reverse",
+            "packs": [
+              "experimental"
+            ],
+            "path": "_localsetup/workflows/ls-workflow-spec-clarify-reverse",
+            "required_docs": [
+              "_localsetup/docs/DECISION_TREE_WORKFLOW.md",
+              "_localsetup/docs/WORKFLOW_REGISTRY.md"
+            ],
+            "required_skills": [],
+            "required_tools": [],
+            "workflow_id": "spec-clarify-reverse"
+          },
+          {
+            "aliases": [
+              "tmux terminal mode",
+              "always-on tmux"
+            ],
+            "description": "Manage tmux terminal mode enable, disable, and status behavior.",
+            "display_name": "Tmux Terminal Mode",
+            "package": "ls-workflow-tmux-terminal-mode",
+            "packs": [
+              "ops"
+            ],
+            "path": "_localsetup/workflows/ls-workflow-tmux-terminal-mode",
+            "required_docs": [
+              "_localsetup/docs/TMUX_TERMINAL_MODE.md",
+              "_localsetup/docs/WORKFLOW_REGISTRY.md"
+            ],
+            "required_skills": [],
+            "required_tools": [
+              "_localsetup/tools/tmux_terminal_mode"
+            ],
+            "workflow_id": "tmux-terminal-mode"
+          },
+          {
+            "aliases": [
+              "Agent Q bidirectional"
+            ],
+            "description": "Handle sealed Agent Q handoff payload transport over file_drop or mail adapters.",
+            "display_name": "Transport Handoff",
+            "package": "ls-workflow-transport-handoff",
+            "packs": [
+              "integrations"
+            ],
+            "path": "_localsetup/workflows/ls-workflow-transport-handoff",
+            "required_docs": [
+              "_localsetup/docs/AGENTIC_AGENT_TO_AGENT_PROTOCOL.md",
+              "_localsetup/docs/AGENTIC_AGENT_Q_SCENARIOS.md",
+              "_localsetup/docs/AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md"
+            ],
+            "required_skills": [
+              "ls-agentq-transport",
+              "ls-mail-protocol-control"
+            ],
+            "required_tools": [
+              "_localsetup/tools/agentq_transport_client/agentq_cli.py"
+            ],
+            "workflow_id": "transport-handoff"
+          },
+          {
+            "aliases": [
+              "umbrella workflow"
+            ],
+            "description": "Execute a named multi-phase umbrella workflow with explicit pre-human-confirmation gates.",
+            "display_name": "Umbrella Run",
+            "package": "ls-workflow-umbrella-run",
+            "packs": [
+              "experimental"
+            ],
+            "path": "_localsetup/workflows/ls-workflow-umbrella-run",
+            "required_docs": [
+              "_localsetup/docs/AGENTIC_UMBRELLA_WORKFLOWS.md",
+              "_localsetup/docs/WORKFLOW_REGISTRY.md"
+            ],
+            "required_skills": [],
+            "required_tools": [],
+            "workflow_id": "umbrella-run"
+          }
+        ]
+      }
+    },
+    "workflow_count": {
+      "sources": [
+        "_localsetup/workflows/ls-workflow-*/workflow.yaml"
+      ],
+      "value": 18
+    }
+  }
+}

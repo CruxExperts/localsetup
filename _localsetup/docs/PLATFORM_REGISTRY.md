@@ -5,7 +5,7 @@ version: 3.3
 
 # Platform registry (Localsetup v3)
 
-**Purpose:** Single source of truth for which AI agent platforms the framework supports. When you need to list supported platforms, reference this file instead of scattering names across docs. When adding a new platform, add it here first; when registering a new skill or workflow package, use the registration lists below so no platform is missed.
+**Purpose:** Canonical human-readable registry for which AI agent platforms the framework supports. When you need to list supported platforms, reference this file instead of scattering names across docs. When adding a new platform, add it here first; when registering a new skill or workflow package, use the registration lists below so no platform is missed.
 
 **Manifest source:** V3 installer behavior is controlled by `_localsetup/config/platforms.yaml`. This page is a human-readable summary. The root `--tools` flag remains a compatibility alias for v3 `--platforms`.
 

@@ -8,7 +8,7 @@ tasks:
     status: pending_approval
     approval_required: true
     scope:
-      - /home/cptnfren/.codex/AGENTS.md
+      - <codex-home>/AGENTS.md
     blockers:
       - global_config_write
     validation:
@@ -22,8 +22,8 @@ tasks:
     status: pending_approval
     approval_required: true
     scope:
-      - /home/cptnfren/.codex/config.toml
-      - /home/cptnfren/.codex/AGENT_TEAM_RUNBOOK.md
+      - <codex-home>/config.toml
+      - <codex-home>/AGENT_TEAM_RUNBOOK.md
     blockers:
       - global_config_write
     validation:
@@ -37,7 +37,7 @@ tasks:
     status: pending_approval
     approval_required: true
     scope:
-      - /home/cptnfren/.codex/AGENT_TEAM_RUNBOOK.md
+      - <codex-home>/AGENT_TEAM_RUNBOOK.md
     blockers:
       - global_config_write
     validation:
@@ -50,8 +50,8 @@ tasks:
     status: pending_approval
     approval_required: true
     scope:
-      - /home/cptnfren/.codex
-      - /home/cptnfren/.codex/agents
+      - <codex-home>
+      - <codex-home>/agents
     blockers:
       - external_permission_change
     validation:
@@ -79,9 +79,9 @@ tasks:
     status: planned
     approval_required: false
     scope:
-      - /mnt/data/devzone/localsetup/.agents/skills
-      - /home/cptnfren/.codex/skills
-      - /home/cptnfren/.local/share/agents/skills/localsetup
+      - <legacy-localsetup-repo>/.agents/skills
+      - <codex-home>/skills
+      - <localsetup-managed-skill-library>
     blockers:
       - read_only_external_inventory_only
     validation:

@@ -14,7 +14,7 @@ findings:
     status: open
     approval_required: true
     evidence:
-      - /home/cptnfren/.codex/AGENTS.md lacks an explicit exception for user no-subagent constraints.
+      - <codex-home>/AGENTS.md lacks an explicit exception for user no-subagent constraints.
       - agent-reports/codex-bootstrap-auditor.md
     recommendation: Add a global instruction override clause that explicit user, developer, and tool constraints take precedence.
   - id: CBA-002
@@ -32,7 +32,7 @@ findings:
     status: open
     approval_required: true
     evidence:
-      - /home/cptnfren/.codex/config.toml uses agents.max_threads = 6.
+      - <codex-home>/config.toml uses agents.max_threads = 6.
       - Global instructions strongly encourage team mode for non-trivial work.
     recommendation: Add a normal 1-2 concurrent-agent guideline or lower max_threads after approval.
   - id: CBA-004
@@ -50,7 +50,7 @@ findings:
     status: accepted
     approval_required: false
     evidence:
-      - /home/cptnfren/.codex/runs was absent.
+      - <codex-home>/runs was absent.
       - Current repo instructions require repo-local ledgers for agent-team tasks.
     recommendation: No action unless global bootstrap tasks should maintain global ledgers.
   - id: CBR-001
@@ -105,7 +105,7 @@ findings:
     status: open
     approval_required: true
     evidence:
-      - /mnt/data/devzone/localsetup/.agents/skills uses older localsetup-* names.
+      - <legacy-localsetup-repo>/.agents/skills uses older localsetup-* names.
       - ~/.codex/skills uses older localsetup-* names.
       - agent-reports/legacy-inventory.md
     recommendation: Build hash-based dry-run migration before touching either tree.

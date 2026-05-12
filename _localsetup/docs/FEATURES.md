@@ -12,8 +12,8 @@ This is the full public capability catalog for Localsetup v3. The [root README](
 <!-- facts-block:start -->
 - Current version: `3.3.5`
 - Supported platforms: `cursor, claude-code, codex, openclaw, kilo, opencode`
-- Shipped skills: `49`
-- Workflow packages: `17`
+- Shipped skills: `50`
+- Workflow packages: `18`
 - Source: `_localsetup/docs/_generated/facts.json`
 <!-- facts-block:end -->
 
@@ -33,7 +33,7 @@ This is the full public capability catalog for Localsetup v3. The [root README](
 | Capability | What it gives you |
 |---|---|
 | Agent Skills compliance | Shipped skills use spec-compatible `SKILL.md` packages with `name`, `description`, and `metadata.version`. |
-| 46 shipped skills plus 17 workflow packages | Practical capabilities and orchestration flows for debugging, tests, PR review, git recovery, service triage, patching, docs, MCP building, TypeScript code quality, and more. |
+| 50 shipped skills plus 18 workflow packages | Practical capabilities and orchestration flows for debugging, tests, PR review, git recovery, service triage, patching, docs, MCP building, TypeScript code quality, and more. |
 | Skill import | Import skills from a URL or local path with discovery, validation, heuristic security screening, and summaries. |
 | Skill vetting | Treat third-party skills as untrusted before they can influence agent behavior. |
 | Skill normalization | Clean imported or in-tree skills for spec compliance, platform-neutral wording, and framework tooling standards. |
@@ -67,6 +67,7 @@ This is the full public capability catalog for Localsetup v3. The [root README](
 |---|---|
 | Conventional Commit versioning | Version bumps are inferred from commits, with explicit override trailers when needed. |
 | Generated facts sync | README and docs facts blocks stay aligned with `VERSION`, platform count, skill count, and workflow package count. |
+| Automated documentation alignment | `_localsetup/tools/docs_alignment.py` inventories repo docs, maps source-truth claims, validates assets and links, refreshes generated artifacts, and supports CI checks. |
 | Skill metadata versions | Skill versions are tracked separately from framework release versions. |
 | Framework audit | Doc, link, skill matrix, version, facts, and smoke checks before release. |
 | Public package boundary | Packaging and scan commands keep generated/runtime artifacts out of source releases. |

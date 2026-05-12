@@ -83,6 +83,11 @@
 | `keep` | `_localsetup/docs/WORKFLOW_REGISTRY.md` |
 | `keep` | `_localsetup/docs/WORKFLOW_SKILLS_REVIEW_BUILD_SPEC.md` |
 | `keep` | `_localsetup/docs/WORKFLOW_STANDARD.md` |
+| `generate` | `_localsetup/docs/_generated/docs-alignment-summary.md` |
+| `generate` | `_localsetup/docs/_generated/docs-asset-manifest.json` |
+| `generate` | `_localsetup/docs/_generated/docs-audit-result.json` |
+| `generate` | `_localsetup/docs/_generated/docs-inventory.json` |
+| `generate` | `_localsetup/docs/_generated/docs-truth-map.json` |
 | `generate` | `_localsetup/docs/_generated/facts.json` |
 | `generate` | `_localsetup/docs/_generated/implementation-file-map.md` |
 | `generate` | `_localsetup/docs/_generated/platform-adapters.md` |
@@ -189,6 +194,16 @@
 | `keep` | `_localsetup/skills/ls-debug-pro/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-docs-organization/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-docs-organization/references/docs-routing-reference.md` |
+| `keep` | `_localsetup/skills/ls-documentation-alignment/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-documentation-alignment/asset-guidance.md` |
+| `keep` | `_localsetup/skills/ls-documentation-alignment/ci-model.md` |
+| `keep` | `_localsetup/skills/ls-documentation-alignment/commands.md` |
+| `keep` | `_localsetup/skills/ls-documentation-alignment/generated-docs-policy.md` |
+| `keep` | `_localsetup/skills/ls-documentation-alignment/public-docs-style.md` |
+| `keep` | `_localsetup/skills/ls-documentation-alignment/runbook.md` |
+| `keep` | `_localsetup/skills/ls-documentation-alignment/source-ledger.md` |
+| `keep` | `_localsetup/skills/ls-documentation-alignment/troubleshooting.md` |
+| `keep` | `_localsetup/skills/ls-documentation-alignment/truth-map.md` |
 | `keep` | `_localsetup/skills/ls-framework-audit/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py` |
 | `keep` | `_localsetup/skills/ls-framework-audit/scripts/tests/test_framework_audit_hardening.py` |
@@ -490,6 +505,7 @@
 | `keep` | `_localsetup/tests/conftest.py` |
 | `keep` | `_localsetup/tests/skill_smoke_commands.yaml` |
 | `keep` | `_localsetup/tests/test_adapter_parser.py` |
+| `keep` | `_localsetup/tests/test_docs_alignment.py` |
 | `keep` | `_localsetup/tests/test_github_starredrepos_skill.py` |
 | `keep` | `_localsetup/tests/test_keepass_secrets_cli_json.py` |
 | `keep` | `_localsetup/tests/test_keepass_secrets_config_resolution.py` |
@@ -538,6 +554,7 @@
 | `keep` | `_localsetup/tools/agentq_transport_client/docs/USER_GUIDE.md` |
 | `keep` | `_localsetup/tools/agentq_transport_client/tests/test_agentq_pipeline.py` |
 | `keep` | `_localsetup/tools/cli_helpers.py` |
+| `keep` | `_localsetup/tools/docs_alignment.py` |
 | `keep` | `_localsetup/tools/generate_docs_artifacts.py` |
 | `refactor` | `_localsetup/tools/localsetup_v3.py` |
 | `keep` | `_localsetup/tools/refresh_public_skill_index.py` |
@@ -599,6 +616,8 @@
 | `keep` | `_localsetup/workflows/ls-workflow-audit-framework/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-audit-markdown-references/SKILL.md` |
 | `keep` | `_localsetup/workflows/ls-workflow-audit-markdown-references/workflow.yaml` |
+| `keep` | `_localsetup/workflows/ls-workflow-documentation-alignment/SKILL.md` |
+| `keep` | `_localsetup/workflows/ls-workflow-documentation-alignment/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-ops-guarded/SKILL.md` |
 | `keep` | `_localsetup/workflows/ls-workflow-ops-guarded/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-ops-tmux-session/SKILL.md` |
@@ -629,6 +648,7 @@
 | `keep` | `_localsetup/workflows/ls-workflow-transport-handoff/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-umbrella-run/SKILL.md` |
 | `keep` | `_localsetup/workflows/ls-workflow-umbrella-run/workflow.yaml` |
+| `keep` | `assets/README.md` |
 | `keep` | `assets/localsetup-v3-architecture.svg` |
 | `keep` | `assets/localsetup-v3-install-lifecycle.svg` |
 | `keep` | `assets/localsetup-v3-logo.png` |

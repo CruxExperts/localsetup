@@ -25,7 +25,7 @@ Use it when you want agents to stop improvising and start working from auditable
 Localsetup v3 packages:
 
 - Repo-local framework source under `_localsetup/`
-- 46 shipped capability skills plus 17 first-class workflow packages for debugging, testing, PR review, infrastructure, docs, git recovery, skill import, security vetting, TypeScript code quality, and agent workflow control
+- 50 shipped capability skills plus 18 first-class workflow packages for debugging, testing, PR review, infrastructure, docs, git recovery, skill import, security vetting, TypeScript code quality, and agent workflow control
 - Cross-platform adapters for Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode
 - Agent Skills-compatible `SKILL.md` packages that can be imported, normalized, vetted, installed, and reused
 - Workflow packages under `_localsetup/workflows/` that stay executable as skills while carrying Localsetup `workflow.yaml` metadata for aliases, gates, dependencies, and generated registries
@@ -62,8 +62,8 @@ Start with the [workflow packages guide](_localsetup/docs/WORKFLOW_PACKAGES.md) 
 |---|---|
 | Current version | `3.3.5` |
 | Supported platforms | `cursor, claude-code, codex, openclaw, kilo, opencode` |
-| Shipped skills | `49` |
-| Workflow packages | `17` |
+| Shipped skills | `50` |
+| Workflow packages | `18` |
 | Source | `_localsetup/docs/_generated/facts.json` |
 <!-- facts-block:end -->
 

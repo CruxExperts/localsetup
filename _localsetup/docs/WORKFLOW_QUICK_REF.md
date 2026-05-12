@@ -13,6 +13,7 @@ This page is generated from `_localsetup/workflows/*/workflow.yaml`.
 |------------|------|---------|---------|-----------------|
 | `audit-framework` | Audit Framework | run audit; framework audit | `ls-workflow-audit-framework` | `ls-framework-audit` |
 | `audit-markdown-references` | Audit Markdown References | reference audit; link integrity audit | `ls-workflow-audit-markdown-references` | `ls-markdown-reference-validator` |
+| `documentation-alignment` | Documentation Alignment | docs alignment; documentation sync; repo docs audit | `ls-workflow-documentation-alignment` | `ls-documentation-alignment`; `ls-docs-organization`; `ls-markdown-reference-validator`; `ls-script-and-docs-quality`; `ls-test-runner` |
 | `ops-guarded` | Ops Guarded | lazy admin; manual execution | `ls-workflow-ops-guarded` | `ls-framework-compliance` |
 | `ops-tmux-session` | Ops Tmux Session | tmux shared session | `ls-workflow-ops-tmux-session` | n/a |
 | `pipeline-git-repair-hygiene` | Pipeline Git Repair Hygiene | git repair pipeline | `ls-workflow-pipeline-git-repair-hygiene` | `ls-unfuck-my-git-state`; `ls-git-workflows`; `ls-framework-compliance` |
@@ -35,6 +36,9 @@ This page is generated from `_localsetup/workflows/*/workflow.yaml`.
 - "framework audit" -> `audit-framework`
 - "reference audit" -> `audit-markdown-references`
 - "link integrity audit" -> `audit-markdown-references`
+- "docs alignment" -> `documentation-alignment`
+- "documentation sync" -> `documentation-alignment`
+- "repo docs audit" -> `documentation-alignment`
 - "lazy admin" -> `ops-guarded`
 - "manual execution" -> `ops-guarded`
 - "tmux shared session" -> `ops-tmux-session`

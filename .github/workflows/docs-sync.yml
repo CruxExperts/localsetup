@@ -37,5 +37,14 @@ jobs:
           python3 _localsetup/tools/localsetup_v3.py --repo . generate-docs
           python3 _localsetup/tools/localsetup_v3.py --repo . version-sync --check --target "$(cat VERSION)"
 
+      - name: Check documentation alignment
+        run: |
+          set +e
+          python3 _localsetup/tools/docs_alignment.py --repo-root . check --ci --summary-output /tmp/docs-alignment-summary.md
+          status=$?
+          set -e
+          cat /tmp/docs-alignment-summary.md >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+
       - name: Verify generated files are committed
         run: git diff --exit-code

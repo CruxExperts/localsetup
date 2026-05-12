@@ -14,6 +14,7 @@
 | `ops` | `skill` | `ls-cron-orchestrator` | `localsetup-cron-orchestrator` |
 | `dev` | `skill` | `ls-debug-pro` | `localsetup-debug-pro` |
 | `bootstrap, dev` | `skill` | `ls-docs-organization` | `localsetup-docs-organization` |
+| `dev, publishing` | `skill` | `ls-documentation-alignment` | `localsetup-documentation-alignment` |
 | `dev` | `skill` | `ls-framework-audit` | `localsetup-framework-audit` |
 | `bootstrap, dev` | `skill` | `ls-framework-compliance` | `localsetup-framework-compliance` |
 | `bootstrap, dev` | `skill` | `ls-git-workflows` | `localsetup-git-workflows` |
@@ -53,6 +54,7 @@
 | `dev` | `skill` | `ls-unfuck-my-git-state` | `localsetup-unfuck-my-git-state` |
 | `bootstrap, dev` | `workflow` | `ls-workflow-audit-framework` | `n/a` |
 | `dev` | `workflow` | `ls-workflow-audit-markdown-references` | `n/a` |
+| `dev, publishing` | `workflow` | `ls-workflow-documentation-alignment` | `n/a` |
 | `bootstrap, dev` | `workflow` | `ls-workflow-ops-guarded` | `n/a` |
 | `ops` | `workflow` | `ls-workflow-ops-tmux-session` | `n/a` |
 | `bootstrap, dev` | `workflow` | `ls-workflow-pipeline-git-repair-hygiene` | `n/a` |

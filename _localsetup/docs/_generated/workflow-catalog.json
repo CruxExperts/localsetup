@@ -1,5 +1,5 @@
 {
-  "count": 17,
+  "count": 18,
   "workflows": [
     {
       "aliases": [
@@ -49,6 +49,38 @@
         "_localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py"
       ],
       "workflow_id": "audit-markdown-references"
+    },
+    {
+      "aliases": [
+        "docs alignment",
+        "documentation sync",
+        "repo docs audit"
+      ],
+      "description": "Run automated repo documentation alignment with source-truth scouting, current-doc research, generated artifacts, CI checks, and final review.",
+      "display_name": "Documentation Alignment",
+      "package": "ls-workflow-documentation-alignment",
+      "packs": [
+        "dev",
+        "publishing"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-documentation-alignment",
+      "required_docs": [
+        "_localsetup/skills/ls-documentation-alignment/SKILL.md",
+        "_localsetup/docs/OUTPUT_AND_DOC_GENERATION.md",
+        "_localsetup/docs/DOCUMENT_LIFECYCLE_MANAGEMENT.md"
+      ],
+      "required_skills": [
+        "ls-documentation-alignment",
+        "ls-docs-organization",
+        "ls-markdown-reference-validator",
+        "ls-script-and-docs-quality",
+        "ls-test-runner"
+      ],
+      "required_tools": [
+        "_localsetup/tools/docs_alignment.py",
+        "_localsetup/tools/generate_docs_artifacts.py"
+      ],
+      "workflow_id": "documentation-alignment"
     },
     {
       "aliases": [

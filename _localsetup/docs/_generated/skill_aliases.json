@@ -11,6 +11,7 @@
   "localsetup-cron-orchestrator": "ls-cron-orchestrator",
   "localsetup-debug-pro": "ls-debug-pro",
   "localsetup-docs-organization": "ls-docs-organization",
+  "localsetup-documentation-alignment": "ls-documentation-alignment",
   "localsetup-framework-audit": "ls-framework-audit",
   "localsetup-framework-compliance": "ls-framework-compliance",
   "localsetup-git-workflows": "ls-git-workflows",

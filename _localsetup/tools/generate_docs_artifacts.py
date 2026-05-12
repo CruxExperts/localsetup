@@ -19,6 +19,8 @@ if str(_ROOT) not in sys.path:
 
 from _localsetup.v3.workflows import load_workflow_catalog, workflow_catalog_payload
 
+from docs_alignment import generate_alignment_artifacts
+
 
 FRONTMATTER_BOUNDARY = re.compile(r"^---\s*$", re.MULTILINE)
 VERSION_RE = re.compile(r'^\s*version:\s*["\']?([0-9.]+)["\']?\s*$')
@@ -198,6 +200,13 @@ def write_skills_md(path: Path, major_minor: str, skills: list[dict[str, str]]) 
 
 
 def write_workflow_registry(path: Path, major_minor: str, workflows: list[dict[str, object]]) -> None:
+    def doc_link(doc: str) -> str:
+        if doc.startswith("_localsetup/docs/"):
+            target = doc.removeprefix("_localsetup/docs/")
+        else:
+            target = f"../../{doc}"
+        return f"[{Path(doc).name}]({target})"
+
     lines = [
         "---",
         "status: ACTIVE",
@@ -225,7 +234,7 @@ def write_workflow_registry(path: Path, major_minor: str, workflows: list[dict[s
     for workflow in workflows:
         aliases = "; ".join(workflow["aliases"]) if workflow["aliases"] else "n/a"
         required_skills = "; ".join(f"`{name}`" for name in workflow["required_skills"]) or "n/a"
-        docs = "; ".join(f"[{Path(doc).name}]({doc.removeprefix('_localsetup/docs/')})" for doc in workflow["required_docs"])
+        docs = "; ".join(doc_link(str(doc)) for doc in workflow["required_docs"])
         tools = "; ".join(f"`{tool}`" for tool in workflow["required_tools"])
         primary = "; ".join(part for part in [docs, tools] if part) or "n/a"
         description = str(workflow["description"]).replace("|", "\\|") or "No description in frontmatter."
@@ -440,6 +449,7 @@ def main() -> int:
     write_workflow_quick_ref(docs_dir / "WORKFLOW_QUICK_REF.md", major_minor, workflows)
     write_facts_json(docs_dir / "_generated" / "facts.json", facts)
     write_workflow_catalog_json(docs_dir / "_generated" / "workflow-catalog.json", repo_root)
+    alignment_outputs = generate_alignment_artifacts(repo_root)
     if args.internal_output:
         write_internal_snapshot(repo_root / args.internal_output, facts)
     update_facts_blocks(repo_root, facts)
@@ -449,6 +459,8 @@ def main() -> int:
     print("Generated: _localsetup/docs/WORKFLOW_QUICK_REF.md")
     print("Generated: _localsetup/docs/_generated/facts.json")
     print("Generated: _localsetup/docs/_generated/workflow-catalog.json")
+    for output in alignment_outputs.values():
+        print(f"Generated: {Path(output).relative_to(repo_root)}")
     if args.internal_output:
         print(f"Generated: {args.internal_output}")
     return 0
