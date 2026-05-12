@@ -51,4 +51,5 @@ version: 3.2
 | `localsetup-task-skill-matcher` | `ls-task-skill-matcher` |
 | `localsetup-tdd-guide` | `ls-tdd-guide` |
 | `localsetup-test-runner` | `ls-test-runner` |
+| `localsetup-typescript-code-quality` | `ls-typescript-code-quality` |
 | `localsetup-unfuck-my-git-state` | `ls-unfuck-my-git-state` |

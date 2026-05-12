@@ -32,6 +32,7 @@ Localsetup v3 is deployed at `_localsetup/`. Framework and context are repo-loca
 - Current generated catalog: [SKILLS.md](../../docs/SKILLS.md).
 - Machine-readable generated facts: [_generated/facts.json](../../docs/_generated/facts.json).
 - Treat any short skill mentions in always-loaded platform context as orientation only; the generated catalog and each skill's own frontmatter are the current source of truth.
+- `ls-typescript-code-quality`: TypeScript/TSX code quality, tsconfig, typed ESLint or Biome config, Node TypeScript scripts, and TypeScript-heavy framework code.
 
 ## Key docs
 _localsetup/docs/AGENTIC_DESIGN_INDEX.md, WORKFLOW_REGISTRY.md, PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md, DECISION_TREE_WORKFLOW.md, INPUT_HARDENING_STANDARD.md, TOOLING_POLICY.md

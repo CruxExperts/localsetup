@@ -52,6 +52,7 @@ packs:
     - ls-git-workflows
     - ls-markdown-reference-validator
     - ls-receiving-code-review
+    - ls-typescript-code-quality
     - ls-unfuck-my-git-state
   ops:
     - ls-ansible-skill

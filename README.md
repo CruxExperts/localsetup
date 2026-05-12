@@ -25,7 +25,7 @@ Use it when you want agents to stop improvising and start working from auditable
 Localsetup v3 packages:
 
 - Repo-local framework source under `_localsetup/`
-- 45 shipped capability skills plus 16 first-class workflow packages for debugging, testing, PR review, infrastructure, docs, git recovery, skill import, security vetting, and agent workflow control
+- 46 shipped capability skills plus 17 first-class workflow packages for debugging, testing, PR review, infrastructure, docs, git recovery, skill import, security vetting, TypeScript code quality, and agent workflow control
 - Cross-platform adapters for Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode
 - Agent Skills-compatible `SKILL.md` packages that can be imported, normalized, vetted, installed, and reused
 - Workflow packages under `_localsetup/workflows/` that stay executable as skills while carrying Localsetup `workflow.yaml` metadata for aliases, gates, dependencies, and generated registries
@@ -62,7 +62,7 @@ Start with the [workflow packages guide](_localsetup/docs/WORKFLOW_PACKAGES.md) 
 |---|---|
 | Current version | `3.2.5` |
 | Supported platforms | `cursor, claude-code, codex, openclaw, kilo, opencode` |
-| Shipped skills | `45` |
+| Shipped skills | `46` |
 | Workflow packages | `17` |
 | Source | `_localsetup/docs/_generated/facts.json` |
 <!-- facts-block:end -->
@@ -164,6 +164,7 @@ These are not toy prompts. They are practical skills and workflows from the ship
 | `ls-agentlens` | Helps agents explore larger codebases through structured navigation instead of blind file-hopping. |
 | `ls-debug-pro` | Gives debugging a repeatable method across Node, Python, Swift, network issues, and git bisect. |
 | `ls-test-runner` | Guides test creation and execution across pytest, Jest, Vitest, Playwright, and XCTest. |
+| `ls-typescript-code-quality` | Guides TypeScript, TSX, tsconfig, typed linting, Node TypeScript scripts, and framework-heavy TypeScript changes. |
 | `ls-pr-reviewer` | Turns PR review into a structured risk hunt: diff analysis, security concerns, test gaps, and style issues. |
 | `ls-mcp-builder` | Helps build high-quality MCP servers for current agent/tool interoperability workflows. |
 | `ls-skill-importer` | Imports skills from URLs or local paths with discovery, validation, security screening, and summaries. |

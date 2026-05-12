@@ -74,6 +74,7 @@ OpenCode uses `AGENTS.md` as the project initialization file. This context is lo
 - ls-omniroute-admin-automation: OmniRoute administration automation for providers, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, and drift reconciliation.
 - ls-kilo-boss-orchestrator: Kilo headless boss-worker orchestration with repo-local state, watchdog leases, consensus validation, and safety gates.
 - ls-kilo-visual-output: Kilo CLI visual output organization guide with structured response patterns.
+- ls-typescript-code-quality: TypeScript/TSX code quality, tsconfig, typed ESLint or Biome config, Node TypeScript scripts, and TypeScript-heavy framework code.
 
 ## Docs
 _localsetup/docs/AGENTIC_DESIGN_INDEX.md, WORKFLOW_REGISTRY.md, PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md, DECISION_TREE_WORKFLOW.md, INPUT_HARDENING_STANDARD.md, TOOLING_POLICY.md

@@ -312,6 +312,8 @@
 | `keep` | `_localsetup/skills/ls-tdd-guide/scripts/test_cli_contract.py` |
 | `keep` | `_localsetup/skills/ls-tdd-guide/scripts/test_generator.py` |
 | `keep` | `_localsetup/skills/ls-test-runner/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-typescript-code-quality/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-typescript-code-quality/references/typescript-quality-standards.md` |
 | `keep` | `_localsetup/skills/ls-unfuck-my-git-state/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-unfuck-my-git-state/references/overview.md` |
 | `keep` | `_localsetup/skills/ls-unfuck-my-git-state/references/recovery-checklist.md` |

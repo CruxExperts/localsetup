@@ -51,5 +51,6 @@
 | ls-kilo-boss-orchestrator | Kilo headless boss-worker orchestration with repo-local state, watchdog leases, consensus validation, and safety gates | Multi-agent autonomous loops requiring planning, delegation, verification, and discrepancy adjudication |
 | ls-kilo-visual-output | Kilo CLI visual output organization guide with structured response patterns | Kilo output formatting, options, rationale blocks, and execution summaries |
 | ls-scrapling | Host-first Scrapling integration; install/upgrade via pipx, run single-URL extractions with adaptive fetch modes and job tracking, and keep adapters current via parsed CLI/docs state | **Default** web scraping and website fetching skill; use for most tasks that need content from public web pages |
+| ls-typescript-code-quality | TypeScript code quality guide | TypeScript/TSX code quality, tsconfig, typed ESLint or Biome config, Node TypeScript scripts, and TypeScript-heavy framework code |
 
 Framework docs: _localsetup/docs/ (AGENTIC_DESIGN_INDEX.md, WORKFLOW_REGISTRY.md, PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md).

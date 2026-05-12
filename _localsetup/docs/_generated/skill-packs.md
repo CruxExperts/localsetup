@@ -46,6 +46,7 @@
 | `bootstrap, core` | `skill` | `ls-task-skill-matcher` | `localsetup-task-skill-matcher` |
 | `core` | `skill` | `ls-tdd-guide` | `localsetup-tdd-guide` |
 | `bootstrap, core` | `skill` | `ls-test-runner` | `localsetup-test-runner` |
+| `dev` | `skill` | `ls-typescript-code-quality` | `localsetup-typescript-code-quality` |
 | `dev` | `skill` | `ls-unfuck-my-git-state` | `localsetup-unfuck-my-git-state` |
 | `bootstrap, dev` | `workflow` | `ls-workflow-audit-framework` | `n/a` |
 | `dev` | `workflow` | `ls-workflow-audit-markdown-references` | `n/a` |

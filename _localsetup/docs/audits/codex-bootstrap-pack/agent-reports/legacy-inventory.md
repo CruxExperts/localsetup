@@ -18,7 +18,7 @@ No auth files, token stores, KeePass databases, mail stores, or browser profiles
 
 | Location | Status | Evidence |
 |---|---|---|
-| `_localsetup/skills` | Canonical repo source | 45 `ls-*` skill dirs and 45 `SKILL.md` files reported |
+| `_localsetup/skills` | Canonical repo source | Current repo source has 46 `ls-*` skill dirs and 46 `SKILL.md` files; this includes `ls-typescript-code-quality` added after the original 2026-05-10 inventory |
 | `_localsetup/templates` | Canonical prompt/template source | 14 template files reported |
 | `_localsetup/config` | Canonical config source | 9 config/schema/example files reported |
 | `.codex` in current repo | Operational history | run artifacts only at shallow depth |

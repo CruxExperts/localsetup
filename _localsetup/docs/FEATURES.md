@@ -12,7 +12,7 @@ This is the full public capability catalog for Localsetup v3. The [root README](
 <!-- facts-block:start -->
 - Current version: `3.2.5`
 - Supported platforms: `cursor, claude-code, codex, openclaw, kilo, opencode`
-- Shipped skills: `45`
+- Shipped skills: `46`
 - Workflow packages: `17`
 - Source: `_localsetup/docs/_generated/facts.json`
 <!-- facts-block:end -->
@@ -33,7 +33,7 @@ This is the full public capability catalog for Localsetup v3. The [root README](
 | Capability | What it gives you |
 |---|---|
 | Agent Skills compliance | Shipped skills use spec-compatible `SKILL.md` packages with `name`, `description`, and `metadata.version`. |
-| 45 shipped skills plus 16 workflow packages | Practical capabilities and orchestration flows for debugging, tests, PR review, git recovery, service triage, patching, docs, MCP building, and more. |
+| 46 shipped skills plus 17 workflow packages | Practical capabilities and orchestration flows for debugging, tests, PR review, git recovery, service triage, patching, docs, MCP building, TypeScript code quality, and more. |
 | Skill import | Import skills from a URL or local path with discovery, validation, heuristic security screening, and summaries. |
 | Skill vetting | Treat third-party skills as untrusted before they can influence agent behavior. |
 | Skill normalization | Clean imported or in-tree skills for spec compliance, platform-neutral wording, and framework tooling standards. |
@@ -78,6 +78,7 @@ This is the full public capability catalog for Localsetup v3. The [root README](
 | `ls-agentlens` | Codebase navigation and module discovery. |
 | `ls-debug-pro` | Systematic debugging across languages and failure types. |
 | `ls-test-runner` | Writing and running test suites across common frameworks. |
+| `ls-typescript-code-quality` | TypeScript, TSX, tsconfig, typed linting, Node TypeScript scripts, and framework-heavy TypeScript changes. |
 | `ls-pr-reviewer` | Risk-focused PR review and missing-test detection. |
 | `ls-mcp-builder` | Building MCP servers for agent/tool interoperability. |
 | `ls-skill-importer` | Bringing in skills from external sources safely. |

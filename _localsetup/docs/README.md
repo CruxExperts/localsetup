@@ -16,7 +16,7 @@ This is the public documentation map for Localsetup v3. Start here when you want
 <!-- facts-block:start -->
 - Current version: `3.2.5`
 - Supported platforms: `cursor, claude-code, codex, openclaw, kilo, opencode`
-- Shipped skills: `45`
+- Shipped skills: `46`
 - Workflow packages: `17`
 - Source: `_localsetup/docs/_generated/facts.json`
 <!-- facts-block:end -->
@@ -66,6 +66,10 @@ Localsetup installs both capability skills and workflow packages into the manage
 | [Skill interoperability](SKILL_INTEROPERABILITY.md) | How skills move between Localsetup and spec-compatible hosts. |
 | [Skill normalization](SKILL_NORMALIZATION.md) | How imported or in-tree skills are cleaned up and standardized. |
 | [Task skill matching](TASK_SKILL_MATCHING.md) | How agents choose the right skill for a task. |
+
+Registered capability highlights:
+
+- `ls-typescript-code-quality`: TypeScript/TSX code quality, tsconfig, typed ESLint or Biome config, Node TypeScript scripts, and TypeScript-heavy framework code.
 
 ## Agent Q Transport
 

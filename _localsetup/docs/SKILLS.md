@@ -7,7 +7,7 @@ version: 3.2
 
 This page is generated from `_localsetup/skills/*/SKILL.md`.
 
-Total shipped skills: 45
+Total shipped skills: 46
 
 | Skill ID | Name | Version | Description |
 |---|---|---|---|
@@ -55,4 +55,5 @@ Total shipped skills: 45
 | `ls-task-skill-matcher` | `ls-task-skill-matcher` | `1.1` | Match user tasks to installed Localsetup skills, recommend top matches, and run single-task or batch skill-selection flow with minimal interruption. Delegates complementary public-skill discovery to ls-skill-discovery. |
 | `ls-tdd-guide` | `ls-tdd-guide` | `1.1` | Test-driven development workflow with test generation, coverage analysis, and multi-framework support |
 | `ls-test-runner` | `ls-test-runner` | `1.1` | Write and run tests across languages and frameworks (Vitest, Jest, pytest, XCTest, Playwright). TDD workflow, coverage, and test patterns. |
+| `ls-typescript-code-quality` | `ls-typescript-code-quality` | `1.0` | Guide TypeScript code quality work. Use when touching TypeScript, TSX, tsconfig, typed ESLint or Biome config, Node TypeScript scripts, or TypeScript-heavy framework code. |
 | `ls-unfuck-my-git-state` | `ls-unfuck-my-git-state` | `1.2` | Diagnose and recover broken Git state and worktree metadata with a staged, low-risk recovery flow. Use when Git reports detached or contradictory HEAD state, phantom worktree locks, orphaned worktree entries, missing refs, 0000000000000000000000000000000000000000 hashes, or branch operations fail with errors like already checked out, unknown revision, not a valid object name, or cannot lock ref. |

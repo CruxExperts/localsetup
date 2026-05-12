@@ -75,6 +75,7 @@ Load when task matches:
 - ls-omniroute-admin-automation  - OmniRoute administration automation for providers, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, and drift reconciliation.
 - ls-kilo-boss-orchestrator  - Kilo headless boss-worker orchestration with repo-local state, watchdog leases, consensus validation, and safety gates.
 - ls-kilo-visual-output  - Kilo CLI visual output organization guide with structured response patterns.
+- ls-typescript-code-quality  - TypeScript/TSX code quality, tsconfig, typed ESLint or Biome config, Node TypeScript scripts, and TypeScript-heavy framework code.
 
 ## Key docs
 [AGENTIC_DESIGN_INDEX.md](../../docs/AGENTIC_DESIGN_INDEX.md), [AGENTIC_AGENT_Q_SCENARIOS.md](../../docs/AGENTIC_AGENT_Q_SCENARIOS.md), [WORKFLOW_REGISTRY.md](../../docs/WORKFLOW_REGISTRY.md), [PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md](../../docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md), [DECISION_TREE_WORKFLOW.md](../../docs/DECISION_TREE_WORKFLOW.md), [INPUT_HARDENING_STANDARD.md](../../docs/INPUT_HARDENING_STANDARD.md), [TOOLING_POLICY.md](../../docs/TOOLING_POLICY.md)
