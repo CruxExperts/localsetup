@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 
+import _localsetup.v3.wizard as wizard
 from _localsetup.v3.apply import apply_plan
 from _localsetup.v3.boundary import scan_tar_for_leaks
 from _localsetup.v3.cli import _split_csv
@@ -28,6 +29,11 @@ from _localsetup.v3.shell import detect_invocation_target, is_managed_shim, regi
 from _localsetup.v3.verify import verify_install
 from _localsetup.v3.wizard import Choice, TerminalWizard, choose_many, choose_one, run_wizard
 from _localsetup.v3.workflows import workflow_catalog_payload
+
+
+class KeyboardInterruptStream(io.StringIO):
+    def readline(self, *args: object, **kwargs: object) -> str:
+        raise KeyboardInterrupt
 
 
 def make_temp_repo(tmp_path: Path) -> Path:
@@ -1501,6 +1507,18 @@ def test_wizard_selection_helpers_accept_numbers_and_back_cancel() -> None:
     assert choose_one(term, "Mode", [("global", "Global")], default="global") == "__cancel__"
 
 
+def test_wizard_prompt_returns_cancel_on_keyboard_interrupt() -> None:
+    output = io.StringIO()
+    term = TerminalWizard(
+        input_stream=KeyboardInterruptStream(),
+        output_stream=output,
+        color=False,
+    )
+
+    assert term.prompt("Mode") == "__cancel__"
+    assert output.getvalue().endswith("\n")
+
+
 def test_wizard_choice_detail_mode_renders_extended_context() -> None:
     output = io.StringIO()
     term = TerminalWizard(
@@ -1677,6 +1695,50 @@ def test_wizard_cancel_exits_without_applying(tmp_path: Path) -> None:
 
     assert code == 130
     assert not (home / ".local/share/agents/skills/localsetup").exists()
+
+
+def test_wizard_keyboard_interrupt_before_apply_exits_without_applying(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    output = io.StringIO()
+    term = TerminalWizard(
+        input_stream=KeyboardInterruptStream(),
+        output_stream=output,
+        color=False,
+    )
+
+    code = run_wizard(repo_root=root, home=home, terminal=term)
+
+    assert code == 130
+    assert "Install canceled. No changes were applied." in output.getvalue()
+    assert not (home / ".local/share/agents/skills/localsetup").exists()
+
+
+def test_wizard_keyboard_interrupt_during_apply_warns_partial_state(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = make_temp_repo(tmp_path)
+    source = Path(__file__).resolve().parents[2]
+    shutil.copytree(source / "_localsetup" / "docs", root / "_localsetup" / "docs", dirs_exist_ok=True)
+    home = tmp_path / "home"
+    output = io.StringIO()
+    term = TerminalWizard(
+        input_stream=io.StringIO("\n\n1\n1\n1\n1\nyes\n"),
+        output_stream=output,
+        color=False,
+    )
+
+    def interrupt_apply(term: TerminalWizard, state: wizard.WizardState) -> int:
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(wizard, "_apply_and_show_result", interrupt_apply)
+
+    code = run_wizard(repo_root=root, home=home, terminal=term, register_shell=False)
+
+    rendered = output.getvalue()
+    assert code == 130
+    assert "Install interrupted during apply. Some changes may have been applied" in rendered
+    assert "Install canceled. No changes were applied." not in rendered
 
 
 def test_wizard_global_only_apply_with_scripted_confirmation(tmp_path: Path) -> None:

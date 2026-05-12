@@ -99,7 +99,11 @@ class TerminalWizard:
                 self.write(self.style(footer, "2"))
             self.output.write(f"{prompt}{suffix}: ")
             self.output.flush()
-            line = self.input.readline()
+            try:
+                line = self.input.readline()
+            except KeyboardInterrupt:
+                self.write("")
+                return CANCEL
             if line == "":
                 return CANCEL
             value = line.strip()
@@ -817,6 +821,17 @@ def _apply_and_show_result(term: TerminalWizard, state: WizardState) -> int:
     return 0 if verify["ok"] else 1
 
 
+def _write_interrupted_message(term: TerminalWizard, *, apply_started: bool) -> None:
+    term.write("")
+    if apply_started:
+        term.write(
+            "Install interrupted during apply. Some changes may have been applied; "
+            "run localsetup verify or rollback before retrying."
+        )
+    else:
+        term.write("Install canceled. No changes were applied.")
+
+
 def run_wizard(
     *,
     repo_root: Path,
@@ -848,6 +863,7 @@ def run_wizard(
     term.detail_mode = state.detail_mode
     steps = [_show_welcome, _source_step, _mode_step, _platform_step, _pack_step, _options_step, _review_step]
     index = 0
+    apply_started = False
     try:
         while index < len(steps):
             result = steps[index](term, state)
@@ -859,9 +875,13 @@ def run_wizard(
                 index = max(0, index - 1)
                 continue
             if result == "apply":
+                apply_started = True
                 return _apply_and_show_result(term, state)
             index += 1
         return 1
+    except KeyboardInterrupt:
+        _write_interrupted_message(term, apply_started=apply_started)
+        return 130
     finally:
         if terminal is None:
             term.close()
