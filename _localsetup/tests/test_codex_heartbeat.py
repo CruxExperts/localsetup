@@ -233,6 +233,7 @@ def test_harness_pack_selects_heartbeat_skill_and_workflow() -> None:
     assert "ls-codex-heartbeat" in selected_skill_names(ROOT, ["harness"])
     assert "ls-cron-orchestrator" in selected_skill_names(ROOT, ["harness"])
     assert "ls-workflow-codex-heartbeat" in selected_workflow_names(ROOT, ["harness"])
+    assert "ls-workflow-repo-finalizer" in selected_workflow_names(ROOT, ["harness"])
 
 
 def test_normal_install_of_harness_pack_does_not_activate_target(tmp_path: Path) -> None:

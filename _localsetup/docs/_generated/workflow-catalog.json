@@ -1,5 +1,5 @@
 {
-  "count": 21,
+  "count": 22,
   "workflows": [
     {
       "aliases": [
@@ -386,6 +386,32 @@
       "required_skills": [],
       "required_tools": [],
       "workflow_id": "queue-batch-implement"
+    },
+    {
+      "aliases": [
+        "repo finalizer",
+        "finalizer harness",
+        "finalization checkpoint"
+      ],
+      "description": "Safely inspect repo dirty state and optionally checkpoint allowlisted managed outputs without destructive git operations.",
+      "display_name": "Repo Finalizer",
+      "package": "ls-workflow-repo-finalizer",
+      "packs": [
+        "harness"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-repo-finalizer",
+      "required_docs": [
+        "_localsetup/docs/HARNESS_AUTOMATION.md",
+        "_localsetup/docs/WORKFLOW_PACKAGES.md"
+      ],
+      "required_skills": [
+        "ls-framework-compliance",
+        "ls-git-workflows"
+      ],
+      "required_tools": [
+        "_localsetup/tools/localsetup_v3.py"
+      ],
+      "workflow_id": "repo-finalizer"
     },
     {
       "aliases": [

@@ -131,6 +131,7 @@ workflow_packs:
   harness:
     - ls-workflow-codex-heartbeat
     - ls-workflow-context-index-refresh
+    - ls-workflow-repo-finalizer
   experimental:
     - ls-workflow-queue-batch-implement
     - ls-workflow-spec-clarify-reverse
@@ -145,6 +146,7 @@ public_private:
   public_paths:
     - README.md
     - AGENTS.md
+    - config/localsetup_finalizer.yaml
     - install
     - install.ps1
     - .github

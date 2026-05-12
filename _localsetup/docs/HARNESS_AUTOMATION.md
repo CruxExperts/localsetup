@@ -5,7 +5,7 @@ version: 3.6
 
 # Harness automation
 
-Localsetup's harness pack provides opt-in automation scaffolding for target repositories. The first shipped harness is the Codex heartbeat.
+Localsetup's harness pack provides opt-in automation scaffolding for target repositories. The shipped harness profiles are Codex heartbeat and repo-finalizer.
 
 The important boundary is simple: selecting or installing the `harness` pack only installs the capability. It does not create `HEARTBEAT.md`, write `config/codex_heartbeat.yaml`, edit `cron/manifest.yaml`, create `state/codex-heartbeat/`, or schedule autonomous work. A target repo is activated only through explicit harness commands.
 
@@ -15,7 +15,7 @@ The important boundary is simple: selecting or installing the `harness` pack onl
 localsetup install --packs harness --tools codex --yes
 ```
 
-This installs `ls-codex-heartbeat`, `ls-cron-orchestrator`, and `ls-workflow-codex-heartbeat` into the managed Localsetup package library. Normal Localsetup install behavior remains user-initiated.
+This installs `ls-codex-heartbeat`, `ls-cron-orchestrator`, `ls-workflow-codex-heartbeat`, and `ls-workflow-repo-finalizer` into the managed Localsetup package library. Normal Localsetup install behavior remains user-initiated.
 
 ## Activate a target repo
 
@@ -75,6 +75,40 @@ localsetup harness codex-heartbeat disable
 ```
 
 `disable` flips config back to disabled and disables the heartbeat cron task. It does not delete historical artifacts.
+
+## Repo finalizer profile
+
+Use repo-finalizer to report dirty Git state and optionally stage or checkpoint only allowlisted managed outputs.
+
+Plan and status are read-only:
+
+```bash
+localsetup harness repo-finalizer plan
+localsetup harness repo-finalizer status --json
+```
+
+Run with no mutation:
+
+```bash
+localsetup harness repo-finalizer run --no-commit --json
+```
+
+Checkpoint commit is explicit and gated:
+
+```bash
+localsetup harness repo-finalizer run --checkpoint --message "chore: checkpoint managed outputs"
+```
+
+Policy defaults come from built-in settings. If present, `config/localsetup_finalizer.yaml` overrides classification and stage allowlists. Repo-finalizer never runs `git push`, `git reset`, or delete/revert commands.
+
+`run` writes the latest JSON and text reports under the repo-local ignored state directory:
+
+```text
+state/repo-finalizer/latest.json
+state/repo-finalizer/latest.md
+```
+
+When only runtime-ignored finalizer state is present, status reports `clean_except_ignored` instead of blocking cleanup.
 
 ## Runtime artifacts
 

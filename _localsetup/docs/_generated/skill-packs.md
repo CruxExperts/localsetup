@@ -70,6 +70,7 @@
 | `ops` | `workflow` | `ls-workflow-pipeline-server-triage-patch` | `n/a` |
 | `dev` | `workflow` | `ls-workflow-pipeline-skill-onboard` | `n/a` |
 | `experimental` | `workflow` | `ls-workflow-queue-batch-implement` | `n/a` |
+| `harness` | `workflow` | `ls-workflow-repo-finalizer` | `n/a` |
 | `dev` | `workflow` | `ls-workflow-skills-index-refresh` | `n/a` |
 | `experimental` | `workflow` | `ls-workflow-spec-clarify-reverse` | `n/a` |
 | `ops` | `workflow` | `ls-workflow-tmux-terminal-mode` | `n/a` |

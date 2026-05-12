@@ -509,6 +509,7 @@
 | `keep` | `_localsetup/templates/claude-code/MEMORY.md` |
 | `keep` | `_localsetup/templates/codex/AGENTS.md` |
 | `keep` | `_localsetup/templates/codex/MEMORY.md` |
+| `keep` | `_localsetup/templates/config/localsetup_finalizer.yaml` |
 | `keep` | `_localsetup/templates/cursor/MEMORY.md` |
 | `keep` | `_localsetup/templates/cursor/ls-context-index.md` |
 | `keep` | `_localsetup/templates/cursor/ls-context.mdc` |
@@ -538,6 +539,7 @@
 | `keep` | `_localsetup/tests/test_ls_cron_orchestrator_run_trigger.py` |
 | `keep` | `_localsetup/tests/test_ls_kilo_boss_orchestrator_runner.py` |
 | `keep` | `_localsetup/tests/test_ls_linux_patcher_patch_cli.py` |
+| `keep` | `_localsetup/tests/test_repo_finalizer.py` |
 | `keep` | `_localsetup/tests/test_scrapling_helper.py` |
 | `keep` | `_localsetup/tests/test_scrapling_jobs.py` |
 | `keep` | `_localsetup/tests/test_skill_sandbox_tester.py` |
@@ -629,6 +631,7 @@
 | `refactor` | `_localsetup/v3/package.py` |
 | `refactor` | `_localsetup/v3/paths.py` |
 | `refactor` | `_localsetup/v3/plan.py` |
+| `refactor` | `_localsetup/v3/repo_finalizer.py` |
 | `refactor` | `_localsetup/v3/rollback.py` |
 | `refactor` | `_localsetup/v3/shell.py` |
 | `refactor` | `_localsetup/v3/skills.py` |
@@ -669,6 +672,8 @@
 | `keep` | `_localsetup/workflows/ls-workflow-pipeline-skill-onboard/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-queue-batch-implement/SKILL.md` |
 | `keep` | `_localsetup/workflows/ls-workflow-queue-batch-implement/workflow.yaml` |
+| `keep` | `_localsetup/workflows/ls-workflow-repo-finalizer/SKILL.md` |
+| `keep` | `_localsetup/workflows/ls-workflow-repo-finalizer/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-skills-index-refresh/SKILL.md` |
 | `keep` | `_localsetup/workflows/ls-workflow-skills-index-refresh/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-spec-clarify-reverse/SKILL.md` |
@@ -684,6 +689,7 @@
 | `keep` | `assets/localsetup-v3-install-lifecycle.svg` |
 | `keep` | `assets/localsetup-v3-logo.png` |
 | `keep` | `assets/localsetup-v3-readme-hero.png` |
+| `keep` | `config/localsetup_finalizer.yaml` |
 | `keep` | `docs.config.yaml` |
 | `keep` | `install` |
 | `refactor` | `install.ps1` |

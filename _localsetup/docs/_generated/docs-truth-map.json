@@ -356,7 +356,7 @@
       }
     ],
     "version": "3.6.0",
-    "workflow_count": 21,
+    "workflow_count": 22,
     "workflows": [
       {
         "id": "audit-framework",
@@ -455,6 +455,12 @@
         "path": "_localsetup/workflows/ls-workflow-queue-batch-implement/SKILL.md"
       },
       {
+        "id": "repo-finalizer",
+        "name": "Repo Finalizer",
+        "package": "ls-workflow-repo-finalizer",
+        "path": "_localsetup/workflows/ls-workflow-repo-finalizer/SKILL.md"
+      },
+      {
         "id": "skills-index-refresh",
         "name": "Skills Index Refresh",
         "package": "ls-workflow-skills-index-refresh",
@@ -521,7 +527,7 @@
         "_localsetup/workflows/*/workflow.yaml"
       ],
       "value": {
-        "count": 21,
+        "count": 22,
         "workflows": [
           {
             "aliases": [
@@ -911,6 +917,32 @@
           },
           {
             "aliases": [
+              "repo finalizer",
+              "finalizer harness",
+              "finalization checkpoint"
+            ],
+            "description": "Safely inspect repo dirty state and optionally checkpoint allowlisted managed outputs without destructive git operations.",
+            "display_name": "Repo Finalizer",
+            "package": "ls-workflow-repo-finalizer",
+            "packs": [
+              "harness"
+            ],
+            "path": "_localsetup/workflows/ls-workflow-repo-finalizer",
+            "required_docs": [
+              "_localsetup/docs/HARNESS_AUTOMATION.md",
+              "_localsetup/docs/WORKFLOW_PACKAGES.md"
+            ],
+            "required_skills": [
+              "ls-framework-compliance",
+              "ls-git-workflows"
+            ],
+            "required_tools": [
+              "_localsetup/tools/localsetup_v3.py"
+            ],
+            "workflow_id": "repo-finalizer"
+          },
+          {
+            "aliases": [
               "refresh skills",
               "scrub index"
             ],
@@ -1024,7 +1056,7 @@
       "sources": [
         "_localsetup/workflows/ls-workflow-*/workflow.yaml"
       ],
-      "value": 21
+      "value": 22
     }
   }
 }

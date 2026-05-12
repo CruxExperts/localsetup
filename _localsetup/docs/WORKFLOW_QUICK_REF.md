@@ -27,6 +27,7 @@ This page is generated from `_localsetup/workflows/*/workflow.yaml`.
 | `pipeline-server-triage-patch` | Pipeline Server Triage Patch | server triage patch pipeline | `ls-workflow-pipeline-server-triage-patch` | `ls-system-info`; `ls-linux-service-triage`; `ls-linux-patcher` |
 | `pipeline-skill-onboard` | Pipeline Skill Onboard | skill onboarding pipeline | `ls-workflow-pipeline-skill-onboard` | `ls-skill-vetter`; `ls-skill-importer`; `ls-skill-normalizer`; `ls-skill-sandbox-tester` |
 | `queue-batch-implement` | Queue Batch Implement | Agent Q queue; process PRDs | `ls-workflow-queue-batch-implement` | n/a |
+| `repo-finalizer` | Repo Finalizer | repo finalizer; finalizer harness; finalization checkpoint | `ls-workflow-repo-finalizer` | `ls-framework-compliance`; `ls-git-workflows` |
 | `skills-index-refresh` | Skills Index Refresh | refresh skills; scrub index | `ls-workflow-skills-index-refresh` | `ls-skill-discovery` |
 | `spec-clarify-reverse` | Reverse Prompt Spec Clarify | decision tree; reverse prompt | `ls-workflow-spec-clarify-reverse` | n/a |
 | `tmux-terminal-mode` | Tmux Terminal Mode | tmux terminal mode; always-on tmux | `ls-workflow-tmux-terminal-mode` | n/a |
@@ -63,6 +64,9 @@ This page is generated from `_localsetup/workflows/*/workflow.yaml`.
 - "skill onboarding pipeline" -> `pipeline-skill-onboard`
 - "Agent Q queue" -> `queue-batch-implement`
 - "process PRDs" -> `queue-batch-implement`
+- "repo finalizer" -> `repo-finalizer`
+- "finalizer harness" -> `repo-finalizer`
+- "finalization checkpoint" -> `repo-finalizer`
 - "refresh skills" -> `skills-index-refresh`
 - "scrub index" -> `skills-index-refresh`
 - "decision tree" -> `spec-clarify-reverse`

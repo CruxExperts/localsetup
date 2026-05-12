@@ -1,0 +1,38 @@
+# Optional repo-finalizer policy overrides.
+# If this file is absent, built-in defaults are used.
+managed_output_globs:
+  - localsetup.lock.json
+  - config/localsetup_finalizer.yaml
+  - HEARTBEAT.md
+  - config/codex_heartbeat.yaml
+  - cron/manifest.yaml
+  - cron/codex-heartbeat.crontab
+  - .codex/skills/**
+  - .claude/skills/**
+  - .cursor/skills/**
+  - .kilo/skills/**
+  - .opencode/skills/**
+  - .openclaw/skills/**
+generated_artifact_globs:
+  - _localsetup/docs/_generated/**
+runtime_ignored_globs:
+  - state/repo-finalizer
+  - state/repo-finalizer/
+  - state/repo-finalizer/**
+  - .codex/runs
+  - .codex/runs/
+  - .codex/runs/**
+stage_allowlist_globs:
+  - localsetup.lock.json
+  - config/localsetup_finalizer.yaml
+  - HEARTBEAT.md
+  - config/codex_heartbeat.yaml
+  - cron/manifest.yaml
+  - cron/codex-heartbeat.crontab
+  - .codex/skills/**
+  - .claude/skills/**
+  - .cursor/skills/**
+  - .kilo/skills/**
+  - .opencode/skills/**
+  - .openclaw/skills/**
+  - _localsetup/docs/_generated/**

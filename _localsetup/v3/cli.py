@@ -22,6 +22,10 @@ from .harness import payload_to_text as harness_payload_to_text
 from .harness import plan as harness_plan
 from .harness import run as harness_run
 from .harness import status as harness_status
+from .repo_finalizer import payload_to_text as repo_finalizer_payload_to_text
+from .repo_finalizer import plan as repo_finalizer_plan
+from .repo_finalizer import run as repo_finalizer_run
+from .repo_finalizer import status as repo_finalizer_status
 from .hooks import run_maintainer_gate
 from .manifests import load_pack_config
 from .manifests import load_platforms
@@ -316,6 +320,18 @@ def _main(argv: list[str] | None = None) -> int:
     _add_harness_target_flags(run_p)
     run_p.add_argument("--no-agent", action="store_true")
     run_p.add_argument("--force", action="store_true")
+    finalizer_p = harness_sub.add_parser("repo-finalizer")
+    finalizer_sub = finalizer_p.add_subparsers(dest="harness_action", required=True)
+    for action_name in ("plan", "status"):
+        action_p = finalizer_sub.add_parser(action_name)
+        _add_harness_target_flags(action_p)
+        action_p.add_argument("--json", action="store_true")
+    finalizer_run_p = finalizer_sub.add_parser("run")
+    _add_harness_target_flags(finalizer_run_p)
+    finalizer_run_p.add_argument("--json", action="store_true")
+    finalizer_run_p.add_argument("--no-commit", action="store_true")
+    finalizer_run_p.add_argument("--checkpoint", action="store_true")
+    finalizer_run_p.add_argument("--message")
     docs_align_p = sub.add_parser("docs-align")
     docs_align_p.add_argument("docs_align_args", nargs=argparse.REMAINDER)
 
@@ -543,6 +559,28 @@ def _main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.cmd == "harness":
+        if args.harness_topic == "repo-finalizer":
+            target_root = _harness_target(args)
+            if args.harness_action == "plan":
+                payload = repo_finalizer_plan(root, target_root)
+            elif args.harness_action == "status":
+                payload = repo_finalizer_status(root, target_root)
+            elif args.harness_action == "run":
+                payload = repo_finalizer_run(
+                    root,
+                    target_root,
+                    no_commit=args.no_commit,
+                    checkpoint=args.checkpoint,
+                    message=args.message,
+                )
+            else:
+                print(f"localsetup-v3: unsupported repo-finalizer action: {args.harness_action}", file=sys.stderr)
+                return 2
+            if args.json:
+                print(json.dumps(payload, indent=2, sort_keys=True))
+            else:
+                print(repo_finalizer_payload_to_text(payload), end="")
+            return 0 if payload.get("ok", True) else 1
         if args.harness_topic != "codex-heartbeat":
             print(f"localsetup-v3: unsupported harness topic: {args.harness_topic}", file=sys.stderr)
             return 2

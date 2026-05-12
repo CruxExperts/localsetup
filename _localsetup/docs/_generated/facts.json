@@ -3,7 +3,7 @@
   "major_minor": "3.6",
   "platform_count": 6,
   "skill_count": 52,
-  "workflow_count": 21,
+  "workflow_count": 22,
   "platforms": [
     {
       "id": "cursor",
@@ -452,6 +452,12 @@
       "package": "ls-workflow-queue-batch-implement",
       "name": "Queue Batch Implement",
       "path": "_localsetup/workflows/ls-workflow-queue-batch-implement/SKILL.md"
+    },
+    {
+      "id": "repo-finalizer",
+      "package": "ls-workflow-repo-finalizer",
+      "name": "Repo Finalizer",
+      "path": "_localsetup/workflows/ls-workflow-repo-finalizer/SKILL.md"
     },
     {
       "id": "skills-index-refresh",
