@@ -34,6 +34,7 @@
   "localsetup-safety-and-backup": "ls-safety-and-backup",
   "localsetup-scrapling": "ls-scrapling",
   "localsetup-script-and-docs-quality": "ls-script-and-docs-quality",
+  "localsetup-shadcn-ui": "ls-shadcn-ui",
   "localsetup-skill-creator": "ls-skill-creator",
   "localsetup-skill-discovery": "ls-skill-discovery",
   "localsetup-skill-importer": "ls-skill-importer",

@@ -53,6 +53,7 @@ packs:
     - ls-markdown-reference-validator
     - ls-nodejs-nextjs
     - ls-receiving-code-review
+    - ls-shadcn-ui
     - ls-typescript-code-quality
     - ls-unfuck-my-git-state
   ops:

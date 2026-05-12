@@ -1,0 +1,203 @@
+#!/usr/bin/env python3
+"""Validate the ls-shadcn-ui skill and optionally refresh upstream source facts."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+import urllib.error
+import urllib.request
+from pathlib import Path
+
+
+REQUIRED_FILES = [
+    "SKILL.md",
+    "references/source-ledger.md",
+    "references/cli.md",
+    "references/project-context.md",
+    "references/components-json.md",
+    "references/frameworks.md",
+    "references/theming.md",
+    "references/forms.md",
+    "references/accessibility.md",
+    "references/registry.md",
+    "references/mcp.md",
+    "references/troubleshooting.md",
+    "references/update-procedure.md",
+    "rules/styling.md",
+    "rules/composition.md",
+    "rules/forms.md",
+    "rules/icons.md",
+    "rules/base-vs-radix.md",
+    "rules/updates.md",
+    "components/index.md",
+    "components/forms-inputs.md",
+    "components/buttons-actions.md",
+    "components/layout-navigation.md",
+    "components/overlays-menus.md",
+    "components/feedback-status-loading.md",
+    "components/data-display-dashboards.md",
+    "components/media-typography-utilities.md",
+    "components/registry-patterns.md",
+    "examples/login-form.md",
+    "examples/settings-page.md",
+    "examples/dashboard.md",
+    "examples/command-dialog.md",
+    "examples/destructive-alert-dialog.md",
+    "examples/responsive-navigation.md",
+    "examples/data-table.md",
+    "examples/date-picker-calendar.md",
+    "examples/theme-customization.md",
+    "examples/monorepo-imports.md",
+    "examples/custom-registry.md",
+    "examples/safe-component-update.md",
+    "tests/fixtures/README.md",
+    "tests/validation-checklist.md",
+]
+
+NPM_URL = "https://registry.npmjs.org/shadcn"
+
+OFFICIAL_URLS = [
+    "https://ui.shadcn.com/docs",
+    "https://ui.shadcn.com/docs/cli",
+    "https://ui.shadcn.com/docs/components",
+    "https://ui.shadcn.com/docs/components-json",
+    "https://ui.shadcn.com/docs/package-imports",
+    "https://ui.shadcn.com/docs/theming",
+    "https://ui.shadcn.com/docs/forms",
+    "https://ui.shadcn.com/docs/registry",
+    "https://ui.shadcn.com/docs/mcp",
+    "https://ui.shadcn.com/schema/registry.json",
+    "https://ui.shadcn.com/schema/registry-item.json",
+    "https://registry.npmjs.org/shadcn",
+]
+
+
+def fetch_url(url: str, timeout: int) -> dict[str, object]:
+    request = urllib.request.Request(url, headers={"User-Agent": "ls-shadcn-ui-verifier/1.0"})
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            data = response.read(1024 * 1024)
+            return {"url": url, "ok": 200 <= response.status < 400, "status": response.status, "bytes": len(data)}
+    except urllib.error.HTTPError as exc:
+        return {"url": url, "ok": False, "status": exc.code, "error": str(exc)}
+    except (urllib.error.URLError, TimeoutError) as exc:
+        return {"url": url, "ok": False, "status": None, "error": str(exc)}
+
+
+def fetch_json(url: str, timeout: int) -> dict[str, object]:
+    request = urllib.request.Request(url, headers={"User-Agent": "ls-shadcn-ui-verifier/1.0"})
+    with urllib.request.urlopen(request, timeout=timeout) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
+def ledger_expected_npm(ledger_text: str) -> tuple[str | None, str | None]:
+    version_match = re.search(r"shadcn@([0-9]+\.[0-9]+\.[0-9]+)", ledger_text)
+    timestamp_match = re.search(r"`([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.]+Z)`", ledger_text)
+    version = version_match.group(1) if version_match else None
+    timestamp = timestamp_match.group(1) if timestamp_match else None
+    return version, timestamp
+
+
+def validate_static(skill_root: Path) -> list[str]:
+    errors: list[str] = []
+    for rel_path in REQUIRED_FILES:
+        if not (skill_root / rel_path).is_file():
+            errors.append(f"missing required file: {rel_path}")
+
+    skill_md = skill_root / "SKILL.md"
+    if skill_md.is_file():
+        text = skill_md.read_text(encoding="utf-8")
+        if "name: ls-shadcn-ui" not in text:
+            errors.append("SKILL.md frontmatter must declare name: ls-shadcn-ui")
+        if "description:" not in text:
+            errors.append("SKILL.md frontmatter must include description")
+        if "metadata:" not in text or "version:" not in text:
+            errors.append("SKILL.md frontmatter must include metadata.version")
+
+    source_ledger = skill_root / "references/source-ledger.md"
+    if source_ledger.is_file():
+        ledger = source_ledger.read_text(encoding="utf-8")
+        for expected in ["https://ui.shadcn.com/docs", "https://registry.npmjs.org/shadcn", "shadcn@4.7.0"]:
+            if expected not in ledger:
+                errors.append(f"source ledger missing {expected}")
+
+    return errors
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Validate ls-shadcn-ui skill structure and optional source freshness.")
+    parser.add_argument("--skill-root", type=Path, default=Path(__file__).resolve().parents[1])
+    parser.add_argument("--refresh", action="store_true", help="Check official URLs and npm metadata over the network.")
+    parser.add_argument("--timeout", type=int, default=15, help="Network timeout in seconds for --refresh.")
+    parser.add_argument("--json", action="store_true", help="Print JSON output.")
+    args = parser.parse_args(argv)
+
+    skill_root = args.skill_root.resolve()
+    errors = validate_static(skill_root)
+    refresh_results: list[dict[str, object]] = []
+    npm_check: dict[str, object] | None = None
+
+    if args.refresh:
+        refresh_results = [fetch_url(url, args.timeout) for url in OFFICIAL_URLS]
+        for item in refresh_results:
+            if not item.get("ok"):
+                errors.append(f"source check failed: {item['url']} ({item.get('status') or item.get('error')})")
+
+        source_ledger = skill_root / "references/source-ledger.md"
+        if source_ledger.is_file():
+            ledger = source_ledger.read_text(encoding="utf-8")
+            expected_version, expected_timestamp = ledger_expected_npm(ledger)
+            try:
+                npm = fetch_json(NPM_URL, args.timeout)
+                latest = str(npm.get("dist-tags", {}).get("latest", ""))
+                latest_time = str(npm.get("time", {}).get(latest, ""))
+                npm_check = {
+                    "url": NPM_URL,
+                    "ok": True,
+                    "expected_version": expected_version,
+                    "latest_version": latest,
+                    "expected_timestamp": expected_timestamp,
+                    "latest_timestamp": latest_time,
+                }
+                if expected_version and latest != expected_version:
+                    npm_check["ok"] = False
+                    errors.append(f"npm latest mismatch: ledger {expected_version}, live {latest}")
+                if expected_timestamp and latest_time != expected_timestamp:
+                    npm_check["ok"] = False
+                    errors.append(f"npm timestamp mismatch: ledger {expected_timestamp}, live {latest_time}")
+            except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
+                npm_check = {"url": NPM_URL, "ok": False, "error": str(exc)}
+                errors.append(f"npm metadata check failed: {exc}")
+
+    payload = {
+        "skill_root": str(skill_root),
+        "static_ok": not [error for error in errors if not error.startswith("source check failed:")],
+        "refresh": args.refresh,
+        "refresh_results": refresh_results,
+        "npm_check": npm_check,
+        "ok": not errors,
+        "errors": errors,
+    }
+
+    if args.json:
+        print(json.dumps(payload, indent=2, sort_keys=True))
+    else:
+        print(f"skill_root: {skill_root}")
+        print(f"static: {'ok' if payload['static_ok'] else 'failed'}")
+        if args.refresh:
+            ok_count = sum(1 for item in refresh_results if item.get("ok"))
+            print(f"refresh: {ok_count}/{len(refresh_results)} sources ok")
+            if npm_check is not None:
+                print(f"npm latest: {'ok' if npm_check.get('ok') else 'failed'}")
+        if errors:
+            for error in errors:
+                print(f"ERROR: {error}", file=sys.stderr)
+
+    return 0 if payload["ok"] else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

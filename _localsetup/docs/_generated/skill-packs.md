@@ -37,6 +37,7 @@
 | `bootstrap, core` | `skill` | `ls-safety-and-backup` | `localsetup-safety-and-backup` |
 | `integrations` | `skill` | `ls-scrapling` | `localsetup-scrapling` |
 | `bootstrap, core` | `skill` | `ls-script-and-docs-quality` | `localsetup-script-and-docs-quality` |
+| `dev` | `skill` | `ls-shadcn-ui` | `localsetup-shadcn-ui` |
 | `experimental` | `skill` | `ls-skill-creator` | `localsetup-skill-creator` |
 | `experimental` | `skill` | `ls-skill-discovery` | `localsetup-skill-discovery` |
 | `experimental` | `skill` | `ls-skill-importer` | `localsetup-skill-importer` |

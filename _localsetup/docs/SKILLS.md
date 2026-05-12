@@ -7,7 +7,7 @@ version: 3.3
 
 This page is generated from `_localsetup/skills/*/SKILL.md`.
 
-Total shipped skills: 47
+Total shipped skills: 48
 
 | Skill ID | Name | Version | Description |
 |---|---|---|---|
@@ -46,6 +46,7 @@ Total shipped skills: 47
 | `ls-safety-and-backup` | `ls-safety-and-backup` | `1.1` | Security and safety (conservative), backup management, temporary file management, firewall management. Use for destructive ops, system config changes, backups, temp files, or when adding services. |
 | `ls-scrapling` | `ls-scrapling` | `1.0` | Host-first Scrapling integration skill: install or upgrade Scrapling via pipx, run single-URL extractions (simple and structured), and manage adapter and version refresh flows, with Docker as an optional escape hatch. |
 | `ls-script-and-docs-quality` | `ls-script-and-docs-quality` | `1.2` | Markdown/encoding standards, script generation quality, file creation discipline, documentation discipline. Use when generating scripts, creating/editing markdown or docs. |
+| `ls-shadcn-ui` | `ls-shadcn-ui` | `1.0` | Project-aware shadcn/ui guide. Use for shadcn setup, components, CLI/MCP, registry, theming, forms, Radix/Base UI, aliases, updates, and troubleshooting in React UI projects. |
 | `ls-skill-creator` | `ls-skill-creator` | `1.3` | Use when creating a new Agent Skills-compliant skill, adapting a document into a skill, importing an existing skill for Localsetup, or exporting framework skills to other spec-compliant hosts. |
 | `ls-skill-discovery` | `ls-skill-discovery` | `1.4` | Discover and recommend public skills from external registries (e.g. awesome lists, skill hubs). Use when the user is creating a new skill, importing a skill, or asking to find similar public skills. Maintains PUBLIC_SKILL_REGISTRY.urls and PUBLIC_SKILL_INDEX.yaml; returns top 5 similar matches with rich summaries and clear next actions. |
 | `ls-skill-importer` | `ls-skill-importer` | `1.4` | Import external skills from a URL (GitHub or other) or local path; discover, validate, security-screen, and summarize each skill so the user can choose which to import. Use when the user wants to add skills from a repo/URL or local folder, or when screening and selecting skills to add to the framework. |

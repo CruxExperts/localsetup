@@ -2,7 +2,7 @@
   "version": "3.3.0",
   "major_minor": "3.3",
   "platform_count": 6,
-  "skill_count": 47,
+  "skill_count": 48,
   "workflow_count": 17,
   "platforms": [
     {
@@ -252,6 +252,12 @@
       "name": "ls-script-and-docs-quality",
       "version": "1.2",
       "path": "_localsetup/skills/ls-script-and-docs-quality/SKILL.md"
+    },
+    {
+      "id": "ls-shadcn-ui",
+      "name": "ls-shadcn-ui",
+      "version": "1.0",
+      "path": "_localsetup/skills/ls-shadcn-ui/SKILL.md"
     },
     {
       "id": "ls-skill-creator",

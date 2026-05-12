@@ -82,6 +82,7 @@ Kilo CLI loads project context from `.kilo/instructions.md` (repo-local) or `~/.
 | ls-kilo-boss-orchestrator | Kilo headless boss-worker orchestration with repo-local state, watchdog leases, consensus validation, and safety gates |
 | ls-kilo-visual-output | Kilo CLI visual output organization guide with structured response patterns |
 | ls-nodejs-nextjs | Node.js/Next.js/React runbook for package-manager, build, migration, debugging, testing, security, deployment, and current-version verification |
+| ls-shadcn-ui | shadcn/ui component workflow for setup, components, CLI/MCP, registry, theming, forms, aliases, Radix/Base UI, updates, and troubleshooting |
 | ls-typescript-code-quality | TypeScript/TSX code quality, tsconfig, typed ESLint or Biome config, Node TypeScript scripts, and TypeScript-heavy framework code |
 
 ## Framework docs index
