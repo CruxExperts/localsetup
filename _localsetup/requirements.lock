@@ -482,6 +482,8 @@ pycparser==3.0 \
 
 # CI/test runner dependencies. Keep these hash-locked so GitHub Actions never
 # performs a separate live PyPI resolution for test tooling.
+exceptiongroup==1.3.1 \
+    --hash=sha256:a7a39a3bd276781e98394987d3a5701d0c4edffb633bb7a5144577f82c773598
 iniconfig==2.3.0 \
     --hash=sha256:f631c04d2c48c52b84d0d0549c99ff3859c98df65b3101406327ecc7d53fbf12
 packaging==26.2 \
