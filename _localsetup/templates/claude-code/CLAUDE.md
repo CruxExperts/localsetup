@@ -68,7 +68,7 @@ Localsetup v3 is deployed into this repo at `_localsetup/`. All framework and co
 - **ls-markdown-reference-validator**  - Validate markdown local references/anchors from YAML-configured targets; emit scheduled-safe audit report for docs/skills/global Kilo surfaces
 - **ls-system-info**  - Capture server baseline, host layout and specs; CPU, memory, disk, uptime
 - **ls-cron-orchestrator**  - Manage cron from manifest; triggers, sequenced tasks, on-boot delay; create/remove/reorder/install
-- **ls-cloudflare-dns**  - Manage Cloudflare DNS records (list, create, modify, delete) and zone surveys via flarectl; adding, changing, or removing DNS records
+- **ls-cloudflare-dns**  - Manage Cloudflare DNS records and zone DNS settings through direct Cloudflare v4 REST API tooling; dry-run plans, snapshots, and apply gates
 - **ls-npm-management**  - Manage Nginx Proxy Manager proxy hosts via REST API; coordinate Docker + NPM deploy workflows; diagnose 502s; backup/restore
 - **ls-keepass-secrets**  - KeePass-backed secrets via logical IDs; get/ensure credentials; bulk create or rotate; use when user asks for logins or workflow needs credentials
 - **ls-mail-protocol-control**  - SMTP/IMAP; preencrypted_openpgp_armored for Agent Q strict mail ship; agent-driven mailbox read/send/mutate/encrypt workflows

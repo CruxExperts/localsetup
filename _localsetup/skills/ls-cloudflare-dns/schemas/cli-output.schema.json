@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://localsetup.invalid/schemas/cloudflare-dns/cli-output.schema.json",
+  "title": "Cloudflare DNS CLI Output",
+  "type": "object",
+  "required": ["ok", "command", "result", "errors", "messages", "rate_limit"],
+  "properties": {
+    "ok": { "type": "boolean" },
+    "command": { "type": "string", "minLength": 1 },
+    "result": {},
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "messages": {
+      "type": "array",
+      "items": {}
+    },
+    "rate_limit": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "result_info": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "zone": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "plan_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  },
+  "additionalProperties": true
+}

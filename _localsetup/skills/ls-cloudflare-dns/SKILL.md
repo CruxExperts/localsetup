@@ -1,145 +1,136 @@
 ---
 name: ls-cloudflare-dns
-description: Manage Cloudflare DNS records with the flarectl CLI and guidance for safe zone surveys. Use when adding, changing, removing, listing, or auditing DNS records.
+description: Manage Cloudflare DNS records and zone DNS settings with a Python-first direct Cloudflare v4 REST API CLI, deterministic JSON output, snapshots, dry-run plans, and apply safety gates.
 metadata:
-  version: "1.1"
-compatibility: "Guidance-only skill. Requires flarectl on PATH, outbound network access to Cloudflare, and a scoped Cloudflare API token. Future bundled helpers must use Python 3.10+ and approved requests/PyYAML dependencies when relevant."
+  version: "2.0"
+compatibility: "Python 3.10+ with requests and jsonschema from _localsetup/requirements.txt. Uses Cloudflare v4 REST API directly; no external DNS CLI dependency."
 ---
 
 # Cloudflare DNS management
 
 ## Purpose
 
-Give an AI agent a safe workflow for managing DNS records in a Cloudflare account from the terminal. Covers list, create, modify, and delete operations across multiple zones, plus guidance for zone surveys.
+Use this skill when an agent needs to inspect, plan, or apply Cloudflare DNS changes from the terminal. The bundled `scripts/cf_dns.py` helper calls the Cloudflare v4 REST API directly, emits deterministic JSON by default, and keeps mutations behind dry-run plans, confirmation phrases, and plan hashes.
 
-This skill does not ship active Cloudflare tooling. It provides a safe operating workflow for using the external `flarectl` command directly. Add a reviewed Python helper in a future change before advertising wrapper commands such as `cf_dns.py`, `survey_dns_zones.py`, or `setup_survey_schedule.py`.
+This skill is DNS-focused. Keep DNSSEC, Registrar, Workers, Pages, WAF, Zero Trust, R2, D1, and unrelated Cloudflare products out of direct tooling scope unless they are needed as adjacent DNS troubleshooting context.
 
 ## When to use
 
-- User asks to add, update, or remove a DNS record.
-- User asks to list or inspect DNS records for a domain.
-- User asks to plan or run a DNS zone survey or snapshot.
-- Natural follow-on after creating an NPM proxy host (to create the matching A/CNAME record).
+- Add, update, delete, upsert, import, export, or batch-plan DNS records.
+- List zones or resolve a zone name to exactly one visible zone.
+- Inspect or patch zone DNS settings or general zone settings.
+- Create DNS snapshots, compare snapshots, or compare a saved plan to live DNS state.
+- Run a safe Cloudflare DNS survey before Nginx Proxy Manager or server routing work.
 
-Do not use for Cloudflare Pages, Workers, or any Cloudflare service beyond DNS.
+## Tooling
 
-## Tooling (framework standard)
-
-Current package mode is guidance-only plus external `flarectl` usage.
-
-Requirements:
-- Python 3.10+ only if a future helper script is added.
-- Approved Python dependencies for future helpers: `requests` for Cloudflare HTTP API calls and PyYAML for YAML survey output.
-- External binary: `flarectl` on PATH. See `references/flarectl-install.md`.
-- Network access to Cloudflare API endpoints from the machine running `flarectl`.
-- Cloudflare API token exposed through `flarectl`'s supported authentication environment.
-
-## Inputs required
-
-- Cloudflare API token with "Edit zone DNS" permission, provided through `flarectl`'s supported configuration or environment for your installation.
-- For all operations: zone (domain name).
-- For create: record name, type, content; optionally proxied flag.
-- For modify/delete: record ID (fetched via list at operation time, never reused from memory).
-
-## Directory layout
-
-No `scripts/` directory is currently bundled with this skill. Keep local tokens and survey outputs outside the repo in a gitignored location.
-
-## Workflow
-
-### 1. Setup (first time)
-
-1. Install flarectl (see `references/flarectl-install.md`).
-2. Configure a scoped Cloudflare token according to `references/api-token-setup.md` and your `flarectl` installation.
-3. Verify the installed command and flags: `flarectl dns --help`.
-4. Verify access with a read-only list command for the target zone.
-
-### 2. List records
+Run from this skill directory:
 
 ```bash
-flarectl dns --help
-# Then use the installed version's list syntax for the target zone.
+python3 scripts/cf_dns.py --help
+python3 scripts/cf_dns.py auth verify
+python3 scripts/cf_dns.py zones list --all
+python3 scripts/cf_dns.py records list example.com
+python3 scripts/cf_dns.py records create example.com --type A --name app.example.com --content 192.0.2.10
 ```
 
-- Do not assume a default zone. Always ask the user which domain to list or infer from context.
-- Present output as a table: name, type, content, proxied, ID.
-- Record IDs are required for modify and delete; capture from this output.
+The helper accepts `--api-base` for mock servers and tests. JSON output is the default; `--output table` is available for simple list views.
 
-### 3. Create record
+## Authentication
 
-Parameters to gather: `zone`, `name` (subdomain or `@` for apex), `type` (A/AAAA/CNAME/MX/TXT), `content`, and whether proxied.
+Set a scoped Cloudflare API token in the environment:
 
-```
-flarectl dns create --zone=<domain> --name=<name> --type=<type> --content=<content> [--proxy]
+```bash
+export CLOUDFLARE_API_TOKEN=...
 ```
 
-After creation: confirm by showing output or re-listing the zone.
+`CF_API_TOKEN` is accepted as a compatibility fallback. Do not use global API keys. The helper never prints token values, Authorization headers, environment values, or credential file contents.
 
-### 4. Modify record (destructive, double confirmation required)
+Minimum recommended scopes:
 
-Safety gates (mandatory):
-1. User states intent.
-2. Agent lists the record(s) that will change (zone, name, type, current content, proposed new content, record ID). Waits.
-3. User must confirm with a phrase **containing the word "modify"** (e.g. "confirm modify"). Vague replies ("yes", "ok") are not accepted.
+- Read-only inspection: `Zone:Zone:Read` and `Zone:DNS:Read`.
+- DNS mutations: add `Zone:DNS:Edit` for the specific zones.
+- DNS settings changes: add only the DNS settings permission needed for the target account or zone.
 
-Steps:
-1. List zone to get live record ID.
-2. Show details and wait for second confirmation.
-3. Apply update with the installed `flarectl dns update` syntax after verifying exact flags with `flarectl dns --help`.
-4. Re-list to confirm.
+See `references/auth-permissions.md` for token setup and validation notes.
 
-Note: run `flarectl dns --help` to verify exact flags for the installed version.
+## Command Map
 
-### 5. Delete record (destructive, double confirmation required)
+- `auth verify`: verify token validity through `/user/tokens/verify`.
+- `permissions summarize`: print local guidance for minimum recommended scopes.
+- `zones list|get|create|edit|delete|activation-check`: manage zone-level operations.
+- `dns-settings get|patch`: use `/zones/{zone_id}/dns_settings`.
+- `zone-settings list|get|patch`: use `/zones/{zone_id}/settings` and `/settings/{setting_id}`.
+- `records list|find|get|create|create-json|patch|put|delete|upsert|export|import|batch-plan|batch-apply`: manage DNS records.
+- `records scan trigger|list|review`: call the current DNS scan endpoints.
+- `snapshot create|create-all|diff`: capture and compare normalized DNS record snapshots.
+- `plan diff-live`: compare a plan's recorded live state hash with current Cloudflare DNS state.
 
-Safety gates (mandatory):
-1. User states intent.
-2. Agent shows exactly what will be deleted (zone, name, type, content, record ID). Waits.
-3. User must confirm with a phrase **containing the word "delete"** (e.g. "confirm delete").
+Endpoint coverage and source links are in `references/api-scope.md`.
 
-Steps:
-1. List zone to get live record ID.
-2. Show full record detail and wait for second confirmation.
-3. Delete with the installed `flarectl dns delete` syntax after verifying exact flags with `flarectl dns --help`.
-4. Confirm removal (re-list optional).
+## Safety Rules
 
-### 6. Zone survey
+Mutations default to dry-run. A dry-run emits a canonical plan with `plan_hash`; applying the mutation requires:
 
-No survey script is bundled in this skill. For a survey, use `flarectl` read-only list commands per zone and store any report in a gitignored location. If automation is needed, create a tested Python 3.10+ helper using `requests` for Cloudflare API calls and PyYAML for optional YAML output before documenting or scheduling it.
+1. `--apply`.
+2. The exact confirmation phrase for the operation.
+3. `--plan-hash <hash>` from the dry-run plan when the command requires a plan hash.
+4. A live fetch before destructive operations when a current record or setting exists.
 
-Suggested report location: `~/.localsetup/context/dns/`.
+Confirmation phrases:
 
-Suggested report names, if a future helper or manual process writes them:
-- `cloudflare_dns_survey.json`
-- `cloudflare_dns_survey.yaml` when YAML output is intentionally produced
+- General create/edit/update/import/batch apply: `confirm apply`.
+- Deletes: `confirm delete`.
+- Full record `PUT` overwrite: `confirm overwrite`.
+- DNS or zone settings patch: `confirm settings`.
 
-The agent may read the survey for read-only context (e.g. "what records point to this host"), but must always use a live `dns list` call for any modify or delete to get current record IDs.
+If the user gives a vague confirmation such as "yes" or "ok", do not apply. Re-run or show the dry-run plan and ask for the exact phrase.
 
-### 7. Schedule survey
+## Zone Resolution
 
-Use `ls-cron-orchestrator` only after a real survey command exists and has been tested. Do not schedule placeholder commands.
+Always pass a zone explicitly. A zone ID is accepted directly. A zone name must resolve to exactly one visible Cloudflare zone. Ambiguous zone names return exit code `6` with candidate IDs; the agent must ask the user or choose an explicit ID from evidence.
 
-## Agent behavior rules
+## Output Contract
 
-**Multi-zone (mandatory):**
-- Never assume a single domain. Always ask for or infer the zone before running any command.
-- Always pass `--zone=<domain>` explicitly.
-- When the account has multiple zones, do not default to any one of them.
+The CLI output is JSON by default and follows `schemas/cli-output.schema.json`:
 
-**Record IDs:**
-- Always fetch the current record list before modify or delete. Do not guess or reuse IDs from a previous session.
+```json
+{
+  "ok": true,
+  "command": "records list",
+  "result": [],
+  "errors": [],
+  "messages": [],
+  "rate_limit": {}
+}
+```
 
-**Error handling:**
-- Surface non-zero flarectl exits to the user with the full error output.
-- If the token is missing or authentication fails, direct the user to check the local `flarectl` configuration and the token's IP restrictions.
+Cloudflare v4 envelopes are preserved where useful: `success`, `errors`, `messages`, `result`, and `result_info`. The helper normalizes rate limit headers from `Ratelimit`, `Ratelimit-Policy`, and `retry-after`.
 
-**Security:**
-- Any token/config file must be gitignored and permissions set to `600`.
-- Token should have only "Edit zone DNS" permission and an IP restriction for the machine's public IP.
-- Survey output files contain record IDs and content; store in a gitignored location.
+Normalized records preserve unknown Cloudflare fields in `provider_fields` so new API fields do not require immediate wrapper changes.
 
-## Reference
+## References
 
-- references/flarectl-install.md - flarectl install methods (Go, Homebrew, manual build)
-- references/api-token-setup.md - Cloudflare API token creation guide
-- references/survey-schema.md - Suggested zone survey report schema
+- `references/source-ledger.md` - source freshness and unverified live-behavior notes.
+- `references/api-scope.md` - supported API endpoints and out-of-scope products.
+- `references/auth-permissions.md` - token setup, verification, and permission guidance.
+- `references/deterministic-tooling.md` - JSON output, plan hashing, and schema contracts.
+- `references/zones.md` - zone operations and activation checks.
+- `references/dns-records.md` - record operations, normalization, and record ID rules.
+- `references/dns-settings.md` - DNS settings and zone settings.
+- `references/batch-import-export-scan.md` - batch, import/export, and scan workflows.
+- `references/record-types.md` - record type notes and high-risk categories.
+- `references/safety.md` - mutation gates and confirmation policy.
+- `references/snapshots-plans.md` - snapshot and plan workflows.
+- `references/dynamic-dns.md` - safe dynamic DNS pattern.
+- `references/troubleshooting.md` - common failures and exit codes.
+- `references/examples.md` - copy/paste examples.
+- `references/update-procedure.md` - how to refresh schema/source evidence.
+
+## Validation
+
+```bash
+python3 scripts/cf_dns.py --help
+python3 scripts/validate_cf_dns_skill.py
+python3 -m pytest tests -q
+```

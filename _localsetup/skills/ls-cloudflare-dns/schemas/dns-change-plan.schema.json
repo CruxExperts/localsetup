@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://localsetup.invalid/schemas/cloudflare-dns/dns-change-plan.schema.json",
+  "title": "Cloudflare DNS Change Plan",
+  "type": "object",
+  "required": ["action", "endpoint", "method", "body", "live_state_hash", "snapshot_required", "snapshot_waived", "plan_hash"],
+  "properties": {
+    "action": { "type": "string", "minLength": 1 },
+    "endpoint": { "type": "string", "minLength": 1 },
+    "method": { "enum": ["GET", "POST", "PATCH", "PUT", "DELETE"] },
+    "body": {},
+    "live_state_hash": {
+      "anyOf": [
+        { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        { "type": "null" }
+      ]
+    },
+    "snapshot_required": { "type": "boolean" },
+    "snapshot_waived": { "type": "boolean" },
+    "high_risk": { "type": "boolean" },
+    "plan_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  },
+  "additionalProperties": false
+}

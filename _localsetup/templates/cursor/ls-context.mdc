@@ -83,7 +83,7 @@ Load the appropriate skill when the task matches. Runtime skills are managed in 
 | ls-markdown-reference-validator | Validate markdown local references/anchors from YAML-configured targets; emit scheduled-safe audit report for docs/skills/global Kilo surfaces |
 | ls-system-info | Capture server baseline, host layout and specs; CPU, memory, disk, uptime |
 | ls-cron-orchestrator | Manage cron from manifest; triggers, sequenced tasks, on-boot delay; create/remove/reorder/install |
-| ls-cloudflare-dns | Manage Cloudflare DNS records (list, create, modify, delete) and zone surveys via flarectl | Adding, changing, or removing DNS records; zone survey; DNS snapshots |
+| ls-cloudflare-dns | Manage Cloudflare DNS records and zone DNS settings through direct Cloudflare v4 REST API tooling | DNS record changes; DNS settings; dry-run plans; snapshots |
 | ls-npm-management | Manage Nginx Proxy Manager proxy hosts via REST API; coordinate Docker + NPM deploy workflows | Create/modify/remove NPM proxy hosts; diagnose 502s; backup/restore; Docker service deployments |
 | ls-keepass-secrets | KeePass-backed secrets via logical IDs; get/ensure credentials; bulk create or rotate; never embed in repo | User asks for logins, workflow needs credentials, or bulk account creation |
 | ls-docs-organization | Docs organization router for repo docs; classify doc work, choose folder slugs, and keep docs indexes in sync | Creating, moving, or significantly updating docs; deciding placement and index updates |

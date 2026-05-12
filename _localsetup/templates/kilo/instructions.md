@@ -73,7 +73,7 @@ Kilo CLI loads project context from `.kilo/instructions.md` (repo-local) or `~/.
 | ls-markdown-reference-validator | Validate markdown local references/anchors from YAML-configured targets; emit scheduled-safe audit report for docs/skills/global Kilo surfaces |
 | ls-system-info | Capture server baseline, host layout and specs; CPU, memory, disk, uptime |
 | ls-cron-orchestrator | Manage cron from manifest; triggers, sequenced tasks, on-boot delay; create/remove/reorder/install |
-| ls-cloudflare-dns | Manage Cloudflare DNS records (list, create, modify, delete) and zone surveys via flarectl |
+| ls-cloudflare-dns | Manage Cloudflare DNS records and zone DNS settings through direct Cloudflare v4 REST API tooling |
 | ls-npm-management | Manage Nginx Proxy Manager proxy hosts via REST API; coordinate Docker + NPM deploy workflows |
 | ls-keepass-secrets | KeePass-backed secrets via logical IDs; get/ensure credentials; bulk create or rotate |
 | ls-docs-organization | Docs organization router; classify docs, choose folder slugs, keep docs indexes in sync |

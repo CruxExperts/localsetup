@@ -1,0 +1,21 @@
+{
+  "record_count": 1,
+  "records": [
+    {
+      "content": "192.0.2.10",
+      "id": "record123",
+      "name": "www.example.com",
+      "proxied": true,
+      "record_hash": "8d8cf6502cfbb8f5255a987d5245eb09fc6ed44d9ecb8af33f4135f2d0780c23",
+      "ttl": 1,
+      "type": "A",
+      "zone_id": "zone123",
+      "zone_name": "example.com"
+    }
+  ],
+  "snapshot_hash": "f2d6d98ce3c78a3b3673b49dc9f41397e1a5c0a84a443f85cc641d16da6de4f6",
+  "zone": {
+    "id": "zone123",
+    "name": "example.com"
+  }
+}

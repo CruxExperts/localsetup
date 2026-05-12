@@ -1,0 +1,16 @@
+{
+  "content": "192.0.2.10",
+  "created_on": "2026-05-12T00:00:00Z",
+  "id": "record123",
+  "modified_on": "2026-05-12T00:00:00Z",
+  "name": "www.example.com",
+  "provider_fields": {
+    "new_cloudflare_field": "preserved"
+  },
+  "proxied": true,
+  "record_hash": "8d8cf6502cfbb8f5255a987d5245eb09fc6ed44d9ecb8af33f4135f2d0780c23",
+  "ttl": 1,
+  "type": "A",
+  "zone_id": "zone123",
+  "zone_name": "example.com"
+}

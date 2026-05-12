@@ -1,0 +1,18 @@
+{
+  "command": "records list",
+  "errors": [],
+  "messages": [],
+  "ok": true,
+  "rate_limit": {
+    "Ratelimit": "\"default\";r=49;t=1"
+  },
+  "result": [
+    {
+      "content": "192.0.2.10",
+      "id": "record123",
+      "name": "www.example.com",
+      "record_hash": "8d8cf6502cfbb8f5255a987d5245eb09fc6ed44d9ecb8af33f4135f2d0780c23",
+      "type": "A"
+    }
+  ]
+}

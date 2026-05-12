@@ -82,7 +82,7 @@
     {
       "id": "ls-cloudflare-dns",
       "name": "ls-cloudflare-dns",
-      "version": "1.1",
+      "version": "2.0",
       "path": "_localsetup/skills/ls-cloudflare-dns/SKILL.md"
     },
     {
