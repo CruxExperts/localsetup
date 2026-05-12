@@ -349,7 +349,7 @@
         "version": "1.2"
       }
     ],
-    "version": "3.5.0",
+    "version": "3.5.1",
     "workflow_count": 19,
     "workflows": [
       {
@@ -489,14 +489,14 @@
       "value": 51
     },
     "version": {
-      "facts_version": "3.5.0",
-      "pyproject_version": "3.5.0",
+      "facts_version": "3.5.1",
+      "pyproject_version": "3.5.1",
       "sources": [
         "VERSION",
         "pyproject.toml",
         "_localsetup/docs/_generated/facts.json"
       ],
-      "value": "3.5.0"
+      "value": "3.5.1"
     },
     "workflow_catalog": {
       "sources": [
