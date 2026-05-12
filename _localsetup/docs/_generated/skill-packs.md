@@ -18,6 +18,7 @@
 | `bootstrap, dev` | `skill` | `ls-framework-compliance` | `localsetup-framework-compliance` |
 | `bootstrap, dev` | `skill` | `ls-git-workflows` | `localsetup-git-workflows` |
 | `publishing` | `skill` | `ls-github-publishing-workflow` | `localsetup-github-publishing-workflow` |
+| `integrations` | `skill` | `ls-github-starredrepos` | `localsetup-github-starredrepos` |
 | `experimental` | `skill` | `ls-humanizer` | `localsetup-humanizer` |
 | `integrations` | `skill` | `ls-keepass-secrets` | `localsetup-keepass-secrets` |
 | `experimental` | `skill` | `ls-kilo-boss-orchestrator` | `localsetup-kilo-boss-orchestrator` |

@@ -38,6 +38,7 @@ OpenCode uses `AGENTS.md` as the project initialization file. This context is lo
 - ls-workflow-ops-tmux-session: server commands, deployments, tmux, human-in-the-loop ops
 - ls-automatic-versioning: version bumps, release workflow, conventional commits, versioning docs
 - ls-github-publishing-workflow: publishing to GitHub, public release prep, publishing checklist, repo readiness
+- ls-github-starredrepos: manage a GitHub starred repositories archive named starredrepos; authenticated context checks, dry-run sync, repo scouting, metadata snapshots, and guarded publish workflows
 - ls-skill-creator: create new capability skill from an existing doc/markdown/GitHub source; use workflow packages for named orchestration flows
 - ls-skill-importer: import skills from URL or local path; discover, validate, screen, summarize; user picks which to import
 - ls-skill-discovery: discover public skills from registries; recommend top 5 similar when creating/importing; in-depth summary, use public, continue, or adapt

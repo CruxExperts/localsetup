@@ -23,6 +23,7 @@ version: 3.3
 | `localsetup-framework-compliance` | `ls-framework-compliance` |
 | `localsetup-git-workflows` | `ls-git-workflows` |
 | `localsetup-github-publishing-workflow` | `ls-github-publishing-workflow` |
+| `localsetup-github-starredrepos` | `ls-github-starredrepos` |
 | `localsetup-humanizer` | `ls-humanizer` |
 | `localsetup-keepass-secrets` | `ls-keepass-secrets` |
 | `localsetup-kilo-boss-orchestrator` | `ls-kilo-boss-orchestrator` |

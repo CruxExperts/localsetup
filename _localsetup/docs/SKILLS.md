@@ -7,7 +7,7 @@ version: 3.3
 
 This page is generated from `_localsetup/skills/*/SKILL.md`.
 
-Total shipped skills: 48
+Total shipped skills: 49
 
 | Skill ID | Name | Version | Description |
 |---|---|---|---|
@@ -27,6 +27,7 @@ Total shipped skills: 48
 | `ls-framework-compliance` | `ls-framework-compliance` | `1.2` | Pre-task workflow, certainty assessment, context load, document status, testing, Git checkpoints, document maintenance. Use for framework modifications, PRDs, or any task that must follow checklist and checkpoints. |
 | `ls-git-workflows` | `ls-git-workflows` | `1.3` | Advanced git operations beyond add/commit/push. Use when rebasing, bisecting bugs, using worktrees for parallel development, recovering with reflog, managing subtrees/submodules, resolving merge conflicts, cherry-picking across branches, or working with monorepos. |
 | `ls-github-publishing-workflow` | `ls-github-publishing-workflow` | `1.1` | Use when publishing to GitHub, preparing a public release, or reviewing repo readiness. Covers public-doc structure, licensing, PII/secrets/path scrub, version checks, and repository settings. |
+| `ls-github-starredrepos` | `ls-github-starredrepos` | `1.0` | Manage a GitHub starred repositories archive named starredrepos with authenticated context checks, dry-run synchronization, repo scouting, metadata snapshots, and guarded publish workflows. |
 | `ls-humanizer` | `ls-humanizer` | `2.1.2` | Remove signs of AI-generated writing from text. Use when editing or reviewing text to make it sound more natural and human-written. Based on Wikipedia's comprehensive "Signs of AI writing" guide. Detects and fixes patterns including: inflated symbolism, promotional language, superficial -ing analyses, vague attributions, em dash overuse, rule of three, AI vocabulary words, negative parallelisms, and excessive conjunctive phrases. |
 | `ls-keepass-secrets` | `ls-keepass-secrets` | `1.0` | Resolve logical secret IDs through KeePass using repo-local mapping files; optionally bulk-create or rotate secrets without ever writing values into tracked files. |
 | `ls-kilo-boss-orchestrator` | `ls-kilo-boss-orchestrator` | `1.0` | Orchestrate Kilo headless boss-worker execution with repo-local state, watchdog leases, consensus validation, and safety gates. Use when running multi-agent autonomous loops that require planning, delegation, verifier checks, and high/critical discrepancy adjudication. |

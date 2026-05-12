@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://localsetup.dev/schemas/starredrepos/repo-metadata.schema.json",
+  "title": "Starredrepos repository metadata",
+  "type": "object",
+  "required": ["fullName", "owner", "name", "htmlUrl", "cloneUrl", "defaultBranch", "starredAt"],
+  "additionalProperties": false,
+  "properties": {
+    "fullName": { "type": "string", "pattern": "^(?!\\.\\.?/)(?![^/]+/\\.\\.?$)[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" },
+    "owner": { "type": "string", "minLength": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "htmlUrl": { "type": "string", "format": "uri" },
+    "cloneUrl": { "type": "string", "format": "uri" },
+    "defaultBranch": { "type": "string", "minLength": 1 },
+    "description": { "type": ["string", "null"] },
+    "language": { "type": ["string", "null"] },
+    "topics": { "type": "array", "items": { "type": "string" } },
+    "license": { "type": ["string", "null"] },
+    "visibility": { "type": "string" },
+    "archived": { "type": "boolean" },
+    "fork": { "type": "boolean" },
+    "pushedAt": { "type": ["string", "null"] },
+    "starredAt": { "type": ["string", "null"] },
+    "stargazersCount": { "type": "integer", "minimum": 0 },
+    "openIssuesCount": { "type": "integer", "minimum": 0 },
+    "metadataFetchedAt": { "type": "string" }
+  }
+}

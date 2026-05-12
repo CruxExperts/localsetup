@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://localsetup.dev/schemas/starredrepos/scout-report.schema.json",
+  "title": "Starredrepos scout report",
+  "type": "object",
+  "required": ["schemaVersion", "generatedAt", "fullName", "mode", "summary", "claims"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "type": "string", "const": "1.0" },
+    "generatedAt": { "type": "string" },
+    "fullName": { "type": "string", "pattern": "^(?!\\.\\.?/)(?![^/]+/\\.\\.?$)[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" },
+    "mode": { "type": "string", "enum": ["static", "command"] },
+    "summary": { "type": "string" },
+    "fit": { "type": ["string", "null"] },
+    "risks": { "type": "array", "items": { "type": "string" } },
+    "nextSteps": { "type": "array", "items": { "type": "string" } },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["text", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "text": { "type": "string" },
+          "status": { "type": "string", "enum": ["verified", "unverified"] },
+          "evidence": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}

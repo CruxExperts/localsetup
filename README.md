@@ -62,7 +62,7 @@ Start with the [workflow packages guide](_localsetup/docs/WORKFLOW_PACKAGES.md) 
 |---|---|
 | Current version | `3.3.1` |
 | Supported platforms | `cursor, claude-code, codex, openclaw, kilo, opencode` |
-| Shipped skills | `48` |
+| Shipped skills | `49` |
 | Workflow packages | `17` |
 | Source | `_localsetup/docs/_generated/facts.json` |
 <!-- facts-block:end -->

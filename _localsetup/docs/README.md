@@ -16,7 +16,7 @@ This is the public documentation map for Localsetup v3. Start here when you want
 <!-- facts-block:start -->
 - Current version: `3.3.1`
 - Supported platforms: `cursor, claude-code, codex, openclaw, kilo, opencode`
-- Shipped skills: `48`
+- Shipped skills: `49`
 - Workflow packages: `17`
 - Source: `_localsetup/docs/_generated/facts.json`
 <!-- facts-block:end -->
@@ -70,6 +70,7 @@ Localsetup installs both capability skills and workflow packages into the manage
 Registered capability highlights:
 
 - `ls-nodejs-nextjs`: Node.js/Next.js/React runbook for package-manager, build, migration, debugging, testing, security, deployment, and current-version verification.
+- `ls-github-starredrepos`: GitHub starred repository archive workflow for authenticated context checks, dry-run sync, repo scouting, metadata snapshots, and guarded publish flows.
 - `ls-shadcn-ui`: shadcn/ui component workflow for setup, components, CLI/MCP, registry, theming, forms, aliases, Radix/Base UI, updates, and troubleshooting.
 - `ls-typescript-code-quality`: TypeScript/TSX code quality, tsconfig, typed ESLint or Biome config, Node TypeScript scripts, and TypeScript-heavy framework code.
 

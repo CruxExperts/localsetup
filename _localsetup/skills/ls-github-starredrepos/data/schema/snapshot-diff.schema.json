@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://localsetup.dev/schemas/starredrepos/snapshot-diff.schema.json",
+  "title": "Starredrepos snapshot diff",
+  "type": "object",
+  "required": ["schemaVersion", "generatedAt", "before", "after", "added", "removed", "changed"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "type": "string", "const": "1.0" },
+    "generatedAt": { "type": "string" },
+    "before": { "type": ["string", "null"] },
+    "after": { "type": "string" },
+    "added": { "type": "array", "items": { "type": "string" } },
+    "removed": { "type": "array", "items": { "type": "string" } },
+    "changed": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["fullName", "fields"],
+        "additionalProperties": false,
+        "properties": {
+          "fullName": { "type": "string" },
+          "fields": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}

@@ -66,6 +66,7 @@ packs:
   integrations:
     - ls-agentq-transport
     - ls-cloudflare-dns
+    - ls-github-starredrepos
     - ls-keepass-secrets
     - ls-mail-protocol-control
     - ls-mcp-builder

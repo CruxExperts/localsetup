@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://localsetup.dev/schemas/starredrepos/manifest.schema.json",
+  "title": "Starredrepos manifest",
+  "type": "object",
+  "required": ["schemaVersion", "generatedAt", "owner", "sourceHost", "storageMode", "repositories"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "type": "string", "const": "1.0" },
+    "generatedAt": { "type": "string" },
+    "owner": { "type": "string", "minLength": 1 },
+    "sourceHost": { "type": "string", "minLength": 1 },
+    "storageMode": {
+      "type": "string",
+      "enum": ["metadata", "submodule", "checkout-cache", "bare-mirror-cache", "vendor"]
+    },
+    "repositoryCount": { "type": "integer", "minimum": 0 },
+    "repositories": {
+      "type": "array",
+      "items": { "$ref": "./repo-metadata.schema.json" }
+    }
+  }
+}

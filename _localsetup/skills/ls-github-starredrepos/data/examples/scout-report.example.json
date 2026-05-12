@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-05-12T00:00:00Z",
+  "fullName": "octocat/Hello-World",
+  "mode": "static",
+  "summary": "Example repository metadata for starredrepos.",
+  "fit": "Useful as a demonstration fixture.",
+  "risks": [],
+  "nextSteps": ["Review upstream README and license before vendoring."],
+  "claims": [
+    {
+      "text": "Primary language is JavaScript.",
+      "status": "verified",
+      "evidence": "Repository metadata language field."
+    }
+  ]
+}

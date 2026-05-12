@@ -33,6 +33,7 @@ Localsetup v3 is deployed at `_localsetup/`. Framework and context are repo-loca
 - Machine-readable generated facts: [_generated/facts.json](../../docs/_generated/facts.json).
 - Treat any short skill mentions in always-loaded platform context as orientation only; the generated catalog and each skill's own frontmatter are the current source of truth.
 - `ls-nodejs-nextjs`: Node.js/Next.js/React runbook for package-manager, build, migration, debugging, testing, security, deployment, and current-version verification.
+- `ls-github-starredrepos`: GitHub starred repository archive workflow for authenticated context checks, dry-run sync, repo scouting, metadata snapshots, and guarded publish flows.
 - `ls-shadcn-ui`: shadcn/ui component workflow for setup, components, CLI/MCP, registry, theming, forms, aliases, Radix/Base UI, updates, and troubleshooting.
 - `ls-typescript-code-quality`: TypeScript/TSX code quality, tsconfig, typed ESLint or Biome config, Node TypeScript scripts, and TypeScript-heavy framework code.
 

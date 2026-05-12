@@ -1,0 +1,20 @@
+{
+  "fullName": "octocat/Hello-World",
+  "owner": "octocat",
+  "name": "Hello-World",
+  "htmlUrl": "https://github.com/octocat/Hello-World",
+  "cloneUrl": "https://github.com/octocat/Hello-World.git",
+  "defaultBranch": "master",
+  "description": "Example repository metadata for starredrepos.",
+  "language": "JavaScript",
+  "topics": ["example", "github"],
+  "license": "MIT",
+  "visibility": "public",
+  "archived": false,
+  "fork": false,
+  "pushedAt": "2026-05-01T00:00:00Z",
+  "starredAt": "2026-05-12T00:00:00Z",
+  "stargazersCount": 42,
+  "openIssuesCount": 0,
+  "metadataFetchedAt": "2026-05-12T00:00:00Z"
+}
