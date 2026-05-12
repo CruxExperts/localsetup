@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 3.7
+version: 3.8
 ---
 
 # Agentic umbrella workflows (Localsetup v3)
