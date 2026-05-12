@@ -32,7 +32,8 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: python3 -m pip install --require-hashes --only-binary :all: -r _localsetup/requirements.lock --quiet
+        run: |
+          python3 -m pip install --require-hashes --only-binary :all: -r _localsetup/requirements.lock --quiet
 
       - name: Resolve release base
         id: release-base

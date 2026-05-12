@@ -31,7 +31,8 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: python3 -m pip install --require-hashes --only-binary :all: -r _localsetup/requirements.lock --quiet
+        run: |
+          python3 -m pip install --require-hashes --only-binary :all: -r _localsetup/requirements.lock --quiet
 
       - name: Check version and generated docs
         env:
@@ -83,7 +84,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: python3 -m pip install --require-hashes --only-binary :all: -r _localsetup/requirements.lock --quiet
+        run: |
+          python3 -m pip install --require-hashes --only-binary :all: -r _localsetup/requirements.lock --quiet
 
       - name: Verify framework context
         run: |
@@ -117,7 +119,8 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: python3 -m pip install --require-hashes --only-binary :all: -r _localsetup/requirements.lock --quiet
+        run: |
+          python3 -m pip install --require-hashes --only-binary :all: -r _localsetup/requirements.lock --quiet
 
       - name: Run framework audit
         run: python3 _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-v3-framework-audit.md
