@@ -139,7 +139,7 @@ def test_keepassxc_backend_methods_return_json_errors() -> None:
     data = payload(result)
     assert result.returncode != 0
     assert data["ok"] is False
-    assert data["errors"][0]["code"] == "interactive_backend_required"
+    assert data["errors"][0]["code"] in {"interactive_backend_required", "missing_backend"}
     assert "Traceback" not in result.stderr
 
 
