@@ -27,6 +27,7 @@
 | `integrations` | `skill` | `ls-mail-protocol-control` | `localsetup-mail-protocol-control` |
 | `dev` | `skill` | `ls-markdown-reference-validator` | `localsetup-markdown-reference-validator` |
 | `integrations` | `skill` | `ls-mcp-builder` | `localsetup-mcp-builder` |
+| `dev` | `skill` | `ls-nodejs-nextjs` | `localsetup-nodejs-nextjs` |
 | `integrations` | `skill` | `ls-npm-management` | `localsetup-npm-management` |
 | `integrations` | `skill` | `ls-omniroute-admin-automation` | `localsetup-omniroute-admin-automation` |
 | `integrations` | `skill` | `ls-omniroute-proxy` | `localsetup-omniroute-proxy` |

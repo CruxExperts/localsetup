@@ -50,6 +50,7 @@
 | ls-omniroute-admin-automation | OmniRoute administration automation for providers, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, and drift reconciliation | OmniRoute admin changes, reconciliation, backup/restore, key and policy management |
 | ls-kilo-boss-orchestrator | Kilo headless boss-worker orchestration with repo-local state, watchdog leases, consensus validation, and safety gates | Multi-agent autonomous loops requiring planning, delegation, verification, and discrepancy adjudication |
 | ls-kilo-visual-output | Kilo CLI visual output organization guide with structured response patterns | Kilo output formatting, options, rationale blocks, and execution summaries |
+| ls-nodejs-nextjs | Node.js/Next.js/React runbook | Package-manager, build, migration, debugging, testing, security, deployment, and current-version verification |
 | ls-scrapling | Host-first Scrapling integration; install/upgrade via pipx, run single-URL extractions with adaptive fetch modes and job tracking, and keep adapters current via parsed CLI/docs state | **Default** web scraping and website fetching skill; use for most tasks that need content from public web pages |
 | ls-typescript-code-quality | TypeScript code quality guide | TypeScript/TSX code quality, tsconfig, typed ESLint or Biome config, Node TypeScript scripts, and TypeScript-heavy framework code |
 

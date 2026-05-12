@@ -2,7 +2,7 @@
   "version": "3.2.6",
   "major_minor": "3.2",
   "platform_count": 6,
-  "skill_count": 46,
+  "skill_count": 47,
   "workflow_count": 17,
   "platforms": [
     {
@@ -192,6 +192,12 @@
       "name": "ls-mcp-builder",
       "version": "1.2",
       "path": "_localsetup/skills/ls-mcp-builder/SKILL.md"
+    },
+    {
+      "id": "ls-nodejs-nextjs",
+      "name": "ls-nodejs-nextjs",
+      "version": "1.0",
+      "path": "_localsetup/skills/ls-nodejs-nextjs/SKILL.md"
     },
     {
       "id": "ls-npm-management",

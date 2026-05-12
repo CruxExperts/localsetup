@@ -51,6 +51,7 @@ packs:
     - ls-framework-compliance
     - ls-git-workflows
     - ls-markdown-reference-validator
+    - ls-nodejs-nextjs
     - ls-receiving-code-review
     - ls-typescript-code-quality
     - ls-unfuck-my-git-state

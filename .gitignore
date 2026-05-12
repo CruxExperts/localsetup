@@ -10,6 +10,8 @@ _localsetup/.localsetup-meta/
 
 # Repo-local data (PR review state, audit output, etc.; never publish)
 data/
+!_localsetup/skills/ls-nodejs-nextjs/data/
+!_localsetup/skills/ls-nodejs-nextjs/data/verified-versions.json
 
 # Mail accounts (credentials; use example template only in repo)
 _localsetup/config/mail_accounts.json

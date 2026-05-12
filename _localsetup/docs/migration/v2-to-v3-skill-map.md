@@ -32,6 +32,7 @@ version: 3.2
 | `localsetup-mail-protocol-control` | `ls-mail-protocol-control` |
 | `localsetup-markdown-reference-validator` | `ls-markdown-reference-validator` |
 | `localsetup-mcp-builder` | `ls-mcp-builder` |
+| `localsetup-nodejs-nextjs` | `ls-nodejs-nextjs` |
 | `localsetup-npm-management` | `ls-npm-management` |
 | `localsetup-omniroute-admin-automation` | `ls-omniroute-admin-automation` |
 | `localsetup-omniroute-proxy` | `ls-omniroute-proxy` |

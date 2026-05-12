@@ -7,7 +7,7 @@ version: 3.2
 
 This page is generated from `_localsetup/skills/*/SKILL.md`.
 
-Total shipped skills: 46
+Total shipped skills: 47
 
 | Skill ID | Name | Version | Description |
 |---|---|---|---|
@@ -36,6 +36,7 @@ Total shipped skills: 46
 | `ls-mail-protocol-control` | `ls-mail-protocol-control` | `1.2` | Provide full SMTP and IMAP account control for delegated mailboxes with attachment-first MIME handling and full-envelope encryption. Use when an agent must read, send, organize, decrypt, and manage mailbox state with strict admin controls. |
 | `ls-markdown-reference-validator` | `ls-markdown-reference-validator` | `1.0` | Validate markdown local references and anchors across configured global+repo paths; scheduled-safe report generator with YAML sidecar config. |
 | `ls-mcp-builder` | `ls-mcp-builder` | `1.2` | Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services through well-designed tools. Use when building MCP servers to integrate external APIs or services, whether in Python (FastMCP) or Node/TypeScript (MCP SDK). |
+| `ls-nodejs-nextjs` | `ls-nodejs-nextjs` | `1.0` | Practical Node.js and Next.js project runbook. Use for Node, Next.js, React, package-manager, build, migration, debugging, testing, security, deployment, and version-verification tasks. |
 | `ls-npm-management` | `ls-npm-management` | `1.0` | Manage Nginx Proxy Manager (NPM) reverse proxy hosts via its REST API using the native Python client npm_api.py. Use when creating, modifying, diagnosing, removing, or cleaning up proxy hosts, or when coordinating Docker service deployments with NPM routing. |
 | `ls-omniroute-admin-automation` | `ls-omniroute-admin-automation` | `1.0` | Comprehensive OmniRoute administration and automation via Python tooling. Use when you need full API-driven control of providers, nodes, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, sync, resilience, and configuration reconciliation with safety gates. |
 | `ls-omniroute-proxy` | `ls-omniroute-proxy` | `1.0` | Guide agents through read-only OmniRoute proxy discovery, model catalogs, provider metadata, context windows, rate limits, quotas, routing combos, MCP/A2A integration, and agent client configuration. Use when working with OmniRoute, OmniRoute proxy, AI gateway discovery, model catalogs, provider limits, context windows, routing combos, MCP/A2A integration, or configuring agents to use OmniRoute. |
