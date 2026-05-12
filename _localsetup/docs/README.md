@@ -14,7 +14,7 @@ This is the public documentation map for Localsetup v3. Start here when you want
 ## Generated Facts
 
 <!-- facts-block:start -->
-- Current version: `3.7.1`
+- Current version: `3.7.2`
 - Supported platforms: `cursor, claude-code, codex, openclaw, kilo, opencode`
 - Shipped skills: `52`
 - Workflow packages: `22`
