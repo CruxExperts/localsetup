@@ -705,6 +705,86 @@ def test_v3_cli_context_target_warning_requires_explicit_target(tmp_path: Path) 
     assert any("target directory was provided" in warning for warning in explicit_payload["warnings"])
 
 
+def test_v3_self_refresh_defaults_to_all_packs_and_existing_repo_adapters(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    home.mkdir(parents=True, exist_ok=True)
+    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+
+    existing_global = home / ".local" / "share" / "agents" / "skills" / "localsetup"
+    existing_global.mkdir(parents=True, exist_ok=True)
+    (root / ".codex").mkdir(parents=True, exist_ok=True)
+    (root / ".codex" / "skills").symlink_to(existing_global, target_is_directory=True)
+    external_global = home / ".external" / "skills"
+    external_global.mkdir(parents=True, exist_ok=True)
+    (root / ".cursor").mkdir(parents=True, exist_ok=True)
+    (root / ".cursor" / "skills").symlink_to(external_global, target_is_directory=True)
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(tool),
+            "--repo",
+            str(root),
+            "--home",
+            str(home),
+            "self-refresh",
+            "--dependency-mode",
+            "prompt-only",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(completed.stdout)
+    assert payload["ok"] is True
+    assert payload["selected"]["platforms"] == ["codex"]
+    assert "integrations" in payload["selected"]["packs"]
+    assert (home / ".local/share/agents/skills/localsetup/ls-cloudflare-dns").is_dir()
+    assert (root / ".codex" / "skills").is_symlink()
+    assert payload["verify"]["adapters"][0]["points_to_global"] is True
+    assert (root / ".cursor" / "skills").resolve() == external_global
+
+
+def test_v3_self_refresh_preserves_existing_portable_adapter_mode(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    home.mkdir(parents=True, exist_ok=True)
+    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+
+    portable_adapter = root / ".codex" / "skills"
+    portable_adapter.mkdir(parents=True, exist_ok=True)
+    (portable_adapter / ".localsetup-portable").write_text("managed_by=localsetup-v3\n", encoding="utf-8")
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(tool),
+            "--repo",
+            str(root),
+            "--home",
+            str(home),
+            "self-refresh",
+            "--dependency-mode",
+            "prompt-only",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(completed.stdout)
+    assert payload["ok"] is True
+    assert payload["selected"]["platforms"] == ["codex"]
+    assert payload["selected"]["attach_mode"] == "portable"
+    assert portable_adapter.is_dir()
+    assert not portable_adapter.is_symlink()
+    assert (portable_adapter / ".localsetup-portable").is_file()
+
+
 def test_docs_do_not_show_selector_free_portable_install() -> None:
     root = Path(__file__).resolve().parents[2]
     overview = (root / "_localsetup" / "docs" / "migration" / "v3-overview.md").read_text(encoding="utf-8")

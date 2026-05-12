@@ -27,6 +27,16 @@ python3 -m pytest _localsetup/tests -q
 git diff --check
 ```
 
+## Managed Adapter Refresh
+
+Run this after changing shipped skills, workflow packages, platform adapters, or repo agent context when this machine should immediately use the current checkout:
+
+```bash
+python3 _localsetup/tools/localsetup_v3.py --repo . self-refresh --dependency-mode prompt-only
+```
+
+The command installs every configured pack from this checkout into the managed Localsetup library and refreshes only adapter paths that are already attached in the target repo. It is maintenance tooling for local machine state, not a release or publish step.
+
 ## GitHub Actions
 
 - `pr-validation` is the required PR and merge-queue validation workflow.

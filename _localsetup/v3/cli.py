@@ -7,7 +7,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-from .adapters import adapter_status
+from .adapters import adapter_path_state, adapter_status
 from .apply import apply_plan
 from .config import DEPENDENCY_MODES, InstallConfig, config_to_dict, load_install_config, merge_cli_config
 from .context import build_agent_context, render_markdown_report
@@ -17,6 +17,7 @@ from .doctor import run_doctor
 from .docs import generate_alias_outputs
 from .hooks import run_maintainer_gate
 from .manifests import load_pack_config
+from .manifests import load_platforms
 from .lockfile import save_json, save_text
 from .migration import conservative_migrate, scan_legacy_references
 from .package import build_public_artifact
@@ -145,6 +146,86 @@ def _print_payload(payload: dict, *, markdown: bool = False) -> None:
         print(json.dumps(payload, indent=2, sort_keys=True))
 
 
+def _all_configured_packs(repo_root: Path) -> list[str]:
+    pack = load_pack_config(repo_root)
+    return list(pack.packs.keys())
+
+
+def _existing_target_platforms(repo_root: Path, target_root: Path, home: Path) -> list[dict[str, str]]:
+    global_root = expand_user_path(load_pack_config(repo_root).global_root, home)
+    selected: list[dict[str, str]] = []
+    for platform in load_platforms(repo_root):
+        for rel in platform.repo_paths:
+            candidate = target_root / rel
+            state = adapter_path_state(candidate, global_root)
+            if state["points_to_global"] or state["is_portable_copy"]:
+                selected.append(
+                    {
+                        "platform": platform.platform_id,
+                        "mode": "portable" if state["is_portable_copy"] else "symlink",
+                    }
+                )
+                break
+    return sorted(selected, key=lambda item: item["platform"])
+
+
+def _run_self_refresh(
+    root: Path,
+    config: InstallConfig,
+    home: Path,
+    *,
+    packs_override: list[str] | None = None,
+    platforms_override: list[str] | None = None,
+    attach_mode_explicit: bool = False,
+) -> dict:
+    target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else root
+    packs = packs_override if packs_override is not None else _all_configured_packs(root)
+    existing_platforms = _existing_target_platforms(root, target_root, home)
+    platforms = platforms_override if platforms_override is not None else [item["platform"] for item in existing_platforms]
+    attach_mode = config.attach_mode
+    if not attach_mode_explicit:
+        selected_modes = {item["mode"] for item in existing_platforms if item["platform"] in set(platforms)}
+        if len(selected_modes) == 1:
+            attach_mode = selected_modes.pop()
+        elif len(selected_modes) > 1:
+            return {
+                "ok": False,
+                "issues": [
+                    "self-refresh found mixed existing adapter modes; pass --mode symlink or --mode portable explicitly"
+                ],
+                "selected": {
+                    "packs": packs,
+                    "platforms": platforms,
+                    "target_root": str(target_root),
+                    "attach_mode": None,
+                },
+            }
+    dependency_info = ensure_dependencies(root, mode=config.dependency_mode) if config.dependency_mode != "prompt-only" else None
+    plan = build_install_plan(
+        root,
+        home=home,
+        packs=packs,
+        attach_mode=attach_mode,
+        platform_ids=platforms,
+        target_root=target_root,
+    )
+    result = apply_plan(root, plan, home=home, dry_run=False, dependency_info=dependency_info, target_root=target_root)
+    verify = verify_install(root, home=home, platform_ids=platforms, target_root=target_root)
+    if dependency_info:
+        result["dependencies"] = dependency_info
+    return {
+        "ok": verify["ok"],
+        "selected": {
+            "packs": packs,
+            "platforms": platforms,
+            "target_root": str(target_root),
+            "attach_mode": attach_mode,
+        },
+        "apply": result,
+        "verify": verify,
+    }
+
+
 def _main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="localsetup-v3")
     parser.add_argument("--home")
@@ -224,6 +305,9 @@ def _main(argv: list[str] | None = None) -> int:
 
     release_push_p = sub.add_parser("release-push")
     release_push_p.add_argument("push_args", nargs=argparse.REMAINDER)
+    self_refresh_p = sub.add_parser("self-refresh")
+    _add_config_flags(self_refresh_p)
+    _add_selector_flags(self_refresh_p)
 
     sub.add_parser("install-hooks")
     sub.add_parser("register-shell")
@@ -488,6 +572,23 @@ def _main(argv: list[str] | None = None) -> int:
         cmd = ["git", "push", *push_args] if push_args else ["git", "push"]
         completed = subprocess.run(cmd, cwd=root)
         return completed.returncode
+
+    if args.cmd == "self-refresh":
+        config = _resolved_config(args, home)
+        home = Path(config.home or home).expanduser().resolve()
+        packs_override = _split_csv(getattr(args, "packs", None)) if getattr(args, "packs", None) is not None else None
+        platforms_override = _split_csv(getattr(args, "platforms", None)) if getattr(args, "platforms", None) is not None else None
+        payload = _run_self_refresh(
+            root,
+            config,
+            home,
+            packs_override=packs_override,
+            platforms_override=platforms_override,
+            attach_mode_explicit=getattr(args, "mode", None) is not None,
+        )
+        _write_report(config.output.report, payload)
+        _print_payload(payload)
+        return 0 if payload["ok"] else 1
 
     if args.cmd == "install-hooks":
         subprocess.run(["git", "config", "core.hooksPath", ".githooks"], cwd=root, check=True)
