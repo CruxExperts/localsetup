@@ -567,11 +567,12 @@ def generate_alignment_artifacts(repo_root: Path) -> dict[str, str]:
     inventory = collect_inventory(repo_root)
     truth = collect_truth_map(repo_root)
     audit_result = audit(repo_root)
+    write_summary(repo_root, inventory, audit_result)
+    inventory = collect_inventory(repo_root)
     _write_json(repo_root / INVENTORY_PATH, inventory)
     _write_json(repo_root / TRUTH_MAP_PATH, truth)
     _write_json(repo_root / ASSET_MANIFEST_PATH, asset_manifest)
     _write_json(repo_root / AUDIT_PATH, audit_result)
-    write_summary(repo_root, inventory, audit_result)
     return {
         "inventory": str(repo_root / INVENTORY_PATH),
         "truth_map": str(repo_root / TRUTH_MAP_PATH),

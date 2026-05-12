@@ -200,3 +200,20 @@ def test_generated_alignment_outputs_are_checkout_deterministic(tmp_path: Path) 
         "assets/README.md",
     ):
         assert (repo_a / rel).read_text(encoding="utf-8") == (repo_b / rel).read_text(encoding="utf-8")
+
+    before = {
+        rel: (repo_a / rel).read_text(encoding="utf-8")
+        for rel in (
+            "_localsetup/docs/_generated/docs-inventory.json",
+            "_localsetup/docs/_generated/docs-truth-map.json",
+            "_localsetup/docs/_generated/docs-asset-manifest.json",
+            "_localsetup/docs/_generated/docs-audit-result.json",
+            "_localsetup/docs/_generated/docs-alignment-summary.md",
+            "assets/README.md",
+        )
+    }
+    run_tool(repo_a, "apply", "--scope", "generated")
+    assert {
+        rel: (repo_a / rel).read_text(encoding="utf-8")
+        for rel in before
+    } == before
