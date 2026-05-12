@@ -14,7 +14,7 @@ body:
     attributes:
       label: Localsetup version
       description: Paste the value from `cat VERSION` or the release tag.
-      placeholder: "3.2.x"
+      placeholder: "3.7.x"
     validations:
       required: true
   - type: input

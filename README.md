@@ -12,13 +12,13 @@
 
 **Version:** 3.7.1<br>
 
-**Localsetup v3 gives coding agents a real operating layer inside your repo.**
+**Localsetup v3 gives coding agents a repo-local operating layer.**
 
-Recent research signals from 2025 and 2026 show the same pressure from different angles: AI coding work is growing fast, agent teams still struggle with durable context and review, and developers remain cautious about AI accuracy. That is the gap Localsetup is built for.
+Agent work is moving from one-off prompts into repeatable development operations. The hard part is not only giving an agent more context; it is keeping that context durable, reviewable, portable across tools, and safe enough for real repositories.
 
-Localsetup v3 turns your repository into the source of truth for agent context, skills, workflows, safety gates, install state, and release evidence. It is not another chat prompt collection. It is a portable framework with adapters for Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode, plus a disciplined skill library and predictable workflow model.
+Localsetup v3 turns your repository into the source of truth for agent instructions, skills, workflow packages, adapter configuration, safety gates, install state, documentation truth, and release evidence. It is not another chat prompt collection. It is a portable framework with adapters for Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode, plus a disciplined package library and predictable controller workflow model.
 
-Use it when you want agents to stop improvising and start working from auditable context.
+Use it when you want agents to stop improvising from hidden local setup and start working from auditable context that travels with the code.
 
 ## The short version
 
@@ -29,8 +29,10 @@ Localsetup v3 packages:
 - Cross-platform adapters for Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode
 - Agent Skills-compatible `SKILL.md` packages that can be imported, normalized, vetted, installed, and reused
 - Workflow packages under `_localsetup/workflows/` that stay executable as skills while carrying Localsetup `workflow.yaml` metadata for aliases, gates, dependencies, and generated registries
+- Documentation alignment tooling that inventories source-owned docs, maps code truth, audits generated facts, and refreshes supported public/generated surfaces
+- Context-index tooling for vector-first SQLite retrieval, freshness checks, agent preflight, MCP configuration support, and machine-readable worklists
 - A Python-first installer with preflight, planning, verification, rollback metadata, and generated docs sync
-- Human-in-the-loop operations for risky commands, remote/server work, and sudo-aware tmux sessions
+- Opt-in harness automation for Codex heartbeat and repo-finalizer workflows, plus human-in-the-loop operations for risky commands, remote/server work, and sudo-aware tmux sessions
 
 That means your agent setup travels with the repo, survives context resets, and can be reviewed like code.
 
@@ -148,16 +150,16 @@ Opt-in harness automation is documented separately because normal installs never
 
 1. **Your agent context becomes code.** Instructions, skills, workflows, platform manifests, and docs live in the repo, so changes are visible in git instead of hidden in a local profile or a forgotten prompt.
 2. **One skill library reaches multiple agent hosts.** When selected with `--tools` or `--platforms`, the shipped adapters let Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode attach to the same managed Localsetup skill library.
-3. **It leans into the Agent Skills standard.** Skills use spec-compatible `SKILL.md` frontmatter, which makes them easier to import, export, normalize, and share across ecosystems.
+3. **It leans into portable skill packaging.** Skills use spec-compatible `SKILL.md` frontmatter, which makes them easier to import, export, normalize, and share across ecosystems that understand the package shape.
 4. **It tackles the trust gap directly.** The framework pushes agents toward repeatable workflows, explicit verification, documented assumptions, and human gates instead of one-off "looks good" responses.
 5. **It treats skill imports as supply-chain events.** External skills are discovered, validated, security-screened, summarized, and normalized before they become part of your library.
 6. **It helps with the work developers actually hand agents.** Debugging, tests, PR review, codebase navigation, docs cleanup, git recovery, MCP building, Linux service triage, patching, and release chores are covered out of the box.
 7. **It has safety rails for real machines.** Server and operations workflows route through tmux, sudo probing, backup/safety guidance, and explicit approval points for risky actions.
 8. **It gives long-running work a shape.** First-class workflow packages, decision trees, PRD queues, Agent Q handoffs, generated registries, and outcome templates make multi-step agent work easier to restart, audit, and delegate.
 9. **It makes installs reversible.** The v3 installer plans, applies, verifies, writes lock metadata, and can roll back managed paths without treating generated adapter output as source.
-10. **It keeps releases tidy.** Version sync, generated facts, skill metadata versions, framework audit, and Conventional Commit release tooling reduce the drift that makes public repos feel abandoned.
+10. **It keeps releases tidy.** Version sync, generated facts, docs-alignment checks, skill metadata versions, framework audit, and Conventional Commit release tooling reduce the drift that makes public repos feel abandoned.
 
-## 10 shipped packages worth starting with
+## Shipped packages worth starting with
 
 These are not toy prompts. They are practical skills and workflows from the shipped library.
 
@@ -168,12 +170,15 @@ These are not toy prompts. They are practical skills and workflows from the ship
 | `ls-test-runner` | Guides test creation and execution across pytest, Jest, Vitest, Playwright, and XCTest. |
 | `ls-typescript-code-quality` | Guides TypeScript, TSX, tsconfig, typed linting, Node TypeScript scripts, and framework-heavy TypeScript changes. |
 | `ls-pr-reviewer` | Turns PR review into a structured risk hunt: diff analysis, security concerns, test gaps, and style issues. |
+| `ls-documentation-alignment` | Audits docs against implementation truth, generated facts, assets, and source-owned documentation surfaces. |
+| `ls-github-publishing-workflow` | Packages public GitHub readiness checks around docs, versioning, security policy, release evidence, and repository settings. |
 | `ls-mcp-builder` | Helps build high-quality MCP servers for current agent/tool interoperability workflows. |
 | `ls-skill-importer` | Imports skills from URLs or local paths with discovery, validation, security screening, and summaries. |
 | `ls-skill-vetter` | Reviews third-party skills as untrusted inputs before they join your agent environment. |
+| `ls-codex-heartbeat` | Initializes and runs opt-in heartbeat checks with transaction-safe artifacts and explicit cron activation. |
+| `ls-keepass-secrets` | Resolves logical secrets through KeePassXC with safe mapping files and redacted output defaults. |
+| `ls-cloudflare-dns` | Manages Cloudflare DNS through deterministic JSON plans, snapshots, dry runs, and guarded apply flows. |
 | `ls-workflow-ops-tmux-session` | Keeps human-controlled server operations visible, resumable, and sudo-aware. |
-| `ls-linux-service-triage` | Diagnoses service failures with logs, systemd/PM2, file permissions, reverse proxy checks, and DNS sanity checks. |
-| `ls-automatic-versioning` | Keeps `VERSION`, README values, generated docs, and release behavior aligned with Conventional Commits. |
 
 See the generated catalogs for all shipped skills and workflows: [_localsetup/docs/SKILLS.md](_localsetup/docs/SKILLS.md) and [_localsetup/docs/WORKFLOW_QUICK_REF.md](_localsetup/docs/WORKFLOW_QUICK_REF.md).
 
@@ -198,18 +203,17 @@ python3 _localsetup/tools/localsetup_v3.py --repo . rollback
 
 ## What Localsetup is solving
 
-The 2025 agent tooling story is exciting, but the hard parts are not magic. Teams still need context that survives across sessions, standards that work across tools, safety around imported instructions, and workflows that can be resumed by another human or agent without archaeology.
+Agent tooling moves quickly, but the hard parts stay stubbornly practical. Teams still need context that survives across sessions, standards that work across tools, safety around imported instructions, and workflows that can be resumed by another human or agent without archaeology.
 
 Localsetup's opinion is simple: keep the agent operating model close to the code. Make it installable. Make it reviewable. Make it boring enough to trust.
 
-Research signals behind the design, verified in May 2026:
+The design follows a few durable pressures instead of chasing market snapshots:
 
-- [GitHub Octoverse 2025](https://github.blog/news-insights/octoverse/octoverse-a-new-developer-joins-github-every-second-as-ai-leads-typescript-to-1/) reports rapid growth in AI projects and LLM SDK use on GitHub.
-- [LangChain State of Agent Engineering](https://www.langchain.com/state-of-agent-engineering) highlights human review, evals, model/tool choices, and production agent patterns.
-- [Stack Overflow 2025 AI survey](https://survey.stackoverflow.co/2025/ai) reports high AI tool use alongside low trust in AI accuracy.
-- [Gartner's 2025 engineering leader survey](https://www.gartner.com/en/newsroom/press-releases/2025-05-22-gartner-survey-finds-77-percent-of-engineering-leaders-identify-ai-integration-in-apps-as-a-major-challenge) frames AI integration into applications as a significant engineering challenge.
-- [OWASP LLM Top 10 2025](https://owasp.org/www-project-top-10-for-large-language-model-applications/) keeps prompt injection, sensitive information disclosure, supply-chain issues, and excessive agency in view.
-- [Model Context Protocol](https://modelcontextprotocol.io/docs/getting-started/intro) and [Agent Skills](https://agentskills.io/specification) are current interoperability standards for tools, context, and skills.
+- Agents need repo-owned context, not only session memory.
+- Imported instructions and skills need supply-chain treatment before they are trusted.
+- Tool and data access should be explicit, least-privilege, and reviewable.
+- Long-running work needs checkpoints, validation evidence, and handoff notes.
+- Interoperability work such as [Model Context Protocol](https://modelcontextprotocol.io/docs/getting-started/intro) and [Agent Skills](https://agentskills.io/specification) is useful, but Localsetup keeps those integrations source-owned and replaceable.
 
 ## Requirements
 
