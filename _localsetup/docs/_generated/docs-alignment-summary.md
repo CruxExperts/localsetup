@@ -9,7 +9,7 @@ This page is generated from repository inventory, source-truth manifests, asset 
 
 | Signal | Value |
 |---|---:|
-| Version | `3.4.0` |
+| Version | `3.4.1` |
 | Public/framework docs scanned | 324 |
 | Shipped skills | 50 |
 | Workflow packages | 18 |

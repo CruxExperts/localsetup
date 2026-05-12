@@ -469,12 +469,18 @@ def stage_version_files(repo_root: Path) -> None:
         "_localsetup/docs/VERSIONING.md",
         "_localsetup/docs/_generated/facts.json",
         "_localsetup/docs/_generated/workflow-catalog.json",
+        "_localsetup/docs/_generated/docs-inventory.json",
+        "_localsetup/docs/_generated/docs-truth-map.json",
+        "_localsetup/docs/_generated/docs-audit-result.json",
+        "_localsetup/docs/_generated/docs-asset-manifest.json",
+        "_localsetup/docs/_generated/docs-alignment-summary.md",
         "_localsetup/docs/_generated/implementation-file-map.md",
         "_localsetup/docs/_generated/platform-adapters.md",
         "_localsetup/docs/_generated/skill-packs.md",
         "_localsetup/docs/_generated/skill_aliases.json",
         "_localsetup/docs/migration/v2-to-v3-skill-map.md",
         "_localsetup/docs/SKILLS.md",
+        "assets/README.md",
     ]
     doc_paths = [
         str(path.relative_to(repo_root))

@@ -87,6 +87,8 @@ def test_sync_version_files_updates_known_surfaces(tmp_path: Path) -> None:
     assert "- Current value: `3.2.0`" in (repo / "_localsetup/docs/VERSIONING.md").read_text(encoding="utf-8")
     assert "version: 3.2" in (repo / "_localsetup/docs/README.md").read_text(encoding="utf-8")
     assert '"version": "3.2.0"' in (repo / "_localsetup/docs/_generated/facts.json").read_text(encoding="utf-8")
+    assert '"version": "3.2.0"' in (repo / "_localsetup/docs/_generated/docs-truth-map.json").read_text(encoding="utf-8")
+    assert "| Version | `3.2.0` |" in (repo / "_localsetup/docs/_generated/docs-alignment-summary.md").read_text(encoding="utf-8")
     assert '"count":' in (repo / "_localsetup/docs/_generated/workflow-catalog.json").read_text(encoding="utf-8")
     assert "version: 3.2" in (repo / "_localsetup/docs/WORKFLOW_REGISTRY.md").read_text(encoding="utf-8")
     assert "version: 3.2" in (repo / "_localsetup/docs/migration/v2-to-v3-skill-map.md").read_text(encoding="utf-8")
@@ -136,6 +138,7 @@ def test_pre_push_hook_creates_sync_commit_and_blocks_stale_push(tmp_path: Path)
     assert "push stopped" in completed.stderr
     assert run(repo, "git", "log", "-1", "--pretty=%s").stdout.strip() == f"chore: sync release version {expected_version}"
     assert (repo / "VERSION").read_text(encoding="utf-8").strip() == expected_version
+    assert run(repo, "git", "status", "--short").stdout.strip() == ""
 
 
 def test_internal_release_tooling_feat_is_patch(tmp_path: Path) -> None:
