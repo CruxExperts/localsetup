@@ -1,0 +1,22 @@
+database: infra
+entries:
+  mail:
+    box03:
+      example:
+        admin:
+          service_type: mail.mailbox
+          path: Servers/box03/Mail/admin@example.com
+          username: admin@example.com
+        info:
+          service_type: mail.mailbox
+          path: Servers/box03/Mail/info@example.com
+          username: info@example.com
+  postgres:
+    box03:
+      app1:
+        service_type: db.user
+        path: Servers/box03/Postgres/app1
+        username: app1
+aliases:
+  admin@example.com: mail.box03.example.admin
+  info@example.com: mail.box03.example.info

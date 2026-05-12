@@ -1,0 +1,6 @@
+backend: keepassxc
+scope: global
+profile: default
+map_path: ~/.local/share/localsetup/secrets/maps/default.yaml
+database: ~/KeePass/example-infra.kdbx
+keepassxc_binary: keepassxc-cli

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Localsetup secret reference",
+  "description": "Accepted forms: Secret ID line, template reference, or secret:// URI.",
+  "oneOf": [
+    {
+      "type": "string",
+      "pattern": "^Secret ID: [A-Za-z0-9@._:+-]+$"
+    },
+    {
+      "type": "string",
+      "pattern": "^\\{\\{secret:[^}:]+:[^}]+\\}\\}$"
+    },
+    {
+      "type": "string",
+      "pattern": "^secret://localsetup/[a-z0-9_-]+/[a-z0-9_-]+/[a-z0-9][a-z0-9._-]{0,127}(#field=[A-Za-z0-9_.-]+)?$"
+    }
+  ]
+}

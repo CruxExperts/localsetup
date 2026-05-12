@@ -1,0 +1,3 @@
+Secret ID: mail.box03.example.admin
+{{secret:mail.box03.example.admin:password}}
+secret://localsetup/repo/default/mail.box03.example.admin#field=username

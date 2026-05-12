@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Localsetup secrets command result",
+  "type": "object",
+  "required": [
+    "ok",
+    "command",
+    "data",
+    "warnings",
+    "errors",
+    "sources",
+    "sensitive",
+    "redactions"
+  ],
+  "properties": {
+    "ok": {
+      "type": "boolean"
+    },
+    "command": {
+      "type": "string"
+    },
+    "data": {},
+    "warnings": {
+      "type": "array"
+    },
+    "errors": {
+      "type": "array"
+    },
+    "sources": {
+      "type": "array"
+    },
+    "sensitive": {
+      "type": "boolean"
+    },
+    "redactions": {
+      "type": "array"
+    }
+  },
+  "additionalProperties": false
+}

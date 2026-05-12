@@ -4,6 +4,15 @@
 .DS_Store
 *.log
 
+# Secret-bearing local artifacts
+*.kdbx
+*.kdbx.*
+*.keyfile
+*.keyx
+.env
+.env.*
+!.env.example
+
 # Local-only generated maintenance docs
 _internal_docs/
 _localsetup/.localsetup-meta/
@@ -33,6 +42,8 @@ _localsetup/logs/
 docs/
 !_localsetup/docs/
 !_localsetup/docs/**
+!_localsetup/skills/*/docs/
+!_localsetup/skills/*/docs/**
 
 # Contribution artifacts (local-only, not shipped)
 contributions/

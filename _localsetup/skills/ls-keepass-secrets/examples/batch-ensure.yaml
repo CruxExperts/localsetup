@@ -1,0 +1,10 @@
+items:
+  - id: mail.box03.example.admin
+    username: admin@example.com
+    service_type: mail.mailbox
+    path: Servers/box03/Mail/admin@example.com
+  - id: postgres.box03.app1
+    username: app1
+    service_type: db.user
+    path: Servers/box03/Postgres/app1
+    rotate_password: false

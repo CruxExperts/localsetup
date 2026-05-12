@@ -1,0 +1,6 @@
+backend: keepassxc
+scope: repo
+profile: default
+map_path: .localsetup/secrets/map.yaml
+database: ../vaults/example-infra.kdbx
+keepassxc_binary: keepassxc-cli

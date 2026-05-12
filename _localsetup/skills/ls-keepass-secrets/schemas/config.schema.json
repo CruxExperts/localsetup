@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Localsetup secrets config",
+  "type": "object",
+  "required": ["backend"],
+  "properties": {
+    "backend": {
+      "enum": ["keepassxc", "fake"]
+    },
+    "scope": {
+      "type": "string"
+    },
+    "profile": {
+      "type": "string"
+    },
+    "map_path": {
+      "type": "string"
+    },
+    "database": {
+      "type": "string"
+    },
+    "keepassxc_binary": {
+      "type": "string"
+    },
+    "fake_store": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}
