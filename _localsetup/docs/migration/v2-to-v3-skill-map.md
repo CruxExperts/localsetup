@@ -14,6 +14,7 @@ version: 3.4
 | `localsetup-automatic-versioning` | `ls-automatic-versioning` |
 | `localsetup-backlog-and-reminders` | `ls-backlog-and-reminders` |
 | `localsetup-cloudflare-dns` | `ls-cloudflare-dns` |
+| `localsetup-codex-heartbeat` | `ls-codex-heartbeat` |
 | `localsetup-communication-and-tools` | `ls-communication-and-tools` |
 | `localsetup-context` | `ls-context` |
 | `localsetup-cron-orchestrator` | `ls-cron-orchestrator` |

@@ -1,0 +1,30 @@
+heartbeat:
+  enabled: false
+  interval_minutes: 15
+  state_dir: state/codex-heartbeat
+  stale_after_seconds: 3600
+
+codex:
+  enabled: false
+  model: gpt-5.4-mini
+  timeout_seconds: 1800
+  command:
+    - codex
+    - exec
+    - --model
+    - gpt-5.4-mini
+    - --ask-for-approval
+    - on-request
+    - --sandbox
+    - workspace-write
+    - --
+    - Read HEARTBEAT.md, inspect queued heartbeat work, and produce a concise status report.
+
+hooks:
+  before: []
+  after: []
+
+direct_command_policy:
+  allow_git_writes: false
+  allow_destructive: false
+  allowlist: []

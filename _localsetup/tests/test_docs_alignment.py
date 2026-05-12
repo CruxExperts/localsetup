@@ -165,7 +165,7 @@ def test_managed_public_count_update_preserves_surrounding_content(tmp_path: Pat
 
     assert "README.md" in payload["changed"]
     assert "# Localsetup v3" in text
-    assert "50 shipped capability skills plus" in text
+    assert "51 shipped capability skills plus" in text
     assert "<!-- facts-block:start -->" in text
 
 

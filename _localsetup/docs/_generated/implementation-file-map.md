@@ -53,6 +53,7 @@
 | `keep` | `_localsetup/docs/DOCUMENT_LIFECYCLE_MANAGEMENT.md` |
 | `keep` | `_localsetup/docs/FEATURES.md` |
 | `keep` | `_localsetup/docs/GIT_TRACEABILITY.md` |
+| `keep` | `_localsetup/docs/HARNESS_AUTOMATION.md` |
 | `keep` | `_localsetup/docs/INPUT_HARDENING_STANDARD.md` |
 | `keep` | `_localsetup/docs/MEMORY_MANAGEMENT.md` |
 | `keep` | `_localsetup/docs/MULTI_PLATFORM_INSTALL.md` |
@@ -183,6 +184,16 @@
 | `keep` | `_localsetup/skills/ls-cloudflare-dns/tests/fixtures/normalized-record.json` |
 | `keep` | `_localsetup/skills/ls-cloudflare-dns/tests/fixtures/snapshot.json` |
 | `keep` | `_localsetup/skills/ls-cloudflare-dns/tests/test_cf_dns.py` |
+| `keep` | `_localsetup/skills/ls-codex-heartbeat/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-codex-heartbeat/references/artifacts.md` |
+| `keep` | `_localsetup/skills/ls-codex-heartbeat/references/command-logging.md` |
+| `keep` | `_localsetup/skills/ls-codex-heartbeat/references/config.md` |
+| `keep` | `_localsetup/skills/ls-codex-heartbeat/references/process-control.md` |
+| `keep` | `_localsetup/skills/ls-codex-heartbeat/references/recovery.md` |
+| `keep` | `_localsetup/skills/ls-codex-heartbeat/references/transactions.md` |
+| `keep` | `_localsetup/skills/ls-codex-heartbeat/scripts/codex_heartbeat.py` |
+| `keep` | `_localsetup/skills/ls-codex-heartbeat/templates/HEARTBEAT.md` |
+| `keep` | `_localsetup/skills/ls-codex-heartbeat/templates/codex_heartbeat.yaml` |
 | `keep` | `_localsetup/skills/ls-communication-and-tools/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-context/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-cron-orchestrator/SKILL.md` |
@@ -505,6 +516,7 @@
 | `keep` | `_localsetup/tests/conftest.py` |
 | `keep` | `_localsetup/tests/skill_smoke_commands.yaml` |
 | `keep` | `_localsetup/tests/test_adapter_parser.py` |
+| `keep` | `_localsetup/tests/test_codex_heartbeat.py` |
 | `keep` | `_localsetup/tests/test_docs_alignment.py` |
 | `keep` | `_localsetup/tests/test_github_starredrepos_skill.py` |
 | `keep` | `_localsetup/tests/test_keepass_secrets_cli_json.py` |
@@ -596,6 +608,7 @@
 | `refactor` | `_localsetup/v3/dependencies.py` |
 | `refactor` | `_localsetup/v3/docs.py` |
 | `refactor` | `_localsetup/v3/doctor.py` |
+| `refactor` | `_localsetup/v3/harness.py` |
 | `refactor` | `_localsetup/v3/hooks.py` |
 | `refactor` | `_localsetup/v3/lockfile.py` |
 | `refactor` | `_localsetup/v3/manifests.py` |
@@ -616,6 +629,8 @@
 | `keep` | `_localsetup/workflows/ls-workflow-audit-framework/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-audit-markdown-references/SKILL.md` |
 | `keep` | `_localsetup/workflows/ls-workflow-audit-markdown-references/workflow.yaml` |
+| `keep` | `_localsetup/workflows/ls-workflow-codex-heartbeat/SKILL.md` |
+| `keep` | `_localsetup/workflows/ls-workflow-codex-heartbeat/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-documentation-alignment/SKILL.md` |
 | `keep` | `_localsetup/workflows/ls-workflow-documentation-alignment/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-ops-guarded/SKILL.md` |

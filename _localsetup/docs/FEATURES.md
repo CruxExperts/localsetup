@@ -12,8 +12,8 @@ This is the full public capability catalog for Localsetup v3. The [root README](
 <!-- facts-block:start -->
 - Current version: `3.4.1`
 - Supported platforms: `cursor, claude-code, codex, openclaw, kilo, opencode`
-- Shipped skills: `50`
-- Workflow packages: `18`
+- Shipped skills: `51`
+- Workflow packages: `19`
 - Source: `_localsetup/docs/_generated/facts.json`
 <!-- facts-block:end -->
 
@@ -33,7 +33,7 @@ This is the full public capability catalog for Localsetup v3. The [root README](
 | Capability | What it gives you |
 |---|---|
 | Agent Skills compliance | Shipped skills use spec-compatible `SKILL.md` packages with `name`, `description`, and `metadata.version`. |
-| 50 shipped skills plus 18 workflow packages | Practical capabilities and orchestration flows for debugging, tests, PR review, git recovery, service triage, patching, docs, MCP building, TypeScript code quality, and more. |
+| 51 shipped skills plus 19 workflow packages | Practical capabilities and orchestration flows for debugging, tests, PR review, git recovery, service triage, patching, docs, MCP building, TypeScript code quality, opt-in heartbeat harnessing, and more. |
 | Skill import | Import skills from a URL or local path with discovery, validation, heuristic security screening, and summaries. |
 | Skill vetting | Treat third-party skills as untrusted before they can influence agent behavior. |
 | Skill normalization | Clean imported or in-tree skills for spec compliance, platform-neutral wording, and framework tooling standards. |
@@ -45,6 +45,7 @@ This is the full public capability catalog for Localsetup v3. The [root README](
 |---|---|
 | Workflow registry | Named workflows, aliases, and impact expectations for repeatable agent behavior. |
 | First-class workflow packages | Workflow sources live under `_localsetup/workflows/ls-workflow-*`, include executable `SKILL.md` files, and carry Localsetup `workflow.yaml` metadata for dependencies, gates, phases, validation, and generated catalogs. |
+| Opt-in harness automation | The `harness` pack installs Codex heartbeat capability only; target config, cron entries, and runtime state are created only by explicit `localsetup harness codex-heartbeat ...` activation commands. |
 | Decision tree workflow | A reverse-prompt planning loop that asks one focused question at a time. |
 | PRD batch workflow | Queue-driven spec execution with status updates and outcome records. |
 | Agent Q transport | Bidirectional PRD/spec exchange over file_drop or mail with sealed payloads, registry checks, and ledgering. |
@@ -56,6 +57,7 @@ This is the full public capability catalog for Localsetup v3. The [root README](
 | Capability | What it gives you |
 |---|---|
 | Human-in-the-loop tmux ops | Privileged or risky operations stay visible in tmux with sudo readiness checks and resumable output. |
+| Transaction-safe heartbeat runs | Codex heartbeat writes staged artifacts, validates hashes, promotes atomically, and recovers interrupted staged runs before fresh work starts. |
 | Safety and backup guidance | Skills route destructive ops through conservative backup, temp-file, firewall, and approval practices. |
 | Input hardening | Framework docs and tooling policy require hostile-input treatment for CLI args, files, network payloads, and imported content. |
 | Security-aware skill import | Prompt-injection and suspicious-pattern heuristics run before imported skills become part of the library. |

@@ -598,6 +598,12 @@ def _pack_choices(repo_root: Path) -> list[Choice]:
             "You plan to ship changes, prepare public docs, or manage release flow.",
             "Adds release-process opinions that are unnecessary for private scratch repos.",
         ),
+        "harness": (
+            "Opt-in autonomous harness capability for Codex heartbeat checks.",
+            "Installs the heartbeat skill and workflow only; activation still requires explicit harness commands.",
+            "You want a target repo to support scheduled heartbeat runs after a deliberate enable step.",
+            "Does not create config, cron entries, or state during normal install.",
+        ),
         "experimental": (
             "Advanced, less-conservative, or specialist workflows.",
             "Installs exploratory skills for orchestration, skill import/vetting, and higher-risk workflows.",

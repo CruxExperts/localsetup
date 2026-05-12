@@ -25,7 +25,7 @@ Use it when you want agents to stop improvising and start working from auditable
 Localsetup v3 packages:
 
 - Repo-local framework source under `_localsetup/`
-- 50 shipped capability skills plus 18 first-class workflow packages for debugging, testing, PR review, infrastructure, docs, git recovery, skill import, security vetting, TypeScript code quality, and agent workflow control
+- 51 shipped capability skills plus 19 first-class workflow packages for debugging, testing, PR review, infrastructure, docs, git recovery, skill import, security vetting, TypeScript code quality, opt-in harness automation, and agent workflow control
 - Cross-platform adapters for Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode
 - Agent Skills-compatible `SKILL.md` packages that can be imported, normalized, vetted, installed, and reused
 - Workflow packages under `_localsetup/workflows/` that stay executable as skills while carrying Localsetup `workflow.yaml` metadata for aliases, gates, dependencies, and generated registries
@@ -62,8 +62,8 @@ Start with the [workflow packages guide](_localsetup/docs/WORKFLOW_PACKAGES.md) 
 |---|---|
 | Current version | `3.4.1` |
 | Supported platforms | `cursor, claude-code, codex, openclaw, kilo, opencode` |
-| Shipped skills | `50` |
-| Workflow packages | `18` |
+| Shipped skills | `51` |
+| Workflow packages | `19` |
 | Source | `_localsetup/docs/_generated/facts.json` |
 <!-- facts-block:end -->
 
@@ -120,7 +120,7 @@ localsetup install --tools codex,kilo --yes
 Install every shipped skill and workflow package for Codex, Kilo, and OpenCode, while preparing the managed Python dependency environment:
 
 ```bash
-./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,experimental --install-deps
+./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,harness,experimental --install-deps
 ```
 
 Attach a selected adapter to another repo while using this checkout as the source:
@@ -141,6 +141,8 @@ Conversion writes a timestamped backup and machine-readable report under `.local
 Windows support is WSL2-only in v3. Open WSL2, change to the repo path, and run the Bash installer. `install.ps1` is a compatibility guidance stub.
 
 Full install docs: [_localsetup/docs/QUICKSTART.md](_localsetup/docs/QUICKSTART.md) and [_localsetup/docs/MULTI_PLATFORM_INSTALL.md](_localsetup/docs/MULTI_PLATFORM_INSTALL.md).
+
+Opt-in harness automation is documented separately because normal installs never schedule autonomous work. See [_localsetup/docs/HARNESS_AUTOMATION.md](_localsetup/docs/HARNESS_AUTOMATION.md) for `localsetup harness codex-heartbeat plan/init/enable/status/run/disable`.
 
 ## 10 reasons to use Localsetup v3
 
@@ -228,6 +230,7 @@ Use managed dependency setup instead of system pip overrides:
 - [Framework README](_localsetup/README.md)
 - [Feature catalog](_localsetup/docs/FEATURES.md)
 - [Platform registry](_localsetup/docs/PLATFORM_REGISTRY.md)
+- [Harness automation](_localsetup/docs/HARNESS_AUTOMATION.md)
 - [Workflow packages](_localsetup/docs/WORKFLOW_PACKAGES.md)
 - [Workflow standard](_localsetup/docs/WORKFLOW_STANDARD.md)
 - [Workflow registry](_localsetup/docs/WORKFLOW_REGISTRY.md)

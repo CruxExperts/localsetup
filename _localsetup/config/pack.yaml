@@ -21,6 +21,7 @@ optional_packs:
   - ops
   - integrations
   - publishing
+  - harness
   - experimental
 
 packs:
@@ -64,6 +65,9 @@ packs:
     - ls-linux-patcher
     - ls-linux-service-triage
     - ls-system-info
+  harness:
+    - ls-codex-heartbeat
+    - ls-cron-orchestrator
   integrations:
     - ls-agentq-transport
     - ls-cloudflare-dns
@@ -120,6 +124,8 @@ workflow_packs:
   publishing:
     - ls-workflow-documentation-alignment
     - ls-workflow-pipeline-pre-publish
+  harness:
+    - ls-workflow-codex-heartbeat
   experimental:
     - ls-workflow-queue-batch-implement
     - ls-workflow-spec-clarify-reverse

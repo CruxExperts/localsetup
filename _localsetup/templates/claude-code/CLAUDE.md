@@ -42,6 +42,7 @@ Localsetup v3 is deployed into this repo at `_localsetup/`. All framework and co
 - **ls-automatic-versioning**  - Version bumps, release workflow, conventional commits, versioning docs
 - **ls-github-publishing-workflow**  - Publishing to GitHub, public release prep, publishing checklist, repo readiness
 - **ls-github-starredrepos**  - Manage a GitHub starred repositories archive named starredrepos; authenticated context checks, dry-run sync, repo scouting, metadata snapshots, and guarded publish workflows
+- **ls-codex-heartbeat**  - Opt-in Codex heartbeat harness; use `localsetup harness codex-heartbeat plan/init/enable/status/run/disable`; normal install does not activate autonomous runs
 - **ls-skill-creator**  - Create new capability skill from an existing doc/markdown/GitHub source; use workflow packages for named orchestration flows
 - **ls-skill-importer**  - Import skills from URL or local path; discover, validate, screen, summarize; user picks which to import
 - **ls-skill-discovery**  - Discover public skills from registries; recommend top 5 similar when creating/importing; in-depth summary, use public skill, continue on own, or adapt

@@ -68,10 +68,12 @@ When the raw installer is run with `--tools` or `--platforms` and no explicit `-
 Full local setup for the Codex, Kilo, and OpenCode adapters:
 
 ```bash
-./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,experimental --install-deps
+./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,harness,experimental --install-deps
 ```
 
 That command installs every declared skill and workflow pack, attaches only `.codex/skills`, `.kilo/skills`, and `.opencode/skills`, and prepares the managed `.localsetup/venv` dependency environment.
+
+The `harness` pack only installs autonomous-harness capability. It does not create `HEARTBEAT.md`, `config/codex_heartbeat.yaml`, `cron/manifest.yaml`, or `state/codex-heartbeat/`. Activate a target repo later with `localsetup harness codex-heartbeat init` and `localsetup harness codex-heartbeat enable`; see [HARNESS_AUTOMATION.md](HARNESS_AUTOMATION.md).
 
 Attach a selected adapter to another repo or directory:
 
@@ -117,7 +119,7 @@ The wizard keeps the install portable and line-oriented; it uses plain terminal 
 
 - **Install mode:** `Global library only` is the safest default and refreshes the shared Localsetup library without repo adapter paths. `Current directory` prepares the directory you launched from. `Another target directory` prepares a different repo while using this checkout as the source.
 - **Platforms:** each selected platform shows the adapter path it writes, such as `.codex/skills` for Codex or `.cursor/skills` for Cursor.
-- **Skill packs:** `core` is the suggested default for normal use. `bootstrap` adds agent-team startup and audit workflows. `dev` adds code, docs, git, test, and repo repair workflows. `ops` adds server and maintenance workflows. `integrations` adds external system connectors. `publishing` adds release and public-repo support. `experimental` adds advanced or less-conservative workflows.
+- **Skill packs:** `core` is the suggested default for normal use. `bootstrap` adds agent-team startup and audit workflows. `dev` adds code, docs, git, test, and repo repair workflows. `ops` adds server and maintenance workflows. `integrations` adds external system connectors. `publishing` adds release and public-repo support. `harness` adds opt-in autonomous harness capability without activating it. `experimental` adds advanced or less-conservative workflows.
 - **Options:** symlink adapters are easiest to update because they point repos at the managed library. Portable adapter copies are more self-contained, but updating requires copying again. Prompt-only dependency mode reports what is needed without installing dependencies. Managed virtual environment mode prepares Localsetup's managed Python environment.
 
 ## Shared home library

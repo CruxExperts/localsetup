@@ -9,9 +9,10 @@
 | `publishing` | `skill` | `ls-automatic-versioning` | `localsetup-automatic-versioning` |
 | `ops` | `skill` | `ls-backlog-and-reminders` | `localsetup-backlog-and-reminders` |
 | `integrations` | `skill` | `ls-cloudflare-dns` | `localsetup-cloudflare-dns` |
+| `harness` | `skill` | `ls-codex-heartbeat` | `localsetup-codex-heartbeat` |
 | `bootstrap, core` | `skill` | `ls-communication-and-tools` | `localsetup-communication-and-tools` |
 | `bootstrap, core` | `skill` | `ls-context` | `localsetup-context` |
-| `ops` | `skill` | `ls-cron-orchestrator` | `localsetup-cron-orchestrator` |
+| `harness, ops` | `skill` | `ls-cron-orchestrator` | `localsetup-cron-orchestrator` |
 | `dev` | `skill` | `ls-debug-pro` | `localsetup-debug-pro` |
 | `bootstrap, dev` | `skill` | `ls-docs-organization` | `localsetup-docs-organization` |
 | `dev, publishing` | `skill` | `ls-documentation-alignment` | `localsetup-documentation-alignment` |
@@ -54,6 +55,7 @@
 | `dev` | `skill` | `ls-unfuck-my-git-state` | `localsetup-unfuck-my-git-state` |
 | `bootstrap, dev` | `workflow` | `ls-workflow-audit-framework` | `n/a` |
 | `dev` | `workflow` | `ls-workflow-audit-markdown-references` | `n/a` |
+| `harness` | `workflow` | `ls-workflow-codex-heartbeat` | `n/a` |
 | `dev, publishing` | `workflow` | `ls-workflow-documentation-alignment` | `n/a` |
 | `bootstrap, dev` | `workflow` | `ls-workflow-ops-guarded` | `n/a` |
 | `ops` | `workflow` | `ls-workflow-ops-tmux-session` | `n/a` |

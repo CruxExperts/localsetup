@@ -18,6 +18,7 @@ version: 3.4
 - `_localsetup/skills/` and `_localsetup/workflows/` are framework source.
 - `~/.local/share/agents/skills/localsetup` is managed runtime output and can be recreated by install.
 - Explicitly selected platform adapter paths such as `.codex/skills`, `.kilo/skills`, and `.cursor/skills` are attachments to the managed runtime library, not new source roots. A global-only install creates no repo adapter paths.
+- Harness activation files such as `HEARTBEAT.md`, `config/codex_heartbeat.yaml`, `cron/manifest.yaml`, and `state/codex-heartbeat/` are target-repo state created only by explicit harness commands, not by normal install.
 - Generated workflow docs come from `_localsetup/workflows/*/workflow.yaml`; do not treat generated registry rows as source edits.
 
 ## Reference
@@ -25,3 +26,4 @@ version: 3.4
 - [GIT_TRACEABILITY.md](GIT_TRACEABILITY.md)  - Attach git hash when referencing PRDs, specs, outcomes.
 - [AGENTIC_DESIGN_INDEX.md](AGENTIC_DESIGN_INDEX.md)  - Index of framework docs.
 - [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md)  - Source/runtime model for first-class workflow packages.
+- [HARNESS_AUTOMATION.md](HARNESS_AUTOMATION.md)  - Opt-in harness activation and runtime artifact boundaries.

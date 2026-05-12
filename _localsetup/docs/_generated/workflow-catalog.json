@@ -1,5 +1,5 @@
 {
-  "count": 18,
+  "count": 19,
   "workflows": [
     {
       "aliases": [
@@ -49,6 +49,35 @@
         "_localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py"
       ],
       "workflow_id": "audit-markdown-references"
+    },
+    {
+      "aliases": [
+        "codex heartbeat",
+        "heartbeat harness",
+        "harness heartbeat"
+      ],
+      "description": "Initialize, activate, run, inspect, and disable the opt-in Codex heartbeat harness with transaction evidence and cron manifest validation.",
+      "display_name": "Codex Heartbeat",
+      "package": "ls-workflow-codex-heartbeat",
+      "packs": [
+        "harness"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-codex-heartbeat",
+      "required_docs": [
+        "_localsetup/docs/HARNESS_AUTOMATION.md",
+        "_localsetup/skills/ls-codex-heartbeat/SKILL.md",
+        "_localsetup/skills/ls-codex-heartbeat/references/transactions.md"
+      ],
+      "required_skills": [
+        "ls-codex-heartbeat",
+        "ls-cron-orchestrator",
+        "ls-framework-compliance"
+      ],
+      "required_tools": [
+        "_localsetup/skills/ls-codex-heartbeat/scripts/codex_heartbeat.py",
+        "_localsetup/skills/ls-cron-orchestrator/scripts/cron_ctl.py"
+      ],
+      "workflow_id": "codex-heartbeat"
     },
     {
       "aliases": [

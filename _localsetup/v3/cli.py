@@ -15,6 +15,13 @@ from .conversion import convert_repo
 from .dependencies import ensure_dependencies
 from .doctor import run_doctor
 from .docs import generate_alias_outputs
+from .harness import disable as harness_disable
+from .harness import enable as harness_enable
+from .harness import init as harness_init
+from .harness import payload_to_text as harness_payload_to_text
+from .harness import plan as harness_plan
+from .harness import run as harness_run
+from .harness import status as harness_status
 from .hooks import run_maintainer_gate
 from .manifests import load_pack_config
 from .manifests import load_platforms
@@ -98,7 +105,7 @@ def _target_directory_value(args: argparse.Namespace) -> str | None:
 def _inject_global_target(args: argparse.Namespace) -> None:
     if not _is_global_shim_invocation():
         return
-    if args.cmd not in {"plan", "install", "update", "verify", "rollback", "adapters", "doctor", "migrate", "context", "convert"}:
+    if args.cmd not in {"plan", "install", "update", "verify", "rollback", "adapters", "doctor", "migrate", "context", "convert", "harness"}:
         return
     if _target_directory_value(args):
         return
@@ -149,6 +156,15 @@ def _print_payload(payload: dict, *, markdown: bool = False) -> None:
 def _all_configured_packs(repo_root: Path) -> list[str]:
     pack = load_pack_config(repo_root)
     return list(pack.packs.keys())
+
+
+def _add_harness_target_flags(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--target-directory", default=argparse.SUPPRESS)
+
+
+def _harness_target(args: argparse.Namespace) -> Path | None:
+    value = getattr(args, "target_directory", None)
+    return Path(value).expanduser().resolve() if value else None
 
 
 def _existing_target_platforms(repo_root: Path, target_root: Path, home: Path) -> list[dict[str, str]]:
@@ -284,6 +300,22 @@ def _main(argv: list[str] | None = None) -> int:
     sub.add_parser("scan-migration")
     sub.add_parser("validate-catalog")
     sub.add_parser("generate-docs")
+    harness_p = sub.add_parser("harness")
+    harness_sub = harness_p.add_subparsers(dest="harness_topic", required=True)
+    heartbeat_p = harness_sub.add_parser("codex-heartbeat")
+    heartbeat_sub = heartbeat_p.add_subparsers(dest="harness_action", required=True)
+    for action_name in ("plan", "init", "status"):
+        action_p = heartbeat_sub.add_parser(action_name)
+        _add_harness_target_flags(action_p)
+    for action_name in ("enable", "disable"):
+        action_p = heartbeat_sub.add_parser(action_name)
+        _add_harness_target_flags(action_p)
+        action_p.add_argument("--install-crontab", action="store_true")
+        action_p.add_argument("--yes", action="store_true")
+    run_p = heartbeat_sub.add_parser("run")
+    _add_harness_target_flags(run_p)
+    run_p.add_argument("--no-agent", action="store_true")
+    run_p.add_argument("--force", action="store_true")
     docs_align_p = sub.add_parser("docs-align")
     docs_align_p.add_argument("docs_align_args", nargs=argparse.REMAINDER)
 
@@ -506,6 +538,29 @@ def _main(argv: list[str] | None = None) -> int:
     if args.cmd == "generate-docs":
         print(json.dumps(generate_alias_outputs(root), indent=2))
         return 0
+
+    if args.cmd == "harness":
+        if args.harness_topic != "codex-heartbeat":
+            print(f"localsetup-v3: unsupported harness topic: {args.harness_topic}", file=sys.stderr)
+            return 2
+        target_root = _harness_target(args)
+        if args.harness_action == "plan":
+            payload = harness_plan(root, target_root)
+        elif args.harness_action == "init":
+            payload = harness_init(root, target_root)
+        elif args.harness_action == "enable":
+            payload = harness_enable(root, target_root, install_crontab=args.install_crontab, yes=args.yes)
+        elif args.harness_action == "disable":
+            payload = harness_disable(root, target_root, install_crontab=args.install_crontab, yes=args.yes)
+        elif args.harness_action == "status":
+            payload = harness_status(root, target_root)
+        elif args.harness_action == "run":
+            payload = harness_run(root, target_root, no_agent=args.no_agent, force=args.force)
+        else:
+            print(f"localsetup-v3: unsupported heartbeat action: {args.harness_action}", file=sys.stderr)
+            return 2
+        print(harness_payload_to_text(payload))
+        return 0 if payload.get("ok") else 1
 
     if args.cmd == "docs-align":
         tool = root / "_localsetup" / "tools" / "docs_alignment.py"

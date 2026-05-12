@@ -7,7 +7,7 @@ version: 3.4
 
 This page is generated from `_localsetup/skills/*/SKILL.md`.
 
-Total shipped skills: 50
+Total shipped skills: 51
 
 | Skill ID | Name | Version | Description |
 |---|---|---|---|
@@ -18,6 +18,7 @@ Total shipped skills: 50
 | `ls-automatic-versioning` | `ls-automatic-versioning` | `1.1` | Use and maintain automatic versioning from conventional commits; VERSION as source of truth; sync to READMEs and docs. Use when working on version bumps, release workflow, or when the user asks about versioning or conventional commits. |
 | `ls-backlog-and-reminders` | `ls-backlog-and-reminders` | `1.1` | Record deferred ideas, to-dos, and reminders (with optional due date or 'whenever'); show due/overdue when user starts a session or asks. Use when user says 'add to backlog', 'remind me', 'I'll do this later', 'what's due?', 'show my backlog', 'start my session', or wants to capture ideas for later. |
 | `ls-cloudflare-dns` | `ls-cloudflare-dns` | `2.0` | Manage Cloudflare DNS records and zone DNS settings with a Python-first direct Cloudflare v4 REST API CLI, deterministic JSON output, snapshots, dry-run plans, and apply safety gates. |
+| `ls-codex-heartbeat` | `ls-codex-heartbeat` | `1.0` | Opt-in Codex heartbeat harness for target repositories: initialize config, run transaction-safe heartbeat checks, preserve artifacts, and wire cron only after explicit activation. |
 | `ls-communication-and-tools` | `ls-communication-and-tools` | `1.2` | Communication and response guidelines, tool selection and enhancement, periodic context updates. Use for user communication style, choosing tools, MCP/context updates. |
 | `ls-context` | `ls-context` | `1.5` | Localsetup v3 framework context  - overview, invariants, and skills index. Load first when working in a repo that uses Localsetup v3. Use when starting work in this repo or when user asks about framework rules. |
 | `ls-cron-orchestrator` | `ls-cron-orchestrator` | `1.0` | Manage cron from a repo-local manifest: time triggers, on-boot-with-delay, sequenced tasks; create, remove, reorder, install. |

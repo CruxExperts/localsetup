@@ -15,6 +15,7 @@
 | ls-automatic-versioning | Automatic semantic versioning from conventional commits; VERSION, sync to READMEs/docs | Version bumps, release workflow, conventional commits, versioning docs |
 | ls-github-publishing-workflow | Publishing checklist, doc structure, licensing, scrub for PII/secrets | Publishing to GitHub, public release prep, publishing checklist, repo readiness |
 | ls-github-starredrepos | GitHub starred repositories archive named starredrepos | Authenticated context checks, dry-run sync, repo scouting, metadata snapshots, and guarded publish workflows |
+| ls-codex-heartbeat | Codex heartbeat harness | Opt-in heartbeat activation, cron manifest wiring, transaction artifacts, and explicit no-agent runs |
 | ls-skill-creator | Create framework capability skill from existing doc/markdown/GitHub source | Create new skill; use workflow packages for named orchestration flows; adapt doc or skill into framework |
 | ls-skill-importer | Import skills from URL (e.g. GitHub) or local path; discover, validate, screen, summarize; user picks which to import | Import skills from URL/path, screen external skills, add skills from repo |
 | ls-skill-discovery | Discover public skills from registries; recommend top 5 similar when creating/importing; in-depth summary, use public, continue, or adapt | Creating/importing skill; find similar public skills; PUBLIC_SKILL_REGISTRY.urls, PUBLIC_SKILL_INDEX.yaml |

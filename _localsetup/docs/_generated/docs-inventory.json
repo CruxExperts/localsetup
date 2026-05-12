@@ -68,12 +68,14 @@
   "cli_commands": [
     "adapters",
     "catalog",
+    "codex-heartbeat",
     "configure",
     "context",
     "convert",
     "docs-align",
     "doctor",
     "generate-docs",
+    "harness",
     "hook-gate",
     "install",
     "install-hooks",
@@ -83,6 +85,7 @@
     "register-shell",
     "release-push",
     "rollback",
+    "run",
     "scan-migration",
     "self-refresh",
     "update",
@@ -93,14 +96,14 @@
     "wizard"
   ],
   "counts": {
-    "docs": 324,
-    "framework_docs": 56,
+    "docs": 334,
+    "framework_docs": 57,
     "generated_docs": 4,
     "platforms": 6,
     "public_docs": 6,
-    "skills": 50,
-    "workflow_packs": 23,
-    "workflows": 18
+    "skills": 51,
+    "workflow_packs": 24,
+    "workflows": 19
   },
   "docs": [
     {
@@ -264,6 +267,14 @@
       "has_frontmatter": true,
       "managed_blocks": [],
       "path": "_localsetup/docs/GIT_TRACEABILITY.md",
+      "status": "ACTIVE",
+      "version": "3.4"
+    },
+    {
+      "class": "framework",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "path": "_localsetup/docs/HARNESS_AUTOMATION.md",
       "status": "ACTIVE",
       "version": "3.4"
     },
@@ -892,6 +903,70 @@
       "path": "_localsetup/skills/ls-cloudflare-dns/references/zones.md",
       "status": "",
       "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "path": "_localsetup/skills/ls-codex-heartbeat/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "path": "_localsetup/skills/ls-codex-heartbeat/references/artifacts.md",
+      "status": "ACTIVE",
+      "version": "3.4"
+    },
+    {
+      "class": "other",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "path": "_localsetup/skills/ls-codex-heartbeat/references/command-logging.md",
+      "status": "ACTIVE",
+      "version": "3.4"
+    },
+    {
+      "class": "other",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "path": "_localsetup/skills/ls-codex-heartbeat/references/config.md",
+      "status": "ACTIVE",
+      "version": "3.4"
+    },
+    {
+      "class": "other",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "path": "_localsetup/skills/ls-codex-heartbeat/references/process-control.md",
+      "status": "ACTIVE",
+      "version": "3.4"
+    },
+    {
+      "class": "other",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "path": "_localsetup/skills/ls-codex-heartbeat/references/recovery.md",
+      "status": "ACTIVE",
+      "version": "3.4"
+    },
+    {
+      "class": "other",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "path": "_localsetup/skills/ls-codex-heartbeat/references/transactions.md",
+      "status": "ACTIVE",
+      "version": "3.4"
+    },
+    {
+      "class": "other",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "path": "_localsetup/skills/ls-codex-heartbeat/templates/HEARTBEAT.md",
+      "status": "ACTIVE",
+      "version": "3.4"
     },
     {
       "class": "skill",
@@ -2569,6 +2644,14 @@
       "class": "skill",
       "has_frontmatter": true,
       "managed_blocks": [],
+      "path": "_localsetup/workflows/ls-workflow-codex-heartbeat/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
       "path": "_localsetup/workflows/ls-workflow-documentation-alignment/SKILL.md",
       "status": "",
       "version": ""
@@ -2793,6 +2876,13 @@
       "path": "_localsetup/skills/ls-cloudflare-dns"
     },
     {
+      "name": "ls-codex-heartbeat",
+      "packs": [
+        "harness"
+      ],
+      "path": "_localsetup/skills/ls-codex-heartbeat"
+    },
+    {
       "name": "ls-communication-and-tools",
       "packs": [
         "bootstrap",
@@ -2811,6 +2901,7 @@
     {
       "name": "ls-cron-orchestrator",
       "packs": [
+        "harness",
         "ops"
       ],
       "path": "_localsetup/skills/ls-cron-orchestrator"
@@ -3122,6 +3213,14 @@
       ],
       "path": "_localsetup/workflows/ls-workflow-audit-markdown-references",
       "workflow_id": "audit-markdown-references"
+    },
+    {
+      "package": "ls-workflow-codex-heartbeat",
+      "packs": [
+        "harness"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-codex-heartbeat",
+      "workflow_id": "codex-heartbeat"
     },
     {
       "package": "ls-workflow-documentation-alignment",

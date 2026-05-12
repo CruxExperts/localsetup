@@ -16,8 +16,8 @@ This is the public documentation map for Localsetup v3. Start here when you want
 <!-- facts-block:start -->
 - Current version: `3.4.1`
 - Supported platforms: `cursor, claude-code, codex, openclaw, kilo, opencode`
-- Shipped skills: `50`
-- Workflow packages: `18`
+- Shipped skills: `51`
+- Workflow packages: `19`
 - Source: `_localsetup/docs/_generated/facts.json`
 <!-- facts-block:end -->
 
@@ -34,6 +34,7 @@ This is the public documentation map for Localsetup v3. Start here when you want
 | [Workflow package standard](WORKFLOW_STANDARD.md) | Rules for first-class workflow packages and `workflow.yaml`. |
 | [Platform registry](PLATFORM_REGISTRY.md) | Canonical platform IDs, paths, and adapter rules. |
 | [Multi-platform install](MULTI_PLATFORM_INSTALL.md) | Detailed install behavior and options. |
+| [Harness automation](HARNESS_AUTOMATION.md) | Opt-in Codex heartbeat activation, runtime artifacts, cron gating, and command-policy boundaries. |
 
 ## Skills And Workflow Packages At A Glance
 
@@ -91,6 +92,7 @@ Agent Q is the bidirectional handoff layer for PRD/spec exchange over file_drop 
 |---|---|
 | [Versioning](VERSIONING.md) | VERSION source of truth, Conventional Commits, and release sync. |
 | [Documentation alignment summary](_generated/docs-alignment-summary.md) | Generated inventory, truth map, asset manifest, and docs-alignment audit results. |
+| [Harness automation](HARNESS_AUTOMATION.md) | Explicit activation rules for autonomous harness capabilities. |
 | [Repository maintenance](REPO_MAINTENANCE.md) | GitHub rulesets, required checks, labels, triage, security settings, and release-maintenance gates. |
 | [Document lifecycle](DOCUMENT_LIFECYCLE_MANAGEMENT.md) | ACTIVE, DRAFT, PROPOSAL, and deprecation rules. |
 | [Repo and data separation](REPO_AND_DATA_SEPARATION.md) | What belongs in source vs. local/generated state. |

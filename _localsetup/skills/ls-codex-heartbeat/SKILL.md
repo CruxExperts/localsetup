@@ -1,0 +1,47 @@
+---
+name: ls-codex-heartbeat
+description: "Opt-in Codex heartbeat harness for target repositories: initialize config, run transaction-safe heartbeat checks, preserve artifacts, and wire cron only after explicit activation."
+metadata:
+  version: "1.0"
+compatibility: "Python 3.10+, PyYAML, Localsetup v3.4 harness CLI."
+---
+
+# Codex Heartbeat
+
+Use this skill when a repository needs an explicit, auditable heartbeat harness for periodic Codex-oriented checks.
+
+## Guardrails
+
+- Installing this skill only makes the harness available. It does not create config, cron entries, or autonomous runs.
+- Activate per target repo with `localsetup harness codex-heartbeat init` and `enable`.
+- Runtime artifacts stay under ignored target-repo `state/codex-heartbeat/`.
+- `enable --install-crontab` refuses to install a live crontab unless `--yes` is also passed.
+- `run --no-agent` exercises locks, recovery, command logging, staged validation, and atomic promotion without model use.
+- Direct hooks block `git commit`, `git push`, and destructive executables unless explicitly allowed.
+- Codex model execution is still constrained by the configured Codex command, sandbox, and approval settings. This harness records and gates execution; it is not a sandbox replacement.
+
+## Commands
+
+```bash
+localsetup harness codex-heartbeat plan
+localsetup harness codex-heartbeat init
+localsetup harness codex-heartbeat enable
+localsetup harness codex-heartbeat status
+localsetup harness codex-heartbeat run --no-agent
+localsetup harness codex-heartbeat disable
+```
+
+Standalone runtime script:
+
+```bash
+python3 _localsetup/skills/ls-codex-heartbeat/scripts/codex_heartbeat.py --target-root . --no-agent
+```
+
+## References
+
+- `references/config.md`
+- `references/artifacts.md`
+- `references/recovery.md`
+- `references/command-logging.md`
+- `references/process-control.md`
+- `references/transactions.md`
