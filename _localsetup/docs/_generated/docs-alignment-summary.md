@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 3.3
+version: 3.4
 ---
 
 # Documentation Alignment Summary
@@ -9,7 +9,7 @@ This page is generated from repository inventory, source-truth manifests, asset 
 
 | Signal | Value |
 |---|---:|
-| Version | `3.3.5` |
+| Version | `3.4.0` |
 | Public/framework docs scanned | 324 |
 | Shipped skills | 50 |
 | Workflow packages | 18 |
