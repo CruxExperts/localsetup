@@ -17,6 +17,8 @@ NON_INTERACTIVE=false
 INSTALL_DEPS=false
 REGISTER_SHELL=true
 DEPENDENCY_MODE="prompt-only"
+COLOR_MODE="auto"
+GLYPH_MODE="auto"
 MIN_PYTHON_VERSION="3.10.0"
 EXPLICIT_SOURCE_DIR=false
 EXPLICIT_TARGET_DIR=false
@@ -56,6 +58,9 @@ Options:
   --mode MODE          symlink or portable. Default: symlink.
   --install-deps       Create/update the managed venv and install _localsetup/requirements.txt.
   --no-register-shell  Do not create/update ~/.local/bin/localsetup.
+  --color MODE         Wizard color mode: auto, always, or never. Default: auto.
+  --no-color           Alias for --color never.
+  --glyphs MODE        Wizard glyph mode: auto, ascii, or unicode. Default: auto.
   --upgrade-policy     Accepted for v2 compatibility; v3 uses managed install metadata.
   --global             Accepted for v2 compatibility; v3 installs the shared home library by default.
   --help, -h           Show this help.
@@ -206,6 +211,26 @@ while [[ $# -gt 0 ]]; do
       REGISTER_SHELL=false
       shift
       ;;
+    --color)
+      [[ $# -ge 2 ]] || die "missing value for --color"
+      case "$2" in
+        auto|always|never) COLOR_MODE="$2" ;;
+        *) die "invalid --color: $2" ;;
+      esac
+      shift 2
+      ;;
+    --no-color)
+      COLOR_MODE="never"
+      shift
+      ;;
+    --glyphs)
+      [[ $# -ge 2 ]] || die "missing value for --glyphs"
+      case "$2" in
+        auto|ascii|unicode) GLYPH_MODE="$2" ;;
+        *) die "invalid --glyphs: $2" ;;
+      esac
+      shift 2
+      ;;
     --upgrade-policy)
       [[ $# -ge 2 ]] || die "missing value for --upgrade-policy"
       shift 2
@@ -271,7 +296,7 @@ if [[ "$NON_INTERACTIVE" != true ]]; then
   if [[ -n "$ATTACH_TARGET_DIR" ]]; then
     wizard_target_args=(--target-directory "$ATTACH_TARGET_DIR")
   fi
-  wizard_cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --repo "$SOURCE_DIR" "${wizard_target_args[@]}" wizard --caller-directory "$CALLER_DIR" --dependency-mode "$DEPENDENCY_MODE" --mode "$MODE" --packs "${pack_args[@]}")
+  wizard_cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --repo "$SOURCE_DIR" "${wizard_target_args[@]}" wizard --caller-directory "$CALLER_DIR" --dependency-mode "$DEPENDENCY_MODE" --mode "$MODE" --color "$COLOR_MODE" --glyphs "$GLYPH_MODE" --packs "${pack_args[@]}")
   if [[ -n "$ATTACH_TARGET_DIR" && "$EXPLICIT_TARGET_DIR" != true ]]; then
     wizard_cmd+=(--target-directory-origin inferred)
   fi

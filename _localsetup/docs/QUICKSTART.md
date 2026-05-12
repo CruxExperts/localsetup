@@ -28,6 +28,8 @@ This opens a terminal wizard. It creates or refreshes the managed source checkou
 
 The wizard uses guided choices on every step. Each prompt shows `Enter number(s) | d details | b back | q quit | ? help`; detailed mode is on by default and explains what each option does, when to choose it, and its tradeoff. Press `d` to switch to compact mode when you only want the one-line summaries.
 
+Color and glyphs are optional presentation aids, not part of the automation contract. Interactive runs default to `--color auto --glyphs auto`, honor `NO_COLOR`, avoid color on `TERM=dumb` and non-TTY output, and fall back to text labels such as `[OK]`, `[WARN]`, and `[FAIL]` when Unicode is not appropriate. Use `--no-color`, `--color never`, or `--glyphs ascii` for portable logs.
+
 The old public command form still opens the wizard when a terminal is available:
 
 ```bash

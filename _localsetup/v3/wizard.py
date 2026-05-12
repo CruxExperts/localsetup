@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import locale
 import os
+import shutil
 import sys
+import textwrap
 from pathlib import Path
 from typing import Sequence, TextIO
 
@@ -29,6 +32,42 @@ PLATFORM_LABELS = {
 }
 
 SHORTCUT_FOOTER = "Enter number(s) | d details | b back | q quit | ? help"
+COLOR_MODES = {"auto", "always", "never"}
+GLYPH_MODES = {"auto", "ascii", "unicode"}
+
+STYLE_CODES = {
+    "heading": "1;36",
+    "rule": "36",
+    "muted": "2",
+    "shortcut": "1;37",
+    "choice_number": "1;36",
+    "suggested": "1;32",
+    "path": "36",
+    "command": "1;37",
+    "success": "32",
+    "warning": "33",
+    "error": "31",
+    "blocker": "31",
+    "planned": "36",
+}
+
+ASCII_GLYPHS = {
+    "ok": "[OK]",
+    "warn": "[WARN]",
+    "fail": "[FAIL]",
+    "info": "[INFO]",
+    "plan": "[PLAN]",
+    "suggested": "[SUGGESTED]",
+}
+
+UNICODE_GLYPHS = {
+    "ok": "[OK] ✓",
+    "warn": "[WARN] !",
+    "fail": "[FAIL] ✕",
+    "info": "[INFO] •",
+    "plan": "[PLAN] →",
+    "suggested": "[SUGGESTED] ★",
+}
 
 WELCOME_BANNER = r""" _      ___   ____    _    _     ____  _____ _____ _   _ ____
 | |    / _ \ / ___|  / \  | |   / ___|| ____|_   _| | | |  _ \
@@ -69,15 +108,64 @@ class WizardState:
 
 
 class TerminalWizard:
-    def __init__(self, input_stream: TextIO, output_stream: TextIO, *, color: bool | None = None) -> None:
+    def __init__(
+        self,
+        input_stream: TextIO,
+        output_stream: TextIO,
+        *,
+        color: bool | None = None,
+        color_mode: str = "auto",
+        glyph_mode: str | None = None,
+    ) -> None:
         self.input = input_stream
         self.output = output_stream
-        self.color = color if color is not None else self._supports_color(output_stream)
+        if color is not None:
+            color_mode = "always" if color else "never"
+            if color is False and glyph_mode is None:
+                glyph_mode = "ascii"
+        if glyph_mode is None:
+            glyph_mode = "auto"
+        self.color_mode = _validate_mode(color_mode, COLOR_MODES, "color")
+        self.glyph_mode = _validate_mode(glyph_mode, GLYPH_MODES, "glyphs")
+        self.color = self._resolve_color(output_stream, self.color_mode)
+        self.unicode_glyphs = self._resolve_glyphs(output_stream, self.glyph_mode)
         self.detail_mode = True
+        self.current_progress: str | None = None
 
     @staticmethod
     def _supports_color(stream: TextIO) -> bool:
+        return TerminalWizard._resolve_color(stream, "auto")
+
+    @staticmethod
+    def _is_tty(stream: TextIO) -> bool:
         return hasattr(stream, "isatty") and stream.isatty()
+
+    @staticmethod
+    def _resolve_color(stream: TextIO, mode: str) -> bool:
+        if mode == "always":
+            return True
+        if mode == "never":
+            return False
+        if os.environ.get("NO_COLOR") is not None:
+            return False
+        if os.environ.get("FORCE_COLOR") is not None:
+            return True
+        if os.environ.get("TERM", "").lower() in {"dumb", "unknown"}:
+            return False
+        return TerminalWizard._is_tty(stream)
+
+    @staticmethod
+    def _resolve_glyphs(stream: TextIO, mode: str) -> bool:
+        if mode == "unicode":
+            return True
+        if mode == "ascii":
+            return False
+        if not TerminalWizard._is_tty(stream):
+            return False
+        if os.environ.get("TERM", "").lower() in {"dumb", "unknown"}:
+            return False
+        encoding = getattr(stream, "encoding", None) or locale.getpreferredencoding(False)
+        return "utf" in encoding.lower()
 
     def close(self) -> None:
         for stream in {self.input, self.output}:
@@ -92,10 +180,74 @@ class TerminalWizard:
             return text
         return f"\033[{code}m{text}\033[0m"
 
+    def token(self, text: str, token: str) -> str:
+        return self.style(text, STYLE_CODES.get(token, "0"))
+
+    def glyph(self, name: str) -> str:
+        glyphs = UNICODE_GLYPHS if self.unicode_glyphs else ASCII_GLYPHS
+        return glyphs.get(name, f"[{name.upper()}]")
+
+    def width(self) -> int:
+        try:
+            return shutil.get_terminal_size((88, 24)).columns
+        except OSError:
+            return 88
+
     def title(self, text: str) -> None:
+        self.step_header(text, progress=self.current_progress)
+
+    def step_header(self, text: str, *, progress: str | None = None) -> None:
+        heading = f"{progress} - {text}" if progress else text
         self.write("")
-        self.write(self.style(text, "1;36"))
-        self.write(self.style("-" * len(text), "36"))
+        self.write(self.token(heading, "heading"))
+        self.write(self.token("-" * len(heading), "rule"))
+
+    def detail_line(self, text: str, *, indent: str = "", style: str = "muted") -> None:
+        width = max(40, self.width())
+        for line in textwrap.wrap(text, width=width, initial_indent=indent, subsequent_indent=indent):
+            self.write(self.token(line, style))
+
+    def key_value_block(self, rows: Sequence[tuple[str, str]], *, indent: str = "") -> None:
+        label_width = max((len(label) for label, _ in rows), default=0)
+        width = max(40, self.width())
+        for label, value in rows:
+            prefix = f"{indent}{label + ':':<{label_width + 1}} "
+            wrapped = textwrap.wrap(str(value), width=max(20, width - len(prefix)))
+            if not wrapped:
+                self.write(prefix.rstrip())
+                continue
+            self.write(prefix + wrapped[0])
+            continuation = " " * len(prefix)
+            for line in wrapped[1:]:
+                self.write(continuation + line)
+
+    def choice_row(self, index: int, choice: Choice, *, suggested: bool = False) -> None:
+        marker = f" {self.token(self.glyph('suggested'), 'suggested')}" if suggested else ""
+        number = self.token(f"{index}.", "choice_number")
+        self.write(f"  {number} {choice.label}{marker}")
+        self.detail_line(choice.summary, indent="     ", style="muted")
+        if self.detail_mode:
+            self.detail_line(f"Does: {choice.effect}", indent="     ")
+            self.detail_line(f"Choose when: {choice.best_for}", indent="     ")
+            self.detail_line(f"Tradeoff: {choice.tradeoff}", indent="     ")
+            if choice.caution:
+                self.detail_line(f"Caution: {choice.caution}", indent="     ", style="warning")
+
+    def status_line(self, kind: str, text: str) -> None:
+        style = {"ok": "success", "warn": "warning", "fail": "error", "info": "muted", "plan": "planned"}.get(kind, "muted")
+        self.write(f"{self.token(self.glyph(kind), style)} {text}")
+
+    def action_list(self, lines: Sequence[str]) -> None:
+        for line in lines:
+            self.detail_line(f"{self.glyph('plan')} {line}", indent="  ", style="planned")
+
+    def diagnostic_command(self, command: Sequence[str] | str) -> None:
+        command_text = command if isinstance(command, str) else " ".join(command)
+        self.write("Diagnostic command:")
+        self.detail_line(command_text, indent="  ", style="command")
+
+    def footer(self) -> str:
+        return self.token(SHORTCUT_FOOTER, "shortcut")
 
     def clear_screen(self) -> None:
         if not (hasattr(self.output, "isatty") and self.output.isatty()):
@@ -106,7 +258,7 @@ class TerminalWizard:
         self.output.flush()
 
     def banner(self, text: str) -> None:
-        self.write(self.style(text, "1;36"))
+        self.write(self.token(text, "heading"))
 
     def write(self, text: str = "") -> None:
         print(text, file=self.output)
@@ -115,7 +267,7 @@ class TerminalWizard:
         suffix = f" [{default}]" if default else ""
         while True:
             if footer:
-                self.write(self.style(footer, "2"))
+                self.write(footer)
             self.output.write(f"{prompt}{suffix}: ")
             self.output.flush()
             try:
@@ -136,7 +288,13 @@ class TerminalWizard:
             return value
 
 
-def open_tty() -> TerminalWizard:
+def _validate_mode(value: str, choices: set[str], name: str) -> str:
+    if value not in choices:
+        raise ValueError(f"invalid {name} mode: {value}")
+    return value
+
+
+def open_tty(*, color_mode: str = "auto", glyph_mode: str = "auto") -> TerminalWizard:
     try:
         tty_in = open("/dev/tty", "r", encoding="utf-8", errors="replace")
         tty_out = open("/dev/tty", "w", encoding="utf-8", errors="replace")
@@ -144,7 +302,7 @@ def open_tty() -> TerminalWizard:
         raise RuntimeError(
             "interactive installer requires a terminal. Run with a TTY, or use --non-interactive --yes for automation."
         ) from exc
-    return TerminalWizard(tty_in, tty_out)
+    return TerminalWizard(tty_in, tty_out, color_mode=color_mode, glyph_mode=glyph_mode)
 
 
 def _choice_from_input(choice: ChoiceInput) -> Choice:
@@ -173,25 +331,17 @@ def _render_step_context(
     suggested_reason: str | None,
 ) -> None:
     if decides:
-        term.write(f"Decides: {decides}")
+        term.detail_line(f"Decides: {decides}")
     if suggested:
         reason = suggested_reason or suggested.best_for
-        term.write(f"Suggested: {suggested.label} - {reason}")
+        term.detail_line(f"{term.glyph('suggested')} Suggested: {suggested.label} - {reason}", style="suggested")
     if decides or suggested:
         term.write("")
 
 
 def _render_choices(term: TerminalWizard, choices: list[Choice], *, default_values: set[str]) -> None:
     for i, choice in enumerate(choices, start=1):
-        marker = " (suggested)" if choice.value in default_values else ""
-        term.write(f"  {i}. {choice.label}{marker}")
-        term.write(f"     {choice.summary}")
-        if term.detail_mode:
-            term.write(f"     Does: {choice.effect}")
-            term.write(f"     Choose when: {choice.best_for}")
-            term.write(f"     Tradeoff: {choice.tradeoff}")
-            if choice.caution:
-                term.write(f"     Caution: {choice.caution}")
+        term.choice_row(i, choice, suggested=choice.value in default_values)
 
 
 def _print_step_help(term: TerminalWizard, *, help_text: str | None, allow_many: bool) -> None:
@@ -211,11 +361,11 @@ def _toggle_details(term: TerminalWizard) -> None:
 
 
 def _choice_footer(term: TerminalWizard) -> str:
-    return SHORTCUT_FOOTER
+    return term.footer()
 
 
 def _continue_footer(term: TerminalWizard) -> str:
-    return SHORTCUT_FOOTER
+    return term.footer()
 
 
 def _continue_prompt(term: TerminalWizard, prompt: str, *, help_text: str, detail_text: str | None = None) -> str:
@@ -530,11 +680,15 @@ def _action_summary(actions: list[object]) -> list[str]:
 def _show_welcome(term: TerminalWizard, state: WizardState) -> str:
     term.banner(WELCOME_BANNER)
     term.write("")
-    term.write("Decides: Starts a guided install session and confirms the source checkout.")
-    term.write("This wizard installs the managed Localsetup skill library and can attach adapters for agent tools.")
-    term.write(f"Source checkout: {state.repo_root}")
-    term.write(f"Managed library: {_global_root(state.repo_root, state.home)}")
-    term.write("It will show a review screen before anything is applied.")
+    term.detail_line("Decides: Starts a guided install session and confirms the source checkout.")
+    term.detail_line("This wizard installs the managed Localsetup skill library and can attach adapters for agent tools.")
+    term.key_value_block(
+        [
+            ("Source checkout", str(state.repo_root)),
+            ("Managed library", str(_global_root(state.repo_root, state.home))),
+        ]
+    )
+    term.status_line("info", "It will show a review screen before anything is applied.")
     return _continue_prompt(
         term,
         "Press Enter to continue",
@@ -545,13 +699,13 @@ def _show_welcome(term: TerminalWizard, state: WizardState) -> str:
 
 def _source_step(term: TerminalWizard, state: WizardState) -> str:
     term.title("Source")
-    term.write("Decides: Which Localsetup checkout provides the installer files and shipped skills.")
-    term.write(f"Using Localsetup source: {state.repo_root}")
-    term.write("Explicit --directory values are used as-is; raw installs use the managed source checkout.")
+    term.detail_line("Decides: Which Localsetup checkout provides the installer files and shipped skills.")
+    term.key_value_block([("Using Localsetup source", str(state.repo_root))])
+    term.detail_line("Explicit --directory values are used as-is; raw installs use the managed source checkout.")
     if term.detail_mode:
-        term.write("Does: Reads manifests, skills, workflows, and installer code from this checkout.")
-        term.write("Choose when: This source path is the Localsetup version you want to install from.")
-        term.write("Tradeoff: A stale source checkout can install stale skills; refresh the source first if that is a concern.")
+        term.detail_line("Does: Reads manifests, skills, workflows, and installer code from this checkout.")
+        term.detail_line("Choose when: This source path is the Localsetup version you want to install from.")
+        term.detail_line("Tradeoff: A stale source checkout can install stale skills; refresh the source first if that is a concern.")
     return _continue_prompt(
         term,
         "Press Enter to continue",
@@ -708,7 +862,7 @@ def _options_step(term: TerminalWizard, state: WizardState) -> str:
 
 def _review_step(term: TerminalWizard, state: WizardState) -> str:
     term.title("Review")
-    term.write("Decides: Whether the planned install should be applied.")
+    term.detail_line("Decides: Whether the planned install should be applied.")
     target_root = state.target_directory
     platforms = state.platforms or []
     packs = state.packs or ["core"]
@@ -728,32 +882,50 @@ def _review_step(term: TerminalWizard, state: WizardState) -> str:
         dependency_mode=state.dependency_mode,
         target_root=target_root,
     )
-    term.write(f"Source: {state.repo_root}")
-    term.write(f"Target: {target_root or state.repo_root} ({'global library only' if not platforms else 'adapters selected'})")
-    term.write(f"Home library: {_global_root(state.repo_root, state.home)}")
-    term.write(f"Platforms: {', '.join(platforms) if platforms else 'none'}")
-    term.write(f"Packs: {', '.join(packs)}")
-    term.write(f"Adapter mode: {state.attach_mode}")
-    term.write(f"Dependency mode: {state.dependency_mode}")
+    term.write("Source")
+    term.key_value_block(
+        [
+            ("Checkout", str(state.repo_root)),
+            ("Home library", str(_global_root(state.repo_root, state.home))),
+        ],
+        indent="  ",
+    )
+    term.write("")
+    term.write("Target")
+    term.key_value_block(
+        [
+            ("Directory", f"{target_root or state.repo_root} ({'global library only' if not platforms else 'adapters selected'})"),
+            ("Adapter mode", state.attach_mode),
+        ],
+        indent="  ",
+    )
+    term.write("")
+    term.write("Selections")
+    term.key_value_block(
+        [
+            ("Platforms", ", ".join(platforms) if platforms else "none"),
+            ("Packs", ", ".join(packs)),
+            ("Dependency mode", state.dependency_mode),
+        ],
+        indent="  ",
+    )
     if term.detail_mode:
-        term.write("Does: Shows source, target, packs, adapter mode, dependency mode, and concrete filesystem actions before changes.")
-        term.write("Choose when: Continue only if this screen matches the install you intended.")
-        term.write("Tradeoff: Going back is cheap now; after apply, rollback uses the generated lockfile.")
+        term.detail_line("Does: Shows source, target, packs, adapter mode, dependency mode, and concrete filesystem actions before changes.")
+        term.detail_line("Choose when: Continue only if this screen matches the install you intended.")
+        term.detail_line("Tradeoff: Going back is cheap now; after apply, rollback uses the generated lockfile.")
     term.write("")
     term.write("Planned actions:")
-    for line in _action_summary(plan.actions):
-        term.write(f"  - {line}")
+    term.action_list(_action_summary(plan.actions))
     if doctor["warnings"]:
         term.write("")
-        term.write(term.style("Warnings:", "33"))
+        term.write(term.token("Warnings:", "warning"))
         for warning in doctor["warnings"]:
-            term.write(f"  - {warning}")
+            term.status_line("warn", warning)
     if doctor["blockers"]:
         term.write("")
-        term.write(term.style("Blockers:", "31"))
+        term.write(term.token("Blockers:", "blocker"))
         for blocker in doctor["blockers"]:
-            term.write(f"  - {blocker}")
-        term.write("Diagnostic command:")
+            term.status_line("fail", blocker)
         cmd = [
             "python3",
             str(state.repo_root / "_localsetup/tools/localsetup_v3.py"),
@@ -767,7 +939,7 @@ def _review_step(term: TerminalWizard, state: WizardState) -> str:
         cmd.extend(["doctor", "--dependency-mode", state.dependency_mode, "--packs", *packs])
         if platforms:
             cmd.extend(["--platforms", *platforms])
-        term.write("  " + " ".join(cmd))
+        term.diagnostic_command(cmd)
         return _blocker_prompt(term)
     return _confirm_apply(term)
 
@@ -802,42 +974,51 @@ def _apply_and_show_result(term: TerminalWizard, state: WizardState) -> int:
         shell_result = register_shell_command(state.repo_root, home=state.home) if state.register_shell else None
         verify = verify_install(state.repo_root, state.home, platform_ids=platforms, target_root=target_root)
     except Exception as exc:
-        term.write(term.style("Install failed.", "31"))
-        term.write(str(exc))
-        term.write("Diagnostic command:")
-        term.write(
-            "  python3 "
-            + str(state.repo_root / "_localsetup/tools/localsetup_v3.py")
-            + f" --home {state.home} --repo {state.repo_root} doctor"
+        term.status_line("fail", "Install failed.")
+        term.detail_line(str(exc), style="error")
+        term.diagnostic_command(
+            [
+                "python3",
+                str(state.repo_root / "_localsetup/tools/localsetup_v3.py"),
+                "--home",
+                str(state.home),
+                "--repo",
+                str(state.repo_root),
+                "doctor",
+            ]
         )
         return 2
 
     term.title("Result")
-    term.write("Decides: Confirms what was installed and which follow-up commands are useful.")
+    term.detail_line("Decides: Confirms what was installed and which follow-up commands are useful.")
     if verify["ok"]:
-        term.write(term.style("Localsetup installed successfully.", "32"))
+        term.status_line("ok", "Localsetup installed successfully.")
     else:
-        term.write(term.style("Install finished, but verification reported issues.", "33"))
-    term.write(f"Managed library: {_global_root(state.repo_root, state.home)}")
-    term.write(f"Target: {target_root or state.repo_root}")
-    term.write(f"Platforms: {', '.join(platforms) if platforms else 'none'}")
+        term.status_line("warn", "Install finished, but verification reported issues.")
+    term.key_value_block(
+        [
+            ("Managed library", str(_global_root(state.repo_root, state.home))),
+            ("Target", str(target_root or state.repo_root)),
+            ("Platforms", ", ".join(platforms) if platforms else "none"),
+        ]
+    )
     if shell_result:
-        term.write(f"Command: {state.home / '.local/bin/localsetup'}")
+        term.key_value_block([("Command", str(state.home / ".local/bin/localsetup"))])
         for warning in shell_result.get("warnings", []):
-            term.write(f"Warning: {warning}")
+            term.status_line("warn", warning)
     term.write("")
     term.write("Next commands:")
     verify_cmd = ["localsetup", "verify"]
     if platforms:
         verify_cmd.extend(["--tools", ",".join(platforms)])
-    term.write("  " + " ".join(verify_cmd))
-    term.write("  localsetup rollback")
+    term.detail_line(" ".join(verify_cmd), indent="  ", style="command")
+    term.detail_line("localsetup rollback", indent="  ", style="command")
     if result.get("lockfile"):
-        term.write(f"Lockfile: {result['lockfile']}")
+        term.key_value_block([("Lockfile", str(result["lockfile"]))])
     if term.detail_mode:
-        term.write("Does: Verification checked the managed library and selected adapter paths after applying the plan.")
-        term.write("Choose when: Use the verify command later if you move files or change installed platforms.")
-        term.write("Tradeoff: Rollback uses the lockfile from this run, so keep it with the prepared repo.")
+        term.detail_line("Does: Verification checked the managed library and selected adapter paths after applying the plan.")
+        term.detail_line("Choose when: Use the verify command later if you move files or change installed platforms.")
+        term.detail_line("Tradeoff: Rollback uses the lockfile from this run, so keep it with the prepared repo.")
     return 0 if verify["ok"] else 1
 
 
@@ -865,8 +1046,10 @@ def run_wizard(
     dependency_mode: str = "prompt-only",
     register_shell: bool = True,
     terminal: TerminalWizard | None = None,
+    color_mode: str = "auto",
+    glyph_mode: str = "auto",
 ) -> int:
-    term = terminal or open_tty()
+    term = terminal or open_tty(color_mode=color_mode, glyph_mode=glyph_mode)
     state = WizardState(
         repo_root=repo_root.resolve(),
         home=home.expanduser().resolve(),
@@ -887,6 +1070,7 @@ def run_wizard(
     apply_started = False
     try:
         while index < len(steps):
+            term.current_progress = f"Step {index + 1}/{len(steps)}"
             result = steps[index](term, state)
             state.detail_mode = term.detail_mode
             if result == CANCEL:
@@ -897,8 +1081,10 @@ def run_wizard(
                 continue
             if result == "apply":
                 apply_started = True
+                term.current_progress = None
                 return _apply_and_show_result(term, state)
             index += 1
+        term.current_progress = None
         return 1
     except KeyboardInterrupt:
         _write_interrupted_message(term, apply_started=apply_started)

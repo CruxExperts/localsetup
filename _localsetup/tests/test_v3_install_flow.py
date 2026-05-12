@@ -41,6 +41,12 @@ class FakeTtyStringIO(io.StringIO):
         return True
 
 
+class FakeAsciiTtyStringIO(FakeTtyStringIO):
+    @property
+    def encoding(self) -> str:
+        return "ascii"
+
+
 def make_temp_repo(tmp_path: Path) -> Path:
     source = Path(__file__).resolve().parents[2]
     repo = tmp_path / "repo"
@@ -896,6 +902,40 @@ def test_root_installer_non_interactive_no_register_shell_skips_shim(tmp_path: P
     assert not (home / ".local" / "bin" / "localsetup").exists()
 
 
+def test_root_installer_non_interactive_visual_flags_keep_json_stdout(tmp_path: Path) -> None:
+    source = Path(__file__).resolve().parents[2]
+    root = tmp_path / "repo"
+    shutil.copytree(source / "_localsetup", root / "_localsetup", ignore=shutil.ignore_patterns("__pycache__", ".cache"))
+    shutil.copy2(source / "install", root / "install")
+    home = tmp_path / "custom-home"
+
+    completed = subprocess.run(
+        [
+            str(root / "install"),
+            "--directory",
+            str(root),
+            "--home",
+            str(home),
+            "--non-interactive",
+            "--yes",
+            "--no-register-shell",
+            "--color",
+            "always",
+            "--glyphs",
+            "unicode",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(completed.stdout)
+    assert payload["attachment"]["platforms"] == []
+    assert "\033[" not in completed.stdout
+    assert "[OK]" not in completed.stdout
+
+
 def test_root_installer_help_mentions_target_directory_and_global_only_defaults() -> None:
     install_path = Path(__file__).resolve().parents[2] / "install"
 
@@ -913,6 +953,9 @@ def test_root_installer_help_mentions_target_directory_and_global_only_defaults(
     assert "--non-interactive" in completed.stdout
     assert "Automation mode" in completed.stdout
     assert "--no-register-shell" in completed.stdout
+    assert "--color MODE" in completed.stdout
+    assert "--no-color" in completed.stdout
+    assert "--glyphs MODE" in completed.stdout
 
 
 def make_bootstrap_git_repo(tmp_path: Path) -> Path:
@@ -1137,7 +1180,7 @@ def test_root_installer_refreshes_clean_stale_managed_source_before_wizard(tmp_p
 
     completed = run_installer_in_pty(
         [str(install_path), "--home", str(home), "--no-register-shell"],
-        input_text="q\n",
+        input_text="\n\nq\n",
         cwd=outside,
         env=env,
     )
@@ -1439,6 +1482,38 @@ def test_root_installer_interactive_preserves_explicit_target_and_no_register_sh
     assert not (home / ".local" / "bin" / "localsetup").exists()
 
 
+def test_root_installer_interactive_visual_flags_reach_wizard(tmp_path: Path) -> None:
+    source = Path(__file__).resolve().parents[2]
+    root = tmp_path / "source"
+    home = tmp_path / "home"
+    shutil.copytree(source / "_localsetup", root / "_localsetup", ignore=shutil.ignore_patterns("__pycache__", ".cache"))
+    shutil.copy2(source / "install", root / "install")
+
+    completed = run_installer_in_pty(
+        [
+            str(root / "install"),
+            "--directory",
+            str(root),
+            "--home",
+            str(home),
+            "--no-register-shell",
+            "--no-color",
+            "--glyphs",
+            "ascii",
+        ],
+        input_text="\n\nq\n",
+        cwd=tmp_path,
+    )
+
+    combined = completed.stdout + completed.stderr
+    assert completed.returncode == 130, combined
+    assert "\033[1;" not in combined
+    assert "\033[0m" not in combined
+    assert "[SUGGESTED]" in combined
+    assert "★" not in combined
+    assert "Install canceled. No changes were applied." in combined
+
+
 def test_root_installer_interactive_explicit_target_without_platforms_stays_global_only(tmp_path: Path) -> None:
     source = Path(__file__).resolve().parents[2]
     root = tmp_path / "source"
@@ -1522,6 +1597,76 @@ def test_wizard_prompt_returns_cancel_on_keyboard_interrupt() -> None:
 
     assert term.prompt("Mode") == "__cancel__"
     assert output.getvalue().endswith("\n")
+
+
+def test_wizard_color_policy_honors_tty_env_and_explicit_modes(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("NO_COLOR", raising=False)
+    monkeypatch.delenv("FORCE_COLOR", raising=False)
+    monkeypatch.setenv("TERM", "xterm-256color")
+
+    assert TerminalWizard(io.StringIO(), FakeTtyStringIO(), color_mode="auto").color is True
+    assert TerminalWizard(io.StringIO(), io.StringIO(), color_mode="auto").color is False
+
+    monkeypatch.setenv("NO_COLOR", "1")
+    assert TerminalWizard(io.StringIO(), FakeTtyStringIO(), color_mode="auto").color is False
+    assert TerminalWizard(io.StringIO(), FakeTtyStringIO(), color_mode="always").color is True
+
+    monkeypatch.delenv("NO_COLOR", raising=False)
+    monkeypatch.setenv("FORCE_COLOR", "1")
+    assert TerminalWizard(io.StringIO(), io.StringIO(), color_mode="auto").color is True
+    assert TerminalWizard(io.StringIO(), FakeTtyStringIO(), color_mode="never").color is False
+
+    monkeypatch.delenv("FORCE_COLOR", raising=False)
+    monkeypatch.setenv("TERM", "dumb")
+    assert TerminalWizard(io.StringIO(), FakeTtyStringIO(), color_mode="auto").color is False
+
+
+def test_wizard_glyph_policy_uses_ascii_for_scripted_or_ascii_terminals(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("TERM", "xterm-256color")
+
+    legacy_plain = TerminalWizard(io.StringIO(), FakeTtyStringIO(), color=False)
+    assert legacy_plain.glyph("ok") == "[OK]"
+
+    scripted = TerminalWizard(io.StringIO(), io.StringIO(), glyph_mode="auto")
+    assert scripted.glyph("ok") == "[OK]"
+
+    ascii_tty = TerminalWizard(io.StringIO(), FakeAsciiTtyStringIO(), glyph_mode="auto")
+    assert ascii_tty.glyph("suggested") == "[SUGGESTED]"
+
+    unicode_forced = TerminalWizard(io.StringIO(), io.StringIO(), glyph_mode="unicode")
+    assert unicode_forced.glyph("ok").startswith("[OK]")
+    assert unicode_forced.glyph("ok") != "[OK]"
+
+    ascii_forced = TerminalWizard(io.StringIO(), FakeTtyStringIO(), glyph_mode="ascii")
+    assert ascii_forced.glyph("fail") == "[FAIL]"
+
+
+def test_wizard_semantic_renderer_wraps_paths_and_keeps_text_labels() -> None:
+    output = io.StringIO()
+    term = TerminalWizard(
+        input_stream=io.StringIO(),
+        output_stream=output,
+        color=False,
+        glyph_mode="ascii",
+    )
+
+    term.step_header("Platforms", progress="Step 3/7")
+    term.key_value_block([("Long path", "/tmp/" + "nested/" * 16 + "repo")])
+    term.status_line("ok", "Localsetup installed successfully.")
+    term.status_line("warn", "Manual dependency setup may still be needed.")
+    term.status_line("fail", "A blocker prevents apply.")
+    term.action_list(["Attach selected adapter: /tmp/" + "nested/" * 12 + ".codex/skills"])
+    term.diagnostic_command(["python3", "/tmp/" + "nested/" * 12 + "localsetup_v3.py", "doctor"])
+
+    rendered = output.getvalue()
+    assert "Step 3/7 - Platforms" in rendered
+    assert "Long path:" in rendered
+    assert "[OK] Localsetup installed successfully." in rendered
+    assert "[WARN] Manual dependency setup may still be needed." in rendered
+    assert "[FAIL] A blocker prevents apply." in rendered
+    assert "[PLAN] Attach selected adapter:" in rendered
+    assert "Diagnostic command:" in rendered
+    assert "python3" in rendered
 
 
 def test_wizard_choice_detail_mode_renders_extended_context() -> None:
@@ -1669,6 +1814,10 @@ def test_wizard_full_flow_renders_guided_context_for_current_repo(tmp_path: Path
     rendered = output.getvalue()
     assert code == 0
     assert wizard.WELCOME_BANNER in rendered
+    assert "Step 7/7 - Applying" not in rendered
+    assert "Step 7/7 - Result" not in rendered
+    assert "\nApplying\n" in rendered
+    assert "\nResult\n" in rendered
     assert "Source" in rendered
     assert "Install Mode" in rendered
     assert "Platforms" in rendered
@@ -1682,8 +1831,10 @@ def test_wizard_full_flow_renders_guided_context_for_current_repo(tmp_path: Path
     assert "Code, docs, git, testing, markdown validation, and repo repair workflows." in rendered
     assert "Portable adapter copies" in rendered
     assert "Managed virtual environment" in rendered
-    assert "Does: Shows source, target, packs, adapter mode, dependency mode, and concrete filesystem actions before changes." in rendered
-    assert "Does: Verification checked the managed library and selected adapter paths after applying the plan." in rendered
+    assert "Does: Shows source, target, packs, adapter mode, dependency mode, and concrete" in rendered
+    assert "filesystem actions before changes." in rendered
+    assert "Does: Verification checked the managed library and selected adapter paths after applying" in rendered
+    assert "the plan." in rendered
     assert "Enter number(s) | d details | b back | q quit | ? help" in rendered
     assert (caller / ".codex" / "skills").exists()
 

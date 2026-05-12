@@ -31,6 +31,8 @@ This opens the interactive terminal wizard. It shows the source checkout, target
 
 Every wizard prompt shows the same shortcut footer: `Enter number(s) | d details | b back | q quit | ? help`. Detailed mode is on by default, so install mode, platform, pack, adapter, and dependency choices explain what they do, when to pick them, and their tradeoffs. Press `d` to toggle compact mode; compact mode still shows one-line summaries for each option.
 
+The visual layer remains standard-library only. `--color auto` enables ANSI color only for capable interactive terminals, while `--no-color` and `--color never` force output free of ANSI color. `--glyphs auto` uses simple Unicode status hints only on UTF-8 interactive terminals; `--glyphs ascii` keeps portable labels like `[OK]`, `[WARN]`, and `[FAIL]`. Scripted installs should continue to use `--non-interactive --yes`, which preserves machine-readable output instead of wizard screens.
+
 The legacy public form still opens the wizard when a terminal is available:
 
 ```bash

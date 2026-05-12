@@ -76,6 +76,12 @@ def _add_selector_flags(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--platforms", "--tools", nargs="*", dest="platforms")
 
 
+def _add_visual_flags(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--color", choices=["auto", "always", "never"], default="auto")
+    parser.add_argument("--no-color", action="store_const", const="never", dest="color")
+    parser.add_argument("--glyphs", choices=["auto", "ascii", "unicode"], default="auto")
+
+
 def _is_global_shim_invocation() -> bool:
     return os.environ.get(SHIM_ENV) == "1"
 
@@ -228,6 +234,7 @@ def _main(argv: list[str] | None = None) -> int:
     wizard_p.add_argument("--caller-directory")
     wizard_p.add_argument("--no-register-shell", action="store_true")
     wizard_p.add_argument("--target-directory-origin", choices=["explicit", "inferred"], default="explicit")
+    _add_visual_flags(wizard_p)
 
     package_p = sub.add_parser("package")
     package_p.add_argument("--out", default="dist/localsetup-v3-public.tar.gz")
@@ -300,6 +307,8 @@ def _main(argv: list[str] | None = None) -> int:
             attach_mode=config.attach_mode,
             dependency_mode=config.dependency_mode,
             register_shell=not args.no_register_shell,
+            color_mode=args.color,
+            glyph_mode=args.glyphs,
         )
 
     if args.cmd == "verify":
