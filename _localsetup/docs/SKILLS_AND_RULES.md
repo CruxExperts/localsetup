@@ -11,7 +11,7 @@ version: 3.7
 
 - **One always-loaded context** per platform: Cursor uses `.cursor/rules/ls-context.mdc`; Claude Code uses `.claude/CLAUDE.md`; Codex uses `AGENTS.md`; OpenClaw uses its platform template; OpenCode uses `AGENTS.md`; Kilo CLI uses `.kilo/instructions.md`.
 - **Capability skills and workflow packages:** Capability skills live in `_localsetup/skills/`. Workflow packages live in `_localsetup/workflows/` and also contain `SKILL.md`, so v3 installs both package types into the managed package library.
-- **Memory file:** Each platform has a writable `MEMORY.md` file for agent learnings (`.kilo/MEMORY.md`, `.claude/MEMORY.md`, etc.). See [MEMORY_MANAGEMENT.md](MEMORY_MANAGEMENT.md) for curation rules.
+- **Memory file:** Each platform has a curated `MEMORY.md` path for agent learnings (`.kilo/MEMORY.md`, `.claude/MEMORY.md`, etc.). These files are mutable project or platform state outside `_localsetup/`; never store memory, reminders, backlog, or temporary notes under framework source. See [MEMORY_MANAGEMENT.md](MEMORY_MANAGEMENT.md) for curation rules.
 - **When to load a skill or workflow:** Load when the task matches the package description (e.g. user says "decision tree" -> ls-workflow-spec-clarify-reverse). The master rule/context includes an index of key packages and when to use them.
 
 ## Skills vs workflow packages

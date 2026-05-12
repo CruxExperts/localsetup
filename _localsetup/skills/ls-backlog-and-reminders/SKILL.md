@@ -22,11 +22,11 @@ metadata:
 
 ## Backlog file location
 
-- Canonical path: `_localsetup/backlog.md`.
-- Legacy fallback: `BACKLOG.md` at the repo root, only when `_localsetup/backlog.md` does not exist.
-- If both files exist, read and update `_localsetup/backlog.md`; mention that root `BACKLOG.md` is legacy and should be merged or removed when the user is ready.
-- If neither file exists, create `_localsetup/backlog.md` with the structure below.
-- If `_localsetup/` is unavailable because the skill is being used outside a Localsetup repo, create `BACKLOG.md` in the current repo root and say that `_localsetup/backlog.md` remains the canonical Localsetup location.
+- Canonical path: `.localsetup/backlog.md`.
+- Legacy fallback: `BACKLOG.md` at the repo root, only when `.localsetup/backlog.md` does not exist.
+- If both files exist, read and update `.localsetup/backlog.md`; mention that root `BACKLOG.md` is legacy and should be merged or removed when the user is ready.
+- If neither file exists, create `.localsetup/backlog.md` with the structure below.
+- Never create or update backlog/reminder state under `_localsetup/`; that directory is framework-owned source.
 
 ## File format
 
@@ -105,5 +105,5 @@ Example: "I want to add a dark mode toggle and also fix the login bug by next we
 ## References
 
 - Backlog template and precedence notes: [references/backlog-template.md](references/backlog-template.md).
-- Backlog file: `_localsetup/backlog.md`; root `BACKLOG.md` is a legacy fallback.
+- Backlog file: `.localsetup/backlog.md`; root `BACKLOG.md` is a legacy fallback.
 - No external services required; everything is file-based and git-friendly.

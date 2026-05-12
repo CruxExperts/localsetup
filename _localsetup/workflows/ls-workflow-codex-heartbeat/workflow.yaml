@@ -21,7 +21,7 @@ gates:
   - id: transaction_gate
     rule: A run is successful only after staged artifacts validate and promote atomically.
   - id: command_policy
-    rule: Hooks and launch commands run with shell=False and block direct git writes/destructive executables unless explicitly allowed.
+    rule: Hooks plus direct/resolved agent profiles run with shell=False; shell-login is explicit opt-in; direct git writes/destructive executables are blocked unless explicitly allowed.
 phases:
   - id: plan
     summary: Inspect target paths, config, cron manifest, and planned launcher command.

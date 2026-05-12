@@ -99,7 +99,7 @@ Load when task matches:
 
 ## Memory
 
-A persistent memory file exists at `MEMORY.md` (repo root). You can write freely, but this file must remain curated.
+A persistent memory file exists at `MEMORY.md` (repo root). Treat it as mutable project/platform state outside `_localsetup/`; keep it curated and never store memory, reminders, backlog, or temporary notes under `_localsetup/`.
 
 **Curation Rules:**
 - Maximum 20 entries per section

@@ -113,28 +113,140 @@ def read_version(repo_root: Path, ref: str | None = None) -> SemVer:
     return SemVer.parse((repo_root / "VERSION").read_text(encoding="utf-8").strip())
 
 
+def _rev_parse(repo_root: Path, ref: str) -> str | None:
+    completed = _run_git(repo_root, ["rev-parse", "--verify", f"{ref}^{{commit}}"], check=False)
+    if completed.returncode == 0 and completed.stdout.strip():
+        return completed.stdout.strip()
+    return None
+
+
+def _base_result(*, status: str, strategy: str, ref: str | None, sha: str, attempts: list[dict[str, str]]) -> dict[str, object]:
+    return {
+        "status": status,
+        "strategy": strategy,
+        "ref": ref,
+        "sha": sha,
+        "attempts": attempts,
+    }
+
+
+def _try_base_ref(repo_root: Path, *, strategy: str, ref: str, attempts: list[dict[str, str]]) -> tuple[str, dict[str, object]] | None:
+    sha = _rev_parse(repo_root, ref)
+    attempts.append({"strategy": strategy, "ref": ref, "status": "resolved" if sha else "unresolved"})
+    if sha:
+        return sha, _base_result(status="resolved", strategy=strategy, ref=ref, sha=sha, attempts=attempts)
+    return None
+
+
+def _base_or_merge_base(
+    repo_root: Path,
+    *,
+    base: str | None,
+    head: str,
+    strategy: str,
+    ref: str,
+    sha: str,
+    attempts: list[dict[str, str]],
+) -> dict[str, object]:
+    if base == ZERO_SHA:
+        merge_base = _run_git(repo_root, ["merge-base", sha, head], check=False)
+        if merge_base.returncode == 0 and merge_base.stdout.strip():
+            attempts.append({"strategy": "merge_base", "ref": ref, "status": "resolved"})
+            merge_sha = merge_base.stdout.strip()
+            return {
+                "base": merge_sha,
+                "base_resolution": _base_result(
+                    status="resolved",
+                    strategy="merge_base",
+                    ref=ref,
+                    sha=merge_sha,
+                    attempts=attempts,
+                ),
+            }
+    return {
+        "base": sha,
+        "base_resolution": _base_result(status="resolved", strategy=strategy, ref=ref, sha=sha, attempts=attempts),
+    }
+
+
+def _symbolic_remote_head(repo_root: Path, remote: str) -> str | None:
+    completed = _run_git(repo_root, ["symbolic-ref", "--quiet", "--short", f"refs/remotes/{remote}/HEAD"], check=False)
+    if completed.returncode == 0 and completed.stdout.strip():
+        return completed.stdout.strip()
+    show = _run_git(repo_root, ["remote", "show", "-n", remote], check=False)
+    if show.returncode != 0:
+        return None
+    for line in show.stdout.splitlines():
+        line = line.strip()
+        if line.startswith("HEAD branch:"):
+            branch = line.split(":", 1)[1].strip()
+            if branch and branch != "(unknown)":
+                return f"{remote}/{branch}"
+    return None
+
+
 def default_base_ref(repo_root: Path) -> str:
-    upstream = _run_git(repo_root, ["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"], check=False)
-    if upstream.returncode == 0 and upstream.stdout.strip():
-        return upstream.stdout.strip()
-    remote_head = _run_git(repo_root, ["symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"], check=False)
-    if remote_head.returncode == 0 and remote_head.stdout.strip():
-        return remote_head.stdout.strip()
-    return "origin/main"
+    resolution = resolve_base_with_metadata(repo_root)
+    ref = resolution["base_resolution"].get("ref")
+    return str(ref or "HEAD")
 
 
 def resolve_head(repo_root: Path, head: str | None = None) -> str:
     return _git_text(repo_root, ["rev-parse", head or "HEAD"])
 
 
-def resolve_base(repo_root: Path, base: str | None = None, head: str | None = None) -> str:
+def resolve_base_with_metadata(repo_root: Path, base: str | None = None, head: str | None = None) -> dict[str, object]:
+    resolved_head = resolve_head(repo_root, head)
+    attempts: list[dict[str, str]] = []
+
     if base and base != ZERO_SHA:
-        return _git_text(repo_root, ["rev-parse", base])
-    if base == ZERO_SHA:
-        merge_base = _run_git(repo_root, ["merge-base", default_base_ref(repo_root), head or "HEAD"], check=False)
-        if merge_base.returncode == 0 and merge_base.stdout.strip():
-            return merge_base.stdout.strip()
-    return _git_text(repo_root, ["rev-parse", default_base_ref(repo_root)])
+        resolved = _try_base_ref(repo_root, strategy="explicit", ref=base, attempts=attempts)
+        if resolved:
+            return {"base": resolved[0], "base_resolution": resolved[1]}
+        raise ValueError(f"explicit base ref did not resolve: {base}")
+
+    upstream = _run_git(repo_root, ["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"], check=False)
+    if upstream.returncode == 0 and upstream.stdout.strip():
+        ref = upstream.stdout.strip()
+        resolved = _try_base_ref(repo_root, strategy="upstream", ref=ref, attempts=attempts)
+        if resolved:
+            return _base_or_merge_base(repo_root, base=base, head=resolved_head, strategy="upstream", ref=ref, sha=resolved[0], attempts=attempts)
+
+    remotes = _run_git(repo_root, ["remote"], check=False)
+    remote_names = [line.strip() for line in remotes.stdout.splitlines() if line.strip()] if remotes.returncode == 0 else []
+    remote_set = set(remote_names)
+    ordered_remotes = [remote for remote in ["origin", *remote_names] if remote in remote_set]
+    ordered_remotes = list(dict.fromkeys(ordered_remotes))
+    for remote in ordered_remotes:
+        remote_head = _symbolic_remote_head(repo_root, remote)
+        if not remote_head:
+            attempts.append({"strategy": "remote_default", "ref": f"{remote}/HEAD", "status": "unresolved"})
+            continue
+        resolved = _try_base_ref(repo_root, strategy="remote_default", ref=remote_head, attempts=attempts)
+        if resolved:
+            return _base_or_merge_base(repo_root, base=base, head=resolved_head, strategy="remote_default", ref=remote_head, sha=resolved[0], attempts=attempts)
+
+    for branch in ("main", "master"):
+        resolved = _try_base_ref(repo_root, strategy=f"local_{branch}", ref=branch, attempts=attempts)
+        if resolved:
+            return _base_or_merge_base(repo_root, base=base, head=resolved_head, strategy=f"local_{branch}", ref=branch, sha=resolved[0], attempts=attempts)
+
+    attempts.append({"strategy": "head", "ref": "HEAD", "status": "no_comparison_base"})
+    return {
+        "base": resolved_head,
+        "base_resolution": _base_result(
+            status="no_comparison_base",
+            strategy="head",
+            ref="HEAD",
+            sha=resolved_head,
+            attempts=attempts,
+        )
+        | {"reason": "no explicit, upstream, remote default, local main, or local master comparison base resolved"},
+    }
+
+
+def resolve_base(repo_root: Path, base: str | None = None, head: str | None = None) -> str:
+    return str(resolve_base_with_metadata(repo_root, base=base, head=head)["base"])
 
 
 def list_commits(repo_root: Path, base: str, head: str) -> list[CommitInfo]:
@@ -246,7 +358,9 @@ def net_unreleased_commits(commits: list[CommitInfo]) -> tuple[list[CommitInfo],
 
 def plan_version(repo_root: Path, *, base: str | None = None, head: str | None = None, ref: str | None = None) -> dict:
     resolved_head = resolve_head(repo_root, head)
-    resolved_base = resolve_base(repo_root, base, resolved_head)
+    base_payload = resolve_base_with_metadata(repo_root, base, resolved_head)
+    resolved_base = str(base_payload["base"])
+    base_resolution = base_payload["base_resolution"]
     commits = list_commits(repo_root, resolved_base, resolved_head)
     net_commits, canceled = net_unreleased_commits(commits)
     bump = max_bump(classify_commit_for_release(repo_root, commit) for commit in net_commits)
@@ -261,6 +375,7 @@ def plan_version(repo_root: Path, *, base: str | None = None, head: str | None =
         "ref": ref,
         "base": resolved_base,
         "head": resolved_head,
+        "base_resolution": base_resolution,
         "base_version": str(base_version),
         "current_version": str(current),
         "worktree_version": str(worktree),

@@ -9,7 +9,13 @@ version: 3.7
 
 ## Overview
 
-Localsetup v3 includes a persistent **memory file** for each supported platform. This memory file stores AI agent learnings, patterns, and troubleshooting solutions across sessions. Unlike `AGENTS.md` (which is write-protected), the memory file is freely writable by the AI agent.
+Localsetup v3 includes a persistent **memory file** for each supported platform. This memory file stores AI agent learnings, patterns, and troubleshooting solutions across sessions. Memory files are mutable project or platform state; they are not framework source and must not be stored under `_localsetup/`.
+
+## Framework-Owned Boundary
+
+`_localsetup/` is framework-owned source: code, docs, skills, workflow packages, templates, and generated framework artifacts. Upgrades may replace this folder. Do not store reminders, backlog entries, agent memory, temporary notes, heartbeat runtime output, or other mutable project/user state under `_localsetup/`.
+
+Mutable project or user state belongs in stable repo-level paths such as platform memory files, harness state directories, or platform-owned home paths declared in `platforms.yaml`. If mutable state is accidentally placed under `_localsetup/`, move it to an approved path and revert the framework-source change.
 
 ## Core Principle: Curation Over Accumulation
 
@@ -45,8 +51,8 @@ Each memory file contains:
 ```markdown
 # Memory [Platform]
 
-This file stores AI agent learnings. It is NOT protected - you can write freely.
-However, this file must remain CURATED and CONCISE. Bloat will be corrected.
+This file stores AI agent learnings as mutable project/platform state outside `_localsetup/`.
+It must remain CURATED and CONCISE. Bloat will be corrected.
 
 ## Curation Rules (MUST Follow)
 
@@ -96,7 +102,7 @@ When you discover something valuable:
 
 ## Deployment: V3 Memory Paths
 
-V3 declares memory paths in `_localsetup/config/platforms.yaml`. The installer focuses on managed skill adapters; memory files remain project or platform state and should stay curated by the agent host using them.
+V3 declares memory paths in `_localsetup/config/platforms.yaml`. The installer focuses on managed skill adapters; memory files remain project or platform state outside `_localsetup/` and should stay curated by the agent host using them.
 
 ### Repo-local memory
 

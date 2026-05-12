@@ -99,7 +99,7 @@ _localsetup/docs/AGENTIC_DESIGN_INDEX.md, WORKFLOW_REGISTRY.md, PRD_SCHEMA_EXTER
 
 ## Memory
 
-A persistent memory file exists at `.opencode/MEMORY.md`. You can write freely, but this file must remain curated.
+A persistent memory file exists at `.opencode/MEMORY.md`. Treat it as mutable project/platform state outside `_localsetup/`; keep it curated and never store memory, reminders, backlog, or temporary notes under `_localsetup/`.
 
 **Curation Rules:**
 - Maximum 20 entries per section

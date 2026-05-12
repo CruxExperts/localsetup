@@ -7,6 +7,8 @@ import argparse
 import hashlib
 import json
 import os
+import shlex
+import shutil
 import signal
 import subprocess
 import sys
@@ -171,6 +173,7 @@ def run_command(
     cwd: Path,
     timeout_seconds: int,
     sidecar_path: Path,
+    launcher_info: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     started = utc_now()
     entry: dict[str, Any] = {
@@ -180,6 +183,8 @@ def run_command(
         "started_at": started,
         "timeout_seconds": timeout_seconds,
     }
+    if launcher_info:
+        entry.update(launcher_info)
     proc: subprocess.Popen[str] | None = None
     try:
         proc = subprocess.Popen(
@@ -248,6 +253,7 @@ def load_hooks(config: dict[str, Any], name: str) -> list[dict[str, Any]]:
             {
                 "id": str(item.get("id") or f"{name}-{index + 1}"),
                 "command": command,
+                "launcher_mode": "direct-argv",
                 "timeout_seconds": normalize_timeout(item.get("timeout_seconds")),
                 "allow_direct": bool(item.get("allow_direct", False)),
             }
@@ -255,19 +261,185 @@ def load_hooks(config: dict[str, Any], name: str) -> list[dict[str, Any]]:
     return normalized
 
 
+def _agent_profile(config: dict[str, Any], profile_name: str) -> dict[str, Any]:
+    profiles = config.get("agent_profiles") if isinstance(config.get("agent_profiles"), dict) else {}
+    profile = profiles.get(profile_name)
+    if not isinstance(profile, dict):
+        raise HeartbeatError(f"agent profile not found: {profile_name}")
+    return profile
+
+
+def _path_env(profile: dict[str, Any]) -> str | None:
+    raw_path = profile.get("path_env")
+    if isinstance(raw_path, str) and raw_path.strip():
+        return raw_path
+    path_entries = profile.get("path")
+    if isinstance(path_entries, list):
+        entries = [str(item) for item in path_entries if str(item).strip()]
+        if entries:
+            return os.pathsep.join(entries)
+    return None
+
+
+def _profile_prompt(profile: dict[str, Any]) -> str:
+    prompt = profile.get("prompt")
+    if isinstance(prompt, str) and prompt.strip():
+        return prompt
+    return "Read HEARTBEAT.md, inspect queued heartbeat work, and produce a concise status report."
+
+
+def _profile_command_argv(profile: dict[str, Any]) -> list[str]:
+    command = profile.get("command")
+    if isinstance(command, list) and command and all(isinstance(part, str) and part for part in command):
+        return list(command)
+    command_name = str(profile.get("command_name") or "codex").strip()
+    if not command_name:
+        raise HeartbeatError("agent profile command_name must not be empty")
+    argv = [command_name, "exec"]
+    model = profile.get("model")
+    if isinstance(model, str) and model.strip():
+        argv.extend(["--model", model.strip()])
+    reasoning_effort = profile.get("reasoning_effort")
+    if isinstance(reasoning_effort, str) and reasoning_effort.strip():
+        argv.extend(["-c", f'model_reasoning_effort="{reasoning_effort.strip()}"'])
+    sandbox = profile.get("sandbox")
+    if isinstance(sandbox, str) and sandbox.strip():
+        argv.extend(["--sandbox", sandbox.strip()])
+    if bool(profile.get("json", False)):
+        argv.append("--json")
+    argv.extend(["--", _profile_prompt(profile)])
+    return argv
+
+
+def _resolve_profile_executable(profile: dict[str, Any], argv: list[str]) -> tuple[list[str], str]:
+    path_env = _path_env(profile)
+    executable = shutil.which(argv[0], path=path_env)
+    if not executable:
+        raise HeartbeatError(f"unable to resolve agent profile executable: {argv[0]}")
+    return [executable, *argv[1:]], executable
+
+
+def _shell_login_command(profile: dict[str, Any], argv: list[str]) -> tuple[list[str], str]:
+    shell_path = str(profile.get("shell") or "/bin/bash")
+    if not Path(shell_path).is_absolute():
+        resolved_shell = shutil.which(shell_path)
+        if not resolved_shell:
+            raise HeartbeatError(f"unable to resolve shell-login shell: {shell_path}")
+        shell_path = resolved_shell
+    rendered = shlex.join(argv)
+    path_env = _path_env(profile)
+    if path_env:
+        rendered = f"PATH={shlex.quote(path_env)}; export PATH; {rendered}"
+    return [shell_path, "-lc", rendered], rendered
+
+
+def _codex_profile_command(config: dict[str, Any], codex: dict[str, Any]) -> dict[str, Any] | None:
+    profile_name = str(codex.get("profile") or "heartbeat")
+    profiles = config.get("agent_profiles") if isinstance(config.get("agent_profiles"), dict) else {}
+    if profile_name not in profiles:
+        return None
+    profile = _agent_profile(config, profile_name)
+    launcher = str(profile.get("launcher") or "resolved-path").strip()
+    logical_argv = _profile_command_argv(profile)
+    timeout_seconds = normalize_timeout(codex.get("timeout_seconds", profile.get("timeout_seconds")))
+    model = profile.get("model")
+    launcher_info: dict[str, Any] = {
+        "launcher_mode": launcher,
+        "profile": profile_name,
+        "app": str(profile.get("app") or "codex"),
+        "model_policy": str(profile.get("model_policy") or "configurable"),
+        "model": model if isinstance(model, str) and model.strip() else None,
+        "reasoning_effort": profile.get("reasoning_effort"),
+        "json": bool(profile.get("json", False)),
+        "logical_argv": logical_argv,
+    }
+    command = logical_argv
+    if launcher == "direct-argv":
+        launcher_info["resolved_executable"] = str(Path(command[0]).resolve()) if Path(command[0]).is_absolute() else None
+    elif launcher == "resolved-path":
+        command, resolved = _resolve_profile_executable(profile, logical_argv)
+        launcher_info["resolved_executable"] = resolved
+    elif launcher == "shell-login":
+        command, rendered = _shell_login_command(profile, logical_argv)
+        launcher_info["rendered_command"] = rendered
+        launcher_info["resolved_executable"] = None
+    else:
+        raise HeartbeatError("agent profile launcher must be one of: direct-argv, resolved-path, shell-login")
+    return {
+        "id": f"{profile_name}-agent",
+        "command": command,
+        "policy_command": logical_argv,
+        "timeout_seconds": timeout_seconds,
+        "allow_direct": bool(codex.get("allow_direct", profile.get("allow_direct", False))),
+        "launcher_info": launcher_info,
+    }
+
+
 def load_codex_command(config: dict[str, Any]) -> dict[str, Any] | None:
     codex = config.get("codex") if isinstance(config.get("codex"), dict) else {}
     if not bool(codex.get("enabled", False)):
         return None
+    profile_command = _codex_profile_command(config, codex)
+    if profile_command:
+        return profile_command
     command = codex.get("command")
     if not isinstance(command, list) or not command or not all(isinstance(part, str) and part for part in command):
         raise HeartbeatError("codex.command must be a non-empty argv list when codex.enabled is true")
     return {
         "id": "codex-agent",
         "command": command,
+        "policy_command": command,
+        "launcher_info": {
+            "launcher_mode": "direct-argv",
+            "profile": None,
+            "app": "codex",
+            "model_policy": "legacy-command",
+            "model": codex.get("model") if isinstance(codex.get("model"), str) else None,
+            "logical_argv": command,
+            "resolved_executable": str(Path(command[0]).resolve()) if Path(command[0]).is_absolute() else None,
+        },
         "timeout_seconds": normalize_timeout(codex.get("timeout_seconds")),
         "allow_direct": bool(codex.get("allow_direct", False)),
     }
+
+
+def planned_commands(config: dict[str, Any], *, no_agent: bool = False) -> list[dict[str, Any]]:
+    commands: list[dict[str, Any]] = []
+    commands.extend(load_hooks(config, "before"))
+    codex_command = load_codex_command(config)
+    if codex_command and not no_agent:
+        commands.append(codex_command)
+    commands.extend(load_hooks(config, "after"))
+    return commands
+
+
+def plan_summary(*, target_root: Path, config_path: Path | None = None, no_agent: bool = False) -> dict[str, Any]:
+    target_root = target_root.resolve()
+    config_path = config_path or config_path_for(target_root)
+    if not config_path.is_file():
+        return {"ok": True, "commands": [], "config_exists": False}
+    config = load_yaml(config_path)
+    summaries: list[dict[str, Any]] = []
+    try:
+        planned = planned_commands(config, no_agent=no_agent)
+    except HeartbeatError as exc:
+        return {"ok": False, "commands": [], "config_exists": True, "error": str(exc)}
+    for command in planned:
+        info = command.get("launcher_info") if isinstance(command.get("launcher_info"), dict) else {}
+        summaries.append(
+            {
+                "id": command["id"],
+                "argv": command["command"],
+                "policy_argv": command.get("policy_command", command["command"]),
+                "launcher_mode": info.get("launcher_mode", command.get("launcher_mode", "direct-argv")),
+                "resolved_executable": info.get("resolved_executable"),
+                "rendered_command": info.get("rendered_command"),
+                "model_policy": info.get("model_policy"),
+                "model": info.get("model"),
+                "timeout_seconds": command["timeout_seconds"],
+            }
+        )
+    return {"ok": True, "commands": summaries, "config_exists": True}
 
 
 def _ensure_state_dirs(state_root: Path) -> Path:
@@ -518,23 +690,20 @@ def run_once(
             "recovered_before_run": recovered,
         }
         atomic_write_json(staged / "manifest.json", manifest)
-        planned_commands = []
-        planned_commands.extend(load_hooks(config, "before"))
-        codex_command = load_codex_command(config)
-        if codex_command and not no_agent:
-            planned_commands.append(codex_command)
-        planned_commands.extend(load_hooks(config, "after"))
+        planned = planned_commands(config, no_agent=no_agent)
 
         status = "succeeded"
-        for index, command in enumerate(planned_commands, start=1):
+        for index, command in enumerate(planned, start=1):
             argv = command["command"]
             try:
-                validate_direct_command(argv, config, allow_direct=bool(command.get("allow_direct")))
+                validate_direct_command(command.get("policy_command", argv), config, allow_direct=bool(command.get("allow_direct")))
             except HeartbeatError as exc:
+                launcher_info = command.get("launcher_info") if isinstance(command.get("launcher_info"), dict) else {}
                 command_entries.append(
                     {
                         "id": command["id"],
                         "argv": argv,
+                        **launcher_info,
                         "blocked": True,
                         "error": str(exc),
                         "finished_at": utc_now(),
@@ -542,13 +711,14 @@ def run_once(
                 )
                 status = "failed"
                 break
-            sidecar = staged / f"command-{index:02d}-{command['id']}.json"
+            sidecar = staged / f"command-{index:02d}.json"
             entry = run_command(
                 str(command["id"]),
                 argv,
                 cwd=target_root,
                 timeout_seconds=int(command["timeout_seconds"]),
                 sidecar_path=sidecar,
+                launcher_info=command.get("launcher_info") if isinstance(command.get("launcher_info"), dict) else None,
             )
             command_entries.append(entry)
             if entry.get("returncode") != 0:

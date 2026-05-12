@@ -18,7 +18,7 @@ Use this skill when a repository needs an explicit, auditable heartbeat harness 
 - `enable --install-crontab` refuses to install a live crontab unless `--yes` is also passed.
 - `run --no-agent` exercises locks, recovery, command logging, staged validation, and atomic promotion without model use.
 - Direct hooks block `git commit`, `git push`, and destructive executables unless explicitly allowed.
-- Codex model execution is still constrained by the configured Codex command, sandbox, and approval settings. This harness records and gates execution; it is not a sandbox replacement.
+- Codex model execution is constrained by the configured agent profile, launcher mode, sandbox, and Codex client settings. The profile may pin a model, but the framework default leaves the model configurable. This harness records and gates execution; it is not a sandbox replacement.
 
 ## Commands
 

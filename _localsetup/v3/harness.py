@@ -206,6 +206,11 @@ def plan(repo_root: Path, target_root: Path | None = None) -> dict[str, Any]:
         "config_exists": False,
         "enabled": False,
     }
+    command_plan = runtime.plan_summary(target_root=target, config_path=config_path) if config_path.exists() else {
+        "ok": True,
+        "commands": [],
+        "config_exists": False,
+    }
     return {
         "ok": True,
         "target_root": str(target),
@@ -214,6 +219,7 @@ def plan(repo_root: Path, target_root: Path | None = None) -> dict[str, Any]:
         "cron_manifest": str(manifest_path),
         "state_dir": str(target / "state" / "codex-heartbeat"),
         "launcher_command": _heartbeat_command(repo_root, target),
+        "command_plan": command_plan,
         "status": status_payload,
         "cron": _cron_summary(manifest),
     }

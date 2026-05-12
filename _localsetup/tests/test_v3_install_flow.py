@@ -197,6 +197,67 @@ def test_v3_external_target_directory_attaches_selected_adapter(tmp_path: Path) 
     assert not (root / "localsetup.lock.json").exists()
 
 
+def test_v3_external_target_install_verify_and_context_freshness_smoke(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "consumer"
+    target.mkdir()
+    (target / "README.md").write_text("# Consumer repo\n\nLocalsetup context lives here.\n", encoding="utf-8")
+    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=target, text=True, capture_output=True, check=True)
+
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"], target_root=target)
+    apply_plan(root, plan, home=home, target_root=target)
+    lock = load_json(target / "localsetup.lock.json")
+
+    assert lock["source_root"] == str(root)
+    assert verify_install(root, home, platform_ids=["codex"], target_root=target)["ok"] is True
+
+    verify_cli = subprocess.run(
+        [
+            sys.executable,
+            str(root / "_localsetup" / "tools" / "localsetup_v3.py"),
+            "--repo",
+            str(root),
+            "--home",
+            str(home),
+            "--target-directory",
+            str(target),
+            "verify",
+            "--tools",
+            "codex",
+        ],
+        cwd=target,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert verify_cli.returncode == 0, verify_cli.stderr + verify_cli.stdout
+    assert json.loads(verify_cli.stdout)["ok"] is True
+
+    freshness = subprocess.run(
+        [
+            sys.executable,
+            str(root / "_localsetup" / "tools" / "localsetup_v3.py"),
+            "--repo",
+            str(root),
+            "--home",
+            str(home),
+            "--target-directory",
+            str(target),
+            "context-index",
+            "freshness",
+        ],
+        cwd=target,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert freshness.returncode == 0, freshness.stderr + freshness.stdout
+    payload = json.loads(freshness.stdout)
+    assert payload["ok"] is True
+    assert payload["contexts"][0]["scope"] == "repo"
+
+
 def test_detect_invocation_target_prefers_git_root(tmp_path: Path) -> None:
     project = tmp_path / "project"
     nested = project / "a" / "b"
@@ -2097,9 +2158,18 @@ def test_wizard_explicit_target_without_platforms_defaults_global_only(tmp_path:
 def test_v3_migration_scanner_and_hook_gate(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     (root / "README.md").write_text("Use localsetup-context during migration.\n", encoding="utf-8")
+    runtime_note = root / ".codex" / "runs" / "20260512-note.md"
+    runtime_note.parent.mkdir(parents=True)
+    runtime_note.write_text("Use localsetup-context in runtime notes only.\n", encoding="utf-8")
+    heartbeat_note = root / "state" / "codex-heartbeat" / "latest.json"
+    heartbeat_note.parent.mkdir(parents=True)
+    heartbeat_note.write_text('{"note": "Use localsetup-context in runtime state only."}\n', encoding="utf-8")
 
     findings = scan_legacy_references(root)
-    assert findings and findings[0]["path"] == "README.md"
+    paths = {finding["path"] for finding in findings}
+    assert "README.md" in paths
+    assert ".codex/runs/20260512-note.md" not in paths
+    assert "state/codex-heartbeat/latest.json" not in paths
 
     gate = run_maintainer_gate(root, tmp_path / "artifact.tar.gz")
     assert gate["ok"] is True

@@ -13,6 +13,15 @@ from .paths import expand_user_path
 
 DEFAULT_SCAN_SUFFIXES = {".md", ".yaml", ".yml", ".json", ".toml", ".txt", ".sh", ".py", ".ps1"}
 SKIP_DIRS = {".git", ".git-state-snapshots", ".venv", "__pycache__", "node_modules"}
+RUNTIME_SKIP_PREFIXES = {
+    (".codex", "runs"),
+    ("state", "codex-heartbeat"),
+    ("state", "repo-finalizer"),
+}
+
+
+def _is_runtime_skip_path(rel: Path) -> bool:
+    return any(rel.parts[: len(prefix)] == prefix for prefix in RUNTIME_SKIP_PREFIXES)
 
 
 def scan_legacy_references(repo_root: Path, needle: str = "localsetup-") -> list[dict]:
@@ -26,6 +35,8 @@ def scan_legacy_references(repo_root: Path, needle: str = "localsetup-") -> list
         if path.suffix.lower() not in DEFAULT_SCAN_SUFFIXES:
             continue
         rel = path.relative_to(repo_root)
+        if _is_runtime_skip_path(rel):
+            continue
         if rel.parts[:2] == ("_localsetup", "skills"):
             continue
         if rel.parts[:2] == ("_localsetup", "tests"):

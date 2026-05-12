@@ -1,6 +1,6 @@
 # Backlog template
 
-Use this template when creating the canonical backlog file at `_localsetup/backlog.md`. If `_localsetup/` is unavailable because the skill is being used outside a Localsetup repo, create `BACKLOG.md` in the current repo root and note that it is a fallback location.
+Use this template when creating the canonical backlog file at `.localsetup/backlog.md`. Never store backlog or reminder state under `_localsetup/`; that directory is framework-owned source.
 
 ```markdown
 # Backlog
@@ -26,9 +26,9 @@ Use this template when creating the canonical backlog file at `_localsetup/backl
 
 ## Path precedence
 
-1. Use `_localsetup/backlog.md` as the canonical Localsetup backlog.
-2. Use root `BACKLOG.md` only when `_localsetup/backlog.md` does not exist or when the skill is running outside a Localsetup repo.
-3. If both files exist, update `_localsetup/backlog.md` and tell the user that `BACKLOG.md` is legacy.
+1. Use `.localsetup/backlog.md` as the canonical Localsetup backlog.
+2. Use root `BACKLOG.md` only when `.localsetup/backlog.md` does not exist or when the skill is running outside a Localsetup repo.
+3. If both files exist, update `.localsetup/backlog.md` and tell the user that `BACKLOG.md` is legacy.
 
 ## Timezone rule
 

@@ -112,7 +112,7 @@ Localsetup v3 is deployed into this repo at `_localsetup/`. All framework and co
 
 ## Memory
 
-A persistent memory file exists at `.claude/MEMORY.md`. You can write freely, but this file must remain curated.
+A persistent memory file exists at `.claude/MEMORY.md`. Treat it as mutable project/platform state outside `_localsetup/`; keep it curated and never store memory, reminders, backlog, or temporary notes under `_localsetup/`.
 
 **Curation Rules:**
 - Maximum 20 entries per section

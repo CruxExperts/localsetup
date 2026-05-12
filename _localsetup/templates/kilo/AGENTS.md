@@ -2,7 +2,7 @@
 
 ## Overview
 
-Localsetup v3 is a universal, cross-platform agentic workflow engine. It is **deployed into the client repository** at `_localsetup/`. All framework code and repo-local context live in the repo so the deployment is mobile and backup-able. Engine = contents of _localsetup/; user/context data = repo-local (under _localsetup/ or repo-level path). Git coupling: attach git hash when referencing PRDs, specs, or outcomes. See [_localsetup/docs/GIT_TRACEABILITY.md](../../docs/GIT_TRACEABILITY.md).
+Localsetup v3 is a universal, cross-platform agentic workflow engine. It is **deployed into the client repository** at `_localsetup/`. All framework code lives in `_localsetup/`; mutable user/context data belongs in repo-level or platform-owned paths outside `_localsetup/`. Git coupling: attach git hash when referencing PRDs, specs, or outcomes. See [_localsetup/docs/GIT_TRACEABILITY.md](../../docs/GIT_TRACEABILITY.md).
 
 Kilo CLI uses `AGENTS.md` as the project initialization file at repo root.
 
@@ -98,7 +98,7 @@ Kilo CLI uses `AGENTS.md` as the project initialization file at repo root.
 
 ## Memory
 
-A persistent memory file exists at `.kilo/MEMORY.md`. You can write freely, but this file must remain curated.
+A persistent memory file exists at `.kilo/MEMORY.md`. Treat it as mutable project/platform state outside `_localsetup/`; keep it curated and never store memory, reminders, backlog, or temporary notes under `_localsetup/`.
 
 **Curation Rules:**
 - Maximum 20 entries per section

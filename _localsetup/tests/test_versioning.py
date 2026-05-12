@@ -1,3 +1,4 @@
+import json
 import shutil
 import subprocess
 import sys
@@ -110,6 +111,82 @@ def test_revert_before_push_cancels_unreleased_bump(tmp_path: Path) -> None:
     assert plan["bump"] == "none"
     assert plan["target_version"] == str(repo_version(repo))
     assert plan["canceled_reverts"]
+
+
+def test_version_plan_uses_local_main_when_no_remote_exists(tmp_path: Path) -> None:
+    repo = tmp_path / "consumer"
+    repo.mkdir()
+    (repo / "VERSION").write_text("1.0.0\n", encoding="utf-8")
+    run(repo, "git", "init", "-q", "-b", "main")
+    run(repo, "git", "config", "user.email", "test@example.invalid")
+    run(repo, "git", "config", "user.name", "Test User")
+    run(repo, "git", "add", "VERSION")
+    run(repo, "git", "commit", "-q", "-m", "chore: initial")
+
+    completed = run(
+        repo,
+        sys.executable,
+        str(Path(__file__).resolve().parents[2] / "_localsetup" / "tools" / "localsetup_v3.py"),
+        "--repo",
+        str(repo),
+        "version-plan",
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr + completed.stdout
+    payload = json.loads(completed.stdout)
+    assert payload["ok"] is True
+    assert payload["commit_count"] == 0
+    assert payload["base_resolution"]["status"] == "resolved"
+    assert payload["base_resolution"]["strategy"] == "local_main"
+    assert payload["base_resolution"]["ref"] == "main"
+
+
+def test_version_plan_reports_no_comparison_base_for_detached_repo_without_named_base(tmp_path: Path) -> None:
+    repo = tmp_path / "detached"
+    repo.mkdir()
+    (repo / "VERSION").write_text("1.0.0\n", encoding="utf-8")
+    run(repo, "git", "init", "-q")
+    run(repo, "git", "config", "user.email", "test@example.invalid")
+    run(repo, "git", "config", "user.name", "Test User")
+    run(repo, "git", "add", "VERSION")
+    run(repo, "git", "commit", "-q", "-m", "chore: initial")
+    head = run(repo, "git", "rev-parse", "HEAD").stdout.strip()
+    run(repo, "git", "checkout", "--detach", head)
+    run(repo, "git", "branch", "-D", "master")
+
+    plan = plan_version(repo)
+
+    assert plan["ok"] is True
+    assert plan["commit_count"] == 0
+    assert plan["base"] == plan["head"]
+    assert plan["base_resolution"]["status"] == "no_comparison_base"
+
+
+def test_version_plan_invalid_explicit_base_fails_instead_of_falling_back(tmp_path: Path) -> None:
+    repo = tmp_path / "consumer"
+    repo.mkdir()
+    (repo / "VERSION").write_text("1.0.0\n", encoding="utf-8")
+    run(repo, "git", "init", "-q", "-b", "main")
+    run(repo, "git", "config", "user.email", "test@example.invalid")
+    run(repo, "git", "config", "user.name", "Test User")
+    run(repo, "git", "add", "VERSION")
+    run(repo, "git", "commit", "-q", "-m", "chore: initial")
+
+    completed = run(
+        repo,
+        sys.executable,
+        str(Path(__file__).resolve().parents[2] / "_localsetup" / "tools" / "localsetup_v3.py"),
+        "--repo",
+        str(repo),
+        "version-plan",
+        "--base",
+        "definitely-missing-ref",
+        check=False,
+    )
+
+    assert completed.returncode == 2
+    assert "explicit base ref did not resolve: definitely-missing-ref" in completed.stderr
 
 
 def test_pre_push_hook_creates_sync_commit_and_blocks_stale_push(tmp_path: Path) -> None:
