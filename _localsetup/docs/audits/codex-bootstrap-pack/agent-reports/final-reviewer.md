@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 3.5
+version: 3.6
 date: 2026-05-10
 ---
 

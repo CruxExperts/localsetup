@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 3.5
+version: 3.6
 ---
 
 # Repo and data separation (Localsetup v3)

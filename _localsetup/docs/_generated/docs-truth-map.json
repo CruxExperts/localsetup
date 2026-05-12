@@ -1,6 +1,6 @@
 {
   "generated_facts": {
-    "major_minor": "3.5",
+    "major_minor": "3.6",
     "platform_count": 6,
     "platforms": [
       {
@@ -355,7 +355,7 @@
         "version": "1.2"
       }
     ],
-    "version": "3.5.1",
+    "version": "3.6.0",
     "workflow_count": 21,
     "workflows": [
       {
@@ -492,7 +492,7 @@
       "sources": [
         "VERSION"
       ],
-      "value": "3.5"
+      "value": "3.6"
     },
     "platform_count": {
       "sources": [
@@ -507,14 +507,14 @@
       "value": 52
     },
     "version": {
-      "facts_version": "3.5.1",
-      "pyproject_version": "3.5.1",
+      "facts_version": "3.6.0",
+      "pyproject_version": "3.6.0",
       "sources": [
         "VERSION",
         "pyproject.toml",
         "_localsetup/docs/_generated/facts.json"
       ],
-      "value": "3.5.1"
+      "value": "3.6.0"
     },
     "workflow_catalog": {
       "sources": [
