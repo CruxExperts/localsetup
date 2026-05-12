@@ -36,6 +36,11 @@ class KeyboardInterruptStream(io.StringIO):
         raise KeyboardInterrupt
 
 
+class FakeTtyStringIO(io.StringIO):
+    def isatty(self) -> bool:
+        return True
+
+
 def make_temp_repo(tmp_path: Path) -> Path:
     source = Path(__file__).resolve().parents[2]
     repo = tmp_path / "repo"
@@ -1663,6 +1668,7 @@ def test_wizard_full_flow_renders_guided_context_for_current_repo(tmp_path: Path
 
     rendered = output.getvalue()
     assert code == 0
+    assert wizard.WELCOME_BANNER in rendered
     assert "Source" in rendered
     assert "Install Mode" in rendered
     assert "Platforms" in rendered
@@ -1680,6 +1686,41 @@ def test_wizard_full_flow_renders_guided_context_for_current_repo(tmp_path: Path
     assert "Does: Verification checked the managed library and selected adapter paths after applying the plan." in rendered
     assert "Enter number(s) | d details | b back | q quit | ? help" in rendered
     assert (caller / ".codex" / "skills").exists()
+
+
+def test_wizard_tty_output_clears_screen_before_banner(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    output = FakeTtyStringIO()
+    term = TerminalWizard(
+        input_stream=io.StringIO("q\n"),
+        output_stream=output,
+        color=False,
+    )
+    monkeypatch.setenv("TERM", "xterm-256color")
+
+    code = run_wizard(repo_root=root, home=home, terminal=term)
+
+    assert code == 130
+    assert output.getvalue().startswith("\033[2J\033[3J\033[H" + wizard.WELCOME_BANNER)
+
+
+def test_wizard_scripted_output_does_not_clear_screen(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    output = io.StringIO()
+    term = TerminalWizard(
+        input_stream=io.StringIO("q\n"),
+        output_stream=output,
+        color=False,
+    )
+    monkeypatch.setenv("TERM", "xterm-256color")
+
+    code = run_wizard(repo_root=root, home=home, terminal=term)
+
+    assert code == 130
+    assert "\033[2J" not in output.getvalue()
+    assert output.getvalue().startswith(wizard.WELCOME_BANNER)
 
 
 def test_wizard_cancel_exits_without_applying(tmp_path: Path) -> None:

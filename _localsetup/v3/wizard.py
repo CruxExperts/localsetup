@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
 import sys
 from pathlib import Path
 from typing import Sequence, TextIO
@@ -28,6 +29,13 @@ PLATFORM_LABELS = {
 }
 
 SHORTCUT_FOOTER = "Enter number(s) | d details | b back | q quit | ? help"
+
+WELCOME_BANNER = r""" _      ___   ____    _    _     ____  _____ _____ _   _ ____
+| |    / _ \ / ___|  / \  | |   / ___|| ____|_   _| | | |  _ \
+| |   | | | | |     / _ \ | |   \___ \|  _|   | | | | | | |_) |
+| |___| |_| | |___ / ___ \| |___ ___) | |___  | | | |_| |  __/
+|_____|\___/ \____/_/   \_\_____|____/|_____| |_|  \___/|_|
+                         v3 installer"""
 
 
 @dataclass
@@ -88,6 +96,17 @@ class TerminalWizard:
         self.write("")
         self.write(self.style(text, "1;36"))
         self.write(self.style("-" * len(text), "36"))
+
+    def clear_screen(self) -> None:
+        if not (hasattr(self.output, "isatty") and self.output.isatty()):
+            return
+        if os.environ.get("TERM") == "dumb":
+            return
+        self.output.write("\033[2J\033[3J\033[H")
+        self.output.flush()
+
+    def banner(self, text: str) -> None:
+        self.write(self.style(text, "1;36"))
 
     def write(self, text: str = "") -> None:
         print(text, file=self.output)
@@ -509,7 +528,8 @@ def _action_summary(actions: list[object]) -> list[str]:
 
 
 def _show_welcome(term: TerminalWizard, state: WizardState) -> str:
-    term.title("Localsetup v3 installer")
+    term.banner(WELCOME_BANNER)
+    term.write("")
     term.write("Decides: Starts a guided install session and confirms the source checkout.")
     term.write("This wizard installs the managed Localsetup skill library and can attach adapters for agent tools.")
     term.write(f"Source checkout: {state.repo_root}")
@@ -861,6 +881,7 @@ def run_wizard(
         register_shell=register_shell,
     )
     term.detail_mode = state.detail_mode
+    term.clear_screen()
     steps = [_show_welcome, _source_step, _mode_step, _platform_step, _pack_step, _options_step, _review_step]
     index = 0
     apply_started = False
