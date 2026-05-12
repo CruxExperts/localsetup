@@ -3,7 +3,7 @@
   "$id": "https://localsetup.dev/schemas/workflow.schema.json",
   "title": "Localsetup v3 workflow package manifest",
   "type": "object",
-  "additionalProperties": true,
+  "additionalProperties": false,
   "required": [
     "workflow_id",
     "display_name",
@@ -74,6 +74,9 @@
       "items": { "type": "object" }
     },
     "migration": {
+      "type": "object"
+    },
+    "extensions": {
       "type": "object"
     }
   }

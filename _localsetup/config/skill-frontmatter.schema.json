@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://localsetup.dev/schemas/skill-frontmatter.schema.json",
+  "title": "Localsetup skill SKILL.md frontmatter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "description"],
+  "properties": {
+    "name": { "type": "string", "pattern": "^ls-[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "description": { "type": "string", "minLength": 1 },
+    "metadata": { "type": "object" },
+    "compatibility": {
+      "anyOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "object" }
+      ]
+    },
+    "risk": { "type": "string", "enum": ["low", "medium", "high"] },
+    "permissions": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "license": { "type": "string", "minLength": 1 },
+    "allowed-tools": { "type": "string", "minLength": 1 },
+    "extensions": { "type": "object" }
+  }
+}

@@ -9,6 +9,7 @@ import yaml
 
 from .manifests import load_pack_config
 from .paths import PathValidationError, repo_path
+from .schema import validate_json_schema
 from .skills import parse_skill_frontmatter, selected_pack_names
 
 
@@ -173,7 +174,7 @@ def workflow_catalog_payload(repo_root: Path) -> dict[str, Any]:
     return {"workflows": workflows, "count": len(workflows)}
 
 
-def validate_workflow_catalog(repo_root: Path) -> list[str]:
+def validate_workflow_catalog(repo_root: Path, *, validate_references: bool = True) -> list[str]:
     issues: list[str] = []
     pack = load_pack_config(repo_root)
     workflows_root = repo_root / "_localsetup" / "workflows"
@@ -211,6 +212,14 @@ def validate_workflow_catalog(repo_root: Path) -> list[str]:
         except ValueError as exc:
             issues.append(str(exc))
             manifest = {}
+        if manifest:
+            issues.extend(
+                validate_json_schema(
+                    manifest,
+                    repo_root / "_localsetup" / "config" / "workflow.schema.json",
+                    label=f"{manifest_path.relative_to(repo_root)}",
+                )
+            )
         missing_keys = sorted(REQUIRED_WORKFLOW_KEYS - set(manifest))
         if missing_keys:
             issues.append(f"workflow manifest missing keys: {manifest_path}:{', '.join(missing_keys)}")
@@ -254,25 +263,26 @@ def validate_workflow_catalog(repo_root: Path) -> list[str]:
                 issues.append(f"workflow alias collision: {alias} ({aliases[normalized]} and {workflow.package})")
             aliases[normalized] = workflow.package
 
-        for skill_name in workflow.required_skills:
-            if skill_name not in skill_names:
-                issues.append(f"workflow requires missing skill: {workflow.package}:{skill_name}")
-        for tool in workflow.required_tools:
-            if "/" in tool or "\\" in tool or tool.startswith((".", "~", "_localsetup")):
+        if validate_references:
+            for skill_name in workflow.required_skills:
+                if skill_name not in skill_names:
+                    issues.append(f"workflow requires missing skill: {workflow.package}:{skill_name}")
+            for tool in workflow.required_tools:
+                if "/" in tool or "\\" in tool or tool.startswith((".", "~", "_localsetup")):
+                    try:
+                        tool_path = repo_path(repo_root, tool, f"workflow required_tools {workflow.package}")
+                    except PathValidationError as exc:
+                        issues.append(f"workflow requires unsafe tool path: {workflow.package}:{tool}: {exc}")
+                        continue
+                    if not tool_path.exists():
+                        issues.append(f"workflow requires missing tool: {workflow.package}:{tool}")
+            for doc in workflow.required_docs:
                 try:
-                    tool_path = repo_path(repo_root, tool, f"workflow required_tools {workflow.package}")
+                    doc_path = repo_path(repo_root, doc, f"workflow required_docs {workflow.package}")
                 except PathValidationError as exc:
-                    issues.append(f"workflow requires unsafe tool path: {workflow.package}:{tool}: {exc}")
+                    issues.append(f"workflow requires unsafe doc path: {workflow.package}:{doc}: {exc}")
                     continue
-                if not tool_path.exists():
-                    issues.append(f"workflow requires missing tool: {workflow.package}:{tool}")
-        for doc in workflow.required_docs:
-            try:
-                doc_path = repo_path(repo_root, doc, f"workflow required_docs {workflow.package}")
-            except PathValidationError as exc:
-                issues.append(f"workflow requires unsafe doc path: {workflow.package}:{doc}: {exc}")
-                continue
-            if not doc_path.is_file():
-                issues.append(f"workflow requires missing doc: {workflow.package}:{doc}")
+                if not doc_path.is_file():
+                    issues.append(f"workflow requires missing doc: {workflow.package}:{doc}")
 
     return issues

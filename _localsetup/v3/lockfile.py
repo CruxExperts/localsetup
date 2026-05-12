@@ -30,5 +30,15 @@ def save_text(path: Path, data: str) -> None:
         delete=False,
     ) as handle:
         handle.write(data)
+        handle.flush()
+        os.fsync(handle.fileno())
         temp_name = handle.name
     os.replace(temp_name, path)
+    try:
+        dir_fd = os.open(path.parent, os.O_DIRECTORY)
+    except OSError:
+        return
+    try:
+        os.fsync(dir_fd)
+    finally:
+        os.close(dir_fd)

@@ -6,6 +6,7 @@ import yaml
 
 from .models import PackConfig, PlatformConfig
 from .paths import validate_home_scoped_path, validate_repo_relative_path
+from .schema import validate_json_schema
 
 
 class ManifestError(RuntimeError):
@@ -73,3 +74,19 @@ def load_platforms(repo_root: Path) -> list[PlatformConfig]:
             )
         )
     return out
+
+
+def validate_manifest_schemas(repo_root: Path) -> list[str]:
+    issues: list[str] = []
+    config_root = repo_root / "_localsetup" / "config"
+    try:
+        pack_data = _load_yaml(config_root / "pack.yaml")
+        issues.extend(validate_json_schema(pack_data, config_root / "pack.schema.json", label="pack.yaml"))
+    except Exception as exc:
+        issues.append(f"pack.yaml schema validation failed: {exc}")
+    try:
+        platforms_data = _load_yaml(config_root / "platforms.yaml")
+        issues.extend(validate_json_schema(platforms_data, config_root / "platforms.schema.json", label="platforms.yaml"))
+    except Exception as exc:
+        issues.append(f"platforms.yaml schema validation failed: {exc}")
+    return issues

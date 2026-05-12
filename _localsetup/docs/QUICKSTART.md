@@ -12,7 +12,7 @@ Use this page to install Localsetup v3, choose agent platforms, verify the insta
 - Python `>= 3.10`
 - Bash on Linux, macOS, or WSL2
 - Git and network access to GitHub for raw bootstrap, unless installing from a local clone
-- Recommended: `rg`, `pip`, and the packages in `_localsetup/requirements.txt`
+- Recommended: `rg`, `pip`, and the packages in `_localsetup/requirements.txt`; managed dependency installs use `_localsetup/requirements.lock` with pip hash checking when the lock is present.
 
 Windows is WSL2-only in Localsetup v3. Native PowerShell install is intentionally not supported; `install.ps1` prints WSL2 guidance.
 
@@ -34,6 +34,21 @@ The old public command form still opens the wizard when a terminal is available:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --yes --tools codex
+```
+
+Raw `main` bootstrap follows the current development channel. For release verification, use the GitHub release tarball and its `.sha256` sidecar, then run:
+
+```bash
+python3 _localsetup/tools/localsetup_v3.py --repo . verify-release dist/localsetup-v$(cat VERSION).tar.gz
+```
+
+Release builds also publish a CycloneDX SBOM sidecar. When it is available, include it in verification:
+
+```bash
+python3 _localsetup/tools/localsetup_v3.py --repo . verify-release \
+  dist/localsetup-v$(cat VERSION).tar.gz \
+  --sha256 dist/localsetup-v$(cat VERSION).tar.gz.sha256 \
+  --sbom dist/localsetup-v$(cat VERSION).tar.gz.cdx.json
 ```
 
 Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.codex/skills` to the selected target. If no tools are selected, the install is global-library-only.
@@ -80,7 +95,7 @@ If Python dependencies are missing or you want the managed venv prepared:
 ./install --directory . --install-deps
 ```
 
-Localsetup v3 does not require `--break-system-packages`.
+Localsetup v3 does not require `--break-system-packages`. Framework libraries install into a managed venv, while app-style CLI tools should use `pipx` when they are distributed as commands.
 
 ## Platform IDs
 
@@ -123,6 +138,7 @@ The first command is a dry report. Apply mode writes a timestamped backup and `c
 - Managed workflow packages under the same library; their source remains `_localsetup/workflows/ls-workflow-*`
 - Explicitly selected platform adapter paths such as `.codex/skills` or `.kilo/skills`
 - `localsetup.lock.json` and reports that support verification and rollback
+- Transaction journals under `.localsetup/install-journal/` for applied installs
 
 Selected adapters point to the managed home library by symlink. Use portable mode when symlinks are not suitable:
 
@@ -154,6 +170,44 @@ Agent-readable install context:
 python3 _localsetup/tools/localsetup_v3.py --repo . context --markdown
 ```
 
+Verify supports explicit levels. `filesystem` runs the implemented local rule engine. `host` and `smoke` currently return structured `not_run` entries for probes that are not implemented yet, so automation can distinguish unsupported checks from failures:
+
+```bash
+localsetup verify --tools codex --level filesystem
+```
+
+Use JSONL tracing when automation needs resumable evidence:
+
+```bash
+localsetup verify --tools codex --level filesystem --trace-json /tmp/localsetup-events.jsonl
+localsetup doctor --trace-json /tmp/localsetup-events.jsonl
+```
+
+Inspect planned changes against the current lockfile before applying:
+
+```bash
+localsetup diff --tools codex
+```
+
+Search the installed catalog and explain pack selection:
+
+```bash
+localsetup skill search context
+localsetup skill info ls-context
+localsetup workflow search audit
+localsetup workflow info ls-workflow-audit-framework
+localsetup why --packs core
+localsetup graph
+localsetup adopt --target-directory .
+```
+
+Generate SBOMs for the source tree or an installed target:
+
+```bash
+localsetup sbom --out /tmp/localsetup-source.cdx.json
+localsetup sbom --installed --target-directory . --out /tmp/localsetup-installed.cdx.json
+```
+
 ## Update
 
 Re-run install with the same directory and platform selection:
@@ -165,6 +219,18 @@ Re-run install with the same directory and platform selection:
 The installer refreshes managed skills, selected adapter links or portable copies, lock metadata, and reports. A global-only re-run refreshes the managed library and records an empty platform list.
 
 Selected workflow packs also refresh their workflow packages and required capability skill dependencies. See [Workflow packages](WORKFLOW_PACKAGES.md) for canonical source/runtime and install details.
+
+Non-interactive strict policy blocks high-risk skill metadata unless the operator explicitly chooses a less restrictive mode:
+
+```bash
+localsetup install --tools codex --policy-mode strict --yes
+```
+
+Use `detach` when you only want to remove selected adapter paths while preserving shared managed packages and registry references:
+
+```bash
+localsetup detach --tools codex --target-directory .
+```
 
 ## Roll Back Managed Paths
 

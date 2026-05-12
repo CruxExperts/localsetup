@@ -7,6 +7,7 @@ import yaml
 
 from .aliases import legacy_skill_name, skill_alias
 from .manifests import load_pack_config
+from .schema import validate_json_schema
 
 
 @dataclass(frozen=True)
@@ -92,6 +93,13 @@ def validate_skill_catalog(repo_root: Path) -> list[str]:
 
     for skill in load_skill_catalog(repo_root):
         frontmatter = parse_skill_frontmatter(skill.path / "SKILL.md")
+        issues.extend(
+            validate_json_schema(
+                frontmatter,
+                repo_root / "_localsetup" / "config" / "skill-frontmatter.schema.json",
+                label=f"{skill.path.relative_to(repo_root)}/SKILL.md frontmatter",
+            )
+        )
         frontmatter_name = str(frontmatter.get("name", ""))
         if skill.path.name.startswith("localsetup-"):
             issues.append(f"source skill directory uses legacy prefix: {skill.path}")

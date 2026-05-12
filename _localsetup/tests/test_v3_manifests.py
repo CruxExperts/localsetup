@@ -1,11 +1,12 @@
 from pathlib import Path
 import json
+import shutil
 
 import pytest
 import yaml
 
 from _localsetup.v3.baseline import classify_path
-from _localsetup.v3.manifests import load_pack_config, load_platforms
+from _localsetup.v3.manifests import load_pack_config, load_platforms, validate_manifest_schemas
 from _localsetup.v3.paths import PathValidationError
 from _localsetup.v3.skills import selected_skill_names, validate_skill_catalog
 from _localsetup.v3.workflows import selected_workflow_names, validate_workflow_catalog
@@ -93,6 +94,48 @@ def test_platform_manifest_has_six_platforms() -> None:
     platforms = load_platforms(root)
     ids = {p.platform_id for p in platforms}
     assert ids == {"codex", "claude-code", "cursor", "kilo", "opencode", "openclaw"}
+
+
+def test_manifest_schemas_reject_unknown_pack_and_platform_fields(tmp_path: Path) -> None:
+    source = Path(__file__).resolve().parents[2]
+    root = tmp_path / "repo"
+    shutil.copytree(source / "_localsetup" / "config", root / "_localsetup" / "config")
+    pack_path = root / "_localsetup" / "config" / "pack.yaml"
+    platforms_path = root / "_localsetup" / "config" / "platforms.yaml"
+    pack_path.write_text(pack_path.read_text(encoding="utf-8") + "\nunknown_control_field: true\n", encoding="utf-8")
+    platforms_path.write_text(
+        platforms_path.read_text(encoding="utf-8").replace("    native_config: symlink_or_reference", "    native_config: symlink_or_reference\n    unknown_platform_field: true", 1),
+        encoding="utf-8",
+    )
+
+    issues = validate_manifest_schemas(root)
+
+    assert any("pack.yaml schema validation failed" in issue and "unknown_control_field" in issue for issue in issues)
+    assert any("platforms.yaml schema validation failed" in issue and "unknown_platform_field" in issue for issue in issues)
+
+
+def test_skill_frontmatter_schema_rejects_unknown_field(tmp_path: Path) -> None:
+    root = make_workflow_validation_repo(tmp_path)
+    source = Path(__file__).resolve().parents[2]
+    shutil.copy2(source / "_localsetup" / "config" / "skill-frontmatter.schema.json", root / "_localsetup" / "config" / "skill-frontmatter.schema.json")
+    skill_md = root / "_localsetup" / "skills" / "ls-context" / "SKILL.md"
+    skill_md.write_text("---\nname: ls-context\ndescription: Context.\nunknown: true\n---\n", encoding="utf-8")
+
+    issues = validate_skill_catalog(root)
+
+    assert any("frontmatter schema validation failed" in issue and "unknown" in issue for issue in issues)
+
+
+def test_workflow_schema_rejects_unknown_field(tmp_path: Path) -> None:
+    root = make_workflow_validation_repo(tmp_path)
+    source = Path(__file__).resolve().parents[2]
+    shutil.copy2(source / "_localsetup" / "config" / "workflow.schema.json", root / "_localsetup" / "config" / "workflow.schema.json")
+    workflow_path = root / "_localsetup" / "workflows" / "ls-workflow-demo" / "workflow.yaml"
+    workflow_path.write_text(workflow_path.read_text(encoding="utf-8") + "\nunknown: true\n", encoding="utf-8")
+
+    issues = validate_workflow_catalog(root)
+
+    assert any("workflow.yaml schema validation failed" in issue and "unknown" in issue for issue in issues)
 
 
 def test_facts_json_aligns_with_live_version_and_catalogs() -> None:

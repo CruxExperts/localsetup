@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://localsetup.dev/schemas/platforms.schema.json",
+  "title": "Localsetup v3 platform manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["platforms"],
+  "properties": {
+    "platforms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "repo_paths", "global_paths", "memory_paths", "verify_rules", "rollback_targets"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+          "repo_paths": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true
+          },
+          "global_paths": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true
+          },
+          "memory_paths": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true
+          },
+          "native_config": { "type": "string", "minLength": 1 },
+          "smoke_test_level": { "type": "string", "enum": ["filesystem", "host", "smoke"] },
+          "verify_rules": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true
+          },
+          "rollback_targets": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true
+          },
+          "extensions": { "type": "object" }
+        }
+      }
+    },
+    "extensions": { "type": "object" }
+  }
+}

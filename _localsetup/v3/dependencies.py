@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
 import json
 import importlib.util
 from importlib import metadata
@@ -41,6 +42,53 @@ class DependencyStatus:
 
 def requirements_path(repo_root: Path) -> Path:
     return repo_root / "_localsetup" / "requirements.txt"
+
+
+def requirements_input_path(repo_root: Path) -> Path:
+    return repo_root / "_localsetup" / "requirements.in"
+
+
+def requirements_lock_path(repo_root: Path) -> Path:
+    return repo_root / "_localsetup" / "requirements.lock"
+
+
+def file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def active_requirements_path(repo_root: Path) -> Path:
+    lock = requirements_lock_path(repo_root)
+    return lock if lock.exists() else requirements_path(repo_root)
+
+
+def locked_requirements_metadata(repo_root: Path) -> dict:
+    req = requirements_path(repo_root)
+    req_in = requirements_input_path(repo_root)
+    lock = requirements_lock_path(repo_root)
+    metadata = {
+        "requirements": str(req),
+        "requirements_sha256": file_sha256(req) if req.exists() else None,
+        "lockfile": str(lock),
+        "lockfile_sha256": file_sha256(lock) if lock.exists() else None,
+        "hash_mode": lock.exists(),
+        "install_args": ["--require-hashes", "--only-binary", ":all:"] if lock.exists() else [],
+    }
+    if req_in.exists():
+        metadata["input"] = str(req_in)
+        metadata["input_sha256"] = file_sha256(req_in)
+    return metadata
+
+
+def pip_install_args(req: Path) -> list[str]:
+    args: list[str] = []
+    if req.name == "requirements.lock":
+        args.extend(["--require-hashes", "--only-binary", ":all:"])
+    args.extend(["-r", str(req)])
+    return args
 
 
 def managed_venv_path(repo_root: Path, data_root: Path | None = None) -> Path:
@@ -130,7 +178,7 @@ def dependency_status(
     data_root: Path | None = None,
     runner: Runner | None = None,
 ) -> DependencyStatus:
-    req = requirements_path(repo_root)
+    req = active_requirements_path(repo_root)
     venv_path = managed_venv_path(repo_root, data_root)
     interpreter = venv_python(venv_path) if venv_path.exists() else None
     warnings: list[str] = []
@@ -143,7 +191,7 @@ def dependency_status(
     if mode == "managed-venv":
         commands = [
             [sys.executable, "-m", "venv", str(venv_path)],
-            [str(venv_python(venv_path)), "-m", "pip", "install", "-r", str(req)],
+            [str(venv_python(venv_path)), "-m", "pip", "install", *pip_install_args(req)],
             [str(venv_python(venv_path)), "-m", "pip", "check"],
         ]
         if not has_venv_module():
@@ -152,7 +200,7 @@ def dependency_status(
             warnings.append(f"pip is unavailable inside managed venv: {interpreter}")
         ok = bool(req.exists()) and has_venv_module() and (interpreter is None or pip_available(interpreter, runner=runner))
     elif mode == "user-pip":
-        commands = [[sys.executable, "-m", "pip", "install", "--user", "-r", str(req)], [sys.executable, "-m", "pip", "check"]]
+        commands = [[sys.executable, "-m", "pip", "install", "--user", *pip_install_args(req)], [sys.executable, "-m", "pip", "check"]]
         if not pip_available(sys.executable, runner=runner):
             warnings.append("pip is unavailable for the current interpreter")
         ok = bool(req.exists()) and pip_available(sys.executable, runner=runner)
@@ -179,17 +227,17 @@ def ensure_dependencies(
     data_root: Path | None = None,
     runner: Runner | None = None,
 ) -> dict:
-    req = requirements_path(repo_root)
+    req = active_requirements_path(repo_root)
     if mode == "prompt-only":
         status = dependency_status(repo_root, mode=mode, data_root=data_root, runner=runner)
-        return status.to_dict() | {"changed": False, "pip_check": None}
+        return status.to_dict() | {"changed": False, "pip_check": None, "lock": locked_requirements_metadata(repo_root)}
 
     if mode == "user-pip":
         if not pip_available(sys.executable, runner=runner):
             raise RuntimeError(
                 "pip is unavailable for the current interpreter; install python3-pip or use --dependency-mode managed-venv"
             )
-        install = _run([sys.executable, "-m", "pip", "install", "--user", "-r", str(req)], runner=runner)
+        install = _run([sys.executable, "-m", "pip", "install", "--user", *pip_install_args(req)], runner=runner)
         if install.returncode != 0:
             raise RuntimeError(f"user pip install failed without --break-system-packages: {install.stderr.strip()}")
         check = _run([sys.executable, "-m", "pip", "check"], runner=runner)
@@ -198,6 +246,7 @@ def ensure_dependencies(
         return dependency_status(repo_root, mode=mode, data_root=data_root, runner=runner).to_dict() | {
             "changed": True,
             "pip_check": check.stdout.strip(),
+            "lock": locked_requirements_metadata(repo_root),
         }
 
     if not has_venv_module():
@@ -218,7 +267,7 @@ def ensure_dependencies(
 
     if not pip_available(python, runner=runner):
         raise RuntimeError(f"pip is unavailable in managed venv: {python}")
-    install = _run([str(python), "-m", "pip", "install", "-r", str(req)], runner=runner)
+    install = _run([str(python), "-m", "pip", "install", *pip_install_args(req)], runner=runner)
     if install.returncode != 0:
         raise RuntimeError(f"managed venv dependency install failed: {install.stderr.strip()}")
     check = _run([str(python), "-m", "pip", "check"], runner=runner)
@@ -228,6 +277,7 @@ def ensure_dependencies(
     return dependency_status(repo_root, mode=mode, data_root=data_root, runner=runner).to_dict() | {
         "changed": True,
         "pip_check": check.stdout.strip(),
+        "lock": locked_requirements_metadata(repo_root),
     }
 
 

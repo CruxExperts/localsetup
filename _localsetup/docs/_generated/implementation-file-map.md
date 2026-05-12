@@ -23,6 +23,7 @@
 | `keep` | `CODE_OF_CONDUCT.md` |
 | `keep` | `CONTRIBUTING.md` |
 | `keep` | `LICENSE` |
+| `keep` | `MANIFEST.in` |
 | `keep` | `README.md` |
 | `keep` | `SECURITY.md` |
 | `keep` | `SUPPORT.md` |
@@ -35,8 +36,11 @@
 | `keep` | `_localsetup/config/install.schema.json` |
 | `keep` | `_localsetup/config/mail_protocol_policy.yaml` |
 | `keep` | `_localsetup/config/manifest.schema.json` |
+| `keep` | `_localsetup/config/pack.schema.json` |
 | `refactor` | `_localsetup/config/pack.yaml` |
+| `keep` | `_localsetup/config/platforms.schema.json` |
 | `refactor` | `_localsetup/config/platforms.yaml` |
+| `keep` | `_localsetup/config/skill-frontmatter.schema.json` |
 | `keep` | `_localsetup/config/workflow.schema.json` |
 | `keep` | `_localsetup/discovery/core/os_detector.ps1` |
 | `keep` | `_localsetup/discovery/core/os_detector.py` |
@@ -119,6 +123,8 @@
 | `keep` | `_localsetup/lib/deps.py` |
 | `keep` | `_localsetup/lib/json_formatter.sh` |
 | `keep` | `_localsetup/lib/path_resolution.py` |
+| `keep` | `_localsetup/requirements.in` |
+| `keep` | `_localsetup/requirements.lock` |
 | `keep` | `_localsetup/requirements.txt` |
 | `keep` | `_localsetup/skills/ls-agentlens/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-agentlens/references/navigation.md` |
@@ -620,6 +626,7 @@
 | `refactor` | `_localsetup/v3/context.py` |
 | `refactor` | `_localsetup/v3/conversion.py` |
 | `refactor` | `_localsetup/v3/dependencies.py` |
+| `refactor` | `_localsetup/v3/diffing.py` |
 | `refactor` | `_localsetup/v3/docs.py` |
 | `refactor` | `_localsetup/v3/doctor.py` |
 | `refactor` | `_localsetup/v3/harness.py` |
@@ -631,11 +638,15 @@
 | `refactor` | `_localsetup/v3/package.py` |
 | `refactor` | `_localsetup/v3/paths.py` |
 | `refactor` | `_localsetup/v3/plan.py` |
+| `refactor` | `_localsetup/v3/query.py` |
+| `refactor` | `_localsetup/v3/registry.py` |
 | `refactor` | `_localsetup/v3/repo_finalizer.py` |
 | `refactor` | `_localsetup/v3/rollback.py` |
+| `refactor` | `_localsetup/v3/schema.py` |
 | `refactor` | `_localsetup/v3/shell.py` |
 | `refactor` | `_localsetup/v3/skills.py` |
 | `refactor` | `_localsetup/v3/source.py` |
+| `refactor` | `_localsetup/v3/trace.py` |
 | `refactor` | `_localsetup/v3/verify.py` |
 | `refactor` | `_localsetup/v3/versioning.py` |
 | `refactor` | `_localsetup/v3/wizard.py` |

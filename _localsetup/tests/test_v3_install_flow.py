@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 
+import _localsetup.v3.apply as apply_mod
 import _localsetup.v3.wizard as wizard
 from _localsetup.v3.apply import apply_plan
 from _localsetup.v3.boundary import scan_tar_for_leaks
@@ -22,7 +23,7 @@ from _localsetup.v3.docs import generate_alias_outputs
 from _localsetup.v3.hooks import run_maintainer_gate
 from _localsetup.v3.lockfile import load_json
 from _localsetup.v3.migration import conservative_migrate, detect_legacy_artifacts, scan_legacy_references
-from _localsetup.v3.package import build_public_artifact
+from _localsetup.v3.package import build_public_artifact, parse_sha256_file, verify_release_artifact
 from _localsetup.v3.plan import build_install_plan
 from _localsetup.v3.rollback import rollback
 from _localsetup.v3.shell import detect_invocation_target, is_managed_shim, register_shell_command, shell_registration_status
@@ -57,6 +58,8 @@ def make_temp_repo(tmp_path: Path) -> Path:
     shutil.copytree(source / "_localsetup" / "workflows", repo / "_localsetup" / "workflows")
     shutil.copytree(source / "_localsetup" / "tools", repo / "_localsetup" / "tools")
     shutil.copy2(source / "_localsetup" / "requirements.txt", repo / "_localsetup" / "requirements.txt")
+    shutil.copy2(source / "_localsetup" / "requirements.in", repo / "_localsetup" / "requirements.in")
+    shutil.copy2(source / "_localsetup" / "requirements.lock", repo / "_localsetup" / "requirements.lock")
     shutil.copy2(source / "VERSION", repo / "VERSION")
     (repo / "_localsetup" / "docs" / "_generated").mkdir(parents=True)
     (repo / "_localsetup" / "docs" / "migration").mkdir(parents=True)
@@ -80,6 +83,13 @@ def test_v3_plan_apply_verify_rollback(tmp_path: Path) -> None:
 
     result = apply_plan(root, plan, home=home, dry_run=False)
     assert result["dry_run"] is False
+    assert result["transaction"]
+    journal = load_json(Path(result["journal"]))
+    assert journal["status"] == "committed"
+    assert journal["txid"] == result["transaction"]
+    assert not (root / ".localsetup" / "staging" / result["transaction"]).exists()
+    assert not (home / ".local/share/agents/skills/localsetup/.localsetup-staging" / result["transaction"]).exists()
+    assert any(item["kind"] == "staging_root" for item in journal["touched"])
 
     verify = verify_install(root, home)
     assert verify["ok"] is True
@@ -256,6 +266,210 @@ def test_v3_external_target_install_verify_and_context_freshness_smoke(tmp_path:
     payload = json.loads(freshness.stdout)
     assert payload["ok"] is True
     assert payload["contexts"][0]["scope"] == "repo"
+
+
+def test_v3_verify_levels_and_trace_json(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "consumer"
+    target.mkdir()
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"], target_root=target)
+    apply_plan(root, plan, home=home, target_root=target)
+    trace = tmp_path / "trace.jsonl"
+    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(tool),
+            "--repo",
+            str(root),
+            "--home",
+            str(home),
+            "--target-directory",
+            str(target),
+            "verify",
+            "--tools",
+            "codex",
+            "--level",
+            "host",
+            "--trace-json",
+            str(trace),
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr + completed.stdout
+    payload = json.loads(completed.stdout)
+    assert payload["level"] == "host"
+    assert any(row.get("status") == "not_run" for row in payload["rules"])
+    trace_rows = [json.loads(line) for line in trace.read_text(encoding="utf-8").splitlines()]
+    assert trace_rows[-1]["event"] == "verify"
+
+
+def test_v3_registry_refs_preserve_shared_packages_until_last_rollback(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target_one = tmp_path / "one"
+    target_two = tmp_path / "two"
+    target_one.mkdir()
+    target_two.mkdir()
+    apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"], target_root=target_one), home=home, target_root=target_one)
+    apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["kilo"], target_root=target_two), home=home, target_root=target_two)
+    managed_skill = home / ".local/share/agents/skills/localsetup/ls-context"
+    registry = load_json(home / ".local/share/agents/skills/localsetup/.localsetup-registry.json")
+    assert registry["version"] == 2
+    assert len(registry["packages"]["ls-context"]["refs"]) == 2
+
+    rollback(root, home=home, target_root=target_one)
+    assert managed_skill.is_dir()
+    rollback(root, home=home, target_root=target_two)
+    assert not managed_skill.exists()
+
+
+def test_v3_detach_removes_adapters_and_preserves_packages(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+    apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"]), home=home)
+
+    completed = subprocess.run(
+        [sys.executable, str(tool), "--repo", str(root), "--home", str(home), "detach", "--tools", "codex"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr + completed.stdout
+    payload = json.loads(completed.stdout)
+    assert payload["packages_preserved"] is True
+    assert not (root / ".codex" / "skills").exists()
+    assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
+
+
+def test_v3_phase3_command_family_outputs_json(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "consumer"
+    target.mkdir()
+    (target / "package.json").write_text('{"scripts":{"test":"node --test"}}\n', encoding="utf-8")
+    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+    commands = [
+        ["skill", "search", "context"],
+        ["skill", "info", "ls-context"],
+        ["workflow", "search", "audit"],
+        ["workflow", "info", "ls-workflow-audit-framework"],
+        ["why", "--packs", "core"],
+        ["graph"],
+        ["adopt", "--target-directory", str(target)],
+        ["diff", "--tools", "codex"],
+    ]
+    for args in commands:
+        completed = subprocess.run(
+            [sys.executable, str(tool), "--repo", str(root), "--home", str(home), *args],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        assert completed.returncode == 0, args + [completed.stderr, completed.stdout]
+        payload = json.loads(completed.stdout)
+        assert isinstance(payload, dict)
+
+
+def test_v3_policy_blocks_high_risk_skill_in_strict_mode(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    skill_md = root / "_localsetup" / "skills" / "ls-context" / "SKILL.md"
+    skill_md.write_text(
+        "---\nname: ls-context\ndescription: Context.\nrisk: high\npermissions: [filesystem-write]\n---\n",
+        encoding="utf-8",
+    )
+    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(tool),
+            "--repo",
+            str(root),
+            "--home",
+            str(home),
+            "install",
+            "--yes",
+            "--dependency-mode",
+            "prompt-only",
+            "--policy-mode",
+            "strict",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 1
+    payload = json.loads(completed.stdout)
+    assert payload["policy"]["blockers"]
+
+
+def test_v3_policy_blocks_invalid_risk_metadata_in_strict_mode(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    skill_md = root / "_localsetup" / "skills" / "ls-context" / "SKILL.md"
+    skill_md.write_text(
+        "---\nname: ls-context\ndescription: Context.\nrisk: critical\n---\n",
+        encoding="utf-8",
+    )
+    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(tool),
+            "--repo",
+            str(root),
+            "--home",
+            str(home),
+            "install",
+            "--yes",
+            "--dependency-mode",
+            "prompt-only",
+            "--policy-mode",
+            "strict",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 1
+    payload = json.loads(completed.stdout)
+    assert any("invalid skill policy metadata" in blocker for blocker in payload["policy"]["blockers"])
+
+
+def test_v3_sbom_command_writes_source_and_installed_boms(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    apply_plan(root, build_install_plan(root, home=home, packs=["core"]), home=home)
+    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+    source_out = tmp_path / "source.cdx.json"
+    installed_out = tmp_path / "installed.cdx.json"
+
+    for args in (
+        ["sbom", "--out", str(source_out)],
+        ["sbom", "--installed", "--out", str(installed_out)],
+    ):
+        completed = subprocess.run(
+            [sys.executable, str(tool), "--repo", str(root), "--home", str(home), *args],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        assert completed.returncode == 0, completed.stderr + completed.stdout
+
+    assert json.loads(source_out.read_text(encoding="utf-8"))["bomFormat"] == "CycloneDX"
+    assert json.loads(installed_out.read_text(encoding="utf-8"))["components"]
 
 
 def test_detect_invocation_target_prefers_git_root(tmp_path: Path) -> None:
@@ -602,10 +816,12 @@ def test_v3_managed_venv_commands_and_lock_interpreter(tmp_path: Path) -> None:
     lock = load_json(root / "localsetup.lock.json")
 
     assert any(cmd[1:3] == ["-m", "venv"] for cmd in commands)
-    assert any(cmd[2:4] == ["pip", "install"] and "-r" in cmd for cmd in commands)
+    assert any(cmd[2:4] == ["pip", "install"] and "--require-hashes" in cmd and "--only-binary" in cmd for cmd in commands)
     assert any(cmd[-2:] == ["pip", "check"] for cmd in commands)
     assert deps["interpreter"].endswith(".localsetup/venv/bin/python")
+    assert deps["lock"]["hash_mode"] is True
     assert lock["python_interpreter"] == deps["interpreter"]
+    assert lock["dependency_state"]["hash_mode"] is True
     assert result["lockfile"].endswith("localsetup.lock.json")
 
 
@@ -904,6 +1120,12 @@ def test_v3_docs_and_package(tmp_path: Path) -> None:
     package = build_public_artifact(root, artifact)
     assert artifact.exists()
     assert package["leaks"] == []
+    assert Path(package["sha256"]).is_file()
+    assert Path(package["sbom"]).is_file()
+    verified = verify_release_artifact(artifact, expected_commit=package["manifest"]["source_commit"])
+    assert verified["ok"] is True
+    assert any(check["name"] == "sbom" and check["ok"] for check in verified["checks"])
+    assert verified["metadata"]["pack_id"] == "localsetup"
     assert "_localsetup/__pycache__/cached.pyc" not in package["files"]
     assert "_localsetup/.cache/scrapling/jobs/job.json" not in package["files"]
     assert "_localsetup/docs/local-context/SECRETS_OVERVIEW.md" not in package["files"]
@@ -913,6 +1135,77 @@ def test_v3_docs_and_package(tmp_path: Path) -> None:
     assert "_localsetup/skills/ls-npm-management/scripts/data/127_0_0_1_81/token/expiry.txt" not in package["files"]
     assert "_localsetup/workflows/ls-workflow-ops-tmux-session/scripts/data/runtime.txt" not in package["files"]
     assert "state/inventory.yml" not in package["files"]
+
+
+def test_package_command_creates_output_parent(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    artifact = tmp_path / "missing" / "nested" / "localsetup-v3-public.tar.gz"
+
+    package = build_public_artifact(root, artifact)
+
+    assert artifact.is_file()
+    assert Path(package["sha256"]).is_file()
+    assert Path(package["sbom"]).is_file()
+
+
+def test_package_command_fails_when_leak_scan_finds_private_file(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+    leak = root / "_localsetup" / "token.secret"
+    leak.write_text("do not ship\n", encoding="utf-8")
+    artifact = tmp_path / "localsetup-v3-public.tar.gz"
+
+    completed = subprocess.run(
+        [sys.executable, str(tool), "--repo", str(root), "package", "--out", str(artifact)],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 1
+    payload = json.loads(completed.stdout)
+    assert "_localsetup/token.secret" in payload["leaks"]
+
+
+def test_verify_release_rejects_missing_or_stale_sbom(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    artifact = tmp_path / "localsetup-v3-public.tar.gz"
+    package = build_public_artifact(root, artifact)
+    sbom = Path(package["sbom"])
+    sbom.unlink()
+
+    missing = verify_release_artifact(artifact)
+    assert missing["ok"] is False
+    assert any(check["name"] == "sbom" and not check["ok"] for check in missing["checks"])
+
+    sbom.write_text('{"bomFormat":"CycloneDX","metadata":{"component":{"name":"wrong"},"properties":[]},"components":[]}\n', encoding="utf-8")
+    stale = verify_release_artifact(artifact)
+    assert stale["ok"] is False
+    assert any(check["name"] == "sbom" and not check["ok"] for check in stale["checks"])
+
+
+def test_verify_release_rejects_incomplete_sbom_components(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    artifact = tmp_path / "localsetup-v3-public.tar.gz"
+    package = build_public_artifact(root, artifact)
+    sbom = Path(package["sbom"])
+    payload = json.loads(sbom.read_text(encoding="utf-8"))
+    payload["components"] = payload["components"][:-1]
+    sbom.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+    verified = verify_release_artifact(artifact)
+
+    assert verified["ok"] is False
+    sbom_check = next(check for check in verified["checks"] if check["name"] == "sbom")
+    assert sbom_check["missing_components"]
+
+
+def test_parse_sha256_file_accepts_binary_mode_marker(tmp_path: Path) -> None:
+    sha = tmp_path / "artifact.sha256"
+    sha.write_text("a" * 64 + " *artifact.tar.gz\n", encoding="utf-8")
+    digest, name = parse_sha256_file(sha)
+    assert digest == "a" * 64
+    assert name == "artifact.tar.gz"
 
 
 def test_workflow_catalog_generation_parity_between_paths(tmp_path: Path) -> None:
@@ -2321,6 +2614,116 @@ def test_v3_refuses_unmanaged_skill_collision(tmp_path: Path) -> None:
         assert "unmanaged package path" in str(exc)
     else:
         raise AssertionError("expected unmanaged collision to fail")
+
+
+def test_v3_failed_apply_marks_journal_and_cleans_staging(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    plan = build_install_plan(root, home=home, packs=["core"])
+    original_replace = apply_mod._same_filesystem_replace
+
+    def fail_first_replace(src: Path, dest: Path) -> None:
+        if dest.name == "ls-context":
+            raise OSError("simulated replace failure")
+        original_replace(src, dest)
+
+    monkeypatch.setattr(apply_mod, "_same_filesystem_replace", fail_first_replace)
+
+    with pytest.raises(OSError, match="simulated replace failure"):
+        apply_plan(root, plan, home=home, dry_run=False)
+
+    journals = sorted((root / ".localsetup" / "install-journal").glob("*.json"))
+    assert journals
+    journal = load_json(journals[-1])
+    assert journal["status"] == "failed"
+    assert "simulated replace failure" in journal["error"]
+    for item in journal["touched"]:
+        if item.get("kind") == "staging_root":
+            assert not Path(item["staging_root"]).exists()
+
+
+def test_v3_failed_package_promotion_restores_existing_managed_package(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    plan = build_install_plan(root, home=home, packs=["core"])
+    apply_plan(root, plan, home=home, dry_run=False)
+    installed = home / ".local/share/agents/skills/localsetup/ls-context"
+    original_skill_md = installed / "SKILL.md"
+    original_text = original_skill_md.read_text(encoding="utf-8")
+    original_replace = apply_mod._same_filesystem_replace
+
+    def fail_promotion(src: Path, dest: Path) -> None:
+        if src.name == "ls-context" and src.parent.name == "skills" and dest.name == "ls-context":
+            raise OSError("simulated promotion failure")
+        original_replace(src, dest)
+
+    monkeypatch.setattr(apply_mod, "_same_filesystem_replace", fail_promotion)
+
+    with pytest.raises(OSError, match="simulated promotion failure"):
+        apply_plan(root, plan, home=home, dry_run=False)
+
+    assert installed.is_dir()
+    assert original_skill_md.read_text(encoding="utf-8") == original_text
+    assert not list((home / ".local/share/agents/skills/localsetup").glob(".ls-context.localsetup-backup-*"))
+    journals = sorted((root / ".localsetup" / "install-journal").glob("*.json"))
+    assert load_json(journals[-1])["status"] == "failed"
+
+
+def test_v3_failed_late_commit_restores_packages_and_registry(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    plan = build_install_plan(root, home=home, packs=["core"])
+    apply_plan(root, plan, home=home, dry_run=False)
+    installed = home / ".local/share/agents/skills/localsetup/ls-context"
+    original_text = (installed / "SKILL.md").read_text(encoding="utf-8")
+    registry_path = home / ".local/share/agents/skills/localsetup/.localsetup-registry.json"
+    original_registry = registry_path.read_text(encoding="utf-8")
+    (root / "_localsetup" / "skills" / "ls-context" / "SKILL.md").write_text(
+        "---\nname: ls-context\ndescription: Changed.\n---\nchanged\n",
+        encoding="utf-8",
+    )
+    original_save_json = apply_mod.save_json
+
+    def fail_lock_save(path: Path, payload: dict) -> None:
+        if path.name == "localsetup.lock.json":
+            raise OSError("simulated lockfile failure")
+        original_save_json(path, payload)
+
+    monkeypatch.setattr(apply_mod, "save_json", fail_lock_save)
+
+    with pytest.raises(OSError, match="simulated lockfile failure"):
+        apply_plan(root, plan, home=home, dry_run=False)
+
+    assert (installed / "SKILL.md").read_text(encoding="utf-8") == original_text
+    assert registry_path.read_text(encoding="utf-8") == original_registry
+    journals = sorted((root / ".localsetup" / "install-journal").glob("*.json"))
+    assert load_json(journals[-1])["status"] == "failed"
+
+
+def test_v3_failed_adapter_replace_restores_existing_adapter(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    plan = build_install_plan(root, home=home, packs=["core"], attach_mode="portable", platform_ids=["codex"])
+    apply_plan(root, plan, home=home, dry_run=False)
+    adapter = root / ".codex" / "skills"
+    existing_note = adapter / "existing.txt"
+    existing_note.write_text("keep me\n", encoding="utf-8")
+    original_copytree = apply_mod.shutil.copytree
+
+    def fail_adapter_copy(src: Path, dst: Path, *args: object, **kwargs: object):
+        if dst == adapter:
+            raise OSError("simulated adapter copy failure")
+        return original_copytree(src, dst, *args, **kwargs)
+
+    monkeypatch.setattr(apply_mod.shutil, "copytree", fail_adapter_copy)
+
+    with pytest.raises(OSError, match="simulated adapter copy failure"):
+        apply_plan(root, plan, home=home, dry_run=False)
+
+    assert (adapter / ".localsetup-portable").is_file()
+    assert existing_note.read_text(encoding="utf-8") == "keep me\n"
+    journals = sorted((root / ".localsetup" / "install-journal").glob("*.json"))
+    assert load_json(journals[-1])["status"] == "failed"
 
 
 def test_rollback_refuses_managed_marker_outside_global_root(tmp_path: Path) -> None:

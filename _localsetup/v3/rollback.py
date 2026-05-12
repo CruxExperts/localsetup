@@ -7,6 +7,7 @@ from .adapters import adapter_path_state, validate_platform_selectors
 from .lockfile import load_json
 from .manifests import load_pack_config
 from .paths import expand_user_path, repo_path
+from .registry import load_registry, package_has_other_refs, remove_target
 
 
 def _require_under_global_root(path: Path, global_root: Path) -> None:
@@ -45,17 +46,23 @@ def rollback(
     removed: list[str] = []
 
     registry = expand_user_path(pack.global_registry, home)
-    if registry.exists():
-        registry.unlink()
-        removed.append(str(registry))
+    registry_payload = load_registry(registry)
 
     global_root = expand_user_path(pack.global_root, home)
     for skill_path_str in [*lock.get("installed_skills", []), *lock.get("installed_workflows", [])]:
         skill_path = Path(skill_path_str)
         _require_under_global_root(skill_path, global_root)
+        if package_has_other_refs(registry_payload, skill_path.name, target_root=attachment_root):
+            continue
         if skill_path.exists() and (skill_path / ".localsetup-managed").exists():
             shutil.rmtree(skill_path)
             removed.append(str(skill_path))
+
+    if registry.exists():
+        before = registry.exists()
+        remove_target(registry, target_root=attachment_root)
+        if before and not registry.exists():
+            removed.append(str(registry))
 
     for adapter_path in lock.get("adapter_state", []):
         p = Path(str(adapter_path))

@@ -42,7 +42,7 @@ That means your agent setup travels with the repo, survives context resets, and 
   <img src="assets/localsetup-v3-architecture.svg" alt="Localsetup v3 architecture: repo source, config resolver, managed home library, adapters, and rollback metadata" width="960">
 </p>
 
-`_localsetup/` is the canonical source. The installer resolves configuration, creates the managed home library for skills and workflow packages, attaches only explicitly selected platform adapter paths, writes lock/report metadata, and leaves rollback evidence behind. Generated adapter trees are install output, not framework source.
+`_localsetup/` is the canonical source. The installer resolves configuration, creates the managed home library for skills and workflow packages, attaches only explicitly selected platform adapter paths, writes lock/report metadata, and records an install journal under `.localsetup/install-journal/`. Generated adapter trees are install output, not framework source.
 
 ## Skills and workflow packages
 
@@ -87,6 +87,12 @@ The legacy public form still opens the same wizard when a terminal is available:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --yes --tools codex
+```
+
+Raw `main` bootstrap is the current development channel. For release verification, download the GitHub release tarball with its `.sha256` sidecar and run:
+
+```bash
+python3 _localsetup/tools/localsetup_v3.py --repo . verify-release dist/localsetup-v$(cat VERSION).tar.gz
 ```
 
 Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.codex/skills` to the chosen target. If you do not select tools, the install is global-library-only.
@@ -156,8 +162,8 @@ Opt-in harness automation is documented separately because normal installs never
 6. **It helps with the work developers actually hand agents.** Debugging, tests, PR review, codebase navigation, docs cleanup, git recovery, MCP building, Linux service triage, patching, and release chores are covered out of the box.
 7. **It has safety rails for real machines.** Server and operations workflows route through tmux, sudo probing, backup/safety guidance, and explicit approval points for risky actions.
 8. **It gives long-running work a shape.** First-class workflow packages, decision trees, PRD queues, Agent Q handoffs, generated registries, and outcome templates make multi-step agent work easier to restart, audit, and delegate.
-9. **It makes installs reversible.** The v3 installer plans, applies, verifies, writes lock metadata, and can roll back managed paths without treating generated adapter output as source.
-10. **It keeps releases tidy.** Version sync, generated facts, docs-alignment checks, skill metadata versions, framework audit, and Conventional Commit release tooling reduce the drift that makes public repos feel abandoned.
+9. **It makes installs reversible.** The v3 installer plans, applies, verifies, writes lock/registry metadata, supports adapter detach, and can roll back managed paths without treating generated adapter output as source.
+10. **It keeps releases tidy.** Version sync, generated facts, strict manifest schemas, checksum/SBOM sidecars, framework audit, and Conventional Commit release tooling reduce the drift that makes public repos feel abandoned.
 
 ## Shipped packages worth starting with
 
@@ -194,12 +200,21 @@ Useful commands:
 
 ```bash
 localsetup doctor
-localsetup verify --tools codex
+localsetup verify --tools codex --level filesystem
+localsetup diff --tools codex
+localsetup skill search context
+localsetup workflow info ls-workflow-audit-framework
+localsetup why --packs core
+localsetup graph
+localsetup adopt --target-directory .
+localsetup sbom --out /tmp/localsetup-source.cdx.json
 python3 _localsetup/tools/localsetup_v3.py doctor
 python3 _localsetup/tools/localsetup_v3.py --repo . context --markdown
 python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
 python3 _localsetup/tools/localsetup_v3.py --repo . rollback
 ```
+
+Use `--trace-json /path/to/events.jsonl` with `install`, `verify`, or `doctor` to append local JSONL trace events for automation review.
 
 ## What Localsetup is solving
 
@@ -220,7 +235,7 @@ The design follows a few durable pressures instead of chasing market snapshots:
 - Python `>= 3.10`
 - Bash on Linux, macOS, or WSL2
 - Git and network access to GitHub for raw bootstrap, unless installing from a local clone
-- Recommended: `rg`, `pip`, and the packages in `_localsetup/requirements.txt`
+- Recommended: `rg`, `pip`, and the packages in `_localsetup/requirements.txt`; managed installs prefer `_localsetup/requirements.lock` with pip hash checking when present.
 
 Use managed dependency setup instead of system pip overrides:
 

@@ -7,10 +7,52 @@ name = "localsetup"
 version = "3.7.2"
 description = "Global-first Localsetup skill pack manager"
 requires-python = ">=3.10"
-dependencies = ["PyYAML>=6.0"]
+dependencies = ["PyYAML>=6.0", "jsonschema>=4.0"]
 
 [project.scripts]
 localsetup = "_localsetup.v3.cli:main"
 
+[tool.setuptools]
+include-package-data = false
+
 [tool.setuptools.packages.find]
 include = ["_localsetup*"]
+
+[tool.setuptools.package-data]
+"_localsetup" = [
+  "requirements.txt",
+  "requirements.in",
+  "requirements.lock",
+  "config/*.json",
+  "config/*.yaml",
+  "docs/*.md",
+  "docs/*.yaml",
+  "docs/_generated/*.md",
+  "docs/_generated/*.json",
+  "docs/migration/*.md",
+  "docs/ops/*.md",
+  "discovery/**/*",
+  "lib/*",
+  "tools/*",
+  "tools/**/*",
+  "skills/**/*",
+  "templates/**/*",
+  "workflows/**/*",
+]
+
+[tool.setuptools.exclude-package-data]
+"*" = [
+  "docs/local-context/*",
+  "docs/local-context/**/*",
+  "_localsetup/docs/local-context/*",
+  "_localsetup/docs/local-context/**/*",
+  ".cache/**",
+  "**/.cache/**",
+  "skills/*/scripts/data/*",
+  "skills/*/scripts/data/**/*",
+  "workflows/*/scripts/data/*",
+  "workflows/*/scripts/data/**/*",
+  "**/__pycache__/**",
+  "**/*.pyc",
+  "**/*.pyo",
+]

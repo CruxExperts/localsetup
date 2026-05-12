@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://localsetup.dev/schemas/pack.schema.json",
+  "title": "Localsetup v3 pack manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "pack_id",
+    "namespace",
+    "version",
+    "global",
+    "repo",
+    "optional_packs",
+    "packs",
+    "workflow_packs",
+    "distribution_channels",
+    "public_private"
+  ],
+  "properties": {
+    "pack_id": { "type": "string", "minLength": 1 },
+    "namespace": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "version": { "type": "integer", "minimum": 1 },
+    "global": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["root", "registry"],
+      "properties": {
+        "root": { "type": "string", "minLength": 1 },
+        "registry": { "type": "string", "minLength": 1 }
+      }
+    },
+    "repo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lockfile"],
+      "properties": {
+        "lockfile": { "type": "string", "minLength": 1 }
+      }
+    },
+    "alias_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": { "type": "string", "minLength": 1 },
+        "legacy_prefix": { "type": "string", "minLength": 1 },
+        "new_prefix": { "type": "string", "minLength": 1 }
+      }
+    },
+    "optional_packs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "packs": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string", "minLength": 1 },
+        "uniqueItems": true
+      }
+    },
+    "workflow_packs": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string", "minLength": 1 },
+        "uniqueItems": true
+      }
+    },
+    "distribution_channels": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "public_private": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["public_paths", "private_paths"],
+      "properties": {
+        "public_paths": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "private_paths": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      }
+    },
+    "extensions": { "type": "object" }
+  }
+}

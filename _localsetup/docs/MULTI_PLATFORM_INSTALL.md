@@ -176,7 +176,7 @@ To install dependencies automatically during install, add the `--install-deps` f
 
 Without `--install-deps`, the root wrapper runs doctor in `prompt-only` mode and applies the v3 install without mutating Python dependencies. Direct Python CLI installs default to `--dependency-mode managed-venv`; use `--dependency-mode prompt-only` when you only want adapter installation.
 
-Do not use `--break-system-packages`. If virtualenv creation is unavailable, install the OS venv package first, for example `sudo apt-get install python3-venv` on Debian/Ubuntu.
+Do not use `--break-system-packages`. If virtualenv creation is unavailable, install the OS venv package first, for example `sudo apt-get install python3-venv` on Debian/Ubuntu. Use `pipx` for standalone CLI tools, including future wheel-based Localsetup command installs; use the managed venv for libraries imported by Localsetup framework modules.
 
 ## V3 reinstall behavior
 

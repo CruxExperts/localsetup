@@ -51,7 +51,7 @@ The `version-plan` output includes both `raw_bump` from the commit message and f
 
 ## GitHub release workflow
 
-On pushes to `main`, GitHub Actions verifies the computed version plan, confirms all version references and generated docs are committed, runs the framework validation suite, builds the public package artifact, and publishes tag/release `vX.Y.Z`. Existing tags must already point at the current commit or the workflow fails.
+On pushes to `main`, GitHub Actions verifies the computed version plan, confirms all version references and generated docs are committed, runs the framework validation suite, builds the public package artifact, verifies the tarball checksum and embedded artifact metadata, uploads the tarball plus `.sha256` and CycloneDX SBOM sidecars, attests the tarball when GitHub artifact attestation is available, and publishes tag/release `vX.Y.Z`. Existing tags must already point at the current commit or the workflow fails.
 
 ## Verification
 
@@ -65,5 +65,7 @@ python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
 python3 _localsetup/tools/localsetup_v3.py --repo . scan-migration
 python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .
 python3 _localsetup/tools/localsetup_v3.py --repo . generate-docs
+python3 _localsetup/tools/localsetup_v3.py --repo . package --out "dist/localsetup-v$(cat VERSION).tar.gz"
+python3 _localsetup/tools/localsetup_v3.py --repo . verify-release "dist/localsetup-v$(cat VERSION).tar.gz"
 git diff --check
 ```

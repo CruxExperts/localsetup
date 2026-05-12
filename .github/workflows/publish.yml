@@ -8,6 +8,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 concurrency:
   group: publish-main
@@ -20,18 +22,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
         with:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: |
-          python3 -m pip install -r _localsetup/requirements.txt pytest --quiet
+        run: python3 -m pip install --require-hashes --only-binary :all: -r _localsetup/requirements.lock --quiet
 
       - name: Resolve release base
         id: release-base
@@ -74,6 +75,26 @@ jobs:
       - name: Build public artifact
         run: python3 _localsetup/tools/localsetup_v3.py --repo . package --out dist/localsetup-v$(cat VERSION).tar.gz
 
+      - name: Verify release artifact
+        run: |
+          set -euo pipefail
+          version="$(cat VERSION)"
+          python3 _localsetup/tools/localsetup_v3.py --repo . verify-release "dist/localsetup-v${version}.tar.gz" --expected-commit "$GITHUB_SHA"
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: localsetup-release-${{ github.sha }}
+          path: |
+            dist/localsetup-v*.tar.gz
+            dist/localsetup-v*.tar.gz.sha256
+            dist/localsetup-v*.tar.gz.cdx.json
+
+      - name: Attest release tarball
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
+        with:
+          subject-path: dist/localsetup-v*.tar.gz
+
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -89,9 +110,16 @@ jobs:
             fi
           fi
           if gh release view "${tag}" >/dev/null 2>&1; then
-            gh release upload "${tag}" "dist/localsetup-v${version}.tar.gz" --clobber
+            gh release upload "${tag}" \
+              "dist/localsetup-v${version}.tar.gz" \
+              "dist/localsetup-v${version}.tar.gz.sha256" \
+              "dist/localsetup-v${version}.tar.gz.cdx.json" \
+              --clobber
           else
-            gh release create "${tag}" "dist/localsetup-v${version}.tar.gz" \
+            gh release create "${tag}" \
+              "dist/localsetup-v${version}.tar.gz" \
+              "dist/localsetup-v${version}.tar.gz.sha256" \
+              "dist/localsetup-v${version}.tar.gz.cdx.json" \
               --target "$GITHUB_SHA" \
               --title "Localsetup ${version}" \
               --notes "Automated release for Localsetup ${version}."

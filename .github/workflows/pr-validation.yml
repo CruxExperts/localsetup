@@ -21,17 +21,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
         with:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: python3 -m pip install -r _localsetup/requirements.txt --quiet
+        run: python3 -m pip install --require-hashes --only-binary :all: -r _localsetup/requirements.lock --quiet
 
       - name: Check version and generated docs
         env:
@@ -75,15 +75,15 @@ jobs:
           - "3.12"
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: python3 -m pip install -r _localsetup/requirements.txt pytest --quiet
+        run: python3 -m pip install --require-hashes --only-binary :all: -r _localsetup/requirements.lock --quiet
 
       - name: Verify framework context
         run: |
@@ -94,6 +94,12 @@ jobs:
         run: |
           python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
           python3 _localsetup/tools/localsetup_v3.py --repo . scan-migration
+          python3 _localsetup/tools/localsetup_v3.py --repo . skill search context
+          python3 _localsetup/tools/localsetup_v3.py --repo . workflow search audit
+          python3 _localsetup/tools/localsetup_v3.py --repo . why --packs core
+          python3 _localsetup/tools/localsetup_v3.py --repo . graph
+          python3 _localsetup/tools/localsetup_v3.py --repo . adopt --target-directory .
+          python3 _localsetup/tools/localsetup_v3.py --repo . sbom --out /tmp/localsetup-source.cdx.json
 
       - name: Run pytest
         run: python3 -m pytest _localsetup/tests -q
@@ -103,15 +109,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
         with:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: python3 -m pip install -r _localsetup/requirements.txt pytest --quiet
+        run: python3 -m pip install --require-hashes --only-binary :all: -r _localsetup/requirements.lock --quiet
 
       - name: Run framework audit
         run: python3 _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-v3-framework-audit.md

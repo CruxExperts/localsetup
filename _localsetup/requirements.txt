@@ -1,6 +1,7 @@
 # Python deps for framework tools.
-# Install with any Python package manager, for example:
-#   python3 -m pip install -r _localsetup/requirements.txt
+# Runtime installs must stay isolated: Localsetup uses a managed venv with
+# requirements.lock when available. Use pipx for app-style CLI distribution,
+# not for these importable framework libraries.
 # Runtime target: Python >= 3.10 (Ubuntu 22.04 LTS baseline).
 #
 # PyYAML: YAML parsing for PUBLIC_SKILL_INDEX.yaml and other framework docs.
@@ -23,8 +24,9 @@ cryptography>=42.0
 #
 # PGPy: pure-Python OpenPGP encryption/decryption support for secure mail exchange.
 #   Used by: skills/ls-mail-protocol-control/scripts/crypto_engine.py
-PGPy>=0.6.0
+#   Keep below 0.6 for the first binary-only hash lock; 0.6.0 has no wheel in pip's binary-only resolver.
+PGPy>=0.5.4,<0.6
 #
-# jsonschema: optional runtime validation of Agent Q inner manifest against manifest.schema.json.
-#   Used by: tools/agentq_transport_client/agentq_transport_client/manifest_validate.py
+# jsonschema: Draft 2020-12 validation for framework manifests and Agent Q inner manifests.
+#   Used by: v3/schema.py, tools/agentq_transport_client/agentq_transport_client/manifest_validate.py
 jsonschema>=4.0

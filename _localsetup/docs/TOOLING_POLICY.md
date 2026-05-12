@@ -29,13 +29,34 @@ Purpose: define project-wide tooling language and dependency rules.
   - broad adoption
   - clear license
   - recent release activity
-- Pin lower bounds in `requirements.txt` and document why each dependency exists.
+- Pin human-maintained dependency intent in `requirements.in` and `requirements.txt`, and document why each dependency exists.
+- Keep `requirements.lock` as the managed-install lock. Managed installs use `pip install --require-hashes --only-binary :all:` when this lock is present.
+- Keep framework dependency installs isolated. The default `--dependency-mode managed-venv` creates or updates Localsetup's own venv and never requires `--break-system-packages`.
+- Use `pipx` for app-style CLI tools and future wheel-based Localsetup command installs. Do not use `pipx` as the mechanism for libraries imported by framework Python modules; those belong in the managed venv.
+- Treat `--dependency-mode user-pip` as a compatibility escape hatch only. It uses `--user`, never `--break-system-packages`, and should not be the default for Ubuntu servers or desktops.
 
 For CLI-based skills that depend on external binaries (for example, Scrapling), see also the CLI skills environment policy in `CLI_SKILLS_ENV.md` for user-first `pipx` installs, PATH handling, and health checks.
 
+## Skill risk metadata and policy modes
+
+Skill frontmatter may declare:
+
+- `risk: low|medium|high`
+- `permissions: [...]`
+
+Missing risk metadata is treated as `low` with no permissions. `plan` and `install` include policy warnings when selected skills declare medium or high risk, or when permissions are listed. `--policy-mode strict` and `--policy-mode ci` block high-risk selected skills during non-interactive installs. `permissive` and `standard` report warnings without blocking.
+
+Use strict policy in CI or unattended provisioning when high-risk skills must be explicitly approved before they can alter a target:
+
+```bash
+localsetup install --tools codex --policy-mode strict --yes
+```
+
+The policy gate is metadata-based. It complements, but does not replace, skill vetting, schema validation, and release artifact verification.
+
 ## Approved libraries (mandatory use)
 
-These libraries are pre-approved, listed in `requirements.txt`, and available after any framework install. When writing new tools or refactoring existing ones, **use these libraries** instead of reimplementing their functionality. Reinventing them (custom HTTP clients, bespoke YAML parsers, ad-hoc frontmatter splits) is explicitly prohibited when one of these covers the need.
+These libraries are pre-approved, listed in `requirements.txt`, locked in `requirements.lock`, and available after any framework install. When writing new tools or refactoring existing ones, **use these libraries** instead of reimplementing their functionality. Reinventing them (custom HTTP clients, bespoke YAML parsers, ad-hoc frontmatter splits) is explicitly prohibited when one of these covers the need.
 
 | Library | Import name | pip package | Use for |
 |---------|-------------|-------------|---------|
@@ -43,7 +64,8 @@ These libraries are pre-approved, listed in `requirements.txt`, and available af
 | requests | `requests` | `requests>=2.28` | All outbound HTTP. Use `requests.Session` for multi-request tools. Never use `urllib.request` for new code. |
 | python-frontmatter | `frontmatter` | `python-frontmatter>=1.1` | Parse YAML front matter from skill and PRD markdown files. Never split frontmatter by hand. |
 | cryptography | `cryptography` | `cryptography>=42.0` | Framework cryptographic primitives (AES-GCM, HKDF, PBKDF2, secure random). Use for encryption/decryption and key derivation. |
-| PGPy | `pgpy` | `PGPy>=0.6.0` | Pure-Python OpenPGP encryption and decryption in framework tooling. |
+| PGPy | `pgpy` | `PGPy>=0.5.4,<0.6` | Pure-Python OpenPGP encryption and decryption in framework tooling. |
+| jsonschema | `jsonschema` | `jsonschema>=4.0` | Draft 2020-12 validation for Localsetup manifests and Agent Q payloads. |
 
 **Shared dependency helper:** Import `lib.deps` at the top of every tool and call `require_deps()` before using any approved library. This gives users an actionable error message instead of a bare `ImportError` if the library is missing.
 

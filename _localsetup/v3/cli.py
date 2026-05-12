@@ -3,9 +3,11 @@ from __future__ import annotations
 import argparse
 import os
 import json
+from importlib.resources import files
 from pathlib import Path
 import subprocess
 import sys
+import time
 
 from .adapters import adapter_path_state, adapter_status
 from .apply import apply_plan
@@ -13,6 +15,7 @@ from .config import DEPENDENCY_MODES, InstallConfig, config_to_dict, load_instal
 from .context import build_agent_context, render_markdown_report
 from .conversion import convert_repo
 from .dependencies import ensure_dependencies
+from .diffing import diff_plan_current
 from .doctor import run_doctor
 from .docs import generate_alias_outputs
 from .harness import disable as harness_disable
@@ -29,16 +32,20 @@ from .repo_finalizer import status as repo_finalizer_status
 from .hooks import run_maintainer_gate
 from .manifests import load_pack_config
 from .manifests import load_platforms
+from .manifests import validate_manifest_schemas
 from .lockfile import save_json, save_text
 from .migration import conservative_migrate, scan_legacy_references
-from .package import build_public_artifact
+from .package import build_public_artifact, verify_release_artifact, write_installed_sbom, write_source_sbom
 from .paths import expand_user_path
 from .plan import build_install_plan
+from .query import adopt_recommendations, graph_payload, pack_reasoning, skill_payload, workflow_payload
 from .rollback import rollback
 from .shell import SHIM_ENV, detect_invocation_target, register_shell_command, shell_registration_status
 from .skills import load_skill_catalog, validate_skill_catalog
+from .skills import parse_skill_frontmatter
 from .workflows import load_workflow_catalog, validate_workflow_catalog
 from .verify import verify_install
+from .trace import write_trace
 from .wizard import run_wizard
 from .versioning import (
     VERSION_SYNC_PREFIX,
@@ -53,7 +60,7 @@ from .versioning import (
 
 
 def _repo_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    return Path(str(files("_localsetup"))).resolve().parent
 
 
 def _split_csv(values: list[str] | None) -> list[str] | None:
@@ -76,6 +83,8 @@ def _add_config_flags(parser: argparse.ArgumentParser, *, include_apply: bool = 
     parser.add_argument("--json", action="store_true", default=None)
     parser.add_argument("--report")
     parser.add_argument("--backup-dir")
+    parser.add_argument("--trace-json")
+    parser.add_argument("--policy-mode", choices=["permissive", "standard", "strict", "ci"], default="standard")
     parser.add_argument("--dependency-mode", choices=sorted(DEPENDENCY_MODES))
     if include_apply:
         parser.add_argument("--apply", action="store_true")
@@ -160,6 +169,34 @@ def _print_payload(payload: dict, *, markdown: bool = False) -> None:
 def _all_configured_packs(repo_root: Path) -> list[str]:
     pack = load_pack_config(repo_root)
     return list(pack.packs.keys())
+
+
+def _policy_findings(root: Path, skill_names: list[str], mode: str) -> dict:
+    by_name = {skill.name: skill for skill in load_skill_catalog(root)}
+    warnings: list[str] = []
+    blockers: list[str] = []
+    for skill_name in skill_names:
+        skill = by_name.get(skill_name)
+        if not skill:
+            continue
+        frontmatter = parse_skill_frontmatter(skill.path / "SKILL.md")
+        risk = str(frontmatter.get("risk", "low"))
+        permissions = frontmatter.get("permissions", [])
+        invalid_metadata = False
+        if risk not in {"low", "medium", "high"}:
+            invalid_metadata = True
+            warnings.append(f"{skill_name}: invalid risk metadata: {risk}")
+        if not isinstance(permissions, list) or not all(isinstance(item, str) for item in permissions):
+            invalid_metadata = True
+            warnings.append(f"{skill_name}: invalid permissions metadata")
+            permissions = []
+        if risk in {"medium", "high"} or permissions:
+            warnings.append(f"{skill_name}: risk={risk}; permissions={permissions}")
+        if mode in {"strict", "ci"} and invalid_metadata:
+            blockers.append(f"invalid skill policy metadata blocked by {mode} policy: {skill_name}")
+        if mode in {"strict", "ci"} and risk == "high":
+            blockers.append(f"high-risk skill blocked by {mode} policy: {skill_name}")
+    return {"mode": mode, "warnings": warnings, "blockers": blockers}
 
 
 def _add_harness_target_flags(parser: argparse.ArgumentParser) -> None:
@@ -264,6 +301,7 @@ def _main(argv: list[str] | None = None) -> int:
     verify_p = sub.add_parser("verify")
     _add_config_flags(verify_p)
     verify_p.add_argument("--platforms", "--tools", nargs="*", dest="platforms")
+    verify_p.add_argument("--level", choices=["filesystem", "host", "smoke"], default="filesystem")
 
     rollback_p = sub.add_parser("rollback")
     _add_config_flags(rollback_p)
@@ -301,6 +339,34 @@ def _main(argv: list[str] | None = None) -> int:
     _add_selector_flags(convert_p)
 
     sub.add_parser("catalog")
+    diff_p = sub.add_parser("diff")
+    _add_config_flags(diff_p)
+    _add_selector_flags(diff_p)
+    skill_p = sub.add_parser("skill")
+    skill_sub = skill_p.add_subparsers(dest="skill_action", required=True)
+    skill_search = skill_sub.add_parser("search")
+    skill_search.add_argument("query", nargs="?")
+    skill_info = skill_sub.add_parser("info")
+    skill_info.add_argument("query")
+    workflow_p = sub.add_parser("workflow")
+    workflow_sub = workflow_p.add_subparsers(dest="workflow_action", required=True)
+    workflow_search = workflow_sub.add_parser("search")
+    workflow_search.add_argument("query", nargs="?")
+    workflow_info = workflow_sub.add_parser("info")
+    workflow_info.add_argument("query")
+    why_p = sub.add_parser("why")
+    why_p.add_argument("--packs", nargs="*")
+    sub.add_parser("graph")
+    adopt_p = sub.add_parser("adopt")
+    adopt_p.add_argument("--target-directory", default=argparse.SUPPRESS)
+    detach_p = sub.add_parser("detach")
+    _add_config_flags(detach_p)
+    detach_p.add_argument("--platforms", "--tools", nargs="*", dest="platforms", required=True)
+    sbom_p = sub.add_parser("sbom")
+    sbom_p.add_argument("--format", choices=["cyclonedx"], default="cyclonedx")
+    sbom_p.add_argument("--out", required=True)
+    sbom_p.add_argument("--installed", action="store_true")
+    sbom_p.add_argument("--target-directory", default=argparse.SUPPRESS)
     sub.add_parser("scan-migration")
     sub.add_parser("validate-catalog")
     sub.add_parser("generate-docs")
@@ -375,6 +441,12 @@ def _main(argv: list[str] | None = None) -> int:
 
     package_p = sub.add_parser("package")
     package_p.add_argument("--out", default="dist/localsetup-v3-public.tar.gz")
+    verify_release_p = sub.add_parser("verify-release")
+    verify_release_p.add_argument("artifact")
+    verify_release_p.add_argument("--sha256")
+    verify_release_p.add_argument("--sbom")
+    verify_release_p.add_argument("--expected-commit")
+    verify_release_p.add_argument("--expected-tag")
 
     args = parser.parse_args(argv)
     _inject_global_target(args)
@@ -382,6 +454,7 @@ def _main(argv: list[str] | None = None) -> int:
     home = Path(args.home or Path.home()).expanduser().resolve()
 
     if args.cmd in {"plan", "install", "update"}:
+        started_at = time.time()
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
         target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
@@ -394,6 +467,7 @@ def _main(argv: list[str] | None = None) -> int:
             platform_ids=config.platforms,
             target_root=target_root,
         )
+        policy = _policy_findings(root, plan.rollback_metadata.get("skills", []), getattr(args, "policy_mode", "standard"))
         detected_target = bool(getattr(args, "detected_target_directory", False))
         if args.cmd == "plan" or (args.cmd == "install" and not args.apply):
             warnings = []
@@ -408,11 +482,18 @@ def _main(argv: list[str] | None = None) -> int:
                     "global_only": plan.rollback_metadata.get("global_only", False),
                 },
                 "warnings": warnings,
+                "policy": policy,
                 "rollback": plan.rollback_metadata,
             }
             _write_report(config.output.report, payload)
             _print_payload(payload)
+            write_trace(getattr(args, "trace_json", None), event=args.cmd, status="ok", attributes={"dry_run": True}, started_at=started_at)
             return 0
+        if policy["blockers"]:
+            payload = {"ok": False, "policy": policy, "blockers": policy["blockers"]}
+            _write_report(config.output.report, payload)
+            _print_payload(payload)
+            return 1
         dependency_info = ensure_dependencies(root, mode=config.dependency_mode) if config.dependency_mode != "prompt-only" else None
         result = apply_plan(root, plan, home=home, dry_run=False, dependency_info=dependency_info, target_root=target_root)
         if dependency_info:
@@ -424,8 +505,12 @@ def _main(argv: list[str] | None = None) -> int:
         }
         if config.target_directory and not config.platforms and not detected_target:
             result["warnings"] = ["target directory was provided but no platforms were selected; install was global-only with no repo adapters"]
+        if policy["warnings"]:
+            result.setdefault("warnings", []).extend(policy["warnings"])
+        result["policy"] = policy
         _write_report(config.output.report, result)
         _print_payload(result)
+        write_trace(getattr(args, "trace_json", None), event=args.cmd, status="ok", attributes={"target_root": str(attachment_root)}, started_at=started_at)
         return 0
 
     if args.cmd == "wizard":
@@ -449,12 +534,14 @@ def _main(argv: list[str] | None = None) -> int:
         )
 
     if args.cmd == "verify":
+        started_at = time.time()
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
         target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
-        payload = verify_install(root, home=home, platform_ids=config.platforms, target_root=target_root)
+        payload = verify_install(root, home=home, platform_ids=config.platforms, target_root=target_root, level=args.level)
         _write_report(config.output.report, payload)
         _print_payload(payload)
+        write_trace(getattr(args, "trace_json", None), event="verify", status="ok" if payload["ok"] else "failed", attributes={"level": args.level}, started_at=started_at)
         return 0 if payload["ok"] else 1
 
     if args.cmd == "rollback":
@@ -491,6 +578,7 @@ def _main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.cmd == "doctor":
+        started_at = time.time()
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
         target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
@@ -507,6 +595,7 @@ def _main(argv: list[str] | None = None) -> int:
             payload["warnings"].extend(payload["shell_registration"]["warnings"])
         _write_report(config.output.report, payload)
         _print_payload(payload)
+        write_trace(getattr(args, "trace_json", None), event="doctor", status="ok" if payload["ok"] else "failed", attributes={"target_root": str(target_root or root)}, started_at=started_at)
         return 0 if payload["ok"] else 1
 
     if args.cmd == "migrate":
@@ -622,8 +711,69 @@ def _main(argv: list[str] | None = None) -> int:
         print(json.dumps(payload, indent=2))
         return 0
 
+    if args.cmd == "diff":
+        config = _resolved_config(args, home)
+        home = Path(config.home or home).expanduser().resolve()
+        target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
+        payload = diff_plan_current(root, home=home, packs=config.packs, platform_ids=config.platforms, target_root=target_root, attach_mode=config.attach_mode)
+        _print_payload(payload)
+        return 0
+
+    if args.cmd == "skill":
+        payload = skill_payload(root, args.query)
+        _print_payload(payload)
+        return 0 if payload["count"] else 1
+
+    if args.cmd == "workflow":
+        payload = workflow_payload(root, args.query)
+        _print_payload(payload)
+        return 0 if payload["count"] else 1
+
+    if args.cmd == "why":
+        _print_payload(pack_reasoning(root, args.packs))
+        return 0
+
+    if args.cmd == "graph":
+        _print_payload(graph_payload(root))
+        return 0
+
+    if args.cmd == "adopt":
+        target_root = Path(getattr(args, "target_directory", None) or root).expanduser().resolve()
+        _print_payload(adopt_recommendations(target_root))
+        return 0
+
+    if args.cmd == "detach":
+        config = _resolved_config(args, home)
+        home = Path(config.home or home).expanduser().resolve()
+        target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else root
+        from .adapters import adapter_targets
+        removed = []
+        pack = load_pack_config(root)
+        global_root = expand_user_path(pack.global_root, home)
+        for target in adapter_targets(root, home, platform_ids=config.platforms, target_root=target_root):
+            path = target["repo_path"]
+            state = adapter_path_state(path, global_root)
+            if (path.exists() or path.is_symlink()) and (state["points_to_global"] or state["is_portable_copy"]):
+                if path.is_dir() and not path.is_symlink():
+                    import shutil
+                    shutil.rmtree(path)
+                else:
+                    path.unlink()
+                removed.append(str(path))
+        _print_payload({"removed": removed, "packages_preserved": True})
+        return 0
+
+    if args.cmd == "sbom":
+        if args.installed:
+            target_root = Path(getattr(args, "target_directory", None) or root).expanduser().resolve()
+            payload = write_installed_sbom(root, target_root, Path(args.out))
+        else:
+            payload = write_source_sbom(root, Path(args.out))
+        _print_payload(payload)
+        return 0
+
     if args.cmd == "validate-catalog":
-        issues = validate_skill_catalog(root) + validate_workflow_catalog(root)
+        issues = validate_manifest_schemas(root) + validate_skill_catalog(root) + validate_workflow_catalog(root)
         print(json.dumps({"ok": not issues, "issues": issues}, indent=2))
         return 0 if not issues else 1
 
@@ -712,8 +862,20 @@ def _main(argv: list[str] | None = None) -> int:
     if args.cmd == "package":
         out = Path(args.out)
         out.parent.mkdir(parents=True, exist_ok=True)
-        print(json.dumps(build_public_artifact(root, out), indent=2))
-        return 0
+        payload = build_public_artifact(root, out)
+        print(json.dumps(payload, indent=2))
+        return 1 if payload.get("leaks") else 0
+
+    if args.cmd == "verify-release":
+        payload = verify_release_artifact(
+            Path(args.artifact),
+            sha256_path=Path(args.sha256) if args.sha256 else None,
+            sbom_path=Path(args.sbom) if args.sbom else None,
+            expected_commit=args.expected_commit,
+            expected_tag=args.expected_tag,
+        )
+        print(json.dumps(payload, indent=2, sort_keys=True))
+        return 0 if payload["ok"] else 1
 
     return 1
 
