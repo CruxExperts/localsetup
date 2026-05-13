@@ -362,6 +362,8 @@
 | `keep` | `_localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py` |
 | `keep` | `_localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_validator.py` |
 | `keep` | `_localsetup/skills/ls-markdown-reference-validator/templates/markdown_reference_audit.yaml` |
+| `keep` | `_localsetup/skills/ls-markdown-reference-validator/templates/markdown_reference_host_aware.yaml` |
+| `keep` | `_localsetup/skills/ls-markdown-reference-validator/templates/markdown_reference_strict_repo.yaml` |
 | `keep` | `_localsetup/skills/ls-mcp-builder/LICENSE.txt` |
 | `keep` | `_localsetup/skills/ls-mcp-builder/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-mcp-builder/assets/evaluation-requirements.txt` |

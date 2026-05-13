@@ -61,6 +61,8 @@ curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install 
 
 Automation mode keeps machine-readable output. Without a terminal and without `--non-interactive --yes`, the installer exits with a short message explaining both choices.
 
+Localsetup CLI commands emit JSON by default unless a command has an explicit human-readable mode such as `context --markdown`. The `--json` config flag remains available when scripts want to make that output contract explicit.
+
 From a local checkout:
 
 ```bash

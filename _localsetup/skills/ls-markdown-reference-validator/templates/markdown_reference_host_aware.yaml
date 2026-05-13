@@ -1,21 +1,15 @@
 repo_root: "{repo_root}"
 
 report:
-  output_path: "{repo_root}/docs/reference/markdown-reference-audit.md"
-  state_file: "{repo_root}/.kilo/state/markdown_reference_audit_last_run_epoch"
-  max_findings: 1500
+  output_path: "{repo_root}/.localsetup/state/markdown-reference/host-aware.md"
+  state_file: "{repo_root}/.localsetup/state/markdown-reference/host-aware-last-run-epoch"
+  max_findings: 2000
 
 extraction:
-  # Modes:
-  # - off: disable inline-code parsing
-  # - smart: only likely file/path literals (recommended default)
-  # - all: treat every inline code token as candidate path
   inline_code_mode: smart
-  # Back-compat toggle; if set and inline_code_mode omitted, true->smart / false->off
   include_inline_code_paths: true
 
 ignore:
-  # Ignore known non-source or volatile markdown surfaces that generate expected pseudo paths.
   source_file_globs:
     - "**/node_modules/**"
     - "**/_generated/**"
@@ -24,9 +18,10 @@ ignore:
     - "**/.kilo/plans/**"
     - "**/.kilo/state/**"
     - "**/.kilo/skills/**"
+    - "**/.local/share/agents/skills/**"
+    - "**/.local/share/localsetup/packages/**"
     - "**/templates/repo-scaffold/**"
 
-  # Ignore target patterns known to be placeholders/examples/shell snippets.
   target_regexes:
     - '^URL$'
     - '^<[^>]+>$'
@@ -41,7 +36,6 @@ ignore:
     - '^\.agents/MEMORY\.md$'
     - '^\.agentlens/INDEX\.md$'
 
-  # Ignore pseudo-path prefixes that are usually examples or host-runtime references.
   path_prefixes:
     - "/etc/"
     - "/opt/"
@@ -50,7 +44,6 @@ ignore:
     - "old.reddit.com/"
     - "/.well-known/"
 
-  # Placeholder tokens to suppress template/example links while preserving strict checks for concrete local links.
   placeholder_tokens:
     - "<repo>"
     - "<host>"
@@ -77,26 +70,33 @@ targets:
     include_globs:
       - "_localsetup/docs/**/*.md"
       - "_localsetup/skills/**/*.md"
+      - "_localsetup/workflows/**/*.md"
       - "_localsetup/templates/**/*.md"
       - "_localsetup/templates/**/*.mdc"
     exclude_globs:
       - "_localsetup/**/_generated/**"
       - "_localsetup/**/node_modules/**"
 
-  - name: repo-kilo-config-docs
+  - name: repo-host-config-docs
     base_dir: "{repo_root}"
     include_globs:
       - ".kilo/**/*.md"
+      - ".cursor/**/*.md"
+      - ".opencode/**/*.md"
+      - ".claude/**/*.md"
     exclude_globs:
       - ".kilo/**/node_modules/**"
+      - ".kilo/skills/**"
+      - ".kilo/state/**"
+      - ".cursor/**/node_modules/**"
+      - ".opencode/**/node_modules/**"
+      - ".claude/**/node_modules/**"
 
   - name: host-kilo-global
     base_dir: "~"
     include_globs:
       - ".kilo/instructions/*.md"
       - ".kilo/memories/**/*.md"
-      # Intentionally exclude broad global skill trees here; those are often mirrored/template
-      # surfaces and produce high expected-noise. Validate them in their own repo context.
     exclude_globs:
       - ".kilo/**/node_modules/**"
       - ".kilo/skills/**"

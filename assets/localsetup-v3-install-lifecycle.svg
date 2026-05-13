@@ -85,7 +85,7 @@
 
   <g filter="url(#shadow)">
     <rect x="360" y="322" width="480" height="74" rx="18" fill="#101914" stroke="#8af5c9" stroke-width="1.4"/>
-    <text x="438" y="352" class="mono">rollback uses localsetup.lock.json</text>
+    <text x="438" y="352" class="mono">rollback uses .localsetup/lock.json</text>
     <text x="434" y="376" class="mono">plus managed-path metadata</text>
   </g>
 </svg>

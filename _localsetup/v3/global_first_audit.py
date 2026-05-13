@@ -7,7 +7,7 @@ from .manifests import load_pack_config
 from .paths import expand_user_path, target_lockfile_path
 
 
-POWERSHELL_PUBLIC_SURFACES = [
+RETIRED_POWERSHELL_SURFACES = [
     "install.ps1",
     "_localsetup/discovery/core/os_detector.ps1",
     "_localsetup/lib/data_paths.ps1",
@@ -40,7 +40,7 @@ DOC_CLAIM_PATTERNS = {
     ),
     "target_local_tool_command": re.compile(r"\./_localsetup/(tools|tests)/"),
     "target_venv": re.compile(r"\.localsetup/venv"),
-    "powershell_surface": re.compile(
+    "retired_powershell_surface": re.compile(
         r"(install|verify_context|verify_rules|skill_importer_scan|automated_test|data_paths|os_detector)\.ps1"
     ),
     "framework_sync_claim": re.compile(r"syncs current framework", re.IGNORECASE),
@@ -152,10 +152,10 @@ def audit_global_first(source_root: Path, *, home: Path, target_root: Path | Non
     if old_package_root.exists() and old_package_root.resolve(strict=False) != package_root.resolve(strict=False):
         warnings.append({"kind": "legacy_package_root", "path": str(old_package_root)})
 
-    active_ps1 = [rel for rel in POWERSHELL_PUBLIC_SURFACES if (source / rel).exists()]
+    active_ps1 = [rel for rel in RETIRED_POWERSHELL_SURFACES if (source / rel).exists()]
     if active_ps1:
-        blockers.extend({"kind": "powershell_surface", "path": rel} for rel in active_ps1)
-    observations.append({"kind": "powershell_surfaces", "present": active_ps1})
+        blockers.extend({"kind": "retired_powershell_surface", "path": rel} for rel in active_ps1)
+    observations.append({"kind": "retired_powershell_surfaces", "present": active_ps1})
     observations.append({"kind": "shell_wrappers", "present": [rel for rel in SHELL_WRAPPER_SURFACES if (source / rel).exists()]})
 
     legacy_deploy = [rel for rel in LEGACY_DEPLOY_SURFACES if (source / rel).exists()]

@@ -190,6 +190,22 @@ def test_catalog_validation_and_pack_selection() -> None:
     assert "ls-system-info" in selected_skill_names(root, ["ops"])
 
 
+def test_agent_queue_example_yaml_has_expected_runtime_shape() -> None:
+    root = Path(__file__).resolve().parents[2]
+    payload = yaml.safe_load((root / "_localsetup" / "config" / "agent_queue.example.yaml").read_text(encoding="utf-8"))
+
+    assert payload["layout"] in {"flat", "structured"}
+    assert payload["queue_path"] == ".agent/queue"
+    assert payload["agent_trust_registry_path"] == "_localsetup/config/agent_trust_registry.yaml"
+    assert set(payload["transports_enabled"]) == {"mail", "file_drop"}
+    assert payload["version_mismatch_policy"] in {"warn", "block", "allow_log"}
+    assert payload["post_ingest_mailbox"]
+    assert payload["sealed_extension"].startswith(".")
+    assert all(isinstance(pattern, str) and pattern for pattern in payload["ignore_globs"])
+    assert payload["archive_retention_days"] > 0
+    assert payload["archive_max_total_gb"] > 0
+
+
 def test_skill_allowed_tools_frontmatter_is_space_separated() -> None:
     root = Path(__file__).resolve().parents[2]
 

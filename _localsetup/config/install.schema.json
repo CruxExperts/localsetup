@@ -33,7 +33,7 @@
     "data_root": {
       "type": "string",
       "minLength": 1,
-      "description": "Optional root for managed runtime state. Defaults to .localsetup under the repo."
+      "description": "Optional root for managed runtime state such as the managed dependency venv. Defaults to the Localsetup user data root, normally ~/.local/share/localsetup."
     },
     "dependency_mode": {
       "type": "string",
@@ -58,7 +58,11 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "json": { "type": "boolean", "default": true },
+        "json": {
+          "type": "boolean",
+          "default": true,
+          "description": "Explicit JSON output preference. JSON is the default for non-Markdown commands."
+        },
         "report": { "type": "string", "minLength": 1 },
         "markdown": { "type": "boolean", "default": false }
       }

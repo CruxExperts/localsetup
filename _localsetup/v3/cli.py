@@ -68,6 +68,12 @@ def _localsetup_home(home: Path) -> Path:
     return home / ".local" / "share" / "localsetup"
 
 
+def _config_data_root(config: InstallConfig, home: Path) -> Path:
+    if config.data_root:
+        return Path(config.data_root).expanduser().resolve()
+    return _localsetup_home(home)
+
+
 def _split_csv(values: list[str] | None) -> list[str] | None:
     if values is None:
         return None
@@ -85,7 +91,7 @@ def _split_csv(values: list[str] | None) -> list[str] | None:
 def _add_config_flags(parser: argparse.ArgumentParser, *, include_apply: bool = False) -> None:
     parser.add_argument("--config")
     parser.add_argument("--target-directory", default=argparse.SUPPRESS)
-    parser.add_argument("--json", action="store_true", default=None)
+    parser.add_argument("--json", action="store_true", default=None, help="Emit JSON output explicitly; JSON is the default for non-Markdown commands.")
     parser.add_argument("--report")
     parser.add_argument("--backup-dir")
     parser.add_argument("--trace-json")
@@ -263,7 +269,7 @@ def _run_self_refresh(
                 },
             }
     dependency_info = (
-        ensure_dependencies(root, mode=config.dependency_mode, data_root=_localsetup_home(home))
+        ensure_dependencies(root, mode=config.dependency_mode, data_root=_config_data_root(config, home))
         if config.dependency_mode != "prompt-only"
         else None
     )
@@ -509,7 +515,7 @@ def _main(argv: list[str] | None = None) -> int:
             _print_payload(payload)
             return 1
         dependency_info = (
-            ensure_dependencies(root, mode=config.dependency_mode, data_root=_localsetup_home(home))
+            ensure_dependencies(root, mode=config.dependency_mode, data_root=_config_data_root(config, home))
             if config.dependency_mode != "prompt-only"
             else None
         )
@@ -606,6 +612,7 @@ def _main(argv: list[str] | None = None) -> int:
             packs=config.packs,
             platform_ids=config.platforms,
             dependency_mode=config.dependency_mode,
+            data_root=_config_data_root(config, home),
             target_root=target_root,
         )
         payload["shell_registration"] = shell_registration_status(root, home=home)

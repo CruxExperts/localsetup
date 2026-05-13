@@ -25,6 +25,8 @@ Framework and ops docs evolve quickly. Broken references waste agent cycles and 
 ## Inputs and outputs
 
 - **Input config (YAML):** `_localsetup/skills/ls-markdown-reference-validator/templates/markdown_reference_audit.yaml`, or a repo-local copy adapted from it.
+- **Strict repo profile:** `_localsetup/skills/ls-markdown-reference-validator/templates/markdown_reference_strict_repo.yaml`
+- **Host-aware profile:** `_localsetup/skills/ls-markdown-reference-validator/templates/markdown_reference_host_aware.yaml`
 - **Skill entrypoint:** `scripts/markdown_reference_audit.py`
 - **Engine script:** `_localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_validator.py`
 - **Default report:** `docs/reference/markdown-reference-audit.md`
@@ -36,6 +38,24 @@ Run once manually:
 
 ```bash
 python3 _localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py \
+  --force \
+  --reason manual
+```
+
+Run the strict repo-owned profile:
+
+```bash
+python3 _localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py \
+  --config _localsetup/skills/ls-markdown-reference-validator/templates/markdown_reference_strict_repo.yaml \
+  --force \
+  --reason manual
+```
+
+Run the broader host-aware profile:
+
+```bash
+python3 _localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py \
+  --config _localsetup/skills/ls-markdown-reference-validator/templates/markdown_reference_host_aware.yaml \
   --force \
   --reason manual
 ```
@@ -67,6 +87,8 @@ The sidecar config defines:
 - `report.output_path`, `report.state_file`, and `report.max_findings`.
 - `extraction.inline_code_mode`: `off | smart | all` (`smart` is default and recommended).
 - `ignore.*` blocks to reduce false positives from templates/examples while keeping strict checks for concrete links.
+
+The shipped default profile scans repo and selected host Kilo documentation but excludes its own default report, generated state reports, and managed host skill mirrors to avoid self-scan and mirror noise. Use the strict repo profile for tracked source link and anchor review, and use the host-aware profile when you also need local adapter or host instruction surfaces plus broader inline-code path classification.
 
 ### Config schema (practical defaults)
 

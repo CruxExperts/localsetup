@@ -110,11 +110,11 @@
     "workflow"
   ],
   "counts": {
-    "docs": 345,
+    "docs": 346,
     "framework_docs": 57,
     "generated_docs": 4,
     "platforms": 6,
-    "public_docs": 6,
+    "public_docs": 7,
     "skills": 52,
     "workflow_packs": 28,
     "workflows": 22
@@ -2883,6 +2883,14 @@
       "has_frontmatter": false,
       "managed_blocks": [],
       "path": "assets/README.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "public",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "path": "docs/reference/markdown-reference-audit.md",
       "status": "",
       "version": ""
     }

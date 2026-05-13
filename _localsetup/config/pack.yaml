@@ -147,6 +147,7 @@ public_private:
   public_paths:
     - README.md
     - AGENTS.md
+    - assets
     - config/localsetup_finalizer.yaml
     - install
     - .github

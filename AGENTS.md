@@ -2,13 +2,12 @@
 
 ## Project Structure & Module Organization
 
-This repository packages Localsetup v3, a repo-local framework for agent context, skills, and install workflows. Root files include the cross-platform installers (`install`, `install.ps1`), top-level docs, `VERSION`, and support files. The main engine lives in `_localsetup/`: reusable code is under `_localsetup/lib/`, OS discovery helpers under `_localsetup/discovery/`, shipped skills under `_localsetup/skills/`, platform templates under `_localsetup/templates/`, and framework docs under `_localsetup/docs/`. Tests live in `_localsetup/tests/`; static assets live in `assets/`.
+This repository packages Localsetup v3, a repo-local framework for agent context, skills, and install workflows. Root files include the Bash installer (`install`), top-level docs, `VERSION`, and support files. The main engine lives in `_localsetup/`: reusable code is under `_localsetup/lib/`, OS discovery helpers under `_localsetup/discovery/`, shipped skills under `_localsetup/skills/`, platform templates under `_localsetup/templates/`, and framework docs under `_localsetup/docs/`. Tests live in `_localsetup/tests/`; static assets live in `assets/`.
 
 ## Build, Test, and Development Commands
 
 - `python3 -m pip install -r _localsetup/requirements.txt`: install Python dependencies used by helper scripts and tests.
 - `./_localsetup/tests/automated_test.sh`: run the core Linux/macOS smoke test suite.
-- `pwsh ./_localsetup/tests/automated_test.ps1`: run the PowerShell test wrapper where PowerShell is available.
 - `python3 -m pytest _localsetup/tests`: run the Python pytest tests directly.
 - `./install --directory . --tools codex --non-interactive --yes`: test a local non-interactive install path for one platform.
 - `python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .` and `python3 _localsetup/tools/localsetup_v3.py --repo . generate-docs`: refresh generated docs artifacts when documentation inputs change.
@@ -20,7 +19,7 @@ Keep scripts portable and explicit: Bash files should use `set -euo pipefail`; P
 
 ## Testing Guidelines
 
-Add or update tests under `_localsetup/tests/` for changes to path resolution, discovery, parsing, deploy behavior, or skill tooling. Name Python tests `test_<feature>.py` and keep shell/PowerShell wrappers thin. Before opening a PR, run `./_localsetup/tests/automated_test.sh` and `python3 -m pytest _localsetup/tests`; include the PowerShell wrapper result when touching Windows behavior.
+Add or update tests under `_localsetup/tests/` for changes to path resolution, discovery, parsing, deploy behavior, or skill tooling. Name Python tests `test_<feature>.py` and keep shell wrappers thin. Before opening a PR, run `./_localsetup/tests/automated_test.sh` and `python3 -m pytest _localsetup/tests`; Windows support is WSL2-only in v3.
 
 ## Commit & Pull Request Guidelines
 

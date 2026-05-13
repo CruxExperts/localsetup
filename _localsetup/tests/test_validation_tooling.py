@@ -45,3 +45,32 @@ def test_markdown_reference_validator_slugifies_gfm_punctuation() -> None:
     )
 
     assert module._slugify_heading("Stealth & Anti-Bot") == "stealth--anti-bot"
+
+
+def test_markdown_reference_validator_profiles_load(monkeypatch) -> None:
+    root = Path(__file__).resolve().parents[2]
+    module = load_script_module(
+        "_localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_validator.py"
+    )
+    monkeypatch.chdir(root)
+    template_dir = root / "_localsetup" / "skills" / "ls-markdown-reference-validator" / "templates"
+
+    configs = {
+        path.name: module._load_config(path)
+        for path in sorted(template_dir.glob("markdown_reference*.yaml"))
+    }
+
+    assert set(configs) == {
+        "markdown_reference_audit.yaml",
+        "markdown_reference_host_aware.yaml",
+        "markdown_reference_strict_repo.yaml",
+    }
+    assert configs["markdown_reference_strict_repo.yaml"].report_path == (
+        root / ".localsetup/state/markdown-reference/strict-repo.md"
+    )
+    assert configs["markdown_reference_host_aware.yaml"].report_path == (
+        root / ".localsetup/state/markdown-reference/host-aware.md"
+    )
+    default_ignores = configs["markdown_reference_audit.yaml"].ignore.source_file_globs
+    assert "**/docs/reference/markdown-reference-audit.md" in default_ignores
+    assert "**/.localsetup/state/markdown-reference/**" in default_ignores

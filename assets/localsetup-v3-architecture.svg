@@ -88,7 +88,7 @@
 
   <g filter="url(#shadow)">
     <rect x="360" y="438" width="480" height="92" rx="18" fill="#111814" stroke="url(#amber)" stroke-width="1.6"/>
-    <text x="414" y="478" class="mono">localsetup.lock.json + reports</text>
+    <text x="414" y="478" class="mono">.localsetup/lock.json + reports</text>
     <text x="426" y="504" class="mono">rollback metadata + managed paths</text>
   </g>
 

@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 
 import _localsetup.v3.apply as apply_mod
+import _localsetup.v3.cli as cli_mod
 import _localsetup.v3.conversion as conversion_mod
 import _localsetup.v3.wizard as wizard
 from _localsetup.v3.apply import apply_plan
@@ -62,6 +63,7 @@ def make_temp_repo(tmp_path: Path) -> Path:
     shutil.copy2(source / "_localsetup" / "requirements.in", repo / "_localsetup" / "requirements.in")
     shutil.copy2(source / "_localsetup" / "requirements.lock", repo / "_localsetup" / "requirements.lock")
     shutil.copy2(source / "VERSION", repo / "VERSION")
+    shutil.copytree(source / "assets", repo / "assets")
     (repo / "_localsetup" / "docs" / "_generated").mkdir(parents=True)
     (repo / "_localsetup" / "docs" / "migration").mkdir(parents=True)
     for rel_path in ("README.md", "FEATURES.md", "PLATFORM_REGISTRY.md"):
@@ -869,6 +871,7 @@ def test_v3_config_file_and_cli_precedence(tmp_path: Path) -> None:
   "packs": ["dev"],
   "attach_mode": "portable",
   "target_directory": "/tmp/localsetup-target",
+  "data_root": "/tmp/localsetup-data",
   "dependency_mode": "prompt-only",
   "migration_mode": "report-only",
   "output": {"json": true}
@@ -884,10 +887,80 @@ def test_v3_config_file_and_cli_precedence(tmp_path: Path) -> None:
     assert base.packs == ["dev"]
     assert base.attach_mode == "portable"
     assert base.target_directory == "/tmp/localsetup-target"
+    assert base.data_root == "/tmp/localsetup-data"
     assert merged.packs == ["core"]
     assert merged.attach_mode == "symlink"
     assert merged.target_directory == "/tmp/localsetup-target"
+    assert merged.data_root == "/tmp/localsetup-data"
     assert merged.dependency_mode == "managed-venv"
+
+
+def test_v3_cli_install_uses_configured_data_root_for_managed_dependencies(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    data_root = tmp_path / "runtime-root"
+    config_path = tmp_path / "install.json"
+    config_path.write_text(
+        json.dumps(
+            {
+                "platforms": [],
+                "packs": ["core"],
+                "data_root": str(data_root),
+                "dependency_mode": "managed-venv",
+            }
+        ),
+        encoding="utf-8",
+    )
+    captured: list[Path | None] = []
+
+    def fake_ensure_dependencies(
+        repo_root: Path,
+        *,
+        mode: str,
+        data_root: Path | None = None,
+        runner: object | None = None,
+    ) -> dict:
+        captured.append(data_root)
+        assert repo_root == root
+        assert mode == "managed-venv"
+        assert data_root is not None
+        interpreter = data_root / "venv" / "bin" / "python"
+        return {
+            "mode": mode,
+            "interpreter": str(interpreter),
+            "requirements": str(root / "_localsetup" / "requirements.lock"),
+            "venv_path": str(data_root / "venv"),
+            "lock": {"hash_mode": True},
+            "changed": False,
+            "pip_check": None,
+            "warnings": [],
+            "missing": [],
+            "commands": [],
+            "ok": True,
+        }
+
+    monkeypatch.setattr(cli_mod, "ensure_dependencies", fake_ensure_dependencies)
+
+    rc = cli_mod._main(
+        [
+            "--repo",
+            str(root),
+            "--home",
+            str(home),
+            "install",
+            "--config",
+            str(config_path),
+            "--yes",
+        ]
+    )
+
+    lock = load_json(root / ".localsetup" / "lock.json")
+    assert rc == 0
+    assert captured == [data_root.resolve()]
+    assert lock["python_interpreter"] == str(data_root.resolve() / "venv" / "bin" / "python")
 
 
 def test_v3_managed_venv_commands_and_lock_interpreter(tmp_path: Path) -> None:
@@ -1220,6 +1293,14 @@ def test_v3_docs_and_package(tmp_path: Path) -> None:
     assert verified["ok"] is True
     assert any(check["name"] == "sbom" and check["ok"] for check in verified["checks"])
     assert verified["metadata"]["pack_id"] == "localsetup"
+    for asset in (
+        "assets/README.md",
+        "assets/localsetup-v3-readme-hero.png",
+        "assets/localsetup-v3-architecture.svg",
+        "assets/localsetup-v3-install-lifecycle.svg",
+    ):
+        assert asset in package["files"]
+    assert "assets" in package["manifest"]["public_paths"]
     assert "_localsetup/__pycache__/cached.pyc" not in package["files"]
     assert "_localsetup/.cache/scrapling/jobs/job.json" not in package["files"]
     assert "_localsetup/docs/local-context/SECRETS_OVERVIEW.md" not in package["files"]
