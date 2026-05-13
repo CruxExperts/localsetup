@@ -5,7 +5,7 @@ Use `context-index` before broad recursive reads when the capability is enabled.
 ## Preflight
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index agent-preflight --scope repo
+localsetup context-index agent-preflight --scope repo
 ```
 
 Important fields:
@@ -18,9 +18,9 @@ Important fields:
 ## Search
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index search "how are workflows registered" --scope repo --top-k 10
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index search "memory promotion rules" --scope global --top-k 10
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index search "skill validation smoke commands" --scope framework --mode hybrid --top-k 10
+localsetup context-index search "how are workflows registered" --scope repo --top-k 10
+localsetup context-index search "memory promotion rules" --scope global --top-k 10
+localsetup context-index search "skill validation smoke commands" --scope framework --mode hybrid --top-k 10
 ```
 
 Result rows include rank, score, vector score, lexical score, scope, path, line range, snippet, chunk ID, source hash, chunk hash, and stale status.
@@ -28,7 +28,7 @@ Result rows include rank, score, vector score, lexical score, scope, path, line 
 ## Lookup
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index lookup --chunk-id UUID
+localsetup context-index lookup --chunk-id UUID
 ```
 
 Use lookup when a search result is important enough to inspect in full. For code edits, still open the source file by path and line range.
@@ -36,10 +36,10 @@ Use lookup when a search result is important enough to inspect in full. For code
 ## Freshness And Worklists
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index freshness --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index stale-files --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index worklist --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index stats --scope repo
+localsetup context-index freshness --scope repo
+localsetup context-index stale-files --scope repo
+localsetup context-index worklist --scope repo
+localsetup context-index stats --scope repo
 ```
 
 If a file is listed in `read_direct_paths`, read it directly before using index results for that file.
@@ -47,10 +47,10 @@ If a file is listed in `read_direct_paths`, read it directly before using index 
 ## Ingest And Refresh
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index ingest --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index refresh --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index worker nudge --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index worker run --scope repo
+localsetup context-index ingest --scope repo
+localsetup context-index refresh --scope repo
+localsetup context-index worker nudge --scope repo
+localsetup context-index worker run --scope repo
 ```
 
 `refresh` and `worker run` use changed-only ingest. `worker nudge` is safe for heartbeat because it only queues work when a deterministic worklist exists.
@@ -58,8 +58,8 @@ python3 _localsetup/tools/localsetup_v3.py --repo . context-index worker run --s
 ## Reset And Rebuild
 
 ```bash
-PLAN=$(python3 _localsetup/tools/localsetup_v3.py --repo . context-index rebuild plan --scope repo)
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index rebuild apply --scope repo --plan PLAN_ID
+PLAN=$(localsetup context-index rebuild plan --scope repo)
+localsetup context-index rebuild apply --scope repo --plan PLAN_ID
 ```
 
 Use rebuild when the index is contaminated, when embedding settings changed, or when maintainers request a clean reindex. The database is disposable derived state.
@@ -67,15 +67,15 @@ Use rebuild when the index is contaminated, when embedding settings changed, or 
 For vector-only refreshes:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index vector-rebuild plan --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index vector-rebuild apply --scope repo --plan PLAN_ID
+localsetup context-index vector-rebuild plan --scope repo
+localsetup context-index vector-rebuild apply --scope repo --plan PLAN_ID
 ```
 
 For conservative cleanup of deleted/tombstoned indexed sources:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index prune plan --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index prune apply --scope repo --plan PLAN_ID
+localsetup context-index prune plan --scope repo
+localsetup context-index prune apply --scope repo --plan PLAN_ID
 ```
 
 ## Agent Rules
@@ -89,7 +89,7 @@ python3 _localsetup/tools/localsetup_v3.py --repo . context-index prune apply --
 ## MCP Config
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index mcp config --scope repo
+localsetup context-index mcp config --scope repo
 ```
 
 This emits a read-only stdio server command target for MCP-capable clients. Live serving is optional and requires enabling the MCP SDK wrapper; the deterministic CLI remains the supported baseline.

@@ -67,8 +67,9 @@ Choose checks based on the surface changed:
 ```bash
 ./_localsetup/tools/verify_context
 ./_localsetup/tools/verify_rules
-python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
-python3 _localsetup/tools/localsetup_v3.py --repo . scan-migration
+python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
+python3 _localsetup/tools/localsetup_v3.py --source-root . scan-migration
+python3 _localsetup/tools/localsetup_v3.py --source-root . audit-global-first
 ./_localsetup/tests/automated_test.sh
 python3 -m pytest _localsetup/tests
 git diff --check
@@ -78,6 +79,7 @@ git diff --check
 - Run `verify_rules` after framework or rule-related changes.
 - Run `validate-catalog` after skill, catalog, platform, or registry changes.
 - Run `scan-migration` when migration, installer, adapter, generated-artifact, or source-boundary behavior may be affected.
+- Run `audit-global-first` when global-first layout, lockfile, target-state, PowerShell removal, or source/target docs claims may be affected.
 - Run focused tests for narrow changes; run the full smoke and pytest suites before release or broad framework changes.
 
 ## Git And Handoff

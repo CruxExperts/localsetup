@@ -215,8 +215,7 @@ def default_config(repo_root: Path, home: Path) -> dict[str, Any]:
 
 DEFAULT_EXCLUDES = [
     ".git/**",
-    ".localsetup/context-index/**",
-    ".localsetup/venv/**",
+    ".localsetup/**",
     ".venv/**",
     "_localsetup/.cache/**",
     "_localsetup/docs/local-context/**",
@@ -335,11 +334,13 @@ def db_path_for(config: dict[str, Any], repo_root: Path, home: Path, scope: str,
 
 
 def runtime(args: argparse.Namespace, scope: str | None = None, database: str | None = None) -> Runtime:
-    repo_root = Path(args.repo).expanduser().resolve()
+    target_root = Path(args.repo).expanduser().resolve()
+    source_root = Path(getattr(args, "source_root", None) or target_root).expanduser().resolve()
     home = Path(args.home).expanduser().resolve()
-    config, _ = load_config(repo_root, home)
     selected_scope = scope or getattr(args, "scope", "repo") or "repo"
     first_scope = str(selected_scope).split(",")[0].strip() or "repo"
+    repo_root = source_root if first_scope == "framework" else target_root
+    config, _ = load_config(repo_root, home)
     ctx = context_for(config, repo_root, first_scope)
     db_path = db_path_for(config, repo_root, home, first_scope, database=database)
     return Runtime(repo_root, home, config, ctx, db_path, first_scope)
@@ -1659,6 +1660,7 @@ def dispatch_multi_scope(args: argparse.Namespace, scopes: list[str]) -> dict[st
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="context_index")
     parser.add_argument("--repo", default=".")
+    parser.add_argument("--source-root")
     parser.add_argument("--home", default=str(Path.home()))
     sub = parser.add_subparsers(dest="cmd", required=True)
     cfg = sub.add_parser("config")

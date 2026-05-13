@@ -29,13 +29,13 @@ Localsetup v3 uses the root `VERSION` file as the source of truth for the framew
 Install hooks once per clone:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . install-hooks
+python3 _localsetup/tools/localsetup_v3.py --source-root . install-hooks
 ```
 
 For normal release pushes, use:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . release-push
+python3 _localsetup/tools/localsetup_v3.py --source-root . release-push
 ```
 
 Raw `git push` is guarded by `.githooks/pre-push`. If a version-sync commit is needed, the hook creates it and stops that push; rerun the push after reviewing the generated commit. This two-step guard is intentional because Git determines the commit being pushed before the `pre-push` hook runs.
@@ -43,8 +43,8 @@ Raw `git push` is guarded by `.githooks/pre-push`. If a version-sync commit is n
 Useful read-only checks:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . version-plan
-python3 _localsetup/tools/localsetup_v3.py --repo . version-sync --check --target "$(cat VERSION)"
+python3 _localsetup/tools/localsetup_v3.py --source-root . version-plan
+python3 _localsetup/tools/localsetup_v3.py --source-root . version-sync --check --target "$(cat VERSION)"
 ```
 
 The `version-plan` output includes both `raw_bump` from the commit message and final `bump` after path-aware policy is applied.
@@ -58,14 +58,15 @@ On pushes to `main`, GitHub Actions verifies the computed version plan, confirms
 Before release, run:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . version-plan
-python3 _localsetup/tools/localsetup_v3.py --repo . version-sync --check --target "$(cat VERSION)"
+python3 _localsetup/tools/localsetup_v3.py --source-root . version-plan
+python3 _localsetup/tools/localsetup_v3.py --source-root . version-sync --check --target "$(cat VERSION)"
 python3 _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-v3-framework-audit.md
-python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
-python3 _localsetup/tools/localsetup_v3.py --repo . scan-migration
+python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
+python3 _localsetup/tools/localsetup_v3.py --source-root . scan-migration
+python3 _localsetup/tools/localsetup_v3.py --source-root . audit-global-first
 python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .
-python3 _localsetup/tools/localsetup_v3.py --repo . generate-docs
-python3 _localsetup/tools/localsetup_v3.py --repo . package --out "dist/localsetup-v$(cat VERSION).tar.gz"
-python3 _localsetup/tools/localsetup_v3.py --repo . verify-release "dist/localsetup-v$(cat VERSION).tar.gz"
+python3 _localsetup/tools/localsetup_v3.py --source-root . generate-docs
+python3 _localsetup/tools/localsetup_v3.py --source-root . package --out "dist/localsetup-v$(cat VERSION).tar.gz"
+python3 _localsetup/tools/localsetup_v3.py --source-root . verify-release "dist/localsetup-v$(cat VERSION).tar.gz"
 git diff --check
 ```

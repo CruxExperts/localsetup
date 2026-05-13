@@ -15,8 +15,8 @@ For Localsetup, the minimum validation is:
 
 ```bash
 python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .
-python3 _localsetup/tools/localsetup_v3.py --repo . generate-docs
-python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
+python3 _localsetup/tools/localsetup_v3.py --source-root . generate-docs
+python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
 python3 _localsetup/tools/docs_alignment.py --repo-root . check --ci
 git diff --check
 ```

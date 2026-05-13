@@ -44,7 +44,7 @@ def write_config(
         "heartbeat": {
             "enabled": enabled,
             "interval_minutes": 15,
-            "state_dir": "state/codex-heartbeat",
+            "state_dir": ".localsetup/state/codex-heartbeat",
         },
         "codex": {"enabled": False, "command": ["codex", "exec", "--", "status"]},
         "hooks": hooks or {"before": [], "after": []},
@@ -65,7 +65,7 @@ def write_config(
 
 
 def state_root(target: Path) -> Path:
-    return target / "state" / "codex-heartbeat"
+    return target / ".localsetup" / "state" / "codex-heartbeat"
 
 
 def test_heartbeat_transaction_promotes_valid_no_agent_run(tmp_path: Path) -> None:
@@ -443,11 +443,11 @@ def test_normal_install_of_harness_pack_does_not_activate_target(tmp_path: Path)
     result = apply_plan(ROOT, plan, home=home, target_root=target)
 
     assert result["dry_run"] is False
-    assert (home / ".local/share/agents/skills/localsetup/ls-codex-heartbeat").is_dir()
+    assert (home / ".local/share/localsetup/packages/ls-codex-heartbeat").is_dir()
     assert not (target / "HEARTBEAT.md").exists()
     assert not (target / "config" / "codex_heartbeat.yaml").exists()
     assert not (target / "cron" / "manifest.yaml").exists()
-    assert not (target / "state" / "codex-heartbeat").exists()
+    assert not (target / ".localsetup" / "state" / "codex-heartbeat").exists()
 
 
 def test_harness_init_enable_run_status_disable_are_idempotent(tmp_path: Path) -> None:
@@ -542,5 +542,5 @@ def test_harness_plan_reports_launcher_from_source_checkout(tmp_path: Path) -> N
     payload = harness_plan(ROOT, target)
 
     command = payload["launcher_command"]
-    assert str(ROOT / "_localsetup" / "tools" / "localsetup_v3.py") in command
+    assert command[0].endswith("localsetup") or str(ROOT / "_localsetup" / "tools" / "localsetup_v3.py") in command
     assert "_localsetup/skills/ls-codex-heartbeat" not in " ".join(command)

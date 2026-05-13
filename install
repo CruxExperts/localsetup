@@ -45,7 +45,7 @@ Options:
   --directory PATH      Localsetup source checkout containing _localsetup/ (default: . when run
                        from a checkout; otherwise creates or refreshes a managed source checkout).
   --target-directory PATH
-                       Directory where adapter links and localsetup.lock.json are written.
+                       Directory where adapter links and .localsetup/lock.json are written.
                        Defaults to --directory for explicit checkouts and to the caller's current
                        directory for piped bootstrap installs with --tools/--platforms.
   --home PATH           Home directory for the managed shared skill library (default: $HOME)
@@ -61,8 +61,6 @@ Options:
   --color MODE         Wizard color mode: auto, always, or never. Default: auto.
   --no-color           Alias for --color never.
   --glyphs MODE        Wizard glyph mode: auto, ascii, or unicode. Default: auto.
-  --upgrade-policy     Accepted for v2 compatibility; v3 uses managed install metadata.
-  --global             Accepted for v2 compatibility; v3 installs the shared home library by default.
   --help, -h           Show this help.
 
 Windows note:
@@ -232,11 +230,10 @@ while [[ $# -gt 0 ]]; do
       shift 2
       ;;
     --upgrade-policy)
-      [[ $# -ge 2 ]] || die "missing value for --upgrade-policy"
-      shift 2
+      die "--upgrade-policy was removed in Localsetup v3; managed global installs are always metadata-driven"
       ;;
     --global)
-      shift
+      die "--global was removed in Localsetup v3; the shared package library is always global-first"
       ;;
     --help|-h)
       usage
@@ -296,7 +293,7 @@ if [[ "$NON_INTERACTIVE" != true ]]; then
   if [[ -n "$ATTACH_TARGET_DIR" ]]; then
     wizard_target_args=(--target-directory "$ATTACH_TARGET_DIR")
   fi
-  wizard_cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --repo "$SOURCE_DIR" "${wizard_target_args[@]}" wizard --caller-directory "$CALLER_DIR" --dependency-mode "$DEPENDENCY_MODE" --mode "$MODE" --color "$COLOR_MODE" --glyphs "$GLYPH_MODE" --packs "${pack_args[@]}")
+  wizard_cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --source-root "$SOURCE_DIR" "${wizard_target_args[@]}" wizard --caller-directory "$CALLER_DIR" --dependency-mode "$DEPENDENCY_MODE" --mode "$MODE" --color "$COLOR_MODE" --glyphs "$GLYPH_MODE" --packs "${pack_args[@]}")
   if [[ -n "$ATTACH_TARGET_DIR" && "$EXPLICIT_TARGET_DIR" != true ]]; then
     wizard_cmd+=(--target-directory-origin inferred)
   fi
@@ -312,7 +309,7 @@ fi
 mkdir -p "$HOME_DIR"
 HOME_DIR="$(cd "$HOME_DIR" && pwd)"
 
-doctor_cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --repo "$SOURCE_DIR" "${target_args[@]}" doctor --dependency-mode "$DEPENDENCY_MODE" --packs "${pack_args[@]}")
+doctor_cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --source-root "$SOURCE_DIR" "${target_args[@]}" doctor --dependency-mode "$DEPENDENCY_MODE" --packs "${pack_args[@]}")
 if [[ ${#platform_args[@]} -gt 0 ]]; then
   doctor_cmd+=(--platforms "${platform_args[@]}")
 fi
@@ -325,7 +322,7 @@ if ! "${doctor_cmd[@]}" >/dev/null; then
 fi
 
 if "$REGISTER_SHELL"; then
-  register_cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --repo "$SOURCE_DIR" register-shell)
+  register_cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --source-root "$SOURCE_DIR" register-shell)
   if ! "${register_cmd[@]}" >/dev/null; then
     echo "Localsetup shell registration failed. Re-run for details:" >&2
     printf ' %q' "${register_cmd[@]}" >&2
@@ -342,7 +339,7 @@ if "$REGISTER_SHELL"; then
   fi
 fi
 
-cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --repo "$SOURCE_DIR" "${target_args[@]}" install --apply --dependency-mode "$DEPENDENCY_MODE" --mode "$MODE" --packs "${pack_args[@]}")
+cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --source-root "$SOURCE_DIR" "${target_args[@]}" install --apply --dependency-mode "$DEPENDENCY_MODE" --mode "$MODE" --packs "${pack_args[@]}")
 if [[ ${#platform_args[@]} -gt 0 ]]; then
   cmd+=(--platforms "${platform_args[@]}")
 fi

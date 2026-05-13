@@ -13,18 +13,18 @@ version: 3.8
 
 | ID | Display name | Repo adapter path | Managed package library |
 |----|--------------|-------------------|-----------------------|
-| cursor | Cursor | .cursor/skills | ~/.local/share/agents/skills/localsetup |
-| claude-code | Claude Code | .claude/skills | ~/.local/share/agents/skills/localsetup |
-| codex | OpenAI Codex CLI | .codex/skills | ~/.local/share/agents/skills/localsetup |
-| openclaw | OpenClaw | .openclaw/skills | ~/.local/share/agents/skills/localsetup |
-| kilo | Kilo CLI | .kilo/skills | ~/.local/share/agents/skills/localsetup |
-| opencode | OpenCode CLI | .opencode/skills | ~/.local/share/agents/skills/localsetup |
+| cursor | Cursor | .cursor/skills | ~/.local/share/localsetup/packages |
+| claude-code | Claude Code | .claude/skills | ~/.local/share/localsetup/packages |
+| codex | OpenAI Codex CLI | .codex/skills | ~/.local/share/localsetup/packages |
+| openclaw | OpenClaw | .openclaw/skills | ~/.local/share/localsetup/packages |
+| kilo | Kilo CLI | .kilo/skills | ~/.local/share/localsetup/packages |
+| opencode | OpenCode CLI | .opencode/skills | ~/.local/share/localsetup/packages |
 
 *More platforms may be added later. Update this table and the "Skill registration (new skills)" section when adding one.*
 
 ## Shared home library
 
-V3 installs selected skills and workflow packages to `~/.local/share/agents/skills/localsetup`. Repo adapter paths attach to that library only when selected with `--tools` or `--platforms`; omitted selectors are global-only and create no adapters. `--mode portable` creates managed copies instead of symlinks. Rollback uses `localsetup.lock.json` and removes only managed paths recorded by that install.
+V3 installs selected skills and workflow packages to `~/.local/share/localsetup/packages`. Repo adapter paths attach to that library only when selected with `--tools` or `--platforms`; omitted selectors are global-only and create no adapters. `--mode portable` creates managed copies instead of symlinks. Rollback uses `.localsetup/lock.json` and removes only managed paths recorded by that install.
 
 ## Skill registration (new skills)
 
@@ -54,8 +54,8 @@ Use [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) for the model and [WORKFLOW_STA
 
 ## Reference
 
-- V3 CLI: `_localsetup/tools/localsetup_v3.py plan|install|verify|rollback`.
+- V3 CLI: target users run `localsetup plan|install|verify|rollback`; source contributors may run `_localsetup/tools/localsetup_v3.py --source-root . ...` from this checkout.
 - Root wrapper: `./install --directory .` opens the interactive guided-choice wizard for global-only; use `--tools cursor,codex` or `--platforms cursor codex` to select adapters. The wizard shows `Enter number(s) | d details | b back | q quit | ? help` on prompts and explains each platform's adapter path, such as `.codex/skills`. Visual rendering is controlled with `--color auto|always|never`, `--no-color`, and `--glyphs auto|ascii|unicode`; plain text labels remain present for status meaning. Use `--target-directory /path/to/project` to attach selected adapters outside the source checkout. Automation must use `--non-interactive --yes`.
-- Windows: WSL2-only. `install.ps1` is a guidance stub, not a native installer.
+- Windows: WSL2-only. Native PowerShell installation surfaces are removed.
 - Skills and rules (paths and model): [SKILLS_AND_RULES.md](SKILLS_AND_RULES.md).
 - Release and publish are handled by this repo's automatic versioning hooks and GitHub workflow.

@@ -46,6 +46,7 @@ def run_doctor(
     blockers: list[str] = []
     warnings: list[str] = []
     attachment_root = target_root or repo_root
+    dependency_root = data_root or (home / ".local" / "share" / "localsetup")
 
     environment = {
         "os": platform.system(),
@@ -99,7 +100,7 @@ def run_doctor(
     if not pip_available(sys.executable):
         warnings.append("pip is unavailable for the current interpreter")
 
-    dep_status = dependency_status(repo_root, mode=dependency_mode, data_root=data_root).to_dict()
+    dep_status = dependency_status(repo_root, mode=dependency_mode, data_root=dependency_root).to_dict()
     if dependency_mode != "prompt-only" and dep_status["warnings"]:
         warnings.extend(dep_status["warnings"])
 

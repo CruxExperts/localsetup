@@ -53,7 +53,7 @@ Tasks:
 - Compare candidate legacy trees by hash:
   - `<legacy-localsetup-repo>/.agents/skills`
   - `~/.codex/skills`
-  - runtime mirror under `~/.local/share/agents/skills/localsetup`
+  - runtime mirror under `~/.local/share/localsetup/packages`
 - Emit a dry-run report with no file mutations.
 
 Validation:

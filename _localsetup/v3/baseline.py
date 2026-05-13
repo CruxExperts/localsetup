@@ -39,8 +39,6 @@ def classify_path(path: str) -> str:
         return "legacy-migration"
     if path.startswith("_localsetup/workflows/ls-workflow-"):
         return "keep"
-    if path == "install.ps1":
-        return "refactor"
     if path.startswith("_localsetup/v3/") or path in {
         "_localsetup/config/pack.yaml",
         "_localsetup/config/platforms.yaml",

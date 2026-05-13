@@ -3,11 +3,12 @@ namespace: ls
 version: 3
 
 global:
-  root: ~/.local/share/agents/skills/localsetup
-  registry: ~/.local/share/agents/skills/localsetup/.localsetup-registry.json
+  home: ~/.local/share/localsetup
+  package_root: ~/.local/share/localsetup/packages
+  registry: ~/.local/share/localsetup/registry.json
 
 repo:
-  lockfile: localsetup.lock.json
+  lockfile: .localsetup/lock.json
 
 alias_policy:
   mode: metadata_only
@@ -148,7 +149,6 @@ public_private:
     - AGENTS.md
     - config/localsetup_finalizer.yaml
     - install
-    - install.ps1
     - .github
     - _localsetup
   private_paths:

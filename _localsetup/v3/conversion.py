@@ -42,10 +42,10 @@ def _inventory(
     if target_framework.exists() and _framework_sync_needed(source_root, target_root):
         artifacts.append(
             {
-                "kind": "legacy_framework_source",
+                "kind": "stale_framework_source",
                 "path": str(target_framework),
                 "managed": False,
-                "details": {"replacement": str(source_root / "_localsetup")},
+                "details": {"action": "backup_and_remove", "source_root": str(source_root)},
             }
         )
     return artifacts
@@ -103,7 +103,7 @@ def _conversion_blockers(
 def _archive_target_artifacts(artifacts: list[dict], backup_root: Path, target_root: Path) -> list[str]:
     backed_up: list[str] = []
     for artifact in artifacts:
-        if artifact["kind"] not in {"lockfile", "legacy_framework_source"}:
+        if artifact["kind"] not in {"lockfile", "legacy_framework_source", "stale_framework_source"}:
             continue
         path = Path(artifact["path"])
         if not (path.exists() or path.is_symlink()):
@@ -114,55 +114,6 @@ def _archive_target_artifacts(artifacts: list[dict], backup_root: Path, target_r
         else:
             path.unlink()
     return backed_up
-
-
-def _sync_framework_source(source_root: Path, target_root: Path) -> dict:
-    if not _framework_sync_needed(source_root, target_root):
-        return {"skipped": True, "reason": "source and target are the same checkout"}
-    source = source_root / "_localsetup"
-    dest = target_root / "_localsetup"
-    pack = load_pack_config(source_root)
-
-    def is_package_runtime_data(rel_parts: list[str]) -> bool:
-        return (
-            len(rel_parts) >= 5
-            and rel_parts[0] == "_localsetup"
-            and rel_parts[1] in {"skills", "workflows"}
-            and rel_parts[3:5] == ["scripts", "data"]
-        )
-
-    def ignore_private(dir_path: str, names: list[str]) -> set[str]:
-        ignored: set[str] = set()
-        directory = Path(dir_path)
-        for name in names:
-            candidate = directory / name
-            rel_repo = candidate.relative_to(source_root).as_posix()
-            parts = rel_repo.split("/")
-            if (
-                "__pycache__" in parts
-                or ".cache" in parts
-                or ".pytest_cache" in parts
-                or ".mypy_cache" in parts
-                or ".ruff_cache" in parts
-                or rel_repo.endswith((".pyc", ".pyo"))
-                or is_package_runtime_data(parts)
-            ):
-                ignored.add(name)
-                continue
-            for private in pack.private_paths:
-                private_name = private.rstrip("/")
-                if rel_repo == private_name or rel_repo.startswith(private_name + "/"):
-                    ignored.add(name)
-                    break
-        return ignored
-
-    shutil.copytree(
-        source,
-        dest,
-        symlinks=True,
-        ignore=ignore_private,
-    )
-    return {"skipped": False, "source": str(source), "target": str(dest)}
 
 
 def convert_repo(
@@ -191,7 +142,7 @@ def convert_repo(
         "blockers": blockers,
         "backed_up": [],
         "migration": None,
-        "framework_sync": None,
+        "framework_source": None,
         "install": None,
         "verify": None,
     }
@@ -229,8 +180,17 @@ def convert_repo(
         save_json(backup_root / "conversion-report.json", payload)
         return payload
 
-    payload["framework_sync"] = _sync_framework_source(source_root, target)
-    dependency_info = ensure_dependencies(source_root, mode=dependency_mode) if dependency_mode != "prompt-only" else None
+    payload["framework_source"] = {
+        "copied": False,
+        "source_root": str(source_root),
+        "target_framework_absent": not (target / "_localsetup").exists(),
+    }
+    pack = load_pack_config(source_root)
+    dependency_info = (
+        ensure_dependencies(source_root, mode=dependency_mode, data_root=expand_user_path(pack.global_home, home))
+        if dependency_mode != "prompt-only"
+        else None
+    )
     plan = build_install_plan(
         source_root,
         home=home,

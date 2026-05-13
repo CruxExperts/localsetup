@@ -6,7 +6,7 @@ import shutil
 from .adapters import adapter_path_state, validate_platform_selectors
 from .lockfile import load_json
 from .manifests import load_pack_config
-from .paths import expand_user_path, repo_path
+from .paths import expand_user_path, legacy_target_lockfile_path, repo_path, target_lockfile_path
 from .registry import load_registry, package_has_other_refs, remove_target
 
 
@@ -42,7 +42,12 @@ def rollback(
     attachment_root = target_root or repo_root
     pack = load_pack_config(repo_root)
     lock_path = repo_path(attachment_root, pack.lockfile, "repo.lockfile")
+    if lock_path.name != "lock.json" or lock_path.parent.name != ".localsetup":
+        lock_path = target_lockfile_path(attachment_root)
     lock = load_json(lock_path)
+    legacy_lock = legacy_target_lockfile_path(attachment_root)
+    if not lock and legacy_lock.exists():
+        lock = load_json(legacy_lock)
     removed: list[str] = []
 
     registry = expand_user_path(pack.global_registry, home)
@@ -88,5 +93,8 @@ def rollback(
     if lock_path.exists():
         lock_path.unlink()
         removed.append(str(lock_path))
+    if legacy_lock.exists():
+        legacy_lock.unlink()
+        removed.append(str(legacy_lock))
 
     return {"removed": removed}

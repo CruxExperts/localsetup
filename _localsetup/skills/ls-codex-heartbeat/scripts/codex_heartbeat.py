@@ -24,7 +24,7 @@ except Exception:  # pragma: no cover - surfaced as a CLI error when config is l
 
 
 SCHEMA_VERSION = "1.0"
-STATE_DIR_DEFAULT = "state/codex-heartbeat"
+STATE_DIR_DEFAULT = ".localsetup/state/codex-heartbeat"
 LOCK_NAME = "heartbeat.lock"
 ACTIVE_NAME = "active.json"
 LATEST_NAME = "latest.json"

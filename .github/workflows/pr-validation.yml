@@ -65,10 +65,10 @@ jobs:
           fi
 
           echo "Checking version plan from ${base_sha} to ${HEAD_SHA}"
-          python3 _localsetup/tools/localsetup_v3.py --repo . version-plan --base "$base_sha" --head "$HEAD_SHA"
-          python3 _localsetup/tools/localsetup_v3.py --repo . version-sync --check --base "$base_sha" --head "$HEAD_SHA"
+          python3 _localsetup/tools/localsetup_v3.py --source-root . version-plan --base "$base_sha" --head "$HEAD_SHA"
+          python3 _localsetup/tools/localsetup_v3.py --source-root . version-sync --check --base "$base_sha" --head "$HEAD_SHA"
           python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .
-          python3 _localsetup/tools/localsetup_v3.py --repo . generate-docs
+          python3 _localsetup/tools/localsetup_v3.py --source-root . generate-docs
           git diff --exit-code
 
   framework-validation:
@@ -100,14 +100,14 @@ jobs:
 
       - name: Validate catalogs and migration boundaries
         run: |
-          python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
-          python3 _localsetup/tools/localsetup_v3.py --repo . scan-migration
-          python3 _localsetup/tools/localsetup_v3.py --repo . skill search context
-          python3 _localsetup/tools/localsetup_v3.py --repo . workflow search audit
-          python3 _localsetup/tools/localsetup_v3.py --repo . why --packs core
-          python3 _localsetup/tools/localsetup_v3.py --repo . graph
-          python3 _localsetup/tools/localsetup_v3.py --repo . adopt --target-directory .
-          python3 _localsetup/tools/localsetup_v3.py --repo . sbom --out /tmp/localsetup-source.cdx.json
+          python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
+          python3 _localsetup/tools/localsetup_v3.py --source-root . scan-migration
+          python3 _localsetup/tools/localsetup_v3.py --source-root . skill search context
+          python3 _localsetup/tools/localsetup_v3.py --source-root . workflow search audit
+          python3 _localsetup/tools/localsetup_v3.py --source-root . why --packs core
+          python3 _localsetup/tools/localsetup_v3.py --source-root . graph
+          python3 _localsetup/tools/localsetup_v3.py --source-root . adopt --target-directory .
+          python3 _localsetup/tools/localsetup_v3.py --source-root . sbom --out /tmp/localsetup-source.cdx.json
 
       - name: Run pytest
         run: python3 -m pytest _localsetup/tests -q

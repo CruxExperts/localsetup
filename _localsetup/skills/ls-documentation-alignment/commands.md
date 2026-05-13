@@ -13,4 +13,4 @@ All commands are run from the repository root.
 | `python3 _localsetup/tools/docs_alignment.py --repo-root . apply --scope all --dry-run` | Show write targets without mutating files. |
 | `python3 _localsetup/tools/docs_alignment.py --repo-root . check --ci` | Read-only CI gate; exits non-zero for critical or major findings. |
 | `python3 _localsetup/tools/docs_alignment.py --repo-root . explain --claim-id skill_count` | Show backing source files for a claim. |
-| `python3 _localsetup/tools/localsetup_v3.py --repo . docs-align check --ci` | Run through the Localsetup CLI wrapper. |
+| `python3 _localsetup/tools/localsetup_v3.py --source-root . docs-align check --ci` | Run through the Localsetup CLI wrapper. |

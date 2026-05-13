@@ -22,25 +22,25 @@ The repo DB is ignored by the default inventory rules and is not intended to be 
 ## Core Commands
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index doctor
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index agent-preflight --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index freshness --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index worklist --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index stats --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index ingest --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index search "workflow registry" --scope repo --top-k 10
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index lookup --chunk-id UUID
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index memory mark-used --scope repo --chunk-id UUID --reason selected_context
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index memory stats --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index vector-rebuild plan --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index vector-rebuild apply --scope repo --plan PLAN_ID
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index rebuild plan --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index rebuild apply --scope repo --plan PLAN_ID
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index prune plan --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index prune apply --scope repo --plan PLAN_ID
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index worker nudge --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index logs status --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index mcp config --scope repo
+localsetup context-index doctor
+localsetup context-index agent-preflight --scope repo
+localsetup context-index freshness --scope repo
+localsetup context-index worklist --scope repo
+localsetup context-index stats --scope repo
+localsetup context-index ingest --scope repo
+localsetup context-index search "workflow registry" --scope repo --top-k 10
+localsetup context-index lookup --chunk-id UUID
+localsetup context-index memory mark-used --scope repo --chunk-id UUID --reason selected_context
+localsetup context-index memory stats --scope repo
+localsetup context-index vector-rebuild plan --scope repo
+localsetup context-index vector-rebuild apply --scope repo --plan PLAN_ID
+localsetup context-index rebuild plan --scope repo
+localsetup context-index rebuild apply --scope repo --plan PLAN_ID
+localsetup context-index prune plan --scope repo
+localsetup context-index prune apply --scope repo --plan PLAN_ID
+localsetup context-index worker nudge --scope repo
+localsetup context-index logs status --scope repo
+localsetup context-index mcp config --scope repo
 ```
 
 All agent-facing commands emit JSON. Agents should check `freshness`, `worklist`, or `agent-preflight` first, then use search only for paths that are not listed in `read_direct_paths`.

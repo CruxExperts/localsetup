@@ -62,7 +62,8 @@ def test_allowlisted_managed_output_stages(tmp_path: Path) -> None:
 
 def test_default_policy_stages_lock_and_heartbeat_outputs(tmp_path: Path) -> None:
     repo = _init_repo(tmp_path)
-    (repo / "localsetup.lock.json").write_text("{}\n", encoding="utf-8")
+    (repo / ".localsetup").mkdir()
+    (repo / ".localsetup" / "lock.json").write_text("{}\n", encoding="utf-8")
     config = repo / "config"
     config.mkdir()
     (config / "localsetup_finalizer.yaml").write_text("{}\n", encoding="utf-8")
@@ -74,7 +75,7 @@ def test_default_policy_stages_lock_and_heartbeat_outputs(tmp_path: Path) -> Non
     payload = finalizer_run(ROOT, repo)
 
     assert payload["ok"] is True
-    assert _class_for(payload, "localsetup.lock.json") == "managed_output"
+    assert _class_for(payload, ".localsetup/lock.json") == "managed_output"
     assert _class_for(payload, "config/localsetup_finalizer.yaml") == "managed_output"
     assert _class_for(payload, "config/codex_heartbeat.yaml") == "managed_output"
     assert _class_for(payload, "cron/manifest.yaml") == "managed_output"
@@ -83,7 +84,7 @@ def test_default_policy_stages_lock_and_heartbeat_outputs(tmp_path: Path) -> Non
         "config/codex_heartbeat.yaml",
         "config/localsetup_finalizer.yaml",
         "cron/manifest.yaml",
-        "localsetup.lock.json",
+        ".localsetup/lock.json",
     }
 
 
@@ -100,7 +101,7 @@ def test_unknown_modified_block(tmp_path: Path) -> None:
     payload = finalizer_run(ROOT, repo)
 
     assert payload["ok"] is False
-    assert _class_for(payload, "_localsetup/config/generated.txt") == "unknown_change"
+    assert _class_for(payload, "_localsetup/config/generated.txt") == "stale_legacy_framework_source"
 
 
 def test_user_owned_dirty_block(tmp_path: Path) -> None:
@@ -131,29 +132,29 @@ def test_unknown_untracked_block(tmp_path: Path) -> None:
 
 def test_git_ignored_runtime_state(tmp_path: Path) -> None:
     repo = _init_repo(tmp_path)
-    (repo / ".gitignore").write_text("state/\n", encoding="utf-8")
+    (repo / ".gitignore").write_text(".localsetup/state/\n", encoding="utf-8")
     _git(repo, "add", "--", ".gitignore")
     _git(repo, "commit", "-m", "ignore state")
-    runtime = repo / "state" / "repo-finalizer"
+    runtime = repo / ".localsetup" / "state" / "repo-finalizer"
     runtime.mkdir(parents=True)
     (runtime / "report.json").write_text("{}\n", encoding="utf-8")
 
     payload = finalizer_plan(ROOT, repo)
 
-    assert _class_for(payload, "state/repo-finalizer/report.json") == "runtime_ignored"
+    assert _class_for(payload, ".localsetup/state/repo-finalizer/report.json") == "runtime_ignored"
     assert payload["summary"]["blockers"] == 0
     assert payload["status"] == "clean_except_ignored"
 
 
 def test_existing_non_ignored_runtime_state_blocks(tmp_path: Path) -> None:
     repo = _init_repo(tmp_path)
-    runtime = repo / "state" / "repo-finalizer"
+    runtime = repo / ".localsetup" / "state" / "repo-finalizer"
     runtime.mkdir(parents=True)
     (runtime / "latest.json").write_text("{}\n", encoding="utf-8")
 
     payload = finalizer_plan(ROOT, repo)
 
-    assert _class_for(payload, "state/repo-finalizer/latest.json") == "unknown_change"
+    assert _class_for(payload, ".localsetup/state/repo-finalizer/latest.json") == "unknown_change"
     assert payload["summary"]["blockers"] == 1
     assert payload["status"] == "blocked"
 
@@ -164,7 +165,7 @@ def test_run_reports_are_locally_excluded(tmp_path: Path) -> None:
     payload = finalizer_run(ROOT, repo, no_commit=True)
 
     assert payload["ok"] is True
-    assert _git(repo, "check-ignore", "-q", "--", "state/repo-finalizer/latest.json").returncode == 0
+    assert _git(repo, "check-ignore", "-q", "--", ".localsetup/state/repo-finalizer/latest.json").returncode == 0
     status = finalizer_status(ROOT, repo)
     assert status["status"] == "clean_except_ignored"
     assert all(row["classification"] == "runtime_ignored" for row in status["files"])
@@ -192,8 +193,8 @@ def test_run_no_commit_never_stages(tmp_path: Path) -> None:
 
     assert payload["ok"] is True
     assert "report_paths" in payload
-    assert (repo / "state" / "repo-finalizer" / "latest.json").is_file()
-    assert (repo / "state" / "repo-finalizer" / "latest.md").is_file()
+    assert (repo / ".localsetup" / "state" / "repo-finalizer" / "latest.json").is_file()
+    assert (repo / ".localsetup" / "state" / "repo-finalizer" / "latest.md").is_file()
     staged = _git(repo, "diff", "--cached", "--name-only")
     assert staged.stdout.strip() == ""
 

@@ -41,8 +41,7 @@ After conversion, run:
 
 ```bash
 localsetup verify --tools codex
-./_localsetup/tools/verify_context
-python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
+localsetup doctor --tools codex
 ```
 
-Use the conversion report and `localsetup.lock.json` as the evidence trail for follow-up rollback or audit work.
+Use the conversion report and `.localsetup/lock.json` as the evidence trail for follow-up rollback or audit work. Conversion backs up and removes stale target `_localsetup/` folders; it does not copy framework source into the target.

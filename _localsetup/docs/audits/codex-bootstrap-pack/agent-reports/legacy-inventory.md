@@ -10,7 +10,7 @@ date: 2026-05-10
 
 The current repo holds canonical Localsetup v3 source surfaces under `_localsetup/skills`, `_localsetup/templates`, and `_localsetup/config`. Repo-local hidden dirs for Cursor, Kilo, and OpenCode were shallow placeholders. The strongest legacy duplicate trees were `<legacy-localsetup-repo>/.agents/skills` and `~/.codex/skills`, both using older `localsetup-*` names with sampled hashes that differ from current repo source.
 
-`~/.local/share/agents/skills/localsetup` appears to be the current runtime mirror for sampled `ls-*` skills.
+`~/.local/share/localsetup/packages` appears to be the current runtime mirror for sampled `ls-*` skills.
 
 No auth files, token stores, KeePass databases, mail stores, or browser profiles were opened.
 
@@ -25,7 +25,7 @@ No auth files, token stores, KeePass databases, mail stores, or browser profiles
 | `.cursor`, `.kilo`, `.opencode` in current repo | Empty placeholders | no files at shallow depth |
 | `<legacy-localsetup-repo>/.agents/skills` | Legacy duplicate candidate | 50 skill dirs, older `localsetup-*` names, sample hashes differ |
 | `~/.codex/skills` | Legacy duplicate candidate | 55 skill dirs, older `localsetup-*` names, sample hashes differ |
-| `~/.local/share/agents/skills/localsetup` | Current runtime mirror candidate | 61 `ls-*` dirs; sampled hashes matched current repo source |
+| `~/.local/share/localsetup/packages` | Current runtime mirror candidate | 61 `ls-*` dirs; sampled hashes matched current repo source |
 | `~/.agents` | Adjacent non-Localsetup skills | no Localsetup skill tree surfaced |
 | `~/.cursor`, `~/.config/kilo`, `~/.config/opencode` | Adjacent app state | no Localsetup-specific files surfaced in this pass |
 
@@ -39,7 +39,7 @@ No auth files, token stores, KeePass databases, mail stores, or browser profiles
 
 ## Approval Boundaries
 
-Any write, delete, rename, symlink, permission, or package-install action outside the current repo requires explicit user approval. That includes `<legacy-localsetup-repo>`, `~/.codex`, `~/.agents`, `~/.cursor`, `~/.config/kilo`, `~/.config/opencode`, and `~/.local/share/agents/skills/localsetup`.
+Any write, delete, rename, symlink, permission, or package-install action outside the current repo requires explicit user approval. That includes `<legacy-localsetup-repo>`, `~/.codex`, `~/.agents`, `~/.cursor`, `~/.config/kilo`, `~/.config/opencode`, and `~/.local/share/localsetup/packages`.
 
 ## Recommended Remediation Tasks
 

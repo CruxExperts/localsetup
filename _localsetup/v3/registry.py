@@ -54,11 +54,14 @@ def upsert_target(
     target_id = str(target_root.resolve(strict=False))
     package_names = [path.name for path in package_paths]
     registry["source_commit"] = source_commit
+    registry["canonical_package_root"] = str(package_paths[0].parent) if package_paths else registry.get("canonical_package_root")
     registry["targets"][target_id] = {
         "target_root": str(target_root),
         "source_commit": source_commit,
         "packages": package_names,
         "adapters": adapter_targets,
+        "lock_path": str(target_root / ".localsetup" / "lock.json"),
+        "registry_path": str(registry_path),
     }
     for path in package_paths:
         package = registry["packages"].setdefault(path.name, {"path": str(path), "refs": [], "digest": None})

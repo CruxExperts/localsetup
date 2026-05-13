@@ -5,7 +5,7 @@ from typing import Any
 
 from .lockfile import load_json
 from .manifests import load_pack_config
-from .paths import repo_path
+from .paths import repo_path, target_lockfile_path
 from .plan import build_install_plan
 
 
@@ -13,7 +13,10 @@ def diff_plan_current(repo_root: Path, *, home: Path, packs: list[str] | None, p
     plan = build_install_plan(repo_root, home=home, packs=packs, platform_ids=platform_ids, target_root=target_root, attach_mode=attach_mode)
     attachment_root = target_root or repo_root
     pack = load_pack_config(repo_root)
-    lock = load_json(repo_path(attachment_root, pack.lockfile, "repo.lockfile"))
+    lock_path = repo_path(attachment_root, pack.lockfile, "repo.lockfile")
+    if lock_path.name != "lock.json" or lock_path.parent.name != ".localsetup":
+        lock_path = target_lockfile_path(attachment_root)
+    lock = load_json(lock_path)
     planned_skills = set(plan.rollback_metadata.get("skills", []))
     planned_workflows = set(plan.rollback_metadata.get("workflows", []))
     current_skills = {Path(path).name for path in lock.get("installed_skills", [])}

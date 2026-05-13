@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 import re
 
+from .models import GlobalLayout, SourceLayout, TargetLayout
+
 
 class PathValidationError(ValueError):
     pass
@@ -68,3 +70,42 @@ def expand_user_path(path_str: str, home: Path | None = None) -> Path:
 
 def ensure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
+
+
+def source_layout(source_root: Path) -> SourceLayout:
+    root = source_root.expanduser().resolve(strict=False)
+    framework = root / "_localsetup"
+    if not framework.exists():
+        raise PathValidationError(f"source_root must contain _localsetup: {root}")
+    return SourceLayout(source_root=root)
+
+
+def global_layout(home: Path, *, package_root: str | None = None, registry_path: str | None = None) -> GlobalLayout:
+    localsetup_home = home.expanduser().resolve(strict=False) / ".local" / "share" / "localsetup"
+    package = expand_user_path(package_root, home) if package_root else localsetup_home / "packages"
+    registry = expand_user_path(registry_path, home) if registry_path else localsetup_home / "registry.json"
+    return GlobalLayout(
+        localsetup_home=localsetup_home,
+        package_root=package.expanduser().resolve(strict=False),
+        registry_path=registry.expanduser().resolve(strict=False),
+    )
+
+
+def target_layout(target_root: Path) -> TargetLayout:
+    return TargetLayout(target_root=target_root.expanduser().resolve(strict=False))
+
+
+def target_lockfile_path(target_root: Path) -> Path:
+    return target_layout(target_root).lockfile_path
+
+
+def legacy_target_lockfile_path(target_root: Path) -> Path:
+    return target_layout(target_root).legacy_lockfile_path
+
+
+def target_journal_root(target_root: Path) -> Path:
+    return target_layout(target_root).journal_root
+
+
+def target_backup_root(target_root: Path) -> Path:
+    return target_layout(target_root).backup_root

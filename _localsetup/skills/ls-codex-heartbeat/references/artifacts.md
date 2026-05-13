@@ -5,7 +5,7 @@ version: 3.4
 
 # Heartbeat Artifacts
 
-Runtime artifacts live under `state/codex-heartbeat/` in the target repository.
+Runtime artifacts live under `.localsetup/state/codex-heartbeat/` in the target repository.
 
 Each run starts as `runs/<run-id>.staged`. A run is successful only after `manifest.json`, `heartbeat-result.json`, and `command-log.json` validate and the staged directory is atomically promoted to `runs/<run-id>`.
 

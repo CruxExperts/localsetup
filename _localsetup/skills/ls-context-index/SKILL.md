@@ -21,17 +21,17 @@ Use this skill when an agent needs fast Localsetup context retrieval across repo
 ## Commands
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index doctor
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index agent-preflight --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index freshness --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index worklist --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index stats --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index ingest --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index search "how are workflows registered" --scope repo --top-k 10
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index lookup --chunk-id UUID
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index worker nudge --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index vector-rebuild plan --scope repo
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index prune plan --scope repo
+localsetup context-index doctor
+localsetup context-index agent-preflight --scope repo
+localsetup context-index freshness --scope repo
+localsetup context-index worklist --scope repo
+localsetup context-index stats --scope repo
+localsetup context-index ingest --scope repo
+localsetup context-index search "how are workflows registered" --scope repo --top-k 10
+localsetup context-index lookup --chunk-id UUID
+localsetup context-index worker nudge --scope repo
+localsetup context-index vector-rebuild plan --scope repo
+localsetup context-index prune plan --scope repo
 ```
 
 ## Scope Model

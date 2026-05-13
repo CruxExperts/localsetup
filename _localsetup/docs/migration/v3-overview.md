@@ -11,7 +11,7 @@ Localsetup v3 installs one global package library for skills and workflow packag
 
 Default global path:
 
-- `~/.local/share/agents/skills/localsetup/`
+- `~/.local/share/localsetup/packages/`
 
 The global library contains managed copies of selected capability skills and selected workflow packages. Source stays split:
 
@@ -20,7 +20,7 @@ The global library contains managed copies of selected capability skills and sel
 
 Repo attachment lockfile:
 
-- `localsetup.lock.json`
+- `.localsetup/lock.json`
 
 ## Windows Support
 
@@ -28,18 +28,18 @@ Windows support is WSL2-only in v3. Run agents inside WSL and use WSL filesystem
 
 ## Core Commands
 
-- `python3 _localsetup/tools/localsetup_v3.py plan`
-- `python3 _localsetup/tools/localsetup_v3.py doctor`
-- `python3 _localsetup/tools/localsetup_v3.py configure`
-- `python3 _localsetup/tools/localsetup_v3.py context --markdown`
-- `python3 _localsetup/tools/localsetup_v3.py migrate`
-- `python3 _localsetup/tools/localsetup_v3.py install --apply`
-- `python3 _localsetup/tools/localsetup_v3.py verify`
-- `python3 _localsetup/tools/localsetup_v3.py rollback`
-- `python3 _localsetup/tools/localsetup_v3.py adapters`
-- `python3 _localsetup/tools/localsetup_v3.py catalog`
-- `python3 _localsetup/tools/localsetup_v3.py validate-catalog`
-- `python3 _localsetup/tools/localsetup_v3.py scan-migration`
+- `localsetup plan`
+- `localsetup doctor`
+- `localsetup configure`
+- `localsetup context --markdown`
+- `localsetup migrate`
+- `localsetup install --yes`
+- `localsetup verify`
+- `localsetup rollback`
+- `localsetup adapters`
+- `localsetup catalog`
+- `python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog` (source checkout)
+- `localsetup scan-migration`
 - `python3 _localsetup/tools/localsetup_v3.py hook-gate`
 - `python3 _localsetup/tools/localsetup_v3.py generate-docs`
 - `python3 _localsetup/tools/localsetup_v3.py package --out dist/localsetup-v3-public.tar.gz`

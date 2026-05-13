@@ -1,7 +1,7 @@
 heartbeat:
   enabled: false
   interval_minutes: 15
-  state_dir: state/codex-heartbeat
+  state_dir: .localsetup/state/codex-heartbeat
   stale_after_seconds: 3600
 
 codex:

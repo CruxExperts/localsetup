@@ -51,10 +51,6 @@ TOOLING_POLICY_MARKERS = {
         Path("install"),
         "_localsetup/tools/localsetup_v3.py",
     ),
-    "install_ps1": (
-        Path("install.ps1"),
-        "Localsetup v3 supports Windows through WSL2 only.",
-    ),
 }
 
 

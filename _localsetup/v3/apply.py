@@ -9,7 +9,7 @@ import uuid
 from .lockfile import save_json
 from .manifests import load_pack_config
 from .models import DeployPlan
-from .paths import ensure_dir, repo_path
+from .paths import ensure_dir, legacy_target_lockfile_path, repo_path, target_lockfile_path
 from .adapters import adapter_path_state
 from .registry import upsert_target
 from .source import source_commit
@@ -66,7 +66,7 @@ def _cleanup_backups(journal: dict) -> None:
 
 def _restore_failed_mutations(journal: dict) -> None:
     for item in reversed(journal.get("touched", [])):
-        if not isinstance(item, dict) or item.get("kind") not in {"managed_package", "adapter", "file_state"}:
+        if not isinstance(item, dict) or item.get("kind") not in {"managed_package", "adapter", "file_state", "legacy_lockfile"}:
             continue
         path = Path(str(item["path"]))
         backup = Path(str(item["backup"])) if item.get("backup") else None
@@ -94,6 +94,20 @@ def _record_file_state(journal: dict, journal_path: Path, path: Path) -> None:
         {"kind": "file_state", "path": str(path), "backup": str(backup), "existed": existed}
     )
     _write_journal(journal_path, journal)
+
+
+def _archive_legacy_lockfile(legacy_lockfile: Path, attachment_root: Path, txid: str) -> str | None:
+    if not (legacy_lockfile.exists() or legacy_lockfile.is_symlink()):
+        return None
+    backup = attachment_root / ".localsetup" / "backups" / f"legacy-lock-{txid}" / legacy_lockfile.name
+    backup.parent.mkdir(parents=True, exist_ok=True)
+    if legacy_lockfile.is_symlink():
+        backup.write_text(f"symlink -> {legacy_lockfile.readlink()}\n", encoding="utf-8")
+        legacy_lockfile.unlink()
+    else:
+        shutil.copy2(legacy_lockfile, backup)
+        legacy_lockfile.unlink()
+    return str(backup)
 
 
 def _install_managed_packages(
@@ -274,13 +288,16 @@ def apply_plan(
 
     pack = load_pack_config(repo_root)
     lockfile_path = repo_path(attachment_root, pack.lockfile, "repo.lockfile")
+    if lockfile_path.name != "lock.json" or lockfile_path.parent.name != ".localsetup":
+        lockfile_path = target_lockfile_path(attachment_root)
     adapter_actions = [a for a in plan.actions if a.kind == "attach_repo_path"]
     lock_payload = {
-        "version": 1,
+        "version": 2,
         "pack": pack.pack_id,
         "namespace": pack.namespace,
         "source_commit": source_commit(repo_root),
         "source_root": str(repo_root),
+        "localsetup_home": str(home / ".local" / "share" / "localsetup"),
         "target_root": str(attachment_root),
         "aliases": plan.rollback_metadata.get("aliases", {}),
         "skills": plan.rollback_metadata.get("skills", []),
@@ -304,9 +321,17 @@ def apply_plan(
         "python_interpreter": (dependency_info or {}).get("interpreter"),
         "dependency_state": (dependency_info or {}).get("lock"),
     }
+    registry_actions = [a for a in plan.actions if a.kind == "write_registry"]
+    if registry_actions:
+        lock_payload["registry_path"] = str(registry_actions[0].path)
+    global_roots = [a.path for a in plan.actions if a.kind in {"install_skills", "install_workflows"}]
+    if global_roots:
+        lock_payload["package_root"] = str(global_roots[0])
+    legacy_lockfile = legacy_target_lockfile_path(attachment_root)
+    if legacy_lockfile.exists() and legacy_lockfile != lockfile_path:
+        lock_payload["migration_origin"] = {"legacy_lockfile": str(legacy_lockfile)}
     if not dry_run:
         try:
-            registry_actions = [a for a in plan.actions if a.kind == "write_registry"]
             if registry_actions:
                 _record_file_state(journal, journal_path, registry_actions[0].path)
                 upsert_target(
@@ -317,6 +342,18 @@ def apply_plan(
                     adapter_targets=lock_payload["adapter_targets"],
                 )
             _record_file_state(journal, journal_path, lockfile_path)
+            legacy_backup = None
+            if legacy_lockfile.exists() and legacy_lockfile != lockfile_path:
+                legacy_backup = _archive_legacy_lockfile(legacy_lockfile, attachment_root, txid)
+                journal["touched"].append(
+                    {
+                        "kind": "legacy_lockfile",
+                        "path": str(legacy_lockfile),
+                        "backup": legacy_backup,
+                        "existed": True,
+                    }
+                )
+                lock_payload["migration_origin"]["backup"] = legacy_backup
             journal["touched"].append({"kind": "lockfile", "path": str(lockfile_path)})
             _write_journal(journal_path, journal)
             save_json(lockfile_path, lock_payload)

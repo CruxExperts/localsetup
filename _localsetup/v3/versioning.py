@@ -36,7 +36,6 @@ INTERNAL_PATCH_PATHS = (
     "CONTRIBUTING.md",
     "README.md",
     "install",
-    "install.ps1",
     "_localsetup/README.md",
     "_localsetup/config/",
     "_localsetup/docs/",

@@ -37,13 +37,13 @@ Common commands from the repository root:
 ./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor
 ./install --directory . --tools codex --non-interactive --yes
 python3 _localsetup/tools/localsetup_v3.py doctor
-python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
-python3 _localsetup/tools/localsetup_v3.py --repo . rollback
+python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
+python3 _localsetup/tools/localsetup_v3.py --source-root . rollback
 ```
 
 The root wrapper opens the interactive wizard by default. Automation must use `--non-interactive --yes`.
 
-Use WSL2 for Windows. Native PowerShell installation is intentionally not supported in v3; `install.ps1` only points users to WSL2.
+Use WSL2 for Windows. Native PowerShell installation is intentionally not supported in v3.
 
 ## Directory map
 
@@ -55,7 +55,7 @@ Use WSL2 for Windows. Native PowerShell installation is intentionally not suppor
 | `lib/` | Shared shell and helper library code. |
 | `skills/` | Source packages for all shipped `ls-*` skills. |
 | `templates/` | Platform-specific context loaders and adapter templates. |
-| `tests/` | Bash, PowerShell, and pytest coverage for framework behavior. |
+| `tests/` | Bash and pytest coverage for framework behavior. |
 | `tools/` | v3 CLI, docs generation, validation, release, skill index, and Agent Q tooling. |
 | `v3/` | Planner, apply, verify, rollback, versioning, and CLI implementation modules. |
 | `workflows/` | Source packages for all shipped `ls-workflow-*` workflow packages. |
@@ -75,7 +75,7 @@ Omitting `--tools` or `--platforms` installs the managed library only. Use `--to
 
 ## Skill model
 
-Skills are task-focused instruction packages. Localsetup keeps the canonical source under `_localsetup/skills/`, installs managed copies to `~/.local/share/agents/skills/localsetup`, and attaches selected platform adapter paths to that library by symlink or portable copy.
+Skills are task-focused instruction packages. Localsetup keeps the canonical source under `_localsetup/skills/` in the source checkout, installs managed copies to `~/.local/share/localsetup/packages`, and attaches selected platform adapter paths to that library by symlink or portable copy.
 
 Useful docs:
 
@@ -104,8 +104,8 @@ Run these before release-oriented changes:
 
 ```bash
 python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .
-python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
-python3 _localsetup/tools/localsetup_v3.py --repo . scan-migration
+python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
+python3 _localsetup/tools/localsetup_v3.py --source-root . scan-migration
 python3 _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-v3-framework-audit.md
 python3 -m pytest _localsetup/tests
 git diff --check

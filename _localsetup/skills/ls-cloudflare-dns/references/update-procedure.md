@@ -14,7 +14,7 @@ python3 -m pytest tests -q
 
 ```bash
 python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .
-python3 _localsetup/tools/localsetup_v3.py --repo . generate-docs
+python3 _localsetup/tools/localsetup_v3.py --source-root . generate-docs
 ```
 
 5. Run catalog and framework validation before publishing.

@@ -23,7 +23,7 @@ Use this when refreshing the skill's volatile version facts.
    ```bash
    node _localsetup/skills/ls-nodejs-nextjs/scripts/verify-current-versions.mjs --json
    python3 _localsetup/tools/skill_validation_scan.py _localsetup/skills/ls-nodejs-nextjs --scan-root . --no-fetch
-   python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
+   python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
    git diff --check
    ```
 

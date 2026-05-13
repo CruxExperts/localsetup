@@ -14,7 +14,7 @@ The default inventory excludes common noise and secret-bearing paths:
 Maintainers can inspect exclusions with:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index inventory --scope repo --show-excludes
+localsetup context-index inventory --scope repo --show-excludes
 ```
 
 ## Secret Policy

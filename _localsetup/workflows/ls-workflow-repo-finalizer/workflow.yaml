@@ -26,15 +26,15 @@ phases:
     summary: Optionally stage allowlisted outputs and checkpoint commit when requested.
 validation:
   - check: python3 -m pytest _localsetup/tests/test_repo_finalizer.py
-  - check: python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
+  - check: python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
 outputs:
   - Human-readable dirty-state report with per-file classification and action plan
   - JSON payload with blocker reasons and staged/commit actions
-  - Repo-local latest reports under state/repo-finalizer/
+  - Repo-local latest reports under .localsetup/state/repo-finalizer/
   - Optional checkpoint commit containing only allowlisted files
 smoke:
   - id: repo_finalizer_cli_plan
-    check: python3 _localsetup/tools/localsetup_v3.py --repo . harness repo-finalizer plan --json
+    check: python3 _localsetup/tools/localsetup_v3.py --source-root . harness repo-finalizer plan --json
 migration:
   source: issue #10 repo finalizer harness
   note: Config file is optional; defaults apply when config/localsetup_finalizer.yaml is absent.

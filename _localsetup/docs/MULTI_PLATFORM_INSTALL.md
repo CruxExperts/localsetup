@@ -13,8 +13,8 @@ version: 3.8
 
 ## Platform detection and script selection
 
-- **Linux / macOS:** Use `./install`, which opens the interactive wizard by default. Automation uses `_localsetup/tools/localsetup_v3.py install --apply` through `--non-interactive --yes`.
-- **Windows:** Localsetup v3 supports Windows through WSL2 only. Native PowerShell installation was removed; `install.ps1` prints WSL2 guidance and exits.
+- **Linux / macOS:** Use `./install`, which opens the interactive wizard by default. Automation uses `./install --non-interactive --yes`.
+- **Windows:** Localsetup v3 supports Windows through WSL2 only. Native PowerShell installation surfaces are removed.
 - **Git Bash (or MSYS/Cygwin) on Windows:** Open WSL2 and run the Bash installer from there.
 
 ## Install command
@@ -71,9 +71,9 @@ Full local setup for the Codex, Kilo, and OpenCode adapters:
 ./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,harness,experimental --install-deps
 ```
 
-That command installs every declared skill and workflow pack, attaches only `.codex/skills`, `.kilo/skills`, and `.opencode/skills`, and prepares the managed `.localsetup/venv` dependency environment.
+That command installs every declared skill and workflow pack, attaches only `.codex/skills`, `.kilo/skills`, and `.opencode/skills`, and prepares the managed `~/.local/share/localsetup/venv` dependency environment.
 
-The `harness` pack only installs autonomous-harness capability. It does not create `HEARTBEAT.md`, `config/codex_heartbeat.yaml`, `cron/manifest.yaml`, or `state/codex-heartbeat/`. Activate a target repo later with `localsetup harness codex-heartbeat init` and `localsetup harness codex-heartbeat enable`; see [HARNESS_AUTOMATION.md](HARNESS_AUTOMATION.md).
+The `harness` pack only installs autonomous-harness capability. It does not create `HEARTBEAT.md`, `config/codex_heartbeat.yaml`, `cron/manifest.yaml`, or `.localsetup/state/codex-heartbeat/`. Activate a target repo later with `localsetup harness codex-heartbeat init` and `localsetup harness codex-heartbeat enable`; see [HARNESS_AUTOMATION.md](HARNESS_AUTOMATION.md).
 
 Attach a selected adapter to another repo or directory:
 
@@ -90,7 +90,7 @@ localsetup convert --tools codex --packs core
 localsetup convert --tools codex --packs core --yes
 ```
 
-The dry report lists artifacts and blockers. Apply mode writes `.localsetup/backups/conversion-*/conversion-report.json`, archives known managed or legacy Localsetup content, refuses ambiguous unmanaged content, syncs current framework source when appropriate, installs selected adapters, and verifies.
+The dry report lists artifacts and blockers. Apply mode writes `.localsetup/backups/conversion-*/conversion-report.json`, archives known managed or legacy Localsetup content, refuses ambiguous unmanaged content, removes stale target `_localsetup/` copies, installs selected adapters, and verifies.
 
 ### Windows (WSL2)
 
@@ -103,13 +103,13 @@ cd /path/to/repo
 ## Options
 
 - `--directory PATH` / `-Directory PATH`  - Localsetup source checkout containing `_localsetup/`. Defaults to `.` when run from a checkout; otherwise the raw Bash installer creates or refreshes `~/.local/share/localsetup/source`.
-- `--target-directory PATH`  - Directory where selected repo adapter links and `localsetup.lock.json` are written. Defaults to the source checkout for explicit local installs and to the caller's current directory for raw bootstrap installs with selected platforms.
+- `--target-directory PATH`  - Directory where selected repo adapter links and `.localsetup/lock.json` are written. Defaults to the source checkout for explicit local installs and to the caller's current directory for raw bootstrap installs with selected platforms.
 - `--tools LIST`  - Compatibility alias for comma-separated platforms: cursor, claude-code, codex, openclaw, kilo, opencode
 - `--platforms LIST`  - Space-separated v3 platform ids. Omit for a global-only install with no repo adapters.
 - `--yes`  - Legacy accepted flag for interactive installs. For automation, combine with `--non-interactive`.
 - `--non-interactive`  - Automation mode. Requires `--yes` and preserves machine-readable output.
-- `--global`  - Legacy no-op compatibility flag; v3 installs the managed home library by default
-- `--install-deps`  - Create/update the managed `.localsetup/venv` and install `_localsetup/requirements.txt`
+- `--global`  - Removed legacy flag; v3 installs the managed home library by default and exits with an explicit error if this flag is supplied.
+- `--install-deps`  - Create/update the managed `~/.local/share/localsetup/venv` and install `_localsetup/requirements.txt`
 - `--no-register-shell`  - Skip creating/updating `~/.local/bin/localsetup`
 - `--help`  - Print usage and exit
 
@@ -124,7 +124,7 @@ The wizard keeps the install portable and line-oriented; it uses plain terminal 
 
 ## Shared home library
 
-V3 installs managed skills and workflow packages to `~/.local/share/agents/skills/localsetup` and writes a registry beside them. Explicitly selected repo adapter paths such as `.codex/skills` and `.kilo/skills` point at that library by symlink, or receive a managed portable copy when `--mode portable` is used.
+V3 installs managed skills and workflow packages to `~/.local/share/localsetup/packages` and writes a registry beside them. Explicitly selected repo adapter paths such as `.codex/skills` and `.kilo/skills` point at that library by symlink, or receive a managed portable copy when `--mode portable` is used.
 
 Workflow packages are sourced from `_localsetup/workflows/ls-workflow-*`. They install beside skills because every workflow package includes a valid `SKILL.md`, while its Localsetup-specific `workflow.yaml` stays in source for validation and generated docs.
 
@@ -133,7 +133,7 @@ If `--tools` or `--platforms` is omitted, no repo adapter is attached. This is t
 To remove a v3 install, run:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py rollback
+localsetup rollback
 ```
 
 ## Dependency preflight
@@ -154,10 +154,10 @@ Before install, use the dependency list below as the canonical source of truth. 
 | Python: `cryptography` (cryptography>=42.0) | Recommended | Framework cryptographic primitives for secure envelope workflows |
 | Python: `pgpy` (PGPy>=0.6.0) | Recommended | Pure-Python OpenPGP support for secure mail workflows |
 
-Python packages are listed in `_localsetup/requirements.txt`. The conservative default for Python tooling is a managed virtualenv at `.localsetup/venv`, which avoids PEP 668 externally managed system-pip failures. To check the current machine without changing files, run:
+Python packages are listed in `_localsetup/requirements.txt`. The conservative default for Python tooling is a managed virtualenv at `~/.local/share/localsetup/venv`, which avoids PEP 668 externally managed system-pip failures. To check the current machine without changing files, run:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py doctor
+localsetup doctor
 ```
 
 Dependency checks use installed Python distribution metadata from the selected interpreter. This keeps packages with different distribution and import names, such as `PGPy` / `pgpy`, from being misreported as missing after managed dependency installation.
@@ -165,7 +165,7 @@ Dependency checks use installed Python distribution metadata from the selected i
 To normalize install intent without changing files, run:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py configure --platforms codex --packs core
+localsetup configure --platforms codex --packs core
 ```
 
 To install dependencies automatically during install, add the `--install-deps` flag:
@@ -180,35 +180,35 @@ Do not use `--break-system-packages`. If virtualenv creation is unavailable, ins
 
 ## V3 reinstall behavior
 
-On re-run, the v3 installer refreshes the managed shared package library, rewrites the global registry, updates selected adapter links or portable copies, and writes `localsetup.lock.json`.
+On re-run, the v3 installer refreshes the managed shared package library, rewrites the global registry, updates selected adapter links or portable copies, and writes `.localsetup/lock.json`.
 
-`--upgrade-policy` is accepted by the root wrapper as a legacy compatibility flag, but v3 uses managed install metadata and refuses to overwrite unmanaged skill paths.
+`--upgrade-policy` is removed. V3 uses managed install metadata and refuses to overwrite unmanaged skill paths.
 
 Adapter paths are conservative. The installer creates only the selected adapter subpath, for example `.cursor/skills`, and preserves neighboring project configuration such as `.cursor/rules`. It refuses unmanaged adapter directories, regular files, dangling symlinks, and symlinks that point somewhere other than the managed Localsetup library. Re-running the same install is idempotent when an adapter already points at the intended managed library or is a Localsetup-managed portable copy.
 
 ## What gets deployed
 
-- **Shared library:** Managed skills under `~/.local/share/agents/skills/localsetup`.
+- **Shared library:** Managed skills under `~/.local/share/localsetup/packages`.
 - **Workflow packages:** Managed copies of selected `_localsetup/workflows/ls-workflow-*` packages in the same library.
 - **Per-platform adapters:** Explicitly selected repo paths from `_localsetup/config/platforms.yaml`, such as `.codex/skills` and `.kilo/skills`.
-- **Lock and registry:** `localsetup.lock.json` in the repo and `.localsetup-registry.json` in the managed home library.
+- **Lock and registry:** `.localsetup/lock.json` in the repo and `~/.local/share/localsetup/registry.json` in the Localsetup home.
 
 ## Framework tools
 
 | Tool | Linux/macOS | Windows |
 |------|-------------|---------|
-| Install | `./install` or `python3 _localsetup/tools/localsetup_v3.py install --apply` | WSL2 only |
-| Doctor | `localsetup doctor` or `python3 _localsetup/tools/localsetup_v3.py doctor` | WSL2 only |
-| Configure | `python3 _localsetup/tools/localsetup_v3.py configure` | WSL2 only |
-| Agent context | `python3 _localsetup/tools/localsetup_v3.py context --markdown` | WSL2 only |
-| Migrate | `python3 _localsetup/tools/localsetup_v3.py migrate` | WSL2 only |
+| Install | `./install` or `localsetup install --tools codex --yes` | WSL2 only |
+| Doctor | `localsetup doctor` | WSL2 only |
+| Configure | `localsetup configure --platforms codex --packs core` | WSL2 only |
+| Agent context | `localsetup context --markdown` | WSL2 only |
+| Migrate | `localsetup migrate` | WSL2 only |
 | Convert | `localsetup convert --tools codex --packs core` | WSL2 only |
-| Plan | `localsetup plan --tools codex` or `python3 _localsetup/tools/localsetup_v3.py plan` | WSL2 only |
-| Verify | `localsetup verify --tools codex` or `python3 _localsetup/tools/localsetup_v3.py verify` | WSL2 only |
+| Plan | `localsetup plan --tools codex` | WSL2 only |
+| Verify | `localsetup verify --tools codex` | WSL2 only |
 | Tests | `./_localsetup/tests/automated_test.sh` | WSL2 only |
 
 Framework install logic is Python-first. Shell is limited to the bootstrap wrapper, and PowerShell is not a native v3 install target.
 
 ## Repo-local
 
-Framework source and repo-local context live in the repo. Installed skill and workflow package copies live in the managed home library and can be recreated from the repo with `./install --directory .`. Add `--tools` or `--platforms` when you want to attach repo adapter paths.
+Framework source lives in the Localsetup source checkout. Target repo context and state live under `.localsetup/`, while installed skill and workflow package copies live in the managed home library. Add `--tools` or `--platforms` when you want to attach repo adapter paths.

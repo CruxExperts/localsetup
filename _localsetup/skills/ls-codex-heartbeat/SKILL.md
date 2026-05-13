@@ -14,7 +14,7 @@ Use this skill when a repository needs an explicit, auditable heartbeat harness 
 
 - Installing this skill only makes the harness available. It does not create config, cron entries, or autonomous runs.
 - Activate per target repo with `localsetup harness codex-heartbeat init` and `enable`.
-- Runtime artifacts stay under ignored target-repo `state/codex-heartbeat/`.
+- Runtime artifacts stay under ignored target-repo `.localsetup/state/codex-heartbeat/`.
 - `enable --install-crontab` refuses to install a live crontab unless `--yes` is also passed.
 - `run --no-agent` exercises locks, recovery, command logging, staged validation, and atomic promotion without model use.
 - Direct hooks block `git commit`, `git push`, and destructive executables unless explicitly allowed.

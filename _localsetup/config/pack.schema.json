@@ -23,9 +23,11 @@
     "global": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["root", "registry"],
+      "required": ["package_root", "registry"],
       "properties": {
+        "home": { "type": "string", "minLength": 1 },
         "root": { "type": "string", "minLength": 1 },
+        "package_root": { "type": "string", "minLength": 1 },
         "registry": { "type": "string", "minLength": 1 }
       }
     },

@@ -5,11 +5,75 @@ from pathlib import Path
 from typing import Any
 
 
+@dataclass(frozen=True)
+class SourceLayout:
+    source_root: Path
+
+    @property
+    def framework_root(self) -> Path:
+        return self.source_root / "_localsetup"
+
+
+@dataclass(frozen=True)
+class GlobalLayout:
+    localsetup_home: Path
+    package_root: Path
+    registry_path: Path
+
+    @property
+    def venv_path(self) -> Path:
+        return self.localsetup_home / "venv"
+
+    @property
+    def cache_root(self) -> Path:
+        return self.localsetup_home / "cache"
+
+    @property
+    def state_root(self) -> Path:
+        return self.localsetup_home / "state"
+
+    @property
+    def logs_root(self) -> Path:
+        return self.localsetup_home / "logs"
+
+
+@dataclass(frozen=True)
+class TargetLayout:
+    target_root: Path
+
+    @property
+    def state_root(self) -> Path:
+        return self.target_root / ".localsetup"
+
+    @property
+    def lockfile_path(self) -> Path:
+        return self.state_root / "lock.json"
+
+    @property
+    def legacy_lockfile_path(self) -> Path:
+        return self.target_root / "localsetup.lock.json"
+
+    @property
+    def journal_root(self) -> Path:
+        return self.state_root / "install-journal"
+
+    @property
+    def backup_root(self) -> Path:
+        return self.state_root / "backups"
+
+    @property
+    def context_index_root(self) -> Path:
+        return self.state_root / "context-index"
+
+
 @dataclass
 class PackConfig:
     pack_id: str
     namespace: str
     version: int
+    global_home: str
+    package_root: str
+    registry_path: str
     global_root: str
     global_registry: str
     lockfile: str

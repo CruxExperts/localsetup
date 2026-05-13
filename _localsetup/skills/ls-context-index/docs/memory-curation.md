@@ -7,7 +7,7 @@ Memory curation tracks which retrieved chunks actually influenced agent work. It
 After a result materially helps, agents may mark it used:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index memory mark-used --scope repo --chunk-id UUID --reason selected_context
+localsetup context-index memory mark-used --scope repo --chunk-id UUID --reason selected_context
 ```
 
 This inserts a UUIDv7 `usage_events` row with `chunk_id`, `context_key`, `reason`, and `used_at`. The row is indexed by chunk and by `context_key, used_at` so usage reports and promotion scans stay cheap.
@@ -15,7 +15,7 @@ This inserts a UUIDv7 `usage_events` row with `chunk_id`, `context_key`, `reason
 ## Stats
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index memory stats --scope repo
+localsetup context-index memory stats --scope repo
 ```
 
 Stats group usage by chunk and include path and last-used timestamp.
@@ -23,7 +23,7 @@ Stats group usage by chunk and include path and last-used timestamp.
 ## Promotion Planning
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index memory promote-plan --scope repo
+localsetup context-index memory promote-plan --scope repo
 ```
 
 The plan reports candidates that meet `context_index.memory.min_uses_for_promotion`. Apply is intentionally conservative in this implementation: it does not mutate global memory files until a repo-approved memory writer and privacy policy are configured.

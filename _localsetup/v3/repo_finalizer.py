@@ -12,13 +12,14 @@ import yaml
 
 
 FINALIZER_CONFIG = "config/localsetup_finalizer.yaml"
-STATE_DIR = "state/repo-finalizer"
+STATE_DIR = ".localsetup/state/repo-finalizer"
 SUPPORTED_CLASSIFICATIONS = {
     "managed_output",
     "generated_artifact",
     "runtime_ignored",
     "user_change",
     "unknown_change",
+    "stale_legacy_framework_source",
 }
 MANAGED_ROOT_PREFIXES = ("_localsetup/",)
 
@@ -38,7 +39,7 @@ def _target(target_root: Path | None, repo_root: Path) -> Path:
 def _defaults() -> FinalizerSettings:
     return FinalizerSettings(
         managed_output_globs=[
-            "localsetup.lock.json",
+            ".localsetup/lock.json",
             "config/localsetup_finalizer.yaml",
             "HEARTBEAT.md",
             "config/codex_heartbeat.yaml",
@@ -56,17 +57,17 @@ def _defaults() -> FinalizerSettings:
             "_localsetup/docs/_generated/*",
         ],
         runtime_ignored_globs=[
-            "state/repo-finalizer",
-            "state/repo-finalizer/",
-            "state/repo-finalizer/**",
-            "state/repo-finalizer/*",
+            ".localsetup/state/repo-finalizer",
+            ".localsetup/state/repo-finalizer/",
+            ".localsetup/state/repo-finalizer/**",
+            ".localsetup/state/repo-finalizer/*",
             ".codex/runs",
             ".codex/runs/",
             ".codex/runs/**",
             ".codex/runs/*",
         ],
         stage_allowlist_globs=[
-            "localsetup.lock.json",
+            ".localsetup/lock.json",
             "config/localsetup_finalizer.yaml",
             "HEARTBEAT.md",
             "config/codex_heartbeat.yaml",
@@ -233,7 +234,7 @@ def _collect_disk_runtime(target_root: Path, settings: FinalizerSettings, existi
     return sorted(rows, key=lambda item: item["path"])
 
 
-def _classify(target_root: Path, items: list[dict[str, Any]], settings: FinalizerSettings) -> list[dict[str, Any]]:
+def _classify(target_root: Path, items: list[dict[str, Any]], settings: FinalizerSettings, *, mode: str) -> list[dict[str, Any]]:
     classified: list[dict[str, Any]] = []
     for item in items:
         path = item["path"]
@@ -247,6 +248,8 @@ def _classify(target_root: Path, items: list[dict[str, Any]], settings: Finalize
             category = "managed_output"
         elif _matches(path, settings.generated_artifact_globs):
             category = "generated_artifact"
+        elif mode == "target" and (path == "_localsetup" or path.startswith(MANAGED_ROOT_PREFIXES)):
+            category = "stale_legacy_framework_source"
         elif tracked and path.startswith(MANAGED_ROOT_PREFIXES):
             category = "unknown_change"
         elif tracked:
@@ -268,6 +271,8 @@ def _classify(target_root: Path, items: list[dict[str, Any]], settings: Finalize
             reason = "runtime ignored path"
         elif category == "user_change":
             reason = "tracked user-owned change"
+        elif category == "stale_legacy_framework_source":
+            reason = "target _localsetup is a stale legacy framework source"
         else:
             reason = "tracked managed-root change not recognized as managed output" if tracked else "untracked path not recognized as managed output"
         classified.append(
@@ -279,7 +284,9 @@ def _classify(target_root: Path, items: list[dict[str, Any]], settings: Finalize
                 "renamed_or_copied": renamed_or_copied,
                 "classification": category,
                 "planned_action": action,
-                "blocker": renamed_or_copied or deleted or category in {"user_change", "unknown_change"},
+                "blocker": renamed_or_copied
+                or deleted
+                or category in {"user_change", "unknown_change", "stale_legacy_framework_source"},
                 "blocker_reason": reason,
             }
         )
@@ -309,12 +316,14 @@ def _diff_names(target_root: Path, *args: str) -> list[str]:
     return sorted(line for line in diff.stdout.splitlines() if line)
 
 
-def _snapshot(repo_root: Path, target_root: Path | None = None) -> dict[str, Any]:
+def _snapshot(repo_root: Path, target_root: Path | None = None, *, mode: str | None = None) -> dict[str, Any]:
     target = _target(target_root, repo_root)
+    selected_mode = mode or ("source" if target.resolve(strict=False) == repo_root.resolve(strict=False) else "target")
     supported, reason = _git_supported(target)
     payload: dict[str, Any] = {
         "ok": True,
         "target_root": str(target),
+        "mode_classification": selected_mode,
         "config_path": str(target / FINALIZER_CONFIG),
         "state_dir": str(target / STATE_DIR),
         "git_supported": supported,
@@ -337,7 +346,7 @@ def _snapshot(repo_root: Path, target_root: Path | None = None) -> dict[str, Any
     dirty.extend(_collect_ignored_runtime(target, settings, {item["path"] for item in dirty}))
     if not dirty:
         dirty.extend(_collect_disk_runtime(target, settings, set()))
-    classified = _classify(target, dirty, settings)
+    classified = _classify(target, dirty, settings, mode=selected_mode)
     payload["files"] = classified
     payload["summary"] = _summary(classified)
     payload["diffs"] = {
@@ -375,14 +384,14 @@ def _write_run_reports(payload: dict[str, Any]) -> dict[str, str]:
     return {"json": str(json_path), "text": str(text_path)}
 
 
-def plan(repo_root: Path, target_root: Path | None = None) -> dict[str, Any]:
-    payload = _snapshot(repo_root, target_root)
+def plan(repo_root: Path, target_root: Path | None = None, *, mode: str | None = None) -> dict[str, Any]:
+    payload = _snapshot(repo_root, target_root, mode=mode)
     payload["mode"] = "plan"
     return payload
 
 
-def status(repo_root: Path, target_root: Path | None = None) -> dict[str, Any]:
-    payload = _snapshot(repo_root, target_root)
+def status(repo_root: Path, target_root: Path | None = None, *, mode: str | None = None) -> dict[str, Any]:
+    payload = _snapshot(repo_root, target_root, mode=mode)
     payload["mode"] = "status"
     return payload
 
@@ -391,11 +400,12 @@ def run(
     repo_root: Path,
     target_root: Path | None = None,
     *,
+    mode: str | None = None,
     no_commit: bool = False,
     checkpoint: bool = False,
     message: str | None = None,
 ) -> dict[str, Any]:
-    payload = _snapshot(repo_root, target_root)
+    payload = _snapshot(repo_root, target_root, mode=mode)
     payload["mode"] = "run"
     payload["actions"] = []
     if not payload.get("git_supported", False):

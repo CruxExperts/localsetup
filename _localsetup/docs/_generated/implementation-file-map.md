@@ -42,7 +42,6 @@
 | `refactor` | `_localsetup/config/platforms.yaml` |
 | `keep` | `_localsetup/config/skill-frontmatter.schema.json` |
 | `keep` | `_localsetup/config/workflow.schema.json` |
-| `keep` | `_localsetup/discovery/core/os_detector.ps1` |
 | `keep` | `_localsetup/discovery/core/os_detector.py` |
 | `keep` | `_localsetup/discovery/core/os_detector.sh` |
 | `keep` | `_localsetup/docs/AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md` |
@@ -118,7 +117,6 @@
 | `keep` | `_localsetup/docs/ops/tmux-ops-managed.md` |
 | `keep` | `_localsetup/docs/ops/tmux-ops-remote.md` |
 | `keep` | `_localsetup/docs/scrapling-cheat-sheet.md` |
-| `keep` | `_localsetup/lib/data_paths.ps1` |
 | `keep` | `_localsetup/lib/data_paths.sh` |
 | `keep` | `_localsetup/lib/deps.py` |
 | `keep` | `_localsetup/lib/json_formatter.sh` |
@@ -526,7 +524,6 @@
 | `keep` | `_localsetup/templates/openclaw/OPENCLAW_CONTEXT.md` |
 | `keep` | `_localsetup/templates/opencode/AGENTS.md` |
 | `keep` | `_localsetup/templates/opencode/MEMORY.md` |
-| `keep` | `_localsetup/tests/automated_test.ps1` |
 | `keep` | `_localsetup/tests/automated_test.py` |
 | `keep` | `_localsetup/tests/automated_test.sh` |
 | `keep` | `_localsetup/tests/conftest.py` |
@@ -600,7 +597,6 @@
 | `keep` | `_localsetup/tools/scrapling_helper/main.py` |
 | `keep` | `_localsetup/tools/scrapling_helper/tests/test_job_registry_contract.py` |
 | `keep` | `_localsetup/tools/skill_importer_scan` |
-| `keep` | `_localsetup/tools/skill_importer_scan.ps1` |
 | `keep` | `_localsetup/tools/skill_importer_scan.py` |
 | `keep` | `_localsetup/tools/skill_index_scrub.py` |
 | `keep` | `_localsetup/tools/skill_validation_scan.py` |
@@ -610,10 +606,8 @@
 | `keep` | `_localsetup/tools/tmux_terminal_mode.py` |
 | `keep` | `_localsetup/tools/validate_output_contract.py` |
 | `keep` | `_localsetup/tools/verify_context` |
-| `keep` | `_localsetup/tools/verify_context.ps1` |
 | `keep` | `_localsetup/tools/verify_context.py` |
 | `keep` | `_localsetup/tools/verify_rules` |
-| `keep` | `_localsetup/tools/verify_rules.ps1` |
 | `keep` | `_localsetup/tools/verify_rules.py` |
 | `refactor` | `_localsetup/v3/__init__.py` |
 | `refactor` | `_localsetup/v3/adapters.py` |
@@ -629,6 +623,7 @@
 | `refactor` | `_localsetup/v3/diffing.py` |
 | `refactor` | `_localsetup/v3/docs.py` |
 | `refactor` | `_localsetup/v3/doctor.py` |
+| `refactor` | `_localsetup/v3/global_first_audit.py` |
 | `refactor` | `_localsetup/v3/harness.py` |
 | `refactor` | `_localsetup/v3/hooks.py` |
 | `refactor` | `_localsetup/v3/lockfile.py` |
@@ -703,7 +698,6 @@
 | `keep` | `config/localsetup_finalizer.yaml` |
 | `keep` | `docs.config.yaml` |
 | `keep` | `install` |
-| `refactor` | `install.ps1` |
 | `keep` | `pyproject.toml` |
 | `keep` | `tools/scrapling_helper/scrapling_capabilities.json` |
 | `keep` | `uv.lock` |

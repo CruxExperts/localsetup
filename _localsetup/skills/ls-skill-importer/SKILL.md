@@ -18,7 +18,7 @@ metadata:
 ## Workflow (agent steps)
 
 1. **Get source**  - For a repository or archive URL, fetch it into a temporary directory. For a local path, use that path as the scan root. For pasted content or a single-document URL, follow [SKILL_IMPORTING.md](../../docs/SKILL_IMPORTING.md#adding-a-skill-from-paste-or-url) before writing anything to `_localsetup/skills/`.
-2. **Scan**  - Run `_localsetup/tools/skill_importer_scan <path>` from the repo root, or use `_localsetup/tools/skill_importer_scan.ps1 -Path <path>` where PowerShell is required. The current importer scanner takes a directory path only and writes a human-readable summary to stdout.
+2. **Scan**  - Run `_localsetup/tools/skill_importer_scan <path>` from the repo root. The current importer scanner takes a directory path only and writes a human-readable summary to stdout.
 3. **Summarize and choose**  - Present each candidate's purpose, included files, code types, heuristic security result, and any content-safety review instructions emitted by validation tooling. Do not execute candidate code. Ask which candidates to import.
 4. **Check duplicates and overlap**  - Compare selected candidates with `_localsetup/skills/` by directory name, frontmatter `name`, description, purpose, and triggers. On collision or high overlap, offer **Ignore new**, **Replace existing**, **Merge**, or **Create as new**; get explicit user choice.
 5. **Normalize before copy**  - After the user chooses to proceed past security and content-safety review, run mandatory normalization using [SKILL_NORMALIZATION.md](../../docs/SKILL_NORMALIZATION.md) as the source of truth. Present the summary and key edits, get approval, and import the normalized result.

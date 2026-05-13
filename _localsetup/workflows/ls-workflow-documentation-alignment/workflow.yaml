@@ -39,7 +39,7 @@ phases:
     summary: Run a read-only review and resolve or document findings.
 validation:
   - check: python3 _localsetup/tools/docs_alignment.py --repo-root . check --ci
-  - check: python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
+  - check: python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
 outputs:
   - Run ledger with checkpoints
   - Documentation alignment audit summary

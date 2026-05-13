@@ -5,7 +5,7 @@ from pathlib import Path
 from .adapters import adapter_path_state, adapter_status
 from .lockfile import load_json
 from .manifests import load_pack_config, load_platforms
-from .paths import expand_user_path, repo_path
+from .paths import expand_user_path, legacy_target_lockfile_path, repo_path, target_lockfile_path
 from .workflows import validate_workflow_catalog
 
 
@@ -47,12 +47,21 @@ def verify_install(
         raise ValueError(f"unsupported verify level: {level}")
     pack = load_pack_config(repo_root)
     attachment_root = target_root or repo_root
-    lock = load_json(repo_path(attachment_root, pack.lockfile, "repo.lockfile"))
+    lock_path = repo_path(attachment_root, pack.lockfile, "repo.lockfile")
+    if lock_path.name != "lock.json" or lock_path.parent.name != ".localsetup":
+        lock_path = target_lockfile_path(attachment_root)
+    lock = load_json(lock_path)
     global_root = expand_user_path(pack.global_root, home)
 
     issues: list[str] = []
     if not lock:
         issues.append("missing lockfile")
+    legacy_lock = legacy_target_lockfile_path(attachment_root)
+    if legacy_lock.exists():
+        issues.append(f"legacy root lockfile remains; migrate to .localsetup/lock.json: {legacy_lock}")
+    target_framework = attachment_root / "_localsetup"
+    if target_framework.exists() and attachment_root.resolve(strict=False) != repo_root.resolve(strict=False):
+        issues.append(f"stale target framework source is not supported: {target_framework}")
     attach_mode = lock.get("attach_mode", "symlink") if isinstance(lock, dict) else "symlink"
 
     if not global_root.is_dir():
@@ -124,7 +133,7 @@ def verify_install(
     if workflow_issues:
         issues.extend(f"workflow manifest validation failed: {issue}" for issue in workflow_issues)
 
-    registry_path = expand_user_path(pack.global_registry, home)
+    registry_path = Path(str(lock.get("registry_path"))) if isinstance(lock, dict) and lock.get("registry_path") else expand_user_path(pack.global_registry, home)
     if not registry_path.exists():
         issues.append(f"missing global registry: {registry_path}")
 

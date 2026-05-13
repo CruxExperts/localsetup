@@ -28,7 +28,7 @@ The `SKILL.md` file keeps the workflow executable by agent hosts that understand
 The installer copies selected skills and selected workflow packages into:
 
 ```text
-~/.local/share/agents/skills/localsetup
+~/.local/share/localsetup/packages
 ```
 
 When selected with `--tools` or `--platforms`, platform adapters such as `.codex/skills`, `.kilo/skills`, and `.cursor/skills` attach to that managed library by symlink or portable copy. A workflow package therefore appears beside normal skills at runtime, but its source and metadata stay separate in `_localsetup/workflows/`.
@@ -47,7 +47,7 @@ Do not hand-maintain workflow rows in those files. Update the relevant `_localse
 
 ```bash
 python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .
-python3 _localsetup/tools/localsetup_v3.py --repo . generate-docs
+python3 _localsetup/tools/localsetup_v3.py --source-root . generate-docs
 ```
 
 ## Validation
@@ -55,7 +55,7 @@ python3 _localsetup/tools/localsetup_v3.py --repo . generate-docs
 Use the catalog validator after editing skills or workflow packages:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
+python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
 ```
 
 The validator checks that workflow package names match `ls-workflow-<workflow_id>`, `SKILL.md` names match directory names, aliases do not collide, dependencies exist, required docs and tools resolve inside the repo, and each package has a smoke row.

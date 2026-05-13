@@ -106,9 +106,8 @@ Localsetup v3 is deployed into this repo at `_localsetup/`. All framework and co
 ## Key files and commands
 
 - _localsetup/lib/data_paths.sh, lib/json_formatter.sh
-- _localsetup/tools/verify_context, verify_rules
-- _localsetup/tests/automated_test.sh
-- From repo root: `./_localsetup/tools/verify_context`, `./_localsetup/tests/automated_test.sh`
+- `localsetup doctor`, `localsetup verify --level filesystem`
+- `localsetup context --markdown`
 
 ## Memory
 

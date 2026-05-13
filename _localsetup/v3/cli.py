@@ -18,6 +18,7 @@ from .dependencies import ensure_dependencies
 from .diffing import diff_plan_current
 from .doctor import run_doctor
 from .docs import generate_alias_outputs
+from .global_first_audit import audit_global_first
 from .harness import disable as harness_disable
 from .harness import enable as harness_enable
 from .harness import init as harness_init
@@ -61,6 +62,10 @@ from .versioning import (
 
 def _repo_root() -> Path:
     return Path(str(files("_localsetup"))).resolve().parent
+
+
+def _localsetup_home(home: Path) -> Path:
+    return home / ".local" / "share" / "localsetup"
 
 
 def _split_csv(values: list[str] | None) -> list[str] | None:
@@ -257,7 +262,11 @@ def _run_self_refresh(
                     "attach_mode": None,
                 },
             }
-    dependency_info = ensure_dependencies(root, mode=config.dependency_mode) if config.dependency_mode != "prompt-only" else None
+    dependency_info = (
+        ensure_dependencies(root, mode=config.dependency_mode, data_root=_localsetup_home(home))
+        if config.dependency_mode != "prompt-only"
+        else None
+    )
     plan = build_install_plan(
         root,
         home=home,
@@ -286,7 +295,8 @@ def _run_self_refresh(
 def _main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="localsetup-v3")
     parser.add_argument("--home")
-    parser.add_argument("--repo", default=str(_repo_root()))
+    parser.add_argument("--source-root")
+    parser.add_argument("--repo", default=None, help=argparse.SUPPRESS)
     parser.add_argument("--target-directory")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
@@ -368,6 +378,8 @@ def _main(argv: list[str] | None = None) -> int:
     sbom_p.add_argument("--installed", action="store_true")
     sbom_p.add_argument("--target-directory", default=argparse.SUPPRESS)
     sub.add_parser("scan-migration")
+    audit_global_p = sub.add_parser("audit-global-first")
+    audit_global_p.add_argument("--target-directory", default=argparse.SUPPRESS)
     sub.add_parser("validate-catalog")
     sub.add_parser("generate-docs")
     harness_p = sub.add_parser("harness")
@@ -391,9 +403,11 @@ def _main(argv: list[str] | None = None) -> int:
     for action_name in ("plan", "status"):
         action_p = finalizer_sub.add_parser(action_name)
         _add_harness_target_flags(action_p)
+        action_p.add_argument("--mode", choices=["source", "target"])
         action_p.add_argument("--json", action="store_true")
     finalizer_run_p = finalizer_sub.add_parser("run")
     _add_harness_target_flags(finalizer_run_p)
+    finalizer_run_p.add_argument("--mode", choices=["source", "target"])
     finalizer_run_p.add_argument("--json", action="store_true")
     finalizer_run_p.add_argument("--no-commit", action="store_true")
     finalizer_run_p.add_argument("--checkpoint", action="store_true")
@@ -450,7 +464,7 @@ def _main(argv: list[str] | None = None) -> int:
 
     args = parser.parse_args(argv)
     _inject_global_target(args)
-    root = Path(args.repo).resolve()
+    root = Path(args.source_root or args.repo or str(_repo_root())).resolve()
     home = Path(args.home or Path.home()).expanduser().resolve()
 
     if args.cmd in {"plan", "install", "update"}:
@@ -494,7 +508,11 @@ def _main(argv: list[str] | None = None) -> int:
             _write_report(config.output.report, payload)
             _print_payload(payload)
             return 1
-        dependency_info = ensure_dependencies(root, mode=config.dependency_mode) if config.dependency_mode != "prompt-only" else None
+        dependency_info = (
+            ensure_dependencies(root, mode=config.dependency_mode, data_root=_localsetup_home(home))
+            if config.dependency_mode != "prompt-only"
+            else None
+        )
         result = apply_plan(root, plan, home=home, dry_run=False, dependency_info=dependency_info, target_root=target_root)
         if dependency_info:
             result["dependencies"] = dependency_info
@@ -651,13 +669,14 @@ def _main(argv: list[str] | None = None) -> int:
         if args.harness_topic == "repo-finalizer":
             target_root = _harness_target(args)
             if args.harness_action == "plan":
-                payload = repo_finalizer_plan(root, target_root)
+                payload = repo_finalizer_plan(root, target_root, mode=getattr(args, "mode", None))
             elif args.harness_action == "status":
-                payload = repo_finalizer_status(root, target_root)
+                payload = repo_finalizer_status(root, target_root, mode=getattr(args, "mode", None))
             elif args.harness_action == "run":
                 payload = repo_finalizer_run(
                     root,
                     target_root,
+                    mode=getattr(args, "mode", None),
                     no_commit=args.no_commit,
                     checkpoint=args.checkpoint,
                     message=args.message,
@@ -700,7 +719,17 @@ def _main(argv: list[str] | None = None) -> int:
     if args.cmd == "context-index":
         tool = root / "_localsetup" / "tools" / "context_index.py"
         target_root = Path(getattr(args, "target_directory", None) or root).expanduser().resolve()
-        command = [sys.executable, str(tool), "--repo", str(target_root), "--home", str(home), *args.context_index_args]
+        command = [
+            sys.executable,
+            str(tool),
+            "--repo",
+            str(target_root),
+            "--source-root",
+            str(root),
+            "--home",
+            str(home),
+            *args.context_index_args,
+        ]
         return subprocess.run(command, cwd=target_root).returncode
 
     if args.cmd == "catalog":
@@ -780,6 +809,12 @@ def _main(argv: list[str] | None = None) -> int:
     if args.cmd == "scan-migration":
         print(json.dumps({"findings": scan_legacy_references(root)}, indent=2))
         return 0
+
+    if args.cmd == "audit-global-first":
+        target_root = Path(getattr(args, "target_directory", None)).expanduser().resolve() if getattr(args, "target_directory", None) else None
+        payload = audit_global_first(root, home=home, target_root=target_root)
+        _print_payload(payload)
+        return 0 if payload["ok"] else 1
 
     if args.cmd == "hook-gate":
         result = run_maintainer_gate(root, Path(args.out), runner=args.runner)

@@ -133,14 +133,14 @@ When you discover something valuable:
 - lib/data_paths.sh  - Path resolution
 - lib/json_formatter.sh  - JSON formatting
 - tools/verify_rules  - Rule/checkpoint verification
-- tests/automated_test.sh  - Test suite
+- localsetup verify --level filesystem  - Verify installed adapters and managed packages
 - discovery/core/os_detector.py  - OS detection
 
 ## Quick commands (run from repo root)
 
 ```bash
-./_localsetup/tools/verify_context
-./_localsetup/tests/automated_test.sh
+localsetup verify --tools kilo
+localsetup context --markdown
 ./_localsetup/discovery/discover
-./_localsetup/tools/update_context
+localsetup doctor
 ```

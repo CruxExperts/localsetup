@@ -12,10 +12,10 @@ The harness is opt-in. It does not run until `config/codex_heartbeat.yaml` has `
 ## Runtime
 
 - Config: `config/codex_heartbeat.yaml`
-- State: `state/codex-heartbeat/`
+- State: `.localsetup/state/codex-heartbeat/`
 - Cron manifest: `cron/manifest.yaml`
 
-Runtime artifacts are local repository state. Keep `state/codex-heartbeat/` ignored and preserve it when investigating interrupted runs.
+Runtime artifacts are local repository state. Keep `.localsetup/state/codex-heartbeat/` ignored and preserve it when investigating interrupted runs.
 
 ## Manual Checks
 

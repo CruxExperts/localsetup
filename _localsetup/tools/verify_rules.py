@@ -41,11 +41,10 @@ def main() -> int:
         print("[WARNING] Git not initialized or not installed")
 
     data_sh = engine_dir / "lib" / "data_paths.sh"
-    data_ps1 = engine_dir / "lib" / "data_paths.ps1"
-    if data_sh.exists() or data_ps1.exists():
-        print("[OK] data_paths (sh or ps1)")
+    if data_sh.exists():
+        print("[OK] data_paths.sh")
     else:
-        print("[FAIL] data_paths.sh / data_paths.ps1 missing")
+        print("[FAIL] data_paths.sh missing")
         return 1
 
     skills_dir = engine_dir / "skills"

@@ -83,7 +83,7 @@ python3 _localsetup/tools/docs_alignment.py --repo-root . check --ci
 Localsetup wrapper:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . docs-align check --ci
+python3 _localsetup/tools/localsetup_v3.py --source-root . docs-align check --ci
 ```
 
 ## Outputs

@@ -92,7 +92,7 @@ def pip_install_args(req: Path) -> list[str]:
 
 
 def managed_venv_path(repo_root: Path, data_root: Path | None = None) -> Path:
-    root = data_root if data_root is not None else repo_root / ".localsetup"
+    root = data_root if data_root is not None else Path.home() / ".local" / "share" / "localsetup"
     return root / "venv"
 
 
@@ -138,7 +138,10 @@ def _installed_distribution_names(python: str | Path | None = None, runner: Runn
         "import importlib.metadata as m, json; "
         "print(json.dumps([d.metadata['Name'] for d in m.distributions()]))"
     )
-    result = _run([str(python), "-c", script], runner=runner)
+    try:
+        result = _run([str(python), "-c", script], runner=runner)
+    except OSError:
+        return set()
     if result.returncode != 0:
         return set()
     try:

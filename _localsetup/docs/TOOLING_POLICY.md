@@ -10,10 +10,11 @@ Purpose: define project-wide tooling language and dependency rules.
 ## Core rule
 
 - Python is the primary and only language for framework tooling after installation.
-- Shell and PowerShell are limited to bootstrap and platform entrypoints:
-  - install bootstrap (`install`, `install.ps1`)
+- Shell is limited to bootstrap and tiny platform entrypoints:
+  - install bootstrap (`install`)
   - minimal wrappers/delegation for host compatibility
   - environment orchestration outside framework runtime
+- Native PowerShell wrappers are not active v3 surfaces; use WSL2 plus Bash on Windows.
 
 ## Python runtime target
 

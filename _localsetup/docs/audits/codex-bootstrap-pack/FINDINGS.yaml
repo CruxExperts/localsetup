@@ -115,7 +115,7 @@ findings:
     status: accepted
     approval_required: true
     evidence:
-      - ~/.local/share/agents/skills/localsetup sampled hashes matched current repo.
+      - ~/.local/share/localsetup/packages sampled hashes matched current repo.
       - agent-reports/legacy-inventory.md
     recommendation: Treat runtime mirror updates as approval-gated external writes.
   - id: DOC-001

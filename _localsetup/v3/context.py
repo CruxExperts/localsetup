@@ -38,11 +38,11 @@ def build_agent_context(repo_root: Path, *, home: Path, config: InstallConfig) -
     migration_artifacts = detect_legacy_artifacts(repo_root, home=home, platform_ids=config.platforms, target_root=target_root)
 
     commands = {
-        "doctor": "python3 _localsetup/tools/localsetup_v3.py doctor",
-        "plan": "python3 _localsetup/tools/localsetup_v3.py plan",
-        "install": "python3 _localsetup/tools/localsetup_v3.py install --apply",
-        "verify": "python3 _localsetup/tools/localsetup_v3.py verify",
-        "rollback": "python3 _localsetup/tools/localsetup_v3.py rollback",
+        "doctor": "localsetup doctor",
+        "plan": "localsetup plan",
+        "install": "localsetup install --yes",
+        "verify": "localsetup verify",
+        "rollback": "localsetup rollback",
     }
     suffix_parts: list[str] = []
     if config.target_directory:

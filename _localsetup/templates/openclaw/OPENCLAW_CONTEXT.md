@@ -93,9 +93,10 @@ Load when task matches:
 - **Batch / long-running:** prompt once at start with options: auto-pick for whole job, parcel-by-parcel prompts, or parcel auto-pick. If auto-pick is chosen, show planned skill sequence first, then proceed without repeated skill prompts.
 - Keep this section short. Full behavior lives in `ls-task-skill-matcher` and [TASK_SKILL_MATCHING.md](../../docs/TASK_SKILL_MATCHING.md).
 
-## Commands (repo root)
-./_localsetup/tools/verify_context
-./_localsetup/tests/automated_test.sh
+## Commands
+localsetup doctor
+localsetup verify --level filesystem
+localsetup context --markdown
 
 ## Memory
 

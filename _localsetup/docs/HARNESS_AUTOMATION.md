@@ -7,7 +7,7 @@ version: 3.8
 
 Localsetup's harness pack provides opt-in automation scaffolding for target repositories. The shipped harness profiles are Codex heartbeat and repo-finalizer.
 
-The important boundary is simple: selecting or installing the `harness` pack only installs the capability. It does not create `HEARTBEAT.md`, write `config/codex_heartbeat.yaml`, edit `cron/manifest.yaml`, create `state/codex-heartbeat/`, or schedule autonomous work. A target repo is activated only through explicit harness commands.
+The important boundary is simple: selecting or installing the `harness` pack only installs the capability. It does not create `HEARTBEAT.md`, write `config/codex_heartbeat.yaml`, edit `cron/manifest.yaml`, create `.localsetup/state/codex-heartbeat/`, or schedule autonomous work. A target repo is activated only through explicit harness commands.
 
 ## Install the harness capability
 
@@ -104,8 +104,8 @@ Policy defaults come from built-in settings. If present, `config/localsetup_fina
 `run` writes the latest JSON and text reports under the repo-local ignored state directory:
 
 ```text
-state/repo-finalizer/latest.json
-state/repo-finalizer/latest.md
+.localsetup/state/repo-finalizer/latest.json
+.localsetup/state/repo-finalizer/latest.md
 ```
 
 When only runtime-ignored finalizer state is present, status reports `clean_except_ignored` instead of blocking cleanup.
@@ -115,7 +115,7 @@ When only runtime-ignored finalizer state is present, status reports `clean_exce
 Runtime state stays in the target repo under:
 
 ```text
-state/codex-heartbeat/
+.localsetup/state/codex-heartbeat/
 ```
 
 Each run starts under `runs/<run-id>.staged`. The harness writes `manifest.json`, `heartbeat-result.json`, and `command-log.json`, validates artifact hashes, then atomically promotes the staged directory to `runs/<run-id>`. A run is not successful until that validation and promotion finish.
@@ -141,7 +141,7 @@ Codex execution is additionally constrained by the configured agent profile, lau
 Cron entries use the registered Localsetup source checkout through the Localsetup Python launcher, for example:
 
 ```text
-python3 /path/to/localsetup/_localsetup/tools/localsetup_v3.py --repo /path/to/localsetup --target-directory /path/to/target harness codex-heartbeat run --no-agent
+python3 /path/to/localsetup/_localsetup/tools/localsetup_v3.py --source-root /path/to/localsetup --target-directory /path/to/target harness codex-heartbeat run --no-agent
 ```
 
 The command does not hard-code `_localsetup/skills/...` inside the target repo.

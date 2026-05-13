@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 
 import _localsetup.v3.apply as apply_mod
+import _localsetup.v3.conversion as conversion_mod
 import _localsetup.v3.wizard as wizard
 from _localsetup.v3.apply import apply_plan
 from _localsetup.v3.boundary import scan_tar_for_leaks
@@ -88,15 +89,15 @@ def test_v3_plan_apply_verify_rollback(tmp_path: Path) -> None:
     assert journal["status"] == "committed"
     assert journal["txid"] == result["transaction"]
     assert not (root / ".localsetup" / "staging" / result["transaction"]).exists()
-    assert not (home / ".local/share/agents/skills/localsetup/.localsetup-staging" / result["transaction"]).exists()
+    assert not (home / ".local/share/localsetup/packages/.localsetup-staging" / result["transaction"]).exists()
     assert any(item["kind"] == "staging_root" for item in journal["touched"])
 
     verify = verify_install(root, home)
     assert verify["ok"] is True
-    assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
-    assert not (home / ".local/share/agents/skills/localsetup/ls-cloudflare-dns").exists()
+    assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
+    assert not (home / ".local/share/localsetup/packages/ls-cloudflare-dns").exists()
     assert verify["adapters"] == []
-    lock = load_json(root / "localsetup.lock.json")
+    lock = load_json(root / ".localsetup/lock.json")
     assert lock["platforms"] == []
     assert lock["adapter_state"] == []
     for rel in (".codex/skills", ".claude/skills", ".cursor/skills", ".kilo/skills", ".opencode/skills", ".openclaw/skills"):
@@ -119,8 +120,8 @@ def test_v3_selected_workflows_install_as_skill_packages(tmp_path: Path) -> None
     assert "ls-linux-patcher" in plan.rollback_metadata["skills"]
 
     result = apply_plan(root, plan, home=home, dry_run=False)
-    lock = load_json(root / "localsetup.lock.json")
-    global_root = home / ".local/share/agents/skills/localsetup"
+    lock = load_json(root / ".localsetup/lock.json")
+    global_root = home / ".local/share/localsetup/packages"
 
     assert result["dry_run"] is False
     assert (global_root / "ls-workflow-ops-tmux-session" / "SKILL.md").is_file()
@@ -195,7 +196,7 @@ def test_v3_external_target_directory_attaches_selected_adapter(tmp_path: Path) 
     plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["cursor"], target_root=target)
     result = apply_plan(root, plan, home=home)
     verify = verify_install(root, home, target_root=target)
-    lock = load_json(target / "localsetup.lock.json")
+    lock = load_json(target / ".localsetup/lock.json")
 
     assert result["dry_run"] is False
     assert (target / ".cursor" / "skills").is_symlink()
@@ -204,7 +205,7 @@ def test_v3_external_target_directory_attaches_selected_adapter(tmp_path: Path) 
     assert {adapter["platform"] for adapter in verify["adapters"]} == {"cursor"}
     assert lock["target_root"] == str(target)
     assert lock["platforms"] == ["cursor"]
-    assert not (root / "localsetup.lock.json").exists()
+    assert not (root / ".localsetup/lock.json").exists()
 
 
 def test_v3_external_target_install_verify_and_context_freshness_smoke(tmp_path: Path) -> None:
@@ -217,7 +218,7 @@ def test_v3_external_target_install_verify_and_context_freshness_smoke(tmp_path:
 
     plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"], target_root=target)
     apply_plan(root, plan, home=home, target_root=target)
-    lock = load_json(target / "localsetup.lock.json")
+    lock = load_json(target / ".localsetup/lock.json")
 
     assert lock["source_root"] == str(root)
     assert verify_install(root, home, platform_ids=["codex"], target_root=target)["ok"] is True
@@ -318,8 +319,8 @@ def test_v3_registry_refs_preserve_shared_packages_until_last_rollback(tmp_path:
     target_two.mkdir()
     apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"], target_root=target_one), home=home, target_root=target_one)
     apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["kilo"], target_root=target_two), home=home, target_root=target_two)
-    managed_skill = home / ".local/share/agents/skills/localsetup/ls-context"
-    registry = load_json(home / ".local/share/agents/skills/localsetup/.localsetup-registry.json")
+    managed_skill = home / ".local/share/localsetup/packages/ls-context"
+    registry = load_json(home / ".local/share/localsetup/registry.json")
     assert registry["version"] == 2
     assert len(registry["packages"]["ls-context"]["refs"]) == 2
 
@@ -346,7 +347,7 @@ def test_v3_detach_removes_adapters_and_preserves_packages(tmp_path: Path) -> No
     payload = json.loads(completed.stdout)
     assert payload["packages_preserved"] is True
     assert not (root / ".codex" / "skills").exists()
-    assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
+    assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
 
 
 def test_v3_phase3_command_family_outputs_json(tmp_path: Path) -> None:
@@ -363,6 +364,7 @@ def test_v3_phase3_command_family_outputs_json(tmp_path: Path) -> None:
         ["workflow", "info", "ls-workflow-audit-framework"],
         ["why", "--packs", "core"],
         ["graph"],
+        ["audit-global-first"],
         ["adopt", "--target-directory", str(target)],
         ["diff", "--tools", "codex"],
     ]
@@ -376,6 +378,40 @@ def test_v3_phase3_command_family_outputs_json(tmp_path: Path) -> None:
         assert completed.returncode == 0, args + [completed.stderr, completed.stdout]
         payload = json.loads(completed.stdout)
         assert isinstance(payload, dict)
+
+
+def test_v3_global_first_audit_reports_target_legacy_surfaces(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "consumer"
+    stale_framework = target / "_localsetup"
+    stale_framework.mkdir(parents=True)
+    (target / "localsetup.lock.json").write_text('{"version": 1}\n', encoding="utf-8")
+    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(tool),
+            "--source-root",
+            str(root),
+            "--home",
+            str(home),
+            "--target-directory",
+            str(target),
+            "audit-global-first",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 1
+    payload = json.loads(completed.stdout)
+    blocker_kinds = {blocker["kind"] for blocker in payload["blockers"]}
+    assert {"stale_framework_source", "legacy_root_lockfile"} <= blocker_kinds
+    assert payload["package_root"].endswith(".local/share/localsetup/packages")
+    assert payload["registry_path"].endswith(".local/share/localsetup/registry.json")
 
 
 def test_v3_policy_blocks_high_risk_skill_in_strict_mode(tmp_path: Path) -> None:
@@ -545,7 +581,7 @@ def test_custom_home_shim_invocation_uses_registered_home(tmp_path: Path) -> Non
     )
 
     assert completed.returncode == 0, completed.stderr
-    assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
+    assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
     assert (target / ".codex" / "skills").is_symlink()
 
 
@@ -616,7 +652,7 @@ def test_global_shim_invocation_installs_at_detected_git_root(tmp_path: Path) ->
     payload = json.loads(completed.stdout)
     assert payload["attachment"]["target_root"] == str(target.resolve())
     assert (target / ".codex" / "skills").is_symlink()
-    assert (target / "localsetup.lock.json").is_file()
+    assert (target / ".localsetup/lock.json").is_file()
     assert not (root / ".codex" / "skills").exists()
 
 
@@ -658,7 +694,7 @@ def test_v3_target_directory_without_selector_is_global_only(tmp_path: Path) -> 
     result = apply_plan(root, plan, home=home, target_root=target)
     verify = verify_install(root, home, target_root=target)
     doctor = run_doctor(root, home=home, platform_ids=None, target_root=target)
-    lock = load_json(target / "localsetup.lock.json")
+    lock = load_json(target / ".localsetup/lock.json")
 
     assert result["dry_run"] is False
     assert verify["ok"] is True
@@ -667,6 +703,63 @@ def test_v3_target_directory_without_selector_is_global_only(tmp_path: Path) -> 
     assert lock["adapter_state"] == []
     assert not (target / ".cursor" / "skills").exists()
     assert any("no platforms were selected" in warning for warning in doctor["warnings"])
+
+
+def test_v3_install_migrates_legacy_root_lockfile(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "legacy-target"
+    target.mkdir()
+    legacy_lock = target / "localsetup.lock.json"
+    legacy_payload = '{"version": 1, "legacy": true}\n'
+    legacy_lock.write_text(legacy_payload, encoding="utf-8")
+
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"], target_root=target)
+    result = apply_plan(root, plan, home=home, target_root=target)
+    verify = verify_install(root, home, target_root=target)
+    lock = load_json(target / ".localsetup" / "lock.json")
+
+    assert result["dry_run"] is False
+    assert verify["ok"] is True
+    assert not legacy_lock.exists()
+    backup = Path(lock["migration_origin"]["backup"])
+    assert backup.is_file()
+    assert backup.read_text(encoding="utf-8") == legacy_payload
+
+
+def test_v3_target_templates_use_global_command_surface() -> None:
+    root = Path(__file__).resolve().parents[2]
+    target_facing_paths = [
+        root / "_localsetup" / "skills" / "ls-context" / "SKILL.md",
+        root / "_localsetup" / "skills" / "ls-context-index" / "SKILL.md",
+        root / "_localsetup" / "skills" / "ls-context-index" / "README.md",
+        root / "_localsetup" / "skills" / "ls-context-index" / "docs" / "agent-usage.md",
+        root / "_localsetup" / "templates" / "claude-code" / "CLAUDE.md",
+        root / "_localsetup" / "templates" / "codex" / "AGENTS.md",
+        root / "_localsetup" / "templates" / "cursor" / "ls-context.mdc",
+        root / "_localsetup" / "templates" / "kilo" / "AGENTS.md",
+        root / "_localsetup" / "templates" / "kilo" / "instructions.md",
+        root / "_localsetup" / "templates" / "openclaw" / "OPENCLAW_CONTEXT.md",
+        root / "_localsetup" / "templates" / "opencode" / "AGENTS.md",
+    ]
+    forbidden = [
+        "./_localsetup/tools",
+        "./_localsetup/tests",
+        "python3 _localsetup/tools/localsetup_v3.py",
+        "install.ps1",
+        "verify_context.ps1",
+        "verify_rules.ps1",
+        "skill_importer_scan.ps1",
+    ]
+
+    offenders: list[str] = []
+    for path in target_facing_paths:
+        text = path.read_text(encoding="utf-8")
+        for needle in forbidden:
+            if needle in text:
+                offenders.append(f"{path.relative_to(root)}: {needle}")
+
+    assert offenders == []
 
 
 def test_v3_preserves_existing_platform_config_when_attaching_skills(tmp_path: Path) -> None:
@@ -810,19 +903,19 @@ def test_v3_managed_venv_commands_and_lock_interpreter(tmp_path: Path) -> None:
             python_path.write_text("# fake python\n", encoding="utf-8")
         return subprocess.CompletedProcess(cmd, 0, stdout="ok\n", stderr="")
 
-    deps = ensure_dependencies(root, mode="managed-venv", runner=fake_runner)
+    deps = ensure_dependencies(root, mode="managed-venv", data_root=home / ".local/share/localsetup", runner=fake_runner)
     plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"])
     result = apply_plan(root, plan, home=home, dependency_info=deps)
-    lock = load_json(root / "localsetup.lock.json")
+    lock = load_json(root / ".localsetup/lock.json")
 
     assert any(cmd[1:3] == ["-m", "venv"] for cmd in commands)
     assert any(cmd[2:4] == ["pip", "install"] and "--require-hashes" in cmd and "--only-binary" in cmd for cmd in commands)
     assert any(cmd[-2:] == ["pip", "check"] for cmd in commands)
-    assert deps["interpreter"].endswith(".localsetup/venv/bin/python")
+    assert deps["interpreter"].endswith(".local/share/localsetup/venv/bin/python")
     assert deps["lock"]["hash_mode"] is True
     assert lock["python_interpreter"] == deps["interpreter"]
     assert lock["dependency_state"]["hash_mode"] is True
-    assert result["lockfile"].endswith("localsetup.lock.json")
+    assert result["lockfile"].endswith(".localsetup/lock.json")
 
 
 def test_v3_missing_requirements_checks_selected_interpreter(tmp_path: Path) -> None:
@@ -883,7 +976,8 @@ def test_v3_agent_context_and_markdown_report(tmp_path: Path) -> None:
     assert context["selected_platforms"] == ["codex"]
     assert context["selected_packs"] == ["core"]
     assert "# Localsetup v3 Install Context" in markdown
-    assert "python3 _localsetup/tools/localsetup_v3.py verify --platforms codex" in markdown
+    assert "localsetup verify --platforms codex" in markdown
+    assert "python3 _localsetup/tools/localsetup_v3.py verify" not in markdown
 
 
 def test_v3_cli_doctor_target_warning_requires_explicit_target(tmp_path: Path) -> None:
@@ -988,7 +1082,7 @@ def test_v3_self_refresh_defaults_to_all_packs_and_existing_repo_adapters(tmp_pa
     home.mkdir(parents=True, exist_ok=True)
     tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
 
-    existing_global = home / ".local" / "share" / "agents" / "skills" / "localsetup"
+    existing_global = home / ".local" / "share" / "localsetup" / "packages"
     existing_global.mkdir(parents=True, exist_ok=True)
     (root / ".codex").mkdir(parents=True, exist_ok=True)
     (root / ".codex" / "skills").symlink_to(existing_global, target_is_directory=True)
@@ -1019,7 +1113,7 @@ def test_v3_self_refresh_defaults_to_all_packs_and_existing_repo_adapters(tmp_pa
     assert payload["ok"] is True
     assert payload["selected"]["platforms"] == ["codex"]
     assert "integrations" in payload["selected"]["packs"]
-    assert (home / ".local/share/agents/skills/localsetup/ls-cloudflare-dns").is_dir()
+    assert (home / ".local/share/localsetup/packages/ls-cloudflare-dns").is_dir()
     assert (root / ".codex" / "skills").is_symlink()
     assert payload["verify"]["adapters"][0]["points_to_global"] is True
     assert (root / ".cursor" / "skills").resolve() == external_global
@@ -1267,7 +1361,7 @@ def test_root_installer_forwards_custom_home(tmp_path: Path) -> None:
     )
 
     assert completed.returncode == 0, completed.stderr
-    assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
+    assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
     assert (root / ".codex" / "skills").is_symlink()
     assert (home / ".local" / "bin" / "localsetup").is_file()
 
@@ -1301,9 +1395,9 @@ def test_root_installer_supports_target_directory(tmp_path: Path) -> None:
     )
 
     assert completed.returncode == 0, completed.stderr
-    assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
+    assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
     assert (target / ".cursor" / "skills").is_symlink()
-    assert (target / "localsetup.lock.json").is_file()
+    assert (target / ".localsetup/lock.json").is_file()
     assert (home / ".local" / "bin" / "localsetup").is_file()
     assert not (root / ".cursor" / "skills").exists()
 
@@ -1332,7 +1426,7 @@ def test_root_installer_non_interactive_no_register_shell_skips_shim(tmp_path: P
     )
 
     assert completed.returncode == 0, completed.stderr
-    assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
+    assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
     assert not (home / ".local" / "bin" / "localsetup").exists()
 
 
@@ -1590,10 +1684,10 @@ def test_root_installer_piped_bootstrap_global_only_uses_managed_source(tmp_path
 
     assert completed.returncode == 0, completed.stderr.decode()
     assert (managed_source / "_localsetup/tools/localsetup_v3.py").is_file()
-    assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
+    assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
     assert (home / ".local/bin/localsetup").is_file()
     assert not (outside / ".codex").exists()
-    assert not (outside / "localsetup.lock.json").exists()
+    assert not (outside / ".localsetup/lock.json").exists()
 
 
 def test_root_installer_refreshes_clean_stale_managed_source_before_wizard(tmp_path: Path) -> None:
@@ -1664,7 +1758,7 @@ def test_root_installer_refreshes_clean_stale_managed_source_before_non_interact
     ).stdout.strip()
     assert completed.returncode == 0, completed.stderr
     assert refreshed == current_commit
-    assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
+    assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
 
 
 def test_root_installer_dirty_managed_source_fails_before_refresh(tmp_path: Path) -> None:
@@ -1807,9 +1901,9 @@ def test_root_installer_piped_bootstrap_selected_platform_attaches_caller_target
         )
 
     assert completed.returncode == 0, completed.stderr.decode()
-    assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
+    assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
     assert (target / ".codex" / "skills").is_symlink()
-    assert (target / "localsetup.lock.json").is_file()
+    assert (target / ".localsetup/lock.json").is_file()
     assert not (managed_source / ".codex").exists()
 
 
@@ -1880,7 +1974,7 @@ def test_root_installer_explicit_directory_ignores_managed_source_refresh(tmp_pa
     assert completed.returncode == 0, completed.stderr
     assert (managed_source / "not-git.txt").read_text(encoding="utf-8") == "ignored\n"
     assert not (managed_source / ".git").exists()
-    assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
+    assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
 
 
 def test_root_installer_interactive_preserves_explicit_target_and_no_register_shell(tmp_path: Path) -> None:
@@ -1911,7 +2005,7 @@ def test_root_installer_interactive_preserves_explicit_target_and_no_register_sh
 
     assert completed.returncode == 0, completed.stderr + completed.stdout
     assert (target / ".cursor" / "skills").is_symlink()
-    assert (target / "localsetup.lock.json").is_file()
+    assert (target / ".localsetup/lock.json").is_file()
     assert not (root / ".cursor" / "skills").exists()
     assert not (home / ".local" / "bin" / "localsetup").exists()
 
@@ -1973,8 +2067,8 @@ def test_root_installer_interactive_explicit_target_without_platforms_stays_glob
     )
 
     assert completed.returncode == 0, completed.stderr + completed.stdout
-    assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
-    assert (target / "localsetup.lock.json").is_file()
+    assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
+    assert (target / ".localsetup/lock.json").is_file()
     assert not (target / ".codex").exists()
     assert not (target / ".cursor").exists()
 
@@ -2320,7 +2414,7 @@ def test_wizard_cancel_exits_without_applying(tmp_path: Path) -> None:
     code = run_wizard(repo_root=root, home=home, terminal=term)
 
     assert code == 130
-    assert not (home / ".local/share/agents/skills/localsetup").exists()
+    assert not (home / ".local/share/localsetup/packages").exists()
 
 
 def test_wizard_keyboard_interrupt_before_apply_exits_without_applying(tmp_path: Path) -> None:
@@ -2337,7 +2431,7 @@ def test_wizard_keyboard_interrupt_before_apply_exits_without_applying(tmp_path:
 
     assert code == 130
     assert "Install canceled. No changes were applied." in output.getvalue()
-    assert not (home / ".local/share/agents/skills/localsetup").exists()
+    assert not (home / ".local/share/localsetup/packages").exists()
 
 
 def test_wizard_keyboard_interrupt_during_apply_warns_partial_state(
@@ -2381,7 +2475,7 @@ def test_wizard_global_only_apply_with_scripted_confirmation(tmp_path: Path) -> 
     code = run_wizard(repo_root=root, home=home, terminal=term, register_shell=False)
 
     assert code == 0
-    assert (home / ".local/share/agents/skills/localsetup/ls-context").is_dir()
+    assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
     assert not (root / ".codex").exists()
 
 
@@ -2413,7 +2507,7 @@ def test_wizard_explicit_target_is_default_when_provided(tmp_path: Path) -> None
 
     assert code == 0
     assert (target / ".cursor" / "skills").is_symlink()
-    assert (target / "localsetup.lock.json").is_file()
+    assert (target / ".localsetup/lock.json").is_file()
     assert not (caller / ".cursor").exists()
 
 
@@ -2443,7 +2537,7 @@ def test_wizard_explicit_target_without_platforms_defaults_global_only(tmp_path:
     )
 
     assert code == 0
-    assert (target / "localsetup.lock.json").is_file()
+    assert (target / ".localsetup/lock.json").is_file()
     assert not (target / ".codex").exists()
     assert not (caller / ".codex").exists()
 
@@ -2454,7 +2548,7 @@ def test_v3_migration_scanner_and_hook_gate(tmp_path: Path) -> None:
     runtime_note = root / ".codex" / "runs" / "20260512-note.md"
     runtime_note.parent.mkdir(parents=True)
     runtime_note.write_text("Use localsetup-context in runtime notes only.\n", encoding="utf-8")
-    heartbeat_note = root / "state" / "codex-heartbeat" / "latest.json"
+    heartbeat_note = root / ".localsetup" / "state" / "codex-heartbeat" / "latest.json"
     heartbeat_note.parent.mkdir(parents=True)
     heartbeat_note.write_text('{"note": "Use localsetup-context in runtime state only."}\n', encoding="utf-8")
 
@@ -2462,7 +2556,7 @@ def test_v3_migration_scanner_and_hook_gate(tmp_path: Path) -> None:
     paths = {finding["path"] for finding in findings}
     assert "README.md" in paths
     assert ".codex/runs/20260512-note.md" not in paths
-    assert "state/codex-heartbeat/latest.json" not in paths
+    assert ".localsetup/state/codex-heartbeat/latest.json" not in paths
 
     gate = run_maintainer_gate(root, tmp_path / "artifact.tar.gz")
     assert gate["ok"] is True
@@ -2472,7 +2566,7 @@ def test_v3_migration_scanner_and_hook_gate(tmp_path: Path) -> None:
 def test_v3_conservative_migration_renames_managed_legacy_global_skill(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
-    legacy = home / ".local/share/agents/skills/localsetup/localsetup-context"
+    legacy = home / ".local/share/localsetup/packages/localsetup-context"
     legacy.mkdir(parents=True)
     (legacy / ".localsetup-managed").write_text("source=localsetup-context\n", encoding="utf-8")
     (legacy / "SKILL.md").write_text("---\nname: localsetup-context\n---\n", encoding="utf-8")
@@ -2483,7 +2577,7 @@ def test_v3_conservative_migration_renames_managed_legacy_global_skill(tmp_path:
     assert any(item["kind"] == "legacy_global_skill" for item in artifacts)
     assert report["ok"] is True
     assert not legacy.exists()
-    assert (home / ".local/share/agents/skills/localsetup/ls-context/.localsetup-managed").exists()
+    assert (home / ".local/share/localsetup/packages/ls-context/.localsetup-managed").exists()
     assert (tmp_path / "backup" / "migration-report.json").exists()
 
 
@@ -2513,7 +2607,7 @@ def test_v3_convert_blocks_unmanaged_adapter_content(tmp_path: Path) -> None:
 
     assert report["ok"] is False
     assert any(blocker["kind"] == "adapter_collision" for blocker in report["blockers"])
-    assert not (target / "localsetup.lock.json").exists()
+    assert not (target / ".localsetup/lock.json").exists()
 
 
 def test_v3_convert_archives_old_framework_and_installs_at_target(tmp_path: Path) -> None:
@@ -2538,13 +2632,13 @@ def test_v3_convert_archives_old_framework_and_installs_at_target(tmp_path: Path
     assert report["ok"] is True
     assert report["applied"] is True
     assert (tmp_path / "backup" / "repo" / "_localsetup" / "OLD.txt").is_file()
-    assert (target / "_localsetup" / "v3" / "cli.py").is_file()
+    assert not (target / "_localsetup").exists()
     assert (target / ".codex" / "skills").is_symlink()
-    assert (target / "localsetup.lock.json").is_file()
+    assert (target / ".localsetup/lock.json").is_file()
     assert report["verify"]["ok"] is True
 
 
-def test_v3_convert_framework_sync_excludes_private_runtime_data(tmp_path: Path) -> None:
+def test_v3_convert_does_not_copy_framework_source(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "target"
@@ -2560,9 +2654,44 @@ def test_v3_convert_framework_sync_excludes_private_runtime_data(tmp_path: Path)
     report = convert_repo(root, home=home, platform_ids=["codex"], target_root=target, apply=True)
 
     assert report["ok"] is True
-    assert not (target / "_localsetup" / "docs" / "local-context").exists()
-    assert not (target / "_localsetup" / "skills" / "ls-context" / "scripts" / "data").exists()
-    assert not (target / "_localsetup" / "workflows" / "ls-workflow-pipeline-repo-convert" / "scripts" / "data").exists()
+    assert report["framework_source"]["copied"] is False
+    assert not (target / "_localsetup").exists()
+
+
+def test_v3_convert_managed_venv_uses_configured_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "custom-home"
+    target = tmp_path / "target"
+    commands: list[list[str]] = []
+
+    def fake_runner(cmd: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        commands.append(cmd)
+        if cmd[1:3] == ["-m", "venv"]:
+            python_path = Path(cmd[3]) / "bin" / "python"
+            python_path.parent.mkdir(parents=True, exist_ok=True)
+            python_path.write_text("# fake python\n", encoding="utf-8")
+        return subprocess.CompletedProcess(cmd, 0, stdout="ok\n", stderr="")
+
+    def fake_ensure_dependencies(repo_root: Path, *, mode: str, data_root: Path | None = None, runner: object | None = None) -> dict:
+        return ensure_dependencies(repo_root, mode=mode, data_root=data_root, runner=fake_runner)
+
+    monkeypatch.setattr(conversion_mod, "ensure_dependencies", fake_ensure_dependencies)
+
+    report = convert_repo(
+        root,
+        home=home,
+        packs=["core"],
+        platform_ids=["codex"],
+        target_root=target,
+        dependency_mode="managed-venv",
+        apply=True,
+    )
+
+    interpreter = report["install"]["dependencies"]["interpreter"]
+    assert report["ok"] is True
+    assert any(cmd[1:3] == ["-m", "venv"] for cmd in commands)
+    assert interpreter.endswith(".local/share/localsetup/venv/bin/python")
+    assert str(home) in interpreter
 
 
 def test_v3_convert_late_migration_blocker_does_not_remove_target_framework(tmp_path: Path) -> None:
@@ -2572,10 +2701,10 @@ def test_v3_convert_late_migration_blocker_does_not_remove_target_framework(tmp_
     old_framework = target / "_localsetup"
     old_framework.mkdir(parents=True)
     (old_framework / "OLD.txt").write_text("legacy\n", encoding="utf-8")
-    legacy = home / ".local/share/agents/skills/localsetup/localsetup-context"
+    legacy = home / ".local/share/localsetup/packages/localsetup-context"
     legacy.mkdir(parents=True)
     (legacy / ".localsetup-managed").write_text("source=localsetup-context\n", encoding="utf-8")
-    collision = home / ".local/share/agents/skills/localsetup/ls-context"
+    collision = home / ".local/share/localsetup/packages/ls-context"
     collision.mkdir(parents=True)
     (collision / "SKILL.md").write_text("unmanaged\n", encoding="utf-8")
 
@@ -2603,7 +2732,7 @@ def test_v3_hook_gate_accepts_mock_runner(tmp_path: Path) -> None:
 def test_v3_refuses_unmanaged_skill_collision(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
-    collision = home / ".local/share/agents/skills/localsetup/ls-context"
+    collision = home / ".local/share/localsetup/packages/ls-context"
     collision.mkdir(parents=True)
     (collision / "SKILL.md").write_text("unmanaged\n", encoding="utf-8")
 
@@ -2647,7 +2776,7 @@ def test_v3_failed_package_promotion_restores_existing_managed_package(tmp_path:
     home = tmp_path / "home"
     plan = build_install_plan(root, home=home, packs=["core"])
     apply_plan(root, plan, home=home, dry_run=False)
-    installed = home / ".local/share/agents/skills/localsetup/ls-context"
+    installed = home / ".local/share/localsetup/packages/ls-context"
     original_skill_md = installed / "SKILL.md"
     original_text = original_skill_md.read_text(encoding="utf-8")
     original_replace = apply_mod._same_filesystem_replace
@@ -2664,7 +2793,7 @@ def test_v3_failed_package_promotion_restores_existing_managed_package(tmp_path:
 
     assert installed.is_dir()
     assert original_skill_md.read_text(encoding="utf-8") == original_text
-    assert not list((home / ".local/share/agents/skills/localsetup").glob(".ls-context.localsetup-backup-*"))
+    assert not list((home / ".local/share/localsetup/packages").glob(".ls-context.localsetup-backup-*"))
     journals = sorted((root / ".localsetup" / "install-journal").glob("*.json"))
     assert load_json(journals[-1])["status"] == "failed"
 
@@ -2674,9 +2803,9 @@ def test_v3_failed_late_commit_restores_packages_and_registry(tmp_path: Path, mo
     home = tmp_path / "home"
     plan = build_install_plan(root, home=home, packs=["core"])
     apply_plan(root, plan, home=home, dry_run=False)
-    installed = home / ".local/share/agents/skills/localsetup/ls-context"
+    installed = home / ".local/share/localsetup/packages/ls-context"
     original_text = (installed / "SKILL.md").read_text(encoding="utf-8")
-    registry_path = home / ".local/share/agents/skills/localsetup/.localsetup-registry.json"
+    registry_path = home / ".local/share/localsetup/registry.json"
     original_registry = registry_path.read_text(encoding="utf-8")
     (root / "_localsetup" / "skills" / "ls-context" / "SKILL.md").write_text(
         "---\nname: ls-context\ndescription: Changed.\n---\nchanged\n",
@@ -2685,7 +2814,7 @@ def test_v3_failed_late_commit_restores_packages_and_registry(tmp_path: Path, mo
     original_save_json = apply_mod.save_json
 
     def fail_lock_save(path: Path, payload: dict) -> None:
-        if path.name == "localsetup.lock.json":
+        if path.name == "lock.json" and path.parent.name == ".localsetup":
             raise OSError("simulated lockfile failure")
         original_save_json(path, payload)
 
@@ -2732,7 +2861,8 @@ def test_rollback_refuses_managed_marker_outside_global_root(tmp_path: Path) -> 
     outside = tmp_path / "outside-managed"
     outside.mkdir()
     (outside / ".localsetup-managed").write_text("source=bad\n", encoding="utf-8")
-    (root / "localsetup.lock.json").write_text(
+    (root / ".localsetup").mkdir()
+    (root / ".localsetup/lock.json").write_text(
         f"""{{
   "platforms": [],
   "installed_skills": ["{outside}"]

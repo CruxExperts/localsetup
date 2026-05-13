@@ -95,9 +95,9 @@ Path values in `required_docs` and `required_tools` must be repo-relative, must 
 Run these commands after editing workflow packages:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
+python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
 python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .
-python3 _localsetup/tools/localsetup_v3.py --repo . generate-docs
+python3 _localsetup/tools/localsetup_v3.py --source-root . generate-docs
 ```
 
 Validation covers both skills and workflow packages. Generation refreshes the workflow registry, quick reference, generated workflow catalog, pack map, facts, migration maps, platform adapter docs, and implementation file map.

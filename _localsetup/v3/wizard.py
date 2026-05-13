@@ -937,7 +937,7 @@ def _review_step(term: TerminalWizard, state: WizardState) -> str:
             str(state.repo_root / "_localsetup/tools/localsetup_v3.py"),
             "--home",
             str(state.home),
-            "--repo",
+            "--source-root",
             str(state.repo_root),
         ]
         if target_root:
@@ -957,7 +957,11 @@ def _apply_and_show_result(term: TerminalWizard, state: WizardState) -> int:
     packs = state.packs or ["core"]
     try:
         dependency_info = (
-            ensure_dependencies(state.repo_root, mode=state.dependency_mode)
+            ensure_dependencies(
+                state.repo_root,
+                mode=state.dependency_mode,
+                data_root=state.home / ".local" / "share" / "localsetup",
+            )
             if state.dependency_mode != "prompt-only"
             else None
         )
@@ -988,7 +992,7 @@ def _apply_and_show_result(term: TerminalWizard, state: WizardState) -> int:
                 str(state.repo_root / "_localsetup/tools/localsetup_v3.py"),
                 "--home",
                 str(state.home),
-                "--repo",
+                "--source-root",
                 str(state.repo_root),
                 "doctor",
             ]

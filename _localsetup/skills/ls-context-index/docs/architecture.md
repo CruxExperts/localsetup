@@ -14,7 +14,7 @@ inventory -> freshness -> chunking -> embedding -> SQLite upsert
 The implementation lives in `_localsetup/tools/context_index.py`. The top-level command wrapper is:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . context-index ...
+localsetup context-index ...
 ```
 
 ## Storage

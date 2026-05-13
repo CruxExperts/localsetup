@@ -34,10 +34,11 @@ pack_id: localsetup
 namespace: ls
 version: 3
 global:
-  root: ~/.local/share/agents/skills/localsetup
-  registry: ~/.local/share/agents/skills/localsetup/.localsetup-registry.json
+  home: ~/.local/share/localsetup
+  package_root: ~/.local/share/localsetup/packages
+  registry: ~/.local/share/localsetup/registry.json
 repo:
-  lockfile: localsetup.lock.json
+  lockfile: .localsetup/lock.json
 packs:
   core:
     - ls-context
@@ -84,7 +85,7 @@ def test_pack_manifest_loads() -> None:
     pack = load_pack_config(root)
     assert pack.pack_id == "localsetup"
     assert pack.namespace == "ls"
-    assert pack.lockfile == "localsetup.lock.json"
+    assert pack.lockfile == ".localsetup/lock.json"
     assert "core" in pack.packs
     assert "experimental" in pack.packs
 
@@ -388,10 +389,11 @@ pack_id: localsetup
 namespace: ls
 version: 3
 global:
-  root: ~/.local/share/agents/skills/localsetup
-  registry: ~/.local/share/agents/skills/localsetup/.localsetup-registry.json
+  home: ~/.local/share/localsetup
+  package_root: ~/.local/share/localsetup/packages
+  registry: ~/.local/share/localsetup/registry.json
 repo:
-  lockfile: localsetup.lock.json
+  lockfile: .localsetup/lock.json
 packs: {}
 public_private:
   public_paths:
@@ -426,10 +428,11 @@ pack_id: localsetup
 namespace: ls
 version: 3
 global:
-  root: ~/.local/share/agents/skills/localsetup
-  registry: ~/.local/share/agents/skills/localsetup/.localsetup-registry.json
+  home: ~/.local/share/localsetup
+  package_root: ~/.local/share/localsetup/packages
+  registry: ~/.local/share/localsetup/registry.json
 repo:
-  lockfile: localsetup.lock.json
+  lockfile: .localsetup/lock.json
 packs: {{}}
 public_private:
   public_paths:

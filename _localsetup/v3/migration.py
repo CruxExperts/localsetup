@@ -17,6 +17,8 @@ RUNTIME_SKIP_PREFIXES = {
     (".codex", "runs"),
     ("state", "codex-heartbeat"),
     ("state", "repo-finalizer"),
+    (".localsetup", "state", "codex-heartbeat"),
+    (".localsetup", "state", "repo-finalizer"),
 }
 
 

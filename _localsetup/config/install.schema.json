@@ -28,7 +28,7 @@
     "target_directory": {
       "type": "string",
       "minLength": 1,
-      "description": "Directory where repo adapter links and localsetup.lock.json are written. Defaults to the source repo."
+      "description": "Directory where repo adapter links and .localsetup/lock.json are written. Defaults to the detected target."
     },
     "data_root": {
       "type": "string",

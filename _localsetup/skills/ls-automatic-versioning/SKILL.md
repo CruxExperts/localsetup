@@ -24,9 +24,9 @@ metadata:
 
 ## In this repo (public framework)
 
-Version bump and doc sync are performed by deterministic repo tooling. Use `python3 _localsetup/tools/localsetup_v3.py --repo . release-push` for normal release pushes. Raw `git push` is guarded: if a sync commit is needed, `.githooks/pre-push` creates it and stops the stale push so the next push sends the correct commit.
+Version bump and doc sync are performed by deterministic repo tooling. Use `python3 _localsetup/tools/localsetup_v3.py --source-root . release-push` for normal release pushes. Raw `git push` is guarded: if a sync commit is needed, `.githooks/pre-push` creates it and stops the stale push so the next push sends the correct commit.
 
-For read-only release preflight, run `python3 _localsetup/tools/localsetup_v3.py --repo . version-plan` and `python3 _localsetup/tools/localsetup_v3.py --repo . version-sync --check --target "$(cat VERSION)"`.
+For read-only release preflight, run `python3 _localsetup/tools/localsetup_v3.py --source-root . version-plan` and `python3 _localsetup/tools/localsetup_v3.py --source-root . version-sync --check --target "$(cat VERSION)"`.
 
 ## Reference
 

@@ -13,14 +13,15 @@ Run these before a maintainer release or broad automation change:
 
 ```bash
 git status --short --branch
-python3 _localsetup/tools/localsetup_v3.py --repo . version-plan
-python3 _localsetup/tools/localsetup_v3.py --repo . version-sync --check --target "$(cat VERSION)"
+python3 _localsetup/tools/localsetup_v3.py --source-root . version-plan
+python3 _localsetup/tools/localsetup_v3.py --source-root . version-sync --check --target "$(cat VERSION)"
 ./_localsetup/tools/verify_context
 ./_localsetup/tools/verify_rules
-python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
-python3 _localsetup/tools/localsetup_v3.py --repo . scan-migration
+python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
+python3 _localsetup/tools/localsetup_v3.py --source-root . scan-migration
+python3 _localsetup/tools/localsetup_v3.py --source-root . audit-global-first
 python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .
-python3 _localsetup/tools/localsetup_v3.py --repo . generate-docs
+python3 _localsetup/tools/localsetup_v3.py --source-root . generate-docs
 python3 _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-v3-framework-audit.md
 python3 -m pytest _localsetup/tests -q
 ./_localsetup/tests/automated_test.sh
@@ -32,7 +33,7 @@ git diff --check
 Run this after changing shipped skills, workflow packages, platform adapters, or repo agent context when this machine should immediately use the current checkout:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . self-refresh --dependency-mode prompt-only
+python3 _localsetup/tools/localsetup_v3.py --source-root . self-refresh --dependency-mode prompt-only
 ```
 
 The command installs every configured pack from this checkout into the managed Localsetup library and refreshes only adapter paths that are already attached in the target repo. It is maintenance tooling for local machine state, not a release or publish step.
@@ -110,7 +111,7 @@ The triage workflow bootstraps these labels. Run the workflow manually once befo
 `VERSION` is the source of truth. Use [`VERSIONING.md`](VERSIONING.md) for the policy and command flow. Version sync should be produced locally before push through the hook or:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . release-push
+python3 _localsetup/tools/localsetup_v3.py --source-root . release-push
 ```
 
 Do not publish a release from a dirty worktree. If a tag already exists at a different commit, stop and resolve the remote release state before retrying.

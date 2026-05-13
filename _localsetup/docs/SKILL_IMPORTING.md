@@ -18,7 +18,7 @@ version: 3.8
 When the source is **pasted content** (e.g. user pastes SKILL.md into chat) or a **URL to a single document** (not a repo), the agent must **never write directly to the final skill location**. Use this flow:
 
 1. **Write to a temporary directory**  - Create a unique temp dir (e.g. `mktemp -d` or equivalent). Write the pasted or fetched content as `SKILL.md` (and any scripts/assets if present) into that dir.
-2. **Run validation on that path**  - Run the scan tool against the temporary parent directory with `_localsetup/tools/skill_importer_scan <temp-parent>`. If you need content-safety references for one specific candidate, run `_localsetup/tools/skill_validation_scan.py --scan-root <temp-parent> <tempdir>`. Validation is always path-based; do not pass skill content through the shell or on stdin.
+2. **Run validation on that path**  - From the Localsetup source checkout, run the scan tool against the temporary parent directory with `_localsetup/tools/skill_importer_scan <temp-parent>`. If you need content-safety references for one specific candidate, run `_localsetup/tools/skill_validation_scan.py --scan-root <temp-parent> <tempdir>`. Validation is always path-based; do not pass skill content through the shell or on stdin.
 3. **Present results and user choices**  - Show content-safety results (references only: file, line, column, pattern, description from index). Offer: (1) Do not import / skip, (2) I have reviewed the file; proceed with import, (3) I will ignore and continue anyway.
 4. **Copy only after approval**  - Only if the user approves, copy the temp dir (or its contents) into `_localsetup/skills/<name>/`. Do not modify the temp dir after validation.
 
@@ -55,7 +55,7 @@ If the agent cannot create a temp directory (permissions, no space), report that
 
 ## Tool
 
-- **Scan only (no fetch):** `_localsetup/tools/skill_importer_scan <path>` (Bash) or `_localsetup/tools/skill_importer_scan.ps1 -Path <path>` (PowerShell). Run from repo root. The only scan argument is a directory that may contain skill subdirs. The tool writes a human-readable per-skill summary to stdout: what it does, what it has, code types, and security flags. It does not currently expose a machine-readable output option.
+- **Scan only (no fetch):** `_localsetup/tools/skill_importer_scan <path>` (Bash). Run from the Localsetup source checkout. The only scan argument is a directory that may contain skill subdirs. The tool writes a human-readable per-skill summary to stdout: what it does, what it has, code types, and security flags. It does not currently expose a machine-readable output option.
 - **Fetch**  - The agent uses `git clone`, `curl`, or equivalent to obtain the URL content; then runs the scan tool on the resulting path.
 
 ## Duplicate, overlap, and namespace checks

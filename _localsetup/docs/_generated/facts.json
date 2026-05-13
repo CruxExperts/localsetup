@@ -9,37 +9,37 @@
       "id": "cursor",
       "display_name": "Cursor",
       "context_loader": ".cursor/skills",
-      "skills_path": "~/.local/share/agents/skills/localsetup"
+      "skills_path": "~/.local/share/localsetup/packages"
     },
     {
       "id": "claude-code",
       "display_name": "Claude Code",
       "context_loader": ".claude/skills",
-      "skills_path": "~/.local/share/agents/skills/localsetup"
+      "skills_path": "~/.local/share/localsetup/packages"
     },
     {
       "id": "codex",
       "display_name": "OpenAI Codex CLI",
       "context_loader": ".codex/skills",
-      "skills_path": "~/.local/share/agents/skills/localsetup"
+      "skills_path": "~/.local/share/localsetup/packages"
     },
     {
       "id": "openclaw",
       "display_name": "OpenClaw",
       "context_loader": ".openclaw/skills",
-      "skills_path": "~/.local/share/agents/skills/localsetup"
+      "skills_path": "~/.local/share/localsetup/packages"
     },
     {
       "id": "kilo",
       "display_name": "Kilo CLI",
       "context_loader": ".kilo/skills",
-      "skills_path": "~/.local/share/agents/skills/localsetup"
+      "skills_path": "~/.local/share/localsetup/packages"
     },
     {
       "id": "opencode",
       "display_name": "OpenCode CLI",
       "context_loader": ".opencode/skills",
-      "skills_path": "~/.local/share/agents/skills/localsetup"
+      "skills_path": "~/.local/share/localsetup/packages"
     }
   ],
   "skills": [

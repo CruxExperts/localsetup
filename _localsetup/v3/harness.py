@@ -5,6 +5,7 @@ import json
 import os
 import subprocess
 import sys
+import shutil
 from pathlib import Path
 from types import ModuleType
 from typing import Any
@@ -81,10 +82,21 @@ def _interval_schedule(minutes: int) -> str:
 
 
 def _heartbeat_command(repo_root: Path, target_root: Path) -> list[str]:
+    localsetup = shutil.which("localsetup")
+    if localsetup:
+        return [
+            localsetup,
+            "--target-directory",
+            str(target_root.resolve()),
+            "harness",
+            "codex-heartbeat",
+            "run",
+            "--no-agent",
+        ]
     return [
         sys.executable,
         str((repo_root / "_localsetup" / "tools" / "localsetup_v3.py").resolve()),
-        "--repo",
+        "--source-root",
         str(repo_root.resolve()),
         "--target-directory",
         str(target_root.resolve()),
@@ -217,7 +229,7 @@ def plan(repo_root: Path, target_root: Path | None = None) -> dict[str, Any]:
         "heartbeat_doc": str(target / HEARTBEAT_DOC),
         "config_path": str(config_path),
         "cron_manifest": str(manifest_path),
-        "state_dir": str(target / "state" / "codex-heartbeat"),
+        "state_dir": str(target / ".localsetup" / "state" / "codex-heartbeat"),
         "launcher_command": _heartbeat_command(repo_root, target),
         "command_plan": command_plan,
         "status": status_payload,

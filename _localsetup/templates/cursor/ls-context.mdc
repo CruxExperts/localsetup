@@ -39,7 +39,7 @@ Localsetup v3 is a universal, cross-platform agentic workflow engine. It is **de
 
 ## Capability skills and workflow packages index
 
-Load the appropriate skill when the task matches. Runtime skills are managed in `~/.local/share/agents/skills/localsetup` and exposed to Cursor through the `.cursor/skills` adapter path.
+Load the appropriate skill when the task matches. Runtime skills are managed in `~/.local/share/localsetup/packages` and exposed to Cursor through the `.cursor/skills` adapter path.
 
 | Package | When to use |
 |-------|--------------|
@@ -119,21 +119,18 @@ For full procedures (pre-task workflow, script quality, safety), load the matchi
 - **Batch / long-running:** prompt once at start with options: auto-pick for whole job, parcel-by-parcel prompts, or parcel auto-pick. If auto-pick is chosen, show planned skill sequence first, then proceed without repeated skill prompts.
 - Keep this section short. Full behavior lives in `ls-task-skill-matcher` and `_localsetup/docs/TASK_SKILL_MATCHING.md`.
 
-## Key files (paths relative to _localsetup/)
+## Key files
 
-- lib/data_paths.sh  - Path resolution
-- lib/json_formatter.sh  - JSON formatting
-- tools/verify_rules  - Rule/checkpoint verification
-- tests/automated_test.sh  - Test suite
-- discovery/core/os_detector.py  - OS detection (os_detector.sh/.ps1 are launchers)
+- localsetup context --markdown  - Print active project context
+- localsetup verify --level filesystem  - Verify installed adapters and managed packages
+- localsetup doctor  - Check source, target, adapters, and dependency state
 
 ## Quick commands (run from repo root)
 
 ```bash
-./_localsetup/tools/verify_context
-./_localsetup/tests/automated_test.sh
-./_localsetup/discovery/discover
-./_localsetup/tools/update_context
+localsetup verify --tools cursor
+localsetup context --markdown
+localsetup doctor
 ```
 
 Context and skills index: .cursor/rules/ls-context-index.md (or see master rule above).

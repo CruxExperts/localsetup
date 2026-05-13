@@ -26,9 +26,16 @@ def load_pack_config(repo_root: Path) -> PackConfig:
     data = _load_yaml(repo_root / "_localsetup" / "config" / "pack.yaml")
     global_data = data.get("global", {})
     repo_data = data.get("repo", {})
-    global_root = validate_home_scoped_path(str(global_data["root"]), "global.root")
-    global_registry = validate_home_scoped_path(str(global_data["registry"]), "global.registry")
-    lockfile = validate_repo_relative_path(str(repo_data.get("lockfile", "localsetup.lock.json")), "repo.lockfile")
+    global_home = validate_home_scoped_path(str(global_data.get("home", "~/.local/share/localsetup")), "global.home")
+    package_root = validate_home_scoped_path(
+        str(global_data.get("package_root", global_data.get("root", "~/.local/share/localsetup/packages"))),
+        "global.package_root",
+    )
+    registry_path = validate_home_scoped_path(
+        str(global_data.get("registry", "~/.local/share/localsetup/registry.json")),
+        "global.registry",
+    )
+    lockfile = validate_repo_relative_path(str(repo_data.get("lockfile", ".localsetup/lock.json")), "repo.lockfile")
     public_paths = [
         validate_repo_relative_path(str(v), "public_private.public_paths")
         for v in data.get("public_private", {}).get("public_paths", [])
@@ -41,8 +48,11 @@ def load_pack_config(repo_root: Path) -> PackConfig:
         pack_id=str(data["pack_id"]),
         namespace=str(data["namespace"]),
         version=int(data.get("version", 3)),
-        global_root=global_root,
-        global_registry=global_registry,
+        global_home=global_home,
+        package_root=package_root,
+        registry_path=registry_path,
+        global_root=package_root,
+        global_registry=registry_path,
         lockfile=lockfile,
         optional_packs=[str(v) for v in data.get("optional_packs", [])],
         packs={str(k): [str(v) for v in values] for k, values in data.get("packs", {}).items()},

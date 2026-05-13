@@ -24,7 +24,7 @@ Use it when you want agents to stop improvising from hidden local setup and star
 
 Localsetup v3 packages:
 
-- Repo-local framework source under `_localsetup/`
+- Global framework source under `~/.local/share/localsetup/source` for installed users; source checkouts keep `_localsetup/` for contributors
 - 52 shipped capability skills plus 22 first-class workflow packages for debugging, testing, PR review, infrastructure, docs, git recovery, skill import, security vetting, context indexing, TypeScript code quality, opt-in harness automation, and agent workflow control
 - Cross-platform adapters for Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode
 - Agent Skills-compatible `SKILL.md` packages that can be imported, normalized, vetted, installed, and reused
@@ -42,7 +42,7 @@ That means your agent setup travels with the repo, survives context resets, and 
   <img src="assets/localsetup-v3-architecture.svg" alt="Localsetup v3 architecture: repo source, config resolver, managed home library, adapters, and rollback metadata" width="960">
 </p>
 
-`_localsetup/` is the canonical source. The installer resolves configuration, creates the managed home library for skills and workflow packages, attaches only explicitly selected platform adapter paths, writes lock/report metadata, and records an install journal under `.localsetup/install-journal/`. Generated adapter trees are install output, not framework source.
+The registered Localsetup source checkout is the canonical framework source. The installer resolves configuration, creates the managed package library for skills and workflow packages, attaches only explicitly selected target adapter paths, writes target lock/report metadata under `.localsetup/`, and records an install journal under `.localsetup/install-journal/`. Consuming repos do not receive a copied `_localsetup/` by default.
 
 ## Skills and workflow packages
 
@@ -53,7 +53,7 @@ Localsetup v3 makes one important distinction explicit:
 | Capability skill | `_localsetup/skills/ls-*` | Agent Skills `SKILL.md` package | A reusable capability such as debugging, testing, skill import, PR review, service triage, or versioning. |
 | Workflow package | `_localsetup/workflows/ls-workflow-*` | Agent Skills `SKILL.md` package plus `workflow.yaml` | A named orchestration flow with aliases, required skills, gates, phases, validation, and expected outputs. |
 
-Both package types install into `~/.local/share/agents/skills/localsetup`, so agent hosts can invoke them through explicitly attached adapter paths. The split keeps portable skills clean while making workflow orchestration auditable and generated from source manifests.
+Both package types install into `~/.local/share/localsetup/packages`, so agent hosts can invoke them through explicitly attached adapter paths. The split keeps portable skills clean while making workflow orchestration auditable and generated from source manifests.
 
 Start with the [workflow packages guide](_localsetup/docs/WORKFLOW_PACKAGES.md) for usage and the [workflow standard](_localsetup/docs/WORKFLOW_STANDARD.md) for authoring rules.
 
@@ -92,7 +92,7 @@ curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install 
 Raw `main` bootstrap is the current development channel. For release verification, download the GitHub release tarball with its `.sha256` sidecar and run:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . verify-release dist/localsetup-v$(cat VERSION).tar.gz
+python3 _localsetup/tools/localsetup_v3.py --source-root . verify-release dist/localsetup-v$(cat VERSION).tar.gz
 ```
 
 Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.codex/skills` to the chosen target. If you do not select tools, the install is global-library-only.
@@ -144,9 +144,9 @@ localsetup convert --tools codex --packs core
 localsetup convert --tools codex --packs core --yes
 ```
 
-Conversion writes a timestamped backup and machine-readable report under `.localsetup/backups/conversion-*`, archives known managed or legacy Localsetup artifacts, blocks ambiguous unmanaged content, syncs the current framework source when needed, installs selected adapters, and verifies the result.
+Conversion writes a timestamped backup and machine-readable report under `.localsetup/backups/conversion-*`, archives known managed or legacy Localsetup artifacts, backs up and removes stale target `_localsetup/` folders, blocks ambiguous unmanaged content, installs selected adapters, and verifies the result.
 
-Windows support is WSL2-only in v3. Open WSL2, change to the repo path, and run the Bash installer. `install.ps1` is a compatibility guidance stub.
+Windows support is WSL2-only in v3. Open WSL2, change to the repo path, and run the Bash installer.
 
 Full install docs: [_localsetup/docs/QUICKSTART.md](_localsetup/docs/QUICKSTART.md) and [_localsetup/docs/MULTI_PLATFORM_INSTALL.md](_localsetup/docs/MULTI_PLATFORM_INSTALL.md).
 
@@ -208,10 +208,10 @@ localsetup why --packs core
 localsetup graph
 localsetup adopt --target-directory .
 localsetup sbom --out /tmp/localsetup-source.cdx.json
-python3 _localsetup/tools/localsetup_v3.py doctor
-python3 _localsetup/tools/localsetup_v3.py --repo . context --markdown
-python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
-python3 _localsetup/tools/localsetup_v3.py --repo . rollback
+python3 _localsetup/tools/localsetup_v3.py --source-root . context --markdown
+python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
+python3 _localsetup/tools/localsetup_v3.py --source-root . audit-global-first
+python3 _localsetup/tools/localsetup_v3.py --source-root . rollback
 ```
 
 Use `--trace-json /path/to/events.jsonl` with `install`, `verify`, or `doctor` to append local JSONL trace events for automation review.

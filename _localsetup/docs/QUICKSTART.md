@@ -14,7 +14,7 @@ Use this page to install Localsetup v3, choose agent platforms, verify the insta
 - Git and network access to GitHub for raw bootstrap, unless installing from a local clone
 - Recommended: `rg`, `pip`, and the packages in `_localsetup/requirements.txt`; managed dependency installs use `_localsetup/requirements.lock` with pip hash checking when the lock is present.
 
-Windows is WSL2-only in Localsetup v3. Native PowerShell install is intentionally not supported; `install.ps1` prints WSL2 guidance.
+Windows is WSL2-only in Localsetup v3. Native PowerShell install is intentionally not supported; run the Bash installer inside WSL2.
 
 ## Install In One Command
 
@@ -39,13 +39,13 @@ curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install 
 Raw `main` bootstrap follows the current development channel. For release verification, use the GitHub release tarball and its `.sha256` sidecar, then run:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . verify-release dist/localsetup-v$(cat VERSION).tar.gz
+python3 _localsetup/tools/localsetup_v3.py --source-root . verify-release dist/localsetup-v$(cat VERSION).tar.gz
 ```
 
 Release builds also publish a CycloneDX SBOM sidecar. When it is available, include it in verification:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . verify-release \
+python3 _localsetup/tools/localsetup_v3.py --source-root . verify-release \
   dist/localsetup-v$(cat VERSION).tar.gz \
   --sha256 dist/localsetup-v$(cat VERSION).tar.gz.sha256 \
   --sbom dist/localsetup-v$(cat VERSION).tar.gz.cdx.json
@@ -101,12 +101,12 @@ Localsetup v3 does not require `--break-system-packages`. Framework libraries in
 
 | ID | Agent host | Adapter path | Managed package library |
 |---|---|---|---|
-| `cursor` | Cursor | `.cursor/skills` | `~/.local/share/agents/skills/localsetup` |
-| `claude-code` | Claude Code | `.claude/skills` | `~/.local/share/agents/skills/localsetup` |
-| `codex` | OpenAI Codex CLI | `.codex/skills` | `~/.local/share/agents/skills/localsetup` |
-| `openclaw` | OpenClaw | `.openclaw/skills` | `~/.local/share/agents/skills/localsetup` |
-| `kilo` | Kilo CLI | `.kilo/skills` | `~/.local/share/agents/skills/localsetup` |
-| `opencode` | OpenCode CLI | `.opencode/skills` | `~/.local/share/agents/skills/localsetup` |
+| `cursor` | Cursor | `.cursor/skills` | `~/.local/share/localsetup/packages` |
+| `claude-code` | Claude Code | `.claude/skills` | `~/.local/share/localsetup/packages` |
+| `codex` | OpenAI Codex CLI | `.codex/skills` | `~/.local/share/localsetup/packages` |
+| `openclaw` | OpenClaw | `.openclaw/skills` | `~/.local/share/localsetup/packages` |
+| `kilo` | Kilo CLI | `.kilo/skills` | `~/.local/share/localsetup/packages` |
+| `opencode` | OpenCode CLI | `.opencode/skills` | `~/.local/share/localsetup/packages` |
 
 Comma-separate multiple IDs:
 
@@ -129,16 +129,18 @@ localsetup convert --tools codex --packs core
 localsetup convert --tools codex --packs core --yes
 ```
 
-The first command is a dry report. Apply mode writes a timestamped backup and `conversion-report.json`, archives known managed or legacy Localsetup artifacts, blocks ambiguous unmanaged content, syncs the current framework source when the target is separate from the source checkout, installs selected adapters, and verifies the result.
+The first command is a dry report. Apply mode writes a timestamped backup and `conversion-report.json`, archives known managed or legacy Localsetup artifacts, backs up and removes stale target `_localsetup/` folders, blocks ambiguous unmanaged content, installs selected adapters, and verifies the result.
 
 ## What Gets Installed
 
-- `_localsetup/` framework source in the repo
-- Managed skills under `~/.local/share/agents/skills/localsetup`
+- A registered framework source checkout under `~/.local/share/localsetup/source` or the checkout passed with `--directory`
+- Managed skills under `~/.local/share/localsetup/packages`
 - Managed workflow packages under the same library; their source remains `_localsetup/workflows/ls-workflow-*`
 - Explicitly selected platform adapter paths such as `.codex/skills` or `.kilo/skills`
-- `localsetup.lock.json` and reports that support verification and rollback
+- `.localsetup/lock.json` and reports that support verification and rollback
 - Transaction journals under `.localsetup/install-journal/` for applied installs
+
+Consuming target repos do not receive `_localsetup/` by default. If conversion finds an old target `_localsetup/`, it backs it up under `.localsetup/backups/` and removes it before installing adapters.
 
 Selected adapters point to the managed home library by symlink. Use portable mode when symlinks are not suitable:
 
@@ -148,18 +150,18 @@ Selected adapters point to the managed home library by symlink. Use portable mod
 
 ## Verify
 
-Run the core repo checks:
+For a target repo, verify the installed adapter state:
 
 ```bash
-./_localsetup/tools/verify_context
-./_localsetup/tools/verify_rules
-python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
+localsetup verify --tools codex
+localsetup doctor --tools codex
 ```
 
-Read-only preflight:
+For the Localsetup source checkout itself, maintainers can also run source checks:
 
 ```bash
-localsetup doctor
+python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
+python3 _localsetup/tools/localsetup_v3.py --source-root . audit-global-first
 ```
 
 After using `--install-deps`, `doctor` verifies installed Python distributions from the managed venv interpreter, so packages whose distribution and import names differ, such as `PGPy` / `pgpy`, are reported accurately.
@@ -167,7 +169,7 @@ After using `--install-deps`, `doctor` verifies installed Python distributions f
 Agent-readable install context:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . context --markdown
+python3 _localsetup/tools/localsetup_v3.py --source-root . context --markdown
 ```
 
 Verify supports explicit levels. `filesystem` runs the implemented local rule engine. `host` and `smoke` currently return structured `not_run` entries for probes that are not implemented yet, so automation can distinguish unsupported checks from failures:
@@ -235,7 +237,7 @@ localsetup detach --tools codex --target-directory .
 ## Roll Back Managed Paths
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . rollback
+python3 _localsetup/tools/localsetup_v3.py --source-root . rollback
 ```
 
 Rollback only acts on managed paths recorded by Localsetup metadata.
