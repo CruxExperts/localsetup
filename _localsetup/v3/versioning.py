@@ -355,6 +355,18 @@ def net_unreleased_commits(commits: list[CommitInfo]) -> tuple[list[CommitInfo],
     return remaining, canceled
 
 
+def version_from_sync_commit(subject: str) -> SemVer | None:
+    if not subject.startswith(VERSION_SYNC_PREFIX):
+        return None
+    raw = subject.removeprefix(VERSION_SYNC_PREFIX).strip()
+    if not raw:
+        return None
+    try:
+        return SemVer.parse(raw)
+    except ValueError:
+        return None
+
+
 def plan_version(repo_root: Path, *, base: str | None = None, head: str | None = None, ref: str | None = None) -> dict:
     resolved_head = resolve_head(repo_root, head)
     base_payload = resolve_base_with_metadata(repo_root, base, resolved_head)
@@ -367,8 +379,11 @@ def plan_version(repo_root: Path, *, base: str | None = None, head: str | None =
     target = base_version.bump(bump)
     current = read_version(repo_root, resolved_head)
     worktree = read_version(repo_root)
-    version_sync_present = any(commit.subject.startswith(VERSION_SYNC_PREFIX) for commit in commits)
-    ok = bump == "none" or current == target
+    sync_versions = [parsed for commit in commits if (parsed := version_from_sync_commit(commit.subject)) is not None]
+    version_sync_present = bool(sync_versions)
+    if sync_versions:
+        target = sync_versions[-1]
+    ok = current == target if version_sync_present else bump == "none" or current == target
     return {
         "ok": ok,
         "ref": ref,

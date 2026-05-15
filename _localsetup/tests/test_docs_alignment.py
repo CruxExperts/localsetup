@@ -62,6 +62,24 @@ def test_inventory_discovers_docs_assets_skills_workflows_and_ci(tmp_path: Path)
     assert ".github/workflows/docs-sync.yml" in payload["ci_workflows"]
 
 
+def test_inventory_ignores_gitignored_markdown_when_git_metadata_exists(tmp_path: Path) -> None:
+    repo = copy_docs_alignment_repo(tmp_path)
+    (repo / ".gitignore").write_text("docs/\n", encoding="utf-8")
+    run = subprocess.run
+    run(["git", "init", "-q"], cwd=repo, check=True)
+    run(["git", "config", "user.email", "test@example.invalid"], cwd=repo, check=True)
+    run(["git", "config", "user.name", "Test User"], cwd=repo, check=True)
+    run(["git", "add", "."], cwd=repo, check=True)
+    run(["git", "commit", "-q", "-m", "chore: initial"], cwd=repo, check=True)
+    ignored = repo / "docs" / "reference" / "markdown-reference-audit.md"
+    ignored.parent.mkdir(parents=True, exist_ok=True)
+    ignored.write_text("# Local audit output\n", encoding="utf-8")
+
+    payload = json.loads(run_tool(repo, "inventory").stdout)
+
+    assert "docs/reference/markdown-reference-audit.md" not in {row["path"] for row in payload["docs"]}
+
+
 def test_audit_catches_stale_skill_count_and_version_drift(tmp_path: Path) -> None:
     repo = copy_docs_alignment_repo(tmp_path)
     readme = repo / "README.md"

@@ -113,6 +113,28 @@ def test_revert_before_push_cancels_unreleased_bump(tmp_path: Path) -> None:
     assert plan["canceled_reverts"]
 
 
+def test_version_plan_uses_release_sync_commit_version_as_target(tmp_path: Path) -> None:
+    repo = copy_full_repo(tmp_path)
+    remote = tmp_path / "remote.git"
+    run(tmp_path, "git", "init", "--bare", str(remote))
+    init_git_repo(repo, remote)
+    expected = str(repo_version(repo).bump("patch"))
+
+    (repo / "bugfix.txt").write_text("bugfix\n", encoding="utf-8")
+    run(repo, "git", "add", "bugfix.txt")
+    run(repo, "git", "commit", "-m", "fix: resolve release bug", "--no-verify")
+    sync_version_files(repo, expected)
+    run(repo, "git", "add", ".")
+    run(repo, "git", "commit", "-m", f"chore: sync release version {expected}", "--no-verify")
+
+    plan = plan_version(repo, base="origin/main", head="HEAD")
+
+    assert plan["ok"] is True
+    assert plan["version_sync_present"] is True
+    assert plan["target_version"] == expected
+    assert plan["current_version"] == expected
+
+
 def test_version_plan_uses_local_main_when_no_remote_exists(tmp_path: Path) -> None:
     repo = tmp_path / "consumer"
     repo.mkdir()

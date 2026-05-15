@@ -125,7 +125,29 @@ def _frontmatter(text: str) -> dict[str, Any]:
 
 def _markdown_files(repo_root: Path) -> list[Path]:
     files: list[Path] = []
-    for path in repo_root.rglob("*.md"):
+    candidates: list[Path]
+    if (repo_root / ".git").exists():
+        completed = subprocess.run(
+            ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", "*.md"],
+            cwd=repo_root,
+            text=False,
+            capture_output=True,
+            check=False,
+        )
+        if completed.returncode == 0:
+            candidates = [
+                repo_root / raw.decode("utf-8", errors="replace")
+                for raw in completed.stdout.split(b"\0")
+                if raw
+            ]
+        else:
+            candidates = sorted(repo_root.rglob("*.md"))
+    else:
+        candidates = sorted(repo_root.rglob("*.md"))
+
+    for path in candidates:
+        if not path.is_file():
+            continue
         rel_parts = path.relative_to(repo_root).parts
         if any(part in LOCAL_DOC_EXCLUDES for part in rel_parts):
             continue
