@@ -2,3 +2,17 @@
 set -euo pipefail
 
 echo "[localsetup-v3] post-commit: report-only hook completed"
+
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+runner="${repo_root}/scripts/ops/graphify_post_commit_update.py"
+log_dir="${repo_root}/graphify-out/hooks"
+dispatch_log="${log_dir}/post-commit-dispatch.log"
+
+if [[ "${GRAPHIFY_POST_COMMIT:-1}" != "0" && -x "${runner}" ]]; then
+  mkdir -p "${log_dir}"
+  {
+    printf '[localsetup-v3] post-commit: dispatching Graphify refresh at %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    nohup python3 "${runner}" --repo "${repo_root}" >/dev/null 2>&1 &
+    printf '[localsetup-v3] post-commit: Graphify refresh pid=%s\n' "$!"
+  } >>"${dispatch_log}" 2>&1 || true
+fi
