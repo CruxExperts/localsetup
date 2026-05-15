@@ -123,8 +123,34 @@ def _session_exists(session: str) -> bool:
     return r.returncode == 0
 
 
+def _pane_target(session: str) -> tuple[str | None, str | None]:
+    result = _run_tmux(["list-panes", "-t", session, "-F", "#{pane_id}"])
+    if result.returncode != 0:
+        return None, result.stderr or f"tmux list-panes exited {result.returncode}"
+    panes = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    if not panes:
+        return None, f"no panes found for session {session}"
+    return panes[0], None
+
+
+def _targeted_tmux(session: str, args: list[str], timeout: float = 5.0) -> TmuxResult:
+    pane, err = _pane_target(session)
+    if pane is None:
+        return TmuxResult(-1, "", err or f"unable to resolve pane target for {session}")
+    resolved_args = [pane if arg == "{target}" else arg for arg in args]
+    result = _run_tmux(resolved_args, timeout=timeout)
+    if result.returncode != 0:
+        detail = result.stderr or result.stdout
+        if detail:
+            detail = f"{detail.rstrip()}\nresolved_target={pane}"
+        else:
+            detail = f"resolved_target={pane}"
+        return TmuxResult(result.returncode, result.stdout, detail)
+    return result
+
+
 def _cursor_y(target: str) -> tuple[int | None, str | None]:
-    result = _run_tmux(["display-message", "-t", target, "-p", "-F", "#{cursor_y}"])
+    result = _targeted_tmux(target, ["display-message", "-t", "{target}", "-p", "-F", "#{cursor_y}"])
     if result.returncode != 0:
         return None, result.stderr or f"tmux display-message exited {result.returncode}"
     try:
@@ -134,8 +160,8 @@ def _cursor_y(target: str) -> tuple[int | None, str | None]:
 
 
 def _capture_line(target: str, line_index: int) -> tuple[str, str | None]:
-    result = _run_tmux([
-        "capture-pane", "-t", target, "-p", "-S", str(line_index), "-E", str(line_index),
+    result = _targeted_tmux(target, [
+        "capture-pane", "-t", "{target}", "-p", "-S", str(line_index), "-E", str(line_index),
     ])
     if result.returncode != 0:
         return "", result.stderr or f"tmux capture-pane exited {result.returncode}"
@@ -301,7 +327,7 @@ def _bootstrap_session(session: str, create: bool) -> tuple[bool, str | None]:
             return False, r.stderr or f"tmux new-session exited {r.returncode}"
     script = _write_bootstrap(session)
     wait = _start_tmux_wait(_prompt_channel(session))
-    r = _run_tmux(["send-keys", "-t", session, f"source {shlex.quote(str(script))}", "Enter"])
+    r = _targeted_tmux(session, ["send-keys", "-t", "{target}", f"source {shlex.quote(str(script))}", "Enter"])
     if r.returncode != 0:
         return False, r.stderr or f"tmux send-keys exited {r.returncode}"
     if not _wait_proc(wait, 5.0):
@@ -460,7 +486,7 @@ def cmd_probe(target: str) -> dict[str, Any]:
     script = _write_probe_script(san)
     channel = f"{WAIT_PREFIX}-{san}-probe"
     wait = _start_tmux_wait(channel)
-    r = _run_tmux(["send-keys", "-t", san, f"bash {shlex.quote(str(script))}", "Enter"])
+    r = _targeted_tmux(san, ["send-keys", "-t", "{target}", f"bash {shlex.quote(str(script))}", "Enter"])
     if r.returncode != 0:
         return {"error": "tmux send-keys failed", "detail": r.stderr, "session": san, "source": "probe"}
     if not _wait_proc(wait, 10.0):
@@ -470,7 +496,7 @@ def cmd_probe(target: str) -> dict[str, Any]:
     if not payload:
         return {"error": "sudo probe status missing", "session": san, "source": "probe"}
     if payload.get("sudo") == "password_required":
-        r2 = _run_tmux(["send-keys", "-t", san, "sudo -v", "Enter"])
+        r2 = _targeted_tmux(san, ["send-keys", "-t", "{target}", "sudo -v", "Enter"])
         if r2.returncode != 0:
             return {"error": "tmux send-keys failed", "detail": r2.stderr, "session": san, "source": "probe"}
     if payload.get("sudo") == "failed":
@@ -590,7 +616,7 @@ def cmd_run(target: str, command: str, timeout: float, tail_lines: int) -> dict[
 
     channel = _run_channel(san, run_id)
     wait = _start_tmux_wait(channel)
-    r = _run_tmux(["send-keys", "-t", san, f"TMUX_OPS_RUN_ID={shlex.quote(run_id)} bash {shlex.quote(str(script_path))}", "Enter"])
+    r = _targeted_tmux(san, ["send-keys", "-t", "{target}", f"TMUX_OPS_RUN_ID={shlex.quote(run_id)} bash {shlex.quote(str(script_path))}", "Enter"])
     if r.returncode != 0:
         status.update({"status": "failed", "detail": r.stderr})
         _json_write(_status_path(san, run_id), status)
@@ -640,7 +666,7 @@ def cmd_cancel(target: str, run_id: str) -> dict[str, Any]:
         return {"error": "no active run", "session": san, "source": "cancel"}
     if active.get("run_id") != run_id:
         return {"error": "run_id does not match active run", "session": san, "run_id": run_id, "source": "cancel"}
-    r = _run_tmux(["send-keys", "-t", san, "C-c"])
+    r = _targeted_tmux(san, ["send-keys", "-t", "{target}", "C-c"])
     if r.returncode != 0:
         return {"error": "tmux cancel failed", "detail": r.stderr, "session": san, "run_id": run_id, "source": "cancel"}
     status = _status_payload(san, run_id)
@@ -712,7 +738,7 @@ def cmd_send(
     if delay < 0:
         return {"error": "delay must be non-negative", "detail": str(delay), "session": san, "source": "send"}
     pre_cy = _snapshot_cursor(san)
-    r = _run_tmux(["send-keys", "-t", san, cmd, "Enter"])
+    r = _targeted_tmux(san, ["send-keys", "-t", "{target}", cmd, "Enter"])
     if r.returncode != 0:
         return {"error": "tmux send-keys failed", "detail": r.stderr, "session": san, "source": "send"}
     time.sleep(delay)
