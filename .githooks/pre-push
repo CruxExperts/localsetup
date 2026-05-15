@@ -26,6 +26,17 @@ from _localsetup.v3.versioning import (
 repo_root = Path.cwd()
 payload_path = Path(sys.argv[1])
 plans = push_lines_to_plans(repo_root, payload_path.read_text(encoding="utf-8"))
+blocked = [p for p in plans if p.get("release_type_required")]
+if blocked:
+    for plan in blocked:
+        for commit in plan.get("release_type_required_commits", []):
+            print(
+                "[localsetup-v3] version plan blocked: "
+                f"{commit.get('sha', '')[:12]} {commit.get('subject', '')} requires "
+                "Release-Type: major|minor|patch|none",
+                file=sys.stderr,
+            )
+    raise SystemExit(1)
 actionable = [p for p in plans if p["bump"] != "none" and not p["ok"]]
 if not actionable:
     raise SystemExit(1)

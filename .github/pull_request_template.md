@@ -28,6 +28,6 @@ git diff --check
 ## Release notes
 
 - Conventional Commit type:
-- `Release-Type:` trailer needed: yes/no
+- `Release-Type:` trailer included for major/minor/none or breaking-marker commits: yes/no/not applicable
 - Version-sync commit included when required: yes/no
 - Screenshots, logs, or artifacts attached when useful: yes/no

@@ -6,7 +6,7 @@ from pathlib import Path
 
 def tracked_files(repo_root: Path) -> list[str]:
     completed = subprocess.run(
-        ["git", "ls-files", "--cached", "--others", "--exclude-standard"],
+        ["git", "ls-files", "--cached"],
         cwd=repo_root,
         text=True,
         capture_output=True,

@@ -842,6 +842,9 @@ def _main(argv: list[str] | None = None) -> int:
         target = args.target
         if not target:
             plan = plan_version(root, base=args.base, head=args.head)
+            if not plan["ok"] and plan.get("release_type_required"):
+                print_json(plan)
+                return 1
             target = plan["target_version"]
         if args.check:
             payload = check_version_files(root, target)
@@ -863,10 +866,16 @@ def _main(argv: list[str] | None = None) -> int:
 
     if args.cmd == "release-push":
         plan = plan_version(root)
+        if not plan["ok"] and plan.get("release_type_required"):
+            print_json(plan)
+            return 1
         if plan["bump"] != "none" and not plan["ok"]:
             sync_version_files(root, plan["target_version"])
             commit_version_sync(root, plan["target_version"])
             plan = plan_version(root)
+            if not plan["ok"] and plan.get("release_type_required"):
+                print_json(plan)
+                return 1
         push_args = args.push_args
         if push_args and push_args[0] == "--":
             push_args = push_args[1:]

@@ -67,6 +67,11 @@ localsetup.lock.json
 .opencode/skills
 .openclaw/skills
 
+# Graphify local state and generated indexes
+.graphify_*
+.graphifyignore
+graphify-out/
+
 # Kilo Code local state.
 .kilocode/
 .kilo/*

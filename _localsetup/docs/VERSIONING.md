@@ -16,9 +16,10 @@ Localsetup v3 uses the root `VERSION` file as the source of truth for the framew
 ## Policy
 
 - Keep `VERSION`, the root README version line, and generated facts in sync.
-- Use Conventional Commits for release history. Breaking commits (`!` or `BREAKING CHANGE:`) bump major. User-facing framework capability changes bump minor. Internal release automation, installer/platform-adapter maintenance, hooks, CI, docs, tests, validation, and packaging changes bump patch even when their commit message uses `feat:`.
-- Treat installer, adapter, template, existing skill, config, and framework runtime maintenance as patch by default. Use an explicit `Release-Type: minor` trailer when a change should be marketed as a new public capability.
-- Add an explicit `Release-Type: major|minor|patch|none` trailer when the default classification would be too broad or too narrow.
+- Use Conventional Commits for readable release history. Routine development defaults to one patch bump per release batch, including commits whose subject starts with `feat:`.
+- `Release-Type: major|minor|patch|none` is the only way to request a major bump, minor bump, explicit patch bump, or no release bump.
+- Breaking markers (`!` or `BREAKING CHANGE:`) are diagnostic only until paired with an explicit `Release-Type:` trailer. `version-plan` fails with an actionable message when a breaking marker appears without that trailer.
+- Merge commits, version-sync commits, and fully canceled unreleased reverts do not request a bump.
 - Version and documentation sync are automatic. Local hooks plan the bump from outgoing commits, update known version surfaces, regenerate docs artifacts, and create a version-sync commit before push.
 - Reverts of unreleased commits cancel the pending bump before push. Reverts of already-published commits are released as a monotonic patch version rather than decreasing `VERSION`.
 - Skill versions are separate from the framework version and live in each skill's `SKILL.md` frontmatter under `metadata.version`.
@@ -47,7 +48,7 @@ python3 _localsetup/tools/localsetup_v3.py --source-root . version-plan
 python3 _localsetup/tools/localsetup_v3.py --source-root . version-sync --check --target "$(cat VERSION)"
 ```
 
-The `version-plan` output includes both `raw_bump` from the commit message and final `bump` after path-aware policy is applied.
+The `version-plan` output includes `policy: "patch-default"`, diagnostic `raw_bump` values from Conventional Commit parsing, and the effective release `bump` after patch-default policy is applied.
 
 ## GitHub release workflow
 

@@ -14,6 +14,8 @@ from .docs import generate_alias_outputs
 ZERO_SHA = "0" * 40
 VERSION_SYNC_PREFIX = "chore: sync release version"
 RELEASE_TYPE_RE = re.compile(r"^Release-Type:\s*(major|minor|patch|none)\s*$", re.MULTILINE | re.IGNORECASE)
+BREAKING_CHANGE_RE = re.compile(r"^BREAKING CHANGE:", re.MULTILINE)
+BREAKING_SUBJECT_RE = re.compile(r"^[a-zA-Z]+(?:\([^)]+\))?!:")
 KNOWN_PATCH_TYPES = {
     "fix",
     "docs",
@@ -274,9 +276,9 @@ def classify_commit(subject: str, body: str = "") -> str:
     release_type = RELEASE_TYPE_RE.search(body)
     if release_type:
         return release_type.group(1).lower()
-    if re.match(r"^[a-zA-Z]+(?:\([^)]+\))?!:", subject):
+    if BREAKING_SUBJECT_RE.match(subject):
         return "major"
-    if re.search(r"^BREAKING CHANGE:", body, flags=re.MULTILINE):
+    if BREAKING_CHANGE_RE.search(body):
         return "major"
     match = re.match(r"^([a-zA-Z]+)(?:\([^)]+\))?:", subject)
     if not match:
@@ -289,6 +291,19 @@ def classify_commit(subject: str, body: str = "") -> str:
     return "patch"
 
 
+def release_type_override(body: str) -> str | None:
+    release_type = RELEASE_TYPE_RE.search(body)
+    if release_type:
+        return release_type.group(1).lower()
+    return None
+
+
+def requires_release_type(commit: CommitInfo) -> bool:
+    if release_type_override(commit.body):
+        return False
+    return bool(BREAKING_SUBJECT_RE.match(commit.subject) or BREAKING_CHANGE_RE.search(commit.body))
+
+
 def changed_files(repo_root: Path, sha: str) -> list[str]:
     output = _git_text(repo_root, ["diff-tree", "--no-commit-id", "--name-only", "-r", sha])
     return [line for line in output.splitlines() if line]
@@ -299,16 +314,29 @@ def _is_internal_patch_file(path: str) -> bool:
 
 
 def classify_commit_for_release(repo_root: Path, commit: CommitInfo) -> str:
-    base = classify_commit(commit.subject, commit.body)
-    if base != "minor":
-        return base
-    release_type = RELEASE_TYPE_RE.search(commit.body)
-    if release_type:
-        return release_type.group(1).lower()
-    files = changed_files(repo_root, commit.sha)
-    if files and all(_is_internal_patch_file(path) for path in files):
-        return "patch"
-    return base
+    if commit.subject.startswith("Merge "):
+        return "none"
+    if commit.subject.startswith("Revert "):
+        return "none"
+    if commit.subject.startswith(VERSION_SYNC_PREFIX):
+        return "none"
+    if release_type := release_type_override(commit.body):
+        return release_type
+    return "patch"
+
+
+def release_type_required_diagnostics(commits: Iterable[CommitInfo]) -> list[dict[str, str]]:
+    diagnostics: list[dict[str, str]] = []
+    for commit in commits:
+        if requires_release_type(commit):
+            diagnostics.append(
+                {
+                    "sha": commit.sha,
+                    "subject": commit.subject,
+                    "message": "Breaking release markers require an explicit Release-Type: major|minor|patch|none trailer under patch-default versioning.",
+                }
+            )
+    return diagnostics
 
 
 def bump_rank(bump_type: str) -> int:
@@ -374,6 +402,7 @@ def plan_version(repo_root: Path, *, base: str | None = None, head: str | None =
     base_resolution = base_payload["base_resolution"]
     commits = list_commits(repo_root, resolved_base, resolved_head)
     net_commits, canceled = net_unreleased_commits(commits)
+    release_type_required = release_type_required_diagnostics(net_commits)
     bump = max_bump(classify_commit_for_release(repo_root, commit) for commit in net_commits)
     base_version = read_version(repo_root, resolved_base)
     target = base_version.bump(bump)
@@ -383,9 +412,10 @@ def plan_version(repo_root: Path, *, base: str | None = None, head: str | None =
     version_sync_present = bool(sync_versions)
     if sync_versions:
         target = sync_versions[-1]
-    ok = current == target if version_sync_present else bump == "none" or current == target
+    ok = (current == target if version_sync_present else bump == "none" or current == target) and not release_type_required
     return {
         "ok": ok,
+        "policy": "patch-default",
         "ref": ref,
         "base": resolved_base,
         "head": resolved_head,
@@ -396,6 +426,8 @@ def plan_version(repo_root: Path, *, base: str | None = None, head: str | None =
         "target_version": str(target),
         "major_minor": target.major_minor,
         "bump": bump,
+        "release_type_required": bool(release_type_required),
+        "release_type_required_commits": release_type_required,
         "version_sync_present": version_sync_present,
         "commit_count": len(commits),
         "net_commit_count": len(net_commits),
@@ -406,6 +438,7 @@ def plan_version(repo_root: Path, *, base: str | None = None, head: str | None =
                 "subject": commit.subject,
                 "bump": classify_commit_for_release(repo_root, commit),
                 "raw_bump": classify_commit(commit.subject, commit.body),
+                "release_type_required": requires_release_type(commit),
                 "files": changed_files(repo_root, commit.sha),
             }
             for commit in net_commits

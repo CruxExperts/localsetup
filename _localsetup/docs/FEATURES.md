@@ -67,7 +67,7 @@ This is the full public capability catalog for Localsetup v3. The [root README](
 
 | Capability | What it gives you |
 |---|---|
-| Conventional Commit versioning | Version bumps are inferred from commits, with explicit override trailers when needed. |
+| Patch-default release versioning | Routine commit batches advance one patch by default; `Release-Type:` trailers explicitly request major, minor, patch, or no bump. |
 | Generated facts sync | README and docs facts blocks stay aligned with `VERSION`, platform count, skill count, and workflow package count. |
 | Automated documentation alignment | `_localsetup/tools/docs_alignment.py` inventories repo docs, maps source-truth claims, validates assets and links, refreshes generated artifacts, and supports CI checks. |
 | Skill metadata versions | Skill versions are tracked separately from framework release versions. |

@@ -1,11 +1,13 @@
 from pathlib import Path
 import json
 import shutil
+import subprocess
 
 import pytest
 import yaml
 
 from _localsetup.v3.baseline import classify_path
+from _localsetup.v3.baseline import tracked_files
 from _localsetup.v3.manifests import load_pack_config, load_platforms, validate_manifest_schemas
 from _localsetup.v3.paths import PathValidationError
 from _localsetup.v3.skills import selected_skill_names, validate_skill_catalog
@@ -271,6 +273,20 @@ def test_baseline_file_classification() -> None:
     assert classify_path("_localsetup/docs/_generated/skill_aliases.json") == "generate"
     assert classify_path("_localsetup/docs/local-context/SECRETS_OVERVIEW.md") == "private-maintainer"
     assert classify_path("scripts/generate-doc-artifacts") == "private-maintainer"
+
+
+def test_baseline_tracked_files_excludes_untracked_local_files(tmp_path: Path) -> None:
+    root = tmp_path / "repo"
+    root.mkdir()
+    (root / "tracked.txt").write_text("tracked\n", encoding="utf-8")
+    (root / "untracked.txt").write_text("untracked\n", encoding="utf-8")
+    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+    subprocess.run(["git", "add", "tracked.txt"], cwd=root, check=True)
+
+    files = tracked_files(root)
+
+    assert "tracked.txt" in files
+    assert "untracked.txt" not in files
 
 
 def test_generated_implementation_map_includes_workflow_sources() -> None:
