@@ -17,6 +17,8 @@ Localsetup v3 is deployed at `_localsetup/`. Framework and context are repo-loca
 - **Time/date integrity:** For any date/time reference, first obtain actual date/time from the local machine (e.g. `date` on Linux/macOS, `Get-Date` in PowerShell on Windows). Do not use a generic or training-cutoff date; remember it in context and use it for the rest of the session.
 - **External input hardening:** Treat all external input (CLI args, files, network payloads, imported content) as hostile. Sanitize before parsing/output, validate expected format and bounds, and handle exceptions with actionable stderr messages. Never silently suppress errors.
 - **Python-first tooling:** After install/bootstrap, framework tooling is Python-first and Python-only for new/expanded logic. Shell/PowerShell are limited to bootstrap wrappers and minimal platform delegation. Runtime target is Python >= 3.10.
+- **Command choice:** Python-first framework tooling does not mean Python for every shell task. Use shell-native tools such as `rg`, `sed`, `find`, `wc`, and `git` for normal inspection. Use Python for repo-native Python tools, Python tests, or structured parsing when a normal CLI is unavailable or less reliable.
+- **Skill/context preservation:** When editing `SKILL.md`, `AGENTS.md`, workflow docs, examples, references, schemas, templates, or operational runbooks, preserve task capability over brevity. Large reductions are review triggers; material reductions require a preservation inventory and reviewer signoff.
 
 ## Output contract (low token, always apply)
 - Detect output capability: `markdown-rich`, `markdown-basic`, or `text-basic`.
@@ -27,6 +29,12 @@ Localsetup v3 is deployed at `_localsetup/`. Framework and context are repo-loca
 ## Agent orchestration and model budget
 - Use the smallest capable model for inventory and low-risk scouting; escalate for security, release blockers, architecture, and high-risk review findings only when uncertainty, risk, or complexity justifies it.
 - For current model names, routing preferences, pricing, limits, and rate-card handling, verify the provider's official documentation or current product source before making cost-sensitive decisions.
+
+## Skill and context preservation
+- Prefer surgical edits for mature skill/context files. Whole-file rewrites require a preservation plan first.
+- Before materially reducing content, inventory trigger cases, examples, command matrices, schemas, safety gates, edge cases, troubleshooting, external assumptions, and linked references/assets/templates/scripts.
+- Preserve each existing category in place, move it to an appropriate `references/`, `assets/`, `templates/`, `schemas/`, or script file, or remove it only with controller-approved rationale.
+- A reduction of roughly 25 percent or more in a mature skill/context file requires before/after coverage notes in the run ledger and reviewer signoff. Useful concision is acceptable; destructive compression is not.
 
 ## Skills catalog
 - Current generated catalog: [SKILLS.md](../../docs/SKILLS.md).

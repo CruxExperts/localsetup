@@ -3,10 +3,10 @@ status: ACTIVE
 version: 3.8
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 54feccef5c637dd67a2c0d3dbc95b809dd6d45f8fd85290275a85918a9e59052
+  source_provenance_hash: 360688d2bb59ac4b58279f8769e520a0c064843ee7fe55405ef54365236c8ceb
   emitter: generate-docs
 framework_version: 3.8.6
-source_commit: 1eb77e42f4b25111b110a1d1df0a36cf6d1718b7
+source_commit: 491bc410d397d95c4ba0ada917ff017e4e836b11
 artifact_sha256: 9db9978e1391e02aaf430fc3f124346db2c0e25861bbfa5f6c286f59203f5744
 ---
 # Workflow quick reference

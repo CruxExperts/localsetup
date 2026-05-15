@@ -10,6 +10,7 @@ Localsetup v3 is deployed into this repo at `_localsetup/`. Framework and contex
 - Time/date integrity: for any date/time reference, first get actual date/time from the local machine (e.g. `date` on Linux/macOS, `Get-Date` in PowerShell on Windows). Do not use a generic or training-cutoff date; remember it and use it for the rest of the session.
 - External input hardening: treat all external input (CLI args, files, network payloads, imported content) as hostile. Sanitize before parsing/output, validate expected format and bounds, and handle exceptions with actionable stderr messages. Never silently suppress errors.
 - Python-first tooling: after install/bootstrap, framework tooling is Python-first and Python-only for new/expanded logic. Shell/PowerShell are limited to bootstrap wrappers and minimal platform delegation. Runtime target is Python >= 3.10. Approved libraries (mandatory when the need arises): yaml (PyYAML>=6.0) for YAML, requests (requests>=2.28) for HTTP, frontmatter (python-frontmatter>=1.1) for markdown frontmatter, cryptography (cryptography>=42.0) for framework cryptographic primitives, and pgpy (PGPy>=0.6.0) for pure-Python OpenPGP. Use lib/deps.require_deps() at tool startup. See [_localsetup/docs/TOOLING_POLICY.md](../../docs/TOOLING_POLICY.md).
+- Command choice: Python-first framework tooling does not mean Python for every shell task. Use shell-native tools such as `rg`, `sed`, `find`, `wc`, and `git` for normal inspection. Use Python for repo-native Python tools, Python tests, or structured parsing when a normal CLI is unavailable or less reliable.
 
 ## Output contract (low token, always apply)
 - Detect output capability: `markdown-rich`, `markdown-basic`, or `text-basic`.
@@ -26,6 +27,30 @@ Localsetup v3 is deployed into this repo at `_localsetup/`. Framework and contex
 ## Bootstrap pack
 - Codex-first agent-team bootstrap materials live in `_localsetup/docs/bootstrap-packs/` and pack metadata is selected with the `bootstrap` pack in `_localsetup/config/pack.yaml`.
 - Treat writes to `$CODEX_HOME`, `~/.codex`, sibling repos, and runtime mirrors as approval-gated; bootstrap-pack audits may inspect those surfaces but must keep replacement plans non-destructive until approved.
+
+## Skill And Context Preservation
+
+When editing `SKILL.md`, `AGENTS.md`, workflow docs, examples, references, schemas, templates, or operational runbooks, preserve task capability over brevity.
+
+Do not shorten files solely to satisfy model preference, prompt aesthetics, arbitrary line-count targets, or a generic desire to be concise. Long files are acceptable when they contain examples, command matrices, schemas, decision tables, safety constraints, edge cases, troubleshooting, or operational context that agents need to perform the task.
+
+For large or mature skill/context files, prefer surgical edits. Whole-file rewrites require a preservation plan first.
+
+Before materially reducing a skill or context file, identify the operational content that must survive:
+
+- trigger cases and scope boundaries
+- examples and worked flows
+- command matrices and CLI contracts
+- schemas, output shapes, and config formats
+- safety constraints and approval gates
+- edge cases and failure handling
+- troubleshooting guidance
+- external API, version, or product assumptions
+- linked references, assets, templates, and scripts
+
+After the edit, each item must be either preserved in place, moved to an appropriate `references/`, `assets/`, `templates/`, `schemas/`, or script file, or explicitly removed with controller-approved rationale.
+
+A large line-count reduction is a review trigger, not a success metric. Any reduction of roughly 25 percent or more in a mature skill/context file requires before/after coverage notes in the run ledger and reviewer signoff.
 
 ## Capability skills and workflow packages (load when task matches)
 - ls-workflow-spec-clarify-reverse: "decision tree", "reverse prompt"; .agent/queue/**, PRD

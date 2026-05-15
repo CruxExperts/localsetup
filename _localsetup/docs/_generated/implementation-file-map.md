@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 54feccef5c637dd67a2c0d3dbc95b809dd6d45f8fd85290275a85918a9e59052
+  source_provenance_hash: 360688d2bb59ac4b58279f8769e520a0c064843ee7fe55405ef54365236c8ceb
   emitter: generate-docs
 framework_version: 3.8.6
-source_commit: 1eb77e42f4b25111b110a1d1df0a36cf6d1718b7
-artifact_sha256: aff6e541ddd500a8bccae906fe75e78fd4202033e89ec446545480858f0960ae
+source_commit: 491bc410d397d95c4ba0ada917ff017e4e836b11
+artifact_sha256: 975fe03bbac2e27eaba715ffcd3e11a9faa573edd584abff20d6ae04673e81c0
 ---
 # Implementation File Map
 
@@ -96,6 +96,7 @@ artifact_sha256: aff6e541ddd500a8bccae906fe75e78fd4202033e89ec446545480858f0960a
 | `keep` | `_localsetup/docs/WORKFLOW_REGISTRY.md` |
 | `keep` | `_localsetup/docs/WORKFLOW_SKILLS_REVIEW_BUILD_SPEC.md` |
 | `keep` | `_localsetup/docs/WORKFLOW_STANDARD.md` |
+| `generate` | `_localsetup/docs/_generated/artifact-registry.json` |
 | `generate` | `_localsetup/docs/_generated/docs-alignment-summary.md` |
 | `generate` | `_localsetup/docs/_generated/docs-asset-manifest.json` |
 | `generate` | `_localsetup/docs/_generated/docs-audit-result.json` |
@@ -553,6 +554,7 @@ artifact_sha256: aff6e541ddd500a8bccae906fe75e78fd4202033e89ec446545480858f0960a
 | `keep` | `_localsetup/tests/test_ls_cron_orchestrator_run_trigger.py` |
 | `keep` | `_localsetup/tests/test_ls_kilo_boss_orchestrator_runner.py` |
 | `keep` | `_localsetup/tests/test_ls_linux_patcher_patch_cli.py` |
+| `keep` | `_localsetup/tests/test_provenance.py` |
 | `keep` | `_localsetup/tests/test_repo_finalizer.py` |
 | `keep` | `_localsetup/tests/test_scrapling_helper.py` |
 | `keep` | `_localsetup/tests/test_scrapling_jobs.py` |
@@ -644,6 +646,7 @@ artifact_sha256: aff6e541ddd500a8bccae906fe75e78fd4202033e89ec446545480858f0960a
 | `refactor` | `_localsetup/v3/package.py` |
 | `refactor` | `_localsetup/v3/paths.py` |
 | `refactor` | `_localsetup/v3/plan.py` |
+| `refactor` | `_localsetup/v3/provenance.py` |
 | `refactor` | `_localsetup/v3/query.py` |
 | `refactor` | `_localsetup/v3/registry.py` |
 | `refactor` | `_localsetup/v3/repo_finalizer.py` |
