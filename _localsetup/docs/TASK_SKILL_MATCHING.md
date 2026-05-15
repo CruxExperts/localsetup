@@ -1,6 +1,7 @@
 ---
 status: ACTIVE
 version: 3.8
+owner_skill: ls-task-skill-matcher
 ---
 
 # Task-to-skill matching (Localsetup v3)

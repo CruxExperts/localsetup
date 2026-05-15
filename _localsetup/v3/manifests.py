@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -44,6 +45,21 @@ def load_pack_config(repo_root: Path) -> PackConfig:
         validate_repo_relative_path(str(v), "public_private.private_paths")
         for v in data.get("public_private", {}).get("private_paths", [])
     ]
+    extensions = data.get("extensions", {})
+    if extensions is None:
+        extensions = {}
+    if not isinstance(extensions, dict):
+        raise ManifestError("extensions must be a mapping")
+    raw_taxonomy = extensions.get("skill_taxonomy", {})
+    if raw_taxonomy is None:
+        raw_taxonomy = {}
+    if not isinstance(raw_taxonomy, dict):
+        raise ManifestError("extensions.skill_taxonomy must be a mapping")
+    skill_taxonomy: dict[str, dict[str, Any]] = {}
+    for skill_name, row in raw_taxonomy.items():
+        if not isinstance(row, dict):
+            raise ManifestError(f"extensions.skill_taxonomy.{skill_name} must be a mapping")
+        skill_taxonomy[str(skill_name)] = dict(row)
     return PackConfig(
         pack_id=str(data["pack_id"]),
         namespace=str(data["namespace"]),
@@ -60,6 +76,7 @@ def load_pack_config(repo_root: Path) -> PackConfig:
         channels=[str(v) for v in data.get("distribution_channels", [])],
         public_paths=public_paths,
         private_paths=private_paths,
+        skill_taxonomy=skill_taxonomy,
     )
 
 

@@ -17,6 +17,7 @@ Use this skill when a repo needs documentation brought back into alignment with 
 - Generate a stable inventory, truth map, audit result, asset manifest, and summary.
 - Fix supported stale facts in public docs without hand-maintaining volatile counts.
 - Keep generated docs owned by the repo generator instead of ad hoc edits.
+- Record public-doc ownership through `owner_skill` or `owner_package` frontmatter and fail CI for active framework docs without an owner.
 - Leave a reproducible validation trail for future runs.
 
 ## Generic workflow
@@ -103,8 +104,10 @@ Asset provenance and reference notes live in `assets/README.md` when the asset s
 The tool reports JSON-first findings for:
 
 - version and generated-facts drift
+- stale generated skill taxonomy
 - stale skill/workflow counts
 - missing lifecycle frontmatter in framework docs
+- missing or invalid active-doc ownership frontmatter
 - broken relative links and missing image files
 - missing image alt text
 - unclosed fenced code blocks

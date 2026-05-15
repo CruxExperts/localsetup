@@ -1,6 +1,7 @@
 ---
 status: ACTIVE
 version: 3.8
+owner_skill: ls-skill-creator
 ---
 
 # Agent Skills compliance (Localsetup v3)

@@ -83,6 +83,7 @@ class PackConfig:
     channels: list[str] = field(default_factory=list)
     public_paths: list[str] = field(default_factory=list)
     private_paths: list[str] = field(default_factory=list)
+    skill_taxonomy: dict[str, dict[str, Any]] = field(default_factory=dict)
 
 
 @dataclass

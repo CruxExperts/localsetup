@@ -1,6 +1,7 @@
 ---
 status: ACTIVE
 version: 3.8
+owner_package: ls-workflow-umbrella-run
 ---
 
 # Agentic umbrella workflows (Localsetup v3)

@@ -37,6 +37,13 @@ Pre-ship checks accept argv-only `pytest` or `python3 -m pytest` commands and ru
 
 ## Docs
 
+This skill owns the operational rules behind the public Agent Q docs. Treat the docs below as public references and examples; when there is a conflict, use this skill and the shipped `agentq_transport_client` CLI/schema/config as the execution contract.
+
+- Queue status rules, ready-marker semantics, and PRD outcome fields belong here.
+- File-drop and mail transport behavior must stay policy-gated by `agent_trust_registry` and manifest schema validation.
+- Strict mail shipping uses pre-encrypted OpenPGP payloads; mail transport never downgrades encryption because a recipient is inconvenient to reach.
+- Build and scenario docs should not grow new operational requirements unless this skill and the CLI tests are updated in the same wave.
+
 - [AGENTIC_AGENT_TO_AGENT_PROTOCOL.md](../../docs/AGENTIC_AGENT_TO_AGENT_PROTOCOL.md)
 - [AGENTIC_AGENT_Q_SCENARIOS.md](../../docs/AGENTIC_AGENT_Q_SCENARIOS.md)
 - [AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md](../../docs/AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md)

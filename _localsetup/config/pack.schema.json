@@ -91,6 +91,40 @@
         }
       }
     },
-    "extensions": { "type": "object" }
+    "extensions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "skill_taxonomy": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["class", "sort_priority", "tags", "owner_scope"],
+            "properties": {
+              "class": {
+                "type": "string",
+                "enum": [
+                  "core",
+                  "framework-governance",
+                  "development",
+                  "operations",
+                  "integrations",
+                  "skill-lifecycle",
+                  "specialized"
+                ]
+              },
+              "sort_priority": { "type": "integer", "minimum": 0 },
+              "tags": {
+                "type": "array",
+                "items": { "type": "string", "minLength": 1 },
+                "uniqueItems": true
+              },
+              "owner_scope": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    }
   }
 }

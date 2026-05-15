@@ -1,6 +1,7 @@
 ---
 status: ACTIVE
 version: 3.8
+owner_skill: ls-agentq-transport
 ---
 
 # Agent Q (queue) pattern (Localsetup v3)

@@ -138,6 +138,269 @@ workflow_packs:
     - ls-workflow-spec-clarify-reverse
     - ls-workflow-umbrella-run
 
+extensions:
+  skill_taxonomy:
+    ls-context:
+      class: core
+      sort_priority: 10
+      tags: [context, bootstrap]
+      owner_scope: skill
+    ls-context-index:
+      class: core
+      sort_priority: 10
+      tags: [context, index]
+      owner_scope: skill
+    ls-communication-and-tools:
+      class: core
+      sort_priority: 10
+      tags: [communication, tools]
+      owner_scope: skill
+    ls-safety-and-backup:
+      class: core
+      sort_priority: 10
+      tags: [safety, backup]
+      owner_scope: skill
+    ls-script-and-docs-quality:
+      class: core
+      sort_priority: 10
+      tags: [scripts, docs]
+      owner_scope: skill
+    ls-task-skill-matcher:
+      class: core
+      sort_priority: 10
+      tags: [routing, skills]
+      owner_scope: skill
+    ls-test-runner:
+      class: core
+      sort_priority: 10
+      tags: [testing, validation]
+      owner_scope: skill
+    ls-automatic-versioning:
+      class: framework-governance
+      sort_priority: 20
+      tags: [versioning, release]
+      owner_scope: skill
+    ls-docs-organization:
+      class: framework-governance
+      sort_priority: 20
+      tags: [docs, organization]
+      owner_scope: skill
+    ls-documentation-alignment:
+      class: framework-governance
+      sort_priority: 20
+      tags: [docs, alignment]
+      owner_scope: skill
+    ls-framework-audit:
+      class: framework-governance
+      sort_priority: 20
+      tags: [audit, release]
+      owner_scope: skill
+    ls-framework-compliance:
+      class: framework-governance
+      sort_priority: 20
+      tags: [compliance, framework]
+      owner_scope: skill
+    ls-git-workflows:
+      class: framework-governance
+      sort_priority: 20
+      tags: [git, workflows]
+      owner_scope: skill
+    ls-github-publishing-workflow:
+      class: framework-governance
+      sort_priority: 20
+      tags: [github, publishing]
+      owner_scope: skill
+    ls-markdown-reference-validator:
+      class: framework-governance
+      sort_priority: 20
+      tags: [markdown, references]
+      owner_scope: skill
+    ls-public-repo-identity:
+      class: framework-governance
+      sort_priority: 20
+      tags: [identity, publishing]
+      owner_scope: skill
+    ls-receiving-code-review:
+      class: framework-governance
+      sort_priority: 20
+      tags: [review, feedback]
+      owner_scope: skill
+    ls-unfuck-my-git-state:
+      class: framework-governance
+      sort_priority: 20
+      tags: [git, recovery]
+      owner_scope: skill
+    ls-agentlens:
+      class: development
+      sort_priority: 30
+      tags: [codebase, navigation]
+      owner_scope: skill
+    ls-debug-pro:
+      class: development
+      sort_priority: 30
+      tags: [debugging, diagnostics]
+      owner_scope: skill
+    ls-nodejs-nextjs:
+      class: development
+      sort_priority: 30
+      tags: [nodejs, nextjs]
+      owner_scope: skill
+    ls-pr-reviewer:
+      class: development
+      sort_priority: 30
+      tags: [review, pull-requests]
+      owner_scope: skill
+    ls-shadcn-ui:
+      class: development
+      sort_priority: 30
+      tags: [react, ui]
+      owner_scope: skill
+    ls-tdd-guide:
+      class: development
+      sort_priority: 30
+      tags: [tdd, testing]
+      owner_scope: skill
+    ls-typescript-code-quality:
+      class: development
+      sort_priority: 30
+      tags: [typescript, quality]
+      owner_scope: skill
+    ls-ansible-skill:
+      class: operations
+      sort_priority: 40
+      tags: [ansible, infrastructure]
+      owner_scope: skill
+    ls-backlog-and-reminders:
+      class: operations
+      sort_priority: 40
+      tags: [backlog, reminders]
+      owner_scope: skill
+    ls-codex-heartbeat:
+      class: operations
+      sort_priority: 40
+      tags: [heartbeat, automation]
+      owner_scope: skill
+    ls-cron-orchestrator:
+      class: operations
+      sort_priority: 40
+      tags: [cron, scheduling]
+      owner_scope: skill
+    ls-linux-patcher:
+      class: operations
+      sort_priority: 40
+      tags: [linux, patching]
+      owner_scope: skill
+    ls-linux-service-triage:
+      class: operations
+      sort_priority: 40
+      tags: [linux, services]
+      owner_scope: skill
+    ls-system-info:
+      class: operations
+      sort_priority: 40
+      tags: [system, diagnostics]
+      owner_scope: skill
+    ls-agentq-transport:
+      class: integrations
+      sort_priority: 50
+      tags: [agentq, transport]
+      owner_scope: skill
+    ls-cloudflare-dns:
+      class: integrations
+      sort_priority: 50
+      tags: [cloudflare, dns]
+      owner_scope: skill
+    ls-github-starredrepos:
+      class: integrations
+      sort_priority: 50
+      tags: [github, archive]
+      owner_scope: skill
+    ls-keepass-secrets:
+      class: integrations
+      sort_priority: 50
+      tags: [keepass, secrets]
+      owner_scope: skill
+    ls-mail-protocol-control:
+      class: integrations
+      sort_priority: 50
+      tags: [mail, protocols]
+      owner_scope: skill
+    ls-mcp-builder:
+      class: integrations
+      sort_priority: 50
+      tags: [mcp, builder]
+      owner_scope: skill
+    ls-npm-management:
+      class: integrations
+      sort_priority: 50
+      tags: [nginx-proxy-manager, api]
+      owner_scope: skill
+    ls-omniroute-admin-automation:
+      class: integrations
+      sort_priority: 50
+      tags: [omniroute, admin]
+      owner_scope: skill
+    ls-omniroute-proxy:
+      class: integrations
+      sort_priority: 50
+      tags: [omniroute, proxy]
+      owner_scope: skill
+    ls-scrapling:
+      class: integrations
+      sort_priority: 50
+      tags: [scrapling, extraction]
+      owner_scope: skill
+    ls-skill-creator:
+      class: skill-lifecycle
+      sort_priority: 60
+      tags: [skills, authoring]
+      owner_scope: skill
+    ls-skill-discovery:
+      class: skill-lifecycle
+      sort_priority: 60
+      tags: [skills, discovery]
+      owner_scope: skill
+    ls-skill-importer:
+      class: skill-lifecycle
+      sort_priority: 60
+      tags: [skills, import]
+      owner_scope: skill
+    ls-skill-normalizer:
+      class: skill-lifecycle
+      sort_priority: 60
+      tags: [skills, normalization]
+      owner_scope: skill
+    ls-skill-sandbox-tester:
+      class: skill-lifecycle
+      sort_priority: 60
+      tags: [skills, sandbox]
+      owner_scope: skill
+    ls-skill-vetter:
+      class: skill-lifecycle
+      sort_priority: 60
+      tags: [skills, security]
+      owner_scope: skill
+    ls-arbiter:
+      class: specialized
+      sort_priority: 70
+      tags: [arbiter, review]
+      owner_scope: skill
+    ls-humanizer:
+      class: specialized
+      sort_priority: 70
+      tags: [writing, editing]
+      owner_scope: skill
+    ls-kilo-boss-orchestrator:
+      class: specialized
+      sort_priority: 70
+      tags: [kilo, orchestration]
+      owner_scope: skill
+    ls-kilo-visual-output:
+      class: specialized
+      sort_priority: 70
+      tags: [kilo, output]
+      owner_scope: skill
+
 distribution_channels:
   - git
   - shell_installer

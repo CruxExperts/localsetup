@@ -22,7 +22,7 @@ if str(_ROOT) not in sys.path:
 
 from _localsetup.v3.manifests import load_pack_config, load_platforms
 from _localsetup.v3.provenance import json_with_provenance, markdown_with_provenance, base_provenance
-from _localsetup.v3.skills import load_skill_catalog, parse_skill_frontmatter
+from _localsetup.v3.skills import load_skill_catalog, parse_skill_frontmatter, skill_taxonomy_payload
 from _localsetup.v3.workflows import load_workflow_catalog, workflow_catalog_payload
 
 
@@ -253,6 +253,8 @@ def collect_inventory(repo_root: Path) -> dict[str, Any]:
                 "class": _classify_doc(repo_root, path),
                 "status": str(fm.get("status", "")),
                 "version": str(fm.get("version", "")),
+                "owner_skill": str(fm.get("owner_skill", "")),
+                "owner_package": str(fm.get("owner_package", "")),
                 "managed_blocks": _managed_blocks(text),
                 "has_frontmatter": bool(fm),
             }
@@ -280,7 +282,18 @@ def collect_inventory(repo_root: Path) -> dict[str, Any]:
             "platforms": len(platforms),
             "workflow_packs": sum(len(items) for items in pack.workflow_packs.values()),
         },
-        "skills": [{"name": skill.name, "path": _rel(repo_root, skill.path), "packs": skill.packs} for skill in skills],
+        "skills": [
+            {
+                "name": skill.name,
+                "path": _rel(repo_root, skill.path),
+                "packs": skill.packs,
+                "class": skill.taxonomy_class,
+                "sort_priority": skill.sort_priority,
+                "tags": skill.tags,
+                "owner_scope": skill.owner_scope,
+            }
+            for skill in skills
+        ],
         "workflows": [
             {
                 "package": workflow.package,
@@ -306,9 +319,20 @@ def collect_truth_map(repo_root: Path) -> dict[str, Any]:
         pyproject_version = match.group(1)
     facts_path = repo_root / GENERATED_DIR / "facts.json"
     facts = json.loads(_read_text(facts_path)) if facts_path.exists() else {}
+    taxonomy_path = repo_root / GENERATED_DIR / "skill-taxonomy.json"
+    generated_skill_taxonomy = json.loads(_read_text(taxonomy_path)) if taxonomy_path.exists() else {}
     platforms = load_platforms(repo_root)
     skills = load_skill_catalog(repo_root)
     workflows = load_workflow_catalog(repo_root)
+    active_doc_owners = [
+        {
+            "path": row["path"],
+            "owner_skill": row["owner_skill"],
+            "owner_package": row["owner_package"],
+        }
+        for row in collect_inventory(repo_root)["docs"]
+        if row["class"] == "framework" and row["status"] == "ACTIVE"
+    ]
     return {
         "schema_version": SCHEMA_VERSION,
         "truths": {
@@ -328,7 +352,11 @@ def collect_truth_map(repo_root: Path) -> dict[str, Any]:
             },
             "skill_count": {
                 "value": len(skills),
-                "sources": ["_localsetup/skills/ls-*/SKILL.md"],
+                "sources": ["_localsetup/skills/ls-*/SKILL.md", "_localsetup/config/pack.yaml"],
+            },
+            "skill_taxonomy": {
+                "value": skill_taxonomy_payload(repo_root),
+                "sources": ["_localsetup/config/pack.yaml", "_localsetup/skills/ls-*/SKILL.md"],
             },
             "workflow_count": {
                 "value": len(workflows),
@@ -338,8 +366,13 @@ def collect_truth_map(repo_root: Path) -> dict[str, Any]:
                 "value": workflow_catalog_payload(repo_root),
                 "sources": ["_localsetup/workflows/*/workflow.yaml"],
             },
+            "active_doc_owners": {
+                "value": active_doc_owners,
+                "sources": ["_localsetup/docs/**/*.md frontmatter"],
+            },
         },
         "generated_facts": facts,
+        "generated_skill_taxonomy": generated_skill_taxonomy,
     }
 
 
@@ -389,10 +422,13 @@ def _markdown_links(text: str) -> Iterable[tuple[str, str, int, str]]:
 def audit(repo_root: Path) -> dict[str, Any]:
     truth = collect_truth_map(repo_root)
     facts = truth["generated_facts"]
+    generated_skill_taxonomy = truth["generated_skill_taxonomy"]
     truths = truth["truths"]
     skill_count = truths["skill_count"]["value"]
     workflow_count = truths["workflow_count"]["value"]
     version = truths["version"]["value"]
+    valid_owner_skills = {skill.name for skill in load_skill_catalog(repo_root)}
+    valid_owner_packages = {workflow.package for workflow in load_workflow_catalog(repo_root)} | {"generate-docs", "docs-align"}
     findings: list[Finding] = []
 
     if truths["version"]["pyproject_version"] and truths["version"]["pyproject_version"] != version:
@@ -402,6 +438,13 @@ def audit(repo_root: Path) -> dict[str, Any]:
             actual = facts.get(key)
             if actual != expected:
                 findings.append(Finding(f"facts.{key}", "critical", "generated_drift", "_localsetup/docs/_generated/facts.json", None, f"generated facts `{key}` is stale", expected, actual, "live manifests", "generated"))
+    expected_skill_taxonomy = truths["skill_taxonomy"]["value"]
+    if generated_skill_taxonomy:
+        actual_skill_taxonomy = {k: v for k, v in generated_skill_taxonomy.items() if k != "provenance"}
+        if actual_skill_taxonomy != expected_skill_taxonomy:
+            findings.append(Finding("skill_taxonomy.generated", "critical", "generated_drift", "_localsetup/docs/_generated/skill-taxonomy.json", None, "generated skill taxonomy is stale", expected_skill_taxonomy, actual_skill_taxonomy, "live skill taxonomy", "generated"))
+    else:
+        findings.append(Finding("skill_taxonomy.missing", "critical", "generated_drift", "_localsetup/docs/_generated/skill-taxonomy.json", None, "generated skill taxonomy is missing", expected_skill_taxonomy, None, "live skill taxonomy", "generated"))
 
     count_re = re.compile(r"\b(\d+)\s+shipped(?:\s+capability)?\s+skills?\s+plus\s+(\d+)\s+(?:first-class\s+)?workflow\s+packages\b", re.IGNORECASE)
     for path in _markdown_files(repo_root):
@@ -420,6 +463,15 @@ def audit(repo_root: Path) -> dict[str, Any]:
             fm = _frontmatter(text)
             if fm.get("status") not in LIFECYCLE_STATES or not fm.get("version"):
                 findings.append(Finding(f"lifecycle.{rel}", "major", "lifecycle", rel, 1, "framework doc is missing valid lifecycle status/version frontmatter", "status and version", fm, "docs.config.yaml", "public"))
+            if fm.get("status") == "ACTIVE":
+                owner_skill = str(fm.get("owner_skill", "")).strip()
+                owner_package = str(fm.get("owner_package", "")).strip()
+                if not owner_skill and not owner_package:
+                    findings.append(Finding(f"ownership.{rel}", "major", "ownership", rel, 1, "active framework doc is missing owner_skill or owner_package frontmatter", "owner_skill or owner_package", fm, "skill-owned documentation policy", "public"))
+                if owner_skill and owner_skill not in valid_owner_skills:
+                    findings.append(Finding(f"ownership_skill.{rel}", "major", "ownership", rel, 1, "active framework doc references missing owner_skill", sorted(valid_owner_skills), owner_skill, "skill catalog", "public"))
+                if owner_package and owner_package not in valid_owner_packages:
+                    findings.append(Finding(f"ownership_package.{rel}", "major", "ownership", rel, 1, "active framework doc references missing owner_package", sorted(valid_owner_packages), owner_package, "workflow catalog and generated packages", "public"))
 
         for kind, target, offset, label in _markdown_links(text):
             line = _line_for_offset(text, offset)
@@ -473,6 +525,7 @@ def build_plan(audit_result: dict[str, Any]) -> dict[str, Any]:
         "public_doc_rewrites": [],
         "lifecycle_cleanup": [],
         "asset_cleanup": [],
+        "ownership_cleanup": [],
         "ci_changes": [],
         "manual_review": [],
     }
@@ -486,6 +539,8 @@ def build_plan(audit_result: dict[str, Any]) -> dict[str, Any]:
             buckets["lifecycle_cleanup"].append(finding["id"])
         elif category == "asset":
             buckets["asset_cleanup"].append(finding["id"])
+        elif category == "ownership":
+            buckets["ownership_cleanup"].append(finding["id"])
         else:
             buckets["manual_review"].append(finding["id"])
     return {"schema_version": SCHEMA_VERSION, "ok": audit_result["ok"], "buckets": buckets}
@@ -559,6 +614,7 @@ def write_summary(repo_root: Path, inventory: dict[str, Any], audit_result: dict
         "---",
         "status: ACTIVE",
         f"version: {truth['major_minor']['value']}",
+        "owner_package: docs-align",
         "---",
         "",
         "# Documentation Alignment Summary",

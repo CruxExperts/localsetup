@@ -16,6 +16,15 @@ Security-first vetting protocol for AI agent skills. **Never install a skill wit
 - When evaluating skills shared by other agents
 - Anytime you're asked to install unknown code
 
+## Rule ownership
+
+This skill owns import-time security and content-safety review. `SKILL_VALIDATION_PATTERNS.md` is the public reference for pattern IDs and review examples; agents should load this skill before making install decisions.
+
+- Do not execute candidate code while vetting.
+- Frontmatter and sidecar metadata drift is a finding, not an excuse to skip review.
+- Pattern matches are reported by location and pattern description; avoid displaying sensitive matched content unless the user explicitly needs it.
+- Use `ls-skill-sandbox-tester` only after vetting and normalization have passed.
+
 ## Vetting Protocol
 
 ### Step 1: Source Check

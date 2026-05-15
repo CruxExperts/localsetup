@@ -21,6 +21,15 @@ metadata:
 - **Public skill index:** `_localsetup/docs/PUBLIC_SKILL_INDEX.yaml`  - YAML with `schema_version`, `sources`, `updated` (ISO8601 date/datetime of last refresh), and `skills`. Each skill entry includes richer matching data: `summary_short`, `summary_long`, `capabilities`, `requirements`, `risk_flags`, `quality_signals`.
 - **Project-maintained copies:** The framework's GitHub repository keeps its own copy of the registry and index. Users who do not want to maintain their own can download these files from the project repo (e.g. raw URLs from the default branch) or update the framework so `_localsetup/docs/` gets the latest; alternatively they can edit and refresh locally.
 
+## Rule ownership
+
+This skill owns public skill discovery behavior. `SKILL_DISCOVERY.md` is the public reference; the refresh prompt, stale-index threshold, scrub sequence, and recommendation format live here for agents.
+
+- Always compute freshness from the current local date.
+- Treat an index with no `updated` value as not built yet.
+- The normal stale threshold is 7 days.
+- A refresh is not complete until the scrub dry-run and fix pass have been considered.
+
 ## Index refresh and prompts
 
 - **Current date:** Obtain the current date from the environment (e.g. `date` on Linux/macOS, `Get-Date` in PowerShell) for all age calculations.

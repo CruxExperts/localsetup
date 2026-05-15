@@ -18,6 +18,10 @@ def skill_payload(repo_root: Path, query: str | None = None) -> dict[str, Any]:
             {
                 "name": skill.name,
                 "description": skill.description,
+                "class": skill.taxonomy_class,
+                "sort_priority": skill.sort_priority,
+                "tags": skill.tags,
+                "owner_scope": skill.owner_scope,
                 "packs": skill.packs,
                 "path": str(skill.path.relative_to(repo_root)),
                 "risk": frontmatter.get("risk", "low"),

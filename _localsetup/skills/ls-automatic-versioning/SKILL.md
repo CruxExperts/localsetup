@@ -30,4 +30,12 @@ For read-only release preflight, run `python3 _localsetup/tools/localsetup_v3.py
 
 ## Reference
 
-- Versioning doc: [_localsetup/docs/VERSIONING.md](../../docs/VERSIONING.md) in the framework docs.
+- Versioning doc: [_localsetup/docs/VERSIONING.md](../../docs/VERSIONING.md) is the public reference.
+
+## Rule ownership
+
+This skill owns versioning and release-sync behavior. Keep `VERSION`, generated docs, version-sync path lists, provenance, and release tooling aligned here before updating the public doc.
+
+- `VERSION` is canonical.
+- Release impact is controlled by the patch-default policy plus explicit `Release-Type:` trailers.
+- Generated docs and generated taxonomy artifacts are part of release sync; do not leave them outside the versioning candidate/staging lists.

@@ -36,6 +36,14 @@ Provide agents with a host-first, high-level interface to the Scrapling CLI so t
   - Compare against a stored adapter state file and propose updates.
   - Apply safe adapter changes only after explicit confirmation.
 
+## Rule ownership
+
+This skill owns the Scrapling cheat-sheet behavior. `_localsetup/docs/scrapling-cheat-sheet.md` is the public quick reference, but install/upgrade, host-vs-Docker choice, adapter refresh, helper verb signatures, and status artifact rules live here.
+
+- Use host pipx first, Docker only as an escape hatch.
+- Treat the capability index as generated adapter truth; refresh it through the helper workflow rather than editing it by hand.
+- For current Scrapling CLI changes, refresh adapters and verify against upstream docs before changing helper behavior.
+
 ## Agent-facing verbs
 
 Agents should typically work through the public helper functions in `_localsetup.tools.scrapling_helper.main`:

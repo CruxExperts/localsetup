@@ -32,6 +32,14 @@ compatibility: "Python 3.10+ for any bundled tooling. Sandbox paths follow platf
 
 So the sandbox tester provides the **staging and run** (copy, run one command, interpret exit code); debug-pro provides the **how to fix** when that command fails. The agent ties them together by choosing the smoke command, running it, and on failure following debug-pro while keeping all edits in the sandbox.
 
+## Rule ownership
+
+This skill owns post-normalization skill validation behavior. Public validation docs describe patterns and examples; this skill is the execution contract for sandbox creation, smoke selection, debug handoff, and copy-back approval.
+
+- Never run sandbox testing before vetting and normalization have completed.
+- Never write sandbox fixes back to the repo without user approval.
+- Smoke commands must run inside the sandbox copy and must not write outside that directory.
+
 ## Design: use debug-pro in conjunction
 
 This skill does **not** duplicate the debugging methodology. When a smoke run fails:

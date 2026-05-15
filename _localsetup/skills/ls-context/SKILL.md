@@ -39,6 +39,7 @@ Localsetup v3 is deployed at `_localsetup/`. Framework and context are repo-loca
 ## Skills catalog
 - Current generated catalog: [SKILLS.md](../../docs/SKILLS.md).
 - Machine-readable generated facts: [_generated/facts.json](../../docs/_generated/facts.json).
+- Skill taxonomy source: `_localsetup/config/pack.yaml` (`extensions.skill_taxonomy`); generated machine-readable view: [_generated/skill-taxonomy.json](../../docs/_generated/skill-taxonomy.json).
 - Treat any short skill mentions in always-loaded platform context as orientation only; the generated catalog and each skill's own frontmatter are the current source of truth.
 - `ls-nodejs-nextjs`: Node.js/Next.js/React runbook for package-manager, build, migration, debugging, testing, security, deployment, and current-version verification.
 - `ls-github-starredrepos`: GitHub starred repository archive workflow for authenticated context checks, dry-run sync, repo scouting, metadata snapshots, and guarded publish flows.
@@ -53,9 +54,7 @@ _localsetup/docs/AGENTIC_DESIGN_INDEX.md, WORKFLOW_REGISTRY.md, PRD_SCHEMA_EXTER
 - Treat as **batch** when user request includes multiple distinct subtasks, or says "batch", "multiple steps", or "run the whole thing". Otherwise treat as **single task**.
 - If user names a specific skill, load it directly. Do not run task-skill-matcher.
 - If uncertain which skill fits, or user asks "what skill should I use?" / "pick the best", load `ls-task-skill-matcher`.
-- **Single task:** if one clear installed match exists, ask once "Use this skill?" before loading. In the same response, include up to 3 complementary public skills from `_localsetup/docs/PUBLIC_SKILL_INDEX.yaml` (one-line reason each). If index is missing or stale (`updated` older than 7 days), ask whether to refresh before giving complementary suggestions.
-- **Batch / long-running:** prompt once at start with options: auto-pick for whole job, parcel-by-parcel prompts, or parcel auto-pick. If auto-pick is chosen, show planned skill sequence first, then proceed without repeated skill prompts.
-- Keep this section short. Full behavior lives in `ls-task-skill-matcher` and `_localsetup/docs/TASK_SKILL_MATCHING.md`.
+- Keep this section short. Full matching behavior lives in `ls-task-skill-matcher`; public docs are references only.
 
 ## Commands
 localsetup doctor

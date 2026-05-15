@@ -18,7 +18,7 @@ metadata:
 ## Workflow (agent steps)
 
 1. **Identify target(s)**  - User specifies one skill (e.g. by name or path) or "all" (all skills under `_localsetup/skills/`). Resolve to a list of skill directories; each must contain SKILL.md.
-2. **Load rules**  - Read `_localsetup/docs/SKILL_NORMALIZATION.md` from the current framework source. Treat it as the single source of truth for document normalization, platform-specific handling, tooling normalization, approval flow, and references to `TOOLING_POLICY.md` and `INPUT_HARDENING_STANDARD.md`.
+2. **Load rules**  - This skill owns the normalization workflow. Read `_localsetup/docs/SKILL_NORMALIZATION.md` as the public reference for examples, platform-specific choices, and references to `TOOLING_POLICY.md` and `INPUT_HARDENING_STANDARD.md`; if a rule conflicts, update this skill and the public reference together.
 3. **Inventory the skill**  - List the files that normalization may need to touch:
    - `SKILL.md` and any other skill documentation, including `references/`, README-style files, playbook notes, and usage examples.
    - Tooling assets such as `scripts/`, executable entrypoints, helper libraries, tests, playbooks, templates, and files that the skill relies on for behavior.
@@ -38,6 +38,13 @@ metadata:
 - **Phase 1 covers documents:** `SKILL.md` plus other skill-local markdown or documentation where appropriate, including `references/`, README-style docs, playbook notes, and examples.
 - **Phase 2 covers tooling:** scripts, executable helpers, behavior-bearing playbooks, templates, tests, and related files are normalized or explicitly retained under the keep-original-tooling exception.
 - The same rules as import-time normalization apply: product-agnostic detection of platform-specific sections (e.g. "Integration with ...", "From ... Agent") and user choice before changing platform-specific intent.
+
+## Rule ownership
+
+- Normalize documents before tooling so references, examples, and command descriptions do not drift.
+- Apply input hardening and tooling policy when scripts are added or changed.
+- Keep platform-specific intent only with an explicit user choice.
+- Mirror normalization implications into public references after behavior changes, but do not make those docs the only execution source.
 
 ## Reference
 

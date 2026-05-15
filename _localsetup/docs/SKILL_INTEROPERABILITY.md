@@ -1,6 +1,7 @@
 ---
 status: ACTIVE
 version: 3.8
+owner_skill: ls-skill-creator
 ---
 
 # Skill interoperability (Localsetup v3)

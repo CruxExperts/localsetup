@@ -30,6 +30,7 @@ from _localsetup.v3.plan import build_install_plan
 from _localsetup.v3.provenance import MARKER_JSON
 from _localsetup.v3.rollback import rollback
 from _localsetup.v3.shell import detect_invocation_target, is_managed_shim, register_shell_command, shell_registration_status
+from _localsetup.v3.skills import skill_taxonomy_payload
 from _localsetup.v3.verify import verify_install
 from _localsetup.v3.wizard import Choice, TerminalWizard, choose_many, choose_one, run_wizard
 from _localsetup.v3.workflows import workflow_catalog_payload
@@ -1483,16 +1484,26 @@ def test_workflow_catalog_generation_parity_between_paths(tmp_path: Path) -> Non
     generated_by_script = json.loads(
         (root / "_localsetup/docs/_generated/workflow-catalog.json").read_text(encoding="utf-8")
     )
+    taxonomy_by_script = json.loads(
+        (root / "_localsetup/docs/_generated/skill-taxonomy.json").read_text(encoding="utf-8")
+    )
 
     generate_alias_outputs(root)
     generated_by_v3_docs = json.loads(
         (root / "_localsetup/docs/_generated/workflow-catalog.json").read_text(encoding="utf-8")
     )
+    taxonomy_by_v3_docs = json.loads(
+        (root / "_localsetup/docs/_generated/skill-taxonomy.json").read_text(encoding="utf-8")
+    )
 
     generated_by_script.pop("provenance", None)
     generated_by_v3_docs.pop("provenance", None)
+    taxonomy_by_script.pop("provenance", None)
+    taxonomy_by_v3_docs.pop("provenance", None)
     assert generated_by_script == workflow_catalog_payload(root)
     assert generated_by_v3_docs == workflow_catalog_payload(root)
+    assert taxonomy_by_script == skill_taxonomy_payload(root)
+    assert taxonomy_by_v3_docs == skill_taxonomy_payload(root)
 
 
 def test_lifecycle_status_for_deprecated_and_private_docs() -> None:

@@ -14,3 +14,11 @@ Use a **local identity file** and this committed stub so the framework repo stay
 - **Template guidance:** Localsetup v3 does not ship a separate public identity template. To create a local identity file, copy the fields you need from this stub and fill them in only in the local-only file.
 
 Do not put real names, contact info, or org details in this file; they belong in local-identity.mdc (not committed).
+
+## Rule ownership
+
+This skill owns public identity behavior for README, CONTRIBUTING, SUPPORT, SECURITY, package metadata, and other publishable surfaces.
+
+- Keep committed identity generic unless the user explicitly provides public identity text for the repo.
+- Keep private identity files local-only and ignored.
+- When publishing, combine this skill with `ls-github-publishing-workflow` so identity, license, contact, and repository links are checked together.

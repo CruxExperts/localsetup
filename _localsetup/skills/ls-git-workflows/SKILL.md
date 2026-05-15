@@ -51,6 +51,14 @@ git branch backup/before-recovery
 6. After each operation, re-check status and confirm the branch, staged files,
    and diff match the requested outcome.
 
+## Rule ownership
+
+This skill owns advanced Git operations and traceability behavior. `GIT_TRACEABILITY.md` is the public reference; use this skill for branch, history, worktree, release-tag, and checkpoint decisions.
+
+- Preserve unrelated dirty-tree work.
+- Record commit hashes or branch names when a decision depends on a past state.
+- Use `ls-unfuck-my-git-state` for broken worktree/index/ref symptoms instead of improvising repair steps here.
+
 ## Workflow Router
 
 Open the matching reference and follow only that recipe:

@@ -41,3 +41,12 @@ metadata:
 
 - **_localsetup/docs/ is ONLY for framework documentation.** Not for IDE setup or external tool guides. All docs must have status (ACTIVE/PROPOSAL/DRAFT/DEPRECATED/ARCHIVED). Check status before assuming a feature is implemented. See [DOCUMENT_LIFECYCLE_MANAGEMENT.md](../../docs/DOCUMENT_LIFECYCLE_MANAGEMENT.md).
 - **Platform default for any generated docs/output:** Use rich markdown (code blocks, lists, typography, links for in-repo refs, glyphs where they help), humanized prose. See [OUTPUT_AND_DOC_GENERATION.md](../../docs/OUTPUT_AND_DOC_GENERATION.md).
+
+## Rule ownership
+
+This skill owns script-quality, input-hardening, tooling-policy, and generated-output behavior. Public docs such as `INPUT_HARDENING_STANDARD.md`, `TOOLING_POLICY.md`, and `OUTPUT_AND_DOC_GENERATION.md` are reference surfaces for this skill.
+
+- Treat CLI args, files, network payloads, copied text, and imported archives as hostile.
+- Prefer structured parsers and approved dependencies over ad hoc parsing.
+- New framework tooling is Python 3.10+ unless it is a minimal bootstrap or platform entrypoint.
+- Generated docs should be produced by the repo generators and carry provenance; do not hand-edit generated artifacts except to repair the generator.

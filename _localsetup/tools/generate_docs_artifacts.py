@@ -18,6 +18,8 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from _localsetup.v3.provenance import artifact_registry_entry, base_provenance, json_with_provenance, markdown_with_provenance
+from _localsetup.v3.docs import generate_alias_outputs
+from _localsetup.v3.skills import load_skill_catalog, skill_taxonomy_payload
 from _localsetup.v3.workflows import load_workflow_catalog, workflow_catalog_payload
 
 from docs_alignment import generate_alignment_artifacts
@@ -38,6 +40,7 @@ ASCII_REPLACEMENTS = {
 ARTIFACT_SOURCE_INPUTS = [
     "VERSION",
     "_localsetup/skills",
+    "_localsetup/config/pack.yaml",
     "_localsetup/workflows",
     "_localsetup/config/platforms.yaml",
     "_localsetup/docs/PLATFORM_REGISTRY.md",
@@ -106,21 +109,24 @@ def read_frontmatter(md_path: Path) -> dict[str, str]:
     }
 
 
-def collect_skills(skills_dir: Path) -> list[dict[str, str]]:
+def collect_skills(repo_root: Path) -> list[dict[str, object]]:
     skills = []
-    for skill_md in sorted(skills_dir.glob("ls-*/SKILL.md")):
-        fm = read_frontmatter(skill_md)
-        skill_id = skill_md.parent.name
-        name = fm.get("name", "") or skill_id
-        description = ascii_clean(fm.get("description", "").replace("\n", " ").strip())
-        version = fm.get("version", "")
+    for skill in load_skill_catalog(repo_root):
+        skill_md = skill.path / "SKILL.md"
+        name = skill.name
+        description = ascii_clean(skill.description.replace("\n", " ").strip())
         skills.append(
             {
-                "id": skill_id,
+                "id": skill.name,
                 "name": name,
                 "description": description,
-                "version": version,
-                "path": str(skill_md.relative_to(skills_dir.parents[1])),
+                "version": skill.version,
+                "path": str(skill_md.relative_to(repo_root)),
+                "class": skill.taxonomy_class,
+                "sort_priority": skill.sort_priority,
+                "tags": skill.tags,
+                "owner_scope": skill.owner_scope,
+                "packs": skill.packs,
             }
         )
     return skills
@@ -224,11 +230,12 @@ def write_artifact_registry(repo_root: Path, paths: list[Path]) -> None:
     )
 
 
-def write_skills_md(path: Path, major_minor: str, skills: list[dict[str, str]], repo_root: Path) -> None:
+def write_skills_md(path: Path, major_minor: str, skills: list[dict[str, object]], repo_root: Path) -> None:
     lines = [
         "---",
         "status: ACTIVE",
         f"version: {major_minor}",
+        "owner_package: generate-docs",
         "---",
         "",
         "# Shipped skills catalog",
@@ -237,16 +244,18 @@ def write_skills_md(path: Path, major_minor: str, skills: list[dict[str, str]], 
         "",
         f"Total shipped skills: {len(skills)}",
         "",
-        "| Skill ID | Name | Version | Description |",
-        "|---|---|---|---|",
+        "| Skill ID | Class | Priority | Packs | Tags | Name | Version | Description |",
+        "|---|---|---:|---|---|---|---|---|",
     ]
 
     for skill in skills:
-        desc = (skill["description"] or "").replace("|", "\\|")
+        desc = str(skill["description"] or "").replace("|", "\\|")
         if not desc:
             desc = "No description in frontmatter."
+        packs = ", ".join(f"`{pack}`" for pack in skill["packs"]) if skill["packs"] else "unassigned"
+        tags = ", ".join(f"`{tag}`" for tag in skill["tags"]) if skill["tags"] else "n/a"
         lines.append(
-            f"| `{skill['id']}` | `{skill['name']}` | `{skill['version'] or 'n/a'}` | {desc} |"
+            f"| `{skill['id']}` | `{skill['class']}` | {skill['sort_priority']} | {packs} | {tags} | `{skill['name']}` | `{skill['version'] or 'n/a'}` | {desc} |"
         )
 
     lines.append("")
@@ -266,6 +275,7 @@ def write_workflow_registry(path: Path, major_minor: str, workflows: list[dict[s
         "---",
         "status: ACTIVE",
         f"version: {major_minor}",
+        "owner_package: generate-docs",
         "---",
         "",
         "# Workflow and module registry (Localsetup v3)",
@@ -317,6 +327,7 @@ def write_workflow_quick_ref(path: Path, major_minor: str, workflows: list[dict[
         "---",
         "status: ACTIVE",
         f"version: {major_minor}",
+        "owner_package: generate-docs",
         "---",
         "",
         "# Workflow quick reference",
@@ -355,6 +366,10 @@ def write_facts_json(path: Path, facts: dict, repo_root: Path) -> None:
 
 def write_workflow_catalog_json(path: Path, repo_root: Path) -> None:
     _write_json(path, workflow_catalog_payload(repo_root), repo_root)
+
+
+def write_skill_taxonomy_json(path: Path, repo_root: Path) -> None:
+    _write_json(path, skill_taxonomy_payload(repo_root), repo_root)
 
 
 def write_internal_snapshot(path: Path, facts: dict) -> None:
@@ -459,11 +474,10 @@ def main() -> int:
     version = (repo_root / "VERSION").read_text(encoding="utf-8").strip()
     major_minor = ".".join(version.split(".")[:2]) if "." in version else version
 
-    skills_dir = repo_root / "_localsetup" / "skills"
     docs_dir = repo_root / "_localsetup" / "docs"
     platform_registry = docs_dir / "PLATFORM_REGISTRY.md"
 
-    skills = collect_skills(skills_dir)
+    skills = collect_skills(repo_root)
     workflows = collect_workflows(repo_root)
     platforms = collect_platforms(platform_registry)
 
@@ -481,6 +495,11 @@ def main() -> int:
                 "name": s["name"],
                 "version": s["version"],
                 "path": s["path"],
+                "class": s["class"],
+                "sort_priority": s["sort_priority"],
+                "tags": s["tags"],
+                "owner_scope": s["owner_scope"],
+                "packs": s["packs"],
             }
             for s in skills
         ],
@@ -501,23 +520,31 @@ def main() -> int:
         docs_dir / "WORKFLOW_QUICK_REF.md",
         docs_dir / "_generated" / "facts.json",
         docs_dir / "_generated" / "workflow-catalog.json",
+        docs_dir / "_generated" / "skill-taxonomy.json",
     ]
     write_skills_md(direct_outputs[0], major_minor, skills, repo_root)
     write_workflow_registry(direct_outputs[1], major_minor, workflows, repo_root)
     write_workflow_quick_ref(direct_outputs[2], major_minor, workflows, repo_root)
     write_facts_json(direct_outputs[3], facts, repo_root)
     write_workflow_catalog_json(docs_dir / "_generated" / "workflow-catalog.json", repo_root)
+    write_skill_taxonomy_json(docs_dir / "_generated" / "skill-taxonomy.json", repo_root)
+    alias_outputs = generate_alias_outputs(repo_root)
     alignment_outputs = generate_alignment_artifacts(repo_root)
     if args.internal_output:
         write_internal_snapshot(repo_root / args.internal_output, facts)
     update_facts_blocks(repo_root, facts)
-    write_artifact_registry(repo_root, [*direct_outputs, *(Path(output) for output in alignment_outputs.values())])
+    alias_output_paths = [Path(output) for key, output in alias_outputs.items() if key != "count"]
+    write_artifact_registry(
+        repo_root,
+        [*direct_outputs, *alias_output_paths, *(Path(output) for output in alignment_outputs.values())],
+    )
 
     print("Generated: _localsetup/docs/SKILLS.md")
     print("Generated: _localsetup/docs/WORKFLOW_REGISTRY.md")
     print("Generated: _localsetup/docs/WORKFLOW_QUICK_REF.md")
     print("Generated: _localsetup/docs/_generated/facts.json")
     print("Generated: _localsetup/docs/_generated/workflow-catalog.json")
+    print("Generated: _localsetup/docs/_generated/skill-taxonomy.json")
     for output in alignment_outputs.values():
         print(f"Generated: {Path(output).relative_to(repo_root)}")
     print("Generated: _localsetup/docs/_generated/artifact-registry.json")

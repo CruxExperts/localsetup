@@ -10,7 +10,11 @@ from _localsetup.v3.baseline import classify_path
 from _localsetup.v3.baseline import tracked_files
 from _localsetup.v3.manifests import load_pack_config, load_platforms, validate_manifest_schemas
 from _localsetup.v3.paths import PathValidationError
-from _localsetup.v3.skills import selected_skill_names, validate_skill_catalog
+from _localsetup.v3.skills import ALLOWED_SKILL_TAXONOMY_CLASSES
+from _localsetup.v3.skills import load_skill_catalog
+from _localsetup.v3.skills import selected_skill_names
+from _localsetup.v3.skills import skill_taxonomy_payload
+from _localsetup.v3.skills import validate_skill_catalog
 from _localsetup.v3.workflows import selected_workflow_names, validate_workflow_catalog
 from _localsetup.v3.workflows import load_workflow_catalog
 
@@ -192,6 +196,31 @@ def test_catalog_validation_and_pack_selection() -> None:
     assert "ls-cloudflare-dns" not in selected_skill_names(root, ["core"])
     assert "ls-workflow-ops-tmux-session" in selected_workflow_names(root, ["ops"])
     assert "ls-system-info" in selected_skill_names(root, ["ops"])
+
+
+def test_skill_taxonomy_covers_all_shipped_skills_and_allowed_classes() -> None:
+    root = Path(__file__).resolve().parents[2]
+    pack = load_pack_config(root)
+    skill_names = {path.parent.name for path in (root / "_localsetup" / "skills").glob("ls-*/SKILL.md")}
+    taxonomy = pack.skill_taxonomy
+
+    assert set(taxonomy) == skill_names
+    assert len(taxonomy) == 52
+    assert {row["class"] for row in taxonomy.values()} <= ALLOWED_SKILL_TAXONOMY_CLASSES
+    assert {row["owner_scope"] for row in taxonomy.values()} == {"skill"}
+
+
+def test_skill_catalog_uses_taxonomy_sort_order_and_payload_fields() -> None:
+    root = Path(__file__).resolve().parents[2]
+    catalog = load_skill_catalog(root)
+    sort_keys = [(skill.sort_priority, skill.name) for skill in catalog]
+    payload = skill_taxonomy_payload(root)
+
+    assert sort_keys == sorted(sort_keys)
+    assert [row["id"] for row in payload["skills"]] == [skill.name for skill in catalog]
+    assert payload["count"] == len(catalog) == 52
+    assert payload["skills"][0]["sort_priority"] == 10
+    assert {"class", "sort_priority", "tags", "owner_scope", "packs"} <= set(payload["skills"][0])
 
 
 def test_agent_queue_example_yaml_has_expected_runtime_shape() -> None:

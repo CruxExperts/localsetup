@@ -803,8 +803,24 @@ def _main(argv: list[str] | None = None) -> int:
         return subprocess.run(command, cwd=target_root).returncode
 
     if args.cmd == "catalog":
+        skills = []
+        for skill in load_skill_catalog(root):
+            skills.append(
+                {
+                    "name": skill.name,
+                    "legacy_name": skill.legacy_name,
+                    "description": skill.description,
+                    "version": skill.version,
+                    "class": skill.taxonomy_class,
+                    "sort_priority": skill.sort_priority,
+                    "tags": skill.tags,
+                    "owner_scope": skill.owner_scope,
+                    "packs": skill.packs,
+                    "path": str(skill.path),
+                }
+            )
         payload = {
-            "skills": [skill.__dict__ | {"path": str(skill.path)} for skill in load_skill_catalog(root)],
+            "skills": skills,
             "workflows": [workflow.__dict__ | {"path": str(workflow.path)} for workflow in load_workflow_catalog(root)],
         }
         print(json.dumps(payload, indent=2))

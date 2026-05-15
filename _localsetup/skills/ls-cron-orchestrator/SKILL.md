@@ -10,6 +10,14 @@ compatibility: "Linux cron; Python 3.10+ and PyYAML (framework). Manifest at cro
 
 Define triggers and tasks in a single YAML manifest. One trigger (for example, `midnight-utc`) runs multiple tasks in sequence; on-boot triggers can delay before execution. Tooling creates, removes, reorders, enables, disables, validates, and installs generated crontab fragments.
 
+## Rule ownership
+
+This skill owns cron manifest and scheduling behavior. Public harness docs may reference cron, but cron validation, argv command handling, install fragments, and sequencing rules live here.
+
+- Prefer argv-list commands; string commands are parsed conservatively and shell operators are rejected.
+- Validate manifests before installing crontab fragments.
+- Coordinate with `ls-codex-heartbeat` for heartbeat-specific scheduling instead of duplicating heartbeat activation rules here.
+
 ## Manifest (cron/manifest.yaml)
 
 ```yaml

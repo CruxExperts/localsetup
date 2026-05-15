@@ -28,13 +28,15 @@ Before changing files:
 
 Use active v3 sources only:
 
+- Owning skills and workflow packages for operational behavior. Public docs carry `owner_skill` or `owner_package` frontmatter so agents know what to load.
 - `_localsetup/docs/AGENTIC_DESIGN_INDEX.md` for agent-facing design and workflow doc navigation.
 - `_localsetup/docs/WORKFLOW_REGISTRY.md` for named workflows and their triggers.
-- `_localsetup/docs/DOCUMENT_LIFECYCLE_MANAGEMENT.md` for document status meanings.
-- `_localsetup/docs/SKILLS_AND_RULES.md` and `_localsetup/docs/AGENT_SKILLS_COMPLIANCE.md` for skill format and loading rules.
-- `_localsetup/docs/REPO_AND_DATA_SEPARATION.md` for framework source versus repo-local data boundaries.
+- `_localsetup/docs/DOCUMENT_LIFECYCLE_MANAGEMENT.md` for document status meanings and ownership metadata.
+- `_localsetup/docs/SKILLS_AND_RULES.md` and `_localsetup/docs/AGENT_SKILLS_COMPLIANCE.md` as public references for skill format and loading rules; `ls-skill-creator` and `ls-task-skill-matcher` own execution behavior.
+- `_localsetup/docs/REPO_AND_DATA_SEPARATION.md` as the public reference for framework source versus repo-local data boundaries; this skill owns the operational guardrail.
 - `_localsetup/docs/QUICKSTART.md` for supported verification commands.
 - `_localsetup/config/platforms.yaml` and `_localsetup/docs/PLATFORM_REGISTRY.md` for supported platform paths.
+- `_localsetup/config/pack.yaml` for pack membership and `extensions.skill_taxonomy`; generated catalogs must not invent their own classification.
 
 Do not reference removed v2/v3-draft helper files or indexes. In particular, do not call missing rule-enforcer or document-maintenance shell helpers, and do not rely on non-existent YAML document/rule indexes.
 
@@ -46,8 +48,9 @@ Before relying on a framework document:
 2. Read its YAML frontmatter.
 3. Treat `status: ACTIVE` as current guidance.
 4. Treat `status: PROPOSAL`, `DRAFT`, `DEPRECATED`, or `ARCHIVED` as non-authoritative unless the user explicitly asks you to work from it.
-5. If `status:` is missing, treat the document as uncertain and cross-check against an active index or ask before relying on it for core behavior.
-6. When adding or materially changing a framework doc, include `status:` and, where applicable, `version:` frontmatter.
+5. For active public framework docs, read `owner_skill` or `owner_package` and load that owner for operational rules before changing behavior.
+6. If `status:` or ownership is missing, treat the document as uncertain and cross-check against an active index or ask before relying on it for core behavior.
+7. When adding or materially changing a framework doc, include `status:`, `version:`, and the appropriate owner field.
 
 The status meanings are defined in [DOCUMENT_LIFECYCLE_MANAGEMENT.md](../../docs/DOCUMENT_LIFECYCLE_MANAGEMENT.md).
 

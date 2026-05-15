@@ -27,6 +27,15 @@ metadata:
 - Codex: the workspace `AGENTS.md`.
 - Other platforms: the workspace context source identified by the platform registry.
 - For complementary public-skill suggestions, load `ls-skill-discovery` and follow its public-index check, refresh prompt, and recommendation flow.
+- For framework-generated catalogs, prefer `_localsetup/docs/_generated/skill-taxonomy.json` and `_localsetup/docs/SKILLS.md`; both are sorted by `sort_priority` then skill ID and expose class, tags, and pack membership.
+
+## Rule ownership
+
+This skill owns task-to-skill selection behavior. `TASK_SKILL_MATCHING.md` and `SKILLS_AND_RULES.md` are public references, while this skill carries the runtime matching flow.
+
+- Do not add always-loaded platform rules for every skill; keep platform context compact and route users to generated catalogs or this matcher.
+- If a user names a skill directly, load that skill and skip matching.
+- For batch work, choose a skill sequence once at the beginning unless the user asks for parcel-by-parcel prompts.
 
 ## Mode detection
 

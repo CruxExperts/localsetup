@@ -7,13 +7,14 @@ from .aliases import collect_skill_aliases
 from .baseline import implementation_file_map
 from .manifests import load_platforms
 from .provenance import artifact_registry_entry, base_provenance, json_with_provenance, markdown_with_provenance
-from .skills import load_skill_catalog
+from .skills import load_skill_catalog, skill_taxonomy_payload
 from .workflows import load_workflow_catalog, workflow_catalog_payload
 
 
 ARTIFACT_SOURCE_INPUTS = [
     "VERSION",
     "_localsetup/skills",
+    "_localsetup/config/pack.yaml",
     "_localsetup/workflows",
     "_localsetup/config/platforms.yaml",
     "_localsetup/docs/PLATFORM_REGISTRY.md",
@@ -75,6 +76,7 @@ def generate_alias_outputs(repo_root: Path) -> dict:
         "---",
         "status: ACTIVE",
         f"version: {major_minor}",
+        "owner_package: generate-docs",
         "---",
         "",
         "# v2 to v3 Skill Map",
@@ -102,25 +104,36 @@ def generate_alias_outputs(repo_root: Path) -> dict:
     _write_markdown(platforms_md, "\n".join(platform_lines) + "\n", repo_root)
 
     packs_md = repo_root / "_localsetup" / "docs" / "_generated" / "skill-packs.md"
-    pack_lines = ["# Skill And Workflow Packs", "", "| Pack | Type | Package | Legacy Alias |", "|---|---|---|---|"]
+    pack_lines = [
+        "# Skill And Workflow Packs",
+        "",
+        "| Pack | Type | Package | Class | Priority | Tags | Legacy Alias |",
+        "|---|---|---|---|---:|---|---|",
+    ]
     for skill in load_skill_catalog(repo_root):
         packs = ", ".join(skill.packs) if skill.packs else "unassigned"
         legacy = skill.legacy_name or "n/a"
-        pack_lines.append(f"| `{packs}` | `skill` | `{skill.name}` | `{legacy}` |")
+        tags = ", ".join(skill.tags) if skill.tags else "n/a"
+        pack_lines.append(
+            f"| `{packs}` | `skill` | `{skill.name}` | `{skill.taxonomy_class}` | {skill.sort_priority} | `{tags}` | `{legacy}` |"
+        )
     for workflow in load_workflow_catalog(repo_root):
         packs = ", ".join(workflow.packs) if workflow.packs else "unassigned"
-        pack_lines.append(f"| `{packs}` | `workflow` | `{workflow.package}` | `n/a` |")
+        pack_lines.append(f"| `{packs}` | `workflow` | `{workflow.package}` | n/a | n/a | n/a | `n/a` |")
     _write_markdown(packs_md, "\n".join(pack_lines) + "\n", repo_root)
 
     workflow_catalog = repo_root / "_localsetup" / "docs" / "_generated" / "workflow-catalog.json"
     _write_json(workflow_catalog, workflow_catalog_payload(repo_root), repo_root)
+
+    skill_taxonomy = repo_root / "_localsetup" / "docs" / "_generated" / "skill-taxonomy.json"
+    _write_json(skill_taxonomy, skill_taxonomy_payload(repo_root), repo_root)
 
     file_map_md = repo_root / "_localsetup" / "docs" / "_generated" / "implementation-file-map.md"
     map_lines = ["# Implementation File Map", "", "| Classification | Path |", "|---|---|"]
     for entry in implementation_file_map(repo_root):
         map_lines.append(f"| `{entry['classification']}` | `{entry['path']}` |")
     _write_markdown(file_map_md, "\n".join(map_lines) + "\n", repo_root)
-    _write_artifact_registry(repo_root, [aliases_path, migration_md, platforms_md, packs_md, workflow_catalog, file_map_md])
+    _write_artifact_registry(repo_root, [aliases_path, migration_md, platforms_md, packs_md, workflow_catalog, skill_taxonomy, file_map_md])
 
     return {
         "aliases": str(aliases_path),
@@ -128,6 +141,7 @@ def generate_alias_outputs(repo_root: Path) -> dict:
         "platforms": str(platforms_md),
         "packs": str(packs_md),
         "workflow_catalog": str(workflow_catalog),
+        "skill_taxonomy": str(skill_taxonomy),
         "file_map": str(file_map_md),
         "count": len(aliases),
     }

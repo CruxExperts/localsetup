@@ -71,6 +71,22 @@ def test_inventory_discovers_docs_assets_skills_workflows_and_ci(tmp_path: Path)
     assert any(row["path"] == "README.md" for row in payload["docs"])
     assert any(row["path"].startswith("assets/") for row in payload["assets"])
     assert ".github/workflows/docs-sync.yml" in payload["ci_workflows"]
+    framework_docs = [row for row in payload["docs"] if row["class"] == "framework" and row["status"] == "ACTIVE"]
+    assert framework_docs
+    assert all(row["owner_skill"] or row["owner_package"] for row in framework_docs)
+
+
+def test_audit_catches_active_framework_doc_missing_owner(tmp_path: Path) -> None:
+    repo = copy_docs_alignment_repo(tmp_path)
+    doc = repo / "_localsetup" / "docs" / "OUTPUT_AND_DOC_GENERATION.md"
+    text = doc.read_text(encoding="utf-8")
+    text = re.sub(r"\nowner_skill: [^\n]+\n", "\n", text, count=1)
+    doc.write_text(text, encoding="utf-8")
+
+    payload = json.loads(run_tool(repo, "audit").stdout)
+
+    assert any(finding["category"] == "ownership" for finding in payload["findings"])
+    assert payload["ok"] is False
 
 
 def test_inventory_ignores_gitignored_markdown_when_git_metadata_exists(tmp_path: Path) -> None:
@@ -323,3 +339,33 @@ def test_generated_artifact_registry_is_stable_across_generator_order(tmp_path: 
     second = (repo / "_localsetup/docs/_generated/artifact-registry.json").read_text(encoding="utf-8")
 
     assert second == first
+
+
+def test_broad_generator_refreshes_alias_owned_docs_before_alignment(tmp_path: Path) -> None:
+    repo = copy_docs_alignment_repo(tmp_path)
+    migration = repo / "_localsetup" / "docs" / "migration" / "v2-to-v3-skill-map.md"
+    migration.write_text(
+        re.sub(r"\nowner_package: [^\n]+\n", "\n", migration.read_text(encoding="utf-8"), count=1),
+        encoding="utf-8",
+    )
+
+    subprocess.run(
+        [sys.executable, "_localsetup/tools/generate_docs_artifacts.py", "--repo-root", "."],
+        cwd=repo,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+
+    assert "owner_package: generate-docs" in migration.read_text(encoding="utf-8")
+    audit = json.loads((repo / "_localsetup/docs/_generated/docs-audit-result.json").read_text(encoding="utf-8"))
+    assert not any(
+        finding["category"] == "ownership"
+        and finding["path"] == "_localsetup/docs/migration/v2-to-v3-skill-map.md"
+        for finding in audit["findings"]
+    )
+    inventory = json.loads((repo / "_localsetup/docs/_generated/docs-inventory.json").read_text(encoding="utf-8"))
+    migration_row = next(
+        row for row in inventory["docs"] if row["path"] == "_localsetup/docs/migration/v2-to-v3-skill-map.md"
+    )
+    assert migration_row["owner_package"] == "generate-docs"

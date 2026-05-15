@@ -1,6 +1,7 @@
 ---
 status: ACTIVE
 version: 3.8
+owner_skill: ls-skill-importer
 ---
 
 # Skill importing (Localsetup v3)

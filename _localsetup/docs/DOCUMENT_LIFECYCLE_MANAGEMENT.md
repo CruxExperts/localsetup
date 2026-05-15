@@ -1,6 +1,7 @@
 ---
 status: ACTIVE
 version: 3.8
+owner_skill: ls-documentation-alignment
 ---
 
 # Document lifecycle (Localsetup v3)

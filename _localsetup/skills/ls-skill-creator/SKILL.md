@@ -22,6 +22,14 @@ metadata:
 - **External skills can be used here.** A skill from [anthropics/skills](https://github.com/anthropics/skills) or any spec-compliant source can be copied into `_localsetup/skills/`, optionally renamed to `ls-*`, given `metadata.version` if missing, and registered. Preserve imported content as-is during the copy step, then immediately hand off to `ls-skill-normalizer` so document and tooling normalization follow [SKILL_NORMALIZATION.md](../../docs/SKILL_NORMALIZATION.md).
 - **Design guidance:** For structure, progressive disclosure, and what to include (scripts, references, assets), follow the [Agent Skills spec](https://agentskills.io/specification) and [Anthropic's skill-creator](https://github.com/anthropics/skills/tree/main/skills/skill-creator). This skill adds framework placement and registration; the resulting skill remains portable. See [SKILL_INTEROPERABILITY.md](../../docs/SKILL_INTEROPERABILITY.md).
 
+## Rule ownership
+
+This skill owns framework skill-authoring and interoperability behavior. Public docs such as `AGENT_SKILLS_COMPLIANCE.md`, `SKILL_INTEROPERABILITY.md`, and `SKILLS_AND_RULES.md` are reference surfaces; do not add new required `SKILL.md` fields there without also updating this skill, validation tests, and generated catalogs.
+
+- Keep Agent Skills portability: `name` and `description` remain the only required skill frontmatter fields.
+- Keep Localsetup-only classification in `_localsetup/config/pack.yaml` under `extensions.skill_taxonomy`; do not require taxonomy fields in every `SKILL.md`.
+- For imports, hand off to `ls-skill-importer`, `ls-skill-vetter`, `ls-skill-normalizer`, and `ls-skill-sandbox-tester` rather than embedding their whole workflows here.
+
 ## Inputs you can accept
 
 1. **Free-form description**  - User describes the workflow or behavior. Infer purpose, steps, and trigger scenarios; ask one or two clarifying questions if needed. Draft a spec-compliant skill (use Anthropic's design principles: concise, degrees of freedom, progressive disclosure).

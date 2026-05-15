@@ -1,6 +1,7 @@
 ---
 status: ACTIVE
 version: 3.8
+owner_skill: ls-backlog-and-reminders
 ---
 
 # Memory Management (Localsetup v3)

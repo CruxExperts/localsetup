@@ -59,6 +59,14 @@ Run a quick scrub command (e.g. grep for password, secret, api_key, token, /home
 - Treat this section as the source checklist for the skill. If the target repo maintains a publishing checklist, create or update its repo-local `docs/PUBLISHING_CHECKLIST.md` from these same categories: documentation and structure, scrub (PII/secrets/paths/URLs/artifacts), version and release, and repository settings.
 - Before going public, work through the checklist and optionally run the scrub command. When all items are checked, the repo is ready for public publishing.
 
+## Rule ownership
+
+This skill owns GitHub publication readiness. Public docs can summarize publishing behavior, but release-prep agents should load this skill for the scrub checklist, repository settings, and documentation/public-boundary decisions.
+
+- Use `ls-automatic-versioning` for version bump and sync behavior.
+- Use `ls-public-repo-identity` for public identity and contact fields.
+- Do not publish private maintenance state, generated local indexes, credentials, or machine paths.
+
 ## Reference
 
 - Checklist source: use `Publishing Checklist Baseline` in this skill unless the target repo has its own tracked checklist.

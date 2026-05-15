@@ -1,6 +1,7 @@
 ---
 status: ACTIVE
 version: 3.8
+owner_skill: ls-framework-compliance
 ---
 
 # Platform registry (Localsetup v3)

@@ -17,12 +17,21 @@ metadata:
 
 ## Workflow (agent steps)
 
-1. **Get source**  - For a repository or archive URL, fetch it into a temporary directory. For a local path, use that path as the scan root. For pasted content or a single-document URL, follow [SKILL_IMPORTING.md](../../docs/SKILL_IMPORTING.md#adding-a-skill-from-paste-or-url) before writing anything to `_localsetup/skills/`.
+1. **Get source**  - For a repository or archive URL, fetch it into a temporary directory. For a local path, use that path as the scan root. For pasted content or a single-document URL, write to a temporary candidate directory before any final copy; validation is path-based and no pasted content goes directly into `_localsetup/skills/`.
 2. **Scan**  - Run `_localsetup/tools/skill_importer_scan <path>` from the repo root. The current importer scanner takes a directory path only and writes a human-readable summary to stdout.
 3. **Summarize and choose**  - Present each candidate's purpose, included files, code types, heuristic security result, and any content-safety review instructions emitted by validation tooling. Do not execute candidate code. Ask which candidates to import.
 4. **Check duplicates and overlap**  - Compare selected candidates with `_localsetup/skills/` by directory name, frontmatter `name`, description, purpose, and triggers. On collision or high overlap, offer **Ignore new**, **Replace existing**, **Merge**, or **Create as new**; get explicit user choice.
 5. **Normalize before copy**  - After the user chooses to proceed past security and content-safety review, run mandatory normalization using [SKILL_NORMALIZATION.md](../../docs/SKILL_NORMALIZATION.md) as the source of truth. Present the summary and key edits, get approval, and import the normalized result.
 6. **Import and confirm**  - Copy the normalized skill to `_localsetup/skills/<name>/`, align frontmatter `name` with the directory, add `metadata.version: "1.0"` if missing, register per [PLATFORM_REGISTRY.md](../../docs/PLATFORM_REGISTRY.md), and report what changed.
+
+## Rule ownership
+
+This skill owns the operational import flow. `SKILL_IMPORTING.md` is a public reference for the same rules, but agents should load this skill for execution.
+
+- Candidate content is never executed during import screening.
+- Pasted content and single-document URLs are staged in a temporary directory, scanned, and presented before any final write.
+- Duplicate/overlap choices require explicit user selection; do not auto-replace or auto-merge.
+- Successful imports remain Agent Skills compatible and then move through vetting, normalization, and sandbox testing as separate owned steps.
 
 ## Security and content safety screening (heuristic only)
 

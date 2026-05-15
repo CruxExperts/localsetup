@@ -108,6 +108,7 @@ def test_source_dirty_ignores_generated_doc_outputs(tmp_path: Path) -> None:
         repo / "_localsetup" / "docs" / "SKILLS.md",
         repo / "_localsetup" / "docs" / "WORKFLOW_REGISTRY.md",
         repo / "_localsetup" / "docs" / "_generated" / "facts.json",
+        repo / "_localsetup" / "docs" / "_generated" / "skill-taxonomy.json",
         repo / "_localsetup" / "docs" / "migration" / "v2-to-v3-skill-map.md",
         repo / "assets" / "README.md",
     ]
