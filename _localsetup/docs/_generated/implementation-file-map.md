@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 57864500aafb46b36c1621fcd547b482c1a533a3e22ff4867a190df736b44dbd
+  source_provenance_hash: 04e2ba1003781b304a8c9205d1dd1075b443970979ae64c791303292cf844b6d
   emitter: generate-docs
 framework_version: 3.8.6
-source_commit: 3d8e304f49f2b11cca6986cf95dc27f4fad14765
-artifact_sha256: 975fe03bbac2e27eaba715ffcd3e11a9faa573edd584abff20d6ae04673e81c0
+source_commit: 69b0ab0f992ed4ed3d5b0bc7d0136ca1f0d4096a
+artifact_sha256: 97496d008aedcd38120470c39db495dc03c995f4bf36c1fe07f7f338caa7e87c
 ---
 # Implementation File Map
 
@@ -608,6 +608,7 @@ artifact_sha256: 975fe03bbac2e27eaba715ffcd3e11a9faa573edd584abff20d6ae04673e81c
 | `keep` | `_localsetup/tools/scrapling_helper/host_env.py` |
 | `keep` | `_localsetup/tools/scrapling_helper/job_registry.py` |
 | `keep` | `_localsetup/tools/scrapling_helper/main.py` |
+| `keep` | `_localsetup/tools/scrapling_helper/scrapling_capabilities.json` |
 | `keep` | `_localsetup/tools/scrapling_helper/tests/test_job_registry_contract.py` |
 | `keep` | `_localsetup/tools/skill_importer_scan` |
 | `keep` | `_localsetup/tools/skill_importer_scan.py` |
@@ -713,5 +714,4 @@ artifact_sha256: 975fe03bbac2e27eaba715ffcd3e11a9faa573edd584abff20d6ae04673e81c
 | `keep` | `docs.config.yaml` |
 | `keep` | `install` |
 | `keep` | `pyproject.toml` |
-| `keep` | `tools/scrapling_helper/scrapling_capabilities.json` |
 | `keep` | `uv.lock` |
