@@ -61,6 +61,11 @@ __pycache__/
 .localsetup/
 localsetup.lock.json
 .codex/skills
+.codex/runs/
+.codex/sessions/
+.codex/logs/
+.codex/tmp/
+.codex/*.backup
 .claude/skills
 .cursor/skills
 .kilo/skills

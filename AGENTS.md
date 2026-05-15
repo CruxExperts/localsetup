@@ -6,6 +6,8 @@ This root `AGENTS.md` is the governing agent contract for this repository. Treat
 
 When the user corrects agent behavior in a way that should survive future sessions, update this file in the same work wave unless the rule is private, secret, temporary, or explicitly not meant for the repo. Do not rely on chat history, memory, or prior-run summaries for rules that should govern future agents.
 
+Do not impose an arbitrary length cap on this file. In particular, do not trim it to fit a 300-line preference or a generic prompt-aesthetics target. If repo rules need more context, add the context here with clear headings and keep it operational.
+
 Keep this file aligned with the repo's actual workflow. If a rule also belongs in installed Codex context for future converted repos, mirror the portable part into `_localsetup/templates/codex/AGENTS.md`. If the rule is only for this checkout, keep it here.
 
 ## Project Structure & Module Organization
@@ -45,6 +47,12 @@ Do not commit local secrets, generated private state, or machine-specific agent 
 
 `_localsetup/docs/`, root documentation, platform templates, generated docs, and package/catalog surfaces are publishable framework context. Do not place repo-maintenance plans, private audits, unapproved inventories, internal ledgers, or transient planning artifacts in those locations unless the user explicitly authorizes public documentation.
 
+There are three separate destinations. Do not blur them:
+
+- tracked and GitHub-visible: source, public framework docs, templates, tests, and examples intentionally meant for the public repo
+- tracked but release-archive-excluded: rare repo metadata examples that are safe on GitHub but should not ship in framework archives, controlled by `.gitattributes export-ignore`
+- local private and untracked: active maintenance state, run ledgers, private audit drafts, generated local indexes, credentials, logs, caches, and planning transcripts
+
 Use private or ignored locations for repo-maintenance state:
 
 - `.codex/runs/` for controller ledgers, resume notes, validation evidence, and temporary handoff prompts
@@ -52,6 +60,14 @@ Use private or ignored locations for repo-maintenance state:
 - `.git/info/exclude` for repo-local ignore rules that should not affect collaborators
 
 Before creating or moving planning material, classify the destination as public framework context or private maintenance state. If public placement is not explicitly authorized, keep the material private and record only a compact public pointer when the user asks for one.
+
+Git hygiene defaults for this repo:
+
+- Keep `.codex/runs/`, `.codex/sessions/`, `.codex/logs/`, `.codex/tmp/`, `.localsetup-maint/docs/`, `graphify-out/`, `state/`, `data/`, and root `docs/` out of normal commits.
+- Use `.gitignore` for repo-wide private-state patterns. Use `.git/info/exclude` only for one-machine extras.
+- Before committing or publishing, check `git status --short`, `git diff --cached --name-status`, and `git ls-files .codex/runs .localsetup-maint/docs graphify-out state data docs`.
+- If a file must be tracked for local repository operation but should not ship in release archives, add an explicit `.gitattributes export-ignore` rule and state why in the commit.
+- The pre-commit hook blocks staged private/local maintenance paths by default. Use `LOCALSETUP_ALLOW_PRIVATE_STAGE=1` only after an explicit public-boundary review.
 
 ## Agent-Team Workflow Defaults
 

@@ -4,6 +4,27 @@ set -euo pipefail
 repo_root="$(git rev-parse --show-toplevel)"
 cd "$repo_root"
 
+if [[ "${LOCALSETUP_ALLOW_PRIVATE_STAGE:-0}" != "1" ]]; then
+  private_staged=()
+  while IFS= read -r -d '' path; do
+    case "$path" in
+      .codex/runs/*|.codex/sessions/*|.codex/logs/*|.codex/tmp/*|.codex/*.backup|\
+      .agent/*|.git-state-snapshots/*|.localsetup/*|localsetup.lock.json|\
+      .localsetup-maint/config/*|.localsetup-maint/docs/*|.localsetup-maint/prompts/*|.localsetup-maint/reports/*|.localsetup-maint/state/*|\
+      data/*|docs/*|graphify-out/*|_internal_docs/*|_localsetup/.cache/*|_localsetup/logs/*)
+        private_staged+=("$path")
+        ;;
+    esac
+  done < <(git diff --cached --name-only -z)
+
+  if ((${#private_staged[@]})); then
+    echo "[localsetup-v3] refusing to commit private/local maintenance paths:"
+    printf '  %s\n' "${private_staged[@]}"
+    echo "[localsetup-v3] move private work to ignored state, or set LOCALSETUP_ALLOW_PRIVATE_STAGE=1 only after an explicit public-boundary review."
+    exit 1
+  fi
+fi
+
 python3 _localsetup/tools/localsetup_v3.py hook-gate --out /tmp/localsetup-v3-public.tar.gz >/tmp/localsetup-v3-hook.json
 
 if python3 - <<'PY'
@@ -21,8 +42,15 @@ else
 fi
 
 generated_paths=(
+  _localsetup/docs/_generated/artifact-registry.json
+  _localsetup/docs/_generated/workflow-catalog.json
   _localsetup/docs/SKILLS.md
   _localsetup/docs/_generated/facts.json
+  _localsetup/docs/_generated/docs-inventory.json
+  _localsetup/docs/_generated/docs-truth-map.json
+  _localsetup/docs/_generated/docs-audit-result.json
+  _localsetup/docs/_generated/docs-asset-manifest.json
+  _localsetup/docs/_generated/docs-alignment-summary.md
   _localsetup/docs/_generated/implementation-file-map.md
   _localsetup/docs/_generated/platform-adapters.md
   _localsetup/docs/_generated/skill-packs.md
