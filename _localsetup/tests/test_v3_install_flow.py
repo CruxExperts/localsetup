@@ -1080,7 +1080,7 @@ def test_v3_managed_venv_commands_and_lock_interpreter(tmp_path: Path) -> None:
 
 def test_v3_missing_requirements_checks_selected_interpreter(tmp_path: Path) -> None:
     req = tmp_path / "requirements.txt"
-    req.write_text("PGPy>=0.6.0\nDefinitely-Missing-Package>=1\n", encoding="utf-8")
+    req.write_text("PGPy>=0.5.4,<0.6\nDefinitely-Missing-Package>=1\n", encoding="utf-8")
 
     def fake_runner(cmd: list[str], **_: object) -> subprocess.CompletedProcess[str]:
         assert cmd[:2] == ["/tmp/venv/bin/python", "-c"]

@@ -69,7 +69,7 @@ Agents should typically work through the public helper functions in `_localsetup
 - `scrapling_self_test(mode: "auto"|"offline"|"online")`:
   - Run a CLI-only self-test that checks environment status, prints an install or upgrade plan (including pipx bootstrap commands when needed), and performs a tiny extraction against a local HTML fixture by default (offline).
 
-The helper functions are also summarized in a machine-readable capability index written to `tools/scrapling_helper/scrapling_capabilities.json` by `refresh_adapters()` so other agents can discover them quickly.
+The helper functions are also summarized in a machine-readable capability index at `_localsetup/tools/scrapling_helper/scrapling_capabilities.json` so other agents can discover them quickly. `refresh_adapters(dry_run=True)` returns the current capability index without writing files; `refresh_adapters(dry_run=False)` writes the adapter state and packaged capability index.
 
 The exact verb signatures and response shapes are defined in the Scrapling integration plan; implementations should keep them stable so other skills can depend on them.
 

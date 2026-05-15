@@ -152,7 +152,7 @@ Before install, use the dependency list below as the canonical source of truth. 
 | Python: `requests` (requests>=2.28) | Recommended | HTTP client used by index refresh and scrub tools |
 | Python: `frontmatter` (python-frontmatter>=1.1) | Recommended | YAML frontmatter parsing for skill and PRD markdown files |
 | Python: `cryptography` (cryptography>=42.0) | Recommended | Framework cryptographic primitives for secure envelope workflows |
-| Python: `pgpy` (PGPy>=0.6.0) | Recommended | Pure-Python OpenPGP support for secure mail workflows |
+| Python: `pgpy` (PGPy>=0.5.4,<0.6) | Recommended | Pure-Python OpenPGP support for secure mail workflows |
 
 Python packages are listed in `_localsetup/requirements.txt`. The conservative default for Python tooling is a managed virtualenv at `~/.local/share/localsetup/venv`, which avoids PEP 668 externally managed system-pip failures. To check the current machine without changing files, run:
 

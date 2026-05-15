@@ -35,7 +35,7 @@ DEFAULT_STATE = AdapterState(
 
 
 def state_path(cfg: ScraplingConfig) -> Path:
-    return cfg.framework_root / "tools" / "scrapling_helper" / "adapter_state.json"
+    return cfg.framework_root / "_localsetup" / "tools" / "scrapling_helper" / "adapter_state.json"
 
 
 def load_state(cfg: ScraplingConfig) -> AdapterState:
@@ -60,11 +60,10 @@ def save_state(cfg: ScraplingConfig, state: AdapterState) -> None:
 
 
 def capability_index_path(cfg: ScraplingConfig) -> Path:
-    return cfg.framework_root / "tools" / "scrapling_helper" / "scrapling_capabilities.json"
+    return cfg.framework_root / "_localsetup" / "tools" / "scrapling_helper" / "scrapling_capabilities.json"
 
 
 def save_capability_index(cfg: ScraplingConfig, index: Dict[str, Any]) -> None:
     path = capability_index_path(cfg)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(index, indent=2), encoding="utf-8")
-

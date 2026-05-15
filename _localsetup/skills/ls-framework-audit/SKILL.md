@@ -3,12 +3,12 @@ name: ls-framework-audit
 description: "Run doc, link, skill matrix, and version/facts checks before release. Single entrypoint script; output to user-specified path only; no in-repo default. Use when user says 'run audit', 'run framework audit', or before release."
 metadata:
   version: "1.0"
-compatibility: "Python 3.10+ and PyYAML via the framework dependency helper. Depends on ls-skill-sandbox-tester tooling (create_sandbox.py, run_smoke.py) for skill matrix; both ship with the framework (framework invariant)."
+compatibility: "Python 3.10+ and PyYAML via the framework dependency helper. Skill-sandbox smoke entries depend on ls-skill-sandbox-tester tooling (create_sandbox.py, run_smoke.py); repo-root smoke entries run directly from the repository root."
 ---
 
 # Framework audit
 
-**Purpose:** One atomic skill and entrypoint to run a release-ready audit: doc checks, link checks, skill matrix (sandbox only), version/facts, and optional maintainer-ref flagging. Output is written only to a user-provided path (CLI or env); no default in-repo. Exit 0 only when there are zero errors.
+**Purpose:** One atomic skill and entrypoint to run a release-ready audit: doc checks, link checks, skill matrix smoke checks, version/facts, and optional maintainer-ref flagging. Output is written only to a user-provided path (CLI or env); no default in-repo. Exit 0 only when there are zero errors.
 
 ## When to use
 
@@ -18,14 +18,14 @@ compatibility: "Python 3.10+ and PyYAML via the framework dependency helper. Dep
 ## Workflow
 
 1. **Run the entrypoint** from repo root: `python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py [--output /path/to/report]` or set `LOCALSETUP_AUDIT_OUTPUT` to a writable path. If no output path is given, the script prints a short summary to stdout only; no file is written in the repo.
-2. **Phases:** Doc checks (key docs exist), link checks (plain-text refs to docs/ or _localsetup/ reported for conversion to markdown links), skill matrix (sandbox + smoke from smoke list), version/facts (VERSION vs README vs facts.json if present), private release refs (hardcoded private paths or script names).
+2. **Phases:** Doc checks (key docs exist), link checks (plain-text refs to docs/ or _localsetup/ reported for conversion to markdown links), skill matrix (sandbox or repo-root smoke from smoke list), version/facts (VERSION vs README vs facts.json if present), private release refs (hardcoded private paths or script names).
 3. **Report:** Contains a `requires_review` / `human_decision` section for items that need user resolution. The script is non-interactive; the agent presents the report and asks the user.
 4. **Doc-only skills:** The smoke list marks them as `N/A`. The script does not run tooling for those. The **agent** (not the script) produces an enumerated one-sentence/paragraph per logical step and flags logic gaps for user resolution, per SKILL.md of each doc-only skill.
 
 ## Smoke list (skill matrix)
 
 - **Path:** `_localsetup/tests/skill_smoke_commands.yaml`
-- **Schema:** YAML map: `skill_id` (directory name under _localsetup/skills/) -> `command` string or `"N/A"`. Command is run with cwd = sandbox copy of the skill. `N/A` = doc-only; no runnable smoke; audit uses agent step summary only.
+- **Schema:** YAML map: `skill_id` (directory name under _localsetup/skills/) -> `command` string, `"N/A"`, or a mapping shaped like `{cwd: skill-sandbox|repo-root, command: "..."}`. String commands and `cwd: skill-sandbox` mappings run with cwd = sandbox copy of the skill. `cwd: repo-root` mappings run directly from the repository root for tool-backed skills whose executable lives outside the skill directory. `N/A` = doc-only; no runnable smoke; audit uses agent step summary only.
 - One entry per skill in `_localsetup/skills/*`. The audit script reads this file as single source of truth for which skills have tooling to smoke.
 
 ## Dependencies (framework invariant)

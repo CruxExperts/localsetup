@@ -10,8 +10,10 @@ no in-repo default. Exit 0 only when zero errors. Follows INPUT_HARDENING_STANDA
 """
 
 import argparse
+import json
 import os
 import re
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -36,6 +38,7 @@ MAINTAINER_PATTERN = re.compile(
     re.IGNORECASE,
 )
 VERSION_LINE = re.compile(r"^\*\*Version:\*\*\s*([\d.]+)", re.MULTILINE)
+SMOKE_COMMAND_MAX = 2048
 
 
 def _script_dir() -> Path:
@@ -92,6 +95,45 @@ def _format_subprocess_failure(
     return "\n".join(parts)
 
 
+def _sanitize_smoke_command(command: str) -> list[str]:
+    if not isinstance(command, str):
+        raise ValueError("command must be a string")
+    command = command.strip()
+    if not command:
+        raise ValueError("command is empty")
+    if len(command) > SMOKE_COMMAND_MAX:
+        raise ValueError(f"command length exceeds {SMOKE_COMMAND_MAX}")
+    if CONTROL_CHARS.search(command):
+        raise ValueError("command contains unsupported control characters")
+    try:
+        argv = shlex.split(command)
+    except ValueError as exc:
+        raise ValueError(f"command could not be parsed: {exc}") from exc
+    if not argv:
+        raise ValueError("command is empty")
+    if argv[0] in {"python", "python3"}:
+        argv[0] = sys.executable
+    return argv
+
+
+def _normalize_smoke_entry(entry: object) -> tuple[str, str] | None:
+    if isinstance(entry, str):
+        if entry.strip().upper() == "N/A":
+            return None
+        return ("skill-sandbox", entry)
+    if not isinstance(entry, dict):
+        raise ValueError("entry must be a command string, 'N/A', or a mapping")
+    command = entry.get("command")
+    if isinstance(command, str) and command.strip().upper() == "N/A":
+        return None
+    if not isinstance(command, str) or not command.strip():
+        raise ValueError("mapping entries require a non-empty command")
+    cwd = entry.get("cwd", "skill-sandbox")
+    if cwd not in {"skill-sandbox", "repo-root"}:
+        raise ValueError("mapping cwd must be 'skill-sandbox' or 'repo-root'")
+    return (str(cwd), command)
+
+
 def _append_report_items(report_lines: list[str], items: list[str]) -> None:
     for item in items:
         lines = item.splitlines() or [""]
@@ -134,11 +176,14 @@ def _read_facts_version(root: Path) -> str | None:
         return None
     try:
         text = facts.read_text(encoding="utf-8", errors="replace")
-        if '"version"' in text:
-            m = re.search(r'"version"\s*:\s*"([^"]+)"', text)
-            return m.group(1).strip() if m else None
+        payload = json.loads(text)
+        if isinstance(payload, dict):
+            version = payload.get("version")
+            return version.strip() if isinstance(version, str) and version.strip() else None
     except OSError:
         pass
+    except json.JSONDecodeError:
+        return None
     return None
 
 
@@ -227,14 +272,37 @@ def phase_skill_matrix(root: Path, fw: Path) -> tuple[list[str], list[str]]:
     if not create_sandbox.is_file() or not run_smoke.is_file():
         errors.append("Sandbox tooling (create_sandbox.py, run_smoke.py) not found")
         return (errors, warnings)
-    for skill_id, cmd in data.items():
-        if not isinstance(cmd, str) or cmd.strip().upper() == "N/A":
+    for skill_id, entry in data.items():
+        try:
+            smoke = _normalize_smoke_entry(entry)
+        except ValueError as exc:
+            errors.append(f"Skill matrix {skill_id}: invalid smoke entry: {exc}")
             continue
+        if smoke is None:
+            continue
+        cwd_mode, cmd = smoke
         skill_path = skills_dir / skill_id
         if not skill_path.is_dir():
             warnings.append(f"Smoke list references missing skill dir: {skill_id}")
             continue
         try:
+            if cwd_mode == "repo-root":
+                argv = _sanitize_smoke_command(cmd)
+                cp = subprocess.run(
+                    argv,
+                    cwd=str(root),
+                    capture_output=True,
+                    text=True,
+                    timeout=120,
+                )
+                if cp.returncode != 0:
+                    errors.append(
+                        _format_subprocess_failure(
+                            f"Skill matrix {skill_id}: repo-root smoke",
+                            cp,
+                        )
+                    )
+                continue
             cp = subprocess.run(
                 [sys.executable, str(create_sandbox), "--skill-path", str(skill_path)],
                 cwd=str(root),

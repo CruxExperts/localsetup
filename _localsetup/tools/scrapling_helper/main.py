@@ -491,25 +491,9 @@ def launch_mcp_server(
     return apply_command_plan(cmd)
 
 
-def refresh_adapters(dry_run: bool = True) -> Dict[str, Any]:
-    """
-    Parse current Scrapling CLI features and generate a structured diff
-    against the persisted AdapterState. When dry_run is True, only the diff
-    is returned. When dry_run is False, the new state is written as well.
-    """
-    cfg = load_config()
-    state_before: AdapterState = load_state(cfg)
-    observed_state: AdapterState = parse_current_features(cfg)
-
-    diff = {
-        "supported_versions_before": state_before.supported_versions,
-        "supported_versions_after": observed_state.supported_versions,
-        "cli_commands_before": list(state_before.cli_commands.keys()),
-        "cli_commands_after": list(observed_state.cli_commands.keys()),
-        "flags_added": sorted(set(observed_state.flags.keys()) - set(state_before.flags.keys())),
-        "flags_removed": sorted(set(state_before.flags.keys()) - set(observed_state.flags.keys())),
-    }
-    capability_index = {
+def build_capability_index(cfg: ScraplingConfig) -> Dict[str, Any]:
+    """Return the machine-readable helper capability index without writing files."""
+    return {
         "scrapling_status": {
             "cli": "scrapling --help",
             "helper": "scrapling_status()",
@@ -556,11 +540,32 @@ def refresh_adapters(dry_run: bool = True) -> Dict[str, Any]:
             "description": "Run an offline-first self-test and write a status file.",
         },
     }
-    save_capability_index(cfg, capability_index)
+
+
+def refresh_adapters(dry_run: bool = True) -> Dict[str, Any]:
+    """
+    Parse current Scrapling CLI features and generate a structured diff
+    against the persisted AdapterState. When dry_run is True, only the diff
+    is returned. When dry_run is False, the new state is written as well.
+    """
+    cfg = load_config()
+    state_before: AdapterState = load_state(cfg)
+    observed_state: AdapterState = parse_current_features(cfg)
+
+    diff = {
+        "supported_versions_before": state_before.supported_versions,
+        "supported_versions_after": observed_state.supported_versions,
+        "cli_commands_before": list(state_before.cli_commands.keys()),
+        "cli_commands_after": list(observed_state.cli_commands.keys()),
+        "flags_added": sorted(set(observed_state.flags.keys()) - set(state_before.flags.keys())),
+        "flags_removed": sorted(set(state_before.flags.keys()) - set(observed_state.flags.keys())),
+    }
+    capability_index = build_capability_index(cfg)
 
     if dry_run:
         return {"applied": False, "diff": diff, "capabilities": capability_index}
     save_state(cfg, observed_state)
+    save_capability_index(cfg, capability_index)
     return {"applied": True, "diff": diff, "capabilities": capability_index}
 
 

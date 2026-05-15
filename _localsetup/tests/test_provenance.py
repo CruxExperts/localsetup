@@ -102,6 +102,26 @@ def test_source_dirty_includes_untracked_package_sources(tmp_path: Path) -> None
     assert marker["source_dirty"] is True
 
 
+def test_source_dirty_ignores_generated_doc_outputs(tmp_path: Path) -> None:
+    repo = make_git_repo(tmp_path)
+    generated_files = [
+        repo / "_localsetup" / "docs" / "SKILLS.md",
+        repo / "_localsetup" / "docs" / "WORKFLOW_REGISTRY.md",
+        repo / "_localsetup" / "docs" / "_generated" / "facts.json",
+        repo / "_localsetup" / "docs" / "migration" / "v2-to-v3-skill-map.md",
+        repo / "assets" / "README.md",
+    ]
+    for path in generated_files:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("generated\n", encoding="utf-8")
+
+    assert source_dirty(repo) is False
+
+    (repo / "VERSION").write_text("3.9.1\n", encoding="utf-8")
+
+    assert source_dirty(repo) is True
+
+
 def test_package_marker_loads_json_and_legacy_text(tmp_path: Path) -> None:
     package = tmp_path / "ls-demo"
     package.mkdir()

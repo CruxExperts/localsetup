@@ -15,6 +15,16 @@ PROVENANCE_SCHEMA_VERSION = 1
 MARKER_JSON = ".localsetup-managed.json"
 MARKER_LEGACY = ".localsetup-managed"
 PORTABLE_MARKER = ".localsetup-portable"
+GENERATED_SOURCE_DIRTY_PATHS = {
+    "assets/README.md",
+    "_localsetup/docs/SKILLS.md",
+    "_localsetup/docs/WORKFLOW_QUICK_REF.md",
+    "_localsetup/docs/WORKFLOW_REGISTRY.md",
+    "_localsetup/docs/migration/v2-to-v3-skill-map.md",
+}
+GENERATED_SOURCE_DIRTY_PREFIXES = (
+    "_localsetup/docs/_generated/",
+)
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -42,9 +52,25 @@ def source_tree_sha(repo_root: Path) -> str:
     return completed.stdout.strip()
 
 
+def _status_entry_paths(line: str) -> list[str]:
+    if len(line) < 4:
+        return []
+    path = line[3:].strip()
+    if " -> " in path:
+        return [part.strip() for part in path.split(" -> ", 1)]
+    return [path]
+
+
+def _is_generated_output_path(path: str) -> bool:
+    normalized = path.strip().strip('"')
+    return normalized in GENERATED_SOURCE_DIRTY_PATHS or any(
+        normalized.startswith(prefix) for prefix in GENERATED_SOURCE_DIRTY_PREFIXES
+    )
+
+
 def source_dirty(repo_root: Path) -> bool:
     completed = subprocess.run(
-        ["git", "status", "--porcelain"],
+        ["git", "status", "--porcelain", "--untracked-files=all"],
         cwd=repo_root,
         text=True,
         capture_output=True,
@@ -52,7 +78,11 @@ def source_dirty(repo_root: Path) -> bool:
     )
     if completed.returncode != 0:
         return False
-    return bool(completed.stdout.strip())
+    for line in completed.stdout.splitlines():
+        paths = _status_entry_paths(line)
+        if not paths or any(not _is_generated_output_path(path) for path in paths):
+            return True
+    return False
 
 
 def source_remote_url(repo_root: Path) -> str | None:

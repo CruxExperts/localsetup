@@ -15,6 +15,7 @@ _ROOT = Path(__file__).resolve().parent
 _ENGINE = _ROOT.parent.parent
 sys.path.insert(0, str(_ENGINE))
 sys.path.insert(0, str(_ROOT))
+from lib.deps import require_deps  # noqa: E402
 
 
 def cmd_version(_args: argparse.Namespace) -> int:
@@ -51,11 +52,9 @@ def cmd_key_fingerprint(args: argparse.Namespace) -> int:
     if not path.is_file():
         sys.stderr.write("[FAIL] Not a file: %s\n" % path)
         return 1
-    try:
-        import pgpy  # type: ignore
-    except ImportError:
-        sys.stderr.write("[FAIL] PGPy required: pip install PGPy\n")
-        return 2
+    require_deps(["pgpy"])
+    import pgpy  # type: ignore
+
     key, _ = pgpy.PGPKey.from_file(str(path))
     fp = key.fingerprint.replace(" ", "")
     print("fingerprint:", fp)

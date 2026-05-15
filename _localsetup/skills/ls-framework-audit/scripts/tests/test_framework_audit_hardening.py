@@ -57,6 +57,24 @@ def test_report_items_indent_multiline_evidence() -> None:
     assert lines == ["- smoke failed", "  stdout:", "  boom"]
 
 
+def test_read_facts_version_uses_top_level_version(tmp_path: Path) -> None:
+    facts = tmp_path / "_localsetup" / "docs" / "_generated" / "facts.json"
+    facts.parent.mkdir(parents=True)
+    facts.write_text(
+        dedent(
+            """\
+            {
+              "skills": [{"id": "ls-example", "version": "1.0"}],
+              "version": "3.8.6"
+            }
+            """
+        ),
+        encoding="utf-8",
+    )
+
+    assert audit._read_facts_version(tmp_path) == "3.8.6"
+
+
 def test_skill_matrix_requires_one_smoke_row_per_skill(tmp_path: Path) -> None:
     fw = tmp_path / "_localsetup"
     (fw / "skills" / "ls-present").mkdir(parents=True)
@@ -76,4 +94,59 @@ def test_skill_matrix_requires_one_smoke_row_per_skill(tmp_path: Path) -> None:
     assert warnings == []
     assert errors == [
         "skill_smoke_commands.yaml missing entries for skill dirs: ls-missing"
+    ]
+
+
+def test_skill_matrix_supports_repo_root_smoke_entries(tmp_path: Path) -> None:
+    fw = tmp_path / "_localsetup"
+    (fw / "skills" / "ls-present").mkdir(parents=True)
+    sandbox_scripts = fw / "skills" / "ls-skill-sandbox-tester" / "scripts"
+    sandbox_scripts.mkdir(parents=True)
+    (sandbox_scripts / "create_sandbox.py").write_text("# placeholder\n", encoding="utf-8")
+    (sandbox_scripts / "run_smoke.py").write_text("# placeholder\n", encoding="utf-8")
+    (fw / "tests").mkdir(parents=True)
+    (fw / "tests" / "skill_smoke_commands.yaml").write_text(
+        dedent(
+            """\
+            ls-present:
+              cwd: repo-root
+              command: "python3 -c \\"from pathlib import Path; Path('repo-root-smoke.txt').write_text('ok')\\""
+            ls-skill-sandbox-tester: "N/A"
+            """
+        ),
+        encoding="utf-8",
+    )
+
+    errors, warnings = audit.phase_skill_matrix(tmp_path, fw)
+
+    assert warnings == []
+    assert errors == []
+    assert (tmp_path / "repo-root-smoke.txt").read_text(encoding="utf-8") == "ok"
+
+
+def test_skill_matrix_rejects_invalid_structured_smoke_entry(tmp_path: Path) -> None:
+    fw = tmp_path / "_localsetup"
+    (fw / "skills" / "ls-present").mkdir(parents=True)
+    sandbox_scripts = fw / "skills" / "ls-skill-sandbox-tester" / "scripts"
+    sandbox_scripts.mkdir(parents=True)
+    (sandbox_scripts / "create_sandbox.py").write_text("# placeholder\n", encoding="utf-8")
+    (sandbox_scripts / "run_smoke.py").write_text("# placeholder\n", encoding="utf-8")
+    (fw / "tests").mkdir(parents=True)
+    (fw / "tests" / "skill_smoke_commands.yaml").write_text(
+        dedent(
+            """\
+            ls-present:
+              cwd: elsewhere
+              command: "python3 -V"
+            ls-skill-sandbox-tester: "N/A"
+            """
+        ),
+        encoding="utf-8",
+    )
+
+    errors, warnings = audit.phase_skill_matrix(tmp_path, fw)
+
+    assert warnings == []
+    assert errors == [
+        "Skill matrix ls-present: invalid smoke entry: mapping cwd must be 'skill-sandbox' or 'repo-root'"
     ]

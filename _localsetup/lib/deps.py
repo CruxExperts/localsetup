@@ -23,6 +23,9 @@ _REGISTRY: dict[str, str] = {
     "yaml": "PyYAML",
     "requests": "requests",
     "frontmatter": "python-frontmatter",
+    "cryptography": "cryptography",
+    "pgpy": "PGPy",
+    "jsonschema": "jsonschema",
 }
 
 # Path to the sentinel file written by install when deps were absent at install time.

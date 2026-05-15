@@ -13,7 +13,7 @@ from typing import Any
 
 _ENGINE = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(_ENGINE))
-from lib.deps import require_deps  # noqa: E402
+from lib.deps import check_deps, require_deps  # noqa: E402
 
 require_deps(["yaml"])
 
@@ -65,10 +65,12 @@ def _collect_public_key_paths(agent_cfg: dict[str, Any]) -> list[Path]:
 
 def validate_registry(raw: dict[str, Any], *, require_keys_exist: bool = True) -> dict[str, Any]:
     """Validate registry; build fingerprint -> agent_id map. Fail closed."""
-    try:
-        import pgpy  # type: ignore
-    except ImportError as exc:
-        raise RegistryError("PGPy required for registry validation.") from exc
+    if check_deps(["pgpy"]):
+        raise RegistryError(
+            "PGPy required for registry validation. Install with: python3 -m pip install PGPy "
+            "or re-run the framework install script with --install-deps."
+        )
+    import pgpy  # type: ignore
 
     agents = raw["agents"]
     fp_to_agent: dict[str, str] = {}

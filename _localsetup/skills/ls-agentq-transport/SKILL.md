@@ -50,4 +50,4 @@ python3 _localsetup/tools/agentq_transport_client/agentq_cli.py --help
 python3 -m pytest _localsetup/tools/agentq_transport_client/tests/ -q
 ```
 
-Skill directory has no bundled scripts; CLI lives under `tools/agentq_transport_client/`.
+Skill directory has no bundled scripts; CLI lives under `_localsetup/tools/agentq_transport_client/`. Full OpenPGP test coverage requires the framework Python dependencies from `_localsetup/requirements.txt`, including `cryptography`, `PGPy`, and `jsonschema`; when PGPy is absent, OpenPGP-specific pytest cases skip with an explicit dependency reason while non-PGP tests still run.

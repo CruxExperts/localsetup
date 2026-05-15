@@ -15,9 +15,24 @@ _ENGINE = _PKG.parent.parent
 sys.path.insert(0, str(_ENGINE))
 sys.path.insert(0, str(_PKG))
 
+OPENPGP_DEPS_REASON = (
+    "PGPy OpenPGP dependency not installed; install framework dependencies from "
+    "_localsetup/requirements.txt to run Agent Q OpenPGP tests."
+)
+CRYPTOGRAPHY_DEPS_REASON = (
+    "cryptography dependency not installed; install framework dependencies from "
+    "_localsetup/requirements.txt to run Agent Q OpenPGP tests."
+)
+
+
+def _require_openpgp_deps() -> None:
+    pytest.importorskip("cryptography", reason=CRYPTOGRAPHY_DEPS_REASON)
+    pytest.importorskip("pgpy", reason=OPENPGP_DEPS_REASON)
+
 
 @pytest.fixture
 def keypair(tmp_path):
+    _require_openpgp_deps()
     from agentq_transport_client.keygen import generate_keypair_gnupg
 
     if os.system("which gpg >/dev/null 2>&1") != 0:
@@ -177,6 +192,7 @@ Expire-Date: 0
 @pytest.mark.skipif(os.system("which gpg >/dev/null 2>&1") != 0, reason="gpg missing")
 def test_gpg_strict_ship_ingest(tmp_path):
     """Sign-then-encrypt with gpg; ingest --strict-gpg verifies signer in registry."""
+    _require_openpgp_deps()
     import subprocess
     import yaml
 
@@ -372,6 +388,7 @@ def test_ready_marker_sha256_mismatch_rejects(keypair, tmp_path):
 
 
 def test_registry_validate_example():
+    _require_openpgp_deps()
     from agentq_transport_client.registry import RegistryError, load_registry_yaml, validate_registry
 
     example = _ENGINE / "config" / "agent_trust_registry.example.yaml"

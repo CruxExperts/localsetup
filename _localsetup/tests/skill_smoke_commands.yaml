@@ -1,10 +1,14 @@
 # Smoke commands per skill for framework audit (skill matrix).
-# Schema: skill_id (from _localsetup/skills/<name>/) -> command string or "N/A".
-# Command is run with cwd = sandbox copy of the skill (see ls-skill-sandbox-tester).
+# Schema: skill_id (from _localsetup/skills/<name>/) -> command string, "N/A",
+# or {cwd: skill-sandbox|repo-root, command: "..."}.
+# String commands run with cwd = sandbox copy of the skill (see ls-skill-sandbox-tester).
+# Structured repo-root commands run from the repository root for source-tree tools.
 # N/A = doc-only skill; no runnable tooling to smoke. Audit uses agent step summary only.
 # Path and schema documented in ls-framework-audit SKILL.md.
 
-ls-agentq-transport: "N/A"
+ls-agentq-transport:
+  cwd: repo-root
+  command: "python3 _localsetup/tools/agentq_transport_client/agentq_cli.py --help"
 ls-agentlens: "N/A"
 ls-ansible-skill: "N/A"
 ls-arbiter: "python3 scripts/arbiter_cli.py --help"
@@ -35,7 +39,9 @@ ls-pr-reviewer: "python3 scripts/pr_review.py --help"
 ls-public-repo-identity: "N/A"
 ls-receiving-code-review: "N/A"
 ls-safety-and-backup: "N/A"
-ls-scrapling: "N/A"
+ls-scrapling:
+  cwd: repo-root
+  command: "python3 -c \"import json, pathlib; data=json.loads(pathlib.Path('_localsetup/tools/scrapling_helper/scrapling_capabilities.json').read_text(encoding='utf-8')); assert 'scrapling_status' in data\""
 ls-shadcn-ui: "python3 scripts/verify_shadcn_sources.py --help"
 ls-script-and-docs-quality: "N/A"
 ls-skill-creator: "N/A"
