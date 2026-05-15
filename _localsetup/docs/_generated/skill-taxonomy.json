@@ -1,0 +1,769 @@
+{
+  "classes": [
+    "core",
+    "development",
+    "framework-governance",
+    "integrations",
+    "operations",
+    "skill-lifecycle",
+    "specialized"
+  ],
+  "count": 52,
+  "provenance": {
+    "artifact_path": "_localsetup/docs/_generated/skill-taxonomy.json",
+    "artifact_sha256": "7d824f55cd42d6078f80757f350aa153a0920c951d6ab2a1252163b5dcd008b1",
+    "emitter": "generate-docs",
+    "framework_version": "3.8.6",
+    "schema_version": 1,
+    "source_commit": "686ad81f943078556ac73cf8da07a5258f037427",
+    "source_dirty": false,
+    "source_provenance_hash": "560824f13c92088f37e1702a240ead6d7656438a86ab41d2e5eea7c6e39ba2f0",
+    "source_root_id": "37dc9bb906c4aedc066ae182ed66270e99b74605c2864df4f652e57701906e5a",
+    "source_tag": null,
+    "source_tree_sha": "ea73ddf4210036536dd9d3f1054ec7f3c5e1954c"
+  },
+  "schema_version": 1,
+  "skills": [
+    {
+      "class": "core",
+      "id": "ls-communication-and-tools",
+      "owner_scope": "skill",
+      "packs": [
+        "bootstrap",
+        "core"
+      ],
+      "path": "_localsetup/skills/ls-communication-and-tools",
+      "sort_priority": 10,
+      "tags": [
+        "communication",
+        "tools"
+      ]
+    },
+    {
+      "class": "core",
+      "id": "ls-context",
+      "owner_scope": "skill",
+      "packs": [
+        "bootstrap",
+        "core"
+      ],
+      "path": "_localsetup/skills/ls-context",
+      "sort_priority": 10,
+      "tags": [
+        "context",
+        "bootstrap"
+      ]
+    },
+    {
+      "class": "core",
+      "id": "ls-context-index",
+      "owner_scope": "skill",
+      "packs": [
+        "core",
+        "dev"
+      ],
+      "path": "_localsetup/skills/ls-context-index",
+      "sort_priority": 10,
+      "tags": [
+        "context",
+        "index"
+      ]
+    },
+    {
+      "class": "core",
+      "id": "ls-safety-and-backup",
+      "owner_scope": "skill",
+      "packs": [
+        "bootstrap",
+        "core"
+      ],
+      "path": "_localsetup/skills/ls-safety-and-backup",
+      "sort_priority": 10,
+      "tags": [
+        "safety",
+        "backup"
+      ]
+    },
+    {
+      "class": "core",
+      "id": "ls-script-and-docs-quality",
+      "owner_scope": "skill",
+      "packs": [
+        "bootstrap",
+        "core"
+      ],
+      "path": "_localsetup/skills/ls-script-and-docs-quality",
+      "sort_priority": 10,
+      "tags": [
+        "scripts",
+        "docs"
+      ]
+    },
+    {
+      "class": "core",
+      "id": "ls-task-skill-matcher",
+      "owner_scope": "skill",
+      "packs": [
+        "bootstrap",
+        "core"
+      ],
+      "path": "_localsetup/skills/ls-task-skill-matcher",
+      "sort_priority": 10,
+      "tags": [
+        "routing",
+        "skills"
+      ]
+    },
+    {
+      "class": "core",
+      "id": "ls-test-runner",
+      "owner_scope": "skill",
+      "packs": [
+        "bootstrap",
+        "core"
+      ],
+      "path": "_localsetup/skills/ls-test-runner",
+      "sort_priority": 10,
+      "tags": [
+        "testing",
+        "validation"
+      ]
+    },
+    {
+      "class": "framework-governance",
+      "id": "ls-automatic-versioning",
+      "owner_scope": "skill",
+      "packs": [
+        "publishing"
+      ],
+      "path": "_localsetup/skills/ls-automatic-versioning",
+      "sort_priority": 20,
+      "tags": [
+        "versioning",
+        "release"
+      ]
+    },
+    {
+      "class": "framework-governance",
+      "id": "ls-docs-organization",
+      "owner_scope": "skill",
+      "packs": [
+        "bootstrap",
+        "dev"
+      ],
+      "path": "_localsetup/skills/ls-docs-organization",
+      "sort_priority": 20,
+      "tags": [
+        "docs",
+        "organization"
+      ]
+    },
+    {
+      "class": "framework-governance",
+      "id": "ls-documentation-alignment",
+      "owner_scope": "skill",
+      "packs": [
+        "dev",
+        "publishing"
+      ],
+      "path": "_localsetup/skills/ls-documentation-alignment",
+      "sort_priority": 20,
+      "tags": [
+        "docs",
+        "alignment"
+      ]
+    },
+    {
+      "class": "framework-governance",
+      "id": "ls-framework-audit",
+      "owner_scope": "skill",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/skills/ls-framework-audit",
+      "sort_priority": 20,
+      "tags": [
+        "audit",
+        "release"
+      ]
+    },
+    {
+      "class": "framework-governance",
+      "id": "ls-framework-compliance",
+      "owner_scope": "skill",
+      "packs": [
+        "bootstrap",
+        "dev"
+      ],
+      "path": "_localsetup/skills/ls-framework-compliance",
+      "sort_priority": 20,
+      "tags": [
+        "compliance",
+        "framework"
+      ]
+    },
+    {
+      "class": "framework-governance",
+      "id": "ls-git-workflows",
+      "owner_scope": "skill",
+      "packs": [
+        "bootstrap",
+        "dev"
+      ],
+      "path": "_localsetup/skills/ls-git-workflows",
+      "sort_priority": 20,
+      "tags": [
+        "git",
+        "workflows"
+      ]
+    },
+    {
+      "class": "framework-governance",
+      "id": "ls-github-publishing-workflow",
+      "owner_scope": "skill",
+      "packs": [
+        "publishing"
+      ],
+      "path": "_localsetup/skills/ls-github-publishing-workflow",
+      "sort_priority": 20,
+      "tags": [
+        "github",
+        "publishing"
+      ]
+    },
+    {
+      "class": "framework-governance",
+      "id": "ls-markdown-reference-validator",
+      "owner_scope": "skill",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/skills/ls-markdown-reference-validator",
+      "sort_priority": 20,
+      "tags": [
+        "markdown",
+        "references"
+      ]
+    },
+    {
+      "class": "framework-governance",
+      "id": "ls-public-repo-identity",
+      "owner_scope": "skill",
+      "packs": [
+        "publishing"
+      ],
+      "path": "_localsetup/skills/ls-public-repo-identity",
+      "sort_priority": 20,
+      "tags": [
+        "identity",
+        "publishing"
+      ]
+    },
+    {
+      "class": "framework-governance",
+      "id": "ls-receiving-code-review",
+      "owner_scope": "skill",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/skills/ls-receiving-code-review",
+      "sort_priority": 20,
+      "tags": [
+        "review",
+        "feedback"
+      ]
+    },
+    {
+      "class": "framework-governance",
+      "id": "ls-unfuck-my-git-state",
+      "owner_scope": "skill",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/skills/ls-unfuck-my-git-state",
+      "sort_priority": 20,
+      "tags": [
+        "git",
+        "recovery"
+      ]
+    },
+    {
+      "class": "development",
+      "id": "ls-agentlens",
+      "owner_scope": "skill",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/skills/ls-agentlens",
+      "sort_priority": 30,
+      "tags": [
+        "codebase",
+        "navigation"
+      ]
+    },
+    {
+      "class": "development",
+      "id": "ls-debug-pro",
+      "owner_scope": "skill",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/skills/ls-debug-pro",
+      "sort_priority": 30,
+      "tags": [
+        "debugging",
+        "diagnostics"
+      ]
+    },
+    {
+      "class": "development",
+      "id": "ls-nodejs-nextjs",
+      "owner_scope": "skill",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/skills/ls-nodejs-nextjs",
+      "sort_priority": 30,
+      "tags": [
+        "nodejs",
+        "nextjs"
+      ]
+    },
+    {
+      "class": "development",
+      "id": "ls-pr-reviewer",
+      "owner_scope": "skill",
+      "packs": [
+        "bootstrap",
+        "publishing"
+      ],
+      "path": "_localsetup/skills/ls-pr-reviewer",
+      "sort_priority": 30,
+      "tags": [
+        "review",
+        "pull-requests"
+      ]
+    },
+    {
+      "class": "development",
+      "id": "ls-shadcn-ui",
+      "owner_scope": "skill",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/skills/ls-shadcn-ui",
+      "sort_priority": 30,
+      "tags": [
+        "react",
+        "ui"
+      ]
+    },
+    {
+      "class": "development",
+      "id": "ls-tdd-guide",
+      "owner_scope": "skill",
+      "packs": [
+        "core"
+      ],
+      "path": "_localsetup/skills/ls-tdd-guide",
+      "sort_priority": 30,
+      "tags": [
+        "tdd",
+        "testing"
+      ]
+    },
+    {
+      "class": "development",
+      "id": "ls-typescript-code-quality",
+      "owner_scope": "skill",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/skills/ls-typescript-code-quality",
+      "sort_priority": 30,
+      "tags": [
+        "typescript",
+        "quality"
+      ]
+    },
+    {
+      "class": "operations",
+      "id": "ls-ansible-skill",
+      "owner_scope": "skill",
+      "packs": [
+        "ops"
+      ],
+      "path": "_localsetup/skills/ls-ansible-skill",
+      "sort_priority": 40,
+      "tags": [
+        "ansible",
+        "infrastructure"
+      ]
+    },
+    {
+      "class": "operations",
+      "id": "ls-backlog-and-reminders",
+      "owner_scope": "skill",
+      "packs": [
+        "ops"
+      ],
+      "path": "_localsetup/skills/ls-backlog-and-reminders",
+      "sort_priority": 40,
+      "tags": [
+        "backlog",
+        "reminders"
+      ]
+    },
+    {
+      "class": "operations",
+      "id": "ls-codex-heartbeat",
+      "owner_scope": "skill",
+      "packs": [
+        "harness"
+      ],
+      "path": "_localsetup/skills/ls-codex-heartbeat",
+      "sort_priority": 40,
+      "tags": [
+        "heartbeat",
+        "automation"
+      ]
+    },
+    {
+      "class": "operations",
+      "id": "ls-cron-orchestrator",
+      "owner_scope": "skill",
+      "packs": [
+        "harness",
+        "ops"
+      ],
+      "path": "_localsetup/skills/ls-cron-orchestrator",
+      "sort_priority": 40,
+      "tags": [
+        "cron",
+        "scheduling"
+      ]
+    },
+    {
+      "class": "operations",
+      "id": "ls-linux-patcher",
+      "owner_scope": "skill",
+      "packs": [
+        "ops"
+      ],
+      "path": "_localsetup/skills/ls-linux-patcher",
+      "sort_priority": 40,
+      "tags": [
+        "linux",
+        "patching"
+      ]
+    },
+    {
+      "class": "operations",
+      "id": "ls-linux-service-triage",
+      "owner_scope": "skill",
+      "packs": [
+        "ops"
+      ],
+      "path": "_localsetup/skills/ls-linux-service-triage",
+      "sort_priority": 40,
+      "tags": [
+        "linux",
+        "services"
+      ]
+    },
+    {
+      "class": "operations",
+      "id": "ls-system-info",
+      "owner_scope": "skill",
+      "packs": [
+        "ops"
+      ],
+      "path": "_localsetup/skills/ls-system-info",
+      "sort_priority": 40,
+      "tags": [
+        "system",
+        "diagnostics"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-agentq-transport",
+      "owner_scope": "skill",
+      "packs": [
+        "integrations"
+      ],
+      "path": "_localsetup/skills/ls-agentq-transport",
+      "sort_priority": 50,
+      "tags": [
+        "agentq",
+        "transport"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-cloudflare-dns",
+      "owner_scope": "skill",
+      "packs": [
+        "integrations"
+      ],
+      "path": "_localsetup/skills/ls-cloudflare-dns",
+      "sort_priority": 50,
+      "tags": [
+        "cloudflare",
+        "dns"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-github-starredrepos",
+      "owner_scope": "skill",
+      "packs": [
+        "integrations"
+      ],
+      "path": "_localsetup/skills/ls-github-starredrepos",
+      "sort_priority": 50,
+      "tags": [
+        "github",
+        "archive"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-keepass-secrets",
+      "owner_scope": "skill",
+      "packs": [
+        "integrations"
+      ],
+      "path": "_localsetup/skills/ls-keepass-secrets",
+      "sort_priority": 50,
+      "tags": [
+        "keepass",
+        "secrets"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-mail-protocol-control",
+      "owner_scope": "skill",
+      "packs": [
+        "integrations"
+      ],
+      "path": "_localsetup/skills/ls-mail-protocol-control",
+      "sort_priority": 50,
+      "tags": [
+        "mail",
+        "protocols"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-mcp-builder",
+      "owner_scope": "skill",
+      "packs": [
+        "integrations"
+      ],
+      "path": "_localsetup/skills/ls-mcp-builder",
+      "sort_priority": 50,
+      "tags": [
+        "mcp",
+        "builder"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-npm-management",
+      "owner_scope": "skill",
+      "packs": [
+        "integrations"
+      ],
+      "path": "_localsetup/skills/ls-npm-management",
+      "sort_priority": 50,
+      "tags": [
+        "nginx-proxy-manager",
+        "api"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-omniroute-admin-automation",
+      "owner_scope": "skill",
+      "packs": [
+        "integrations"
+      ],
+      "path": "_localsetup/skills/ls-omniroute-admin-automation",
+      "sort_priority": 50,
+      "tags": [
+        "omniroute",
+        "admin"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-omniroute-proxy",
+      "owner_scope": "skill",
+      "packs": [
+        "integrations"
+      ],
+      "path": "_localsetup/skills/ls-omniroute-proxy",
+      "sort_priority": 50,
+      "tags": [
+        "omniroute",
+        "proxy"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-scrapling",
+      "owner_scope": "skill",
+      "packs": [
+        "integrations"
+      ],
+      "path": "_localsetup/skills/ls-scrapling",
+      "sort_priority": 50,
+      "tags": [
+        "scrapling",
+        "extraction"
+      ]
+    },
+    {
+      "class": "skill-lifecycle",
+      "id": "ls-skill-creator",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-skill-creator",
+      "sort_priority": 60,
+      "tags": [
+        "skills",
+        "authoring"
+      ]
+    },
+    {
+      "class": "skill-lifecycle",
+      "id": "ls-skill-discovery",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-skill-discovery",
+      "sort_priority": 60,
+      "tags": [
+        "skills",
+        "discovery"
+      ]
+    },
+    {
+      "class": "skill-lifecycle",
+      "id": "ls-skill-importer",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-skill-importer",
+      "sort_priority": 60,
+      "tags": [
+        "skills",
+        "import"
+      ]
+    },
+    {
+      "class": "skill-lifecycle",
+      "id": "ls-skill-normalizer",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-skill-normalizer",
+      "sort_priority": 60,
+      "tags": [
+        "skills",
+        "normalization"
+      ]
+    },
+    {
+      "class": "skill-lifecycle",
+      "id": "ls-skill-sandbox-tester",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-skill-sandbox-tester",
+      "sort_priority": 60,
+      "tags": [
+        "skills",
+        "sandbox"
+      ]
+    },
+    {
+      "class": "skill-lifecycle",
+      "id": "ls-skill-vetter",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-skill-vetter",
+      "sort_priority": 60,
+      "tags": [
+        "skills",
+        "security"
+      ]
+    },
+    {
+      "class": "specialized",
+      "id": "ls-arbiter",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-arbiter",
+      "sort_priority": 70,
+      "tags": [
+        "arbiter",
+        "review"
+      ]
+    },
+    {
+      "class": "specialized",
+      "id": "ls-humanizer",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-humanizer",
+      "sort_priority": 70,
+      "tags": [
+        "writing",
+        "editing"
+      ]
+    },
+    {
+      "class": "specialized",
+      "id": "ls-kilo-boss-orchestrator",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-kilo-boss-orchestrator",
+      "sort_priority": 70,
+      "tags": [
+        "kilo",
+        "orchestration"
+      ]
+    },
+    {
+      "class": "specialized",
+      "id": "ls-kilo-visual-output",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-kilo-visual-output",
+      "sort_priority": 70,
+      "tags": [
+        "kilo",
+        "output"
+      ]
+    }
+  ]
+}

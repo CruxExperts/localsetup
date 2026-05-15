@@ -1,87 +1,87 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 04e2ba1003781b304a8c9205d1dd1075b443970979ae64c791303292cf844b6d
+  source_provenance_hash: 560824f13c92088f37e1702a240ead6d7656438a86ab41d2e5eea7c6e39ba2f0
   emitter: generate-docs
 framework_version: 3.8.6
-source_commit: 69b0ab0f992ed4ed3d5b0bc7d0136ca1f0d4096a
-artifact_sha256: 974472bb9e57f70f19430e1aecbfec95acf21b7e0bdf4c9cf86b91c20e7850b1
+source_commit: 686ad81f943078556ac73cf8da07a5258f037427
+artifact_sha256: 326c60e46af4b70afa5ea452e9174a5964ff572420959e0279b9174f25f90834
 ---
 # Skill And Workflow Packs
 
-| Pack | Type | Package | Legacy Alias |
-|---|---|---|---|
-| `dev` | `skill` | `ls-agentlens` | `localsetup-agentlens` |
-| `integrations` | `skill` | `ls-agentq-transport` | `localsetup-agentq-transport` |
-| `ops` | `skill` | `ls-ansible-skill` | `localsetup-ansible-skill` |
-| `experimental` | `skill` | `ls-arbiter` | `localsetup-arbiter` |
-| `publishing` | `skill` | `ls-automatic-versioning` | `localsetup-automatic-versioning` |
-| `ops` | `skill` | `ls-backlog-and-reminders` | `localsetup-backlog-and-reminders` |
-| `integrations` | `skill` | `ls-cloudflare-dns` | `localsetup-cloudflare-dns` |
-| `harness` | `skill` | `ls-codex-heartbeat` | `localsetup-codex-heartbeat` |
-| `bootstrap, core` | `skill` | `ls-communication-and-tools` | `localsetup-communication-and-tools` |
-| `bootstrap, core` | `skill` | `ls-context` | `localsetup-context` |
-| `core, dev` | `skill` | `ls-context-index` | `localsetup-context-index` |
-| `harness, ops` | `skill` | `ls-cron-orchestrator` | `localsetup-cron-orchestrator` |
-| `dev` | `skill` | `ls-debug-pro` | `localsetup-debug-pro` |
-| `bootstrap, dev` | `skill` | `ls-docs-organization` | `localsetup-docs-organization` |
-| `dev, publishing` | `skill` | `ls-documentation-alignment` | `localsetup-documentation-alignment` |
-| `dev` | `skill` | `ls-framework-audit` | `localsetup-framework-audit` |
-| `bootstrap, dev` | `skill` | `ls-framework-compliance` | `localsetup-framework-compliance` |
-| `bootstrap, dev` | `skill` | `ls-git-workflows` | `localsetup-git-workflows` |
-| `publishing` | `skill` | `ls-github-publishing-workflow` | `localsetup-github-publishing-workflow` |
-| `integrations` | `skill` | `ls-github-starredrepos` | `localsetup-github-starredrepos` |
-| `experimental` | `skill` | `ls-humanizer` | `localsetup-humanizer` |
-| `integrations` | `skill` | `ls-keepass-secrets` | `localsetup-keepass-secrets` |
-| `experimental` | `skill` | `ls-kilo-boss-orchestrator` | `localsetup-kilo-boss-orchestrator` |
-| `experimental` | `skill` | `ls-kilo-visual-output` | `localsetup-kilo-visual-output` |
-| `ops` | `skill` | `ls-linux-patcher` | `localsetup-linux-patcher` |
-| `ops` | `skill` | `ls-linux-service-triage` | `localsetup-linux-service-triage` |
-| `integrations` | `skill` | `ls-mail-protocol-control` | `localsetup-mail-protocol-control` |
-| `dev` | `skill` | `ls-markdown-reference-validator` | `localsetup-markdown-reference-validator` |
-| `integrations` | `skill` | `ls-mcp-builder` | `localsetup-mcp-builder` |
-| `dev` | `skill` | `ls-nodejs-nextjs` | `localsetup-nodejs-nextjs` |
-| `integrations` | `skill` | `ls-npm-management` | `localsetup-npm-management` |
-| `integrations` | `skill` | `ls-omniroute-admin-automation` | `localsetup-omniroute-admin-automation` |
-| `integrations` | `skill` | `ls-omniroute-proxy` | `localsetup-omniroute-proxy` |
-| `bootstrap, publishing` | `skill` | `ls-pr-reviewer` | `localsetup-pr-reviewer` |
-| `publishing` | `skill` | `ls-public-repo-identity` | `localsetup-public-repo-identity` |
-| `dev` | `skill` | `ls-receiving-code-review` | `localsetup-receiving-code-review` |
-| `bootstrap, core` | `skill` | `ls-safety-and-backup` | `localsetup-safety-and-backup` |
-| `integrations` | `skill` | `ls-scrapling` | `localsetup-scrapling` |
-| `bootstrap, core` | `skill` | `ls-script-and-docs-quality` | `localsetup-script-and-docs-quality` |
-| `dev` | `skill` | `ls-shadcn-ui` | `localsetup-shadcn-ui` |
-| `experimental` | `skill` | `ls-skill-creator` | `localsetup-skill-creator` |
-| `experimental` | `skill` | `ls-skill-discovery` | `localsetup-skill-discovery` |
-| `experimental` | `skill` | `ls-skill-importer` | `localsetup-skill-importer` |
-| `experimental` | `skill` | `ls-skill-normalizer` | `localsetup-skill-normalizer` |
-| `experimental` | `skill` | `ls-skill-sandbox-tester` | `localsetup-skill-sandbox-tester` |
-| `experimental` | `skill` | `ls-skill-vetter` | `localsetup-skill-vetter` |
-| `ops` | `skill` | `ls-system-info` | `localsetup-system-info` |
-| `bootstrap, core` | `skill` | `ls-task-skill-matcher` | `localsetup-task-skill-matcher` |
-| `core` | `skill` | `ls-tdd-guide` | `localsetup-tdd-guide` |
-| `bootstrap, core` | `skill` | `ls-test-runner` | `localsetup-test-runner` |
-| `dev` | `skill` | `ls-typescript-code-quality` | `localsetup-typescript-code-quality` |
-| `dev` | `skill` | `ls-unfuck-my-git-state` | `localsetup-unfuck-my-git-state` |
-| `bootstrap, dev` | `workflow` | `ls-workflow-audit-framework` | `n/a` |
-| `dev` | `workflow` | `ls-workflow-audit-markdown-references` | `n/a` |
-| `harness` | `workflow` | `ls-workflow-codex-heartbeat` | `n/a` |
-| `dev` | `workflow` | `ls-workflow-context-index-query` | `n/a` |
-| `dev, harness` | `workflow` | `ls-workflow-context-index-refresh` | `n/a` |
-| `dev, publishing` | `workflow` | `ls-workflow-documentation-alignment` | `n/a` |
-| `bootstrap, dev` | `workflow` | `ls-workflow-ops-guarded` | `n/a` |
-| `ops` | `workflow` | `ls-workflow-ops-tmux-session` | `n/a` |
-| `bootstrap, dev` | `workflow` | `ls-workflow-pipeline-git-repair-hygiene` | `n/a` |
-| `dev` | `workflow` | `ls-workflow-pipeline-pr-feedback-loop` | `n/a` |
-| `publishing` | `workflow` | `ls-workflow-pipeline-pre-publish` | `n/a` |
-| `bootstrap, dev` | `workflow` | `ls-workflow-pipeline-repo-convert` | `n/a` |
-| `dev` | `workflow` | `ls-workflow-pipeline-repo-polish` | `n/a` |
-| `ops` | `workflow` | `ls-workflow-pipeline-server-triage-patch` | `n/a` |
-| `dev` | `workflow` | `ls-workflow-pipeline-skill-onboard` | `n/a` |
-| `experimental` | `workflow` | `ls-workflow-queue-batch-implement` | `n/a` |
-| `harness` | `workflow` | `ls-workflow-repo-finalizer` | `n/a` |
-| `dev` | `workflow` | `ls-workflow-skills-index-refresh` | `n/a` |
-| `experimental` | `workflow` | `ls-workflow-spec-clarify-reverse` | `n/a` |
-| `ops` | `workflow` | `ls-workflow-tmux-terminal-mode` | `n/a` |
-| `integrations` | `workflow` | `ls-workflow-transport-handoff` | `n/a` |
-| `experimental` | `workflow` | `ls-workflow-umbrella-run` | `n/a` |
+| Pack | Type | Package | Class | Priority | Tags | Legacy Alias |
+|---|---|---|---|---:|---|---|
+| `bootstrap, core` | `skill` | `ls-communication-and-tools` | `core` | 10 | `communication, tools` | `localsetup-communication-and-tools` |
+| `bootstrap, core` | `skill` | `ls-context` | `core` | 10 | `context, bootstrap` | `localsetup-context` |
+| `core, dev` | `skill` | `ls-context-index` | `core` | 10 | `context, index` | `localsetup-context-index` |
+| `bootstrap, core` | `skill` | `ls-safety-and-backup` | `core` | 10 | `safety, backup` | `localsetup-safety-and-backup` |
+| `bootstrap, core` | `skill` | `ls-script-and-docs-quality` | `core` | 10 | `scripts, docs` | `localsetup-script-and-docs-quality` |
+| `bootstrap, core` | `skill` | `ls-task-skill-matcher` | `core` | 10 | `routing, skills` | `localsetup-task-skill-matcher` |
+| `bootstrap, core` | `skill` | `ls-test-runner` | `core` | 10 | `testing, validation` | `localsetup-test-runner` |
+| `publishing` | `skill` | `ls-automatic-versioning` | `framework-governance` | 20 | `versioning, release` | `localsetup-automatic-versioning` |
+| `bootstrap, dev` | `skill` | `ls-docs-organization` | `framework-governance` | 20 | `docs, organization` | `localsetup-docs-organization` |
+| `dev, publishing` | `skill` | `ls-documentation-alignment` | `framework-governance` | 20 | `docs, alignment` | `localsetup-documentation-alignment` |
+| `dev` | `skill` | `ls-framework-audit` | `framework-governance` | 20 | `audit, release` | `localsetup-framework-audit` |
+| `bootstrap, dev` | `skill` | `ls-framework-compliance` | `framework-governance` | 20 | `compliance, framework` | `localsetup-framework-compliance` |
+| `bootstrap, dev` | `skill` | `ls-git-workflows` | `framework-governance` | 20 | `git, workflows` | `localsetup-git-workflows` |
+| `publishing` | `skill` | `ls-github-publishing-workflow` | `framework-governance` | 20 | `github, publishing` | `localsetup-github-publishing-workflow` |
+| `dev` | `skill` | `ls-markdown-reference-validator` | `framework-governance` | 20 | `markdown, references` | `localsetup-markdown-reference-validator` |
+| `publishing` | `skill` | `ls-public-repo-identity` | `framework-governance` | 20 | `identity, publishing` | `localsetup-public-repo-identity` |
+| `dev` | `skill` | `ls-receiving-code-review` | `framework-governance` | 20 | `review, feedback` | `localsetup-receiving-code-review` |
+| `dev` | `skill` | `ls-unfuck-my-git-state` | `framework-governance` | 20 | `git, recovery` | `localsetup-unfuck-my-git-state` |
+| `dev` | `skill` | `ls-agentlens` | `development` | 30 | `codebase, navigation` | `localsetup-agentlens` |
+| `dev` | `skill` | `ls-debug-pro` | `development` | 30 | `debugging, diagnostics` | `localsetup-debug-pro` |
+| `dev` | `skill` | `ls-nodejs-nextjs` | `development` | 30 | `nodejs, nextjs` | `localsetup-nodejs-nextjs` |
+| `bootstrap, publishing` | `skill` | `ls-pr-reviewer` | `development` | 30 | `review, pull-requests` | `localsetup-pr-reviewer` |
+| `dev` | `skill` | `ls-shadcn-ui` | `development` | 30 | `react, ui` | `localsetup-shadcn-ui` |
+| `core` | `skill` | `ls-tdd-guide` | `development` | 30 | `tdd, testing` | `localsetup-tdd-guide` |
+| `dev` | `skill` | `ls-typescript-code-quality` | `development` | 30 | `typescript, quality` | `localsetup-typescript-code-quality` |
+| `ops` | `skill` | `ls-ansible-skill` | `operations` | 40 | `ansible, infrastructure` | `localsetup-ansible-skill` |
+| `ops` | `skill` | `ls-backlog-and-reminders` | `operations` | 40 | `backlog, reminders` | `localsetup-backlog-and-reminders` |
+| `harness` | `skill` | `ls-codex-heartbeat` | `operations` | 40 | `heartbeat, automation` | `localsetup-codex-heartbeat` |
+| `harness, ops` | `skill` | `ls-cron-orchestrator` | `operations` | 40 | `cron, scheduling` | `localsetup-cron-orchestrator` |
+| `ops` | `skill` | `ls-linux-patcher` | `operations` | 40 | `linux, patching` | `localsetup-linux-patcher` |
+| `ops` | `skill` | `ls-linux-service-triage` | `operations` | 40 | `linux, services` | `localsetup-linux-service-triage` |
+| `ops` | `skill` | `ls-system-info` | `operations` | 40 | `system, diagnostics` | `localsetup-system-info` |
+| `integrations` | `skill` | `ls-agentq-transport` | `integrations` | 50 | `agentq, transport` | `localsetup-agentq-transport` |
+| `integrations` | `skill` | `ls-cloudflare-dns` | `integrations` | 50 | `cloudflare, dns` | `localsetup-cloudflare-dns` |
+| `integrations` | `skill` | `ls-github-starredrepos` | `integrations` | 50 | `github, archive` | `localsetup-github-starredrepos` |
+| `integrations` | `skill` | `ls-keepass-secrets` | `integrations` | 50 | `keepass, secrets` | `localsetup-keepass-secrets` |
+| `integrations` | `skill` | `ls-mail-protocol-control` | `integrations` | 50 | `mail, protocols` | `localsetup-mail-protocol-control` |
+| `integrations` | `skill` | `ls-mcp-builder` | `integrations` | 50 | `mcp, builder` | `localsetup-mcp-builder` |
+| `integrations` | `skill` | `ls-npm-management` | `integrations` | 50 | `nginx-proxy-manager, api` | `localsetup-npm-management` |
+| `integrations` | `skill` | `ls-omniroute-admin-automation` | `integrations` | 50 | `omniroute, admin` | `localsetup-omniroute-admin-automation` |
+| `integrations` | `skill` | `ls-omniroute-proxy` | `integrations` | 50 | `omniroute, proxy` | `localsetup-omniroute-proxy` |
+| `integrations` | `skill` | `ls-scrapling` | `integrations` | 50 | `scrapling, extraction` | `localsetup-scrapling` |
+| `experimental` | `skill` | `ls-skill-creator` | `skill-lifecycle` | 60 | `skills, authoring` | `localsetup-skill-creator` |
+| `experimental` | `skill` | `ls-skill-discovery` | `skill-lifecycle` | 60 | `skills, discovery` | `localsetup-skill-discovery` |
+| `experimental` | `skill` | `ls-skill-importer` | `skill-lifecycle` | 60 | `skills, import` | `localsetup-skill-importer` |
+| `experimental` | `skill` | `ls-skill-normalizer` | `skill-lifecycle` | 60 | `skills, normalization` | `localsetup-skill-normalizer` |
+| `experimental` | `skill` | `ls-skill-sandbox-tester` | `skill-lifecycle` | 60 | `skills, sandbox` | `localsetup-skill-sandbox-tester` |
+| `experimental` | `skill` | `ls-skill-vetter` | `skill-lifecycle` | 60 | `skills, security` | `localsetup-skill-vetter` |
+| `experimental` | `skill` | `ls-arbiter` | `specialized` | 70 | `arbiter, review` | `localsetup-arbiter` |
+| `experimental` | `skill` | `ls-humanizer` | `specialized` | 70 | `writing, editing` | `localsetup-humanizer` |
+| `experimental` | `skill` | `ls-kilo-boss-orchestrator` | `specialized` | 70 | `kilo, orchestration` | `localsetup-kilo-boss-orchestrator` |
+| `experimental` | `skill` | `ls-kilo-visual-output` | `specialized` | 70 | `kilo, output` | `localsetup-kilo-visual-output` |
+| `bootstrap, dev` | `workflow` | `ls-workflow-audit-framework` | n/a | n/a | n/a | `n/a` |
+| `dev` | `workflow` | `ls-workflow-audit-markdown-references` | n/a | n/a | n/a | `n/a` |
+| `harness` | `workflow` | `ls-workflow-codex-heartbeat` | n/a | n/a | n/a | `n/a` |
+| `dev` | `workflow` | `ls-workflow-context-index-query` | n/a | n/a | n/a | `n/a` |
+| `dev, harness` | `workflow` | `ls-workflow-context-index-refresh` | n/a | n/a | n/a | `n/a` |
+| `dev, publishing` | `workflow` | `ls-workflow-documentation-alignment` | n/a | n/a | n/a | `n/a` |
+| `bootstrap, dev` | `workflow` | `ls-workflow-ops-guarded` | n/a | n/a | n/a | `n/a` |
+| `ops` | `workflow` | `ls-workflow-ops-tmux-session` | n/a | n/a | n/a | `n/a` |
+| `bootstrap, dev` | `workflow` | `ls-workflow-pipeline-git-repair-hygiene` | n/a | n/a | n/a | `n/a` |
+| `dev` | `workflow` | `ls-workflow-pipeline-pr-feedback-loop` | n/a | n/a | n/a | `n/a` |
+| `publishing` | `workflow` | `ls-workflow-pipeline-pre-publish` | n/a | n/a | n/a | `n/a` |
+| `bootstrap, dev` | `workflow` | `ls-workflow-pipeline-repo-convert` | n/a | n/a | n/a | `n/a` |
+| `dev` | `workflow` | `ls-workflow-pipeline-repo-polish` | n/a | n/a | n/a | `n/a` |
+| `ops` | `workflow` | `ls-workflow-pipeline-server-triage-patch` | n/a | n/a | n/a | `n/a` |
+| `dev` | `workflow` | `ls-workflow-pipeline-skill-onboard` | n/a | n/a | n/a | `n/a` |
+| `experimental` | `workflow` | `ls-workflow-queue-batch-implement` | n/a | n/a | n/a | `n/a` |
+| `harness` | `workflow` | `ls-workflow-repo-finalizer` | n/a | n/a | n/a | `n/a` |
+| `dev` | `workflow` | `ls-workflow-skills-index-refresh` | n/a | n/a | n/a | `n/a` |
+| `experimental` | `workflow` | `ls-workflow-spec-clarify-reverse` | n/a | n/a | n/a | `n/a` |
+| `ops` | `workflow` | `ls-workflow-tmux-terminal-mode` | n/a | n/a | n/a | `n/a` |
+| `integrations` | `workflow` | `ls-workflow-transport-handoff` | n/a | n/a | n/a | `n/a` |
+| `experimental` | `workflow` | `ls-workflow-umbrella-run` | n/a | n/a | n/a | `n/a` |
