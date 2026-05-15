@@ -19,6 +19,8 @@
 | `keep` | `.github/workflows/publish.yml` |
 | `keep` | `.github/workflows/triage.yml` |
 | `keep` | `.gitignore` |
+| `keep` | `.graphify_python` |
+| `keep` | `.graphifyignore` |
 | `keep` | `AGENTS.md` |
 | `keep` | `CODE_OF_CONDUCT.md` |
 | `keep` | `CONTRIBUTING.md` |

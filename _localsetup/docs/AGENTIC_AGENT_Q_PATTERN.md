@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 3.8
+version: 4.0
 ---
 
 # Agent Q (queue) pattern (Localsetup v3)

@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 3.8
+version: 4.0
 ---
 
 # Codex Plan-Mode Prompt: Bootstrap-Pack Audit
