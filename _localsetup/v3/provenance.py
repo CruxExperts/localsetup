@@ -1,0 +1,380 @@
+from __future__ import annotations
+
+import hashlib
+import json
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+from .lockfile import load_json
+from .source import source_commit, source_tag
+
+
+PROVENANCE_SCHEMA_VERSION = 1
+MARKER_JSON = ".localsetup-managed.json"
+MARKER_LEGACY = ".localsetup-managed"
+PORTABLE_MARKER = ".localsetup-portable"
+
+
+def sha256_bytes(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def source_tree_sha(repo_root: Path) -> str:
+    completed = subprocess.run(
+        ["git", "rev-parse", "HEAD^{tree}"],
+        cwd=repo_root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if completed.returncode != 0:
+        return "unknown"
+    return completed.stdout.strip()
+
+
+def source_dirty(repo_root: Path) -> bool:
+    completed = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=repo_root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if completed.returncode != 0:
+        return False
+    return bool(completed.stdout.strip())
+
+
+def source_remote_url(repo_root: Path) -> str | None:
+    completed = subprocess.run(
+        ["git", "config", "--get", "remote.origin.url"],
+        cwd=repo_root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if completed.returncode != 0:
+        return None
+    value = completed.stdout.strip()
+    return value or None
+
+
+def framework_version(repo_root: Path) -> str:
+    version_file = repo_root / "VERSION"
+    if not version_file.exists():
+        return "unknown"
+    return version_file.read_text(encoding="utf-8").strip() or "unknown"
+
+
+def source_root_id(repo_root: Path) -> str:
+    seed = {
+        "source_commit": source_commit(repo_root),
+        "remote_url": source_remote_url(repo_root),
+    }
+    return sha256_bytes(json.dumps(seed, sort_keys=True).encode("utf-8"))
+
+
+def source_provenance_hash(payload: dict[str, Any]) -> str:
+    keys = {
+        "schema_version": payload.get("schema_version"),
+        "framework_version": payload.get("framework_version"),
+        "source_commit": payload.get("source_commit"),
+        "source_tag": payload.get("source_tag"),
+        "source_tree_sha": payload.get("source_tree_sha"),
+        "source_dirty": payload.get("source_dirty"),
+        "source_root_id": payload.get("source_root_id"),
+    }
+    return sha256_bytes(json.dumps(keys, sort_keys=True).encode("utf-8"))
+
+
+def base_provenance(
+    repo_root: Path,
+    *,
+    emitter: str,
+    artifact_path: Path | None = None,
+    package_name: str | None = None,
+    package_type: str | None = None,
+    generated_at: bool = False,
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "schema_version": PROVENANCE_SCHEMA_VERSION,
+        "framework_version": framework_version(repo_root),
+        "source_commit": source_commit(repo_root),
+        "source_tag": source_tag(repo_root),
+        "source_tree_sha": source_tree_sha(repo_root),
+        "source_dirty": source_dirty(repo_root),
+        "source_root_id": source_root_id(repo_root),
+        "emitter": emitter,
+    }
+    if package_name:
+        payload["package_name"] = package_name
+    if package_type:
+        payload["package_type"] = package_type
+    if artifact_path is not None:
+        payload["artifact_path"] = str(artifact_path)
+    if generated_at:
+        payload["generated_at"] = datetime.now(timezone.utc).isoformat()
+    payload["source_provenance_hash"] = source_provenance_hash(payload)
+    return payload
+
+
+def managed_marker_path(path: Path) -> Path:
+    return path / MARKER_JSON
+
+
+def legacy_marker_path(path: Path) -> Path:
+    return path / MARKER_LEGACY
+
+
+def is_managed_package(path: Path) -> bool:
+    return managed_marker_path(path).exists() or legacy_marker_path(path).exists()
+
+
+def has_legacy_marker(path: Path) -> bool:
+    return legacy_marker_path(path).exists() and not managed_marker_path(path).exists()
+
+
+def package_digest(path: Path) -> str | None:
+    if not path.exists():
+        return None
+    digest = hashlib.sha256()
+    saw_file = False
+    excluded = {MARKER_JSON, MARKER_LEGACY}
+    for child in sorted(p for p in path.rglob("*") if p.is_file() and not p.is_symlink()):
+        rel = child.relative_to(path).as_posix()
+        if rel in excluded:
+            continue
+        saw_file = True
+        digest.update(rel.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(child.read_bytes())
+    return digest.hexdigest() if saw_file else None
+
+
+def load_package_marker(path: Path) -> dict[str, Any] | None:
+    marker = managed_marker_path(path)
+    if marker.exists():
+        return load_json(marker)
+    legacy = legacy_marker_path(path)
+    if legacy.exists():
+        return {"schema_version": 0, "legacy_marker": True, "source": legacy.read_text(encoding="utf-8").strip()}
+    return None
+
+
+def build_package_marker(
+    repo_root: Path,
+    package_path: Path,
+    *,
+    package_name: str,
+    package_type: str,
+    source_path: Path,
+    emitter: str,
+    artifact_path: Path | None = None,
+    installed_at: bool = True,
+) -> dict[str, Any]:
+    digest = package_digest(package_path)
+    payload = base_provenance(
+        repo_root,
+        emitter=emitter,
+        artifact_path=artifact_path or package_path,
+        package_name=package_name,
+        package_type=package_type,
+        generated_at=installed_at,
+    )
+    payload.update(
+        {
+            "source_path": str(source_path),
+            "package_digest": digest,
+            "artifact_sha256": digest,
+            "marker_path": str(managed_marker_path(artifact_path or package_path)),
+        }
+    )
+    if installed_at and "generated_at" in payload:
+        payload["installed_at"] = payload["generated_at"]
+    return payload
+
+
+def marker_public_snapshot(marker: dict[str, Any] | None) -> dict[str, Any] | None:
+    if not marker:
+        return None
+    keys = [
+        "schema_version",
+        "framework_version",
+        "source_commit",
+        "source_tag",
+        "source_tree_sha",
+        "source_dirty",
+        "source_root_id",
+        "source_provenance_hash",
+        "emitter",
+        "package_name",
+        "package_type",
+        "source_path",
+        "package_digest",
+        "artifact_sha256",
+        "installed_at",
+        "legacy_marker",
+        "source",
+    ]
+    return {key: marker.get(key) for key in keys if key in marker}
+
+
+def markdown_with_provenance(text: str, provenance: dict[str, Any]) -> str:
+    content_hash = sha256_bytes(text.encode("utf-8"))
+    body = text
+    existing: list[str] = []
+    if body.startswith("---\n"):
+        parts = body.split("---\n", 2)
+        if len(parts) == 3:
+            skip_localsetup_block = False
+            for line in parts[1].splitlines():
+                stripped = line.strip()
+                if stripped.startswith("localsetup_provenance:"):
+                    skip_localsetup_block = True
+                    continue
+                if skip_localsetup_block and (line.startswith(" ") or line.startswith("\t") or not stripped):
+                    continue
+                skip_localsetup_block = False
+                if stripped.startswith(("framework_version:", "source_commit:", "artifact_sha256:")):
+                    continue
+                existing.append(line)
+            body = parts[2].lstrip("\n")
+    frontmatter = [
+        "---",
+        *existing,
+        "localsetup_provenance:",
+        f"  schema_version: {provenance['schema_version']}",
+        f"  source_provenance_hash: {provenance['source_provenance_hash']}",
+        f"  emitter: {provenance['emitter']}",
+        f"framework_version: {provenance['framework_version']}",
+        f"source_commit: {provenance['source_commit']}",
+        f"artifact_sha256: {content_hash}",
+        "---",
+        "",
+    ]
+    return "\n".join(frontmatter) + body
+
+
+def json_with_provenance(payload: dict[str, Any], provenance: dict[str, Any]) -> dict[str, Any]:
+    output = dict(payload)
+    content = json.dumps(output, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    output["provenance"] = {**provenance, "artifact_sha256": sha256_bytes(content)}
+    return output
+
+
+def artifact_registry_entry(
+    repo_root: Path,
+    path: Path,
+    *,
+    artifact_type: str,
+    emitter: str,
+    source_inputs: list[str] | None = None,
+    content_bytes: bytes | None = None,
+) -> dict[str, Any]:
+    provenance = base_provenance(repo_root, emitter=emitter, artifact_path=path)
+    data = content_bytes if content_bytes is not None else path.read_bytes()
+    artifact_hash = sha256_bytes(data)
+    return {
+        "path": str(path.relative_to(repo_root) if path.is_absolute() and path.is_relative_to(repo_root) else path),
+        "type": artifact_type,
+        "emitter": emitter,
+        "source_inputs": source_inputs or [],
+        "artifact_sha256": artifact_hash,
+        "provenance_hash": provenance["source_provenance_hash"],
+        "source_commit": provenance["source_commit"],
+        "framework_version": provenance["framework_version"],
+    }
+
+
+def provenance_report(
+    repo_root: Path,
+    *,
+    lock: dict[str, Any] | None = None,
+    registry: dict[str, Any] | None = None,
+    global_root: Path | None = None,
+    adapters: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    warnings: list[str] = []
+    hints: list[str] = []
+    package_status: dict[str, Any] = {}
+    lock = lock or {}
+    registry = registry or {}
+
+    for package_name, expected in (lock.get("package_provenance") or {}).items():
+        expected_digest = expected.get("package_digest") or expected.get("artifact_sha256")
+        current_path = global_root / package_name if global_root else None
+        current_digest = package_digest(current_path) if current_path else None
+        if expected_digest and current_digest and expected_digest != current_digest:
+            warnings.append(f"target lock references stale package digest for {package_name}")
+            hints.append(f"refresh target package selection or reinstall {package_name}")
+        if expected_digest and current_digest is None:
+            warnings.append(f"target lock references missing global package digest for {package_name}")
+            hints.append(f"reinstall missing managed package {package_name}")
+        registry_digest = ((registry.get("packages") or {}).get(package_name) or {}).get("digest")
+        if expected_digest and registry_digest and expected_digest != registry_digest:
+            warnings.append(f"global registry digest differs from target lock for {package_name}")
+            hints.append(f"run localsetup provenance report before planning repair for {package_name}")
+        package_status[package_name] = {
+            "lock_digest": expected_digest,
+            "global_digest": current_digest,
+            "registry_digest": registry_digest,
+        }
+
+    if global_root and global_root.exists():
+        for package_path in sorted(p for p in global_root.iterdir() if p.is_dir()):
+            if legacy_marker_path(package_path).exists():
+                warnings.append(f"legacy plain managed marker found: {legacy_marker_path(package_path)}")
+                hints.append(f"reinstall {package_path.name} to write {MARKER_JSON}")
+            elif not managed_marker_path(package_path).exists() and package_path.name.startswith("ls-"):
+                warnings.append(f"managed package marker missing JSON marker: {package_path}")
+                hints.append(f"review unmanaged local content before replacing {package_path.name}")
+
+    for adapter in adapters or []:
+        repo_path = Path(str(adapter.get("repo_path")))
+        if adapter.get("points_to_global"):
+            adapter["provenance_current"] = "global-managed-package"
+        elif adapter.get("is_portable_copy"):
+            adapter["provenance_current"] = "repo-portable-copy"
+            if global_root and global_root.exists():
+                for package_path in sorted(p for p in repo_path.iterdir() if p.is_dir()):
+                    local_digest = package_digest(package_path)
+                    global_digest = package_digest(global_root / package_path.name)
+                    if local_digest and global_digest and local_digest != global_digest:
+                        warnings.append(f"portable adapter package differs from global package: {package_path.name}")
+                        hints.append(f"portable adapter remains current for this repo; compare before refreshing {package_path.name}")
+        elif adapter.get("exists"):
+            adapter["provenance_current"] = "unmanaged-local-content"
+
+    registry_path = repo_root / "_localsetup" / "docs" / "_generated" / "artifact-registry.json"
+    if registry_path.exists():
+        artifact_registry = load_json(registry_path)
+        for entry in artifact_registry.get("artifacts", []):
+            rel = entry.get("path")
+            if not rel:
+                continue
+            artifact_path = repo_root / str(rel)
+            if not artifact_path.exists():
+                warnings.append(f"generated artifact missing from registry path: {rel}")
+                hints.append(f"regenerate docs artifact {rel}")
+                continue
+            current_hash = sha256_file(artifact_path)
+            if entry.get("artifact_sha256") and entry.get("artifact_sha256") != current_hash:
+                warnings.append(f"generated artifact has stale content digest: {rel}")
+                hints.append(f"regenerate docs artifact {rel}")
+
+    return {
+        "ok": True,
+        "warnings": sorted(set(warnings)),
+        "repair_hints": sorted(set(hints)),
+        "packages": package_status,
+    }

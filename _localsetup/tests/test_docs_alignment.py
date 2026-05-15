@@ -5,6 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from _localsetup.v3.provenance import provenance_report
+
 
 def copy_docs_alignment_repo(tmp_path: Path) -> Path:
     source = Path(__file__).resolve().parents[2]
@@ -27,6 +29,7 @@ def copy_docs_alignment_repo(tmp_path: Path) -> Path:
         "OUTPUT_AND_DOC_GENERATION.md",
         "DOCUMENT_LIFECYCLE_MANAGEMENT.md",
         "WORKFLOW_STANDARD.md",
+        "migration/v2-to-v3-skill-map.md",
     ):
         src = source / "_localsetup" / "docs" / rel
         dst = repo / "_localsetup" / "docs" / rel
@@ -47,6 +50,14 @@ def run_tool(repo: Path, *args: str, check: bool = True) -> subprocess.Completed
         capture_output=True,
         check=check,
     )
+
+
+def init_clean_git_repo(repo: Path) -> None:
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=repo, check=True)
+    subprocess.run(["git", "config", "user.name", "Test User"], cwd=repo, check=True)
+    subprocess.run(["git", "add", "."], cwd=repo, check=True)
+    subprocess.run(["git", "commit", "-q", "-m", "chore: initial"], cwd=repo, check=True)
 
 
 def test_inventory_discovers_docs_assets_skills_workflows_and_ci(tmp_path: Path) -> None:
@@ -139,9 +150,13 @@ def test_apply_generated_and_assets_write_stable_outputs(tmp_path: Path) -> None
     ):
         payload = json.loads((repo / rel).read_text(encoding="utf-8"))
         assert payload["schema_version"] == "1.0"
+        assert payload["provenance"]["schema_version"] == 1
+        assert payload["provenance"]["emitter"] == "docs-align"
     inventory = json.loads((repo / "_localsetup/docs/_generated/docs-inventory.json").read_text(encoding="utf-8"))
     assert inventory["repo"] == "."
-    assert "# Documentation Alignment Summary" in (repo / "_localsetup/docs/_generated/docs-alignment-summary.md").read_text(encoding="utf-8")
+    summary = (repo / "_localsetup/docs/_generated/docs-alignment-summary.md").read_text(encoding="utf-8")
+    assert "localsetup_provenance:" in summary
+    assert "# Documentation Alignment Summary" in summary
     assert "# Asset Inventory" in (repo / "assets" / "README.md").read_text(encoding="utf-8")
 
 
@@ -274,3 +289,37 @@ def test_generated_alignment_outputs_are_checkout_deterministic(tmp_path: Path) 
         rel: (repo_a / rel).read_text(encoding="utf-8")
         for rel in before
     } == before
+
+
+def test_generated_artifact_provenance_survives_clean_commit(tmp_path: Path) -> None:
+    repo = copy_docs_alignment_repo(tmp_path)
+    init_clean_git_repo(repo)
+
+    subprocess.run(
+        [sys.executable, "_localsetup/tools/generate_docs_artifacts.py", "--repo-root", "."],
+        cwd=repo,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    subprocess.run(["git", "add", "."], cwd=repo, check=True)
+    subprocess.run(["git", "commit", "-q", "-m", "docs: regenerate artifacts"], cwd=repo, check=True)
+
+    report = provenance_report(repo)
+
+    assert report["warnings"] == []
+
+
+def test_generated_artifact_registry_is_stable_across_generator_order(tmp_path: Path) -> None:
+    repo = copy_docs_alignment_repo(tmp_path)
+    broad = [sys.executable, "_localsetup/tools/generate_docs_artifacts.py", "--repo-root", "."]
+    alias = [sys.executable, "_localsetup/tools/localsetup_v3.py", "--source-root", ".", "generate-docs"]
+
+    subprocess.run(broad, cwd=repo, text=True, capture_output=True, check=True)
+    subprocess.run(alias, cwd=repo, text=True, capture_output=True, check=True)
+    first = (repo / "_localsetup/docs/_generated/artifact-registry.json").read_text(encoding="utf-8")
+    subprocess.run(broad, cwd=repo, text=True, capture_output=True, check=True)
+    subprocess.run(alias, cwd=repo, text=True, capture_output=True, check=True)
+    second = (repo / "_localsetup/docs/_generated/artifact-registry.json").read_text(encoding="utf-8")
+
+    assert second == first

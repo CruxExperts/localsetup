@@ -40,6 +40,19 @@
         "skills_path": "~/.local/share/localsetup/packages"
       }
     ],
+    "provenance": {
+      "artifact_path": "_localsetup/docs/_generated/facts.json",
+      "artifact_sha256": "59d65d900df4bbd1471d6785b901bb452c1b695f1202de6331cd6348e9ab70f1",
+      "emitter": "generate-docs",
+      "framework_version": "3.8.6",
+      "schema_version": 1,
+      "source_commit": "1eb77e42f4b25111b110a1d1df0a36cf6d1718b7",
+      "source_dirty": true,
+      "source_provenance_hash": "54feccef5c637dd67a2c0d3dbc95b809dd6d45f8fd85290275a85918a9e59052",
+      "source_root_id": "c96a9a5f6e10ed145286550fe6c1843d28b2efc07c529be36ac16a517970f1e6",
+      "source_tag": "v3.8.6",
+      "source_tree_sha": "e60620e6210eeb145dcfaf7b0e61c9160196fafa"
+    },
     "skill_count": 52,
     "skills": [
       {
@@ -491,6 +504,19 @@
         "path": "_localsetup/workflows/ls-workflow-umbrella-run/SKILL.md"
       }
     ]
+  },
+  "provenance": {
+    "artifact_path": "_localsetup/docs/_generated/docs-truth-map.json",
+    "artifact_sha256": "26becbb8cec0b1fa04654c5987ff3afce568e155561deffc5eebf21a9ad10be7",
+    "emitter": "docs-align",
+    "framework_version": "3.8.6",
+    "schema_version": 1,
+    "source_commit": "1eb77e42f4b25111b110a1d1df0a36cf6d1718b7",
+    "source_dirty": true,
+    "source_provenance_hash": "54feccef5c637dd67a2c0d3dbc95b809dd6d45f8fd85290275a85918a9e59052",
+    "source_root_id": "c96a9a5f6e10ed145286550fe6c1843d28b2efc07c529be36ac16a517970f1e6",
+    "source_tag": "v3.8.6",
+    "source_tree_sha": "e60620e6210eeb145dcfaf7b0e61c9160196fafa"
   },
   "schema_version": "1.0",
   "truths": {

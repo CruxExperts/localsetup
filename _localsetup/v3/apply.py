@@ -12,6 +12,7 @@ from .models import DeployPlan
 from .paths import ensure_dir, legacy_target_lockfile_path, repo_path, target_lockfile_path
 from .adapters import adapter_path_state
 from .registry import upsert_target
+from .provenance import build_package_marker, is_managed_package, load_package_marker, managed_marker_path, marker_public_snapshot
 from .source import source_commit
 
 
@@ -128,8 +129,9 @@ def _install_managed_packages(
         src = source_root / package_name
         dest = global_root / package_name
         staged = (staging_root / source_subdir / package_name) if staging_root else dest
-        if dest.exists() and not (dest / ".localsetup-managed").exists():
+        if dest.exists() and not is_managed_package(dest):
             raise RuntimeError(f"refusing to overwrite unmanaged package path: {dest}")
+        package_type = "workflow" if source_subdir == "workflows" else "skill"
         if staging_root:
             if journal is not None and not any(
                 item.get("kind") == "staging_root" and item.get("staging_root") == str(staging_root)
@@ -143,7 +145,18 @@ def _install_managed_packages(
                 shutil.rmtree(staged)
             staged.parent.mkdir(parents=True, exist_ok=True)
             shutil.copytree(src, staged)
-            (staged / ".localsetup-managed").write_text(f"source={source_subdir}/{package_name}\n", encoding="utf-8")
+            save_json(
+                managed_marker_path(staged),
+                build_package_marker(
+                    repo_root,
+                    staged,
+                    package_name=package_name,
+                    package_type=package_type,
+                    source_path=src,
+                    emitter="package-install",
+                    artifact_path=dest,
+                ),
+            )
             backup = dest.with_name(f".{dest.name}.localsetup-backup-{uuid.uuid4().hex}")
             existed = dest.exists() or dest.is_symlink()
             if journal is not None:
@@ -165,7 +178,17 @@ def _install_managed_packages(
             if dest.exists() or dest.is_symlink():
                 _remove_path(dest)
             shutil.copytree(src, dest)
-            (dest / ".localsetup-managed").write_text(f"source={source_subdir}/{package_name}\n", encoding="utf-8")
+            save_json(
+                managed_marker_path(dest),
+                build_package_marker(
+                    repo_root,
+                    dest,
+                    package_name=package_name,
+                    package_type=package_type,
+                    source_path=src,
+                    emitter="package-install",
+                ),
+            )
         installed.append(str(dest))
 
     return installed
@@ -327,6 +350,10 @@ def apply_plan(
     global_roots = [a.path for a in plan.actions if a.kind in {"install_skills", "install_workflows"}]
     if global_roots:
         lock_payload["package_root"] = str(global_roots[0])
+    lock_payload["package_provenance"] = {
+        Path(path).name: marker_public_snapshot(load_package_marker(Path(path)))
+        for path in [*installed_skills, *installed_workflows]
+    }
     legacy_lockfile = legacy_target_lockfile_path(attachment_root)
     if legacy_lockfile.exists() and legacy_lockfile != lockfile_path:
         lock_payload["migration_origin"] = {"legacy_lockfile": str(legacy_lockfile)}

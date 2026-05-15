@@ -1,8 +1,14 @@
 ---
 status: ACTIVE
 version: 3.8
+localsetup_provenance:
+  schema_version: 1
+  source_provenance_hash: 54feccef5c637dd67a2c0d3dbc95b809dd6d45f8fd85290275a85918a9e59052
+  emitter: generate-docs
+framework_version: 3.8.6
+source_commit: 1eb77e42f4b25111b110a1d1df0a36cf6d1718b7
+artifact_sha256: 15493110cb4f49b1349153b0d260336380fb85504b52dff21f8313fbf77a4a41
 ---
-
 # Workflow and module registry (Localsetup v3)
 
 This page is generated from `_localsetup/workflows/*/workflow.yaml`.

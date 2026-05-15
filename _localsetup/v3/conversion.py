@@ -13,6 +13,7 @@ from .manifests import load_pack_config
 from .migration import _backup_item, conservative_migrate, detect_legacy_artifacts
 from .paths import expand_user_path
 from .plan import build_install_plan
+from .provenance import is_managed_package
 from .verify import verify_install
 
 
@@ -88,7 +89,7 @@ def _conversion_blockers(
             path = Path(artifact["path"])
             if path.name in aliases:
                 dest = path.with_name(aliases[path.name])
-                if dest.exists() and not (dest / ".localsetup-managed").exists():
+                if dest.exists() and not is_managed_package(dest):
                     blockers.append(
                         {
                             "kind": "global_skill_collision",

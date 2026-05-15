@@ -1,8 +1,14 @@
 ---
 status: ACTIVE
 version: 3.8
+localsetup_provenance:
+  schema_version: 1
+  source_provenance_hash: 54feccef5c637dd67a2c0d3dbc95b809dd6d45f8fd85290275a85918a9e59052
+  emitter: generate-docs
+framework_version: 3.8.6
+source_commit: 1eb77e42f4b25111b110a1d1df0a36cf6d1718b7
+artifact_sha256: ff79086b667e6c2c1d280aab7e02e1f73c388b8a558f956c3cbd3f0962d12b22
 ---
-
 # Shipped skills catalog
 
 This page is generated from `_localsetup/skills/*/SKILL.md`.

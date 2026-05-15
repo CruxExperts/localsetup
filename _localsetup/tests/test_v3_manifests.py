@@ -151,6 +151,8 @@ def test_facts_json_aligns_with_live_version_and_catalogs() -> None:
     workflow_count = len(load_workflow_catalog(root))
 
     assert facts["version"] == version
+    assert facts["provenance"]["schema_version"] == 1
+    assert facts["provenance"]["emitter"] == "generate-docs"
     assert facts["major_minor"] == ".".join(version.split(".")[:2])
     assert facts["platform_count"] == len(platform_ids)
     assert sorted(row["id"] for row in facts["platforms"]) == sorted(platform_ids)
@@ -270,6 +272,7 @@ def test_active_templates_do_not_reference_old_agents_skill_root() -> None:
 def test_baseline_file_classification() -> None:
     assert classify_path("_localsetup/skills/ls-context/SKILL.md") == "keep"
     assert classify_path("_localsetup/workflows/ls-workflow-ops-tmux-session/SKILL.md") == "keep"
+    assert classify_path("_localsetup/docs/_generated/artifact-registry.json") == "generate"
     assert classify_path("_localsetup/docs/_generated/skill_aliases.json") == "generate"
     assert classify_path("_localsetup/docs/local-context/SECRETS_OVERVIEW.md") == "private-maintainer"
     assert classify_path("scripts/generate-doc-artifacts") == "private-maintainer"

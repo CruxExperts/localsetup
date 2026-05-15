@@ -17,6 +17,7 @@ _ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
+from _localsetup.v3.provenance import artifact_registry_entry, base_provenance, json_with_provenance, markdown_with_provenance
 from _localsetup.v3.workflows import load_workflow_catalog, workflow_catalog_payload
 
 from docs_alignment import generate_alignment_artifacts
@@ -33,6 +34,14 @@ ASCII_REPLACEMENTS = {
     "“": '"',
     "”": '"',
 }
+
+ARTIFACT_SOURCE_INPUTS = [
+    "VERSION",
+    "_localsetup/skills",
+    "_localsetup/workflows",
+    "_localsetup/config/platforms.yaml",
+    "_localsetup/docs/PLATFORM_REGISTRY.md",
+]
 
 
 def ascii_clean(value: str) -> str:
@@ -168,7 +177,54 @@ def collect_platforms(platform_registry: Path) -> list[dict[str, str]]:
     return rows
 
 
-def write_skills_md(path: Path, major_minor: str, skills: list[dict[str, str]]) -> None:
+def _write_markdown(path: Path, text: str, repo_root: Path, *, emitter: str = "generate-docs") -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    artifact_path = path.relative_to(repo_root) if path.is_absolute() and path.is_relative_to(repo_root) else path
+    path.write_text(
+        markdown_with_provenance(text, base_provenance(repo_root, emitter=emitter, artifact_path=artifact_path)),
+        encoding="utf-8",
+    )
+
+
+def _write_json(path: Path, payload: dict, repo_root: Path, *, emitter: str = "generate-docs") -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    artifact_path = path.relative_to(repo_root) if path.is_absolute() and path.is_relative_to(repo_root) else path
+    output = json_with_provenance(payload, base_provenance(repo_root, emitter=emitter, artifact_path=artifact_path))
+    path.write_text(json.dumps(output, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def write_artifact_registry(repo_root: Path, paths: list[Path]) -> None:
+    registry_path = repo_root / "_localsetup" / "docs" / "_generated" / "artifact-registry.json"
+    existing = {}
+    if registry_path.exists():
+        try:
+            payload = json.loads(registry_path.read_text(encoding="utf-8"))
+            existing = {
+                str(item.get("path")): item
+                for item in payload.get("artifacts", [])
+                if item.get("path") and (repo_root / str(item.get("path"))).exists()
+            }
+        except json.JSONDecodeError:
+            existing = {}
+    for path in sorted({p.resolve() for p in paths if p.exists()}, key=lambda p: p.as_posix()):
+        rel = path.relative_to(repo_root).as_posix()
+        artifact_type = "json" if path.suffix == ".json" else "markdown" if path.suffix == ".md" else path.suffix.lstrip(".")
+        existing[rel] = artifact_registry_entry(
+            repo_root,
+            path,
+            artifact_type=artifact_type,
+            emitter="generate-docs",
+            source_inputs=ARTIFACT_SOURCE_INPUTS,
+        )
+    _write_json(
+        registry_path,
+        {"schema_version": 1, "artifacts": [existing[key] for key in sorted(existing)]},
+        repo_root,
+        emitter="generate-docs",
+    )
+
+
+def write_skills_md(path: Path, major_minor: str, skills: list[dict[str, str]], repo_root: Path) -> None:
     lines = [
         "---",
         "status: ACTIVE",
@@ -195,11 +251,10 @@ def write_skills_md(path: Path, major_minor: str, skills: list[dict[str, str]]) 
 
     lines.append("")
 
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("\n".join(lines), encoding="utf-8")
+    _write_markdown(path, "\n".join(lines), repo_root)
 
 
-def write_workflow_registry(path: Path, major_minor: str, workflows: list[dict[str, object]]) -> None:
+def write_workflow_registry(path: Path, major_minor: str, workflows: list[dict[str, object]], repo_root: Path) -> None:
     def doc_link(doc: str) -> str:
         if doc.startswith("_localsetup/docs/"):
             target = doc.removeprefix("_localsetup/docs/")
@@ -254,11 +309,10 @@ def write_workflow_registry(path: Path, major_minor: str, workflows: list[dict[s
             "",
         ]
     )
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("\n".join(lines), encoding="utf-8")
+    _write_markdown(path, "\n".join(lines), repo_root)
 
 
-def write_workflow_quick_ref(path: Path, major_minor: str, workflows: list[dict[str, object]]) -> None:
+def write_workflow_quick_ref(path: Path, major_minor: str, workflows: list[dict[str, object]], repo_root: Path) -> None:
     lines = [
         "---",
         "status: ACTIVE",
@@ -291,19 +345,16 @@ def write_workflow_quick_ref(path: Path, major_minor: str, workflows: list[dict[
         for alias in workflow["aliases"]:
             lines.append(f"- \"{alias}\" -> `{workflow['id']}`")
     lines.append("")
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("\n".join(lines), encoding="utf-8")
+    _write_markdown(path, "\n".join(lines), repo_root)
 
 
-def write_facts_json(path: Path, facts: dict) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
+def write_facts_json(path: Path, facts: dict, repo_root: Path) -> None:
     output = {k: v for k, v in facts.items() if k != "generated_at"}
-    path.write_text(json.dumps(output, indent=2) + "\n", encoding="utf-8")
+    _write_json(path, output, repo_root)
 
 
 def write_workflow_catalog_json(path: Path, repo_root: Path) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(workflow_catalog_payload(repo_root), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    _write_json(path, workflow_catalog_payload(repo_root), repo_root)
 
 
 def write_internal_snapshot(path: Path, facts: dict) -> None:
@@ -444,15 +495,23 @@ def main() -> int:
         ],
     }
 
-    write_skills_md(docs_dir / "SKILLS.md", major_minor, skills)
-    write_workflow_registry(docs_dir / "WORKFLOW_REGISTRY.md", major_minor, workflows)
-    write_workflow_quick_ref(docs_dir / "WORKFLOW_QUICK_REF.md", major_minor, workflows)
-    write_facts_json(docs_dir / "_generated" / "facts.json", facts)
+    direct_outputs = [
+        docs_dir / "SKILLS.md",
+        docs_dir / "WORKFLOW_REGISTRY.md",
+        docs_dir / "WORKFLOW_QUICK_REF.md",
+        docs_dir / "_generated" / "facts.json",
+        docs_dir / "_generated" / "workflow-catalog.json",
+    ]
+    write_skills_md(direct_outputs[0], major_minor, skills, repo_root)
+    write_workflow_registry(direct_outputs[1], major_minor, workflows, repo_root)
+    write_workflow_quick_ref(direct_outputs[2], major_minor, workflows, repo_root)
+    write_facts_json(direct_outputs[3], facts, repo_root)
     write_workflow_catalog_json(docs_dir / "_generated" / "workflow-catalog.json", repo_root)
     alignment_outputs = generate_alignment_artifacts(repo_root)
     if args.internal_output:
         write_internal_snapshot(repo_root / args.internal_output, facts)
     update_facts_blocks(repo_root, facts)
+    write_artifact_registry(repo_root, [*direct_outputs, *(Path(output) for output in alignment_outputs.values())])
 
     print("Generated: _localsetup/docs/SKILLS.md")
     print("Generated: _localsetup/docs/WORKFLOW_REGISTRY.md")
@@ -461,6 +520,7 @@ def main() -> int:
     print("Generated: _localsetup/docs/_generated/workflow-catalog.json")
     for output in alignment_outputs.values():
         print(f"Generated: {Path(output).relative_to(repo_root)}")
+    print("Generated: _localsetup/docs/_generated/artifact-registry.json")
     if args.internal_output:
         print(f"Generated: {args.internal_output}")
     return 0

@@ -6,6 +6,8 @@ from .adapters import adapter_path_state, adapter_status
 from .lockfile import load_json
 from .manifests import load_pack_config, load_platforms
 from .paths import expand_user_path, legacy_target_lockfile_path, repo_path, target_lockfile_path
+from .provenance import is_managed_package, provenance_report
+from .registry import load_registry
 from .workflows import validate_workflow_catalog
 
 
@@ -72,7 +74,7 @@ def verify_install(
         skill_path = global_root / skill_name
         if not skill_path.is_dir():
             issues.append(f"missing managed skill: {skill_path}")
-        elif not (skill_path / ".localsetup-managed").exists():
+        elif not is_managed_package(skill_path):
             issues.append(f"managed marker missing: {skill_path}")
 
     workflows = lock.get("workflows", []) if isinstance(lock, dict) else []
@@ -80,7 +82,7 @@ def verify_install(
         workflow_path = global_root / workflow_name
         if not workflow_path.is_dir():
             issues.append(f"missing managed workflow: {workflow_path}")
-        elif not (workflow_path / ".localsetup-managed").exists():
+        elif not is_managed_package(workflow_path):
             issues.append(f"managed marker missing: {workflow_path}")
 
     adapters = (
@@ -136,10 +138,15 @@ def verify_install(
     registry_path = Path(str(lock.get("registry_path"))) if isinstance(lock, dict) and lock.get("registry_path") else expand_user_path(pack.global_registry, home)
     if not registry_path.exists():
         issues.append(f"missing global registry: {registry_path}")
+    registry = load_registry(registry_path) if registry_path.exists() else {}
+    provenance = provenance_report(repo_root, lock=lock, registry=registry, global_root=global_root, adapters=adapters)
 
     return {
         "ok": not issues,
         "issues": issues,
+        "provenance": provenance,
+        "provenance_warnings": provenance["warnings"],
+        "provenance_repair_hints": provenance["repair_hints"],
         "adapters": adapters,
         "level": level,
         "rules": rule_results,

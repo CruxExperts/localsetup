@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 
 from .lockfile import load_json, save_json
+from .provenance import load_package_marker, marker_public_snapshot, package_digest
 
 
 REGISTRY_VERSION = 2
@@ -27,21 +28,6 @@ def load_registry(path: Path) -> dict[str, Any]:
     return data
 
 
-def package_digest(path: Path) -> str | None:
-    marker = path / ".localsetup-managed"
-    if not marker.exists():
-        return None
-    import hashlib
-
-    digest = hashlib.sha256()
-    for child in sorted(p for p in path.rglob("*") if p.is_file() and not p.is_symlink()):
-        rel = child.relative_to(path).as_posix()
-        digest.update(rel.encode("utf-8"))
-        digest.update(b"\0")
-        digest.update(child.read_bytes())
-    return digest.hexdigest()
-
-
 def upsert_target(
     registry_path: Path,
     *,
@@ -55,10 +41,15 @@ def upsert_target(
     package_names = [path.name for path in package_paths]
     registry["source_commit"] = source_commit
     registry["canonical_package_root"] = str(package_paths[0].parent) if package_paths else registry.get("canonical_package_root")
+    package_snapshots = {
+        path.name: marker_public_snapshot(load_package_marker(path))
+        for path in package_paths
+    }
     registry["targets"][target_id] = {
         "target_root": str(target_root),
         "source_commit": source_commit,
         "packages": package_names,
+        "package_provenance": package_snapshots,
         "adapters": adapter_targets,
         "lock_path": str(target_root / ".localsetup" / "lock.json"),
         "registry_path": str(registry_path),
@@ -67,6 +58,7 @@ def upsert_target(
         package = registry["packages"].setdefault(path.name, {"path": str(path), "refs": [], "digest": None})
         package["path"] = str(path)
         package["digest"] = package_digest(path)
+        package["provenance"] = marker_public_snapshot(load_package_marker(path))
         refs = set(str(ref) for ref in package.get("refs", []))
         refs.add(target_id)
         package["refs"] = sorted(refs)

@@ -1,8 +1,14 @@
 ---
 status: ACTIVE
 version: 3.8
+localsetup_provenance:
+  schema_version: 1
+  source_provenance_hash: 54feccef5c637dd67a2c0d3dbc95b809dd6d45f8fd85290275a85918a9e59052
+  emitter: generate-docs
+framework_version: 3.8.6
+source_commit: 1eb77e42f4b25111b110a1d1df0a36cf6d1718b7
+artifact_sha256: f212be23322db6905c83cc4a7de33b3e1d02634699322d719ba99eb1c842c419
 ---
-
 # v2 to v3 Skill Map
 
 | v2 | v3 |

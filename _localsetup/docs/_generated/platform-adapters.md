@@ -1,3 +1,12 @@
+---
+localsetup_provenance:
+  schema_version: 1
+  source_provenance_hash: 54feccef5c637dd67a2c0d3dbc95b809dd6d45f8fd85290275a85918a9e59052
+  emitter: generate-docs
+framework_version: 3.8.6
+source_commit: 1eb77e42f4b25111b110a1d1df0a36cf6d1718b7
+artifact_sha256: 4630cfc4d0d8f3305c3e4eb47fd9f3b85e232d651993e5635e70e7dd3dd3a8f1
+---
 # Platform Adapters
 
 Repo adapter paths are attached only when selected with `--tools` or `--platforms`; a selector-free install is global-only.

@@ -6,15 +6,66 @@ from pathlib import Path
 from .aliases import collect_skill_aliases
 from .baseline import implementation_file_map
 from .manifests import load_platforms
+from .provenance import artifact_registry_entry, base_provenance, json_with_provenance, markdown_with_provenance
 from .skills import load_skill_catalog
 from .workflows import load_workflow_catalog, workflow_catalog_payload
+
+
+ARTIFACT_SOURCE_INPUTS = [
+    "VERSION",
+    "_localsetup/skills",
+    "_localsetup/workflows",
+    "_localsetup/config/platforms.yaml",
+    "_localsetup/docs/PLATFORM_REGISTRY.md",
+]
+
+
+def _write_markdown(path: Path, text: str, repo_root: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    artifact_path = path.relative_to(repo_root) if path.is_absolute() and path.is_relative_to(repo_root) else path
+    path.write_text(
+        markdown_with_provenance(text, base_provenance(repo_root, emitter="generate-docs", artifact_path=artifact_path)),
+        encoding="utf-8",
+    )
+
+
+def _write_json(path: Path, payload: dict, repo_root: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    artifact_path = path.relative_to(repo_root) if path.is_absolute() and path.is_relative_to(repo_root) else path
+    output = json_with_provenance(payload, base_provenance(repo_root, emitter="generate-docs", artifact_path=artifact_path))
+    path.write_text(json.dumps(output, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _write_artifact_registry(repo_root: Path, paths: list[Path]) -> None:
+    registry_path = repo_root / "_localsetup" / "docs" / "_generated" / "artifact-registry.json"
+    existing = {}
+    if registry_path.exists():
+        try:
+            payload = json.loads(registry_path.read_text(encoding="utf-8"))
+            existing = {
+                str(item.get("path")): item
+                for item in payload.get("artifacts", [])
+                if item.get("path") and (repo_root / str(item.get("path"))).exists()
+            }
+        except json.JSONDecodeError:
+            existing = {}
+    for path in sorted({p.resolve() for p in paths if p.exists()}, key=lambda p: p.as_posix()):
+        artifact_type = "json" if path.suffix == ".json" else "markdown" if path.suffix == ".md" else path.suffix.lstrip(".")
+        entry = artifact_registry_entry(
+            repo_root,
+                path,
+                artifact_type=artifact_type,
+                emitter="generate-docs",
+                source_inputs=ARTIFACT_SOURCE_INPUTS,
+            )
+        existing[str(entry["path"])] = entry
+    _write_json(registry_path, {"schema_version": 1, "artifacts": [existing[key] for key in sorted(existing)]}, repo_root)
 
 
 def generate_alias_outputs(repo_root: Path) -> dict:
     aliases = collect_skill_aliases(repo_root / "_localsetup" / "skills")
     aliases_path = repo_root / "_localsetup" / "docs" / "_generated" / "skill_aliases.json"
-    aliases_path.parent.mkdir(parents=True, exist_ok=True)
-    aliases_path.write_text(json.dumps(aliases, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    _write_json(aliases_path, aliases, repo_root)
 
     migration_md = repo_root / "_localsetup" / "docs" / "migration" / "v2-to-v3-skill-map.md"
     version_file = repo_root / "VERSION"
@@ -33,8 +84,7 @@ def generate_alias_outputs(repo_root: Path) -> dict:
     ]
     for old, new in sorted(aliases.items()):
         lines.append(f"| `{old}` | `{new}` |")
-    migration_md.parent.mkdir(parents=True, exist_ok=True)
-    migration_md.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    _write_markdown(migration_md, "\n".join(lines) + "\n", repo_root)
 
     platforms_md = repo_root / "_localsetup" / "docs" / "_generated" / "platform-adapters.md"
     platform_lines = [
@@ -49,7 +99,7 @@ def generate_alias_outputs(repo_root: Path) -> dict:
         platform_lines.append(
             f"| `{platform.platform_id}` | `{', '.join(platform.repo_paths)}` | `{', '.join(platform.verify_rules)}` |"
         )
-    platforms_md.write_text("\n".join(platform_lines) + "\n", encoding="utf-8")
+    _write_markdown(platforms_md, "\n".join(platform_lines) + "\n", repo_root)
 
     packs_md = repo_root / "_localsetup" / "docs" / "_generated" / "skill-packs.md"
     pack_lines = ["# Skill And Workflow Packs", "", "| Pack | Type | Package | Legacy Alias |", "|---|---|---|---|"]
@@ -60,16 +110,17 @@ def generate_alias_outputs(repo_root: Path) -> dict:
     for workflow in load_workflow_catalog(repo_root):
         packs = ", ".join(workflow.packs) if workflow.packs else "unassigned"
         pack_lines.append(f"| `{packs}` | `workflow` | `{workflow.package}` | `n/a` |")
-    packs_md.write_text("\n".join(pack_lines) + "\n", encoding="utf-8")
+    _write_markdown(packs_md, "\n".join(pack_lines) + "\n", repo_root)
 
     workflow_catalog = repo_root / "_localsetup" / "docs" / "_generated" / "workflow-catalog.json"
-    workflow_catalog.write_text(json.dumps(workflow_catalog_payload(repo_root), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    _write_json(workflow_catalog, workflow_catalog_payload(repo_root), repo_root)
 
     file_map_md = repo_root / "_localsetup" / "docs" / "_generated" / "implementation-file-map.md"
     map_lines = ["# Implementation File Map", "", "| Classification | Path |", "|---|---|"]
     for entry in implementation_file_map(repo_root):
         map_lines.append(f"| `{entry['classification']}` | `{entry['path']}` |")
-    file_map_md.write_text("\n".join(map_lines) + "\n", encoding="utf-8")
+    _write_markdown(file_map_md, "\n".join(map_lines) + "\n", repo_root)
+    _write_artifact_registry(repo_root, [aliases_path, migration_md, platforms_md, packs_md, workflow_catalog, file_map_md])
 
     return {
         "aliases": str(aliases_path),

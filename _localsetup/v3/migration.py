@@ -9,6 +9,7 @@ from .aliases import collect_skill_aliases
 from .lockfile import save_json
 from .manifests import load_pack_config
 from .paths import expand_user_path
+from .provenance import build_package_marker, is_managed_package, managed_marker_path
 
 
 DEFAULT_SCAN_SUFFIXES = {".md", ".yaml", ".yml", ".json", ".toml", ".txt", ".sh", ".py", ".ps1"}
@@ -78,7 +79,7 @@ def detect_legacy_artifacts(
 
     if global_root.exists():
         for path in sorted(global_root.glob("localsetup-*")):
-            artifacts.append(_artifact("legacy_global_skill", path, (path / ".localsetup-managed").exists()))
+            artifacts.append(_artifact("legacy_global_skill", path, is_managed_package(path)))
 
     for target in adapter_targets(repo_root, home, platform_ids=platform_ids, target_root=attachment_root):
         path = target["repo_path"]
@@ -198,7 +199,7 @@ def conservative_migrate(
 
         if artifact["kind"] == "legacy_global_skill" and path.name in aliases:
             dest = path.with_name(aliases[path.name])
-            if dest.exists() and not (dest / ".localsetup-managed").exists():
+            if dest.exists() and not is_managed_package(dest):
                 blockers.append(
                     {
                         "path": str(dest),
@@ -214,7 +215,17 @@ def conservative_migrate(
                 else:
                     dest.unlink()
             path.rename(dest)
-            (dest / ".localsetup-managed").write_text(f"source={dest.name}\n", encoding="utf-8")
+            save_json(
+                managed_marker_path(dest),
+                build_package_marker(
+                    repo_root,
+                    dest,
+                    package_name=dest.name,
+                    package_type="skill",
+                    source_path=repo_root / "_localsetup" / "skills" / dest.name,
+                    emitter="migration",
+                ),
+            )
             migrated.append({"from": str(path), "to": str(dest), "kind": artifact["kind"]})
 
     report = {

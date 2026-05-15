@@ -7,6 +7,7 @@ from .adapters import adapter_path_state, validate_platform_selectors
 from .lockfile import load_json
 from .manifests import load_pack_config
 from .paths import expand_user_path, legacy_target_lockfile_path, repo_path, target_lockfile_path
+from .provenance import is_managed_package
 from .registry import load_registry, package_has_other_refs, remove_target
 
 
@@ -59,7 +60,7 @@ def rollback(
         _require_under_global_root(skill_path, global_root)
         if package_has_other_refs(registry_payload, skill_path.name, target_root=attachment_root):
             continue
-        if skill_path.exists() and (skill_path / ".localsetup-managed").exists():
+        if skill_path.exists() and is_managed_package(skill_path):
             shutil.rmtree(skill_path)
             removed.append(str(skill_path))
 

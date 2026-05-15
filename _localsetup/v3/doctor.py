@@ -10,6 +10,9 @@ from .dependencies import dependency_status, has_venv_module, pip_available, too
 from .manifests import load_pack_config, load_platforms
 from .migration import detect_legacy_artifacts, scan_legacy_references
 from .paths import expand_user_path
+from .provenance import provenance_report
+from .lockfile import load_json
+from .registry import load_registry
 from .skills import validate_skill_catalog
 from .workflows import validate_workflow_catalog
 
@@ -130,6 +133,15 @@ def run_doctor(
     }
     if legacy["artifacts"]:
         warnings.append("legacy v2 artifacts detected; run migrate for a conservative report and backup")
+    registry_path = expand_user_path(pack.global_registry, home)
+    lock_path = attachment_root / ".localsetup" / "lock.json"
+    provenance = provenance_report(
+        repo_root,
+        lock=load_json(lock_path),
+        registry=load_registry(registry_path) if registry_path.exists() else {},
+        global_root=global_root,
+        adapters=adapters,
+    )
 
     return {
         "ok": not blockers,
@@ -139,6 +151,9 @@ def run_doctor(
         "dependencies": dep_status,
         "adapter_collisions": collisions,
         "legacy": legacy,
+        "provenance": provenance,
+        "provenance_warnings": provenance["warnings"],
+        "provenance_repair_hints": provenance["repair_hints"],
         "writable_paths": writable_paths,
         "blockers": blockers,
         "warnings": warnings,

@@ -1,3 +1,12 @@
+---
+localsetup_provenance:
+  schema_version: 1
+  source_provenance_hash: 54feccef5c637dd67a2c0d3dbc95b809dd6d45f8fd85290275a85918a9e59052
+  emitter: generate-docs
+framework_version: 3.8.6
+source_commit: 1eb77e42f4b25111b110a1d1df0a36cf6d1718b7
+artifact_sha256: 974472bb9e57f70f19430e1aecbfec95acf21b7e0bdf4c9cf86b91c20e7850b1
+---
 # Skill And Workflow Packs
 
 | Pack | Type | Package | Legacy Alias |

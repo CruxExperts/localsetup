@@ -1,8 +1,14 @@
 ---
 status: ACTIVE
 version: 3.8
+localsetup_provenance:
+  schema_version: 1
+  source_provenance_hash: 54feccef5c637dd67a2c0d3dbc95b809dd6d45f8fd85290275a85918a9e59052
+  emitter: docs-align
+framework_version: 3.8.6
+source_commit: 1eb77e42f4b25111b110a1d1df0a36cf6d1718b7
+artifact_sha256: bcfd641a06c4cabb62e18aa8cfd7987019cd21efa6dd27ef23fcbddd54641225
 ---
-
 # Documentation Alignment Summary
 
 This page is generated from repository inventory, source-truth manifests, asset metadata, and the docs-alignment audit.

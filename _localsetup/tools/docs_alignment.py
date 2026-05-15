@@ -21,6 +21,7 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from _localsetup.v3.manifests import load_pack_config, load_platforms
+from _localsetup.v3.provenance import json_with_provenance, markdown_with_provenance, base_provenance
 from _localsetup.v3.skills import load_skill_catalog, parse_skill_frontmatter
 from _localsetup.v3.workflows import load_workflow_catalog, workflow_catalog_payload
 
@@ -104,13 +105,26 @@ def _rel(repo_root: Path, path: Path) -> str:
     return path.resolve().relative_to(repo_root.resolve()).as_posix()
 
 
+def _artifact_id(repo_root: Path, path: Path) -> Path:
+    try:
+        return Path(_rel(repo_root, path))
+    except ValueError:
+        return path
+
+
 def _read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
 
 
-def _write_json(path: Path, payload: dict[str, Any]) -> None:
+def _write_json(path: Path, payload: dict[str, Any], *, repo_root: Path | None = None, emitter: str = "docs-align") -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    output = payload
+    if repo_root is not None:
+        output = json_with_provenance(
+            payload,
+            base_provenance(repo_root, emitter=emitter, artifact_path=_artifact_id(repo_root, path)),
+        )
+    path.write_text(json.dumps(output, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def _frontmatter(text: str) -> dict[str, Any]:
@@ -580,7 +594,11 @@ def write_summary(repo_root: Path, inventory: dict[str, Any], audit_result: dict
         lines.extend(["## Findings", "", "No critical or major documentation alignment findings were detected.", ""])
     path = repo_root / SUMMARY_PATH
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("\n".join(lines), encoding="utf-8")
+    text = "\n".join(lines)
+    path.write_text(
+        markdown_with_provenance(text, base_provenance(repo_root, emitter="docs-align", artifact_path=_artifact_id(repo_root, path))),
+        encoding="utf-8",
+    )
 
 
 def generate_alignment_artifacts(repo_root: Path) -> dict[str, str]:
@@ -591,10 +609,10 @@ def generate_alignment_artifacts(repo_root: Path) -> dict[str, str]:
     audit_result = audit(repo_root)
     write_summary(repo_root, inventory, audit_result)
     inventory = collect_inventory(repo_root)
-    _write_json(repo_root / INVENTORY_PATH, inventory)
-    _write_json(repo_root / TRUTH_MAP_PATH, truth)
-    _write_json(repo_root / ASSET_MANIFEST_PATH, asset_manifest)
-    _write_json(repo_root / AUDIT_PATH, audit_result)
+    _write_json(repo_root / INVENTORY_PATH, inventory, repo_root=repo_root)
+    _write_json(repo_root / TRUTH_MAP_PATH, truth, repo_root=repo_root)
+    _write_json(repo_root / ASSET_MANIFEST_PATH, asset_manifest, repo_root=repo_root)
+    _write_json(repo_root / AUDIT_PATH, audit_result, repo_root=repo_root)
     return {
         "inventory": str(repo_root / INVENTORY_PATH),
         "truth_map": str(repo_root / TRUTH_MAP_PATH),
@@ -698,7 +716,7 @@ def main(argv: list[str] | None = None) -> int:
             if write_assets_readme(repo_root, manifest, dry_run=args.dry_run):
                 changed["changed"].append(str(ASSETS_README))
             if not args.dry_run:
-                _write_json(repo_root / ASSET_MANIFEST_PATH, manifest)
+                _write_json(repo_root / ASSET_MANIFEST_PATH, manifest, repo_root=repo_root)
         print(json.dumps(changed, indent=2, sort_keys=True))
         return 0
     if args.cmd == "check":

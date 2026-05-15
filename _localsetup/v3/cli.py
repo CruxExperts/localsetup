@@ -39,13 +39,16 @@ from .migration import conservative_migrate, scan_legacy_references
 from .package import build_public_artifact, verify_release_artifact, write_installed_sbom, write_source_sbom
 from .paths import expand_user_path
 from .plan import build_install_plan
+from .provenance import provenance_report
 from .query import adopt_recommendations, graph_payload, pack_reasoning, skill_payload, workflow_payload
+from .registry import load_registry
 from .rollback import rollback
 from .shell import SHIM_ENV, detect_invocation_target, register_shell_command, shell_registration_status
 from .skills import load_skill_catalog, validate_skill_catalog
 from .skills import parse_skill_frontmatter
 from .workflows import load_workflow_catalog, validate_workflow_catalog
 from .verify import verify_install
+from .verify import _recorded_adapter_status
 from .trace import write_trace
 from .wizard import run_wizard
 from .versioning import (
@@ -129,7 +132,7 @@ def _target_directory_value(args: argparse.Namespace) -> str | None:
 def _inject_global_target(args: argparse.Namespace) -> None:
     if not _is_global_shim_invocation():
         return
-    if args.cmd not in {"plan", "install", "update", "verify", "rollback", "adapters", "doctor", "migrate", "context", "convert", "harness", "context-index"}:
+    if args.cmd not in {"plan", "install", "update", "verify", "rollback", "adapters", "doctor", "migrate", "context", "convert", "harness", "context-index", "provenance"}:
         return
     if _target_directory_value(args):
         return
@@ -330,6 +333,7 @@ def _main(argv: list[str] | None = None) -> int:
     adapters_p = sub.add_parser("adapters")
     adapters_p.add_argument("--target-directory", default=argparse.SUPPRESS)
     adapters_p.add_argument("--platforms", "--tools", nargs="*", dest="platforms")
+    adapters_p.add_argument("--provenance", action="store_true")
     configure_p = sub.add_parser("configure")
     _add_config_flags(configure_p)
     _add_selector_flags(configure_p)
@@ -339,6 +343,7 @@ def _main(argv: list[str] | None = None) -> int:
     _add_config_flags(doctor_p)
     doctor_p.add_argument("--packs", nargs="*")
     doctor_p.add_argument("--platforms", "--tools", nargs="*", dest="platforms")
+    doctor_p.add_argument("--provenance", action="store_true")
 
     migrate_p = sub.add_parser("migrate")
     _add_config_flags(migrate_p)
@@ -388,6 +393,13 @@ def _main(argv: list[str] | None = None) -> int:
     audit_global_p.add_argument("--target-directory", default=argparse.SUPPRESS)
     sub.add_parser("validate-catalog")
     sub.add_parser("generate-docs")
+    provenance_p = sub.add_parser("provenance")
+    provenance_sub = provenance_p.add_subparsers(dest="provenance_action", required=True)
+    provenance_report_p = provenance_sub.add_parser("report")
+    _add_config_flags(provenance_report_p)
+    provenance_report_p.add_argument("--platforms", "--tools", nargs="*", dest="platforms")
+    repair_p = provenance_sub.add_parser("repair")
+    repair_p.add_argument("--plan", action="store_true", required=True)
     harness_p = sub.add_parser("harness")
     harness_sub = harness_p.add_subparsers(dest="harness_topic", required=True)
     heartbeat_p = harness_sub.add_parser("codex-heartbeat")
@@ -580,15 +592,30 @@ def _main(argv: list[str] | None = None) -> int:
     if args.cmd == "adapters":
         pack = load_pack_config(root)
         target_root = Path(getattr(args, "target_directory", None)).expanduser().resolve() if getattr(args, "target_directory", None) else None
+        global_root = expand_user_path(pack.global_root, home)
+        payload = adapter_status(
+            root,
+            home,
+            global_root,
+            platform_ids=_split_csv(args.platforms),
+            target_root=target_root,
+        )
+        if args.provenance:
+            attachment_root = target_root or root
+            registry_path = expand_user_path(pack.global_registry, home)
+            lock = json.loads((attachment_root / ".localsetup" / "lock.json").read_text(encoding="utf-8")) if (attachment_root / ".localsetup" / "lock.json").exists() else {}
+            provenance = provenance_report(
+                root,
+                lock=lock,
+                registry=load_registry(registry_path) if registry_path.exists() else {},
+                global_root=global_root,
+                adapters=payload,
+            )
+            print(json.dumps({"adapters": payload, "provenance": provenance, "provenance_warnings": provenance["warnings"], "provenance_repair_hints": provenance["repair_hints"]}, indent=2, sort_keys=True))
+            return 0
         print(
             json.dumps(
-                adapter_status(
-                    root,
-                    home,
-                    expand_user_path(pack.global_root, home),
-                    platform_ids=_split_csv(args.platforms),
-                    target_root=target_root,
-                ),
+                payload,
                 indent=2,
             )
         )
@@ -622,6 +649,42 @@ def _main(argv: list[str] | None = None) -> int:
         _print_payload(payload)
         write_trace(getattr(args, "trace_json", None), event="doctor", status="ok" if payload["ok"] else "failed", attributes={"target_root": str(target_root or root)}, started_at=started_at)
         return 0 if payload["ok"] else 1
+
+    if args.cmd == "provenance":
+        if args.provenance_action == "repair":
+            payload = {
+                "ok": True,
+                "planned": True,
+                "actions": [],
+                "message": "provenance repair is intentionally report-only in this release",
+            }
+            _print_payload(payload)
+            return 0
+        config = _resolved_config(args, home)
+        home = Path(config.home or home).expanduser().resolve()
+        target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
+        attachment_root = target_root or root
+        pack = load_pack_config(root)
+        global_root = expand_user_path(pack.global_root, home)
+        registry_path = expand_user_path(pack.global_registry, home)
+        lock_path = attachment_root / ".localsetup" / "lock.json"
+        lock = json.loads(lock_path.read_text(encoding="utf-8")) if lock_path.exists() else {}
+        adapters = (
+            adapter_status(root, home, global_root, platform_ids=config.platforms, target_root=target_root)
+            if config.platforms is not None
+            else _recorded_adapter_status(lock, global_root)
+        )
+        payload = provenance_report(
+            root,
+            lock=lock,
+            registry=load_registry(registry_path) if registry_path.exists() else {},
+            global_root=global_root,
+            adapters=adapters,
+        )
+        payload["adapters"] = adapters
+        _write_report(config.output.report, payload)
+        _print_payload(payload)
+        return 0
 
     if args.cmd == "migrate":
         config = _resolved_config(args, home)

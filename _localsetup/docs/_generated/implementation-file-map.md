@@ -1,3 +1,12 @@
+---
+localsetup_provenance:
+  schema_version: 1
+  source_provenance_hash: 54feccef5c637dd67a2c0d3dbc95b809dd6d45f8fd85290275a85918a9e59052
+  emitter: generate-docs
+framework_version: 3.8.6
+source_commit: 1eb77e42f4b25111b110a1d1df0a36cf6d1718b7
+artifact_sha256: aff6e541ddd500a8bccae906fe75e78fd4202033e89ec446545480858f0960ae
+---
 # Implementation File Map
 
 | Classification | Path |

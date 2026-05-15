@@ -27,6 +27,7 @@ from _localsetup.v3.lockfile import load_json
 from _localsetup.v3.migration import conservative_migrate, detect_legacy_artifacts, scan_legacy_references
 from _localsetup.v3.package import build_public_artifact, parse_sha256_file, verify_release_artifact
 from _localsetup.v3.plan import build_install_plan
+from _localsetup.v3.provenance import MARKER_JSON
 from _localsetup.v3.rollback import rollback
 from _localsetup.v3.shell import detect_invocation_target, is_managed_shim, register_shell_command, shell_registration_status
 from _localsetup.v3.verify import verify_install
@@ -96,12 +97,27 @@ def test_v3_plan_apply_verify_rollback(tmp_path: Path) -> None:
 
     verify = verify_install(root, home)
     assert verify["ok"] is True
+    assert verify["provenance"]["ok"] is True
+    assert verify["provenance_warnings"] == []
     assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
+    marker = load_json(home / ".local/share/localsetup/packages/ls-context" / MARKER_JSON)
+    assert marker["schema_version"] == 1
+    assert marker["framework_version"]
+    assert marker["source_commit"]
+    assert marker["source_tree_sha"]
+    assert marker["source_dirty"] in {False, True}
+    assert marker["emitter"] == "package-install"
+    assert marker["package_name"] == "ls-context"
+    assert marker["package_type"] == "skill"
+    assert marker["artifact_sha256"] == marker["package_digest"]
+    assert marker["artifact_path"] == str(home / ".local/share/localsetup/packages/ls-context")
+    assert marker["marker_path"] == str(home / ".local/share/localsetup/packages/ls-context" / MARKER_JSON)
     assert not (home / ".local/share/localsetup/packages/ls-cloudflare-dns").exists()
     assert verify["adapters"] == []
     lock = load_json(root / ".localsetup/lock.json")
     assert lock["platforms"] == []
     assert lock["adapter_state"] == []
+    assert lock["package_provenance"]["ls-context"]["package_digest"] == marker["package_digest"]
     for rel in (".codex/skills", ".claude/skills", ".cursor/skills", ".kilo/skills", ".opencode/skills", ".openclaw/skills"):
         assert not (root / rel).exists()
 
@@ -325,11 +341,82 @@ def test_v3_registry_refs_preserve_shared_packages_until_last_rollback(tmp_path:
     registry = load_json(home / ".local/share/localsetup/registry.json")
     assert registry["version"] == 2
     assert len(registry["packages"]["ls-context"]["refs"]) == 2
+    assert registry["packages"]["ls-context"]["provenance"]["package_name"] == "ls-context"
+    assert registry["targets"][str(target_one.resolve())]["package_provenance"]["ls-context"]["package_digest"]
 
     rollback(root, home=home, target_root=target_one)
     assert managed_skill.is_dir()
     rollback(root, home=home, target_root=target_two)
     assert not managed_skill.exists()
+
+
+def test_v3_provenance_report_cli_is_report_only(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"]), home=home)
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "_localsetup/tools/localsetup_v3.py",
+            "--source-root",
+            str(root),
+            "--home",
+            str(home),
+            "provenance",
+            "report",
+            "--platforms",
+            "codex",
+        ],
+        cwd=root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr + completed.stdout
+    payload = json.loads(completed.stdout)
+    assert payload["ok"] is True
+    assert "warnings" in payload
+    assert "repair_hints" in payload
+    assert payload["packages"]["ls-context"]["lock_digest"]
+    assert payload["adapters"][0]["provenance_current"] == "global-managed-package"
+
+
+def test_v3_provenance_report_global_shim_uses_caller_target(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target-repo"
+    target.mkdir()
+    apply_plan(
+        root,
+        build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"], target_root=target),
+        home=home,
+        target_root=target,
+    )
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(root / "_localsetup/tools/localsetup_v3.py"),
+            "--source-root",
+            str(root),
+            "--home",
+            str(home),
+            "provenance",
+            "report",
+        ],
+        cwd=target,
+        env={**os.environ, "LOCALSETUP_GLOBAL_SHIM": "1"},
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr + completed.stdout
+    payload = json.loads(completed.stdout)
+    assert payload["packages"]["ls-context"]["lock_digest"]
+    assert payload["adapters"][0]["repo_path"] == str(target / ".codex" / "skills")
 
 
 def test_v3_detach_removes_adapters_and_preserves_packages(tmp_path: Path) -> None:
@@ -1402,6 +1489,8 @@ def test_workflow_catalog_generation_parity_between_paths(tmp_path: Path) -> Non
         (root / "_localsetup/docs/_generated/workflow-catalog.json").read_text(encoding="utf-8")
     )
 
+    generated_by_script.pop("provenance", None)
+    generated_by_v3_docs.pop("provenance", None)
     assert generated_by_script == workflow_catalog_payload(root)
     assert generated_by_v3_docs == workflow_catalog_payload(root)
 
@@ -2658,7 +2747,7 @@ def test_v3_conservative_migration_renames_managed_legacy_global_skill(tmp_path:
     assert any(item["kind"] == "legacy_global_skill" for item in artifacts)
     assert report["ok"] is True
     assert not legacy.exists()
-    assert (home / ".local/share/localsetup/packages/ls-context/.localsetup-managed").exists()
+    assert (home / ".local/share/localsetup/packages/ls-context" / MARKER_JSON).exists()
     assert (tmp_path / "backup" / "migration-report.json").exists()
 
 
