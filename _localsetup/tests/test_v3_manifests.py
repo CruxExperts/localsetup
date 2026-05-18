@@ -120,6 +120,12 @@ skills:
 - name: dead
   description: Removed upstream.
   url: https://example.invalid/dead
+- name: transient
+  description: Temporary upstream failure.
+  url: https://example.invalid/transient
+- name: network
+  description: Temporary network failure.
+  url: https://example.invalid/network
 - name: fixable
   description: "Anthropic skill: placeholder."
   url: https://example.com/fixable
@@ -132,7 +138,27 @@ skills:
     updated, pruned = scrub.apply_fixes(
         index,
         [
-            {"name": "dead", "url": "https://example.invalid/dead", "url_live": False, "action": "dead_url"},
+            {
+                "name": "dead",
+                "url": "https://example.invalid/dead",
+                "url_live": False,
+                "url_status": 404,
+                "action": "dead_url",
+            },
+            {
+                "name": "transient",
+                "url": "https://example.invalid/transient",
+                "url_live": False,
+                "url_status": 503,
+                "action": "dead_url",
+            },
+            {
+                "name": "network",
+                "url": "https://example.invalid/network",
+                "url_live": False,
+                "url_status": 0,
+                "action": "dead_url",
+            },
             {
                 "name": "fixable",
                 "url": "https://example.com/fixable",
@@ -147,8 +173,8 @@ skills:
     payload = yaml.safe_load(index.read_text(encoding="utf-8"))
     assert updated == 1
     assert pruned == 1
-    assert [skill["name"] for skill in payload["skills"]] == ["fixable"]
-    assert payload["skills"][0]["description"] == "Real upstream description."
+    assert [skill["name"] for skill in payload["skills"]] == ["transient", "network", "fixable"]
+    assert payload["skills"][2]["description"] == "Real upstream description."
 
 
 def test_pack_manifest_loads() -> None:

@@ -13,13 +13,13 @@ Usage:
 Modes:
     (default)   Dry-run audit: check URLs, detect stubs, report gaps. No writes.
     --fix       Write enriched descriptions back to the index in-place and update 'updated'.
-                With --prune-dead-urls, also remove entries whose URL liveness check fails.
+                With --prune-dead-urls, also remove entries whose URLs return 404/410.
 
 Options:
     --workers N         Parallel fetch workers (default: 10).
     --timeout S         HTTP timeout per request in seconds (default: 10).
     --report FILE       Write GFM report to FILE in addition to stdout.
-    --prune-dead-urls   With --fix, remove entries whose URL liveness check fails.
+    --prune-dead-urls   With --fix, remove entries whose URLs return 404/410.
     --min-desc-len N    Minimum acceptable description length (default: 20).
     --skip-url-check    Skip HTTP liveness probing (faster, description-only mode).
     --skip-desc-fetch   Skip upstream SKILL.md fetch (URL-check-only mode).
@@ -65,6 +65,7 @@ MIN_DESC_LEN_DEFAULT = 20
 DEFAULT_WORKERS = 10
 DEFAULT_TIMEOUT = 10
 MAX_FIELD_LEN = 4096
+HARD_DEAD_URL_STATUSES = {404, 410}
 
 # Placeholder patterns that indicate the description was auto-generated, not fetched
 STUB_PATTERNS = [
@@ -242,6 +243,11 @@ def check_url_liveness(url: str, timeout: int = DEFAULT_TIMEOUT) -> tuple[bool, 
         return False, 0
     live = 200 <= status < 400
     return live, status
+
+
+def is_prunable_dead_url(result: dict) -> bool:
+    """Return True only for hard-dead URLs that are safe to prune automatically."""
+    return result.get("url_live") is False and result.get("url_status") in HARD_DEAD_URL_STATUSES
 
 
 def _fetch_text(url: str, timeout: int = DEFAULT_TIMEOUT) -> tuple[int, str]:
@@ -525,7 +531,7 @@ def apply_fixes(index_path: Path, results: list[dict], *, prune_dead_urls: bool 
     for r in results:
         if r["action"] == "fixable" and r["fetched_desc"]:
             fix_map[(r["name"], r["url"])] = r["fetched_desc"]
-        if prune_dead_urls and r["url_live"] is False:
+        if prune_dead_urls and is_prunable_dead_url(r):
             dead_keys.add((r["name"], r["url"]))
 
     updated_count = 0
@@ -576,7 +582,7 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument("--fix", action="store_true", help="Apply fetched descriptions to the index.")
     p.add_argument("--prune-dead-urls", action="store_true",
-                   help="With --fix and URL checks enabled, remove entries whose URLs are dead.")
+                   help="With --fix and URL checks enabled, remove entries whose URLs return 404/410.")
     p.add_argument("--workers", type=int, default=DEFAULT_WORKERS, metavar="N",
                    help=f"Parallel workers (default: {DEFAULT_WORKERS}).")
     p.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT, metavar="S",
@@ -728,9 +734,10 @@ def main() -> int:
     if args.fix:
         fixable = [r for r in results if r["action"] == "fixable"]
         dead = [r for r in results if r["url_live"] is False]
+        prunable_dead = [r for r in dead if is_prunable_dead_url(r)]
         if worker_errors:
             _warn("Skipping --fix because one or more audit workers failed.")
-        elif fixable or (args.prune_dead_urls and dead):
+        elif fixable or (args.prune_dead_urls and prunable_dead):
             count, pruned_dead_urls = apply_fixes(index_path, results, prune_dead_urls=args.prune_dead_urls)
             print(f"[INFO]  Applied {count} description fix(es) to {index_path}", file=sys.stderr)
             if args.prune_dead_urls:
