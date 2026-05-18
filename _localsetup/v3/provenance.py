@@ -208,7 +208,7 @@ def base_provenance(
     tree_sha = source_tree_sha(repo_root)
     dirty = source_dirty(repo_root)
     root_id = source_root_id(repo_root)
-    if generated_commit_parent and not dirty:
+    if generated_commit_parent:
         parent = generated_artifact_parent_source_commit(repo_root)
         if parent:
             commit = parent
