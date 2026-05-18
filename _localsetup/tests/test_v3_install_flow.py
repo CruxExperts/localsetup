@@ -52,6 +52,46 @@ class FakeAsciiTtyStringIO(FakeTtyStringIO):
         return "ascii"
 
 
+class FakeKeyInput:
+    def __init__(self, text: str) -> None:
+        self.text = text
+        self.offset = 0
+
+    @property
+    def remaining(self) -> bool:
+        return self.offset < len(self.text)
+
+    def read(self, size: int = 1) -> str:
+        if not self.remaining:
+            return ""
+        value = self.text[self.offset : self.offset + size]
+        self.offset += len(value)
+        return value
+
+    def fileno(self) -> int:
+        return 0
+
+    def isatty(self) -> bool:
+        return True
+
+
+def patch_fake_key_input(monkeypatch: pytest.MonkeyPatch, stream: FakeKeyInput) -> None:
+    def fake_select(
+        read_fds: list[int], write_fds: list[int], error_fds: list[int], timeout: float | None = None
+    ) -> tuple[list[int], list[int], list[int]]:
+        return (read_fds if stream.remaining else [], write_fds, error_fds)
+
+    monkeypatch.setattr(wizard.select, "select", fake_select)
+
+
+def enable_checkbox_key_mode(monkeypatch: pytest.MonkeyPatch, stream: FakeKeyInput) -> None:
+    patch_fake_key_input(monkeypatch, stream)
+    monkeypatch.setattr(wizard, "_can_use_checkbox_keys", lambda term: True)
+    monkeypatch.setattr(wizard.termios, "tcgetattr", lambda fd: [])
+    monkeypatch.setattr(wizard.termios, "tcsetattr", lambda fd, when, settings: None)
+    monkeypatch.setattr(wizard.tty, "setcbreak", lambda fd: None)
+
+
 def make_temp_repo(tmp_path: Path) -> Path:
     source = Path(__file__).resolve().parents[2]
     repo = tmp_path / "repo"
@@ -2753,6 +2793,106 @@ def test_wizard_checkbox_falls_back_to_line_mode_for_scripted_streams() -> None:
         [("ls-context", "ls-context"), ("ls-test-runner", "ls-test-runner")],
         default=["ls-context"],
     ) == ["ls-context", "ls-test-runner"]
+
+
+@pytest.mark.parametrize(
+    ("input_text", "expected"),
+    [
+        ("\x1b[A", "up"),
+        ("\x1b[B", "down"),
+        ("\x1bOA", "up"),
+        ("\x1bOB", "down"),
+        ("\x1b[1;5A", "up"),
+        ("\x1b[1;5B", "down"),
+    ],
+)
+def test_wizard_read_key_recognizes_arrow_sequences(
+    monkeypatch: pytest.MonkeyPatch, input_text: str, expected: str
+) -> None:
+    key_input = FakeKeyInput(input_text)
+    patch_fake_key_input(monkeypatch, key_input)
+    term = TerminalWizard(input_stream=key_input, output_stream=io.StringIO(), color=False)
+
+    assert wizard._read_key(term) == expected
+
+
+@pytest.mark.parametrize("input_text", ["\x1b", "\x1b[", "\x1b[1;5", "\x1bOC"])
+def test_wizard_read_key_treats_incomplete_or_unsupported_escape_as_unknown(
+    monkeypatch: pytest.MonkeyPatch, input_text: str
+) -> None:
+    key_input = FakeKeyInput(input_text)
+    patch_fake_key_input(monkeypatch, key_input)
+    term = TerminalWizard(input_stream=key_input, output_stream=io.StringIO(), color=False)
+
+    assert wizard._read_key(term) == "unknown"
+
+
+def test_wizard_read_key_recognizes_ctrl_c() -> None:
+    key_input = FakeKeyInput("\x03")
+    term = TerminalWizard(input_stream=key_input, output_stream=io.StringIO(), color=False)
+
+    assert wizard._read_key(term) == "ctrl-c"
+
+
+def test_wizard_checkbox_unknown_printable_key_is_noop(monkeypatch: pytest.MonkeyPatch) -> None:
+    key_input = FakeKeyInput("x\n")
+    enable_checkbox_key_mode(monkeypatch, key_input)
+    term = TerminalWizard(input_stream=key_input, output_stream=io.StringIO(), color=False)
+
+    assert choose_many_checkbox(
+        term,
+        "Skills",
+        [("ls-context", "ls-context"), ("ls-test-runner", "ls-test-runner")],
+        default=["ls-context"],
+    ) == ["ls-context"]
+
+
+def test_wizard_checkbox_application_cursor_arrows_move_selection(monkeypatch: pytest.MonkeyPatch) -> None:
+    key_input = FakeKeyInput("\x1bOB\x1bOA \n")
+    enable_checkbox_key_mode(monkeypatch, key_input)
+    term = TerminalWizard(input_stream=key_input, output_stream=io.StringIO(), color=False)
+
+    assert choose_many_checkbox(
+        term,
+        "Skills",
+        [("ls-context", "ls-context"), ("ls-test-runner", "ls-test-runner")],
+        default=[],
+    ) == ["ls-context"]
+
+
+def test_wizard_checkbox_application_cursor_down_selects_next_item(monkeypatch: pytest.MonkeyPatch) -> None:
+    key_input = FakeKeyInput("\x1bOB \n")
+    enable_checkbox_key_mode(monkeypatch, key_input)
+    term = TerminalWizard(input_stream=key_input, output_stream=io.StringIO(), color=False)
+
+    assert choose_many_checkbox(
+        term,
+        "Skills",
+        [("ls-context", "ls-context"), ("ls-test-runner", "ls-test-runner")],
+        default=[],
+    ) == ["ls-test-runner"]
+
+
+def test_wizard_checkbox_q_still_cancels(monkeypatch: pytest.MonkeyPatch) -> None:
+    key_input = FakeKeyInput("q")
+    enable_checkbox_key_mode(monkeypatch, key_input)
+    term = TerminalWizard(input_stream=key_input, output_stream=io.StringIO(), color=False)
+
+    assert (
+        choose_many_checkbox(term, "Skills", [("ls-context", "ls-context")], default=["ls-context"])
+        == wizard.CANCEL
+    )
+
+
+def test_wizard_checkbox_ctrl_c_cancels(monkeypatch: pytest.MonkeyPatch) -> None:
+    key_input = FakeKeyInput("\x03")
+    enable_checkbox_key_mode(monkeypatch, key_input)
+    term = TerminalWizard(input_stream=key_input, output_stream=io.StringIO(), color=False)
+
+    assert (
+        choose_many_checkbox(term, "Skills", [("ls-context", "ls-context")], default=["ls-context"])
+        == wizard.CANCEL
+    )
 
 
 def test_wizard_full_flow_renders_guided_context_for_current_repo(tmp_path: Path) -> None:

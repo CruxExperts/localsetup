@@ -566,24 +566,53 @@ def _can_use_checkbox_keys(term: TerminalWizard) -> bool:
 
 def _read_key(term: TerminalWizard) -> str:
     char = term.input.read(1)
+    if char == "\x03":
+        return "ctrl-c"
     if char == "\x1b":
-        rest = ""
-        fd = term.input.fileno()
-        for _ in range(2):
-            ready, _, _ = select.select([fd], [], [], 0.05)
-            if not ready:
-                break
-            rest += term.input.read(1)
-        if rest == "[A":
+        sequence = _read_escape_sequence(term)
+        if sequence.startswith("[") and sequence.endswith("A"):
             return "up"
-        if rest == "[B":
+        if sequence.startswith("[") and sequence.endswith("B"):
             return "down"
-        return "escape"
+        if sequence == "OA":
+            return "up"
+        if sequence == "OB":
+            return "down"
+        return "unknown"
     if char in {"\r", "\n"}:
         return "enter"
     if char == " ":
         return "space"
+    if char == "":
+        return "unknown"
     return char.lower()
+
+
+def _read_escape_sequence(term: TerminalWizard, *, max_chars: int = 12) -> str:
+    try:
+        fd = term.input.fileno()
+    except (AttributeError, OSError):
+        return ""
+    sequence = ""
+    for _ in range(max_chars):
+        ready, _, _ = select.select([fd], [], [], 0.05)
+        if not ready:
+            break
+        next_char = term.input.read(1)
+        if not next_char:
+            break
+        sequence += next_char
+        if _escape_sequence_is_complete(sequence):
+            break
+    return sequence
+
+
+def _escape_sequence_is_complete(sequence: str) -> bool:
+    if sequence.startswith("["):
+        return len(sequence) >= 2 and "@" <= sequence[-1] <= "~"
+    if sequence.startswith("O"):
+        return len(sequence) >= 2
+    return bool(sequence)
 
 
 def _render_checkbox(
@@ -656,7 +685,7 @@ def choose_many_checkbox(
                 suggested_reason=suggested_reason,
             )
             key = _read_key(term)
-            if key in {"q", "c", "escape"}:
+            if key in {"q", "ctrl-c"}:
                 return CANCEL
             if key == "b":
                 return BACK
