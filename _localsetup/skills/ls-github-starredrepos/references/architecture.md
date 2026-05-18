@@ -23,4 +23,4 @@ gh auth -> verify-github-auth -> list-starred-repos -> sync-starredrepos
 
 ## Boundary
 
-The archive repository is for metadata, docs, manifests, and optional submodule pointers. It is not a hidden mirror of every starred repository unless the user authorizes vendoring after review.
+The archive repository is currently for metadata, docs, and manifests. Submodule pointers and vendored copies are roadmap storage strategies only; this helper rejects non-metadata storage modes until guarded implementations and tests exist.

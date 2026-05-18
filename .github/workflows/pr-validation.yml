@@ -16,6 +16,41 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  dependency-manifest-validation:
+    name: dependency manifest validation
+    if: ${{ github.event_name == 'pull_request' && (github.actor == 'dependabot[bot]' || startsWith(github.head_ref, 'dependabot/')) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
+        with:
+          python-version: "3.12"
+
+      - name: Exercise dependency manifests
+        run: |
+          set -euo pipefail
+          for manifest in _localsetup/requirements.in _localsetup/requirements.txt pyproject.toml; do
+            venv="/tmp/localsetup-deps-$(basename "${manifest}" | tr '.-' '__')"
+            python3 -m venv "${venv}"
+            "${venv}/bin/python" -m pip install --upgrade pip --quiet
+            if [[ "${manifest}" == "pyproject.toml" ]]; then
+              "${venv}/bin/python" -m pip install --only-binary :all: . --quiet
+            else
+              "${venv}/bin/python" -m pip install --only-binary :all: -r "${manifest}" --quiet
+            fi
+            "${venv}/bin/python" -m pip check
+          done
+
+      - name: Check locked install remains usable
+        run: |
+          python3 -m venv /tmp/localsetup-deps-lock
+          /tmp/localsetup-deps-lock/bin/python -m pip install --upgrade pip --quiet
+          /tmp/localsetup-deps-lock/bin/python -m pip install --require-hashes --only-binary :all: -r _localsetup/requirements.lock --quiet
+          /tmp/localsetup-deps-lock/bin/python -m pip check
+
   generated-docs-and-version:
     name: generated docs and version sync
     runs-on: ubuntu-latest

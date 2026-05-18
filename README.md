@@ -247,7 +247,7 @@ The design follows a few durable pressures instead of chasing market snapshots:
 - Python `>= 3.10`
 - Bash on Linux, macOS, or WSL2
 - Git and network access to GitHub for raw bootstrap, unless installing from a local clone
-- Recommended: `rg`, `pip`, and the packages in `_localsetup/requirements.txt`; managed installs prefer `_localsetup/requirements.lock` with pip hash checking when present.
+- Recommended: `rg`, `pip`, and the packages in `_localsetup/requirements.txt`; managed installs prefer `_localsetup/requirements.lock` with pip hash checking when present, while dependency PRs also exercise changed manifests.
 
 Use managed dependency setup instead of system pip overrides:
 

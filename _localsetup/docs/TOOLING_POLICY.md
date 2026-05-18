@@ -33,6 +33,7 @@ Purpose: define project-wide tooling language and dependency rules.
   - recent release activity
 - Pin human-maintained dependency intent in `requirements.in` and `requirements.txt`, and document why each dependency exists.
 - Keep `requirements.lock` as the managed-install lock. Managed installs use `pip install --require-hashes --only-binary :all:` when this lock is present.
+- Dependency-update PRs must exercise changed manifests separately from the lock-based install path. Do not assume Dependabot regenerates hash locks unless the regenerated lock is present and validated.
 - Keep framework dependency installs isolated. The default `--dependency-mode managed-venv` creates or updates Localsetup's own venv and never requires `--break-system-packages`.
 - Use `pipx` for app-style CLI tools and future wheel-based Localsetup command installs. Do not use `pipx` as the mechanism for libraries imported by framework Python modules; those belong in the managed venv.
 - Treat `--dependency-mode user-pip` as a compatibility escape hatch only. It uses `--user`, never `--break-system-packages`, and should not be the default for Ubuntu servers or desktops.

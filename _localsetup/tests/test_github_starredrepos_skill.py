@@ -239,7 +239,48 @@ def test_github_starredrepos_storage_mode_defaults_to_metadata() -> None:
         pytest.skip("node is not installed")
     text = (SKILL / "scripts/sync-starredrepos.mjs").read_text(encoding="utf-8")
     assert 'process.env.STARREDREPOS_STORAGE_MODE || "metadata"' in text
-    assert "Submodule storage planning is documented but not implemented" in text
+    assert "Current helper apply mode is metadata-only" in text
+
+    schema = load_json(SKILL / "data/schema/manifest.schema.json")
+    assert schema["properties"]["storageMode"]["enum"] == ["metadata"]
+
+
+def test_github_starredrepos_rejects_unsupported_storage_modes() -> None:
+    if not shutil.which("node"):
+        pytest.skip("node is not installed")
+
+    for mode in ("submodule", "vendor", "checkout-cache", "bare-mirror-cache"):
+        result = subprocess.run(
+            ["node", "scripts/sync-starredrepos.mjs", "--help"],
+            cwd=SKILL,
+            check=False,
+            text=True,
+            capture_output=True,
+            timeout=10,
+            env={**__import__("os").environ, "STARREDREPOS_STORAGE_MODE": mode},
+        )
+        assert result.returncode == 0, result.stderr
+
+        script = (
+            "import { spawn } from 'node:child_process';"
+            "const child = spawn('node', ['scripts/sync-starredrepos.mjs', '--dry-run'], {"
+            "cwd: process.cwd(), env: {...process.env, STARREDREPOS_STORAGE_MODE: process.argv[1]}, stdio: ['ignore', 'pipe', 'pipe']"
+            "});"
+            "let err=''; child.stderr.on('data', c => err += c);"
+            "child.on('close', code => { console.log(JSON.stringify({code, err})); });"
+        )
+        failure = subprocess.run(
+            ["node", "--input-type=module", "-e", script, mode],
+            cwd=SKILL,
+            check=False,
+            text=True,
+            capture_output=True,
+            timeout=10,
+        )
+        assert failure.returncode == 0, failure.stderr
+        payload = json.loads(failure.stdout)
+        assert payload["code"] != 0
+        assert f"Unsupported storage mode: {mode}" in payload["err"]
 
 
 def test_github_starredrepos_redaction_helper_covers_github_tokens() -> None:

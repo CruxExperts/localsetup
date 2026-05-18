@@ -473,7 +473,7 @@ def test_v3_external_target_install_verify_and_context_freshness_smoke(tmp_path:
     assert payload["contexts"][0]["scope"] == "repo"
 
 
-def test_v3_verify_levels_and_trace_json(tmp_path: Path) -> None:
+def test_v3_verify_level_filesystem_and_trace_json(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "consumer"
@@ -497,7 +497,7 @@ def test_v3_verify_levels_and_trace_json(tmp_path: Path) -> None:
             "--tools",
             "codex",
             "--level",
-            "host",
+            "filesystem",
             "--trace-json",
             str(trace),
         ],
@@ -508,10 +508,36 @@ def test_v3_verify_levels_and_trace_json(tmp_path: Path) -> None:
 
     assert completed.returncode == 0, completed.stderr + completed.stdout
     payload = json.loads(completed.stdout)
-    assert payload["level"] == "host"
-    assert any(row.get("status") == "not_run" for row in payload["rules"])
+    assert payload["level"] == "filesystem"
+    assert not any(row.get("status") == "not_run" for row in payload["rules"])
     trace_rows = [json.loads(line) for line in trace.read_text(encoding="utf-8").splitlines()]
     assert trace_rows[-1]["event"] == "verify"
+
+
+def test_v3_verify_rejects_unimplemented_levels(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+
+    for level in ("host", "smoke"):
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(tool),
+                "--repo",
+                str(root),
+                "verify",
+                "--tools",
+                "codex",
+                "--level",
+                level,
+            ],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+        assert completed.returncode != 0
+        assert "invalid choice" in completed.stderr
 
 
 def test_v3_registry_refs_preserve_shared_packages_until_last_rollback(tmp_path: Path) -> None:

@@ -13,7 +13,7 @@ Use this page to install Localsetup v3, choose agent platforms, verify the insta
 - Python `>= 3.10`
 - Bash on Linux, macOS, or WSL2
 - Git and network access to GitHub for raw bootstrap, unless installing from a local clone
-- Recommended: `rg`, `pip`, and the packages in `_localsetup/requirements.txt`; managed dependency installs use `_localsetup/requirements.lock` with pip hash checking when the lock is present.
+- Recommended: `rg`, `pip`, and the packages in `_localsetup/requirements.txt`; managed dependency installs use `_localsetup/requirements.lock` with pip hash checking when the lock is present. Dependency PRs validate changed manifests separately from the committed lock.
 
 Windows is WSL2-only in Localsetup v3. Native PowerShell install is intentionally not supported; run the Bash installer inside WSL2.
 
@@ -185,7 +185,7 @@ Agent-readable install context:
 python3 _localsetup/tools/localsetup_v3.py --source-root . context --markdown
 ```
 
-Verify supports explicit levels. `filesystem` runs the implemented local rule engine. `host` and `smoke` currently return structured `not_run` entries for probes that are not implemented yet, so automation can distinguish unsupported checks from failures:
+Verify supports the explicit `filesystem` level, which runs the implemented local rule engine:
 
 ```bash
 localsetup verify --tools codex --level filesystem

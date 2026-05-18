@@ -1,4 +1,5 @@
 from pathlib import Path
+import importlib.util
 import json
 import shutil
 import subprocess
@@ -17,6 +18,9 @@ from _localsetup.v3.skills import skill_taxonomy_payload
 from _localsetup.v3.skills import validate_skill_catalog
 from _localsetup.v3.workflows import selected_workflow_names, validate_workflow_catalog
 from _localsetup.v3.workflows import load_workflow_catalog
+
+
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def make_workflow_validation_repo(tmp_path: Path) -> Path:
@@ -84,6 +88,67 @@ migration: {}
         encoding="utf-8",
     )
     return root
+
+
+def test_dependency_pr_validation_exercises_manifest_inputs() -> None:
+    workflow = (ROOT / ".github" / "workflows" / "pr-validation.yml").read_text(encoding="utf-8")
+    dependabot = (ROOT / ".github" / "dependabot.yml").read_text(encoding="utf-8")
+
+    assert "dependency-manifest-validation:" in workflow
+    assert "github.actor == 'dependabot[bot]'" in workflow
+    assert "_localsetup/requirements.in _localsetup/requirements.txt pyproject.toml" in workflow
+    assert "pip install --only-binary :all: -r \"${manifest}\"" in workflow
+    assert "pip install --only-binary :all: . --quiet" in workflow
+    assert "pip install --require-hashes --only-binary :all: -r _localsetup/requirements.lock" in workflow
+    assert "dependency-name: PGPy" in dependabot
+    assert "\">=0.6\"" in dependabot
+
+
+def test_skill_index_scrub_can_prune_dead_urls(tmp_path: Path) -> None:
+    module_path = ROOT / "_localsetup" / "tools" / "skill_index_scrub.py"
+    spec = importlib.util.spec_from_file_location("skill_index_scrub_under_test", module_path)
+    assert spec is not None and spec.loader is not None
+    scrub = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(scrub)
+
+    index = tmp_path / "PUBLIC_SKILL_INDEX.yaml"
+    index.write_text(
+        """
+schema_version: 2
+updated: '2026-05-18T00:00:00Z'
+skills:
+- name: dead
+  description: Removed upstream.
+  url: https://example.invalid/dead
+- name: fixable
+  description: "Anthropic skill: placeholder."
+  url: https://example.com/fixable
+  summary_short: "Anthropic skill: placeholder."
+  summary_long: "Anthropic skill: placeholder."
+  quality_signals: {}
+""",
+        encoding="utf-8",
+    )
+    updated, pruned = scrub.apply_fixes(
+        index,
+        [
+            {"name": "dead", "url": "https://example.invalid/dead", "url_live": False, "action": "dead_url"},
+            {
+                "name": "fixable",
+                "url": "https://example.com/fixable",
+                "url_live": True,
+                "action": "fixable",
+                "fetched_desc": "Real upstream description.",
+            },
+        ],
+        prune_dead_urls=True,
+    )
+
+    payload = yaml.safe_load(index.read_text(encoding="utf-8"))
+    assert updated == 1
+    assert pruned == 1
+    assert [skill["name"] for skill in payload["skills"]] == ["fixable"]
+    assert payload["skills"][0]["description"] == "Real upstream description."
 
 
 def test_pack_manifest_loads() -> None:

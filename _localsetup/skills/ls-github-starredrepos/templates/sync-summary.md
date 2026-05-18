@@ -2,7 +2,7 @@
 
 - Generated: {{generatedAt}}
 - Owner: {{owner}}
-- Storage mode: {{storageMode}}
+- Effective storage mode: {{storageMode}}
 - Repository count: {{repositoryCount}}
 - Added: {{addedCount}}
 - Removed: {{removedCount}}

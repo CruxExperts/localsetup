@@ -19,7 +19,7 @@ Use this skill when the user asks to inventory GitHub stars, sync starred reposi
 1. **Authenticate first:** Run `node scripts/verify-github-auth.mjs` before any GitHub API or repository work. Prefer the active `gh` login and record host, viewer, REST API versions, and rate-limit context.
 2. **Read-only by default:** Start with `node scripts/list-starred-repos.mjs --limit 100 --json` and `node scripts/sync-starredrepos.mjs --dry-run`.
 3. **Use the `starredrepos` contract:** Store publishable metadata, manifests, diffs, and generated docs in the archive repository. Keep local checkout caches, bare mirrors, and scout caches outside committed history.
-4. **Pick storage intentionally:** Default current helper runs to metadata-only. Treat submodule mode as a planned publishable mode until guarded submodule creation is implemented. Full vendoring is disabled unless the user explicitly authorizes it after license, privacy, and size review.
+4. **Use metadata storage:** Current helper apply mode is metadata-only. Submodule, checkout-cache, bare-mirror-cache, and vendor strategies are roadmap concepts until guarded implementations and tests exist.
 5. **Scout conservatively:** Static metadata scouting is deterministic and default. Only run a configured model or command when `STARREDREPOS_SCOUT_MODE=command` or a matching CLI flag is explicit.
 6. **Guard mutations:** Creating remotes, committing, pushing, deleting submodules, and vendoring content require separate explicit flags and should be previewed in a dry run first.
 
@@ -42,7 +42,7 @@ Run commands from this skill directory unless a script option names another path
 - `STARREDREPOS_GITHUB_HOST`: GitHub host, default `github.com`.
 - `STARREDREPOS_REPO_NAME`: archive repository, default `starredrepos`.
 - `STARREDREPOS_WORKTREE`: local archive worktree path.
-- `STARREDREPOS_STORAGE_MODE`: `metadata`, `submodule`, `checkout-cache`, `bare-mirror-cache`, or `vendor`.
+- `STARREDREPOS_STORAGE_MODE`: `metadata` only. Other storage strategies are rejected by the helper until implemented.
 - `STARREDREPOS_CACHE_DIR`: local cache directory for non-committed clones or mirrors.
 - `STARREDREPOS_REST_API_VERSION`: REST version header, default `2026-03-10`.
 - `STARREDREPOS_SCOUT_MODEL`: optional model label passed to external scout tooling.
@@ -59,7 +59,7 @@ Run commands from this skill directory unless a script option names another path
 - `--create-remote` may create `OWNER/starredrepos` only when combined with `--apply`.
 - `--commit` may create a local commit only when combined with `--apply`.
 - `--push` may push only when combined with `--apply --commit`.
-- Do not delete, deinitialize, or rewrite existing submodules unless the user explicitly asks for that cleanup.
+- Do not delete, deinitialize, or rewrite existing submodules unless the user explicitly asks for that cleanup; this helper does not create submodules yet.
 - Never print GitHub tokens, authorization headers, or full `gh auth token` output.
 
 ## Reference Map

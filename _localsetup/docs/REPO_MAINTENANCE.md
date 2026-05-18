@@ -83,10 +83,10 @@ Security-sensitive reports should follow [`../../SECURITY.md`](../../SECURITY.md
 Tracked configuration lives at [`../../.github/dependabot.yml`](../../.github/dependabot.yml). It covers:
 
 - GitHub Actions updates.
-- Python dependency updates for `_localsetup/requirements.txt`.
+- Python dependency intent updates for `_localsetup/requirements.in` and `_localsetup/requirements.txt`.
 - Python project metadata at the repository root.
 
-Keep Dependabot PRs small, grouped, and scheduled. Treat dependency updates that affect install, transport, security, or packaging as release-relevant.
+Keep Dependabot PRs small, grouped, and scheduled. Treat dependency updates that affect install, transport, security, or packaging as release-relevant. Pull requests from Dependabot run an extra manifest-validation job that installs the changed dependency manifests in temporary virtual environments, while the standard validation jobs continue to install the committed hash lock.
 
 ## Labels
 

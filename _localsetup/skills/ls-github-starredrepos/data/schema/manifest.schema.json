@@ -12,7 +12,7 @@
     "sourceHost": { "type": "string", "minLength": 1 },
     "storageMode": {
       "type": "string",
-      "enum": ["metadata", "submodule", "checkout-cache", "bare-mirror-cache", "vendor"]
+      "enum": ["metadata"]
     },
     "repositoryCount": { "type": "integer", "minimum": 0 },
     "repositories": {

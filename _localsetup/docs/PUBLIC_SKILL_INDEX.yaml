@@ -5,7 +5,7 @@ schema_version: 2
 sources:
 - https://github.com/VoltAgent/awesome-openclaw-skills
 - https://github.com/anthropics/skills/tree/main/skills
-updated: '2026-05-09T19:16:13Z'
+updated: '2026-05-18T20:28:34Z'
 skills:
 - name: agent-commons
   description: Consult, commit, extend, and challenge reasoning chains.
@@ -877,44 +877,6 @@ skills:
     has_category: true
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
-- name: skywork-ppt
-  description: Generate, imitate, and edit PowerPoint presentations with skywork.
-  url: https://github.com/openclaw/skills/blob/main/skills/gxcun17/skywork-ppt/SKILL.md
-  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-  category: Table of Contents
-  summary_short: Generate, imitate, and edit PowerPoint presentations with skywork.
-  summary_long: 'Generate, imitate, and edit PowerPoint presentations with skywork. Primary capabilities: github. May require network access.'
-  capabilities:
-  - github
-  requirements: []
-  risk_flags:
-  - external_network
-  - file_write
-  quality_signals:
-    has_description: true
-    description_length: 66
-    has_category: true
-    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-    url_domain_hint: github
-- name: skywork-music-maker
-  description: Create professional music with Mureka AI.
-  url: https://github.com/openclaw/skills/blob/main/skills/gxcun17/skywork-music-maker/SKILL.md
-  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-  category: Table of Contents
-  summary_short: Create professional music with Mureka AI.
-  summary_long: 'Create professional music with Mureka AI. Primary capabilities: github. May require network access.'
-  capabilities:
-  - github
-  requirements: []
-  risk_flags:
-  - external_network
-  - file_write
-  quality_signals:
-    has_description: true
-    description_length: 41
-    has_category: true
-    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-    url_domain_hint: github
 - name: 1p-shortlink
   description: Create short URLs and submit feature requests using 1p.io.
   url: https://clawskills.sh/skills/tuanpmt-1p-shortlink
@@ -1382,45 +1344,6 @@ skills:
     has_category: true
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
-- name: adspower-browser
-  description: Use when the user asks to create or manage AdsPower browsers, groups, tags, proxies, or check status via AdsPower Local API.
-  url: https://github.com/openclaw/skills/tree/main/skills/adspower/adspower-browser
-  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-  category: Table of Contents
-  summary_short: Use when the user asks to create or manage AdsPower browsers, groups, tags, proxies, or check status via AdsPower Local API.
-  summary_long: 'Use when the user asks to create or manage AdsPower browsers, groups, tags, proxies, or check status via AdsPower Local API. Primary capabilities: github, data. Likely requirements: external_service. May require network access.'
-  capabilities:
-  - github
-  - data
-  requirements:
-  - external_service
-  risk_flags:
-  - external_network
-  - file_write
-  quality_signals:
-    has_description: true
-    description_length: 124
-    has_category: true
-    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-    url_domain_hint: github
-- name: duoplus-agent
-  description: Control DuoPlus cloud phones via ADB.
-  url: https://github.com/openclaw/skills/tree/main/skills/duoplusofficial/duoplus-agent/SKILL.md
-  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-  category: Table of Contents
-  summary_short: Control DuoPlus cloud phones via ADB.
-  summary_long: 'Control DuoPlus cloud phones via ADB. Likely requirements: external_service. May require network access.'
-  capabilities: []
-  requirements:
-  - external_service
-  risk_flags:
-  - external_network
-  quality_signals:
-    has_description: true
-    description_length: 37
-    has_category: true
-    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-    url_domain_hint: github
 - name: 0xwork
   description: Find and complete paid tasks on the 0xWork decentralized marketplace (Base chain, USDC escrow)
   url: https://clawskills.sh/skills/jkillr-0xwork
@@ -2821,23 +2744,6 @@ skills:
     has_category: true
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
-- name: cad-agent
-  description: Rendering server for AI agents doing CAD work.
-  url: https://github.com/clawdbot/skills/tree/main/skills/clawd-maf/cad-agent/SKILL.md
-  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-  category: Table of Contents
-  summary_short: Rendering server for AI agents doing CAD work.
-  summary_long: Rendering server for AI agents doing CAD work. May require network access.
-  capabilities: []
-  requirements: []
-  risk_flags:
-  - external_network
-  quality_signals:
-    has_description: true
-    description_length: 46
-    has_category: true
-    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-    url_domain_hint: github
 - name: calorie-visualizer
   description: Local calorie logging and visual reporting (auto-refreshes and returns report image after each log)
   url: https://clawskills.sh/skills/vintlin-calorie-visualizer
@@ -2875,41 +2781,6 @@ skills:
     has_category: true
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
-- name: skywork-design
-  description: Generate and edit images via Skywork Image for posters, logos and more.
-  url: https://github.com/openclaw/skills/blob/main/skills/gxcun17/skywork-design/SKILL.md
-  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-  category: Table of Contents
-  summary_short: Generate and edit images via Skywork Image for posters, logos and more.
-  summary_long: Generate and edit images via Skywork Image for posters, logos and more. May require network access.
-  capabilities: []
-  requirements: []
-  risk_flags:
-  - external_network
-  - file_write
-  quality_signals:
-    has_description: true
-    description_length: 71
-    has_category: true
-    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-    url_domain_hint: github
-- name: ai-video-remix
-  description: AI-driven video remix from local library using ShotAI.
-  url: https://github.com/openclaw/skills/tree/main/skills/abu-shotai/ai-video-remix/SKILL.md
-  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-  category: Table of Contents
-  summary_short: AI-driven video remix from local library using ShotAI.
-  summary_long: AI-driven video remix from local library using ShotAI. May require network access.
-  capabilities: []
-  requirements: []
-  risk_flags:
-  - external_network
-  quality_signals:
-    has_description: true
-    description_length: 54
-    has_category: true
-    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-    url_domain_hint: github
 - name: alter-actions
   description: Trigger Alter macOS app actions via x-callback-urls.
   url: https://clawskills.sh/skills/olivieralter-alter-actions
@@ -3983,24 +3854,6 @@ skills:
     has_category: true
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
-- name: skywork-search
-  description: AI-powered web search for real-time information — retrieve up-to-date content.
-  url: https://github.com/openclaw/skills/blob/main/skills/gxcun17/skywork-search/SKILL.md
-  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-  category: Table of Contents
-  summary_short: AI-powered web search for real-time information — retrieve up-to-date content.
-  summary_long: 'AI-powered web search for real-time information — retrieve up-to-date content. Primary capabilities: search. May require network access.'
-  capabilities:
-  - search
-  requirements: []
-  risk_flags:
-  - external_network
-  quality_signals:
-    has_description: true
-    description_length: 78
-    has_category: true
-    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-    url_domain_hint: github
 - name: adhd-assistant
   description: ADHD-friendly life management assistant for OpenClaw.
   url: https://clawskills.sh/skills/thinktankmachine-adhd-assistant
@@ -5437,45 +5290,6 @@ skills:
     has_category: true
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
-- name: socialecho-social-media-management-agent
-  description: SocialEcho API team account article report queries.
-  url: https://github.com/openclaw/skills/tree/main/skills/socialecho-net/socialecho-social-media-management-agent/SKILL.md
-  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-  category: Table of Contents
-  summary_short: SocialEcho API team account article report queries.
-  summary_long: 'SocialEcho API team account article report queries. Primary capabilities: pdf, automation, data. Likely requirements: external_service. May require network access.'
-  capabilities:
-  - pdf
-  - automation
-  - data
-  requirements:
-  - external_service
-  risk_flags:
-  - external_network
-  quality_signals:
-    has_description: true
-    description_length: 51
-    has_category: true
-    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-    url_domain_hint: github
-- name: postiz
-  description: Schedule social media posts and threads across 28+ platforms.
-  url: https://github.com/openclaw/skills/tree/main/skills/nevo-david/postiz/SKILL.md
-  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-  category: Table of Contents
-  summary_short: Schedule social media posts and threads across 28+ platforms.
-  summary_long: 'Schedule social media posts and threads across 28+ platforms. Primary capabilities: automation. May require network access.'
-  capabilities:
-  - automation
-  requirements: []
-  risk_flags:
-  - external_network
-  quality_signals:
-    has_description: true
-    description_length: 61
-    has_category: true
-    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-    url_domain_hint: github
 - name: 4to1-planner
   description: AI planning coach using the 4To1 Method™ — turn 4-year vision into daily action.
   url: https://clawskills.sh/skills/qingxuantang-4to1-planner
@@ -5956,23 +5770,6 @@ skills:
     has_category: true
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
-- name: boss-ai-agent
-  description: AI management middleware with 14 mentors and 9 culture packs.
-  url: https://github.com/openclaw/skills/tree/main/skills/tonypk/boss-ai-agent/SKILL.md
-  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-  category: Table of Contents
-  summary_short: AI management middleware with 14 mentors and 9 culture packs.
-  summary_long: AI management middleware with 14 mentors and 9 culture packs. May require network access.
-  capabilities: []
-  requirements: []
-  risk_flags:
-  - external_network
-  quality_signals:
-    has_description: true
-    description_length: 61
-    has_category: true
-    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-    url_domain_hint: github
 - name: 4claw
   description: 4claw — a moderated imageboard for AI agents.
   url: https://clawskills.sh/skills/mfergpt-4claw
@@ -6742,25 +6539,6 @@ skills:
     has_category: true
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
-- name: skywork-excel
-  description: AI-powered spreadsheet operations for creating, analyzing and generating reports.
-  url: https://github.com/openclaw/skills/blob/main/skills/gxcun17/skywork-excel/SKILL.md
-  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-  category: Table of Contents
-  summary_short: AI-powered spreadsheet operations for creating, analyzing and generating reports.
-  summary_long: 'AI-powered spreadsheet operations for creating, analyzing and generating reports. Primary capabilities: pdf, github. May require network access.'
-  capabilities:
-  - pdf
-  - github
-  requirements: []
-  risk_flags:
-  - external_network
-  quality_signals:
-    has_description: true
-    description_length: 81
-    has_category: true
-    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-    url_domain_hint: github
 - name: alexa-control
   description: Control Alexa devices via CLI - set alarms, play music, flash briefings, smart home commands.
   url: https://clawskills.sh/skills/ignito-pg-alexa-control
@@ -7075,23 +6853,6 @@ skills:
   quality_signals:
     has_description: true
     description_length: 60
-    has_category: true
-    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-    url_domain_hint: other
-- name: chords-fetcher
-  description: Fetch clean guitar chords and lyrics from mychords.net, amdm.ru, ultimate-guitar.com.
-  url: https://clawskills.sh/skills/flobo3-chords-fetcher
-  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-  category: Table of Contents
-  summary_short: Fetch clean guitar chords and lyrics from mychords.net, amdm.ru, ultimate-guitar.com.
-  summary_long: Fetch clean guitar chords and lyrics from mychords.net, amdm.ru, ultimate-guitar.com. May require network access.
-  capabilities: []
-  requirements: []
-  risk_flags:
-  - external_network
-  quality_signals:
-    has_description: true
-    description_length: 85
     has_category: true
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
@@ -11492,6 +11253,26 @@ skills:
     has_category: true
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
+- name: accli-plus
+  description: Extended Apple Calendar CLI for macOS — adds search, export, dry-run, recurring events, alerts, and full error codes on top of accli.
+  url: https://clawhub.ai/gopaljigaur/accli-plus
+  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+  category: Table of Contents
+  summary_short: Extended Apple Calendar CLI for macOS — adds search, export, dry-run, recurring events, alerts, and full error codes on top of accli.
+  summary_long: 'Extended Apple Calendar CLI for macOS — adds search, export, dry-run, recurring events, alerts, and full error codes on top of accli. Primary capabilities: search. May require network access.'
+  capabilities:
+  - search
+  requirements: []
+  risk_flags:
+  - external_network
+  - file_write
+  - command_execution
+  quality_signals:
+    has_description: true
+    description_length: 133
+    has_category: true
+    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
+    url_domain_hint: other
 - name: advanced-calendar
   description: Advanced calendar skill with natural language.
   url: https://clawskills.sh/skills/toughworm-advanced-calendar
@@ -12443,43 +12224,6 @@ skills:
     has_category: true
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
-- name: bluente-translate
-  description: Translate your documents with formatting intact in 2 minutes.
-  url: https://github.com/openclaw/skills/blob/main/skills/varsmallrookie/bluente-translate/SKILL.md
-  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-  category: Table of Contents
-  summary_short: Translate your documents with formatting intact in 2 minutes.
-  summary_long: Translate your documents with formatting intact in 2 minutes. May require network access.
-  capabilities: []
-  requirements: []
-  risk_flags:
-  - external_network
-  quality_signals:
-    has_description: true
-    description_length: 61
-    has_category: true
-    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-    url_domain_hint: github
-- name: skywork-document
-  description: Generate professional documents from prompts with automatic web search for up-to-date content.
-  url: https://github.com/openclaw/skills/blob/main/skills/gxcun17/skywork-document/SKILL.md
-  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-  category: Table of Contents
-  summary_short: Generate professional documents from prompts with automatic web search for up-to-date content.
-  summary_long: 'Generate professional documents from prompts with automatic web search for up-to-date content. Primary capabilities: search, github. May require network access.'
-  capabilities:
-  - search
-  - github
-  requirements: []
-  risk_flags:
-  - external_network
-  - file_write
-  quality_signals:
-    has_description: true
-    description_length: 94
-    has_category: true
-    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-    url_domain_hint: github
 - name: beacon
   description: Agent-to-agent protocol for social coordination, crypto payments, and P2P mesh.
   url: https://clawskills.sh/skills/scottcjn-beacon
@@ -13080,26 +12824,6 @@ skills:
     has_category: true
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
-- name: agent-security-harness
-  description: Security testing for AI agent wire protocols and platforms.
-  url: https://github.com/openclaw/skills/tree/main/skills/msaleme/agent-security-harness/SKILL.md
-  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-  category: Table of Contents
-  summary_short: Security testing for AI agent wire protocols and platforms.
-  summary_long: 'Security testing for AI agent wire protocols and platforms. Primary capabilities: github, testing, security. May require network access.'
-  capabilities:
-  - github
-  - testing
-  - security
-  requirements: []
-  risk_flags:
-  - external_network
-  quality_signals:
-    has_description: true
-    description_length: 59
-    has_category: true
-    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-    url_domain_hint: github
 - name: api-security
   description: Implement secure API design patterns including authentication, authorization, input validation, rate limiting.
   url: https://clawskills.sh/skills/brandonwise-api-security
@@ -13482,24 +13206,6 @@ skills:
   quality_signals:
     has_description: true
     description_length: 55
-    has_category: true
-    source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-    url_domain_hint: other
-- name: skill-provenance
-  description: Version tracking and integrity verification for skill bundles
-  url: https://clawskills.sh/skills/snapsynapse-skill-provenance
-  source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
-  category: Table of Contents
-  summary_short: Version tracking and integrity verification for skill bundles
-  summary_long: 'Version tracking and integrity verification for skill bundles Primary capabilities: github. May require network access.'
-  capabilities:
-  - github
-  requirements: []
-  risk_flags:
-  - external_network
-  quality_signals:
-    has_description: true
-    description_length: 61
     has_category: true
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other

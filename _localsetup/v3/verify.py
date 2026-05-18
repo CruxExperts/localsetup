@@ -11,7 +11,7 @@ from .registry import load_registry
 from .workflows import validate_workflow_catalog
 
 
-SUPPORTED_LEVELS = {"filesystem", "host", "smoke"}
+SUPPORTED_LEVELS = {"filesystem"}
 
 
 def verify_install(
@@ -79,8 +79,6 @@ def verify_install(
     for adapter in adapters:
         expected_mode = adapter.get("expected_mode", attach_mode)
         rules = platform_rules.get(str(adapter.get("platform")), adapter.get("verify_rules", []))
-        if level != "filesystem":
-            rule_results.append({"level": level, "status": "not_run", "reason": f"{level} probes are not implemented yet", "platform": adapter.get("platform")})
         if "adapter_path_exists" in rules or rules:
             ok = bool(adapter["exists"])
             rule_results.append({"rule": "adapter_path_exists", "platform": adapter.get("platform"), "ok": ok, "path": adapter["repo_path"]})

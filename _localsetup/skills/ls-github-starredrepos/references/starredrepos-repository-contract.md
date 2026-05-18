@@ -24,5 +24,5 @@ modules/
 - `snapshots/latest.json` is the latest complete inventory.
 - `snapshots/diffs/` stores diff reports between runs.
 - `docs/repos/` stores generated per-repository notes.
-- `modules/` stores submodule pointers only after guarded submodule creation is implemented and explicitly selected.
+- `modules/` is reserved for a future guarded submodule mode. The current helper does not create or select submodules.
 - Local checkout caches and bare mirrors are never committed.

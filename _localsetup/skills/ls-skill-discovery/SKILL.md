@@ -52,7 +52,7 @@ After every index refresh, the scrub step **must** run before the index is consi
 4. **Apply fixes** - Run `python3 _localsetup/tools/skill_index_scrub.py --skip-url-check --fix`. Confirm the "Applied fixes" count in the report.
 5. **Done** - The index is now ready. Report summary to the user: total skills, stubs fixed, stubs unfixable (if any), `updated` timestamp.
 
-**With URL check (optional, slower):** Add `--workers 20` and remove `--skip-url-check` to also validate liveness of all skill URLs. Recommended before publishing the index upstream or before a framework release. Use `--report FILE` to save the GFM report.
+**With URL check (optional, slower):** Add `--workers 20` and remove `--skip-url-check` to also validate liveness of all skill URLs. Recommended before publishing the index upstream or before a framework release. If the URL audit finds dead entries, run `python3 _localsetup/tools/skill_index_scrub.py --workers 20 --fix --prune-dead-urls --report FILE` after reviewing the report. Use `--report FILE` to save the GFM report.
 
 **Shorthand for agents:** "refresh and scrub" means run steps 1-5 above in order.
 

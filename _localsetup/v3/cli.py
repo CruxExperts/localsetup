@@ -336,7 +336,7 @@ def _main(argv: list[str] | None = None) -> int:
     verify_p = sub.add_parser("verify")
     _add_config_flags(verify_p)
     verify_p.add_argument("--platforms", "--tools", nargs="*", dest="platforms")
-    verify_p.add_argument("--level", choices=["filesystem", "host", "smoke"], default="filesystem")
+    verify_p.add_argument("--level", choices=["filesystem"], default="filesystem")
 
     rollback_p = sub.add_parser("rollback")
     _add_config_flags(rollback_p)

@@ -16,7 +16,7 @@ Accessed: 2026-05-12.
 | GitHub CLI api | https://cli.github.com/manual/gh_api | Current docs include `--slurp`; this skill avoids it for compatibility with local `gh 2.45.0`. |
 | GitHub CLI auth | https://cli.github.com/manual/gh_auth_status | `gh auth status` is the first local authentication check. |
 | GitHub CLI repo | https://cli.github.com/manual/gh_repo_create | Remote creation must be opt-in with `--create-remote`. |
-| Git submodules | https://git-scm.com/docs/git-submodule | Submodule storage is a planned explicit publishable mode; current helper apply mode remains metadata-only. |
+| Git submodules | https://git-scm.com/docs/git-submodule | Submodule storage is a roadmap concept only; current helper apply mode is metadata-only and rejects non-metadata storage modes. |
 | Git clone | https://git-scm.com/docs/git-clone | Local checkout and bare mirror caches belong outside committed archive history. |
 | GitHub Actions token | https://docs.github.com/en/actions/security-guides/automatic-token-authentication | Repository-scoped `GITHUB_TOKEN` is often insufficient for user-star synchronization. |
 | Node.js releases | https://nodejs.org/en/about/previous-releases | Target Node >=22 LTS for built-in `fetch` and maintained runtime behavior. |

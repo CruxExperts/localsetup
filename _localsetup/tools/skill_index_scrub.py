@@ -7,17 +7,19 @@
 
 """
 Usage:
-    python3 skill_index_scrub.py [--fix] [--workers N] [--timeout S] [--report FILE]
+    python3 skill_index_scrub.py [--fix] [--prune-dead-urls] [--workers N] [--timeout S] [--report FILE]
                                  [--min-desc-len N] [--skip-url-check] [--skip-desc-fetch]
 
 Modes:
     (default)   Dry-run audit: check URLs, detect stubs, report gaps. No writes.
     --fix       Write enriched descriptions back to the index in-place and update 'updated'.
+                With --prune-dead-urls, also remove entries whose URL liveness check fails.
 
 Options:
     --workers N         Parallel fetch workers (default: 10).
     --timeout S         HTTP timeout per request in seconds (default: 10).
     --report FILE       Write GFM report to FILE in addition to stdout.
+    --prune-dead-urls   With --fix, remove entries whose URL liveness check fails.
     --min-desc-len N    Minimum acceptable description length (default: 20).
     --skip-url-check    Skip HTTP liveness probing (faster, description-only mode).
     --skip-desc-fetch   Skip upstream SKILL.md fetch (URL-check-only mode).
@@ -390,6 +392,7 @@ def build_report(
     args: argparse.Namespace,
     index_updated_status: str,
     index_stale: bool,
+    pruned_dead_urls: int = 0,
 ) -> str:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -417,6 +420,7 @@ def build_report(
         f"| Dead / unreachable URLs | {len(dead)} |",
         f"| Stub or too-short descriptions | {len(stubs)} |",
         f"| Fixable (upstream desc found) | {len(fixable)} |",
+        f"| Pruned dead URLs | {pruned_dead_urls} |",
         f"| Worker errors | {len(worker_errors)} |",
         f"| Clean | {len(ok)} |",
         f"",
@@ -509,23 +513,31 @@ def build_report(
 # Apply fixes to index
 # ---------------------------------------------------------------------------
 
-def apply_fixes(index_path: Path, results: list[dict]) -> int:
-    """Write fetched descriptions back to the index. Returns count of entries updated."""
+def apply_fixes(index_path: Path, results: list[dict], *, prune_dead_urls: bool = False) -> tuple[int, int]:
+    """Write fetched descriptions and optional dead URL pruning back to the index."""
     with open(index_path, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
 
     skills = data.get("skills", [])
     # Build lookup by stable entry identity; names can repeat across registries.
     fix_map: dict[tuple[str, str], str] = {}
+    dead_keys: set[tuple[str, str]] = set()
     for r in results:
         if r["action"] == "fixable" and r["fetched_desc"]:
             fix_map[(r["name"], r["url"])] = r["fetched_desc"]
+        if prune_dead_urls and r["url_live"] is False:
+            dead_keys.add((r["name"], r["url"]))
 
     updated_count = 0
+    pruned_count = 0
+    kept_skills = []
     for s in skills:
         name = s.get("name", "")
         url = s.get("url", "")
         key = (name, url)
+        if key in dead_keys:
+            pruned_count += 1
+            continue
         if key in fix_map:
             new_desc = fix_map[key]
             s["description"] = new_desc
@@ -537,7 +549,10 @@ def apply_fixes(index_path: Path, results: list[dict]) -> int:
             qs["description_length"] = len(new_desc)
             s["quality_signals"] = qs
             updated_count += 1
+        kept_skills.append(s)
 
+    if prune_dead_urls:
+        data["skills"] = kept_skills
     data["updated"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     with open(index_path, "w", encoding="utf-8") as f:
@@ -546,7 +561,7 @@ def apply_fixes(index_path: Path, results: list[dict]) -> int:
         f.write("# the user is creating or importing a skill. Schema: sources, updated (ISO8601), skills.\n")
         yaml.dump(data, f, default_flow_style=False, allow_unicode=True, sort_keys=False, width=1000)
 
-    return updated_count
+    return updated_count, pruned_count
 
 
 # ---------------------------------------------------------------------------
@@ -560,6 +575,8 @@ def parse_args() -> argparse.Namespace:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     p.add_argument("--fix", action="store_true", help="Apply fetched descriptions to the index.")
+    p.add_argument("--prune-dead-urls", action="store_true",
+                   help="With --fix and URL checks enabled, remove entries whose URLs are dead.")
     p.add_argument("--workers", type=int, default=DEFAULT_WORKERS, metavar="N",
                    help=f"Parallel workers (default: {DEFAULT_WORKERS}).")
     p.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT, metavar="S",
@@ -615,6 +632,10 @@ def main() -> int:
         _die(f"--timeout must be between 1 and 120, got {args.timeout}")
     if args.min_desc_len < 1:
         _die(f"--min-desc-len must be >= 1, got {args.min_desc_len}")
+    if args.prune_dead_urls and not args.fix:
+        _die("--prune-dead-urls requires --fix")
+    if args.prune_dead_urls and args.skip_url_check:
+        _die("--prune-dead-urls requires URL checking; remove --skip-url-check")
 
     if args.index:
         index_path = Path(args.index).expanduser().resolve()
@@ -703,13 +724,17 @@ def main() -> int:
     # Apply fixes if requested
     worker_errors = [r for r in results if r["action"] == "error"]
 
+    pruned_dead_urls = 0
     if args.fix:
         fixable = [r for r in results if r["action"] == "fixable"]
+        dead = [r for r in results if r["url_live"] is False]
         if worker_errors:
             _warn("Skipping --fix because one or more audit workers failed.")
-        elif fixable:
-            count = apply_fixes(index_path, results)
+        elif fixable or (args.prune_dead_urls and dead):
+            count, pruned_dead_urls = apply_fixes(index_path, results, prune_dead_urls=args.prune_dead_urls)
             print(f"[INFO]  Applied {count} description fix(es) to {index_path}", file=sys.stderr)
+            if args.prune_dead_urls:
+                print(f"[INFO]  Pruned {pruned_dead_urls} dead URL entrie(s) from {index_path}", file=sys.stderr)
             index_updated_status, _, index_stale = index_refresh_status(
                 datetime.now(timezone.utc),
                 datetime.now(timezone.utc),
@@ -718,7 +743,7 @@ def main() -> int:
             print("[INFO]  No fixable entries found; index unchanged.", file=sys.stderr)
 
     # Build and emit report
-    report = build_report(results, args, index_updated_status, index_stale)
+    report = build_report(results, args, index_updated_status, index_stale, pruned_dead_urls=pruned_dead_urls)
     print(report)
 
     if args.report:

@@ -169,7 +169,7 @@ Before install, use the dependency list below as the canonical source of truth. 
 | Python: `cryptography` (cryptography>=42.0) | Recommended | Framework cryptographic primitives for secure envelope workflows |
 | Python: `pgpy` (PGPy>=0.5.4,<0.6) | Recommended | Pure-Python OpenPGP support for secure mail workflows |
 
-Python packages are listed in `_localsetup/requirements.txt`. The conservative default for Python tooling is a managed virtualenv at `~/.local/share/localsetup/venv`, which avoids PEP 668 externally managed system-pip failures. To check the current machine without changing files, run:
+Python package intent is listed in `_localsetup/requirements.in` and `_localsetup/requirements.txt`; managed installs prefer `_localsetup/requirements.lock` so hash-checked binary wheels are reproducible. Dependency PRs must validate changed manifests separately before the lock is refreshed. The conservative default for Python tooling is a managed virtualenv at `~/.local/share/localsetup/venv`, which avoids PEP 668 externally managed system-pip failures. To check the current machine without changing files, run:
 
 ```bash
 localsetup doctor

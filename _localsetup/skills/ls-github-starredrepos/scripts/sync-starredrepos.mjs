@@ -52,12 +52,12 @@ async function main() {
     throw new Error("--push requires --apply --commit");
   }
 
+  const storageMode = process.env.STARREDREPOS_STORAGE_MODE || "metadata";
+  if (storageMode !== "metadata") {
+    throw new Error(`Unsupported storage mode: ${storageMode}. Current helper apply mode is metadata-only; use STARREDREPOS_STORAGE_MODE=metadata.`);
+  }
   const user = await ghApi("/user");
   const repositories = await fetchStarredRepos();
-  const storageMode = process.env.STARREDREPOS_STORAGE_MODE || "metadata";
-  if (storageMode === "submodule") {
-    throw new Error("Submodule storage planning is documented but not implemented by this helper yet; use STARREDREPOS_STORAGE_MODE=metadata.");
-  }
   const manifest = {
     schemaVersion: "1.0",
     generatedAt: isoNow(),

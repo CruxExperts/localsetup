@@ -38,7 +38,7 @@ owner_skill: ls-skill-discovery
   python3 _localsetup/tools/skill_index_scrub.py --skip-url-check --fix
   ```
 
-  Optional: save a report with `--report path/to/report.md`. The report includes the index `updated` date/age, a warning when the index is stale or invalid, and a Worker Errors section when any parallel audit worker fails. Full URL liveness checking (omit `--skip-url-check`) is only needed before a public release or when dead link auditing is explicitly requested. See the scrub tool's `--help` for all options.
+  Optional: save a report with `--report path/to/report.md`. The report includes the index `updated` date/age, a warning when the index is stale or invalid, and a Worker Errors section when any parallel audit worker fails. Full URL liveness checking (omit `--skip-url-check`) is only needed before a public release or when dead link auditing is explicitly requested. Use `--fix --prune-dead-urls` with URL checking enabled to remove dead registry entries after reviewing the report. See the scrub tool's `--help` for all options.
 
 ## Index refresh and user prompts
 

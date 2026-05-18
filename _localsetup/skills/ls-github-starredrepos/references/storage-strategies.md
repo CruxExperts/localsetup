@@ -3,9 +3,9 @@
 | Mode | Use | Committed content |
 |---|---|---|
 | `metadata` | First dry runs, current helper apply mode, and lightweight docs | Manifest, snapshots, docs |
-| `submodule` | Planned publishable mode after guarded submodule creation is implemented | Git submodule pointers under `modules/` |
-| `checkout-cache` | Local inspection only | Nothing from the checkout cache |
-| `bare-mirror-cache` | Local archival cache only | Nothing from the mirror cache |
-| `vendor` | Rare, explicitly approved full copy | Repository contents after license/privacy/size review |
+| `submodule` | Roadmap only until guarded submodule creation is implemented | Not selectable by current helper |
+| `checkout-cache` | Roadmap/local-only concept | Not selectable by current helper |
+| `bare-mirror-cache` | Roadmap/local-only concept | Not selectable by current helper |
+| `vendor` | Roadmap only; would require explicit license/privacy/size review | Not selectable by current helper |
 
-`vendor` must not be selected by default. Confirm the user understands license, privacy, repository size, generated files, and secret-leak risk.
+`metadata` is the only supported runtime value for `STARREDREPOS_STORAGE_MODE` and for `manifest.json` today. The helper rejects every other value so archive manifests cannot imply a storage behavior that was not actually performed. Do not implement or enable `vendor` without confirming the user understands license, privacy, repository size, generated files, and secret-leak risk.
