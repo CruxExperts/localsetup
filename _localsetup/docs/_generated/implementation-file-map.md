@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 560824f13c92088f37e1702a240ead6d7656438a86ab41d2e5eea7c6e39ba2f0
+  source_provenance_hash: 44198c3cfa2d9d764eeab6c37363c2c33b0b682d73d13d9a306bf5d3735d1c76
   emitter: generate-docs
 framework_version: 3.8.6
-source_commit: 686ad81f943078556ac73cf8da07a5258f037427
-artifact_sha256: 97496d008aedcd38120470c39db495dc03c995f4bf36c1fe07f7f338caa7e87c
+source_commit: cbcec74de9a5135811372877c432106889e1590b
+artifact_sha256: b5e8bfffed419835addbf132b2e6be1e6133ebc20c743b68a7a54b2c5d0539b1
 ---
 # Implementation File Map
 
@@ -106,6 +106,7 @@ artifact_sha256: 97496d008aedcd38120470c39db495dc03c995f4bf36c1fe07f7f338caa7e87
 | `generate` | `_localsetup/docs/_generated/implementation-file-map.md` |
 | `generate` | `_localsetup/docs/_generated/platform-adapters.md` |
 | `generate` | `_localsetup/docs/_generated/skill-packs.md` |
+| `generate` | `_localsetup/docs/_generated/skill-taxonomy.json` |
 | `generate` | `_localsetup/docs/_generated/skill_aliases.json` |
 | `generate` | `_localsetup/docs/_generated/workflow-catalog.json` |
 | `keep` | `_localsetup/docs/audits/codex-bootstrap-pack/AUDIT_REPORT.md` |
@@ -640,6 +641,7 @@ artifact_sha256: 97496d008aedcd38120470c39db495dc03c995f4bf36c1fe07f7f338caa7e87
 | `refactor` | `_localsetup/v3/global_first_audit.py` |
 | `refactor` | `_localsetup/v3/harness.py` |
 | `refactor` | `_localsetup/v3/hooks.py` |
+| `refactor` | `_localsetup/v3/inventory.py` |
 | `refactor` | `_localsetup/v3/lockfile.py` |
 | `refactor` | `_localsetup/v3/manifests.py` |
 | `refactor` | `_localsetup/v3/migration.py` |
@@ -653,6 +655,7 @@ artifact_sha256: 97496d008aedcd38120470c39db495dc03c995f4bf36c1fe07f7f338caa7e87
 | `refactor` | `_localsetup/v3/repo_finalizer.py` |
 | `refactor` | `_localsetup/v3/rollback.py` |
 | `refactor` | `_localsetup/v3/schema.py` |
+| `refactor` | `_localsetup/v3/selection.py` |
 | `refactor` | `_localsetup/v3/shell.py` |
 | `refactor` | `_localsetup/v3/skills.py` |
 | `refactor` | `_localsetup/v3/source.py` |
