@@ -30,6 +30,7 @@ def _recorded_adapter_status(lock: dict, global_root: Path) -> list[dict]:
                 "platform": item.get("platform"),
                 "repo_path": str(path),
                 "expected_mode": item.get("mode", lock.get("attach_mode", "symlink")),
+                "expected_packages": item.get("packages", lock.get("adapter_packages", [])),
                 **adapter_path_state(path, expected_global),
                 "verify_rules": [],
             }
@@ -90,6 +91,13 @@ def verify_install(
         if platform_ids is not None
         else _recorded_adapter_status(lock, global_root)
     )
+    expected_by_path = {
+        str(item.get("path")): item.get("packages", lock.get("adapter_packages", []))
+        for item in lock.get("adapter_targets", [])
+        if isinstance(item, dict)
+    }
+    for adapter in adapters:
+        adapter.setdefault("expected_packages", expected_by_path.get(adapter["repo_path"], lock.get("adapter_packages", [])))
     platform_rules = {platform.platform_id: platform.verify_rules for platform in load_platforms(repo_root)}
     rule_results: list[dict] = []
     for adapter in adapters:
@@ -103,7 +111,7 @@ def verify_install(
             if not ok:
                 issues.append(f"verify rule adapter_path_exists failed: {adapter['repo_path']}")
         if "adapter_points_to_managed_root" in rules or expected_mode != "portable":
-            ok = bool(adapter["points_to_global"]) if expected_mode != "portable" else True
+            ok = bool(adapter["points_to_global"] or adapter.get("is_scoped_symlink_adapter")) if expected_mode != "portable" else True
             rule_results.append({"rule": "adapter_points_to_managed_root", "platform": adapter.get("platform"), "ok": ok, "path": adapter["repo_path"]})
             if not ok:
                 issues.append(f"verify rule adapter_points_to_managed_root failed: {adapter['repo_path']}")
@@ -116,8 +124,23 @@ def verify_install(
             issues.append(f"missing adapter path: {adapter['repo_path']}")
         elif expected_mode == "portable" and not adapter["is_portable_copy"]:
             issues.append(f"adapter is not a managed portable copy: {adapter['repo_path']}")
-        elif expected_mode != "portable" and not adapter["points_to_global"]:
+        elif expected_mode != "portable" and not (adapter["points_to_global"] or adapter.get("is_scoped_symlink_adapter")):
             issues.append(f"adapter does not point at global library: {adapter['repo_path']}")
+        expected_packages = sorted(str(name) for name in adapter.get("expected_packages", []) if name)
+        if expected_packages:
+            visible_packages = sorted(str(name) for name in adapter.get("visible_packages", []))
+            ok = visible_packages == expected_packages
+            rule_results.append(
+                {
+                    "rule": "adapter_visible_packages_match_selection",
+                    "platform": adapter.get("platform"),
+                    "ok": ok,
+                    "visible_count": len(visible_packages),
+                    "expected_count": len(expected_packages),
+                }
+            )
+            if not ok:
+                issues.append(f"adapter visible packages do not match selection: {adapter['repo_path']}")
         if "namespace_ls" in rules:
             ok = all(Path(path).name.startswith("ls-") for path in [*lock.get("installed_skills", []), *lock.get("installed_workflows", [])])
             rule_results.append({"rule": "namespace_ls", "platform": adapter.get("platform"), "ok": ok})

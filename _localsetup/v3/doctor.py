@@ -7,6 +7,7 @@ import sys
 
 from .adapters import adapter_status, adapter_targets
 from .dependencies import dependency_status, has_venv_module, pip_available, tool_status
+from .inventory import install_inventory
 from .manifests import load_pack_config, load_platforms
 from .migration import detect_legacy_artifacts, scan_legacy_references
 from .paths import expand_user_path
@@ -151,6 +152,7 @@ def run_doctor(
         "dependencies": dep_status,
         "adapter_collisions": collisions,
         "legacy": legacy,
+        "inventory": install_inventory(repo_root, home=home, target_root=target_root, platform_ids=platform_ids),
         "provenance": provenance,
         "provenance_warnings": provenance["warnings"],
         "provenance_repair_hints": provenance["repair_hints"],

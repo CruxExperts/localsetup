@@ -30,7 +30,7 @@ curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install 
 
 This opens the interactive terminal wizard. It shows the source checkout, target directory, managed home library, selected platforms and packs, warnings, blockers, and planned actions before asking for final confirmation.
 
-Every wizard prompt shows the same shortcut footer: `Enter number(s) | d details | b back | q quit | ? help`. Detailed mode is on by default, so install mode, platform, pack, adapter, and dependency choices explain what they do, when to pick them, and their tradeoffs. Press `d` to toggle compact mode; compact mode still shows one-line summaries for each option.
+Single-choice wizard prompts show `Enter number(s) | d details | b back | q quit | ? help`. Detailed mode is on by default, so install mode, adapter, and dependency choices explain what they do, when to pick them, and their tradeoffs. Multi-select prompts use checkbox controls in real terminals: move with arrows or `j`/`k`, press `Space` to toggle platforms, packs, classes, tags, or individual skills, and press `Enter` to accept. Scripted streams fall back to comma-separated line input. Press `d` to toggle compact mode; compact mode still shows one-line summaries for each option.
 
 The visual layer remains standard-library only. `--color auto` enables ANSI color only for capable interactive terminals, while `--no-color` and `--color never` force output free of ANSI color. `--glyphs auto` uses simple Unicode status hints only on UTF-8 interactive terminals; `--glyphs ascii` keeps portable labels like `[OK]`, `[WARN]`, and `[FAIL]`. Scripted installs should continue to use `--non-interactive --yes`, which preserves machine-readable output instead of wizard screens.
 
@@ -76,6 +76,14 @@ That command installs every declared skill and workflow pack, attaches only `.co
 
 The `harness` pack only installs autonomous-harness capability. It does not create `HEARTBEAT.md`, `config/codex_heartbeat.yaml`, `cron/manifest.yaml`, or `.localsetup/state/codex-heartbeat/`. Activate a target repo later with `localsetup harness codex-heartbeat init` and `localsetup harness codex-heartbeat enable`; see [HARNESS_AUTOMATION.md](HARNESS_AUTOMATION.md).
 
+For a smaller footprint, select by preset, taxonomy class, tag, individual skill, or exclusion:
+
+```bash
+localsetup install --tools codex --preset suggested --skill-classes development --skill-tags git --skills ls-context --exclude-skills ls-linux-patcher --yes
+```
+
+Presets are `core`, `suggested`, `all`, and `custom`. Automation defaults to `core` when no selector is supplied. Interactive global-only installs preselect `core`; interactive repo installs preselect `core` plus repo-detected suggested packs. `--packs`, `--skill-classes`, `--skill-tags`, and `--skills` are additive; `--exclude-skills` removes named packages unless a selected workflow requires them.
+
 Attach a selected adapter to another repo or directory:
 
 ```bash
@@ -107,6 +115,12 @@ cd /path/to/repo
 - `--target-directory PATH`  - Directory where selected repo adapter links and `.localsetup/lock.json` are written. Defaults to the source checkout for explicit local installs and to the caller's current directory for raw bootstrap installs with selected platforms.
 - `--tools LIST`  - Compatibility alias for comma-separated platforms: cursor, claude-code, codex, openclaw, kilo, opencode
 - `--platforms LIST`  - Space-separated v3 platform ids. Omit for a global-only install with no repo adapters.
+- `--preset NAME`  - Skill selection preset: core, suggested, all, or custom.
+- `--packs LIST`  - Comma-separated skill/workflow packs to install.
+- `--skills LIST`  - Comma-separated individual skill ids to include.
+- `--skill-classes LIST`  - Comma-separated taxonomy classes to include.
+- `--skill-tags LIST`  - Comma-separated taxonomy tags to include.
+- `--exclude-skills LIST`  - Comma-separated individual skill ids to remove from the resolved selection.
 - `--yes`  - Legacy accepted flag for interactive installs. For automation, combine with `--non-interactive`.
 - `--non-interactive`  - Automation mode. Requires `--yes` and preserves machine-readable output.
 - `--global`  - Removed legacy flag; v3 installs the managed home library by default and exits with an explicit error if this flag is supplied.
@@ -116,16 +130,16 @@ cd /path/to/repo
 
 ## Wizard choice guide
 
-The wizard keeps the install portable and line-oriented; it uses plain terminal output with optional ANSI styling and no curses/Textual dependency. Choices can be selected by number or label, and multi-select prompts accept comma-separated values.
+The wizard keeps the install portable and dependency-free; it uses plain terminal output with optional ANSI styling and no curses/Textual dependency. Single-choice prompts can be selected by number or label. Multi-select prompts use spacebar toggles in real terminals and comma-separated values in scripted fallback mode.
 
 - **Install mode:** `Global library only` is the safest default and refreshes the shared Localsetup library without repo adapter paths. `Current directory` prepares the directory you launched from. `Another target directory` prepares a different repo while using this checkout as the source.
 - **Platforms:** each selected platform shows the adapter path it writes, such as `.codex/skills` for Codex or `.cursor/skills` for Cursor.
-- **Skill packs:** `core` is the suggested default for normal use. `bootstrap` adds agent-team startup and audit workflows. `dev` adds code, docs, git, test, and repo repair workflows. `ops` adds server and maintenance workflows. `integrations` adds external system connectors. `publishing` adds release and public-repo support. `harness` adds opt-in autonomous harness capability without activating it. `experimental` adds advanced or less-conservative workflows.
+- **Skill packs and groups:** `core` is the suggested default for normal use. `bootstrap` adds agent-team startup and audit workflows. `dev` adds code, docs, git, test, and repo repair workflows. `ops` adds server and maintenance workflows. `integrations` adds external system connectors. `publishing` adds release and public-repo support. `harness` adds opt-in autonomous harness capability without activating it. `experimental` adds advanced or less-conservative workflows. Follow-up screens let you add taxonomy classes, tags, and individual skills or remove skills before review.
 - **Options:** symlink adapters are easiest to update because they point repos at the managed library. Portable adapter copies are more self-contained, but updating requires copying again. Prompt-only dependency mode reports what is needed without installing dependencies. Managed virtual environment mode prepares Localsetup's managed Python environment.
 
 ## Shared home library
 
-V3 installs managed skills and workflow packages to `~/.local/share/localsetup/packages` and writes a registry beside them. Explicitly selected repo adapter paths such as `.codex/skills` and `.kilo/skills` point at that library by symlink, or receive a managed portable copy when `--mode portable` is used.
+V3 installs managed skills and workflow packages to `~/.local/share/localsetup/packages` and writes a registry beside them. Explicitly selected repo adapter paths such as `.codex/skills` and `.kilo/skills` become scoped Localsetup-managed adapter directories. In symlink mode, each selected package inside the adapter links to the managed home library. In portable mode, the selected packages are copied. Both modes write `.localsetup-adapter.json` so Localsetup can recognize, verify, detach, and replace the adapter later.
 
 Workflow packages are sourced from `_localsetup/workflows/ls-workflow-*`. They install beside skills because every workflow package includes a valid `SKILL.md`, while its Localsetup-specific `workflow.yaml` stays in source for validation and generated docs.
 
@@ -185,7 +199,7 @@ On re-run, the v3 installer refreshes the managed shared package library, rewrit
 
 `--upgrade-policy` is removed. V3 uses managed install metadata and refuses to overwrite unmanaged skill paths.
 
-Adapter paths are conservative. The installer creates only the selected adapter subpath, for example `.cursor/skills`, and preserves neighboring project configuration such as `.cursor/rules`. It refuses unmanaged adapter directories, regular files, dangling symlinks, and symlinks that point somewhere other than the managed Localsetup library. Re-running the same install is idempotent when an adapter already points at the intended managed library or is a Localsetup-managed portable copy.
+Adapter paths are conservative. The installer creates only the selected adapter subpath, for example `.cursor/skills`, and preserves neighboring project configuration such as `.cursor/rules`. It refuses unmanaged adapter directories, regular files, dangling symlinks, and symlinks that point somewhere other than the managed Localsetup library. It recognizes current scoped adapters, legacy monolithic managed symlinks, and Localsetup-managed portable copies so re-running the same install can update the adapter without exposing unrelated global packages.
 
 ## What gets deployed
 

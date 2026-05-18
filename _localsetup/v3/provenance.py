@@ -382,6 +382,13 @@ def provenance_report(
                     if local_digest and global_digest and local_digest != global_digest:
                         warnings.append(f"portable adapter package differs from global package: {package_path.name}")
                         hints.append(f"portable adapter remains current for this repo; compare before refreshing {package_path.name}")
+        elif adapter.get("is_scoped_symlink_adapter"):
+            adapter["provenance_current"] = "repo-scoped-symlink-adapter"
+            visible = set(str(name) for name in adapter.get("visible_packages", []))
+            expected = set(str(name) for name in adapter.get("expected_packages", []))
+            if expected and visible != expected:
+                warnings.append(f"scoped adapter package set differs from target lock: {repo_path}")
+                hints.append(f"refresh adapter package selection for {repo_path}")
         elif adapter.get("exists"):
             adapter["provenance_current"] = "unmanaged-local-content"
 

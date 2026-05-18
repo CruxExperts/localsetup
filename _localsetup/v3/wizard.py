@@ -3,9 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 import locale
 import os
+import select
 import shutil
 import sys
+import termios
 import textwrap
+import tty
 from pathlib import Path
 from typing import Sequence, TextIO
 
@@ -15,7 +18,9 @@ from .doctor import run_doctor
 from .manifests import load_pack_config, load_platforms
 from .paths import expand_user_path
 from .plan import build_install_plan
+from .selection import recommended_packs_for_target, resolve_package_selection
 from .shell import register_shell_command
+from .skills import load_skill_catalog
 from .verify import verify_install
 
 
@@ -101,6 +106,11 @@ class WizardState:
     platforms: list[str] | None = None
     platforms_were_provided: bool = False
     packs: list[str] | None = None
+    preset: str | None = None
+    skills: list[str] | None = None
+    skill_classes: list[str] | None = None
+    skill_tags: list[str] | None = None
+    exclude_skills: list[str] | None = None
     attach_mode: str = "symlink"
     dependency_mode: str = "prompt-only"
     register_shell: bool = True
@@ -129,7 +139,12 @@ class TerminalWizard:
         self.glyph_mode = _validate_mode(glyph_mode, GLYPH_MODES, "glyphs")
         self.color = self._resolve_color(output_stream, self.color_mode)
         self.unicode_glyphs = self._resolve_glyphs(output_stream, self.glyph_mode)
-        self.detail_mode = True
+        self.detail_mode = os.environ.get("LOCALSETUP_WIZARD_DETAIL", "").lower() not in {"compact", "off", "0"}
+        self.force_line_mode = os.environ.get("LOCALSETUP_WIZARD_SELECTION_MODE", "").lower() in {
+            "line",
+            "plain",
+            "scripted",
+        }
         self.current_progress: str | None = None
 
     @staticmethod
@@ -539,6 +554,143 @@ def choose_many(
         term.write("Choose comma-separated numbers from the list, enter d for detail mode, ? for help, b to go back, or q to cancel.")
 
 
+def _can_use_checkbox_keys(term: TerminalWizard) -> bool:
+    return (
+        not term.force_line_mode
+        and TerminalWizard._is_tty(term.input)
+        and TerminalWizard._is_tty(term.output)
+        and hasattr(term.input, "fileno")
+        and hasattr(term.output, "fileno")
+    )
+
+
+def _read_key(term: TerminalWizard) -> str:
+    char = term.input.read(1)
+    if char == "\x1b":
+        rest = ""
+        fd = term.input.fileno()
+        for _ in range(2):
+            ready, _, _ = select.select([fd], [], [], 0.05)
+            if not ready:
+                break
+            rest += term.input.read(1)
+        if rest == "[A":
+            return "up"
+        if rest == "[B":
+            return "down"
+        return "escape"
+    if char in {"\r", "\n"}:
+        return "enter"
+    if char == " ":
+        return "space"
+    return char.lower()
+
+
+def _render_checkbox(
+    term: TerminalWizard,
+    prompt: str,
+    choices: list[Choice],
+    *,
+    selected: set[str],
+    cursor: int,
+    decides: str | None,
+    suggested: Choice | None,
+    suggested_reason: str | None,
+) -> None:
+    term.output.write("\033[H\033[J")
+    term.title(prompt)
+    _render_step_context(term, decides=decides, suggested=suggested, suggested_reason=suggested_reason)
+    for index, choice in enumerate(choices):
+        pointer = ">" if index == cursor else " "
+        marker = "[x]" if choice.value in selected else "[ ]"
+        term.write(f"{pointer} {marker} {choice.label}")
+        term.detail_line(choice.summary, indent="      ", style="muted")
+        if term.detail_mode and index == cursor:
+            term.detail_line(f"Does: {choice.effect}", indent="      ")
+            term.detail_line(f"Choose when: {choice.best_for}", indent="      ")
+            term.detail_line(f"Tradeoff: {choice.tradeoff}", indent="      ")
+            if choice.caution:
+                term.detail_line(f"Caution: {choice.caution}", indent="      ", style="warning")
+    term.write(term.token("Space toggle | Enter accept | arrows/j/k move | a all | n none | d details | b back | q quit | ? help", "shortcut"))
+    term.output.flush()
+
+
+def choose_many_checkbox(
+    term: TerminalWizard,
+    prompt: str,
+    choices: Sequence[ChoiceInput],
+    *,
+    default: list[str],
+    allow_none: bool = True,
+    decides: str | None = None,
+    suggested_reason: str | None = None,
+    help_text: str | None = None,
+) -> list[str] | str:
+    if not _can_use_checkbox_keys(term):
+        return choose_many(
+            term,
+            prompt,
+            choices,
+            default=default,
+            allow_none=allow_none,
+            decides=decides,
+            suggested_reason=suggested_reason,
+            help_text=help_text,
+        )
+    normalized = _choice_list(choices)
+    selected = {choice.value for choice in normalized if choice.value in set(default)}
+    cursor = 0
+    suggested = next((choice for choice in normalized if choice.value in selected), normalized[0] if normalized else None)
+    old_settings = termios.tcgetattr(term.input.fileno())
+    try:
+        tty.setcbreak(term.input.fileno())
+        while True:
+            _render_checkbox(
+                term,
+                prompt,
+                normalized,
+                selected=selected,
+                cursor=cursor,
+                decides=decides,
+                suggested=suggested,
+                suggested_reason=suggested_reason,
+            )
+            key = _read_key(term)
+            if key in {"q", "c", "escape"}:
+                return CANCEL
+            if key == "b":
+                return BACK
+            if key == "?":
+                term.write(help_text or "Use Space to toggle the highlighted item, then Enter to accept.")
+                continue
+            if key == "d":
+                _toggle_details(term)
+                continue
+            if key in {"up", "k"}:
+                cursor = max(0, cursor - 1)
+                continue
+            if key in {"down", "j"}:
+                cursor = min(len(normalized) - 1, cursor + 1)
+                continue
+            if key == "a":
+                selected = {choice.value for choice in normalized}
+                continue
+            if key == "n":
+                selected = set()
+                continue
+            if key == "space" and normalized:
+                value = normalized[cursor].value
+                if value in selected:
+                    selected.remove(value)
+                else:
+                    selected.add(value)
+                continue
+            if key == "enter" and (selected or allow_none):
+                return [choice.value for choice in normalized if choice.value in selected]
+    finally:
+        termios.tcsetattr(term.input.fileno(), termios.TCSADRAIN, old_settings)
+
+
 def _platform_choices(repo_root: Path) -> list[Choice]:
     choices: list[Choice] = []
     for platform in load_platforms(repo_root):
@@ -624,6 +776,50 @@ def _pack_choices(repo_root: Path) -> list[Choice]:
         )
         out.append(Choice(name, name, summary, effect, best_for, tradeoff))
     return out
+
+
+def _skill_class_choices(repo_root: Path) -> list[Choice]:
+    classes = sorted({skill.taxonomy_class for skill in load_skill_catalog(repo_root) if skill.taxonomy_class})
+    return [
+        Choice(
+            value=name,
+            label=name,
+            summary=f"Adds all skills classified as {name}.",
+            effect=f"Includes every shipped skill with taxonomy class {name}.",
+            best_for=f"You want the {name} capability group without picking each skill.",
+            tradeoff="May add skills outside the selected packs.",
+        )
+        for name in classes
+    ]
+
+
+def _skill_tag_choices(repo_root: Path) -> list[Choice]:
+    tags = sorted({tag for skill in load_skill_catalog(repo_root) for tag in skill.tags})
+    return [
+        Choice(
+            value=tag,
+            label=tag,
+            summary=f"Adds skills tagged {tag}.",
+            effect=f"Includes shipped skills whose taxonomy tags include {tag}.",
+            best_for=f"You need the {tag} capability regardless of pack.",
+            tradeoff="Tags are additive; review individual skills on the next screen.",
+        )
+        for tag in tags
+    ]
+
+
+def _skill_choices(repo_root: Path) -> list[Choice]:
+    return [
+        Choice(
+            value=skill.name,
+            label=skill.name,
+            summary=f"{skill.taxonomy_class}; packs: {', '.join(skill.packs) or 'none'}; tags: {', '.join(skill.tags) or 'none'}.",
+            effect=skill.description,
+            best_for=f"You want {skill.name} available in the selected install footprint.",
+            tradeoff="Unselecting a workflow-required skill may be overridden by the workflow dependency.",
+        )
+        for skill in load_skill_catalog(repo_root)
+    ]
 
 
 def _attach_choices() -> list[Choice]:
@@ -803,7 +999,7 @@ def _platform_step(term: TerminalWizard, state: WizardState) -> str:
         return "continue"
     term.title("Platforms")
     default_platforms = state.platforms or (["codex"] if not state.target_directory_is_explicit else [])
-    selected = choose_many(
+    selected = choose_many_checkbox(
         term,
         "Select platforms",
         _platform_choices(state.repo_root),
@@ -821,19 +1017,99 @@ def _platform_step(term: TerminalWizard, state: WizardState) -> str:
 
 def _pack_step(term: TerminalWizard, state: WizardState) -> str:
     term.title("Skill Packs")
-    selected = choose_many(
+    default_packs = state.packs
+    if default_packs is None:
+        if state.preset is not None:
+            target_root = state.target_directory or state.caller_directory
+            default_packs = resolve_package_selection(
+                state.repo_root,
+                preset=state.preset,
+                skills=state.skills,
+                skill_classes=state.skill_classes,
+                skill_tags=state.skill_tags,
+                exclude_skills=state.exclude_skills,
+                target_root=target_root,
+            ).packs
+        elif state.target_directory is None:
+            default_packs = ["core"]
+            state.preset = "core"
+        else:
+            default_packs = recommended_packs_for_target(state.target_directory)
+            state.preset = "suggested"
+    selected = choose_many_checkbox(
         term,
         "Select packs",
         _pack_choices(state.repo_root),
-        default=state.packs or ["core"],
-        allow_none=False,
+        default=default_packs,
+        allow_none=True,
         decides="Which Localsetup skills and workflows are installed into the managed library.",
-        suggested_reason="Core is the normal starter pack for regular use.",
-        help_text="Choose one or more packs by number or name. Core is recommended unless you know you need a specialized pack.",
+        suggested_reason="Core plus detected repo suggestions is the default for interactive installs.",
+        help_text="Choose one or more packs. The next screens can add classes, tags, or individual skill overrides.",
     )
     if isinstance(selected, str) and selected in {BACK, CANCEL}:
         return selected
     state.packs = selected
+    return "continue"
+
+
+def _skill_group_step(term: TerminalWizard, state: WizardState) -> str:
+    term.title("Skill Groups")
+    classes = choose_many_checkbox(
+        term,
+        "Select skill classes",
+        _skill_class_choices(state.repo_root),
+        default=state.skill_classes or [],
+        allow_none=True,
+        decides="Which taxonomy classes add skills beyond selected packs.",
+        suggested_reason="Leave this empty unless you want a broad class-level addition.",
+        help_text="Classes are additive. Use the next screen to toggle individual skills before apply.",
+    )
+    if isinstance(classes, str) and classes in {BACK, CANCEL}:
+        return classes
+    tags = choose_many_checkbox(
+        term,
+        "Select skill tags",
+        _skill_tag_choices(state.repo_root),
+        default=state.skill_tags or [],
+        allow_none=True,
+        decides="Which tagged skills add to the install footprint.",
+        suggested_reason="Leave this empty unless a tag matches your repo need.",
+        help_text="Tags are additive. Use the next screen to remove individual skills you do not want.",
+    )
+    if isinstance(tags, str) and tags in {BACK, CANCEL}:
+        return tags
+    state.skill_classes = classes
+    state.skill_tags = tags
+    return "continue"
+
+
+def _skill_individual_step(term: TerminalWizard, state: WizardState) -> str:
+    term.title("Individual Skills")
+    target_root = state.target_directory or state.caller_directory
+    base = resolve_package_selection(
+        state.repo_root,
+        packs=state.packs,
+        preset=state.preset,
+        skills=state.skills,
+        skill_classes=state.skill_classes,
+        skill_tags=state.skill_tags,
+        exclude_skills=state.exclude_skills,
+        target_root=target_root,
+    )
+    selected = choose_many_checkbox(
+        term,
+        "Toggle skills",
+        _skill_choices(state.repo_root),
+        default=base.skills,
+        allow_none=False,
+        decides="The exact skill packages included after pack, class, and tag selection.",
+        suggested_reason="The prechecked set comes from the selected preset, packs, classes, and tags.",
+        help_text="Use Space to toggle individual skills. Workflow-required skills may be re-added during planning.",
+    )
+    if isinstance(selected, str) and selected in {BACK, CANCEL}:
+        return selected
+    state.skills = selected
+    state.exclude_skills = sorted(set(base.skills) - set(selected))
     return "continue"
 
 
@@ -871,11 +1147,16 @@ def _review_step(term: TerminalWizard, state: WizardState) -> str:
     term.detail_line("Decides: Whether the planned install should be applied.")
     target_root = state.target_directory
     platforms = state.platforms or []
-    packs = state.packs or ["core"]
+    packs = state.packs if state.packs is not None else ["core"]
     plan = build_install_plan(
         state.repo_root,
         home=state.home,
         packs=packs,
+        preset=state.preset,
+        skills=state.skills,
+        skill_classes=state.skill_classes,
+        skill_tags=state.skill_tags,
+        exclude_skills=state.exclude_skills,
         attach_mode=state.attach_mode,
         platform_ids=platforms,
         target_root=target_root,
@@ -911,6 +1192,10 @@ def _review_step(term: TerminalWizard, state: WizardState) -> str:
         [
             ("Platforms", ", ".join(platforms) if platforms else "none"),
             ("Packs", ", ".join(packs)),
+            ("Classes", ", ".join(state.skill_classes or []) if state.skill_classes else "none"),
+            ("Tags", ", ".join(state.skill_tags or []) if state.skill_tags else "none"),
+            ("Skills", str(len(plan.rollback_metadata.get("skills", [])))),
+            ("Workflows", str(len(plan.rollback_metadata.get("workflows", [])))),
             ("Dependency mode", state.dependency_mode),
         ],
         indent="  ",
@@ -942,7 +1227,9 @@ def _review_step(term: TerminalWizard, state: WizardState) -> str:
         ]
         if target_root:
             cmd.extend(["--target-directory", str(target_root)])
-        cmd.extend(["doctor", "--dependency-mode", state.dependency_mode, "--packs", *packs])
+        cmd.extend(["doctor", "--dependency-mode", state.dependency_mode])
+        if packs:
+            cmd.extend(["--packs", *packs])
         if platforms:
             cmd.extend(["--platforms", *platforms])
         term.diagnostic_command(cmd)
@@ -954,7 +1241,7 @@ def _apply_and_show_result(term: TerminalWizard, state: WizardState) -> int:
     term.title("Applying")
     target_root = state.target_directory
     platforms = state.platforms or []
-    packs = state.packs or ["core"]
+    packs = state.packs if state.packs is not None else ["core"]
     try:
         dependency_info = (
             ensure_dependencies(
@@ -969,6 +1256,11 @@ def _apply_and_show_result(term: TerminalWizard, state: WizardState) -> int:
             state.repo_root,
             home=state.home,
             packs=packs,
+            preset=state.preset,
+            skills=state.skills,
+            skill_classes=state.skill_classes,
+            skill_tags=state.skill_tags,
+            exclude_skills=state.exclude_skills,
             attach_mode=state.attach_mode,
             platform_ids=platforms,
             target_root=target_root,
@@ -1052,6 +1344,11 @@ def run_wizard(
     target_directory_is_explicit: bool = False,
     platforms: list[str] | None = None,
     packs: list[str] | None = None,
+    preset: str | None = None,
+    skills: list[str] | None = None,
+    skill_classes: list[str] | None = None,
+    skill_tags: list[str] | None = None,
+    exclude_skills: list[str] | None = None,
     attach_mode: str = "symlink",
     dependency_mode: str = "prompt-only",
     register_shell: bool = True,
@@ -1069,13 +1366,28 @@ def run_wizard(
         platforms=platforms,
         platforms_were_provided=platforms is not None,
         packs=packs,
+        preset=preset,
+        skills=skills,
+        skill_classes=skill_classes,
+        skill_tags=skill_tags,
+        exclude_skills=exclude_skills,
         attach_mode=attach_mode,
         dependency_mode=dependency_mode,
         register_shell=register_shell,
     )
-    term.detail_mode = state.detail_mode
+    state.detail_mode = term.detail_mode
     term.clear_screen()
-    steps = [_show_welcome, _source_step, _mode_step, _platform_step, _pack_step, _options_step, _review_step]
+    steps = [
+        _show_welcome,
+        _source_step,
+        _mode_step,
+        _platform_step,
+        _pack_step,
+        _skill_group_step,
+        _skill_individual_step,
+        _options_step,
+        _review_step,
+    ]
     index = 0
     apply_started = False
     try:

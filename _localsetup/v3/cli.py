@@ -31,6 +31,7 @@ from .repo_finalizer import plan as repo_finalizer_plan
 from .repo_finalizer import run as repo_finalizer_run
 from .repo_finalizer import status as repo_finalizer_status
 from .hooks import run_maintainer_gate
+from .inventory import install_inventory
 from .manifests import load_pack_config
 from .manifests import load_platforms
 from .manifests import validate_manifest_schemas
@@ -43,6 +44,7 @@ from .provenance import provenance_report
 from .query import adopt_recommendations, graph_payload, pack_reasoning, skill_payload, workflow_payload
 from .registry import load_registry
 from .rollback import rollback
+from .selection import PRESETS
 from .shell import SHIM_ENV, detect_invocation_target, register_shell_command, shell_registration_status
 from .skills import load_skill_catalog, validate_skill_catalog
 from .skills import parse_skill_frontmatter
@@ -106,7 +108,12 @@ def _add_config_flags(parser: argparse.ArgumentParser, *, include_apply: bool = 
 
 
 def _add_selector_flags(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--preset", choices=sorted(PRESETS))
     parser.add_argument("--packs", nargs="*")
+    parser.add_argument("--skills", nargs="*")
+    parser.add_argument("--skill-classes", nargs="*", dest="skill_classes")
+    parser.add_argument("--skill-tags", nargs="*", dest="skill_tags")
+    parser.add_argument("--exclude-skills", nargs="*", dest="exclude_skills")
     parser.add_argument("--mode", choices=["symlink", "portable"])
     parser.add_argument("--platforms", "--tools", nargs="*", dest="platforms")
 
@@ -151,6 +158,11 @@ def _resolved_config(args: argparse.Namespace, default_home: Path) -> InstallCon
         base,
         platforms=_split_csv(getattr(args, "platforms", None)) if hasattr(args, "platforms") else None,
         packs=_split_csv(getattr(args, "packs", None)) if hasattr(args, "packs") else None,
+        preset=getattr(args, "preset", None),
+        skills=_split_csv(getattr(args, "skills", None)) if hasattr(args, "skills") else None,
+        skill_classes=_split_csv(getattr(args, "skill_classes", None)) if hasattr(args, "skill_classes") else None,
+        skill_tags=_split_csv(getattr(args, "skill_tags", None)) if hasattr(args, "skill_tags") else None,
+        exclude_skills=_split_csv(getattr(args, "exclude_skills", None)) if hasattr(args, "exclude_skills") else None,
         attach_mode=getattr(args, "mode", None),
         home=cli_home,
         target_directory=getattr(args, "target_directory", None),
@@ -280,6 +292,11 @@ def _run_self_refresh(
         root,
         home=home,
         packs=packs,
+        preset=config.preset,
+        skills=config.skills,
+        skill_classes=config.skill_classes,
+        skill_tags=config.skill_tags,
+        exclude_skills=config.exclude_skills,
         attach_mode=attach_mode,
         platform_ids=platforms,
         target_root=target_root,
@@ -341,8 +358,7 @@ def _main(argv: list[str] | None = None) -> int:
 
     doctor_p = sub.add_parser("doctor")
     _add_config_flags(doctor_p)
-    doctor_p.add_argument("--packs", nargs="*")
-    doctor_p.add_argument("--platforms", "--tools", nargs="*", dest="platforms")
+    _add_selector_flags(doctor_p)
     doctor_p.add_argument("--provenance", action="store_true")
 
     migrate_p = sub.add_parser("migrate")
@@ -495,6 +511,11 @@ def _main(argv: list[str] | None = None) -> int:
             root,
             home=home,
             packs=config.packs,
+            preset=config.preset,
+            skills=config.skills,
+            skill_classes=config.skill_classes,
+            skill_tags=config.skill_tags,
+            exclude_skills=config.exclude_skills,
             attach_mode=config.attach_mode,
             platform_ids=config.platforms,
             target_root=target_root,
@@ -513,6 +534,7 @@ def _main(argv: list[str] | None = None) -> int:
                     "platforms": plan.rollback_metadata.get("platforms", []),
                     "global_only": plan.rollback_metadata.get("global_only", False),
                 },
+                "inventory": install_inventory(root, home=home, target_root=target_root, platform_ids=config.platforms),
                 "warnings": warnings,
                 "policy": policy,
                 "rollback": plan.rollback_metadata,
@@ -562,6 +584,11 @@ def _main(argv: list[str] | None = None) -> int:
             target_directory_is_explicit=bool(target_root and args.target_directory_origin == "explicit"),
             platforms=config.platforms,
             packs=config.packs,
+            preset=config.preset,
+            skills=config.skills,
+            skill_classes=config.skill_classes,
+            skill_tags=config.skill_tags,
+            exclude_skills=config.exclude_skills,
             attach_mode=config.attach_mode,
             dependency_mode=config.dependency_mode,
             register_shell=not args.no_register_shell,
@@ -711,6 +738,11 @@ def _main(argv: list[str] | None = None) -> int:
             root,
             home=home,
             packs=config.packs,
+            preset=config.preset,
+            skills=config.skills,
+            skill_classes=config.skill_classes,
+            skill_tags=config.skill_tags,
+            exclude_skills=config.exclude_skills,
             platform_ids=config.platforms,
             attach_mode=config.attach_mode,
             target_root=target_root,
@@ -830,7 +862,19 @@ def _main(argv: list[str] | None = None) -> int:
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
         target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
-        payload = diff_plan_current(root, home=home, packs=config.packs, platform_ids=config.platforms, target_root=target_root, attach_mode=config.attach_mode)
+        payload = diff_plan_current(
+            root,
+            home=home,
+            packs=config.packs,
+            preset=config.preset,
+            skills=config.skills,
+            skill_classes=config.skill_classes,
+            skill_tags=config.skill_tags,
+            exclude_skills=config.exclude_skills,
+            platform_ids=config.platforms,
+            target_root=target_root,
+            attach_mode=config.attach_mode,
+        )
         _print_payload(payload)
         return 0
 
@@ -868,7 +912,11 @@ def _main(argv: list[str] | None = None) -> int:
         for target in adapter_targets(root, home, platform_ids=config.platforms, target_root=target_root):
             path = target["repo_path"]
             state = adapter_path_state(path, global_root)
-            if (path.exists() or path.is_symlink()) and (state["points_to_global"] or state["is_portable_copy"]):
+            if (path.exists() or path.is_symlink()) and (
+                state["points_to_global"]
+                or state["is_scoped_symlink_adapter"]
+                or state["is_portable_copy"]
+            ):
                 if path.is_dir() and not path.is_symlink():
                     import shutil
                     shutil.rmtree(path)

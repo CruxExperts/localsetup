@@ -10,7 +10,12 @@ SOURCE_DIR="."
 ATTACH_TARGET_DIR=""
 HOME_DIR="${HOME}"
 PLATFORMS_CSV=""
-PACKS_CSV="core"
+PACKS_CSV=""
+PRESET=""
+SKILLS_CSV=""
+SKILL_CLASSES_CSV=""
+SKILL_TAGS_CSV=""
+EXCLUDE_SKILLS_CSV=""
 MODE="symlink"
 YES=false
 NON_INTERACTIVE=false
@@ -54,7 +59,14 @@ Options:
   --non-interactive    Automation mode. Requires --yes and preserves JSON machine output.
   --tools LIST         Compatibility alias for --platforms. Comma-separated.
   --platforms LIST     Platform adapter ids. Omit for global-only install with no repo adapters.
-  --packs LIST         Skill packs to install. Comma-separated. Default: core.
+  --preset NAME        Selection preset: core, suggested, all, or custom.
+  --packs LIST         Skill packs to install. Comma-separated. Default: core in automation;
+                       interactive installs suggest core plus repo-detected additions.
+  --skills LIST        Individual skill ids to include. Comma-separated.
+  --skill-classes LIST Skill taxonomy classes to include. Comma-separated.
+  --skill-tags LIST    Skill taxonomy tags to include. Comma-separated.
+  --exclude-skills LIST
+                       Individual skill ids to exclude from the resolved selection. Comma-separated.
   --mode MODE          symlink or portable. Default: symlink.
   --install-deps       Create/update the managed venv and install _localsetup/requirements.txt.
   --no-register-shell  Do not create/update ~/.local/bin/localsetup.
@@ -188,6 +200,31 @@ while [[ $# -gt 0 ]]; do
       PACKS_CSV="$2"
       shift 2
       ;;
+    --preset)
+      [[ $# -ge 2 ]] || die "missing value for --preset"
+      PRESET="$2"
+      shift 2
+      ;;
+    --skills)
+      [[ $# -ge 2 ]] || die "missing value for --skills"
+      SKILLS_CSV="$2"
+      shift 2
+      ;;
+    --skill-classes)
+      [[ $# -ge 2 ]] || die "missing value for --skill-classes"
+      SKILL_CLASSES_CSV="$2"
+      shift 2
+      ;;
+    --skill-tags)
+      [[ $# -ge 2 ]] || die "missing value for --skill-tags"
+      SKILL_TAGS_CSV="$2"
+      shift 2
+      ;;
+    --exclude-skills)
+      [[ $# -ge 2 ]] || die "missing value for --exclude-skills"
+      EXCLUDE_SKILLS_CSV="$2"
+      shift 2
+      ;;
     --mode)
       [[ $# -ge 2 ]] || die "missing value for --mode"
       MODE="$2"
@@ -267,7 +304,29 @@ if "$INSTALL_DEPS"; then
 fi
 
 pack_args=()
-csv_to_args "$PACKS_CSV" pack_args
+if [[ -n "$PACKS_CSV" ]]; then
+  csv_to_args "$PACKS_CSV" pack_args
+fi
+
+skill_args=()
+if [[ -n "$SKILLS_CSV" ]]; then
+  csv_to_args "$SKILLS_CSV" skill_args
+fi
+
+skill_class_args=()
+if [[ -n "$SKILL_CLASSES_CSV" ]]; then
+  csv_to_args "$SKILL_CLASSES_CSV" skill_class_args
+fi
+
+skill_tag_args=()
+if [[ -n "$SKILL_TAGS_CSV" ]]; then
+  csv_to_args "$SKILL_TAGS_CSV" skill_tag_args
+fi
+
+exclude_skill_args=()
+if [[ -n "$EXCLUDE_SKILLS_CSV" ]]; then
+  csv_to_args "$EXCLUDE_SKILLS_CSV" exclude_skill_args
+fi
 
 platform_args=()
 if [[ -n "$PLATFORMS_CSV" ]]; then
@@ -293,7 +352,13 @@ if [[ "$NON_INTERACTIVE" != true ]]; then
   if [[ -n "$ATTACH_TARGET_DIR" ]]; then
     wizard_target_args=(--target-directory "$ATTACH_TARGET_DIR")
   fi
-  wizard_cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --source-root "$SOURCE_DIR" "${wizard_target_args[@]}" wizard --caller-directory "$CALLER_DIR" --dependency-mode "$DEPENDENCY_MODE" --mode "$MODE" --color "$COLOR_MODE" --glyphs "$GLYPH_MODE" --packs "${pack_args[@]}")
+  wizard_cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --source-root "$SOURCE_DIR" "${wizard_target_args[@]}" wizard --caller-directory "$CALLER_DIR" --dependency-mode "$DEPENDENCY_MODE" --mode "$MODE" --color "$COLOR_MODE" --glyphs "$GLYPH_MODE")
+  [[ -z "$PRESET" ]] || wizard_cmd+=(--preset "$PRESET")
+  [[ ${#pack_args[@]} -eq 0 ]] || wizard_cmd+=(--packs "${pack_args[@]}")
+  [[ ${#skill_args[@]} -eq 0 ]] || wizard_cmd+=(--skills "${skill_args[@]}")
+  [[ ${#skill_class_args[@]} -eq 0 ]] || wizard_cmd+=(--skill-classes "${skill_class_args[@]}")
+  [[ ${#skill_tag_args[@]} -eq 0 ]] || wizard_cmd+=(--skill-tags "${skill_tag_args[@]}")
+  [[ ${#exclude_skill_args[@]} -eq 0 ]] || wizard_cmd+=(--exclude-skills "${exclude_skill_args[@]}")
   if [[ -n "$ATTACH_TARGET_DIR" && "$EXPLICIT_TARGET_DIR" != true ]]; then
     wizard_cmd+=(--target-directory-origin inferred)
   fi
@@ -309,7 +374,13 @@ fi
 mkdir -p "$HOME_DIR"
 HOME_DIR="$(cd "$HOME_DIR" && pwd)"
 
-doctor_cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --source-root "$SOURCE_DIR" "${target_args[@]}" doctor --dependency-mode "$DEPENDENCY_MODE" --packs "${pack_args[@]}")
+doctor_cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --source-root "$SOURCE_DIR" "${target_args[@]}" doctor --dependency-mode "$DEPENDENCY_MODE")
+[[ ${#pack_args[@]} -eq 0 ]] || doctor_cmd+=(--packs "${pack_args[@]}")
+[[ -z "$PRESET" ]] || doctor_cmd+=(--preset "$PRESET")
+[[ ${#skill_args[@]} -eq 0 ]] || doctor_cmd+=(--skills "${skill_args[@]}")
+[[ ${#skill_class_args[@]} -eq 0 ]] || doctor_cmd+=(--skill-classes "${skill_class_args[@]}")
+[[ ${#skill_tag_args[@]} -eq 0 ]] || doctor_cmd+=(--skill-tags "${skill_tag_args[@]}")
+[[ ${#exclude_skill_args[@]} -eq 0 ]] || doctor_cmd+=(--exclude-skills "${exclude_skill_args[@]}")
 if [[ ${#platform_args[@]} -gt 0 ]]; then
   doctor_cmd+=(--platforms "${platform_args[@]}")
 fi
@@ -339,7 +410,13 @@ if "$REGISTER_SHELL"; then
   fi
 fi
 
-cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --source-root "$SOURCE_DIR" "${target_args[@]}" install --apply --dependency-mode "$DEPENDENCY_MODE" --mode "$MODE" --packs "${pack_args[@]}")
+cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --source-root "$SOURCE_DIR" "${target_args[@]}" install --apply --dependency-mode "$DEPENDENCY_MODE" --mode "$MODE")
+[[ ${#pack_args[@]} -eq 0 ]] || cmd+=(--packs "${pack_args[@]}")
+[[ -z "$PRESET" ]] || cmd+=(--preset "$PRESET")
+[[ ${#skill_args[@]} -eq 0 ]] || cmd+=(--skills "${skill_args[@]}")
+[[ ${#skill_class_args[@]} -eq 0 ]] || cmd+=(--skill-classes "${skill_class_args[@]}")
+[[ ${#skill_tag_args[@]} -eq 0 ]] || cmd+=(--skill-tags "${skill_tag_args[@]}")
+[[ ${#exclude_skill_args[@]} -eq 0 ]] || cmd+=(--exclude-skills "${exclude_skill_args[@]}")
 if [[ ${#platform_args[@]} -gt 0 ]]; then
   cmd+=(--platforms "${platform_args[@]}")
 fi

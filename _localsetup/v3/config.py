@@ -25,7 +25,12 @@ class OutputPreferences:
 @dataclass(frozen=True)
 class InstallConfig:
     platforms: list[str] | None = None
-    packs: list[str] = field(default_factory=lambda: ["core"])
+    packs: list[str] | None = None
+    preset: str | None = None
+    skills: list[str] | None = None
+    skill_classes: list[str] | None = None
+    skill_tags: list[str] | None = None
+    exclude_skills: list[str] | None = None
     attach_mode: str = "symlink"
     home: str | None = None
     target_directory: str | None = None
@@ -74,7 +79,12 @@ def load_install_config(path: Path | None) -> InstallConfig:
 
     config = InstallConfig(
         platforms=_as_list(data.get("platforms"), "platforms"),
-        packs=_as_list(data.get("packs"), "packs") or ["core"],
+        packs=_as_list(data.get("packs"), "packs"),
+        preset=_as_str(data.get("preset"), "preset"),
+        skills=_as_list(data.get("skills"), "skills"),
+        skill_classes=_as_list(data.get("skill_classes"), "skill_classes"),
+        skill_tags=_as_list(data.get("skill_tags"), "skill_tags"),
+        exclude_skills=_as_list(data.get("exclude_skills"), "exclude_skills"),
         attach_mode=str(data.get("attach_mode", "symlink")),
         home=_as_str(data.get("home"), "home"),
         target_directory=_as_str(data.get("target_directory"), "target_directory"),
@@ -136,6 +146,11 @@ def merge_cli_config(
     *,
     platforms: list[str] | None = None,
     packs: list[str] | None = None,
+    preset: str | None = None,
+    skills: list[str] | None = None,
+    skill_classes: list[str] | None = None,
+    skill_tags: list[str] | None = None,
+    exclude_skills: list[str] | None = None,
     attach_mode: str | None = None,
     home: str | None = None,
     target_directory: str | None = None,
@@ -149,6 +164,11 @@ def merge_cli_config(
     merged = InstallConfig(
         platforms=platforms if platforms is not None else base.platforms,
         packs=packs if packs is not None else base.packs,
+        preset=preset if preset is not None else base.preset,
+        skills=skills if skills is not None else base.skills,
+        skill_classes=skill_classes if skill_classes is not None else base.skill_classes,
+        skill_tags=skill_tags if skill_tags is not None else base.skill_tags,
+        exclude_skills=exclude_skills if exclude_skills is not None else base.exclude_skills,
         attach_mode=attach_mode or base.attach_mode,
         home=home or base.home,
         target_directory=target_directory or base.target_directory,
@@ -171,6 +191,11 @@ def config_to_dict(config: InstallConfig) -> dict[str, Any]:
     return {
         "platforms": config.platforms,
         "packs": config.packs,
+        "preset": config.preset,
+        "skills": config.skills,
+        "skill_classes": config.skill_classes,
+        "skill_tags": config.skill_tags,
+        "exclude_skills": config.exclude_skills,
         "attach_mode": config.attach_mode,
         "home": config.home,
         "target_directory": config.target_directory,

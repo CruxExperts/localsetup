@@ -27,7 +27,7 @@ curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install 
 
 This opens a terminal wizard. It creates or refreshes the managed source checkout, shows the source, target, managed skill library, selected platforms and packs, then asks for confirmation before applying.
 
-The wizard uses guided choices on every step. Each prompt shows `Enter number(s) | d details | b back | q quit | ? help`; detailed mode is on by default and explains what each option does, when to choose it, and its tradeoff. Press `d` to switch to compact mode when you only want the one-line summaries.
+The wizard uses guided choices on every step. Single-choice prompts show `Enter number(s) | d details | b back | q quit | ? help`; detailed mode is on by default and explains what each option does, when to choose it, and its tradeoff. Multi-select prompts use checkbox controls in real terminals: move with arrows or `j`/`k`, press `Space` to toggle platforms, packs, classes, tags, or individual skills, and press `Enter` to accept. Scripted streams fall back to comma-separated line input. Press `d` to switch to compact mode when you only want the one-line summaries.
 
 Color and glyphs are optional presentation aids, not part of the automation contract. Interactive runs default to `--color auto --glyphs auto`, honor `NO_COLOR`, avoid color on `TERM=dumb` and non-TTY output, and fall back to text labels such as `[OK]`, `[WARN]`, and `[FAIL]` when Unicode is not appropriate. Use `--no-color`, `--color never`, or `--glyphs ascii` for portable logs.
 
@@ -52,7 +52,7 @@ python3 _localsetup/tools/localsetup_v3.py --source-root . verify-release \
   --sbom dist/localsetup-v$(cat VERSION).tar.gz.cdx.json
 ```
 
-Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.codex/skills` to the selected target. If no tools are selected, the install is global-library-only.
+Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.codex/skills` to the selected target. If no tools are selected, the install is global-library-only. Interactive global-only installs preselect `core`; interactive repo installs preselect `core` plus repo-detected suggested packs.
 
 For scripts and CI, use explicit automation mode:
 
@@ -85,6 +85,14 @@ Attach selected agent hosts explicitly:
 ```bash
 localsetup install --tools codex,kilo --yes
 ```
+
+Select skills by preset, pack, taxonomy class, tag, individual skill, or exclusion:
+
+```bash
+localsetup install --tools codex --preset suggested --skill-classes development --skill-tags git --skills ls-context --exclude-skills ls-linux-patcher --yes
+```
+
+The selector flags are additive except for `--exclude-skills`. Presets are `core`, `suggested`, `all`, and `custom`; automation defaults to `core` when no selector is supplied. `suggested` starts with `core` plus repo-detected additions, while `custom` lets the named packs, classes, tags, and skills define the footprint.
 
 For a full local setup with all shipped skill and workflow packs attached to Codex, Kilo, and OpenCode:
 
@@ -145,11 +153,13 @@ The first command is a dry report. Apply mode writes a timestamped backup and `c
 
 Consuming target repos do not receive `_localsetup/` by default. If conversion finds an old target `_localsetup/`, it backs it up under `.localsetup/backups/` and removes it before installing adapters.
 
-Selected adapters point to the managed home library by symlink. Use portable mode when symlinks are not suitable:
+Selected adapters use symlink mode by default. Use portable mode when symlinks are not suitable:
 
 ```bash
 ./install --directory . --tools codex --mode portable
 ```
+
+Symlink mode creates a scoped adapter directory rather than a monolithic link to the whole global library. The adapter contains `.localsetup-adapter.json` and one symlink per selected package, so the repo sees only the selected skills and workflow packages. Portable mode uses the same marker and scoped package list, but copies selected packages into the adapter.
 
 ## Verify
 

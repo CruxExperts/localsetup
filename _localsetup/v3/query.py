@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 
 from .manifests import load_pack_config
+from .selection import recommended_packs_for_target
 from .skills import load_skill_catalog, parse_skill_frontmatter
 from .workflows import load_workflow_catalog
 
@@ -91,11 +92,4 @@ def adopt_recommendations(target_root: Path) -> dict[str, Any]:
         "nginx": any(target_root.glob("**/nginx*.conf")),
         "systemd": any(target_root.glob("**/*.service")),
     }
-    packs = ["core"]
-    if signals["node"] or signals["python"]:
-        packs.append("dev")
-    if signals["docker"] or signals["ansible"] or signals["terraform"] or signals["nginx"] or signals["systemd"]:
-        packs.append("ops")
-    if signals["github_actions"]:
-        packs.append("publishing")
-    return {"target_root": str(target_root), "signals": signals, "recommended_packs": sorted(set(packs))}
+    return {"target_root": str(target_root), "signals": signals, "recommended_packs": recommended_packs_for_target(target_root)}

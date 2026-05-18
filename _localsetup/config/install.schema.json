@@ -16,6 +16,31 @@
       "uniqueItems": true,
       "default": ["core"]
     },
+    "preset": {
+      "type": "string",
+      "enum": ["core", "suggested", "all", "custom"],
+      "description": "Named selection preset. Omit for the conservative core default in automation."
+    },
+    "skills": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "skill_classes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "skill_tags": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "exclude_skills": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
     "attach_mode": {
       "type": "string",
       "enum": ["symlink", "portable"],

@@ -5,6 +5,8 @@ from pathlib import Path
 from .manifests import load_platforms
 from .paths import expand_user_path, repo_path
 
+ADAPTER_MARKER_JSON = ".localsetup-adapter.json"
+
 
 def validate_platform_selectors(repo_root: Path, platform_ids: list[str] | None) -> list[str]:
     platforms = load_platforms(repo_root)
@@ -48,22 +50,60 @@ def adapter_targets(
     return targets
 
 
-def adapter_path_state(repo_path: Path, global_root: Path) -> dict:
+def legacy_global_roots(home: Path) -> list[Path]:
+    return [home / ".local" / "share" / "agents" / "skills" / "localsetup"]
+
+
+def _symlink_target(repo_path: Path) -> Path | None:
+    if not repo_path.is_symlink():
+        return None
+    link_target = repo_path.readlink()
+    if not link_target.is_absolute():
+        link_target = repo_path.parent / link_target
+    return link_target.resolve(strict=False)
+
+
+def _visible_adapter_packages(repo_path: Path, global_root: Path) -> list[str]:
+    if repo_path.is_symlink() and _symlink_target(repo_path) == global_root.resolve(strict=False):
+        if global_root.exists():
+            return sorted(path.name for path in global_root.iterdir() if path.is_dir())
+        return []
+    if not repo_path.is_dir() or repo_path.is_symlink():
+        return []
+    names: list[str] = []
+    for child in sorted(repo_path.iterdir()):
+        if child.name.startswith("."):
+            continue
+        if child.is_symlink() or child.is_dir():
+            names.append(child.name)
+    return names
+
+
+def adapter_path_state(repo_path: Path, global_root: Path, *, known_global_roots: list[Path] | None = None) -> dict:
+    managed_roots = [global_root, *(known_global_roots or [])]
+    resolved_roots = {root.resolve(strict=False) for root in managed_roots}
     exists = repo_path.exists() or repo_path.is_symlink()
     is_symlink = repo_path.is_symlink()
     is_dangling_symlink = is_symlink and not repo_path.exists()
     points_to_global = False
+    points_to_legacy_global = False
+    is_monolithic_global_symlink = False
     if is_symlink:
-        link_target = repo_path.readlink()
-        if not link_target.is_absolute():
-            link_target = repo_path.parent / link_target
-        points_to_global = link_target.resolve(strict=False) == global_root.resolve(strict=False)
+        link_target = _symlink_target(repo_path)
+        points_to_global = link_target == global_root.resolve(strict=False)
+        points_to_legacy_global = bool(link_target and link_target in (resolved_roots - {global_root.resolve(strict=False)}))
+        is_monolithic_global_symlink = bool(link_target and link_target in resolved_roots)
+    is_scoped_symlink_adapter = (
+        repo_path.is_dir()
+        and not is_symlink
+        and (repo_path / ADAPTER_MARKER_JSON).exists()
+    )
     is_portable_copy = (
         repo_path.is_dir()
         and not is_symlink
         and (repo_path / ".localsetup-portable").exists()
     )
-    is_unmanaged_directory = repo_path.is_dir() and not is_symlink and not is_portable_copy
+    is_unmanaged_directory = repo_path.is_dir() and not is_symlink and not is_portable_copy and not is_scoped_symlink_adapter
     is_regular_file = repo_path.exists() and repo_path.is_file() and not is_symlink
     is_other = repo_path.exists() and not (
         repo_path.is_file() or repo_path.is_dir() or is_symlink
@@ -71,7 +111,7 @@ def adapter_path_state(repo_path: Path, global_root: Path) -> dict:
     collision_reason = None
     if is_dangling_symlink:
         collision_reason = "dangling symlink"
-    elif is_symlink and not points_to_global:
+    elif is_symlink and not is_monolithic_global_symlink:
         collision_reason = "symlink points outside managed library"
     elif is_regular_file:
         collision_reason = "regular file"
@@ -84,11 +124,15 @@ def adapter_path_state(repo_path: Path, global_root: Path) -> dict:
         "is_symlink": is_symlink,
         "is_dangling_symlink": is_dangling_symlink,
         "points_to_global": points_to_global,
+        "points_to_legacy_global": points_to_legacy_global,
+        "is_monolithic_global_symlink": is_monolithic_global_symlink,
+        "is_scoped_symlink_adapter": is_scoped_symlink_adapter,
         "is_portable_copy": is_portable_copy,
         "is_unmanaged_directory": is_unmanaged_directory,
         "is_regular_file": is_regular_file,
         "is_other": is_other,
         "collision_reason": collision_reason,
+        "visible_packages": _visible_adapter_packages(repo_path, global_root),
     }
 
 
@@ -101,9 +145,10 @@ def adapter_status(
     target_root: Path | None = None,
 ) -> list[dict]:
     status: list[dict] = []
+    known_roots = legacy_global_roots(home)
     for target in adapter_targets(repo_root, home, platform_ids=platform_ids, target_root=target_root):
         repo_path = target["repo_path"]
-        path_state = adapter_path_state(repo_path, global_root)
+        path_state = adapter_path_state(repo_path, global_root, known_global_roots=known_roots)
         status.append(
             {
                 "platform": target["platform"],

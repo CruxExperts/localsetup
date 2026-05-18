@@ -32,7 +32,7 @@ from _localsetup.v3.rollback import rollback
 from _localsetup.v3.shell import detect_invocation_target, is_managed_shim, register_shell_command, shell_registration_status
 from _localsetup.v3.skills import skill_taxonomy_payload
 from _localsetup.v3.verify import verify_install
-from _localsetup.v3.wizard import Choice, TerminalWizard, choose_many, choose_one, run_wizard
+from _localsetup.v3.wizard import Choice, TerminalWizard, choose_many, choose_many_checkbox, choose_one, run_wizard
 from _localsetup.v3.workflows import workflow_catalog_payload
 
 
@@ -74,6 +74,14 @@ def make_temp_repo(tmp_path: Path) -> Path:
     (repo / "README.md").write_text("# Localsetup\n", encoding="utf-8")
     (repo / "AGENTS.md").write_text("# Agents\n", encoding="utf-8")
     return repo
+
+
+def assert_scoped_adapter(path: Path, *packages: str) -> None:
+    assert path.is_dir()
+    assert not path.is_symlink()
+    assert (path / ".localsetup-adapter.json").is_file()
+    for package in packages:
+        assert (path / package).is_symlink() or (path / package).is_dir()
 
 
 def test_v3_plan_apply_verify_rollback(tmp_path: Path) -> None:
@@ -150,6 +158,61 @@ def test_v3_selected_workflows_install_as_skill_packages(tmp_path: Path) -> None
     assert verify_install(root, home, platform_ids=["codex"])["ok"] is True
 
 
+def test_v3_selection_resolves_preset_classes_tags_skills_and_exclusions(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+
+    plan = build_install_plan(
+        root,
+        home=home,
+        preset="custom",
+        skills=["localsetup-context"],
+        skill_classes=["operations"],
+        skill_tags=["git"],
+        exclude_skills=["ls-linux-patcher"],
+    )
+
+    selected = set(plan.rollback_metadata["skills"])
+    assert "ls-context" in selected
+    assert "ls-git-workflows" in selected
+    assert "ls-system-info" in selected
+    assert "ls-linux-patcher" not in selected
+    assert plan.rollback_metadata["packs"] == []
+    assert plan.rollback_metadata["selectors"]["skill_classes"] == ["operations"]
+    assert plan.rollback_metadata["selectors"]["skill_tags"] == ["git"]
+
+
+def test_v3_scoped_adapter_exposes_only_selected_packages_even_when_global_has_more(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+
+    apply_plan(root, build_install_plan(root, home=home, packs=["dev"]), home=home)
+    apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"]), home=home)
+
+    global_root = home / ".local/share/localsetup/packages"
+    adapter = root / ".codex" / "skills"
+    assert (global_root / "ls-nodejs-nextjs").is_dir()
+    assert_scoped_adapter(adapter, "ls-context")
+    assert not (adapter / "ls-nodejs-nextjs").exists()
+    assert verify_install(root, home, platform_ids=["codex"])["ok"] is True
+
+
+def test_v3_legacy_managed_global_symlink_is_migrated_to_scoped_adapter(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    legacy_root = home / ".local/share/agents/skills/localsetup"
+    legacy_root.mkdir(parents=True)
+    adapter = root / ".codex" / "skills"
+    adapter.parent.mkdir(parents=True)
+    adapter.symlink_to(legacy_root, target_is_directory=True)
+
+    apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"]), home=home)
+
+    assert_scoped_adapter(adapter, "ls-context")
+    assert not adapter.is_symlink()
+    assert verify_install(root, home, platform_ids=["codex"])["ok"] is True
+
+
 def test_v3_portable_mode_uses_managed_copies(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
@@ -162,6 +225,7 @@ def test_v3_portable_mode_uses_managed_copies(tmp_path: Path) -> None:
     verify = verify_install(root, home, platform_ids=["codex"])
     assert verify["ok"] is True
     assert all(adapter["is_portable_copy"] for adapter in verify["adapters"])
+    assert verify["adapters"][0]["provenance_current"] == "repo-portable-copy"
     assert not (root / ".cursor" / "skills").exists()
 
     rolled = rollback(root, home)
@@ -177,7 +241,7 @@ def test_v3_platform_selector_limits_adapters(tmp_path: Path) -> None:
     result = apply_plan(root, plan, home=home, dry_run=False)
 
     assert result["dry_run"] is False
-    assert (root / ".codex" / "skills").is_symlink()
+    assert_scoped_adapter(root / ".codex" / "skills", "ls-context")
     assert not (root / ".kilo" / "skills").exists()
     assert not (root / ".cursor" / "skills").exists()
     verify = verify_install(root, home, platform_ids=["codex"])
@@ -200,8 +264,8 @@ def test_v3_multi_platform_selector_attaches_only_requested_adapters(tmp_path: P
     assert result["dry_run"] is False
     assert {Path(adapter["repo_path"]).parent.name for adapter in verify["adapters"]} == {".codex", ".kilo"}
     assert {adapter["platform"] for adapter in verify["adapters"]} == {"codex", "kilo"}
-    assert (root / ".codex" / "skills").is_symlink()
-    assert (root / ".kilo" / "skills").is_symlink()
+    assert_scoped_adapter(root / ".codex" / "skills", "ls-context")
+    assert_scoped_adapter(root / ".kilo" / "skills", "ls-context")
     assert not (root / ".cursor" / "skills").exists()
 
 
@@ -218,7 +282,7 @@ def test_v3_external_target_directory_attaches_selected_adapter(tmp_path: Path) 
     lock = load_json(target / ".localsetup/lock.json")
 
     assert result["dry_run"] is False
-    assert (target / ".cursor" / "skills").is_symlink()
+    assert_scoped_adapter(target / ".cursor" / "skills", "ls-context")
     assert not (root / ".cursor" / "skills").exists()
     assert verify["ok"] is True
     assert {adapter["platform"] for adapter in verify["adapters"]} == {"cursor"}
@@ -381,7 +445,7 @@ def test_v3_provenance_report_cli_is_report_only(tmp_path: Path) -> None:
     assert "warnings" in payload
     assert "repair_hints" in payload
     assert payload["packages"]["ls-context"]["lock_digest"]
-    assert payload["adapters"][0]["provenance_current"] == "global-managed-package"
+    assert payload["adapters"][0]["provenance_current"] == "repo-scoped-symlink-adapter"
 
 
 def test_v3_provenance_report_global_shim_uses_caller_target(tmp_path: Path) -> None:
@@ -672,7 +736,7 @@ def test_custom_home_shim_invocation_uses_registered_home(tmp_path: Path) -> Non
 
     assert completed.returncode == 0, completed.stderr
     assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
-    assert (target / ".codex" / "skills").is_symlink()
+    assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
 
 
 def test_v3_cli_tools_and_yes_aliases_install(tmp_path: Path) -> None:
@@ -703,7 +767,7 @@ def test_v3_cli_tools_and_yes_aliases_install(tmp_path: Path) -> None:
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload["attachment"]["platforms"] == ["codex"]
-    assert (root / ".codex" / "skills").is_symlink()
+    assert_scoped_adapter(root / ".codex" / "skills", "ls-context")
 
 
 def test_global_shim_invocation_installs_at_detected_git_root(tmp_path: Path) -> None:
@@ -741,7 +805,7 @@ def test_global_shim_invocation_installs_at_detected_git_root(tmp_path: Path) ->
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload["attachment"]["target_root"] == str(target.resolve())
-    assert (target / ".codex" / "skills").is_symlink()
+    assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
     assert (target / ".localsetup/lock.json").is_file()
     assert not (root / ".codex" / "skills").exists()
 
@@ -862,7 +926,7 @@ def test_v3_preserves_existing_platform_config_when_attaching_skills(tmp_path: P
     plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["cursor"])
     apply_plan(root, plan, home=home)
 
-    assert (root / ".cursor" / "skills").is_symlink()
+    assert_scoped_adapter(root / ".cursor" / "skills", "ls-context")
     assert (rules / "project.mdc").read_text(encoding="utf-8") == "keep me\n"
 
 
@@ -906,7 +970,7 @@ def test_v3_rerun_with_correct_managed_symlink_is_idempotent(tmp_path: Path) -> 
     assert first["dry_run"] is False
     assert second["dry_run"] is False
     assert verify["ok"] is True
-    assert (root / ".codex" / "skills").is_symlink()
+    assert_scoped_adapter(root / ".codex" / "skills", "ls-context")
 
 
 def test_v3_doctor_reports_selected_adapter_collisions_only(tmp_path: Path) -> None:
@@ -956,7 +1020,12 @@ def test_v3_config_file_and_cli_precedence(tmp_path: Path) -> None:
     config_path.write_text(
         """{
   "platforms": ["codex"],
+  "preset": "suggested",
   "packs": ["dev"],
+  "skills": ["ls-context"],
+  "skill_classes": ["operations"],
+  "skill_tags": ["git"],
+  "exclude_skills": ["ls-linux-patcher"],
   "attach_mode": "portable",
   "target_directory": "/tmp/localsetup-target",
   "data_root": "/tmp/localsetup-data",
@@ -969,14 +1038,29 @@ def test_v3_config_file_and_cli_precedence(tmp_path: Path) -> None:
     )
 
     base = load_install_config(config_path)
-    merged = merge_cli_config(base, packs=["core"], attach_mode="symlink", dependency_mode="managed-venv")
+    merged = merge_cli_config(
+        base,
+        packs=["core"],
+        preset="custom",
+        skills=["ls-test-runner"],
+        attach_mode="symlink",
+        dependency_mode="managed-venv",
+    )
 
     assert base.platforms == ["codex"]
+    assert base.preset == "suggested"
     assert base.packs == ["dev"]
+    assert base.skills == ["ls-context"]
+    assert base.skill_classes == ["operations"]
+    assert base.skill_tags == ["git"]
+    assert base.exclude_skills == ["ls-linux-patcher"]
     assert base.attach_mode == "portable"
     assert base.target_directory == "/tmp/localsetup-target"
     assert base.data_root == "/tmp/localsetup-data"
     assert merged.packs == ["core"]
+    assert merged.preset == "custom"
+    assert merged.skills == ["ls-test-runner"]
+    assert merged.skill_classes == ["operations"]
     assert merged.attach_mode == "symlink"
     assert merged.target_directory == "/tmp/localsetup-target"
     assert merged.data_root == "/tmp/localsetup-data"
@@ -1275,8 +1359,8 @@ def test_v3_self_refresh_defaults_to_all_packs_and_existing_repo_adapters(tmp_pa
     assert payload["selected"]["platforms"] == ["codex"]
     assert "integrations" in payload["selected"]["packs"]
     assert (home / ".local/share/localsetup/packages/ls-cloudflare-dns").is_dir()
-    assert (root / ".codex" / "skills").is_symlink()
-    assert payload["verify"]["adapters"][0]["points_to_global"] is True
+    assert_scoped_adapter(root / ".codex" / "skills", "ls-context")
+    assert payload["verify"]["adapters"][0]["is_scoped_symlink_adapter"] is True
     assert (root / ".cursor" / "skills").resolve() == external_global
 
 
@@ -1543,7 +1627,7 @@ def test_root_installer_forwards_custom_home(tmp_path: Path) -> None:
 
     assert completed.returncode == 0, completed.stderr
     assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
-    assert (root / ".codex" / "skills").is_symlink()
+    assert_scoped_adapter(root / ".codex" / "skills", "ls-context")
     assert (home / ".local" / "bin" / "localsetup").is_file()
 
 
@@ -1577,7 +1661,7 @@ def test_root_installer_supports_target_directory(tmp_path: Path) -> None:
 
     assert completed.returncode == 0, completed.stderr
     assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
-    assert (target / ".cursor" / "skills").is_symlink()
+    assert_scoped_adapter(target / ".cursor" / "skills", "ls-context")
     assert (target / ".localsetup/lock.json").is_file()
     assert (home / ".local" / "bin" / "localsetup").is_file()
     assert not (root / ".cursor" / "skills").exists()
@@ -1758,11 +1842,17 @@ def run_installer_in_pty(
         pytest.skip("script command is required for pseudo-terminal installer tests")
     log_path = cwd / "installer-pty.log"
     shell_command = " ".join(shlex.quote(part) for part in command)
+    effective_env = {
+        **os.environ,
+        "LOCALSETUP_WIZARD_SELECTION_MODE": "line",
+        "LOCALSETUP_WIZARD_DETAIL": "compact",
+        **(env or {}),
+    }
     return subprocess.run(
         [script, "-q", "-e", "-c", shell_command, str(log_path)],
         input=input_text,
         cwd=cwd,
-        env=env,
+        env=effective_env,
         text=True,
         capture_output=True,
         check=False,
@@ -2083,7 +2173,7 @@ def test_root_installer_piped_bootstrap_selected_platform_attaches_caller_target
 
     assert completed.returncode == 0, completed.stderr.decode()
     assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
-    assert (target / ".codex" / "skills").is_symlink()
+    assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
     assert (target / ".localsetup/lock.json").is_file()
     assert not (managed_source / ".codex").exists()
 
@@ -2180,12 +2270,12 @@ def test_root_installer_interactive_preserves_explicit_target_and_no_register_sh
             "cursor",
             "--no-register-shell",
         ],
-        input_text="\n\n\n\n1\n1\n1\nyes\n",
+        input_text="\n\n\n\n\n\n\n\n1\n1\nyes\n",
         cwd=tmp_path,
     )
 
     assert completed.returncode == 0, completed.stderr + completed.stdout
-    assert (target / ".cursor" / "skills").is_symlink()
+    assert_scoped_adapter(target / ".cursor" / "skills", "ls-context")
     assert (target / ".localsetup/lock.json").is_file()
     assert not (root / ".cursor" / "skills").exists()
     assert not (home / ".local" / "bin" / "localsetup").exists()
@@ -2243,7 +2333,7 @@ def test_root_installer_interactive_explicit_target_without_platforms_stays_glob
             str(home),
             "--no-register-shell",
         ],
-        input_text="\n\n\n\n1\n1\n1\nyes\n",
+        input_text="\n\n\n\n\n\n\n\n1\n1\nyes\n",
         cwd=tmp_path,
     )
 
@@ -2498,6 +2588,21 @@ def test_wizard_selection_helpers_accept_labels_and_comma_lists() -> None:
     ) == ["claude-code"]
 
 
+def test_wizard_checkbox_falls_back_to_line_mode_for_scripted_streams() -> None:
+    term = TerminalWizard(
+        input_stream=io.StringIO("1,2\n"),
+        output_stream=io.StringIO(),
+        color=False,
+    )
+
+    assert choose_many_checkbox(
+        term,
+        "Skills",
+        [("ls-context", "ls-context"), ("ls-test-runner", "ls-test-runner")],
+        default=["ls-context"],
+    ) == ["ls-context", "ls-test-runner"]
+
+
 def test_wizard_full_flow_renders_guided_context_for_current_repo(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     source = Path(__file__).resolve().parents[2]
@@ -2507,7 +2612,7 @@ def test_wizard_full_flow_renders_guided_context_for_current_repo(tmp_path: Path
     caller.mkdir()
     output = io.StringIO()
     term = TerminalWizard(
-        input_stream=io.StringIO("\n\n2\n1\n1,3\n2\n1\nyes\n"),
+        input_stream=io.StringIO("\n\n2\n1\n1,3\n\n\n\n2\n1\nyes\n"),
         output_stream=output,
         color=False,
     )
@@ -2624,7 +2729,7 @@ def test_wizard_keyboard_interrupt_during_apply_warns_partial_state(
     home = tmp_path / "home"
     output = io.StringIO()
     term = TerminalWizard(
-        input_stream=io.StringIO("\n\n1\n1\n1\n1\nyes\n"),
+        input_stream=io.StringIO("\n\n1\n1\n\n\n\n1\n1\nyes\n"),
         output_stream=output,
         color=False,
     )
@@ -2648,7 +2753,7 @@ def test_wizard_global_only_apply_with_scripted_confirmation(tmp_path: Path) -> 
     shutil.copytree(source / "_localsetup" / "docs", root / "_localsetup" / "docs", dirs_exist_ok=True)
     home = tmp_path / "home"
     term = TerminalWizard(
-        input_stream=io.StringIO("\n\n1\n1\n1\n1\nyes\n"),
+        input_stream=io.StringIO("\n\n1\n1\n\n\n\n1\n1\nyes\n"),
         output_stream=io.StringIO(),
         color=False,
     )
@@ -2658,6 +2763,33 @@ def test_wizard_global_only_apply_with_scripted_confirmation(tmp_path: Path) -> 
     assert code == 0
     assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
     assert not (root / ".codex").exists()
+
+
+def test_wizard_custom_preset_can_install_individual_skill_without_pack(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    source = Path(__file__).resolve().parents[2]
+    shutil.copytree(source / "_localsetup" / "docs", root / "_localsetup" / "docs", dirs_exist_ok=True)
+    home = tmp_path / "home"
+    term = TerminalWizard(
+        input_stream=io.StringIO("\n\n1\n\n\n\n\n1\n1\nyes\n"),
+        output_stream=io.StringIO(),
+        color=False,
+    )
+
+    code = run_wizard(
+        repo_root=root,
+        home=home,
+        terminal=term,
+        preset="custom",
+        skills=["ls-context"],
+        register_shell=False,
+    )
+
+    lock = load_json(root / ".localsetup/lock.json")
+    assert code == 0
+    assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
+    assert not (home / ".local/share/localsetup/packages/ls-test-runner").exists()
+    assert lock["skills"] == ["ls-context"]
 
 
 def test_wizard_explicit_target_is_default_when_provided(tmp_path: Path) -> None:
@@ -2670,7 +2802,7 @@ def test_wizard_explicit_target_is_default_when_provided(tmp_path: Path) -> None
     caller.mkdir()
     target.mkdir()
     term = TerminalWizard(
-        input_stream=io.StringIO("\n\n\n\n1\n1\n1\nyes\n"),
+        input_stream=io.StringIO("\n\n\n\n1\n\n\n\n1\n1\nyes\n"),
         output_stream=io.StringIO(),
         color=False,
     )
@@ -2687,7 +2819,7 @@ def test_wizard_explicit_target_is_default_when_provided(tmp_path: Path) -> None
     )
 
     assert code == 0
-    assert (target / ".cursor" / "skills").is_symlink()
+    assert_scoped_adapter(target / ".cursor" / "skills", "ls-context")
     assert (target / ".localsetup/lock.json").is_file()
     assert not (caller / ".cursor").exists()
 
@@ -2702,7 +2834,7 @@ def test_wizard_explicit_target_without_platforms_defaults_global_only(tmp_path:
     caller.mkdir()
     target.mkdir()
     term = TerminalWizard(
-        input_stream=io.StringIO("\n\n\n\n1\n1\n1\nyes\n"),
+        input_stream=io.StringIO("\n\n\n\n1\n\n\n\n1\n1\nyes\n"),
         output_stream=io.StringIO(),
         color=False,
     )
@@ -2814,7 +2946,7 @@ def test_v3_convert_archives_old_framework_and_installs_at_target(tmp_path: Path
     assert report["applied"] is True
     assert (tmp_path / "backup" / "repo" / "_localsetup" / "OLD.txt").is_file()
     assert not (target / "_localsetup").exists()
-    assert (target / ".codex" / "skills").is_symlink()
+    assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
     assert (target / ".localsetup/lock.json").is_file()
     assert report["verify"]["ok"] is True
 
@@ -3021,7 +3153,7 @@ def test_v3_failed_adapter_replace_restores_existing_adapter(tmp_path: Path, mon
     original_copytree = apply_mod.shutil.copytree
 
     def fail_adapter_copy(src: Path, dst: Path, *args: object, **kwargs: object):
-        if dst == adapter:
+        if Path(dst).parent == adapter:
             raise OSError("simulated adapter copy failure")
         return original_copytree(src, dst, *args, **kwargs)
 

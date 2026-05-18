@@ -10,7 +10,7 @@ from .lockfile import save_json
 from .manifests import load_pack_config
 from .models import DeployPlan
 from .paths import ensure_dir, legacy_target_lockfile_path, repo_path, target_lockfile_path
-from .adapters import adapter_path_state
+from .adapters import ADAPTER_MARKER_JSON, adapter_path_state, legacy_global_roots
 from .registry import upsert_target
 from .provenance import build_package_marker, is_managed_package, load_package_marker, managed_marker_path, marker_public_snapshot
 from .source import source_commit
@@ -202,6 +202,31 @@ def _install_managed_workflows(repo_root: Path, global_root: Path, workflow_name
     return _install_managed_packages(repo_root, global_root, workflow_names, "workflows")
 
 
+def _write_scoped_adapter(adapter_path: Path, global_root: Path, package_names: list[str], *, mode: str) -> None:
+    ensure_dir(adapter_path)
+    save_json(
+        adapter_path / ADAPTER_MARKER_JSON,
+        {
+            "version": 1,
+            "managed_by": "localsetup-v3",
+            "mode": mode,
+            "global_root": str(global_root),
+            "packages": sorted(set(package_names)),
+        },
+    )
+    for package_name in sorted(set(package_names)):
+        source = global_root / package_name
+        if not source.is_dir():
+            raise RuntimeError(f"selected package is missing from managed library: {source}")
+        target = adapter_path / package_name
+        if mode == "portable":
+            shutil.copytree(source, target)
+        else:
+            target.symlink_to(source, target_is_directory=True)
+    if mode == "portable":
+        (adapter_path / ".localsetup-portable").write_text("managed_by=localsetup-v3\n", encoding="utf-8")
+
+
 def apply_plan(
     repo_root: Path,
     plan: DeployPlan,
@@ -274,15 +299,8 @@ def apply_plan(
                     ensure_dir(action.path.parent)
                     mode = action.details.get("mode", "symlink")
                     global_root = Path(action.details["global_root"])
-                    state = adapter_path_state(action.path, global_root)
-                    if (
-                        (action.path.exists() or action.path.is_symlink())
-                        and not state["collision_reason"]
-                        and action.path.is_symlink()
-                        and mode == "symlink"
-                    ):
-                        executed.append(f"attach_repo_path:{action.path}")
-                        continue
+                    package_names = [str(name) for name in action.details.get("packages", [])]
+                    state = adapter_path_state(action.path, global_root, known_global_roots=legacy_global_roots(home))
                     backup = action.path.with_name(f".{action.path.name}.localsetup-backup-{uuid.uuid4().hex}")
                     existed = action.path.exists() or action.path.is_symlink()
                     journal["touched"].append(
@@ -293,11 +311,7 @@ def apply_plan(
                         if state["collision_reason"]:
                             raise RuntimeError(f"refusing to replace {state['collision_reason']} at adapter path: {action.path}")
                         _same_filesystem_replace(action.path, backup)
-                    if mode == "portable":
-                        shutil.copytree(global_root, action.path)
-                        (action.path / ".localsetup-portable").write_text("managed_by=localsetup-v3\n", encoding="utf-8")
-                    else:
-                        action.path.symlink_to(global_root)
+                    _write_scoped_adapter(action.path, global_root, package_names, mode=mode)
                 executed.append(f"attach_repo_path:{action.path}")
     except Exception as exc:
         if not dry_run:
@@ -332,6 +346,7 @@ def apply_plan(
                 "path": str(action.path),
                 "mode": action.details.get("mode", "symlink"),
                 "global_root": action.details.get("global_root"),
+                "packages": action.details.get("packages", []),
             }
             for action in adapter_actions
         ],
@@ -340,6 +355,7 @@ def apply_plan(
         "attach_mode": plan.rollback_metadata.get("attach_mode", "symlink"),
         "installed_skills": installed_skills,
         "installed_workflows": installed_workflows,
+        "adapter_packages": plan.rollback_metadata.get("packages", []),
         "dependency_mode": (dependency_info or {}).get("mode"),
         "python_interpreter": (dependency_info or {}).get("interpreter"),
         "dependency_state": (dependency_info or {}).get("lock"),

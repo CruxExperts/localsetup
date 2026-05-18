@@ -48,7 +48,7 @@ def parse_skill_frontmatter(skill_md: Path) -> dict:
 
 def selected_pack_names(repo_root: Path, requested_packs: list[str] | None) -> list[str]:
     pack = load_pack_config(repo_root)
-    names = requested_packs or ["core"]
+    names = requested_packs if requested_packs is not None else ["core"]
     unknown = [name for name in names if name not in pack.packs]
     if unknown:
         raise ValueError(f"unknown pack(s): {', '.join(sorted(unknown))}")

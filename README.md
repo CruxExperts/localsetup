@@ -81,7 +81,7 @@ This opens an interactive terminal wizard. It creates or refreshes the managed s
 
 Every wizard step shows the same shortcuts before you answer: `Enter number(s) | d details | b back | q quit | ? help`. Detailed mode is on by default, so menu rows explain what each choice does, when to choose it, and the tradeoff. Press `d` at any prompt for compact mode; compact mode still keeps the one-line summary for each option.
 
-The wizard stays dependency-free and line-oriented. It uses semantic color and simple status glyphs only when the terminal supports them; `NO_COLOR`, `TERM=dumb`, non-TTY output, `--no-color`, and `--color never` keep output free of ANSI color. Use `--color always` or `--glyphs unicode` only for an interactive terminal where you explicitly want that rendering; `--glyphs ascii` keeps portable labels such as `[OK]`, `[WARN]`, and `[FAIL]`.
+The wizard stays dependency-free and uses standard terminal controls. Multi-select screens use a checkbox UI in real terminals: move with arrows or `j`/`k`, press `Space` to toggle packs, classes, tags, platforms, or individual skills, and press `Enter` to accept. Scripted or non-TTY streams fall back to line-mode comma-separated choices. It uses semantic color and simple status glyphs only when the terminal supports them; `NO_COLOR`, `TERM=dumb`, non-TTY output, `--no-color`, and `--color never` keep output free of ANSI color. Use `--color always` or `--glyphs unicode` only for an interactive terminal where you explicitly want that rendering; `--glyphs ascii` keeps portable labels such as `[OK]`, `[WARN]`, and `[FAIL]`.
 
 The legacy public form still opens the same wizard when a terminal is available:
 
@@ -95,7 +95,7 @@ Raw `main` bootstrap is the current development channel. For release verificatio
 python3 _localsetup/tools/localsetup_v3.py --source-root . verify-release dist/localsetup-v$(cat VERSION).tar.gz
 ```
 
-Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.codex/skills` to the chosen target. If you do not select tools, the install is global-library-only.
+Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.codex/skills` to the chosen target. If you do not select tools, the install is global-library-only. Interactive installs default to `core` for global-only runs and `core` plus repo-detected suggested packs when a target repo is selected.
 
 For automation, opt in explicitly:
 
@@ -127,11 +127,21 @@ Attach adapters only for the hosts you choose:
 localsetup install --tools codex,kilo --yes
 ```
 
+Tune the skill footprint by preset, pack, taxonomy class, tag, individual skill, or exclusion:
+
+```bash
+localsetup install --tools codex --preset suggested --skill-classes development --skill-tags git --skills ls-context --exclude-skills ls-linux-patcher --yes
+```
+
+Presets are `core`, `suggested`, `all`, and `custom`. `core` is the conservative default for automation when no selector is provided; `suggested` starts with `core` plus repo-detected categories; `all` installs every shipped skill and workflow package; `custom` relies on the packs, classes, tags, and skills you name.
+
 Install every shipped skill and workflow package for Codex, Kilo, and OpenCode, while preparing the managed Python dependency environment:
 
 ```bash
 ./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,harness,experimental --install-deps
 ```
+
+In symlink mode, each repo adapter path is a Localsetup-managed scoped adapter directory with `.localsetup-adapter.json` and per-package links to the managed home library. That means a repo sees only the selected skills and workflow packages even when the global library contains more. Portable mode uses the same scoped adapter shape, but copies selected packages instead of linking them.
 
 Attach a selected adapter to another repo while using this checkout as the source:
 

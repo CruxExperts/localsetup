@@ -9,8 +9,33 @@ from .paths import repo_path, target_lockfile_path
 from .plan import build_install_plan
 
 
-def diff_plan_current(repo_root: Path, *, home: Path, packs: list[str] | None, platform_ids: list[str] | None, target_root: Path | None, attach_mode: str) -> dict[str, Any]:
-    plan = build_install_plan(repo_root, home=home, packs=packs, platform_ids=platform_ids, target_root=target_root, attach_mode=attach_mode)
+def diff_plan_current(
+    repo_root: Path,
+    *,
+    home: Path,
+    packs: list[str] | None,
+    platform_ids: list[str] | None,
+    target_root: Path | None,
+    attach_mode: str,
+    preset: str | None = None,
+    skills: list[str] | None = None,
+    skill_classes: list[str] | None = None,
+    skill_tags: list[str] | None = None,
+    exclude_skills: list[str] | None = None,
+) -> dict[str, Any]:
+    plan = build_install_plan(
+        repo_root,
+        home=home,
+        packs=packs,
+        preset=preset,
+        skills=skills,
+        skill_classes=skill_classes,
+        skill_tags=skill_tags,
+        exclude_skills=exclude_skills,
+        platform_ids=platform_ids,
+        target_root=target_root,
+        attach_mode=attach_mode,
+    )
     attachment_root = target_root or repo_root
     pack = load_pack_config(repo_root)
     lock_path = repo_path(attachment_root, pack.lockfile, "repo.lockfile")
