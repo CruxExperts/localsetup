@@ -187,7 +187,15 @@ def _write_markdown(path: Path, text: str, repo_root: Path, *, emitter: str = "g
     path.parent.mkdir(parents=True, exist_ok=True)
     artifact_path = path.relative_to(repo_root) if path.is_absolute() and path.is_relative_to(repo_root) else path
     path.write_text(
-        markdown_with_provenance(text, base_provenance(repo_root, emitter=emitter, artifact_path=artifact_path)),
+        markdown_with_provenance(
+            text,
+            base_provenance(
+                repo_root,
+                emitter=emitter,
+                artifact_path=artifact_path,
+                generated_commit_parent=True,
+            ),
+        ),
         encoding="utf-8",
     )
 
@@ -195,7 +203,15 @@ def _write_markdown(path: Path, text: str, repo_root: Path, *, emitter: str = "g
 def _write_json(path: Path, payload: dict, repo_root: Path, *, emitter: str = "generate-docs") -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     artifact_path = path.relative_to(repo_root) if path.is_absolute() and path.is_relative_to(repo_root) else path
-    output = json_with_provenance(payload, base_provenance(repo_root, emitter=emitter, artifact_path=artifact_path))
+    output = json_with_provenance(
+        payload,
+        base_provenance(
+            repo_root,
+            emitter=emitter,
+            artifact_path=artifact_path,
+            generated_commit_parent=True,
+        ),
+    )
     path.write_text(json.dumps(output, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
@@ -221,6 +237,7 @@ def write_artifact_registry(repo_root: Path, paths: list[Path]) -> None:
             artifact_type=artifact_type,
             emitter="generate-docs",
             source_inputs=ARTIFACT_SOURCE_INPUTS,
+            generated_commit_parent=True,
         )
     _write_json(
         registry_path,

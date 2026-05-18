@@ -122,7 +122,12 @@ def _write_json(path: Path, payload: dict[str, Any], *, repo_root: Path | None =
     if repo_root is not None:
         output = json_with_provenance(
             payload,
-            base_provenance(repo_root, emitter=emitter, artifact_path=_artifact_id(repo_root, path)),
+            base_provenance(
+                repo_root,
+                emitter=emitter,
+                artifact_path=_artifact_id(repo_root, path),
+                generated_commit_parent=True,
+            ),
         )
     path.write_text(json.dumps(output, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
@@ -652,7 +657,15 @@ def write_summary(repo_root: Path, inventory: dict[str, Any], audit_result: dict
     path.parent.mkdir(parents=True, exist_ok=True)
     text = "\n".join(lines)
     path.write_text(
-        markdown_with_provenance(text, base_provenance(repo_root, emitter="docs-align", artifact_path=_artifact_id(repo_root, path))),
+        markdown_with_provenance(
+            text,
+            base_provenance(
+                repo_root,
+                emitter="docs-align",
+                artifact_path=_artifact_id(repo_root, path),
+                generated_commit_parent=True,
+            ),
+        ),
         encoding="utf-8",
     )
 

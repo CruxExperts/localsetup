@@ -25,7 +25,15 @@ def _write_markdown(path: Path, text: str, repo_root: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     artifact_path = path.relative_to(repo_root) if path.is_absolute() and path.is_relative_to(repo_root) else path
     path.write_text(
-        markdown_with_provenance(text, base_provenance(repo_root, emitter="generate-docs", artifact_path=artifact_path)),
+        markdown_with_provenance(
+            text,
+            base_provenance(
+                repo_root,
+                emitter="generate-docs",
+                artifact_path=artifact_path,
+                generated_commit_parent=True,
+            ),
+        ),
         encoding="utf-8",
     )
 
@@ -33,7 +41,15 @@ def _write_markdown(path: Path, text: str, repo_root: Path) -> None:
 def _write_json(path: Path, payload: dict, repo_root: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     artifact_path = path.relative_to(repo_root) if path.is_absolute() and path.is_relative_to(repo_root) else path
-    output = json_with_provenance(payload, base_provenance(repo_root, emitter="generate-docs", artifact_path=artifact_path))
+    output = json_with_provenance(
+        payload,
+        base_provenance(
+            repo_root,
+            emitter="generate-docs",
+            artifact_path=artifact_path,
+            generated_commit_parent=True,
+        ),
+    )
     path.write_text(json.dumps(output, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
@@ -55,10 +71,11 @@ def _write_artifact_registry(repo_root: Path, paths: list[Path]) -> None:
         entry = artifact_registry_entry(
             repo_root,
                 path,
-                artifact_type=artifact_type,
-                emitter="generate-docs",
-                source_inputs=ARTIFACT_SOURCE_INPUTS,
-            )
+            artifact_type=artifact_type,
+            emitter="generate-docs",
+            source_inputs=ARTIFACT_SOURCE_INPUTS,
+            generated_commit_parent=True,
+        )
         existing[str(entry["path"])] = entry
     _write_json(registry_path, {"schema_version": 1, "artifacts": [existing[key] for key in sorted(existing)]}, repo_root)
 

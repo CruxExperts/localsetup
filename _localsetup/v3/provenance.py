@@ -25,6 +25,8 @@ GENERATED_SOURCE_DIRTY_PATHS = {
 GENERATED_SOURCE_DIRTY_PREFIXES = (
     "_localsetup/docs/_generated/",
 )
+VERSION_SYNC_SUBJECT_PREFIX = "chore: sync release version "
+GENERATED_DOCS_SUBJECT_PREFIX = "docs: refresh "
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -40,8 +42,12 @@ def sha256_file(path: Path) -> str:
 
 
 def source_tree_sha(repo_root: Path) -> str:
+    return _tree_sha_for_ref(repo_root, "HEAD")
+
+
+def _tree_sha_for_ref(repo_root: Path, ref: str) -> str:
     completed = subprocess.run(
-        ["git", "rev-parse", "HEAD^{tree}"],
+        ["git", "rev-parse", f"{ref}^{{tree}}"],
         cwd=repo_root,
         text=True,
         capture_output=True,
@@ -50,6 +56,24 @@ def source_tree_sha(repo_root: Path) -> str:
     if completed.returncode != 0:
         return "unknown"
     return completed.stdout.strip()
+
+
+def _git_text(repo_root: Path, args: list[str]) -> str | None:
+    completed = subprocess.run(
+        ["git", *args],
+        cwd=repo_root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if completed.returncode != 0:
+        return None
+    value = completed.stdout.strip()
+    return value or None
+
+
+def _source_tag_for_ref(repo_root: Path, ref: str) -> str | None:
+    return _git_text(repo_root, ["describe", "--tags", "--exact-match", ref])
 
 
 def _status_entry_paths(line: str) -> list[str]:
@@ -85,6 +109,40 @@ def source_dirty(repo_root: Path) -> bool:
     return False
 
 
+def _head_subject(repo_root: Path) -> str:
+    return _git_text(repo_root, ["log", "-1", "--pretty=%s"]) or ""
+
+
+def _head_changed_paths(repo_root: Path) -> list[str]:
+    output = _git_text(repo_root, ["diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"])
+    return [line for line in (output or "").splitlines() if line]
+
+
+def release_sync_parent_dirty(repo_root: Path) -> bool:
+    """Return the pre-commit dirty flag encoded by a generated release-sync commit."""
+    return _head_subject(repo_root).startswith(VERSION_SYNC_SUBJECT_PREFIX)
+
+
+def generated_artifact_parent_source_commit(repo_root: Path) -> str | None:
+    """
+    Generated artifact commits are produced from their parent source state.
+
+    Without this, a clean CI regeneration rewrites committed provenance from the
+    parent commit to the generated-docs commit itself, creating unavoidable drift.
+    The parent mode is opt-in so package/install provenance still points at the
+    actual current checkout.
+    """
+    subject = _head_subject(repo_root)
+    if subject.startswith(VERSION_SYNC_SUBJECT_PREFIX):
+        return _git_text(repo_root, ["rev-parse", "HEAD^"])
+    if not subject.startswith(GENERATED_DOCS_SUBJECT_PREFIX):
+        return None
+    changed_paths = _head_changed_paths(repo_root)
+    if changed_paths and all(_is_generated_output_path(path) for path in changed_paths):
+        return _git_text(repo_root, ["rev-parse", "HEAD^"])
+    return None
+
+
 def source_remote_url(repo_root: Path) -> str | None:
     completed = subprocess.run(
         ["git", "config", "--get", "remote.origin.url"],
@@ -114,6 +172,14 @@ def source_root_id(repo_root: Path) -> str:
     return sha256_bytes(json.dumps(seed, sort_keys=True).encode("utf-8"))
 
 
+def _source_root_id_for_commit(repo_root: Path, commit: str) -> str:
+    seed = {
+        "source_commit": commit,
+        "remote_url": source_remote_url(repo_root),
+    }
+    return sha256_bytes(json.dumps(seed, sort_keys=True).encode("utf-8"))
+
+
 def source_provenance_hash(payload: dict[str, Any]) -> str:
     keys = {
         "schema_version": payload.get("schema_version"),
@@ -135,15 +201,29 @@ def base_provenance(
     package_name: str | None = None,
     package_type: str | None = None,
     generated_at: bool = False,
+    generated_commit_parent: bool = False,
 ) -> dict[str, Any]:
+    commit = source_commit(repo_root)
+    tag = source_tag(repo_root)
+    tree_sha = source_tree_sha(repo_root)
+    dirty = source_dirty(repo_root)
+    root_id = source_root_id(repo_root)
+    if generated_commit_parent and not dirty:
+        parent = generated_artifact_parent_source_commit(repo_root)
+        if parent:
+            commit = parent
+            tag = _source_tag_for_ref(repo_root, parent)
+            tree_sha = _tree_sha_for_ref(repo_root, parent)
+            dirty = release_sync_parent_dirty(repo_root)
+            root_id = _source_root_id_for_commit(repo_root, parent)
     payload: dict[str, Any] = {
         "schema_version": PROVENANCE_SCHEMA_VERSION,
         "framework_version": framework_version(repo_root),
-        "source_commit": source_commit(repo_root),
-        "source_tag": source_tag(repo_root),
-        "source_tree_sha": source_tree_sha(repo_root),
-        "source_dirty": source_dirty(repo_root),
-        "source_root_id": source_root_id(repo_root),
+        "source_commit": commit,
+        "source_tag": tag,
+        "source_tree_sha": tree_sha,
+        "source_dirty": dirty,
+        "source_root_id": root_id,
         "emitter": emitter,
     }
     if package_name:
@@ -310,8 +390,14 @@ def artifact_registry_entry(
     emitter: str,
     source_inputs: list[str] | None = None,
     content_bytes: bytes | None = None,
+    generated_commit_parent: bool = False,
 ) -> dict[str, Any]:
-    provenance = base_provenance(repo_root, emitter=emitter, artifact_path=path)
+    provenance = base_provenance(
+        repo_root,
+        emitter=emitter,
+        artifact_path=path,
+        generated_commit_parent=generated_commit_parent,
+    )
     data = content_bytes if content_bytes is not None else path.read_bytes()
     artifact_hash = sha256_bytes(data)
     return {

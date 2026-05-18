@@ -3,6 +3,7 @@ from pathlib import Path
 
 from _localsetup.v3.provenance import (
     MARKER_LEGACY,
+    base_provenance,
     build_package_marker,
     load_package_marker,
     source_dirty,
@@ -121,6 +122,47 @@ def test_source_dirty_ignores_generated_doc_outputs(tmp_path: Path) -> None:
     (repo / "VERSION").write_text("3.9.1\n", encoding="utf-8")
 
     assert source_dirty(repo) is True
+
+
+def test_generated_artifact_provenance_uses_parent_for_generated_commits(tmp_path: Path) -> None:
+    repo = make_git_repo(tmp_path)
+    generated = repo / "_localsetup" / "docs" / "_generated" / "facts.json"
+    generated.parent.mkdir(parents=True, exist_ok=True)
+    parent = run(repo, "rev-parse", "HEAD")
+
+    generated.write_text("{}\n", encoding="utf-8")
+    run(repo, "add", str(generated.relative_to(repo)))
+    run(repo, "commit", "-q", "-m", "docs: refresh generated artifacts")
+
+    normal = base_provenance(repo, emitter="test")
+    generated_mode = base_provenance(repo, emitter="test", generated_commit_parent=True)
+
+    assert normal["source_commit"] == run(repo, "rev-parse", "HEAD")
+    assert normal["source_dirty"] is False
+    assert generated_mode["source_commit"] == parent
+    assert generated_mode["source_dirty"] is False
+
+
+def test_generated_artifact_provenance_uses_dirty_parent_for_release_sync(tmp_path: Path) -> None:
+    repo = make_git_repo(tmp_path)
+    parent = run(repo, "rev-parse", "HEAD")
+    parent_tree = run(repo, "rev-parse", "HEAD^{tree}")
+
+    (repo / "VERSION").write_text("3.9.1\n", encoding="utf-8")
+    generated = repo / "_localsetup" / "docs" / "SKILLS.md"
+    generated.parent.mkdir(parents=True, exist_ok=True)
+    generated.write_text("generated for release\n", encoding="utf-8")
+    run(repo, "add", "VERSION", str(generated.relative_to(repo)))
+    run(repo, "commit", "-q", "-m", "chore: sync release version 3.9.1")
+
+    normal = base_provenance(repo, emitter="test")
+    generated_mode = base_provenance(repo, emitter="test", generated_commit_parent=True)
+
+    assert normal["source_commit"] == run(repo, "rev-parse", "HEAD")
+    assert normal["source_dirty"] is False
+    assert generated_mode["source_commit"] == parent
+    assert generated_mode["source_tree_sha"] == parent_tree
+    assert generated_mode["source_dirty"] is True
 
 
 def test_package_marker_loads_json_and_legacy_text(tmp_path: Path) -> None:
