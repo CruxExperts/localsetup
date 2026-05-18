@@ -2,40 +2,16 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .adapters import adapter_path_state, adapter_status
+from .adapters import adapter_status, recorded_adapter_status
 from .lockfile import load_json
 from .manifests import load_pack_config, load_platforms
 from .paths import expand_user_path, legacy_target_lockfile_path, repo_path, target_lockfile_path
-from .provenance import is_managed_package, provenance_report
+from .provenance import is_managed_package, package_digest, provenance_report
 from .registry import load_registry
 from .workflows import validate_workflow_catalog
 
 
 SUPPORTED_LEVELS = {"filesystem", "host", "smoke"}
-
-
-def _recorded_adapter_status(lock: dict, global_root: Path) -> list[dict]:
-    recorded = lock.get("adapter_targets") if isinstance(lock, dict) else None
-    if not recorded:
-        recorded = [
-            {"platform": None, "path": path, "mode": lock.get("attach_mode", "symlink"), "global_root": str(global_root)}
-            for path in lock.get("adapter_state", [])
-        ]
-    statuses: list[dict] = []
-    for item in recorded:
-        path = Path(str(item["path"]))
-        expected_global = Path(str(item.get("global_root") or global_root))
-        statuses.append(
-            {
-                "platform": item.get("platform"),
-                "repo_path": str(path),
-                "expected_mode": item.get("mode", lock.get("attach_mode", "symlink")),
-                "expected_packages": item.get("packages", lock.get("adapter_packages", [])),
-                **adapter_path_state(path, expected_global),
-                "verify_rules": [],
-            }
-        )
-    return statuses
 
 
 def verify_install(
@@ -89,7 +65,7 @@ def verify_install(
     adapters = (
         adapter_status(repo_root, home, global_root, platform_ids=platform_ids, target_root=attachment_root)
         if platform_ids is not None
-        else _recorded_adapter_status(lock, global_root)
+        else recorded_adapter_status(lock, global_root)
     )
     expected_by_path = {
         str(item.get("path")): item.get("packages", lock.get("adapter_packages", []))
@@ -141,6 +117,49 @@ def verify_install(
             )
             if not ok:
                 issues.append(f"adapter visible packages do not match selection: {adapter['repo_path']}")
+        integrity_failures = adapter.get("package_integrity_failures", [])
+        if integrity_failures:
+            rule_results.append(
+                {
+                    "rule": "adapter_package_targets_match_managed_root",
+                    "platform": adapter.get("platform"),
+                    "ok": False,
+                    "failure_count": len(integrity_failures),
+                    "path": adapter["repo_path"],
+                }
+            )
+            issues.append(f"adapter package target mismatch: {adapter['repo_path']}")
+        elif adapter.get("is_scoped_symlink_adapter") or adapter.get("is_portable_copy"):
+            rule_results.append(
+                {
+                    "rule": "adapter_package_targets_match_managed_root",
+                    "platform": adapter.get("platform"),
+                    "ok": True,
+                    "path": adapter["repo_path"],
+                }
+            )
+        if expected_mode == "portable" and adapter.get("is_portable_copy"):
+            digest_mismatches: list[str] = []
+            adapter_path = Path(str(adapter["repo_path"]))
+            for package_name in expected_packages or adapter.get("visible_packages", []):
+                package = str(package_name)
+                local_digest = package_digest(adapter_path / package)
+                global_digest = package_digest(global_root / package)
+                if local_digest and global_digest and local_digest != global_digest:
+                    digest_mismatches.append(package)
+            rule_results.append(
+                {
+                    "rule": "portable_package_digests_match_global",
+                    "platform": adapter.get("platform"),
+                    "ok": not digest_mismatches,
+                    "mismatches": digest_mismatches,
+                    "path": adapter["repo_path"],
+                }
+            )
+            if digest_mismatches:
+                issues.append(
+                    f"portable adapter package digest differs from managed library: {adapter['repo_path']}"
+                )
         if "namespace_ls" in rules:
             ok = all(Path(path).name.startswith("ls-") for path in [*lock.get("installed_skills", []), *lock.get("installed_workflows", [])])
             rule_results.append({"rule": "namespace_ls", "platform": adapter.get("platform"), "ok": ok})

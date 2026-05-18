@@ -326,6 +326,20 @@ def artifact_registry_entry(
     }
 
 
+def _record_adapter_integrity_warnings(
+    warnings: list[str], hints: list[str], adapter: dict[str, Any], repo_path: Path
+) -> None:
+    for failure in adapter.get("package_integrity_failures", []):
+        package = failure.get("package")
+        if package:
+            warnings.append(f"scoped adapter package target differs from managed package: {package}")
+            hints.append(f"refresh scoped adapter package link for {package} in {repo_path}")
+        else:
+            reason = failure.get("reason") or "unknown integrity failure"
+            warnings.append(f"scoped adapter integrity failure: {repo_path}: {reason}")
+            hints.append(f"refresh scoped adapter marker and package links in {repo_path}")
+
+
 def provenance_report(
     repo_root: Path,
     *,
@@ -371,6 +385,7 @@ def provenance_report(
 
     for adapter in adapters or []:
         repo_path = Path(str(adapter.get("repo_path")))
+        _record_adapter_integrity_warnings(warnings, hints, adapter, repo_path)
         if adapter.get("points_to_global"):
             adapter["provenance_current"] = "global-managed-package"
         elif adapter.get("is_portable_copy"):

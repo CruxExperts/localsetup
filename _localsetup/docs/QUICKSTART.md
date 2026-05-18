@@ -92,7 +92,7 @@ Select skills by preset, pack, taxonomy class, tag, individual skill, or exclusi
 localsetup install --tools codex --preset suggested --skill-classes development --skill-tags git --skills ls-context --exclude-skills ls-linux-patcher --yes
 ```
 
-The selector flags are additive except for `--exclude-skills`. Presets are `core`, `suggested`, `all`, and `custom`; automation defaults to `core` when no selector is supplied. `suggested` starts with `core` plus repo-detected additions, while `custom` lets the named packs, classes, tags, and skills define the footprint.
+The selector flags are additive except for `--exclude-skills`. Presets are `core`, `suggested`, `all`, and `custom`; automation defaults to `core` when no selector is supplied. `suggested` starts with `core` plus repo-detected additions, while `custom` lets the named packs, classes, tags, and skills define the footprint. Exclusions do not remove skills required by a selected workflow.
 
 For a full local setup with all shipped skill and workflow packs attached to Codex, Kilo, and OpenCode:
 

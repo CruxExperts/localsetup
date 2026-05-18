@@ -182,6 +182,41 @@ def test_v3_selection_resolves_preset_classes_tags_skills_and_exclusions(tmp_pat
     assert plan.rollback_metadata["selectors"]["skill_tags"] == ["git"]
 
 
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    [
+        ({"preset": "unknown"}, "unknown preset: unknown"),
+        ({"packs": ["unknown"]}, "unknown pack"),
+        ({"skill_classes": ["unknown"]}, "unknown skill class"),
+        ({"skill_tags": ["unknown"]}, "unknown skill tag"),
+        ({"skills": ["unknown"]}, "unknown skill selector: unknown"),
+        ({"exclude_skills": ["unknown"]}, "unknown excluded skill: unknown"),
+    ],
+)
+def test_v3_selection_rejects_unknown_selectors(tmp_path: Path, kwargs: dict, message: str) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+
+    with pytest.raises(ValueError, match=message):
+        build_install_plan(root, home=home, **kwargs)
+
+
+def test_v3_selection_keeps_workflow_required_skills_after_exclusion(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+
+    plan = build_install_plan(
+        root,
+        home=home,
+        packs=["publishing"],
+        exclude_skills=["ls-framework-audit"],
+    )
+
+    assert "ls-workflow-pipeline-pre-publish" in plan.rollback_metadata["workflows"]
+    assert "ls-framework-audit" in plan.rollback_metadata["skills"]
+    assert plan.rollback_metadata["selectors"]["exclude_skills"] == ["ls-framework-audit"]
+
+
 def test_v3_scoped_adapter_exposes_only_selected_packages_even_when_global_has_more(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
@@ -195,6 +230,72 @@ def test_v3_scoped_adapter_exposes_only_selected_packages_even_when_global_has_m
     assert_scoped_adapter(adapter, "ls-context")
     assert not (adapter / "ls-nodejs-nextjs").exists()
     assert verify_install(root, home, platform_ids=["codex"])["ok"] is True
+    doctor = run_doctor(root, home=home)
+    assert not any(
+        artifact["kind"] == "unmanaged_adapter" and Path(artifact["path"]) == adapter
+        for artifact in doctor["legacy"]["artifacts"]
+    )
+
+
+def test_v3_scoped_adapter_detects_tampered_child_symlink(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+
+    apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"]), home=home)
+
+    adapter = root / ".codex" / "skills"
+    bad_target = tmp_path / "elsewhere" / "ls-context"
+    bad_target.mkdir(parents=True)
+    (bad_target / "SKILL.md").write_text("---\nname: ls-context\n---\n", encoding="utf-8")
+    (adapter / "ls-context").unlink()
+    (adapter / "ls-context").symlink_to(bad_target, target_is_directory=True)
+
+    verify = verify_install(root, home, platform_ids=["codex"])
+    doctor = run_doctor(root, home=home, platform_ids=["codex"])
+
+    assert verify["ok"] is False
+    assert any("adapter package target mismatch" in issue for issue in verify["issues"])
+    assert any(
+        warning == "scoped adapter package target differs from managed package: ls-context"
+        for warning in verify["provenance_warnings"]
+    )
+    assert doctor["ok"] is False
+    assert any("adapter package target mismatch (ls-context)" in blocker for blocker in doctor["blockers"])
+
+
+@pytest.mark.parametrize(
+    ("attach_mode", "marker_text", "reason"),
+    [
+        ("symlink", "{not-json", "adapter marker is not valid JSON"),
+        ("symlink", '{"version": 1}', "adapter marker has unsupported mode"),
+        ("symlink", '{"mode": "elsewhere"}', "adapter marker has unsupported mode"),
+        ("portable", "{not-json", "adapter marker is not valid JSON"),
+        ("portable", '{"version": 1}', "adapter marker has unsupported mode"),
+        ("portable", '{"mode": "elsewhere"}', "adapter marker has unsupported mode"),
+    ],
+)
+def test_v3_adapter_invalid_marker_fails_integrity(
+    tmp_path: Path, attach_mode: str, marker_text: str, reason: str
+) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+
+    apply_plan(
+        root,
+        build_install_plan(root, home=home, packs=["core"], attach_mode=attach_mode, platform_ids=["codex"]),
+        home=home,
+    )
+    adapter = root / ".codex" / "skills"
+    (adapter / ".localsetup-adapter.json").write_text(marker_text, encoding="utf-8")
+
+    verify = verify_install(root, home, platform_ids=["codex"])
+    doctor = run_doctor(root, home=home)
+
+    assert verify["ok"] is False
+    assert any(reason in str(failure.get("reason")) for failure in verify["adapters"][0]["package_integrity_failures"])
+    assert any("scoped adapter integrity failure" in warning and reason in warning for warning in verify["provenance_warnings"])
+    assert doctor["ok"] is False
+    assert any("adapter package target mismatch (adapter marker)" in blocker for blocker in doctor["blockers"])
 
 
 def test_v3_legacy_managed_global_symlink_is_migrated_to_scoped_adapter(tmp_path: Path) -> None:
@@ -230,6 +331,26 @@ def test_v3_portable_mode_uses_managed_copies(tmp_path: Path) -> None:
 
     rolled = rollback(root, home)
     assert rolled["removed"]
+
+
+def test_v3_portable_adapter_digest_drift_is_reported(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+
+    apply_plan(
+        root,
+        build_install_plan(root, home=home, packs=["core"], attach_mode="portable", platform_ids=["codex"]),
+        home=home,
+    )
+    adapter = root / ".codex" / "skills"
+    with (adapter / "ls-context" / "SKILL.md").open("a", encoding="utf-8") as handle:
+        handle.write("\n# local portable drift\n")
+
+    verify = verify_install(root, home, platform_ids=["codex"])
+
+    assert verify["ok"] is False
+    assert any("portable adapter package digest differs" in issue for issue in verify["issues"])
+    assert "portable adapter package differs from global package: ls-context" in verify["provenance_warnings"]
 
 
 def test_v3_platform_selector_limits_adapters(tmp_path: Path) -> None:
@@ -1043,6 +1164,9 @@ def test_v3_config_file_and_cli_precedence(tmp_path: Path) -> None:
         packs=["core"],
         preset="custom",
         skills=["ls-test-runner"],
+        skill_classes=["quality"],
+        skill_tags=["testing"],
+        exclude_skills=["ls-context-index"],
         attach_mode="symlink",
         dependency_mode="managed-venv",
     )
@@ -1060,7 +1184,9 @@ def test_v3_config_file_and_cli_precedence(tmp_path: Path) -> None:
     assert merged.packs == ["core"]
     assert merged.preset == "custom"
     assert merged.skills == ["ls-test-runner"]
-    assert merged.skill_classes == ["operations"]
+    assert merged.skill_classes == ["quality"]
+    assert merged.skill_tags == ["testing"]
+    assert merged.exclude_skills == ["ls-context-index"]
     assert merged.attach_mode == "symlink"
     assert merged.target_directory == "/tmp/localsetup-target"
     assert merged.data_root == "/tmp/localsetup-data"
@@ -2858,6 +2984,15 @@ def test_wizard_explicit_target_without_platforms_defaults_global_only(tmp_path:
 def test_v3_migration_scanner_and_hook_gate(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     (root / "README.md").write_text("Use localsetup-context during migration.\n", encoding="utf-8")
+    alias_doc = root / "_localsetup" / "docs" / "_generated" / "skill_aliases.json"
+    alias_doc.write_text('{"localsetup-context": "ls-context"}\n', encoding="utf-8")
+    pack_doc = root / "_localsetup" / "docs" / "_generated" / "skill-packs.md"
+    pack_doc.write_text("| `core` | `skill` | `ls-context` | `localsetup-context` |\n", encoding="utf-8")
+    migration_doc = root / "_localsetup" / "docs" / "migration" / "v2-to-v3-skill-map.md"
+    migration_doc.write_text("| `localsetup-context` | `ls-context` |\n", encoding="utf-8")
+    private_backup = root / ".localsetup" / "backups" / "audit" / "localsetup.lock.json"
+    private_backup.parent.mkdir(parents=True)
+    private_backup.write_text('{"aliases": {"localsetup-context": "ls-context"}}\n', encoding="utf-8")
     runtime_note = root / ".codex" / "runs" / "20260512-note.md"
     runtime_note.parent.mkdir(parents=True)
     runtime_note.write_text("Use localsetup-context in runtime notes only.\n", encoding="utf-8")
@@ -2867,9 +3002,37 @@ def test_v3_migration_scanner_and_hook_gate(tmp_path: Path) -> None:
 
     findings = scan_legacy_references(root)
     paths = {finding["path"] for finding in findings}
+    by_path = {finding["path"]: finding for finding in findings}
     assert "README.md" in paths
+    assert by_path["README.md"]["category"] == "actionable"
+    assert by_path["README.md"]["actionable"] is True
+    assert by_path["_localsetup/docs/_generated/skill_aliases.json"]["category"] == "expected_alias_surface"
+    assert by_path["_localsetup/docs/_generated/skill_aliases.json"]["actionable"] is False
+    assert by_path["_localsetup/docs/_generated/skill-packs.md"]["category"] == "expected_alias_surface"
+    assert by_path["_localsetup/docs/migration/v2-to-v3-skill-map.md"]["category"] == "expected_migration_map"
+    assert by_path[".localsetup/backups/audit/localsetup.lock.json"]["category"] == "ignored_private_backup"
+    assert all({"path", "line", "text"} <= set(finding) for finding in findings)
+    assert {finding["path"] for finding in scan_legacy_references(root, include_expected=False)} == {"README.md"}
     assert ".codex/runs/20260512-note.md" not in paths
     assert ".localsetup/state/codex-heartbeat/latest.json" not in paths
+
+    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+    plain = subprocess.run(
+        [sys.executable, str(tool), "--source-root", str(root), "scan-migration"],
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    with_expected = subprocess.run(
+        [sys.executable, str(tool), "--source-root", str(root), "scan-migration", "--include-expected"],
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    assert {finding["path"] for finding in json.loads(plain.stdout)["findings"]} == {"README.md"}
+    assert ".localsetup/backups/audit/localsetup.lock.json" in {
+        finding["path"] for finding in json.loads(with_expected.stdout)["findings"]
+    }
 
     gate = run_maintainer_gate(root, tmp_path / "artifact.tar.gz")
     assert gate["ok"] is True

@@ -120,7 +120,7 @@ cd /path/to/repo
 - `--skills LIST`  - Comma-separated individual skill ids to include.
 - `--skill-classes LIST`  - Comma-separated taxonomy classes to include.
 - `--skill-tags LIST`  - Comma-separated taxonomy tags to include.
-- `--exclude-skills LIST`  - Comma-separated individual skill ids to remove from the resolved selection.
+- `--exclude-skills LIST`  - Comma-separated individual skill ids to remove from the resolved selection unless a selected workflow requires them.
 - `--yes`  - Legacy accepted flag for interactive installs. For automation, combine with `--non-interactive`.
 - `--non-interactive`  - Automation mode. Requires `--yes` and preserves machine-readable output.
 - `--global`  - Removed legacy flag; v3 installs the managed home library by default and exits with an explicit error if this flag is supplied.

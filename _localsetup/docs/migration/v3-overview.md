@@ -69,14 +69,17 @@ uses `core`; optional packs can be requested with `--packs`.
 
 Pack entries can select both skills and workflow packages. Workflow packages are listed under `workflow_packs` and may auto-include required capability skills through their `workflow.yaml` manifests.
 
-Migration scanning reports remaining `localsetup-*` references outside the
-source skill corpus so maintainers can decide whether each reference should stay
-as historical documentation or move to the v3 `ls-*` name.
+Migration scanning reports remaining actionable `localsetup-*` references outside
+the source skill corpus so maintainers can decide whether each reference should
+stay as historical documentation or move to the v3 `ls-*` name. Use
+`localsetup scan-migration --include-expected` when auditing intentional
+compatibility surfaces and private backup snapshots.
 
 In the source-only v3 tree, expected remaining scan findings are limited to
-generated alias metadata and the v2-to-v3 skill map. Those entries are
-intentional historical references used by migration reports and compatibility
-docs; new source skills and user-facing setup docs should use `ls-*` names.
+generated alias metadata, the v2-to-v3 skill map, and ignored private backups.
+Those entries are intentional historical references used by migration reports,
+compatibility docs, or local recovery evidence; new source skills and
+user-facing setup docs should use `ls-*` names.
 
 `migrate` is conservative: it backs up first, renames only known managed
 `localsetup-*` global skill artifacts through the v2-to-v3 alias map, and

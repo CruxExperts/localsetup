@@ -9,7 +9,7 @@ import subprocess
 import sys
 import time
 
-from .adapters import adapter_path_state, adapter_status
+from .adapters import adapter_path_state, adapter_status, recorded_adapter_status
 from .apply import apply_plan
 from .config import DEPENDENCY_MODES, InstallConfig, config_to_dict, load_install_config, merge_cli_config
 from .context import build_agent_context, render_markdown_report
@@ -50,7 +50,6 @@ from .skills import load_skill_catalog, validate_skill_catalog
 from .skills import parse_skill_frontmatter
 from .workflows import load_workflow_catalog, validate_workflow_catalog
 from .verify import verify_install
-from .verify import _recorded_adapter_status
 from .trace import write_trace
 from .wizard import run_wizard
 from .versioning import (
@@ -404,7 +403,8 @@ def _main(argv: list[str] | None = None) -> int:
     sbom_p.add_argument("--out", required=True)
     sbom_p.add_argument("--installed", action="store_true")
     sbom_p.add_argument("--target-directory", default=argparse.SUPPRESS)
-    sub.add_parser("scan-migration")
+    scan_migration_p = sub.add_parser("scan-migration")
+    scan_migration_p.add_argument("--include-expected", action="store_true")
     audit_global_p = sub.add_parser("audit-global-first")
     audit_global_p.add_argument("--target-directory", default=argparse.SUPPRESS)
     sub.add_parser("validate-catalog")
@@ -699,7 +699,7 @@ def _main(argv: list[str] | None = None) -> int:
         adapters = (
             adapter_status(root, home, global_root, platform_ids=config.platforms, target_root=target_root)
             if config.platforms is not None
-            else _recorded_adapter_status(lock, global_root)
+            else recorded_adapter_status(lock, global_root)
         )
         payload = provenance_report(
             root,
@@ -941,7 +941,7 @@ def _main(argv: list[str] | None = None) -> int:
         return 0 if not issues else 1
 
     if args.cmd == "scan-migration":
-        print(json.dumps({"findings": scan_legacy_references(root)}, indent=2))
+        print(json.dumps({"findings": scan_legacy_references(root, include_expected=args.include_expected)}, indent=2))
         return 0
 
     if args.cmd == "audit-global-first":

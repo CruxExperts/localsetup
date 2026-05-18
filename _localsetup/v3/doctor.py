@@ -5,7 +5,7 @@ import platform
 from pathlib import Path
 import sys
 
-from .adapters import adapter_status, adapter_targets
+from .adapters import adapter_status, adapter_targets, recorded_adapter_status
 from .dependencies import dependency_status, has_venv_module, pip_available, tool_status
 from .inventory import install_inventory
 from .manifests import load_pack_config, load_platforms
@@ -109,7 +109,13 @@ def run_doctor(
         warnings.extend(dep_status["warnings"])
 
     global_root = expand_user_path(pack.global_root, home)
-    adapters = adapter_status(repo_root, home, global_root, platform_ids=platform_ids, target_root=attachment_root)
+    lock_path = attachment_root / ".localsetup" / "lock.json"
+    lock = load_json(lock_path)
+    adapters = (
+        adapter_status(repo_root, home, global_root, platform_ids=platform_ids, target_root=attachment_root)
+        if platform_ids is not None
+        else recorded_adapter_status(lock, global_root)
+    )
     collisions: list[dict] = []
     for adapter in adapters:
         if adapter["collision_reason"]:
@@ -120,6 +126,12 @@ def run_doctor(
             }
             collisions.append(collision)
             blockers.append(f"adapter collision ({adapter['collision_reason']}): {adapter['repo_path']}")
+        for failure in adapter.get("package_integrity_failures", []):
+            subject = failure.get("package") or "adapter marker"
+            blockers.append(
+                "adapter package target mismatch "
+                f"({subject}): {adapter['repo_path']}"
+            )
 
     writable_paths = [_writable_status(global_root), _writable_status(home), _writable_status(attachment_root)]
     for target in adapter_targets(repo_root, home, platform_ids=platform_ids, target_root=attachment_root):
@@ -135,10 +147,9 @@ def run_doctor(
     if legacy["artifacts"]:
         warnings.append("legacy v2 artifacts detected; run migrate for a conservative report and backup")
     registry_path = expand_user_path(pack.global_registry, home)
-    lock_path = attachment_root / ".localsetup" / "lock.json"
     provenance = provenance_report(
         repo_root,
-        lock=load_json(lock_path),
+        lock=lock,
         registry=load_registry(registry_path) if registry_path.exists() else {},
         global_root=global_root,
         adapters=adapters,

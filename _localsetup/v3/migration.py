@@ -4,7 +4,7 @@ from pathlib import Path
 import shutil
 from datetime import datetime, timezone
 
-from .adapters import adapter_targets
+from .adapters import ADAPTER_MARKER_JSON, adapter_targets
 from .aliases import collect_skill_aliases
 from .lockfile import save_json
 from .manifests import load_pack_config
@@ -27,7 +27,26 @@ def _is_runtime_skip_path(rel: Path) -> bool:
     return any(rel.parts[: len(prefix)] == prefix for prefix in RUNTIME_SKIP_PREFIXES)
 
 
-def scan_legacy_references(repo_root: Path, needle: str = "localsetup-") -> list[dict]:
+def _legacy_reference_category(rel: Path) -> str:
+    parts = rel.parts
+    if len(parts) >= 2 and parts[:2] == (".localsetup", "backups"):
+        return "ignored_private_backup"
+    if rel.as_posix() in {
+        "_localsetup/docs/_generated/skill_aliases.json",
+        "_localsetup/docs/_generated/skill-packs.md",
+    }:
+        return "expected_alias_surface"
+    if rel.as_posix() == "_localsetup/docs/migration/v2-to-v3-skill-map.md":
+        return "expected_migration_map"
+    return "actionable"
+
+
+def scan_legacy_references(
+    repo_root: Path,
+    needle: str = "localsetup-",
+    *,
+    include_expected: bool = True,
+) -> list[dict]:
     findings: list[dict] = []
     legacy_skill_names = set(collect_skill_aliases(repo_root / "_localsetup" / "skills"))
     for path in sorted(repo_root.rglob("*")):
@@ -52,7 +71,19 @@ def scan_legacy_references(repo_root: Path, needle: str = "localsetup-") -> list
             if needle in line:
                 if legacy_skill_names and not any(name in line for name in legacy_skill_names):
                     continue
-                findings.append({"path": str(rel), "line": line_no, "text": line.strip()[:240]})
+                category = _legacy_reference_category(rel)
+                actionable = category == "actionable"
+                if not include_expected and not actionable:
+                    continue
+                findings.append(
+                    {
+                        "path": str(rel),
+                        "line": line_no,
+                        "text": line.strip()[:240],
+                        "category": category,
+                        "actionable": actionable,
+                    }
+                )
     return findings
 
 
@@ -85,7 +116,12 @@ def detect_legacy_artifacts(
         path = target["repo_path"]
         if not (path.exists() or path.is_symlink()):
             continue
-        if path.is_dir() and not path.is_symlink() and not (path / ".localsetup-portable").exists():
+        if (
+            path.is_dir()
+            and not path.is_symlink()
+            and not (path / ".localsetup-portable").exists()
+            and not (path / ADAPTER_MARKER_JSON).exists()
+        ):
             artifacts.append(_artifact("unmanaged_adapter", path, False, {"platform": target["platform"]}))
 
     for rel in [".deps-missing", "_localsetup/.deps-missing", "_localsetup/tools/deploy", "_localsetup/tools/deploy.py", "_localsetup/tools/deploy.ps1"]:

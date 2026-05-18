@@ -133,7 +133,7 @@ Tune the skill footprint by preset, pack, taxonomy class, tag, individual skill,
 localsetup install --tools codex --preset suggested --skill-classes development --skill-tags git --skills ls-context --exclude-skills ls-linux-patcher --yes
 ```
 
-Presets are `core`, `suggested`, `all`, and `custom`. `core` is the conservative default for automation when no selector is provided; `suggested` starts with `core` plus repo-detected categories; `all` installs every shipped skill and workflow package; `custom` relies on the packs, classes, tags, and skills you name.
+Presets are `core`, `suggested`, `all`, and `custom`. `core` is the conservative default for automation when no selector is provided; `suggested` starts with `core` plus repo-detected categories; `all` installs every shipped skill and workflow package; `custom` relies on the packs, classes, tags, and skills you name. `--exclude-skills` removes named skills from the resolved selection unless a selected workflow requires them.
 
 Install every shipped skill and workflow package for Codex, Kilo, and OpenCode, while preparing the managed Python dependency environment:
 

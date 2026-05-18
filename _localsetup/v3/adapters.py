@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from .manifests import load_platforms
@@ -79,6 +80,89 @@ def _visible_adapter_packages(repo_path: Path, global_root: Path) -> list[str]:
     return names
 
 
+def _adapter_marker_state(repo_path: Path) -> dict:
+    marker = repo_path / ADAPTER_MARKER_JSON
+    if not marker.exists():
+        return {"exists": False, "mode": None, "error": None}
+    try:
+        payload = json.loads(marker.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {"exists": True, "mode": None, "error": "adapter marker is not valid JSON"}
+    if not isinstance(payload, dict):
+        return {"exists": True, "mode": None, "error": "adapter marker is not a JSON object"}
+    mode = payload.get("mode")
+    if mode not in {"symlink", "portable"}:
+        return {
+            "exists": True,
+            "mode": str(mode) if mode is not None else None,
+            "error": "adapter marker has unsupported mode",
+        }
+    return {"exists": True, "mode": str(mode), "error": None}
+
+
+def _adapter_package_integrity(repo_path: Path, global_root: Path) -> list[dict]:
+    if not repo_path.is_dir() or repo_path.is_symlink():
+        return []
+    marker = _adapter_marker_state(repo_path)
+    marker_mode = marker["mode"]
+    if marker["exists"] and marker["error"]:
+        return [
+            {
+                "package": None,
+                "path": str(repo_path / ADAPTER_MARKER_JSON),
+                "expected_target": None,
+                "mode": marker_mode,
+                "ok": False,
+                "reason": marker["error"],
+            }
+        ]
+    if marker_mode not in {"symlink", "portable"}:
+        return []
+    rows: list[dict] = []
+    for child in sorted(repo_path.iterdir()):
+        if child.name.startswith("."):
+            continue
+        expected = global_root / child.name
+        row = {
+            "package": child.name,
+            "path": str(child),
+            "expected_target": str(expected),
+            "mode": marker_mode,
+            "ok": False,
+            "reason": None,
+        }
+        if marker_mode == "portable":
+            row["is_symlink"] = child.is_symlink()
+            row["is_directory"] = child.is_dir()
+            row["resolved_target"] = str(child.resolve(strict=False))
+            if child.is_dir() and not child.is_symlink():
+                row["ok"] = True
+            else:
+                row["reason"] = "portable adapter package is not a directory copy"
+        elif child.is_symlink():
+            resolved = _symlink_target(child)
+            expected_resolved = expected.resolve(strict=False)
+            row["is_symlink"] = True
+            row["is_directory"] = child.is_dir()
+            row["resolved_target"] = str(resolved) if resolved else None
+            if resolved == expected_resolved:
+                row["ok"] = True
+            else:
+                row["reason"] = "package symlink target differs from managed package"
+        elif child.is_dir():
+            row["is_symlink"] = False
+            row["is_directory"] = True
+            row["resolved_target"] = str(child.resolve(strict=False))
+            row["reason"] = "symlink adapter package is not a symlink"
+        else:
+            row["is_symlink"] = child.is_symlink()
+            row["is_directory"] = child.is_dir()
+            row["resolved_target"] = str(child.resolve(strict=False))
+            row["reason"] = "adapter package is not a supported filesystem node"
+        rows.append(row)
+    return rows
+
+
 def adapter_path_state(repo_path: Path, global_root: Path, *, known_global_roots: list[Path] | None = None) -> dict:
     managed_roots = [global_root, *(known_global_roots or [])]
     resolved_roots = {root.resolve(strict=False) for root in managed_roots}
@@ -119,6 +203,8 @@ def adapter_path_state(repo_path: Path, global_root: Path, *, known_global_roots
         collision_reason = "unmanaged adapter directory"
     elif is_other:
         collision_reason = "unsupported filesystem node"
+    package_integrity = _adapter_package_integrity(repo_path, global_root)
+    package_integrity_failures = [row for row in package_integrity if not row.get("ok")]
     return {
         "exists": exists,
         "is_symlink": is_symlink,
@@ -133,6 +219,9 @@ def adapter_path_state(repo_path: Path, global_root: Path, *, known_global_roots
         "is_other": is_other,
         "collision_reason": collision_reason,
         "visible_packages": _visible_adapter_packages(repo_path, global_root),
+        "package_integrity": package_integrity,
+        "package_integrity_ok": not package_integrity_failures,
+        "package_integrity_failures": package_integrity_failures,
     }
 
 
@@ -158,3 +247,29 @@ def adapter_status(
             }
         )
     return status
+
+
+def recorded_adapter_status(lock: dict, global_root: Path) -> list[dict]:
+    if not isinstance(lock, dict):
+        lock = {}
+    recorded = lock.get("adapter_targets") if isinstance(lock, dict) else None
+    if not recorded:
+        recorded = [
+            {"platform": None, "path": path, "mode": lock.get("attach_mode", "symlink"), "global_root": str(global_root)}
+            for path in lock.get("adapter_state", [])
+        ]
+    statuses: list[dict] = []
+    for item in recorded:
+        path = Path(str(item["path"]))
+        expected_global = Path(str(item.get("global_root") or global_root))
+        statuses.append(
+            {
+                "platform": item.get("platform"),
+                "repo_path": str(path),
+                "expected_mode": item.get("mode", lock.get("attach_mode", "symlink")),
+                "expected_packages": item.get("packages", lock.get("adapter_packages", [])),
+                **adapter_path_state(path, expected_global),
+                "verify_rules": [],
+            }
+        )
+    return statuses

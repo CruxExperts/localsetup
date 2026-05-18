@@ -66,7 +66,8 @@ Options:
   --skill-classes LIST Skill taxonomy classes to include. Comma-separated.
   --skill-tags LIST    Skill taxonomy tags to include. Comma-separated.
   --exclude-skills LIST
-                       Individual skill ids to exclude from the resolved selection. Comma-separated.
+                       Individual skill ids to exclude unless required by a selected workflow.
+                       Comma-separated.
   --mode MODE          symlink or portable. Default: symlink.
   --install-deps       Create/update the managed venv and install _localsetup/requirements.txt.
   --no-register-shell  Do not create/update ~/.local/bin/localsetup.
