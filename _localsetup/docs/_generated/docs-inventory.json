@@ -113,7 +113,7 @@
     "workflow"
   ],
   "counts": {
-    "docs": 345,
+    "docs": 339,
     "framework_docs": 57,
     "generated_docs": 4,
     "platforms": 6,
@@ -3290,66 +3290,6 @@
       "version": ""
     },
     {
-      "class": "other",
-      "has_frontmatter": false,
-      "managed_blocks": [],
-      "owner_package": "",
-      "owner_skill": "",
-      "path": "_localsetup/tools/agentq_transport_client/docs/ADMIN_GUIDE.md",
-      "status": "",
-      "version": ""
-    },
-    {
-      "class": "other",
-      "has_frontmatter": false,
-      "managed_blocks": [],
-      "owner_package": "",
-      "owner_skill": "",
-      "path": "_localsetup/tools/agentq_transport_client/docs/API_EXAMPLES.md",
-      "status": "",
-      "version": ""
-    },
-    {
-      "class": "other",
-      "has_frontmatter": false,
-      "managed_blocks": [],
-      "owner_package": "",
-      "owner_skill": "",
-      "path": "_localsetup/tools/agentq_transport_client/docs/DEFERRED.md",
-      "status": "",
-      "version": ""
-    },
-    {
-      "class": "other",
-      "has_frontmatter": false,
-      "managed_blocks": [],
-      "owner_package": "",
-      "owner_skill": "",
-      "path": "_localsetup/tools/agentq_transport_client/docs/SHIP_GATE_CHECKLIST.md",
-      "status": "",
-      "version": ""
-    },
-    {
-      "class": "other",
-      "has_frontmatter": false,
-      "managed_blocks": [],
-      "owner_package": "",
-      "owner_skill": "",
-      "path": "_localsetup/tools/agentq_transport_client/docs/TROUBLESHOOTING.md",
-      "status": "",
-      "version": ""
-    },
-    {
-      "class": "other",
-      "has_frontmatter": false,
-      "managed_blocks": [],
-      "owner_package": "",
-      "owner_skill": "",
-      "path": "_localsetup/tools/agentq_transport_client/docs/USER_GUIDE.md",
-      "status": "",
-      "version": ""
-    },
-    {
       "class": "skill",
       "has_frontmatter": true,
       "managed_blocks": [],
@@ -3620,16 +3560,16 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "be3542391079d2dfb8dc44a2c7c0c7cc8ab096488d607e9f9ea1a66c57427634",
+    "artifact_sha256": "266df80d0a15c0f2e59f4cc1f41ec369fe56d72971a3ce61f086718841128bf7",
     "emitter": "docs-align",
     "framework_version": "3.8.6",
     "schema_version": 1,
-    "source_commit": "cbcec74de9a5135811372877c432106889e1590b",
+    "source_commit": "6e92a875825c5df4fa13c8619163734407c69bed",
     "source_dirty": false,
-    "source_provenance_hash": "44198c3cfa2d9d764eeab6c37363c2c33b0b682d73d13d9a306bf5d3735d1c76",
-    "source_root_id": "4695b91830302e598e88da90f402488f0871858c4726cadb663ebf9aa272d9fb",
+    "source_provenance_hash": "82b823bd56c7874fc142970a3faf1f9188e362f0000363af1cf9726df9283907",
+    "source_root_id": "706c089674121c1048e3a7280029daf7172a9718da1f9c10e8eca2ab5e707d15",
     "source_tag": null,
-    "source_tree_sha": "389398304c67d0e754f41fb58516b61dc2a88928"
+    "source_tree_sha": "64df97fbafe262f71227a667aa744832aa49a2e5"
   },
   "repo": ".",
   "schema_version": "1.0",
