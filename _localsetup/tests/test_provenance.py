@@ -7,6 +7,7 @@ from _localsetup.v3.provenance import (
     build_package_marker,
     load_package_marker,
     source_dirty,
+    source_remote_url,
     source_tag,
 )
 from _localsetup.v3.lockfile import save_json
@@ -122,6 +123,16 @@ def test_source_dirty_ignores_generated_doc_outputs(tmp_path: Path) -> None:
     (repo / "VERSION").write_text("3.9.1\n", encoding="utf-8")
 
     assert source_dirty(repo) is True
+
+
+def test_source_remote_url_is_normalized_for_ci_parity(tmp_path: Path) -> None:
+    repo = make_git_repo(tmp_path)
+
+    run(repo, "remote", "add", "origin", "https://github.com/CruxExperts/localsetup.git")
+    assert source_remote_url(repo) == "https://github.com/CruxExperts/localsetup"
+
+    run(repo, "remote", "set-url", "origin", "git@github.com:CruxExperts/localsetup.git")
+    assert source_remote_url(repo) == "https://github.com/CruxExperts/localsetup"
 
 
 def test_generated_artifact_provenance_uses_parent_for_generated_commits(tmp_path: Path) -> None:

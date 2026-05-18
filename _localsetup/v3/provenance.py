@@ -154,7 +154,13 @@ def source_remote_url(repo_root: Path) -> str | None:
     if completed.returncode != 0:
         return None
     value = completed.stdout.strip()
-    return value or None
+    if not value:
+        return None
+    if value.startswith("git@github.com:"):
+        value = "https://github.com/" + value.removeprefix("git@github.com:")
+    if value.endswith(".git"):
+        value = value[:-4]
+    return value.rstrip("/") or None
 
 
 def framework_version(repo_root: Path) -> str:
