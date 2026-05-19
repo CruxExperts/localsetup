@@ -40,7 +40,7 @@ wheels = [
 
 [[package]]
 name = "localsetup"
-version = "3.8.7"
+version = "3.8.8"
 source = { editable = "." }
 dependencies = [
     { name = "jsonschema" },

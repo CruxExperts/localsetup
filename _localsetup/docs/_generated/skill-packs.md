@@ -1,10 +1,10 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 2f7bb73f05865ce1b6e0cdd011bb9d911109cc3a2a837f46b44ef79448fcea61
+  source_provenance_hash: 557c4f8ad9319299ffa45d42aaf1ebc2dd3396608a3ac935c6784039bb40c8cd
   emitter: generate-docs
-framework_version: 3.8.7
-source_commit: 41438b7412860460a8fb314a41aacb204b58cb5b
+framework_version: 3.8.8
+source_commit: bd0ecb742298f83a3d52066ff5c904e62765033f
 artifact_sha256: 326c60e46af4b70afa5ea452e9174a5964ff572420959e0279b9174f25f90834
 ---
 # Skill And Workflow Packs
