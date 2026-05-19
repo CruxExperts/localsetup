@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
+
+from .git_subprocess import run_git
 
 
 def source_commit(repo_root: Path) -> str:
-    completed = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=repo_root,
+    completed = run_git(
+        repo_root,
+        ["rev-parse", "HEAD"],
         text=True,
         capture_output=True,
         check=False,
@@ -18,9 +19,9 @@ def source_commit(repo_root: Path) -> str:
 
 
 def source_tag(repo_root: Path) -> str | None:
-    completed = subprocess.run(
-        ["git", "describe", "--tags", "--exact-match", "HEAD"],
-        cwd=repo_root,
+    completed = run_git(
+        repo_root,
+        ["describe", "--tags", "--exact-match", "HEAD"],
         text=True,
         capture_output=True,
         check=False,

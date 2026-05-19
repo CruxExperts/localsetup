@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
+
+from .git_subprocess import run_git
 
 
 def tracked_files(repo_root: Path) -> list[str]:
-    completed = subprocess.run(
-        ["git", "ls-files", "--cached"],
-        cwd=repo_root,
+    completed = run_git(
+        repo_root,
+        ["ls-files", "--cached"],
         text=True,
         capture_output=True,
         check=False,

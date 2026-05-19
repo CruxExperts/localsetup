@@ -7,7 +7,6 @@ import argparse
 import json
 import re
 import struct
-import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -20,6 +19,7 @@ _ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
+from _localsetup.v3.git_subprocess import run_git
 from _localsetup.v3.manifests import load_pack_config, load_platforms
 from _localsetup.v3.provenance import json_with_provenance, markdown_with_provenance, base_provenance
 from _localsetup.v3.skills import load_skill_catalog, parse_skill_frontmatter, skill_taxonomy_payload
@@ -146,9 +146,9 @@ def _markdown_files(repo_root: Path) -> list[Path]:
     files: list[Path] = []
     candidates: list[Path]
     if (repo_root / ".git").exists():
-        completed = subprocess.run(
-            ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", "*.md"],
-            cwd=repo_root,
+        completed = run_git(
+            repo_root,
+            ["ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", "*.md"],
             text=False,
             capture_output=True,
             check=False,

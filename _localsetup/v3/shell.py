@@ -5,7 +5,8 @@ from pathlib import Path
 import shlex
 import shutil
 import stat
-import subprocess
+
+from .git_subprocess import run_git
 
 
 SHIM_NAME = "localsetup"
@@ -130,9 +131,9 @@ def shell_registration_status(source_root: Path, *, home: Path, path_env: str | 
 def detect_invocation_target(cwd: Path | None = None) -> Path:
     start = (cwd or Path.cwd()).resolve(strict=False)
     try:
-        completed = subprocess.run(
-            ["git", "rev-parse", "--show-toplevel"],
-            cwd=start,
+        completed = run_git(
+            start,
+            ["rev-parse", "--show-toplevel"],
             text=True,
             capture_output=True,
             check=False,

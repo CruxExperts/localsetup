@@ -1,6 +1,9 @@
+import os
 import subprocess
 from pathlib import Path
 
+from _localsetup.v3.baseline import tracked_files
+from _localsetup.v3.git_subprocess import GIT_ENV_TO_SCRUB
 from _localsetup.v3.provenance import (
     MARKER_LEGACY,
     base_provenance,
@@ -13,10 +16,19 @@ from _localsetup.v3.provenance import (
 from _localsetup.v3.lockfile import save_json
 
 
+def clean_git_env(**overrides: str) -> dict[str, str]:
+    env = os.environ.copy()
+    for name in GIT_ENV_TO_SCRUB:
+        env.pop(name, None)
+    env.update(overrides)
+    return env
+
+
 def run(repo: Path, *args: str) -> str:
     completed = subprocess.run(
         ["git", *args],
         cwd=repo,
+        env=clean_git_env(),
         text=True,
         capture_output=True,
         check=True,
@@ -37,6 +49,25 @@ def make_git_repo(tmp_path: Path) -> Path:
     run(repo, "add", ".")
     run(repo, "commit", "-q", "-m", "chore: initial")
     return repo
+
+
+def make_poison_index(tmp_path: Path) -> tuple[Path, Path]:
+    alien = tmp_path / "alien"
+    alien.mkdir()
+    run(alien, "init", "-q")
+    plugin_file = alien / ".agents" / "plugins" / "marketplace.json"
+    plugin_file.parent.mkdir(parents=True)
+    plugin_file.write_text('{"name": "plugin-marketplace"}\n', encoding="utf-8")
+    poison_index = tmp_path / "poison.index"
+    subprocess.run(
+        ["git", "add", "-A"],
+        cwd=alien,
+        env=clean_git_env(GIT_INDEX_FILE=str(poison_index)),
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    return poison_index, alien
 
 
 def test_provenance_payload_clean_dirty_and_tagged_git_state(tmp_path: Path) -> None:
@@ -123,6 +154,44 @@ def test_source_dirty_ignores_generated_doc_outputs(tmp_path: Path) -> None:
     (repo / "VERSION").write_text("3.9.1\n", encoding="utf-8")
 
     assert source_dirty(repo) is True
+
+
+def test_repo_git_probes_ignore_inherited_scratch_index(tmp_path: Path, monkeypatch) -> None:
+    repo = make_git_repo(tmp_path)
+    package = repo / "_localsetup" / "skills" / "ls-demo"
+    expected_commit = run(repo, "rev-parse", "HEAD")
+    expected_tree = run(repo, "rev-parse", "HEAD^{tree}")
+    poison_index, alien = make_poison_index(tmp_path)
+
+    raw_ls_files = subprocess.run(
+        ["git", "ls-files", "--cached"],
+        cwd=repo,
+        env=clean_git_env(GIT_INDEX_FILE=str(poison_index)),
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    assert ".agents/plugins/marketplace.json" in raw_ls_files.stdout
+
+    monkeypatch.setenv("GIT_INDEX_FILE", str(poison_index))
+    monkeypatch.setenv("GIT_DIR", str(alien / ".git"))
+    monkeypatch.setenv("GIT_WORK_TREE", str(alien))
+
+    marker = build_package_marker(
+        repo,
+        package,
+        package_name="ls-demo",
+        package_type="skill",
+        source_path=package,
+        emitter="test",
+        installed_at=False,
+    )
+
+    assert marker["source_commit"] == expected_commit
+    assert marker["source_tree_sha"] == expected_tree
+    assert marker["source_dirty"] is False
+    assert "VERSION" in tracked_files(repo)
+    assert ".agents/plugins/marketplace.json" not in tracked_files(repo)
 
 
 def test_source_remote_url_is_normalized_for_ci_parity(tmp_path: Path) -> None:

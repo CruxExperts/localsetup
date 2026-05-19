@@ -10,6 +10,8 @@ from typing import Any
 
 import yaml
 
+from .git_subprocess import run_git
+
 
 FINALIZER_CONFIG = "config/localsetup_finalizer.yaml"
 STATE_DIR = ".localsetup/state/repo-finalizer"
@@ -118,8 +120,9 @@ def _settings(target_root: Path) -> FinalizerSettings:
 
 
 def _git(target_root: Path, args: list[str]) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["git", "-C", str(target_root), *args],
+    return run_git(
+        target_root,
+        args,
         text=True,
         capture_output=True,
         check=False,

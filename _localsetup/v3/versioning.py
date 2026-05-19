@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Iterable
 
 from .docs import generate_alias_outputs
+from .git_subprocess import run_git
 
 
 ZERO_SHA = "0" * 40
@@ -93,9 +94,9 @@ class CommitInfo:
 
 
 def _run_git(repo_root: Path, args: list[str], *, check: bool = True) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["git", *args],
-        cwd=repo_root,
+    return run_git(
+        repo_root,
+        args,
         text=True,
         capture_output=True,
         check=check,

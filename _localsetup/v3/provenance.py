@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import hashlib
 import json
-import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from .git_subprocess import run_git
 from .lockfile import load_json
 from .source import source_commit, source_tag
 
@@ -46,9 +46,9 @@ def source_tree_sha(repo_root: Path) -> str:
 
 
 def _tree_sha_for_ref(repo_root: Path, ref: str) -> str:
-    completed = subprocess.run(
-        ["git", "rev-parse", f"{ref}^{{tree}}"],
-        cwd=repo_root,
+    completed = run_git(
+        repo_root,
+        ["rev-parse", f"{ref}^{{tree}}"],
         text=True,
         capture_output=True,
         check=False,
@@ -59,9 +59,9 @@ def _tree_sha_for_ref(repo_root: Path, ref: str) -> str:
 
 
 def _git_text(repo_root: Path, args: list[str]) -> str | None:
-    completed = subprocess.run(
-        ["git", *args],
-        cwd=repo_root,
+    completed = run_git(
+        repo_root,
+        args,
         text=True,
         capture_output=True,
         check=False,
@@ -93,9 +93,9 @@ def _is_generated_output_path(path: str) -> bool:
 
 
 def source_dirty(repo_root: Path) -> bool:
-    completed = subprocess.run(
-        ["git", "status", "--porcelain", "--untracked-files=all"],
-        cwd=repo_root,
+    completed = run_git(
+        repo_root,
+        ["status", "--porcelain", "--untracked-files=all"],
         text=True,
         capture_output=True,
         check=False,
@@ -144,9 +144,9 @@ def generated_artifact_parent_source_commit(repo_root: Path) -> str | None:
 
 
 def source_remote_url(repo_root: Path) -> str | None:
-    completed = subprocess.run(
-        ["git", "config", "--get", "remote.origin.url"],
-        cwd=repo_root,
+    completed = run_git(
+        repo_root,
+        ["config", "--get", "remote.origin.url"],
         text=True,
         capture_output=True,
         check=False,
