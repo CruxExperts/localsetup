@@ -68,12 +68,15 @@ def verify_install(
         else recorded_adapter_status(lock, global_root)
     )
     expected_by_path = {
-        str(item.get("path")): item.get("packages", lock.get("adapter_packages", []))
+        str(item.get("path")): item.get("packages", lock.get("repo_packages", lock.get("adapter_packages", [])))
         for item in lock.get("adapter_targets", [])
         if isinstance(item, dict)
     }
     for adapter in adapters:
-        adapter.setdefault("expected_packages", expected_by_path.get(adapter["repo_path"], lock.get("adapter_packages", [])))
+        adapter.setdefault(
+            "expected_packages",
+            expected_by_path.get(adapter["repo_path"], lock.get("repo_packages", lock.get("adapter_packages", []))),
+        )
     platform_rules = {platform.platform_id: platform.verify_rules for platform in load_platforms(repo_root)}
     rule_results: list[dict] = []
     for adapter in adapters:

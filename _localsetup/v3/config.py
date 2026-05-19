@@ -31,6 +31,18 @@ class InstallConfig:
     skill_classes: list[str] | None = None
     skill_tags: list[str] | None = None
     exclude_skills: list[str] | None = None
+    global_packs: list[str] | None = None
+    global_preset: str | None = None
+    global_skills: list[str] | None = None
+    global_skill_classes: list[str] | None = None
+    global_skill_tags: list[str] | None = None
+    global_exclude_skills: list[str] | None = None
+    repo_packs: list[str] | None = None
+    repo_preset: str | None = None
+    repo_skills: list[str] | None = None
+    repo_skill_classes: list[str] | None = None
+    repo_skill_tags: list[str] | None = None
+    repo_exclude_skills: list[str] | None = None
     attach_mode: str = "symlink"
     home: str | None = None
     target_directory: str | None = None
@@ -85,6 +97,18 @@ def load_install_config(path: Path | None) -> InstallConfig:
         skill_classes=_as_list(data.get("skill_classes"), "skill_classes"),
         skill_tags=_as_list(data.get("skill_tags"), "skill_tags"),
         exclude_skills=_as_list(data.get("exclude_skills"), "exclude_skills"),
+        global_packs=_as_list(data.get("global_packs"), "global_packs"),
+        global_preset=_as_str(data.get("global_preset"), "global_preset"),
+        global_skills=_as_list(data.get("global_skills"), "global_skills"),
+        global_skill_classes=_as_list(data.get("global_skill_classes"), "global_skill_classes"),
+        global_skill_tags=_as_list(data.get("global_skill_tags"), "global_skill_tags"),
+        global_exclude_skills=_as_list(data.get("global_exclude_skills"), "global_exclude_skills"),
+        repo_packs=_as_list(data.get("repo_packs"), "repo_packs"),
+        repo_preset=_as_str(data.get("repo_preset"), "repo_preset"),
+        repo_skills=_as_list(data.get("repo_skills"), "repo_skills"),
+        repo_skill_classes=_as_list(data.get("repo_skill_classes"), "repo_skill_classes"),
+        repo_skill_tags=_as_list(data.get("repo_skill_tags"), "repo_skill_tags"),
+        repo_exclude_skills=_as_list(data.get("repo_exclude_skills"), "repo_exclude_skills"),
         attach_mode=str(data.get("attach_mode", "symlink")),
         home=_as_str(data.get("home"), "home"),
         target_directory=_as_str(data.get("target_directory"), "target_directory"),
@@ -151,6 +175,18 @@ def merge_cli_config(
     skill_classes: list[str] | None = None,
     skill_tags: list[str] | None = None,
     exclude_skills: list[str] | None = None,
+    global_packs: list[str] | None = None,
+    global_preset: str | None = None,
+    global_skills: list[str] | None = None,
+    global_skill_classes: list[str] | None = None,
+    global_skill_tags: list[str] | None = None,
+    global_exclude_skills: list[str] | None = None,
+    repo_packs: list[str] | None = None,
+    repo_preset: str | None = None,
+    repo_skills: list[str] | None = None,
+    repo_skill_classes: list[str] | None = None,
+    repo_skill_tags: list[str] | None = None,
+    repo_exclude_skills: list[str] | None = None,
     attach_mode: str | None = None,
     home: str | None = None,
     target_directory: str | None = None,
@@ -169,6 +205,18 @@ def merge_cli_config(
         skill_classes=skill_classes if skill_classes is not None else base.skill_classes,
         skill_tags=skill_tags if skill_tags is not None else base.skill_tags,
         exclude_skills=exclude_skills if exclude_skills is not None else base.exclude_skills,
+        global_packs=global_packs if global_packs is not None else base.global_packs,
+        global_preset=global_preset if global_preset is not None else base.global_preset,
+        global_skills=global_skills if global_skills is not None else base.global_skills,
+        global_skill_classes=global_skill_classes if global_skill_classes is not None else base.global_skill_classes,
+        global_skill_tags=global_skill_tags if global_skill_tags is not None else base.global_skill_tags,
+        global_exclude_skills=global_exclude_skills if global_exclude_skills is not None else base.global_exclude_skills,
+        repo_packs=repo_packs if repo_packs is not None else base.repo_packs,
+        repo_preset=repo_preset if repo_preset is not None else base.repo_preset,
+        repo_skills=repo_skills if repo_skills is not None else base.repo_skills,
+        repo_skill_classes=repo_skill_classes if repo_skill_classes is not None else base.repo_skill_classes,
+        repo_skill_tags=repo_skill_tags if repo_skill_tags is not None else base.repo_skill_tags,
+        repo_exclude_skills=repo_exclude_skills if repo_exclude_skills is not None else base.repo_exclude_skills,
         attach_mode=attach_mode or base.attach_mode,
         home=home or base.home,
         target_directory=target_directory or base.target_directory,
@@ -196,6 +244,18 @@ def config_to_dict(config: InstallConfig) -> dict[str, Any]:
         "skill_classes": config.skill_classes,
         "skill_tags": config.skill_tags,
         "exclude_skills": config.exclude_skills,
+        "global_packs": config.global_packs,
+        "global_preset": config.global_preset,
+        "global_skills": config.global_skills,
+        "global_skill_classes": config.global_skill_classes,
+        "global_skill_tags": config.global_skill_tags,
+        "global_exclude_skills": config.global_exclude_skills,
+        "repo_packs": config.repo_packs,
+        "repo_preset": config.repo_preset,
+        "repo_skills": config.repo_skills,
+        "repo_skill_classes": config.repo_skill_classes,
+        "repo_skill_tags": config.repo_skill_tags,
+        "repo_exclude_skills": config.repo_exclude_skills,
         "attach_mode": config.attach_mode,
         "home": config.home,
         "target_directory": config.target_directory,

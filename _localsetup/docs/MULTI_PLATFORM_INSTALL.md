@@ -28,9 +28,9 @@ Global bootstrap from any directory:
 curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s --
 ```
 
-This opens the interactive terminal wizard. It shows the source checkout, target directory, managed home library, selected platforms and packs, warnings, blockers, and planned actions before asking for final confirmation.
+This opens the interactive terminal wizard. The raw bootstrap wrapper checks the latest stable GitHub release, falls back to the latest stable-looking tag when the release API is unavailable, creates or refreshes the managed source checkout from that ref, and shows source/release status, global package-library selection, optional repo setup, selected platforms and packs, warnings, blockers, and planned actions before asking for final confirmation.
 
-Single-choice wizard prompts show `Enter number(s) | d details | b back | q quit | ? help`. Detailed mode is on by default, so install mode, adapter, and dependency choices explain what they do, when to pick them, and their tradeoffs. Multi-select prompts use checkbox controls in real terminals: move with arrows or `j`/`k`, press `Space` to toggle platforms, packs, classes, tags, or individual skills, and press `Enter` to accept. Scripted streams fall back to comma-separated line input. Press `d` to toggle compact mode; compact mode still shows one-line summaries for each option. Use `q` or Ctrl-C to quit; bare Esc is ignored so terminal arrow-key sequences do not cancel selection.
+Single-choice wizard prompts show `Enter number(s) | d details | b back | q quit | ? help`. Detailed mode is on by default, so source, package-library, repo setup, and adapter choices explain what they do, when to pick them, and their tradeoffs. Multi-select prompts use checkbox controls in real terminals: move with arrows or `j`/`k`, press `Space` to toggle global packs, repo-visible packs, or platforms, and press `Enter` to accept. Scripted streams fall back to comma-separated line input. Press `d` to toggle compact mode; compact mode still shows one-line summaries for each option. Use `q` or Ctrl-C to quit; bare Esc is ignored so terminal arrow-key sequences do not cancel selection.
 
 The visual layer remains standard-library only. `--color auto` enables ANSI color only for capable interactive terminals, while `--no-color` and `--color never` force output free of ANSI color. `--glyphs auto` uses simple Unicode status hints only on UTF-8 interactive terminals; `--glyphs ascii` keeps portable labels like `[OK]`, `[WARN]`, and `[FAIL]`. Scripted installs should continue to use `--non-interactive --yes`, which preserves machine-readable output instead of wizard screens.
 
@@ -48,7 +48,7 @@ Automation global-only install:
 curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --non-interactive --yes
 ```
 
-Automation mode creates or refreshes a managed Localsetup source checkout at `~/.local/share/localsetup/source`, installs the managed Localsetup package library, registers `~/.local/bin/localsetup`, creates no repo adapter paths unless selected, and preserves machine-readable output. If no terminal is available and `--non-interactive --yes` is not provided, the installer exits with an actionable message.
+Automation mode creates or refreshes a managed Localsetup source checkout at `~/.local/share/localsetup/source` from the latest non-draft, non-prerelease GitHub release, with a stable-tag fallback when release lookup is unavailable. It installs the managed Localsetup package library, registers `~/.local/bin/localsetup`, creates no repo adapter paths unless selected, and preserves machine-readable output. If release lookup fails and a clean managed source already exists, the wrapper warns and continues from that existing source; if no managed source exists, it fails with an actionable message. If no terminal is available and `--non-interactive --yes` is not provided, the installer exits with an actionable message.
 
 Selected platforms for the current repo after global bootstrap:
 
@@ -82,7 +82,7 @@ For a smaller footprint, select by preset, taxonomy class, tag, individual skill
 localsetup install --tools codex --preset suggested --skill-classes development --skill-tags git --skills ls-context --exclude-skills ls-linux-patcher --yes
 ```
 
-Presets are `core`, `suggested`, `all`, and `custom`. Automation defaults to `core` when no selector is supplied. Interactive global-only installs preselect `core`; interactive repo installs preselect `core` plus repo-detected suggested packs. `--packs`, `--skill-classes`, `--skill-tags`, and `--skills` are additive; `--exclude-skills` removes named packages unless a selected workflow requires them.
+Presets are `core`, `suggested`, `all`, and `custom`. Automation defaults to `core` when no selector is supplied. Interactive installs first choose the global package-library baseline, defaulting to `core` or the prior registry setting. Repo setup is a separate choice; when selected, repo-visible packs default from the target lockfile or repo-detected suggestions. `--packs`, `--skill-classes`, `--skill-tags`, and `--skills` are additive; `--exclude-skills` removes named packages unless a selected workflow requires them. The legacy selector flags apply to both the managed global baseline and repo-visible adapter selection for compatibility. Use `--global-packs` / `--global-preset` and `--repo-packs` / `--repo-preset` when you want the managed package library to contain a broader baseline than the target repo exposes.
 
 Attach a selected adapter to another repo or directory:
 
@@ -121,6 +121,8 @@ cd /path/to/repo
 - `--skill-classes LIST`  - Comma-separated taxonomy classes to include.
 - `--skill-tags LIST`  - Comma-separated taxonomy tags to include.
 - `--exclude-skills LIST`  - Comma-separated individual skill ids to remove from the resolved selection unless a selected workflow requires them.
+- `--global-preset NAME`, `--global-packs LIST`, `--global-skills LIST`, `--global-skill-classes LIST`, `--global-skill-tags LIST`, `--global-exclude-skills LIST`  - Selector aliases for the managed package-library baseline.
+- `--repo-preset NAME`, `--repo-packs LIST`, `--repo-skills LIST`, `--repo-skill-classes LIST`, `--repo-skill-tags LIST`, `--repo-exclude-skills LIST`  - Selector aliases for packages exposed through repo adapter paths.
 - `--yes`  - Legacy accepted flag for interactive installs. For automation, combine with `--non-interactive`.
 - `--non-interactive`  - Automation mode. Requires `--yes` and preserves machine-readable output.
 - `--global`  - Removed legacy flag; v3 installs the managed home library by default and exits with an explicit error if this flag is supplied.
@@ -132,14 +134,14 @@ cd /path/to/repo
 
 The wizard keeps the install portable and dependency-free; it uses plain terminal output with optional ANSI styling and no curses/Textual dependency. Single-choice prompts can be selected by number or label. Multi-select prompts use spacebar toggles in real terminals and comma-separated values in scripted fallback mode.
 
-- **Install mode:** `Global library only` is the safest default and refreshes the shared Localsetup library without repo adapter paths. `Current directory` prepares the directory you launched from. `Another target directory` prepares a different repo while using this checkout as the source.
-- **Platforms:** each selected platform shows the adapter path it writes, such as `.codex/skills` for Codex or `.cursor/skills` for Cursor.
-- **Skill packs and groups:** `core` is the suggested default for normal use. `bootstrap` adds agent-team startup and audit workflows. `dev` adds code, docs, git, test, and repo repair workflows. `ops` adds server and maintenance workflows. `integrations` adds external system connectors. `publishing` adds release and public-repo support. `harness` adds opt-in autonomous harness capability without activating it. `experimental` adds advanced or less-conservative workflows. Follow-up screens let you add taxonomy classes, tags, and individual skills or remove skills before review.
-- **Options:** symlink adapters are easiest to update because they point repos at the managed library. Portable adapter copies are more self-contained, but updating requires copying again. Prompt-only dependency mode reports what is needed without installing dependencies. Managed virtual environment mode prepares Localsetup's managed Python environment.
+- **Source and release:** shows the source checkout, current source ref, and latest upstream release result when the raw managed bootstrap path performed a release check.
+- **Global package library:** `core` is the suggested baseline for normal use. `bootstrap` adds agent-team startup and audit workflows. `dev` adds code, docs, git, test, and repo repair workflows. `ops` adds server and maintenance workflows. `integrations` adds external system connectors. `publishing` adds release and public-repo support. `harness` adds opt-in autonomous harness capability without activating it. `experimental` adds advanced or less-conservative workflows.
+- **Repo setup:** `No repo setup` refreshes the managed package library without repo adapter paths. `Current directory` prepares the directory you launched from. `Another target directory` prepares a different repo while using this checkout as the source.
+- **Repo adapters:** each selected platform shows the adapter path it writes, such as `.codex/skills` for Codex or `.cursor/skills` for Cursor. Repo-visible packs are selected separately from the global baseline.
 
 ## Shared home library
 
-V3 installs managed skills and workflow packages to `~/.local/share/localsetup/packages` and writes a registry beside them. Explicitly selected repo adapter paths such as `.codex/skills` and `.kilo/skills` become scoped Localsetup-managed adapter directories. In symlink mode, each selected package inside the adapter links to the managed home library. In portable mode, the selected packages are copied. Both modes write `.localsetup-adapter.json` so Localsetup can recognize, verify, detach, and replace the adapter later.
+V3 installs managed skills and workflow packages to `~/.local/share/localsetup/packages` and writes a registry beside them. The managed package root contains the union of the global baseline and any repo-visible packages. Explicitly selected repo adapter paths such as `.codex/skills` and `.kilo/skills` become scoped Localsetup-managed adapter directories. In symlink mode, each selected repo-visible package inside the adapter links to the managed home library. In portable mode, the selected repo-visible packages are copied. Both modes write `.localsetup-adapter.json` so Localsetup can recognize, verify, detach, and replace the adapter later.
 
 Workflow packages are sourced from `_localsetup/workflows/ls-workflow-*`. They install beside skills because every workflow package includes a valid `SKILL.md`, while its Localsetup-specific `workflow.yaml` stays in source for validation and generated docs.
 
@@ -195,7 +197,7 @@ Do not use `--break-system-packages`. If virtualenv creation is unavailable, ins
 
 ## V3 reinstall behavior
 
-On re-run, the v3 installer refreshes the managed shared package library, rewrites the global registry, updates selected adapter links or portable copies, and writes `.localsetup/lock.json`.
+On re-run, the v3 installer refreshes the managed shared package library, rewrites the global registry, updates selected adapter links or portable copies, and writes `.localsetup/lock.json`. The wizard reloads prior global baseline selectors from the registry and repo-visible selectors, platforms, adapter mode, and dependency mode from `.localsetup/lock.json`. Choosing no repo setup for a prior target removes managed adapter state while leaving the shared package library intact.
 
 `--upgrade-policy` is removed. V3 uses managed install metadata and refuses to overwrite unmanaged skill paths.
 

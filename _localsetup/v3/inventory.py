@@ -52,6 +52,10 @@ def install_inventory(
             "workflows": lock.get("workflows", []),
             "platforms": lock.get("platforms", []),
             "adapter_packages": lock.get("adapter_packages", []),
+            "global_baseline_packages": lock.get("global_baseline_packages", []),
+            "global_baseline_selectors": lock.get("global_baseline_selectors", {}),
+            "repo_packages": lock.get("repo_packages", lock.get("adapter_packages", [])),
+            "repo_selectors": lock.get("repo_selectors", lock.get("selectors", {})),
         },
         "package_roots": {
             "current": str(global_root),

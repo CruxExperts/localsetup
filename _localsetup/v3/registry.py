@@ -35,12 +35,28 @@ def upsert_target(
     source_commit: str,
     package_paths: list[Path],
     adapter_targets: list[dict[str, Any]],
+    global_baseline: dict[str, Any] | None = None,
+    repo_selection: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     registry = load_registry(registry_path)
     target_id = str(target_root.resolve(strict=False))
     package_names = [path.name for path in package_paths]
+    current_packages = set(package_names)
     registry["source_commit"] = source_commit
     registry["canonical_package_root"] = str(package_paths[0].parent) if package_paths else registry.get("canonical_package_root")
+    if global_baseline is not None:
+        registry["global_baseline"] = {
+            "source_commit": source_commit,
+            **global_baseline,
+        }
+    for package_name, package in list(registry.get("packages", {}).items()):
+        if package_name in current_packages:
+            continue
+        refs = [str(ref) for ref in package.get("refs", []) if str(ref) != target_id]
+        if refs:
+            package["refs"] = sorted(refs)
+        else:
+            registry["packages"].pop(package_name, None)
     package_snapshots = {
         path.name: marker_public_snapshot(load_package_marker(path))
         for path in package_paths
@@ -51,6 +67,8 @@ def upsert_target(
         "packages": package_names,
         "package_provenance": package_snapshots,
         "adapters": adapter_targets,
+        "global_baseline": global_baseline or {},
+        "repo_selection": repo_selection or {},
         "lock_path": str(target_root / ".localsetup" / "lock.json"),
         "registry_path": str(registry_path),
     }

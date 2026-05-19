@@ -29,6 +29,24 @@ def _require_adapter_under_target_root(path: Path, target_root: Path) -> None:
         raise RuntimeError(f"refusing to rollback adapter outside target root: {path}") from exc
 
 
+def _remove_unreferenced_managed_packages(global_root: Path, registry_payload: dict) -> list[str]:
+    if not global_root.exists():
+        return []
+    referenced = {
+        name
+        for name, package in registry_payload.get("packages", {}).items()
+        if isinstance(package, dict) and package.get("refs")
+    }
+    removed: list[str] = []
+    for path in sorted(global_root.iterdir(), key=lambda item: item.name):
+        if path.name.startswith(".localsetup-") or path.name in referenced:
+            continue
+        if path.exists() and is_managed_package(path):
+            shutil.rmtree(path)
+            removed.append(str(path))
+    return removed
+
+
 def rollback(
     repo_root: Path,
     home: Path,
@@ -66,9 +84,10 @@ def rollback(
 
     if registry.exists():
         before = registry.exists()
-        remove_target(registry, target_root=attachment_root)
+        registry_payload = remove_target(registry, target_root=attachment_root)
         if before and not registry.exists():
             removed.append(str(registry))
+        removed.extend(_remove_unreferenced_managed_packages(global_root, registry_payload))
 
     for adapter_path in lock.get("adapter_state", []):
         p = Path(str(adapter_path))

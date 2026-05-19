@@ -8,6 +8,7 @@ from .manifests import load_pack_config, load_platforms
 from .models import DeployPlan, PlanAction
 from .paths import expand_user_path
 from .selection import resolve_package_selection
+from .skills import load_skill_catalog
 
 
 def build_install_plan(
@@ -19,6 +20,18 @@ def build_install_plan(
     skill_classes: list[str] | None = None,
     skill_tags: list[str] | None = None,
     exclude_skills: list[str] | None = None,
+    global_packs: list[str] | None = None,
+    global_preset: str | None = None,
+    global_skills: list[str] | None = None,
+    global_skill_classes: list[str] | None = None,
+    global_skill_tags: list[str] | None = None,
+    global_exclude_skills: list[str] | None = None,
+    repo_packs: list[str] | None = None,
+    repo_preset: str | None = None,
+    repo_skills: list[str] | None = None,
+    repo_skill_classes: list[str] | None = None,
+    repo_skill_tags: list[str] | None = None,
+    repo_exclude_skills: list[str] | None = None,
     attach_mode: str = "symlink",
     platform_ids: list[str] | None = None,
     target_root: Path | None = None,
@@ -34,18 +47,77 @@ def build_install_plan(
     attachment_root = target_root or repo_root
     global_root = expand_user_path(pack.global_root, home)
 
-    selection = resolve_package_selection(
+    legacy_selector_present = any(
+        value is not None
+        for value in (packs, preset, skills, skill_classes, skill_tags, exclude_skills)
+    )
+    global_selector_present = any(
+        value is not None
+        for value in (
+            global_packs,
+            global_preset,
+            global_skills,
+            global_skill_classes,
+            global_skill_tags,
+            global_exclude_skills,
+        )
+    )
+    repo_selector_present = any(
+        value is not None
+        for value in (
+            repo_packs,
+            repo_preset,
+            repo_skills,
+            repo_skill_classes,
+            repo_skill_tags,
+            repo_exclude_skills,
+        )
+    )
+
+    global_selection = resolve_package_selection(
         repo_root,
-        packs=packs,
-        preset=preset,
-        skills=skills,
-        skill_classes=skill_classes,
-        skill_tags=skill_tags,
-        exclude_skills=exclude_skills,
+        packs=global_packs if global_packs is not None else packs,
+        preset=global_preset if global_preset is not None else preset,
+        skills=global_skills if global_skills is not None else skills,
+        skill_classes=global_skill_classes if global_skill_classes is not None else skill_classes,
+        skill_tags=global_skill_tags if global_skill_tags is not None else skill_tags,
+        exclude_skills=global_exclude_skills if global_exclude_skills is not None else exclude_skills,
         target_root=attachment_root,
     )
-    selected_names = selection.skills
-    selected_workflows = selection.workflows
+    if selected_platforms:
+        if repo_selector_present:
+            repo_selection = resolve_package_selection(
+                repo_root,
+                packs=repo_packs if repo_packs is not None else packs,
+                preset=repo_preset if repo_preset is not None else preset,
+                skills=repo_skills if repo_skills is not None else skills,
+                skill_classes=repo_skill_classes if repo_skill_classes is not None else skill_classes,
+                skill_tags=repo_skill_tags if repo_skill_tags is not None else skill_tags,
+                exclude_skills=repo_exclude_skills if repo_exclude_skills is not None else exclude_skills,
+                target_root=attachment_root,
+            )
+        elif legacy_selector_present:
+            repo_selection = resolve_package_selection(
+                repo_root,
+                packs=packs,
+                preset=preset,
+                skills=skills,
+                skill_classes=skill_classes,
+                skill_tags=skill_tags,
+                exclude_skills=exclude_skills,
+                target_root=attachment_root,
+            )
+        else:
+            repo_selection = resolve_package_selection(repo_root, target_root=attachment_root)
+    else:
+        repo_selection = resolve_package_selection(repo_root, preset="custom", target_root=attachment_root)
+
+    sort_order = {skill.name: (skill.sort_priority, skill.name) for skill in load_skill_catalog(repo_root)}
+    selected_names = sorted(
+        set([*global_selection.skills, *repo_selection.skills]),
+        key=lambda name: sort_order.get(name, (1_000_000, name)),
+    )
+    selected_workflows = list(dict.fromkeys([*global_selection.workflows, *repo_selection.workflows]))
     legacy_aliases = collect_skill_aliases(repo_root / "_localsetup" / "skills")
     selected_aliases = {legacy_skill_name(name): name for name in selected_names}
     actions: list[PlanAction] = [
@@ -65,7 +137,7 @@ def build_install_plan(
                     "platform": target["platform"],
                     "mode": attach_mode,
                     "global_root": str(global_root),
-                    "packages": selection.packages,
+                    "packages": repo_selection.packages,
                 },
             )
         )
@@ -73,9 +145,19 @@ def build_install_plan(
     rollback = {
         "created_paths": [str(global_root)],
         "repo_links": [str(a.path) for a in actions if a.kind == "attach_repo_path"],
-        "preset": selection.preset,
-        "packs": selection.packs,
-        "selectors": selection.selectors,
+        "preset": global_selection.preset,
+        "packs": global_selection.packs,
+        "selectors": global_selection.selectors,
+        "global_baseline_selectors": global_selection.selectors,
+        "global_baseline_packs": global_selection.packs,
+        "global_baseline_skills": global_selection.skills,
+        "global_baseline_workflows": global_selection.workflows,
+        "global_baseline_packages": global_selection.packages,
+        "repo_selectors": repo_selection.selectors,
+        "repo_packs": repo_selection.packs,
+        "repo_skills": repo_selection.skills,
+        "repo_workflows": repo_selection.workflows,
+        "repo_packages": repo_selection.packages,
         "platforms": [platform.platform_id for platform in selected_platforms],
         "target_root": str(attachment_root),
         "global_only": not selected_platforms,
@@ -84,6 +166,7 @@ def build_install_plan(
         "catalog_aliases": legacy_aliases,
         "skills": selected_names,
         "workflows": selected_workflows,
-        "packages": selection.packages,
+        "packages": sorted(set([*global_selection.packages, *repo_selection.packages])),
+        "adapter_packages": repo_selection.packages,
     }
     return DeployPlan(actions=actions, rollback_metadata=rollback)

@@ -41,6 +41,68 @@
       "items": { "type": "string", "minLength": 1 },
       "uniqueItems": true
     },
+    "global_packs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true,
+      "description": "Managed package-library baseline packs."
+    },
+    "global_preset": {
+      "type": "string",
+      "enum": ["core", "suggested", "all", "custom"],
+      "description": "Managed package-library baseline preset."
+    },
+    "global_skills": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "global_skill_classes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "global_skill_tags": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "global_exclude_skills": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "repo_packs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true,
+      "description": "Repo-visible packs exposed through selected adapter paths."
+    },
+    "repo_preset": {
+      "type": "string",
+      "enum": ["core", "suggested", "all", "custom"],
+      "description": "Repo-visible selection preset."
+    },
+    "repo_skills": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "repo_skill_classes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "repo_skill_tags": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "repo_exclude_skills": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
     "attach_mode": {
       "type": "string",
       "enum": ["symlink", "portable"],

@@ -16,6 +16,18 @@ SKILLS_CSV=""
 SKILL_CLASSES_CSV=""
 SKILL_TAGS_CSV=""
 EXCLUDE_SKILLS_CSV=""
+GLOBAL_PACKS_CSV=""
+GLOBAL_PRESET=""
+GLOBAL_SKILLS_CSV=""
+GLOBAL_SKILL_CLASSES_CSV=""
+GLOBAL_SKILL_TAGS_CSV=""
+GLOBAL_EXCLUDE_SKILLS_CSV=""
+REPO_PACKS_CSV=""
+REPO_PRESET=""
+REPO_SKILLS_CSV=""
+REPO_SKILL_CLASSES_CSV=""
+REPO_SKILL_TAGS_CSV=""
+REPO_EXCLUDE_SKILLS_CSV=""
 MODE="symlink"
 YES=false
 NON_INTERACTIVE=false
@@ -29,8 +41,11 @@ EXPLICIT_SOURCE_DIR=false
 EXPLICIT_TARGET_DIR=false
 BOOTSTRAPPED_SOURCE=false
 BOOTSTRAP_REPO="${LOCALSETUP_BOOTSTRAP_REPO:-https://github.com/CruxExperts/localsetup.git}"
-BOOTSTRAP_REF="${LOCALSETUP_BOOTSTRAP_REF:-main}"
+BOOTSTRAP_REF_OVERRIDE="${LOCALSETUP_BOOTSTRAP_REF:-}"
+BOOTSTRAP_REF="$BOOTSTRAP_REF_OVERRIDE"
 BOOTSTRAP_SOURCE_DIR="${LOCALSETUP_BOOTSTRAP_SOURCE_DIR:-${HOME}/.local/share/localsetup/source}"
+BOOTSTRAP_LATEST_REF=""
+BOOTSTRAP_RELEASE_STATUS="not checked"
 
 usage() {
   cat <<'USAGE_END'
@@ -68,6 +83,25 @@ Options:
   --exclude-skills LIST
                        Individual skill ids to exclude unless required by a selected workflow.
                        Comma-separated.
+  --global-preset NAME
+                       Selection preset for the managed package-library baseline.
+  --global-packs LIST  Skill packs for the managed package-library baseline. Comma-separated.
+  --global-skills LIST Individual skills for the managed package-library baseline. Comma-separated.
+  --global-skill-classes LIST
+                       Skill taxonomy classes for the managed package-library baseline.
+  --global-skill-tags LIST
+                       Skill taxonomy tags for the managed package-library baseline.
+  --global-exclude-skills LIST
+                       Skills excluded from the managed package-library baseline.
+  --repo-preset NAME   Selection preset for repo-visible adapter packages.
+  --repo-packs LIST    Skill packs exposed through repo adapter paths. Comma-separated.
+  --repo-skills LIST   Individual skills exposed through repo adapter paths. Comma-separated.
+  --repo-skill-classes LIST
+                       Skill taxonomy classes exposed through repo adapter paths.
+  --repo-skill-tags LIST
+                       Skill taxonomy tags exposed through repo adapter paths.
+  --repo-exclude-skills LIST
+                       Skills excluded from repo adapter visibility.
   --mode MODE          symlink or portable. Default: symlink.
   --install-deps       Create/update the managed venv and install _localsetup/requirements.txt.
   --no-register-shell  Do not create/update ~/.local/bin/localsetup.
@@ -113,8 +147,7 @@ raise SystemExit(0 if current >= required else 1)
 PY
 }
 
-refresh_bootstrap_source() {
-  command -v git >/dev/null 2>&1 || die "git is required to refresh Localsetup from $BOOTSTRAP_REPO"
+inspect_managed_bootstrap_source() {
   if ! git -C "$SOURCE_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     die "managed bootstrap source exists but is not a Git checkout: $SOURCE_DIR. Move or remove it, or pass --directory PATH to use an explicit Localsetup checkout."
   fi
@@ -128,12 +161,107 @@ refresh_bootstrap_source() {
   if [[ -n "$status" ]]; then
     die "cannot refresh managed bootstrap source because it has uncommitted or untracked changes: $SOURCE_DIR. Commit, stash, move, or remove it, or pass --directory PATH to use an explicit checkout."
   fi
+}
+
+refresh_bootstrap_source() {
+  command -v git >/dev/null 2>&1 || die "git is required to refresh Localsetup from $BOOTSTRAP_REPO"
+  inspect_managed_bootstrap_source
   git -C "$SOURCE_DIR" fetch --quiet "$BOOTSTRAP_REPO" "$BOOTSTRAP_REF" || {
     die "failed to fetch Localsetup bootstrap source from $BOOTSTRAP_REPO at ref $BOOTSTRAP_REF"
   }
   git -C "$SOURCE_DIR" checkout --quiet --detach FETCH_HEAD || {
     die "failed to check out refreshed Localsetup bootstrap source from $BOOTSTRAP_REPO at ref $BOOTSTRAP_REF"
   }
+}
+
+derive_github_releases_url() {
+  local repo="$1"
+  local path
+  case "$repo" in
+    https://github.com/*|http://github.com/*|git@github.com:*)
+      path="${repo#https://github.com/}"
+      path="${path#http://github.com/}"
+      path="${path#git@github.com:}"
+      path="${path%.git}"
+      printf 'https://api.github.com/repos/%s/releases\n' "$path"
+      ;;
+    *) return 1 ;;
+  esac
+}
+
+latest_release_from_api() {
+  local api_url="$1"
+  python3 - "$api_url" <<'PY'
+from __future__ import annotations
+
+import json
+import sys
+import urllib.request
+
+url = sys.argv[1]
+request = urllib.request.Request(
+    url,
+    headers={"Accept": "application/vnd.github+json", "User-Agent": "localsetup-installer"},
+)
+with urllib.request.urlopen(request, timeout=10) as response:
+    releases = json.load(response)
+stable = [
+    release
+    for release in releases
+    if isinstance(release, dict)
+    and release.get("tag_name")
+    and not release.get("draft")
+    and not release.get("prerelease")
+]
+stable.sort(key=lambda release: release.get("published_at") or release.get("created_at") or "", reverse=True)
+if not stable:
+    raise SystemExit("no stable GitHub release found")
+print(stable[0]["tag_name"])
+PY
+}
+
+latest_release_from_git_tags() {
+  command -v git >/dev/null 2>&1 || return 1
+  git ls-remote --tags --refs "$BOOTSTRAP_REPO" 'v*' 2>/dev/null \
+    | awk '{print $2}' \
+    | sed 's#refs/tags/##' \
+    | grep -E '^v[0-9]+([.][0-9]+)*$' \
+    | sort -V \
+    | tail -n 1
+}
+
+resolve_bootstrap_ref() {
+  if [[ -n "$BOOTSTRAP_REF_OVERRIDE" ]]; then
+    BOOTSTRAP_REF="$BOOTSTRAP_REF_OVERRIDE"
+    BOOTSTRAP_LATEST_REF="$BOOTSTRAP_REF"
+    BOOTSTRAP_RELEASE_STATUS="override: LOCALSETUP_BOOTSTRAP_REF"
+    return 0
+  fi
+  local api_url resolved
+  api_url="${LOCALSETUP_BOOTSTRAP_RELEASES_URL:-}"
+  if [[ -z "$api_url" ]]; then
+    api_url="$(derive_github_releases_url "$BOOTSTRAP_REPO" || true)"
+  fi
+  if [[ -n "$api_url" ]]; then
+    resolved="$(latest_release_from_api "$api_url" 2>/dev/null || true)"
+    if [[ -n "$resolved" ]]; then
+      BOOTSTRAP_REF="$resolved"
+      BOOTSTRAP_LATEST_REF="$resolved"
+      BOOTSTRAP_RELEASE_STATUS="latest stable GitHub release"
+      return 0
+    fi
+  fi
+  resolved="$(latest_release_from_git_tags || true)"
+  if [[ -n "$resolved" ]]; then
+    BOOTSTRAP_REF="$resolved"
+    BOOTSTRAP_LATEST_REF="$resolved"
+    BOOTSTRAP_RELEASE_STATUS="latest stable tag"
+    return 0
+  fi
+  BOOTSTRAP_REF=""
+  BOOTSTRAP_LATEST_REF="unknown"
+  BOOTSTRAP_RELEASE_STATUS="latest release lookup failed"
+  return 1
 }
 
 ensure_bootstrap_source() {
@@ -146,13 +274,25 @@ ensure_bootstrap_source() {
   fi
 
   SOURCE_DIR="$BOOTSTRAP_SOURCE_DIR"
+  if ! resolve_bootstrap_ref; then
+    if [[ -e "$SOURCE_DIR" ]]; then
+      echo "Warning: failed to discover the latest Localsetup release; using existing managed source at $SOURCE_DIR." >&2
+    else
+      die "failed to discover the latest Localsetup release and no managed source exists at $SOURCE_DIR. Check network access, set LOCALSETUP_BOOTSTRAP_REF, or pass --directory PATH."
+    fi
+  fi
   if [[ -e "$SOURCE_DIR" ]]; then
-    refresh_bootstrap_source
+    if [[ -n "$BOOTSTRAP_REF" ]]; then
+      refresh_bootstrap_source
+    else
+      inspect_managed_bootstrap_source
+    fi
     [[ -f "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" ]] || die "refreshed bootstrap source is missing _localsetup/tools/localsetup_v3.py: $SOURCE_DIR"
     BOOTSTRAPPED_SOURCE=true
     return
   fi
   command -v git >/dev/null 2>&1 || die "git is required to bootstrap Localsetup from $BOOTSTRAP_REPO"
+  [[ -n "$BOOTSTRAP_REF" ]] || die "no bootstrap release ref is available; set LOCALSETUP_BOOTSTRAP_REF or pass --directory PATH"
   mkdir -p "$(dirname "$SOURCE_DIR")"
   git clone --branch "$BOOTSTRAP_REF" --single-branch "$BOOTSTRAP_REPO" "$SOURCE_DIR" >/dev/null 2>&1 || {
     rm -rf "$SOURCE_DIR"
@@ -226,6 +366,66 @@ while [[ $# -gt 0 ]]; do
       EXCLUDE_SKILLS_CSV="$2"
       shift 2
       ;;
+    --global-packs)
+      [[ $# -ge 2 ]] || die "missing value for --global-packs"
+      GLOBAL_PACKS_CSV="$2"
+      shift 2
+      ;;
+    --global-preset)
+      [[ $# -ge 2 ]] || die "missing value for --global-preset"
+      GLOBAL_PRESET="$2"
+      shift 2
+      ;;
+    --global-skills)
+      [[ $# -ge 2 ]] || die "missing value for --global-skills"
+      GLOBAL_SKILLS_CSV="$2"
+      shift 2
+      ;;
+    --global-skill-classes)
+      [[ $# -ge 2 ]] || die "missing value for --global-skill-classes"
+      GLOBAL_SKILL_CLASSES_CSV="$2"
+      shift 2
+      ;;
+    --global-skill-tags)
+      [[ $# -ge 2 ]] || die "missing value for --global-skill-tags"
+      GLOBAL_SKILL_TAGS_CSV="$2"
+      shift 2
+      ;;
+    --global-exclude-skills)
+      [[ $# -ge 2 ]] || die "missing value for --global-exclude-skills"
+      GLOBAL_EXCLUDE_SKILLS_CSV="$2"
+      shift 2
+      ;;
+    --repo-packs)
+      [[ $# -ge 2 ]] || die "missing value for --repo-packs"
+      REPO_PACKS_CSV="$2"
+      shift 2
+      ;;
+    --repo-preset)
+      [[ $# -ge 2 ]] || die "missing value for --repo-preset"
+      REPO_PRESET="$2"
+      shift 2
+      ;;
+    --repo-skills)
+      [[ $# -ge 2 ]] || die "missing value for --repo-skills"
+      REPO_SKILLS_CSV="$2"
+      shift 2
+      ;;
+    --repo-skill-classes)
+      [[ $# -ge 2 ]] || die "missing value for --repo-skill-classes"
+      REPO_SKILL_CLASSES_CSV="$2"
+      shift 2
+      ;;
+    --repo-skill-tags)
+      [[ $# -ge 2 ]] || die "missing value for --repo-skill-tags"
+      REPO_SKILL_TAGS_CSV="$2"
+      shift 2
+      ;;
+    --repo-exclude-skills)
+      [[ $# -ge 2 ]] || die "missing value for --repo-exclude-skills"
+      REPO_EXCLUDE_SKILLS_CSV="$2"
+      shift 2
+      ;;
     --mode)
       [[ $# -ge 2 ]] || die "missing value for --mode"
       MODE="$2"
@@ -290,6 +490,8 @@ if [[ "$NON_INTERACTIVE" != true && ! -t 1 && ! -t 2 ]]; then
   die "interactive installer requires a terminal. Run from a TTY, or use --non-interactive --yes for automation."
 fi
 ensure_bootstrap_source
+export LOCALSETUP_BOOTSTRAP_LATEST_REF="$BOOTSTRAP_LATEST_REF"
+export LOCALSETUP_BOOTSTRAP_RELEASE_STATUS="$BOOTSTRAP_RELEASE_STATUS"
 [[ -d "$SOURCE_DIR" ]] || die "directory does not exist: $SOURCE_DIR"
 SOURCE_DIR="$(cd "$SOURCE_DIR" && pwd)"
 [[ -f "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" ]] || die "missing v3 tool at $SOURCE_DIR/_localsetup/tools/localsetup_v3.py"
@@ -329,6 +531,56 @@ if [[ -n "$EXCLUDE_SKILLS_CSV" ]]; then
   csv_to_args "$EXCLUDE_SKILLS_CSV" exclude_skill_args
 fi
 
+global_pack_args=()
+if [[ -n "$GLOBAL_PACKS_CSV" ]]; then
+  csv_to_args "$GLOBAL_PACKS_CSV" global_pack_args
+fi
+
+global_skill_args=()
+if [[ -n "$GLOBAL_SKILLS_CSV" ]]; then
+  csv_to_args "$GLOBAL_SKILLS_CSV" global_skill_args
+fi
+
+global_skill_class_args=()
+if [[ -n "$GLOBAL_SKILL_CLASSES_CSV" ]]; then
+  csv_to_args "$GLOBAL_SKILL_CLASSES_CSV" global_skill_class_args
+fi
+
+global_skill_tag_args=()
+if [[ -n "$GLOBAL_SKILL_TAGS_CSV" ]]; then
+  csv_to_args "$GLOBAL_SKILL_TAGS_CSV" global_skill_tag_args
+fi
+
+global_exclude_skill_args=()
+if [[ -n "$GLOBAL_EXCLUDE_SKILLS_CSV" ]]; then
+  csv_to_args "$GLOBAL_EXCLUDE_SKILLS_CSV" global_exclude_skill_args
+fi
+
+repo_pack_args=()
+if [[ -n "$REPO_PACKS_CSV" ]]; then
+  csv_to_args "$REPO_PACKS_CSV" repo_pack_args
+fi
+
+repo_skill_args=()
+if [[ -n "$REPO_SKILLS_CSV" ]]; then
+  csv_to_args "$REPO_SKILLS_CSV" repo_skill_args
+fi
+
+repo_skill_class_args=()
+if [[ -n "$REPO_SKILL_CLASSES_CSV" ]]; then
+  csv_to_args "$REPO_SKILL_CLASSES_CSV" repo_skill_class_args
+fi
+
+repo_skill_tag_args=()
+if [[ -n "$REPO_SKILL_TAGS_CSV" ]]; then
+  csv_to_args "$REPO_SKILL_TAGS_CSV" repo_skill_tag_args
+fi
+
+repo_exclude_skill_args=()
+if [[ -n "$REPO_EXCLUDE_SKILLS_CSV" ]]; then
+  csv_to_args "$REPO_EXCLUDE_SKILLS_CSV" repo_exclude_skill_args
+fi
+
 platform_args=()
 if [[ -n "$PLATFORMS_CSV" ]]; then
   csv_to_args "$PLATFORMS_CSV" platform_args
@@ -360,6 +612,18 @@ if [[ "$NON_INTERACTIVE" != true ]]; then
   [[ ${#skill_class_args[@]} -eq 0 ]] || wizard_cmd+=(--skill-classes "${skill_class_args[@]}")
   [[ ${#skill_tag_args[@]} -eq 0 ]] || wizard_cmd+=(--skill-tags "${skill_tag_args[@]}")
   [[ ${#exclude_skill_args[@]} -eq 0 ]] || wizard_cmd+=(--exclude-skills "${exclude_skill_args[@]}")
+  [[ -z "$GLOBAL_PRESET" ]] || wizard_cmd+=(--global-preset "$GLOBAL_PRESET")
+  [[ ${#global_pack_args[@]} -eq 0 ]] || wizard_cmd+=(--global-packs "${global_pack_args[@]}")
+  [[ ${#global_skill_args[@]} -eq 0 ]] || wizard_cmd+=(--global-skills "${global_skill_args[@]}")
+  [[ ${#global_skill_class_args[@]} -eq 0 ]] || wizard_cmd+=(--global-skill-classes "${global_skill_class_args[@]}")
+  [[ ${#global_skill_tag_args[@]} -eq 0 ]] || wizard_cmd+=(--global-skill-tags "${global_skill_tag_args[@]}")
+  [[ ${#global_exclude_skill_args[@]} -eq 0 ]] || wizard_cmd+=(--global-exclude-skills "${global_exclude_skill_args[@]}")
+  [[ -z "$REPO_PRESET" ]] || wizard_cmd+=(--repo-preset "$REPO_PRESET")
+  [[ ${#repo_pack_args[@]} -eq 0 ]] || wizard_cmd+=(--repo-packs "${repo_pack_args[@]}")
+  [[ ${#repo_skill_args[@]} -eq 0 ]] || wizard_cmd+=(--repo-skills "${repo_skill_args[@]}")
+  [[ ${#repo_skill_class_args[@]} -eq 0 ]] || wizard_cmd+=(--repo-skill-classes "${repo_skill_class_args[@]}")
+  [[ ${#repo_skill_tag_args[@]} -eq 0 ]] || wizard_cmd+=(--repo-skill-tags "${repo_skill_tag_args[@]}")
+  [[ ${#repo_exclude_skill_args[@]} -eq 0 ]] || wizard_cmd+=(--repo-exclude-skills "${repo_exclude_skill_args[@]}")
   if [[ -n "$ATTACH_TARGET_DIR" && "$EXPLICIT_TARGET_DIR" != true ]]; then
     wizard_cmd+=(--target-directory-origin inferred)
   fi
@@ -382,6 +646,18 @@ doctor_cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HO
 [[ ${#skill_class_args[@]} -eq 0 ]] || doctor_cmd+=(--skill-classes "${skill_class_args[@]}")
 [[ ${#skill_tag_args[@]} -eq 0 ]] || doctor_cmd+=(--skill-tags "${skill_tag_args[@]}")
 [[ ${#exclude_skill_args[@]} -eq 0 ]] || doctor_cmd+=(--exclude-skills "${exclude_skill_args[@]}")
+[[ -z "$GLOBAL_PRESET" ]] || doctor_cmd+=(--global-preset "$GLOBAL_PRESET")
+[[ ${#global_pack_args[@]} -eq 0 ]] || doctor_cmd+=(--global-packs "${global_pack_args[@]}")
+[[ ${#global_skill_args[@]} -eq 0 ]] || doctor_cmd+=(--global-skills "${global_skill_args[@]}")
+[[ ${#global_skill_class_args[@]} -eq 0 ]] || doctor_cmd+=(--global-skill-classes "${global_skill_class_args[@]}")
+[[ ${#global_skill_tag_args[@]} -eq 0 ]] || doctor_cmd+=(--global-skill-tags "${global_skill_tag_args[@]}")
+[[ ${#global_exclude_skill_args[@]} -eq 0 ]] || doctor_cmd+=(--global-exclude-skills "${global_exclude_skill_args[@]}")
+[[ -z "$REPO_PRESET" ]] || doctor_cmd+=(--repo-preset "$REPO_PRESET")
+[[ ${#repo_pack_args[@]} -eq 0 ]] || doctor_cmd+=(--repo-packs "${repo_pack_args[@]}")
+[[ ${#repo_skill_args[@]} -eq 0 ]] || doctor_cmd+=(--repo-skills "${repo_skill_args[@]}")
+[[ ${#repo_skill_class_args[@]} -eq 0 ]] || doctor_cmd+=(--repo-skill-classes "${repo_skill_class_args[@]}")
+[[ ${#repo_skill_tag_args[@]} -eq 0 ]] || doctor_cmd+=(--repo-skill-tags "${repo_skill_tag_args[@]}")
+[[ ${#repo_exclude_skill_args[@]} -eq 0 ]] || doctor_cmd+=(--repo-exclude-skills "${repo_exclude_skill_args[@]}")
 if [[ ${#platform_args[@]} -gt 0 ]]; then
   doctor_cmd+=(--platforms "${platform_args[@]}")
 fi
@@ -418,6 +694,18 @@ cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR"
 [[ ${#skill_class_args[@]} -eq 0 ]] || cmd+=(--skill-classes "${skill_class_args[@]}")
 [[ ${#skill_tag_args[@]} -eq 0 ]] || cmd+=(--skill-tags "${skill_tag_args[@]}")
 [[ ${#exclude_skill_args[@]} -eq 0 ]] || cmd+=(--exclude-skills "${exclude_skill_args[@]}")
+[[ -z "$GLOBAL_PRESET" ]] || cmd+=(--global-preset "$GLOBAL_PRESET")
+[[ ${#global_pack_args[@]} -eq 0 ]] || cmd+=(--global-packs "${global_pack_args[@]}")
+[[ ${#global_skill_args[@]} -eq 0 ]] || cmd+=(--global-skills "${global_skill_args[@]}")
+[[ ${#global_skill_class_args[@]} -eq 0 ]] || cmd+=(--global-skill-classes "${global_skill_class_args[@]}")
+[[ ${#global_skill_tag_args[@]} -eq 0 ]] || cmd+=(--global-skill-tags "${global_skill_tag_args[@]}")
+[[ ${#global_exclude_skill_args[@]} -eq 0 ]] || cmd+=(--global-exclude-skills "${global_exclude_skill_args[@]}")
+[[ -z "$REPO_PRESET" ]] || cmd+=(--repo-preset "$REPO_PRESET")
+[[ ${#repo_pack_args[@]} -eq 0 ]] || cmd+=(--repo-packs "${repo_pack_args[@]}")
+[[ ${#repo_skill_args[@]} -eq 0 ]] || cmd+=(--repo-skills "${repo_skill_args[@]}")
+[[ ${#repo_skill_class_args[@]} -eq 0 ]] || cmd+=(--repo-skill-classes "${repo_skill_class_args[@]}")
+[[ ${#repo_skill_tag_args[@]} -eq 0 ]] || cmd+=(--repo-skill-tags "${repo_skill_tag_args[@]}")
+[[ ${#repo_exclude_skill_args[@]} -eq 0 ]] || cmd+=(--repo-exclude-skills "${repo_exclude_skill_args[@]}")
 if [[ ${#platform_args[@]} -gt 0 ]]; then
   cmd+=(--platforms "${platform_args[@]}")
 fi

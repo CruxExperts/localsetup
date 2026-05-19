@@ -12,12 +12,15 @@ import tty
 from pathlib import Path
 from typing import Sequence, TextIO
 
+from .adapters import adapter_path_state, legacy_global_roots
 from .apply import apply_plan
 from .dependencies import ensure_dependencies
 from .doctor import run_doctor
+from .lockfile import load_json
 from .manifests import load_pack_config, load_platforms
-from .paths import expand_user_path
+from .paths import expand_user_path, legacy_target_lockfile_path
 from .plan import build_install_plan
+from .registry import load_registry
 from .selection import recommended_packs_for_target, resolve_package_selection
 from .shell import register_shell_command
 from .skills import load_skill_catalog
@@ -103,6 +106,9 @@ class WizardState:
     caller_directory: Path
     target_directory: Path | None = None
     target_directory_is_explicit: bool = False
+    prior_target_directory: Path | None = None
+    prior_adapter_targets: list[dict] | None = None
+    detach_repo_setup: bool = False
     platforms: list[str] | None = None
     platforms_were_provided: bool = False
     packs: list[str] | None = None
@@ -111,6 +117,18 @@ class WizardState:
     skill_classes: list[str] | None = None
     skill_tags: list[str] | None = None
     exclude_skills: list[str] | None = None
+    global_packs: list[str] | None = None
+    global_preset: str | None = None
+    global_skills: list[str] | None = None
+    global_skill_classes: list[str] | None = None
+    global_skill_tags: list[str] | None = None
+    global_exclude_skills: list[str] | None = None
+    repo_packs: list[str] | None = None
+    repo_preset: str | None = None
+    repo_skills: list[str] | None = None
+    repo_skill_classes: list[str] | None = None
+    repo_skill_tags: list[str] | None = None
+    repo_exclude_skills: list[str] | None = None
     attach_mode: str = "symlink"
     dependency_mode: str = "prompt-only"
     register_shell: bool = True
@@ -897,6 +915,115 @@ def _global_root(repo_root: Path, home: Path) -> Path:
     return expand_user_path(load_pack_config(repo_root).global_root, home)
 
 
+def _registry_path(repo_root: Path, home: Path) -> Path:
+    return expand_user_path(load_pack_config(repo_root).global_registry, home)
+
+
+def _source_identity(repo_root: Path) -> str:
+    import subprocess
+
+    try:
+        tag = subprocess.run(
+            ["git", "-C", str(repo_root), "describe", "--tags", "--exact-match"],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if tag.returncode == 0 and tag.stdout.strip():
+            return tag.stdout.strip()
+        commit = subprocess.run(
+            ["git", "-C", str(repo_root), "rev-parse", "--short", "HEAD"],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if commit.returncode == 0 and commit.stdout.strip():
+            return commit.stdout.strip()
+    except OSError:
+        pass
+    return "unknown"
+
+
+def _selector_payload(selectors: object) -> dict:
+    return selectors if isinstance(selectors, dict) else {}
+
+
+def _load_prior_defaults(state: WizardState) -> None:
+    global_defaults_loaded = False
+    registry_path = _registry_path(state.repo_root, state.home)
+    if registry_path.exists():
+        baseline = load_registry(registry_path).get("global_baseline", {})
+        selectors = _selector_payload(baseline.get("selectors"))
+        global_defaults_loaded = bool(baseline or selectors)
+        prior_packs = list(selectors.get("packs") or baseline.get("packs") or [])
+        if prior_packs and state.global_packs is None and state.packs is None:
+            state.global_packs = prior_packs
+        if state.global_preset is None and state.preset is None:
+            state.global_preset = selectors.get("preset") or baseline.get("preset")
+        if state.global_skills is None and state.skills is None:
+            state.global_skills = list(selectors.get("skills") or [])
+        if state.global_skill_classes is None and state.skill_classes is None:
+            state.global_skill_classes = list(selectors.get("skill_classes") or [])
+        if state.global_skill_tags is None and state.skill_tags is None:
+            state.global_skill_tags = list(selectors.get("skill_tags") or [])
+        if state.global_exclude_skills is None and state.exclude_skills is None:
+            state.global_exclude_skills = list(selectors.get("exclude_skills") or [])
+
+    candidate = state.target_directory or state.caller_directory
+    lock_path = candidate / ".localsetup" / "lock.json"
+    lock = load_json(lock_path)
+    if not lock:
+        lock = load_json(legacy_target_lockfile_path(candidate))
+    if not lock:
+        return
+    state.prior_target_directory = candidate
+    state.prior_adapter_targets = list(lock.get("adapter_targets") or [])
+    if state.target_directory is None:
+        target_value = lock.get("target_root")
+        state.target_directory = Path(str(target_value)).expanduser().resolve() if target_value else candidate
+        state.prior_target_directory = state.target_directory
+    if state.platforms is None:
+        state.platforms = list(lock.get("platforms") or [])
+    if state.attach_mode == "symlink":
+        state.attach_mode = str(lock.get("attach_mode") or state.attach_mode)
+    if state.dependency_mode == "prompt-only" and lock.get("dependency_mode"):
+        state.dependency_mode = str(lock["dependency_mode"])
+    if not global_defaults_loaded:
+        baseline_selectors = _selector_payload(lock.get("global_baseline_selectors") or lock.get("selectors"))
+        prior_global_packs = list(
+            baseline_selectors.get("packs")
+            or lock.get("global_baseline_packs")
+            or lock.get("packs")
+            or []
+        )
+        if prior_global_packs and state.global_packs is None and state.packs is None:
+            state.global_packs = prior_global_packs
+        if state.global_preset is None and state.preset is None:
+            state.global_preset = baseline_selectors.get("preset") or lock.get("global_baseline_preset") or lock.get("preset")
+        if state.global_skills is None and state.skills is None:
+            state.global_skills = list(baseline_selectors.get("skills") or lock.get("global_baseline_skills") or [])
+        if state.global_skill_classes is None and state.skill_classes is None:
+            state.global_skill_classes = list(baseline_selectors.get("skill_classes") or [])
+        if state.global_skill_tags is None and state.skill_tags is None:
+            state.global_skill_tags = list(baseline_selectors.get("skill_tags") or [])
+        if state.global_exclude_skills is None and state.exclude_skills is None:
+            state.global_exclude_skills = list(baseline_selectors.get("exclude_skills") or [])
+    selectors = _selector_payload(lock.get("repo_selectors") or lock.get("selectors"))
+    prior_repo_packs = list(selectors.get("packs") or lock.get("repo_packs") or [])
+    if prior_repo_packs and state.repo_packs is None and state.packs is None:
+        state.repo_packs = prior_repo_packs
+    if state.repo_preset is None and state.preset is None:
+        state.repo_preset = selectors.get("preset") or lock.get("repo_preset")
+    if state.repo_skills is None and state.skills is None:
+        state.repo_skills = list(selectors.get("skills") or [])
+    if state.repo_skill_classes is None and state.skill_classes is None:
+        state.repo_skill_classes = list(selectors.get("skill_classes") or [])
+    if state.repo_skill_tags is None and state.skill_tags is None:
+        state.repo_skill_tags = list(selectors.get("skill_tags") or [])
+    if state.repo_exclude_skills is None and state.exclude_skills is None:
+        state.repo_exclude_skills = list(selectors.get("exclude_skills") or [])
+
+
 def _action_summary(actions: list[object]) -> list[str]:
     labels = {
         "ensure_dir": "Ensure managed skill library exists",
@@ -908,14 +1035,57 @@ def _action_summary(actions: list[object]) -> list[str]:
     return [f"{labels.get(getattr(action, 'kind'), getattr(action, 'kind'))}: {getattr(action, 'path')}" for action in actions]
 
 
+def _detach_prior_adapters(state: WizardState) -> list[str]:
+    if not state.prior_adapter_targets:
+        return []
+    target_root = state.prior_target_directory or state.target_directory
+    if target_root is None:
+        return []
+    resolved_target = target_root.resolve(strict=False)
+    global_root = _global_root(state.repo_root, state.home)
+    removed: list[str] = []
+    for target in state.prior_adapter_targets:
+        path_value = target.get("path") if isinstance(target, dict) else None
+        if not path_value:
+            continue
+        path = Path(str(path_value))
+        if not path.is_absolute() and state.prior_target_directory:
+            path = state.prior_target_directory / path
+        try:
+            path.parent.resolve(strict=False).relative_to(resolved_target)
+        except ValueError:
+            continue
+        adapter_state = adapter_path_state(path, global_root, known_global_roots=legacy_global_roots(state.home))
+        if not (path.exists() or path.is_symlink()):
+            continue
+        if not (
+            adapter_state["points_to_global"]
+            or adapter_state["is_scoped_symlink_adapter"]
+            or adapter_state["is_portable_copy"]
+        ):
+            continue
+        if path.is_dir() and not path.is_symlink():
+            shutil.rmtree(path)
+        else:
+            path.unlink()
+        removed.append(str(path))
+    return removed
+
+
 def _show_welcome(term: TerminalWizard, state: WizardState) -> str:
     term.banner(WELCOME_BANNER)
     term.write("")
-    term.detail_line("Decides: Starts a guided install session and confirms the source checkout.")
-    term.detail_line("This wizard installs the managed Localsetup skill library and can attach adapters for agent tools.")
+    term.title("Source and Release")
+    term.detail_line("Decides: Confirms the installer source and release channel before package choices.")
+    term.detail_line("This wizard installs the managed Localsetup package library and can attach repo adapters for agent tools.")
+    latest_ref = os.environ.get("LOCALSETUP_BOOTSTRAP_LATEST_REF") or "not checked"
+    release_status = os.environ.get("LOCALSETUP_BOOTSTRAP_RELEASE_STATUS") or "explicit/local source"
     term.key_value_block(
         [
             ("Source checkout", str(state.repo_root)),
+            ("Source ref", _source_identity(state.repo_root)),
+            ("Latest upstream", latest_ref),
+            ("Release check", release_status),
             ("Managed library", str(_global_root(state.repo_root, state.home))),
         ]
     )
@@ -946,14 +1116,14 @@ def _source_step(term: TerminalWizard, state: WizardState) -> str:
 
 
 def _mode_step(term: TerminalWizard, state: WizardState) -> str:
-    term.title("Install Mode")
+    term.title("Repo Setup")
     choices = [
         Choice(
-            "global",
-            "Global library only",
-            "Safest default; updates shared Localsetup skills without repo adapter paths.",
-            "Installs or refreshes the managed skill library under your home directory.",
-            "You want Localsetup available globally and do not need this repo wired to an agent tool yet.",
+            "none",
+            "No repo setup",
+            "Updates the managed Localsetup package library without repo adapter paths.",
+            "On reruns, removes only prior managed adapter paths while leaving the shared library intact.",
+            "You only want the shared package library refreshed right now.",
             "No `.codex/skills` or other repo adapter paths are created.",
         ),
         Choice(
@@ -973,7 +1143,7 @@ def _mode_step(term: TerminalWizard, state: WizardState) -> str:
             "You must enter the target path correctly before the review step.",
         ),
     ]
-    default = "global"
+    default = "none"
     if state.target_directory_is_explicit and state.target_directory is not None:
         choices = [
             choices[0],
@@ -993,17 +1163,18 @@ def _mode_step(term: TerminalWizard, state: WizardState) -> str:
         default = "current"
     choice = choose_one(
         term,
-        "Install mode",
+        "Repo setup",
         choices,
         default=default,
-        decides="Whether this run only refreshes the shared library or also wires a repo.",
+        decides="Whether this run only refreshes the managed library or also wires a repo adapter.",
         suggested_reason="This matches the command-line context and avoids surprising repo changes.",
-        help_text="Pick global for the least invasive install, current for this repo, or another target when preparing a different path.",
+        help_text="Pick no repo setup for the least invasive install, current for this repo, or another target when preparing a different path.",
     )
     if choice in {BACK, CANCEL}:
         return choice
-    if choice == "global":
-        state.target_directory = None
+    if choice == "none":
+        state.detach_repo_setup = bool(state.prior_target_directory and state.prior_adapter_targets)
+        state.target_directory = state.prior_target_directory if state.detach_repo_setup else None
         state.platforms = []
     elif choice == "current":
         state.target_directory = state.caller_directory
@@ -1023,10 +1194,15 @@ def _mode_step(term: TerminalWizard, state: WizardState) -> str:
 
 
 def _platform_step(term: TerminalWizard, state: WizardState) -> str:
+    if state.detach_repo_setup:
+        state.platforms = []
+        state.repo_packs = []
+        return "continue"
     if state.target_directory is None:
         state.platforms = []
+        state.repo_packs = []
         return "continue"
-    term.title("Platforms")
+    term.title("Repo Adapters")
     default_platforms = state.platforms or (["codex"] if not state.target_directory_is_explicit else [])
     selected = choose_many_checkbox(
         term,
@@ -1041,43 +1217,74 @@ def _platform_step(term: TerminalWizard, state: WizardState) -> str:
     if isinstance(selected, str) and selected in {BACK, CANCEL}:
         return selected
     state.platforms = selected
+    if not selected:
+        state.repo_packs = []
+        return "continue"
+    default_packs = state.repo_packs if state.repo_packs is not None else state.packs
+    if default_packs is None:
+        if state.repo_preset is not None or state.preset is not None:
+            default_packs = resolve_package_selection(
+                state.repo_root,
+                preset=state.repo_preset or state.preset,
+                skills=state.repo_skills if state.repo_skills is not None else state.skills,
+                skill_classes=state.repo_skill_classes if state.repo_skill_classes is not None else state.skill_classes,
+                skill_tags=state.repo_skill_tags if state.repo_skill_tags is not None else state.skill_tags,
+                exclude_skills=state.repo_exclude_skills if state.repo_exclude_skills is not None else state.exclude_skills,
+                target_root=state.target_directory,
+            ).packs
+        else:
+            default_packs = recommended_packs_for_target(state.target_directory)
+            state.repo_preset = "suggested"
+    repo_selected = choose_many_checkbox(
+        term,
+        "Select repo-visible packs",
+        _pack_choices(state.repo_root),
+        default=default_packs,
+        allow_none=True,
+        decides="Which packages are visible through this repo's selected adapter paths.",
+        suggested_reason="Detected repo suggestions are used unless a prior lockfile or CLI selector is present.",
+        help_text="Repo-visible packs are exposed through adapter paths. The managed library also keeps the global baseline selected earlier.",
+    )
+    if isinstance(repo_selected, str) and repo_selected in {BACK, CANCEL}:
+        return repo_selected
+    state.repo_packs = repo_selected
+    if state.repo_preset is None:
+        state.repo_preset = state.preset or ("core" if repo_selected == ["core"] else "custom")
     return "continue"
 
 
 def _pack_step(term: TerminalWizard, state: WizardState) -> str:
-    term.title("Skill Packs")
-    default_packs = state.packs
+    term.title("Global Package Library")
+    default_packs = state.global_packs if state.global_packs is not None else state.packs
     if default_packs is None:
-        if state.preset is not None:
-            target_root = state.target_directory or state.caller_directory
+        if state.global_preset is not None or state.preset is not None:
             default_packs = resolve_package_selection(
                 state.repo_root,
-                preset=state.preset,
-                skills=state.skills,
-                skill_classes=state.skill_classes,
-                skill_tags=state.skill_tags,
-                exclude_skills=state.exclude_skills,
-                target_root=target_root,
+                preset=state.global_preset or state.preset,
+                skills=state.global_skills if state.global_skills is not None else state.skills,
+                skill_classes=state.global_skill_classes if state.global_skill_classes is not None else state.skill_classes,
+                skill_tags=state.global_skill_tags if state.global_skill_tags is not None else state.skill_tags,
+                exclude_skills=state.global_exclude_skills if state.global_exclude_skills is not None else state.exclude_skills,
+                target_root=state.caller_directory,
             ).packs
-        elif state.target_directory is None:
-            default_packs = ["core"]
-            state.preset = "core"
         else:
-            default_packs = recommended_packs_for_target(state.target_directory)
-            state.preset = "suggested"
+            default_packs = ["core"]
+            state.global_preset = "core"
     selected = choose_many_checkbox(
         term,
-        "Select packs",
+        "Select global packs",
         _pack_choices(state.repo_root),
         default=default_packs,
         allow_none=True,
-        decides="Which Localsetup skills and workflows are installed into the managed library.",
-        suggested_reason="Core plus detected repo suggestions is the default for interactive installs.",
-        help_text="Choose one or more packs. The next screens can add classes, tags, or individual skill overrides.",
+        decides="Which baseline packages are kept in the managed Localsetup library.",
+        suggested_reason="Core is the conservative global baseline unless prior registry settings or CLI selectors are present.",
+        help_text="Choose one or more packs for the shared package library. Repo adapter visibility is selected separately.",
     )
     if isinstance(selected, str) and selected in {BACK, CANCEL}:
         return selected
-    state.packs = selected
+    state.global_packs = selected
+    if state.global_preset is None:
+        state.global_preset = state.preset or ("core" if selected == ["core"] else "custom")
     return "continue"
 
 
@@ -1176,16 +1383,29 @@ def _review_step(term: TerminalWizard, state: WizardState) -> str:
     term.detail_line("Decides: Whether the planned install should be applied.")
     target_root = state.target_directory
     platforms = state.platforms or []
-    packs = state.packs if state.packs is not None else ["core"]
+    global_packs = state.global_packs if state.global_packs is not None else (state.packs if state.packs is not None else ["core"])
+    repo_packs = state.repo_packs if state.repo_packs is not None else (state.packs if platforms and state.packs is not None else [])
     plan = build_install_plan(
         state.repo_root,
         home=state.home,
-        packs=packs,
+        packs=state.packs,
         preset=state.preset,
         skills=state.skills,
         skill_classes=state.skill_classes,
         skill_tags=state.skill_tags,
         exclude_skills=state.exclude_skills,
+        global_packs=global_packs,
+        global_preset=state.global_preset,
+        global_skills=state.global_skills,
+        global_skill_classes=state.global_skill_classes,
+        global_skill_tags=state.global_skill_tags,
+        global_exclude_skills=state.global_exclude_skills,
+        repo_packs=repo_packs,
+        repo_preset=state.repo_preset,
+        repo_skills=state.repo_skills,
+        repo_skill_classes=state.repo_skill_classes,
+        repo_skill_tags=state.repo_skill_tags,
+        repo_exclude_skills=state.repo_exclude_skills,
         attach_mode=state.attach_mode,
         platform_ids=platforms,
         target_root=target_root,
@@ -1193,7 +1413,7 @@ def _review_step(term: TerminalWizard, state: WizardState) -> str:
     doctor = run_doctor(
         state.repo_root,
         home=state.home,
-        packs=packs,
+        packs=global_packs,
         platform_ids=platforms,
         dependency_mode=state.dependency_mode,
         target_root=target_root,
@@ -1220,11 +1440,12 @@ def _review_step(term: TerminalWizard, state: WizardState) -> str:
     term.key_value_block(
         [
             ("Platforms", ", ".join(platforms) if platforms else "none"),
-            ("Packs", ", ".join(packs)),
-            ("Classes", ", ".join(state.skill_classes or []) if state.skill_classes else "none"),
-            ("Tags", ", ".join(state.skill_tags or []) if state.skill_tags else "none"),
-            ("Skills", str(len(plan.rollback_metadata.get("skills", [])))),
-            ("Workflows", str(len(plan.rollback_metadata.get("workflows", [])))),
+            ("Global packs", ", ".join(plan.rollback_metadata.get("global_baseline_packs", [])) or "none"),
+            ("Repo packs", ", ".join(plan.rollback_metadata.get("repo_packs", [])) if platforms else "none"),
+            ("Global packages", str(len(plan.rollback_metadata.get("global_baseline_packages", [])))),
+            ("Repo-visible packages", str(len(plan.rollback_metadata.get("repo_packages", []))) if platforms else "0"),
+            ("Installed skills", str(len(plan.rollback_metadata.get("skills", [])))),
+            ("Installed workflows", str(len(plan.rollback_metadata.get("workflows", [])))),
             ("Dependency mode", state.dependency_mode),
         ],
         indent="  ",
@@ -1257,8 +1478,10 @@ def _review_step(term: TerminalWizard, state: WizardState) -> str:
         if target_root:
             cmd.extend(["--target-directory", str(target_root)])
         cmd.extend(["doctor", "--dependency-mode", state.dependency_mode])
-        if packs:
-            cmd.extend(["--packs", *packs])
+        if global_packs:
+            cmd.extend(["--global-packs", *global_packs])
+        if repo_packs:
+            cmd.extend(["--repo-packs", *repo_packs])
         if platforms:
             cmd.extend(["--platforms", *platforms])
         term.diagnostic_command(cmd)
@@ -1270,7 +1493,8 @@ def _apply_and_show_result(term: TerminalWizard, state: WizardState) -> int:
     term.title("Applying")
     target_root = state.target_directory
     platforms = state.platforms or []
-    packs = state.packs if state.packs is not None else ["core"]
+    global_packs = state.global_packs if state.global_packs is not None else (state.packs if state.packs is not None else ["core"])
+    repo_packs = state.repo_packs if state.repo_packs is not None else (state.packs if platforms and state.packs is not None else [])
     try:
         dependency_info = (
             ensure_dependencies(
@@ -1284,12 +1508,24 @@ def _apply_and_show_result(term: TerminalWizard, state: WizardState) -> int:
         plan = build_install_plan(
             state.repo_root,
             home=state.home,
-            packs=packs,
+            packs=state.packs,
             preset=state.preset,
             skills=state.skills,
             skill_classes=state.skill_classes,
             skill_tags=state.skill_tags,
             exclude_skills=state.exclude_skills,
+            global_packs=global_packs,
+            global_preset=state.global_preset,
+            global_skills=state.global_skills,
+            global_skill_classes=state.global_skill_classes,
+            global_skill_tags=state.global_skill_tags,
+            global_exclude_skills=state.global_exclude_skills,
+            repo_packs=repo_packs,
+            repo_preset=state.repo_preset,
+            repo_skills=state.repo_skills,
+            repo_skill_classes=state.repo_skill_classes,
+            repo_skill_tags=state.repo_skill_tags,
+            repo_exclude_skills=state.repo_exclude_skills,
             attach_mode=state.attach_mode,
             platform_ids=platforms,
             target_root=target_root,
@@ -1303,6 +1539,7 @@ def _apply_and_show_result(term: TerminalWizard, state: WizardState) -> int:
             target_root=target_root,
         )
         shell_result = register_shell_command(state.repo_root, home=state.home) if state.register_shell else None
+        detached_adapters = _detach_prior_adapters(state) if state.detach_repo_setup else []
         verify = verify_install(state.repo_root, state.home, platform_ids=platforms, target_root=target_root)
     except Exception as exc:
         term.status_line("fail", "Install failed.")
@@ -1346,6 +1583,8 @@ def _apply_and_show_result(term: TerminalWizard, state: WizardState) -> int:
     term.detail_line("localsetup rollback", indent="  ", style="command")
     if result.get("lockfile"):
         term.key_value_block([("Lockfile", str(result["lockfile"]))])
+    if detached_adapters:
+        term.key_value_block([("Detached adapters", ", ".join(detached_adapters))])
     if term.detail_mode:
         term.detail_line("Does: Verification checked the managed library and selected adapter paths after applying the plan.")
         term.detail_line("Choose when: Use the verify command later if you move files or change installed platforms.")
@@ -1378,6 +1617,18 @@ def run_wizard(
     skill_classes: list[str] | None = None,
     skill_tags: list[str] | None = None,
     exclude_skills: list[str] | None = None,
+    global_packs: list[str] | None = None,
+    global_preset: str | None = None,
+    global_skills: list[str] | None = None,
+    global_skill_classes: list[str] | None = None,
+    global_skill_tags: list[str] | None = None,
+    global_exclude_skills: list[str] | None = None,
+    repo_packs: list[str] | None = None,
+    repo_preset: str | None = None,
+    repo_skills: list[str] | None = None,
+    repo_skill_classes: list[str] | None = None,
+    repo_skill_tags: list[str] | None = None,
+    repo_exclude_skills: list[str] | None = None,
     attach_mode: str = "symlink",
     dependency_mode: str = "prompt-only",
     register_shell: bool = True,
@@ -1400,21 +1651,30 @@ def run_wizard(
         skill_classes=skill_classes,
         skill_tags=skill_tags,
         exclude_skills=exclude_skills,
+        global_packs=global_packs,
+        global_preset=global_preset,
+        global_skills=global_skills,
+        global_skill_classes=global_skill_classes,
+        global_skill_tags=global_skill_tags,
+        global_exclude_skills=global_exclude_skills,
+        repo_packs=repo_packs,
+        repo_preset=repo_preset,
+        repo_skills=repo_skills,
+        repo_skill_classes=repo_skill_classes,
+        repo_skill_tags=repo_skill_tags,
+        repo_exclude_skills=repo_exclude_skills,
         attach_mode=attach_mode,
         dependency_mode=dependency_mode,
         register_shell=register_shell,
     )
+    _load_prior_defaults(state)
     state.detail_mode = term.detail_mode
     term.clear_screen()
     steps = [
         _show_welcome,
-        _source_step,
+        _pack_step,
         _mode_step,
         _platform_step,
-        _pack_step,
-        _skill_group_step,
-        _skill_individual_step,
-        _options_step,
         _review_step,
     ]
     index = 0

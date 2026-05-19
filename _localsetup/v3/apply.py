@@ -202,6 +202,36 @@ def _install_managed_workflows(repo_root: Path, global_root: Path, workflow_name
     return _install_managed_packages(repo_root, global_root, workflow_names, "workflows")
 
 
+def _prune_unreferenced_managed_packages(
+    global_root: Path,
+    registry: dict,
+    *,
+    journal: dict,
+    journal_path: Path,
+) -> list[str]:
+    if not global_root.exists():
+        return []
+    referenced = {
+        name
+        for name, package in registry.get("packages", {}).items()
+        if isinstance(package, dict) and package.get("refs")
+    }
+    removed: list[str] = []
+    for path in sorted(global_root.iterdir(), key=lambda item: item.name):
+        if path.name.startswith(".localsetup-") or path.name in referenced:
+            continue
+        if not is_managed_package(path):
+            continue
+        backup = path.with_name(f".{path.name}.localsetup-backup-{uuid.uuid4().hex}")
+        journal.setdefault("touched", []).append(
+            {"kind": "managed_package", "path": str(path), "backup": str(backup), "existed": True}
+        )
+        _write_journal(journal_path, journal)
+        _same_filesystem_replace(path, backup)
+        removed.append(str(path))
+    return removed
+
+
 def _write_scoped_adapter(adapter_path: Path, global_root: Path, package_names: list[str], *, mode: str) -> None:
     ensure_dir(adapter_path)
     save_json(
@@ -339,6 +369,16 @@ def apply_plan(
         "aliases": plan.rollback_metadata.get("aliases", {}),
         "skills": plan.rollback_metadata.get("skills", []),
         "workflows": plan.rollback_metadata.get("workflows", []),
+        "global_baseline_selectors": plan.rollback_metadata.get("global_baseline_selectors", {}),
+        "global_baseline_packs": plan.rollback_metadata.get("global_baseline_packs", []),
+        "global_baseline_skills": plan.rollback_metadata.get("global_baseline_skills", []),
+        "global_baseline_workflows": plan.rollback_metadata.get("global_baseline_workflows", []),
+        "global_baseline_packages": plan.rollback_metadata.get("global_baseline_packages", []),
+        "repo_selectors": plan.rollback_metadata.get("repo_selectors", {}),
+        "repo_packs": plan.rollback_metadata.get("repo_packs", []),
+        "repo_skills": plan.rollback_metadata.get("repo_skills", []),
+        "repo_workflows": plan.rollback_metadata.get("repo_workflows", []),
+        "repo_packages": plan.rollback_metadata.get("repo_packages", []),
         "adapter_state": [s for s in plan.rollback_metadata.get("repo_links", [])],
         "adapter_targets": [
             {
@@ -355,7 +395,7 @@ def apply_plan(
         "attach_mode": plan.rollback_metadata.get("attach_mode", "symlink"),
         "installed_skills": installed_skills,
         "installed_workflows": installed_workflows,
-        "adapter_packages": plan.rollback_metadata.get("packages", []),
+        "adapter_packages": plan.rollback_metadata.get("adapter_packages", []),
         "dependency_mode": (dependency_info or {}).get("mode"),
         "python_interpreter": (dependency_info or {}).get("interpreter"),
         "dependency_state": (dependency_info or {}).get("lock"),
@@ -377,13 +417,36 @@ def apply_plan(
         try:
             if registry_actions:
                 _record_file_state(journal, journal_path, registry_actions[0].path)
-                upsert_target(
+                registry_payload = upsert_target(
                     registry_actions[0].path,
                     target_root=attachment_root,
                     source_commit=source_commit(repo_root),
                     package_paths=[Path(path) for path in [*installed_skills, *installed_workflows]],
                     adapter_targets=lock_payload["adapter_targets"],
+                    global_baseline={
+                        "selectors": lock_payload["global_baseline_selectors"],
+                        "packs": lock_payload["global_baseline_packs"],
+                        "skills": lock_payload["global_baseline_skills"],
+                        "workflows": lock_payload["global_baseline_workflows"],
+                        "packages": lock_payload["global_baseline_packages"],
+                    },
+                    repo_selection={
+                        "selectors": lock_payload["repo_selectors"],
+                        "packs": lock_payload["repo_packs"],
+                        "skills": lock_payload["repo_skills"],
+                        "workflows": lock_payload["repo_workflows"],
+                        "packages": lock_payload["repo_packages"],
+                    },
                 )
+                if global_roots:
+                    pruned = _prune_unreferenced_managed_packages(
+                        global_roots[0],
+                        registry_payload,
+                        journal=journal,
+                        journal_path=journal_path,
+                    )
+                    if pruned:
+                        lock_payload["pruned_packages"] = pruned
             _record_file_state(journal, journal_path, lockfile_path)
             legacy_backup = None
             if legacy_lockfile.exists() and legacy_lockfile != lockfile_path:

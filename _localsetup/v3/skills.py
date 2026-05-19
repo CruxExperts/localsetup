@@ -140,7 +140,7 @@ def skill_taxonomy_payload(repo_root: Path) -> dict[str, Any]:
     }
 
 
-def validate_skill_catalog(repo_root: Path) -> list[str]:
+def validate_skill_catalog(repo_root: Path, *, require_jsonschema: bool = True) -> list[str]:
     issues: list[str] = []
     pack = load_pack_config(repo_root)
     skills_root = repo_root / "_localsetup" / "skills"
@@ -179,6 +179,7 @@ def validate_skill_catalog(repo_root: Path) -> list[str]:
                 frontmatter,
                 repo_root / "_localsetup" / "config" / "skill-frontmatter.schema.json",
                 label=f"{skill.path.relative_to(repo_root)}/SKILL.md frontmatter",
+                required=require_jsonschema,
             )
         )
         frontmatter_name = str(frontmatter.get("name", ""))

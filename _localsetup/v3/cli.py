@@ -113,6 +113,18 @@ def _add_selector_flags(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--skill-classes", nargs="*", dest="skill_classes")
     parser.add_argument("--skill-tags", nargs="*", dest="skill_tags")
     parser.add_argument("--exclude-skills", nargs="*", dest="exclude_skills")
+    parser.add_argument("--global-preset", choices=sorted(PRESETS), dest="global_preset")
+    parser.add_argument("--global-packs", nargs="*", dest="global_packs")
+    parser.add_argument("--global-skills", nargs="*", dest="global_skills")
+    parser.add_argument("--global-skill-classes", nargs="*", dest="global_skill_classes")
+    parser.add_argument("--global-skill-tags", nargs="*", dest="global_skill_tags")
+    parser.add_argument("--global-exclude-skills", nargs="*", dest="global_exclude_skills")
+    parser.add_argument("--repo-preset", choices=sorted(PRESETS), dest="repo_preset")
+    parser.add_argument("--repo-packs", nargs="*", dest="repo_packs")
+    parser.add_argument("--repo-skills", nargs="*", dest="repo_skills")
+    parser.add_argument("--repo-skill-classes", nargs="*", dest="repo_skill_classes")
+    parser.add_argument("--repo-skill-tags", nargs="*", dest="repo_skill_tags")
+    parser.add_argument("--repo-exclude-skills", nargs="*", dest="repo_exclude_skills")
     parser.add_argument("--mode", choices=["symlink", "portable"])
     parser.add_argument("--platforms", "--tools", nargs="*", dest="platforms")
 
@@ -162,6 +174,18 @@ def _resolved_config(args: argparse.Namespace, default_home: Path) -> InstallCon
         skill_classes=_split_csv(getattr(args, "skill_classes", None)) if hasattr(args, "skill_classes") else None,
         skill_tags=_split_csv(getattr(args, "skill_tags", None)) if hasattr(args, "skill_tags") else None,
         exclude_skills=_split_csv(getattr(args, "exclude_skills", None)) if hasattr(args, "exclude_skills") else None,
+        global_packs=_split_csv(getattr(args, "global_packs", None)) if hasattr(args, "global_packs") else None,
+        global_preset=getattr(args, "global_preset", None),
+        global_skills=_split_csv(getattr(args, "global_skills", None)) if hasattr(args, "global_skills") else None,
+        global_skill_classes=_split_csv(getattr(args, "global_skill_classes", None)) if hasattr(args, "global_skill_classes") else None,
+        global_skill_tags=_split_csv(getattr(args, "global_skill_tags", None)) if hasattr(args, "global_skill_tags") else None,
+        global_exclude_skills=_split_csv(getattr(args, "global_exclude_skills", None)) if hasattr(args, "global_exclude_skills") else None,
+        repo_packs=_split_csv(getattr(args, "repo_packs", None)) if hasattr(args, "repo_packs") else None,
+        repo_preset=getattr(args, "repo_preset", None),
+        repo_skills=_split_csv(getattr(args, "repo_skills", None)) if hasattr(args, "repo_skills") else None,
+        repo_skill_classes=_split_csv(getattr(args, "repo_skill_classes", None)) if hasattr(args, "repo_skill_classes") else None,
+        repo_skill_tags=_split_csv(getattr(args, "repo_skill_tags", None)) if hasattr(args, "repo_skill_tags") else None,
+        repo_exclude_skills=_split_csv(getattr(args, "repo_exclude_skills", None)) if hasattr(args, "repo_exclude_skills") else None,
         attach_mode=getattr(args, "mode", None),
         home=cli_home,
         target_directory=getattr(args, "target_directory", None),
@@ -296,6 +320,18 @@ def _run_self_refresh(
         skill_classes=config.skill_classes,
         skill_tags=config.skill_tags,
         exclude_skills=config.exclude_skills,
+        global_packs=config.global_packs,
+        global_preset=config.global_preset,
+        global_skills=config.global_skills,
+        global_skill_classes=config.global_skill_classes,
+        global_skill_tags=config.global_skill_tags,
+        global_exclude_skills=config.global_exclude_skills,
+        repo_packs=config.repo_packs,
+        repo_preset=config.repo_preset,
+        repo_skills=config.repo_skills,
+        repo_skill_classes=config.repo_skill_classes,
+        repo_skill_tags=config.repo_skill_tags,
+        repo_exclude_skills=config.repo_exclude_skills,
         attach_mode=attach_mode,
         platform_ids=platforms,
         target_root=target_root,
@@ -516,6 +552,18 @@ def _main(argv: list[str] | None = None) -> int:
             skill_classes=config.skill_classes,
             skill_tags=config.skill_tags,
             exclude_skills=config.exclude_skills,
+            global_packs=config.global_packs,
+            global_preset=config.global_preset,
+            global_skills=config.global_skills,
+            global_skill_classes=config.global_skill_classes,
+            global_skill_tags=config.global_skill_tags,
+            global_exclude_skills=config.global_exclude_skills,
+            repo_packs=config.repo_packs,
+            repo_preset=config.repo_preset,
+            repo_skills=config.repo_skills,
+            repo_skill_classes=config.repo_skill_classes,
+            repo_skill_tags=config.repo_skill_tags,
+            repo_exclude_skills=config.repo_exclude_skills,
             attach_mode=config.attach_mode,
             platform_ids=config.platforms,
             target_root=target_root,
@@ -589,6 +637,18 @@ def _main(argv: list[str] | None = None) -> int:
             skill_classes=config.skill_classes,
             skill_tags=config.skill_tags,
             exclude_skills=config.exclude_skills,
+            global_packs=config.global_packs,
+            global_preset=config.global_preset,
+            global_skills=config.global_skills,
+            global_skill_classes=config.global_skill_classes,
+            global_skill_tags=config.global_skill_tags,
+            global_exclude_skills=config.global_exclude_skills,
+            repo_packs=config.repo_packs,
+            repo_preset=config.repo_preset,
+            repo_skills=config.repo_skills,
+            repo_skill_classes=config.repo_skill_classes,
+            repo_skill_tags=config.repo_skill_tags,
+            repo_exclude_skills=config.repo_exclude_skills,
             attach_mode=config.attach_mode,
             dependency_mode=config.dependency_mode,
             register_shell=not args.no_register_shell,
@@ -743,6 +803,18 @@ def _main(argv: list[str] | None = None) -> int:
             skill_classes=config.skill_classes,
             skill_tags=config.skill_tags,
             exclude_skills=config.exclude_skills,
+            global_packs=config.global_packs,
+            global_preset=config.global_preset,
+            global_skills=config.global_skills,
+            global_skill_classes=config.global_skill_classes,
+            global_skill_tags=config.global_skill_tags,
+            global_exclude_skills=config.global_exclude_skills,
+            repo_packs=config.repo_packs,
+            repo_preset=config.repo_preset,
+            repo_skills=config.repo_skills,
+            repo_skill_classes=config.repo_skill_classes,
+            repo_skill_tags=config.repo_skill_tags,
+            repo_exclude_skills=config.repo_exclude_skills,
             platform_ids=config.platforms,
             attach_mode=config.attach_mode,
             target_root=target_root,

@@ -86,10 +86,10 @@ def run_doctor(
             "warnings": warnings,
         }
 
-    catalog_issues = validate_skill_catalog(repo_root)
+    catalog_issues = validate_skill_catalog(repo_root, require_jsonschema=False)
     if catalog_issues:
         blockers.extend(f"skill catalog: {issue}" for issue in catalog_issues)
-    workflow_issues = validate_workflow_catalog(repo_root)
+    workflow_issues = validate_workflow_catalog(repo_root, require_jsonschema=False)
     if workflow_issues:
         blockers.extend(f"workflow catalog: {issue}" for issue in workflow_issues)
 

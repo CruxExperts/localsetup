@@ -25,9 +25,9 @@ Global bootstrap from any directory:
 curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s --
 ```
 
-This opens a terminal wizard. It creates or refreshes the managed source checkout, shows the source, target, managed skill library, selected platforms and packs, then asks for confirmation before applying.
+This opens a terminal wizard. The raw bootstrap wrapper checks the latest stable GitHub release, falls back to the latest stable-looking tag when the release API is unavailable, creates or refreshes the managed source checkout from that ref, shows the source/release status, target, managed package library, selected platforms and packs, then asks for confirmation before applying.
 
-The wizard uses guided choices on every step. Single-choice prompts show `Enter number(s) | d details | b back | q quit | ? help`; detailed mode is on by default and explains what each option does, when to choose it, and its tradeoff. Multi-select prompts use checkbox controls in real terminals: move with arrows or `j`/`k`, press `Space` to toggle platforms, packs, classes, tags, or individual skills, and press `Enter` to accept. Scripted streams fall back to comma-separated line input. Press `d` to switch to compact mode when you only want the one-line summaries. Use `q` or Ctrl-C to quit; bare Esc is ignored so terminal arrow-key sequences do not cancel selection.
+The wizard uses guided choices on every step. Single-choice prompts show `Enter number(s) | d details | b back | q quit | ? help`; detailed mode is on by default and explains what each option does, when to choose it, and its tradeoff. Multi-select prompts use checkbox controls in real terminals: move with arrows or `j`/`k`, press `Space` to toggle global packs, repo-visible packs, or platforms, and press `Enter` to accept. Scripted streams fall back to comma-separated line input. Press `d` to switch to compact mode when you only want the one-line summaries. Use `q` or Ctrl-C to quit; bare Esc is ignored so terminal arrow-key sequences do not cancel selection.
 
 Color and glyphs are optional presentation aids, not part of the automation contract. Interactive runs default to `--color auto --glyphs auto`, honor `NO_COLOR`, avoid color on `TERM=dumb` and non-TTY output, and fall back to text labels such as `[OK]`, `[WARN]`, and `[FAIL]` when Unicode is not appropriate. Use `--no-color`, `--color never`, or `--glyphs ascii` for portable logs.
 
@@ -37,7 +37,9 @@ The old public command form still opens the wizard when a terminal is available:
 curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --yes --tools codex
 ```
 
-Raw `main` bootstrap follows the current development channel. For release verification, use the GitHub release tarball and its `.sha256` sidecar, then run:
+The public command is release-backed even though the small wrapper is downloaded from `main`: managed bootstrap installs resolve the latest non-draft, non-prerelease GitHub release tag before cloning or refreshing `~/.local/share/localsetup/source`, with a stable-tag fallback when release lookup is unavailable. Set `LOCALSETUP_BOOTSTRAP_REF` only when you intentionally want an explicit branch, tag, or commit. Explicit `--directory` checkouts are source-authoritative and are never auto-fetched or replaced.
+
+For release verification, use the GitHub release tarball and its `.sha256` sidecar, then run:
 
 ```bash
 python3 _localsetup/tools/localsetup_v3.py --source-root . verify-release dist/localsetup-v$(cat VERSION).tar.gz
@@ -52,7 +54,7 @@ python3 _localsetup/tools/localsetup_v3.py --source-root . verify-release \
   --sbom dist/localsetup-v$(cat VERSION).tar.gz.cdx.json
 ```
 
-Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.codex/skills` to the selected target. If no tools are selected, the install is global-library-only. Interactive global-only installs preselect `core`; interactive repo installs preselect `core` plus repo-detected suggested packs.
+Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.codex/skills` to the selected target. If no tools are selected, the install is global-library-only. Interactive installs first choose the global package-library baseline, defaulting to `core` or the prior registry setting. Repo setup is a separate choice; when selected, repo-visible packs default from the target lockfile or repo-detected suggestions.
 
 For scripts and CI, use explicit automation mode:
 
@@ -86,13 +88,13 @@ Attach selected agent hosts explicitly:
 localsetup install --tools codex,kilo --yes
 ```
 
-Select skills by preset, pack, taxonomy class, tag, individual skill, or exclusion:
+Select packages by preset, pack, taxonomy class, tag, individual skill, or exclusion:
 
 ```bash
 localsetup install --tools codex --preset suggested --skill-classes development --skill-tags git --skills ls-context --exclude-skills ls-linux-patcher --yes
 ```
 
-The selector flags are additive except for `--exclude-skills`. Presets are `core`, `suggested`, `all`, and `custom`; automation defaults to `core` when no selector is supplied. `suggested` starts with `core` plus repo-detected additions, while `custom` lets the named packs, classes, tags, and skills define the footprint. Exclusions do not remove skills required by a selected workflow.
+The selector flags are additive except for `--exclude-skills`. Presets are `core`, `suggested`, `all`, and `custom`; automation defaults to `core` when no selector is supplied. `suggested` starts with `core` plus repo-detected additions, while `custom` lets the named packs, classes, tags, and skills define the footprint. Exclusions do not remove skills required by a selected workflow. The legacy selector flags apply to both the managed global baseline and repo-visible adapter selection for compatibility. Use `--global-packs` / `--global-preset` and `--repo-packs` / `--repo-preset` when you want the managed library to contain a broader baseline than a target repo exposes.
 
 For a full local setup with all shipped skill and workflow packs attached to Codex, Kilo, and OpenCode:
 
@@ -159,7 +161,7 @@ Selected adapters use symlink mode by default. Use portable mode when symlinks a
 ./install --directory . --tools codex --mode portable
 ```
 
-Symlink mode creates a scoped adapter directory rather than a monolithic link to the whole global library. The adapter contains `.localsetup-adapter.json` and one symlink per selected package, so the repo sees only the selected skills and workflow packages. Portable mode uses the same marker and scoped package list, but copies selected packages into the adapter.
+Symlink mode creates a scoped adapter directory rather than a monolithic link to the whole global library. The adapter contains `.localsetup-adapter.json` and one symlink per selected repo-visible package, so the repo sees only the selected skills and workflow packages even when the global library contains a broader baseline. Portable mode uses the same marker and scoped package list, but copies selected packages into the adapter.
 
 ## Verify
 
@@ -231,7 +233,7 @@ Re-run install with the same directory and platform selection:
 ./install --directory . --tools codex,kilo
 ```
 
-The installer refreshes managed skills, selected adapter links or portable copies, lock metadata, and reports. A global-only re-run refreshes the managed library and records an empty platform list.
+The installer refreshes managed skills, selected adapter links or portable copies, lock metadata, and reports. A global-only re-run refreshes the managed library and records an empty platform list. The wizard reloads prior global baseline selectors from the registry and repo-visible selections from `.localsetup/lock.json`; choosing no repo setup on a prior target removes managed adapter state while keeping the shared package library intact.
 
 Selected workflow packs also refresh their workflow packages and required capability skill dependencies. See [Workflow packages](WORKFLOW_PACKAGES.md) for canonical source/runtime and install details.
 

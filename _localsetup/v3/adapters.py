@@ -267,7 +267,7 @@ def recorded_adapter_status(lock: dict, global_root: Path) -> list[dict]:
                 "platform": item.get("platform"),
                 "repo_path": str(path),
                 "expected_mode": item.get("mode", lock.get("attach_mode", "symlink")),
-                "expected_packages": item.get("packages", lock.get("adapter_packages", [])),
+                "expected_packages": item.get("packages", lock.get("repo_packages", lock.get("adapter_packages", []))),
                 **adapter_path_state(path, expected_global),
                 "verify_rules": [],
             }

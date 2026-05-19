@@ -174,7 +174,12 @@ def workflow_catalog_payload(repo_root: Path) -> dict[str, Any]:
     return {"workflows": workflows, "count": len(workflows)}
 
 
-def validate_workflow_catalog(repo_root: Path, *, validate_references: bool = True) -> list[str]:
+def validate_workflow_catalog(
+    repo_root: Path,
+    *,
+    validate_references: bool = True,
+    require_jsonschema: bool = True,
+) -> list[str]:
     issues: list[str] = []
     pack = load_pack_config(repo_root)
     workflows_root = repo_root / "_localsetup" / "workflows"
@@ -218,6 +223,7 @@ def validate_workflow_catalog(repo_root: Path, *, validate_references: bool = Tr
                     manifest,
                     repo_root / "_localsetup" / "config" / "workflow.schema.json",
                     label=f"{manifest_path.relative_to(repo_root)}",
+                    required=require_jsonschema,
                 )
             )
         missing_keys = sorted(REQUIRED_WORKFLOW_KEYS - set(manifest))

@@ -5,13 +5,13 @@ from pathlib import Path
 from typing import Any
 
 
-def validate_json_schema(data: dict[str, Any], schema_path: Path, *, label: str) -> list[str]:
+def validate_json_schema(data: dict[str, Any], schema_path: Path, *, label: str, required: bool = True) -> list[str]:
     if not schema_path.exists():
         return []
     try:
         from jsonschema import Draft202012Validator
     except ImportError:
-        return [f"jsonschema is required to validate {label}"]
+        return [f"jsonschema is required to validate {label}"] if required else []
     schema = json.loads(schema_path.read_text(encoding="utf-8"))
     errors = sorted(Draft202012Validator(schema).iter_errors(data), key=lambda error: list(error.path))
     issues: list[str] = []
