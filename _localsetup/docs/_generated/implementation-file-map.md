@@ -5,7 +5,7 @@ localsetup_provenance:
   emitter: generate-docs
 framework_version: 4.0.3
 source_commit: bba618d8069218d61cfab9502ce8d92cb37dd05b
-artifact_sha256: 319058f11ec30e09c643ea3955b576a00c49e0e11541007cca781064243ce769
+artifact_sha256: e7f7216ea80845b0be23d83bb29e4578c0986a5c57b4e8536bbc9bc909a1b644
 ---
 # Implementation File Map
 
@@ -704,7 +704,7 @@ artifact_sha256: 319058f11ec30e09c643ea3955b576a00c49e0e11541007cca781064243ce76
 | `keep` | `assets/localsetup-architecture.svg` |
 | `keep` | `assets/localsetup-install-lifecycle.svg` |
 | `keep` | `assets/localsetup-logo.png` |
-| `keep` | `assets/localsetup-readme-hero.png` |
+| `keep` | `assets/localsetup-readme-hero.svg` |
 | `keep` | `config/localsetup_finalizer.yaml` |
 | `keep` | `docs.config.yaml` |
 | `keep` | `install` |

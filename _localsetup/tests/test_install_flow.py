@@ -2357,7 +2357,7 @@ def test_docs_and_package(tmp_path: Path) -> None:
     assert verified["metadata"]["pack_id"] == "localsetup"
     for asset in (
         "assets/README.md",
-        "assets/localsetup-readme-hero.png",
+        "assets/localsetup-readme-hero.svg",
         "assets/localsetup-architecture.svg",
         "assets/localsetup-install-lifecycle.svg",
     ):

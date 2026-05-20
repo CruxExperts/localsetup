@@ -1,7 +1,7 @@
 # Localsetup
 
 <p align="center">
-  <img src="assets/localsetup-readme-hero.png" alt="Localsetup visual: repo-local agent workflow framework" width="960">
+  <img src="assets/localsetup-readme-hero.svg" alt="Localsetup visual: repo-local agent workflow framework" width="960">
 </p>
 
 <p align="center">

@@ -51,18 +51,18 @@
         "width": 1200
       },
       "license": "Repository license unless otherwise documented",
-      "path": "assets/localsetup-readme-hero.png",
+      "path": "assets/localsetup-readme-hero.svg",
       "provenance": "repository-maintained asset",
       "references": [
         "README.md"
       ],
-      "type": "png"
+      "type": "svg"
     }
   ],
   "count": 4,
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-asset-manifest.json",
-    "artifact_sha256": "cfb93521c8597ba2ce75f1b089a6a0047a46bbe2552c7222a8b421bde731b4ab",
+    "artifact_sha256": "24801409b44bde3229dfaf83ba9598f207d6e755cb80eb7dae917b846013749e",
     "emitter": "docs-align",
     "framework_version": "4.0.3",
     "schema_version": 1,
