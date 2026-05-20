@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: db7c4e04c1e0fca48043c590986418d2afe6d56567183679d7932e24960b4674
+  source_provenance_hash: ee0d852cdf03f9d5157a55781240c0c7647a32c6f24a180904d161015f6f3c1c
   emitter: generate-docs
-framework_version: 3.8.13
-source_commit: 19e0524d78f1d12bcdb49aa622da05c79b56da8c
-artifact_sha256: a898273b28d9928a3c5a92578c971b2bd84900a4cf354387d7e453ade28cac81
+framework_version: 4.0.0
+source_commit: 21cbe73071386d1b0789561dbe9f6da99ea551e9
+artifact_sha256: 7253454bbaa3dc81445614ddce46d5f6ba6fd3793d57bf7b9ccc5eaf6db29d2d
 ---
 # Implementation File Map
 
@@ -28,6 +28,7 @@ artifact_sha256: a898273b28d9928a3c5a92578c971b2bd84900a4cf354387d7e453ade28cac8
 | `keep` | `.github/workflows/publish.yml` |
 | `keep` | `.github/workflows/triage.yml` |
 | `keep` | `.gitignore` |
+| `keep` | `.python-version` |
 | `keep` | `AGENTS.md` |
 | `keep` | `CODE_OF_CONDUCT.md` |
 | `keep` | `CONTRIBUTING.md` |
@@ -552,6 +553,7 @@ artifact_sha256: a898273b28d9928a3c5a92578c971b2bd84900a4cf354387d7e453ade28cac8
 | `keep` | `_localsetup/tests/test_ls_kilo_boss_orchestrator_runner.py` |
 | `keep` | `_localsetup/tests/test_ls_linux_patcher_patch_cli.py` |
 | `keep` | `_localsetup/tests/test_provenance.py` |
+| `keep` | `_localsetup/tests/test_python_runtime_contract.py` |
 | `keep` | `_localsetup/tests/test_repo_finalizer.py` |
 | `keep` | `_localsetup/tests/test_scrapling_helper.py` |
 | `keep` | `_localsetup/tests/test_scrapling_jobs.py` |

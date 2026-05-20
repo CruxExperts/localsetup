@@ -1,14 +1,14 @@
 ---
 status: ACTIVE
-version: 3.8
+version: 4.0
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: db7c4e04c1e0fca48043c590986418d2afe6d56567183679d7932e24960b4674
+  source_provenance_hash: ee0d852cdf03f9d5157a55781240c0c7647a32c6f24a180904d161015f6f3c1c
   emitter: generate-docs
-framework_version: 3.8.13
-source_commit: 19e0524d78f1d12bcdb49aa622da05c79b56da8c
-artifact_sha256: 9bcb3219d974d2b456698cb911401173c88cc4fa64c5d1f175b0b7c75ba2b1e7
+framework_version: 4.0.0
+source_commit: 21cbe73071386d1b0789561dbe9f6da99ea551e9
+artifact_sha256: ac54b542a42fb376cad47caa923f32d19613ec896f6b15f17f3795d20b4c9a06
 ---
 # v2 to v3 Skill Map
 

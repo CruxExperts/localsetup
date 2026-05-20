@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 3.8
+version: 4.0
 owner_skill: ls-framework-audit
 date: 2026-05-10
 ---
