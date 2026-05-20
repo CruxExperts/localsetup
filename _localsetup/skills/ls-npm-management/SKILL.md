@@ -24,7 +24,7 @@ Do not use for NPM access lists, TCP/UDP streams, or redirection hosts (extend a
 
 ## Tooling (framework standard)
 
-The framework default is **Python 3.10+**. This skill uses `npm_api.py`, a native Python client that talks directly to the NPM REST API with `requests` plus Python standard library modules. No Bash, curl, or jq is required.
+The framework default is **Python 3.12+**. This skill uses `npm_api.py`, a native Python client that talks directly to the NPM REST API with `requests` plus Python standard library modules. No Bash, curl, or jq is required.
 
 `npm_api.py` handles:
 - Config loading from `npm-api.conf` with hostile-input sanitization.
@@ -36,7 +36,7 @@ The framework default is **Python 3.10+**. This skill uses `npm_api.py`, a nativ
 
 ## Prerequisites
 
-- Python 3.10+ on the target machine with `requests` available from the Localsetup uv project environment.
+- Python 3.12+ on the target machine with `requests` available from the Localsetup uv project environment.
 - Docker and Docker Compose running.
 - NPM deployed in a container; admin API reachable (default: `http://127.0.0.1:81`).
 - A shared Docker network (e.g. `npm_default`) that NPM and all public-facing containers are attached to.

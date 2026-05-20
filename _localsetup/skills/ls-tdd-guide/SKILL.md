@@ -3,7 +3,7 @@ name: ls-tdd-guide
 description: Test-driven development workflow with test generation, coverage analysis, and multi-framework support
 metadata:
   version: "1.1"
-compatibility: "Python 3.10+. Scripts in scripts/ follow framework tooling standard (input validation, actionable stderr). See [TOOLING_POLICY.md](../../docs/TOOLING_POLICY.md) and [INPUT_HARDENING_STANDARD.md](../../docs/INPUT_HARDENING_STANDARD.md)."
+compatibility: "Python 3.12+. Scripts in scripts/ follow framework tooling standard (input validation, actionable stderr). See [TOOLING_POLICY.md](../../docs/TOOLING_POLICY.md) and [INPUT_HARDENING_STANDARD.md](../../docs/INPUT_HARDENING_STANDARD.md)."
 ---
 
 # TDD Guide

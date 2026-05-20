@@ -3,7 +3,7 @@ name: ls-mail-protocol-control
 description: Provide full SMTP and IMAP account control for delegated mailboxes with attachment-first MIME handling and full-envelope encryption. Use when an agent must read, send, organize, decrypt, and manage mailbox state with strict admin controls.
 metadata:
   version: "1.2"
-compatibility: "Python 3.10+ using stdlib SMTP/IMAP/MIME plus PyYAML and cryptography for policy and encryption helpers. Requires delegated SMTP/IMAP accounts, repo-local policy/account config, and environment-provided credentials; no shell commands or subprocess execution."
+compatibility: "Python 3.12+ using stdlib SMTP/IMAP/MIME plus PyYAML and cryptography for policy and encryption helpers. Requires delegated SMTP/IMAP accounts, repo-local policy/account config, and environment-provided credentials; no shell commands or subprocess execution."
 ---
 
 # Mail protocol control

@@ -45,7 +45,7 @@ HARDENING_RULES = {
 TOOLING_POLICY_MARKERS = {
     "tooling_doc": (
         Path("_localsetup/docs/TOOLING_POLICY.md"),
-        "Minimum supported version: Python 3.10.",
+        "Minimum supported version: Python 3.12.",
     ),
     "install_bash": (
         Path("install"),

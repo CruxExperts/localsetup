@@ -93,7 +93,7 @@ Scrapling is the reference implementation. Other CLI skills should follow the sa
 Scrapling is the reference implementation of this policy and adds a few concrete expectations:
 
 - Required tooling:
-  - Python 3.10+ on the host.
+  - Python 3.12+ on the host.
   - User-level `pipx` available on PATH, or the ability to bootstrap it.
   - Docker is optional and used only as an escape hatch when the host cannot run Scrapling directly.
 - Environment variables:

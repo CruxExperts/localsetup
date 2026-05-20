@@ -248,7 +248,7 @@ The design follows a few durable pressures instead of chasing market snapshots:
 
 ## Requirements
 
-- Python `>= 3.10`
+- Python `>= 3.12`
 - Bash on Linux, macOS, or WSL2
 - Git and network access to GitHub for raw bootstrap, unless installing from a local clone
 - Required for dependency sync: `uv`, with dependency intent in `pyproject.toml` and the committed `uv.lock`.

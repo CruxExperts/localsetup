@@ -40,7 +40,7 @@ UV_BOOTSTRAP_SOURCE="${LOCALSETUP_UV_BOOTSTRAP_SOURCE:-https://astral.sh/uv/inst
 UV_OFFLINE=false
 COLOR_MODE="auto"
 GLYPH_MODE="auto"
-MIN_PYTHON_VERSION="3.10.0"
+MIN_PYTHON_VERSION="3.12.0"
 MIN_UV_VERSION="0.4.27"
 EXPLICIT_SOURCE_DIR=false
 EXPLICIT_TARGET_DIR=false
@@ -145,7 +145,7 @@ csv_to_args() {
 
 check_python() {
   command -v python3 >/dev/null 2>&1 || die "python3 is required"
-  python3 - "$MIN_PYTHON_VERSION" <<'PY' || die "python3 >= 3.10 is required"
+  python3 - "$MIN_PYTHON_VERSION" <<'PY' || die "python3 >= 3.12 is required"
 from __future__ import annotations
 
 import sys

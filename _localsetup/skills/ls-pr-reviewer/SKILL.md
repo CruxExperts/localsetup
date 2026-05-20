@@ -3,7 +3,7 @@ name: ls-pr-reviewer
 description: Automated GitHub PR code review with diff analysis, lint integration, and structured reports. Use when reviewing pull requests, checking for security issues, error handling gaps, test coverage, or code style problems. Supports Go, Python, and JavaScript/TypeScript. Requires gh CLI authenticated with repo access.
 metadata:
   version: "1.2"
-compatibility: "Python 3.10+ stdlib helper; requires gh CLI on PATH, authenticated with GitHub repo access. Optional local lint uses golangci-lint and ruff when present."
+compatibility: "Python 3.12+ stdlib helper; requires gh CLI on PATH, authenticated with GitHub repo access. Optional local lint uses golangci-lint and ruff when present."
 ---
 
 # PR Reviewer
@@ -12,7 +12,7 @@ Automated code review for GitHub pull requests. Analyzes diffs for security issu
 
 ## Prerequisites
 
-- Python 3.10+
+- Python 3.12+
 - `gh` CLI installed and authenticated (`gh auth status`)
 - Repository access (read at minimum, write for posting comments)
 - Optional: `golangci-lint` for Go linting, `ruff` for Python linting

@@ -3,7 +3,7 @@ name: ls-linux-patcher
 description: Create safe Linux server patching and Docker update plans. Use when the user asks to update, patch, or upgrade Linux servers, check maintenance readiness, plan package updates, plan Docker Compose refreshes, or coordinate multi-host maintenance. The bundled helper is plan-only; PatchMon API execution is unavailable until a tested Python client is added.
 metadata:
   version: "1.1"
-compatibility: "Python 3.10+ for scripts/patch_cli.py; ssh is required to run generated commands manually. The bundled CLI never executes remote patching commands."
+compatibility: "Python 3.12+ for scripts/patch_cli.py; ssh is required to run generated commands manually. The bundled CLI never executes remote patching commands."
 ---
 
 # Linux Patcher

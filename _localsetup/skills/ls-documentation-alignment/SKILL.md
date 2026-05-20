@@ -3,7 +3,7 @@ name: ls-documentation-alignment
 description: "Run automated repo documentation alignment: discover source truth, audit public/internal docs, refresh generated artifacts, coordinate subagent research, and verify docs in one pass."
 metadata:
   version: "1.0"
-compatibility: "Python 3.10+, PyYAML, Localsetup docs_alignment.py adapter. Generic workflow with Localsetup source-truth defaults."
+compatibility: "Python 3.12+, PyYAML, Localsetup docs_alignment.py adapter. Generic workflow with Localsetup source-truth defaults."
 ---
 
 # Documentation alignment

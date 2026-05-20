@@ -29,8 +29,3 @@ updates:
       project-python:
         patterns:
           - "*"
-    ignore:
-      # Keep PGPy below 0.6 during the uv migration; upgrading OpenPGP behavior is a separate risk review.
-      - dependency-name: PGPy
-        versions:
-          - ">=0.6"

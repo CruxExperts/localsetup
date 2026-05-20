@@ -100,8 +100,7 @@ def test_dependency_pr_validation_exercises_manifest_inputs() -> None:
     assert "uv sync --frozen --all-groups" in workflow
     assert "uv run --frozen pytest" in workflow
     assert "package-ecosystem: uv" in dependabot
-    assert "dependency-name: PGPy" in dependabot
-    assert "\">=0.6\"" in dependabot
+    assert "dependency-name: PGPy" not in dependabot
 
 
 def test_skill_index_scrub_can_prune_dead_urls(tmp_path: Path) -> None:

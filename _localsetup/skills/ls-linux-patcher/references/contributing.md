@@ -11,7 +11,7 @@ Contributions should preserve the current v3 boundary: Python tooling only, plan
 
 ## Tooling Rules
 
-- Use Python 3.10+ for skill tooling.
+- Use Python 3.12+ for skill tooling.
 - Do not add shell helper wrappers for patching flows.
 - Validate all CLI input as hostile.
 - Return actionable stderr for invalid input.

@@ -10,7 +10,7 @@ Use this page to install Localsetup v3, choose agent platforms, verify the insta
 
 ## Requirements
 
-- Python `>= 3.10`
+- Python `>= 3.12`
 - Bash on Linux, macOS, or WSL2
 - Git and network access to GitHub for raw bootstrap, unless installing from a local clone
 - Required for dependency sync: `uv`, with dependency intent in `pyproject.toml` and the committed `uv.lock`.

@@ -4,7 +4,7 @@ This setup guide reflects the current v3 implementation: `scripts/patch_cli.py` 
 
 ## Prerequisites
 
-- Python 3.10+ on the control machine.
+- Python 3.12+ on the control machine.
 - SSH client on the control machine if you intend to run generated commands.
 - SSH key access to each target host.
 - A maintenance window, backup plan, and rollback path.

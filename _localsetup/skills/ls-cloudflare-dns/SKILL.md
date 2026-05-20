@@ -3,7 +3,7 @@ name: ls-cloudflare-dns
 description: Manage Cloudflare DNS records and zone DNS settings with a Python-first direct Cloudflare v4 REST API CLI, deterministic JSON output, snapshots, dry-run plans, and apply safety gates.
 metadata:
   version: "2.0"
-compatibility: "Python 3.10+ with requests and jsonschema from the Localsetup uv project environment. Uses Cloudflare v4 REST API directly; no external DNS CLI dependency."
+compatibility: "Python 3.12+ with requests and jsonschema from the Localsetup uv project environment. Uses Cloudflare v4 REST API directly; no external DNS CLI dependency."
 ---
 
 # Cloudflare DNS management
