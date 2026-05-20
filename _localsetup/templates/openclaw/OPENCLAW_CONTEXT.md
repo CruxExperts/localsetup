@@ -25,7 +25,7 @@ Localsetup lives in this repo at `_localsetup/`. All context is repo-local (mobi
 - Inventory and scouting: use `gpt-5.4-mini` for cheap repo/file inventory, low-risk search, and parallel subagent scouting.
 - Critical review: use `gpt-5.5` at medium reasoning for security, release blockers, architecture, and high-risk review findings.
 - Bounded coding: use `gpt-5.3-codex` for scoped implementation tasks with clear write ownership and tests.
-- Credit freshness: as of 2026-05-07, the official Codex rate card lists per 1M token credits as `gpt-5.4-mini` 18.75/1.875/113, `gpt-5.3-codex` 43.75/4.375/350, and `gpt-5.5` 125/12.50/750 for input/cached/output. Re-check https://help.openai.com/en/articles/20001106-codex-rate-card before changing model guidance.
+- Credit freshness: Codex credit rates are volatile. Re-check the official Codex rate card at https://help.openai.com/en/articles/20001106-codex-rate-card before changing model guidance or making cost-sensitive routing decisions.
 
 ## Capability skills and workflow packages (in project skills/)
 Load when task matches:

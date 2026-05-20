@@ -1,6 +1,6 @@
 # Source Ledger
 
-Volatile facts were last verified on 2026-05-12 UTC from the official shadcn/ui
+Volatile facts were last verified on 2026-05-20 UTC from the official shadcn/ui
 site, npm registry metadata, GitHub releases, and live CLI help. Re-run
 `python3 scripts/verify_shadcn_sources.py --refresh --json` before release work
 or before relying on current-version facts.

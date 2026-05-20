@@ -69,6 +69,16 @@ Git hygiene defaults for this repo:
 - If a file must be tracked for local repository operation but should not ship in release archives, add an explicit `.gitattributes export-ignore` rule and state why in the commit.
 - The pre-commit hook blocks staged private/local maintenance paths by default. Use `LOCALSETUP_ALLOW_PRIVATE_STAGE=1` only after an explicit public-boundary review.
 
+## Volatile Fact Verification
+
+Before editing or validating markdown claims about latest/current versions, release channels, rate cards, vendor behavior, APIs, protocols, external tool support, security advisories, package compatibility, or platform support, check `.localsetup-maint/docs/volatile-facts.yaml` if it exists.
+
+If the volatile fact index is absent and a volatile claim is found or introduced, create it using the private repo schema. Keep `.localsetup-maint/docs/volatile-facts.yaml` private and untracked; do not move it into public framework docs.
+
+Use source-code, config, and local CLI verification for Localsetup behavior claims. Use primary upstream research for external claims, such as official docs, release notes, package registries, standards, vendor API schemas, advisories, or live CLI/API behavior where safe. For broad or current external fact verification, use research agents and record source URLs, access dates, conflicts, and limitations in the volatile index.
+
+Update the volatile fact index in the same work wave whenever a volatile claim is verified, corrected, de-volatilized, removed, or newly introduced.
+
 ## Agent-Team Workflow Defaults
 
 For non-trivial development work, act as the controller. The controller owns requirements clarification, plan quality, task decomposition, delegation, state tracking, verification, and final acceptance. Use direct single-agent work only when the task is small, the relevant path is obvious, expected edits are one or two files, validation is simple, and context growth is low risk.
