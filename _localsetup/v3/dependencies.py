@@ -420,7 +420,7 @@ def dependency_status(
     commands = [
         _uv_project_command(repo_root, uv_bin, ["lock", "--check"], offline=offline),
         _uv_project_command(repo_root, uv_bin, ["sync", "--locked", "--no-dev"], offline=offline),
-        _uv_project_command(repo_root, uv_bin, ["run", "--locked"], offline=offline),
+        _uv_project_command(repo_root, uv_bin, ["run", "--locked", "--no-sync", "--no-dev"], offline=offline),
     ]
 
     if canonical_mode not in ACTIVE_DEPENDENCY_MODES:

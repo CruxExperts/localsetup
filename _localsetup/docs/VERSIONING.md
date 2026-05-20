@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 3.8
+version: 4.0
 owner_skill: ls-automatic-versioning
 ---
 
@@ -11,7 +11,7 @@ Localsetup v3 uses the root `VERSION` file as the source of truth for the framew
 ## Current Version
 
 - Source of truth: [`../../VERSION`](../../VERSION)
-- Current value: `3.8.13`
+- Current value: `4.0.0`
 - Generated facts: [`_generated/facts.json`](_generated/facts.json)
 
 ## Policy

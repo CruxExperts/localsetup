@@ -71,7 +71,7 @@ def stable_json_hash(payload: Any) -> str:
 
 
 def uuid7() -> str:
-    """Return an RFC 9562-style UUIDv7 string for Python 3.10+."""
+    """Return an RFC 9562-style UUIDv7 string for Python 3.12+."""
     unix_ms = int(time.time() * 1000) & ((1 << 48) - 1)
     rand = random.SystemRandom().getrandbits(UUID7_RANDOM_BITS)
     value = unix_ms << 80

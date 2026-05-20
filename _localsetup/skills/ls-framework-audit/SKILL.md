@@ -3,7 +3,7 @@ name: ls-framework-audit
 description: "Run doc, link, skill matrix, and version/facts checks before release. Single entrypoint script; output to user-specified path only; no in-repo default. Use when user says 'run audit', 'run framework audit', or before release."
 metadata:
   version: "1.0"
-compatibility: "Python 3.10+ and PyYAML via the framework dependency helper. Skill-sandbox smoke entries depend on ls-skill-sandbox-tester tooling (create_sandbox.py, run_smoke.py); repo-root smoke entries run directly from the repository root."
+compatibility: "Python 3.12+ and PyYAML via the framework dependency helper. Skill-sandbox smoke entries depend on ls-skill-sandbox-tester tooling (create_sandbox.py, run_smoke.py); repo-root smoke entries run directly from the repository root."
 ---
 
 # Framework audit

@@ -17,7 +17,7 @@ metadata:
 
 ## Script generation quality
 
-- **Framework tooling default:** New Localsetup framework tooling and substantial refactors must be Python 3.10+ after installation. Shell and PowerShell are limited to install bootstrap, platform entrypoints, host-compatible wrappers, or delegation to Python tooling.
+- **Framework tooling default:** New Localsetup framework tooling and substantial refactors must be Python 3.12+ after installation. Shell and PowerShell are limited to install bootstrap, platform entrypoints, host-compatible wrappers, or delegation to Python tooling.
 - **Python style:** Use `pathlib` where practical, small helper functions, type hints for public functions and boundaries, context managers, and concise docstrings for non-obvious behavior.
 - **Approved libraries:** Use the repo tooling policy for YAML, HTTP, frontmatter, and crypto dependencies. Do not hand-roll parsers or HTTP clients when an approved dependency covers the need.
 - **Comments:** Explain purpose, usage, parameters, and complex decisions. Avoid comments that restate obvious code.
@@ -48,5 +48,5 @@ This skill owns script-quality, input-hardening, tooling-policy, and generated-o
 
 - Treat CLI args, files, network payloads, copied text, and imported archives as hostile.
 - Prefer structured parsers and approved dependencies over ad hoc parsing.
-- New framework tooling is Python 3.10+ unless it is a minimal bootstrap or platform entrypoint.
+- New framework tooling is Python 3.12+ unless it is a minimal bootstrap or platform entrypoint.
 - Generated docs should be produced by the repo generators and carry provenance; do not hand-edit generated artifacts except to repair the generator.

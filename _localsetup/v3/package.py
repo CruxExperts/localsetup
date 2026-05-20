@@ -5,6 +5,7 @@ import io
 import json
 import tarfile
 import time
+import tomllib
 from pathlib import Path
 from typing import Any
 
@@ -18,11 +19,6 @@ ARTIFACT_METADATA_PATH = "_localsetup/artifact-metadata.json"
 
 
 def _load_toml(path: Path) -> dict[str, Any]:
-    try:
-        import tomllib
-    except ModuleNotFoundError:  # pragma: no cover - exercised on Python 3.10
-        import tomli as tomllib  # type: ignore[no-redef]
-
     with path.open("rb") as handle:
         data = tomllib.load(handle)
     return data if isinstance(data, dict) else {}
@@ -118,11 +114,6 @@ def _expected_components_from_artifact(artifact_path: Path) -> list[dict[str, st
         if handle is None:
             return []
         data = handle.read()
-    try:
-        import tomllib
-    except ModuleNotFoundError:  # pragma: no cover - exercised on Python 3.10
-        import tomli as tomllib  # type: ignore[no-redef]
-
     lock = tomllib.loads(data.decode("utf-8"))
     packages = lock.get("package", []) if isinstance(lock, dict) else []
     components: list[dict[str, str]] = []

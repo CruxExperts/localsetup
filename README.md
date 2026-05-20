@@ -10,7 +10,7 @@
   <a href="_localsetup/docs/PLATFORM_REGISTRY.md"><img src="https://img.shields.io/badge/platforms-cursor%20%7C%20claude--code%20%7C%20codex%20%7C%20openclaw%20%7C%20kilo%20%7C%20opencode-1f6feb" alt="Supported platforms"></a>
 </p>
 
-**Version:** 3.8.13<br>
+**Version:** 4.0.0<br>
 
 **Localsetup v3 gives coding agents a repo-local operating layer.**
 
@@ -62,7 +62,7 @@ Start with the [workflow packages guide](_localsetup/docs/WORKFLOW_PACKAGES.md) 
 <!-- facts-block:start -->
 | Fact | Value |
 |---|---|
-| Current version | `3.8.13` |
+| Current version | `4.0.0` |
 | Supported platforms | `cursor, claude-code, codex, openclaw, kilo, opencode` |
 | Shipped skills | `52` |
 | Workflow packages | `22` |
@@ -248,7 +248,7 @@ The design follows a few durable pressures instead of chasing market snapshots:
 
 ## Requirements
 
-- Python `>= 3.10`
+- Python `>= 3.12`
 - Bash on Linux, macOS, or WSL2
 - Git and network access to GitHub for raw bootstrap, unless installing from a local clone
 - Required for dependency sync: `uv`, with dependency intent in `pyproject.toml` and the committed `uv.lock`.

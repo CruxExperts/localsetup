@@ -245,6 +245,47 @@ def test_generated_artifact_provenance_uses_dirty_parent_for_release_sync(tmp_pa
     assert generated_mode["source_dirty"] is True
 
 
+def test_generated_artifact_provenance_uses_release_sync_source_for_pr_merge_commit(tmp_path: Path) -> None:
+    repo = make_git_repo(tmp_path)
+    base = run(repo, "rev-parse", "HEAD")
+
+    (repo / "_localsetup" / "skills" / "ls-demo" / "SKILL.md").write_text(
+        "---\nname: ls-demo\ndescription: Updated\n---\n",
+        encoding="utf-8",
+    )
+    run(repo, "add", "_localsetup/skills/ls-demo/SKILL.md")
+    run(repo, "commit", "-q", "-m", "feat!: update runtime\n\nRelease-Type: major")
+    source = run(repo, "rev-parse", "HEAD")
+    source_tree = run(repo, "rev-parse", "HEAD^{tree}")
+
+    (repo / "VERSION").write_text("4.0.0\n", encoding="utf-8")
+    generated = repo / "_localsetup" / "docs" / "_generated" / "facts.json"
+    generated.parent.mkdir(parents=True, exist_ok=True)
+    generated.write_text("{}\n", encoding="utf-8")
+    run(repo, "add", "VERSION", str(generated.relative_to(repo)))
+    run(repo, "commit", "-q", "-m", "chore: sync release version 4.0.0")
+    release_sync = run(repo, "rev-parse", "HEAD")
+    merge_tree = run(repo, "rev-parse", f"{release_sync}^{{tree}}")
+    merge = run(
+        repo,
+        "commit-tree",
+        merge_tree,
+        "-p",
+        base,
+        "-p",
+        release_sync,
+        "-m",
+        f"Merge {release_sync} into {base}",
+    )
+    run(repo, "reset", "--hard", merge)
+
+    generated_mode = base_provenance(repo, emitter="test", generated_commit_parent=True)
+
+    assert generated_mode["source_commit"] == source
+    assert generated_mode["source_tree_sha"] == source_tree
+    assert generated_mode["source_dirty"] is True
+
+
 def test_package_marker_loads_json_and_legacy_text(tmp_path: Path) -> None:
     package = tmp_path / "ls-demo"
     package.mkdir()

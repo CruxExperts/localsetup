@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 3.8
+version: 4.0
 owner_skill: ls-framework-compliance
 ---
 
@@ -166,13 +166,13 @@ Before install, use the dependency list below as the canonical source of truth. 
 |------------|------------------------|---------|
 | `git` >= 2.20.0 | Required for raw bootstrap clone and refresh; recommended otherwise | Cloning or refreshing the managed source checkout, source traceability, and release workflows |
 | `rg` (ripgrep) | Recommended | Framework search and review workflows |
-| `python` >= 3.10 | Required | V3 installer, framework tools, tests, and Python-first policy |
+| `python` >= 3.12 | Required | V3 installer, framework tools, tests, and Python-first policy |
 | `uv` | Required for dependency sync | Sync `pyproject.toml` / `uv.lock` into the source checkout `.venv` |
 | Python: `yaml` (PyYAML>=6.0) | Recommended | YAML parsing for skill index, config, and PRD files |
 | Python: `requests` (requests>=2.28) | Recommended | HTTP client used by index refresh and scrub tools |
 | Python: `frontmatter` (python-frontmatter>=1.1) | Recommended | YAML frontmatter parsing for skill and PRD markdown files |
 | Python: `cryptography` (cryptography>=42.0) | Recommended | Framework cryptographic primitives for secure envelope workflows |
-| Python: `pgpy` (PGPy>=0.5.4,<0.6) | Recommended | Pure-Python OpenPGP support for secure mail workflows |
+| Python: `pgpy` (PGPy>=0.6.0) | Recommended | Pure-Python OpenPGP support for secure mail workflows |
 
 Python package intent is listed in `pyproject.toml`; `uv.lock` is the committed lock used by automation and installer sync. Dependency PRs must update both files when dependency intent changes. The conservative default is `prompt-only` dependency checking; explicit `--sync-env` or `--dependency-mode uv-sync` creates or updates the uv-managed source checkout `.venv` without mutating externally managed system Python. To check the current machine without changing files, run:
 

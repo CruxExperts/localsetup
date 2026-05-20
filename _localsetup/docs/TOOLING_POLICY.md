@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 3.8
+version: 4.0
 owner_skill: ls-script-and-docs-quality
 ---
 
@@ -19,8 +19,8 @@ Purpose: define project-wide tooling language and dependency rules.
 
 ## Python runtime target
 
-- Minimum supported version: Python 3.10.
-- Baseline rationale: Ubuntu 22.04 LTS default runtime and forward compatibility on newer LTS versions.
+- Minimum supported version: Python 3.12.
+- Baseline rationale: Localsetup uses the Python 3.12 standard library as the supported floor while staying forward-compatible with newer LTS runtimes.
 
 ## Dependency policy
 
@@ -69,9 +69,8 @@ These libraries are pre-approved, listed in `pyproject.toml`, locked in `uv.lock
 | requests | `requests` | `requests>=2.28` | All outbound HTTP. Use `requests.Session` for multi-request tools. Never use `urllib.request` for new code. |
 | python-frontmatter | `frontmatter` | `python-frontmatter>=1.1` | Parse YAML front matter from skill and PRD markdown files. Never split frontmatter by hand. |
 | cryptography | `cryptography` | `cryptography>=42.0` | Framework cryptographic primitives (AES-GCM, HKDF, PBKDF2, secure random). Use for encryption/decryption and key derivation. |
-| PGPy | `pgpy` | `PGPy>=0.5.4,<0.6` | Pure-Python OpenPGP encryption and decryption in framework tooling. |
+| PGPy | `pgpy` | `PGPy>=0.6.0` | Pure-Python OpenPGP encryption and decryption in framework tooling. |
 | jsonschema | `jsonschema` | `jsonschema>=4.0` | Draft 2020-12 validation for Localsetup manifests and Agent Q payloads. |
-| tomli | `tomli` | `tomli>=2.0; python_version < '3.11'` | TOML parsing fallback on Python 3.10. Use standard-library `tomllib` on newer Python. |
 
 **Shared dependency helper:** Import `lib.deps` at the top of every tool and call `require_deps()` before using any approved library. This gives users an actionable error message instead of a bare `ImportError` if the library is missing.
 

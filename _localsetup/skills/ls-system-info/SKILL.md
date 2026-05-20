@@ -3,7 +3,7 @@ name: ls-system-info
 description: "Quick system diagnostics: CPU, memory, disk, uptime. Use when capturing server baseline or recording host layout and specs for further operations."
 metadata:
   version: "1.1"
-compatibility: "Linux: free, df, lscpu, uptime, ip, hostname, lsblk (or /proc); Python 3.10+ stdlib only for script. No sudo or extra packages."
+compatibility: "Linux: free, df, lscpu, uptime, ip, hostname, lsblk (or /proc); Python 3.12+ stdlib only for script. No sudo or extra packages."
 ---
 
 # System info
@@ -66,4 +66,4 @@ If you prefer not to run the script, you can run these manually (all no sudo):
 
 ## Install
 
-No installation needed. The quick commands use `free`, `df`, `uptime`, and `lscpu` (or `/proc`); the extended script uses Python 3.10+ stdlib only. On minimal images, install `util-linux` if `lscpu` or `lsblk` is missing.
+No installation needed. The quick commands use `free`, `df`, `uptime`, and `lscpu` (or `/proc`); the extended script uses Python 3.12+ stdlib only. On minimal images, install `util-linux` if `lscpu` or `lsblk` is missing.

@@ -3,7 +3,7 @@ name: ls-arbiter
 description: "Push decisions to Arbiter Zebu for async human review. Use when you need human input on plans, architectural choices, or approval before proceeding."
 metadata:
   version: "1.3"
-compatibility: "Python 3.10+, python-frontmatter, and an Arbiter Zebu queue at ~/.arbiter/queue. The bundled CLI manages queue files; an Arbiter Zebu bot or human reviewer must still complete decisions."
+compatibility: "Python 3.12+, python-frontmatter, and an Arbiter Zebu queue at ~/.arbiter/queue. The bundled CLI manages queue files; an Arbiter Zebu bot or human reviewer must still complete decisions."
 ---
 
 # Arbiter Skill

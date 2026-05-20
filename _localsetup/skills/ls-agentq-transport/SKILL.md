@@ -3,7 +3,7 @@ name: ls-agentq-transport
 description: Agent Q bidirectional transport client - file_drop ship/ingest, mail pull/ship (including strict gpg preencrypted), registry validation, queue-pending, archive-prune. Use when shipping or ingesting sealed PRD manifests between agents over shared folders or mail; when editing agent_trust_registry, manifest.schema.json, or agentq CLI.
 metadata:
   version: "1.0"
-compatibility: "Python 3.10+, PyYAML, python-frontmatter, cryptography, PGPy, and gpg/gpg2 for key generation or strict sign-then-encrypt. Mail paths require configured IMAP/SMTP via ls-mail-protocol-control."
+compatibility: "Python 3.12+, PyYAML, python-frontmatter, cryptography, PGPy, and gpg/gpg2 for key generation or strict sign-then-encrypt. Mail paths require configured IMAP/SMTP via ls-mail-protocol-control."
 ---
 
 # Agent Q transport

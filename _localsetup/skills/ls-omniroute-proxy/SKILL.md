@@ -3,7 +3,7 @@ name: ls-omniroute-proxy
 description: Guide agents through read-only OmniRoute proxy discovery, model catalogs, provider metadata, context windows, rate limits, quotas, routing combos, MCP/A2A integration, and agent client configuration. Use when working with OmniRoute, OmniRoute proxy, AI gateway discovery, model catalogs, provider limits, context windows, routing combos, MCP/A2A integration, or configuring agents to use OmniRoute.
 metadata:
   version: "1.0"
-compatibility: "Requires Python 3.10+, repo-installed requests, and network reachability to an OmniRoute HTTP(S) proxy. API keys must be supplied through environment variables. HTTP_PROXY, HTTPS_PROXY, and NO_PROXY behavior follows requests."
+compatibility: "Requires Python 3.12+, repo-installed requests, and network reachability to an OmniRoute HTTP(S) proxy. API keys must be supplied through environment variables. HTTP_PROXY, HTTPS_PROXY, and NO_PROXY behavior follows requests."
 ---
 
 # OmniRoute proxy
@@ -25,7 +25,7 @@ Use this skill when the task involves OmniRoute, an OmniRoute proxy, AI gateway 
 
 ## Runtime assumptions
 
-- The bundled probe requires Python 3.10+ and `requests` from the Localsetup uv project environment.
+- The bundled probe requires Python 3.12+ and `requests` from the Localsetup uv project environment.
 - The host running the probe must have network reachability to the OmniRoute proxy base URL.
 - If the environment sets `HTTP_PROXY`, `HTTPS_PROXY`, or `NO_PROXY`, `requests` applies those proxy settings to the probe.
 - The probe accepts only `http` or `https` base URLs and rejects URLs with embedded credentials.

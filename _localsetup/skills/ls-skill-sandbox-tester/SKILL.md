@@ -3,7 +3,7 @@ name: ls-skill-sandbox-tester
 description: "Test skills in an isolated sandbox before production. Run after vetting and normalization (not right after import). Creates a unique temp sandbox when the skill needs read/write; runs smoke checks; on failure uses ls-debug-pro to iterate until fixed; no writes to repo until user approves. Use when validating a skill after it is framework-compliant, testing a skill end-to-end, or ensuring it runs correctly on all supported platforms."
 metadata:
   version: "1.0"
-compatibility: "Python 3.10+ for any bundled tooling. Sandbox paths follow platform temp (Linux /tmp, macOS /tmp or $TMPDIR, Windows %TEMP%). Resolves skill paths per _localsetup/docs/PLATFORM_REGISTRY.md. Tooling must follow _localsetup/docs/TOOLING_POLICY.md and INPUT_HARDENING_STANDARD.md."
+compatibility: "Python 3.12+ for any bundled tooling. Sandbox paths follow platform temp (Linux /tmp, macOS /tmp or $TMPDIR, Windows %TEMP%). Resolves skill paths per _localsetup/docs/PLATFORM_REGISTRY.md. Tooling must follow _localsetup/docs/TOOLING_POLICY.md and INPUT_HARDENING_STANDARD.md."
 ---
 
 # Skill Sandbox Tester
@@ -64,7 +64,7 @@ Resolve the skill directory from current context and registry mapping: if workin
 
 ## Tooling
 
-Python 3.10+ scripts under `scripts/` (per TOOLING_POLICY and INPUT_HARDENING_STANDARD). Run from repo root or from the skill directory; paths below are relative to the skill (e.g. `_localsetup/skills/ls-skill-sandbox-tester/` or deployed equivalent).
+Python 3.12+ scripts under `scripts/` (per TOOLING_POLICY and INPUT_HARDENING_STANDARD). Run from repo root or from the skill directory; paths below are relative to the skill (e.g. `_localsetup/skills/ls-skill-sandbox-tester/` or deployed equivalent).
 
 | Script | Purpose |
 |--------|---------|
@@ -121,7 +121,7 @@ Smoke passes if the command exits 0. On non-zero, use ls-debug-pro in the sandbo
 
 ## Framework standards
 
-- **Tooling:** Any script added to this skill (e.g. a Python helper to create sandbox and run smoke) must be Python 3.10+, per _localsetup/docs/TOOLING_POLICY.md. Shell/PowerShell only for minimal platform entrypoints if required.
+- **Tooling:** Any script added to this skill (e.g. a Python helper to create sandbox and run smoke) must be Python 3.12+, per _localsetup/docs/TOOLING_POLICY.md. Shell/PowerShell only for minimal platform entrypoints if required.
 - **Input hardening:** Any tool that takes paths, skill names, or env must follow _localsetup/docs/INPUT_HARDENING_STANDARD.md: sanitize input, validate paths and bounds, emit actionable stderr, no silent failure.
 - **Documentation:** Keep this SKILL.md and any references in sync with PLATFORM_REGISTRY and the framework docs index.
 

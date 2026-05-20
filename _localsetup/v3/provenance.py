@@ -120,7 +120,19 @@ def _head_changed_paths(repo_root: Path) -> list[str]:
 
 def release_sync_parent_dirty(repo_root: Path) -> bool:
     """Return the pre-commit dirty flag encoded by a generated release-sync commit."""
-    return _head_subject(repo_root).startswith(VERSION_SYNC_SUBJECT_PREFIX)
+    if _head_subject(repo_root).startswith(VERSION_SYNC_SUBJECT_PREFIX):
+        return True
+    merge_head_subject = _subject_for_ref(repo_root, "HEAD^2")
+    return bool(merge_head_subject and merge_head_subject.startswith(VERSION_SYNC_SUBJECT_PREFIX))
+
+
+def _subject_for_ref(repo_root: Path, ref: str) -> str | None:
+    return _git_text(repo_root, ["log", "-1", "--pretty=%s", ref])
+
+
+def _changed_paths_for_ref(repo_root: Path, ref: str) -> list[str]:
+    output = _git_text(repo_root, ["diff-tree", "--no-commit-id", "--name-only", "-r", ref])
+    return [line for line in (output or "").splitlines() if line]
 
 
 def generated_artifact_parent_source_commit(repo_root: Path) -> str | None:
@@ -136,6 +148,13 @@ def generated_artifact_parent_source_commit(repo_root: Path) -> str | None:
     if subject.startswith(VERSION_SYNC_SUBJECT_PREFIX):
         return _git_text(repo_root, ["rev-parse", "HEAD^"])
     if not subject.startswith(GENERATED_DOCS_SUBJECT_PREFIX):
+        merge_head_subject = _subject_for_ref(repo_root, "HEAD^2")
+        if merge_head_subject and merge_head_subject.startswith(VERSION_SYNC_SUBJECT_PREFIX):
+            return _git_text(repo_root, ["rev-parse", "HEAD^2^"])
+        if merge_head_subject and merge_head_subject.startswith(GENERATED_DOCS_SUBJECT_PREFIX):
+            changed_paths = _changed_paths_for_ref(repo_root, "HEAD^2")
+            if changed_paths and all(_is_generated_output_path(path) for path in changed_paths):
+                return _git_text(repo_root, ["rev-parse", "HEAD^2^"])
         return None
     changed_paths = _head_changed_paths(repo_root)
     if changed_paths and all(_is_generated_output_path(path) for path in changed_paths):
