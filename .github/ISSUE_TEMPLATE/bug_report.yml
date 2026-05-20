@@ -17,7 +17,7 @@ body:
     attributes:
       label: Localsetup version
       description: Paste the value from `cat VERSION`, commit, or release tag.
-      placeholder: "4.0.1 / release tag / commit SHA"
+      placeholder: "4.0.2 / release tag / commit SHA"
     validations:
       required: true
   - type: dropdown

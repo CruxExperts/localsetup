@@ -21,6 +21,7 @@ List the commands you ran and their results.
 uv run --locked python _localsetup/tools/localsetup.py --source-root . version-plan
 uv run --locked python _localsetup/tools/localsetup.py --source-root . version-sync --check --target "$(cat VERSION)"
 uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog
+uv run --locked python _localsetup/tools/localsetup.py --source-root . docs-align check --ci
 uv run --locked pytest -n auto _localsetup/tests -q
 git diff --check
 ```

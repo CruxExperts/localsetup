@@ -6,7 +6,7 @@ owner_skill: ls-framework-compliance
 
 # Quickstart
 
-Use this page to install Localsetup, choose agent platforms, verify the install, and update later. For the product pitch, see the [root README](../../README.md).
+Use this page to install Localsetup, choose agent platforms, verify the install, and update later. For copy-paste command tables, see [Command reference](COMMAND_REFERENCE.md). For the product pitch, see the [root README](../../README.md).
 
 ## Requirements
 
@@ -266,5 +266,6 @@ Rollback only acts on managed paths recorded by Localsetup metadata.
 - [Shipped skills catalog](SKILLS.md)
 - [Platform registry](PLATFORM_REGISTRY.md)
 - [Multi-platform install](MULTI_PLATFORM_INSTALL.md)
+- [Command reference](COMMAND_REFERENCE.md)
 - [Workflow packages](WORKFLOW_PACKAGES.md)
 - [Workflow registry](WORKFLOW_REGISTRY.md)

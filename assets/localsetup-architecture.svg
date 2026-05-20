@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
   <title id="title">Localsetup architecture overview</title>
-  <desc id="desc">Repo source, the Localsetup CLI resolver, managed home skill library, repo adapter paths, and lock/report outputs.</desc>
+  <desc id="desc">Source checkout, the Localsetup CLI resolver, managed package library, scoped repo adapter paths, and lock/report outputs.</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#071014"/>
@@ -44,11 +44,11 @@
   <path d="M828 426 C947 486 1042 458 1178 502" class="line" stroke="#253e20" opacity="0.7"/>
 
   <text x="60" y="66" class="title">Localsetup Architecture</text>
-  <text x="60" y="94" class="small">Repo-local source stays canonical. Managed outputs are generated and reversible.</text>
+  <text x="60" y="94" class="small">Source truth stays separate from managed package output and scoped repo adapters.</text>
 
   <g filter="url(#shadow)">
     <rect x="58" y="144" width="280" height="246" rx="22" class="box"/>
-    <text x="86" y="184" class="label">Repo source</text>
+    <text x="86" y="184" class="label">Source checkout</text>
     <text x="86" y="218" class="mono">_localsetup/</text>
     <text x="86" y="250" class="tiny">config/platforms.yaml</text>
     <text x="86" y="278" class="tiny">skills/ls-*</text>
@@ -71,10 +71,10 @@
 
   <g filter="url(#shadow)">
     <rect x="860" y="106" width="286" height="166" rx="22" class="box2"/>
-    <text x="892" y="146" class="label">Managed home library</text>
-    <text x="892" y="182" class="mono">~/.local/share/agents/</text>
-    <text x="892" y="208" class="mono">skills/localsetup</text>
-    <text x="892" y="240" class="tiny">Recreated from repo source.</text>
+    <text x="892" y="146" class="label">Managed packages</text>
+    <text x="892" y="182" class="mono">~/.local/share/</text>
+    <text x="892" y="208" class="mono">localsetup/packages</text>
+    <text x="892" y="240" class="tiny">52 skills + 22 workflows.</text>
   </g>
 
   <g filter="url(#shadow)">
@@ -83,7 +83,7 @@
     <text x="892" y="392" class="mono">.codex/skills</text>
     <text x="892" y="418" class="mono">.kilo/skills</text>
     <text x="892" y="444" class="mono">.opencode/skills</text>
-    <text x="892" y="470" class="tiny">Symlink or portable mode.</text>
+    <text x="892" y="470" class="tiny">Scoped symlink or portable mode.</text>
   </g>
 
   <g filter="url(#shadow)">

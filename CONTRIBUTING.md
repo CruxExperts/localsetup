@@ -26,9 +26,10 @@ Use the versioning policy in [_localsetup/docs/VERSIONING.md](_localsetup/docs/V
 Before opening a release-impacting PR, run the relevant subset of:
 
 ```bash
-uv run --locked python _localsetup/tools/localsetup.py --repo . version-plan
-uv run --locked python _localsetup/tools/localsetup.py --repo . version-sync --check --target "$(cat VERSION)"
-uv run --locked python _localsetup/tools/localsetup.py --repo . validate-catalog
+uv run --locked python _localsetup/tools/localsetup.py --source-root . version-plan
+uv run --locked python _localsetup/tools/localsetup.py --source-root . version-sync --check --target "$(cat VERSION)"
+uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog
+uv run --locked python _localsetup/tools/localsetup.py --source-root . docs-align check --ci
 uv run --locked pytest -n auto _localsetup/tests -q
 git diff --check
 ```
@@ -58,6 +59,7 @@ Only humans are listed as contributors. Do not add AI assistants, IDEs, or tools
 - [Root README](README.md)
 - [Framework README](_localsetup/README.md)
 - [Quickstart](_localsetup/docs/QUICKSTART.md)
+- [Command reference](_localsetup/docs/COMMAND_REFERENCE.md)
 - [Skill importing](_localsetup/docs/SKILL_IMPORTING.md)
 - [Versioning](_localsetup/docs/VERSIONING.md)
 - [Repository maintenance](_localsetup/docs/REPO_MAINTENANCE.md)

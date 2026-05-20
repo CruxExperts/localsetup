@@ -163,6 +163,7 @@ Conversion writes a timestamped backup and machine-readable report under `.local
 Windows support is WSL2-only in the current framework. Open WSL2, change to the repo path, and run the Bash installer.
 
 Full install docs: [_localsetup/docs/QUICKSTART.md](_localsetup/docs/QUICKSTART.md) and [_localsetup/docs/MULTI_PLATFORM_INSTALL.md](_localsetup/docs/MULTI_PLATFORM_INSTALL.md).
+Copy-paste command reference: [_localsetup/docs/COMMAND_REFERENCE.md](_localsetup/docs/COMMAND_REFERENCE.md).
 
 Opt-in harness automation is documented separately because normal installs never schedule autonomous work. See [_localsetup/docs/HARNESS_AUTOMATION.md](_localsetup/docs/HARNESS_AUTOMATION.md) for `localsetup harness codex-heartbeat plan/init/enable/status/run/disable`.
 
@@ -229,6 +230,8 @@ uv run --locked python _localsetup/tools/localsetup.py --source-root . rollback
 ```
 
 Use `--trace-json /path/to/events.jsonl` with `install`, `verify`, or `doctor` to append local JSONL trace events for automation review.
+
+For a complete option table, see the [command reference](_localsetup/docs/COMMAND_REFERENCE.md).
 
 `doctor` reports the uv-managed source checkout environment. If it sees an old `~/.local/share/localsetup/venv` from earlier releases, it reports that legacy venv as ignored and gives a repair hint instead of trying to execute it.
 

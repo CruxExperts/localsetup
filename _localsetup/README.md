@@ -119,6 +119,7 @@ Start here:
 
 - [Docs index](docs/README.md)
 - [Quickstart](docs/QUICKSTART.md)
+- [Command reference](docs/COMMAND_REFERENCE.md)
 - [Features](docs/FEATURES.md)
 - [Platform registry](docs/PLATFORM_REGISTRY.md)
 - [Workflow registry](docs/WORKFLOW_REGISTRY.md)
