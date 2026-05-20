@@ -1,11 +1,11 @@
 # Next.js Latest Stable
 
-Verified on 2026-05-12 UTC from npm registry metadata for `next`.
+Verified on 2026-05-20 UTC from npm registry metadata for `next`.
 
 ## Current Package Facts
 
 - Stable npm `latest`: `16.2.6`.
-- Canary tag: `16.3.0-canary.19`.
+- Canary tag: `16.3.0-canary.24`.
 - Beta tag: `16.0.0-beta.0`.
 - RC tag: `15.0.0-rc.1`.
 - Engine for `next@16.2.6`: Node `>=20.9.0`.
