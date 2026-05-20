@@ -622,6 +622,14 @@ platforms:
         load_platforms(root)
 
 
+def test_verify_rules_wrapper_prefers_uv_project_venv() -> None:
+    wrapper = (ROOT / "_localsetup" / "tools" / "verify_rules").read_text(encoding="utf-8")
+
+    assert 'REPO_ROOT="$(cd "$ENGINE_DIR/.." && pwd)"' in wrapper
+    assert '$REPO_ROOT/.venv/bin/python' in wrapper
+    assert 'LOCALSETUP_PYTHON_BIN' in wrapper
+
+
 @pytest.mark.parametrize(
     "bad_home",
     [

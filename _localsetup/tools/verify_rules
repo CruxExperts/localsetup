@@ -3,4 +3,12 @@
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENGINE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-exec python3 "$ENGINE_DIR/tools/verify_rules.py"
+REPO_ROOT="$(cd "$ENGINE_DIR/.." && pwd)"
+PYTHON_BIN="${LOCALSETUP_PYTHON_BIN:-}"
+if [[ -z "$PYTHON_BIN" && -x "$REPO_ROOT/.venv/bin/python" ]]; then
+  PYTHON_BIN="$REPO_ROOT/.venv/bin/python"
+fi
+if [[ -z "$PYTHON_BIN" ]]; then
+  PYTHON_BIN="python3"
+fi
+exec "$PYTHON_BIN" "$ENGINE_DIR/tools/verify_rules.py"
