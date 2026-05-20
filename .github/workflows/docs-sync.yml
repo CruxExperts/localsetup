@@ -30,20 +30,22 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Install dependencies
-        run: |
-          python3 -m pip install --require-hashes --only-binary :all: -r _localsetup/requirements.lock --quiet
+      - name: Setup uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+
+      - name: Sync dependencies
+        run: uv sync --frozen --all-groups --python python3
 
       - name: Regenerate docs artifacts
         run: |
-          python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .
-          python3 _localsetup/tools/localsetup_v3.py --source-root . generate-docs
-          python3 _localsetup/tools/localsetup_v3.py --source-root . version-sync --check --target "$(cat VERSION)"
+          uv run --frozen python _localsetup/tools/generate_docs_artifacts.py --repo-root .
+          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . generate-docs
+          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . version-sync --check --target "$(cat VERSION)"
 
       - name: Check documentation alignment
         run: |
           set +e
-          python3 _localsetup/tools/docs_alignment.py --repo-root . check --ci --summary-output /tmp/docs-alignment-summary.md
+          uv run --frozen python _localsetup/tools/docs_alignment.py --repo-root . check --ci --summary-output /tmp/docs-alignment-summary.md
           status=$?
           set -e
           cat /tmp/docs-alignment-summary.md >> "$GITHUB_STEP_SUMMARY"

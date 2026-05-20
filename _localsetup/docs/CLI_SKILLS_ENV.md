@@ -101,8 +101,9 @@ Scrapling is the reference implementation of this policy and adds a few concrete
   - `SCRAPLING_DOCKER_IMAGE` (optional): override the default Scrapling Docker image.
 - Installation examples (Ubuntu):
   - Userland-only (no sudo):
-    - `python3 -m pip install --user pipx`
-    - `python3 -m pipx ensurepath`
+    - install `uv`
+    - `uv tool install pipx`
+    - `pipx ensurepath`
     - `pipx install "scrapling[all]"`
   - Sudo-capable servers:
     - `sudo apt update`

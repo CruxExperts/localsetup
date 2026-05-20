@@ -4,7 +4,7 @@ Purpose: Native Python client for Nginx Proxy Manager REST API.
          No shell, curl, or jq dependencies required.
 Created: 2026-02-26
 Last Updated: 2026-02-27
-Requires: requests (see _localsetup/requirements.txt)
+Requires: requests (see pyproject.toml and uv.lock)
 
 Usage:
     python3 npm_api.py --info

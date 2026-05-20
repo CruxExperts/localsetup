@@ -5,8 +5,8 @@
 3. Refresh generated docs:
 
 ```bash
-python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .
-python3 _localsetup/tools/localsetup_v3.py --repo . generate-docs
+uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .
+uv run --locked python _localsetup/tools/localsetup_v3.py --repo . generate-docs
 ```
 
 4. Run catalog and framework validation.

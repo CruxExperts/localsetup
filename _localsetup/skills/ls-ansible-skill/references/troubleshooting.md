@@ -138,7 +138,7 @@ ansible myhost -m pip -a "name=xyz state=present"
 ansible-playbook site.yml --syntax-check
 
 # Lint playbook
-pip install ansible-lint
+uv tool install ansible-lint
 ansible-lint site.yml
 ```
 

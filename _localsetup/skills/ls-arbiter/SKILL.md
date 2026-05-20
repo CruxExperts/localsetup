@@ -38,7 +38,7 @@ The helper does not run the Arbiter Zebu bot, contact Telegram, or replace the r
 1. Install framework Python dependencies:
 
 ```bash
-python3 -m pip install -r _localsetup/requirements.txt
+uv sync --locked --no-dev
 ```
 
 2. Ensure an Arbiter Zebu bot or compatible reviewer watches `~/.arbiter/queue/`.
@@ -152,7 +152,7 @@ Add a heartbeat or session-resume check that:
 
 | Issue | Check |
 |---|---|
-| `python-frontmatter is required` | Install `_localsetup/requirements.txt` into the active Python environment |
+| `python-frontmatter is required` | Run `uv sync --locked --no-dev` from the Localsetup source checkout |
 | Plan not visible to Arbiter | Confirm the generated file is under `~/.arbiter/queue/pending/` and has YAML frontmatter |
 | `get` reports pending | The reviewer has not completed every decision or the plan has not been moved to `completed/` |
 | Tag finds the wrong plan | Use the explicit `planId`; tag lookup returns the newest matching plan |

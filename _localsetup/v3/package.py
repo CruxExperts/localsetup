@@ -17,6 +17,17 @@ from .source import source_commit, source_tag
 ARTIFACT_METADATA_PATH = "_localsetup/artifact-metadata.json"
 
 
+def _load_toml(path: Path) -> dict[str, Any]:
+    try:
+        import tomllib
+    except ModuleNotFoundError:  # pragma: no cover - exercised on Python 3.10
+        import tomli as tomllib  # type: ignore[no-redef]
+
+    with path.open("rb") as handle:
+        data = tomllib.load(handle)
+    return data if isinstance(data, dict) else {}
+
+
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -32,7 +43,7 @@ def write_sha256_file(artifact_path: Path) -> Path:
     return sha_path
 
 
-def _requirements_components_from_lines(lines: list[str]) -> list[dict[str, str]]:
+def _dependency_components_from_lines(lines: list[str]) -> list[dict[str, str]]:
     components: list[dict[str, str]] = []
     for raw_line in lines:
         line = raw_line.split("#", 1)[0].strip()
@@ -58,30 +69,78 @@ def _requirements_components_from_lines(lines: list[str]) -> list[dict[str, str]
     return components
 
 
-def _requirements_for_sbom(repo_root: Path) -> list[dict[str, str]]:
-    req_path = repo_root / "_localsetup" / "requirements.lock"
-    if not req_path.exists():
-        req_path = repo_root / "_localsetup" / "requirements.txt"
-    lines = req_path.read_text(encoding="utf-8").splitlines() if req_path.exists() else []
-    return _requirements_components_from_lines(lines)
+def _components_from_uv_lock(repo_root: Path) -> list[dict[str, str]]:
+    lock_path = repo_root / "uv.lock"
+    if not lock_path.exists():
+        return []
+    lock = _load_toml(lock_path)
+    packages = lock.get("package", [])
+    components: list[dict[str, str]] = []
+    for package in packages if isinstance(packages, list) else []:
+        if not isinstance(package, dict):
+            continue
+        source = package.get("source", {})
+        if isinstance(source, dict) and source.get("editable") == ".":
+            continue
+        name = package.get("name")
+        if not isinstance(name, str) or not name:
+            continue
+        component = {"type": "library", "name": name}
+        version = package.get("version")
+        if isinstance(version, str) and version:
+            component["version"] = version
+        components.append(component)
+    return sorted(components, key=_component_key)
+
+
+def _components_from_pyproject(repo_root: Path) -> list[dict[str, str]]:
+    pyproject = repo_root / "pyproject.toml"
+    if not pyproject.exists():
+        return []
+    project = _load_toml(pyproject).get("project", {})
+    if not isinstance(project, dict):
+        return []
+    dependencies = project.get("dependencies", [])
+    return _dependency_components_from_lines([str(item) for item in dependencies if isinstance(item, str)])
+
+
+def _components_for_sbom(repo_root: Path) -> list[dict[str, str]]:
+    return _components_from_uv_lock(repo_root) or _components_from_pyproject(repo_root)
 
 
 def _expected_components_from_artifact(artifact_path: Path) -> list[dict[str, str]]:
     with tarfile.open(artifact_path, "r:*") as tar:
-        member = None
-        for candidate in ("_localsetup/requirements.lock", "_localsetup/requirements.txt"):
-            try:
-                member = tar.getmember(candidate)
-                break
-            except KeyError:
-                continue
-        if member is None:
+        try:
+            member = tar.getmember("uv.lock")
+        except KeyError:
             return []
         handle = tar.extractfile(member)
         if handle is None:
             return []
-        lines = handle.read().decode("utf-8").splitlines()
-    return _requirements_components_from_lines(lines)
+        data = handle.read()
+    try:
+        import tomllib
+    except ModuleNotFoundError:  # pragma: no cover - exercised on Python 3.10
+        import tomli as tomllib  # type: ignore[no-redef]
+
+    lock = tomllib.loads(data.decode("utf-8"))
+    packages = lock.get("package", []) if isinstance(lock, dict) else []
+    components: list[dict[str, str]] = []
+    for package in packages if isinstance(packages, list) else []:
+        if not isinstance(package, dict):
+            continue
+        source = package.get("source", {})
+        if isinstance(source, dict) and source.get("editable") == ".":
+            continue
+        name = package.get("name")
+        if not isinstance(name, str) or not name:
+            continue
+        component = {"type": "library", "name": name}
+        version = package.get("version")
+        if isinstance(version, str) and version:
+            component["version"] = version
+        components.append(component)
+    return sorted(components, key=_component_key)
 
 
 def _component_key(component: dict[str, Any]) -> tuple[str, str]:
@@ -106,7 +165,7 @@ def write_cyclonedx_sbom(repo_root: Path, artifact_path: Path, metadata: dict[st
                 {"name": "localsetup:artifact", "value": artifact_path.name},
             ],
         },
-        "components": _requirements_for_sbom(repo_root),
+        "components": _components_for_sbom(repo_root),
     }
     sbom_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return sbom_path
@@ -119,7 +178,7 @@ def write_source_sbom(repo_root: Path, output_path: Path) -> dict[str, Any]:
         "specVersion": "1.6",
         "version": 1,
         "metadata": {"component": {"type": "application", "name": pack.pack_id, "version": str(pack.version)}},
-        "components": _requirements_for_sbom(repo_root),
+        "components": _components_for_sbom(repo_root),
     }
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")

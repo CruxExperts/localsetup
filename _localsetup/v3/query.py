@@ -84,7 +84,7 @@ def graph_payload(repo_root: Path) -> dict[str, Any]:
 def adopt_recommendations(target_root: Path) -> dict[str, Any]:
     signals = {
         "node": (target_root / "package.json").exists(),
-        "python": (target_root / "pyproject.toml").exists() or (target_root / "requirements.txt").exists(),
+        "python": (target_root / "pyproject.toml").exists() or (target_root / "uv.lock").exists(),
         "docker": any((target_root / name).exists() for name in ("Dockerfile", "docker-compose.yml", "compose.yml")),
         "github_actions": (target_root / ".github" / "workflows").is_dir(),
         "ansible": any((target_root / name).exists() for name in ("ansible.cfg", "playbook.yml", "site.yml")),

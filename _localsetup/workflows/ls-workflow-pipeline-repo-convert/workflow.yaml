@@ -32,7 +32,7 @@ validation:
   - check: "Conversion report has no blockers."
   - check: ".localsetup/lock.json is written at the target root."
   - check: "Selected adapter paths exist at the target root, not the source checkout."
-  - check: "python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog passes in the source checkout after workflow edits."
+  - check: "uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog passes in the source checkout after workflow edits."
 outputs:
   - Conversion report path and summary
   - Backup directory path

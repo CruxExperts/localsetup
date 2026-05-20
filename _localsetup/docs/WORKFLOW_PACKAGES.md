@@ -47,8 +47,8 @@ These files are generated from workflow manifests:
 Do not hand-maintain workflow rows in those files. Update the relevant `_localsetup/workflows/<package>/workflow.yaml` and regenerate docs instead:
 
 ```bash
-python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .
-python3 _localsetup/tools/localsetup_v3.py --source-root . generate-docs
+uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . generate-docs
 ```
 
 ## Validation
@@ -56,7 +56,7 @@ python3 _localsetup/tools/localsetup_v3.py --source-root . generate-docs
 Use the catalog validator after editing skills or workflow packages:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
 ```
 
 The validator checks that workflow package names match `ls-workflow-<workflow_id>`, `SKILL.md` names match directory names, aliases do not collide, dependencies exist, required docs and tools resolve inside the repo, and each package has a smoke row.

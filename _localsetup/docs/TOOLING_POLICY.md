@@ -31,12 +31,12 @@ Purpose: define project-wide tooling language and dependency rules.
   - broad adoption
   - clear license
   - recent release activity
-- Pin human-maintained dependency intent in `requirements.in` and `requirements.txt`, and document why each dependency exists.
-- Keep `requirements.lock` as the managed-install lock. Managed installs use `pip install --require-hashes --only-binary :all:` when this lock is present.
-- Dependency-update PRs must exercise changed manifests separately from the lock-based install path. Do not assume Dependabot regenerates hash locks unless the regenerated lock is present and validated.
-- Keep framework dependency installs isolated. The default `--dependency-mode managed-venv` creates or updates Localsetup's own venv and never requires `--break-system-packages`.
-- Use `pipx` for app-style CLI tools and future wheel-based Localsetup command installs. Do not use `pipx` as the mechanism for libraries imported by framework Python modules; those belong in the managed venv.
-- Treat `--dependency-mode user-pip` as a compatibility escape hatch only. It uses `--user`, never `--break-system-packages`, and should not be the default for Ubuntu servers or desktops.
+- Pin human-maintained dependency intent in `pyproject.toml`, and document why each dependency exists.
+- Keep `uv.lock` as the committed dependency lock. Automation must run `uv lock --check` and frozen or locked `uv sync` / `uv run` commands.
+- Dependency-update PRs must update `pyproject.toml` and `uv.lock` together when dependency intent changes.
+- Keep framework dependency installs isolated. The default dependency mode is `prompt-only`; explicit `--dependency-mode uv-sync` or root `--sync-env` creates or updates the source checkout `.venv` with uv and does not mutate system Python.
+- Use `pipx` for app-style CLI tools and future wheel-based Localsetup command installs. Do not use `pipx` as the mechanism for libraries imported by framework Python modules; those belong in the uv project environment.
+- Treat old `managed-venv` and `user-pip` dependency-mode values as migration aliases only. New configuration should use `uv-sync` or `prompt-only`.
 
 For CLI-based skills that depend on external binaries (for example, Scrapling), see also the CLI skills environment policy in `CLI_SKILLS_ENV.md` for user-first `pipx` installs, PATH handling, and health checks.
 
@@ -59,9 +59,9 @@ The policy gate is metadata-based. It complements, but does not replace, skill v
 
 ## Approved libraries (mandatory use)
 
-These libraries are pre-approved, listed in `requirements.txt`, locked in `requirements.lock`, and available after any framework install. When writing new tools or refactoring existing ones, **use these libraries** instead of reimplementing their functionality. Reinventing them (custom HTTP clients, bespoke YAML parsers, ad-hoc frontmatter splits) is explicitly prohibited when one of these covers the need.
+These libraries are pre-approved, listed in `pyproject.toml`, locked in `uv.lock`, and available after `uv sync` or an install run with `--sync-env`. When writing new tools or refactoring existing ones, **use these libraries** instead of reimplementing their functionality. Reinventing them (custom HTTP clients, bespoke YAML parsers, ad-hoc frontmatter splits) is explicitly prohibited when one of these covers the need.
 
-| Library | Import name | pip package | Use for |
+| Library | Import name | Project dependency | Use for |
 |---------|-------------|-------------|---------|
 | PyYAML | `yaml` | `PyYAML>=6.0` | All YAML parsing and serialization. Never use `json` as a workaround or parse YAML by hand. |
 | requests | `requests` | `requests>=2.28` | All outbound HTTP. Use `requests.Session` for multi-request tools. Never use `urllib.request` for new code. |
@@ -69,6 +69,7 @@ These libraries are pre-approved, listed in `requirements.txt`, locked in `requi
 | cryptography | `cryptography` | `cryptography>=42.0` | Framework cryptographic primitives (AES-GCM, HKDF, PBKDF2, secure random). Use for encryption/decryption and key derivation. |
 | PGPy | `pgpy` | `PGPy>=0.5.4,<0.6` | Pure-Python OpenPGP encryption and decryption in framework tooling. |
 | jsonschema | `jsonschema` | `jsonschema>=4.0` | Draft 2020-12 validation for Localsetup manifests and Agent Q payloads. |
+| tomli | `tomli` | `tomli>=2.0; python_version < '3.11'` | TOML parsing fallback on Python 3.10. Use standard-library `tomllib` on newer Python. |
 
 **Shared dependency helper:** Import `lib.deps` at the top of every tool and call `require_deps()` before using any approved library. This gives users an actionable error message instead of a bare `ImportError` if the library is missing.
 

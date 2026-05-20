@@ -11,7 +11,7 @@ from typing import Any
 try:
     import jsonschema
 except ImportError as exc:  # pragma: no cover
-    raise SystemExit("Missing dependency: jsonschema. Install _localsetup/requirements.txt.") from exc
+    raise SystemExit("Missing dependency: jsonschema. Run `uv sync --locked --no-dev` from the Localsetup source checkout.") from exc
 
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]

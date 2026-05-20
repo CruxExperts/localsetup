@@ -408,6 +408,9 @@ distribution_channels:
 
 public_private:
   public_paths:
+    - VERSION
+    - pyproject.toml
+    - uv.lock
     - README.md
     - AGENTS.md
     - assets

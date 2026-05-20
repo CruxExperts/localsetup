@@ -30,7 +30,7 @@ compatibility: "Python 3.10+ and PyYAML via the framework dependency helper. Ski
 
 ## Dependencies (framework invariant)
 
-- **PyYAML:** The entrypoint calls the shared `lib.deps.require_deps(["yaml"])` helper at startup, so a missing dependency exits with an actionable install message instead of a bare import failure. Install framework dependencies with `python3 -m pip install -r _localsetup/requirements.txt` or rerun install with dependency management enabled.
+- **PyYAML:** The entrypoint calls the shared `lib.deps.require_deps(["yaml"])` helper at startup, so a missing dependency exits with an actionable install message instead of a bare import failure. Sync framework dependencies with `uv sync --locked --no-dev` or rerun install with `--sync-env`.
 - **Sandbox tooling:** The audit may call `_localsetup/skills/ls-skill-sandbox-tester/scripts/create_sandbox.py` and `run_smoke.py` to run skill smoke commands in an isolated copy. Both the audit skill and the sandbox-tester skill ship with the framework; no external dependency.
 
 ## Tooling

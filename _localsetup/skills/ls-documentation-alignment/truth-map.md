@@ -11,7 +11,7 @@ Each claim has:
 Use `explain` to inspect one claim:
 
 ```bash
-python3 _localsetup/tools/docs_alignment.py --repo-root . explain --claim-id workflow_count
+uv run --locked python _localsetup/tools/docs_alignment.py --repo-root . explain --claim-id workflow_count
 ```
 
 When adapting this workflow to another repo, keep the same shape but replace the Localsetup source rows with that repo's package manifest, API schema, CLI registry, generated docs, or CI source.

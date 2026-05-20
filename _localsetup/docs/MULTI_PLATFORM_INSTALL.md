@@ -69,10 +69,10 @@ When the raw installer is run with `--tools` or `--platforms` and no explicit `-
 Full local setup for the Codex, Kilo, and OpenCode adapters:
 
 ```bash
-./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,harness,experimental --install-deps
+./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,harness,experimental --sync-env
 ```
 
-That command installs every declared skill and workflow pack, attaches only `.codex/skills`, `.kilo/skills`, and `.opencode/skills`, and prepares the managed `~/.local/share/localsetup/venv` dependency environment.
+That command installs every declared skill and workflow pack, attaches only `.codex/skills`, `.kilo/skills`, and `.opencode/skills`, and syncs the uv-managed source checkout `.venv` dependency environment.
 
 The `harness` pack only installs autonomous-harness capability. It does not create `HEARTBEAT.md`, `config/codex_heartbeat.yaml`, `cron/manifest.yaml`, or `.localsetup/state/codex-heartbeat/`. Activate a target repo later with `localsetup harness codex-heartbeat init` and `localsetup harness codex-heartbeat enable`; see [HARNESS_AUTOMATION.md](HARNESS_AUTOMATION.md).
 
@@ -126,7 +126,10 @@ cd /path/to/repo
 - `--yes`  - Legacy accepted flag for interactive installs. For automation, combine with `--non-interactive`.
 - `--non-interactive`  - Automation mode. Requires `--yes` and preserves machine-readable output.
 - `--global`  - Removed legacy flag; v3 installs the managed home library by default and exits with an explicit error if this flag is supplied.
-- `--install-deps`  - Create/update the managed `~/.local/share/localsetup/venv` and install `_localsetup/requirements.txt`
+- `--sync-env`  - Sync the uv-managed source checkout `.venv` from `pyproject.toml` and `uv.lock`.
+- `--install-deps`  - Deprecated alias for `--sync-env`.
+- `--install-uv` / `--no-install-uv`  - Explicitly allow or forbid uv bootstrap when `--sync-env` is requested.
+- `--offline`  - Run uv dependency sync in offline/cache-only mode.
 - `--no-register-shell`  - Skip creating/updating `~/.local/bin/localsetup`
 - `--help`  - Print usage and exit
 
@@ -164,14 +167,14 @@ Before install, use the dependency list below as the canonical source of truth. 
 | `git` >= 2.20.0 | Required for raw bootstrap clone and refresh; recommended otherwise | Cloning or refreshing the managed source checkout, source traceability, and release workflows |
 | `rg` (ripgrep) | Recommended | Framework search and review workflows |
 | `python` >= 3.10 | Required | V3 installer, framework tools, tests, and Python-first policy |
-| `pip` | Recommended | Install `_localsetup/requirements.txt` inside the managed venv |
+| `uv` | Required for dependency sync | Sync `pyproject.toml` / `uv.lock` into the source checkout `.venv` |
 | Python: `yaml` (PyYAML>=6.0) | Recommended | YAML parsing for skill index, config, and PRD files |
 | Python: `requests` (requests>=2.28) | Recommended | HTTP client used by index refresh and scrub tools |
 | Python: `frontmatter` (python-frontmatter>=1.1) | Recommended | YAML frontmatter parsing for skill and PRD markdown files |
 | Python: `cryptography` (cryptography>=42.0) | Recommended | Framework cryptographic primitives for secure envelope workflows |
 | Python: `pgpy` (PGPy>=0.5.4,<0.6) | Recommended | Pure-Python OpenPGP support for secure mail workflows |
 
-Python package intent is listed in `_localsetup/requirements.in` and `_localsetup/requirements.txt`; managed installs prefer `_localsetup/requirements.lock` so hash-checked binary wheels are reproducible. Dependency PRs must validate changed manifests separately before the lock is refreshed. The conservative default for Python tooling is a managed virtualenv at `~/.local/share/localsetup/venv`, which avoids PEP 668 externally managed system-pip failures. To check the current machine without changing files, run:
+Python package intent is listed in `pyproject.toml`; `uv.lock` is the committed lock used by automation and installer sync. Dependency PRs must update both files when dependency intent changes. The conservative default is `prompt-only` dependency checking; explicit `--sync-env` or `--dependency-mode uv-sync` creates or updates the uv-managed source checkout `.venv` without mutating externally managed system Python. To check the current machine without changing files, run:
 
 ```bash
 localsetup doctor
@@ -185,15 +188,15 @@ To normalize install intent without changing files, run:
 localsetup configure --platforms codex --packs core
 ```
 
-To install dependencies automatically during install, add the `--install-deps` flag:
+To install dependencies automatically during install, add the `--sync-env` flag:
 
 ```bash
-./install --directory . --tools cursor --install-deps
+./install --directory . --tools cursor --sync-env
 ```
 
-Without `--install-deps`, the root wrapper runs doctor in `prompt-only` mode and applies the v3 install without mutating Python dependencies. Direct Python CLI installs default to `--dependency-mode managed-venv`; use `--dependency-mode prompt-only` when you only want adapter installation.
+Without `--sync-env`, the root wrapper runs doctor in `prompt-only` mode and applies the v3 install without syncing Python dependencies. Direct Python CLI installs use the same conservative default; pass `--dependency-mode uv-sync` when the CLI should sync the project environment before applying adapter changes.
 
-Do not use `--break-system-packages`. If virtualenv creation is unavailable, install the OS venv package first, for example `sudo apt-get install python3-venv` on Debian/Ubuntu. Use `pipx` for standalone CLI tools, including future wheel-based Localsetup command installs; use the managed venv for libraries imported by Localsetup framework modules.
+Do not alter system Python to satisfy Localsetup framework dependencies. Install uv or set `LOCALSETUP_UV_BIN` to a preinstalled uv binary; use `pipx` for standalone CLI tools, including future wheel-based Localsetup command installs, and use the uv project environment for libraries imported by Localsetup framework modules.
 
 ## V3 reinstall behavior
 
@@ -222,7 +225,7 @@ Adapter paths are conservative. The installer creates only the selected adapter 
 | Convert | `localsetup convert --tools codex --packs core` | WSL2 only |
 | Plan | `localsetup plan --tools codex` | WSL2 only |
 | Verify | `localsetup verify --tools codex` | WSL2 only |
-| Tests | `./_localsetup/tests/automated_test.sh` | WSL2 only |
+| Tests | `uv run --locked ./_localsetup/tests/automated_test.sh` | WSL2 only |
 
 Framework install logic is Python-first. Shell is limited to the bootstrap wrapper, and PowerShell is not a native v3 install target.
 

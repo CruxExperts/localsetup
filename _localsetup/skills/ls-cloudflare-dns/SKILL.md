@@ -3,7 +3,7 @@ name: ls-cloudflare-dns
 description: Manage Cloudflare DNS records and zone DNS settings with a Python-first direct Cloudflare v4 REST API CLI, deterministic JSON output, snapshots, dry-run plans, and apply safety gates.
 metadata:
   version: "2.0"
-compatibility: "Python 3.10+ with requests and jsonschema from _localsetup/requirements.txt. Uses Cloudflare v4 REST API directly; no external DNS CLI dependency."
+compatibility: "Python 3.10+ with requests and jsonschema from the Localsetup uv project environment. Uses Cloudflare v4 REST API directly; no external DNS CLI dependency."
 ---
 
 # Cloudflare DNS management
@@ -130,7 +130,7 @@ Normalized records preserve unknown Cloudflare fields in `provider_fields` so ne
 ## Validation
 
 ```bash
-python3 scripts/cf_dns.py --help
-python3 scripts/validate_cf_dns_skill.py
-python3 -m pytest tests -q
+uv run --locked python scripts/cf_dns.py --help
+uv run --locked python scripts/validate_cf_dns_skill.py
+uv run --locked pytest tests -q
 ```

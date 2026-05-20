@@ -70,25 +70,25 @@ For every tool:
 Load [evaluation guide](./references/evaluation.md) to create read-only,
 verifiable questions and run the bundled harness.
 
-Install harness dependencies from the skill directory:
+Run the harness with its dependencies from the skill directory:
 
 ```bash
-python -m pip install -r assets/evaluation-requirements.txt
+uv run --with 'mcp>=1.1.0' --with 'anthropic>=0.39.0' --with 'openai>=1.0.0' -- python scripts/evaluation.py --help
 ```
 
 Provider examples:
 
 ```bash
 # Claude provider
-ANTHROPIC_API_KEY=... python scripts/evaluation.py \
+ANTHROPIC_API_KEY=... uv run --with 'mcp>=1.1.0' --with 'anthropic>=0.39.0' --with 'openai>=1.0.0' -- python scripts/evaluation.py \
   -t stdio -c python -a my_server.py evaluation.xml
 
 # OpenAI-compatible provider
-OPENAI_API_KEY=... python scripts/evaluation.py --provider openai \
+OPENAI_API_KEY=... uv run --with 'mcp>=1.1.0' --with 'anthropic>=0.39.0' --with 'openai>=1.0.0' -- python scripts/evaluation.py --provider openai \
   -t stdio -c python -a my_server.py evaluation.xml
 
 # Emulation provider, no LLM key
-python scripts/evaluation.py --provider emulation \
+uv run --with 'mcp>=1.1.0' -- python scripts/evaluation.py --provider emulation \
   --emulation-script assets/smoke_emulation.json \
   -t stdio -c python -a my_server.py assets/smoke_eval.xml
 ```

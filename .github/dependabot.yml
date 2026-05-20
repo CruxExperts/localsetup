@@ -15,33 +15,12 @@ updates:
         patterns:
           - "*"
 
-  - package-ecosystem: pip
-    directory: /_localsetup
-    schedule:
-      interval: weekly
-      day: monday
-      time: "10:30"
-    open-pull-requests-limit: 3
-    labels:
-      - dependencies
-      - area/python
-    groups:
-      localsetup-python:
-        patterns:
-          - "*"
-    ignore:
-      # Localsetup managed installs require `--only-binary :all:`;
-      # PGPy 0.6.0 is source-only on PyPI as of 2026-05-18.
-      - dependency-name: PGPy
-        versions:
-          - ">=0.6"
-
-  - package-ecosystem: pip
+  - package-ecosystem: uv
     directory: /
     schedule:
       interval: weekly
       day: monday
-      time: "11:00"
+      time: "10:30"
     open-pull-requests-limit: 2
     labels:
       - dependencies
@@ -50,3 +29,8 @@ updates:
       project-python:
         patterns:
           - "*"
+    ignore:
+      # Keep PGPy below 0.6 during the uv migration; upgrading OpenPGP behavior is a separate risk review.
+      - dependency-name: PGPy
+        versions:
+          - ">=0.6"

@@ -96,10 +96,10 @@ def test_dependency_pr_validation_exercises_manifest_inputs() -> None:
 
     assert "dependency-manifest-validation:" in workflow
     assert "github.actor == 'dependabot[bot]'" in workflow
-    assert "_localsetup/requirements.in _localsetup/requirements.txt pyproject.toml" in workflow
-    assert "pip install --only-binary :all: -r \"${manifest}\"" in workflow
-    assert "pip install --only-binary :all: . --quiet" in workflow
-    assert "pip install --require-hashes --only-binary :all: -r _localsetup/requirements.lock" in workflow
+    assert "uv lock --check" in workflow
+    assert "uv sync --frozen --all-groups" in workflow
+    assert "uv run --frozen pytest" in workflow
+    assert "package-ecosystem: uv" in dependabot
     assert "dependency-name: PGPy" in dependabot
     assert "\">=0.6\"" in dependabot
 

@@ -37,8 +37,8 @@ def _load_frontmatter_module():
         import frontmatter  # type: ignore[import-not-found]
     except ImportError as exc:
         raise InputError(
-            "python-frontmatter is required; install with "
-            "python3 -m pip install -r _localsetup/requirements.txt"
+            "python-frontmatter is required; run "
+            "`uv sync --locked --no-dev` from the Localsetup source checkout"
         ) from exc
     return frontmatter
 

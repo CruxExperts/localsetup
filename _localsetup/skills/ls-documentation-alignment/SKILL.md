@@ -42,49 +42,49 @@ Use this skill when a repo needs documentation brought back into alignment with 
 Inventory:
 
 ```bash
-python3 _localsetup/tools/docs_alignment.py --repo-root . inventory
+uv run --locked python _localsetup/tools/docs_alignment.py --repo-root . inventory
 ```
 
 Audit:
 
 ```bash
-python3 _localsetup/tools/docs_alignment.py --repo-root . audit
+uv run --locked python _localsetup/tools/docs_alignment.py --repo-root . audit
 ```
 
 Plan:
 
 ```bash
-python3 _localsetup/tools/docs_alignment.py --repo-root . plan
+uv run --locked python _localsetup/tools/docs_alignment.py --repo-root . plan
 ```
 
 Apply generated artifacts:
 
 ```bash
-python3 _localsetup/tools/docs_alignment.py --repo-root . apply --scope generated
+uv run --locked python _localsetup/tools/docs_alignment.py --repo-root . apply --scope generated
 ```
 
 Apply supported public-doc fixes:
 
 ```bash
-python3 _localsetup/tools/docs_alignment.py --repo-root . apply --scope public
+uv run --locked python _localsetup/tools/docs_alignment.py --repo-root . apply --scope public
 ```
 
 Dry-run any write scope:
 
 ```bash
-python3 _localsetup/tools/docs_alignment.py --repo-root . apply --scope all --dry-run
+uv run --locked python _localsetup/tools/docs_alignment.py --repo-root . apply --scope all --dry-run
 ```
 
 CI/read-only check:
 
 ```bash
-python3 _localsetup/tools/docs_alignment.py --repo-root . check --ci
+uv run --locked python _localsetup/tools/docs_alignment.py --repo-root . check --ci
 ```
 
 Localsetup wrapper:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --source-root . docs-align check --ci
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . docs-align check --ci
 ```
 
 ## Outputs

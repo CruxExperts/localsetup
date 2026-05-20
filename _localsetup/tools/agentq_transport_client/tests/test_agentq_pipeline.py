@@ -16,12 +16,12 @@ sys.path.insert(0, str(_ENGINE))
 sys.path.insert(0, str(_PKG))
 
 OPENPGP_DEPS_REASON = (
-    "PGPy OpenPGP dependency not installed; install framework dependencies from "
-    "_localsetup/requirements.txt to run Agent Q OpenPGP tests."
+    "PGPy OpenPGP dependency not installed; run uv sync --locked --no-dev "
+    "to run Agent Q OpenPGP tests."
 )
 CRYPTOGRAPHY_DEPS_REASON = (
-    "cryptography dependency not installed; install framework dependencies from "
-    "_localsetup/requirements.txt to run Agent Q OpenPGP tests."
+    "cryptography dependency not installed; run uv sync --locked --no-dev "
+    "to run Agent Q OpenPGP tests."
 )
 
 

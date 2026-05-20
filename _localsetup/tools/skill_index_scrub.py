@@ -3,7 +3,7 @@
 #          Optionally fetch real descriptions from upstream SKILL.md/README.md and write fixes.
 # Created: 2026-02-27
 # Last Updated: 2026-02-27
-# Requires: PyYAML, requests, python-frontmatter (see _localsetup/requirements.txt)
+# Requires: PyYAML, requests, python-frontmatter (see pyproject.toml and uv.lock)
 
 """
 Usage:

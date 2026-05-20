@@ -17,7 +17,7 @@ from typing import Any
 try:
     import yaml
 except ImportError as exc:  # pragma: no cover - exercised by environments
-    raise SystemExit("PyYAML is required; install _localsetup/requirements.txt") from exc
+    raise SystemExit("PyYAML is required; run `uv sync --locked --no-dev` from the Localsetup source checkout") from exc
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:

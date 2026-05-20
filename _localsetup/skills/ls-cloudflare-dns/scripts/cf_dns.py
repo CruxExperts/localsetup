@@ -18,7 +18,7 @@ from typing import Any, Iterable, Mapping
 try:
     import requests
 except ImportError as exc:  # pragma: no cover - environment guidance
-    raise SystemExit("Missing dependency: requests. Install _localsetup/requirements.txt.") from exc
+    raise SystemExit("Missing dependency: requests. Run `uv sync --locked --no-dev` from the Localsetup source checkout.") from exc
 
 
 DEFAULT_API_BASE = "https://api.cloudflare.com/client/v4"

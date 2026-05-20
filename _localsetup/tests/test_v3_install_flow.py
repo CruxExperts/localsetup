@@ -21,7 +21,7 @@ from _localsetup.v3.cli import _split_csv
 from _localsetup.v3.config import InstallConfig, load_install_config, merge_cli_config
 from _localsetup.v3.context import build_agent_context, render_markdown_report
 from _localsetup.v3.conversion import convert_repo
-from _localsetup.v3.dependencies import ensure_dependencies, missing_requirements
+from _localsetup.v3.dependencies import ensure_dependencies
 from _localsetup.v3.doctor import run_doctor
 from _localsetup.v3.docs import generate_alias_outputs
 from _localsetup.v3.hooks import run_maintainer_gate
@@ -104,10 +104,9 @@ def make_temp_repo(tmp_path: Path) -> Path:
     shutil.copytree(source / "_localsetup" / "skills", repo / "_localsetup" / "skills")
     shutil.copytree(source / "_localsetup" / "workflows", repo / "_localsetup" / "workflows")
     shutil.copytree(source / "_localsetup" / "tools", repo / "_localsetup" / "tools")
-    shutil.copy2(source / "_localsetup" / "requirements.txt", repo / "_localsetup" / "requirements.txt")
-    shutil.copy2(source / "_localsetup" / "requirements.in", repo / "_localsetup" / "requirements.in")
-    shutil.copy2(source / "_localsetup" / "requirements.lock", repo / "_localsetup" / "requirements.lock")
     shutil.copy2(source / "VERSION", repo / "VERSION")
+    shutil.copy2(source / "pyproject.toml", repo / "pyproject.toml")
+    shutil.copy2(source / "uv.lock", repo / "uv.lock")
     shutil.copytree(source / "assets", repo / "assets")
     (repo / "_localsetup" / "docs" / "_generated").mkdir(parents=True)
     (repo / "_localsetup" / "docs" / "migration").mkdir(parents=True)
@@ -968,6 +967,11 @@ def test_shell_registration_writes_managed_idempotent_shim_and_blocks_collision(
     assert second["path"]["on_path"] is True
     assert is_managed_shim(shim)
     assert shell_registration_status(root, home=home, path_env="")["source_root"] == str(root.resolve())
+    shim_text = shim.read_text(encoding="utf-8")
+    assert 'LOCALSETUP_PROJECT_PYTHON="$LOCALSETUP_SOURCE_ROOT/.venv/bin/python"' in shim_text
+    assert 'exec "$LOCALSETUP_PROJECT_PYTHON"' in shim_text
+    assert "uv --project" not in shim_text
+    assert "run --locked" not in shim_text
 
     shim.write_text("#!/usr/bin/env bash\necho unmanaged\n", encoding="utf-8")
     with pytest.raises(RuntimeError, match="unmanaged localsetup"):
@@ -1436,7 +1440,7 @@ def test_v3_config_file_and_cli_precedence(tmp_path: Path) -> None:
     assert merged.attach_mode == "symlink"
     assert merged.target_directory == "/tmp/localsetup-target"
     assert merged.data_root == "/tmp/localsetup-data"
-    assert merged.dependency_mode == "managed-venv"
+    assert merged.dependency_mode == "uv-sync"
 
 
 def test_v3_schema_validation_is_optional_without_jsonschema(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -1531,12 +1535,16 @@ def test_doctor_reports_manifest_and_environment_blockers(
     monkeypatch.setattr(doctor_mod, "validate_skill_catalog", lambda *args, **kwargs: ["bad skill"])
     monkeypatch.setattr(doctor_mod, "validate_workflow_catalog", lambda *args, **kwargs: ["bad workflow"])
     monkeypatch.setattr(doctor_mod, "tool_status", lambda name: {"name": name, "ok": False})
-    monkeypatch.setattr(doctor_mod, "has_venv_module", lambda: False)
-    monkeypatch.setattr(doctor_mod, "pip_available", lambda python: False)
     monkeypatch.setattr(
         doctor_mod,
         "dependency_status",
-        lambda *args, **kwargs: SimpleNamespace(to_dict=lambda: {"warnings": ["dependency warning"]}),
+        lambda *args, **kwargs: SimpleNamespace(
+            to_dict=lambda: {
+                "mode": "uv-sync",
+                "warnings": ["dependency warning"],
+                "blockers": ["dependency blocker"],
+            }
+        ),
     )
     monkeypatch.setattr(
         doctor_mod,
@@ -1564,8 +1572,7 @@ def test_doctor_reports_manifest_and_environment_blockers(
     assert any("workflow catalog: bad workflow" in blocker for blocker in result["blockers"])
     assert "missing required tool: git" in result["blockers"]
     assert "missing recommended tool: rg" in result["warnings"]
-    assert "missing python venv module" in result["blockers"]
-    assert "pip is unavailable for the current interpreter" in result["warnings"]
+    assert "dependency blocker" in result["blockers"]
     assert "dependency warning" in result["warnings"]
     assert any("adapter collision (regular file)" in blocker for blocker in result["blockers"])
     assert any("adapter package target mismatch (ls-context)" in blocker for blocker in result["blockers"])
@@ -1573,7 +1580,7 @@ def test_doctor_reports_manifest_and_environment_blockers(
     assert any("legacy v2 artifacts detected" in warning for warning in result["warnings"])
 
 
-def test_v3_cli_install_uses_configured_data_root_for_managed_dependencies(
+def test_v3_cli_install_passes_configured_data_root_to_uv_sync(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1603,19 +1610,21 @@ def test_v3_cli_install_uses_configured_data_root_for_managed_dependencies(
     ) -> dict:
         captured.append(data_root)
         assert repo_root == root
-        assert mode == "managed-venv"
+        assert mode == "uv-sync"
         assert data_root is not None
-        interpreter = data_root / "venv" / "bin" / "python"
+        interpreter = root / ".venv" / "bin" / "python"
         return {
             "mode": mode,
             "interpreter": str(interpreter),
-            "requirements": str(root / "_localsetup" / "requirements.lock"),
-            "venv_path": str(data_root / "venv"),
-            "lock": {"hash_mode": True},
+            "dependency_manager": "uv",
+            "project_root": str(root),
+            "pyproject": str(root / "pyproject.toml"),
+            "lockfile": str(root / "uv.lock"),
+            "environment_path": str(root / ".venv"),
+            "lock": {"dependency_manager": "uv", "lock_status": "current"},
             "changed": False,
-            "pip_check": None,
             "warnings": [],
-            "missing": [],
+            "blockers": [],
             "commands": [],
             "ok": True,
         }
@@ -1638,18 +1647,22 @@ def test_v3_cli_install_uses_configured_data_root_for_managed_dependencies(
     lock = load_json(root / ".localsetup" / "lock.json")
     assert rc == 0
     assert captured == [data_root.resolve()]
-    assert lock["python_interpreter"] == str(data_root.resolve() / "venv" / "bin" / "python")
+    assert lock["python_interpreter"] == str(root / ".venv" / "bin" / "python")
+    assert lock["dependency_state"]["dependency_manager"] == "uv"
 
 
-def test_v3_managed_venv_commands_and_lock_interpreter(tmp_path: Path) -> None:
+def test_v3_uv_sync_commands_and_lock_interpreter(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
+    monkeypatch.setenv("LOCALSETUP_UV_BIN", "uv")
     commands: list[list[str]] = []
 
     def fake_runner(cmd: list[str], **_: object) -> subprocess.CompletedProcess[str]:
         commands.append(cmd)
-        if cmd[1:3] == ["-m", "venv"]:
-            python_path = Path(cmd[3]) / "bin" / "python"
+        if cmd[-1:] == ["--version"]:
+            return subprocess.CompletedProcess(cmd, 0, stdout="uv 0.11.5\n", stderr="")
+        if "sync" in cmd:
+            python_path = root / ".venv" / "bin" / "python"
             python_path.parent.mkdir(parents=True, exist_ok=True)
             python_path.write_text("# fake python\n", encoding="utf-8")
         return subprocess.CompletedProcess(cmd, 0, stdout="ok\n", stderr="")
@@ -1659,37 +1672,67 @@ def test_v3_managed_venv_commands_and_lock_interpreter(tmp_path: Path) -> None:
     result = apply_plan(root, plan, home=home, dependency_info=deps)
     lock = load_json(root / ".localsetup/lock.json")
 
-    assert any(cmd[1:3] == ["-m", "venv"] for cmd in commands)
-    assert any(cmd[2:4] == ["pip", "install"] and "--require-hashes" in cmd and "--only-binary" in cmd for cmd in commands)
-    assert any(cmd[-2:] == ["pip", "check"] for cmd in commands)
-    assert deps["interpreter"].endswith(".local/share/localsetup/venv/bin/python")
-    assert deps["lock"]["hash_mode"] is True
+    assert any(cmd[-2:] == ["lock", "--check"] for cmd in commands)
+    assert any("sync" in cmd and "--locked" in cmd and "--no-dev" in cmd for cmd in commands)
+    assert deps["mode"] == "uv-sync"
+    assert deps["interpreter"].endswith(".venv/bin/python")
+    assert deps["lock"]["dependency_manager"] == "uv"
+    assert deps["lock"]["lock_status"] == "current"
     assert lock["python_interpreter"] == deps["interpreter"]
-    assert lock["dependency_state"]["hash_mode"] is True
+    assert lock["dependency_state"]["dependency_manager"] == "uv"
     assert result["lockfile"].endswith(".localsetup/lock.json")
 
 
-def test_v3_missing_requirements_checks_selected_interpreter(tmp_path: Path) -> None:
-    req = tmp_path / "requirements.txt"
-    req.write_text("PGPy>=0.5.4,<0.6\nDefinitely-Missing-Package>=1\n", encoding="utf-8")
+def test_v3_uv_prompt_only_reports_lock_status(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    root = make_temp_repo(tmp_path)
+    monkeypatch.setenv("LOCALSETUP_UV_BIN", "uv")
 
     def fake_runner(cmd: list[str], **_: object) -> subprocess.CompletedProcess[str]:
-        assert cmd[:2] == ["/tmp/venv/bin/python", "-c"]
-        return subprocess.CompletedProcess(cmd, 0, stdout='["PGPy"]\n', stderr="")
+        if cmd[-1:] == ["--version"]:
+            return subprocess.CompletedProcess(cmd, 0, stdout="uv 0.11.5\n", stderr="")
+        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
 
-    assert missing_requirements(req, python="/tmp/venv/bin/python", runner=fake_runner) == [
-        "Definitely-Missing-Package"
-    ]
+    deps = ensure_dependencies(root, mode="prompt-only", runner=fake_runner)
+
+    assert deps["changed"] is False
+    assert deps["lock_status"] == "current"
+    assert deps["lock"]["dependency_manager"] == "uv"
 
 
-def test_v3_missing_requirements_probe_failure_does_not_fall_back(tmp_path: Path) -> None:
-    req = tmp_path / "requirements.txt"
-    req.write_text("pytest>=1\n", encoding="utf-8")
+def test_v3_uv_already_synced_skips_nested_sync(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    root = make_temp_repo(tmp_path)
+    monkeypatch.setenv("LOCALSETUP_UV_BIN", "uv")
+    monkeypatch.setenv("LOCALSETUP_UV_ALREADY_SYNCED", "1")
+    commands: list[list[str]] = []
 
     def fake_runner(cmd: list[str], **_: object) -> subprocess.CompletedProcess[str]:
-        return subprocess.CompletedProcess(cmd, 1, stdout="", stderr="probe failed")
+        commands.append(cmd)
+        if cmd[-1:] == ["--version"]:
+            return subprocess.CompletedProcess(cmd, 0, stdout="uv 0.11.5\n", stderr="")
+        assert "sync" not in cmd
+        return subprocess.CompletedProcess(cmd, 0, stdout="ok\n", stderr="")
 
-    assert missing_requirements(req, python="/tmp/venv/bin/python", runner=fake_runner) == ["pytest"]
+    deps = ensure_dependencies(root, mode="uv-sync", runner=fake_runner)
+
+    assert deps["sync_status"] == "success"
+    assert deps["changed"] is False
+    assert any(cmd[-2:] == ["lock", "--check"] for cmd in commands)
+    assert not any("sync" in cmd for cmd in commands)
+
+
+def test_v3_uv_stale_lock_is_reported(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    root = make_temp_repo(tmp_path)
+    monkeypatch.setenv("LOCALSETUP_UV_BIN", "uv")
+
+    def fake_runner(cmd: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        if cmd[-1:] == ["--version"]:
+            return subprocess.CompletedProcess(cmd, 0, stdout="uv 0.11.5\n", stderr="")
+        if cmd[-2:] == ["lock", "--check"]:
+            return subprocess.CompletedProcess(cmd, 1, stdout="", stderr="lock would change")
+        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+    with pytest.raises(RuntimeError, match="uv lockfile is stale"):
+        ensure_dependencies(root, mode="uv-sync", runner=fake_runner)
 
 
 def test_skill_smoke_runner_uses_current_python_without_shell(tmp_path: Path) -> None:
@@ -2463,6 +2506,45 @@ def test_root_installer_stdin_help_without_bash_source_warning(tmp_path: Path) -
     assert "--target-directory PATH" in stdout
     assert "BASH_SOURCE" not in stderr
     assert "unbound variable" not in stderr
+
+
+def test_root_installer_sync_env_rejects_old_uv_before_sync(tmp_path: Path) -> None:
+    install_path = Path(__file__).resolve().parents[2] / "install"
+    fake_uv = tmp_path / "uv"
+    sync_marker = tmp_path / "sync-called"
+    fake_uv.write_text(
+        "#!/usr/bin/env bash\n"
+        "if [[ \"$1\" == \"--version\" ]]; then echo 'uv 0.4.26'; exit 0; fi\n"
+        f"if [[ \"$*\" == *sync* ]]; then touch {shlex.quote(str(sync_marker))}; fi\n"
+        "exit 99\n",
+        encoding="utf-8",
+    )
+    fake_uv.chmod(0o755)
+
+    completed = subprocess.run(
+        [
+            str(install_path),
+            "--directory",
+            str(Path(__file__).resolve().parents[2]),
+            "--tools",
+            "codex",
+            "--sync-env",
+            "--non-interactive",
+            "--yes",
+            "--home",
+            str(tmp_path / "home"),
+            "--target-directory",
+            str(tmp_path / "target"),
+        ],
+        env={**os.environ, "LOCALSETUP_UV_BIN": str(fake_uv)},
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode != 0
+    assert "uv 0.4.26 is too old; Localsetup requires uv >= 0.4.27" in completed.stderr
+    assert not sync_marker.exists()
 
 
 def test_root_installer_piped_bootstrap_global_only_uses_managed_source(tmp_path: Path) -> None:
@@ -3477,16 +3559,18 @@ def test_wizard_full_flow_renders_guided_context_for_current_repo(tmp_path: Path
     assert "Repo Adapters" in rendered
     assert "Review" in rendered
     assert "Result" in rendered
-    assert "Decides: Confirms the installer source and release channel before package choices." in rendered
+    rendered_words = " ".join(rendered.split())
+    assert "Decides: Confirms the installer source and release channel before package choices." in rendered_words
     assert "Suggested: No repo setup" in rendered
     assert "Writes adapter path .codex/skills." in rendered
     assert "Code, docs, git, testing, markdown validation, and repo repair workflows." in rendered
     assert "Global packs" in rendered
     assert "Repo-visible packages" in rendered
-    assert "Does: Shows source, target, packs, adapter mode, dependency mode, and concrete" in rendered
-    assert "filesystem actions before changes." in rendered
-    assert "Does: Verification checked the managed library and selected adapter paths after applying" in rendered
-    assert "the plan." in rendered
+    assert (
+        "Does: Shows source, target, packs, adapter mode, dependency mode, and concrete filesystem actions before changes."
+        in rendered_words
+    )
+    assert "Does: Verification checked the managed library and selected adapter paths after applying the plan." in rendered_words
     assert "Enter number(s) | d details | b back | q quit | ? help" in rendered
     assert (caller / ".codex" / "skills").exists()
 
@@ -4047,16 +4131,19 @@ def test_v3_convert_does_not_copy_framework_source(tmp_path: Path) -> None:
     assert not (target / "_localsetup").exists()
 
 
-def test_v3_convert_managed_venv_uses_configured_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_v3_convert_uv_sync_uses_source_checkout_environment(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "custom-home"
     target = tmp_path / "target"
+    monkeypatch.setenv("LOCALSETUP_UV_BIN", "uv")
     commands: list[list[str]] = []
 
     def fake_runner(cmd: list[str], **_: object) -> subprocess.CompletedProcess[str]:
         commands.append(cmd)
-        if cmd[1:3] == ["-m", "venv"]:
-            python_path = Path(cmd[3]) / "bin" / "python"
+        if cmd[-1:] == ["--version"]:
+            return subprocess.CompletedProcess(cmd, 0, stdout="uv 0.11.5\n", stderr="")
+        if "sync" in cmd:
+            python_path = root / ".venv" / "bin" / "python"
             python_path.parent.mkdir(parents=True, exist_ok=True)
             python_path.write_text("# fake python\n", encoding="utf-8")
         return subprocess.CompletedProcess(cmd, 0, stdout="ok\n", stderr="")
@@ -4072,15 +4159,15 @@ def test_v3_convert_managed_venv_uses_configured_home(tmp_path: Path, monkeypatc
         packs=["core"],
         platform_ids=["codex"],
         target_root=target,
-        dependency_mode="managed-venv",
+        dependency_mode="uv-sync",
         apply=True,
     )
 
     interpreter = report["install"]["dependencies"]["interpreter"]
     assert report["ok"] is True
-    assert any(cmd[1:3] == ["-m", "venv"] for cmd in commands)
-    assert interpreter.endswith(".local/share/localsetup/venv/bin/python")
-    assert str(home) in interpreter
+    assert any("sync" in cmd and "--locked" in cmd for cmd in commands)
+    assert interpreter.endswith(".venv/bin/python")
+    assert str(root) in interpreter
 
 
 def test_v3_convert_late_migration_blocker_does_not_remove_target_framework(tmp_path: Path) -> None:
@@ -5039,96 +5126,62 @@ def test_cli_version_failure_branches(tmp_path: Path, monkeypatch: pytest.Monkey
 def test_dependency_status_and_ensure_error_branches(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     from _localsetup.v3 import dependencies as deps
 
-    root = tmp_path / "repo"
-    req_dir = root / "_localsetup"
-    req_dir.mkdir(parents=True)
-    req = req_dir / "requirements.txt"
-    req.write_text(
-        "\n# comment\njsonschema>=4\nrequests[security]==2.0; python_version > '3'\n--find-links wheels\nhttps://example.invalid/pkg.whl\n",
-        encoding="utf-8",
-    )
-    lock = req_dir / "requirements.lock"
-    lock.write_text("locked==1.0 --hash=sha256:abc\n", encoding="utf-8")
+    root = make_temp_repo(tmp_path)
 
-    calls: list[list[str]] = []
-
-    def runner(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
-        calls.append(cmd)
-        if cmd[:2] == ["other-python", "-c"]:
-            raise OSError("missing interpreter")
-        if cmd[-2:] == ["pip", "--version"]:
-            return subprocess.CompletedProcess(cmd, 1, "", "no pip")
-        return subprocess.CompletedProcess(cmd, 0, "[]", "")
-
-    assert deps._requirement_names(tmp_path / "missing.txt") == []
-    assert deps._installed_distribution_names("other-python", runner=runner) == set()
-    assert deps.pip_install_args(lock)[:2] == ["--require-hashes", "--only-binary"]
-
-    monkeypatch.setattr(deps, "has_venv_module", lambda: False)
-    status = deps.dependency_status(root, mode="managed-venv", data_root=tmp_path / "data", runner=runner)
+    monkeypatch.delenv("LOCALSETUP_UV_BIN", raising=False)
+    monkeypatch.setattr(deps.shutil, "which", lambda name: None)
+    status = deps.dependency_status(root)
     assert status.ok is False
-    assert any("python venv module is unavailable" in warning for warning in status.warnings)
-    with pytest.raises(RuntimeError, match="python venv module is unavailable"):
-        deps.ensure_dependencies(root, data_root=tmp_path / "data", runner=runner)
+    assert any("uv is required" in blocker for blocker in status.blockers)
 
-    monkeypatch.setattr(deps, "has_venv_module", lambda: True)
-    user_status = deps.dependency_status(root, mode="user-pip", runner=runner)
-    assert user_status.ok is False
-    assert any("pip is unavailable" in warning for warning in user_status.warnings)
-    with pytest.raises(RuntimeError, match="pip is unavailable"):
-        deps.ensure_dependencies(root, mode="user-pip", runner=runner)
+    monkeypatch.setenv("LOCALSETUP_UV_BIN", "uv")
 
-    def failing_user_runner(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
-        if cmd[-2:] == ["pip", "--version"]:
-            return subprocess.CompletedProcess(cmd, 0, "pip ok", "")
-        if "install" in cmd:
-            return subprocess.CompletedProcess(cmd, 1, "", "install failed")
-        return subprocess.CompletedProcess(cmd, 0, "ok", "")
+    old_uv_commands: list[list[str]] = []
 
-    with pytest.raises(RuntimeError, match="user pip install failed"):
-        deps.ensure_dependencies(root, mode="user-pip", runner=failing_user_runner)
+    def old_uv_runner(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        old_uv_commands.append(cmd)
+        if cmd[-1:] == ["--version"]:
+            return subprocess.CompletedProcess(cmd, 0, "uv 0.4.26\n", "")
+        return subprocess.CompletedProcess(cmd, 0, "", "")
 
-    req.unlink()
-    lock.unlink()
-    with pytest.raises(RuntimeError, match="requirements file not found"):
-        deps.ensure_dependencies(root, data_root=tmp_path / "data", runner=runner)
+    old_status = deps.dependency_status(root, runner=old_uv_runner)
+    assert old_status.ok is False
+    assert old_status.minimum_version == "0.4.27"
+    assert any("uv 0.4.26 is too old" in blocker for blocker in old_status.blockers)
+    assert old_status.lock_status == "unchecked"
+    assert not any(cmd[-2:] == ["lock", "--check"] for cmd in old_uv_commands)
 
-    req.write_text("jsonschema>=4\n", encoding="utf-8")
+    missing_lock_root = make_temp_repo(tmp_path / "missing-lock")
+    (missing_lock_root / "uv.lock").unlink()
+    missing_status = deps.dependency_status(missing_lock_root, runner=old_uv_runner)
+    assert missing_status.lock_status == "missing"
+    assert any("uv.lock not found" in blocker for blocker in missing_status.blockers)
 
-    def fail_venv_runner(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
-        return subprocess.CompletedProcess(cmd, 1, "", "venv failed")
+    def stale_runner(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        if cmd[-1:] == ["--version"]:
+            return subprocess.CompletedProcess(cmd, 0, "uv 0.11.5\n", "")
+        if cmd[-2:] == ["lock", "--check"]:
+            return subprocess.CompletedProcess(cmd, 1, "", "lock would change")
+        return subprocess.CompletedProcess(cmd, 0, "", "")
 
-    with pytest.raises(RuntimeError, match="managed venv creation failed"):
-        deps.ensure_dependencies(root, data_root=tmp_path / "new-data", runner=fail_venv_runner)
+    stale_status = deps.dependency_status(root, runner=stale_runner)
+    assert stale_status.lock_status == "stale"
+    with pytest.raises(RuntimeError, match="uv lockfile is stale"):
+        deps.ensure_dependencies(root, runner=stale_runner)
 
-    venv = tmp_path / "data2" / "venv"
-    venv.mkdir(parents=True)
-    with pytest.raises(RuntimeError, match="managed venv interpreter was not created"):
-        deps.ensure_dependencies(root, data_root=tmp_path / "data2", runner=runner)
+    def fail_sync_runner(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        if cmd[-1:] == ["--version"]:
+            return subprocess.CompletedProcess(cmd, 0, "uv 0.11.5\n", "")
+        if "sync" in cmd:
+            return subprocess.CompletedProcess(cmd, 1, "", "network timed out")
+        return subprocess.CompletedProcess(cmd, 0, "", "")
 
-    python = venv / "bin" / "python"
-    python.parent.mkdir(parents=True, exist_ok=True)
-    python.write_text("#!/usr/bin/env python\n", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="network-or-index"):
+        deps.ensure_dependencies(root, runner=fail_sync_runner)
 
-    def fail_install_runner(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
-        if cmd[-2:] == ["pip", "--version"]:
-            return subprocess.CompletedProcess(cmd, 0, "pip ok", "")
-        if "install" in cmd:
-            return subprocess.CompletedProcess(cmd, 1, "", "install failed")
-        return subprocess.CompletedProcess(cmd, 0, "ok", "")
-
-    with pytest.raises(RuntimeError, match="managed venv dependency install failed"):
-        deps.ensure_dependencies(root, data_root=tmp_path / "data2", runner=fail_install_runner)
-
-    def fail_check_runner(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
-        if cmd[-2:] == ["pip", "--version"]:
-            return subprocess.CompletedProcess(cmd, 0, "pip ok", "")
-        if cmd[-2:] == ["pip", "check"]:
-            return subprocess.CompletedProcess(cmd, 1, "broken", "")
-        return subprocess.CompletedProcess(cmd, 0, "ok", "")
-
-    with pytest.raises(RuntimeError, match="managed venv pip check failed"):
-        deps.ensure_dependencies(root, data_root=tmp_path / "data2", runner=fail_check_runner)
+    prompt = deps.ensure_dependencies(root, mode="user-pip", runner=fail_sync_runner)
+    assert prompt["mode"] == "prompt-only"
+    assert prompt["changed"] is False
 
 
 def test_path_layout_validation_edge_cases(tmp_path: Path) -> None:
@@ -5168,19 +5221,38 @@ def test_package_helpers_cover_error_and_mismatch_branches(tmp_path: Path, monke
     from _localsetup.v3 import package as pkg
 
     root = tmp_path / "repo"
-    (root / "_localsetup").mkdir(parents=True)
-    (root / "_localsetup" / "requirements.txt").write_text(
-        "plain-package>=1\nlocked==2.0\n--index-url https://example.invalid/simple\n",
+    root.mkdir()
+    (root / "pyproject.toml").write_text(
+        "[project]\nname = \"demo\"\ndependencies = [\"plain-package>=1\", \"locked==2.0\"]\n",
         encoding="utf-8",
     )
+    lock_text = """
+version = 1
+
+[[package]]
+name = "localsetup"
+version = "1.0.0"
+source = { editable = "." }
+
+[[package]]
+name = "plain-package"
+version = "1.0"
+source = { registry = "https://pypi.org/simple" }
+
+[[package]]
+name = "locked"
+version = "2.0"
+source = { registry = "https://pypi.org/simple" }
+"""
+    (root / "uv.lock").write_text(lock_text, encoding="utf-8")
     artifact = tmp_path / "artifact.tar.gz"
     with tarfile.open(artifact, "w:gz") as tar:
-        info = tarfile.TarInfo("_localsetup/requirements.txt")
-        data = b"plain-package>=1\nlocked==2.0\n"
+        info = tarfile.TarInfo("uv.lock")
+        data = lock_text.encode("utf-8")
         info.size = len(data)
         tar.addfile(info, io.BytesIO(data))
 
-    assert pkg._requirements_for_sbom(root)[0]["name"] == "plain-package"
+    assert pkg._components_for_sbom(root)[0]["name"] == "locked"
     assert pkg._expected_components_from_artifact(artifact)
     empty_artifact = tmp_path / "empty.tar.gz"
     with tarfile.open(empty_artifact, "w:gz"):

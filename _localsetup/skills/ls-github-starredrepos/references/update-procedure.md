@@ -11,8 +11,8 @@
 4. Refresh generated docs artifacts from the repo root:
 
    ```bash
-   python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .
-   python3 _localsetup/tools/localsetup_v3.py --source-root . generate-docs
+   uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .
+   uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . generate-docs
    ```
 
 5. Run the repo validation gates listed in the root AGENTS.md task instructions.

@@ -23,7 +23,7 @@ The bundled example targets Ansible 8+ or ansible-core 2.15+ and requires these 
 
 ```bash
 # Install Ansible
-pip install ansible
+uv tool install ansible
 
 # Or on macOS
 brew install ansible

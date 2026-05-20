@@ -180,4 +180,4 @@ def test_missing_pyyaml_uses_shared_dependency_error(tmp_path: Path) -> None:
 
     assert proc.returncode == 2
     assert "[FATAL] Missing Python packages: yaml" in proc.stderr
-    assert "python3 -m pip install PyYAML" in proc.stderr
+    assert "uv sync --locked --no-dev" in proc.stderr

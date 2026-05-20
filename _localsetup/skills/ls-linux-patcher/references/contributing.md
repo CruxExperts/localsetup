@@ -22,16 +22,16 @@ Contributions should preserve the current v3 boundary: Python tooling only, plan
 From the repository root:
 
 ```bash
-python3 -m py_compile _localsetup/skills/ls-linux-patcher/scripts/patch_cli.py
-python3 _localsetup/skills/ls-linux-patcher/scripts/patch_cli.py status
-python3 _localsetup/skills/ls-linux-patcher/scripts/patch_cli.py auto --dry-run
-python3 -m pytest -q _localsetup/tests/test_ls_linux_patcher_patch_cli.py
+uv run --locked python -m py_compile _localsetup/skills/ls-linux-patcher/scripts/patch_cli.py
+uv run --locked python _localsetup/skills/ls-linux-patcher/scripts/patch_cli.py status
+uv run --locked python _localsetup/skills/ls-linux-patcher/scripts/patch_cli.py auto --dry-run
+uv run --locked pytest -q _localsetup/tests/test_ls_linux_patcher_patch_cli.py
 ```
 
 If you add skill-local tests, run them directly too:
 
 ```bash
-python3 -m pytest -q _localsetup/skills/ls-linux-patcher/tests
+uv run --locked pytest -q _localsetup/skills/ls-linux-patcher/tests
 ```
 
 ## Pull Request Checklist

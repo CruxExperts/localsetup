@@ -12,7 +12,7 @@ compatibility: "Python 3.10+, PyYAML, python-frontmatter, cryptography, PGPy, an
 
 Operate the **agentq_transport_client** CLI and related config so Agent A and Agent B exchange PRDs and artifacts via **file_drop** (shared directory + ready marker) or **mail** (policy-gated), with OpenPGP outer blobs and optional strict gpg sign-then-encrypt.
 
-Pre-ship checks accept argv-only `pytest` or `python3 -m pytest` commands and run without shell command execution.
+Pre-ship checks accept argv-only `pytest` or `uv run --locked pytest` commands and run without shell command execution.
 
 ## When to use
 
@@ -53,8 +53,8 @@ This skill owns the operational rules behind the public Agent Q docs. Treat the 
 From repo root:
 
 ```bash
-python3 _localsetup/tools/agentq_transport_client/agentq_cli.py --help
-python3 -m pytest _localsetup/tools/agentq_transport_client/tests/ -q
+uv run --locked python _localsetup/tools/agentq_transport_client/agentq_cli.py --help
+uv run --locked pytest _localsetup/tools/agentq_transport_client/tests/ -q
 ```
 
-Skill directory has no bundled scripts; CLI lives under `_localsetup/tools/agentq_transport_client/`. Full OpenPGP test coverage requires the framework Python dependencies from `_localsetup/requirements.txt`, including `cryptography`, `PGPy`, and `jsonschema`; when PGPy is absent, OpenPGP-specific pytest cases skip with an explicit dependency reason while non-PGP tests still run.
+Skill directory has no bundled scripts; CLI lives under `_localsetup/tools/agentq_transport_client/`. Full OpenPGP test coverage requires the framework Python dependencies from the Localsetup uv project environment, including `cryptography`, `PGPy`, and `jsonschema`; when PGPy is absent, OpenPGP-specific pytest cases skip with an explicit dependency reason while non-PGP tests still run.

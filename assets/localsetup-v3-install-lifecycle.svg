@@ -67,7 +67,7 @@
   <g filter="url(#shadow)">
     <rect x="710" y="144" width="154" height="154" rx="24" class="node"/>
     <text x="752" y="190" class="label">install</text>
-    <text x="742" y="224" class="tiny">managed venv</text>
+    <text x="742" y="224" class="tiny">uv .venv</text>
     <text x="742" y="248" class="tiny">skills + links</text>
   </g>
   <g filter="url(#shadow)">

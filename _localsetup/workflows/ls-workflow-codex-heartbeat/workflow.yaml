@@ -36,8 +36,8 @@ phases:
   - id: disable
     summary: Disable config and heartbeat cron task without deleting historical artifacts.
 validation:
-  - check: python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
-  - check: python3 _localsetup/tools/localsetup_v3.py --source-root . harness codex-heartbeat run --no-agent --force
+  - check: uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
+  - check: uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . harness codex-heartbeat run --no-agent --force
 outputs:
   - Target HEARTBEAT.md
   - Target config/codex_heartbeat.yaml

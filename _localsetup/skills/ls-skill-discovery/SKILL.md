@@ -46,13 +46,13 @@ After every index refresh, the scrub step **must** run before the index is consi
 
 **Sequence (agent steps):**
 
-1. **Refresh** - Run `python3 _localsetup/tools/refresh_public_skill_index.py`. Wait for completion and confirm the skill count written to stdout.
-2. **Scrub dry-run** - Run `python3 _localsetup/tools/skill_index_scrub.py --skip-url-check`. This fetches real descriptions from upstream SKILL.md files for any stub entries and prints a GFM report to stdout. Add `--report FILE` when you need a saved markdown artifact. URL checking is skipped in normal flow to keep runtime short; run with full URL checking only when explicitly requested or before a public release.
+1. **Refresh** - Run `uv run --locked python _localsetup/tools/refresh_public_skill_index.py`. Wait for completion and confirm the skill count written to stdout.
+2. **Scrub dry-run** - Run `uv run --locked python _localsetup/tools/skill_index_scrub.py --skip-url-check`. This fetches real descriptions from upstream SKILL.md files for any stub entries and prints a GFM report to stdout. Add `--report FILE` when you need a saved markdown artifact. URL checking is skipped in normal flow to keep runtime short; run with full URL checking only when explicitly requested or before a public release.
 3. **Review report** - Check the summary table. If "Fixable (upstream desc found)" > 0, proceed to step 4. If "Stub or too-short descriptions" > 0 but fixable count is 0, note the unfixable entries (upstream had no usable content) and accept them.
-4. **Apply fixes** - Run `python3 _localsetup/tools/skill_index_scrub.py --skip-url-check --fix`. Confirm the "Applied fixes" count in the report.
+4. **Apply fixes** - Run `uv run --locked python _localsetup/tools/skill_index_scrub.py --skip-url-check --fix`. Confirm the "Applied fixes" count in the report.
 5. **Done** - The index is now ready. Report summary to the user: total skills, stubs fixed, stubs unfixable (if any), `updated` timestamp.
 
-**With URL check (optional, slower):** Add `--workers 20` and remove `--skip-url-check` to also validate liveness of all skill URLs. Recommended before publishing the index upstream or before a framework release. If the URL audit finds dead entries, run `python3 _localsetup/tools/skill_index_scrub.py --workers 20 --fix --prune-dead-urls --report FILE` after reviewing the report. Use `--report FILE` to save the GFM report.
+**With URL check (optional, slower):** Add `--workers 20` and remove `--skip-url-check` to also validate liveness of all skill URLs. Recommended before publishing the index upstream or before a framework release. If the URL audit finds dead entries, run `uv run --locked python _localsetup/tools/skill_index_scrub.py --workers 20 --fix --prune-dead-urls --report FILE` after reviewing the report. Use `--report FILE` to save the GFM report.
 
 **Shorthand for agents:** "refresh and scrub" means run steps 1-5 above in order.
 

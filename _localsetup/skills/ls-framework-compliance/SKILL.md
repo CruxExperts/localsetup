@@ -70,11 +70,11 @@ Choose checks based on the surface changed:
 ```bash
 ./_localsetup/tools/verify_context
 ./_localsetup/tools/verify_rules
-python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
-python3 _localsetup/tools/localsetup_v3.py --source-root . scan-migration
-python3 _localsetup/tools/localsetup_v3.py --source-root . audit-global-first
-./_localsetup/tests/automated_test.sh
-python3 -m pytest _localsetup/tests
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . scan-migration
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . audit-global-first
+uv run --locked ./_localsetup/tests/automated_test.sh
+uv run --locked pytest -n auto _localsetup/tests -q
 git diff --check
 ```
 

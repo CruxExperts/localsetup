@@ -7,7 +7,21 @@ name = "localsetup"
 version = "3.8.9"
 description = "Global-first Localsetup skill pack manager"
 requires-python = ">=3.10"
-dependencies = ["PyYAML>=6.0", "jsonschema>=4.0"]
+dependencies = [
+  "PyYAML>=6.0",
+  "requests>=2.28",
+  "python-frontmatter>=1.1",
+  "cryptography>=42.0",
+  "PGPy>=0.5.4,<0.6",
+  "jsonschema>=4.0",
+  "tomli>=2.0; python_version < '3.11'",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0",
+  "pytest-xdist>=3.6",
+]
 
 [project.scripts]
 localsetup = "_localsetup.v3.cli:main"
@@ -20,9 +34,6 @@ include = ["_localsetup*"]
 
 [tool.setuptools.package-data]
 "_localsetup" = [
-  "requirements.txt",
-  "requirements.in",
-  "requirements.lock",
   "config/*.json",
   "config/*.yaml",
   "docs/*.md",

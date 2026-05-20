@@ -8,7 +8,7 @@
 
 ls-agentq-transport:
   cwd: repo-root
-  command: "python3 _localsetup/tools/agentq_transport_client/agentq_cli.py --help"
+  command: "uv run --locked python _localsetup/tools/agentq_transport_client/agentq_cli.py --help"
 ls-agentlens: "N/A"
 ls-ansible-skill: "N/A"
 ls-arbiter: "python3 scripts/arbiter_cli.py --help"

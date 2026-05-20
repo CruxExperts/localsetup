@@ -39,11 +39,11 @@ Windows support is WSL2-only in v3. Run agents inside WSL and use WSL filesystem
 - `localsetup rollback`
 - `localsetup adapters`
 - `localsetup catalog`
-- `python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog` (source checkout)
+- `uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog` (source checkout)
 - `localsetup scan-migration`
-- `python3 _localsetup/tools/localsetup_v3.py hook-gate`
-- `python3 _localsetup/tools/localsetup_v3.py generate-docs`
-- `python3 _localsetup/tools/localsetup_v3.py package --out dist/localsetup-v3-public.tar.gz`
+- `uv run --locked python _localsetup/tools/localsetup_v3.py hook-gate`
+- `uv run --locked python _localsetup/tools/localsetup_v3.py generate-docs`
+- `uv run --locked python _localsetup/tools/localsetup_v3.py package --out dist/localsetup-v3-public.tar.gz`
 
 ## Platform Adapters
 
@@ -57,7 +57,7 @@ install state rather than assuming every declared platform was attached.
 
 Portable mode vendors managed copies into the repo adapter paths:
 
-- `python3 _localsetup/tools/localsetup_v3.py install --mode portable --platforms codex --apply`
+- `uv run --locked python _localsetup/tools/localsetup_v3.py install --mode portable --platforms codex --apply`
 
 Use portable mode for repos that must carry their selected packages without relying on
 the user's global library.

@@ -18,10 +18,10 @@ Link the issue, discussion, or maintenance note this PR addresses.
 List the commands you ran and their results.
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --source-root . version-plan
-python3 _localsetup/tools/localsetup_v3.py --source-root . version-sync --check --target "$(cat VERSION)"
-python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
-python3 -m pytest _localsetup/tests -q
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . version-plan
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . version-sync --check --target "$(cat VERSION)"
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
+uv run --locked pytest -n auto _localsetup/tests -q
 git diff --check
 ```
 

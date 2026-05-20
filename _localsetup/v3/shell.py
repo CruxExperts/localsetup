@@ -47,6 +47,10 @@ def _managed_shim_content(source_root: Path, home: Path) -> str:
             f"LOCALSETUP_HOME={quoted_home}",
             "export LOCALSETUP_SOURCE_ROOT",
             f"export {SHIM_ENV}=1",
+            'LOCALSETUP_PROJECT_PYTHON="$LOCALSETUP_SOURCE_ROOT/.venv/bin/python"',
+            'if [ -x "$LOCALSETUP_PROJECT_PYTHON" ]; then',
+            '  exec "$LOCALSETUP_PROJECT_PYTHON" "$LOCALSETUP_SOURCE_ROOT/_localsetup/tools/localsetup_v3.py" --source-root "$LOCALSETUP_SOURCE_ROOT" --home "$LOCALSETUP_HOME" "$@"',
+            "fi",
             'exec python3 "$LOCALSETUP_SOURCE_ROOT/_localsetup/tools/localsetup_v3.py" --source-root "$LOCALSETUP_SOURCE_ROOT" --home "$LOCALSETUP_HOME" "$@"',
             "",
         ]

@@ -901,12 +901,12 @@ def _dependency_choices() -> list[Choice]:
             "Some workflows may need manual dependency setup before they run.",
         ),
         Choice(
-            "managed-venv",
-            "Managed virtual environment",
-            "Prepares Localsetup's managed Python environment.",
-            "Creates or updates the Python environment used by Localsetup helper tools.",
+            "uv-sync",
+            "Sync uv environment",
+            "Prepares Localsetup's uv-managed Python environment.",
+            "Creates or updates the source checkout .venv from pyproject.toml and uv.lock.",
             "You want the installer to prepare Python tooling now.",
-            "Takes longer and changes the managed environment under your home directory.",
+            "Takes longer and requires uv plus access to the configured package index or cache.",
         ),
     ]
 
@@ -1369,7 +1369,7 @@ def _options_step(term: TerminalWizard, state: WizardState) -> str:
         default=state.dependency_mode,
         decides="Whether the installer only reports dependencies or prepares Localsetup's Python environment.",
         suggested_reason="Prompt-only avoids changing host dependencies during a first install.",
-        help_text="Prompt-only reports needs without installing. Managed virtual environment prepares Localsetup's Python tooling.",
+        help_text="Prompt-only reports needs without installing. uv-sync prepares Localsetup's project .venv.",
     )
     if deps in {BACK, CANCEL}:
         return deps

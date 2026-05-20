@@ -5,7 +5,7 @@ localsetup_provenance:
   emitter: generate-docs
 framework_version: 3.8.9
 source_commit: 4dad2802e0cadcf733071c029f7e1e998afc9072
-artifact_sha256: b8d0d1d92b4b7fc66d062fc993f142846176ef435798563451f1a37195aa2811
+artifact_sha256: a898273b28d9928a3c5a92578c971b2bd84900a4cf354387d7e453ade28cac81
 ---
 # Implementation File Map
 
@@ -132,9 +132,6 @@ artifact_sha256: b8d0d1d92b4b7fc66d062fc993f142846176ef435798563451f1a37195aa281
 | `keep` | `_localsetup/lib/deps.py` |
 | `keep` | `_localsetup/lib/json_formatter.sh` |
 | `keep` | `_localsetup/lib/path_resolution.py` |
-| `keep` | `_localsetup/requirements.in` |
-| `keep` | `_localsetup/requirements.lock` |
-| `keep` | `_localsetup/requirements.txt` |
 | `keep` | `_localsetup/skills/ls-agentlens/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-agentlens/references/navigation.md` |
 | `keep` | `_localsetup/skills/ls-agentlens/references/structure.md` |
@@ -377,7 +374,6 @@ artifact_sha256: b8d0d1d92b4b7fc66d062fc993f142846176ef435798563451f1a37195aa281
 | `keep` | `_localsetup/skills/ls-markdown-reference-validator/templates/markdown_reference_strict_repo.yaml` |
 | `keep` | `_localsetup/skills/ls-mcp-builder/LICENSE.txt` |
 | `keep` | `_localsetup/skills/ls-mcp-builder/SKILL.md` |
-| `keep` | `_localsetup/skills/ls-mcp-builder/assets/evaluation-requirements.txt` |
 | `keep` | `_localsetup/skills/ls-mcp-builder/assets/example_emulation.json` |
 | `keep` | `_localsetup/skills/ls-mcp-builder/assets/example_evaluation.xml` |
 | `keep` | `_localsetup/skills/ls-mcp-builder/assets/smoke_emulation.json` |

@@ -57,13 +57,13 @@ npx jest path/to/test   # Single file
 
 ### pytest (Python)
 ```bash
-uv pip install pytest pytest-cov pytest-asyncio httpx
+uv add --dev pytest pytest-cov pytest-asyncio httpx
 ```
 
 ```bash
-pytest                          # Run all
-pytest -v                       # Verbose
-pytest -x                       # Stop on first failure
+uv run pytest                   # Run all
+uv run pytest -v                # Verbose
+uv run pytest -x                # Stop on first failure
 pytest --cov=app                # With coverage
 pytest tests/test_api.py -k "test_login"  # Specific test
 pytest --tb=short               # Short tracebacks

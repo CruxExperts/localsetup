@@ -6,7 +6,7 @@ Access date: 2026-05-12.
 |---|---|---|---|---|
 | Local repo `_localsetup/skills/ls-keepass-secrets/SKILL.md` | The previous skill was guidance-only and shipped no helper CLI. | This implementation refactors the existing skill instead of adding a duplicate. | High | None |
 | Local repo `_localsetup/docs/INPUT_HARDENING_STANDARD.md` | External input must be sanitized, validated, and handled with actionable errors. | CLI validates IDs, aliases, env names, YAML roots, and subprocess calls use `shell=False`. | High | None |
-| Local repo `_localsetup/requirements.txt` | PyYAML is already a framework dependency. | YAML config/map parsing uses PyYAML without adding a new dependency. | High | None |
+| Local repo `pyproject.toml` / `uv.lock` | PyYAML is already a framework dependency. | YAML config/map parsing uses PyYAML without adding a new dependency. | High | None |
 | Local repo `git status` / `git rev-parse` | Repo is `CruxExperts/localsetup`, branch `main`, commit `ce904765b04d8fc424ec0006fe76cead2f7806c8` was the plan baseline. | Generated docs and tests are run against the active worktree, not memory. | Medium | Commit may advance during local work. |
 | Local Python | Python `3.12.3` available in this environment. | CLI targets Python 3.10+ and is tested on the available local runtime. | High | None |
 | Local `keepassxc-cli --version` | Plan observed local KeePassXC CLI `2.7.12`. | KeePassXC backend is primary, but tests avoid real vault access. | Medium | CLI may not be installed in every environment. |

@@ -25,7 +25,7 @@ from pathlib import Path
 try:
     import yaml
 except ImportError:
-    print("PyYAML required: pip install pyyaml", file=sys.stderr)
+    print("PyYAML required: run `uv sync --locked --no-dev` from the Localsetup source checkout", file=sys.stderr)
     sys.exit(1)
 
 # Canonical GitHub raw URL for the pattern file (documented in SKILL_VALIDATION_PATTERNS.md)

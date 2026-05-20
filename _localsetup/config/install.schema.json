@@ -120,12 +120,13 @@
     "data_root": {
       "type": "string",
       "minLength": 1,
-      "description": "Optional root for managed runtime state such as the managed dependency venv. Defaults to the Localsetup user data root, normally ~/.local/share/localsetup."
+      "description": "Optional root for managed runtime state. Dependency environments are uv project environments under the Localsetup source checkout."
     },
     "dependency_mode": {
       "type": "string",
-      "enum": ["managed-venv", "user-pip", "prompt-only"],
-      "default": "managed-venv"
+      "enum": ["uv-sync", "prompt-only", "managed-venv", "user-pip"],
+      "default": "prompt-only",
+      "description": "Dependency handling mode. Use uv-sync for explicit uv-managed project sync or prompt-only to report without syncing. managed-venv and user-pip are deprecated compatibility aliases."
     },
     "migration_mode": {
       "type": "string",

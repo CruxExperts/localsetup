@@ -5,7 +5,7 @@
 Run:
 
 ```bash
-python3 _localsetup/tools/docs_alignment.py --repo-root . audit
+uv run --locked python _localsetup/tools/docs_alignment.py --repo-root . audit
 ```
 
 Review critical and major findings first.
@@ -15,7 +15,7 @@ Review critical and major findings first.
 Inspect the claim:
 
 ```bash
-python3 _localsetup/tools/docs_alignment.py --repo-root . explain --claim-id skill_count
+uv run --locked python _localsetup/tools/docs_alignment.py --repo-root . explain --claim-id skill_count
 ```
 
 Fix the source manifest or regenerate docs. Do not hand-edit generated files.

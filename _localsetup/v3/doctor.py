@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 
 from .adapters import adapter_status, adapter_targets, recorded_adapter_status
-from .dependencies import dependency_status, has_venv_module, pip_available, tool_status
+from .dependencies import dependency_status, tool_status
 from .inventory import install_inventory
 from .manifests import load_pack_config, load_platforms
 from .migration import detect_legacy_artifacts, scan_legacy_references
@@ -43,7 +43,7 @@ def run_doctor(
     home: Path,
     packs: list[str] | None = None,
     platform_ids: list[str] | None = None,
-    dependency_mode: str = "managed-venv",
+    dependency_mode: str = "uv-sync",
     data_root: Path | None = None,
     target_root: Path | None = None,
 ) -> dict:
@@ -99,14 +99,11 @@ def run_doctor(
     if not tools[1]["ok"]:
         warnings.append("missing recommended tool: rg")
 
-    if not has_venv_module():
-        blockers.append("missing python venv module")
-    if not pip_available(sys.executable):
-        warnings.append("pip is unavailable for the current interpreter")
-
     dep_status = dependency_status(repo_root, mode=dependency_mode, data_root=dependency_root).to_dict()
-    if dependency_mode != "prompt-only" and dep_status["warnings"]:
+    if dep_status["warnings"]:
         warnings.extend(dep_status["warnings"])
+    if dep_status["mode"] != "prompt-only" and dep_status["blockers"]:
+        blockers.extend(dep_status["blockers"])
 
     global_root = expand_user_path(pack.global_root, home)
     lock_path = attachment_root / ".localsetup" / "lock.json"

@@ -31,12 +31,17 @@ REPO_EXCLUDE_SKILLS_CSV=""
 MODE="symlink"
 YES=false
 NON_INTERACTIVE=false
-INSTALL_DEPS=false
+SYNC_ENV=false
+LEGACY_INSTALL_DEPS=false
 REGISTER_SHELL=true
 DEPENDENCY_MODE="prompt-only"
+UV_BOOTSTRAP_POLICY="never"
+UV_BOOTSTRAP_SOURCE="${LOCALSETUP_UV_BOOTSTRAP_SOURCE:-https://astral.sh/uv/install.sh}"
+UV_OFFLINE=false
 COLOR_MODE="auto"
 GLYPH_MODE="auto"
 MIN_PYTHON_VERSION="3.10.0"
+MIN_UV_VERSION="0.4.27"
 EXPLICIT_SOURCE_DIR=false
 EXPLICIT_TARGET_DIR=false
 BOOTSTRAPPED_SOURCE=false
@@ -103,7 +108,11 @@ Options:
   --repo-exclude-skills LIST
                        Skills excluded from repo adapter visibility.
   --mode MODE          symlink or portable. Default: symlink.
-  --install-deps       Create/update the managed venv and install _localsetup/requirements.txt.
+  --sync-env           Sync the uv-managed project environment from pyproject.toml and uv.lock.
+  --install-deps       Deprecated alias for --sync-env.
+  --install-uv         If uv is missing, download the official uv installer to a temp file and run it.
+  --no-install-uv      Never bootstrap uv automatically. This is the default.
+  --offline            Run uv dependency sync in offline/cache-only mode.
   --no-register-shell  Do not create/update ~/.local/bin/localsetup.
   --color MODE         Wizard color mode: auto, always, or never. Default: auto.
   --no-color           Alias for --color never.
@@ -145,6 +154,92 @@ required = tuple(int(part) for part in sys.argv[1].split("."))
 current = sys.version_info[:3]
 raise SystemExit(0 if current >= required else 1)
 PY
+}
+
+uv_cmd() {
+  if [[ -n "${LOCALSETUP_UV_BIN:-}" ]]; then
+    [[ -x "$LOCALSETUP_UV_BIN" ]] || die "LOCALSETUP_UV_BIN is not executable: $LOCALSETUP_UV_BIN"
+    printf '%s\n' "$LOCALSETUP_UV_BIN"
+    return 0
+  fi
+  command -v uv 2>/dev/null || return 1
+}
+
+uv_version_value() {
+  local uv_bin output
+  uv_bin="$(uv_cmd)" || die "uv is required"
+  output="$("$uv_bin" --version 2>&1)" || die "uv version check failed: $output"
+  if [[ "$output" =~ ([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
+    printf '%s.%s.%s\n' "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}"
+    return 0
+  fi
+  die "uv version output was not recognized: $output"
+}
+
+version_ge() {
+  local current="$1" required="$2"
+  python3 - "$current" "$required" <<'PY'
+from __future__ import annotations
+
+import sys
+
+current = tuple(int(part) for part in sys.argv[1].split("."))
+required = tuple(int(part) for part in sys.argv[2].split("."))
+raise SystemExit(0 if current >= required else 1)
+PY
+}
+
+ensure_uv_min_version() {
+  local version
+  version="$(uv_version_value)"
+  version_ge "$version" "$MIN_UV_VERSION" || die "uv $version is too old; Localsetup requires uv >= $MIN_UV_VERSION"
+}
+
+bootstrap_uv() {
+  local tmp installer fetcher
+  tmp="$(mktemp -d)"
+  installer="$tmp/uv-install.sh"
+  export LOCALSETUP_UV_BOOTSTRAP_ATTEMPTED=1
+  export LOCALSETUP_UV_BOOTSTRAP_SOURCE="$UV_BOOTSTRAP_SOURCE"
+  if command -v curl >/dev/null 2>&1; then
+    fetcher=(curl -fsSL "$UV_BOOTSTRAP_SOURCE" -o "$installer")
+  elif command -v wget >/dev/null 2>&1; then
+    fetcher=(wget -qO "$installer" "$UV_BOOTSTRAP_SOURCE")
+  else
+    die "uv is missing and neither curl nor wget is available for explicit --install-uv bootstrap"
+  fi
+  echo "Fetching uv installer to $installer from $UV_BOOTSTRAP_SOURCE" >&2
+  "${fetcher[@]}"
+  sh "$installer"
+  export PATH="$HOME/.local/bin:$PATH"
+  uv_cmd >/dev/null || die "uv bootstrap finished but uv was not found; add $HOME/.local/bin to PATH or set LOCALSETUP_UV_BIN"
+}
+
+ensure_uv_for_sync() {
+  if ! uv_cmd >/dev/null; then
+    if [[ "$UV_BOOTSTRAP_POLICY" != "auto" ]]; then
+      die "uv is required for --sync-env. Install uv first, pass --install-uv, or set LOCALSETUP_UV_BIN."
+    fi
+    bootstrap_uv
+  fi
+  ensure_uv_min_version
+}
+
+uv_project_base() {
+  local uv_bin
+  uv_bin="$(uv_cmd)" || die "uv is required"
+  printf '%s\0' "$uv_bin"
+  if "$UV_OFFLINE"; then
+    printf '%s\0' "--offline"
+  fi
+  printf '%s\0' "--project" "$SOURCE_DIR"
+}
+
+sync_uv_environment() {
+  local -a uv_base
+  mapfile -d '' -t uv_base < <(uv_project_base)
+  "${uv_base[@]}" sync --locked --no-dev
+  export LOCALSETUP_UV_ALREADY_SYNCED=1
 }
 
 inspect_managed_bootstrap_source() {
@@ -440,7 +535,24 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     --install-deps)
-      INSTALL_DEPS=true
+      SYNC_ENV=true
+      LEGACY_INSTALL_DEPS=true
+      shift
+      ;;
+    --sync-env)
+      SYNC_ENV=true
+      shift
+      ;;
+    --install-uv)
+      UV_BOOTSTRAP_POLICY="auto"
+      shift
+      ;;
+    --no-install-uv)
+      UV_BOOTSTRAP_POLICY="never"
+      shift
+      ;;
+    --offline)
+      UV_OFFLINE=true
       shift
       ;;
     --no-register-shell)
@@ -502,8 +614,22 @@ case "$MODE" in
   *) die "invalid --mode: $MODE" ;;
 esac
 
-if "$INSTALL_DEPS"; then
-  DEPENDENCY_MODE="managed-venv"
+if "$SYNC_ENV"; then
+  ensure_uv_for_sync
+  sync_uv_environment
+  DEPENDENCY_MODE="uv-sync"
+fi
+if "$LEGACY_INSTALL_DEPS"; then
+  export LOCALSETUP_LEGACY_INSTALL_DEPS=1
+fi
+if "$UV_OFFLINE"; then
+  export LOCALSETUP_UV_OFFLINE=1
+fi
+
+cli_base=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py")
+if "$SYNC_ENV"; then
+  mapfile -d '' -t uv_base < <(uv_project_base)
+  cli_base=("${uv_base[@]}" run --locked --no-sync --no-dev python "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py")
 fi
 
 pack_args=()
@@ -605,7 +731,7 @@ if [[ "$NON_INTERACTIVE" != true ]]; then
   if [[ -n "$ATTACH_TARGET_DIR" ]]; then
     wizard_target_args=(--target-directory "$ATTACH_TARGET_DIR")
   fi
-  wizard_cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --source-root "$SOURCE_DIR" "${wizard_target_args[@]}" wizard --caller-directory "$CALLER_DIR" --dependency-mode "$DEPENDENCY_MODE" --mode "$MODE" --color "$COLOR_MODE" --glyphs "$GLYPH_MODE")
+  wizard_cmd=("${cli_base[@]}" --home "$HOME_DIR" --source-root "$SOURCE_DIR" "${wizard_target_args[@]}" wizard --caller-directory "$CALLER_DIR" --dependency-mode "$DEPENDENCY_MODE" --mode "$MODE" --color "$COLOR_MODE" --glyphs "$GLYPH_MODE")
   [[ -z "$PRESET" ]] || wizard_cmd+=(--preset "$PRESET")
   [[ ${#pack_args[@]} -eq 0 ]] || wizard_cmd+=(--packs "${pack_args[@]}")
   [[ ${#skill_args[@]} -eq 0 ]] || wizard_cmd+=(--skills "${skill_args[@]}")
@@ -639,7 +765,7 @@ fi
 mkdir -p "$HOME_DIR"
 HOME_DIR="$(cd "$HOME_DIR" && pwd)"
 
-doctor_cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --source-root "$SOURCE_DIR" "${target_args[@]}" doctor --dependency-mode "$DEPENDENCY_MODE")
+doctor_cmd=("${cli_base[@]}" --home "$HOME_DIR" --source-root "$SOURCE_DIR" "${target_args[@]}" doctor --dependency-mode "$DEPENDENCY_MODE")
 [[ ${#pack_args[@]} -eq 0 ]] || doctor_cmd+=(--packs "${pack_args[@]}")
 [[ -z "$PRESET" ]] || doctor_cmd+=(--preset "$PRESET")
 [[ ${#skill_args[@]} -eq 0 ]] || doctor_cmd+=(--skills "${skill_args[@]}")
@@ -670,7 +796,7 @@ if ! "${doctor_cmd[@]}" >/dev/null; then
 fi
 
 if "$REGISTER_SHELL"; then
-  register_cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --source-root "$SOURCE_DIR" register-shell)
+  register_cmd=("${cli_base[@]}" --home "$HOME_DIR" --source-root "$SOURCE_DIR" register-shell)
   if ! "${register_cmd[@]}" >/dev/null; then
     echo "Localsetup shell registration failed. Re-run for details:" >&2
     printf ' %q' "${register_cmd[@]}" >&2
@@ -687,7 +813,7 @@ if "$REGISTER_SHELL"; then
   fi
 fi
 
-cmd=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup_v3.py" --home "$HOME_DIR" --source-root "$SOURCE_DIR" "${target_args[@]}" install --apply --dependency-mode "$DEPENDENCY_MODE" --mode "$MODE")
+cmd=("${cli_base[@]}" --home "$HOME_DIR" --source-root "$SOURCE_DIR" "${target_args[@]}" install --apply --dependency-mode "$DEPENDENCY_MODE" --mode "$MODE")
 [[ ${#pack_args[@]} -eq 0 ]] || cmd+=(--packs "${pack_args[@]}")
 [[ -z "$PRESET" ]] || cmd+=(--preset "$PRESET")
 [[ ${#skill_args[@]} -eq 0 ]] || cmd+=(--skills "${skill_args[@]}")

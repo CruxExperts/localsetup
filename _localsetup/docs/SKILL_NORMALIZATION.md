@@ -84,11 +84,11 @@ name: ls-some-skill
 description: "Does X. Use when you need Ansible for server provisioning and playbooks."
 metadata:
   version: "1.0"
-compatibility: "Requires ansible, ansible-playbook (e.g. pip install ansible or system package)."
+compatibility: "Requires ansible and ansible-playbook from uv tool install ansible or a system package."
 ---
 ```
 
-Optional: in the body, add one line such as "Install Ansible via your package manager or `pip install ansible` if not present."
+Optional: in the body, add one line such as "Install Ansible via your package manager or `uv tool install ansible` if not present."
 
 ### Description: platform-specific -> generic
 

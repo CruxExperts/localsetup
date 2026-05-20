@@ -9,7 +9,7 @@ import sys
 try:
     import yaml
 except ImportError:
-    print("[FAIL] PyYAML is required (pip install pyyaml)", file=sys.stderr)
+    print("[FAIL] PyYAML is required (run `uv sync --locked --no-dev` from the Localsetup source checkout)", file=sys.stderr)
     sys.exit(2)
 
 

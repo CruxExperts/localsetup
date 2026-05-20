@@ -69,8 +69,8 @@ approval_boundaries:
   - permission changes outside the current repo
   - destructive replacement of legacy skills or prompts
 validation_commands:
-  - python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
-  - python3 _localsetup/tools/localsetup_v3.py --source-root . plan --packs bootstrap
-  - python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .
-  - python3 _localsetup/tools/localsetup_v3.py --source-root . generate-docs
+  - uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
+  - uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . plan --packs bootstrap
+  - uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .
+  - uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . generate-docs
   - git diff --check

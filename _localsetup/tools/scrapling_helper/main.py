@@ -152,7 +152,9 @@ def get_scrapling_version() -> Optional[str]:
     if not docker_status.available:
         return None
     # Call scrapling --help in Docker as a basic health probe.
-    cmd = _build_scrapling_command(cfg, ["--help"], use_docker=True)
+    docker_probe_dir = cfg.cache_dir / "docker-health"
+    docker_probe_dir.mkdir(parents=True, exist_ok=True)
+    cmd = _build_scrapling_command(cfg, ["--help"], use_docker=True, workdir=docker_probe_dir)
     result = apply_command_plan(cmd)
     if result["returncode"] != 0:
         return None

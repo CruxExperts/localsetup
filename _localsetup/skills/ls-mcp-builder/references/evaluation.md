@@ -381,15 +381,15 @@ After creating your evaluation file, you can use the provided evaluation harness
 
 ## Setup
 
-1. **Install Dependencies**
+1. **Run With Dependencies**
 
    ```bash
-   pip install -r assets/evaluation-requirements.txt
+   uv run --with 'mcp>=1.1.0' --with 'anthropic>=0.39.0' --with 'openai>=1.0.0' -- python scripts/evaluation.py --help
    ```
 
-   Or install manually:
+   Or add packages to an existing uv project:
    ```bash
-   pip install anthropic mcp openai
+   uv add anthropic mcp openai
    ```
 
 2. **Set API Key**
@@ -550,17 +550,17 @@ Here's a complete example of creating and running an evaluation:
 </evaluation>
 ```
 
-2. **Install dependencies**:
+2. **Prepare dependencies**:
 
 ```bash
-pip install -r assets/evaluation-requirements.txt
+uv run --with 'mcp>=1.1.0' --with 'anthropic>=0.39.0' --with 'openai>=1.0.0' -- python scripts/evaluation.py --help
 export ANTHROPIC_API_KEY=your_api_key
 ```
 
 3. **Run evaluation**:
 
 ```bash
-python scripts/evaluation.py \
+uv run --with 'mcp>=1.1.0' --with 'anthropic>=0.39.0' --with 'openai>=1.0.0' -- python scripts/evaluation.py \
   -t stdio \
   -c python \
   -a github_mcp_server.py \

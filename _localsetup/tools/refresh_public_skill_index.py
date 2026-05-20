@@ -2,7 +2,7 @@
 # Purpose: Refresh PUBLIC_SKILL_INDEX.yaml from PUBLIC_SKILL_REGISTRY.urls.
 # Created: 2026-02-18
 # Last Updated: 2026-02-27
-# Requires: PyYAML, requests (see _localsetup/requirements.txt)
+# Requires: PyYAML, requests (see pyproject.toml and uv.lock)
 
 """
 Fetches each registry URL, parses skill entries (awesome-list markdown or

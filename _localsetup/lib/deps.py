@@ -18,7 +18,7 @@ import importlib
 import sys
 from pathlib import Path
 
-# Maps the import name used in Python to the pip install package name.
+# Maps import names to the project dependency names declared in pyproject.toml.
 _REGISTRY: dict[str, str] = {
     "yaml": "PyYAML",
     "requests": "requests",
@@ -55,11 +55,12 @@ def require_deps(names: list[str]) -> None:
     if not missing:
         return
 
-    pip_pkgs = " ".join(_REGISTRY.get(n, n) for n in missing)
+    project_deps = ", ".join(_REGISTRY.get(n, n) for n in missing)
     print(
         f"[FATAL] Missing Python packages: {', '.join(missing)}\n"
-        f"  Install with: python3 -m pip install {pip_pkgs}\n"
-        f"  Or re-run the framework install script with --install-deps",
+        f"  Project dependencies: {project_deps}\n"
+        f"  Sync with: uv sync --locked --no-dev\n"
+        f"  Or re-run the framework install script with --sync-env",
         file=sys.stderr,
     )
     sys.exit(2)

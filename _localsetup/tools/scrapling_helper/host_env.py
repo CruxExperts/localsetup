@@ -99,21 +99,17 @@ def propose_pipx_bootstrap(userland: bool = True) -> List[List[str]]:
     """
     plans: List[List[str]] = []
     if userland:
-        # Pure userland bootstrap: install pipx via pip in the current user context.
+        # Pure userland bootstrap without mutating the system Python.
         plans.append(
             [
-                "python3",
-                "-m",
-                "pip",
+                "uv",
+                "tool",
                 "install",
-                "--user",
                 "pipx",
             ]
         )
         plans.append(
             [
-                "python3",
-                "-m",
                 "pipx",
                 "ensurepath",
             ]
@@ -164,4 +160,3 @@ def status_as_json(status: HostEnvStatus) -> str:
             "details": status.details,
         }
     )
-

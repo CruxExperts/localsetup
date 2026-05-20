@@ -13,7 +13,8 @@ Use this page to install Localsetup v3, choose agent platforms, verify the insta
 - Python `>= 3.10`
 - Bash on Linux, macOS, or WSL2
 - Git and network access to GitHub for raw bootstrap, unless installing from a local clone
-- Recommended: `rg`, `pip`, and the packages in `_localsetup/requirements.txt`; managed dependency installs use `_localsetup/requirements.lock` with pip hash checking when the lock is present. Dependency PRs validate changed manifests separately from the committed lock.
+- Required for dependency sync: `uv`, with dependency intent in `pyproject.toml` and the committed `uv.lock`.
+- Recommended: `rg`; GitHub/network access is needed for raw bootstrap unless installing from a local clone.
 
 Windows is WSL2-only in Localsetup v3. Native PowerShell install is intentionally not supported; run the Bash installer inside WSL2.
 
@@ -42,13 +43,13 @@ The public command is release-backed even though the small wrapper is downloaded
 For release verification, use the GitHub release tarball and its `.sha256` sidecar, then run:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --source-root . verify-release dist/localsetup-v$(cat VERSION).tar.gz
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . verify-release dist/localsetup-v$(cat VERSION).tar.gz
 ```
 
 Release builds also publish a CycloneDX SBOM sidecar. When it is available, include it in verification:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --source-root . verify-release \
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . verify-release \
   dist/localsetup-v$(cat VERSION).tar.gz \
   --sha256 dist/localsetup-v$(cat VERSION).tar.gz.sha256 \
   --sbom dist/localsetup-v$(cat VERSION).tar.gz.cdx.json
@@ -99,16 +100,16 @@ The selector flags are additive except for `--exclude-skills`. Presets are `core
 For a full local setup with all shipped skill and workflow packs attached to Codex, Kilo, and OpenCode:
 
 ```bash
-./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,experimental --install-deps
+./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,experimental --sync-env
 ```
 
-If Python dependencies are missing or you want the managed venv prepared:
+If Python dependencies are missing or you want the uv project environment prepared:
 
 ```bash
-./install --directory . --install-deps
+./install --directory . --sync-env
 ```
 
-Localsetup v3 does not require `--break-system-packages`. Framework libraries install into a managed venv, while app-style CLI tools should use `pipx` when they are distributed as commands.
+Localsetup v3 does not mutate system Python. Framework libraries sync into the source checkout `.venv` with uv, while app-style CLI tools should use `pipx` when they are distributed as commands.
 
 ## Platform IDs
 
@@ -175,16 +176,16 @@ localsetup doctor --tools codex
 For the Localsetup source checkout itself, maintainers can also run source checks:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
-python3 _localsetup/tools/localsetup_v3.py --source-root . audit-global-first
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . audit-global-first
 ```
 
-After using `--install-deps`, `doctor` verifies installed Python distributions from the managed venv interpreter, so packages whose distribution and import names differ, such as `PGPy` / `pgpy`, are reported accurately.
+After using `--sync-env`, `doctor` reports uv path/version, lock status, and the source checkout `.venv` interpreter when present.
 
 Agent-readable install context:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --source-root . context --markdown
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . context --markdown
 ```
 
 Verify supports the explicit `filesystem` level, which runs the implemented local rule engine:
@@ -252,7 +253,7 @@ localsetup detach --tools codex --target-directory .
 ## Roll Back Managed Paths
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --source-root . rollback
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . rollback
 ```
 
 Rollback only acts on managed paths recorded by Localsetup metadata.

@@ -83,9 +83,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - uses: astral-sh/setup-uv@v6
 
-      - run: pip install pytest pytest-cov
-      - run: pytest --cov=src --cov-report=xml --cov-fail-under=80
+      - run: uv run --with pytest --with pytest-cov -- pytest --cov=src --cov-report=xml --cov-fail-under=80
 
       - uses: codecov/codecov-action@v4
         with:

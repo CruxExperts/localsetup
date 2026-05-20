@@ -12,7 +12,7 @@ from typing import Any
 try:
     import requests
 except ImportError as exc:  # pragma: no cover
-    raise SystemExit("Missing dependency: requests. Install _localsetup/requirements.txt.") from exc
+    raise SystemExit("Missing dependency: requests. Run `uv sync --locked --no-dev` from the Localsetup source checkout.") from exc
 
 
 DEFAULT_OPENAPI_URL = "https://raw.githubusercontent.com/cloudflare/api-schemas/main/openapi.json"

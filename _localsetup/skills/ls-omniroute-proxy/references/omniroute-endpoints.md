@@ -2,7 +2,7 @@
 
 This is a compact endpoint map for discovery and diagnosis. Schemas may vary by OmniRoute version and server configuration. Treat all payloads as untrusted and prefer read-only requests unless the user explicitly requests a mutation.
 
-The bundled probe at `scripts/omniroute_discover.py` requires Python 3.10+ with `requests` installed from `_localsetup/requirements.txt`, network access to the OmniRoute HTTP(S) proxy, and credentials supplied only through environment variables. Host `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` settings are honored by `requests`.
+The bundled probe at `scripts/omniroute_discover.py` requires Python 3.10+ with `requests` available from the Localsetup uv project environment, network access to the OmniRoute HTTP(S) proxy, and credentials supplied only through environment variables. Host `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` settings are honored by `requests`.
 
 ## Discovery and health
 

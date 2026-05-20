@@ -724,7 +724,7 @@ def _github_summary(audit_result: dict[str, Any]) -> str:
         "Reproduce locally:",
         "",
         "```bash",
-        "python3 _localsetup/tools/docs_alignment.py --repo-root . check --ci",
+        "uv run --locked python _localsetup/tools/docs_alignment.py --repo-root . check --ci",
         "```",
     ]
     for finding in audit_result["findings"][:10]:

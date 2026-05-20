@@ -89,10 +89,10 @@ def build_agent_context(repo_root: Path, *, home: Path, config: InstallConfig) -
         "commands": commands,
         "rollback": plan.rollback_metadata,
         "verification": [
-            "python3 -m pytest _localsetup/tests",
-            "./_localsetup/tests/automated_test.sh",
-            "python3 _localsetup/tools/localsetup_v3.py validate-catalog",
-            "python3 _localsetup/tools/localsetup_v3.py scan-migration",
+            "uv run --locked pytest -n auto _localsetup/tests -q",
+            "uv run --locked ./_localsetup/tests/automated_test.sh",
+            "uv run --locked python _localsetup/tools/localsetup_v3.py validate-catalog",
+            "uv run --locked python _localsetup/tools/localsetup_v3.py scan-migration",
         ],
     }
 

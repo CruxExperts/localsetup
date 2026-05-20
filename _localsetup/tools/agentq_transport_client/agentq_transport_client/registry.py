@@ -67,8 +67,8 @@ def validate_registry(raw: dict[str, Any], *, require_keys_exist: bool = True) -
     """Validate registry; build fingerprint -> agent_id map. Fail closed."""
     if check_deps(["pgpy"]):
         raise RegistryError(
-            "PGPy required for registry validation. Install with: python3 -m pip install PGPy "
-            "or re-run the framework install script with --install-deps."
+            "PGPy required for registry validation. Run `uv sync --locked --no-dev` "
+            "or re-run the framework install script with --sync-env."
         )
     import pgpy  # type: ignore
 

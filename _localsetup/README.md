@@ -36,9 +36,9 @@ Common commands from the repository root:
 ./install --directory . --tools codex,kilo
 ./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor
 ./install --directory . --tools codex --non-interactive --yes
-python3 _localsetup/tools/localsetup_v3.py doctor
-python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
-python3 _localsetup/tools/localsetup_v3.py --source-root . rollback
+uv run --locked python _localsetup/tools/localsetup_v3.py doctor
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . rollback
 ```
 
 The root wrapper opens the interactive wizard by default. Automation must use `--non-interactive --yes`.
@@ -103,11 +103,11 @@ Useful docs:
 Run these before release-oriented changes:
 
 ```bash
-python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .
-python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
-python3 _localsetup/tools/localsetup_v3.py --source-root . scan-migration
-python3 _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-v3-framework-audit.md
-python3 -m pytest _localsetup/tests
+uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . scan-migration
+uv run --locked python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-v3-framework-audit.md
+uv run --locked pytest -n auto _localsetup/tests -q
 git diff --check
 ```
 

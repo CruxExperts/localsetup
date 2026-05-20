@@ -94,7 +94,7 @@ The public command is release-backed even though the small wrapper is downloaded
 For release verification, download the GitHub release tarball with its `.sha256` sidecar and run:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --source-root . verify-release dist/localsetup-v$(cat VERSION).tar.gz
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . verify-release dist/localsetup-v$(cat VERSION).tar.gz
 ```
 
 Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.codex/skills` to the chosen target. If you do not select tools, the install is global-library-only. Interactive installs first choose the global package-library baseline, defaulting to `core` or the prior registry setting. Repo setup is a separate choice; when selected, repo-visible packs default from the target lockfile or repo-detected suggestions.
@@ -137,10 +137,10 @@ localsetup install --tools codex --preset suggested --skill-classes development 
 
 Presets are `core`, `suggested`, `all`, and `custom`. `core` is the conservative default for automation when no selector is provided; `suggested` starts with `core` plus repo-detected categories; `all` installs every shipped skill and workflow package; `custom` relies on the packs, classes, tags, and skills you name. `--exclude-skills` removes named skills from the resolved selection unless a selected workflow requires them. The legacy selector flags apply to both the managed global baseline and repo-visible adapter selection for compatibility. Use `--global-packs` / `--global-preset` and `--repo-packs` / `--repo-preset` when you want the managed library to contain a broader baseline than a target repo exposes.
 
-Install every shipped skill and workflow package for Codex, Kilo, and OpenCode, while preparing the managed Python dependency environment:
+Install every shipped skill and workflow package for Codex, Kilo, and OpenCode, while syncing the uv-managed Python dependency environment:
 
 ```bash
-./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,harness,experimental --install-deps
+./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,harness,experimental --sync-env
 ```
 
 In symlink mode, each repo adapter path is a Localsetup-managed scoped adapter directory with `.localsetup-adapter.json` and per-package links to the managed home library. That means a repo sees only the repo-visible skills and workflow packages even when the global library contains a larger baseline. Portable mode uses the same scoped adapter shape, but copies selected packages instead of linking them.
@@ -222,10 +222,10 @@ localsetup why --packs core
 localsetup graph
 localsetup adopt --target-directory .
 localsetup sbom --out /tmp/localsetup-source.cdx.json
-python3 _localsetup/tools/localsetup_v3.py --source-root . context --markdown
-python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
-python3 _localsetup/tools/localsetup_v3.py --source-root . audit-global-first
-python3 _localsetup/tools/localsetup_v3.py --source-root . rollback
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . context --markdown
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . audit-global-first
+uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . rollback
 ```
 
 Use `--trace-json /path/to/events.jsonl` with `install`, `verify`, or `doctor` to append local JSONL trace events for automation review.
@@ -249,12 +249,13 @@ The design follows a few durable pressures instead of chasing market snapshots:
 - Python `>= 3.10`
 - Bash on Linux, macOS, or WSL2
 - Git and network access to GitHub for raw bootstrap, unless installing from a local clone
-- Recommended: `rg`, `pip`, and the packages in `_localsetup/requirements.txt`; managed installs prefer `_localsetup/requirements.lock` with pip hash checking when present, while dependency PRs also exercise changed manifests.
+- Required for dependency sync: `uv`, with dependency intent in `pyproject.toml` and the committed `uv.lock`.
+- Recommended: `rg`; GitHub/network access is needed for raw bootstrap unless installing from a local clone.
 
-Use managed dependency setup instead of system pip overrides:
+Use uv-managed dependency setup instead of system Python changes:
 
 ```bash
-./install --directory . --install-deps
+./install --directory . --sync-env
 ```
 
 ## Read more

@@ -6,10 +6,11 @@ from pathlib import Path
 from typing import Any
 import importlib.util
 
+from .dependencies import ACCEPTED_DEPENDENCY_MODES, normalize_dependency_mode
 from .paths import PathValidationError
 
 
-DEPENDENCY_MODES = {"managed-venv", "user-pip", "prompt-only"}
+DEPENDENCY_MODES = ACCEPTED_DEPENDENCY_MODES
 MIGRATION_MODES = {"conservative-auto", "report-only"}
 ATTACH_MODES = {"symlink", "portable"}
 BACKUP_POLICIES = {"timestamped"}
@@ -47,7 +48,7 @@ class InstallConfig:
     home: str | None = None
     target_directory: str | None = None
     data_root: str | None = None
-    dependency_mode: str = "managed-venv"
+    dependency_mode: str = "prompt-only"
     migration_mode: str = "conservative-auto"
     backup_dir: str | None = None
     backup_policy: str = "timestamped"
@@ -113,7 +114,7 @@ def load_install_config(path: Path | None) -> InstallConfig:
         home=_as_str(data.get("home"), "home"),
         target_directory=_as_str(data.get("target_directory"), "target_directory"),
         data_root=_as_str(data.get("data_root"), "data_root"),
-        dependency_mode=str(data.get("dependency_mode", "managed-venv")),
+        dependency_mode=normalize_dependency_mode(str(data.get("dependency_mode", "prompt-only"))),
         migration_mode=str(data.get("migration_mode", "conservative-auto")),
         backup_dir=_as_str(data.get("backup_dir"), "backup_dir"),
         backup_policy=str(data.get("backup_policy", "timestamped")),
@@ -221,7 +222,7 @@ def merge_cli_config(
         home=home or base.home,
         target_directory=target_directory or base.target_directory,
         data_root=base.data_root,
-        dependency_mode=dependency_mode or base.dependency_mode,
+        dependency_mode=normalize_dependency_mode(dependency_mode or base.dependency_mode),
         migration_mode=migration_mode or base.migration_mode,
         backup_dir=backup_dir or base.backup_dir,
         backup_policy=base.backup_policy,

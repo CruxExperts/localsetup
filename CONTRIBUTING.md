@@ -26,10 +26,10 @@ Use the versioning policy in [_localsetup/docs/VERSIONING.md](_localsetup/docs/V
 Before opening a release-impacting PR, run the relevant subset of:
 
 ```bash
-python3 _localsetup/tools/localsetup_v3.py --repo . version-plan
-python3 _localsetup/tools/localsetup_v3.py --repo . version-sync --check --target "$(cat VERSION)"
-python3 _localsetup/tools/localsetup_v3.py --repo . validate-catalog
-python3 -m pytest _localsetup/tests -q
+uv run --locked python _localsetup/tools/localsetup_v3.py --repo . version-plan
+uv run --locked python _localsetup/tools/localsetup_v3.py --repo . version-sync --check --target "$(cat VERSION)"
+uv run --locked python _localsetup/tools/localsetup_v3.py --repo . validate-catalog
+uv run --locked pytest -n auto _localsetup/tests -q
 git diff --check
 ```
 

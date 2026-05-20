@@ -25,7 +25,7 @@ Use this skill when the task involves OmniRoute, an OmniRoute proxy, AI gateway 
 
 ## Runtime assumptions
 
-- The bundled probe requires Python 3.10+ and `requests` from `_localsetup/requirements.txt`.
+- The bundled probe requires Python 3.10+ and `requests` from the Localsetup uv project environment.
 - The host running the probe must have network reachability to the OmniRoute proxy base URL.
 - If the environment sets `HTTP_PROXY`, `HTTPS_PROXY`, or `NO_PROXY`, `requests` applies those proxy settings to the probe.
 - The probe accepts only `http` or `https` base URLs and rejects URLs with embedded credentials.

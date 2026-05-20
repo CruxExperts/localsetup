@@ -29,27 +29,18 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Exercise dependency manifests
+      - name: Setup uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+
+      - name: Check uv lockfile
         run: |
           set -euo pipefail
-          for manifest in _localsetup/requirements.in _localsetup/requirements.txt pyproject.toml; do
-            venv="/tmp/localsetup-deps-$(basename "${manifest}" | tr '.-' '__')"
-            python3 -m venv "${venv}"
-            "${venv}/bin/python" -m pip install --upgrade pip --quiet
-            if [[ "${manifest}" == "pyproject.toml" ]]; then
-              "${venv}/bin/python" -m pip install --only-binary :all: . --quiet
-            else
-              "${venv}/bin/python" -m pip install --only-binary :all: -r "${manifest}" --quiet
-            fi
-            "${venv}/bin/python" -m pip check
-          done
+          uv lock --check
 
-      - name: Check locked install remains usable
+      - name: Check frozen uv sync remains usable
         run: |
-          python3 -m venv /tmp/localsetup-deps-lock
-          /tmp/localsetup-deps-lock/bin/python -m pip install --upgrade pip --quiet
-          /tmp/localsetup-deps-lock/bin/python -m pip install --require-hashes --only-binary :all: -r _localsetup/requirements.lock --quiet
-          /tmp/localsetup-deps-lock/bin/python -m pip check
+          uv sync --frozen --all-groups --python python3
+          uv run --frozen python -c "import yaml, requests, frontmatter, cryptography, pgpy, jsonschema"
 
   generated-docs-and-version:
     name: generated docs and version sync
@@ -65,9 +56,11 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install dependencies
-        run: |
-          python3 -m pip install --require-hashes --only-binary :all: -r _localsetup/requirements.lock --quiet
+      - name: Setup uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+
+      - name: Sync dependencies
+        run: uv sync --frozen --all-groups --python python3
 
       - name: Check version and generated docs
         env:
@@ -100,10 +93,10 @@ jobs:
           fi
 
           echo "Checking version plan from ${base_sha} to ${HEAD_SHA}"
-          python3 _localsetup/tools/localsetup_v3.py --source-root . version-plan --base "$base_sha" --head "$HEAD_SHA"
-          python3 _localsetup/tools/localsetup_v3.py --source-root . version-sync --check --base "$base_sha" --head "$HEAD_SHA"
-          python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .
-          python3 _localsetup/tools/localsetup_v3.py --source-root . generate-docs
+          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . version-plan --base "$base_sha" --head "$HEAD_SHA"
+          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . version-sync --check --base "$base_sha" --head "$HEAD_SHA"
+          uv run --frozen python _localsetup/tools/generate_docs_artifacts.py --repo-root .
+          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . generate-docs
           git diff --exit-code
 
   framework-validation:
@@ -124,9 +117,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
-        run: |
-          python3 -m pip install --require-hashes --only-binary :all: -r _localsetup/requirements.lock --quiet
+      - name: Setup uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+
+      - name: Sync dependencies
+        run: uv sync --frozen --all-groups --python python3
 
       - name: Verify framework context
         run: |
@@ -135,17 +130,17 @@ jobs:
 
       - name: Validate catalogs and migration boundaries
         run: |
-          python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
-          python3 _localsetup/tools/localsetup_v3.py --source-root . scan-migration
-          python3 _localsetup/tools/localsetup_v3.py --source-root . skill search context
-          python3 _localsetup/tools/localsetup_v3.py --source-root . workflow search audit
-          python3 _localsetup/tools/localsetup_v3.py --source-root . why --packs core
-          python3 _localsetup/tools/localsetup_v3.py --source-root . graph
-          python3 _localsetup/tools/localsetup_v3.py --source-root . adopt --target-directory .
-          python3 _localsetup/tools/localsetup_v3.py --source-root . sbom --out /tmp/localsetup-source.cdx.json
+          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
+          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . scan-migration
+          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . skill search context
+          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . workflow search audit
+          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . why --packs core
+          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . graph
+          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . adopt --target-directory .
+          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . sbom --out /tmp/localsetup-source.cdx.json
 
       - name: Run pytest
-        run: python3 -m pytest _localsetup/tests -q
+        run: uv run --frozen pytest -n auto _localsetup/tests -q
 
   shell-smoke-and-audit:
     name: shell smoke and framework audit
@@ -159,15 +154,17 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install dependencies
-        run: |
-          python3 -m pip install --require-hashes --only-binary :all: -r _localsetup/requirements.lock --quiet
+      - name: Setup uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+
+      - name: Sync dependencies
+        run: uv sync --frozen --all-groups --python python3
 
       - name: Run framework audit
-        run: python3 _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-v3-framework-audit.md
+        run: uv run --frozen python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-v3-framework-audit.md
 
       - name: Run shell smoke tests
-        run: ./_localsetup/tests/automated_test.sh
+        run: uv run --frozen ./_localsetup/tests/automated_test.sh
 
       - name: Check whitespace-safe diff
         run: git diff --check
