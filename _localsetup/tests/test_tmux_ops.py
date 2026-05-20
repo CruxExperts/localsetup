@@ -4,6 +4,7 @@ import shlex
 import shutil
 import subprocess
 import sys
+import time
 import uuid
 from pathlib import Path
 
@@ -155,12 +156,21 @@ def test_run_timeout_stays_active_and_blocks_second_run(tmux_env):
         "--",
         "bash",
         "-lc",
-        "echo start; sleep 1; echo done",
+        "echo start; sleep 2; echo done",
     )
 
     assert first["status"] == "running"
     assert first["exit_code"] is None
-    assert "start" in first["tail"]
+    tail = first["tail"]
+    for _ in range(20):
+        if "start" in tail:
+            break
+        _, status_probe = run_ops(env, "status", "-t", "ops", "--run-id", first["run_id"], "--tail", "20")
+        tail = status_probe["tail"]
+        if status_probe["status"] != "running":
+            break
+        time.sleep(0.05)
+    assert "start" in tail
     assert all(target.startswith("%") for target in send_targets(log_path, contains="TMUX_OPS_RUN_ID="))
 
     proc, blocked = run_ops(env, "run", "-t", "ops", "--", "echo", "blocked", check=False)
@@ -177,7 +187,7 @@ def test_run_timeout_stays_active_and_blocks_second_run(tmux_env):
         first["run_id"],
         "--wait",
         "--timeout",
-        "3",
+        "5",
         "--tail",
         "20",
     )
