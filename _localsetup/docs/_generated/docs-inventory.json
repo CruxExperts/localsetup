@@ -35,8 +35,8 @@
     {
       "alt_text_required": true,
       "dimensions": {
-        "height": 1920,
-        "width": 1920
+        "height": 1024,
+        "width": 1024
       },
       "license": "Repository license unless otherwise documented",
       "path": "assets/localsetup-logo.png",
@@ -47,8 +47,8 @@
     {
       "alt_text_required": true,
       "dimensions": {
-        "height": 909,
-        "width": 1731
+        "height": 630,
+        "width": 1200
       },
       "license": "Repository license unless otherwise documented",
       "path": "assets/localsetup-readme-hero.png",
@@ -113,8 +113,8 @@
     "workflow"
   ],
   "counts": {
-    "docs": 345,
-    "framework_docs": 57,
+    "docs": 346,
+    "framework_docs": 58,
     "generated_docs": 4,
     "platforms": 6,
     "public_docs": 6,
@@ -282,6 +282,16 @@
       "owner_package": "",
       "owner_skill": "ls-framework-compliance",
       "path": "_localsetup/docs/CLI_SKILLS_ENV.md",
+      "status": "ACTIVE",
+      "version": "4.0"
+    },
+    {
+      "class": "framework",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "ls-framework-compliance",
+      "path": "_localsetup/docs/COMMAND_REFERENCE.md",
       "status": "ACTIVE",
       "version": "4.0"
     },
@@ -3620,16 +3630,16 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "3590384db1e80838fab9e2b65f420d2dd2982010d143239134b05844dfdca11d",
+    "artifact_sha256": "f5076cbffa941ca02a4d5d0c8e98f5308861fe2dca7f130ec0be10c781da3219",
     "emitter": "docs-align",
     "framework_version": "4.0.2",
     "schema_version": 1,
-    "source_commit": "94d7f582fcd84ab3680f60f0c8850d6941ddabab",
-    "source_dirty": true,
-    "source_provenance_hash": "37dea46668c3f57eb691abc689795e85ed92f63360a7f49e3edb0d728eb11e97",
-    "source_root_id": "40342c1812e2ae1ec2b8d31ce4d9f53252b9730c28cbd39d13c91cfe01a8ff5d",
+    "source_commit": "2fb8ecfb7d87611b0fee0f73ed4afb8603dc33c4",
+    "source_dirty": false,
+    "source_provenance_hash": "1941f08d6f732b9d4c0bbe53dedd08645c894cd0f3db91483fffc30543c47039",
+    "source_root_id": "55bb58fec0f46be171a81173875a1324e33594da9c06fa04c7f779d0195ee6d8",
     "source_tag": null,
-    "source_tree_sha": "5be5bc5b9636194c4f5ef7fd12d54c88b92081ea"
+    "source_tree_sha": "7b7b210c6cde647fee97f099c18aa6092cce112b"
   },
   "repo": ".",
   "schema_version": "1.0",

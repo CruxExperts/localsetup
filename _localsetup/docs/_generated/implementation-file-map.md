@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 37dea46668c3f57eb691abc689795e85ed92f63360a7f49e3edb0d728eb11e97
+  source_provenance_hash: 1941f08d6f732b9d4c0bbe53dedd08645c894cd0f3db91483fffc30543c47039
   emitter: generate-docs
 framework_version: 4.0.2
-source_commit: 94d7f582fcd84ab3680f60f0c8850d6941ddabab
-artifact_sha256: 75cbd3c7c79183640afa4e56068c56cb3399cf063d114a51438ba241c9dd4cb5
+source_commit: 2fb8ecfb7d87611b0fee0f73ed4afb8603dc33c4
+artifact_sha256: 71b6354df1807b98fa559806047289d8ffceca49a6cff355304ba13478b618be
 ---
 # Implementation File Map
 
@@ -103,6 +103,7 @@ artifact_sha256: 75cbd3c7c79183640afa4e56068c56cb3399cf063d114a51438ba241c9dd4cb
 | `keep` | `_localsetup/docs/AGENTIC_UMBRELLA_WORKFLOWS.md` |
 | `keep` | `_localsetup/docs/AGENT_SKILLS_COMPLIANCE.md` |
 | `keep` | `_localsetup/docs/CLI_SKILLS_ENV.md` |
+| `keep` | `_localsetup/docs/COMMAND_REFERENCE.md` |
 | `keep` | `_localsetup/docs/DECISION_TREE_WORKFLOW.md` |
 | `keep` | `_localsetup/docs/DOCUMENT_LIFECYCLE_MANAGEMENT.md` |
 | `keep` | `_localsetup/docs/FEATURES.md` |
