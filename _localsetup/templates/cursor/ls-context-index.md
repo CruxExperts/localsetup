@@ -37,8 +37,8 @@
 | ls-linux-patcher | Automated Linux patching and Docker container updates | Server maintenance, security updates, multi-host patching |
 | ls-skill-normalizer | Phase 1: documents (platform choice when platform-specific); Phase 2: tooling to framework standard | Normalize one or all skills; batch review imported or dropped-in skills |
 | ls-skill-sandbox-tester | Test skills in isolated sandbox; smoke check; on failure use debug-pro; no repo writes until user approves | Validate skill after import, test skill in sandbox, ensure skill runs before production |
-| ls-agentlens | Codebase navigation with agentlens hierarchy (INDEX.md, modules, outline, memory) | Explore codebases, find modules/symbols, TODOs/warnings; large repos |
-| ls-context-index | SQLite-backed context index and vector-first search | Use preflight/freshness before broad recursive reads; search indexed repo/framework/global context |
+| ls-agentlens | Codebase navigation with agentlens hierarchy (INDEX.md, modules, outline, notes) | Explore codebases, find modules/symbols, TODOs/warnings; large repos |
+| ls-context-index | SQLite-backed context index and vector-first search | Use preflight/freshness before broad recursive reads; search indexed repo/framework context |
 | ls-framework-audit | Doc/link/skill matrix/version checks; output path required (`run_framework_audit.py --output`) | User says "run audit", "run framework audit", or before release |
 | ls-markdown-reference-validator | Validate markdown local references/anchors from YAML-configured targets and emit audit report | Validating docs/skills/global Kilo references; periodic archive integrity checks |
 | ls-system-info | Quick system diagnostics: CPU, memory, disk, uptime | Capture server baseline, host layout and specs for further operations |

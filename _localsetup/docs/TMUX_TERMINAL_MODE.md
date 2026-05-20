@@ -69,7 +69,7 @@ Both modes configure the same agent rule (Layer 2) and tmux_ops tool (Layer 3). 
 | `--session NAME` | `ops` | tmux session name written into profile/RC/rule |
 | `--settings-file PATH` | auto-detected | IDE settings.json path (ide mode only) |
 | `--shell-rc PATH` | `~/.bashrc` (Linux) / `~/.bash_profile` (macOS) | Shell RC file (shell mode only) |
-| `--rules-file PATH` | `.cursor/rules/operator-memory.mdc` | Agent rules file |
+| `--rules-file PATH` | `.cursor/rules/operator-rules.mdc` | Agent rules file |
 | `--dry-run` | off | Print what would change; modify nothing |
 
 ### What enable does
@@ -145,7 +145,7 @@ tmux-default terminal mode status
   Session name:            ops
   Layer 1a (IDE profile):  ACTIVE   [tmux-session -> ops, settings: ~/.cursor-server/...]
   Layer 1b (shell RC):     INACTIVE
-  Layer 2  (agent rule):   ACTIVE   [rules: .cursor/rules/operator-memory.mdc]
+  Layer 2  (agent rule):   ACTIVE   [rules: .cursor/rules/operator-rules.mdc]
   Layer 3  (tmux_ops):     PRESENT  [_localsetup/tools/tmux_ops]
 ```
 
@@ -186,7 +186,7 @@ cp ~/.bashrc.tmux-mode.bak ~/.bashrc
 # Remove lines between (and including):
 # BEGIN tmux-default-terminal-mode
 # END tmux-default-terminal-mode
-# from .cursor/rules/operator-memory.mdc (or whichever --rules-file you used)
+# from .cursor/rules/operator-rules.mdc (or whichever --rules-file you used)
 ```
 
 All of these require only a text editor or `cp`.

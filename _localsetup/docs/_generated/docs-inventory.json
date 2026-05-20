@@ -113,8 +113,8 @@
     "workflow"
   ],
   "counts": {
-    "docs": 346,
-    "framework_docs": 58,
+    "docs": 338,
+    "framework_docs": 57,
     "generated_docs": 4,
     "platforms": 6,
     "public_docs": 6,
@@ -354,16 +354,6 @@
       "owner_package": "",
       "owner_skill": "ls-script-and-docs-quality",
       "path": "_localsetup/docs/INPUT_HARDENING_STANDARD.md",
-      "status": "ACTIVE",
-      "version": "4.0"
-    },
-    {
-      "class": "framework",
-      "has_frontmatter": true,
-      "managed_blocks": [],
-      "owner_package": "",
-      "owner_skill": "ls-backlog-and-reminders",
-      "path": "_localsetup/docs/MEMORY_MANAGEMENT.md",
       "status": "ACTIVE",
       "version": "4.0"
     },
@@ -1266,16 +1256,6 @@
       "owner_package": "",
       "owner_skill": "",
       "path": "_localsetup/skills/ls-context-index/docs/architecture.md",
-      "status": "",
-      "version": ""
-    },
-    {
-      "class": "other",
-      "has_frontmatter": false,
-      "managed_blocks": [],
-      "owner_package": "",
-      "owner_skill": "",
-      "path": "_localsetup/skills/ls-context-index/docs/memory-curation.md",
       "status": "",
       "version": ""
     },
@@ -3175,37 +3155,7 @@
       "managed_blocks": [],
       "owner_package": "",
       "owner_skill": "",
-      "path": "_localsetup/templates/claude-code/MEMORY.md",
-      "status": "",
-      "version": ""
-    },
-    {
-      "class": "other",
-      "has_frontmatter": false,
-      "managed_blocks": [],
-      "owner_package": "",
-      "owner_skill": "",
       "path": "_localsetup/templates/codex/AGENTS.md",
-      "status": "",
-      "version": ""
-    },
-    {
-      "class": "other",
-      "has_frontmatter": false,
-      "managed_blocks": [],
-      "owner_package": "",
-      "owner_skill": "",
-      "path": "_localsetup/templates/codex/MEMORY.md",
-      "status": "",
-      "version": ""
-    },
-    {
-      "class": "other",
-      "has_frontmatter": false,
-      "managed_blocks": [],
-      "owner_package": "",
-      "owner_skill": "",
-      "path": "_localsetup/templates/cursor/MEMORY.md",
       "status": "",
       "version": ""
     },
@@ -3235,27 +3185,7 @@
       "managed_blocks": [],
       "owner_package": "",
       "owner_skill": "",
-      "path": "_localsetup/templates/kilo/MEMORY.md",
-      "status": "",
-      "version": ""
-    },
-    {
-      "class": "other",
-      "has_frontmatter": false,
-      "managed_blocks": [],
-      "owner_package": "",
-      "owner_skill": "",
       "path": "_localsetup/templates/kilo/instructions.md",
-      "status": "",
-      "version": ""
-    },
-    {
-      "class": "other",
-      "has_frontmatter": false,
-      "managed_blocks": [],
-      "owner_package": "",
-      "owner_skill": "",
-      "path": "_localsetup/templates/openclaw/MEMORY.md",
       "status": "",
       "version": ""
     },
@@ -3276,16 +3206,6 @@
       "owner_package": "",
       "owner_skill": "",
       "path": "_localsetup/templates/opencode/AGENTS.md",
-      "status": "",
-      "version": ""
-    },
-    {
-      "class": "other",
-      "has_frontmatter": false,
-      "managed_blocks": [],
-      "owner_package": "",
-      "owner_skill": "",
-      "path": "_localsetup/templates/opencode/MEMORY.md",
       "status": "",
       "version": ""
     },
@@ -3630,16 +3550,16 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "f5076cbffa941ca02a4d5d0c8e98f5308861fe2dca7f130ec0be10c781da3219",
+    "artifact_sha256": "688fee8121c18cbe692e0ea98b0781782afd996b7171a7a537be5ac5f03dae3b",
     "emitter": "docs-align",
     "framework_version": "4.0.2",
     "schema_version": 1,
-    "source_commit": "0c1de2b912f009974175fb746030f75bf777f213",
-    "source_dirty": false,
-    "source_provenance_hash": "35d7175a0fbc0eabd6c55fe234f19a55c93acb54bc08aa10ba5f494253160dda",
-    "source_root_id": "4755ef5a664511b1a9b3bd9aae8562cea9e16dd85dd58465c8c7b6659e7af88e",
+    "source_commit": "7527c1bc05c7bf58993b471365db58bfdc7e5153",
+    "source_dirty": true,
+    "source_provenance_hash": "32dd87860d936cc763a22c3cd113076e48cf186891365bdcdda5138ea51a4db2",
+    "source_root_id": "8b61d48582587cb86fdd61c88fbe19e251d4a436658058aa76d7531a8ede2c9a",
     "source_tag": null,
-    "source_tree_sha": "b02a545f2f83cfefddb07406abdcf293d61f55d6"
+    "source_tree_sha": "cddd16376e28efc25dd3f3c3dd1f56c59e227553"
   },
   "repo": ".",
   "schema_version": "1.0",

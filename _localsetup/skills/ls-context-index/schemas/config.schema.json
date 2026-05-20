@@ -6,7 +6,7 @@
   "properties": {
     "context_index": {
       "type": "object",
-      "required": ["enabled", "identity", "storage", "scopes", "freshness", "chunking", "embeddings", "retrieval", "worker", "memory", "logging"],
+      "required": ["enabled", "identity", "storage", "scopes", "freshness", "chunking", "embeddings", "retrieval", "worker", "logging"],
       "properties": {
         "enabled": { "type": "boolean" },
         "identity": {
@@ -55,22 +55,21 @@
         },
         "scopes": {
           "type": "object",
-          "required": ["default_query", "include_global_memory_by_default", "definitions"],
+          "required": ["default_query", "definitions"],
           "properties": {
             "default_query": {
               "type": "array",
-              "items": { "enum": ["repo", "framework", "global"] },
+              "items": { "enum": ["repo", "framework"] },
               "minItems": 1,
               "uniqueItems": true
             },
-            "include_global_memory_by_default": { "type": "boolean" },
             "definitions": {
               "type": "object",
               "additionalProperties": {
                 "type": "object",
                 "required": ["type", "roots", "include", "exclude", "max_file_bytes"],
                 "properties": {
-                  "type": { "enum": ["repo", "framework", "global"] },
+                  "type": { "enum": ["repo", "framework"] },
                   "roots": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
                   "include": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
                   "exclude": { "type": "array", "items": { "type": "string" } },
@@ -143,17 +142,6 @@
           },
           "additionalProperties": false
         },
-        "memory": {
-          "type": "object",
-          "properties": {
-            "track_usage": { "type": "boolean" },
-            "promotion_enabled": { "type": "boolean" },
-            "promotion_requires_apply": { "type": "boolean" },
-            "min_uses_for_promotion": { "type": "integer", "minimum": 1 },
-            "protect_recent_days": { "type": "integer", "minimum": 0 }
-          },
-          "additionalProperties": false
-        },
         "logging": {
           "type": "object",
           "properties": {
@@ -175,7 +163,7 @@
           "additionalProperties": true
         }
       },
-      "additionalProperties": true
+      "additionalProperties": false
     }
   },
   "additionalProperties": false

@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 35d7175a0fbc0eabd6c55fe234f19a55c93acb54bc08aa10ba5f494253160dda
+  source_provenance_hash: 32dd87860d936cc763a22c3cd113076e48cf186891365bdcdda5138ea51a4db2
   emitter: generate-docs
 framework_version: 4.0.2
-source_commit: 0c1de2b912f009974175fb746030f75bf777f213
-artifact_sha256: 71b6354df1807b98fa559806047289d8ffceca49a6cff355304ba13478b618be
+source_commit: 7527c1bc05c7bf58993b471365db58bfdc7e5153
+artifact_sha256: 319058f11ec30e09c643ea3955b576a00c49e0e11541007cca781064243ce769
 ---
 # Implementation File Map
 
@@ -110,7 +110,6 @@ artifact_sha256: 71b6354df1807b98fa559806047289d8ffceca49a6cff355304ba13478b618b
 | `keep` | `_localsetup/docs/GIT_TRACEABILITY.md` |
 | `keep` | `_localsetup/docs/HARNESS_AUTOMATION.md` |
 | `keep` | `_localsetup/docs/INPUT_HARDENING_STANDARD.md` |
-| `keep` | `_localsetup/docs/MEMORY_MANAGEMENT.md` |
 | `keep` | `_localsetup/docs/MULTI_PLATFORM_INSTALL.md` |
 | `keep` | `_localsetup/docs/OUTPUT_AND_DOC_GENERATION.md` |
 | `keep` | `_localsetup/docs/PLATFORM_REGISTRY.md` |
@@ -254,7 +253,6 @@ artifact_sha256: 71b6354df1807b98fa559806047289d8ffceca49a6cff355304ba13478b618b
 | `keep` | `_localsetup/skills/ls-context-index/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-context-index/docs/agent-usage.md` |
 | `keep` | `_localsetup/skills/ls-context-index/docs/architecture.md` |
-| `keep` | `_localsetup/skills/ls-context-index/docs/memory-curation.md` |
 | `keep` | `_localsetup/skills/ls-context-index/docs/platform-evaluation.md` |
 | `keep` | `_localsetup/skills/ls-context-index/docs/security-and-privacy.md` |
 | `keep` | `_localsetup/skills/ls-context-index/docs/source-ledger.md` |
@@ -562,20 +560,14 @@ artifact_sha256: 71b6354df1807b98fa559806047289d8ffceca49a6cff355304ba13478b618b
 | `keep` | `_localsetup/skills/ls-unfuck-my-git-state/scripts/regression_harness.py` |
 | `keep` | `_localsetup/skills/ls-unfuck-my-git-state/scripts/snapshot_git_state.py` |
 | `keep` | `_localsetup/templates/claude-code/CLAUDE.md` |
-| `keep` | `_localsetup/templates/claude-code/MEMORY.md` |
 | `keep` | `_localsetup/templates/codex/AGENTS.md` |
-| `keep` | `_localsetup/templates/codex/MEMORY.md` |
 | `keep` | `_localsetup/templates/config/localsetup_finalizer.yaml` |
-| `keep` | `_localsetup/templates/cursor/MEMORY.md` |
 | `keep` | `_localsetup/templates/cursor/ls-context-index.md` |
 | `keep` | `_localsetup/templates/cursor/ls-context.mdc` |
 | `keep` | `_localsetup/templates/kilo/AGENTS.md` |
-| `keep` | `_localsetup/templates/kilo/MEMORY.md` |
 | `keep` | `_localsetup/templates/kilo/instructions.md` |
-| `keep` | `_localsetup/templates/openclaw/MEMORY.md` |
 | `keep` | `_localsetup/templates/openclaw/OPENCLAW_CONTEXT.md` |
 | `keep` | `_localsetup/templates/opencode/AGENTS.md` |
-| `keep` | `_localsetup/templates/opencode/MEMORY.md` |
 | `keep` | `_localsetup/tests/automated_test.py` |
 | `keep` | `_localsetup/tests/automated_test.sh` |
 | `keep` | `_localsetup/tests/conftest.py` |

@@ -92,7 +92,6 @@ def load_platforms(repo_root: Path) -> list[PlatformConfig]:
                 platform_id=str(entry["id"]),
                 repo_paths=[validate_repo_relative_path(str(v), f"platforms.{entry['id']}.repo_paths") for v in entry.get("repo_paths", [])],
                 global_paths=[validate_home_scoped_path(str(v), f"platforms.{entry['id']}.global_paths") for v in entry.get("global_paths", [])],
-                memory_paths=[validate_home_scoped_path(str(v), f"platforms.{entry['id']}.memory_paths") for v in entry.get("memory_paths", [])],
                 verify_rules=[str(v) for v in entry.get("verify_rules", [])],
                 rollback_targets=[
                     validate_repo_relative_path(str(v), f"platforms.{entry['id']}.rollback_targets")

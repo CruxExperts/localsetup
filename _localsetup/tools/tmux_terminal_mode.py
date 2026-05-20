@@ -37,7 +37,7 @@ BAK_SUFFIX     = ".tmux-mode.bak"
 
 DEFAULT_SESSION   = "ops"
 DEFAULT_MODE      = "ide"
-DEFAULT_RULES_FILE = ".cursor/rules/operator-memory.mdc"
+DEFAULT_RULES_FILE = ".cursor/rules/operator-rules.mdc"
 
 # IDE settings.json search order (first existing path wins)
 IDE_SETTINGS_CANDIDATES = [

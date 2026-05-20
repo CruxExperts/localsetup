@@ -16,7 +16,7 @@ phases:
   - id: preflight
     summary: Validate config, scope selection, and logging posture.
   - id: retrieve
-    summary: Run vector-first retrieval against global and optional repo DB.
+    summary: Run vector-first retrieval against framework and optional repo DB.
   - id: postprocess
     summary: Apply redaction policy and emit deterministic result envelope.
 validation:

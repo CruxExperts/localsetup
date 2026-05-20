@@ -17,7 +17,6 @@ Snapshot date: 2026-05-12.
 - RFC 9562 UUIDv7: https://www.rfc-editor.org/rfc/rfc9562
 - PostgreSQL UUID type docs: https://www.postgresql.org/docs/current/datatype-uuid.html
 - LangChain RAG docs: https://docs.langchain.com/oss/python/langchain/rag
-- LangChain memory concepts: https://docs.langchain.com/oss/python/concepts/memory
 - LangChain repository: https://github.com/langchain-ai/langchain
 - LangGraph repository: https://github.com/langchain-ai/langgraph
 - LangGraph overview: https://www.langchain.com/langgraph

@@ -1,6 +1,6 @@
 # Localsetup - Context for OpenClaw workspace
 
-Copy or merge this into your OpenClaw workspace MEMORY.md (or reference it) so the agent has framework context.
+Copy or merge this into your OpenClaw workspace context so the agent has framework context.
 
 ## Overview
 Localsetup lives in this repo at `_localsetup/`. All context is repo-local (mobile, backup-able). Engine = _localsetup/; user/context data = repo-local.
@@ -99,24 +99,3 @@ Load when task matches:
 localsetup doctor
 localsetup verify --level filesystem
 localsetup context --markdown
-
-## Memory
-
-A persistent memory file exists at `MEMORY.md` (repo root). Treat it as mutable project/platform state outside `_localsetup/`; keep it curated and never store memory, reminders, backlog, or temporary notes under `_localsetup/`.
-
-**Curation Rules:**
-- Maximum 20 entries per section
-- Revise existing entries, don't just append
-- Remove stale entries (older than 30 days)
-- Only record patterns confirmed in 2+ sessions
-- Escalate significant learnings to framework docs
-
-## Memory Management Rules
-
-When you discover something valuable:
-1. **Check before writing** - Does this pattern already exist?
-2. **Be specific** - Good: "- 2026-04-02: Use ruff format before ruff check"
-3. **Quality gate** - Only record patterns confirmed in 2+ sessions
-4. **Curate actively** - Before adding, remove stale entries
-5. **Escalate** - Move important patterns to framework docs
-6. **No bloat** - If section exceeds 20 entries, remove old ones first

@@ -1,6 +1,6 @@
 # Architecture
 
-`ls-context-index` is a thin Localsetup RAG layer over source files. It speeds up retrieval but does not replace Markdown, code, manifests, memory files, or generated catalogs as source of truth.
+`ls-context-index` is a thin Localsetup RAG layer over source files. It speeds up retrieval but does not replace Markdown, code, manifests, or generated catalogs as source of truth.
 
 ## Component Model
 
@@ -34,7 +34,7 @@ Each context uses:
 tenant_slug / namespace_slug / corpus_slug / scope_slug
 ```
 
-The combined `context_key` is present on sources, chunks, vectors, runs, usage events, freshness snapshots, workers, and reset plans. This lets one DB contain several repos or a merged global corpus without losing isolation.
+The combined `context_key` is present on sources, chunks, vectors, runs, freshness snapshots, workers, and reset plans. This lets one DB contain several repos or a merged global corpus without losing isolation.
 
 ## Schema Highlights
 
@@ -45,7 +45,6 @@ The combined `context_key` is present on sources, chunks, vectors, runs, usage e
 - `embedding_profiles`: provider/model/dimension identity.
 - `vectors`: packed float vector blobs by chunk/profile/modality.
 - `freshness_snapshots`, `ingest_runs`, `reset_plans`, `worker_runs`, `worker_locks`: deterministic operation records.
-- `usage_events`: memory result usage signals.
 
 All primary relational IDs are UUIDv7 strings.
 
@@ -61,10 +60,9 @@ The schema adds SQL-native indexes for common searches instead of requiring agen
 - `chunks(context_key, repo_relative_path, line_start, line_end)`
 - `vectors(context_key, embedding_profile_id)`
 - `vectors(embedding_profile_id, context_key, modality)`
-- `usage_events(context_key, used_at)`
 - `worker_runs(context_key, status, started_at)`
 
-These indexes support freshness, worklists, lookup, scope merge, vector profile filtering, memory curation, and worker status checks.
+These indexes support freshness, worklists, lookup, scope merge, vector profile filtering, and worker status checks.
 
 ## Freshness
 

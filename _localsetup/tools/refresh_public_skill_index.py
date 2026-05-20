@@ -69,6 +69,38 @@ RISK_HINTS = {
     "command_execution": ["shell", "command", "run", "execute", "terminal"],
 }
 
+MEMORY_SKILL_DENYLIST = {
+    "acc-error-memory",
+    "active-maintenance",
+    "agent-autopilot",
+    "agent-brain",
+    "agent-memory",
+    "agent-memory-ultimate",
+    "agent-rpg",
+    "agent-teleport",
+    "agentmemory",
+    "braindb",
+    "chaos-mind",
+    "claw-sync",
+    "clawdbot-sync",
+    "context-anchor",
+    "continuity",
+    "continuity-framework",
+    "daily-report",
+    "hivemind",
+    "honcho-setup",
+}
+
+MEMORY_SKILL_TERMS = (
+    "memory",
+    "memories",
+    "continuity",
+    "context anchor",
+    "persistent context",
+    "long-term context",
+    "session history",
+)
+
 
 def fetch_text(url: str) -> str:
     try:
@@ -93,6 +125,24 @@ def report_error(context: str, exc: Exception) -> None:
     print(f"[WARNING] {context}: {type(exc).__name__}: {exc}", file=sys.stderr)
     if os.environ.get("LOCALSETUP_DEBUG", "").strip() == "1":
         traceback.print_exc(file=sys.stderr)
+
+
+def is_memory_skill_entry(entry: dict) -> bool:
+    name = str(entry.get("name", "")).strip().lower()
+    if name in MEMORY_SKILL_DENYLIST:
+        return True
+    searchable = " ".join(
+        str(entry.get(key, ""))
+        for key in (
+            "name",
+            "description",
+            "summary_short",
+            "summary_long",
+            "category",
+            "url",
+        )
+    ).lower()
+    return any(term in searchable for term in MEMORY_SKILL_TERMS)
 
 
 def sanitize_text(value: str, max_len: int = MAX_FIELD_LEN) -> str:
@@ -305,7 +355,8 @@ def main() -> int:
     except Exception as e:
         report_error("anthropics fetch failed", e)
 
-    enriched = [enrich_entry(s) for s in all_skills]
+    filtered_skills = [s for s in all_skills if not is_memory_skill_entry(s)]
+    enriched = [enrich_entry(s) for s in filtered_skills]
     updated = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     out = {
         "schema_version": 2,
@@ -321,7 +372,9 @@ def main() -> int:
         f.write("# the user is creating or importing a skill. Schema: sources, updated (ISO8601), skills.\n")
         yaml.dump(out, f, default_flow_style=False, allow_unicode=True, sort_keys=False, width=1000)
 
-    print(f"Wrote {len(all_skills)} skills to {index_path} (updated={updated})")
+    removed = len(all_skills) - len(filtered_skills)
+    suffix = f"; excluded {removed} memory/context-continuity skills" if removed else ""
+    print(f"Wrote {len(filtered_skills)} skills to {index_path} (updated={updated}){suffix}")
     return 0
 
 

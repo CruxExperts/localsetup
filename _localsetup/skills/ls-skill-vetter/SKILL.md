@@ -66,7 +66,7 @@ REJECT IMMEDIATELY IF YOU SEE:
 - Sends data to external servers
 - Requests credentials/tokens/API keys
 - Reads ~/.ssh, ~/.aws, ~/.config without clear reason
-- Accesses MEMORY.md, USER.md, SOUL.md, IDENTITY.md
+- Accesses USER.md, SOUL.md, IDENTITY.md
 - Uses base64 decode on anything
 - Uses eval() or exec() with external input
 - Modifies system files outside workspace

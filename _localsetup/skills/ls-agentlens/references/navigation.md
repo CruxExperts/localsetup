@@ -17,7 +17,7 @@
    → Find line number of function/class
 
 4. Check for issues first?
-   → Read modules/{slug}/memory.md
+   → Read modules/{slug}/notes.md
    → See TODOs, warnings before editing
 ```
 
@@ -43,7 +43,7 @@
 ## Pattern 4: Before Modifying Code
 
 ```
-1. Read memory.md for the module
+1. Read notes.md for the module
 2. Check for:
    - TODO: Pending work
    - FIXME: Known bugs

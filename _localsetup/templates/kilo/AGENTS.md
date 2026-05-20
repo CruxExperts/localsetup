@@ -98,27 +98,6 @@ Kilo CLI uses `AGENTS.md` as the project initialization file at repo root.
 - _localsetup/docs/INPUT_HARDENING_STANDARD.md  - Mandatory hostile-input handling, sanitization, actionable error policy
 - _localsetup/docs/TOOLING_POLICY.md  - Python-first tooling language and dependency policy
 
-## Memory
-
-A persistent memory file exists at `.kilo/MEMORY.md`. Treat it as mutable project/platform state outside `_localsetup/`; keep it curated and never store memory, reminders, backlog, or temporary notes under `_localsetup/`.
-
-**Curation Rules:**
-- Maximum 20 entries per section
-- Revise existing entries, don't just append
-- Remove stale entries (older than 30 days)
-- Only record patterns confirmed in 2+ sessions
-- Escalate significant learnings to framework docs
-
-## Memory Management Rules
-
-When you discover something valuable:
-1. **Check before writing** - Does this pattern already exist?
-2. **Be specific** - Good: "- 2026-04-02: Use ruff format before ruff check"
-3. **Quality gate** - Only record patterns confirmed in 2+ sessions
-4. **Curate actively** - Before adding, remove stale entries
-5. **Escalate** - Move important patterns to framework docs
-6. **No bloat** - If section exceeds 20 entries, remove old ones first
-
 ## Task-to-skill matching (default)
 
 - Treat as **batch** when user request includes multiple distinct subtasks, or says "batch", "multiple steps", or "run the whole thing". Otherwise treat as **single task**.

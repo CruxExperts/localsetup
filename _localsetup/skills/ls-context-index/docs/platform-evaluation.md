@@ -4,9 +4,9 @@ Snapshot date: 2026-05-12.
 
 ## Decision
 
-Use SQLite as the default Localsetup context-index backend, with FTS5 for lexical search and ordinary relational tables for vector payloads, freshness metadata, source provenance, and memory usage. Keep the schema generic enough to migrate to PostgreSQL later.
+Use SQLite as the default Localsetup context-index backend, with FTS5 for lexical search and ordinary relational tables for vector payloads, freshness metadata, and source provenance. Keep the schema generic enough to migrate to PostgreSQL later.
 
-This follows the user's portability requirement: each enabled repo can have its own copyable SQLite DB, while framework and global context share one global SQLite DB. Context columns (`tenant_slug`, `namespace_slug`, `corpus_slug`, `scope_slug`, `context_key`) let one database contain many repos or let several repo DBs be merged into a central database later.
+This follows the user's portability requirement: each enabled repo can have its own copyable SQLite DB, while framework context uses one global SQLite DB. Context columns (`tenant_slug`, `namespace_slug`, `corpus_slug`, `scope_slug`, `context_key`) let one database contain many repos or let several repo DBs be merged into a central database later.
 
 ## Candidate Summary
 
@@ -22,7 +22,7 @@ This follows the user's portability requirement: each enabled repo can have its 
 | Tantivy/BM25S | Useful lexical fallback, but does not cover relational freshness and merge requirements alone | Not selected |
 | Milvus Lite / Weaviate | Powerful but heavier than needed for repo-local default | Not selected |
 | FAISS | Fast vector library, but no native metadata/freshness/control-plane DB | Not selected |
-| LangChain / LangGraph | Useful RAG/memory architecture references, but Localsetup needs deterministic framework-native tooling | Reference only |
+| LangChain / LangGraph | Useful RAG architecture references, but Localsetup needs deterministic framework-native tooling | Reference only |
 
 ## Why SQLite
 
@@ -37,7 +37,6 @@ The schema includes explicit indexes for common agent and worker paths:
 - Merge/consolidation: `idx_sources_scope_lookup`, `idx_sources_context_fingerprint`
 - Provenance lookup: `idx_chunks_source_line`, `idx_chunks_context_line_lookup`
 - Vector search profile filtering: `idx_vectors_context_profile`, `idx_vectors_profile_modality`
-- Memory curation: `idx_usage_chunk`, `idx_usage_context_used`
 - Worker visibility: `idx_worker_runs_context_status`
 - Lexical fallback: `chunk_fts` FTS5 virtual table
 
@@ -45,12 +44,11 @@ These indexes are deliberately SQL-native so agents and tests can validate them 
 
 ## LangChain And LangGraph Notes
 
-LangChain and LangGraph show useful RAG and memory patterns: retrieval pipelines, document provenance, stateful memory, and graph-style maintenance flows. Localsetup borrows the architectural lessons but not the runtime dependency. The Localsetup command surface must remain deterministic, local-first, and aligned with framework files, so it implements its own CLI and schema.
+LangChain and LangGraph show useful RAG patterns: retrieval pipelines, document provenance, and graph-style maintenance flows. Localsetup borrows the architectural lessons but not the runtime dependency. The Localsetup command surface must remain deterministic, local-first, and aligned with framework files, so it implements its own CLI and schema.
 
 ## Sources Checked
 
 - LangChain RAG docs: https://docs.langchain.com/oss/python/langchain/rag
-- LangChain memory concepts: https://docs.langchain.com/oss/python/concepts/memory
 - LangGraph repository: https://github.com/langchain-ai/langgraph
 - LangGraph product/docs overview: https://www.langchain.com/langgraph
 - SQLite FTS5: https://www.sqlite.org/fts5.html

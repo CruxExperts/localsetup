@@ -5,7 +5,7 @@
 ## What It Provides
 
 - Vector-first local RAG using SQLite tables, SQLite FTS5, and deterministic local hash embeddings by default.
-- Repo, framework, and global context segregation through `tenant_slug`, `namespace_slug`, `corpus_slug`, `scope_slug`, and `context_key`.
+- Repo and framework context segregation through `tenant_slug`, `namespace_slug`, `corpus_slug`, `scope_slug`, and `context_key`.
 - UUIDv7 IDs for relational rows so separately created SQLite databases can be merged later without ID collisions.
 - Freshness, worklist, and agent-preflight JSON surfaces that tell agents which paths are stale, missing, deleted, or safe to search.
 - Reset and rebuild controls for disposable index recovery.
@@ -15,9 +15,8 @@
 
 - Repo scope: `.localsetup/context-index/context-index.sqlite3`
 - Framework scope: global DB, `~/.local/share/localsetup/context-index/context-index.sqlite3`
-- Global scope: same global DB as framework, segregated by `context_key`
 
-The repo DB is ignored by the default inventory rules and is not intended to be committed. The global DB intentionally carries both framework and user/global context because those scopes travel together better than a separate framework-only file.
+The repo DB is ignored by the default inventory rules and is not intended to be committed. The global DB carries framework index data only.
 
 ## Core Commands
 
@@ -30,8 +29,6 @@ localsetup context-index stats --scope repo
 localsetup context-index ingest --scope repo
 localsetup context-index search "workflow registry" --scope repo --top-k 10
 localsetup context-index lookup --chunk-id UUID
-localsetup context-index memory mark-used --scope repo --chunk-id UUID --reason selected_context
-localsetup context-index memory stats --scope repo
 localsetup context-index vector-rebuild plan --scope repo
 localsetup context-index vector-rebuild apply --scope repo --plan PLAN_ID
 localsetup context-index rebuild plan --scope repo
@@ -60,7 +57,6 @@ The SQLite schema is deliberately relational and future PostgreSQL-friendly. Com
 - `sources(tenant_slug, namespace_slug, corpus_slug, scope_slug, repo_relative_path)` for future merged/central databases.
 - `chunks(context_key, repo_relative_path, line_start, line_end)` for provenance lookup.
 - `vectors(context_key, embedding_profile_id)` and `vectors(embedding_profile_id, context_key, modality)` for vector scans by profile/scope.
-- `usage_events(context_key, used_at)` for memory curation.
 - FTS5 virtual table `chunk_fts` for lexical fallback.
 
 `stats` reports table counts, DB size, FTS availability, and index names. `prune` is conservative: it removes tombstoned/deleted source rows and orphan vector rows from the selected context, never source files.

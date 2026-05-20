@@ -22,7 +22,7 @@ localsetup context-index inventory --scope repo --show-excludes
 - Do not resolve secret aliases during indexing.
 - Do not index vault files, private keys, token stores, `.env` files, or credential dumps.
 - It is acceptable to index intentional alias names such as `secret_ref: cloudflare_api_token` when they are already present in documentation.
-- Logs and memory usage reasons must not contain raw secrets.
+- Logs must not contain raw secrets.
 
 ## Network Policy
 
@@ -34,4 +34,4 @@ Reset and rebuild commands delete derived index rows for the selected context an
 
 ## Privacy Boundary
 
-Repo scope stays in the repo DB by default. Framework and global/user memory share the global DB but remain segregated by `context_key`.
+Repo scope stays in the repo DB by default. Framework scope uses the global DB but remains segregated by `context_key`.

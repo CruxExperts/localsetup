@@ -11,7 +11,7 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "repo_paths", "global_paths", "memory_paths", "verify_rules", "rollback_targets"],
+        "required": ["id", "repo_paths", "global_paths", "verify_rules", "rollback_targets"],
         "properties": {
           "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
           "repo_paths": {
@@ -20,11 +20,6 @@
             "uniqueItems": true
           },
           "global_paths": {
-            "type": "array",
-            "items": { "type": "string", "minLength": 1 },
-            "uniqueItems": true
-          },
-          "memory_paths": {
             "type": "array",
             "items": { "type": "string", "minLength": 1 },
             "uniqueItems": true

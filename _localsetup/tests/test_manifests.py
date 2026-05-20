@@ -610,7 +610,6 @@ platforms:
   - id: codex
     repo_paths: ["../escape"]
     global_paths: ["~/.codex/skills"]
-    memory_paths: ["~/.codex/memories"]
     verify_rules: []
     rollback_targets: [".codex/skills"]
 """,
@@ -649,7 +648,6 @@ platforms:
   - id: codex
     repo_paths: [".codex/skills"]
     global_paths: ['{bad_home}']
-    memory_paths: ["~/.codex/memories"]
     verify_rules: []
     rollback_targets: [".codex/skills"]
 """,

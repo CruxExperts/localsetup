@@ -30,10 +30,6 @@ ignore:
     - '^\.localsetup/lock\.json$'
     - '^config/codex_heartbeat\.yaml$'
     - '^cron/manifest\.yaml$'
-    - '^\.kilo/MEMORY\.md$'
-    - '^\.opencode/MEMORY\.md$'
-    - '^\.claude/MEMORY\.md$'
-    - '^\.agents/MEMORY\.md$'
     - '^\.agentlens/INDEX\.md$'
 
   path_prefixes:
@@ -96,7 +92,6 @@ targets:
     base_dir: "~"
     include_globs:
       - ".kilo/instructions/*.md"
-      - ".kilo/memories/**/*.md"
     exclude_globs:
       - ".kilo/**/node_modules/**"
       - ".kilo/skills/**"

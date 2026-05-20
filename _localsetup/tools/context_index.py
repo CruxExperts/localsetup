@@ -137,7 +137,6 @@ def default_config(repo_root: Path, home: Path) -> dict[str, Any]:
             },
             "scopes": {
                 "default_query": ["repo", "framework"],
-                "include_global_memory_by_default": False,
                 "definitions": {
                     "repo": {
                         "type": "repo",
@@ -155,13 +154,6 @@ def default_config(repo_root: Path, home: Path) -> dict[str, Any]:
                             "_localsetup/skills/**/SKILL.md",
                             "_localsetup/workflows/**",
                         ],
-                        "exclude": DEFAULT_EXCLUDES,
-                        "max_file_bytes": 1048576,
-                    },
-                    "global": {
-                        "type": "global",
-                        "roots": [str(home / ".codex" / "memories")],
-                        "include": ["**/*.md", "**/*.jsonl"],
                         "exclude": DEFAULT_EXCLUDES,
                         "max_file_bytes": 1048576,
                     },
@@ -195,13 +187,6 @@ def default_config(repo_root: Path, home: Path) -> dict[str, Any]:
                 "max_runtime_seconds": 300,
                 "batch_file_limit": 50,
                 "batch_vector_limit": 250,
-            },
-            "memory": {
-                "track_usage": True,
-                "promotion_enabled": False,
-                "promotion_requires_apply": True,
-                "min_uses_for_promotion": 5,
-                "protect_recent_days": 45,
             },
             "logging": {
                 "enabled": True,
@@ -253,7 +238,6 @@ DEFAULT_EXCLUDES = [
 HIGH_PRIORITY_PATTERNS = [
     "README*",
     "AGENTS.md",
-    "**/MEMORY.md",
     ".agentlens/**/*.md",
     "_localsetup/docs/**/*.md",
     "_localsetup/docs/_generated/*.json",
@@ -311,7 +295,7 @@ def context_for(config: dict[str, Any], repo_root: Path, scope: str) -> dict[str
     if scope == "framework":
         tenant, namespace, corpus = "local", "framework", "localsetup"
     elif scope == "global":
-        tenant, namespace, corpus = "local", "global", "user-memory"
+        raise ContextIndexError("UNSUPPORTED_SCOPE", "context-index global scope has been removed")
     else:
         tenant = str(ident.get("tenant_slug") or "local")
         namespace = str(ident.get("namespace_slug") or "repos")
@@ -343,7 +327,9 @@ def runtime(args: argparse.Namespace, scope: str | None = None, database: str | 
     config, _ = load_config(repo_root, home)
     ctx = context_for(config, repo_root, first_scope)
     db_path = db_path_for(config, repo_root, home, first_scope, database=database)
-    return Runtime(repo_root, home, config, ctx, db_path, first_scope)
+    rt = Runtime(repo_root, home, config, ctx, db_path, first_scope)
+    scope_definition(rt, first_scope)
+    return rt
 
 
 def parse_scopes(value: str | None) -> list[str]:
@@ -366,6 +352,10 @@ def connect(rt: Runtime) -> sqlite3.Connection:
 def migrate(con: sqlite3.Connection) -> None:
     con.executescript(
         """
+        DROP INDEX IF EXISTS idx_usage_chunk;
+        DROP INDEX IF EXISTS idx_usage_context_used;
+        DROP TABLE IF EXISTS usage_events;
+
         CREATE TABLE IF NOT EXISTS database_metadata (
           key TEXT PRIMARY KEY,
           value TEXT NOT NULL
@@ -489,13 +479,6 @@ def migrate(con: sqlite3.Connection) -> None:
           acquired_at TEXT NOT NULL,
           heartbeat_at TEXT NOT NULL
         );
-        CREATE TABLE IF NOT EXISTS usage_events (
-          usage_event_id TEXT PRIMARY KEY,
-          chunk_id TEXT NOT NULL,
-          context_key TEXT NOT NULL,
-          reason TEXT NOT NULL,
-          used_at TEXT NOT NULL
-        );
         """
     )
     con.executescript(
@@ -515,8 +498,6 @@ def migrate(con: sqlite3.Connection) -> None:
         CREATE INDEX IF NOT EXISTS idx_vectors_profile_modality ON vectors(embedding_profile_id, context_key, modality);
         CREATE INDEX IF NOT EXISTS idx_ingest_runs_context_started ON ingest_runs(context_key, started_at);
         CREATE INDEX IF NOT EXISTS idx_freshness_context_checked ON freshness_snapshots(context_key, checked_at);
-        CREATE INDEX IF NOT EXISTS idx_usage_chunk ON usage_events(chunk_id, used_at);
-        CREATE INDEX IF NOT EXISTS idx_usage_context_used ON usage_events(context_key, used_at);
         CREATE INDEX IF NOT EXISTS idx_worker_runs_context_status ON worker_runs(context_key, status, started_at);
         """
     )
@@ -559,7 +540,20 @@ def rel_path(repo_root: Path, path: Path) -> str:
 
 def scope_definition(rt: Runtime, scope: str) -> dict[str, Any]:
     defs = rt.config["context_index"].get("scopes", {}).get("definitions", {})
-    return dict(defs.get(scope, defs.get("repo", {})))
+    if scope not in defs:
+        raise ContextIndexError("UNSUPPORTED_SCOPE", f"context-index scope is not configured: {scope}")
+    definition = dict(defs[scope])
+    if str(definition.get("type", "")) == "global":
+        raise ContextIndexError("UNSUPPORTED_SCOPE", "context-index global scope has been removed")
+    repo_root = rt.repo_root.resolve()
+    for root_value in definition.get("roots") or []:
+        root = Path(str(root_value)).expanduser()
+        base = root if root.is_absolute() else rt.repo_root / root
+        try:
+            base.resolve().relative_to(repo_root)
+        except ValueError as exc:
+            raise ContextIndexError("UNSUPPORTED_SCOPE", f"context-index scope root is outside the repository: {root_value}") from exc
+    return definition
 
 
 def matches_any(value: str, patterns: list[str]) -> bool:
@@ -1233,72 +1227,6 @@ def lookup(rt: Runtime, chunk_id: str) -> dict[str, Any]:
     }
 
 
-def memory_mark_used(rt: Runtime, chunk_id: str, reason: str) -> dict[str, Any]:
-    con = connect(rt)
-    row = con.execute("SELECT chunk_id, context_key, repo_relative_path FROM chunks WHERE chunk_id=?", (chunk_id,)).fetchone()
-    if not row:
-        raise ContextIndexError("NOT_FOUND", f"chunk not found: {chunk_id}")
-    if row["context_key"] != rt.context["context_key"]:
-        raise ContextIndexError("SCOPE_MISMATCH", "chunk belongs to a different context scope")
-    event_id = uuid7()
-    con.execute("INSERT INTO usage_events VALUES (?, ?, ?, ?, ?)", (event_id, chunk_id, rt.context["context_key"], reason[:200], utc_now()))
-    con.commit()
-    log_event(rt, "memory.mark_used", {"usage_event_id": event_id, "chunk_id": chunk_id, "reason": reason[:80]})
-    return {"ok": True, "usage_event_id": event_id, "chunk_id": chunk_id, "path": row["repo_relative_path"], "reason": reason[:200]}
-
-
-def memory_stats(rt: Runtime) -> dict[str, Any]:
-    con = connect(rt)
-    rows = [
-        dict(row)
-        for row in con.execute(
-            """
-            SELECT u.chunk_id, c.repo_relative_path AS path, COUNT(*) AS uses, MAX(u.used_at) AS last_used_at
-            FROM usage_events u
-            JOIN chunks c ON c.chunk_id = u.chunk_id
-            WHERE u.context_key = ?
-            GROUP BY u.chunk_id, c.repo_relative_path
-            ORDER BY uses DESC, last_used_at DESC
-            LIMIT 50
-            """,
-            (rt.context["context_key"],),
-        ).fetchall()
-    ]
-    total = con.execute("SELECT COUNT(*) AS c FROM usage_events WHERE context_key=?", (rt.context["context_key"],)).fetchone()["c"]
-    return {"ok": True, "context_key": rt.context["context_key"], "total_usage_events": total, "chunks": rows}
-
-
-def memory_promote_plan(rt: Runtime) -> dict[str, Any]:
-    con = connect(rt)
-    threshold = int(rt.config["context_index"].get("memory", {}).get("min_uses_for_promotion", 5))
-    rows = [
-        dict(row)
-        for row in con.execute(
-            """
-            SELECT u.chunk_id, c.repo_relative_path AS path, COUNT(*) AS uses, MAX(u.used_at) AS last_used_at,
-                   MIN(c.line_start) AS line_start, MAX(c.line_end) AS line_end
-            FROM usage_events u
-            JOIN chunks c ON c.chunk_id = u.chunk_id
-            WHERE u.context_key = ?
-            GROUP BY u.chunk_id, c.repo_relative_path
-            HAVING COUNT(*) >= ?
-            ORDER BY uses DESC, last_used_at DESC
-            LIMIT 50
-            """,
-            (rt.context["context_key"], threshold),
-        ).fetchall()
-    ]
-    return {
-        "ok": True,
-        "plan_id": uuid7(),
-        "context_key": rt.context["context_key"],
-        "threshold": {"min_uses_for_promotion": threshold},
-        "candidates": rows,
-        "apply_supported": False,
-        "recommended_action": "Review candidates and promote memory manually until a repo-approved global memory writer is configured.",
-    }
-
-
 def mcp_config(rt: Runtime, transport: str) -> dict[str, Any]:
     server = rt.repo_root / "_localsetup" / "tools" / "context_mcp_server.py"
     return {
@@ -1315,8 +1243,6 @@ def mcp_config(rt: Runtime, transport: str) -> dict[str, Any]:
             "context_index_lookup",
             "context_index_stats",
             "context_index_stale",
-            "context_index_mark_used",
-            "context_index_memory_candidates",
             "context_index_ingest_plan",
         ],
     }
@@ -1326,7 +1252,7 @@ def stats(rt: Runtime) -> dict[str, Any]:
     con = connect(rt)
     table_counts = {
         name: con.execute(f"SELECT COUNT(*) AS c FROM {name} WHERE context_key=?", (rt.context["context_key"],)).fetchone()["c"]
-        for name in ("sources", "chunks", "vectors", "ingest_runs", "freshness_snapshots", "reset_plans", "worker_runs", "usage_events")
+        for name in ("sources", "chunks", "vectors", "ingest_runs", "freshness_snapshots", "reset_plans", "worker_runs")
     }
     table_counts["contexts"] = con.execute("SELECT COUNT(*) AS c FROM contexts WHERE context_key=?", (rt.context["context_key"],)).fetchone()["c"]
     indexes = [row["name"] for row in con.execute("SELECT name FROM sqlite_master WHERE type='index' AND name NOT LIKE 'sqlite_%' ORDER BY name")]
@@ -1550,6 +1476,8 @@ def rebuild_apply(rt: Runtime, plan_id: str) -> dict[str, Any]:
 def config_init(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo).expanduser().resolve()
     home = Path(args.home).expanduser().resolve()
+    if args.scope == "global":
+        raise ContextIndexError("UNSUPPORTED_SCOPE", "context-index global scope has been removed")
     cfg = default_config(repo_root, home)
     path = repo_root / REPO_CONFIG_REL if args.scope == "repo" else home / GLOBAL_CONFIG_REL
     if path.exists() and not args.force:
@@ -1559,6 +1487,41 @@ def config_init(args: argparse.Namespace) -> dict[str, Any]:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(yaml.safe_dump(cfg, sort_keys=False), encoding="utf-8")
     return {"ok": True, "created": True, "path": str(path)}
+
+
+def forbidden_config_keys(cfg: dict[str, Any], repo_root: Path) -> list[str]:
+    ci = cfg.get("context_index")
+    if not isinstance(ci, dict):
+        return []
+    forbidden: list[str] = []
+    if "memory" in ci:
+        forbidden.append("context_index.memory")
+    scopes = ci.get("scopes")
+    if isinstance(scopes, dict):
+        default_query = scopes.get("default_query")
+        if isinstance(default_query, list) and "global" in default_query:
+            forbidden.append("context_index.scopes.default_query[global]")
+        if "include_global_memory_by_default" in scopes:
+            forbidden.append("context_index.scopes.include_global_memory_by_default")
+        definitions = scopes.get("definitions")
+        if isinstance(definitions, dict):
+            repo_resolved = repo_root.resolve()
+            for name, definition in definitions.items():
+                if name == "global":
+                    forbidden.append("context_index.scopes.definitions.global")
+                if not isinstance(definition, dict):
+                    continue
+                if definition.get("type") == "global":
+                    forbidden.append(f"context_index.scopes.definitions.{name}.type")
+                for root_value in definition.get("roots") or []:
+                    root = Path(str(root_value)).expanduser()
+                    base = root if root.is_absolute() else repo_root / root
+                    try:
+                        base.resolve().relative_to(repo_resolved)
+                    except ValueError:
+                        forbidden.append(f"context_index.scopes.definitions.{name}.roots")
+                        break
+    return forbidden
 
 
 def config_validate(args: argparse.Namespace) -> dict[str, Any]:
@@ -1573,6 +1536,8 @@ def config_validate(args: argparse.Namespace) -> dict[str, Any]:
         for key in ("storage", "scopes", "freshness", "chunking", "embeddings", "retrieval"):
             if key not in ci:
                 issues.append(f"missing context_index.{key}")
+    for key in forbidden_config_keys(cfg, repo_root):
+        issues.append(f"unsupported removed memory/global context setting: {key}")
     return {"ok": not issues, "loaded": loaded, "issues": issues, "config_hash": stable_json_hash(cfg)}
 
 
@@ -1666,7 +1631,7 @@ def build_parser() -> argparse.ArgumentParser:
     cfg = sub.add_parser("config")
     cfg_sub = cfg.add_subparsers(dest="config_cmd", required=True)
     init_p = cfg_sub.add_parser("init")
-    init_p.add_argument("--scope", choices=["repo", "global"], default="repo")
+    init_p.add_argument("--scope", choices=["repo"], default="repo")
     init_p.add_argument("--force", action="store_true")
     init_p.add_argument("--json", action="store_true", default=True)
     validate_p = cfg_sub.add_parser("validate")
@@ -1690,7 +1655,6 @@ def build_parser() -> argparse.ArgumentParser:
         "worker",
         "logs",
         "lookup",
-        "memory",
         "mcp",
     ):
         p = sub.add_parser(name)
@@ -1718,10 +1682,6 @@ def build_parser() -> argparse.ArgumentParser:
     sub.choices["worker"].add_argument("worker_cmd", choices=["nudge", "status", "run"])
     sub.choices["logs"].add_argument("logs_cmd", nargs="?", choices=["status", "rotate"], default="status")
     sub.choices["lookup"].add_argument("--chunk-id", required=True)
-    sub.choices["memory"].add_argument("memory_cmd", choices=["stats", "mark-used", "promote-plan", "promote-apply"])
-    sub.choices["memory"].add_argument("--chunk-id")
-    sub.choices["memory"].add_argument("--reason", default="selected_context")
-    sub.choices["memory"].add_argument("--plan")
     sub.choices["mcp"].add_argument("mcp_cmd", choices=["config", "serve"])
     sub.choices["mcp"].add_argument("--transport", default="stdio", choices=["stdio"])
     sub.choices["search"].add_argument("--scope", default="repo")
@@ -1774,22 +1734,6 @@ def dispatch(args: argparse.Namespace) -> dict[str, Any]:
         return lookup(rt, args.chunk_id)
     if args.cmd == "stats":
         return stats(rt)
-    if args.cmd == "memory":
-        if args.memory_cmd == "stats":
-            return memory_stats(rt)
-        if args.memory_cmd == "mark-used":
-            if not args.chunk_id:
-                raise ContextIndexError("MISSING_ARGUMENT", "memory mark-used requires --chunk-id")
-            return memory_mark_used(rt, args.chunk_id, args.reason)
-        if args.memory_cmd == "promote-plan":
-            return memory_promote_plan(rt)
-        if args.memory_cmd == "promote-apply":
-            return {
-                "ok": True,
-                "applied": False,
-                "plan_id": args.plan,
-                "recommended_action": "Global memory file mutation is not automatic until a repo-approved memory writer is configured.",
-            }
     if args.cmd == "mcp":
         if args.mcp_cmd == "config":
             return mcp_config(rt, args.transport)

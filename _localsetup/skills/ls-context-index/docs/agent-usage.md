@@ -19,7 +19,6 @@ Important fields:
 
 ```bash
 localsetup context-index search "how are workflows registered" --scope repo --top-k 10
-localsetup context-index search "memory promotion rules" --scope global --top-k 10
 localsetup context-index search "skill validation smoke commands" --scope framework --mode hybrid --top-k 10
 ```
 
@@ -80,7 +79,7 @@ localsetup context-index prune apply --scope repo --plan PLAN_ID
 
 ## Agent Rules
 
-- Prefer `repo` for repo work, `framework` for Localsetup framework questions, and `global` only when user/global memory is relevant.
+- Prefer `repo` for repo work and `framework` for Localsetup framework questions.
 - Never ask the index for secret values.
 - Mark stale results as context hints only.
 - Prefer `ACTIVE` docs where status is available.

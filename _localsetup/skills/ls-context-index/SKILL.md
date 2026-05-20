@@ -7,7 +7,7 @@ metadata:
 
 # Context Index
 
-Use this skill when an agent needs fast Localsetup context retrieval across repo, framework, or global/user memory sources. The index is a retrieval cache; files remain the source of truth.
+Use this skill when an agent needs fast Localsetup context retrieval across repo or framework sources. The index is a retrieval cache; files remain the source of truth.
 
 ## Required Agent Flow
 
@@ -36,9 +36,8 @@ localsetup context-index prune plan --scope repo
 
 ## Scope Model
 
-- `repo`: repo-local docs, code, workflows, `.agentlens`, memory, and selected structured files in the repo DB by default.
+- `repo`: repo-local docs, code, workflows, `.agentlens`, and selected structured files in the repo DB by default.
 - `framework`: Localsetup docs, skills, workflows, and generated catalogs in the global DB.
-- `global`: user/global memory and selected global context in the same global DB as framework, segregated by `context_key`.
 
 Every table uses UUIDv7 row IDs plus context identity columns so repo DBs can later be merged into one central SQLite or PostgreSQL database without losing scope separation.
 
@@ -52,7 +51,6 @@ Do not request secret values from the index. Default inventory excludes `.env`, 
 - [Architecture](docs/architecture.md)
 - [Agent Usage](docs/agent-usage.md)
 - [Security And Privacy](docs/security-and-privacy.md)
-- [Memory Curation](docs/memory-curation.md)
 - [Platform Evaluation](docs/platform-evaluation.md)
 - [Source Ledger](docs/source-ledger.md)
 - [Config Schema](schemas/config.schema.json)

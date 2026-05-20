@@ -12,7 +12,6 @@ owner_skill: ls-task-skill-matcher
 
 - **One always-loaded context** per platform: Cursor uses `.cursor/rules/ls-context.mdc`; Claude Code uses `.claude/CLAUDE.md`; Codex uses `AGENTS.md`; OpenClaw uses its platform template; OpenCode uses `AGENTS.md`; Kilo CLI uses `.kilo/instructions.md`.
 - **Capability skills and workflow packages:** Capability skills live in `_localsetup/skills/`. Workflow packages live in `_localsetup/workflows/` and also contain `SKILL.md`, so installs both package types into the managed package library.
-- **Memory file:** Each platform has a curated `MEMORY.md` path for agent learnings (`.kilo/MEMORY.md`, `.claude/MEMORY.md`, etc.). These files are mutable project or platform state outside `_localsetup/`; never store memory, reminders, backlog, or temporary notes under framework source. See [MEMORY_MANAGEMENT.md](MEMORY_MANAGEMENT.md) for curation rules.
 - **When to load a skill or workflow:** Load when the task matches the package description (e.g. user says "decision tree" -> ls-workflow-spec-clarify-reverse). The master rule/context includes an index of key packages and when to use them.
 
 ## Skills vs workflow packages
@@ -35,16 +34,16 @@ Use [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) as the canonical definition of:
 
 ## Platform paths
 
-**Canonical list:** Supported platforms and their context/skills/memory paths are defined in [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md). Reference that file when listing platforms or adding a new one. The skills paths below are created only when that platform adapter is explicitly selected; a global-only install does not create repo adapter paths. Summary:
+**Canonical list:** Supported platforms and their context and skills paths are defined in [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md). Reference that file when listing platforms or adding a new one. The skills paths below are created only when that platform adapter is explicitly selected; a global-only install does not create repo adapter paths. Summary:
 
-| Platform | Context loader | Skills | Memory file |
-|----------|----------------|--------|-------------|
-| Cursor | .cursor/rules/ls-context.mdc | .cursor/skills -> managed library | .cursor/rules/MEMORY.md |
-| Claude Code | .claude/CLAUDE.md | .claude/skills -> managed library | .claude/MEMORY.md |
-| Codex | AGENTS.md (repo root) | .codex/skills -> managed library | .agents/MEMORY.md |
-| OpenClaw | platform template | .openclaw/skills -> managed library | MEMORY.md (repo root) |
-| OpenCode | AGENTS.md (repo root) | .opencode/skills -> managed library | .opencode/MEMORY.md |
-| Kilo CLI | .kilo/instructions.md | .kilo/skills -> managed library | .kilo/MEMORY.md |
+| Platform | Context loader | Skills |
+|----------|----------------|--------|
+| Cursor | .cursor/rules/ls-context.mdc | .cursor/skills -> managed library |
+| Claude Code | .claude/CLAUDE.md | .claude/skills -> managed library |
+| Codex | AGENTS.md (repo root) | .codex/skills -> managed library |
+| OpenClaw | platform template | .openclaw/skills -> managed library |
+| OpenCode | AGENTS.md (repo root) | .opencode/skills -> managed library |
+| Kilo CLI | .kilo/instructions.md | .kilo/skills -> managed library |
 
 ## Format
 

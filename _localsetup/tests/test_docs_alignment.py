@@ -234,26 +234,19 @@ def test_cli_wrapper_delegates_docs_align(tmp_path: Path) -> None:
     assert payload["schema_version"] == "1.0"
 
 
-def test_memory_policy_surfaces_keep_mutable_state_outside_framework_source() -> None:
+def test_mutable_state_policy_surfaces_keep_backlog_outside_framework_source() -> None:
     repo = Path(__file__).resolve().parents[2]
     surfaces = [
-        "_localsetup/docs/MEMORY_MANAGEMENT.md",
         "_localsetup/docs/SKILLS_AND_RULES.md",
         "_localsetup/docs/REPO_AND_DATA_SEPARATION.md",
         "_localsetup/skills/ls-backlog-and-reminders/SKILL.md",
         "_localsetup/skills/ls-backlog-and-reminders/references/backlog-template.md",
-        "_localsetup/templates/codex/MEMORY.md",
         "_localsetup/templates/codex/AGENTS.md",
-        "_localsetup/templates/claude-code/MEMORY.md",
         "_localsetup/templates/claude-code/CLAUDE.md",
-        "_localsetup/templates/cursor/MEMORY.md",
         "_localsetup/templates/cursor/ls-context.mdc",
-        "_localsetup/templates/kilo/MEMORY.md",
         "_localsetup/templates/kilo/AGENTS.md",
         "_localsetup/templates/kilo/instructions.md",
-        "_localsetup/templates/opencode/MEMORY.md",
         "_localsetup/templates/opencode/AGENTS.md",
-        "_localsetup/templates/openclaw/MEMORY.md",
         "_localsetup/templates/openclaw/OPENCLAW_CONTEXT.md",
     ]
     banned = (
@@ -268,7 +261,6 @@ def test_memory_policy_surfaces_keep_mutable_state_outside_framework_source() ->
     for phrase in banned:
         assert phrase not in combined
     assert "outside `_localsetup/`" in combined
-    assert "never store memory, reminders, backlog, or temporary notes under `_localsetup/`" in combined
     assert ".localsetup/backlog.md" in combined
 
 

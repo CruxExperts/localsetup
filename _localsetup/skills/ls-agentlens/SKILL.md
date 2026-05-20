@@ -29,14 +29,14 @@ Do not assume `agentlens` is available from this repository or from `PATH`.
 | L0 | `AGENT.md` | Optional generated agent instructions for this repo |
 | L1 | `modules/{slug}/MODULE.md` | Module details, file list |
 | L1 | `modules/{slug}/outline.md` | Symbols in large files |
-| L1 | `modules/{slug}/memory.md` | TODOs, warnings, business rules |
+| L1 | `modules/{slug}/notes.md` | TODOs, warnings, business rules |
 | L1 | `modules/{slug}/imports.md` | File dependencies |
 | L2 | `files/{slug}.md` | Deep docs for complex files |
 
 ## Navigation Flow
 
 ```
-INDEX.md -> Find module -> MODULE.md -> outline.md/memory.md -> Source file
+INDEX.md -> Find module -> MODULE.md -> outline.md/notes.md -> Source file
 ```
 
 ## When To Read What
@@ -47,13 +47,13 @@ INDEX.md -> Find module -> MODULE.md -> outline.md/memory.md -> Source file
 | Find a module | INDEX.md, search module name |
 | Understand a module | `modules/{slug}/MODULE.md` |
 | Find function/class in large file | `modules/{slug}/outline.md` |
-| Find TODOs, warnings, rules | `modules/{slug}/memory.md` |
+| Find TODOs, warnings, rules | `modules/{slug}/notes.md` |
 | Understand file dependencies | `modules/{slug}/imports.md` |
 
 ## Best Practices
 
 1. **Don't read source files directly** for large codebases - use outline.md first
-2. **Check memory.md before modifying** code to see warnings and TODOs
+2. **Check notes.md before modifying** code to see warnings and TODOs
 3. **Use outline.md to locate symbols**, then read only the needed source sections
 4. **Verify stale docs against source** before relying on them; regenerate only when the target repo or external AgentLens installation provides a documented command
 

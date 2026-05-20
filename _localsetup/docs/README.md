@@ -62,7 +62,7 @@ Localsetup installs both capability skills and workflow packages into the manage
 
 | Page | What it covers |
 |---|---|
-| [Skills and rules](SKILLS_AND_RULES.md) | How always-loaded context, skills, adapters, and memory fit together. |
+| [Skills and rules](SKILLS_AND_RULES.md) | How always-loaded context, skills, and adapters fit together. |
 | [Agent Skills compliance](AGENT_SKILLS_COMPLIANCE.md) | How Localsetup implements the Agent Skills spec. |
 | [Skill importing](SKILL_IMPORTING.md) | Import skills from URLs or local paths with validation and screening. |
 | [Skill discovery](SKILL_DISCOVERY.md) | Public skill registry/index workflow and recommendations. |

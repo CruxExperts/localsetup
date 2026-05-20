@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import importlib.util
 import sqlite3
 import subprocess
 import sys
@@ -24,13 +25,23 @@ def run_context(repo: Path, home: Path, *args: str) -> dict:
     return json.loads(completed.stdout)
 
 
+def run_context_raw(repo: Path, home: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, str(TOOL), "--repo", str(repo), "--home", str(home), *args],
+        cwd=repo,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+
 def make_repo(tmp_path: Path) -> tuple[Path, Path]:
     repo = tmp_path / "repo"
     home = tmp_path / "home"
     repo.mkdir()
     home.mkdir()
     (repo / "README.md").write_text(
-        "# Localsetup Demo\n\nInstall workflow context and vector search memory live here.\n",
+        "# Localsetup Demo\n\nInstall workflow context and vector search notes live here.\n",
         encoding="utf-8",
     )
     (repo / "src").mkdir()
@@ -42,6 +53,135 @@ def make_repo(tmp_path: Path) -> tuple[Path, Path]:
     (repo / "node_modules").mkdir()
     (repo / "node_modules" / "noise.js").write_text("secret token noise\n", encoding="utf-8")
     return repo, home
+
+
+def test_context_index_rejects_removed_global_scope(tmp_path: Path) -> None:
+    repo, home = make_repo(tmp_path)
+
+    completed = run_context_raw(repo, home, "inventory", "--scope", "global")
+
+    assert completed.returncode != 0
+    payload = json.loads(completed.stdout)
+    assert payload["ok"] is False
+    assert payload["error"]["code"] == "UNSUPPORTED_SCOPE"
+
+
+def test_config_validate_rejects_removed_memory_settings(tmp_path: Path) -> None:
+    repo, home = make_repo(tmp_path)
+    config = repo / ".localsetup" / "context-index" / "config.yaml"
+    config.parent.mkdir(parents=True)
+    config.write_text(
+        """
+context_index:
+  scopes:
+    default_query: [repo, global]
+    include_global_memory_by_default: true
+    definitions:
+      global:
+        type: global
+        roots: []
+      personal:
+        type: global
+        roots:
+          - ~/.codex/memories
+  memory:
+    track_usage: true
+""",
+        encoding="utf-8",
+    )
+
+    completed = run_context_raw(repo, home, "config", "validate")
+
+    assert completed.returncode != 0
+    payload = json.loads(completed.stdout)
+    assert payload["ok"] is False
+    assert any("context_index.memory" in issue for issue in payload["issues"])
+    assert any("default_query" in issue for issue in payload["issues"])
+    assert any("include_global_memory_by_default" in issue for issue in payload["issues"])
+    assert any("definitions.global" in issue for issue in payload["issues"])
+    assert any("definitions.personal.type" in issue for issue in payload["issues"])
+    assert any("definitions.personal.roots" in issue for issue in payload["issues"])
+
+
+def test_context_index_rejects_custom_scope_outside_repo(tmp_path: Path) -> None:
+    repo, home = make_repo(tmp_path)
+    memory_root = home / ".codex" / "memories"
+    memory_root.mkdir(parents=True)
+    (memory_root / "MEMORY.md").write_text("# Removed Surface\n", encoding="utf-8")
+    config = repo / ".localsetup" / "context-index" / "config.yaml"
+    config.parent.mkdir(parents=True)
+    config.write_text(
+        f"""
+context_index:
+  scopes:
+    definitions:
+      personal:
+        type: repo
+        roots:
+          - {memory_root}
+        include: ["**/*.md"]
+        exclude: []
+        max_file_bytes: 1048576
+""",
+        encoding="utf-8",
+    )
+
+    validate = run_context_raw(repo, home, "config", "validate")
+    assert validate.returncode != 0
+    validate_payload = json.loads(validate.stdout)
+    assert any("definitions.personal.roots" in issue for issue in validate_payload["issues"])
+
+    inventory = run_context_raw(repo, home, "inventory", "--scope", "personal")
+    assert inventory.returncode != 0
+    payload = json.loads(inventory.stdout)
+    assert payload["ok"] is False
+    assert payload["error"]["code"] == "UNSUPPORTED_SCOPE"
+
+    for args in (("stats", "--scope", "personal"), ("mcp", "config", "--scope", "personal"), ("logs", "status", "--scope", "personal")):
+        completed = run_context_raw(repo, home, *args)
+        assert completed.returncode != 0
+        payload = json.loads(completed.stdout)
+        assert payload["ok"] is False
+        assert payload["error"]["code"] == "UNSUPPORTED_SCOPE"
+
+
+def test_context_index_rejects_custom_global_type_for_all_commands(tmp_path: Path) -> None:
+    repo, home = make_repo(tmp_path)
+    config = repo / ".localsetup" / "context-index" / "config.yaml"
+    config.parent.mkdir(parents=True)
+    config.write_text(
+        """
+context_index:
+  scopes:
+    definitions:
+      personal:
+        type: global
+        roots: ["."]
+        include: ["**/*.md"]
+        exclude: []
+        max_file_bytes: 1048576
+""",
+        encoding="utf-8",
+    )
+
+    for args in (("inventory", "--scope", "personal"), ("stats", "--scope", "personal"), ("mcp", "config", "--scope", "personal")):
+        completed = run_context_raw(repo, home, *args)
+        assert completed.returncode != 0
+        payload = json.loads(completed.stdout)
+        assert payload["ok"] is False
+        assert payload["error"]["code"] == "UNSUPPORTED_SCOPE"
+
+
+def test_public_skill_index_refresh_filters_memory_entries() -> None:
+    module_path = REPO_ROOT / "_localsetup" / "tools" / "refresh_public_skill_index.py"
+    spec = importlib.util.spec_from_file_location("refresh_public_skill_index_under_test", module_path)
+    assert spec is not None and spec.loader is not None
+    refresh = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(refresh)
+
+    assert refresh.is_memory_skill_entry({"name": "agent-memory", "description": "Stores long-term context"})
+    assert refresh.is_memory_skill_entry({"name": "context-anchor", "description": "Keeps session continuity"})
+    assert not refresh.is_memory_skill_entry({"name": "pdf-tools", "description": "Extracts tables from PDF files"})
 
 
 def test_context_index_schema_has_native_indexes_for_common_searches(tmp_path: Path) -> None:
@@ -61,7 +201,6 @@ def test_context_index_schema_has_native_indexes_for_common_searches(tmp_path: P
         "idx_chunks_context_line_lookup",
         "idx_vectors_context_profile",
         "idx_vectors_profile_modality",
-        "idx_usage_context_used",
         "idx_worker_runs_context_status",
     }.issubset(indexes)
 
@@ -120,14 +259,6 @@ def test_ingest_search_lookup_freshness_and_rebuild(tmp_path: Path) -> None:
     lookup = run_context(repo, home, "lookup", "--chunk-id", top["chunk_id"])
     assert lookup["chunk"]["line_start"] >= 1
     assert lookup["chunk"]["line_end"] >= lookup["chunk"]["line_start"]
-
-    used = run_context(repo, home, "memory", "mark-used", "--chunk-id", top["chunk_id"], "--reason", "selected_context")
-    assert used["ok"] is True
-    stats = run_context(repo, home, "memory", "stats")
-    assert stats["total_usage_events"] == 1
-    promote = run_context(repo, home, "memory", "promote-plan")
-    assert promote["ok"] is True
-    assert promote["apply_supported"] is False
 
     mcp = run_context(repo, home, "mcp", "config")
     assert mcp["ok"] is True

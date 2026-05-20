@@ -91,7 +91,6 @@ class PlatformConfig:
     platform_id: str
     repo_paths: list[str]
     global_paths: list[str]
-    memory_paths: list[str]
     verify_rules: list[str]
     rollback_targets: list[str]
 

@@ -10,7 +10,7 @@
 │   └── {module-slug}/
 │       ├── MODULE.md     # L1: Module overview
 │       ├── outline.md    # L1: Symbol maps for large files
-│       ├── memory.md     # L1: TODOs, warnings, rules
+│       ├── notes.md      # L1: TODOs, warnings, rules
 │       └── imports.md    # L1: File dependencies
 └── files/
     └── {file-slug}.md    # L2: Deep docs for complex files
@@ -56,7 +56,7 @@ If `.agentlens/AGENT.md` is absent, continue with `INDEX.md`; the file is option
 - Line numbers for quick navigation
 - Visibility (public/private)
 
-### memory.md
+### notes.md
 - TODO comments
 - FIXME and BUG markers
 - WARNING and SAFETY notes
