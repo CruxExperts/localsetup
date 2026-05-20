@@ -260,6 +260,8 @@ Use uv-managed dependency setup instead of system Python changes:
 ./install --directory . --sync-env
 ```
 
+The default dependency mode is report-only. It can warn about corrupt legacy Localsetup environments, but it does not move files. Explicit sync paths such as `--sync-env` may quarantine only Localsetup-owned corrupt environments and then let uv rebuild the source checkout `.venv`; a target project's own `.venv` is never modified.
+
 ## Read more
 
 - [Framework docs index](_localsetup/docs/README.md)

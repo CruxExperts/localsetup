@@ -205,7 +205,12 @@ def convert_repo(
     }
     pack = load_pack_config(source_root)
     dependency_info = (
-        ensure_dependencies(source_root, mode=dependency_mode, data_root=expand_user_path(pack.global_home, home))
+        ensure_dependencies(
+            source_root,
+            mode=dependency_mode,
+            data_root=expand_user_path(pack.global_home, home),
+            target_root=target,
+        )
         if dependency_mode != "prompt-only"
         else None
     )

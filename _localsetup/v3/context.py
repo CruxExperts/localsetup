@@ -51,7 +51,7 @@ def build_agent_context(repo_root: Path, *, home: Path, config: InstallConfig) -
         data_root=data_root,
         target_root=target_root,
     )
-    dependencies = dependency_status(repo_root, mode=config.dependency_mode, data_root=data_root).to_dict()
+    dependencies = dependency_status(repo_root, mode=config.dependency_mode, data_root=data_root, target_root=target_root).to_dict()
     selected_platforms = plan.rollback_metadata.get("platforms", [])
     selected_packs = plan.rollback_metadata.get("packs", config.packs)
     migration_artifacts = detect_legacy_artifacts(repo_root, home=home, platform_ids=config.platforms, target_root=target_root)

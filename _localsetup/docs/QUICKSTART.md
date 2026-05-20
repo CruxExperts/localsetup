@@ -111,6 +111,8 @@ If Python dependencies are missing or you want the uv project environment prepar
 
 Localsetup v3 does not mutate system Python. Framework libraries sync into the source checkout `.venv` with uv, while app-style CLI tools should use `pipx` when they are distributed as commands.
 
+The default `prompt-only` dependency mode is non-mutating: it reports missing uv, stale locks, and corrupt legacy Localsetup environments with a repair command. Explicit sync paths such as `./install --sync-env` and `--dependency-mode uv-sync` may quarantine only Localsetup-owned corrupt environments, including source checkout `.venv`, `~/.local/share/localsetup/venv`, and target `.localsetup/venv`, then let uv rebuild the source checkout `.venv`. A target project's own `.venv` is application-owned and is never changed.
+
 ## Platform IDs
 
 | ID | Agent host | Adapter path | Managed package library |
@@ -180,7 +182,7 @@ uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . valida
 uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . audit-global-first
 ```
 
-After using `--sync-env`, `doctor` reports uv path/version, lock status, and the source checkout `.venv` interpreter when present. Old global venvs from earlier releases are reported as ignored legacy state with a repair hint.
+After using `--sync-env`, `doctor` reports uv path/version, lock status, the source checkout `.venv` interpreter when present, and any repair metadata from dependency sync. Old global or target-local Localsetup venvs from earlier releases are reported as ignored legacy state in prompt-only mode and quarantined only when explicit sync is requested.
 
 Agent-readable install context:
 

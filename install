@@ -235,11 +235,124 @@ uv_project_base() {
   printf '%s\0' "--project" "$SOURCE_DIR"
 }
 
+localsetup_env_is_corrupt() {
+  local env_path="$1" python_path cfg_path
+  [[ -e "$env_path" || -L "$env_path" ]] || return 1
+  if [[ -L "$env_path" && ! -e "$env_path" ]]; then
+    return 0
+  fi
+  cfg_path="$env_path/pyvenv.cfg"
+  if [[ -L "$cfg_path" && ! -e "$cfg_path" ]]; then
+    return 0
+  fi
+  if [[ -e "$cfg_path" && ! -r "$cfg_path" ]]; then
+    return 0
+  fi
+  python_path="$env_path/bin/python"
+  if [[ ! -e "$python_path" && ! -L "$python_path" ]]; then
+    python_path="$env_path/Scripts/python.exe"
+  fi
+  if [[ ! -e "$python_path" && ! -L "$python_path" ]]; then
+    return 0
+  fi
+  if [[ -L "$python_path" && ! -e "$python_path" ]]; then
+    return 0
+  fi
+  [[ -x "$python_path" ]] || return 0
+  return 1
+}
+
+quarantine_root_for_env() {
+  local env_path="$1"
+  if [[ "$env_path" == "$SOURCE_DIR/.venv" ]]; then
+    printf '%s\n' "$SOURCE_DIR/.localsetup/state/dependency-repair"
+  elif [[ "$env_path" == "$HOME_DIR/.local/share/localsetup/venv" ]]; then
+    printf '%s\n' "$HOME_DIR/.local/share/localsetup/state/dependency-repair"
+  else
+    printf '%s\n' "$(dirname "$env_path")/state/dependency-repair"
+  fi
+}
+
+quarantine_localsetup_env() {
+  local env_path="$1" owner="$2" reason="$3" uv_error="${4:-}" quarantine_root stamp dest index record_path
+  [[ -e "$env_path" || -L "$env_path" ]] || return 1
+  quarantine_root="$(quarantine_root_for_env "$env_path")"
+  mkdir -p "$quarantine_root"
+  stamp="$(date -u '+%Y%m%dT%H%M%SZ')"
+  dest="$quarantine_root/$(basename "$env_path")-$stamp"
+  index=1
+  while [[ -e "$dest" || -L "$dest" ]]; do
+    index=$((index + 1))
+    dest="$quarantine_root/$(basename "$env_path")-$stamp-$index"
+  done
+  mv "$env_path" "$dest" || die "failed to quarantine Localsetup-owned environment: $env_path"
+  record_path="$quarantine_root/$(basename "$dest").json"
+  python3 - "$env_path" "$dest" "$owner" "$reason" "$DEPENDENCY_MODE" "$uv_error" "$record_path" <<'PY'
+from __future__ import annotations
+
+from datetime import datetime, timezone
+import json
+import sys
+
+original, dest, owner, reason, mode, uv_error, record_path = sys.argv[1:]
+payload = {
+    "original_path": original,
+    "quarantine_path": dest,
+    "owner": owner,
+    "reason": reason,
+    "mode": mode,
+    "timestamp": datetime.now(timezone.utc).isoformat(),
+    "uv_error": uv_error or None,
+}
+with open(record_path, "w", encoding="utf-8") as handle:
+    json.dump(payload, handle, indent=2, sort_keys=True)
+    handle.write("\n")
+PY
+  echo "Warning: quarantined Localsetup-owned corrupt environment: $env_path -> $dest" >&2
+}
+
+pre_sync_repair_localsetup_envs() {
+  local target_root legacy_target_env
+  if localsetup_env_is_corrupt "$SOURCE_DIR/.venv"; then
+    quarantine_localsetup_env "$SOURCE_DIR/.venv" "source_venv" "environment failed pre-sync corruption checks"
+  fi
+  if localsetup_env_is_corrupt "$HOME_DIR/.local/share/localsetup/venv"; then
+    quarantine_localsetup_env "$HOME_DIR/.local/share/localsetup/venv" "legacy_global_venv" "environment failed pre-sync corruption checks"
+  fi
+  target_root="${ATTACH_TARGET_DIR:-$SOURCE_DIR}"
+  legacy_target_env="$target_root/.localsetup/venv"
+  if localsetup_env_is_corrupt "$legacy_target_env"; then
+    quarantine_localsetup_env "$legacy_target_env" "legacy_target_local_venv" "environment failed pre-sync corruption checks"
+  fi
+}
+
+uv_error_is_environment_corruption() {
+  local lowered
+  lowered="$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')"
+  [[ "$lowered" == *".venv"* || "$lowered" == *"virtual environment"* || "$lowered" == *"pyvenv.cfg"* ]] || return 1
+  [[ "$lowered" == *"no such file"* || "$lowered" == *"not found"* || "$lowered" == *"permission denied"* || "$lowered" == *"could not"* || "$lowered" == *"failed"* || "$lowered" == *"broken"* || "$lowered" == *"invalid"* || "$lowered" == *"is not a virtual environment"* ]]
+}
+
 sync_uv_environment() {
   local -a uv_base
+  local output
+  pre_sync_repair_localsetup_envs
   mapfile -d '' -t uv_base < <(uv_project_base)
-  "${uv_base[@]}" sync --locked --no-dev
-  export LOCALSETUP_UV_ALREADY_SYNCED=1
+  if output="$("${uv_base[@]}" sync --locked --no-dev 2>&1)"; then
+    [[ -z "$output" ]] || printf '%s\n' "$output"
+    export LOCALSETUP_UV_ALREADY_SYNCED=1
+    return 0
+  fi
+  if uv_error_is_environment_corruption "$output" && [[ -e "$SOURCE_DIR/.venv" || -L "$SOURCE_DIR/.venv" ]]; then
+    quarantine_localsetup_env "$SOURCE_DIR/.venv" "source_venv" "uv sync reported source environment corruption" "$output"
+    if output="$("${uv_base[@]}" sync --locked --no-dev 2>&1)"; then
+      [[ -z "$output" ]] || printf '%s\n' "$output"
+      export LOCALSETUP_UV_ALREADY_SYNCED=1
+      return 0
+    fi
+  fi
+  printf '%s\n' "$output" >&2
+  return 1
 }
 
 inspect_managed_bootstrap_source() {

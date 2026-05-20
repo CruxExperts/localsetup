@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime, timezone
+import json
 import os
 from pathlib import Path
 import re
@@ -37,6 +39,10 @@ class DependencyStatus:
     bootstrap_attempted: bool
     bootstrap_source: str | None
     legacy_flag_used: bool
+    repair_attempted: bool
+    quarantined_environments: list[dict]
+    sync_attempts: int
+    repair_warnings: list[str]
     warnings: list[str]
     blockers: list[str]
     recoverable_next_steps: list[str]
@@ -64,6 +70,10 @@ class DependencyStatus:
             "bootstrap_attempted": self.bootstrap_attempted,
             "bootstrap_source": self.bootstrap_source,
             "legacy_flag_used": self.legacy_flag_used,
+            "repair_attempted": self.repair_attempted,
+            "quarantined_environments": self.quarantined_environments,
+            "sync_attempts": self.sync_attempts,
+            "repair_warnings": self.repair_warnings,
             "warnings": self.warnings,
             "blockers": self.blockers,
             "recoverable_next_steps": self.recoverable_next_steps,
@@ -105,28 +115,45 @@ def project_python(venv_path: Path) -> Path:
     return venv_path / "Scripts" / "python.exe"
 
 
-def legacy_environment_status(data_root: Path | None) -> dict | None:
-    if data_root is None:
+def _inspect_environment(
+    environment: Path,
+    *,
+    owner: str,
+    ignored: bool,
+    repair_hint: str,
+) -> dict | None:
+    if not (environment.exists() or environment.is_symlink()):
         return None
-    legacy_environment = data_root / "venv"
-    if not legacy_environment.exists():
-        return None
+    label = owner.replace("_", " ")
     candidates = [
-        legacy_environment / "bin" / "python",
-        legacy_environment / "Scripts" / "python.exe",
+        environment / "bin" / "python",
+        environment / "Scripts" / "python.exe",
     ]
     interpreter = next((path for path in candidates if path.exists() or path.is_symlink()), candidates[0])
     payload = {
-        "path": str(legacy_environment),
+        "path": str(environment),
+        "owner": owner,
         "interpreter": str(interpreter),
-        "ignored": True,
+        "ignored": ignored,
         "ok": True,
         "warnings": [],
         "repair_hints": [],
     }
+    if environment.is_symlink() and not environment.exists():
+        payload["ok"] = False
+        payload["warnings"].append(f"{label} environment path is a broken symlink: {environment}")
+        payload["repair_hints"].append(repair_hint)
+        return payload
+    pyvenv_cfg = environment / "pyvenv.cfg"
+    if pyvenv_cfg.exists() or pyvenv_cfg.is_symlink():
+        try:
+            pyvenv_cfg.read_text(encoding="utf-8")
+        except OSError as exc:
+            payload["ok"] = False
+            payload["warnings"].append(f"{label} pyvenv.cfg could not be read: {pyvenv_cfg}: {exc}")
     if not (interpreter.exists() or interpreter.is_symlink()):
         payload["ok"] = False
-        payload["warnings"].append(f"legacy global venv interpreter is missing: {interpreter}")
+        payload["warnings"].append(f"{label} interpreter is missing: {interpreter}")
     else:
         try:
             stat_result = interpreter.stat()
@@ -135,16 +162,107 @@ def legacy_environment_status(data_root: Path | None) -> dict | None:
             payload["interpreter_size"] = stat_result.st_size
         except OSError as exc:
             payload["ok"] = False
-            payload["warnings"].append(f"legacy global venv interpreter could not be inspected: {interpreter}: {exc}")
+            payload["warnings"].append(f"{label} interpreter could not be inspected: {interpreter}: {exc}")
         else:
             if not executable:
                 payload["ok"] = False
-                payload["warnings"].append(f"legacy global venv interpreter is not executable: {interpreter}")
+                payload["warnings"].append(f"{label} interpreter is not executable: {interpreter}")
     if not payload["ok"]:
-        payload["repair_hints"].append(
-            f"Remove or quarantine {legacy_environment}; Localsetup now uses the source checkout .venv via uv sync"
-        )
+        payload["repair_hints"].append(repair_hint)
     return payload
+
+
+def legacy_environment_status(data_root: Path | None) -> dict | None:
+    if data_root is None:
+        return None
+    legacy_environment = data_root / "venv"
+    return _inspect_environment(
+        legacy_environment,
+        owner="legacy_global_venv",
+        ignored=True,
+        repair_hint=(
+            f"Remove or quarantine {legacy_environment}; run "
+            "`./install --directory . --sync-env --non-interactive --yes` to quarantine it "
+            "and rebuild the uv-managed source checkout .venv"
+        ),
+    )
+
+
+def _owned_environment_statuses(repo_root: Path, data_root: Path | None, target_root: Path | None) -> list[dict]:
+    statuses: list[dict] = []
+    source = _inspect_environment(
+        project_environment_path(repo_root),
+        owner="source_venv",
+        ignored=False,
+        repair_hint=(
+            f"Run `./install --directory {repo_root} --sync-env --non-interactive --yes` to quarantine "
+            "and rebuild the uv-managed source checkout .venv"
+        ),
+    )
+    if source:
+        statuses.append(source)
+    legacy = legacy_environment_status(data_root)
+    if legacy:
+        statuses.append(legacy)
+    if target_root is not None:
+        target_legacy = _inspect_environment(
+            target_root / ".localsetup" / "venv",
+            owner="legacy_target_local_venv",
+            ignored=True,
+            repair_hint=(
+                f"Run `./install --directory {repo_root} --target-directory {target_root} --sync-env --non-interactive --yes` "
+                "to quarantine the legacy Localsetup target-local venv"
+            ),
+        )
+        if target_legacy:
+            statuses.append(target_legacy)
+    return statuses
+
+
+def _quarantine_root_for(environment: Path, repo_root: Path, data_root: Path | None, target_root: Path | None) -> Path:
+    if environment == project_environment_path(repo_root):
+        return repo_root / ".localsetup" / "state" / "dependency-repair"
+    if data_root is not None and environment == data_root / "venv":
+        return data_root / "state" / "dependency-repair"
+    if target_root is not None and environment == target_root / ".localsetup" / "venv":
+        return target_root / ".localsetup" / "state" / "dependency-repair"
+    return repo_root / ".localsetup" / "state" / "dependency-repair"
+
+
+def _quarantine_environment(
+    environment: Path,
+    *,
+    repo_root: Path,
+    data_root: Path | None,
+    target_root: Path | None,
+    owner: str,
+    reason: str,
+    mode: str,
+    uv_error: str | None = None,
+) -> dict:
+    quarantine_root = _quarantine_root_for(environment, repo_root, data_root, target_root)
+    quarantine_root.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    base_name = f"{environment.name}-{stamp}"
+    destination = quarantine_root / base_name
+    index = 1
+    while destination.exists() or destination.is_symlink():
+        index += 1
+        destination = quarantine_root / f"{base_name}-{index}"
+    environment.rename(destination)
+    record = {
+        "original_path": str(environment),
+        "quarantine_path": str(destination),
+        "owner": owner,
+        "reason": reason,
+        "mode": mode,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "uv_error": uv_error,
+    }
+    record_path = quarantine_root / f"{destination.name}.json"
+    record_path.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    record["record_path"] = str(record_path)
+    return record
 
 
 def file_sha256(path: Path) -> str:
@@ -220,6 +338,8 @@ def uv_lock_metadata(repo_root: Path, *, lock_status: str | None = None) -> dict
 
 def _classify_sync_failure(text: str) -> str:
     lowered = text.lower()
+    if _is_environment_corruption_error(text):
+        return "environment-corruption"
     if "offline" in lowered or "network disabled" in lowered:
         return "offline-cache-miss"
     if "certificate" in lowered or "tls" in lowered or "ssl" in lowered:
@@ -233,6 +353,25 @@ def _classify_sync_failure(text: str) -> str:
     return "uv-sync"
 
 
+def _is_environment_corruption_error(text: str) -> bool:
+    lowered = text.lower()
+    if ".venv" in lowered or "virtual environment" in lowered or "pyvenv.cfg" in lowered:
+        return any(
+            marker in lowered
+            for marker in [
+                "no such file",
+                "not found",
+                "permission denied",
+                "could not",
+                "failed",
+                "broken",
+                "invalid",
+                "is not a virtual environment",
+            ]
+        )
+    return False
+
+
 def tool_status(name: str) -> dict:
     path = shutil.which(name)
     return {"name": name, "path": path, "ok": path is not None}
@@ -243,6 +382,7 @@ def dependency_status(
     *,
     mode: str = "prompt-only",
     data_root: Path | None = None,
+    target_root: Path | None = None,
     runner: Runner | None = None,
 ) -> DependencyStatus:
     raw_mode = mode
@@ -250,10 +390,17 @@ def dependency_status(
     warnings: list[str] = []
     blockers: list[str] = []
     recoverable_next_steps: list[str] = []
-    legacy_environment = legacy_environment_status(data_root)
+    owned_environment_statuses = _owned_environment_statuses(repo_root, data_root, target_root)
+    legacy_environment = next((item for item in owned_environment_statuses if item["owner"] == "legacy_global_venv"), None)
     if legacy_environment:
         warnings.extend(str(item) for item in legacy_environment["warnings"])
         recoverable_next_steps.extend(str(item) for item in legacy_environment["repair_hints"])
+    for environment_status in owned_environment_statuses:
+        if environment_status["owner"] == "legacy_global_venv":
+            continue
+        if not environment_status["ok"]:
+            warnings.extend(str(item) for item in environment_status["warnings"])
+            recoverable_next_steps.extend(str(item) for item in environment_status["repair_hints"])
     legacy_warning = dependency_mode_warning(raw_mode)
     if legacy_warning:
         warnings.append(legacy_warning)
@@ -348,6 +495,10 @@ def dependency_status(
         bootstrap_attempted=os.environ.get("LOCALSETUP_UV_BOOTSTRAP_ATTEMPTED") == "1",
         bootstrap_source=os.environ.get("LOCALSETUP_UV_BOOTSTRAP_SOURCE"),
         legacy_flag_used=legacy_flag_used,
+        repair_attempted=False,
+        quarantined_environments=[],
+        sync_attempts=0,
+        repair_warnings=[],
         warnings=warnings,
         blockers=blockers,
         recoverable_next_steps=recoverable_next_steps,
@@ -361,14 +512,38 @@ def ensure_dependencies(
     *,
     mode: str = "prompt-only",
     data_root: Path | None = None,
+    target_root: Path | None = None,
     runner: Runner | None = None,
 ) -> dict:
-    status = dependency_status(repo_root, mode=mode, data_root=data_root, runner=runner)
+    status = dependency_status(repo_root, mode=mode, data_root=data_root, target_root=target_root, runner=runner)
     if status.mode == "prompt-only":
         return status.to_dict() | {
             "changed": False,
             "lock": uv_lock_metadata(repo_root, lock_status=status.lock_status),
         }
+    quarantined: list[dict] = []
+    repair_warnings: list[str] = []
+    for environment_status in _owned_environment_statuses(repo_root, data_root, target_root):
+        if environment_status["ok"]:
+            continue
+        try:
+            quarantined.append(
+                _quarantine_environment(
+                    Path(environment_status["path"]),
+                    repo_root=repo_root,
+                    data_root=data_root,
+                    target_root=target_root,
+                    owner=str(environment_status["owner"]),
+                    reason="; ".join(str(item) for item in environment_status["warnings"]),
+                    mode=status.mode,
+                )
+            )
+        except OSError as exc:
+            raise RuntimeError(
+                f"failed to quarantine Localsetup-owned environment {environment_status['path']}: {exc}"
+            ) from exc
+    if quarantined:
+        status = dependency_status(repo_root, mode=mode, data_root=data_root, target_root=target_root, runner=runner)
     if status.blockers:
         steps = "; ".join(status.recoverable_next_steps)
         suffix = f" Next steps: {steps}" if steps else ""
@@ -380,13 +555,20 @@ def ensure_dependencies(
                 "changed": False,
                 "sync_status": "success",
                 "sync_stdout": "",
+                "repair_attempted": bool(quarantined),
+                "quarantined_environments": quarantined,
+                "sync_attempts": 0,
+                "repair_warnings": repair_warnings,
                 "lock": uv_lock_metadata(repo_root, lock_status=status.lock_status),
             }
         )
         return payload
 
     sync_command = next(cmd for cmd in status.commands if "sync" in cmd)
+    sync_attempts = 0
+    sync_output = ""
     try:
+        sync_attempts += 1
         sync = _run(sync_command, cwd=repo_root, runner=runner)
     except OSError as exc:
         raise RuntimeError(
@@ -394,18 +576,52 @@ def ensure_dependencies(
         ) from exc
     if sync.returncode != 0:
         output = sync.stderr.strip() or sync.stdout.strip()
-        category = _classify_sync_failure(output)
-        raise RuntimeError(
-            f"uv sync failed ({category}): {output}. Command: {_command_text(sync_command)}"
-        )
+        source_environment = project_environment_path(repo_root)
+        if _is_environment_corruption_error(output) and (source_environment.exists() or source_environment.is_symlink()):
+            try:
+                quarantined.append(
+                    _quarantine_environment(
+                        source_environment,
+                        repo_root=repo_root,
+                        data_root=data_root,
+                        target_root=target_root,
+                        owner="source_venv",
+                        reason="uv sync reported source environment corruption",
+                        mode=status.mode,
+                        uv_error=output,
+                    )
+                )
+            except OSError as exc:
+                raise RuntimeError(
+                    f"failed to quarantine Localsetup-owned environment {source_environment}: {exc}"
+                ) from exc
+            sync_attempts += 1
+            sync = _run(sync_command, cwd=repo_root, runner=runner)
+            if sync.returncode == 0:
+                sync_output = sync.stdout.strip()
+            else:
+                output = sync.stderr.strip() or sync.stdout.strip()
+        if sync.returncode != 0:
+            if quarantined:
+                repair_warnings.append("Localsetup-owned environment quarantine was preserved after uv sync failure")
+            category = _classify_sync_failure(output)
+            raise RuntimeError(
+                f"uv sync failed ({category}): {output}. Command: {_command_text(sync_command)}"
+            )
+    else:
+        sync_output = sync.stdout.strip()
 
-    refreshed = dependency_status(repo_root, mode=status.mode, data_root=data_root, runner=runner)
+    refreshed = dependency_status(repo_root, mode=status.mode, data_root=data_root, target_root=target_root, runner=runner)
     payload = refreshed.to_dict()
     payload.update(
         {
             "changed": True,
             "sync_status": "success",
-            "sync_stdout": sync.stdout.strip(),
+            "sync_stdout": sync_output,
+            "repair_attempted": bool(quarantined),
+            "quarantined_environments": quarantined,
+            "sync_attempts": sync_attempts,
+            "repair_warnings": repair_warnings,
             "lock": uv_lock_metadata(repo_root, lock_status=refreshed.lock_status),
         }
     )

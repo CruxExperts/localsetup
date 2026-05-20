@@ -24,6 +24,8 @@ RUNTIME_SKIP_PREFIXES = {
 
 
 def _is_runtime_skip_path(rel: Path) -> bool:
+    if rel.parts == (".localsetup", "lock.json"):
+        return True
     return any(rel.parts[: len(prefix)] == prefix for prefix in RUNTIME_SKIP_PREFIXES)
 
 

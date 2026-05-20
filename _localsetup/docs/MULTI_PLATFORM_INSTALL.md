@@ -126,8 +126,8 @@ cd /path/to/repo
 - `--yes`  - Legacy accepted flag for interactive installs. For automation, combine with `--non-interactive`.
 - `--non-interactive`  - Automation mode. Requires `--yes` and preserves machine-readable output.
 - `--global`  - Removed legacy flag; v3 installs the managed home library by default and exits with an explicit error if this flag is supplied.
-- `--sync-env`  - Sync the uv-managed source checkout `.venv` from `pyproject.toml` and `uv.lock`.
-- `--install-deps`  - Deprecated alias for `--sync-env`.
+- `--sync-env`  - Sync the uv-managed source checkout `.venv` from `pyproject.toml` and `uv.lock`; quarantines corrupt Localsetup-owned legacy environments before rebuild.
+- `--install-deps`  - Deprecated migration alias for `--sync-env`.
 - `--install-uv` / `--no-install-uv`  - Explicitly allow or forbid uv bootstrap when `--sync-env` is requested.
 - `--offline`  - Run uv dependency sync in offline/cache-only mode.
 - `--no-register-shell`  - Skip creating/updating `~/.local/bin/localsetup`
@@ -158,7 +158,7 @@ localsetup rollback
 
 ## Dependency preflight
 
-Before install, use the dependency list below as the canonical source of truth. The Bash wrapper delegates preflight and dependency work to `localsetup_v3.py`; it does not call system pip directly.
+Before install, use the dependency list below as the canonical source of truth. The Bash wrapper performs the same minimal Localsetup-owned environment quarantine needed before uv can run the Python CLI, then delegates preflight and dependency work to `localsetup_v3.py`; it does not call system pip directly.
 
 ### Canonical dependency list
 
@@ -180,7 +180,7 @@ Python package intent is listed in `pyproject.toml`; `uv.lock` is the committed 
 localsetup doctor
 ```
 
-Dependency checks use installed Python distribution metadata from the selected interpreter. This keeps packages with different distribution and import names, such as `PGPy` / `pgpy`, from being misreported as missing after managed dependency installation. If `doctor` finds an old `~/.local/share/localsetup/venv` from pre-uv installs, it reports the ignored legacy venv and a repair hint instead of executing that interpreter.
+Dependency checks use installed Python distribution metadata from the selected interpreter. This keeps packages with different distribution and import names, such as `PGPy` / `pgpy`, from being misreported as missing after managed dependency installation. If `doctor` finds an old `~/.local/share/localsetup/venv` or target `.localsetup/venv` from pre-uv installs, it reports the ignored legacy venv and a repair hint instead of executing that interpreter.
 
 To normalize install intent without changing files, run:
 
@@ -195,6 +195,8 @@ To install dependencies automatically during install, add the `--sync-env` flag:
 ```
 
 Without `--sync-env`, the root wrapper runs doctor in `prompt-only` mode and applies the v3 install without syncing Python dependencies. Direct Python CLI installs use the same conservative default; pass `--dependency-mode uv-sync` when the CLI should sync the project environment before applying adapter changes.
+
+When explicit sync is requested, Localsetup may quarantine corrupt Localsetup-owned environments by rename, never deletion. Eligible paths are the source checkout `.venv`, legacy global `~/.local/share/localsetup/venv`, and legacy target-local `.localsetup/venv`. Each quarantine writes a JSON record under Localsetup state with the original path, reason, mode, timestamp, and uv error text when applicable. A target project's own `.venv` is not Localsetup-owned and is never modified.
 
 Do not alter system Python to satisfy Localsetup framework dependencies. Install uv or set `LOCALSETUP_UV_BIN` to a preinstalled uv binary; use `pipx` for standalone CLI tools, including future wheel-based Localsetup command installs, and use the uv project environment for libraries imported by Localsetup framework modules.
 

@@ -1501,6 +1501,7 @@ def _apply_and_show_result(term: TerminalWizard, state: WizardState) -> int:
                 state.repo_root,
                 mode=state.dependency_mode,
                 data_root=state.home / ".local" / "share" / "localsetup",
+                target_root=target_root,
             )
             if state.dependency_mode != "prompt-only"
             else None

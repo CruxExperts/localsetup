@@ -99,7 +99,7 @@ def run_doctor(
     if not tools[1]["ok"]:
         warnings.append("missing recommended tool: rg")
 
-    dep_status = dependency_status(repo_root, mode=dependency_mode, data_root=dependency_root).to_dict()
+    dep_status = dependency_status(repo_root, mode=dependency_mode, data_root=dependency_root, target_root=attachment_root).to_dict()
     if dep_status["warnings"]:
         warnings.extend(dep_status["warnings"])
     if dep_status["mode"] != "prompt-only" and dep_status["blockers"]:

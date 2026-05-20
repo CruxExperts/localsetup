@@ -317,7 +317,7 @@ def _run_self_refresh(
                 },
             }
     dependency_info = (
-        ensure_dependencies(root, mode=config.dependency_mode, data_root=_config_data_root(config, home))
+        ensure_dependencies(root, mode=config.dependency_mode, data_root=_config_data_root(config, home), target_root=target_root)
         if config.dependency_mode != "prompt-only"
         else None
     )
@@ -610,7 +610,7 @@ def _main(argv: list[str] | None = None) -> int:
             _print_payload(payload)
             return 1
         dependency_info = (
-            ensure_dependencies(root, mode=config.dependency_mode, data_root=_config_data_root(config, home))
+            ensure_dependencies(root, mode=config.dependency_mode, data_root=_config_data_root(config, home), target_root=attachment_root)
             if config.dependency_mode != "prompt-only"
             else None
         )
