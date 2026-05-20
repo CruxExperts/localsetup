@@ -230,6 +230,8 @@ uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . rollba
 
 Use `--trace-json /path/to/events.jsonl` with `install`, `verify`, or `doctor` to append local JSONL trace events for automation review.
 
+`doctor` reports the uv-managed source checkout environment. If it sees an old `~/.local/share/localsetup/venv` from earlier releases, it reports that legacy venv as ignored and gives a repair hint instead of trying to execute it.
+
 ## What Localsetup is solving
 
 Agent tooling moves quickly, but the hard parts stay stubbornly practical. Teams still need context that survives across sessions, standards that work across tools, safety around imported instructions, and workflows that can be resumed by another human or agent without archaeology.

@@ -180,7 +180,7 @@ Python package intent is listed in `pyproject.toml`; `uv.lock` is the committed 
 localsetup doctor
 ```
 
-Dependency checks use installed Python distribution metadata from the selected interpreter. This keeps packages with different distribution and import names, such as `PGPy` / `pgpy`, from being misreported as missing after managed dependency installation.
+Dependency checks use installed Python distribution metadata from the selected interpreter. This keeps packages with different distribution and import names, such as `PGPy` / `pgpy`, from being misreported as missing after managed dependency installation. If `doctor` finds an old `~/.local/share/localsetup/venv` from pre-uv installs, it reports the ignored legacy venv and a repair hint instead of executing that interpreter.
 
 To normalize install intent without changing files, run:
 

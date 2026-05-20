@@ -215,6 +215,16 @@ def _print_payload(payload: dict, *, markdown: bool = False) -> None:
         print(json.dumps(payload, indent=2, sort_keys=True))
 
 
+def _print_no_command_help() -> None:
+    print("localsetup-v3: command required", file=sys.stderr)
+    print("", file=sys.stderr)
+    print("Examples:", file=sys.stderr)
+    print("  localsetup doctor", file=sys.stderr)
+    print("  localsetup verify --level filesystem", file=sys.stderr)
+    print("  localsetup self-refresh --dependency-mode uv-sync", file=sys.stderr)
+    print("  localsetup-v3 --help", file=sys.stderr)
+
+
 def _all_configured_packs(repo_root: Path) -> list[str]:
     pack = load_pack_config(repo_root)
     return list(pack.packs.keys())
@@ -359,7 +369,7 @@ def _main(argv: list[str] | None = None) -> int:
     parser.add_argument("--source-root")
     parser.add_argument("--repo", default=None, help=argparse.SUPPRESS)
     parser.add_argument("--target-directory")
-    sub = parser.add_subparsers(dest="cmd", required=True)
+    sub = parser.add_subparsers(dest="cmd")
 
     plan_p = sub.add_parser("plan")
     _add_config_flags(plan_p)
@@ -533,6 +543,9 @@ def _main(argv: list[str] | None = None) -> int:
     verify_release_p.add_argument("--expected-tag")
 
     args = parser.parse_args(argv)
+    if args.cmd is None:
+        _print_no_command_help()
+        return 2
     _inject_global_target(args)
     root = Path(args.source_root or args.repo or str(_repo_root())).resolve()
     home = Path(args.home or Path.home()).expanduser().resolve()

@@ -180,7 +180,7 @@ uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . valida
 uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . audit-global-first
 ```
 
-After using `--sync-env`, `doctor` reports uv path/version, lock status, and the source checkout `.venv` interpreter when present.
+After using `--sync-env`, `doctor` reports uv path/version, lock status, and the source checkout `.venv` interpreter when present. Old global venvs from earlier releases are reported as ignored legacy state with a repair hint.
 
 Agent-readable install context:
 

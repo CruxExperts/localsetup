@@ -43,7 +43,7 @@ def run_doctor(
     home: Path,
     packs: list[str] | None = None,
     platform_ids: list[str] | None = None,
-    dependency_mode: str = "uv-sync",
+    dependency_mode: str = "prompt-only",
     data_root: Path | None = None,
     target_root: Path | None = None,
 ) -> dict:

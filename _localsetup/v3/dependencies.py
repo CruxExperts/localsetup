@@ -30,6 +30,7 @@ class DependencyStatus:
     uv_path: str | None
     uv_version: str | None
     minimum_version: str
+    legacy_environment: dict | None
     lock_status: str
     sync_status: str
     offline: bool
@@ -56,6 +57,7 @@ class DependencyStatus:
             "uv_path": self.uv_path,
             "uv_version": self.uv_version,
             "minimum_version": self.minimum_version,
+            "legacy_environment": self.legacy_environment,
             "lock_status": self.lock_status,
             "sync_status": self.sync_status,
             "offline": self.offline,
@@ -73,7 +75,7 @@ class DependencyStatus:
 
 
 def normalize_dependency_mode(mode: str | None) -> str:
-    selected = mode or "uv-sync"
+    selected = mode or "prompt-only"
     return LEGACY_DEPENDENCY_MODE_ALIASES.get(selected, selected)
 
 
@@ -101,6 +103,48 @@ def project_python(venv_path: Path) -> Path:
     if candidate.exists():
         return candidate
     return venv_path / "Scripts" / "python.exe"
+
+
+def legacy_environment_status(data_root: Path | None) -> dict | None:
+    if data_root is None:
+        return None
+    legacy_environment = data_root / "venv"
+    if not legacy_environment.exists():
+        return None
+    candidates = [
+        legacy_environment / "bin" / "python",
+        legacy_environment / "Scripts" / "python.exe",
+    ]
+    interpreter = next((path for path in candidates if path.exists() or path.is_symlink()), candidates[0])
+    payload = {
+        "path": str(legacy_environment),
+        "interpreter": str(interpreter),
+        "ignored": True,
+        "ok": True,
+        "warnings": [],
+        "repair_hints": [],
+    }
+    if not (interpreter.exists() or interpreter.is_symlink()):
+        payload["ok"] = False
+        payload["warnings"].append(f"legacy global venv interpreter is missing: {interpreter}")
+    else:
+        try:
+            stat_result = interpreter.stat()
+            executable = interpreter.is_file() and os.access(interpreter, os.X_OK)
+            payload["interpreter_executable"] = executable
+            payload["interpreter_size"] = stat_result.st_size
+        except OSError as exc:
+            payload["ok"] = False
+            payload["warnings"].append(f"legacy global venv interpreter could not be inspected: {interpreter}: {exc}")
+        else:
+            if not executable:
+                payload["ok"] = False
+                payload["warnings"].append(f"legacy global venv interpreter is not executable: {interpreter}")
+    if not payload["ok"]:
+        payload["repair_hints"].append(
+            f"Remove or quarantine {legacy_environment}; Localsetup now uses the source checkout .venv via uv sync"
+        )
+    return payload
 
 
 def file_sha256(path: Path) -> str:
@@ -197,16 +241,19 @@ def tool_status(name: str) -> dict:
 def dependency_status(
     repo_root: Path,
     *,
-    mode: str = "uv-sync",
+    mode: str = "prompt-only",
     data_root: Path | None = None,
     runner: Runner | None = None,
 ) -> DependencyStatus:
-    del data_root
     raw_mode = mode
     canonical_mode = normalize_dependency_mode(mode)
     warnings: list[str] = []
     blockers: list[str] = []
     recoverable_next_steps: list[str] = []
+    legacy_environment = legacy_environment_status(data_root)
+    if legacy_environment:
+        warnings.extend(str(item) for item in legacy_environment["warnings"])
+        recoverable_next_steps.extend(str(item) for item in legacy_environment["repair_hints"])
     legacy_warning = dependency_mode_warning(raw_mode)
     if legacy_warning:
         warnings.append(legacy_warning)
@@ -294,6 +341,7 @@ def dependency_status(
         uv_path=uv_bin,
         uv_version=uv_version,
         minimum_version=MIN_UV_VERSION,
+        legacy_environment=legacy_environment,
         lock_status=lock_status,
         sync_status="not-run",
         offline=offline,
@@ -311,7 +359,7 @@ def dependency_status(
 def ensure_dependencies(
     repo_root: Path,
     *,
-    mode: str = "uv-sync",
+    mode: str = "prompt-only",
     data_root: Path | None = None,
     runner: Runner | None = None,
 ) -> dict:

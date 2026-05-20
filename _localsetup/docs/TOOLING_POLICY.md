@@ -35,6 +35,7 @@ Purpose: define project-wide tooling language and dependency rules.
 - Keep `uv.lock` as the committed dependency lock. Automation must run `uv lock --check` and frozen or locked `uv sync` / `uv run` commands.
 - Dependency-update PRs must update `pyproject.toml` and `uv.lock` together when dependency intent changes.
 - Keep framework dependency installs isolated. The default dependency mode is `prompt-only`; explicit `--dependency-mode uv-sync` or root `--sync-env` creates or updates the source checkout `.venv` with uv and does not mutate system Python.
+- Treat `~/.local/share/localsetup/venv` as legacy runtime state. Diagnostics may warn about it, but current dependency setup must not execute it or depend on it.
 - Use `pipx` for app-style CLI tools and future wheel-based Localsetup command installs. Do not use `pipx` as the mechanism for libraries imported by framework Python modules; those belong in the uv project environment.
 - Treat old `managed-venv` and `user-pip` dependency-mode values as migration aliases only. New configuration should use `uv-sync` or `prompt-only`.
 

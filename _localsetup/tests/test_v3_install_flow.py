@@ -969,7 +969,10 @@ def test_shell_registration_writes_managed_idempotent_shim_and_blocks_collision(
     assert shell_registration_status(root, home=home, path_env="")["source_root"] == str(root.resolve())
     shim_text = shim.read_text(encoding="utf-8")
     assert 'LOCALSETUP_PROJECT_PYTHON="$LOCALSETUP_SOURCE_ROOT/.venv/bin/python"' in shim_text
+    assert '"$LOCALSETUP_PROJECT_PYTHON" "$LOCALSETUP_TOOL" --help' in shim_text
     assert 'exec "$LOCALSETUP_PROJECT_PYTHON"' in shim_text
+    assert "no usable Python runtime for Localsetup" in shim_text
+    assert "--sync-env --non-interactive --yes" in shim_text
     assert "uv --project" not in shim_text
     assert "run --locked" not in shim_text
 
@@ -992,6 +995,117 @@ def test_shell_registration_warns_when_path_precedence_hides_shim(tmp_path: Path
     assert result["path"]["on_path"] is True
     assert result["which"] == str(fake)
     assert any("before the managed shim" in warning for warning in result["warnings"])
+
+
+def test_shell_registration_falls_back_when_project_python_is_bad(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    project_python = root / ".venv" / "bin" / "python"
+    project_probe = tmp_path / "project-probe.txt"
+    fallback_args = tmp_path / "fallback-args.txt"
+    project_python.parent.mkdir(parents=True)
+    project_python.write_text(
+        f"#!/usr/bin/env bash\nprintf '%s\\n' \"$*\" > {shlex.quote(str(project_probe))}\nexit 126\n",
+        encoding="utf-8",
+    )
+    project_python.chmod(0o755)
+    fallback_bin = tmp_path / "fallback-bin"
+    fallback_bin.mkdir()
+    fallback_python = fallback_bin / "python3"
+    fallback_python.write_text(
+        f"#!/usr/bin/env bash\nprintf '%s\\n' \"$*\" > {shlex.quote(str(fallback_args))}\nexit 0\n",
+        encoding="utf-8",
+    )
+    fallback_python.chmod(0o755)
+    register_shell_command(root, home=home, path_env=str(home / ".local" / "bin"))
+
+    completed = subprocess.run(
+        [str(home / ".local" / "bin" / "localsetup"), "doctor"],
+        text=True,
+        capture_output=True,
+        check=False,
+        env={**os.environ, "PATH": f"{fallback_bin}{os.pathsep}/usr/bin:/bin"},
+    )
+
+    assert completed.returncode == 0
+    project_probe_text = project_probe.read_text(encoding="utf-8")
+    assert "_localsetup/tools/localsetup_v3.py" in project_probe_text
+    assert "--help" in project_probe_text
+    fallback_text = fallback_args.read_text(encoding="utf-8")
+    assert "_localsetup/tools/localsetup_v3.py" in fallback_text
+    assert "doctor" in fallback_text
+
+
+def test_shell_registration_suppresses_project_python_import_traceback(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    project_python = root / ".venv" / "bin" / "python"
+    project_probe = tmp_path / "project-probe.txt"
+    fallback_args = tmp_path / "fallback-args.txt"
+    project_python.parent.mkdir(parents=True)
+    project_python.write_text(
+        (
+            "#!/usr/bin/env bash\n"
+            f"printf '%s\\n' \"$*\" > {shlex.quote(str(project_probe))}\n"
+            "echo 'Traceback: missing yaml in project venv' >&2\n"
+            "exit 1\n"
+        ),
+        encoding="utf-8",
+    )
+    project_python.chmod(0o755)
+    fallback_bin = tmp_path / "fallback-bin"
+    fallback_bin.mkdir()
+    fallback_python = fallback_bin / "python3"
+    fallback_python.write_text(
+        f"#!/usr/bin/env bash\nprintf '%s\\n' \"$*\" > {shlex.quote(str(fallback_args))}\nexit 0\n",
+        encoding="utf-8",
+    )
+    fallback_python.chmod(0o755)
+    register_shell_command(root, home=home, path_env=str(home / ".local" / "bin"))
+
+    completed = subprocess.run(
+        [str(home / ".local" / "bin" / "localsetup"), "doctor"],
+        text=True,
+        capture_output=True,
+        check=False,
+        env={**os.environ, "PATH": f"{fallback_bin}{os.pathsep}/usr/bin:/bin"},
+    )
+
+    assert completed.returncode == 0
+    assert "Traceback" not in completed.stderr
+    assert "--help" in project_probe.read_text(encoding="utf-8")
+    assert "doctor" in fallback_args.read_text(encoding="utf-8")
+
+
+def test_shell_registration_reports_repair_when_no_python_runtime_works(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    project_python = root / ".venv" / "bin" / "python"
+    project_python.parent.mkdir(parents=True)
+    project_python.write_text("#!/usr/bin/env bash\nexit 126\n", encoding="utf-8")
+    project_python.chmod(0o755)
+    fallback_bin = tmp_path / "fallback-bin"
+    fallback_bin.mkdir()
+    fallback_python = fallback_bin / "python3"
+    fallback_python.write_text(
+        "#!/usr/bin/env bash\necho 'Traceback: missing yaml' >&2\nexit 1\n",
+        encoding="utf-8",
+    )
+    fallback_python.chmod(0o755)
+    register_shell_command(root, home=home, path_env=str(home / ".local" / "bin"))
+
+    completed = subprocess.run(
+        [str(home / ".local" / "bin" / "localsetup"), "doctor"],
+        text=True,
+        capture_output=True,
+        check=False,
+        env={**os.environ, "PATH": f"{fallback_bin}{os.pathsep}/usr/bin:/bin"},
+    )
+
+    assert completed.returncode == 2
+    assert "no usable Python runtime for Localsetup" in completed.stderr
+    assert "--sync-env --non-interactive --yes" in completed.stderr
+    assert "Traceback" not in completed.stderr
 
 
 def test_shell_registration_reports_error_and_status_edge_cases(
@@ -1697,6 +1811,48 @@ def test_v3_uv_prompt_only_reports_lock_status(tmp_path: Path, monkeypatch: pyte
     assert deps["changed"] is False
     assert deps["lock_status"] == "current"
     assert deps["lock"]["dependency_manager"] == "uv"
+
+
+def test_v3_doctor_reports_corrupt_legacy_global_venv_without_execution(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import _localsetup.v3.dependencies as deps_mod
+    import _localsetup.v3.doctor as doctor_mod
+
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    data_root = home / ".local" / "share" / "localsetup"
+    legacy_python = data_root / "venv" / "bin" / "python"
+    legacy_python.parent.mkdir(parents=True)
+    legacy_python.write_text("# fake python\n", encoding="utf-8")
+    legacy_python.chmod(0o644)
+
+    def fake_runner(cmd: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        if cmd[-1:] == ["--version"]:
+            return subprocess.CompletedProcess(cmd, 0, stdout="uv 0.11.5\n", stderr="")
+        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+    monkeypatch.setenv("LOCALSETUP_UV_BIN", "uv")
+    monkeypatch.setattr(
+        doctor_mod,
+        "dependency_status",
+        lambda repo_root, **kwargs: deps_mod.dependency_status(repo_root, runner=fake_runner, **kwargs),
+    )
+
+    prompt_only = run_doctor(root, home=home, dependency_mode="prompt-only", data_root=data_root)
+    default_mode = run_doctor(root, home=home, data_root=data_root)
+
+    for result in (prompt_only, default_mode):
+        assert result["dependencies"]["mode"] == "prompt-only"
+        assert result["dependencies"]["blockers"] == []
+        assert not any("Permission denied" in blocker for blocker in result["blockers"])
+        assert any("legacy global venv interpreter is not executable" in warning for warning in result["warnings"])
+        legacy_environment = result["dependencies"]["legacy_environment"]
+        assert legacy_environment["ignored"] is True
+        assert legacy_environment["ok"] is False
+        assert legacy_environment["interpreter"] == str(legacy_python)
+        assert any("Remove or quarantine" in step for step in result["dependencies"]["recoverable_next_steps"])
+    assert legacy_python.read_text(encoding="utf-8") == "# fake python\n"
 
 
 def test_v3_uv_already_synced_skips_nested_sync(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -5100,6 +5256,17 @@ def test_cli_helper_and_policy_branches(tmp_path: Path, monkeypatch: pytest.Monk
     assert "shell warn" in capsys.readouterr().out
 
 
+def test_v3_cli_no_command_prints_concise_help(capsys: pytest.CaptureFixture[str]) -> None:
+    assert cli_mod._main([]) == 2
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "localsetup-v3: command required" in captured.err
+    assert "localsetup doctor" in captured.err
+    assert "localsetup verify --level filesystem" in captured.err
+    assert "the following arguments are required: cmd" not in captured.err
+
+
 def test_cli_version_failure_branches(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
     root = make_temp_repo(tmp_path)
 
@@ -5131,6 +5298,7 @@ def test_dependency_status_and_ensure_error_branches(tmp_path: Path, monkeypatch
     monkeypatch.delenv("LOCALSETUP_UV_BIN", raising=False)
     monkeypatch.setattr(deps.shutil, "which", lambda name: None)
     status = deps.dependency_status(root)
+    assert status.mode == "prompt-only"
     assert status.ok is False
     assert any("uv is required" in blocker for blocker in status.blockers)
 
@@ -5167,7 +5335,7 @@ def test_dependency_status_and_ensure_error_branches(tmp_path: Path, monkeypatch
     stale_status = deps.dependency_status(root, runner=stale_runner)
     assert stale_status.lock_status == "stale"
     with pytest.raises(RuntimeError, match="uv lockfile is stale"):
-        deps.ensure_dependencies(root, runner=stale_runner)
+        deps.ensure_dependencies(root, mode="uv-sync", runner=stale_runner)
 
     def fail_sync_runner(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
         if cmd[-1:] == ["--version"]:
@@ -5177,7 +5345,7 @@ def test_dependency_status_and_ensure_error_branches(tmp_path: Path, monkeypatch
         return subprocess.CompletedProcess(cmd, 0, "", "")
 
     with pytest.raises(RuntimeError, match="network-or-index"):
-        deps.ensure_dependencies(root, runner=fail_sync_runner)
+        deps.ensure_dependencies(root, mode="uv-sync", runner=fail_sync_runner)
 
     prompt = deps.ensure_dependencies(root, mode="user-pip", runner=fail_sync_runner)
     assert prompt["mode"] == "prompt-only"
