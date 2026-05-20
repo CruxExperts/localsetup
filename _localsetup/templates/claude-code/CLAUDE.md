@@ -1,8 +1,8 @@
-# Localsetup v3 - Project context (Claude Code)
+# Localsetup - Project context (Claude Code)
 
 ## Overview
 
-Localsetup v3 is deployed into this repo at `_localsetup/`. All framework and context are repo-local (mobile, backup-able with the repo). Engine = _localsetup/; user/context data = repo-local. Use Git hashes when referencing PRDs/specs/outcomes (see [_localsetup/docs/GIT_TRACEABILITY.md](../../docs/GIT_TRACEABILITY.md)).
+Localsetup is deployed into this repo at `_localsetup/`. All framework and context are repo-local (mobile, backup-able with the repo). Engine = _localsetup/; user/context data = repo-local. Use Git hashes when referencing PRDs/specs/outcomes (see [_localsetup/docs/GIT_TRACEABILITY.md](../../docs/GIT_TRACEABILITY.md)).
 
 ## Invariants
 

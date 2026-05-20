@@ -6,7 +6,7 @@ owner_skill: ls-framework-compliance
 
 # Quickstart
 
-Use this page to install Localsetup v3, choose agent platforms, verify the install, and update later. For the product pitch, see the [root README](../../README.md).
+Use this page to install Localsetup, choose agent platforms, verify the install, and update later. For the product pitch, see the [root README](../../README.md).
 
 ## Requirements
 
@@ -16,7 +16,7 @@ Use this page to install Localsetup v3, choose agent platforms, verify the insta
 - Required for dependency sync: `uv`, with dependency intent in `pyproject.toml` and the committed `uv.lock`.
 - Recommended: `rg`; GitHub/network access is needed for raw bootstrap unless installing from a local clone.
 
-Windows is WSL2-only in Localsetup v3. Native PowerShell install is intentionally not supported; run the Bash installer inside WSL2.
+Windows is WSL2-only in Localsetup. Native PowerShell install is intentionally not supported; run the Bash installer inside WSL2.
 
 ## Install In One Command
 
@@ -43,13 +43,13 @@ The public command is release-backed even though the small wrapper is downloaded
 For release verification, use the GitHub release tarball and its `.sha256` sidecar, then run:
 
 ```bash
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . verify-release dist/localsetup-v$(cat VERSION).tar.gz
+uv run --locked python _localsetup/tools/localsetup.py --source-root . verify-release dist/localsetup-v$(cat VERSION).tar.gz
 ```
 
 Release builds also publish a CycloneDX SBOM sidecar. When it is available, include it in verification:
 
 ```bash
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . verify-release \
+uv run --locked python _localsetup/tools/localsetup.py --source-root . verify-release \
   dist/localsetup-v$(cat VERSION).tar.gz \
   --sha256 dist/localsetup-v$(cat VERSION).tar.gz.sha256 \
   --sbom dist/localsetup-v$(cat VERSION).tar.gz.cdx.json
@@ -109,7 +109,7 @@ If Python dependencies are missing or you want the uv project environment prepar
 ./install --directory . --sync-env
 ```
 
-Localsetup v3 does not mutate system Python. Framework libraries sync into the source checkout `.venv` with uv, while app-style CLI tools should use `pipx` when they are distributed as commands.
+Localsetup does not mutate system Python. Framework libraries sync into the source checkout `.venv` with uv, while app-style CLI tools should use `pipx` when they are distributed as commands.
 
 The default `prompt-only` dependency mode is non-mutating: it reports missing uv, stale locks, and corrupt legacy Localsetup environments with a repair command. Explicit sync paths such as `./install --sync-env` and `--dependency-mode uv-sync` may quarantine only Localsetup-owned corrupt environments, including source checkout `.venv`, `~/.local/share/localsetup/venv`, and target `.localsetup/venv`, then let uv rebuild the source checkout `.venv`. A target project's own `.venv` is application-owned and is never changed.
 
@@ -178,8 +178,8 @@ localsetup doctor --tools codex
 For the Localsetup source checkout itself, maintainers can also run source checks:
 
 ```bash
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . audit-global-first
+uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog
+uv run --locked python _localsetup/tools/localsetup.py --source-root . audit-global-first
 ```
 
 After using `--sync-env`, `doctor` reports uv path/version, lock status, the source checkout `.venv` interpreter when present, and any repair metadata from dependency sync. Old global or target-local Localsetup venvs from earlier releases are reported as ignored legacy state in prompt-only mode and quarantined only when explicit sync is requested.
@@ -187,7 +187,7 @@ After using `--sync-env`, `doctor` reports uv path/version, lock status, the sou
 Agent-readable install context:
 
 ```bash
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . context --markdown
+uv run --locked python _localsetup/tools/localsetup.py --source-root . context --markdown
 ```
 
 Verify supports the explicit `filesystem` level, which runs the implemented local rule engine:
@@ -255,7 +255,7 @@ localsetup detach --tools codex --target-directory .
 ## Roll Back Managed Paths
 
 ```bash
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . rollback
+uv run --locked python _localsetup/tools/localsetup.py --source-root . rollback
 ```
 
 Rollback only acts on managed paths recorded by Localsetup metadata.

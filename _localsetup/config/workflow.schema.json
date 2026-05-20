@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://localsetup.dev/schemas/workflow.schema.json",
-  "title": "Localsetup v3 workflow package manifest",
+  "title": "Localsetup workflow package manifest",
   "type": "object",
   "additionalProperties": false,
   "required": [

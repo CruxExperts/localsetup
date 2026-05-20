@@ -8,6 +8,6 @@ This ledger defines the default Localsetup truth-map adapter. Other repos can co
 | Supported platforms | `_localsetup/config/platforms.yaml` | Human docs summarize this manifest. |
 | Shipped skills | `_localsetup/skills/ls-*/SKILL.md`, `_localsetup/config/pack.yaml` | Count skill manifests and validate pack assignment. |
 | Workflow packages | `_localsetup/workflows/ls-workflow-*/workflow.yaml`, `_localsetup/config/pack.yaml` | Count workflow manifests and validate workflow pack assignment. |
-| Generated docs | `_localsetup/tools/generate_docs_artifacts.py`, `_localsetup/v3/docs.py` | Generated files are refreshed by tooling, not hand-edited. |
+| Generated docs | `_localsetup/tools/generate_docs_artifacts.py`, `_localsetup/core/docs.py` | Generated files are refreshed by tooling, not hand-edited. |
 | Assets | `assets/*`, Markdown image references | Asset metadata includes dimensions, references, provenance, and license notes. |
 | CI gates | `.github/workflows/*.yml` | Docs alignment runs after generation and before diff checks. |

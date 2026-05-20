@@ -7,17 +7,17 @@ from pathlib import Path
 import pytest
 import yaml
 
-from _localsetup.v3.apply import apply_plan
-from _localsetup.v3.harness import HEARTBEAT_TASK_ID
-from _localsetup.v3.harness import disable as harness_disable
-from _localsetup.v3.harness import enable as harness_enable
-from _localsetup.v3.harness import init as harness_init
-from _localsetup.v3.harness import plan as harness_plan
-from _localsetup.v3.harness import run as harness_run
-from _localsetup.v3.harness import status as harness_status
-from _localsetup.v3.plan import build_install_plan
-from _localsetup.v3.skills import selected_skill_names
-from _localsetup.v3.workflows import selected_workflow_names
+from _localsetup.core.apply import apply_plan
+from _localsetup.core.harness import HEARTBEAT_TASK_ID
+from _localsetup.core.harness import disable as harness_disable
+from _localsetup.core.harness import enable as harness_enable
+from _localsetup.core.harness import init as harness_init
+from _localsetup.core.harness import plan as harness_plan
+from _localsetup.core.harness import run as harness_run
+from _localsetup.core.harness import status as harness_status
+from _localsetup.core.plan import build_install_plan
+from _localsetup.core.skills import selected_skill_names
+from _localsetup.core.workflows import selected_workflow_names
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -542,5 +542,5 @@ def test_harness_plan_reports_launcher_from_source_checkout(tmp_path: Path) -> N
     payload = harness_plan(ROOT, target)
 
     command = payload["launcher_command"]
-    assert command[0].endswith("localsetup") or str(ROOT / "_localsetup" / "tools" / "localsetup_v3.py") in command
+    assert command[0].endswith("localsetup") or str(ROOT / "_localsetup" / "tools" / "localsetup.py") in command
     assert "_localsetup/skills/ls-codex-heartbeat" not in " ".join(command)

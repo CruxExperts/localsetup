@@ -4,14 +4,14 @@ version: 4.0
 owner_skill: ls-task-skill-matcher
 ---
 
-# Skills And Rules (Localsetup v3)
+# Skills And Rules (Localsetup)
 
 **Purpose:** How the master rule (or platform context loader) and skills interact; when to load which skill; cross-platform paths.
 
 ## Model
 
 - **One always-loaded context** per platform: Cursor uses `.cursor/rules/ls-context.mdc`; Claude Code uses `.claude/CLAUDE.md`; Codex uses `AGENTS.md`; OpenClaw uses its platform template; OpenCode uses `AGENTS.md`; Kilo CLI uses `.kilo/instructions.md`.
-- **Capability skills and workflow packages:** Capability skills live in `_localsetup/skills/`. Workflow packages live in `_localsetup/workflows/` and also contain `SKILL.md`, so v3 installs both package types into the managed package library.
+- **Capability skills and workflow packages:** Capability skills live in `_localsetup/skills/`. Workflow packages live in `_localsetup/workflows/` and also contain `SKILL.md`, so installs both package types into the managed package library.
 - **Memory file:** Each platform has a curated `MEMORY.md` path for agent learnings (`.kilo/MEMORY.md`, `.claude/MEMORY.md`, etc.). These files are mutable project or platform state outside `_localsetup/`; never store memory, reminders, backlog, or temporary notes under framework source. See [MEMORY_MANAGEMENT.md](MEMORY_MANAGEMENT.md) for curation rules.
 - **When to load a skill or workflow:** Load when the task matches the package description (e.g. user says "decision tree" -> ls-workflow-spec-clarify-reverse). The master rule/context includes an index of key packages and when to use them.
 

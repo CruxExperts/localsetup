@@ -39,8 +39,8 @@ jobs:
       - name: Regenerate docs artifacts
         run: |
           uv run --frozen python _localsetup/tools/generate_docs_artifacts.py --repo-root .
-          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . generate-docs
-          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . version-sync --check --target "$(cat VERSION)"
+          uv run --frozen python _localsetup/tools/localsetup.py --source-root . generate-docs
+          uv run --frozen python _localsetup/tools/localsetup.py --source-root . version-sync --check --target "$(cat VERSION)"
 
       - name: Check documentation alignment
         run: |

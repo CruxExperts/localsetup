@@ -6,10 +6,10 @@ owner_skill: ls-docs-organization
 
 # Framework Docs Index
 
-This is the public documentation map for Localsetup v3. Start here when you want the install path, platform behavior, shipped skills, workflow model, or release/verification rules.
+This is the public documentation map for Localsetup. Start here when you want the install path, platform behavior, shipped skills, workflow model, or release/verification rules.
 
 <p align="center">
-  <img src="../../assets/localsetup-v3-architecture.svg" alt="Localsetup v3 architecture: repo source, config resolver, managed home library, adapters, and rollback metadata" width="960">
+  <img src="../../assets/localsetup-architecture.svg" alt="Localsetup architecture: repo source, config resolver, managed home library, adapters, and rollback metadata" width="960">
 </p>
 
 ## Generated Facts

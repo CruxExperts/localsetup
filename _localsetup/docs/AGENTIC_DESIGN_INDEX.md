@@ -4,7 +4,7 @@ version: 4.0
 owner_skill: ls-docs-organization
 ---
 
-# Agentic design index (Localsetup v3)
+# Agentic design index (Localsetup)
 
 **Purpose:** Index of agentic-design documentation. Paths are relative to _localsetup/docs/ (repo-local). Audience: humans and AI agents.
 

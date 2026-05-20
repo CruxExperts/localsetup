@@ -85,7 +85,7 @@ def generate_alias_outputs(repo_root: Path) -> dict:
     aliases_path = repo_root / "_localsetup" / "docs" / "_generated" / "skill_aliases.json"
     _write_json(aliases_path, aliases, repo_root)
 
-    migration_md = repo_root / "_localsetup" / "docs" / "migration" / "v2-to-v3-skill-map.md"
+    migration_md = repo_root / "_localsetup" / "docs" / "migration" / "skill-alias-map.md"
     version_file = repo_root / "VERSION"
     version = version_file.read_text(encoding="utf-8").strip() if version_file.exists() else "3.0.0"
     major_minor = ".".join(version.split(".")[:2]) if "." in version else version
@@ -96,9 +96,9 @@ def generate_alias_outputs(repo_root: Path) -> dict:
         "owner_package: generate-docs",
         "---",
         "",
-        "# v2 to v3 Skill Map",
+        "# Skill Alias Map",
         "",
-        "| v2 | v3 |",
+        "| Previous names | Current names |",
         "|---|---|",
     ]
     for old, new in sorted(aliases.items()):

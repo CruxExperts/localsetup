@@ -336,7 +336,7 @@ ansible-playbook site.yml --limit @site.retry
   block:
     - name: Deploy new version
       ansible.builtin.unarchive:
-        src: app-v2.tar.gz
+        src: app-current.tar.gz
         dest: /opt/app
     - name: Restart service
       ansible.builtin.systemd:

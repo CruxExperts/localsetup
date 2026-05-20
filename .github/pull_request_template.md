@@ -18,9 +18,9 @@ Link the issue, discussion, or maintenance note this PR addresses.
 List the commands you ran and their results.
 
 ```bash
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . version-plan
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . version-sync --check --target "$(cat VERSION)"
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
+uv run --locked python _localsetup/tools/localsetup.py --source-root . version-plan
+uv run --locked python _localsetup/tools/localsetup.py --source-root . version-sync --check --target "$(cat VERSION)"
+uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog
 uv run --locked pytest -n auto _localsetup/tests -q
 git diff --check
 ```

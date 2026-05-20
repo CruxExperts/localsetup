@@ -1,7 +1,7 @@
 # OmniRoute Administration API Guide
 
 ---
-title: "OmniRoute v3.6.9 Administration API Guide"
+title: "OmniRoute current framework.6.9 Administration API Guide"
 category: reference
 status: ACTIVE
 last_updated: "2026-04-22"

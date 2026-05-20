@@ -11,32 +11,32 @@ from types import SimpleNamespace
 
 import pytest
 
-import _localsetup.v3.apply as apply_mod
-import _localsetup.v3.cli as cli_mod
-import _localsetup.v3.conversion as conversion_mod
-import _localsetup.v3.wizard as wizard
-from _localsetup.v3.apply import apply_plan
-from _localsetup.v3.boundary import scan_tar_for_leaks
-from _localsetup.v3.cli import _split_csv
-from _localsetup.v3.config import InstallConfig, load_install_config, merge_cli_config
-from _localsetup.v3.context import build_agent_context, render_markdown_report
-from _localsetup.v3.conversion import convert_repo
-from _localsetup.v3.dependencies import ensure_dependencies
-from _localsetup.v3.doctor import run_doctor
-from _localsetup.v3.docs import generate_alias_outputs
-from _localsetup.v3.hooks import run_maintainer_gate
-from _localsetup.v3.lockfile import load_json
-from _localsetup.v3.migration import conservative_migrate, detect_legacy_artifacts, scan_legacy_references
-from _localsetup.v3.package import build_public_artifact, parse_sha256_file, verify_release_artifact
-from _localsetup.v3.plan import build_install_plan
-from _localsetup.v3.provenance import MARKER_JSON
-from _localsetup.v3.rollback import rollback
-from _localsetup.v3.schema import validate_json_schema
-from _localsetup.v3.shell import detect_invocation_target, is_managed_shim, register_shell_command, shell_registration_status
-from _localsetup.v3.skills import skill_taxonomy_payload
-from _localsetup.v3.verify import verify_install
-from _localsetup.v3.wizard import Choice, TerminalWizard, choose_many, choose_many_checkbox, choose_one, run_wizard
-from _localsetup.v3.workflows import workflow_catalog_payload
+import _localsetup.core.apply as apply_mod
+import _localsetup.core.cli as cli_mod
+import _localsetup.core.conversion as conversion_mod
+import _localsetup.core.wizard as wizard
+from _localsetup.core.apply import apply_plan
+from _localsetup.core.boundary import scan_tar_for_leaks
+from _localsetup.core.cli import _split_csv
+from _localsetup.core.config import InstallConfig, load_install_config, merge_cli_config
+from _localsetup.core.context import build_agent_context, render_markdown_report
+from _localsetup.core.conversion import convert_repo
+from _localsetup.core.dependencies import ensure_dependencies
+from _localsetup.core.doctor import run_doctor
+from _localsetup.core.docs import generate_alias_outputs
+from _localsetup.core.hooks import run_maintainer_gate
+from _localsetup.core.lockfile import load_json
+from _localsetup.core.migration import conservative_migrate, detect_legacy_artifacts, scan_legacy_references
+from _localsetup.core.package import build_public_artifact, parse_sha256_file, verify_release_artifact
+from _localsetup.core.plan import build_install_plan
+from _localsetup.core.provenance import MARKER_JSON
+from _localsetup.core.rollback import rollback
+from _localsetup.core.schema import validate_json_schema
+from _localsetup.core.shell import detect_invocation_target, is_managed_shim, register_shell_command, shell_registration_status
+from _localsetup.core.skills import skill_taxonomy_payload
+from _localsetup.core.verify import verify_install
+from _localsetup.core.wizard import Choice, TerminalWizard, choose_many, choose_many_checkbox, choose_one, run_wizard
+from _localsetup.core.workflows import workflow_catalog_payload
 
 
 class KeyboardInterruptStream(io.StringIO):
@@ -100,7 +100,7 @@ def make_temp_repo(tmp_path: Path) -> Path:
     repo = tmp_path / "repo"
     (repo / "_localsetup").mkdir(parents=True)
     shutil.copytree(source / "_localsetup" / "config", repo / "_localsetup" / "config")
-    shutil.copytree(source / "_localsetup" / "v3", repo / "_localsetup" / "v3")
+    shutil.copytree(source / "_localsetup" / "core", repo / "_localsetup" / "core")
     shutil.copytree(source / "_localsetup" / "skills", repo / "_localsetup" / "skills")
     shutil.copytree(source / "_localsetup" / "workflows", repo / "_localsetup" / "workflows")
     shutil.copytree(source / "_localsetup" / "tools", repo / "_localsetup" / "tools")
@@ -126,7 +126,7 @@ def assert_scoped_adapter(path: Path, *packages: str) -> None:
         assert (path / package).is_symlink() or (path / package).is_dir()
 
 
-def test_v3_plan_apply_verify_rollback(tmp_path: Path) -> None:
+def test_plan_apply_verify_rollback(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     home.mkdir(parents=True, exist_ok=True)
@@ -177,7 +177,7 @@ def test_v3_plan_apply_verify_rollback(tmp_path: Path) -> None:
     assert verify_install(root, home)["ok"] is False
 
 
-def test_v3_selected_workflows_install_as_skill_packages(tmp_path: Path) -> None:
+def test_selected_workflows_install_as_skill_packages(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     home.mkdir(parents=True, exist_ok=True)
@@ -200,7 +200,7 @@ def test_v3_selected_workflows_install_as_skill_packages(tmp_path: Path) -> None
     assert verify_install(root, home, platform_ids=["codex"])["ok"] is True
 
 
-def test_v3_selection_resolves_preset_classes_tags_skills_and_exclusions(tmp_path: Path) -> None:
+def test_selection_resolves_preset_classes_tags_skills_and_exclusions(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
 
@@ -235,7 +235,7 @@ def test_v3_selection_resolves_preset_classes_tags_skills_and_exclusions(tmp_pat
         ({"exclude_skills": ["unknown"]}, "unknown excluded skill: unknown"),
     ],
 )
-def test_v3_selection_rejects_unknown_selectors(tmp_path: Path, kwargs: dict, message: str) -> None:
+def test_selection_rejects_unknown_selectors(tmp_path: Path, kwargs: dict, message: str) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
 
@@ -243,7 +243,7 @@ def test_v3_selection_rejects_unknown_selectors(tmp_path: Path, kwargs: dict, me
         build_install_plan(root, home=home, **kwargs)
 
 
-def test_v3_selection_keeps_workflow_required_skills_after_exclusion(tmp_path: Path) -> None:
+def test_selection_keeps_workflow_required_skills_after_exclusion(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
 
@@ -259,7 +259,7 @@ def test_v3_selection_keeps_workflow_required_skills_after_exclusion(tmp_path: P
     assert plan.rollback_metadata["selectors"]["exclude_skills"] == ["ls-framework-audit"]
 
 
-def test_v3_scoped_adapter_exposes_only_selected_packages_even_when_global_has_more(tmp_path: Path) -> None:
+def test_scoped_adapter_exposes_only_selected_packages_even_when_global_has_more(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
 
@@ -282,7 +282,7 @@ def test_v3_scoped_adapter_exposes_only_selected_packages_even_when_global_has_m
     )
 
 
-def test_v3_split_global_and_repo_packs_install_union_but_expose_repo_subset(tmp_path: Path) -> None:
+def test_split_global_and_repo_packs_install_union_but_expose_repo_subset(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
 
@@ -313,7 +313,7 @@ def test_v3_split_global_and_repo_packs_install_union_but_expose_repo_subset(tmp
     assert verify_install(root, home, platform_ids=["codex"])["ok"] is True
 
 
-def test_v3_legacy_selector_flags_apply_to_global_and_repo_selection(tmp_path: Path) -> None:
+def test_legacy_selector_flags_apply_to_global_and_repo_selection(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
 
@@ -325,7 +325,7 @@ def test_v3_legacy_selector_flags_apply_to_global_and_repo_selection(tmp_path: P
     assert (root / ".codex" / "skills" / "ls-nodejs-nextjs").exists()
 
 
-def test_v3_global_selector_aliases_do_not_imply_repo_visibility(tmp_path: Path) -> None:
+def test_global_selector_aliases_do_not_imply_repo_visibility(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
 
@@ -341,7 +341,7 @@ def test_v3_global_selector_aliases_do_not_imply_repo_visibility(tmp_path: Path)
     assert (adapter / "ls-context").exists()
 
 
-def test_v3_scoped_adapter_detects_tampered_child_symlink(tmp_path: Path) -> None:
+def test_scoped_adapter_detects_tampered_child_symlink(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
 
@@ -378,7 +378,7 @@ def test_v3_scoped_adapter_detects_tampered_child_symlink(tmp_path: Path) -> Non
         ("portable", '{"mode": "elsewhere"}', "adapter marker has unsupported mode"),
     ],
 )
-def test_v3_adapter_invalid_marker_fails_integrity(
+def test_adapter_invalid_marker_fails_integrity(
     tmp_path: Path, attach_mode: str, marker_text: str, reason: str
 ) -> None:
     root = make_temp_repo(tmp_path)
@@ -402,7 +402,7 @@ def test_v3_adapter_invalid_marker_fails_integrity(
     assert any("adapter package target mismatch (adapter marker)" in blocker for blocker in doctor["blockers"])
 
 
-def test_v3_legacy_managed_global_symlink_is_migrated_to_scoped_adapter(tmp_path: Path) -> None:
+def test_legacy_managed_global_symlink_is_migrated_to_scoped_adapter(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     legacy_root = home / ".local/share/agents/skills/localsetup"
@@ -418,7 +418,7 @@ def test_v3_legacy_managed_global_symlink_is_migrated_to_scoped_adapter(tmp_path
     assert verify_install(root, home, platform_ids=["codex"])["ok"] is True
 
 
-def test_v3_portable_mode_uses_managed_copies(tmp_path: Path) -> None:
+def test_portable_mode_uses_managed_copies(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     home.mkdir(parents=True, exist_ok=True)
@@ -437,7 +437,7 @@ def test_v3_portable_mode_uses_managed_copies(tmp_path: Path) -> None:
     assert rolled["removed"]
 
 
-def test_v3_portable_adapter_digest_drift_is_reported(tmp_path: Path) -> None:
+def test_portable_adapter_digest_drift_is_reported(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
 
@@ -457,7 +457,7 @@ def test_v3_portable_adapter_digest_drift_is_reported(tmp_path: Path) -> None:
     assert "portable adapter package differs from global package: ls-context" in verify["provenance_warnings"]
 
 
-def test_v3_platform_selector_limits_adapters(tmp_path: Path) -> None:
+def test_platform_selector_limits_adapters(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     home.mkdir(parents=True, exist_ok=True)
@@ -477,7 +477,7 @@ def test_v3_platform_selector_limits_adapters(tmp_path: Path) -> None:
         rollback(root, home, platform_ids=["codex"])
 
 
-def test_v3_multi_platform_selector_attaches_only_requested_adapters(tmp_path: Path) -> None:
+def test_multi_platform_selector_attaches_only_requested_adapters(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     home.mkdir(parents=True, exist_ok=True)
@@ -494,7 +494,7 @@ def test_v3_multi_platform_selector_attaches_only_requested_adapters(tmp_path: P
     assert not (root / ".cursor" / "skills").exists()
 
 
-def test_v3_external_target_directory_attaches_selected_adapter(tmp_path: Path) -> None:
+def test_external_target_directory_attaches_selected_adapter(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "other-repo"
@@ -516,7 +516,7 @@ def test_v3_external_target_directory_attaches_selected_adapter(tmp_path: Path) 
     assert not (root / ".localsetup/lock.json").exists()
 
 
-def test_v3_external_target_install_verify_and_context_freshness_smoke(tmp_path: Path) -> None:
+def test_external_target_install_verify_and_context_freshness_smoke(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "consumer"
@@ -534,7 +534,7 @@ def test_v3_external_target_install_verify_and_context_freshness_smoke(tmp_path:
     verify_cli = subprocess.run(
         [
             sys.executable,
-            str(root / "_localsetup" / "tools" / "localsetup_v3.py"),
+            str(root / "_localsetup" / "tools" / "localsetup.py"),
             "--repo",
             str(root),
             "--home",
@@ -556,7 +556,7 @@ def test_v3_external_target_install_verify_and_context_freshness_smoke(tmp_path:
     freshness = subprocess.run(
         [
             sys.executable,
-            str(root / "_localsetup" / "tools" / "localsetup_v3.py"),
+            str(root / "_localsetup" / "tools" / "localsetup.py"),
             "--repo",
             str(root),
             "--home",
@@ -577,7 +577,7 @@ def test_v3_external_target_install_verify_and_context_freshness_smoke(tmp_path:
     assert payload["contexts"][0]["scope"] == "repo"
 
 
-def test_v3_verify_level_filesystem_and_trace_json(tmp_path: Path) -> None:
+def test_verify_level_filesystem_and_trace_json(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "consumer"
@@ -585,7 +585,7 @@ def test_v3_verify_level_filesystem_and_trace_json(tmp_path: Path) -> None:
     plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"], target_root=target)
     apply_plan(root, plan, home=home, target_root=target)
     trace = tmp_path / "trace.jsonl"
-    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+    tool = root / "_localsetup" / "tools" / "localsetup.py"
 
     completed = subprocess.run(
         [
@@ -618,9 +618,9 @@ def test_v3_verify_level_filesystem_and_trace_json(tmp_path: Path) -> None:
     assert trace_rows[-1]["event"] == "verify"
 
 
-def test_v3_verify_rejects_unimplemented_levels(tmp_path: Path) -> None:
+def test_verify_rejects_unimplemented_levels(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
-    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+    tool = root / "_localsetup" / "tools" / "localsetup.py"
 
     for level in ("host", "smoke"):
         completed = subprocess.run(
@@ -644,7 +644,7 @@ def test_v3_verify_rejects_unimplemented_levels(tmp_path: Path) -> None:
         assert "invalid choice" in completed.stderr
 
 
-def test_v3_registry_refs_preserve_shared_packages_until_last_rollback(tmp_path: Path) -> None:
+def test_registry_refs_preserve_shared_packages_until_last_rollback(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target_one = tmp_path / "one"
@@ -666,7 +666,7 @@ def test_v3_registry_refs_preserve_shared_packages_until_last_rollback(tmp_path:
     assert not managed_skill.exists()
 
 
-def test_v3_narrowed_rerun_reconciles_registry_refs_and_prunes_packages(tmp_path: Path) -> None:
+def test_narrowed_rerun_reconciles_registry_refs_and_prunes_packages(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
 
@@ -694,7 +694,7 @@ def test_v3_narrowed_rerun_reconciles_registry_refs_and_prunes_packages(tmp_path
     assert not (home / ".local/share/localsetup/packages/ls-context").exists()
 
 
-def test_v3_provenance_report_cli_is_report_only(tmp_path: Path) -> None:
+def test_provenance_report_cli_is_report_only(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"]), home=home)
@@ -702,7 +702,7 @@ def test_v3_provenance_report_cli_is_report_only(tmp_path: Path) -> None:
     completed = subprocess.run(
         [
             sys.executable,
-            "_localsetup/tools/localsetup_v3.py",
+            "_localsetup/tools/localsetup.py",
             "--source-root",
             str(root),
             "--home",
@@ -727,7 +727,7 @@ def test_v3_provenance_report_cli_is_report_only(tmp_path: Path) -> None:
     assert payload["adapters"][0]["provenance_current"] == "repo-scoped-symlink-adapter"
 
 
-def test_v3_provenance_report_global_shim_uses_caller_target(tmp_path: Path) -> None:
+def test_provenance_report_global_shim_uses_caller_target(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "target-repo"
@@ -742,7 +742,7 @@ def test_v3_provenance_report_global_shim_uses_caller_target(tmp_path: Path) -> 
     completed = subprocess.run(
         [
             sys.executable,
-            str(root / "_localsetup/tools/localsetup_v3.py"),
+            str(root / "_localsetup/tools/localsetup.py"),
             "--source-root",
             str(root),
             "--home",
@@ -763,10 +763,10 @@ def test_v3_provenance_report_global_shim_uses_caller_target(tmp_path: Path) -> 
     assert payload["adapters"][0]["repo_path"] == str(target / ".codex" / "skills")
 
 
-def test_v3_detach_removes_adapters_and_preserves_packages(tmp_path: Path) -> None:
+def test_detach_removes_adapters_and_preserves_packages(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
-    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+    tool = root / "_localsetup" / "tools" / "localsetup.py"
     apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"]), home=home)
 
     completed = subprocess.run(
@@ -783,13 +783,13 @@ def test_v3_detach_removes_adapters_and_preserves_packages(tmp_path: Path) -> No
     assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
 
 
-def test_v3_phase3_command_family_outputs_json(tmp_path: Path) -> None:
+def test_phase3_command_family_outputs_json(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "consumer"
     target.mkdir()
     (target / "package.json").write_text('{"scripts":{"test":"node --test"}}\n', encoding="utf-8")
-    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+    tool = root / "_localsetup" / "tools" / "localsetup.py"
     commands = [
         ["skill", "search", "context"],
         ["skill", "info", "ls-context"],
@@ -813,14 +813,14 @@ def test_v3_phase3_command_family_outputs_json(tmp_path: Path) -> None:
         assert isinstance(payload, dict)
 
 
-def test_v3_global_first_audit_reports_target_legacy_surfaces(tmp_path: Path) -> None:
+def test_global_first_audit_reports_target_legacy_surfaces(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "consumer"
     stale_framework = target / "_localsetup"
     stale_framework.mkdir(parents=True)
     (target / "localsetup.lock.json").write_text('{"version": 1}\n', encoding="utf-8")
-    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+    tool = root / "_localsetup" / "tools" / "localsetup.py"
 
     completed = subprocess.run(
         [
@@ -847,7 +847,7 @@ def test_v3_global_first_audit_reports_target_legacy_surfaces(tmp_path: Path) ->
     assert payload["registry_path"].endswith(".local/share/localsetup/registry.json")
 
 
-def test_v3_policy_blocks_high_risk_skill_in_strict_mode(tmp_path: Path) -> None:
+def test_policy_blocks_high_risk_skill_in_strict_mode(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     skill_md = root / "_localsetup" / "skills" / "ls-context" / "SKILL.md"
@@ -855,7 +855,7 @@ def test_v3_policy_blocks_high_risk_skill_in_strict_mode(tmp_path: Path) -> None
         "---\nname: ls-context\ndescription: Context.\nrisk: high\npermissions: [filesystem-write]\n---\n",
         encoding="utf-8",
     )
-    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+    tool = root / "_localsetup" / "tools" / "localsetup.py"
 
     completed = subprocess.run(
         [
@@ -882,7 +882,7 @@ def test_v3_policy_blocks_high_risk_skill_in_strict_mode(tmp_path: Path) -> None
     assert payload["policy"]["blockers"]
 
 
-def test_v3_policy_blocks_invalid_risk_metadata_in_strict_mode(tmp_path: Path) -> None:
+def test_policy_blocks_invalid_risk_metadata_in_strict_mode(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     skill_md = root / "_localsetup" / "skills" / "ls-context" / "SKILL.md"
@@ -890,7 +890,7 @@ def test_v3_policy_blocks_invalid_risk_metadata_in_strict_mode(tmp_path: Path) -
         "---\nname: ls-context\ndescription: Context.\nrisk: critical\n---\n",
         encoding="utf-8",
     )
-    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+    tool = root / "_localsetup" / "tools" / "localsetup.py"
 
     completed = subprocess.run(
         [
@@ -917,11 +917,11 @@ def test_v3_policy_blocks_invalid_risk_metadata_in_strict_mode(tmp_path: Path) -
     assert any("invalid skill policy metadata" in blocker for blocker in payload["policy"]["blockers"])
 
 
-def test_v3_sbom_command_writes_source_and_installed_boms(tmp_path: Path) -> None:
+def test_sbom_command_writes_source_and_installed_boms(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     apply_plan(root, build_install_plan(root, home=home, packs=["core"]), home=home)
-    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+    tool = root / "_localsetup" / "tools" / "localsetup.py"
     source_out = tmp_path / "source.cdx.json"
     installed_out = tmp_path / "installed.cdx.json"
 
@@ -981,6 +981,21 @@ def test_shell_registration_writes_managed_idempotent_shim_and_blocks_collision(
         register_shell_command(root, home=home)
 
 
+def test_shell_registration_requires_exact_managed_marker(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    shim = home / ".local" / "bin" / "localsetup"
+    shim.parent.mkdir(parents=True)
+    shim.write_text(
+        "#!/usr/bin/env bash\n# managed_by=localsetup-extra\nexport LOCALSETUP_GLOBAL_SHIM=1\n",
+        encoding="utf-8",
+    )
+
+    assert is_managed_shim(shim) is False
+    with pytest.raises(RuntimeError, match="unmanaged localsetup"):
+        register_shell_command(root, home=home, path_env=str(shim.parent))
+
+
 def test_shell_registration_warns_when_path_precedence_hides_shim(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
@@ -1029,10 +1044,10 @@ def test_shell_registration_falls_back_when_project_python_is_bad(tmp_path: Path
 
     assert completed.returncode == 0
     project_probe_text = project_probe.read_text(encoding="utf-8")
-    assert "_localsetup/tools/localsetup_v3.py" in project_probe_text
+    assert "_localsetup/tools/localsetup.py" in project_probe_text
     assert "--help" in project_probe_text
     fallback_text = fallback_args.read_text(encoding="utf-8")
-    assert "_localsetup/tools/localsetup_v3.py" in fallback_text
+    assert "_localsetup/tools/localsetup.py" in fallback_text
     assert "doctor" in fallback_text
 
 
@@ -1111,12 +1126,12 @@ def test_shell_registration_reports_repair_when_no_python_runtime_works(tmp_path
 def test_shell_registration_reports_error_and_status_edge_cases(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    import _localsetup.v3.shell as shell_mod
+    import _localsetup.core.shell as shell_mod
 
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
 
-    with pytest.raises(FileNotFoundError, match="missing Localsetup v3 source checkout"):
+    with pytest.raises(FileNotFoundError, match="missing Localsetup source checkout"):
         register_shell_command(tmp_path / "missing-source", home=home)
 
     shim = home / ".local" / "bin" / "localsetup"
@@ -1184,10 +1199,10 @@ def test_custom_home_shim_invocation_uses_registered_home(tmp_path: Path) -> Non
     assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
 
 
-def test_v3_cli_tools_and_yes_aliases_install(tmp_path: Path) -> None:
+def test_cli_tools_and_yes_aliases_install(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
-    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+    tool = root / "_localsetup" / "tools" / "localsetup.py"
 
     completed = subprocess.run(
         [
@@ -1222,7 +1237,7 @@ def test_global_shim_invocation_installs_at_detected_git_root(tmp_path: Path) ->
     nested = target / "nested" / "deeper"
     nested.mkdir(parents=True)
     subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=True)
-    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+    tool = root / "_localsetup" / "tools" / "localsetup.py"
     env = {**os.environ, "LOCALSETUP_GLOBAL_SHIM": "1"}
 
     completed = subprocess.run(
@@ -1255,7 +1270,7 @@ def test_global_shim_invocation_installs_at_detected_git_root(tmp_path: Path) ->
     assert not (root / ".codex" / "skills").exists()
 
 
-def test_v3_apply_rejects_target_root_that_differs_from_plan(tmp_path: Path) -> None:
+def test_apply_rejects_target_root_that_differs_from_plan(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "target-repo"
@@ -1269,7 +1284,7 @@ def test_v3_apply_rejects_target_root_that_differs_from_plan(tmp_path: Path) -> 
         apply_plan(root, plan, home=home, target_root=other)
 
 
-def test_v3_legacy_detection_uses_external_target_lockfile(tmp_path: Path) -> None:
+def test_legacy_detection_uses_external_target_lockfile(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "target-repo"
@@ -1283,7 +1298,7 @@ def test_v3_legacy_detection_uses_external_target_lockfile(tmp_path: Path) -> No
     assert lock_paths == [target / "localsetup.lock.json"]
 
 
-def test_v3_target_directory_without_selector_is_global_only(tmp_path: Path) -> None:
+def test_target_directory_without_selector_is_global_only(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "other-repo"
@@ -1304,7 +1319,7 @@ def test_v3_target_directory_without_selector_is_global_only(tmp_path: Path) -> 
     assert any("no platforms were selected" in warning for warning in doctor["warnings"])
 
 
-def test_v3_install_migrates_legacy_root_lockfile(tmp_path: Path) -> None:
+def test_install_migrates_legacy_root_lockfile(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "legacy-target"
@@ -1326,7 +1341,7 @@ def test_v3_install_migrates_legacy_root_lockfile(tmp_path: Path) -> None:
     assert backup.read_text(encoding="utf-8") == legacy_payload
 
 
-def test_v3_target_templates_use_global_command_surface() -> None:
+def test_target_templates_use_global_command_surface() -> None:
     root = Path(__file__).resolve().parents[2]
     target_facing_paths = [
         root / "_localsetup" / "skills" / "ls-context" / "SKILL.md",
@@ -1344,7 +1359,7 @@ def test_v3_target_templates_use_global_command_surface() -> None:
     forbidden = [
         "./_localsetup/tools",
         "./_localsetup/tests",
-        "python3 _localsetup/tools/localsetup_v3.py",
+        "python3 _localsetup/tools/localsetup.py",
         "install.ps1",
         "verify_context.ps1",
         "verify_rules.ps1",
@@ -1361,7 +1376,7 @@ def test_v3_target_templates_use_global_command_surface() -> None:
     assert offenders == []
 
 
-def test_v3_preserves_existing_platform_config_when_attaching_skills(tmp_path: Path) -> None:
+def test_preserves_existing_platform_config_when_attaching_skills(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     rules = root / ".cursor" / "rules"
@@ -1376,7 +1391,7 @@ def test_v3_preserves_existing_platform_config_when_attaching_skills(tmp_path: P
 
 
 @pytest.mark.parametrize("collision_kind", ["directory", "file", "wrong_symlink", "dangling_symlink"])
-def test_v3_refuses_unmanaged_adapter_collisions(tmp_path: Path, collision_kind: str) -> None:
+def test_refuses_unmanaged_adapter_collisions(tmp_path: Path, collision_kind: str) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     adapter = root / ".cursor" / "skills"
@@ -1403,7 +1418,7 @@ def test_v3_refuses_unmanaged_adapter_collisions(tmp_path: Path, collision_kind:
         apply_plan(root, plan, home=home)
 
 
-def test_v3_rerun_with_correct_managed_symlink_is_idempotent(tmp_path: Path) -> None:
+def test_rerun_with_correct_managed_symlink_is_idempotent(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
 
@@ -1418,7 +1433,7 @@ def test_v3_rerun_with_correct_managed_symlink_is_idempotent(tmp_path: Path) -> 
     assert_scoped_adapter(root / ".codex" / "skills", "ls-context")
 
 
-def test_v3_doctor_reports_selected_adapter_collisions_only(tmp_path: Path) -> None:
+def test_doctor_reports_selected_adapter_collisions_only(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     collision = root / ".cursor" / "skills"
@@ -1442,7 +1457,7 @@ def test_cli_rejects_empty_csv_selectors() -> None:
         _split_csv([" "])
 
 
-def test_v3_rejects_unknown_platform_selectors(tmp_path: Path) -> None:
+def test_rejects_unknown_platform_selectors(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     home.mkdir(parents=True, exist_ok=True)
@@ -1455,12 +1470,12 @@ def test_v3_rejects_unknown_platform_selectors(tmp_path: Path) -> None:
         rollback(root, home, platform_ids=["typo"])
 
 
-def test_v3_cli_csv_selector_normalization() -> None:
+def test_cli_csv_selector_normalization() -> None:
     assert _split_csv(["codex,kilo", "cursor"]) == ["codex", "kilo", "cursor"]
     assert _split_csv(None) is None
 
 
-def test_v3_config_file_and_cli_precedence(tmp_path: Path) -> None:
+def test_config_file_and_cli_precedence(tmp_path: Path) -> None:
     config_path = tmp_path / "install.json"
     config_path.write_text(
         """{
@@ -1557,7 +1572,7 @@ def test_v3_config_file_and_cli_precedence(tmp_path: Path) -> None:
     assert merged.dependency_mode == "uv-sync"
 
 
-def test_v3_schema_validation_is_optional_without_jsonschema(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_schema_validation_is_optional_without_jsonschema(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     import builtins
 
     schema = tmp_path / "schema.json"
@@ -1579,7 +1594,7 @@ def test_v3_schema_validation_is_optional_without_jsonschema(tmp_path: Path, mon
 
 
 def test_manifest_loader_reports_invalid_shapes(tmp_path: Path) -> None:
-    from _localsetup.v3.manifests import ManifestError, load_pack_config, load_platforms, validate_manifest_schemas
+    from _localsetup.core.manifests import ManifestError, load_pack_config, load_platforms, validate_manifest_schemas
 
     root = tmp_path / "repo"
     config = root / "_localsetup" / "config"
@@ -1623,7 +1638,7 @@ def test_manifest_loader_reports_invalid_shapes(tmp_path: Path) -> None:
 def test_doctor_reports_manifest_and_environment_blockers(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    import _localsetup.v3.doctor as doctor_mod
+    import _localsetup.core.doctor as doctor_mod
 
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
@@ -1691,10 +1706,10 @@ def test_doctor_reports_manifest_and_environment_blockers(
     assert any("adapter collision (regular file)" in blocker for blocker in result["blockers"])
     assert any("adapter package target mismatch (ls-context)" in blocker for blocker in result["blockers"])
     assert any("path is not writable" in blocker for blocker in result["blockers"])
-    assert any("legacy v2 artifacts detected" in warning for warning in result["warnings"])
+    assert any("legacy artifacts detected" in warning for warning in result["warnings"])
 
 
-def test_v3_cli_install_passes_configured_data_root_to_uv_sync(
+def test_cli_install_passes_configured_data_root_to_uv_sync(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1766,7 +1781,7 @@ def test_v3_cli_install_passes_configured_data_root_to_uv_sync(
     assert lock["dependency_state"]["dependency_manager"] == "uv"
 
 
-def test_v3_uv_sync_commands_and_lock_interpreter(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_uv_sync_commands_and_lock_interpreter(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     monkeypatch.setenv("LOCALSETUP_UV_BIN", "uv")
@@ -1798,7 +1813,7 @@ def test_v3_uv_sync_commands_and_lock_interpreter(tmp_path: Path, monkeypatch: p
     assert result["lockfile"].endswith(".localsetup/lock.json")
 
 
-def test_v3_uv_prompt_only_reports_lock_status(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_uv_prompt_only_reports_lock_status(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = make_temp_repo(tmp_path)
     monkeypatch.setenv("LOCALSETUP_UV_BIN", "uv")
 
@@ -1814,11 +1829,11 @@ def test_v3_uv_prompt_only_reports_lock_status(tmp_path: Path, monkeypatch: pyte
     assert deps["lock"]["dependency_manager"] == "uv"
 
 
-def test_v3_doctor_reports_corrupt_legacy_global_venv_without_execution(
+def test_doctor_reports_corrupt_legacy_global_venv_without_execution(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    import _localsetup.v3.dependencies as deps_mod
-    import _localsetup.v3.doctor as doctor_mod
+    import _localsetup.core.dependencies as deps_mod
+    import _localsetup.core.doctor as doctor_mod
 
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
@@ -1856,7 +1871,7 @@ def test_v3_doctor_reports_corrupt_legacy_global_venv_without_execution(
     assert legacy_python.read_text(encoding="utf-8") == "# fake python\n"
 
 
-def test_v3_uv_already_synced_skips_nested_sync(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_uv_already_synced_skips_nested_sync(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = make_temp_repo(tmp_path)
     monkeypatch.setenv("LOCALSETUP_UV_BIN", "uv")
     monkeypatch.setenv("LOCALSETUP_UV_ALREADY_SYNCED", "1")
@@ -1877,7 +1892,7 @@ def test_v3_uv_already_synced_skips_nested_sync(tmp_path: Path, monkeypatch: pyt
     assert not any("sync" in cmd for cmd in commands)
 
 
-def test_v3_uv_sync_quarantines_corrupt_source_venv(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_uv_sync_quarantines_corrupt_source_venv(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = make_temp_repo(tmp_path)
     broken_python = root / ".venv" / "bin" / "python"
     broken_python.parent.mkdir(parents=True)
@@ -1907,7 +1922,7 @@ def test_v3_uv_sync_quarantines_corrupt_source_venv(tmp_path: Path, monkeypatch:
     assert deps["sync_attempts"] == 1
 
 
-def test_v3_uv_sync_retries_source_venv_corruption_once(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_uv_sync_retries_source_venv_corruption_once(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = make_temp_repo(tmp_path)
     python_path = root / ".venv" / "bin" / "python"
     python_path.parent.mkdir(parents=True)
@@ -1939,7 +1954,7 @@ def test_v3_uv_sync_retries_source_venv_corruption_once(tmp_path: Path, monkeypa
     assert python_path.read_text(encoding="utf-8") == "# rebuilt after retry\n"
 
 
-def test_v3_uv_sync_repairs_legacy_envs_without_touching_target_venv(
+def test_uv_sync_repairs_legacy_envs_without_touching_target_venv(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     root = make_temp_repo(tmp_path)
@@ -1975,7 +1990,7 @@ def test_v3_uv_sync_repairs_legacy_envs_without_touching_target_venv(
     assert project_python.read_text(encoding="utf-8") == "# fake python\n"
 
 
-def test_v3_uv_sync_leaves_healthy_source_venv_in_place(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_uv_sync_leaves_healthy_source_venv_in_place(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = make_temp_repo(tmp_path)
     python_path = root / ".venv" / "bin" / "python"
     python_path.parent.mkdir(parents=True)
@@ -1996,10 +2011,10 @@ def test_v3_uv_sync_leaves_healthy_source_venv_in_place(tmp_path: Path, monkeypa
     assert python_path.read_text(encoding="utf-8") == "# healthy python\n"
 
 
-def test_v3_uv_sync_quarantine_failure_blocks_without_delete(
+def test_uv_sync_quarantine_failure_blocks_without_delete(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    from _localsetup.v3 import dependencies as deps_mod
+    from _localsetup.core import dependencies as deps_mod
 
     root = make_temp_repo(tmp_path)
     broken_python = root / ".venv" / "bin" / "python"
@@ -2026,7 +2041,7 @@ def test_v3_uv_sync_quarantine_failure_blocks_without_delete(
     assert broken_python.exists()
 
 
-def test_v3_uv_sync_failure_preserves_quarantine_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_uv_sync_failure_preserves_quarantine_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = make_temp_repo(tmp_path)
     broken_python = root / ".venv" / "bin" / "python"
     broken_python.parent.mkdir(parents=True)
@@ -2046,7 +2061,7 @@ def test_v3_uv_sync_failure_preserves_quarantine_path(tmp_path: Path, monkeypatc
     assert list((root / ".localsetup" / "state" / "dependency-repair").glob(".venv-*.json"))
 
 
-def test_v3_uv_stale_lock_is_reported(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_uv_stale_lock_is_reported(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = make_temp_repo(tmp_path)
     monkeypatch.setenv("LOCALSETUP_UV_BIN", "uv")
 
@@ -2084,7 +2099,7 @@ def test_skill_smoke_runner_uses_current_python_without_shell(tmp_path: Path) ->
     assert completed.stdout.strip() == sys.executable
 
 
-def test_v3_agent_context_and_markdown_report(tmp_path: Path) -> None:
+def test_agent_context_and_markdown_report(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     config = InstallConfig(platforms=["codex"], packs=["core"], dependency_mode="prompt-only")
@@ -2095,17 +2110,17 @@ def test_v3_agent_context_and_markdown_report(tmp_path: Path) -> None:
     assert {"environment", "selected_platforms", "dependencies", "migration", "actions", "blockers", "warnings", "commands", "rollback", "verification"} <= set(context)
     assert context["selected_platforms"] == ["codex"]
     assert context["selected_packs"] == ["core"]
-    assert "# Localsetup v3 Install Context" in markdown
+    assert "# Localsetup Install Context" in markdown
     assert "localsetup verify --platforms codex" in markdown
-    assert "python3 _localsetup/tools/localsetup_v3.py verify" not in markdown
+    assert "python3 _localsetup/tools/localsetup.py verify" not in markdown
 
 
-def test_v3_cli_doctor_target_warning_requires_explicit_target(tmp_path: Path) -> None:
+def test_cli_doctor_target_warning_requires_explicit_target(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "target-repo"
     target.mkdir()
-    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+    tool = root / "_localsetup" / "tools" / "localsetup.py"
 
     plain = subprocess.run(
         [
@@ -2148,12 +2163,12 @@ def test_v3_cli_doctor_target_warning_requires_explicit_target(tmp_path: Path) -
     assert any("target directory was provided" in warning for warning in explicit_payload["warnings"])
 
 
-def test_v3_cli_context_target_warning_requires_explicit_target(tmp_path: Path) -> None:
+def test_cli_context_target_warning_requires_explicit_target(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "target-repo"
     target.mkdir()
-    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+    tool = root / "_localsetup" / "tools" / "localsetup.py"
 
     plain = subprocess.run(
         [
@@ -2196,11 +2211,11 @@ def test_v3_cli_context_target_warning_requires_explicit_target(tmp_path: Path) 
     assert any("target directory was provided" in warning for warning in explicit_payload["warnings"])
 
 
-def test_v3_self_refresh_defaults_to_all_packs_and_existing_repo_adapters(tmp_path: Path) -> None:
+def test_self_refresh_defaults_to_all_packs_and_existing_repo_adapters(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     home.mkdir(parents=True, exist_ok=True)
-    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+    tool = root / "_localsetup" / "tools" / "localsetup.py"
 
     existing_global = home / ".local" / "share" / "localsetup" / "packages"
     existing_global.mkdir(parents=True, exist_ok=True)
@@ -2239,15 +2254,15 @@ def test_v3_self_refresh_defaults_to_all_packs_and_existing_repo_adapters(tmp_pa
     assert (root / ".cursor" / "skills").resolve() == external_global
 
 
-def test_v3_self_refresh_preserves_existing_portable_adapter_mode(tmp_path: Path) -> None:
+def test_self_refresh_preserves_existing_portable_adapter_mode(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     home.mkdir(parents=True, exist_ok=True)
-    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+    tool = root / "_localsetup" / "tools" / "localsetup.py"
 
     portable_adapter = root / ".codex" / "skills"
     portable_adapter.mkdir(parents=True, exist_ok=True)
-    (portable_adapter / ".localsetup-portable").write_text("managed_by=localsetup-v3\n", encoding="utf-8")
+    (portable_adapter / ".localsetup-portable").write_text("managed_by=localsetup\n", encoding="utf-8")
 
     completed = subprocess.run(
         [
@@ -2278,13 +2293,13 @@ def test_v3_self_refresh_preserves_existing_portable_adapter_mode(tmp_path: Path
 
 def test_docs_do_not_show_selector_free_portable_install() -> None:
     root = Path(__file__).resolve().parents[2]
-    overview = (root / "_localsetup" / "docs" / "migration" / "v3-overview.md").read_text(encoding="utf-8")
+    overview = (root / "_localsetup" / "docs" / "migration" / "overview.md").read_text(encoding="utf-8")
 
     assert "install --mode portable --apply" not in overview
     assert "install --mode portable --platforms codex --apply" in overview
 
 
-def test_v3_docs_and_package(tmp_path: Path) -> None:
+def test_docs_and_package(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     (root / "_localsetup" / "__pycache__").mkdir()
     (root / "_localsetup" / "__pycache__" / "cached.pyc").write_bytes(b"bytecode")
@@ -2330,7 +2345,7 @@ def test_v3_docs_and_package(tmp_path: Path) -> None:
     assert docs["count"] > 0
     assert (root / "_localsetup/docs/_generated/workflow-catalog.json").is_file()
 
-    artifact = tmp_path / "localsetup-v3-public.tar.gz"
+    artifact = tmp_path / "localsetup-public.tar.gz"
     package = build_public_artifact(root, artifact)
     assert artifact.exists()
     assert package["leaks"] == []
@@ -2342,9 +2357,9 @@ def test_v3_docs_and_package(tmp_path: Path) -> None:
     assert verified["metadata"]["pack_id"] == "localsetup"
     for asset in (
         "assets/README.md",
-        "assets/localsetup-v3-readme-hero.png",
-        "assets/localsetup-v3-architecture.svg",
-        "assets/localsetup-v3-install-lifecycle.svg",
+        "assets/localsetup-readme-hero.png",
+        "assets/localsetup-architecture.svg",
+        "assets/localsetup-install-lifecycle.svg",
     ):
         assert asset in package["files"]
     assert "assets" in package["manifest"]["public_paths"]
@@ -2361,7 +2376,7 @@ def test_v3_docs_and_package(tmp_path: Path) -> None:
 
 def test_package_command_creates_output_parent(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
-    artifact = tmp_path / "missing" / "nested" / "localsetup-v3-public.tar.gz"
+    artifact = tmp_path / "missing" / "nested" / "localsetup-public.tar.gz"
 
     package = build_public_artifact(root, artifact)
 
@@ -2372,10 +2387,10 @@ def test_package_command_creates_output_parent(tmp_path: Path) -> None:
 
 def test_package_command_fails_when_leak_scan_finds_private_file(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
-    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+    tool = root / "_localsetup" / "tools" / "localsetup.py"
     leak = root / "_localsetup" / "token.secret"
     leak.write_text("do not ship\n", encoding="utf-8")
-    artifact = tmp_path / "localsetup-v3-public.tar.gz"
+    artifact = tmp_path / "localsetup-public.tar.gz"
 
     completed = subprocess.run(
         [sys.executable, str(tool), "--repo", str(root), "package", "--out", str(artifact)],
@@ -2391,7 +2406,7 @@ def test_package_command_fails_when_leak_scan_finds_private_file(tmp_path: Path)
 
 def test_verify_release_rejects_missing_or_stale_sbom(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
-    artifact = tmp_path / "localsetup-v3-public.tar.gz"
+    artifact = tmp_path / "localsetup-public.tar.gz"
     package = build_public_artifact(root, artifact)
     sbom = Path(package["sbom"])
     sbom.unlink()
@@ -2408,7 +2423,7 @@ def test_verify_release_rejects_missing_or_stale_sbom(tmp_path: Path) -> None:
 
 def test_verify_release_rejects_incomplete_sbom_components(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
-    artifact = tmp_path / "localsetup-v3-public.tar.gz"
+    artifact = tmp_path / "localsetup-public.tar.gz"
     package = build_public_artifact(root, artifact)
     sbom = Path(package["sbom"])
     payload = json.loads(sbom.read_text(encoding="utf-8"))
@@ -2648,23 +2663,9 @@ def make_bootstrap_git_repo(tmp_path: Path) -> Path:
 def make_bootstrap_git_repo_with_legacy_commit(tmp_path: Path) -> tuple[Path, str, str]:
     source = Path(__file__).resolve().parents[2]
     repo = tmp_path / "repo"
-    tool = repo / "_localsetup" / "tools" / "localsetup_v3.py"
-    tool.parent.mkdir(parents=True)
-    tool.write_text(
-        """#!/usr/bin/env python3
-import argparse
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--home")
-parser.add_argument("--repo")
-sub = parser.add_subparsers(dest="cmd", required=True)
-sub.add_parser("doctor")
-sub.add_parser("install")
-sub.add_parser("register-shell")
-parser.parse_args()
-""",
-        encoding="utf-8",
-    )
+    marker = repo / "_localsetup" / "README.md"
+    marker.parent.mkdir(parents=True)
+    marker.write_text("# Localsetup\n", encoding="utf-8")
     shutil.copy2(source / "VERSION", repo / "VERSION")
     (repo / "README.md").write_text("# Localsetup\n", encoding="utf-8")
     (repo / "AGENTS.md").write_text("# Agents\n", encoding="utf-8")
@@ -2707,7 +2708,7 @@ parser.parse_args()
 
 def make_bootstrap_git_repo_with_release_tags(tmp_path: Path) -> tuple[Path, str, str]:
     repo = make_bootstrap_git_repo(tmp_path)
-    subprocess.run(["git", "tag", "v3.8.7"], cwd=repo, text=True, capture_output=True, check=True)
+    subprocess.run(["git", "tag", "v4.8.7"], cwd=repo, text=True, capture_output=True, check=True)
     (repo / "README.md").write_text("# Localsetup\n\nrelease refresh\n", encoding="utf-8")
     subprocess.run(["git", "add", "README.md"], cwd=repo, text=True, capture_output=True, check=True)
     subprocess.run(
@@ -2724,10 +2725,10 @@ def make_bootstrap_git_repo_with_release_tags(tmp_path: Path) -> tuple[Path, str
         capture_output=True,
         check=True,
     ).stdout.strip()
-    subprocess.run(["git", "tag", "v3.8.9"], cwd=repo, text=True, capture_output=True, check=True)
-    subprocess.run(["git", "tag", "v3.9.0-rc.1"], cwd=repo, text=True, capture_output=True, check=True)
+    subprocess.run(["git", "tag", "v4.8.9"], cwd=repo, text=True, capture_output=True, check=True)
+    subprocess.run(["git", "tag", "v4.9.0-rc.1"], cwd=repo, text=True, capture_output=True, check=True)
     old_commit = subprocess.run(
-        ["git", "rev-list", "-n", "1", "v3.8.7"],
+        ["git", "rev-list", "-n", "1", "v4.8.7"],
         cwd=repo,
         text=True,
         capture_output=True,
@@ -2899,7 +2900,7 @@ def test_root_installer_piped_bootstrap_global_only_uses_managed_source(tmp_path
         )
 
     assert completed.returncode == 0, completed.stderr.decode()
-    assert (managed_source / "_localsetup/tools/localsetup_v3.py").is_file()
+    assert (managed_source / "_localsetup/tools/localsetup.py").is_file()
     assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
     assert (home / ".local/bin/localsetup").is_file()
     assert not (outside / ".codex").exists()
@@ -3025,25 +3026,25 @@ def test_root_installer_filters_github_release_api_payload_before_tag_fallback(t
         json.dumps(
             [
                 {
-                    "tag_name": "v3.9.0-rc.1",
+                    "tag_name": "v4.9.0-rc.1",
                     "draft": False,
                     "prerelease": True,
                     "published_at": "2026-05-20T00:00:00Z",
                 },
                 {
-                    "tag_name": "v3.8.10",
+                    "tag_name": "v4.8.10",
                     "draft": True,
                     "prerelease": False,
                     "published_at": "2026-05-19T03:00:00Z",
                 },
                 {
-                    "tag_name": "v3.8.9",
+                    "tag_name": "v4.8.9",
                     "draft": False,
                     "prerelease": False,
                     "published_at": "2026-05-19T02:00:00Z",
                 },
                 {
-                    "tag_name": "v3.8.7",
+                    "tag_name": "v4.8.7",
                     "draft": False,
                     "prerelease": False,
                     "published_at": "2026-05-18T02:00:00Z",
@@ -3088,7 +3089,7 @@ def test_root_installer_bootstrap_ref_override_skips_latest_release_discovery(tm
     env = {
         **os.environ,
         "LOCALSETUP_BOOTSTRAP_REPO": str(bootstrap_repo),
-        "LOCALSETUP_BOOTSTRAP_REF": "v3.8.7",
+        "LOCALSETUP_BOOTSTRAP_REF": "v4.8.7",
         "LOCALSETUP_BOOTSTRAP_SOURCE_DIR": str(managed_source),
     }
 
@@ -3217,7 +3218,7 @@ def test_root_installer_non_git_managed_source_fails_actionably(tmp_path: Path) 
     managed_source = tmp_path / "managed-source"
     outside.mkdir()
     (managed_source / "_localsetup" / "tools").mkdir(parents=True)
-    (managed_source / "_localsetup" / "tools" / "localsetup_v3.py").write_text("print('stale')\n", encoding="utf-8")
+    (managed_source / "_localsetup" / "tools" / "localsetup.py").write_text("print('stale')\n", encoding="utf-8")
     env = {
         **os.environ,
         "LOCALSETUP_BOOTSTRAP_REPO": str(bootstrap_repo),
@@ -3287,7 +3288,7 @@ def test_root_installer_unrelated_clean_git_managed_source_fails_without_mutatio
         check=True,
     ).stdout.strip()
     assert completed.returncode != 0
-    assert "managed bootstrap source exists but is not a Localsetup v3 checkout" in completed.stderr
+    assert "managed bootstrap source exists but is not a Localsetup checkout" in completed.stderr
     assert before_head == after_head
     assert (managed_source / "README.md").read_text(encoding="utf-8") == "# Unrelated\n"
     assert not (managed_source / "_localsetup").exists()
@@ -3602,7 +3603,7 @@ def test_wizard_semantic_renderer_wraps_paths_and_keeps_text_labels() -> None:
     term.status_line("warn", "Manual dependency setup may still be needed.")
     term.status_line("fail", "A blocker prevents apply.")
     term.action_list(["Attach selected adapter: /tmp/" + "nested/" * 12 + ".codex/skills"])
-    term.diagnostic_command(["python3", "/tmp/" + "nested/" * 12 + "localsetup_v3.py", "doctor"])
+    term.diagnostic_command(["python3", "/tmp/" + "nested/" * 12 + "localsetup.py", "doctor"])
 
     rendered = output.getvalue()
     assert "Step 3/7 - Platforms" in rendered
@@ -4268,14 +4269,14 @@ def test_wizard_explicit_target_without_platforms_defaults_global_only(tmp_path:
     assert not (caller / ".codex").exists()
 
 
-def test_v3_migration_scanner_and_hook_gate(tmp_path: Path) -> None:
+def test_migration_scanner_and_hook_gate(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     (root / "README.md").write_text("Use localsetup-context during migration.\n", encoding="utf-8")
     alias_doc = root / "_localsetup" / "docs" / "_generated" / "skill_aliases.json"
     alias_doc.write_text('{"localsetup-context": "ls-context"}\n', encoding="utf-8")
     pack_doc = root / "_localsetup" / "docs" / "_generated" / "skill-packs.md"
     pack_doc.write_text("| `core` | `skill` | `ls-context` | `localsetup-context` |\n", encoding="utf-8")
-    migration_doc = root / "_localsetup" / "docs" / "migration" / "v2-to-v3-skill-map.md"
+    migration_doc = root / "_localsetup" / "docs" / "migration" / "skill-alias-map.md"
     migration_doc.write_text("| `localsetup-context` | `ls-context` |\n", encoding="utf-8")
     private_backup = root / ".localsetup" / "backups" / "audit" / "localsetup.lock.json"
     private_backup.parent.mkdir(parents=True)
@@ -4298,7 +4299,7 @@ def test_v3_migration_scanner_and_hook_gate(tmp_path: Path) -> None:
     assert by_path["_localsetup/docs/_generated/skill_aliases.json"]["category"] == "expected_alias_surface"
     assert by_path["_localsetup/docs/_generated/skill_aliases.json"]["actionable"] is False
     assert by_path["_localsetup/docs/_generated/skill-packs.md"]["category"] == "expected_alias_surface"
-    assert by_path["_localsetup/docs/migration/v2-to-v3-skill-map.md"]["category"] == "expected_migration_map"
+    assert by_path["_localsetup/docs/migration/skill-alias-map.md"]["category"] == "expected_migration_map"
     assert by_path[".localsetup/backups/audit/localsetup.lock.json"]["category"] == "ignored_private_backup"
     assert all({"path", "line", "text"} <= set(finding) for finding in findings)
     assert {finding["path"] for finding in scan_legacy_references(root, include_expected=False)} == {"README.md"}
@@ -4306,7 +4307,7 @@ def test_v3_migration_scanner_and_hook_gate(tmp_path: Path) -> None:
     assert ".localsetup/state/codex-heartbeat/latest.json" not in paths
     assert ".localsetup/lock.json" not in paths
 
-    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+    tool = root / "_localsetup" / "tools" / "localsetup.py"
     plain = subprocess.run(
         [sys.executable, str(tool), "--source-root", str(root), "scan-migration"],
         text=True,
@@ -4329,7 +4330,7 @@ def test_v3_migration_scanner_and_hook_gate(tmp_path: Path) -> None:
     assert gate["package"]["leaks"] == []
 
 
-def test_v3_conservative_migration_renames_managed_legacy_global_skill(tmp_path: Path) -> None:
+def test_conservative_migration_renames_managed_legacy_global_skill(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     legacy = home / ".local/share/localsetup/packages/localsetup-context"
@@ -4347,7 +4348,7 @@ def test_v3_conservative_migration_renames_managed_legacy_global_skill(tmp_path:
     assert (tmp_path / "backup" / "migration-report.json").exists()
 
 
-def test_v3_conservative_migration_refuses_unmanaged_adapter(tmp_path: Path) -> None:
+def test_conservative_migration_refuses_unmanaged_adapter(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     collision = root / ".codex" / "skills"
@@ -4361,7 +4362,7 @@ def test_v3_conservative_migration_refuses_unmanaged_adapter(tmp_path: Path) -> 
     assert "mv " in report["blockers"][0]["remediation"]
 
 
-def test_v3_convert_blocks_unmanaged_adapter_content(tmp_path: Path) -> None:
+def test_convert_blocks_unmanaged_adapter_content(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "target"
@@ -4376,7 +4377,7 @@ def test_v3_convert_blocks_unmanaged_adapter_content(tmp_path: Path) -> None:
     assert not (target / ".localsetup/lock.json").exists()
 
 
-def test_v3_convert_archives_old_framework_and_installs_at_target(tmp_path: Path) -> None:
+def test_convert_archives_old_framework_and_installs_at_target(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "target"
@@ -4404,12 +4405,12 @@ def test_v3_convert_archives_old_framework_and_installs_at_target(tmp_path: Path
     assert report["verify"]["ok"] is True
 
 
-def test_v3_convert_cli_accepts_split_selector_flags(tmp_path: Path) -> None:
+def test_convert_cli_accepts_split_selector_flags(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "target"
     target.mkdir()
-    tool = root / "_localsetup" / "tools" / "localsetup_v3.py"
+    tool = root / "_localsetup" / "tools" / "localsetup.py"
 
     completed = subprocess.run(
         [
@@ -4440,7 +4441,7 @@ def test_v3_convert_cli_accepts_split_selector_flags(tmp_path: Path) -> None:
     assert payload["applied"] is False
 
 
-def test_v3_convert_does_not_copy_framework_source(tmp_path: Path) -> None:
+def test_convert_does_not_copy_framework_source(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "target"
@@ -4460,7 +4461,7 @@ def test_v3_convert_does_not_copy_framework_source(tmp_path: Path) -> None:
     assert not (target / "_localsetup").exists()
 
 
-def test_v3_convert_uv_sync_uses_source_checkout_environment(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_convert_uv_sync_uses_source_checkout_environment(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "custom-home"
     target = tmp_path / "target"
@@ -4506,7 +4507,7 @@ def test_v3_convert_uv_sync_uses_source_checkout_environment(tmp_path: Path, mon
     assert str(root) in interpreter
 
 
-def test_v3_convert_late_migration_blocker_does_not_remove_target_framework(tmp_path: Path) -> None:
+def test_convert_late_migration_blocker_does_not_remove_target_framework(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "target"
@@ -4528,7 +4529,7 @@ def test_v3_convert_late_migration_blocker_does_not_remove_target_framework(tmp_
     assert not (target / ".codex" / "skills").exists()
 
 
-def test_v3_hook_gate_accepts_mock_runner(tmp_path: Path) -> None:
+def test_hook_gate_accepts_mock_runner(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     runner = tmp_path / "mock_runner.sh"
     runner.write_text("#!/usr/bin/env bash\nprintf '{\"ok\": true}\\n'\n", encoding="utf-8")
@@ -4541,7 +4542,7 @@ def test_v3_hook_gate_accepts_mock_runner(tmp_path: Path) -> None:
     assert gate["agent_runner"]["json"] == {"ok": True}
 
 
-def test_v3_refuses_unmanaged_skill_collision(tmp_path: Path) -> None:
+def test_refuses_unmanaged_skill_collision(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     collision = home / ".local/share/localsetup/packages/ls-context"
@@ -4557,7 +4558,7 @@ def test_v3_refuses_unmanaged_skill_collision(tmp_path: Path) -> None:
         raise AssertionError("expected unmanaged collision to fail")
 
 
-def test_v3_failed_apply_marks_journal_and_cleans_staging(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_failed_apply_marks_journal_and_cleans_staging(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     plan = build_install_plan(root, home=home, packs=["core"])
@@ -4583,7 +4584,7 @@ def test_v3_failed_apply_marks_journal_and_cleans_staging(tmp_path: Path, monkey
             assert not Path(item["staging_root"]).exists()
 
 
-def test_v3_failed_package_promotion_restores_existing_managed_package(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_failed_package_promotion_restores_existing_managed_package(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     plan = build_install_plan(root, home=home, packs=["core"])
@@ -4610,7 +4611,7 @@ def test_v3_failed_package_promotion_restores_existing_managed_package(tmp_path:
     assert load_json(journals[-1])["status"] == "failed"
 
 
-def test_v3_failed_late_commit_restores_packages_and_registry(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_failed_late_commit_restores_packages_and_registry(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     plan = build_install_plan(root, home=home, packs=["core"])
@@ -4641,7 +4642,7 @@ def test_v3_failed_late_commit_restores_packages_and_registry(tmp_path: Path, mo
     assert load_json(journals[-1])["status"] == "failed"
 
 
-def test_v3_failed_adapter_replace_restores_existing_adapter(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_failed_adapter_replace_restores_existing_adapter(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     plan = build_install_plan(root, home=home, packs=["core"], attach_mode="portable", platform_ids=["codex"])
@@ -4724,7 +4725,7 @@ def test_rollback_reads_legacy_lock_and_removes_relative_managed_adapter(tmp_pat
 
 
 def test_repo_path_rejects_symlink_parent_escape(tmp_path: Path) -> None:
-    from _localsetup.v3.paths import PathValidationError, repo_path
+    from _localsetup.core.paths import PathValidationError, repo_path
 
     root = tmp_path / "repo"
     outside = tmp_path / "outside"
@@ -4740,7 +4741,7 @@ def test_tar_leak_scan_detects_private_names(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     leak = root / "_localsetup" / "token.secret"
     leak.write_text("do not ship\n", encoding="utf-8")
-    artifact = tmp_path / "localsetup-v3-public.tar.gz"
+    artifact = tmp_path / "localsetup-public.tar.gz"
 
     package = build_public_artifact(root, artifact)
 
@@ -4749,7 +4750,7 @@ def test_tar_leak_scan_detects_private_names(tmp_path: Path) -> None:
 
 
 def test_query_payloads_cover_catalog_reasoning_graph_and_adoption(tmp_path: Path) -> None:
-    from _localsetup.v3.query import adopt_recommendations, graph_payload, pack_reasoning, skill_payload, workflow_payload
+    from _localsetup.core.query import adopt_recommendations, graph_payload, pack_reasoning, skill_payload, workflow_payload
 
     root = make_temp_repo(tmp_path)
     target = tmp_path / "target"
@@ -4783,7 +4784,7 @@ def test_query_payloads_cover_catalog_reasoning_graph_and_adoption(tmp_path: Pat
 
 
 def test_global_first_audit_reports_legacy_and_doc_claims(tmp_path: Path) -> None:
-    from _localsetup.v3.global_first_audit import _relative, audit_global_first
+    from _localsetup.core.global_first_audit import _relative, audit_global_first
 
     source = make_temp_repo(tmp_path)
     home = tmp_path / "home"
@@ -4794,8 +4795,8 @@ def test_global_first_audit_reports_legacy_and_doc_claims(tmp_path: Path) -> Non
     (source / "install.ps1").write_text("retired\n", encoding="utf-8")
     (source / "_localsetup" / "tools" / "deploy").write_text("legacy\n", encoding="utf-8")
     (source / "README.md").write_text(
-        "Run python3 _localsetup/tools/localsetup_v3.py verify here.\n"
-        "Allowed source-checkout command: python3 _localsetup/tools/localsetup_v3.py verify --source-root . --target-directory .\n",
+        "Run python3 _localsetup/tools/localsetup.py verify here.\n"
+        "Allowed source-checkout command: python3 _localsetup/tools/localsetup.py verify --source-root . --target-directory .\n",
         encoding="utf-8",
     )
     old_root = home / ".local" / "share" / "agents" / "skills" / "localsetup"
@@ -4822,7 +4823,7 @@ def test_global_first_audit_reports_legacy_and_doc_claims(tmp_path: Path) -> Non
 
 
 def test_diff_plan_current_compares_lockfile_to_planned_selection(tmp_path: Path) -> None:
-    from _localsetup.v3.diffing import diff_plan_current
+    from _localsetup.core.diffing import diff_plan_current
 
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
@@ -5162,8 +5163,8 @@ def test_wizard_review_blockers_apply_failure_and_warning_result(
 
 
 def test_config_rejects_invalid_shapes_and_modes(tmp_path: Path) -> None:
-    from _localsetup.v3.config import validate_install_config
-    from _localsetup.v3.paths import PathValidationError
+    from _localsetup.core.config import validate_install_config
+    from _localsetup.core.paths import PathValidationError
 
     with pytest.raises(FileNotFoundError):
         load_install_config(tmp_path / "missing.json")
@@ -5208,7 +5209,7 @@ def test_config_rejects_invalid_shapes_and_modes(tmp_path: Path) -> None:
 
 
 def test_adapter_state_edge_cases_cover_markers_symlinks_and_child_types(tmp_path: Path) -> None:
-    from _localsetup.v3.adapters import adapter_targets
+    from _localsetup.core.adapters import adapter_targets
 
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
@@ -5306,10 +5307,10 @@ def test_verify_and_rollback_issue_branches(tmp_path: Path, monkeypatch: pytest.
             "package_integrity_failures": [{"package": "ls-context"}],
         },
     ]
-    monkeypatch.setattr("_localsetup.v3.verify.adapter_status", lambda *args, **kwargs: adapters)
-    monkeypatch.setattr("_localsetup.v3.verify.validate_workflow_catalog", lambda *args, **kwargs: ["bad workflow"])
+    monkeypatch.setattr("_localsetup.core.verify.adapter_status", lambda *args, **kwargs: adapters)
+    monkeypatch.setattr("_localsetup.core.verify.validate_workflow_catalog", lambda *args, **kwargs: ["bad workflow"])
     monkeypatch.setattr(
-        "_localsetup.v3.verify.provenance_report",
+        "_localsetup.core.verify.provenance_report",
         lambda *args, **kwargs: {"warnings": [], "repair_hints": []},
     )
 
@@ -5436,12 +5437,12 @@ def test_cli_helper_and_policy_branches(tmp_path: Path, monkeypatch: pytest.Monk
     assert "shell warn" in capsys.readouterr().out
 
 
-def test_v3_cli_no_command_prints_concise_help(capsys: pytest.CaptureFixture[str]) -> None:
+def test_cli_no_command_prints_concise_help(capsys: pytest.CaptureFixture[str]) -> None:
     assert cli_mod._main([]) == 2
 
     captured = capsys.readouterr()
     assert captured.out == ""
-    assert "localsetup-v3: command required" in captured.err
+    assert "localsetup: command required" in captured.err
     assert "localsetup doctor" in captured.err
     assert "localsetup verify --level filesystem" in captured.err
     assert "the following arguments are required: cmd" not in captured.err
@@ -5471,7 +5472,7 @@ def test_cli_version_failure_branches(tmp_path: Path, monkeypatch: pytest.Monkey
 
 
 def test_dependency_status_and_ensure_error_branches(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    from _localsetup.v3 import dependencies as deps
+    from _localsetup.core import dependencies as deps
 
     root = make_temp_repo(tmp_path)
 
@@ -5533,7 +5534,7 @@ def test_dependency_status_and_ensure_error_branches(tmp_path: Path, monkeypatch
 
 
 def test_path_layout_validation_edge_cases(tmp_path: Path) -> None:
-    from _localsetup.v3 import paths
+    from _localsetup.core import paths
 
     for value, message in [
         ("", "must not be empty"),
@@ -5566,7 +5567,7 @@ def test_path_layout_validation_edge_cases(tmp_path: Path) -> None:
 
 
 def test_package_helpers_cover_error_and_mismatch_branches(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    from _localsetup.v3 import package as pkg
+    from _localsetup.core import package as pkg
 
     root = tmp_path / "repo"
     root.mkdir()
@@ -5610,7 +5611,7 @@ source = { registry = "https://pypi.org/simple" }
     output = tmp_path / "source.cdx.json"
     fake_pack = SimpleNamespace(pack_id="pack", version=1, lockfile=".localsetup/lock.json")
     monkeypatch.setattr(pkg, "load_pack_config", lambda repo: fake_pack)
-    monkeypatch.setattr("_localsetup.v3.manifests.load_pack_config", lambda repo: fake_pack)
+    monkeypatch.setattr("_localsetup.core.manifests.load_pack_config", lambda repo: fake_pack)
     assert pkg.write_source_sbom(root, output)["component_count"] == 2
 
     target = tmp_path / "target"
@@ -5684,7 +5685,7 @@ source = { registry = "https://pypi.org/simple" }
 
 
 def test_versioning_pure_and_check_branches(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    from _localsetup.v3 import versioning as ver
+    from _localsetup.core import versioning as ver
 
     with pytest.raises(ValueError, match="invalid semantic version"):
         ver.SemVer.parse("not-semver")
@@ -5758,7 +5759,7 @@ def test_versioning_pure_and_check_branches(tmp_path: Path, monkeypatch: pytest.
 
 
 def test_provenance_edge_cases_and_report_warnings(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    from _localsetup.v3 import provenance as prov
+    from _localsetup.core import provenance as prov
 
     root = tmp_path / "repo"
     root.mkdir()
@@ -5889,7 +5890,7 @@ def test_provenance_edge_cases_and_report_warnings(tmp_path: Path, monkeypatch: 
 
 
 def test_harness_helpers_error_and_cron_paths(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    from _localsetup.v3 import harness
+    from _localsetup.core import harness
 
     repo = tmp_path / "repo"
     target = tmp_path / "target"
@@ -5961,7 +5962,7 @@ def test_harness_helpers_error_and_cron_paths(tmp_path: Path, monkeypatch: pytes
 
 
 def test_repo_finalizer_helpers_and_run_branches(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    from _localsetup.v3 import repo_finalizer as rf
+    from _localsetup.core import repo_finalizer as rf
 
     repo = tmp_path / "repo"
     repo.mkdir()

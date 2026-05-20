@@ -7,17 +7,17 @@ import subprocess
 import pytest
 import yaml
 
-from _localsetup.v3.baseline import classify_path
-from _localsetup.v3.baseline import tracked_files
-from _localsetup.v3.manifests import load_pack_config, load_platforms, validate_manifest_schemas
-from _localsetup.v3.paths import PathValidationError
-from _localsetup.v3.skills import ALLOWED_SKILL_TAXONOMY_CLASSES
-from _localsetup.v3.skills import load_skill_catalog
-from _localsetup.v3.skills import selected_skill_names
-from _localsetup.v3.skills import skill_taxonomy_payload
-from _localsetup.v3.skills import validate_skill_catalog
-from _localsetup.v3.workflows import selected_workflow_names, validate_workflow_catalog
-from _localsetup.v3.workflows import load_workflow_catalog
+from _localsetup.core.baseline import classify_path
+from _localsetup.core.baseline import tracked_files
+from _localsetup.core.manifests import load_pack_config, load_platforms, validate_manifest_schemas
+from _localsetup.core.paths import PathValidationError
+from _localsetup.core.skills import ALLOWED_SKILL_TAXONOMY_CLASSES
+from _localsetup.core.skills import load_skill_catalog
+from _localsetup.core.skills import selected_skill_names
+from _localsetup.core.skills import skill_taxonomy_payload
+from _localsetup.core.skills import validate_skill_catalog
+from _localsetup.core.workflows import selected_workflow_names, validate_workflow_catalog
+from _localsetup.core.workflows import load_workflow_catalog
 
 
 ROOT = Path(__file__).resolve().parents[2]

@@ -16,16 +16,16 @@ Run these before a maintainer release or broad automation change:
 git status --short --branch
 uv lock --check
 uv sync --locked --all-groups
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . version-plan
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . version-sync --check --target "$(cat VERSION)"
+uv run --locked python _localsetup/tools/localsetup.py --source-root . version-plan
+uv run --locked python _localsetup/tools/localsetup.py --source-root . version-sync --check --target "$(cat VERSION)"
 ./_localsetup/tools/verify_context
 ./_localsetup/tools/verify_rules
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . scan-migration
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . audit-global-first
+uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog
+uv run --locked python _localsetup/tools/localsetup.py --source-root . scan-migration
+uv run --locked python _localsetup/tools/localsetup.py --source-root . audit-global-first
 uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . generate-docs
-uv run --locked python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-v3-framework-audit.md
+uv run --locked python _localsetup/tools/localsetup.py --source-root . generate-docs
+uv run --locked python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-framework-audit.md
 uv run --locked pytest -n auto _localsetup/tests -q
 uv run --locked ./_localsetup/tests/automated_test.sh
 git diff --check
@@ -36,7 +36,7 @@ git diff --check
 Run this after changing shipped skills, workflow packages, platform adapters, or repo agent context when this machine should immediately use the current checkout:
 
 ```bash
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . self-refresh --dependency-mode prompt-only
+uv run --locked python _localsetup/tools/localsetup.py --source-root . self-refresh --dependency-mode prompt-only
 ```
 
 The command installs every configured pack from this checkout into the managed Localsetup library and refreshes only adapter paths that are already attached in the target repo. It is maintenance tooling for local machine state, not a release or publish step.
@@ -113,7 +113,7 @@ The triage workflow bootstraps these labels. Run the workflow manually once befo
 `VERSION` is the source of truth. Use [`VERSIONING.md`](VERSIONING.md) for the policy and command flow. Version sync should be produced locally before push through the hook or:
 
 ```bash
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . release-push
+uv run --locked python _localsetup/tools/localsetup.py --source-root . release-push
 ```
 
 Do not publish a release from a dirty worktree. If a tag already exists at a different commit, stop and resolve the remote release state before retrying.

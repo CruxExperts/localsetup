@@ -23,7 +23,7 @@ dev = [
 ]
 
 [project.scripts]
-localsetup = "_localsetup.v3.cli:main"
+localsetup = "_localsetup.core.cli:main"
 
 [tool.setuptools]
 include-package-data = false

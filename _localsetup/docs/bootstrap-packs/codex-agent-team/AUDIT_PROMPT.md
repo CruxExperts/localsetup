@@ -6,7 +6,7 @@ owner_skill: ls-framework-compliance
 
 # Codex Plan-Mode Prompt: Bootstrap-Pack Audit
 
-Use this prompt when the current repository is Localsetup v3 and the goal is to audit a prior global Codex agent-team bootstrap.
+Use this prompt when the current repository is Localsetup and the goal is to audit a prior global Codex agent-team bootstrap.
 
 ## Mission
 

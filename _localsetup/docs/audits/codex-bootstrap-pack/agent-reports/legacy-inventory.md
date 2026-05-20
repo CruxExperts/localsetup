@@ -9,7 +9,7 @@ date: 2026-05-10
 
 ## Summary
 
-The current repo holds canonical Localsetup v3 source surfaces under `_localsetup/skills`, `_localsetup/templates`, and `_localsetup/config`. Repo-local hidden dirs for Cursor, Kilo, and OpenCode were shallow placeholders. The strongest legacy duplicate trees were `<legacy-localsetup-repo>/.agents/skills` and `~/.codex/skills`, both using older `localsetup-*` names with sampled hashes that differ from current repo source.
+The current repo holds canonical Localsetup source surfaces under `_localsetup/skills`, `_localsetup/templates`, and `_localsetup/config`. Repo-local hidden dirs for Cursor, Kilo, and OpenCode were shallow placeholders. The strongest legacy duplicate trees were `<legacy-localsetup-repo>/.agents/skills` and `~/.codex/skills`, both using older `localsetup-*` names with sampled hashes that differ from current repo source.
 
 `~/.local/share/localsetup/packages` appears to be the current runtime mirror for sampled `ls-*` skills.
 

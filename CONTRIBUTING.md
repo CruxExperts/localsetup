@@ -1,6 +1,6 @@
-# Contributing to Localsetup v3
+# Contributing to Localsetup
 
-Thanks for helping improve Localsetup v3. This project is built for people who want agent workflows to be portable, reviewable, and safe enough to use on real repositories.
+Thanks for helping improve Localsetup. This project is built for people who want agent workflows to be portable, reviewable, and safe enough to use on real repositories.
 
 ## Best ways to contribute
 
@@ -26,9 +26,9 @@ Use the versioning policy in [_localsetup/docs/VERSIONING.md](_localsetup/docs/V
 Before opening a release-impacting PR, run the relevant subset of:
 
 ```bash
-uv run --locked python _localsetup/tools/localsetup_v3.py --repo . version-plan
-uv run --locked python _localsetup/tools/localsetup_v3.py --repo . version-sync --check --target "$(cat VERSION)"
-uv run --locked python _localsetup/tools/localsetup_v3.py --repo . validate-catalog
+uv run --locked python _localsetup/tools/localsetup.py --repo . version-plan
+uv run --locked python _localsetup/tools/localsetup.py --repo . version-sync --check --target "$(cat VERSION)"
+uv run --locked python _localsetup/tools/localsetup.py --repo . validate-catalog
 uv run --locked pytest -n auto _localsetup/tests -q
 git diff --check
 ```

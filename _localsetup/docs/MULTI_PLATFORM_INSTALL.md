@@ -4,18 +4,18 @@ version: 4.0
 owner_skill: ls-framework-compliance
 ---
 
-# Multi-platform install (Localsetup v3)
+# Multi-platform install (Localsetup)
 
-**Purpose:** How to install Localsetup v3 for each supported AI agent platform. Supported platforms are listed in `_localsetup/config/platforms.yaml` and summarized in [_generated/platform-adapters.md](_generated/platform-adapters.md). Same framework; explicitly selected platform adapter paths point at a shared managed package library.
+**Purpose:** How to install Localsetup for each supported AI agent platform. Supported platforms are listed in `_localsetup/config/platforms.yaml` and summarized in [_generated/platform-adapters.md](_generated/platform-adapters.md). Same framework; explicitly selected platform adapter paths point at a shared managed package library.
 
 <p align="center">
-  <img src="../../assets/localsetup-v3-install-lifecycle.svg" alt="Localsetup v3 install lifecycle: doctor, configure, context, plan, install, verify, ship, and rollback" width="960">
+  <img src="../../assets/localsetup-install-lifecycle.svg" alt="Localsetup install lifecycle: doctor, configure, context, plan, install, verify, ship, and rollback" width="960">
 </p>
 
 ## Platform detection and script selection
 
 - **Linux / macOS:** Use `./install`, which opens the interactive wizard by default. Automation uses `./install --non-interactive --yes`.
-- **Windows:** Localsetup v3 supports Windows through WSL2 only. Native PowerShell installation surfaces are removed.
+- **Windows:** Localsetup supports Windows through WSL2 only. Native PowerShell installation surfaces are removed.
 - **Git Bash (or MSYS/Cygwin) on Windows:** Open WSL2 and run the Bash installer from there.
 
 ## Install command
@@ -64,7 +64,7 @@ curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install 
 
 When the raw installer is run with `--tools` or `--platforms` and no explicit `--target-directory`, the wizard defaults adapters to the current directory where you launched the command. Without selected tools or platforms, the install is global-library-only.
 
-`--tools` is a compatibility alias for the v3 `--platforms` selector.
+`--tools` is a compatibility alias for the current `--platforms` selector.
 
 Full local setup for the Codex, Kilo, and OpenCode adapters:
 
@@ -114,7 +114,7 @@ cd /path/to/repo
 - `--directory PATH` / `-Directory PATH`  - Localsetup source checkout containing `_localsetup/`. Defaults to `.` when run from a checkout; otherwise the raw Bash installer creates or refreshes `~/.local/share/localsetup/source`.
 - `--target-directory PATH`  - Directory where selected repo adapter links and `.localsetup/lock.json` are written. Defaults to the source checkout for explicit local installs and to the caller's current directory for raw bootstrap installs with selected platforms.
 - `--tools LIST`  - Compatibility alias for comma-separated platforms: cursor, claude-code, codex, openclaw, kilo, opencode
-- `--platforms LIST`  - Space-separated v3 platform ids. Omit for a global-only install with no repo adapters.
+- `--platforms LIST`  - Space-separated platform ids. Omit for a global-only install with no repo adapters.
 - `--preset NAME`  - Skill selection preset: core, suggested, all, or custom.
 - `--packs LIST`  - Comma-separated skill/workflow packs to install.
 - `--skills LIST`  - Comma-separated individual skill ids to include.
@@ -125,7 +125,7 @@ cd /path/to/repo
 - `--repo-preset NAME`, `--repo-packs LIST`, `--repo-skills LIST`, `--repo-skill-classes LIST`, `--repo-skill-tags LIST`, `--repo-exclude-skills LIST`  - Selector aliases for packages exposed through repo adapter paths.
 - `--yes`  - Legacy accepted flag for interactive installs. For automation, combine with `--non-interactive`.
 - `--non-interactive`  - Automation mode. Requires `--yes` and preserves machine-readable output.
-- `--global`  - Removed legacy flag; v3 installs the managed home library by default and exits with an explicit error if this flag is supplied.
+- `--global`  - Removed legacy flag; installs the managed home library by default and exits with an explicit error if this flag is supplied.
 - `--sync-env`  - Sync the uv-managed source checkout `.venv` from `pyproject.toml` and `uv.lock`; quarantines corrupt Localsetup-owned legacy environments before rebuild.
 - `--install-deps`  - Deprecated migration alias for `--sync-env`.
 - `--install-uv` / `--no-install-uv`  - Explicitly allow or forbid uv bootstrap when `--sync-env` is requested.
@@ -144,13 +144,13 @@ The wizard keeps the install portable and dependency-free; it uses plain termina
 
 ## Shared home library
 
-V3 installs managed skills and workflow packages to `~/.local/share/localsetup/packages` and writes a registry beside them. The managed package root contains the union of the global baseline and any repo-visible packages. Explicitly selected repo adapter paths such as `.codex/skills` and `.kilo/skills` become scoped Localsetup-managed adapter directories. In symlink mode, each selected repo-visible package inside the adapter links to the managed home library. In portable mode, the selected repo-visible packages are copied. Both modes write `.localsetup-adapter.json` so Localsetup can recognize, verify, detach, and replace the adapter later.
+Localsetup installs managed skills and workflow packages to `~/.local/share/localsetup/packages` and writes a registry beside them. The managed package root contains the union of the global baseline and any repo-visible packages. Explicitly selected repo adapter paths such as `.codex/skills` and `.kilo/skills` become scoped Localsetup-managed adapter directories. In symlink mode, each selected repo-visible package inside the adapter links to the managed home library. In portable mode, the selected repo-visible packages are copied. Both modes write `.localsetup-adapter.json` so Localsetup can recognize, verify, detach, and replace the adapter later.
 
 Workflow packages are sourced from `_localsetup/workflows/ls-workflow-*`. They install beside skills because every workflow package includes a valid `SKILL.md`, while its Localsetup-specific `workflow.yaml` stays in source for validation and generated docs.
 
 If `--tools` or `--platforms` is omitted, no repo adapter is attached. This is the safe default for refreshing the managed library without touching project-owned `.codex`, `.cursor`, `.kilo`, `.claude`, `.opencode`, or `.openclaw` configuration.
 
-To remove a v3 install, run:
+To remove a install, run:
 
 ```bash
 localsetup rollback
@@ -158,7 +158,7 @@ localsetup rollback
 
 ## Dependency preflight
 
-Before install, use the dependency list below as the canonical source of truth. The Bash wrapper performs the same minimal Localsetup-owned environment quarantine needed before uv can run the Python CLI, then delegates preflight and dependency work to `localsetup_v3.py`; it does not call system pip directly.
+Before install, use the dependency list below as the canonical source of truth. The Bash wrapper performs the same minimal Localsetup-owned environment quarantine needed before uv can run the Python CLI, then delegates preflight and dependency work to `localsetup.py`; it does not call system pip directly.
 
 ### Canonical dependency list
 
@@ -166,7 +166,7 @@ Before install, use the dependency list below as the canonical source of truth. 
 |------------|------------------------|---------|
 | `git` >= 2.20.0 | Required for raw bootstrap clone and refresh; recommended otherwise | Cloning or refreshing the managed source checkout, source traceability, and release workflows |
 | `rg` (ripgrep) | Recommended | Framework search and review workflows |
-| `python` >= 3.12 | Required | V3 installer, framework tools, tests, and Python-first policy |
+| `python` >= 3.12 | Required | Installer, framework tools, tests, and Python-first policy |
 | `uv` | Required for dependency sync | Sync `pyproject.toml` / `uv.lock` into the source checkout `.venv` |
 | Python: `yaml` (PyYAML>=6.0) | Recommended | YAML parsing for skill index, config, and PRD files |
 | Python: `requests` (requests>=2.28) | Recommended | HTTP client used by index refresh and scrub tools |
@@ -194,17 +194,17 @@ To install dependencies automatically during install, add the `--sync-env` flag:
 ./install --directory . --tools cursor --sync-env
 ```
 
-Without `--sync-env`, the root wrapper runs doctor in `prompt-only` mode and applies the v3 install without syncing Python dependencies. Direct Python CLI installs use the same conservative default; pass `--dependency-mode uv-sync` when the CLI should sync the project environment before applying adapter changes.
+Without `--sync-env`, the root wrapper runs doctor in `prompt-only` mode and applies the install without syncing Python dependencies. Direct Python CLI installs use the same conservative default; pass `--dependency-mode uv-sync` when the CLI should sync the project environment before applying adapter changes.
 
 When explicit sync is requested, Localsetup may quarantine corrupt Localsetup-owned environments by rename, never deletion. Eligible paths are the source checkout `.venv`, legacy global `~/.local/share/localsetup/venv`, and legacy target-local `.localsetup/venv`. Each quarantine writes a JSON record under Localsetup state with the original path, reason, mode, timestamp, and uv error text when applicable. A target project's own `.venv` is not Localsetup-owned and is never modified.
 
 Do not alter system Python to satisfy Localsetup framework dependencies. Install uv or set `LOCALSETUP_UV_BIN` to a preinstalled uv binary; use `pipx` for standalone CLI tools, including future wheel-based Localsetup command installs, and use the uv project environment for libraries imported by Localsetup framework modules.
 
-## V3 reinstall behavior
+## Reinstall behavior
 
-On re-run, the v3 installer refreshes the managed shared package library, rewrites the global registry, updates selected adapter links or portable copies, and writes `.localsetup/lock.json`. The wizard reloads prior global baseline selectors from the registry and repo-visible selectors, platforms, adapter mode, and dependency mode from `.localsetup/lock.json`. Choosing no repo setup for a prior target removes managed adapter state while leaving the shared package library intact.
+On re-run, the Localsetup installer refreshes the managed shared package library, rewrites the global registry, updates selected adapter links or portable copies, and writes `.localsetup/lock.json`. The wizard reloads prior global baseline selectors from the registry and repo-visible selectors, platforms, adapter mode, and dependency mode from `.localsetup/lock.json`. Choosing no repo setup for a prior target removes managed adapter state while leaving the shared package library intact.
 
-`--upgrade-policy` is removed. V3 uses managed install metadata and refuses to overwrite unmanaged skill paths.
+`--upgrade-policy` is removed. Localsetup uses managed install metadata and refuses to overwrite unmanaged skill paths.
 
 Adapter paths are conservative. The installer creates only the selected adapter subpath, for example `.cursor/skills`, and preserves neighboring project configuration such as `.cursor/rules`. It refuses unmanaged adapter directories, regular files, dangling symlinks, and symlinks that point somewhere other than the managed Localsetup library. It recognizes current scoped adapters, legacy monolithic managed symlinks, and Localsetup-managed portable copies so re-running the same install can update the adapter without exposing unrelated global packages.
 
@@ -229,7 +229,7 @@ Adapter paths are conservative. The installer creates only the selected adapter 
 | Verify | `localsetup verify --tools codex` | WSL2 only |
 | Tests | `uv run --locked ./_localsetup/tests/automated_test.sh` | WSL2 only |
 
-Framework install logic is Python-first. Shell is limited to the bootstrap wrapper, and PowerShell is not a native v3 install target.
+Framework install logic is Python-first. Shell is limited to the bootstrap wrapper, and PowerShell is not a native install target.
 
 ## Repo-local
 

@@ -40,10 +40,10 @@ def classify_path(path: str) -> str:
         return "legacy-migration"
     if path.startswith("_localsetup/workflows/ls-workflow-"):
         return "keep"
-    if path.startswith("_localsetup/v3/") or path in {
+    if path.startswith("_localsetup/core/") or path in {
         "_localsetup/config/pack.yaml",
         "_localsetup/config/platforms.yaml",
-        "_localsetup/tools/localsetup_v3.py",
+        "_localsetup/tools/localsetup.py",
     }:
         return "refactor"
     if path.startswith("_localsetup/") or path in {"README.md", "AGENTS.md", "LICENSE", "SECURITY.md"}:

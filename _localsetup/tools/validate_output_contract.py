@@ -49,7 +49,7 @@ TOOLING_POLICY_MARKERS = {
     ),
     "install_bash": (
         Path("install"),
-        "_localsetup/tools/localsetup_v3.py",
+        "_localsetup/tools/localsetup.py",
     ),
 }
 

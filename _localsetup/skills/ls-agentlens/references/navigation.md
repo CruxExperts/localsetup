@@ -65,4 +65,4 @@
 
 This skill does not provide a regeneration command. If `.agentlens/` appears stale, first verify the claim against source files. Regenerate only when the target repository or an external AgentLens installation documents the exact command to run.
 
-Localsetup v3 does not include an `agentlens` executable, and this skill should not imply that one is available from the repo or `PATH`.
+Localsetup does not include an `agentlens` executable, and this skill should not imply that one is available from the repo or `PATH`.

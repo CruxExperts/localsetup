@@ -216,13 +216,13 @@ def _print_payload(payload: dict, *, markdown: bool = False) -> None:
 
 
 def _print_no_command_help() -> None:
-    print("localsetup-v3: command required", file=sys.stderr)
+    print("localsetup: command required", file=sys.stderr)
     print("", file=sys.stderr)
     print("Examples:", file=sys.stderr)
     print("  localsetup doctor", file=sys.stderr)
     print("  localsetup verify --level filesystem", file=sys.stderr)
     print("  localsetup self-refresh --dependency-mode uv-sync", file=sys.stderr)
-    print("  localsetup-v3 --help", file=sys.stderr)
+    print("  localsetup --help", file=sys.stderr)
 
 
 def _all_configured_packs(repo_root: Path) -> list[str]:
@@ -364,7 +364,7 @@ def _run_self_refresh(
 
 
 def _main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="localsetup-v3")
+    parser = argparse.ArgumentParser(prog="localsetup")
     parser.add_argument("--home")
     parser.add_argument("--source-root")
     parser.add_argument("--repo", default=None, help=argparse.SUPPRESS)
@@ -499,7 +499,7 @@ def _main(argv: list[str] | None = None) -> int:
     context_index_p.add_argument("context_index_args", nargs=argparse.REMAINDER)
 
     hook_p = sub.add_parser("hook-gate")
-    hook_p.add_argument("--out", default="/tmp/localsetup-v3-public.tar.gz")
+    hook_p.add_argument("--out", default="/tmp/localsetup-public.tar.gz")
     hook_p.add_argument("--runner")
 
     version_plan_p = sub.add_parser("version-plan")
@@ -534,7 +534,7 @@ def _main(argv: list[str] | None = None) -> int:
     _add_visual_flags(wizard_p)
 
     package_p = sub.add_parser("package")
-    package_p.add_argument("--out", default="dist/localsetup-v3-public.tar.gz")
+    package_p.add_argument("--out", default="dist/localsetup-public.tar.gz")
     verify_release_p = sub.add_parser("verify-release")
     verify_release_p.add_argument("artifact")
     verify_release_p.add_argument("--sha256")
@@ -869,7 +869,7 @@ def _main(argv: list[str] | None = None) -> int:
                     message=args.message,
                 )
             else:
-                print(f"localsetup-v3: unsupported repo-finalizer action: {args.harness_action}", file=sys.stderr)
+                print(f"localsetup: unsupported repo-finalizer action: {args.harness_action}", file=sys.stderr)
                 return 2
             if args.json:
                 print(json.dumps(payload, indent=2, sort_keys=True))
@@ -877,7 +877,7 @@ def _main(argv: list[str] | None = None) -> int:
                 print(repo_finalizer_payload_to_text(payload), end="")
             return 0 if payload.get("ok", True) else 1
         if args.harness_topic != "codex-heartbeat":
-            print(f"localsetup-v3: unsupported harness topic: {args.harness_topic}", file=sys.stderr)
+            print(f"localsetup: unsupported harness topic: {args.harness_topic}", file=sys.stderr)
             return 2
         target_root = _harness_target(args)
         if args.harness_action == "plan":
@@ -893,7 +893,7 @@ def _main(argv: list[str] | None = None) -> int:
         elif args.harness_action == "run":
             payload = harness_run(root, target_root, no_agent=args.no_agent, force=args.force)
         else:
-            print(f"localsetup-v3: unsupported heartbeat action: {args.harness_action}", file=sys.stderr)
+            print(f"localsetup: unsupported heartbeat action: {args.harness_action}", file=sys.stderr)
             return 2
         print(harness_payload_to_text(payload))
         return 0 if payload.get("ok") else 1
@@ -1147,5 +1147,5 @@ def main(argv: list[str] | None = None) -> int:
     try:
         return _main(argv)
     except Exception as exc:
-        print(f"localsetup-v3: {exc}", file=sys.stderr)
+        print(f"localsetup: {exc}", file=sys.stderr)
         return 2

@@ -4,9 +4,9 @@ version: 4.0
 owner_skill: ls-automatic-versioning
 ---
 
-# Localsetup v3 Versioning
+# Localsetup Versioning
 
-Localsetup v3 uses the root `VERSION` file as the source of truth for the framework version. README files, generated facts, and release artifacts should display the same normalized semantic version.
+Localsetup uses the root `VERSION` file as the source of truth for the framework version. README files, generated facts, and release artifacts should display the same normalized semantic version.
 
 ## Current Version
 
@@ -31,13 +31,13 @@ Localsetup v3 uses the root `VERSION` file as the source of truth for the framew
 Install hooks once per clone:
 
 ```bash
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . install-hooks
+uv run --locked python _localsetup/tools/localsetup.py --source-root . install-hooks
 ```
 
 For normal release pushes, use:
 
 ```bash
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . release-push
+uv run --locked python _localsetup/tools/localsetup.py --source-root . release-push
 ```
 
 Raw `git push` is guarded by `.githooks/pre-push`. If a version-sync commit is needed, the hook creates it and stops that push; rerun the push after reviewing the generated commit. This two-step guard is intentional because Git determines the commit being pushed before the `pre-push` hook runs.
@@ -45,8 +45,8 @@ Raw `git push` is guarded by `.githooks/pre-push`. If a version-sync commit is n
 Useful read-only checks:
 
 ```bash
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . version-plan
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . version-sync --check --target "$(cat VERSION)"
+uv run --locked python _localsetup/tools/localsetup.py --source-root . version-plan
+uv run --locked python _localsetup/tools/localsetup.py --source-root . version-sync --check --target "$(cat VERSION)"
 ```
 
 The `version-plan` output includes `policy: "patch-default"`, diagnostic `raw_bump` values from Conventional Commit parsing, and the effective release `bump` after patch-default policy is applied.
@@ -62,15 +62,15 @@ Before release, run:
 ```bash
 uv lock --check
 uv sync --locked --all-groups
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . version-plan
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . version-sync --check --target "$(cat VERSION)"
-uv run --locked python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-v3-framework-audit.md
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . scan-migration
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . audit-global-first
+uv run --locked python _localsetup/tools/localsetup.py --source-root . version-plan
+uv run --locked python _localsetup/tools/localsetup.py --source-root . version-sync --check --target "$(cat VERSION)"
+uv run --locked python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-framework-audit.md
+uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog
+uv run --locked python _localsetup/tools/localsetup.py --source-root . scan-migration
+uv run --locked python _localsetup/tools/localsetup.py --source-root . audit-global-first
 uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . generate-docs
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . package --out "dist/localsetup-v$(cat VERSION).tar.gz"
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . verify-release "dist/localsetup-v$(cat VERSION).tar.gz"
+uv run --locked python _localsetup/tools/localsetup.py --source-root . generate-docs
+uv run --locked python _localsetup/tools/localsetup.py --source-root . package --out "dist/localsetup-v$(cat VERSION).tar.gz"
+uv run --locked python _localsetup/tools/localsetup.py --source-root . verify-release "dist/localsetup-v$(cat VERSION).tar.gz"
 git diff --check
 ```

@@ -1,6 +1,6 @@
 # Security
 
-Localsetup v3 manages agent context, skills, install paths, and automation helpers. Please report security-sensitive issues privately so they can be fixed before public disclosure.
+Localsetup manages agent context, skills, install paths, and automation helpers. Please report security-sensitive issues privately so they can be fixed before public disclosure.
 
 ## Reporting a vulnerability
 
@@ -14,7 +14,7 @@ Include the affected file or command, Localsetup version, platform ID if relevan
 
 This policy covers:
 
-- Root install scripts and v3 install tooling
+- Root install scripts and install tooling
 - `_localsetup/tools/`, `_localsetup/lib/`, and `_localsetup/config/`
 - Shipped skills under `_localsetup/skills/`
 - Public templates, docs, package metadata, and generated release artifacts

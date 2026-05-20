@@ -1,7 +1,7 @@
-# Localsetup v3 - Agent context (OpenCode)
+# Localsetup - Agent context (OpenCode)
 
 ## Overview
-Localsetup v3 is deployed into this repo at `_localsetup/`. Framework and context are repo-local (mobile, backup-able). Engine = _localsetup/; user data = repo-local. Attach git hash when referencing PRDs/specs (see [_localsetup/docs/GIT_TRACEABILITY.md](../../docs/GIT_TRACEABILITY.md)).
+Localsetup is deployed into this repo at `_localsetup/`. Framework and context are repo-local (mobile, backup-able). Engine = _localsetup/; user data = repo-local. Attach git hash when referencing PRDs/specs (see [_localsetup/docs/GIT_TRACEABILITY.md](../../docs/GIT_TRACEABILITY.md)).
 
 OpenCode uses `AGENTS.md` as the project initialization file. This context is loaded automatically when OpenCode initializes in this repo.
 

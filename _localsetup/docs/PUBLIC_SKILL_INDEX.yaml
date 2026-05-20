@@ -772,12 +772,12 @@ skills:
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
 - name: aetherlang-claude-code
-  description: Use this skill to execute AetherLang V3 AI workflows from Claude Code.
+  description: Use this skill to execute AetherLang current AI workflows from Claude Code.
   url: https://clawskills.sh/skills/contrario-aetherlang-claude-code
   source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
   category: Table of Contents
-  summary_short: Use this skill to execute AetherLang V3 AI workflows from Claude Code.
-  summary_long: 'Use this skill to execute AetherLang V3 AI workflows from Claude Code. Primary capabilities: github. May require network access.'
+  summary_short: Use this skill to execute AetherLang current AI workflows from Claude Code.
+  summary_long: 'Use this skill to execute AetherLang current AI workflows from Claude Code. Primary capabilities: github. May require network access.'
   capabilities:
   - github
   requirements: []
@@ -1885,12 +1885,12 @@ skills:
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
 - name: aave-liquidation-monitor
-  description: Proactive monitoring of Aave V3 borrow positions with liquidation alerts.
+  description: Proactive monitoring of Aave borrow positions with liquidation alerts.
   url: https://clawskills.sh/skills/jgramajo4-aave-liquidation-monitor
   source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
   category: Table of Contents
-  summary_short: Proactive monitoring of Aave V3 borrow positions with liquidation alerts.
-  summary_long: 'Proactive monitoring of Aave V3 borrow positions with liquidation alerts. Primary capabilities: github. May require network access.'
+  summary_short: Proactive monitoring of Aave borrow positions with liquidation alerts.
+  summary_long: 'Proactive monitoring of Aave borrow positions with liquidation alerts. Primary capabilities: github. May require network access.'
   capabilities:
   - github
   requirements: []
@@ -5395,7 +5395,7 @@ skills:
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
 - name: aetherlang
-  description: '> The world''s most advanced AI workflow orchestration platform. 9 V3 engines deliver Nobel-level analysis.'
+  description: '> The world''s most advanced AI workflow orchestration platform. 9 engines deliver Nobel-level analysis.'
   url: https://clawskills.sh/skills/contrario-aetherlang
   source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
   category: Table of Contents
@@ -10066,12 +10066,12 @@ skills:
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
 - name: clonev
-  description: Clone any voice and generate speech using Coqui XTTS v2.
+  description: Clone any voice and generate speech using Coqui XTTS previous.
   url: https://clawskills.sh/skills/instant-picture-clonev
   source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
   category: Table of Contents
-  summary_short: Clone any voice and generate speech using Coqui XTTS v2.
-  summary_long: Clone any voice and generate speech using Coqui XTTS v2. May require network access.
+  summary_short: Clone any voice and generate speech using Coqui XTTS previous.
+  summary_long: Clone any voice and generate speech using Coqui XTTS previous. May require network access.
   capabilities: []
   requirements: []
   risk_flags:
@@ -10229,12 +10229,12 @@ skills:
     source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
     url_domain_hint: other
 - name: easyverein-api
-  description: Work with the easyVerein v2.0 REST API.
+  description: Work with the easyVerein previous.0 REST API.
   url: https://clawskills.sh/skills/truefoobar-easyverein-api
   source_registry: https://github.com/VoltAgent/awesome-openclaw-skills
   category: Table of Contents
-  summary_short: Work with the easyVerein v2.0 REST API.
-  summary_long: 'Work with the easyVerein v2.0 REST API. Primary capabilities: data. Likely requirements: external_service. May require network access.'
+  summary_short: Work with the easyVerein previous.0 REST API.
+  summary_long: 'Work with the easyVerein previous.0 REST API. Primary capabilities: data. Likely requirements: external_service. May require network access.'
   capabilities:
   - data
   requirements:

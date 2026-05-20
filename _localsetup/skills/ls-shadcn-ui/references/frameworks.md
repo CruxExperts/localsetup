@@ -20,9 +20,9 @@ Current setup controls include `--monorepo`, `--base radix|base`, `--rtl`,
 `--pointer`, `--css-variables`, and `--preset`. Verify exact spelling with
 `init --help` because this surface changes.
 
-## Tailwind v3 And v4
+## Tailwind generations
 
 - Tailwind v4 projects rely more heavily on CSS-first configuration.
-- Tailwind v3 projects may still have `tailwind.config.*` and content paths.
+- Older Tailwind projects may still have `tailwind.config.*` and content paths.
 - Do not move token definitions between config and CSS without matching the
   project's Tailwind major version and current shadcn/ui docs.

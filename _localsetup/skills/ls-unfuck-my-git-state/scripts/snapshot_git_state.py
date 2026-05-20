@@ -137,7 +137,7 @@ def main() -> int:
         )
 
     captures = [
-        ("status", ("status", "--porcelain=v2", "--branch")),
+        ("status", ("status", "--porcelain", "--branch")),
         ("branch_current", ("branch", "--show-current")),
         ("symbolic_ref_head", ("symbolic-ref", "-q", "HEAD")),
         ("worktree_list", ("worktree", "list", "--porcelain")),

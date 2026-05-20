@@ -9,7 +9,7 @@ date: 2026-05-10
 
 ## Objective
 
-Audit the prior global Codex agent-team bootstrap, verify current Codex CLI behavior from evidence, create a reusable Codex-first bootstrap-pack structure in Localsetup v3, and produce a deterministic remediation plan without destructive or approval-gated changes.
+Audit the prior global Codex agent-team bootstrap, verify current Codex CLI behavior from evidence, create a reusable Codex-first bootstrap-pack structure in Localsetup, and produce a deterministic remediation plan without destructive or approval-gated changes.
 
 ## Scope
 

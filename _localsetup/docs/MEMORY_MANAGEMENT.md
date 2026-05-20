@@ -4,13 +4,13 @@ version: 4.0
 owner_skill: ls-backlog-and-reminders
 ---
 
-# Memory Management (Localsetup v3)
+# Memory Management (Localsetup)
 
 **Purpose:** How to use the persistent memory file for AI agent learnings, with strict curation to prevent file bloat.
 
 ## Overview
 
-Localsetup v3 includes a persistent **memory file** for each supported platform. This memory file stores AI agent learnings, patterns, and troubleshooting solutions across sessions. Memory files are mutable project or platform state; they are not framework source and must not be stored under `_localsetup/`.
+Localsetup includes a persistent **memory file** for each supported platform. This memory file stores AI agent learnings, patterns, and troubleshooting solutions across sessions. Memory files are mutable project or platform state; they are not framework source and must not be stored under `_localsetup/`.
 
 ## Framework-Owned Boundary
 
@@ -101,9 +101,9 @@ When you discover something valuable:
 - Patterns that should be documented as invariants
 - Anything that belongs in `AGENTS.md` or skill files
 
-## Deployment: V3 Memory Paths
+## Deployment: Memory Paths
 
-V3 declares memory paths in `_localsetup/config/platforms.yaml`. The installer focuses on managed skill adapters; memory files remain project or platform state outside `_localsetup/` and should stay curated by the agent host using them.
+Localsetup declares memory paths in `_localsetup/config/platforms.yaml`. The installer focuses on managed skill adapters; memory files remain project or platform state outside `_localsetup/` and should stay curated by the agent host using them.
 
 ### Repo-local memory
 

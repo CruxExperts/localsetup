@@ -20,7 +20,7 @@ GENERATED_SOURCE_DIRTY_PATHS = {
     "_localsetup/docs/SKILLS.md",
     "_localsetup/docs/WORKFLOW_QUICK_REF.md",
     "_localsetup/docs/WORKFLOW_REGISTRY.md",
-    "_localsetup/docs/migration/v2-to-v3-skill-map.md",
+    "_localsetup/docs/migration/skill-alias-map.md",
 }
 GENERATED_SOURCE_DIRTY_PREFIXES = (
     "_localsetup/docs/_generated/",

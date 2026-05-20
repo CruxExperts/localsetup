@@ -14,7 +14,7 @@ uv run --locked pytest tests -q
 
 ```bash
 uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . generate-docs
+uv run --locked python _localsetup/tools/localsetup.py --source-root . generate-docs
 ```
 
 5. Run catalog and framework validation before publishing.

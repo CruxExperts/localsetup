@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Localsetup v3 - Context verification. Thin wrapper; logic in verify_context.py.
+# Localsetup - Context verification. Thin wrapper; logic in verify_context.py.
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENGINE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"

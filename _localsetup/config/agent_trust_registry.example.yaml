@@ -13,7 +13,7 @@ agents:
     # Or rotation (multiple keys); verify accepts any listed:
     # public_keys:
     #   - /secure/keys/agent-b.pub.asc
-    #   - /secure/keys/agent-b.pub.v2.asc
+    #   - /secure/keys/agent-b.pub.asc
     allowed_transports: [mail, file_drop]
     mail:
       accounts: [acct_b_mailbox]

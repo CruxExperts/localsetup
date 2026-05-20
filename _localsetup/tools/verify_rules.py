@@ -16,7 +16,7 @@ from lib.path_resolution import get_engine_dir, get_project_root
 def main() -> int:
     engine_dir = get_engine_dir()
     root = get_project_root()
-    print("Localsetup v3 - Rule Verification")
+    print("Localsetup - Rule Verification")
     print("==================================")
 
     try:

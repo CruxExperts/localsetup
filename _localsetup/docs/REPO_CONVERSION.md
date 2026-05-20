@@ -34,7 +34,7 @@ Platform selection stays explicit. CWD and Git-root detection choose where selec
 - Target repo: nearest Git worktree root from the command CWD, or CWD outside Git.
 - Override: `--target-directory /path/to/project`.
 
-Direct source-checkout commands such as `uv run --locked python _localsetup/tools/localsetup_v3.py install --apply` keep their existing source-local default unless `--target-directory` is provided.
+Direct source-checkout commands such as `uv run --locked python _localsetup/tools/localsetup.py install --apply` keep their existing source-local default unless `--target-directory` is provided.
 
 ## Verification
 

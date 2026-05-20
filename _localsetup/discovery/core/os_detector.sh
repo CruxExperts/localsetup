@@ -1,5 +1,5 @@
 #!/bin/bash
-# Localsetup v3 - OS detection. Thin wrapper; logic in os_detector.py.
+# Localsetup - OS detection. Thin wrapper; logic in os_detector.py.
 set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENGINE_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"

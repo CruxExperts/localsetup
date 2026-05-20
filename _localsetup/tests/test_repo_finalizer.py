@@ -3,9 +3,9 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
-from _localsetup.v3.repo_finalizer import plan as finalizer_plan
-from _localsetup.v3.repo_finalizer import run as finalizer_run
-from _localsetup.v3.repo_finalizer import status as finalizer_status
+from _localsetup.core.repo_finalizer import plan as finalizer_plan
+from _localsetup.core.repo_finalizer import run as finalizer_run
+from _localsetup.core.repo_finalizer import status as finalizer_status
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -96,7 +96,7 @@ def test_unknown_modified_block(tmp_path: Path) -> None:
     tracked.write_text("v1\n", encoding="utf-8")
     _git(repo, "add", "--", str(tracked.relative_to(repo)))
     _git(repo, "commit", "-m", "add managed")
-    tracked.write_text("v2\n", encoding="utf-8")
+    tracked.write_text("previous\n", encoding="utf-8")
 
     payload = finalizer_run(ROOT, repo)
 

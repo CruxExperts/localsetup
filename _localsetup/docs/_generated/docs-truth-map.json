@@ -1809,7 +1809,7 @@
   },
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "fa3e877efc3435fdcbe56e41f8d1b2c7f3f3ad0eb4c6e332886bf03e6bb171b7",
+    "artifact_sha256": "5a9560659d02c9b5204b641552393962b39a55af1c8c321586bbee9ebdcdbb55",
     "emitter": "docs-align",
     "framework_version": "4.0.1",
     "schema_version": 1,
@@ -2078,14 +2078,14 @@
           "path": "_localsetup/docs/bootstrap-packs/codex-agent-team/README.md"
         },
         {
-          "owner_package": "generate-docs",
-          "owner_skill": "",
-          "path": "_localsetup/docs/migration/v2-to-v3-skill-map.md"
-        },
-        {
           "owner_package": "",
           "owner_skill": "ls-framework-compliance",
-          "path": "_localsetup/docs/migration/v3-overview.md"
+          "path": "_localsetup/docs/migration/overview.md"
+        },
+        {
+          "owner_package": "generate-docs",
+          "owner_skill": "",
+          "path": "_localsetup/docs/migration/skill-alias-map.md"
         },
         {
           "owner_package": "ls-workflow-ops-tmux-session",
@@ -3175,7 +3175,7 @@
               "convert repo",
               "localsetup convert"
             ],
-            "description": "Convert an existing repo to the current Localsetup v3 framework with backup, blocker, install, and verification gates.",
+            "description": "Convert an existing repo to the current Localsetup framework with backup, blocker, install, and verification gates.",
             "display_name": "Pipeline Repo Convert",
             "package": "ls-workflow-pipeline-repo-convert",
             "packs": [
@@ -3310,7 +3310,7 @@
               "ls-git-workflows"
             ],
             "required_tools": [
-              "_localsetup/tools/localsetup_v3.py"
+              "_localsetup/tools/localsetup.py"
             ],
             "workflow_id": "repo-finalizer"
           },

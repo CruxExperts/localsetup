@@ -4,7 +4,7 @@ version: 4.0
 owner_skill: ls-documentation-alignment
 ---
 
-# Document lifecycle (Localsetup v3)
+# Document lifecycle (Localsetup)
 
 **Purpose:** Framework docs in `_localsetup/docs/` must have a defined status. Check status before assuming a feature is implemented.
 

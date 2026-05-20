@@ -57,7 +57,7 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
-# Localsetup v3 install output (machine-local runtime state; never publish)
+# Localsetup install output (machine-local runtime state; never publish)
 .localsetup/
 localsetup.lock.json
 .codex/skills
@@ -85,7 +85,7 @@ _localsetup/.kilo/
 # Codex CLI context: track the repo guide; generated skills adapter is install output.
 !AGENTS.md
 
-# Localsetup v3 maintainer-private state
+# Localsetup maintainer-private state
 state/
 .localsetup-maint/boundary.yaml
 .localsetup-maint/config/

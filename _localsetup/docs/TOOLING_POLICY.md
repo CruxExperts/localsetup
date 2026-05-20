@@ -15,7 +15,7 @@ Purpose: define project-wide tooling language and dependency rules.
   - install bootstrap (`install`)
   - minimal wrappers/delegation for host compatibility
   - environment orchestration outside framework runtime
-- Native PowerShell wrappers are not active v3 surfaces; use WSL2 plus Bash on Windows.
+- Native PowerShell wrappers are not active Localsetup surfaces; use WSL2 plus Bash on Windows.
 
 ## Python runtime target
 

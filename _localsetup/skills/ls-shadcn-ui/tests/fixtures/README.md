@@ -9,7 +9,7 @@ Use these scenarios when expanding automated tests for `ls-shadcn-ui`:
 - Astro project with React integration.
 - Laravel plus Vite project.
 - Monorepo with shared UI package.
-- Tailwind v3 and Tailwind v4 projects.
+- Tailwind projects.
 - JavaScript project with `tsx: false`.
 - Radix and Base UI style variants.
 - Custom aliases and package imports.

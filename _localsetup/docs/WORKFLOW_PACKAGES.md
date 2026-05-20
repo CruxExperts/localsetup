@@ -6,7 +6,7 @@ owner_skill: ls-docs-organization
 
 # Workflow packages
 
-Localsetup v3 separates reusable agent capability from reusable agent orchestration.
+Localsetup separates reusable agent capability from reusable agent orchestration.
 
 - A **skill** is a portable capability package under `_localsetup/skills/ls-*`.
 - A **workflow package** is a named orchestration package under `_localsetup/workflows/ls-workflow-*`.
@@ -48,7 +48,7 @@ Do not hand-maintain workflow rows in those files. Update the relevant `_localse
 
 ```bash
 uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . generate-docs
+uv run --locked python _localsetup/tools/localsetup.py --source-root . generate-docs
 ```
 
 ## Validation
@@ -56,7 +56,7 @@ uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . genera
 Use the catalog validator after editing skills or workflow packages:
 
 ```bash
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
+uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog
 ```
 
 The validator checks that workflow package names match `ls-workflow-<workflow_id>`, `SKILL.md` names match directory names, aliases do not collide, dependencies exist, required docs and tools resolve inside the repo, and each package has a smoke row.

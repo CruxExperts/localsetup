@@ -46,11 +46,11 @@ INTERNAL_PATCH_PATHS = (
     "_localsetup/skills/ls-automatic-versioning/",
     "_localsetup/templates/",
     "_localsetup/tests/",
-    "_localsetup/v3/",
+    "_localsetup/core/",
 )
 RELEASE_TOOLING_PATHS = (
-    "_localsetup/v3/cli.py",
-    "_localsetup/v3/versioning.py",
+    "_localsetup/core/cli.py",
+    "_localsetup/core/versioning.py",
 )
 
 
@@ -546,7 +546,7 @@ def sync_version_files(repo_root: Path, target_version: str) -> dict:
         "_localsetup/docs/_generated/docs-alignment-summary.md",
         "_localsetup/docs/_generated/artifact-registry.json",
         "assets/README.md",
-        "_localsetup/docs/migration/v2-to-v3-skill-map.md",
+        "_localsetup/docs/migration/skill-alias-map.md",
         "_localsetup/docs/_generated/platform-adapters.md",
         "_localsetup/docs/_generated/skill-packs.md",
         "_localsetup/docs/_generated/skill_aliases.json",
@@ -590,7 +590,7 @@ def check_version_files(repo_root: Path, target_version: str) -> dict:
         repo_root / "_localsetup" / "docs" / "_generated" / "platform-adapters.md",
         repo_root / "_localsetup" / "docs" / "_generated" / "skill-packs.md",
         repo_root / "_localsetup" / "docs" / "_generated" / "skill_aliases.json",
-        repo_root / "_localsetup" / "docs" / "migration" / "v2-to-v3-skill-map.md",
+        repo_root / "_localsetup" / "docs" / "migration" / "skill-alias-map.md",
     }
     candidates.update(
         path
@@ -647,7 +647,7 @@ def stage_version_files(repo_root: Path) -> None:
         "_localsetup/docs/_generated/platform-adapters.md",
         "_localsetup/docs/_generated/skill-packs.md",
         "_localsetup/docs/_generated/skill_aliases.json",
-        "_localsetup/docs/migration/v2-to-v3-skill-map.md",
+        "_localsetup/docs/migration/skill-alias-map.md",
         "_localsetup/docs/SKILLS.md",
         "assets/README.md",
     ]

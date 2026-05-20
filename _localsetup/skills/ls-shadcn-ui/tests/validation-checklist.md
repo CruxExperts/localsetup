@@ -5,11 +5,11 @@
 - `uv run --locked python scripts/verify_shadcn_sources.py --json`
 - `uv run --locked python scripts/verify_shadcn_sources.py --refresh --json` when current
   upstream source facts matter.
-- `uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog`
+- `uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog`
 - `uv run --locked python _localsetup/tools/skill_validation_scan.py _localsetup/skills --scan-root . --no-fetch`
 - `agentskills validate _localsetup/skills/ls-shadcn-ui` when available.
 - `uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .`
-- `uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . generate-docs`
+- `uv run --locked python _localsetup/tools/localsetup.py --source-root . generate-docs`
 - `git diff --check`
 
 For project-specific shadcn/ui work, also run the target project's typecheck,

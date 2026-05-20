@@ -1,14 +1,14 @@
 ---
 name: ls-context
-description: "Localsetup v3 framework context  - overview, invariants, and skills index. Load first when working in a repo that uses Localsetup v3. Use when starting work in this repo or when user asks about framework rules."
+description: "Localsetup framework context  - overview, invariants, and skills index. Load first when working in a repo that uses Localsetup. Use when starting work in this repo or when user asks about framework rules."
 metadata:
   version: "1.5"
 ---
 
-# Localsetup v3 - Framework context (skill)
+# Localsetup - Framework context (skill)
 
 ## Overview
-Localsetup v3 is deployed at `_localsetup/`. Framework and context are repo-local (mobile, backup-able). Engine = _localsetup/; user data = repo-local. Use Git hashes for PRDs/specs (see [GIT_TRACEABILITY.md](../../docs/GIT_TRACEABILITY.md)).
+Localsetup is deployed at `_localsetup/`. Framework and context are repo-local (mobile, backup-able). Engine = _localsetup/; user data = repo-local. Use Git hashes for PRDs/specs (see [GIT_TRACEABILITY.md](../../docs/GIT_TRACEABILITY.md)).
 
 ## Invariants
 - **Engine/repo separation:** Never commit repo-local secrets or PII. Use _localsetup/lib/data_paths.sh (or equivalent) for path resolution. Framework lives at _localsetup/; upgrades replace that folder.

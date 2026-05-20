@@ -8,11 +8,11 @@ localsetup_provenance:
   emitter: generate-docs
 framework_version: 4.0.1
 source_commit: e2c5d0c87631e0230884e8ae08fe0af41a93fcc8
-artifact_sha256: ac54b542a42fb376cad47caa923f32d19613ec896f6b15f17f3795d20b4c9a06
+artifact_sha256: 4cebd7d65092e5e7148fb6af2dfd84e8a9247427610388a40b7d8f9ea04ee7c7
 ---
-# v2 to v3 Skill Map
+# Skill Alias Map
 
-| v2 | v3 |
+| Previous names | Current names |
 |---|---|
 | `localsetup-agentlens` | `ls-agentlens` |
 | `localsetup-agentq-transport` | `ls-agentq-transport` |

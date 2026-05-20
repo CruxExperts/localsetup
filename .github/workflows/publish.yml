@@ -59,29 +59,29 @@ jobs:
           set -euo pipefail
           base_sha="${{ steps.release-base.outputs.base-sha }}"
           head_sha="${{ steps.release-base.outputs.head-sha }}"
-          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . version-plan --base "$base_sha" --head "$head_sha"
-          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . version-sync --check --base "$base_sha" --head "$head_sha"
+          uv run --frozen python _localsetup/tools/localsetup.py --source-root . version-plan --base "$base_sha" --head "$head_sha"
+          uv run --frozen python _localsetup/tools/localsetup.py --source-root . version-sync --check --base "$base_sha" --head "$head_sha"
 
       - name: Run publish validation
         run: |
           set -euo pipefail
           uv run --frozen python _localsetup/tools/generate_docs_artifacts.py --repo-root .
-          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . generate-docs
+          uv run --frozen python _localsetup/tools/localsetup.py --source-root . generate-docs
           git diff --exit-code
-          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
-          uv run --frozen python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-v3-framework-audit.md
+          uv run --frozen python _localsetup/tools/localsetup.py --source-root . validate-catalog
+          uv run --frozen python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-framework-audit.md
           uv run --frozen pytest -n auto _localsetup/tests -q
           uv run --frozen ./_localsetup/tests/automated_test.sh
           git diff --check
 
       - name: Build public artifact
-        run: uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . package --out dist/localsetup-v$(cat VERSION).tar.gz
+        run: uv run --frozen python _localsetup/tools/localsetup.py --source-root . package --out dist/localsetup-v$(cat VERSION).tar.gz
 
       - name: Verify release artifact
         run: |
           set -euo pipefail
           version="$(cat VERSION)"
-          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . verify-release "dist/localsetup-v${version}.tar.gz" --expected-commit "$GITHUB_SHA"
+          uv run --frozen python _localsetup/tools/localsetup.py --source-root . verify-release "dist/localsetup-v${version}.tar.gz" --expected-commit "$GITHUB_SHA"
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

@@ -238,7 +238,7 @@ def _write_scoped_adapter(adapter_path: Path, global_root: Path, package_names: 
         adapter_path / ADAPTER_MARKER_JSON,
         {
             "version": 1,
-            "managed_by": "localsetup-v3",
+            "managed_by": "localsetup",
             "mode": mode,
             "global_root": str(global_root),
             "packages": sorted(set(package_names)),
@@ -254,7 +254,7 @@ def _write_scoped_adapter(adapter_path: Path, global_root: Path, package_names: 
         else:
             target.symlink_to(source, target_is_directory=True)
     if mode == "portable":
-        (adapter_path / ".localsetup-portable").write_text("managed_by=localsetup-v3\n", encoding="utf-8")
+        (adapter_path / ".localsetup-portable").write_text("managed_by=localsetup\n", encoding="utf-8")
 
 
 def apply_plan(

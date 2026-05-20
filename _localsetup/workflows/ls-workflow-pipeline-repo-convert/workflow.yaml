@@ -1,7 +1,7 @@
 workflow_id: pipeline-repo-convert
 display_name: Pipeline Repo Convert
 aliases: [repo convert pipeline, convert repo, localsetup convert]
-invocation: Use when converting or onboarding a repository to the current Localsetup v3 framework.
+invocation: Use when converting or onboarding a repository to the current Localsetup framework.
 required_skills:
   - ls-framework-compliance
   - ls-safety-and-backup
@@ -32,7 +32,7 @@ validation:
   - check: "Conversion report has no blockers."
   - check: ".localsetup/lock.json is written at the target root."
   - check: "Selected adapter paths exist at the target root, not the source checkout."
-  - check: "uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog passes in the source checkout after workflow edits."
+  - check: "uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog passes in the source checkout after workflow edits."
 outputs:
   - Conversion report path and summary
   - Backup directory path

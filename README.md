@@ -1,7 +1,7 @@
-# Localsetup v3
+# Localsetup
 
 <p align="center">
-  <img src="assets/localsetup-v3-readme-hero.png" alt="Localsetup v3 visual: repo-local agent workflow framework" width="960">
+  <img src="assets/localsetup-readme-hero.png" alt="Localsetup visual: repo-local agent workflow framework" width="960">
 </p>
 
 <p align="center">
@@ -12,17 +12,17 @@
 
 **Version:** 4.0.1<br>
 
-**Localsetup v3 gives coding agents a repo-local operating layer.**
+**Localsetup gives coding agents a repo-local operating layer.**
 
 Agent work is moving from one-off prompts into repeatable development operations. The hard part is not only giving an agent more context; it is keeping that context durable, reviewable, portable across tools, and safe enough for real repositories.
 
-Localsetup v3 turns your repository into the source of truth for agent instructions, skills, workflow packages, adapter configuration, safety gates, install state, documentation truth, and release evidence. It is not another chat prompt collection. It is a portable framework with adapters for Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode, plus a disciplined package library and predictable controller workflow model.
+Localsetup turns your repository into the source of truth for agent instructions, skills, workflow packages, adapter configuration, safety gates, install state, documentation truth, and release evidence. It is not another chat prompt collection. It is a portable framework with adapters for Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode, plus a disciplined package library and predictable controller workflow model.
 
 Use it when you want agents to stop improvising from hidden local setup and start working from auditable context that travels with the code.
 
 ## The short version
 
-Localsetup v3 packages:
+Localsetup packages:
 
 - Global framework source under `~/.local/share/localsetup/source` for installed users; source checkouts keep `_localsetup/` for contributors
 - 52 shipped capability skills plus 22 first-class workflow packages for debugging, testing, PR review, infrastructure, docs, git recovery, skill import, security vetting, context indexing, TypeScript code quality, opt-in harness automation, and agent workflow control
@@ -39,14 +39,14 @@ That means your agent setup travels with the repo, survives context resets, and 
 ## How it fits together
 
 <p align="center">
-  <img src="assets/localsetup-v3-architecture.svg" alt="Localsetup v3 architecture: repo source, config resolver, managed home library, adapters, and rollback metadata" width="960">
+  <img src="assets/localsetup-architecture.svg" alt="Localsetup architecture: repo source, config resolver, managed home library, adapters, and rollback metadata" width="960">
 </p>
 
 The registered Localsetup source checkout is the canonical framework source. The installer resolves configuration, creates the managed package library for skills and workflow packages, attaches only explicitly selected target adapter paths, writes target lock/report metadata under `.localsetup/`, and records an install journal under `.localsetup/install-journal/`. Consuming repos do not receive a copied `_localsetup/` by default.
 
 ## Skills and workflow packages
 
-Localsetup v3 makes one important distinction explicit:
+Localsetup makes one important distinction explicit:
 
 | Package type | Source root | Runtime shape | Use it for |
 |---|---|---|---|
@@ -94,7 +94,7 @@ The public command is release-backed even though the small wrapper is downloaded
 For release verification, download the GitHub release tarball with its `.sha256` sidecar and run:
 
 ```bash
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . verify-release dist/localsetup-v$(cat VERSION).tar.gz
+uv run --locked python _localsetup/tools/localsetup.py --source-root . verify-release dist/localsetup-v$(cat VERSION).tar.gz
 ```
 
 Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.codex/skills` to the chosen target. If you do not select tools, the install is global-library-only. Interactive installs first choose the global package-library baseline, defaulting to `core` or the prior registry setting. Repo setup is a separate choice; when selected, repo-visible packs default from the target lockfile or repo-detected suggestions.
@@ -160,13 +160,13 @@ localsetup convert --tools codex --packs core --yes
 
 Conversion writes a timestamped backup and machine-readable report under `.localsetup/backups/conversion-*`, archives known managed or legacy Localsetup artifacts, backs up and removes stale target `_localsetup/` folders, blocks ambiguous unmanaged content, installs selected adapters, and verifies the result.
 
-Windows support is WSL2-only in v3. Open WSL2, change to the repo path, and run the Bash installer.
+Windows support is WSL2-only in the current framework. Open WSL2, change to the repo path, and run the Bash installer.
 
 Full install docs: [_localsetup/docs/QUICKSTART.md](_localsetup/docs/QUICKSTART.md) and [_localsetup/docs/MULTI_PLATFORM_INSTALL.md](_localsetup/docs/MULTI_PLATFORM_INSTALL.md).
 
 Opt-in harness automation is documented separately because normal installs never schedule autonomous work. See [_localsetup/docs/HARNESS_AUTOMATION.md](_localsetup/docs/HARNESS_AUTOMATION.md) for `localsetup harness codex-heartbeat plan/init/enable/status/run/disable`.
 
-## 10 reasons to use Localsetup v3
+## 10 reasons to use Localsetup
 
 1. **Your agent context becomes code.** Instructions, skills, workflows, platform manifests, and docs live in the repo, so changes are visible in git instead of hidden in a local profile or a forgotten prompt.
 2. **One skill library reaches multiple agent hosts.** When selected with `--tools` or `--platforms`, the shipped adapters let Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode attach to the same managed Localsetup skill library.
@@ -176,7 +176,7 @@ Opt-in harness automation is documented separately because normal installs never
 6. **It helps with the work developers actually hand agents.** Debugging, tests, PR review, codebase navigation, docs cleanup, git recovery, MCP building, Linux service triage, patching, and release chores are covered out of the box.
 7. **It has safety rails for real machines.** Server and operations workflows route through tmux, sudo probing, backup/safety guidance, and explicit approval points for risky actions.
 8. **It gives long-running work a shape.** First-class workflow packages, decision trees, PRD queues, Agent Q handoffs, generated registries, and outcome templates make multi-step agent work easier to restart, audit, and delegate.
-9. **It makes installs reversible.** The v3 installer plans, applies, verifies, writes lock/registry metadata, supports adapter detach, and can roll back managed paths without treating generated adapter output as source.
+9. **It makes installs reversible.** The Localsetup installer plans, applies, verifies, writes lock/registry metadata, supports adapter detach, and can roll back managed paths without treating generated adapter output as source.
 10. **It keeps releases tidy.** Version sync, generated facts, strict manifest schemas, checksum/SBOM sidecars, framework audit, and Conventional Commit release tooling reduce the drift that makes public repos feel abandoned.
 
 ## Shipped packages worth starting with
@@ -205,7 +205,7 @@ See the generated catalogs for all shipped skills and workflows: [_localsetup/do
 ## Install lifecycle
 
 <p align="center">
-  <img src="assets/localsetup-v3-install-lifecycle.svg" alt="Localsetup v3 install lifecycle: doctor, configure, context, plan, install, verify, ship, and rollback" width="960">
+  <img src="assets/localsetup-install-lifecycle.svg" alt="Localsetup install lifecycle: doctor, configure, context, plan, install, verify, ship, and rollback" width="960">
 </p>
 
 The Bash wrapper stays thin. The Python CLI handles preflight, dependency setup, adapter planning, managed skill installation, verification, generated docs, packaging, and rollback.
@@ -222,10 +222,10 @@ localsetup why --packs core
 localsetup graph
 localsetup adopt --target-directory .
 localsetup sbom --out /tmp/localsetup-source.cdx.json
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . context --markdown
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . audit-global-first
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . rollback
+uv run --locked python _localsetup/tools/localsetup.py --source-root . context --markdown
+uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog
+uv run --locked python _localsetup/tools/localsetup.py --source-root . audit-global-first
+uv run --locked python _localsetup/tools/localsetup.py --source-root . rollback
 ```
 
 Use `--trace-json /path/to/events.jsonl` with `install`, `verify`, or `doctor` to append local JSONL trace events for automation review.

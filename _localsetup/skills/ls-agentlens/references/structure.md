@@ -18,7 +18,7 @@
 
 ## Lifecycle
 
-The `.agentlens/` tree is target-repo documentation produced outside this skill. Localsetup v3 does not ship or install an AgentLens generator.
+The `.agentlens/` tree is target-repo documentation produced outside this skill. Localsetup does not ship or install an AgentLens generator.
 
 Use the tree as follows:
 

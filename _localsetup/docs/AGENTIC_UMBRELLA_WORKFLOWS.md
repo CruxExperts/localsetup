@@ -4,7 +4,7 @@ version: 4.0
 owner_package: ls-workflow-umbrella-run
 ---
 
-# Agentic umbrella workflows (Localsetup v3)
+# Agentic umbrella workflows (Localsetup)
 
 **Purpose:** Definition of umbrella workflows: single kickoff, no mid-run stop, PHC (pre-human-confirmation) gates, single final webhook. Framework-wide umbrella workflows (if any) are listed in [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md); repo-local umbrella names live only in `.agent/` queue files or PRDs.
 

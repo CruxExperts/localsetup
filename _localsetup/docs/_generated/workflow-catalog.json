@@ -2,7 +2,7 @@
   "count": 22,
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/workflow-catalog.json",
-    "artifact_sha256": "7d6fb619aa738c0fa1770caea5b34148e0d82a9a787b12a891e9b9458f6bb22c",
+    "artifact_sha256": "68586c206d6e67f5101ade660a00bc7a28a96ba1ac85e96679e7ff1f3896d050",
     "emitter": "generate-docs",
     "framework_version": "4.0.1",
     "schema_version": 1,
@@ -287,7 +287,7 @@
         "convert repo",
         "localsetup convert"
       ],
-      "description": "Convert an existing repo to the current Localsetup v3 framework with backup, blocker, install, and verification gates.",
+      "description": "Convert an existing repo to the current Localsetup framework with backup, blocker, install, and verification gates.",
       "display_name": "Pipeline Repo Convert",
       "package": "ls-workflow-pipeline-repo-convert",
       "packs": [
@@ -422,7 +422,7 @@
         "ls-git-workflows"
       ],
       "required_tools": [
-        "_localsetup/tools/localsetup_v3.py"
+        "_localsetup/tools/localsetup.py"
       ],
       "workflow_id": "repo-finalizer"
     },

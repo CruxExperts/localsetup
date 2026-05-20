@@ -142,7 +142,7 @@ Codex execution is additionally constrained by the configured agent profile, lau
 Cron entries use the registered Localsetup source checkout through the Localsetup Python launcher, for example:
 
 ```text
-python3 /path/to/localsetup/_localsetup/tools/localsetup_v3.py --source-root /path/to/localsetup --target-directory /path/to/target harness codex-heartbeat run --no-agent
+python3 /path/to/localsetup/_localsetup/tools/localsetup.py --source-root /path/to/localsetup --target-directory /path/to/target harness codex-heartbeat run --no-agent
 ```
 
 The command does not hard-code `_localsetup/skills/...` inside the target repo.

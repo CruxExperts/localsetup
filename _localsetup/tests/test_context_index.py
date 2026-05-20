@@ -9,7 +9,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 TOOL = REPO_ROOT / "_localsetup" / "tools" / "context_index.py"
-LOCALSETUP = REPO_ROOT / "_localsetup" / "tools" / "localsetup_v3.py"
+LOCALSETUP = REPO_ROOT / "_localsetup" / "tools" / "localsetup.py"
 
 
 def run_context(repo: Path, home: Path, *args: str) -> dict:
@@ -164,7 +164,7 @@ def test_ingest_search_lookup_freshness_and_rebuild(tmp_path: Path) -> None:
     assert prune_apply["summary"]["deleted_sources"] >= 1
 
 
-def test_v3_cli_delegates_context_index(tmp_path: Path) -> None:
+def test_cli_delegates_context_index(tmp_path: Path) -> None:
     repo, home = make_repo(tmp_path)
     completed = subprocess.run(
         [

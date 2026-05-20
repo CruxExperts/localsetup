@@ -1,17 +1,17 @@
 ---
-description: "Localsetup v3 framework context - index of skills and docs; engine/repo separation; always load this first."
+description: "Localsetup framework context - index of skills and docs; engine/repo separation; always load this first."
 globs: "*"
 alwaysApply: true
 ---
 
 # @context
-# Localsetup v3 - Framework context (master rule)
+# Localsetup - Framework context (master rule)
 
 [WARNING] Verify context is loaded: If you can read this, context IS loaded [OK]. If not, ask user to reload.
 
 ## Overview
 
-Localsetup v3 is a universal, cross-platform agentic workflow engine. It is **deployed into the client repository** at `_localsetup/`. All framework code lives in `_localsetup/`; mutable user/context data belongs in repo-level or platform-owned paths outside `_localsetup/`. Git coupling: attach git hash when referencing PRDs, specs, or outcomes. See _localsetup/docs/GIT_TRACEABILITY.md.
+Localsetup is a universal, cross-platform agentic workflow engine. It is **deployed into the client repository** at `_localsetup/`. All framework code lives in `_localsetup/`; mutable user/context data belongs in repo-level or platform-owned paths outside `_localsetup/`. Git coupling: attach git hash when referencing PRDs, specs, or outcomes. See _localsetup/docs/GIT_TRACEABILITY.md.
 
 ## Invariants (always apply)
 

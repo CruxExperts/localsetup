@@ -1,9 +1,9 @@
-# Localsetup v3 - Context for OpenClaw workspace
+# Localsetup - Context for OpenClaw workspace
 
 Copy or merge this into your OpenClaw workspace MEMORY.md (or reference it) so the agent has framework context.
 
 ## Overview
-Localsetup v3 lives in this repo at `_localsetup/`. All context is repo-local (mobile, backup-able). Engine = _localsetup/; user/context data = repo-local.
+Localsetup lives in this repo at `_localsetup/`. All context is repo-local (mobile, backup-able). Engine = _localsetup/; user/context data = repo-local.
 
 ## Invariants
 - Engine/repo separation: no secrets/PII in commits. Paths via _localsetup/lib/data_paths.sh.

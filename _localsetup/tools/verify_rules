@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Localsetup v3 - Rule compliance check. Thin wrapper; logic in verify_rules.py.
+# Localsetup - Rule compliance check. Thin wrapper; logic in verify_rules.py.
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENGINE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"

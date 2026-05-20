@@ -2,9 +2,9 @@ import os
 import subprocess
 from pathlib import Path
 
-from _localsetup.v3.baseline import tracked_files
-from _localsetup.v3.git_subprocess import GIT_ENV_TO_SCRUB
-from _localsetup.v3.provenance import (
+from _localsetup.core.baseline import tracked_files
+from _localsetup.core.git_subprocess import GIT_ENV_TO_SCRUB
+from _localsetup.core.provenance import (
     MARKER_LEGACY,
     base_provenance,
     build_package_marker,
@@ -13,7 +13,7 @@ from _localsetup.v3.provenance import (
     source_remote_url,
     source_tag,
 )
-from _localsetup.v3.lockfile import save_json
+from _localsetup.core.lockfile import save_json
 
 
 def clean_git_env(**overrides: str) -> dict[str, str]:
@@ -42,7 +42,7 @@ def make_git_repo(tmp_path: Path) -> Path:
     run(repo, "init", "-q")
     run(repo, "config", "user.email", "test@example.invalid")
     run(repo, "config", "user.name", "Test User")
-    (repo / "VERSION").write_text("3.9.0\n", encoding="utf-8")
+    (repo / "VERSION").write_text("4.9.0\n", encoding="utf-8")
     package = repo / "_localsetup" / "skills" / "ls-demo"
     package.mkdir(parents=True)
     (package / "SKILL.md").write_text("---\nname: ls-demo\n---\n", encoding="utf-8")
@@ -83,15 +83,15 @@ def test_provenance_payload_clean_dirty_and_tagged_git_state(tmp_path: Path) -> 
         emitter="test",
         installed_at=False,
     )
-    assert clean_marker["framework_version"] == "3.9.0"
+    assert clean_marker["framework_version"] == "4.9.0"
     assert clean_marker["source_dirty"] is False
     assert clean_marker["source_tag"] is None
     assert clean_marker["source_tree_sha"]
     assert clean_marker["package_digest"]
     assert clean_marker["source_provenance_hash"]
 
-    run(repo, "tag", "v3.9.0")
-    assert source_tag(repo) == "v3.9.0"
+    run(repo, "tag", "v4.9.0")
+    assert source_tag(repo) == "v4.9.0"
     tagged_marker = build_package_marker(
         repo,
         package,
@@ -101,7 +101,7 @@ def test_provenance_payload_clean_dirty_and_tagged_git_state(tmp_path: Path) -> 
         emitter="test",
         installed_at=False,
     )
-    assert tagged_marker["source_tag"] == "v3.9.0"
+    assert tagged_marker["source_tag"] == "v4.9.0"
 
     (package / "SKILL.md").write_text("---\nname: ls-demo\ndescription: Dirty\n---\n", encoding="utf-8")
     assert source_dirty(repo) is True
@@ -142,7 +142,7 @@ def test_source_dirty_ignores_generated_doc_outputs(tmp_path: Path) -> None:
         repo / "_localsetup" / "docs" / "WORKFLOW_REGISTRY.md",
         repo / "_localsetup" / "docs" / "_generated" / "facts.json",
         repo / "_localsetup" / "docs" / "_generated" / "skill-taxonomy.json",
-        repo / "_localsetup" / "docs" / "migration" / "v2-to-v3-skill-map.md",
+        repo / "_localsetup" / "docs" / "migration" / "skill-alias-map.md",
         repo / "assets" / "README.md",
     ]
     for path in generated_files:

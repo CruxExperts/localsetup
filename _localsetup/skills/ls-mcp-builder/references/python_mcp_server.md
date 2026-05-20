@@ -118,7 +118,7 @@ async def service_tool_name(params: ServiceToolInput) -> str:
     pass
 ```
 
-## Pydantic v2 Key Features
+## Pydantic Key Features
 
 - Use `model_config` instead of nested `Config` class
 - Use `field_validator` instead of deprecated `validator`

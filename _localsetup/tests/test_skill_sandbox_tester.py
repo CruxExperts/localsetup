@@ -1,7 +1,7 @@
 import importlib.util
 from pathlib import Path
 
-from _localsetup.v3.manifests import load_platforms
+from _localsetup.core.manifests import load_platforms
 
 
 def load_create_sandbox_module():

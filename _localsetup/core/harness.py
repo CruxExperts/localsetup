@@ -95,7 +95,7 @@ def _heartbeat_command(repo_root: Path, target_root: Path) -> list[str]:
         ]
     return [
         sys.executable,
-        str((repo_root / "_localsetup" / "tools" / "localsetup_v3.py").resolve()),
+        str((repo_root / "_localsetup" / "tools" / "localsetup.py").resolve()),
         "--source-root",
         str(repo_root.resolve()),
         "--target-directory",

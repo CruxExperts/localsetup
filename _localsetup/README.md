@@ -1,13 +1,13 @@
-# Localsetup v3 Framework Engine
+# Localsetup Framework Engine
 
 **Version:** 4.0.1<br>
 
-`_localsetup/` is the engine that makes the public Localsetup v3 promise real. It stores the framework code, shipped skills, workflow packages, platform templates, docs, tests, and install manifests that turn a repository into a portable agent workspace.
+`_localsetup/` is the engine that makes the public Localsetup promise real. It stores the framework code, shipped skills, workflow packages, platform templates, docs, tests, and install manifests that turn a repository into a portable agent workspace.
 
 For the public product overview, start with the [root README](../README.md). This page is the contributor and maintainer map for the framework internals.
 
 <p align="center">
-  <img src="../assets/localsetup-v3-architecture.svg" alt="Localsetup v3 architecture: repo source, config resolver, managed home library, adapters, and rollback metadata" width="960">
+  <img src="../assets/localsetup-architecture.svg" alt="Localsetup architecture: repo source, config resolver, managed home library, adapters, and rollback metadata" width="960">
 </p>
 
 ## What this directory owns
@@ -17,14 +17,14 @@ For the public product overview, start with the [root README](../README.md). Thi
 - **Workflow source of truth:** Every first-class workflow package lives under `workflows/ls-workflow-*` with `SKILL.md` plus Localsetup `workflow.yaml` metadata.
 - **Platform adapters:** Templates and manifests define how explicitly selected agent hosts attach to the managed Localsetup package library.
 - **Public docs:** `docs/` explains install behavior, platform support, workflow registries, skill import, Agent Q transport, versioning, and release validation.
-- **Verification:** The v3 CLI and framework audit tools validate catalog shape, generated docs, migration state, and release readiness.
+- **Verification:** The Localsetup CLI and framework audit tools validate catalog shape, generated docs, migration state, and release readiness.
 
 Generated adapter folders in consuming repositories are install output. Do not treat them as framework source.
 
 ## Install flow
 
 <p align="center">
-  <img src="../assets/localsetup-v3-install-lifecycle.svg" alt="Localsetup v3 install lifecycle: doctor, configure, context, plan, install, verify, ship, and rollback" width="960">
+  <img src="../assets/localsetup-install-lifecycle.svg" alt="Localsetup install lifecycle: doctor, configure, context, plan, install, verify, ship, and rollback" width="960">
 </p>
 
 The root Bash installer delegates to the Python CLI. The CLI resolves platform intent, creates or refreshes the managed home package library, attaches only explicitly selected repo adapter paths, writes lock/report metadata, and supports rollback for managed paths.
@@ -36,14 +36,14 @@ Common commands from the repository root:
 ./install --directory . --tools codex,kilo
 ./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor
 ./install --directory . --tools codex --non-interactive --yes
-uv run --locked python _localsetup/tools/localsetup_v3.py doctor
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . rollback
+uv run --locked python _localsetup/tools/localsetup.py doctor
+uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog
+uv run --locked python _localsetup/tools/localsetup.py --source-root . rollback
 ```
 
 The root wrapper opens the interactive wizard by default. Automation must use `--non-interactive --yes`.
 
-Use WSL2 for Windows. Native PowerShell installation is intentionally not supported in v3.
+Use WSL2 for Windows. Native PowerShell installation is intentionally not supported in the current framework.
 
 ## Directory map
 
@@ -56,8 +56,8 @@ Use WSL2 for Windows. Native PowerShell installation is intentionally not suppor
 | `skills/` | Source packages for all shipped `ls-*` skills. |
 | `templates/` | Platform-specific context loaders and adapter templates. |
 | `tests/` | Bash and pytest coverage for framework behavior. |
-| `tools/` | v3 CLI, docs generation, validation, release, skill index, and Agent Q tooling. |
-| `v3/` | Planner, apply, verify, rollback, versioning, and CLI implementation modules. |
+| `tools/` | Localsetup CLI, docs generation, validation, release, skill index, and Agent Q tooling. |
+| `core/` | Planner, apply, verify, rollback, versioning, and CLI implementation modules. |
 | `workflows/` | Source packages for all shipped `ls-workflow-*` workflow packages. |
 
 ## Supported platforms
@@ -104,9 +104,9 @@ Run these before release-oriented changes:
 
 ```bash
 uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . scan-migration
-uv run --locked python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-v3-framework-audit.md
+uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog
+uv run --locked python _localsetup/tools/localsetup.py --source-root . scan-migration
+uv run --locked python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-framework-audit.md
 uv run --locked pytest -n auto _localsetup/tests -q
 git diff --check
 ```

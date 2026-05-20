@@ -13,11 +13,11 @@ REGISTRY_VERSION = 2
 def load_registry(path: Path) -> dict[str, Any]:
     data = load_json(path)
     if not data:
-        return {"version": REGISTRY_VERSION, "managed_by": "localsetup-v3", "targets": {}, "packages": {}}
+        return {"version": REGISTRY_VERSION, "managed_by": "localsetup", "targets": {}, "packages": {}}
     if int(data.get("version", 1)) < REGISTRY_VERSION:
         return {
             "version": REGISTRY_VERSION,
-            "managed_by": data.get("managed_by", "localsetup-v3"),
+            "managed_by": data.get("managed_by", "localsetup"),
             "source_commit": data.get("source_commit"),
             "targets": {},
             "packages": {},

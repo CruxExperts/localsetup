@@ -13,7 +13,7 @@ tasks:
       - global_config_write
     validation:
       - codex debug prompt-input from non-repo directory
-      - codex debug prompt-input from localsetup-v3 repo
+      - codex debug prompt-input from localsetup repo
     linked_findings:
       - CBA-001
   - id: REM-002

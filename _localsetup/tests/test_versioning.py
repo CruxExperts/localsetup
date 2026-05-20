@@ -4,7 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from _localsetup.v3.versioning import (
+from _localsetup.core.versioning import (
     SemVer,
     classify_commit,
     plan_version,
@@ -187,7 +187,7 @@ def test_version_plan_cli_fails_for_breaking_marker_without_release_type(tmp_pat
     completed = run(
         repo,
         sys.executable,
-        "_localsetup/tools/localsetup_v3.py",
+        "_localsetup/tools/localsetup.py",
         "version-plan",
         "--base",
         "origin/main",
@@ -246,7 +246,7 @@ def test_release_push_blocks_breaking_marker_without_sync_commit(tmp_path: Path)
     completed = run(
         repo,
         sys.executable,
-        "_localsetup/tools/localsetup_v3.py",
+        "_localsetup/tools/localsetup.py",
         "release-push",
         "origin",
         "HEAD:main",
@@ -278,7 +278,7 @@ def test_sync_version_files_updates_known_surfaces(tmp_path: Path) -> None:
     assert "| Version | `3.2.0` |" in (repo / "_localsetup/docs/_generated/docs-alignment-summary.md").read_text(encoding="utf-8")
     assert '"count":' in (repo / "_localsetup/docs/_generated/workflow-catalog.json").read_text(encoding="utf-8")
     assert "version: 3.2" in (repo / "_localsetup/docs/WORKFLOW_REGISTRY.md").read_text(encoding="utf-8")
-    assert "version: 3.2" in (repo / "_localsetup/docs/migration/v2-to-v3-skill-map.md").read_text(encoding="utf-8")
+    assert "version: 3.2" in (repo / "_localsetup/docs/migration/skill-alias-map.md").read_text(encoding="utf-8")
 
 
 def test_revert_before_push_cancels_unreleased_bump(tmp_path: Path) -> None:
@@ -334,7 +334,7 @@ def test_version_plan_uses_local_main_when_no_remote_exists(tmp_path: Path) -> N
     completed = run(
         repo,
         sys.executable,
-        str(Path(__file__).resolve().parents[2] / "_localsetup" / "tools" / "localsetup_v3.py"),
+        str(Path(__file__).resolve().parents[2] / "_localsetup" / "tools" / "localsetup.py"),
         "--repo",
         str(repo),
         "version-plan",
@@ -384,7 +384,7 @@ def test_version_plan_invalid_explicit_base_fails_instead_of_falling_back(tmp_pa
     completed = run(
         repo,
         sys.executable,
-        str(Path(__file__).resolve().parents[2] / "_localsetup" / "tools" / "localsetup_v3.py"),
+        str(Path(__file__).resolve().parents[2] / "_localsetup" / "tools" / "localsetup.py"),
         "--repo",
         str(repo),
         "version-plan",
@@ -454,13 +454,13 @@ def test_installer_adapter_maintenance_feat_is_patch(tmp_path: Path) -> None:
     touched = [
         ".gitignore",
         "install",
-        "_localsetup/v3/adapters.py",
-        "_localsetup/v3/apply.py",
+        "_localsetup/core/adapters.py",
+        "_localsetup/core/apply.py",
         "_localsetup/config/install.schema.json",
         "_localsetup/templates/cursor/ls-context.mdc",
         "_localsetup/skills/ls-skill-creator/SKILL.md",
         "_localsetup/docs/MULTI_PLATFORM_INSTALL.md",
-        "_localsetup/tests/test_v3_install_flow.py",
+        "_localsetup/tests/test_install_flow.py",
     ]
     for rel_path in touched:
         path = repo / rel_path
@@ -490,7 +490,7 @@ def test_release_push_commits_sync_and_pushes(tmp_path: Path) -> None:
     completed = run(
         repo,
         sys.executable,
-        "_localsetup/tools/localsetup_v3.py",
+        "_localsetup/tools/localsetup.py",
         "release-push",
         "origin",
         "HEAD:main",

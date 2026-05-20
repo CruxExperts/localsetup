@@ -4,7 +4,7 @@ version: 4.0
 owner_skill: ls-skill-creator
 ---
 
-# Agent Skills compliance (Localsetup v3)
+# Agent Skills compliance (Localsetup)
 
 **Purpose:** Confirm framework skills conform to the [Agent Skills](https://agentskills.io/specification) specification and document versioning and validation.
 

@@ -26,7 +26,7 @@ Before changing files:
 
 ## Current Sources Of Truth
 
-Use active v3 sources only:
+Use active active sources only:
 
 - Owning skills and workflow packages for operational behavior. Public docs carry `owner_skill` or `owner_package` frontmatter so agents know what to load.
 - `_localsetup/docs/AGENTIC_DESIGN_INDEX.md` for agent-facing design and workflow doc navigation.
@@ -38,7 +38,7 @@ Use active v3 sources only:
 - `_localsetup/config/platforms.yaml` and `_localsetup/docs/PLATFORM_REGISTRY.md` for supported platform paths.
 - `_localsetup/config/pack.yaml` for pack membership and `extensions.skill_taxonomy`; generated catalogs must not invent their own classification.
 
-Do not reference removed v2/v3-draft helper files or indexes. In particular, do not call missing rule-enforcer or document-maintenance shell helpers, and do not rely on non-existent YAML document/rule indexes.
+Do not reference removed removed draft helper files or indexes. In particular, do not call missing rule-enforcer or document-maintenance shell helpers, and do not rely on non-existent YAML document/rule indexes.
 
 ## Document Status Check
 
@@ -70,9 +70,9 @@ Choose checks based on the surface changed:
 ```bash
 ./_localsetup/tools/verify_context
 ./_localsetup/tools/verify_rules
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . scan-migration
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . audit-global-first
+uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog
+uv run --locked python _localsetup/tools/localsetup.py --source-root . scan-migration
+uv run --locked python _localsetup/tools/localsetup.py --source-root . audit-global-first
 uv run --locked ./_localsetup/tests/automated_test.sh
 uv run --locked pytest -n auto _localsetup/tests -q
 git diff --check

@@ -9,7 +9,7 @@ plan_json="$(mktemp)"
 trap 'rm -f "$payload" "$plan_json"' EXIT
 cat >"$payload"
 
-if python3 _localsetup/tools/localsetup_v3.py --repo . version-plan --push-stdin <"$payload" >"$plan_json"; then
+if python3 _localsetup/tools/localsetup.py --repo . version-plan --push-stdin <"$payload" >"$plan_json"; then
   exit 0
 fi
 
@@ -17,7 +17,7 @@ python3 - "$payload" <<'PY'
 import sys
 from pathlib import Path
 
-from _localsetup.v3.versioning import (
+from _localsetup.core.versioning import (
     commit_version_sync,
     push_lines_to_plans,
     sync_version_files,
@@ -31,7 +31,7 @@ if blocked:
     for plan in blocked:
         for commit in plan.get("release_type_required_commits", []):
             print(
-                "[localsetup-v3] version plan blocked: "
+                "[localsetup] version plan blocked: "
                 f"{commit.get('sha', '')[:12]} {commit.get('subject', '')} requires "
                 "Release-Type: major|minor|patch|none",
                 file=sys.stderr,
@@ -42,20 +42,20 @@ if not actionable:
     raise SystemExit(1)
 targets = {p["target_version"] for p in actionable}
 if len(targets) != 1:
-    print("[localsetup-v3] multiple pushed refs require different release versions; use release-push per ref.", file=sys.stderr)
+    print("[localsetup] multiple pushed refs require different release versions; use release-push per ref.", file=sys.stderr)
     raise SystemExit(2)
 target = actionable[0]["target_version"]
 sync_version_files(repo_root, target)
 commit_sha = commit_version_sync(repo_root, target)
 if commit_sha:
-    print(f"[localsetup-v3] created version-sync commit {commit_sha[:12]} for {target}", file=sys.stderr)
+    print(f"[localsetup] created version-sync commit {commit_sha[:12]} for {target}", file=sys.stderr)
 else:
-    print(f"[localsetup-v3] version files already sync to {target}, but pushed ref is stale", file=sys.stderr)
+    print(f"[localsetup] version files already sync to {target}, but pushed ref is stale", file=sys.stderr)
 PY
 
 cat >&2 <<'EOF'
-[localsetup-v3] push stopped after preparing the version-sync commit.
-[localsetup-v3] Run the push again, or use:
-[localsetup-v3]   python3 _localsetup/tools/localsetup_v3.py release-push
+[localsetup] push stopped after preparing the version-sync commit.
+[localsetup] Run the push again, or use:
+[localsetup]   python3 _localsetup/tools/localsetup.py release-push
 EOF
 exit 1

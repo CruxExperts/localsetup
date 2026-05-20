@@ -6,7 +6,7 @@ owner_skill: ls-docs-organization
 
 # Features
 
-This is the full public capability catalog for Localsetup v3. The [root README](../../README.md) explains the pitch; this page lists what the framework actually provides.
+This is the full public capability catalog for Localsetup. The [root README](../../README.md) explains the pitch; this page lists what the framework actually provides.
 
 ## Generated Facts
 
@@ -23,7 +23,7 @@ This is the full public capability catalog for Localsetup v3. The [root README](
 | Capability | What it gives you |
 |---|---|
 | Global framework source | The registered source checkout carries `_localsetup/`; consuming repos keep `.localsetup/` state and selected adapters, not copied framework source. |
-| Python-first v3 installer | Bash bootstrap delegates planning, dependency handling, install, verify, and rollback to `_localsetup/tools/localsetup_v3.py`. |
+| Python-first Localsetup installer | Bash bootstrap delegates planning, dependency handling, install, verify, and rollback to `_localsetup/tools/localsetup.py`. |
 | Explicit multi-platform adapters | One install can attach selected Cursor, Claude Code, Codex CLI, OpenClaw, Kilo, and OpenCode adapter paths to the same managed package library. |
 | Managed home library | Skills and workflow packages install to `~/.local/share/localsetup/packages`; explicitly selected adapters point there by symlink or use portable copies. |
 | Lock and rollback metadata | `.localsetup/lock.json` and managed-path reports make installs inspectable and reversible. |

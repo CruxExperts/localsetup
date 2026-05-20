@@ -7,7 +7,7 @@
         "width": 1200
       },
       "license": "Repository license unless otherwise documented",
-      "path": "assets/localsetup-v3-architecture.svg",
+      "path": "assets/localsetup-architecture.svg",
       "provenance": "repository-maintained asset",
       "references": [
         "README.md",
@@ -23,7 +23,7 @@
         "width": 1200
       },
       "license": "Repository license unless otherwise documented",
-      "path": "assets/localsetup-v3-install-lifecycle.svg",
+      "path": "assets/localsetup-install-lifecycle.svg",
       "provenance": "repository-maintained asset",
       "references": [
         "README.md",
@@ -39,7 +39,7 @@
         "width": 1920
       },
       "license": "Repository license unless otherwise documented",
-      "path": "assets/localsetup-v3-logo.png",
+      "path": "assets/localsetup-logo.png",
       "provenance": "repository-maintained asset",
       "references": [],
       "type": "png"
@@ -51,7 +51,7 @@
         "width": 1731
       },
       "license": "Repository license unless otherwise documented",
-      "path": "assets/localsetup-v3-readme-hero.png",
+      "path": "assets/localsetup-readme-hero.png",
       "provenance": "repository-maintained asset",
       "references": [
         "README.md"
@@ -62,7 +62,7 @@
   "count": 4,
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-asset-manifest.json",
-    "artifact_sha256": "9d5cc3f2f648ee6c4f6e4b2537c50188f9c587dc1b2ff228c3f0f618b5695f92",
+    "artifact_sha256": "7c904453e4ebe9649839ee4408fa69e8453b8f1dc1776b3df20912fc33caddd1",
     "emitter": "docs-align",
     "framework_version": "4.0.1",
     "schema_version": 1,

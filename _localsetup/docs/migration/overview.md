@@ -4,9 +4,9 @@ version: 4.0
 owner_skill: ls-framework-compliance
 ---
 
-# Localsetup v3 Overview
+# Localsetup Overview
 
-Localsetup v3 installs one global package library for skills and workflow packages, then attaches repositories to it.
+Localsetup installs one global package library for skills and workflow packages, then attaches repositories to it.
 
 ## Global Library
 
@@ -25,7 +25,7 @@ Repo attachment lockfile:
 
 ## Windows Support
 
-Windows support is WSL2-only in v3. Run agents inside WSL and use WSL filesystem paths.
+Windows support is WSL2-only in the current framework. Run agents inside WSL and use WSL filesystem paths.
 
 ## Core Commands
 
@@ -39,11 +39,11 @@ Windows support is WSL2-only in v3. Run agents inside WSL and use WSL filesystem
 - `localsetup rollback`
 - `localsetup adapters`
 - `localsetup catalog`
-- `uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog` (source checkout)
+- `uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog` (source checkout)
 - `localsetup scan-migration`
-- `uv run --locked python _localsetup/tools/localsetup_v3.py hook-gate`
-- `uv run --locked python _localsetup/tools/localsetup_v3.py generate-docs`
-- `uv run --locked python _localsetup/tools/localsetup_v3.py package --out dist/localsetup-v3-public.tar.gz`
+- `uv run --locked python _localsetup/tools/localsetup.py hook-gate`
+- `uv run --locked python _localsetup/tools/localsetup.py generate-docs`
+- `uv run --locked python _localsetup/tools/localsetup.py package --out dist/localsetup-public.tar.gz`
 
 ## Platform Adapters
 
@@ -57,7 +57,7 @@ install state rather than assuming every declared platform was attached.
 
 Portable mode vendors managed copies into the repo adapter paths:
 
-- `uv run --locked python _localsetup/tools/localsetup_v3.py install --mode portable --platforms codex --apply`
+- `uv run --locked python _localsetup/tools/localsetup.py install --mode portable --platforms codex --apply`
 
 Use portable mode for repos that must carry their selected packages without relying on
 the user's global library.
@@ -71,16 +71,16 @@ Pack entries can select both skills and workflow packages. Workflow packages are
 
 Migration scanning reports remaining actionable `localsetup-*` references outside
 the source skill corpus so maintainers can decide whether each reference should
-stay as historical documentation or move to the v3 `ls-*` name. Use
+stay as historical documentation or move to the current `ls-*` name. Use
 `localsetup scan-migration --include-expected` when auditing intentional
 compatibility surfaces and private backup snapshots.
 
-In the source-only v3 tree, expected remaining scan findings are limited to
-generated alias metadata, the v2-to-v3 skill map, and ignored private backups.
+In the source-only active tree, expected remaining scan findings are limited to
+generated alias metadata, the skill alias map, and ignored private backups.
 Those entries are intentional historical references used by migration reports,
 compatibility docs, or local recovery evidence; new source skills and
 user-facing setup docs should use `ls-*` names.
 
 `migrate` is conservative: it backs up first, renames only known managed
-`localsetup-*` global skill artifacts through the v2-to-v3 alias map, and
+`localsetup-*` global skill artifacts through the skill alias map, and
 refuses unmanaged adapter collisions with remediation commands in the report.

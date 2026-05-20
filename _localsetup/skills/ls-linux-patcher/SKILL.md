@@ -94,7 +94,7 @@ PatchMon can remain useful as a dashboard for host update state, but this skill 
 python scripts/patch_cli.py auto
 ```
 
-The command reports that PatchMon automatic execution is unavailable in v3 and points users to `host-only`, `host-full`, or `multiple` plan generation. Add a tested Python API client before documenting any live PatchMon querying or credentials file contract.
+The command reports that PatchMon automatic execution is unavailable in the current framework and points users to `host-only`, `host-full`, or `multiple` plan generation. Add a tested Python API client before documenting any live PatchMon querying or credentials file contract.
 
 ## Manual Workflow
 

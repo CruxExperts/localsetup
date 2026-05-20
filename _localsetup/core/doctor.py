@@ -65,7 +65,7 @@ def run_doctor(
     if target_root is not None and not platform_ids:
         warnings.append("target directory was provided but no platforms were selected; install will be global-only with no repo adapters")
     if platform.system().lower().startswith("windows"):
-        blockers.append("native Windows is unsupported; run Localsetup v3 from WSL2")
+        blockers.append("native Windows is unsupported; run Localsetup from WSL2")
 
     try:
         pack = load_pack_config(repo_root)
@@ -142,7 +142,7 @@ def run_doctor(
         "references": scan_legacy_references(repo_root),
     }
     if legacy["artifacts"]:
-        warnings.append("legacy v2 artifacts detected; run migrate for a conservative report and backup")
+        warnings.append("legacy artifacts detected; run migrate for a conservative report and backup")
     registry_path = expand_user_path(pack.global_registry, home)
     provenance = provenance_report(
         repo_root,

@@ -17,12 +17,12 @@ date: 2026-05-10
 | `codex debug --help` | pass | `prompt-input` and `models` debug commands are available |
 | `codex debug prompt-input 'bootstrap-pack audit prompt-load probe'` | pass | Rendered model-visible prompt input JSON |
 | `python3 _localsetup/tools/generate_docs_artifacts.py --repo-root .` | pass | Regenerated skills, workflow registry, quick ref, facts, and workflow catalog |
-| `python3 _localsetup/tools/localsetup_v3.py --source-root . generate-docs` | pass | Regenerated aliases, migration map, platform adapters, skill packs, workflow catalog, and implementation file map |
-| `python3 _localsetup/tools/localsetup_v3.py --source-root . plan --packs bootstrap` | pass | Effective install plan includes 12 skills and 3 workflow packages |
+| `python3 _localsetup/tools/localsetup.py --source-root . generate-docs` | pass | Regenerated aliases, migration map, platform adapters, skill packs, workflow catalog, and implementation file map |
+| `python3 _localsetup/tools/localsetup.py --source-root . plan --packs bootstrap` | pass | Effective install plan includes 12 skills and 3 workflow packages |
 | `./_localsetup/tools/verify_context` | pass | Context verification complete |
 | `./_localsetup/tools/verify_rules` | pass | Rule verification complete |
-| `python3 _localsetup/tools/localsetup_v3.py --source-root . validate-catalog` | pass | `{"ok": true, "issues": []}` |
-| `python3 _localsetup/tools/localsetup_v3.py --source-root . scan-migration` | pass | Exit 0; reported 599 informational legacy-name references in ignored run ledgers, generated migration/alias surfaces, and lockfile |
+| `python3 _localsetup/tools/localsetup.py --source-root . validate-catalog` | pass | `{"ok": true, "issues": []}` |
+| `python3 _localsetup/tools/localsetup.py --source-root . scan-migration` | pass | Exit 0; reported 599 informational legacy-name references in ignored run ledgers, generated migration/alias surfaces, and lockfile |
 | `python3 _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py` | pass | `Errors: 0, Warnings: 0` |
 | `git diff --check` | pass | No whitespace errors |
 | `./_localsetup/tests/automated_test.sh` | pass | `9 passed, 0 failed` |
@@ -50,8 +50,8 @@ root = Path(".").resolve()
 if str(root) not in sys.path:
     sys.path.insert(0, str(root))
 
-from _localsetup.v3.skills import selected_skill_names
-from _localsetup.v3.workflows import selected_workflow_names
+from _localsetup.core.skills import selected_skill_names
+from _localsetup.core.workflows import selected_workflow_names
 
 required = [
     "_localsetup/docs/audits/codex-bootstrap-pack/AUDIT_REPORT.md",

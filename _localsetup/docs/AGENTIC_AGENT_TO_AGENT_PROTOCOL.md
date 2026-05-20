@@ -8,7 +8,7 @@ owner_skill: ls-agentq-transport
 
 **Purpose:** How Agent A and Agent B exchange PRDs and artifacts over pluggable transports (mail, file_drop, future IM). Validation is **transport-independent**: **OpenPGP sign-then-encrypt** and a **YAML agent trust registry** gate what gets promoted to the queue.
 
-**Build contract:** [AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md](AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md) (v2.0) is the implementation order; core pipeline and file_drop ingest are implemented under `_localsetup/tools/agentq_transport_client/`. Mail adapter post-ingest move remains policy-gated via mail skill.
+**Build contract:** [AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md](AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md) (previous.0) is the implementation order; core pipeline and file_drop ingest are implemented under `_localsetup/tools/agentq_transport_client/`. Mail adapter post-ingest move remains policy-gated via mail skill.
 
 **Scenarios (repos, agents, local/remote):** [AGENTIC_AGENT_Q_SCENARIOS.md](AGENTIC_AGENT_Q_SCENARIOS.md).
 

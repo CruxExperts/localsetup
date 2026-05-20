@@ -1,6 +1,6 @@
 # Linux Patcher Setup
 
-This setup guide reflects the current v3 implementation: `scripts/patch_cli.py` generates plans only. It does not execute SSH, package manager, Docker, or PatchMon API operations.
+This setup guide reflects the current implementation: `scripts/patch_cli.py` generates plans only. It does not execute SSH, package manager, Docker, or PatchMon API operations.
 
 ## Prerequisites
 
@@ -15,7 +15,7 @@ PatchMon is optional for dashboard visibility. The bundled helper does not read 
 
 ## Install Location
 
-In Localsetup v3, the canonical source path is:
+In Localsetup, the canonical source path is:
 
 ```text
 _localsetup/skills/ls-linux-patcher/

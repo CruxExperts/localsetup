@@ -22,7 +22,7 @@ def collect_skill_aliases(skills_root: Path) -> dict[str, str]:
         current_skill_names.add(canonical_name)
         aliases[legacy_skill_name(canonical_name)] = canonical_name
 
-    migration_map = skills_root.parent / "docs" / "migration" / "v2-to-v3-skill-map.md"
+    migration_map = skills_root.parent / "docs" / "migration" / "skill-alias-map.md"
     if migration_map.exists():
         for old_name, new_name in re.findall(r"`(localsetup-[^`]+)`\s*\|\s*`(ls-[^`]+)`", migration_map.read_text(encoding="utf-8")):
             if new_name in current_skill_names:

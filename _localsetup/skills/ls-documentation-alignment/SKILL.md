@@ -84,7 +84,7 @@ uv run --locked python _localsetup/tools/docs_alignment.py --repo-root . check -
 Localsetup wrapper:
 
 ```bash
-uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . docs-align check --ci
+uv run --locked python _localsetup/tools/localsetup.py --source-root . docs-align check --ci
 ```
 
 ## Outputs

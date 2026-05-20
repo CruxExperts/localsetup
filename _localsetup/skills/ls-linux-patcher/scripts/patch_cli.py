@@ -221,7 +221,7 @@ def main(argv: list[str] | None = None) -> int:
             mode = "packages only" if args.skip_docker else "packages and Docker where configured"
             dry_run_note = "The --dry-run flag was accepted for compatibility; all shipped modes are already plan-only." if args.dry_run else "Use --dry-run if callers require an explicit preview flag; behavior is unchanged."
             steps = [
-                {"phase": "status", "command": "PatchMon automatic execution is unavailable and guidance-only in v3 until a tested Python API client is added."},
+                {"phase": "status", "command": "PatchMon automatic execution is unavailable and guidance-only in the current framework until a tested Python API client is added."},
                 {"phase": "dry-run", "command": dry_run_note},
                 {"phase": "inputs", "command": f"Collect PatchMon URL, credentials, target host list, and maintenance window for {mode}."},
                 {"phase": "fallback", "command": "Use `python scripts/patch_cli.py host-only HOST` or `host-full HOST /compose/path` for auditable per-host plans."},

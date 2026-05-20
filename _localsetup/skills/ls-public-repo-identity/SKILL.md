@@ -9,9 +9,9 @@ metadata:
 
 Use a **local identity file** and this committed stub so the framework repo stays generic (no PII).
 
-- **Canonical committed source:** This skill is the committed public identity stub for Localsetup v3. Keep it generic so README, CONTRIBUTING, and published repo files do not inherit maintainer-specific names, contact details, or organization data.
+- **Canonical committed source:** This skill is the committed public identity stub for Localsetup. Keep it generic so README, CONTRIBUTING, and published repo files do not inherit maintainer-specific names, contact details, or organization data.
 - **Canonical local source:** Put real identity details in a local-only file loaded by your agent platform, such as `.cursor/rules/local-identity.mdc` for Cursor-style rules or the equivalent local rules/instructions path for another platform. If that path is not already ignored by the repo, add it to `.git/info/exclude` or another local-only ignore file before writing personal details.
-- **Template guidance:** Localsetup v3 does not ship a separate public identity template. To create a local identity file, copy the fields you need from this stub and fill them in only in the local-only file.
+- **Template guidance:** Localsetup does not ship a separate public identity template. To create a local identity file, copy the fields you need from this stub and fill them in only in the local-only file.
 
 Do not put real names, contact info, or org details in this file; they belong in local-identity.mdc (not committed).
 

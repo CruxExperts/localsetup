@@ -4,11 +4,11 @@ version: 4.0
 owner_skill: ls-framework-compliance
 ---
 
-# Platform registry (Localsetup v3)
+# Platform registry (Localsetup)
 
 **Purpose:** Canonical human-readable registry for which AI agent platforms the framework supports. When you need to list supported platforms, reference this file instead of scattering names across docs. When adding a new platform, add it here first; when registering a new skill or workflow package, use the registration lists below so no platform is missed.
 
-**Manifest source:** V3 installer behavior is controlled by `_localsetup/config/platforms.yaml`. This page is a human-readable summary. The root `--tools` flag remains a compatibility alias for v3 `--platforms`.
+**Manifest source:** Installer behavior is controlled by `_localsetup/config/platforms.yaml`. This page is a human-readable summary. The root `--tools` flag remains a compatibility alias for current `--platforms`.
 
 ## Supported platforms
 
@@ -25,7 +25,7 @@ owner_skill: ls-framework-compliance
 
 ## Shared home library
 
-V3 installs selected skills and workflow packages to `~/.local/share/localsetup/packages`. Repo adapter paths attach to that library only when selected with `--tools` or `--platforms`; omitted selectors are global-only and create no adapters. `--mode portable` creates managed copies instead of symlinks. Rollback uses `.localsetup/lock.json` and removes only managed paths recorded by that install.
+Localsetup installs selected skills and workflow packages to `~/.local/share/localsetup/packages`. Repo adapter paths attach to that library only when selected with `--tools` or `--platforms`; omitted selectors are global-only and create no adapters. `--mode portable` creates managed copies instead of symlinks. Rollback uses `.localsetup/lock.json` and removes only managed paths recorded by that install.
 
 ## Skill registration (new skills)
 
@@ -55,7 +55,7 @@ Use [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) for the model and [WORKFLOW_STA
 
 ## Reference
 
-- V3 CLI: target users run `localsetup plan|install|verify|rollback`; source contributors may run `_localsetup/tools/localsetup_v3.py --source-root . ...` from this checkout.
+- Localsetup CLI: target users run `localsetup plan|install|verify|rollback`; source contributors may run `_localsetup/tools/localsetup.py --source-root . ...` from this checkout.
 - Root wrapper: `./install --directory .` opens the interactive guided-choice wizard for global-only; use `--tools cursor,codex` or `--platforms cursor codex` to select adapters. The wizard shows `Enter number(s) | d details | b back | q quit | ? help` on prompts and explains each platform's adapter path, such as `.codex/skills`. Visual rendering is controlled with `--color auto|always|never`, `--no-color`, and `--glyphs auto|ascii|unicode`; plain text labels remain present for status meaning. Use `--target-directory /path/to/project` to attach selected adapters outside the source checkout. Automation must use `--non-interactive --yes`.
 - Windows: WSL2-only. Native PowerShell installation surfaces are removed.
 - Skills and rules (paths and model): [SKILLS_AND_RULES.md](SKILLS_AND_RULES.md).

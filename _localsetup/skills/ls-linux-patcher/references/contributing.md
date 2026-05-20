@@ -1,6 +1,6 @@
 # Contributing to Linux Patcher
 
-Contributions should preserve the current v3 boundary: Python tooling only, plan-only behavior unless a fully tested execution path is added, and platform-neutral documentation.
+Contributions should preserve the current current boundary: Python tooling only, plan-only behavior unless a fully tested execution path is added, and platform-neutral documentation.
 
 ## Good First Contributions
 

@@ -4,7 +4,7 @@ version: 4.0
 owner_skill: ls-skill-creator
 ---
 
-# Skill interoperability (Localsetup v3)
+# Skill interoperability (Localsetup)
 
 **Purpose:** Framework skills are [Agent Skills](https://agentskills.io/specification)-compliant so they can be used in any spec-compliant host. External skills (e.g. from [Anthropic's skills](https://github.com/anthropics/skills)) can be used in this framework with minimal adaptation. Skills are interchangeable across ecosystems that follow the same spec.
 
@@ -24,7 +24,7 @@ owner_skill: ls-skill-creator
 
 ## Using a framework skill elsewhere (export)
 
-- **Copy the skill directory**  - Use `_localsetup/skills/<name>/` as source. After v3 install, managed copies live in `~/.local/share/localsetup/packages`. If an adapter is explicitly selected with `--tools` or `--platforms`, platform paths such as `.cursor/skills/<name>` or `.codex/skills/<name>` attach to that library by symlink or portable copy.
+- **Copy the skill directory**  - Use `_localsetup/skills/<name>/` as source. After install, managed copies live in `~/.local/share/localsetup/packages`. If an adapter is explicitly selected with `--tools` or `--platforms`, platform paths such as `.cursor/skills/<name>` or `.codex/skills/<name>` attach to that library by symlink or portable copy.
 - **Use in any Agent Skills host**  - The directory is a valid Agent Skills skill. The host only needs to support the [Agent Skills](https://agentskills.io/specification) format (SKILL.md with `name` and `description`, optional dirs). No need to change the skill; `ls-*` is a naming choice and does not affect spec validity.
 - **Optional**  - If the target host expects a different name, rename the directory and the `name` field so they match (spec requirement). Paths inside the skill (e.g. `_localsetup/docs/...`) may be framework-specific; the host can ignore or map them as needed.
 

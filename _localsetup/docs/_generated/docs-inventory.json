@@ -7,7 +7,7 @@
         "width": 1200
       },
       "license": "Repository license unless otherwise documented",
-      "path": "assets/localsetup-v3-architecture.svg",
+      "path": "assets/localsetup-architecture.svg",
       "provenance": "repository-maintained asset",
       "references": [
         "README.md",
@@ -23,7 +23,7 @@
         "width": 1200
       },
       "license": "Repository license unless otherwise documented",
-      "path": "assets/localsetup-v3-install-lifecycle.svg",
+      "path": "assets/localsetup-install-lifecycle.svg",
       "provenance": "repository-maintained asset",
       "references": [
         "README.md",
@@ -39,7 +39,7 @@
         "width": 1920
       },
       "license": "Repository license unless otherwise documented",
-      "path": "assets/localsetup-v3-logo.png",
+      "path": "assets/localsetup-logo.png",
       "provenance": "repository-maintained asset",
       "references": [],
       "type": "png"
@@ -51,7 +51,7 @@
         "width": 1731
       },
       "license": "Repository license unless otherwise documented",
-      "path": "assets/localsetup-v3-readme-hero.png",
+      "path": "assets/localsetup-readme-hero.png",
       "provenance": "repository-maintained asset",
       "references": [
         "README.md"
@@ -773,9 +773,9 @@
       "class": "framework",
       "has_frontmatter": true,
       "managed_blocks": [],
-      "owner_package": "generate-docs",
-      "owner_skill": "",
-      "path": "_localsetup/docs/migration/v2-to-v3-skill-map.md",
+      "owner_package": "",
+      "owner_skill": "ls-framework-compliance",
+      "path": "_localsetup/docs/migration/overview.md",
       "status": "ACTIVE",
       "version": "4.0"
     },
@@ -783,9 +783,9 @@
       "class": "framework",
       "has_frontmatter": true,
       "managed_blocks": [],
-      "owner_package": "",
-      "owner_skill": "ls-framework-compliance",
-      "path": "_localsetup/docs/migration/v3-overview.md",
+      "owner_package": "generate-docs",
+      "owner_skill": "",
+      "path": "_localsetup/docs/migration/skill-alias-map.md",
       "status": "ACTIVE",
       "version": "4.0"
     },
@@ -3620,7 +3620,7 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "1487f492f6a8fbda717dcfd5854a1f19b89a283da20a9261d4c0fe4c35fc6e04",
+    "artifact_sha256": "3590384db1e80838fab9e2b65f420d2dd2982010d143239134b05844dfdca11d",
     "emitter": "docs-align",
     "framework_version": "4.0.1",
     "schema_version": 1,

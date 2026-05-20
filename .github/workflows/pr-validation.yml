@@ -93,10 +93,10 @@ jobs:
           fi
 
           echo "Checking version plan from ${base_sha} to ${HEAD_SHA}"
-          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . version-plan --base "$base_sha" --head "$HEAD_SHA"
-          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . version-sync --check --base "$base_sha" --head "$HEAD_SHA"
+          uv run --frozen python _localsetup/tools/localsetup.py --source-root . version-plan --base "$base_sha" --head "$HEAD_SHA"
+          uv run --frozen python _localsetup/tools/localsetup.py --source-root . version-sync --check --base "$base_sha" --head "$HEAD_SHA"
           uv run --frozen python _localsetup/tools/generate_docs_artifacts.py --repo-root .
-          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . generate-docs
+          uv run --frozen python _localsetup/tools/localsetup.py --source-root . generate-docs
           git diff --exit-code
 
   framework-validation:
@@ -129,14 +129,14 @@ jobs:
 
       - name: Validate catalogs and migration boundaries
         run: |
-          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . validate-catalog
-          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . scan-migration
-          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . skill search context
-          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . workflow search audit
-          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . why --packs core
-          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . graph
-          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . adopt --target-directory .
-          uv run --frozen python _localsetup/tools/localsetup_v3.py --source-root . sbom --out /tmp/localsetup-source.cdx.json
+          uv run --frozen python _localsetup/tools/localsetup.py --source-root . validate-catalog
+          uv run --frozen python _localsetup/tools/localsetup.py --source-root . scan-migration
+          uv run --frozen python _localsetup/tools/localsetup.py --source-root . skill search context
+          uv run --frozen python _localsetup/tools/localsetup.py --source-root . workflow search audit
+          uv run --frozen python _localsetup/tools/localsetup.py --source-root . why --packs core
+          uv run --frozen python _localsetup/tools/localsetup.py --source-root . graph
+          uv run --frozen python _localsetup/tools/localsetup.py --source-root . adopt --target-directory .
+          uv run --frozen python _localsetup/tools/localsetup.py --source-root . sbom --out /tmp/localsetup-source.cdx.json
 
       - name: Run pytest
         run: uv run --frozen pytest -n auto _localsetup/tests -q
@@ -160,7 +160,7 @@ jobs:
         run: uv sync --frozen --all-groups --python python3
 
       - name: Run framework audit
-        run: uv run --frozen python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-v3-framework-audit.md
+        run: uv run --frozen python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-framework-audit.md
 
       - name: Run shell smoke tests
         run: uv run --frozen ./_localsetup/tests/automated_test.sh

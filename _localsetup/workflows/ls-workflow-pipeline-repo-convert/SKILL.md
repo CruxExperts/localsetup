@@ -1,6 +1,6 @@
 ---
 name: ls-workflow-pipeline-repo-convert
-description: Convert an existing repo to the current Localsetup v3 framework with backup, blocker, install, and verification gates.
+description: Convert an existing repo to the current Localsetup framework with backup, blocker, install, and verification gates.
 ---
 
 Use this workflow when onboarding a repository that may already contain old Localsetup files, adapter paths, lockfiles, or framework source.

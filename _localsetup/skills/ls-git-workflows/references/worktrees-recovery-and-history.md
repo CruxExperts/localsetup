@@ -36,7 +36,7 @@ cd ../main-tests && npm test
 
 # Compare behavior between branches side by side.
 git worktree add ../compare-old release/v1.0
-git worktree add ../compare-new release/v2.0
+git worktree add ../compare-new release/previous
 ```
 
 ## Reflog Recovery

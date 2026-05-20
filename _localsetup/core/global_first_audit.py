@@ -36,7 +36,7 @@ LEGACY_DEPLOY_SURFACES = [
 DOC_CLAIM_PATTERNS = {
     "root_lockfile": re.compile(r"localsetup\.lock\.json"),
     "target_local_framework_command": re.compile(
-        r"python3\s+_localsetup/tools/localsetup_v3\.py\s+(install --apply|verify|rollback|doctor|plan)\b"
+        r"python3\s+_localsetup/tools/localsetup\.py\s+(install --apply|verify|rollback|doctor|plan)\b"
     ),
     "target_local_tool_command": re.compile(r"\./_localsetup/(tools|tests)/"),
     "target_venv": re.compile(r"\.localsetup/venv"),

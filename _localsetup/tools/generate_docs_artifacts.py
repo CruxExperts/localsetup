@@ -17,10 +17,10 @@ _ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from _localsetup.v3.provenance import artifact_registry_entry, base_provenance, json_with_provenance, markdown_with_provenance
-from _localsetup.v3.docs import generate_alias_outputs
-from _localsetup.v3.skills import load_skill_catalog, skill_taxonomy_payload
-from _localsetup.v3.workflows import load_workflow_catalog, workflow_catalog_payload
+from _localsetup.core.provenance import artifact_registry_entry, base_provenance, json_with_provenance, markdown_with_provenance
+from _localsetup.core.docs import generate_alias_outputs
+from _localsetup.core.skills import load_skill_catalog, skill_taxonomy_payload
+from _localsetup.core.workflows import load_workflow_catalog, workflow_catalog_payload
 
 from docs_alignment import generate_alignment_artifacts
 
@@ -295,7 +295,7 @@ def write_workflow_registry(path: Path, major_minor: str, workflows: list[dict[s
         "owner_package: generate-docs",
         "---",
         "",
-        "# Workflow and module registry (Localsetup v3)",
+        "# Workflow and module registry (Localsetup)",
         "",
         "This page is generated from `_localsetup/workflows/*/workflow.yaml`.",
         "",

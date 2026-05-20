@@ -3,7 +3,7 @@ name: ls-codex-heartbeat
 description: "Opt-in Codex heartbeat harness for target repositories: initialize config, run transaction-safe heartbeat checks, preserve artifacts, and wire cron only after explicit activation."
 metadata:
   version: "1.0"
-compatibility: "Python 3.12+, PyYAML, Localsetup v3.4 harness CLI."
+compatibility: "Python 3.12+, PyYAML, Localsetup.4 harness CLI."
 ---
 
 # Codex Heartbeat

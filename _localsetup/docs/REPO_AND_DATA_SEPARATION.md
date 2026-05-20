@@ -4,7 +4,7 @@ version: 4.0
 owner_skill: ls-framework-compliance
 ---
 
-# Repo and data separation (Localsetup v3)
+# Repo and data separation (Localsetup)
 
 **Purpose:** Localsetup framework source lives in the registered source checkout, normally `~/.local/share/localsetup/source` or a contributor checkout. Consuming repos keep target-owned state under `.localsetup/` and selected adapter paths only.
 

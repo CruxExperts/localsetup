@@ -13,4 +13,4 @@ All commands are run from the repository root.
 | `uv run --locked python _localsetup/tools/docs_alignment.py --repo-root . apply --scope all --dry-run` | Show write targets without mutating files. |
 | `uv run --locked python _localsetup/tools/docs_alignment.py --repo-root . check --ci` | Read-only CI gate; exits non-zero for critical or major findings. |
 | `uv run --locked python _localsetup/tools/docs_alignment.py --repo-root . explain --claim-id skill_count` | Show backing source files for a claim. |
-| `uv run --locked python _localsetup/tools/localsetup_v3.py --source-root . docs-align check --ci` | Run through the Localsetup CLI wrapper. |
+| `uv run --locked python _localsetup/tools/localsetup.py --source-root . docs-align check --ci` | Run through the Localsetup CLI wrapper. |

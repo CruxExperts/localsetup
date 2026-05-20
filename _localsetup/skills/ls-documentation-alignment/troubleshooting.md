@@ -26,4 +26,4 @@ Prefer a relative Markdown link from the source file to the target. If the targe
 
 ## A generated file is not included in version sync
 
-Add it to `_localsetup/v3/versioning.py` generated-path candidates and add a focused test.
+Add it to `_localsetup/core/versioning.py` generated-path candidates and add a focused test.

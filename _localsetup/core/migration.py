@@ -38,7 +38,7 @@ def _legacy_reference_category(rel: Path) -> str:
         "_localsetup/docs/_generated/skill-packs.md",
     }:
         return "expected_alias_surface"
-    if rel.as_posix() == "_localsetup/docs/migration/v2-to-v3-skill-map.md":
+    if rel.as_posix() == "_localsetup/docs/migration/skill-alias-map.md":
         return "expected_migration_map"
     return "actionable"
 

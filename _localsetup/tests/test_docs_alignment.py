@@ -5,7 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from _localsetup.v3.provenance import provenance_report
+from _localsetup.core.provenance import provenance_report
 
 
 def copy_docs_alignment_repo(tmp_path: Path) -> Path:
@@ -13,7 +13,7 @@ def copy_docs_alignment_repo(tmp_path: Path) -> Path:
     repo = tmp_path / "repo"
     (repo / "_localsetup").mkdir(parents=True)
     shutil.copytree(source / "_localsetup" / "config", repo / "_localsetup" / "config")
-    shutil.copytree(source / "_localsetup" / "v3", repo / "_localsetup" / "v3")
+    shutil.copytree(source / "_localsetup" / "core", repo / "_localsetup" / "core")
     shutil.copytree(source / "_localsetup" / "skills", repo / "_localsetup" / "skills")
     shutil.copytree(source / "_localsetup" / "workflows", repo / "_localsetup" / "workflows")
     shutil.copytree(source / "_localsetup" / "tools", repo / "_localsetup" / "tools")
@@ -29,7 +29,7 @@ def copy_docs_alignment_repo(tmp_path: Path) -> Path:
         "OUTPUT_AND_DOC_GENERATION.md",
         "DOCUMENT_LIFECYCLE_MANAGEMENT.md",
         "WORKFLOW_STANDARD.md",
-        "migration/v2-to-v3-skill-map.md",
+        "migration/skill-alias-map.md",
     ):
         src = source / "_localsetup" / "docs" / rel
         dst = repo / "_localsetup" / "docs" / rel
@@ -213,7 +213,7 @@ def test_managed_public_count_update_preserves_surrounding_content(tmp_path: Pat
     text = readme.read_text(encoding="utf-8")
 
     assert "README.md" in payload["changed"]
-    assert "# Localsetup v3" in text
+    assert "# Localsetup" in text
     facts = json.loads((repo / "_localsetup" / "docs" / "_generated" / "facts.json").read_text(encoding="utf-8"))
     assert f"{facts['skill_count']} shipped capability skills plus" in text
     assert "<!-- facts-block:start -->" in text
@@ -223,7 +223,7 @@ def test_cli_wrapper_delegates_docs_align(tmp_path: Path) -> None:
     repo = copy_docs_alignment_repo(tmp_path)
 
     completed = subprocess.run(
-        [sys.executable, "_localsetup/tools/localsetup_v3.py", "--repo", ".", "docs-align", "inventory"],
+        [sys.executable, "_localsetup/tools/localsetup.py", "--repo", ".", "docs-align", "inventory"],
         cwd=repo,
         text=True,
         capture_output=True,
@@ -329,7 +329,7 @@ def test_generated_artifact_provenance_survives_clean_commit(tmp_path: Path) -> 
 def test_generated_artifact_registry_is_stable_across_generator_order(tmp_path: Path) -> None:
     repo = copy_docs_alignment_repo(tmp_path)
     broad = [sys.executable, "_localsetup/tools/generate_docs_artifacts.py", "--repo-root", "."]
-    alias = [sys.executable, "_localsetup/tools/localsetup_v3.py", "--source-root", ".", "generate-docs"]
+    alias = [sys.executable, "_localsetup/tools/localsetup.py", "--source-root", ".", "generate-docs"]
 
     subprocess.run(broad, cwd=repo, text=True, capture_output=True, check=True)
     subprocess.run(alias, cwd=repo, text=True, capture_output=True, check=True)
@@ -343,7 +343,7 @@ def test_generated_artifact_registry_is_stable_across_generator_order(tmp_path: 
 
 def test_broad_generator_refreshes_alias_owned_docs_before_alignment(tmp_path: Path) -> None:
     repo = copy_docs_alignment_repo(tmp_path)
-    migration = repo / "_localsetup" / "docs" / "migration" / "v2-to-v3-skill-map.md"
+    migration = repo / "_localsetup" / "docs" / "migration" / "skill-alias-map.md"
     migration.write_text(
         re.sub(r"\nowner_package: [^\n]+\n", "\n", migration.read_text(encoding="utf-8"), count=1),
         encoding="utf-8",
@@ -361,11 +361,11 @@ def test_broad_generator_refreshes_alias_owned_docs_before_alignment(tmp_path: P
     audit = json.loads((repo / "_localsetup/docs/_generated/docs-audit-result.json").read_text(encoding="utf-8"))
     assert not any(
         finding["category"] == "ownership"
-        and finding["path"] == "_localsetup/docs/migration/v2-to-v3-skill-map.md"
+        and finding["path"] == "_localsetup/docs/migration/skill-alias-map.md"
         for finding in audit["findings"]
     )
     inventory = json.loads((repo / "_localsetup/docs/_generated/docs-inventory.json").read_text(encoding="utf-8"))
     migration_row = next(
-        row for row in inventory["docs"] if row["path"] == "_localsetup/docs/migration/v2-to-v3-skill-map.md"
+        row for row in inventory["docs"] if row["path"] == "_localsetup/docs/migration/skill-alias-map.md"
     )
     assert migration_row["owner_package"] == "generate-docs"

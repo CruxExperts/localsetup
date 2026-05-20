@@ -19,11 +19,11 @@ _ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from _localsetup.v3.git_subprocess import run_git
-from _localsetup.v3.manifests import load_pack_config, load_platforms
-from _localsetup.v3.provenance import json_with_provenance, markdown_with_provenance, base_provenance
-from _localsetup.v3.skills import load_skill_catalog, parse_skill_frontmatter, skill_taxonomy_payload
-from _localsetup.v3.workflows import load_workflow_catalog, workflow_catalog_payload
+from _localsetup.core.git_subprocess import run_git
+from _localsetup.core.manifests import load_pack_config, load_platforms
+from _localsetup.core.provenance import json_with_provenance, markdown_with_provenance, base_provenance
+from _localsetup.core.skills import load_skill_catalog, parse_skill_frontmatter, skill_taxonomy_payload
+from _localsetup.core.workflows import load_workflow_catalog, workflow_catalog_payload
 
 
 SCHEMA_VERSION = "1.0"
@@ -269,7 +269,7 @@ def collect_inventory(repo_root: Path) -> dict[str, Any]:
     platforms = load_platforms(repo_root)
     skills = load_skill_catalog(repo_root)
     workflows = load_workflow_catalog(repo_root)
-    commands = sorted(set(re.findall(r'sub\.add_parser\("([^"]+)"', _read_text(repo_root / "_localsetup/v3/cli.py"))))
+    commands = sorted(set(re.findall(r'sub\.add_parser\("([^"]+)"', _read_text(repo_root / "_localsetup/core/cli.py"))))
     ci = sorted(_rel(repo_root, path) for path in (repo_root / ".github/workflows").glob("*.yml"))
     ci.extend(sorted(_rel(repo_root, path) for path in (repo_root / ".github/workflows").glob("*.yaml")))
 

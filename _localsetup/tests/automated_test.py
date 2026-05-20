@@ -25,7 +25,7 @@ def main() -> int:
     engine_dir = get_engine_dir()
     pass_count = 0
     fail_count = 0
-    print("Localsetup v3 - Automated tests")
+    print("Localsetup - Automated tests")
     print("===============================")
     if run_test(bool(get_engine_dir()), "get_engine_dir"):
         pass_count += 1
@@ -54,7 +54,7 @@ def main() -> int:
         pass_count += 1
     else:
         fail_count += 1
-    if run_test((engine_dir / "tools" / "localsetup_v3.py").is_file(), "localsetup_v3.py"):
+    if run_test((engine_dir / "tools" / "localsetup.py").is_file(), "localsetup.py"):
         pass_count += 1
     else:
         fail_count += 1

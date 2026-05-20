@@ -82,7 +82,7 @@ WELCOME_BANNER = r""" _      ___   ____    _    _     ____  _____ _____ _   _ __
 | |   | | | | |     / _ \ | |   \___ \|  _|   | | | | | | |_) |
 | |___| |_| | |___ / ___ \| |___ ___) | |___  | | | |_| |  __/
 |_____|\___/ \____/_/   \_\_____|____/|_____| |_|  \___/|_|
-                         v3 installer"""
+                         Localsetup installer"""
 
 
 @dataclass
@@ -1469,7 +1469,7 @@ def _review_step(term: TerminalWizard, state: WizardState) -> str:
             term.status_line("fail", blocker)
         cmd = [
             "python3",
-            str(state.repo_root / "_localsetup/tools/localsetup_v3.py"),
+            str(state.repo_root / "_localsetup/tools/localsetup.py"),
             "--home",
             str(state.home),
             "--source-root",
@@ -1548,7 +1548,7 @@ def _apply_and_show_result(term: TerminalWizard, state: WizardState) -> int:
         term.diagnostic_command(
             [
                 "python3",
-                str(state.repo_root / "_localsetup/tools/localsetup_v3.py"),
+                str(state.repo_root / "_localsetup/tools/localsetup.py"),
                 "--home",
                 str(state.home),
                 "--source-root",

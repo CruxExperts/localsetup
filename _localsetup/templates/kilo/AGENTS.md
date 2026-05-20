@@ -1,8 +1,8 @@
-# Localsetup v3 - Agent context (Kilo CLI)
+# Localsetup - Agent context (Kilo CLI)
 
 ## Overview
 
-Localsetup v3 is a universal, cross-platform agentic workflow engine. It is **deployed into the client repository** at `_localsetup/`. All framework code lives in `_localsetup/`; mutable user/context data belongs in repo-level or platform-owned paths outside `_localsetup/`. Git coupling: attach git hash when referencing PRDs, specs, or outcomes. See [_localsetup/docs/GIT_TRACEABILITY.md](../../docs/GIT_TRACEABILITY.md).
+Localsetup is a universal, cross-platform agentic workflow engine. It is **deployed into the client repository** at `_localsetup/`. All framework code lives in `_localsetup/`; mutable user/context data belongs in repo-level or platform-owned paths outside `_localsetup/`. Git coupling: attach git hash when referencing PRDs, specs, or outcomes. See [_localsetup/docs/GIT_TRACEABILITY.md](../../docs/GIT_TRACEABILITY.md).
 
 Kilo CLI uses `AGENTS.md` as the project initialization file at repo root.
 

@@ -12,7 +12,7 @@ Keep this file aligned with the repo's actual workflow. If a rule also belongs i
 
 ## Project Structure & Module Organization
 
-This repository packages Localsetup v3, a repo-local framework for agent context, skills, and install workflows. Root files include the Bash installer (`install`), top-level docs, `VERSION`, and support files. The main engine lives in `_localsetup/`: reusable code is under `_localsetup/lib/`, OS discovery helpers under `_localsetup/discovery/`, shipped skills under `_localsetup/skills/`, platform templates under `_localsetup/templates/`, and framework docs under `_localsetup/docs/`. Tests live in `_localsetup/tests/`; static assets live in `assets/`.
+This repository packages Localsetup, a repo-local framework for agent context, skills, and install workflows. Root files include the Bash installer (`install`), top-level docs, `VERSION`, and support files. The main engine lives in `_localsetup/`: reusable code is under `_localsetup/lib/`, OS discovery helpers under `_localsetup/discovery/`, shipped skills under `_localsetup/skills/`, platform templates under `_localsetup/templates/`, and framework docs under `_localsetup/docs/`. Tests live in `_localsetup/tests/`; static assets live in `assets/`.
 
 ## Build, Test, and Development Commands
 
@@ -20,8 +20,8 @@ This repository packages Localsetup v3, a repo-local framework for agent context
 - `uv run --locked ./_localsetup/tests/automated_test.sh`: run the core Linux/macOS smoke test suite.
 - `uv run --locked pytest -n auto _localsetup/tests -q`: run the Python pytest tests in parallel.
 - `./install --directory . --tools codex --sync-env --non-interactive --yes`: test a local non-interactive install path for one platform and sync the uv environment.
-- `uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .` and `uv run --locked python _localsetup/tools/localsetup_v3.py --repo . generate-docs`: refresh generated docs artifacts when documentation inputs change.
-- `uv run --locked python _localsetup/tools/localsetup_v3.py --repo . release-push`: compute the outgoing Conventional Commit version bump, sync versioned docs, create the release sync commit, and push.
+- `uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .` and `uv run --locked python _localsetup/tools/localsetup.py --repo . generate-docs`: refresh generated docs artifacts when documentation inputs change.
+- `uv run --locked python _localsetup/tools/localsetup.py --repo . release-push`: compute the outgoing Conventional Commit version bump, sync versioned docs, create the release sync commit, and push.
 
 ## Command Choice Clarification
 
@@ -33,7 +33,7 @@ Keep scripts portable and explicit: Bash files should use `set -euo pipefail`; P
 
 ## Testing Guidelines
 
-Add or update tests under `_localsetup/tests/` for changes to path resolution, discovery, parsing, deploy behavior, or skill tooling. Name Python tests `test_<feature>.py` and keep shell wrappers thin. Before opening a PR, run `uv run --locked ./_localsetup/tests/automated_test.sh` and `uv run --locked pytest -n auto _localsetup/tests -q`; Windows support is WSL2-only in v3.
+Add or update tests under `_localsetup/tests/` for changes to path resolution, discovery, parsing, deploy behavior, or skill tooling. Name Python tests `test_<feature>.py` and keep shell wrappers thin. Before opening a PR, run `uv run --locked ./_localsetup/tests/automated_test.sh` and `uv run --locked pytest -n auto _localsetup/tests -q`; Windows support is WSL2-only in the current framework.
 
 ## Commit & Pull Request Guidelines
 

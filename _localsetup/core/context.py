@@ -91,15 +91,15 @@ def build_agent_context(repo_root: Path, *, home: Path, config: InstallConfig) -
         "verification": [
             "uv run --locked pytest -n auto _localsetup/tests -q",
             "uv run --locked ./_localsetup/tests/automated_test.sh",
-            "uv run --locked python _localsetup/tools/localsetup_v3.py validate-catalog",
-            "uv run --locked python _localsetup/tools/localsetup_v3.py scan-migration",
+            "uv run --locked python _localsetup/tools/localsetup.py validate-catalog",
+            "uv run --locked python _localsetup/tools/localsetup.py scan-migration",
         ],
     }
 
 
 def render_markdown_report(context: dict) -> str:
     lines = [
-        "# Localsetup v3 Install Context",
+        "# Localsetup Install Context",
         "",
         f"- Repo: `{context['environment']['repo_root']}`",
         f"- Home: `{context['environment']['home']}`",

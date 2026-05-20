@@ -56,7 +56,7 @@ def rollback(
 ) -> dict:
     validate_platform_selectors(repo_root, platform_ids)
     if platform_ids:
-        raise ValueError("platform-scoped rollback is not supported in v3; run full rollback to remove shared managed state")
+        raise ValueError("platform-scoped rollback is not supported in the current framework; run full rollback to remove shared managed state")
 
     attachment_root = target_root or repo_root
     pack = load_pack_config(repo_root)

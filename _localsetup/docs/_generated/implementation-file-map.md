@@ -5,7 +5,7 @@ localsetup_provenance:
   emitter: generate-docs
 framework_version: 4.0.1
 source_commit: e2c5d0c87631e0230884e8ae08fe0af41a93fcc8
-artifact_sha256: 7253454bbaa3dc81445614ddce46d5f6ba6fd3793d57bf7b9ccc5eaf6db29d2d
+artifact_sha256: 75cbd3c7c79183640afa4e56068c56cb3399cf063d114a51438ba241c9dd4cb5
 ---
 # Implementation File Map
 
@@ -52,6 +52,47 @@ artifact_sha256: 7253454bbaa3dc81445614ddce46d5f6ba6fd3793d57bf7b9ccc5eaf6db29d2
 | `refactor` | `_localsetup/config/platforms.yaml` |
 | `keep` | `_localsetup/config/skill-frontmatter.schema.json` |
 | `keep` | `_localsetup/config/workflow.schema.json` |
+| `refactor` | `_localsetup/core/__init__.py` |
+| `refactor` | `_localsetup/core/adapters.py` |
+| `refactor` | `_localsetup/core/aliases.py` |
+| `refactor` | `_localsetup/core/apply.py` |
+| `refactor` | `_localsetup/core/baseline.py` |
+| `refactor` | `_localsetup/core/boundary.py` |
+| `refactor` | `_localsetup/core/cli.py` |
+| `refactor` | `_localsetup/core/config.py` |
+| `refactor` | `_localsetup/core/context.py` |
+| `refactor` | `_localsetup/core/conversion.py` |
+| `refactor` | `_localsetup/core/dependencies.py` |
+| `refactor` | `_localsetup/core/diffing.py` |
+| `refactor` | `_localsetup/core/docs.py` |
+| `refactor` | `_localsetup/core/doctor.py` |
+| `refactor` | `_localsetup/core/git_subprocess.py` |
+| `refactor` | `_localsetup/core/global_first_audit.py` |
+| `refactor` | `_localsetup/core/harness.py` |
+| `refactor` | `_localsetup/core/hooks.py` |
+| `refactor` | `_localsetup/core/inventory.py` |
+| `refactor` | `_localsetup/core/lockfile.py` |
+| `refactor` | `_localsetup/core/manifests.py` |
+| `refactor` | `_localsetup/core/migration.py` |
+| `refactor` | `_localsetup/core/models.py` |
+| `refactor` | `_localsetup/core/package.py` |
+| `refactor` | `_localsetup/core/paths.py` |
+| `refactor` | `_localsetup/core/plan.py` |
+| `refactor` | `_localsetup/core/provenance.py` |
+| `refactor` | `_localsetup/core/query.py` |
+| `refactor` | `_localsetup/core/registry.py` |
+| `refactor` | `_localsetup/core/repo_finalizer.py` |
+| `refactor` | `_localsetup/core/rollback.py` |
+| `refactor` | `_localsetup/core/schema.py` |
+| `refactor` | `_localsetup/core/selection.py` |
+| `refactor` | `_localsetup/core/shell.py` |
+| `refactor` | `_localsetup/core/skills.py` |
+| `refactor` | `_localsetup/core/source.py` |
+| `refactor` | `_localsetup/core/trace.py` |
+| `refactor` | `_localsetup/core/verify.py` |
+| `refactor` | `_localsetup/core/versioning.py` |
+| `refactor` | `_localsetup/core/wizard.py` |
+| `refactor` | `_localsetup/core/workflows.py` |
 | `keep` | `_localsetup/discovery/core/os_detector.py` |
 | `keep` | `_localsetup/discovery/core/os_detector.sh` |
 | `keep` | `_localsetup/docs/AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md` |
@@ -124,8 +165,8 @@ artifact_sha256: 7253454bbaa3dc81445614ddce46d5f6ba6fd3793d57bf7b9ccc5eaf6db29d2
 | `keep` | `_localsetup/docs/bootstrap-packs/codex-agent-team/AUDIT_PROMPT.md` |
 | `keep` | `_localsetup/docs/bootstrap-packs/codex-agent-team/README.md` |
 | `keep` | `_localsetup/docs/bootstrap-packs/codex-agent-team/metadata.yaml` |
-| `keep` | `_localsetup/docs/migration/v2-to-v3-skill-map.md` |
-| `keep` | `_localsetup/docs/migration/v3-overview.md` |
+| `keep` | `_localsetup/docs/migration/overview.md` |
+| `keep` | `_localsetup/docs/migration/skill-alias-map.md` |
 | `keep` | `_localsetup/docs/ops/tmux-ops-managed.md` |
 | `keep` | `_localsetup/docs/ops/tmux-ops-remote.md` |
 | `keep` | `_localsetup/docs/scrapling-cheat-sheet.md` |
@@ -543,6 +584,7 @@ artifact_sha256: 7253454bbaa3dc81445614ddce46d5f6ba6fd3793d57bf7b9ccc5eaf6db29d2
 | `keep` | `_localsetup/tests/test_context_index.py` |
 | `keep` | `_localsetup/tests/test_docs_alignment.py` |
 | `keep` | `_localsetup/tests/test_github_starredrepos_skill.py` |
+| `keep` | `_localsetup/tests/test_install_flow.py` |
 | `keep` | `_localsetup/tests/test_keepass_secrets_cli_json.py` |
 | `keep` | `_localsetup/tests/test_keepass_secrets_config_resolution.py` |
 | `keep` | `_localsetup/tests/test_keepass_secrets_fake_backend.py` |
@@ -552,6 +594,7 @@ artifact_sha256: 7253454bbaa3dc81445614ddce46d5f6ba6fd3793d57bf7b9ccc5eaf6db29d2
 | `keep` | `_localsetup/tests/test_ls_cron_orchestrator_run_trigger.py` |
 | `keep` | `_localsetup/tests/test_ls_kilo_boss_orchestrator_runner.py` |
 | `keep` | `_localsetup/tests/test_ls_linux_patcher_patch_cli.py` |
+| `keep` | `_localsetup/tests/test_manifests.py` |
 | `keep` | `_localsetup/tests/test_provenance.py` |
 | `keep` | `_localsetup/tests/test_python_runtime_contract.py` |
 | `keep` | `_localsetup/tests/test_repo_finalizer.py` |
@@ -559,8 +602,6 @@ artifact_sha256: 7253454bbaa3dc81445614ddce46d5f6ba6fd3793d57bf7b9ccc5eaf6db29d2
 | `keep` | `_localsetup/tests/test_scrapling_jobs.py` |
 | `keep` | `_localsetup/tests/test_skill_sandbox_tester.py` |
 | `keep` | `_localsetup/tests/test_tmux_ops.py` |
-| `keep` | `_localsetup/tests/test_v3_install_flow.py` |
-| `keep` | `_localsetup/tests/test_v3_manifests.py` |
 | `keep` | `_localsetup/tests/test_validation_tooling.py` |
 | `keep` | `_localsetup/tests/test_versioning.py` |
 | `keep` | `_localsetup/tools/agentq_transport_client/README.md` |
@@ -597,7 +638,7 @@ artifact_sha256: 7253454bbaa3dc81445614ddce46d5f6ba6fd3793d57bf7b9ccc5eaf6db29d2
 | `keep` | `_localsetup/tools/context_mcp_server.py` |
 | `keep` | `_localsetup/tools/docs_alignment.py` |
 | `keep` | `_localsetup/tools/generate_docs_artifacts.py` |
-| `refactor` | `_localsetup/tools/localsetup_v3.py` |
+| `refactor` | `_localsetup/tools/localsetup.py` |
 | `keep` | `_localsetup/tools/refresh_public_skill_index.py` |
 | `keep` | `_localsetup/tools/scrapling_helper/__init__.py` |
 | `keep` | `_localsetup/tools/scrapling_helper/adapter_parser.py` |
@@ -622,47 +663,6 @@ artifact_sha256: 7253454bbaa3dc81445614ddce46d5f6ba6fd3793d57bf7b9ccc5eaf6db29d2
 | `keep` | `_localsetup/tools/verify_context.py` |
 | `keep` | `_localsetup/tools/verify_rules` |
 | `keep` | `_localsetup/tools/verify_rules.py` |
-| `refactor` | `_localsetup/v3/__init__.py` |
-| `refactor` | `_localsetup/v3/adapters.py` |
-| `refactor` | `_localsetup/v3/aliases.py` |
-| `refactor` | `_localsetup/v3/apply.py` |
-| `refactor` | `_localsetup/v3/baseline.py` |
-| `refactor` | `_localsetup/v3/boundary.py` |
-| `refactor` | `_localsetup/v3/cli.py` |
-| `refactor` | `_localsetup/v3/config.py` |
-| `refactor` | `_localsetup/v3/context.py` |
-| `refactor` | `_localsetup/v3/conversion.py` |
-| `refactor` | `_localsetup/v3/dependencies.py` |
-| `refactor` | `_localsetup/v3/diffing.py` |
-| `refactor` | `_localsetup/v3/docs.py` |
-| `refactor` | `_localsetup/v3/doctor.py` |
-| `refactor` | `_localsetup/v3/git_subprocess.py` |
-| `refactor` | `_localsetup/v3/global_first_audit.py` |
-| `refactor` | `_localsetup/v3/harness.py` |
-| `refactor` | `_localsetup/v3/hooks.py` |
-| `refactor` | `_localsetup/v3/inventory.py` |
-| `refactor` | `_localsetup/v3/lockfile.py` |
-| `refactor` | `_localsetup/v3/manifests.py` |
-| `refactor` | `_localsetup/v3/migration.py` |
-| `refactor` | `_localsetup/v3/models.py` |
-| `refactor` | `_localsetup/v3/package.py` |
-| `refactor` | `_localsetup/v3/paths.py` |
-| `refactor` | `_localsetup/v3/plan.py` |
-| `refactor` | `_localsetup/v3/provenance.py` |
-| `refactor` | `_localsetup/v3/query.py` |
-| `refactor` | `_localsetup/v3/registry.py` |
-| `refactor` | `_localsetup/v3/repo_finalizer.py` |
-| `refactor` | `_localsetup/v3/rollback.py` |
-| `refactor` | `_localsetup/v3/schema.py` |
-| `refactor` | `_localsetup/v3/selection.py` |
-| `refactor` | `_localsetup/v3/shell.py` |
-| `refactor` | `_localsetup/v3/skills.py` |
-| `refactor` | `_localsetup/v3/source.py` |
-| `refactor` | `_localsetup/v3/trace.py` |
-| `refactor` | `_localsetup/v3/verify.py` |
-| `refactor` | `_localsetup/v3/versioning.py` |
-| `refactor` | `_localsetup/v3/wizard.py` |
-| `refactor` | `_localsetup/v3/workflows.py` |
 | `keep` | `_localsetup/workflows/ls-workflow-audit-framework/SKILL.md` |
 | `keep` | `_localsetup/workflows/ls-workflow-audit-framework/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-audit-markdown-references/SKILL.md` |
@@ -708,10 +708,10 @@ artifact_sha256: 7253454bbaa3dc81445614ddce46d5f6ba6fd3793d57bf7b9ccc5eaf6db29d2
 | `keep` | `_localsetup/workflows/ls-workflow-umbrella-run/SKILL.md` |
 | `keep` | `_localsetup/workflows/ls-workflow-umbrella-run/workflow.yaml` |
 | `keep` | `assets/README.md` |
-| `keep` | `assets/localsetup-v3-architecture.svg` |
-| `keep` | `assets/localsetup-v3-install-lifecycle.svg` |
-| `keep` | `assets/localsetup-v3-logo.png` |
-| `keep` | `assets/localsetup-v3-readme-hero.png` |
+| `keep` | `assets/localsetup-architecture.svg` |
+| `keep` | `assets/localsetup-install-lifecycle.svg` |
+| `keep` | `assets/localsetup-logo.png` |
+| `keep` | `assets/localsetup-readme-hero.png` |
 | `keep` | `config/localsetup_finalizer.yaml` |
 | `keep` | `docs.config.yaml` |
 | `keep` | `install` |
