@@ -10,6 +10,7 @@ import pytest
 import yaml
 
 from tools.qc_patrol.chunking import chunk_text
+from tools.qc_patrol.cli import build_pr_review_prompt
 from tools.qc_patrol.cli import main as qc_main
 from tools.qc_patrol.config import load_config
 from tools.qc_patrol.diff_reader import read_diff
@@ -139,6 +140,16 @@ def test_llm_client_disabled_without_secret() -> None:
         LLMClient(config).complete("prompt")
 
 
+def test_pr_review_prompt_requires_strict_json() -> None:
+    prompt = build_pr_review_prompt([{"name": "chunk", "text": "diff"}], [])
+    payload = json.loads(prompt)
+    assert payload["output_contract"]["empty_result"] == {"findings": []}
+    rules = "\n".join(payload["output_contract"]["rules"])
+    assert "Return only one JSON object" in rules
+    assert "Do not wrap the JSON in markdown fences" in rules
+    assert "{\"findings\":[]}" in rules
+
+
 def test_llm_client_success_and_retry(monkeypatch: pytest.MonkeyPatch) -> None:
     config = load_config(REPO).llm
     config = SimpleNamespace(**{**config.__dict__, "base_url": "https://example.test", "api_key": "secret", "retry_count": 1})
@@ -170,6 +181,19 @@ def test_llm_strict_json_invalid_response(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="valid JSON"):
         parse_strict_json("not json", raw)
     assert "not json" in raw.read_text(encoding="utf-8")
+
+
+def test_llm_strict_json_accepts_repeated_identical_objects(tmp_path: Path) -> None:
+    raw = tmp_path / "raw.json"
+    assert parse_strict_json('{"findings":[]}{"findings":[]}', raw) == {"findings": []}
+    assert not raw.exists()
+
+
+def test_llm_strict_json_rejects_different_concatenated_objects(tmp_path: Path) -> None:
+    raw = tmp_path / "raw.json"
+    with pytest.raises(ValueError, match="valid JSON"):
+        parse_strict_json('{"findings":[]}{"findings":[{"category":"bad"}]}', raw)
+    assert raw.exists()
 
 
 def test_read_diff_uses_hunks(monkeypatch: pytest.MonkeyPatch) -> None:

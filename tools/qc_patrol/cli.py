@@ -23,6 +23,40 @@ from tools.qc_patrol.repo_inventory import build_inventory
 from tools.qc_patrol.review_contracts import parse_strict_json
 
 
+def build_pr_review_prompt(chunks: list[dict[str, object]], findings: list[dict[str, object]]) -> str:
+    payload = {
+        "task": "Review the supplied pull request diff chunks and deterministic findings for actionable repository QC issues.",
+        "output_contract": {
+            "format": "strict_json_only",
+            "schema": {
+                "findings": [
+                    {
+                        "category": "workflow_security|release|docs|pr_review|other_snake_case",
+                        "severity": "low|medium|high|critical",
+                        "title": "short finding title, max 140 characters",
+                        "body": "concise rationale with evidence",
+                        "affected_paths": ["path/from/repo/root"],
+                        "region": "optional file region",
+                        "check_type": "llm_pr_review",
+                        "remediation": "optional suggested fix",
+                    }
+                ]
+            },
+            "empty_result": {"findings": []},
+            "rules": [
+                "Return only one JSON object.",
+                "Do not wrap the JSON in markdown fences.",
+                "Do not include prose before or after the JSON.",
+                "If there are no actionable findings, return exactly {\"findings\":[]}.",
+                "Do not include secrets, raw credentials, or endpoint URLs.",
+            ],
+        },
+        "chunks": chunks,
+        "deterministic_findings": findings,
+    }
+    return json.dumps(payload, sort_keys=True)
+
+
 def _repo(args: argparse.Namespace) -> Path:
     return Path(getattr(args, "repo", ".")).resolve()
 
@@ -50,7 +84,7 @@ def cmd_pr_review(args: argparse.Namespace) -> int:
     findings = run_deterministic(repo, "ci")
     if args.llm_mode != "off":
         try:
-            response = LLMClient(config.llm).complete(json.dumps({"chunks": chunks, "deterministic_findings": findings}))
+            response = LLMClient(config.llm).complete(build_pr_review_prompt(chunks, findings))
             findings.extend(parse_strict_json(response, out / "llm-raw-response.json").get("findings", []))
         except LLMDisabled:
             pass

@@ -7,6 +7,7 @@ import requests
 
 from .config import LLMConfig
 from .redaction import redact_text
+from .schemas import LLM_REVIEW_SCHEMA
 
 
 class LLMDisabled(RuntimeError):
@@ -29,14 +30,35 @@ class LLMClient:
 
     def _payload(self, prompt: str) -> dict[str, Any]:
         prompt = redact_text(prompt)
+        structured_output = {
+            "type": "json_schema",
+            "json_schema": {
+                "name": "qc_pr_review",
+                "strict": True,
+                "schema": LLM_REVIEW_SCHEMA,
+            },
+        }
         if self.config.api_style == "responses":
-            return {"model": self.config.model, "input": prompt, "temperature": self.config.temperature, "max_output_tokens": self.config.max_tokens}
+            return {
+                "model": self.config.model,
+                "input": prompt,
+                "temperature": self.config.temperature,
+                "max_output_tokens": self.config.max_tokens,
+                "text": {
+                    "format": {
+                        "type": "json_schema",
+                        "name": "qc_pr_review",
+                        "strict": True,
+                        "schema": LLM_REVIEW_SCHEMA,
+                    }
+                },
+            }
         return {
             "model": self.config.model,
             "temperature": self.config.temperature,
             "max_tokens": self.config.max_tokens,
             "messages": [{"role": "user", "content": prompt}],
-            "response_format": {"type": "json_object"},
+            "response_format": structured_output,
         }
 
     def complete(self, prompt: str) -> str:
@@ -52,7 +74,13 @@ class LLMClient:
                 response.raise_for_status()
                 data = response.json()
                 if self.config.api_style == "responses":
+                    if data.get("status") == "incomplete":
+                        reason = (data.get("incomplete_details") or {}).get("reason", "unknown")
+                        raise RuntimeError(f"LLM response incomplete: {reason}")
                     return str(data.get("output_text") or data.get("output", [{}])[0].get("content", [{}])[0].get("text", ""))
+                finish_reason = data.get("choices", [{}])[0].get("finish_reason")
+                if finish_reason == "length":
+                    raise RuntimeError("LLM response incomplete: max_tokens")
                 return str(data["choices"][0]["message"]["content"])
             except Exception as exc:  # requests exposes several timeout/HTTP exception types.
                 last_error = exc
