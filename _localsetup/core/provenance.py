@@ -135,6 +135,25 @@ def _changed_paths_for_ref(repo_root: Path, ref: str) -> list[str]:
     return [line for line in (output or "").splitlines() if line]
 
 
+def _generated_docs_source_ref(repo_root: Path, ref: str) -> str | None:
+    current = ref
+    subject = _subject_for_ref(repo_root, current) or ""
+    if not subject.startswith(GENERATED_DOCS_SUBJECT_PREFIX):
+        return None
+
+    while subject.startswith(GENERATED_DOCS_SUBJECT_PREFIX):
+        changed_paths = _changed_paths_for_ref(repo_root, current)
+        if not changed_paths or any(not _is_generated_output_path(path) for path in changed_paths):
+            return None
+        parent = _git_text(repo_root, ["rev-parse", f"{current}^"])
+        if not parent:
+            return None
+        current = parent
+        subject = _subject_for_ref(repo_root, current) or ""
+
+    return current
+
+
 def generated_artifact_parent_source_commit(repo_root: Path) -> str | None:
     """
     Generated artifact commits are produced from their parent source state.
@@ -152,14 +171,9 @@ def generated_artifact_parent_source_commit(repo_root: Path) -> str | None:
         if merge_head_subject and merge_head_subject.startswith(VERSION_SYNC_SUBJECT_PREFIX):
             return _git_text(repo_root, ["rev-parse", "HEAD^2^"])
         if merge_head_subject and merge_head_subject.startswith(GENERATED_DOCS_SUBJECT_PREFIX):
-            changed_paths = _changed_paths_for_ref(repo_root, "HEAD^2")
-            if changed_paths and all(_is_generated_output_path(path) for path in changed_paths):
-                return _git_text(repo_root, ["rev-parse", "HEAD^2^"])
+            return _generated_docs_source_ref(repo_root, "HEAD^2")
         return None
-    changed_paths = _head_changed_paths(repo_root)
-    if changed_paths and all(_is_generated_output_path(path) for path in changed_paths):
-        return _git_text(repo_root, ["rev-parse", "HEAD^"])
-    return None
+    return _generated_docs_source_ref(repo_root, "HEAD")
 
 
 def source_remote_url(repo_root: Path) -> str | None:

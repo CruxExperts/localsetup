@@ -223,6 +223,26 @@ def test_generated_artifact_provenance_uses_parent_for_generated_commits(tmp_pat
     assert generated_mode["source_dirty"] is False
 
 
+def test_generated_artifact_provenance_walks_generated_commit_chain(tmp_path: Path) -> None:
+    repo = make_git_repo(tmp_path)
+    generated = repo / "_localsetup" / "docs" / "_generated" / "facts.json"
+    generated.parent.mkdir(parents=True, exist_ok=True)
+    source = run(repo, "rev-parse", "HEAD")
+
+    generated.write_text('{"step": 1}\n', encoding="utf-8")
+    run(repo, "add", str(generated.relative_to(repo)))
+    run(repo, "commit", "-q", "-m", "docs: refresh generated artifacts")
+
+    generated.write_text('{"step": 2}\n', encoding="utf-8")
+    run(repo, "add", str(generated.relative_to(repo)))
+    run(repo, "commit", "-q", "-m", "docs: refresh generated provenance")
+
+    generated_mode = base_provenance(repo, emitter="test", generated_commit_parent=True)
+
+    assert generated_mode["source_commit"] == source
+    assert generated_mode["source_dirty"] is False
+
+
 def test_generated_artifact_provenance_uses_dirty_parent_for_release_sync(tmp_path: Path) -> None:
     repo = make_git_repo(tmp_path)
     parent = run(repo, "rev-parse", "HEAD")

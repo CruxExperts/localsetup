@@ -1,16 +1,26 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 9d8c42b62bfd6249bd5d63c71f84d15d24a3ae8f651a30f96e47c0ce89e631dc
+  source_provenance_hash: 26f82c27e3ba6ff0b47432214b0dff6dead5a1d958f474314806c26a471ac6ea
   emitter: generate-docs
-framework_version: 4.0.8
-source_commit: b9a693affa6f73751dc6b4c0767de9639b6f2700
-artifact_sha256: 5b52de7f1f32be517dfa345f84033fe3b00e965c2065589209f552aa70d216f5
+framework_version: 4.0.9
+source_commit: 3c7ddc021d62ce81ac0a90064bddd16e3c28ad0e
+artifact_sha256: befdc1b8dd6ffca370b30e0f3bb27bacf7815a0830cfe63f1a4027e99c8cb9cb
 ---
 # Implementation File Map
 
 | Classification | Path |
 |---|---|
+| `keep` | `.ai/qc/README.md` |
+| `keep` | `.ai/qc/config.example.yml` |
+| `keep` | `.ai/qc/policies/labels.md` |
+| `keep` | `.ai/qc/policies/redaction.md` |
+| `keep` | `.ai/qc/policies/scope.md` |
+| `keep` | `.ai/qc/policies/severity.md` |
+| `keep` | `.ai/qc/prompts/patrol.md` |
+| `keep` | `.ai/qc/prompts/pr-review.md` |
+| `keep` | `.ai/qc/schemas/finding.schema.json` |
+| `keep` | `.ai/qc/schemas/llm-review.schema.json` |
 | `keep` | `.gitattributes` |
 | `keep` | `.githooks/commit-msg` |
 | `keep` | `.githooks/post-commit` |
@@ -26,6 +36,12 @@ artifact_sha256: 5b52de7f1f32be517dfa345f84033fe3b00e965c2065589209f552aa70d216f
 | `keep` | `.github/workflows/docs-sync.yml` |
 | `keep` | `.github/workflows/pr-validation.yml` |
 | `keep` | `.github/workflows/publish.yml` |
+| `keep` | `.github/workflows/qc-autofix.yml` |
+| `keep` | `.github/workflows/qc-ci.yml` |
+| `keep` | `.github/workflows/qc-docs-drift.yml` |
+| `keep` | `.github/workflows/qc-patrol.yml` |
+| `keep` | `.github/workflows/qc-pr-review.yml` |
+| `keep` | `.github/workflows/qc-release.yml` |
 | `keep` | `.github/workflows/triage.yml` |
 | `keep` | `.gitignore` |
 | `keep` | `.python-version` |
@@ -592,6 +608,7 @@ artifact_sha256: 5b52de7f1f32be517dfa345f84033fe3b00e965c2065589209f552aa70d216f
 | `keep` | `_localsetup/tests/test_manifests.py` |
 | `keep` | `_localsetup/tests/test_provenance.py` |
 | `keep` | `_localsetup/tests/test_python_runtime_contract.py` |
+| `keep` | `_localsetup/tests/test_qc_patrol.py` |
 | `keep` | `_localsetup/tests/test_repo_finalizer.py` |
 | `keep` | `_localsetup/tests/test_scrapling_helper.py` |
 | `keep` | `_localsetup/tests/test_scrapling_jobs.py` |
@@ -711,4 +728,21 @@ artifact_sha256: 5b52de7f1f32be517dfa345f84033fe3b00e965c2065589209f552aa70d216f
 | `keep` | `docs.config.yaml` |
 | `keep` | `install` |
 | `keep` | `pyproject.toml` |
+| `keep` | `tools/qc_patrol/__init__.py` |
+| `keep` | `tools/qc_patrol/chunking.py` |
+| `keep` | `tools/qc_patrol/cli.py` |
+| `keep` | `tools/qc_patrol/config.py` |
+| `keep` | `tools/qc_patrol/deterministic_checks.py` |
+| `keep` | `tools/qc_patrol/diff_reader.py` |
+| `keep` | `tools/qc_patrol/docs_drift.py` |
+| `keep` | `tools/qc_patrol/github_api.py` |
+| `keep` | `tools/qc_patrol/issue_writer.py` |
+| `keep` | `tools/qc_patrol/ledger.py` |
+| `keep` | `tools/qc_patrol/llm_client.py` |
+| `keep` | `tools/qc_patrol/pr_writer.py` |
+| `keep` | `tools/qc_patrol/redaction.py` |
+| `keep` | `tools/qc_patrol/release_writer.py` |
+| `keep` | `tools/qc_patrol/repo_inventory.py` |
+| `keep` | `tools/qc_patrol/review_contracts.py` |
+| `keep` | `tools/qc_patrol/schemas.py` |
 | `keep` | `uv.lock` |

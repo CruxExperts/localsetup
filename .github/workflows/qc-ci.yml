@@ -1,0 +1,61 @@
+name: qc-ci
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  merge_group:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  qc-ci:
+    name: deterministic qc
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
+        with:
+          python-version: "3.12"
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+
+      - name: Sync dependencies
+        run: uv sync --frozen --all-groups --python python3
+
+      - name: Run QC inventory
+        run: uv run --frozen python tools/qc_patrol/cli.py inventory --repo . --out qc-out/inventory.json
+
+      - name: Run deterministic QC
+        run: uv run --frozen python tools/qc_patrol/cli.py deterministic --repo . --profile ci --out qc-out/ledger.json
+
+      - name: Run QC tests
+        run: uv run --frozen pytest -q _localsetup/tests/test_qc_patrol.py
+
+      - name: Summarize QC
+        run: |
+          set -euo pipefail
+          {
+            echo "## QC CI"
+            echo
+            echo '```json'
+            cat qc-out/ledger.json
+            echo '```'
+          } >>"$GITHUB_STEP_SUMMARY"
+
+      - name: Upload QC artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: qc-ci-${{ github.sha }}
+          path: qc-out/

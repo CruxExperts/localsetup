@@ -63,6 +63,12 @@
     ".github/workflows/docs-sync.yml",
     ".github/workflows/pr-validation.yml",
     ".github/workflows/publish.yml",
+    ".github/workflows/qc-autofix.yml",
+    ".github/workflows/qc-ci.yml",
+    ".github/workflows/qc-docs-drift.yml",
+    ".github/workflows/qc-patrol.yml",
+    ".github/workflows/qc-pr-review.yml",
+    ".github/workflows/qc-release.yml",
     ".github/workflows/triage.yml"
   ],
   "cli_commands": [
@@ -113,7 +119,7 @@
     "workflow"
   ],
   "counts": {
-    "docs": 339,
+    "docs": 346,
     "framework_docs": 57,
     "generated_docs": 4,
     "platforms": 6,
@@ -123,6 +129,76 @@
     "workflows": 22
   },
   "docs": [
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": ".ai/qc/README.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": ".ai/qc/policies/labels.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": ".ai/qc/policies/redaction.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": ".ai/qc/policies/scope.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": ".ai/qc/policies/severity.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": ".ai/qc/prompts/patrol.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": ".ai/qc/prompts/pr-review.md",
+      "status": "",
+      "version": ""
+    },
     {
       "class": "other",
       "has_frontmatter": false,
@@ -3560,16 +3636,16 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "b14860fa450b5950d77ac1cef61f323d8ca4620b53fd2a11dc36727b448512f8",
+    "artifact_sha256": "6eb310b8514fdeb19c07db283b6d83b3cfb86a7e91bc9963a1ffcd476e80dfae",
     "emitter": "docs-align",
-    "framework_version": "4.0.8",
+    "framework_version": "4.0.9",
     "schema_version": 1,
-    "source_commit": "b9a693affa6f73751dc6b4c0767de9639b6f2700",
-    "source_dirty": true,
-    "source_provenance_hash": "9d8c42b62bfd6249bd5d63c71f84d15d24a3ae8f651a30f96e47c0ce89e631dc",
-    "source_root_id": "95685297f1891438babf4252e8b036c1b50f4afec572d48edef29c405e1d0b50",
+    "source_commit": "3c7ddc021d62ce81ac0a90064bddd16e3c28ad0e",
+    "source_dirty": false,
+    "source_provenance_hash": "26f82c27e3ba6ff0b47432214b0dff6dead5a1d958f474314806c26a471ac6ea",
+    "source_root_id": "1b9a3080b1c9535802fa7f221aa16b7488b3191fac7bd3a977d7c6a6dcd96326",
     "source_tag": null,
-    "source_tree_sha": "d9a65f6a9bcfa9543045cc3f2deefcf3d5723284"
+    "source_tree_sha": "407056ef650c13e310490048061ca99b2b2bf116"
   },
   "repo": ".",
   "schema_version": "1.0",
