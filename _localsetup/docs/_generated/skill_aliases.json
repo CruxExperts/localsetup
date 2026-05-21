@@ -25,6 +25,7 @@
   "localsetup-kilo-visual-output": "ls-kilo-visual-output",
   "localsetup-linux-patcher": "ls-linux-patcher",
   "localsetup-linux-service-triage": "ls-linux-service-triage",
+  "localsetup-localsetup-doctor": "ls-localsetup-doctor",
   "localsetup-mail-protocol-control": "ls-mail-protocol-control",
   "localsetup-markdown-reference-validator": "ls-markdown-reference-validator",
   "localsetup-mcp-builder": "ls-mcp-builder",
@@ -53,7 +54,7 @@
   "localsetup-unfuck-my-git-state": "ls-unfuck-my-git-state",
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/skill_aliases.json",
-    "artifact_sha256": "84e0522702b38ac6f3d26e6357bd0a3d954c683a0e8cfd540fe293df709ab644",
+    "artifact_sha256": "659af67816c64cd0105411b514b5f8ca1760d168471abf76de0821e4a37b2be2",
     "emitter": "generate-docs",
     "framework_version": "4.0.4",
     "schema_version": 1,

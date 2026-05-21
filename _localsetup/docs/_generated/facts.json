@@ -41,7 +41,7 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/facts.json",
-    "artifact_sha256": "8941ac35c9b9c4443c91b3e82d16fcb5e5ad627271fc50fb2abdbc972af94885",
+    "artifact_sha256": "bc0cc54a60f9a8fdc6edf65f29683e0a9e2abf1f14f768801698636e35e33731",
     "emitter": "generate-docs",
     "framework_version": "4.0.4",
     "schema_version": 1,
@@ -52,7 +52,7 @@
     "source_tag": null,
     "source_tree_sha": "9ebd34bc760210b377851a7fe1a9150adec6f44c"
   },
-  "skill_count": 52,
+  "skill_count": 53,
   "skills": [
     {
       "class": "core",
@@ -288,6 +288,22 @@
         "publishing"
       ],
       "version": "1.1"
+    },
+    {
+      "class": "framework-governance",
+      "id": "ls-localsetup-doctor",
+      "name": "ls-localsetup-doctor",
+      "owner_scope": "skill",
+      "packs": [
+        "core"
+      ],
+      "path": "_localsetup/skills/ls-localsetup-doctor/SKILL.md",
+      "sort_priority": 20,
+      "tags": [
+        "doctor",
+        "repair"
+      ],
+      "version": "1.0"
     },
     {
       "class": "framework-governance",

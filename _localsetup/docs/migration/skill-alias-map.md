@@ -8,7 +8,7 @@ localsetup_provenance:
   emitter: generate-docs
 framework_version: 4.0.4
 source_commit: f94c1205fb06a5700e0f6f360e9795c70443d43a
-artifact_sha256: 4cebd7d65092e5e7148fb6af2dfd84e8a9247427610388a40b7d8f9ea04ee7c7
+artifact_sha256: 1308535836ddc668a9aae86a07dc9e717543e7533b763649637046d9e529c008
 ---
 # Skill Alias Map
 
@@ -40,6 +40,7 @@ artifact_sha256: 4cebd7d65092e5e7148fb6af2dfd84e8a9247427610388a40b7d8f9ea04ee7c
 | `localsetup-kilo-visual-output` | `ls-kilo-visual-output` |
 | `localsetup-linux-patcher` | `ls-linux-patcher` |
 | `localsetup-linux-service-triage` | `ls-linux-service-triage` |
+| `localsetup-localsetup-doctor` | `ls-localsetup-doctor` |
 | `localsetup-mail-protocol-control` | `ls-mail-protocol-control` |
 | `localsetup-markdown-reference-validator` | `ls-markdown-reference-validator` |
 | `localsetup-mcp-builder` | `ls-mcp-builder` |

@@ -113,12 +113,12 @@
     "workflow"
   ],
   "counts": {
-    "docs": 338,
+    "docs": 339,
     "framework_docs": 57,
     "generated_docs": 4,
     "platforms": 6,
     "public_docs": 6,
-    "skills": 52,
+    "skills": 53,
     "workflow_packs": 28,
     "workflows": 22
   },
@@ -2065,6 +2065,16 @@
       "managed_blocks": [],
       "owner_package": "",
       "owner_skill": "",
+      "path": "_localsetup/skills/ls-localsetup-doctor/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
       "path": "_localsetup/skills/ls-mail-protocol-control/SKILL.md",
       "status": "",
       "version": ""
@@ -3550,7 +3560,7 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "48305f20a8097cdbd4adb604d12ca7c93dc2b1e3bef0c3e6e5cc29564227a446",
+    "artifact_sha256": "b14860fa450b5950d77ac1cef61f323d8ca4620b53fd2a11dc36727b448512f8",
     "emitter": "docs-align",
     "framework_version": "4.0.4",
     "schema_version": 1,
@@ -3769,6 +3779,20 @@
       "tags": [
         "github",
         "publishing"
+      ]
+    },
+    {
+      "class": "framework-governance",
+      "name": "ls-localsetup-doctor",
+      "owner_scope": "skill",
+      "packs": [
+        "core"
+      ],
+      "path": "_localsetup/skills/ls-localsetup-doctor",
+      "sort_priority": 20,
+      "tags": [
+        "doctor",
+        "repair"
       ]
     },
     {

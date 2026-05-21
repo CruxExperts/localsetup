@@ -31,6 +31,7 @@ from _localsetup.core.package import build_public_artifact, parse_sha256_file, v
 from _localsetup.core.plan import build_install_plan
 from _localsetup.core.provenance import MARKER_JSON
 from _localsetup.core.rollback import rollback
+from _localsetup.core.repair import run_repair
 from _localsetup.core.schema import validate_json_schema
 from _localsetup.core.shell import detect_invocation_target, is_managed_shim, register_shell_command, shell_registration_status
 from _localsetup.core.skills import skill_taxonomy_payload
@@ -4403,6 +4404,251 @@ def test_convert_archives_old_framework_and_installs_at_target(tmp_path: Path) -
     assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
     assert (target / ".localsetup/lock.json").is_file()
     assert report["verify"]["ok"] is True
+
+
+def test_doctor_repair_modern_deployment_dry_run_has_no_actions(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    target.mkdir()
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"], target_root=target)
+    apply_plan(root, plan, home=home, target_root=target)
+
+    report = run_repair(root, home=home, target_root=target)
+
+    assert report["ok"] is True
+    assert report["applied"] is False
+    assert report["actions"] == []
+    assert report["decisions"] == []
+
+
+def test_doctor_repair_apply_noops_when_no_actions(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    target.mkdir()
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"], target_root=target)
+    apply_plan(root, plan, home=home, target_root=target)
+    lock_before = (target / ".localsetup" / "lock.json").read_text(encoding="utf-8")
+
+    report = run_repair(root, home=home, target_root=target, apply=True)
+
+    assert report["ok"] is True
+    assert report["applied"] is False
+    assert report["actions"] == []
+    assert (target / ".localsetup" / "lock.json").read_text(encoding="utf-8") == lock_before
+
+
+def test_doctor_repair_converts_legacy_lockfile(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "legacy-target"
+    target.mkdir()
+    legacy_lock = target / "localsetup.lock.json"
+    legacy_lock.write_text(
+        json.dumps({"platforms": ["codex"], "repo_packages": ["localsetup-context"]}) + "\n",
+        encoding="utf-8",
+    )
+
+    dry = run_repair(root, home=home, target_root=target)
+    assert dry["applied"] is False
+    assert legacy_lock.exists()
+    report = run_repair(root, home=home, target_root=target, apply=True)
+    lock = load_json(target / ".localsetup" / "lock.json")
+
+    assert any(action["kind"] == "backup_remove_legacy_lock" for action in dry["actions"])
+    assert report["ok"] is True
+    assert report["applied"] is True
+    assert not legacy_lock.exists()
+    assert (target / ".localsetup" / "lock.json").is_file()
+    assert Path(lock["migration_origin"]["backup"]).is_file()
+    assert report["verify"]["ok"] is True
+
+
+def test_doctor_repair_removes_stale_consumer_framework(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    stale = target / "_localsetup"
+    (stale / "config").mkdir(parents=True)
+    (stale / "core").mkdir()
+    (stale / "config" / "pack.yaml").write_text("old: true\n", encoding="utf-8")
+
+    report = run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
+
+    assert report["ok"] is True
+    assert not stale.exists()
+    assert any(Path(path).name == "_localsetup" for path in report["backups"])
+    assert (target / ".codex" / "skills" / ".localsetup-adapter.json").is_file()
+    assert report["verify"]["ok"] is True
+
+
+def test_doctor_repair_protects_maintainer_source_checkout(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "maintainer"
+    shutil.copytree(root, target)
+
+    report = run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
+
+    assert report["ok"] is False
+    assert report["applied"] is False
+    assert any(decision["kind"] == "protected_source_root" for decision in report["decisions"])
+    assert (target / "_localsetup" / "config" / "pack.yaml").is_file()
+    assert not (target / ".localsetup" / "lock.json").exists()
+
+
+def test_doctor_repair_protects_managed_source_checkout_path(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    managed_source = home / ".local" / "share" / "localsetup" / "source"
+    shutil.copytree(root, managed_source)
+
+    report = run_repair(root, home=home, target_root=managed_source, platform_ids=["codex"], apply=True)
+
+    assert report["ok"] is False
+    assert report["applied"] is False
+    assert "default managed Localsetup source checkout" in report["detected_shape"]["protected_reasons"]
+    assert any(decision["kind"] == "protected_source_root" for decision in report["decisions"])
+    assert (managed_source / "_localsetup" / "core").is_dir()
+    assert not (managed_source / ".localsetup" / "lock.json").exists()
+
+
+def test_doctor_repair_protects_registered_custom_source_checkout(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    registered_source = tmp_path / "custom-source"
+    shutil.copytree(root, registered_source)
+    register_shell_command(registered_source, home=home)
+
+    report = run_repair(root, home=home, target_root=registered_source, platform_ids=["codex"], apply=True)
+
+    assert report["ok"] is False
+    assert report["applied"] is False
+    assert "registered Localsetup shell source checkout" in report["detected_shape"]["protected_reasons"]
+    assert any(decision["kind"] == "protected_source_root" for decision in report["decisions"])
+    assert (registered_source / "_localsetup" / "tools" / "localsetup.py").is_file()
+    assert not (registered_source / ".localsetup" / "lock.json").exists()
+
+
+def test_doctor_repair_blocks_nonempty_plan_for_protected_source_checkout(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "maintainer"
+    shutil.copytree(root, target)
+    (target / "localsetup.lock.json").write_text('{"platforms": ["codex"]}\n', encoding="utf-8")
+
+    report = run_repair(root, home=home, target_root=target, apply=True)
+
+    assert report["ok"] is False
+    assert report["applied"] is False
+    assert any(action["kind"] == "backup_remove_legacy_lock" for action in report["actions"])
+    assert any(decision["kind"] == "protected_source_root" for decision in report["decisions"])
+    assert (target / "localsetup.lock.json").is_file()
+    assert not (target / ".localsetup" / "lock.json").exists()
+
+
+def test_doctor_repair_retires_old_agents_codex_adapter(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    old_adapter = target / ".agents" / "skills"
+    old_adapter.mkdir(parents=True)
+    (old_adapter / "localsetup-context").mkdir()
+    (old_adapter / "localsetup-context" / "SKILL.md").write_text("---\nname: localsetup-context\n---\n", encoding="utf-8")
+
+    dry = run_repair(root, home=home, target_root=target)
+    report = run_repair(root, home=home, target_root=target, apply=True)
+
+    assert dry["inferred"]["platforms"] == ["codex"]
+    assert any(action["kind"] == "backup_remove_historical_adapter" for action in dry["actions"])
+    assert not old_adapter.exists()
+    assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
+    assert report["verify"]["ok"] is True
+
+
+def test_doctor_repair_unmanaged_adapter_content_requires_decision(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    collision = target / ".codex" / "skills"
+    collision.mkdir(parents=True)
+    (collision / "custom.txt").write_text("user content\n", encoding="utf-8")
+
+    report = run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
+
+    assert report["ok"] is False
+    assert report["applied"] is False
+    assert report["decisions"]
+    assert (collision / "custom.txt").is_file()
+    assert not (target / ".localsetup" / "lock.json").exists()
+
+
+def test_doctor_repair_broken_adapter_symlink_is_recreated(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    adapter = target / ".codex" / "skills"
+    adapter.parent.mkdir(parents=True)
+    adapter.symlink_to(target / "missing-global", target_is_directory=True)
+
+    report = run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
+
+    assert report["ok"] is True
+    assert not adapter.is_symlink()
+    assert_scoped_adapter(adapter, "ls-context")
+    assert report["verify"]["ok"] is True
+
+
+def test_doctor_repair_dry_run_never_mutates_repo(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    target.mkdir()
+    legacy_lock = target / "localsetup.lock.json"
+    legacy_lock.write_text('{"platforms": ["codex"]}\n', encoding="utf-8")
+
+    report = run_repair(root, home=home, target_root=target)
+
+    assert report["applied"] is False
+    assert legacy_lock.is_file()
+    assert not (target / ".localsetup").exists()
+    assert not (target / ".codex").exists()
+
+
+def test_doctor_repair_cli_subcommand_applies(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    target.mkdir()
+    (target / "localsetup.lock.json").write_text('{"platforms": ["codex"]}\n', encoding="utf-8")
+    tool = root / "_localsetup" / "tools" / "localsetup.py"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(tool),
+            "--repo",
+            str(root),
+            "--home",
+            str(home),
+            "doctor",
+            "repair",
+            "--target-directory",
+            str(target),
+            "--yes",
+        ],
+        check=True,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    payload = json.loads(completed.stdout)
+
+    assert payload["ok"] is True
+    assert payload["applied"] is True
+    assert (target / ".localsetup" / "lock.json").is_file()
+    assert (target / ".codex" / "skills" / ".localsetup-adapter.json").is_file()
 
 
 def test_convert_cli_accepts_split_selector_flags(tmp_path: Path) -> None:

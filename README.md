@@ -64,7 +64,7 @@ Start with the [workflow packages guide](_localsetup/docs/WORKFLOW_PACKAGES.md) 
 |---|---|
 | Current version | `4.0.4` |
 | Supported platforms | `cursor, claude-code, codex, openclaw, kilo, opencode` |
-| Shipped skills | `52` |
+| Shipped skills | `53` |
 | Workflow packages | `22` |
 | Source | `_localsetup/docs/_generated/facts.json` |
 <!-- facts-block:end -->
@@ -215,6 +215,7 @@ Useful commands:
 
 ```bash
 localsetup doctor
+localsetup doctor repair --target-directory .
 localsetup verify --tools codex --level filesystem
 localsetup diff --tools codex
 localsetup skill search context
@@ -233,7 +234,7 @@ Use `--trace-json /path/to/events.jsonl` with `install`, `verify`, or `doctor` t
 
 For a complete option table, see the [command reference](_localsetup/docs/COMMAND_REFERENCE.md).
 
-`doctor` reports the uv-managed source checkout environment. If it sees an old `~/.local/share/localsetup/venv` from earlier releases, it reports that legacy venv as ignored and gives a repair hint instead of trying to execute it.
+`doctor` reports the uv-managed source checkout environment. `doctor repair` emits a dry-run JSON repair report for legacy or partial target repos, and applies only low-ambiguity Localsetup-owned repairs when rerun with `--yes`. If `doctor` sees an old `~/.local/share/localsetup/venv` from earlier releases, it reports that legacy venv as ignored and gives a repair hint instead of trying to execute it.
 
 ## What Localsetup is solving
 

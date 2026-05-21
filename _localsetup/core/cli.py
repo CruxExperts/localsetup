@@ -42,6 +42,7 @@ from .paths import expand_user_path
 from .plan import build_install_plan
 from .provenance import provenance_report
 from .query import adopt_recommendations, graph_payload, pack_reasoning, skill_payload, workflow_payload
+from .repair import run_repair
 from .registry import load_registry
 from .rollback import rollback
 from .selection import PRESETS
@@ -405,6 +406,11 @@ def _main(argv: list[str] | None = None) -> int:
     _add_config_flags(doctor_p)
     _add_selector_flags(doctor_p)
     doctor_p.add_argument("--provenance", action="store_true")
+    doctor_sub = doctor_p.add_subparsers(dest="doctor_action")
+    doctor_repair_p = doctor_sub.add_parser("repair")
+    _add_config_flags(doctor_repair_p)
+    doctor_repair_p.add_argument("--yes", action="store_true", dest="apply")
+    doctor_repair_p.add_argument("--platforms", "--tools", nargs="*", dest="platforms")
 
     migrate_p = sub.add_parser("migrate")
     _add_config_flags(migrate_p)
@@ -733,6 +739,26 @@ def _main(argv: list[str] | None = None) -> int:
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
         target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
+        if getattr(args, "doctor_action", None) == "repair":
+            payload = run_repair(
+                root,
+                home=home,
+                target_root=target_root,
+                platform_ids=config.platforms,
+                backup_dir=Path(config.backup_dir).expanduser().resolve() if config.backup_dir else None,
+                dependency_mode=config.dependency_mode,
+                apply=bool(args.apply),
+            )
+            _write_report(config.output.report, payload)
+            _print_payload(payload)
+            write_trace(
+                getattr(args, "trace_json", None),
+                event="doctor.repair",
+                status="ok" if payload["ok"] else "failed",
+                attributes={"target_root": str(target_root or root), "applied": bool(payload["applied"])},
+                started_at=started_at,
+            )
+            return 0 if payload["ok"] else 1
         payload = run_doctor(
             root,
             home=home,

@@ -5,7 +5,7 @@ localsetup_provenance:
   emitter: generate-docs
 framework_version: 4.0.4
 source_commit: f94c1205fb06a5700e0f6f360e9795c70443d43a
-artifact_sha256: 326c60e46af4b70afa5ea452e9174a5964ff572420959e0279b9174f25f90834
+artifact_sha256: 64bffe18dfa4488e56d2287f33dd1a055bf14ad8238f55ef4be49cead71ae95f
 ---
 # Skill And Workflow Packs
 
@@ -25,6 +25,7 @@ artifact_sha256: 326c60e46af4b70afa5ea452e9174a5964ff572420959e0279b9174f25f9083
 | `bootstrap, dev` | `skill` | `ls-framework-compliance` | `framework-governance` | 20 | `compliance, framework` | `localsetup-framework-compliance` |
 | `bootstrap, dev` | `skill` | `ls-git-workflows` | `framework-governance` | 20 | `git, workflows` | `localsetup-git-workflows` |
 | `publishing` | `skill` | `ls-github-publishing-workflow` | `framework-governance` | 20 | `github, publishing` | `localsetup-github-publishing-workflow` |
+| `core` | `skill` | `ls-localsetup-doctor` | `framework-governance` | 20 | `doctor, repair` | `localsetup-localsetup-doctor` |
 | `dev` | `skill` | `ls-markdown-reference-validator` | `framework-governance` | 20 | `markdown, references` | `localsetup-markdown-reference-validator` |
 | `publishing` | `skill` | `ls-public-repo-identity` | `framework-governance` | 20 | `identity, publishing` | `localsetup-public-repo-identity` |
 | `dev` | `skill` | `ls-receiving-code-review` | `framework-governance` | 20 | `review, feedback` | `localsetup-receiving-code-review` |

@@ -1,7 +1,7 @@
 {
   "artifacts": [
     {
-      "artifact_sha256": "70b237983ef6ce53e80769848b95a4943b965c626b8dbd3f7a0a99fd150727b7",
+      "artifact_sha256": "cf82419de4bbaffb6364fe0a9b7a250044881cd5d2a90fafd756fd1ed7bd7e57",
       "emitter": "generate-docs",
       "framework_version": "4.0.4",
       "path": "_localsetup/docs/SKILLS.md",
@@ -52,7 +52,7 @@
       "type": "markdown"
     },
     {
-      "artifact_sha256": "ed0f6caabe14f8631139e98abb7c5c1388e1c3c69d837a568617d3998250a4a2",
+      "artifact_sha256": "53abe4bd3c725b1a2920e65c94dacaf772778fd735b2325a60433dd117c7eedd",
       "emitter": "generate-docs",
       "framework_version": "4.0.4",
       "path": "_localsetup/docs/_generated/docs-alignment-summary.md",
@@ -86,7 +86,7 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "77e8a81810b2f6e79d06b890be80f230d09e84d39404f8b21cbc6d5e13dc1a2e",
+      "artifact_sha256": "cd3a31e698b01ec204bf5fe9878f0384dda4eda69f5b296f6baecd2a792cda81",
       "emitter": "generate-docs",
       "framework_version": "4.0.4",
       "path": "_localsetup/docs/_generated/docs-audit-result.json",
@@ -103,7 +103,7 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "922d500a451f0f849b95c7b70f4df05608f8038a413e1ed4b3573719a97c04b4",
+      "artifact_sha256": "1750c76b1cd0465ad48fbee74b5bf366a1d45fe8ef2ccd61790261de8b66d420",
       "emitter": "generate-docs",
       "framework_version": "4.0.4",
       "path": "_localsetup/docs/_generated/docs-inventory.json",
@@ -120,7 +120,7 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "c50af167ffe320b6b72bf0812992f8850335bf7a51f0729188257e6e0ad1c909",
+      "artifact_sha256": "5cb284914006d9652a1be00d73303b01c112c7c72aeb0b56edcb10a9ee4ee10f",
       "emitter": "generate-docs",
       "framework_version": "4.0.4",
       "path": "_localsetup/docs/_generated/docs-truth-map.json",
@@ -137,7 +137,7 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "e305ccf20fe811ef7c41035168cbeaea67f59d119343f6dd2c4f325dff617dac",
+      "artifact_sha256": "a3e800832d2d1b56154c1fb4d62dcd744cfa7e3e334718065725bc87c69a127f",
       "emitter": "generate-docs",
       "framework_version": "4.0.4",
       "path": "_localsetup/docs/_generated/facts.json",
@@ -188,7 +188,7 @@
       "type": "markdown"
     },
     {
-      "artifact_sha256": "e50a6f86d7c5e3ae22477e71e93bd79083a6e3ec586e8f7088864287921286d7",
+      "artifact_sha256": "209e74773635814fd80bbfbdaca1e214f04d9702cc62a90969ec595fde3b3ff3",
       "emitter": "generate-docs",
       "framework_version": "4.0.4",
       "path": "_localsetup/docs/_generated/skill-packs.md",
@@ -205,7 +205,7 @@
       "type": "markdown"
     },
     {
-      "artifact_sha256": "c608ee8125f6664500cde6c45f6a2471f2b12ad5911a09729d829705b8f92695",
+      "artifact_sha256": "afaef546dc55ea8b2da69e4322bab08d87d333633d706b54c48f2d0c7593516b",
       "emitter": "generate-docs",
       "framework_version": "4.0.4",
       "path": "_localsetup/docs/_generated/skill-taxonomy.json",
@@ -222,7 +222,7 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "ac84a112afbe118dfced07d16f49e8c31d5fe0f6e50734f1c576c021eac40f03",
+      "artifact_sha256": "261aa8002ffb238a7dec6fafa33104466199b22feac8d9e154bd4a2977c0f94a",
       "emitter": "generate-docs",
       "framework_version": "4.0.4",
       "path": "_localsetup/docs/_generated/skill_aliases.json",
@@ -256,7 +256,7 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "047be04af7cc4b7304fb35d0ab60f237022eef6e468ffd851e29a754e4bb0c31",
+      "artifact_sha256": "e8a5bb2a7f89cac85195e72ff97e52de469f5dde51abab174b225b68f83ebb8b",
       "emitter": "generate-docs",
       "framework_version": "4.0.4",
       "path": "_localsetup/docs/migration/skill-alias-map.md",
@@ -292,7 +292,7 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/artifact-registry.json",
-    "artifact_sha256": "dded9cf05f3fc44d611b3abaf3ee13fa27fe018e5590c398104bcc6a0e81fbbf",
+    "artifact_sha256": "c168fc94625d04dc5d81a1905bf4d4b17386a9cbb55dc586b6a1c32aa4569c9b",
     "emitter": "generate-docs",
     "framework_version": "4.0.4",
     "schema_version": 1,
