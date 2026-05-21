@@ -6233,6 +6233,10 @@ def test_provenance_edge_cases_and_report_warnings(tmp_path: Path, monkeypatch: 
             "",
         ),
         ("log", "-1", "--pretty=%s"): subprocess.CompletedProcess([], 0, "docs: refresh generated artifacts\n", ""),
+        ("log", "-1", "--pretty=%s", "HEAD"): subprocess.CompletedProcess(
+            [], 0, "docs: refresh generated artifacts\n", ""
+        ),
+        ("log", "-1", "--pretty=%s", "parent-sha"): subprocess.CompletedProcess([], 0, "fix: source\n", ""),
         ("diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"): subprocess.CompletedProcess(
             [], 0, "_localsetup/docs/_generated/facts.json\n", ""
         ),
