@@ -1,0 +1,93 @@
+name: qc-pr-review
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  pr-review:
+    name: pr qc review
+    runs-on: ubuntu-latest
+    env:
+      LLM_MODE: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && 'auto' || 'off' }}
+      QC_LLM_BASE_URL: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && secrets.QC_LLM_BASE_URL || '' }}
+      QC_LLM_API_KEY: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && secrets.QC_LLM_API_KEY || '' }}
+      QC_LLM_ORGANIZATION: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && secrets.QC_LLM_ORGANIZATION || '' }}
+      QC_LLM_PROJECT: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && secrets.QC_LLM_PROJECT || '' }}
+      QC_LLM_MODEL: ${{ vars.QC_LLM_MODEL }}
+      QC_LLM_TEMPERATURE: ${{ vars.QC_LLM_TEMPERATURE }}
+      QC_LLM_MAX_TOKENS: ${{ vars.QC_LLM_MAX_TOKENS }}
+      QC_LLM_TIMEOUT_SECONDS: ${{ vars.QC_LLM_TIMEOUT_SECONDS }}
+      QC_LLM_RETRY_COUNT: ${{ vars.QC_LLM_RETRY_COUNT }}
+      QC_LLM_API_STYLE: ${{ vars.QC_LLM_API_STYLE }}
+      QC_LLM_ENDPOINT_ALIAS: ${{ vars.QC_LLM_ENDPOINT_ALIAS }}
+    steps:
+      - name: Checkout trusted tooling
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+
+      - name: Checkout subject
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          path: qc-subject
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
+        with:
+          python-version: "3.12"
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+
+      - name: Sync dependencies
+        run: uv sync --frozen --all-groups --python python3
+
+      - name: Run PR QC review
+        env:
+          QC_PR_BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+          QC_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          QC_BASE_REMOTE: https://github.com/${{ github.repository }}.git
+        run: |
+          set -euo pipefail
+          uv run --frozen python tools/qc_patrol/cli.py pr-review \
+            --subject-repo qc-subject \
+            --base "$QC_PR_BASE_SHA" \
+            --head "$QC_PR_HEAD_SHA" \
+            --base-remote "$QC_BASE_REMOTE" \
+            --out qc-out \
+            --llm-mode "$LLM_MODE"
+
+      - name: Summarize PR QC
+        run: |
+          set -euo pipefail
+          {
+            echo "## QC PR Review"
+            echo
+            echo "LLM mode: ${LLM_MODE}"
+            echo
+            echo '```json'
+            cat qc-out/ledger.json
+            echo '```'
+          } >>"$GITHUB_STEP_SUMMARY"
+
+      - name: Upload QC artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: qc-pr-review-${{ github.sha }}
+          path: qc-out/

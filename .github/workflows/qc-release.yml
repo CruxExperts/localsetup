@@ -1,0 +1,41 @@
+name: qc-release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qc-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-readiness:
+    name: release readiness qc
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
+        with:
+          python-version: "3.12"
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+
+      - name: Sync dependencies
+        run: uv sync --frozen --all-groups --python python3
+
+      - name: Run release readiness
+        run: uv run --frozen python tools/qc_patrol/cli.py release-readiness --repo . --out qc-out
+
+      - name: Upload QC artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: qc-release-${{ github.sha }}
+          path: qc-out/

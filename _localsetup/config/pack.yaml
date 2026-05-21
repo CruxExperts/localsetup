@@ -425,6 +425,12 @@ public_private:
     - .github
     - _localsetup
   private_paths:
+    - .github/workflows/qc-autofix.yml
+    - .github/workflows/qc-ci.yml
+    - .github/workflows/qc-docs-drift.yml
+    - .github/workflows/qc-patrol.yml
+    - .github/workflows/qc-pr-review.yml
+    - .github/workflows/qc-release.yml
     - scripts
     - docs
     - .localsetup-maint
