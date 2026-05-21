@@ -45,12 +45,12 @@
     "emitter": "generate-docs",
     "framework_version": "4.0.5",
     "schema_version": 1,
-    "source_commit": "163026d01f43db9371c2dc51b7200e11c8e2b0b8",
-    "source_dirty": true,
-    "source_provenance_hash": "c07bfc5d91f333ced050eb65f7492e04de8c680723ec4b56a3cfad585461aa5f",
-    "source_root_id": "d7deb609e21b68c3eeea86d254a1822d874961333001c8550631aa920fb74724",
+    "source_commit": "5539dfe9212fbbdace244e60c94a7dbe5cd1b8c2",
+    "source_dirty": false,
+    "source_provenance_hash": "5c1e4bc04b12bb85e9f19d44fb6d83ef10090f1f0e98e45ba7d4631365505e80",
+    "source_root_id": "64729e1979c52ce07cce00606ab86adafe71caa6a924e126d440bc54ad23aba7",
     "source_tag": null,
-    "source_tree_sha": "76c5b20c83193fc7efcfb2a7146e9eb688d91863"
+    "source_tree_sha": "28914d9fff789d7323ba8f3dc461feec1f47df91"
   },
   "skill_count": 53,
   "skills": [
