@@ -64,14 +64,14 @@
     "artifact_path": "_localsetup/docs/_generated/docs-asset-manifest.json",
     "artifact_sha256": "24801409b44bde3229dfaf83ba9598f207d6e755cb80eb7dae917b846013749e",
     "emitter": "docs-align",
-    "framework_version": "4.0.7",
+    "framework_version": "4.0.8",
     "schema_version": 1,
-    "source_commit": "dfc25719ea22202c114c490c98658a10c85dec3f",
+    "source_commit": "b9a693affa6f73751dc6b4c0767de9639b6f2700",
     "source_dirty": true,
-    "source_provenance_hash": "2b82423525c10976e1ca498c79f8c56cd096a29c4549feace82ca6fdfef6e10e",
-    "source_root_id": "60f5094f8cbd0c08aa110020d4e886b832d47e70faf63dffe3541263c52a8d98",
+    "source_provenance_hash": "9d8c42b62bfd6249bd5d63c71f84d15d24a3ae8f651a30f96e47c0ce89e631dc",
+    "source_root_id": "95685297f1891438babf4252e8b036c1b50f4afec572d48edef29c405e1d0b50",
     "source_tag": null,
-    "source_tree_sha": "3de66f865f173c75032f2d9f300f2eb2998d2519"
+    "source_tree_sha": "d9a65f6a9bcfa9543045cc3f2deefcf3d5723284"
   },
   "schema_version": "1.0"
 }
