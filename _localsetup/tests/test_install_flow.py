@@ -3091,6 +3091,7 @@ def test_root_installer_filters_github_release_api_payload_before_tag_fallback(t
     env = {
         **os.environ,
         "LOCALSETUP_BOOTSTRAP_REPO": str(bootstrap_repo),
+        "LOCALSETUP_BOOTSTRAP_REF": "",
         "LOCALSETUP_BOOTSTRAP_RELEASES_URL": releases.resolve().as_uri(),
         "LOCALSETUP_BOOTSTRAP_SOURCE_DIR": str(managed_source),
     }
