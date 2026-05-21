@@ -8,7 +8,7 @@ localsetup_provenance:
   emitter: docs-align
 framework_version: 4.0.5
 source_commit: 60e9ad92385a591a93c347da6ef655c1e701b84c
-artifact_sha256: 56d6369b97a701b47b41d77dcca909cf8533a801c8b8694394cf8cce8616b4c2
+artifact_sha256: 3d623847d94adadfdad6a03357d963579561a3575f0a8a827738262fddfcb6bb
 ---
 # Documentation Alignment Summary
 
@@ -21,9 +21,9 @@ This page is generated from repository inventory, source-truth manifests, asset 
 | Shipped skills | 53 |
 | Workflow packages | 22 |
 | Supported platforms | 6 |
-| Audit findings | 2 |
+| Audit findings | 0 |
 | Critical findings | 0 |
-| Major findings | 2 |
+| Major findings | 0 |
 
 ## Generated Artifacts
 
@@ -34,5 +34,4 @@ This page is generated from repository inventory, source-truth manifests, asset 
 
 ## Findings
 
-- `major` `stale_count` README.md:28: hard-coded shipped skill/workflow count is stale
-- `major` `stale_count` _localsetup/docs/FEATURES.md:37: hard-coded shipped skill/workflow count is stale
+No critical or major documentation alignment findings were detected.

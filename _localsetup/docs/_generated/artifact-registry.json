@@ -52,7 +52,7 @@
       "type": "markdown"
     },
     {
-      "artifact_sha256": "b6b56e70b1fa4632970d8bca96eb31f9f0107578d461988004d38daaee06e8ed",
+      "artifact_sha256": "c26daf84f93d6647c124f71b024103e24177aad4cb3d33dad4d6ddc6b7e11ca6",
       "emitter": "generate-docs",
       "framework_version": "4.0.5",
       "path": "_localsetup/docs/_generated/docs-alignment-summary.md",
@@ -86,7 +86,7 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "1b6f85d4b5b50b920aa41cc4028f9e237a87d8d5c3217e2833a13b0c2ab7132a",
+      "artifact_sha256": "9e7fac95afb49bef5c5a23de5c87d71264dab3eb517884d7c756bd9b1daef0cd",
       "emitter": "generate-docs",
       "framework_version": "4.0.5",
       "path": "_localsetup/docs/_generated/docs-audit-result.json",
@@ -292,7 +292,7 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/artifact-registry.json",
-    "artifact_sha256": "057e8ab2bf52ee9bfc386c5b687ce622b09e86bd8e98d2fca82c19ea411dbc5c",
+    "artifact_sha256": "b1c0e1adccb2a757543a10c0b62e493c3c6543387bf41934b451475dc0a9320a",
     "emitter": "generate-docs",
     "framework_version": "4.0.5",
     "schema_version": 1,

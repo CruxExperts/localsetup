@@ -34,7 +34,7 @@ This is the full public capability catalog for Localsetup. The [root README](../
 | Capability | What it gives you |
 |---|---|
 | Agent Skills compliance | Shipped skills use spec-compatible `SKILL.md` packages with `name`, `description`, and `metadata.version`. |
-| 52 shipped skills plus 22 workflow packages | Practical capabilities and orchestration flows for debugging, tests, PR review, git recovery, service triage, patching, docs, MCP building, context indexing, TypeScript code quality, opt-in heartbeat harnessing, repo finalization, and more. |
+| 53 shipped skills plus 22 workflow packages | Practical capabilities and orchestration flows for debugging, tests, PR review, git recovery, service triage, patching, docs, MCP building, context indexing, TypeScript code quality, opt-in heartbeat harnessing, repo finalization, and more. |
 | Skill import | Import skills from a URL or local path with discovery, validation, heuristic security screening, and summaries. |
 | Skill vetting | Treat third-party skills as untrusted before they can influence agent behavior. |
 | Skill normalization | Clean imported or in-tree skills for spec compliance, platform-neutral wording, and framework tooling standards. |

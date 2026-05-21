@@ -1,50 +1,13 @@
 {
   "critical_count": 0,
-  "finding_count": 2,
-  "findings": [
-    {
-      "actual": {
-        "skills": 52,
-        "workflows": 22
-      },
-      "category": "stale_count",
-      "expected": {
-        "skills": 53,
-        "workflows": 22
-      },
-      "fix_scope": "public",
-      "id": "count.README.md:28",
-      "line": 28,
-      "message": "hard-coded shipped skill/workflow count is stale",
-      "path": "README.md",
-      "severity": "major",
-      "source": "live skill/workflow manifests"
-    },
-    {
-      "actual": {
-        "skills": 52,
-        "workflows": 22
-      },
-      "category": "stale_count",
-      "expected": {
-        "skills": 53,
-        "workflows": 22
-      },
-      "fix_scope": "public",
-      "id": "count._localsetup/docs/FEATURES.md:37",
-      "line": 37,
-      "message": "hard-coded shipped skill/workflow count is stale",
-      "path": "_localsetup/docs/FEATURES.md",
-      "severity": "major",
-      "source": "live skill/workflow manifests"
-    }
-  ],
-  "major_count": 2,
+  "finding_count": 0,
+  "findings": [],
+  "major_count": 0,
   "minor_count": 0,
-  "ok": false,
+  "ok": true,
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-audit-result.json",
-    "artifact_sha256": "9f90f0f5f5738eda202d322ab21a912e60e4f0addd2121fe3eef192c91638609",
+    "artifact_sha256": "e82619e42f31266261fa11fa954df7778b2d19b7f12d224a71a85ec1a8cf31a8",
     "emitter": "docs-align",
     "framework_version": "4.0.5",
     "schema_version": 1,
