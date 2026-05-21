@@ -35,19 +35,27 @@ Attach selected platform adapters to the target repo:
 ./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor
 ```
 
-`--tools` is the compatibility alias for `--platforms`. If both are omitted, Localsetup refreshes the managed package library only and does not create repo adapter paths.
+`--tools` is the compatibility alias for `--platforms`. If both are omitted on a source-only install, Localsetup refreshes the managed package library only and does not create repo adapter paths. If a repo target is explicit, selector-free `plan`, `install --apply`, and `update` use auto mode:
+
+```bash
+localsetup plan --target-directory .
+localsetup install --target-directory . --apply
+localsetup update --target-directory .
+```
+
+Auto mode infers existing Localsetup state, applies only unambiguous safe repairs, or installs the suggested global baseline for a brand-new repo without adapter paths.
 
 ## Installer Options
 
 | Option | Meaning |
 |---|---|
 | `--directory PATH` | Localsetup source checkout containing `_localsetup/`. Without an explicit checkout, the raw bootstrap creates or refreshes `~/.local/share/localsetup/source`. |
-| `--target-directory PATH` | Repo or directory where selected adapter paths and `.localsetup/lock.json` are written. |
+| `--target-directory PATH` | Repo or directory where selected adapter paths and `.localsetup/lock.json` are written; without selector flags on `plan`, `install --apply`, and `update`, enables auto mode. |
 | `--home PATH` | Home directory for the managed source and package library. Defaults to `$HOME`. |
 | `--yes` | Accepted legacy flag. For automation, combine with `--non-interactive`. |
 | `--non-interactive` | Automation mode. Requires `--yes` and preserves machine-readable output. |
 | `--tools LIST` | Comma-separated platform ids. Alias for `--platforms`. |
-| `--platforms LIST` | Platform adapter ids. Omit for global-library-only install. |
+| `--platforms LIST` | Platform adapter ids. Explicit values override auto mode. |
 | `--preset NAME` | Selection preset: `core`, `suggested`, `all`, or `custom`. |
 | `--packs LIST` | Comma-separated skill and workflow packs. |
 | `--skills LIST` | Comma-separated individual skill ids. |

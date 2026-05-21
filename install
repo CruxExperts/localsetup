@@ -73,12 +73,13 @@ Options:
                        Directory where adapter links and .localsetup/lock.json are written.
                        Defaults to --directory for explicit checkouts and to the caller's current
                        directory for piped bootstrap installs with --tools/--platforms.
+                       Without selector flags, repo-targeted automation uses Localsetup auto mode.
   --home PATH           Home directory for the managed shared skill library (default: $HOME)
   --yes                Legacy accepted flag for interactive installs. For automation, combine
                        with --non-interactive.
   --non-interactive    Automation mode. Requires --yes and preserves JSON machine output.
   --tools LIST         Compatibility alias for --platforms. Comma-separated.
-  --platforms LIST     Platform adapter ids. Omit for global-only install with no repo adapters.
+  --platforms LIST     Platform adapter ids. Explicit values override auto mode.
   --preset NAME        Selection preset: core, suggested, all, or custom.
   --packs LIST         Skill packs to install. Comma-separated. Default: core in automation;
                        interactive installs suggest core plus repo-detected additions.
@@ -835,10 +836,6 @@ elif "$BOOTSTRAPPED_SOURCE" && ! "$EXPLICIT_TARGET_DIR" && [[ ${#platform_args[@
   ATTACH_TARGET_DIR="$CALLER_DIR"
   target_args=(--target-directory "$ATTACH_TARGET_DIR")
 fi
-if [[ -n "$ATTACH_TARGET_DIR" && ${#platform_args[@]} -eq 0 ]]; then
-  echo "Warning: --target-directory was provided without --tools/--platforms; installing the managed library only and creating no repo adapters." >&2
-fi
-
 if [[ "$NON_INTERACTIVE" != true ]]; then
   wizard_target_args=()
   if [[ -n "$ATTACH_TARGET_DIR" ]]; then

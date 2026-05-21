@@ -2558,6 +2558,40 @@ def test_root_installer_supports_target_directory(tmp_path: Path) -> None:
     assert not (root / ".cursor" / "skills").exists()
 
 
+def test_root_installer_target_directory_without_platforms_uses_auto_mode(tmp_path: Path) -> None:
+    source = Path(__file__).resolve().parents[2]
+    root = tmp_path / "source"
+    target = tmp_path / "target-repo"
+    shutil.copytree(source / "_localsetup", root / "_localsetup", ignore=shutil.ignore_patterns("__pycache__", ".cache"))
+    shutil.copy2(source / "install", root / "install")
+    target.mkdir()
+    home = tmp_path / "custom-home"
+
+    completed = subprocess.run(
+        [
+            str(root / "install"),
+            "--directory",
+            str(root),
+            "--target-directory",
+            str(target),
+            "--home",
+            str(home),
+            "--non-interactive",
+            "--yes",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    payload = json.loads(completed.stdout)
+
+    assert completed.returncode == 0, completed.stderr
+    assert payload["auto_mode"] == "default_new_repo"
+    assert (target / ".localsetup/lock.json").is_file()
+    assert not (target / ".codex" / "skills").exists()
+    assert "without --tools/--platforms" not in completed.stderr
+
+
 def test_root_installer_non_interactive_no_register_shell_skips_shim(tmp_path: Path) -> None:
     source = Path(__file__).resolve().parents[2]
     root = tmp_path / "repo"
@@ -2632,8 +2666,8 @@ def test_root_installer_help_mentions_target_directory_and_global_only_defaults(
 
     assert completed.returncode == 0
     assert "--target-directory PATH" in completed.stdout
-    assert "global-only install" in completed.stdout
-    assert "Omit for global-only install with no repo adapters" in completed.stdout
+    assert "Localsetup auto mode" in completed.stdout
+    assert "Explicit values override auto mode" in completed.stdout
     assert "--non-interactive" in completed.stdout
     assert "Automation mode" in completed.stdout
     assert "--no-register-shell" in completed.stdout
@@ -4651,6 +4685,184 @@ def test_doctor_repair_cli_subcommand_applies(tmp_path: Path) -> None:
     assert (target / ".codex" / "skills" / ".localsetup-adapter.json").is_file()
 
 
+def run_localsetup_cli(root: Path, home: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [
+            sys.executable,
+            str(root / "_localsetup" / "tools" / "localsetup.py"),
+            "--source-root",
+            str(root),
+            "--home",
+            str(home),
+            *args,
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+
+def test_no_selector_plan_install_and_update_infer_existing_modern_repo(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    target.mkdir()
+    plan = build_install_plan(
+        root,
+        home=home,
+        global_preset="suggested",
+        repo_preset="custom",
+        repo_skills=["ls-context"],
+        platform_ids=["codex"],
+        target_root=target,
+    )
+    apply_plan(root, plan, home=home, target_root=target)
+
+    planned = run_localsetup_cli(root, home, "plan", "--target-directory", str(target))
+    assert planned.returncode == 0, planned.stderr
+    plan_payload = json.loads(planned.stdout)
+    assert plan_payload["auto_mode"] == "inferred_existing"
+    assert plan_payload["attachment"]["platforms"] == ["codex"]
+    assert plan_payload["rollback"]["repo_packages"] == ["ls-context"]
+
+    installed = run_localsetup_cli(root, home, "install", "--target-directory", str(target), "--apply")
+    assert installed.returncode == 0, installed.stderr
+    install_payload = json.loads(installed.stdout)
+    assert install_payload["auto_mode"] == "inferred_existing"
+    assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
+
+    updated = run_localsetup_cli(root, home, "update", "--target-directory", str(target))
+    assert updated.returncode == 0, updated.stderr
+    update_payload = json.loads(updated.stdout)
+    lock = load_json(target / ".localsetup" / "lock.json")
+    assert update_payload["auto_mode"] == "inferred_existing"
+    assert lock["platforms"] == ["codex"]
+    assert lock["repo_packages"] == ["ls-context"]
+    assert lock["global_baseline_selectors"]["preset"] == "suggested"
+
+
+def test_no_selector_install_repairs_legacy_lockfile(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "legacy-target"
+    target.mkdir()
+    (target / "localsetup.lock.json").write_text(
+        json.dumps({"platforms": ["codex"], "repo_packages": ["localsetup-context"]}) + "\n",
+        encoding="utf-8",
+    )
+
+    completed = run_localsetup_cli(root, home, "install", "--target-directory", str(target), "--apply")
+    payload = json.loads(completed.stdout)
+
+    assert completed.returncode == 0, completed.stderr
+    assert payload["auto_mode"] == "repair_required"
+    assert payload["applied"] is True
+    assert not (target / "localsetup.lock.json").exists()
+    assert (target / ".localsetup" / "lock.json").is_file()
+    assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
+
+
+def test_no_selector_update_repairs_localsetup_owned_broken_adapter(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    target.mkdir()
+    adapter = target / ".codex" / "skills"
+    adapter.parent.mkdir(parents=True)
+    adapter.symlink_to(target / "missing-global", target_is_directory=True)
+
+    completed = run_localsetup_cli(root, home, "update", "--target-directory", str(target))
+    payload = json.loads(completed.stdout)
+
+    assert completed.returncode == 0, completed.stderr
+    assert payload["auto_mode"] == "repair_required"
+    assert payload["applied"] is True
+    assert not adapter.is_symlink()
+    assert_scoped_adapter(adapter, "ls-context")
+
+
+def test_no_selector_install_blocks_unmanaged_adapter_without_mutation(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    collision = target / ".codex" / "skills"
+    collision.mkdir(parents=True)
+    (collision / "custom.txt").write_text("user content\n", encoding="utf-8")
+
+    completed = run_localsetup_cli(root, home, "install", "--target-directory", str(target), "--apply")
+    payload = json.loads(completed.stdout)
+
+    assert completed.returncode == 1
+    assert payload["auto_mode"] == "repair_required"
+    assert payload["decisions"]
+    assert (collision / "custom.txt").is_file()
+    assert not (target / ".localsetup" / "lock.json").exists()
+
+
+def test_no_selector_install_new_repo_uses_suggested_global_without_adapters(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "new-target"
+    (target / ".github" / "workflows").mkdir(parents=True)
+    (target / ".github" / "workflows" / "ci.yml").write_text("name: ci\n", encoding="utf-8")
+    (target / "package.json").write_text("{}", encoding="utf-8")
+
+    completed = run_localsetup_cli(root, home, "install", "--target-directory", str(target), "--apply")
+    payload = json.loads(completed.stdout)
+    lock = load_json(target / ".localsetup" / "lock.json")
+
+    assert completed.returncode == 0, completed.stderr
+    assert payload["auto_mode"] == "default_new_repo"
+    assert lock["global_only"] is True
+    assert lock["platforms"] == []
+    assert lock["repo_packages"] == []
+    assert lock["global_baseline_selectors"]["preset"] == "suggested"
+    assert "dev" in lock["global_baseline_packs"]
+    assert "publishing" in lock["global_baseline_packs"]
+    assert "ls-nodejs-nextjs" in lock["global_baseline_packages"]
+    assert not (target / ".codex" / "skills").exists()
+
+
+def test_explicit_selectors_bypass_no_selector_auto_mode(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    target.mkdir()
+
+    completed = run_localsetup_cli(
+        root,
+        home,
+        "install",
+        "--target-directory",
+        str(target),
+        "--platforms",
+        "codex",
+        "--apply",
+    )
+    payload = json.loads(completed.stdout)
+
+    assert completed.returncode == 0, completed.stderr
+    assert payload["auto_mode"] == "explicit"
+    assert payload["attachment"]["platforms"] == ["codex"]
+    assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
+
+
+def test_no_selector_install_protects_source_checkout_from_auto_repair(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "maintainer"
+    shutil.copytree(root, target)
+
+    completed = run_localsetup_cli(root, home, "install", "--target-directory", str(target), "--apply")
+    payload = json.loads(completed.stdout)
+
+    assert completed.returncode == 1
+    assert payload["auto_mode"] == "repair_required"
+    assert any(decision["kind"] == "protected_source_root" for decision in payload["decisions"])
+    assert (target / "_localsetup" / "config" / "pack.yaml").is_file()
+    assert not (target / ".localsetup" / "lock.json").exists()
+
+
 def test_convert_cli_accepts_split_selector_flags(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
@@ -5670,7 +5882,7 @@ def test_cli_helper_and_policy_branches(tmp_path: Path, monkeypatch: pytest.Monk
     monkeypatch.setattr(cli_mod, "build_install_plan", lambda *args, **kwargs: fake_plan)
     monkeypatch.setattr(cli_mod, "install_inventory", lambda *args, **kwargs: {})
     monkeypatch.setattr(cli_mod, "_policy_findings", lambda *args, **kwargs: {"mode": "standard", "warnings": ["warn"], "blockers": []})
-    assert cli_mod._main(["--source-root", str(root), "--home", str(home), "--target-directory", str(root), "plan"]) == 0
+    assert cli_mod._main(["--source-root", str(root), "--home", str(home), "--target-directory", str(root), "plan", "--global-packs", "core"]) == 0
     assert "target directory was provided but no platforms were selected" in capsys.readouterr().out
 
     monkeypatch.setattr(cli_mod, "_policy_findings", lambda *args, **kwargs: {"mode": "standard", "warnings": [], "blockers": ["block"]})

@@ -97,7 +97,7 @@ For release verification, download the GitHub release tarball with its `.sha256`
 uv run --locked python _localsetup/tools/localsetup.py --source-root . verify-release dist/localsetup-v$(cat VERSION).tar.gz
 ```
 
-Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.codex/skills` to the chosen target. If you do not select tools, the install is global-library-only. Interactive installs first choose the global package-library baseline, defaulting to `core` or the prior registry setting. Repo setup is a separate choice; when selected, repo-visible packs default from the target lockfile or repo-detected suggestions.
+Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.codex/skills` to the chosen target. For repo-targeted CLI automation with no platform or package selectors, Localsetup uses auto mode: existing Localsetup state is inferred and refreshed, safe legacy repairs are applied only when unambiguous, and a brand-new repo gets the suggested global package baseline with no repo adapter paths. Interactive installs first choose the global package-library baseline, defaulting to `core` or the prior registry setting. Repo setup is a separate choice; when selected, repo-visible packs default from the target lockfile or repo-detected suggestions.
 
 For automation, opt in explicitly:
 
@@ -115,10 +115,12 @@ From a cloned checkout, open the same wizard:
 ./install --directory .
 ```
 
-The local checkout command uses that checkout as the registered source. Like the raw global bootstrap, it installs the managed skill library and creates no repo adapter paths unless you pass `--tools` or `--platforms`. Both paths also create a managed user command at `~/.local/bin/localsetup`. After registration, run Localsetup from any project:
+The local checkout command uses that checkout as the registered source. Like the raw global bootstrap, it installs the managed skill library and creates no repo adapter paths unless you pass `--tools` or `--platforms` or run a repo-targeted auto-mode command. Both paths also create a managed user command at `~/.local/bin/localsetup`. After registration, run Localsetup from any project:
 
 ```bash
-localsetup install --tools codex --yes
+localsetup plan --target-directory .
+localsetup install --target-directory . --apply
+localsetup update --target-directory .
 ```
 
 When invoked through the managed command, Localsetup uses the registered framework checkout as the source and the nearest Git worktree root from your current directory as the target. Outside Git, it targets the current directory. Use `--target-directory /path/to/project` to override that target.
@@ -128,6 +130,8 @@ Attach adapters only for the hosts you choose:
 ```bash
 localsetup install --tools codex,kilo --yes
 ```
+
+Explicit selectors such as `--platforms`, `--global-packs`, `--global-preset`, `--repo-packs`, `--repo-skills`, `--packs`, or `--skills` bypass auto mode and keep the requested shape.
 
 Tune the package footprint by preset, pack, taxonomy class, tag, individual skill, or exclusion:
 
@@ -215,6 +219,9 @@ Useful commands:
 
 ```bash
 localsetup doctor
+localsetup plan --target-directory .
+localsetup install --target-directory . --apply
+localsetup update --target-directory .
 localsetup doctor repair --target-directory .
 localsetup verify --tools codex --level filesystem
 localsetup diff --tools codex

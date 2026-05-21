@@ -35,7 +35,7 @@ from .inventory import install_inventory
 from .manifests import load_pack_config
 from .manifests import load_platforms
 from .manifests import validate_manifest_schemas
-from .lockfile import save_json, save_text
+from .lockfile import load_json, save_json, save_text
 from .migration import conservative_migrate, scan_legacy_references
 from .package import build_public_artifact, verify_release_artifact, write_installed_sbom, write_source_sbom
 from .paths import expand_user_path
@@ -284,6 +284,179 @@ def _existing_target_platforms(repo_root: Path, target_root: Path, home: Path) -
                 )
                 break
     return sorted(selected, key=lambda item: item["platform"])
+
+
+_SELECTOR_CONFIG_FIELDS = (
+    "platforms",
+    "packs",
+    "preset",
+    "skills",
+    "skill_classes",
+    "skill_tags",
+    "exclude_skills",
+    "global_packs",
+    "global_preset",
+    "global_skills",
+    "global_skill_classes",
+    "global_skill_tags",
+    "global_exclude_skills",
+    "repo_packs",
+    "repo_preset",
+    "repo_skills",
+    "repo_skill_classes",
+    "repo_skill_tags",
+    "repo_exclude_skills",
+)
+
+
+def _selector_free(config: InstallConfig) -> bool:
+    return all(getattr(config, field_name) is None for field_name in _SELECTOR_CONFIG_FIELDS)
+
+
+def _repair_detected_existing_state(repair: dict) -> bool:
+    shape = repair.get("detected_shape", {})
+    if any(
+        shape.get(key)
+        for key in (
+            "modern_lockfile",
+            "legacy_lockfile",
+            "adapter_paths",
+            "historical_adapter_paths",
+            "stale_localsetup",
+            "partial_adapters",
+            "protected_source_root",
+        )
+    ):
+        return True
+    inferred = repair.get("inferred", {})
+    return bool(inferred.get("platforms"))
+
+
+def _global_selector_kwargs_from_lock(target_root: Path) -> dict:
+    lock = load_json(target_root / ".localsetup" / "lock.json")
+    selectors = lock.get("global_baseline_selectors") if isinstance(lock, dict) else {}
+    if not isinstance(selectors, dict):
+        selectors = {}
+    kwargs = {
+        "global_packs": selectors.get("packs") if isinstance(selectors.get("packs"), list) else None,
+        "global_preset": selectors.get("preset") if isinstance(selectors.get("preset"), str) else None,
+        "global_skills": selectors.get("skills") if isinstance(selectors.get("skills"), list) else None,
+        "global_skill_classes": selectors.get("skill_classes") if isinstance(selectors.get("skill_classes"), list) else None,
+        "global_skill_tags": selectors.get("skill_tags") if isinstance(selectors.get("skill_tags"), list) else None,
+        "global_exclude_skills": selectors.get("exclude_skills") if isinstance(selectors.get("exclude_skills"), list) else None,
+    }
+    if any(value is not None for value in kwargs.values()):
+        return kwargs
+    if isinstance(lock.get("global_baseline_packs"), list):
+        return {"global_packs": lock["global_baseline_packs"], "global_preset": "custom"}
+    return {"global_preset": "core"}
+
+
+def _build_auto_inferred_plan(root: Path, home: Path, target_root: Path, repair: dict):
+    inferred = repair.get("inferred", {})
+    return build_install_plan(
+        root,
+        home=home,
+        **_global_selector_kwargs_from_lock(target_root),
+        repo_preset="custom",
+        repo_skills=list(inferred.get("repo_packages") or []),
+        attach_mode=str(inferred.get("attach_mode") or "symlink"),
+        platform_ids=list(inferred.get("platforms") or []),
+        target_root=target_root,
+    )
+
+
+def _build_auto_new_repo_plan(root: Path, home: Path, target_root: Path):
+    return build_install_plan(
+        root,
+        home=home,
+        global_preset="suggested",
+        platform_ids=[],
+        target_root=target_root,
+    )
+
+
+def _auto_plan_payload(
+    root: Path,
+    home: Path,
+    config: InstallConfig,
+    target_root: Path,
+    plan,
+    policy: dict,
+    *,
+    mode: str,
+    repair: dict,
+) -> dict:
+    return {
+        "auto_mode": mode,
+        "actions": [{"kind": a.kind, "path": str(a.path), "details": a.details} for a in plan.actions],
+        "config": config_to_dict(config),
+        "attachment": {
+            "target_root": str(target_root),
+            "platforms": plan.rollback_metadata.get("platforms", []),
+            "global_only": plan.rollback_metadata.get("global_only", False),
+        },
+        "inventory": install_inventory(root, home=home, target_root=target_root, platform_ids=plan.rollback_metadata.get("platforms", [])),
+        "warnings": [],
+        "policy": policy,
+        "rollback": plan.rollback_metadata,
+        "repair": repair,
+    }
+
+
+def _apply_install_plan(
+    root: Path,
+    home: Path,
+    config: InstallConfig,
+    target_root: Path,
+    plan,
+    policy: dict,
+    *,
+    mode: str | None = None,
+) -> tuple[dict, int]:
+    if policy["blockers"]:
+        payload = {"ok": False, "policy": policy, "blockers": policy["blockers"]}
+        if mode:
+            payload["auto_mode"] = mode
+        return payload, 1
+    dependency_info = (
+        ensure_dependencies(root, mode=config.dependency_mode, data_root=_config_data_root(config, home), target_root=target_root)
+        if config.dependency_mode != "prompt-only"
+        else None
+    )
+    result = apply_plan(root, plan, home=home, dry_run=False, dependency_info=dependency_info, target_root=target_root)
+    if dependency_info:
+        result["dependencies"] = dependency_info
+    result["attachment"] = {
+        "target_root": str(target_root),
+        "platforms": plan.rollback_metadata.get("platforms", []),
+        "global_only": plan.rollback_metadata.get("global_only", False),
+    }
+    if policy["warnings"]:
+        result.setdefault("warnings", []).extend(policy["warnings"])
+    result["policy"] = policy
+    if mode:
+        result["auto_mode"] = mode
+    return result, 0
+
+
+def _auto_default_context(root: Path, home: Path, config: InstallConfig, target_root: Path) -> dict:
+    repair = run_repair(
+        root,
+        home=home,
+        target_root=target_root,
+        platform_ids=None,
+        backup_dir=Path(config.backup_dir).expanduser().resolve() if config.backup_dir else None,
+        dependency_mode=config.dependency_mode,
+        apply=False,
+    )
+    if repair.get("blockers") or repair.get("decisions"):
+        return {"mode": "repair_required", "repair": repair, "plan": None}
+    if not _repair_detected_existing_state(repair):
+        return {"mode": "default_new_repo", "repair": repair, "plan": _build_auto_new_repo_plan(root, home, target_root)}
+    if repair.get("actions"):
+        return {"mode": "repair_required", "repair": repair, "plan": None}
+    return {"mode": "inferred_existing", "repair": repair, "plan": _build_auto_inferred_plan(root, home, target_root, repair)}
 
 
 def _run_self_refresh(
@@ -562,6 +735,66 @@ def _main(argv: list[str] | None = None) -> int:
         home = Path(config.home or home).expanduser().resolve()
         target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
         attachment_root = target_root or root
+        auto_context = (
+            _auto_default_context(root, home, config, attachment_root)
+            if _selector_free(config) and config.target_directory
+            else None
+        )
+        if auto_context is not None:
+            mode = str(auto_context["mode"])
+            repair = auto_context["repair"]
+            plan = auto_context["plan"]
+            if plan is not None:
+                policy = _policy_findings(root, plan.rollback_metadata.get("skills", []), getattr(args, "policy_mode", "standard"))
+                if args.cmd == "plan" or (args.cmd == "install" and not args.apply):
+                    payload = _auto_plan_payload(root, home, config, attachment_root, plan, policy, mode=mode, repair=repair)
+                    _write_report(config.output.report, payload)
+                    _print_payload(payload)
+                    write_trace(getattr(args, "trace_json", None), event=args.cmd, status="ok", attributes={"dry_run": True, "auto_mode": mode}, started_at=started_at)
+                    return 0
+                result, status = _apply_install_plan(root, home, config, attachment_root, plan, policy, mode=mode)
+                result["repair"] = repair
+                _write_report(config.output.report, result)
+                _print_payload(result)
+                write_trace(getattr(args, "trace_json", None), event=args.cmd, status="ok" if status == 0 else "failed", attributes={"target_root": str(attachment_root), "auto_mode": mode}, started_at=started_at)
+                return status
+
+            if args.cmd == "plan" or (args.cmd == "install" and not args.apply):
+                payload = {
+                    "auto_mode": mode,
+                    "ok": bool(repair.get("ok")),
+                    "config": config_to_dict(config),
+                    "attachment": {
+                        "target_root": str(attachment_root),
+                        "platforms": repair.get("inferred", {}).get("platforms", []),
+                        "global_only": not bool(repair.get("inferred", {}).get("platforms", [])),
+                    },
+                    "repair": repair,
+                    "actions": repair.get("actions", []),
+                    "warnings": repair.get("warnings", []),
+                    "decisions": repair.get("decisions", []),
+                    "blockers": repair.get("blockers", []),
+                }
+                _write_report(config.output.report, payload)
+                _print_payload(payload)
+                write_trace(getattr(args, "trace_json", None), event=args.cmd, status="ok" if payload["ok"] else "failed", attributes={"dry_run": True, "auto_mode": mode}, started_at=started_at)
+                return 0
+
+            applied = run_repair(
+                root,
+                home=home,
+                target_root=attachment_root,
+                platform_ids=None,
+                backup_dir=Path(config.backup_dir).expanduser().resolve() if config.backup_dir else None,
+                dependency_mode=config.dependency_mode,
+                apply=True,
+            )
+            applied["auto_mode"] = mode
+            _write_report(config.output.report, applied)
+            _print_payload(applied)
+            write_trace(getattr(args, "trace_json", None), event=args.cmd, status="ok" if applied["ok"] else "failed", attributes={"target_root": str(attachment_root), "auto_mode": mode, "applied": bool(applied.get("applied"))}, started_at=started_at)
+            return 0 if applied["ok"] else 1
+
         plan = build_install_plan(
             root,
             home=home,
@@ -594,6 +827,7 @@ def _main(argv: list[str] | None = None) -> int:
             if config.target_directory and not config.platforms and not detected_target:
                 warnings.append("target directory was provided but no platforms were selected; plan is global-only with no repo adapters")
             payload = {
+                "auto_mode": "explicit",
                 "actions": [{"kind": a.kind, "path": str(a.path), "details": a.details} for a in plan.actions],
                 "config": config_to_dict(config),
                 "attachment": {
@@ -610,33 +844,14 @@ def _main(argv: list[str] | None = None) -> int:
             _print_payload(payload)
             write_trace(getattr(args, "trace_json", None), event=args.cmd, status="ok", attributes={"dry_run": True}, started_at=started_at)
             return 0
-        if policy["blockers"]:
-            payload = {"ok": False, "policy": policy, "blockers": policy["blockers"]}
-            _write_report(config.output.report, payload)
-            _print_payload(payload)
-            return 1
-        dependency_info = (
-            ensure_dependencies(root, mode=config.dependency_mode, data_root=_config_data_root(config, home), target_root=attachment_root)
-            if config.dependency_mode != "prompt-only"
-            else None
-        )
-        result = apply_plan(root, plan, home=home, dry_run=False, dependency_info=dependency_info, target_root=target_root)
-        if dependency_info:
-            result["dependencies"] = dependency_info
-        result["attachment"] = {
-            "target_root": str(attachment_root),
-            "platforms": plan.rollback_metadata.get("platforms", []),
-            "global_only": plan.rollback_metadata.get("global_only", False),
-        }
+        result, status = _apply_install_plan(root, home, config, attachment_root, plan, policy)
+        result["auto_mode"] = "explicit"
         if config.target_directory and not config.platforms and not detected_target:
             result["warnings"] = ["target directory was provided but no platforms were selected; install was global-only with no repo adapters"]
-        if policy["warnings"]:
-            result.setdefault("warnings", []).extend(policy["warnings"])
-        result["policy"] = policy
         _write_report(config.output.report, result)
         _print_payload(result)
-        write_trace(getattr(args, "trace_json", None), event=args.cmd, status="ok", attributes={"target_root": str(attachment_root)}, started_at=started_at)
-        return 0
+        write_trace(getattr(args, "trace_json", None), event=args.cmd, status="ok" if status == 0 else "failed", attributes={"target_root": str(attachment_root)}, started_at=started_at)
+        return status
 
     if args.cmd == "wizard":
         config = _resolved_config(args, home)

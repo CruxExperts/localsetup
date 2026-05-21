@@ -130,7 +130,15 @@ Comma-separate multiple IDs:
 ./install --directory . --tools cursor,claude-code,codex
 ```
 
-Omit `--tools` and `--platforms` for a global-only install. No omitted selector expands to every platform.
+Omit `--tools` and `--platforms` on a source-only install for a global-only install. No omitted selector expands to every platform. For repo-targeted CLI automation, selector-free commands use auto mode:
+
+```bash
+localsetup plan --target-directory .
+localsetup install --target-directory . --apply
+localsetup update --target-directory .
+```
+
+Auto mode refreshes inferred existing adapters, applies only safe legacy repairs, or installs the suggested global baseline for a brand-new repo without creating adapter paths.
 
 Attach an adapter to another repo or directory while using this checkout as the source:
 

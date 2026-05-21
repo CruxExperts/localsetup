@@ -62,7 +62,15 @@ Or bootstrap Localsetup and attach selected adapters to the current directory in
 curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s -- --tools cursor,claude-code
 ```
 
-When the raw installer is run with `--tools` or `--platforms` and no explicit `--target-directory`, the wizard defaults adapters to the current directory where you launched the command. Without selected tools or platforms, the install is global-library-only.
+When the raw installer is run with `--tools` or `--platforms` and no explicit `--target-directory`, the wizard defaults adapters to the current directory where you launched the command. Without selected tools or platforms and without a target directory, the install is global-library-only. With an explicit target directory and no selector flags, non-interactive automation uses auto mode: existing Localsetup state is inferred and refreshed, safe legacy repairs are applied only when unambiguous, and brand-new repos get the suggested global baseline without adapter paths.
+
+Repo-targeted auto mode:
+
+```bash
+localsetup plan --target-directory .
+localsetup install --target-directory . --apply
+localsetup update --target-directory .
+```
 
 `--tools` is a compatibility alias for the current `--platforms` selector.
 
@@ -112,9 +120,9 @@ cd /path/to/repo
 ## Options
 
 - `--directory PATH` / `-Directory PATH`  - Localsetup source checkout containing `_localsetup/`. Defaults to `.` when run from a checkout; otherwise the raw Bash installer creates or refreshes `~/.local/share/localsetup/source`.
-- `--target-directory PATH`  - Directory where selected repo adapter links and `.localsetup/lock.json` are written. Defaults to the source checkout for explicit local installs and to the caller's current directory for raw bootstrap installs with selected platforms.
+- `--target-directory PATH`  - Directory where selected repo adapter links and `.localsetup/lock.json` are written. Defaults to the source checkout for explicit local installs and to the caller's current directory for raw bootstrap installs with selected platforms. In non-interactive automation without selectors, enables auto mode for that target.
 - `--tools LIST`  - Compatibility alias for comma-separated platforms: cursor, claude-code, codex, openclaw, kilo, opencode
-- `--platforms LIST`  - Space-separated platform ids. Omit for a global-only install with no repo adapters.
+- `--platforms LIST`  - Space-separated platform ids. Explicit values override auto mode.
 - `--preset NAME`  - Skill selection preset: core, suggested, all, or custom.
 - `--packs LIST`  - Comma-separated skill/workflow packs to install.
 - `--skills LIST`  - Comma-separated individual skill ids to include.
