@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 51b63a114c70cc5c4eaf62dce4bed354e71a444efef6cfe273b9710c8a75a4a3
+  source_provenance_hash: c07bfc5d91f333ced050eb65f7492e04de8c680723ec4b56a3cfad585461aa5f
   emitter: generate-docs
-framework_version: 4.0.4
-source_commit: f94c1205fb06a5700e0f6f360e9795c70443d43a
-artifact_sha256: e7f7216ea80845b0be23d83bb29e4578c0986a5c57b4e8536bbc9bc909a1b644
+framework_version: 4.0.5
+source_commit: 163026d01f43db9371c2dc51b7200e11c8e2b0b8
+artifact_sha256: 5b52de7f1f32be517dfa345f84033fe3b00e965c2065589209f552aa70d216f5
 ---
 # Implementation File Map
 
@@ -81,6 +81,7 @@ artifact_sha256: e7f7216ea80845b0be23d83bb29e4578c0986a5c57b4e8536bbc9bc909a1b64
 | `refactor` | `_localsetup/core/provenance.py` |
 | `refactor` | `_localsetup/core/query.py` |
 | `refactor` | `_localsetup/core/registry.py` |
+| `refactor` | `_localsetup/core/repair.py` |
 | `refactor` | `_localsetup/core/repo_finalizer.py` |
 | `refactor` | `_localsetup/core/rollback.py` |
 | `refactor` | `_localsetup/core/schema.py` |
@@ -385,6 +386,7 @@ artifact_sha256: e7f7216ea80845b0be23d83bb29e4578c0986a5c57b4e8536bbc9bc909a1b64
 | `keep` | `_localsetup/skills/ls-linux-patcher/tests/test_patch_cli.py` |
 | `keep` | `_localsetup/skills/ls-linux-service-triage/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-linux-service-triage/references/triage-commands.md` |
+| `keep` | `_localsetup/skills/ls-localsetup-doctor/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-mail-protocol-control/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-mail-protocol-control/references/ACCOUNT_CONFIG_SCHEMA.md` |
 | `keep` | `_localsetup/skills/ls-mail-protocol-control/references/ADMIN_GUIDE.md` |
