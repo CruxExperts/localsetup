@@ -121,6 +121,7 @@ def test_new_qc_workflow_static_contracts() -> None:
             assert "github.event.pull_request.head.repo.full_name == github.repository" in text
             assert "repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}" in text
             assert "QC_BASE_REMOTE: https://github.com/${{ github.repository }}.git" in text
+            assert "qc_llm_mode=\"off\"" in text
             assert "github.event.pull_request.base.sha" not in "\n".join(
                 str(step.get("run", "")) for step in data["jobs"]["pr-review"]["steps"] if isinstance(step, dict)
             )

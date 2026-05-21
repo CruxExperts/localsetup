@@ -65,13 +65,20 @@ jobs:
           QC_BASE_REMOTE: https://github.com/${{ github.repository }}.git
         run: |
           set -euo pipefail
-          uv run --frozen python tools/qc_patrol/cli.py pr-review \
+          qc_tool_root="."
+          qc_llm_mode="$LLM_MODE"
+          if [[ ! -f tools/qc_patrol/cli.py ]]; then
+            qc_tool_root="qc-subject"
+            qc_llm_mode="off"
+          fi
+
+          uv run --frozen python "${qc_tool_root}/tools/qc_patrol/cli.py" pr-review \
             --subject-repo qc-subject \
             --base "$QC_PR_BASE_SHA" \
             --head "$QC_PR_HEAD_SHA" \
             --base-remote "$QC_BASE_REMOTE" \
             --out qc-out \
-            --llm-mode "$LLM_MODE"
+            --llm-mode "$qc_llm_mode"
 
       - name: Summarize PR QC
         run: |
@@ -80,6 +87,11 @@ jobs:
             echo "## QC PR Review"
             echo
             echo "LLM mode: ${LLM_MODE}"
+            echo
+            if [[ ! -f tools/qc_patrol/cli.py ]]; then
+              echo "Trusted base tooling unavailable on the target branch; ran no-secret bootstrap review from the subject checkout."
+              echo
+            fi
             echo
             echo '```json'
             cat qc-out/ledger.json
