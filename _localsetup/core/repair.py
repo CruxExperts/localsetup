@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 import shutil
+import subprocess
 from typing import Any
 
 from .adapters import ADAPTER_MARKER_JSON, adapter_path_state, adapter_targets, legacy_global_roots
@@ -272,6 +273,21 @@ def _source_root_like(path: Path) -> bool:
     )
 
 
+def _is_tracked(target_root: Path, path: Path) -> bool:
+    try:
+        rel = path.relative_to(target_root)
+    except ValueError:
+        return False
+    result = subprocess.run(
+        ["git", "ls-files", "--error-unmatch", "--", str(rel)],
+        cwd=target_root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    return result.returncode == 0
+
+
 def _protected_source_roots(source_root: Path, home: Path) -> list[dict]:
     roots: list[dict] = [
         {"path": source_root.resolve(strict=False), "reason": "active source root"},
@@ -340,6 +356,7 @@ def _plan_actions(
     protected_reasons: list[str],
     decisions: list[dict],
     blockers: list[str],
+    allow: list[str],
 ) -> list[dict]:
     actions: list[dict] = []
     pre_action_count = 0
@@ -368,15 +385,36 @@ def _plan_actions(
                 }
             )
         elif _framework_source_like(stale_framework):
-            actions.append(
-                _action(
-                    "backup_remove_stale_framework",
-                    stale_framework,
-                    safety="safe",
-                    reason="consumer repo should not keep copied _localsetup framework source",
+            tracked = _is_tracked(target_root, stale_framework)
+            if tracked and "tracked-framework-removal" not in allow:
+                decisions.append(
+                    {
+                        "kind": "tracked_framework_removal",
+                        "path": str(stale_framework),
+                        "reason": "tracked stale _localsetup framework source requires explicit approval",
+                        "required": "rerun with --repair-mode apply-with-backups --allow tracked-framework-removal",
+                    }
                 )
-            )
-            pre_action_count += 1
+            elif tracked:
+                actions.append(
+                    _action(
+                        "backup_remove_stale_framework",
+                        stale_framework,
+                        safety="approval-required",
+                        reason="tracked consumer _localsetup framework source removal explicitly allowed",
+                    )
+                )
+                pre_action_count += 1
+            else:
+                actions.append(
+                    _action(
+                        "backup_remove_stale_framework",
+                        stale_framework,
+                        safety="safe",
+                        reason="consumer repo should not keep copied _localsetup framework source",
+                    )
+                )
+                pre_action_count += 1
         else:
             decisions.append(
                 {
@@ -390,9 +428,22 @@ def _plan_actions(
     pack = load_pack_config(source_root)
     global_root = expand_user_path(pack.global_root, home)
     known_roots = legacy_global_roots(home)
+    selected_packages = set(packages)
     for target in adapter_targets(source_root, home, platform_ids=platform_ids, target_root=target_root):
         path = target["repo_path"]
         state = adapter_path_state(path, global_root, known_global_roots=known_roots)
+        same_name_custom = selected_packages & (set(state.get("custom_entries", [])) | set(state.get("unknown_entries", [])))
+        if same_name_custom:
+            decisions.append(
+                {
+                    "kind": "adapter_content",
+                    "path": str(path),
+                    "reason": "adapter contains custom or unknown entries with selected Localsetup package names",
+                    "values": sorted(same_name_custom),
+                    "required": "move or rename this content before doctor repair can recreate the adapter",
+                }
+            )
+            continue
         reason = state["collision_reason"]
         if reason in {"dangling symlink"}:
             actions.append(_action("backup_remove_adapter", path, safety="safe", reason=f"repairable adapter collision: {reason}"))
@@ -517,6 +568,8 @@ def run_repair(
     backup_dir: Path | None = None,
     dependency_mode: str = "prompt-only",
     apply: bool = False,
+    repair_mode: str | None = None,
+    allow: list[str] | None = None,
 ) -> dict:
     source = source_root.expanduser().resolve(strict=False)
     target = (target_root or source).expanduser().resolve(strict=False)
@@ -524,6 +577,19 @@ def run_repair(
     warnings: list[str] = []
     blockers: list[str] = []
     decisions: list[dict] = []
+    allowed = allow or []
+    if repair_mode is None:
+        repair_mode = "safe-repair" if apply else "report-only"
+    if repair_mode == "report-only":
+        apply = False
+    elif repair_mode == "safe-repair":
+        apply = apply or False
+    elif repair_mode == "migration-plan":
+        apply = False
+    elif repair_mode == "apply-with-backups":
+        apply = bool(apply)
+    else:
+        blockers.append(f"unsupported repair mode: {repair_mode}")
     modern_lock_path = target / ".localsetup" / "lock.json"
     legacy_lock_path = target / "localsetup.lock.json"
     modern_lock = _read_json(modern_lock_path, warnings, blockers, "modern lock")
@@ -569,6 +635,7 @@ def run_repair(
         protected_reasons=protected_reasons,
         decisions=decisions,
         blockers=blockers,
+        allow=allowed,
     )
     payload = {
         "ok": not blockers and not decisions,
@@ -576,6 +643,8 @@ def run_repair(
         "source_root": str(source),
         "target_root": str(target),
         "latest_version": _latest_version(source),
+        "repair_mode": repair_mode,
+        "allowed": allowed,
         "detected_shape": detected_shape,
         "inferred": {
             "platforms": inferred_platforms,
@@ -592,7 +661,16 @@ def run_repair(
         "verify": None,
         "blockers": blockers,
         "warnings": warnings,
+        "next_actions": [],
     }
+    if payload["decisions"]:
+        payload["next_actions"].append("localsetup doctor repair --repair-mode migration-plan")
+    if any(item.get("kind") == "tracked_framework_removal" for item in payload["decisions"]):
+        payload["next_actions"].append(
+            "localsetup doctor repair --repair-mode apply-with-backups --allow tracked-framework-removal --yes"
+        )
+    if payload["actions"] and not apply and not payload["decisions"]:
+        payload["next_actions"].append("localsetup doctor repair --repair-mode safe-repair --yes")
     if not apply:
         return payload
     if not actions:

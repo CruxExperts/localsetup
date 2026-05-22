@@ -59,6 +59,8 @@ def _defaults() -> FinalizerSettings:
             "_localsetup/docs/_generated/*",
         ],
         runtime_ignored_globs=[
+            ".localsetup/health.json",
+            ".localsetup/AGENT_STATUS.md",
             ".localsetup/state/repo-finalizer",
             ".localsetup/state/repo-finalizer/",
             ".localsetup/state/repo-finalizer/**",

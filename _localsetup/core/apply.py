@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import os
 import shutil
@@ -7,6 +8,7 @@ import time
 import uuid
 
 from .lockfile import save_json
+from .locking import package_root_lock
 from .manifests import load_pack_config
 from .models import DeployPlan
 from .paths import ensure_dir, legacy_target_lockfile_path, repo_path, target_lockfile_path
@@ -14,6 +16,21 @@ from .adapters import ADAPTER_MARKER_JSON, adapter_path_state, legacy_global_roo
 from .registry import upsert_target
 from .provenance import build_package_marker, is_managed_package, load_package_marker, managed_marker_path, marker_public_snapshot
 from .source import source_commit
+
+
+SAFE_ADAPTER_STATUS_CODES = {
+    "absent",
+    "managed_scoped_adapter",
+    "managed_portable_adapter",
+    "legacy_monolithic_symlink",
+    "mixed_managed_custom_adapter",
+}
+
+
+def _unsafe_same_name_adapter_entries(action, state: dict) -> list[str]:
+    selected = {str(name) for name in action.details.get("packages", [])}
+    unsafe = set(state.get("custom_entries", [])) | set(state.get("unknown_entries", []))
+    return sorted(selected & unsafe)
 
 
 def _journal_root(attachment_root: Path) -> Path:
@@ -234,6 +251,24 @@ def _prune_unreferenced_managed_packages(
 
 def _write_scoped_adapter(adapter_path: Path, global_root: Path, package_names: list[str], *, mode: str) -> None:
     ensure_dir(adapter_path)
+    portable_marker = adapter_path / ".localsetup-portable"
+    if mode != "portable" and portable_marker.exists():
+        portable_marker.unlink()
+    selected = set(package_names)
+    old_marker = adapter_path / ADAPTER_MARKER_JSON
+    old_packages: set[str] = set()
+    if old_marker.is_file():
+        try:
+            old_payload = json.loads(old_marker.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            old_payload = {}
+        old_raw = old_payload.get("packages") if isinstance(old_payload, dict) else None
+        if isinstance(old_raw, list):
+            old_packages = {str(item) for item in old_raw}
+    for stale_package in sorted(old_packages - selected):
+        stale_path = adapter_path / stale_package
+        if _is_current_managed_adapter_entry(stale_path, global_root, mode):
+            _remove_path(stale_path)
     save_json(
         adapter_path / ADAPTER_MARKER_JSON,
         {
@@ -249,6 +284,8 @@ def _write_scoped_adapter(adapter_path: Path, global_root: Path, package_names: 
         if not source.is_dir():
             raise RuntimeError(f"selected package is missing from managed library: {source}")
         target = adapter_path / package_name
+        if target.exists() or target.is_symlink():
+            _remove_path(target)
         if mode == "portable":
             shutil.copytree(source, target)
         else:
@@ -257,7 +294,79 @@ def _write_scoped_adapter(adapter_path: Path, global_root: Path, package_names: 
         (adapter_path / ".localsetup-portable").write_text("managed_by=localsetup\n", encoding="utf-8")
 
 
+def _is_current_managed_adapter_entry(path: Path, global_root: Path, mode: str) -> bool:
+    if mode == "portable":
+        return path.is_dir() and not path.is_symlink() and is_managed_package(path)
+    if not path.is_symlink():
+        return False
+    link_target = path.readlink()
+    if not link_target.is_absolute():
+        link_target = path.parent / link_target
+    return link_target.resolve(strict=False) == (global_root / path.name).resolve(strict=False)
+
+
 def apply_plan(
+    repo_root: Path,
+    plan: DeployPlan,
+    home: Path,
+    dry_run: bool = False,
+    dependency_info: dict | None = None,
+    target_root: Path | None = None,
+) -> dict:
+    if dry_run:
+        return _apply_plan_unlocked(repo_root, plan, home, dry_run=True, dependency_info=dependency_info, target_root=target_root)
+    with package_root_lock(home / ".local" / "share" / "localsetup") as lock:
+        result = _apply_plan_unlocked(
+            repo_root,
+            plan,
+            home,
+            dry_run=False,
+            dependency_info=dependency_info,
+            target_root=target_root,
+        )
+        result["package_root_lock"] = lock
+        return result
+
+
+def preflight_install_plan(repo_root: Path, plan: DeployPlan, home: Path) -> dict:
+    blockers: list[dict] = []
+    for action in plan.actions:
+        if action.kind in {"install_skills", "install_workflows"}:
+            source_subdir = "skills" if action.kind == "install_skills" else "workflows"
+            names = action.details.get("skills", action.details.get("workflows", []))
+            for name in names:
+                src = repo_root / "_localsetup" / source_subdir / str(name)
+                dest = action.path / str(name)
+                if not src.is_dir():
+                    blockers.append({"path": str(src), "status_code": "missing_source_package", "reason": "selected package source is missing"})
+                elif dest.exists() and not is_managed_package(dest):
+                    blockers.append({"path": str(dest), "status_code": "unmanaged_package_path", "reason": "refusing to overwrite unmanaged package path"})
+        elif action.kind == "attach_repo_path":
+            global_root = Path(action.details["global_root"])
+            state = adapter_path_state(action.path, global_root, known_global_roots=legacy_global_roots(home))
+            if state["status_code"] not in SAFE_ADAPTER_STATUS_CODES:
+                blockers.append(
+                    {
+                        "path": str(action.path),
+                        "status_code": state["status_code"],
+                        "reason": state["collision_reason"] or "adapter target is not safe to mutate",
+                    }
+                )
+                continue
+            unsafe_entries = _unsafe_same_name_adapter_entries(action, state)
+            if unsafe_entries:
+                blockers.append(
+                    {
+                        "path": str(action.path),
+                        "status_code": "adapter_custom_package_name_collision",
+                        "reason": "adapter contains custom or unknown entries with selected Localsetup package names",
+                        "entries": unsafe_entries,
+                    }
+                )
+    return {"ok": not blockers, "blockers": blockers}
+
+
+def _apply_plan_unlocked(
     repo_root: Path,
     plan: DeployPlan,
     home: Path,
@@ -274,6 +383,9 @@ def apply_plan(
         if target_root.resolve(strict=False) != metadata_attachment_root.resolve(strict=False):
             raise ValueError("target_root does not match install plan target_root")
     attachment_root = target_root or metadata_attachment_root or repo_root
+    preflight = preflight_install_plan(repo_root, plan, home)
+    if not preflight["ok"]:
+        raise RuntimeError(f"install preflight failed: {preflight['blockers']}")
     txid = uuid.uuid4().hex
     journal_path = _journal_path(attachment_root, txid)
     journal = {
@@ -333,14 +445,27 @@ def apply_plan(
                     state = adapter_path_state(action.path, global_root, known_global_roots=legacy_global_roots(home))
                     backup = action.path.with_name(f".{action.path.name}.localsetup-backup-{uuid.uuid4().hex}")
                     existed = action.path.exists() or action.path.is_symlink()
+                    in_place = state["status_code"] in {
+                        "managed_scoped_adapter",
+                        "managed_portable_adapter",
+                        "mixed_managed_custom_adapter",
+                    }
                     journal["touched"].append(
-                        {"kind": "adapter", "path": str(action.path), "backup": str(backup), "existed": existed}
+                        {
+                            "kind": "adapter",
+                            "path": str(action.path),
+                            "backup": str(backup),
+                            "existed": existed,
+                        }
                     )
                     _write_journal(journal_path, journal)
                     if action.path.exists() or action.path.is_symlink():
-                        if state["collision_reason"]:
+                        if in_place:
+                            shutil.copytree(action.path, backup, symlinks=True)
+                        elif state["collision_reason"]:
                             raise RuntimeError(f"refusing to replace {state['collision_reason']} at adapter path: {action.path}")
-                        _same_filesystem_replace(action.path, backup)
+                        else:
+                            _same_filesystem_replace(action.path, backup)
                     _write_scoped_adapter(action.path, global_root, package_names, mode=mode)
                 executed.append(f"attach_repo_path:{action.path}")
     except Exception as exc:
@@ -476,4 +601,4 @@ def apply_plan(
             _restore_failed_mutations(journal)
             _write_journal(journal_path, journal)
             raise
-    return {"executed": executed, "lockfile": str(lockfile_path), "dry_run": dry_run, "transaction": txid if not dry_run else None, "journal": str(journal_path) if not dry_run else None}
+    return {"executed": executed, "lockfile": str(lockfile_path), "dry_run": dry_run, "transaction": txid if not dry_run else None, "journal": str(journal_path) if not dry_run else None, "preflight": preflight}

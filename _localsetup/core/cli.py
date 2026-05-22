@@ -19,6 +19,7 @@ from .diffing import diff_plan_current
 from .doctor import run_doctor
 from .docs import generate_alias_outputs
 from .global_first_audit import audit_global_first
+from .git_state import git_status_snapshot, status_delta
 from .harness import disable as harness_disable
 from .harness import enable as harness_enable
 from .harness import init as harness_init
@@ -36,6 +37,8 @@ from .manifests import load_pack_config
 from .manifests import load_platforms
 from .manifests import validate_manifest_schemas
 from .lockfile import load_json, save_json, save_text
+from .health import read_health_status, repair_queue, write_health_event
+from .locking import PackageRootLockTimeout
 from .migration import conservative_migrate, scan_legacy_references
 from .package import build_public_artifact, verify_release_artifact, write_installed_sbom, write_source_sbom
 from .paths import expand_user_path
@@ -152,7 +155,7 @@ def _target_directory_value(args: argparse.Namespace) -> str | None:
 def _inject_global_target(args: argparse.Namespace) -> None:
     if not _is_global_shim_invocation():
         return
-    if args.cmd not in {"plan", "install", "update", "verify", "rollback", "adapters", "doctor", "migrate", "context", "convert", "harness", "context-index", "provenance"}:
+    if args.cmd not in {"plan", "install", "update", "verify", "rollback", "adapters", "doctor", "migrate", "context", "convert", "harness", "context-index", "provenance", "health"}:
         return
     if _target_directory_value(args):
         return
@@ -225,6 +228,58 @@ def _print_no_command_help() -> None:
     print("  localsetup verify --level filesystem", file=sys.stderr)
     print("  localsetup self-refresh --dependency-mode uv-sync", file=sys.stderr)
     print("  localsetup --help", file=sys.stderr)
+
+
+def _health_status_from_payload(payload: dict) -> str:
+    if payload.get("ok") is False or payload.get("blockers") or payload.get("decisions"):
+        return "blocked"
+    return "ok"
+
+
+def _record_health_for_payload(
+    *,
+    root: Path,
+    home: Path,
+    target_root: Path,
+    operation: str,
+    mode: str,
+    payload: dict,
+    git_pre: dict | None = None,
+    git_post: dict | None = None,
+    planned_paths: list[str] | None = None,
+) -> dict:
+    blockers = [str(item) for item in payload.get("blockers", [])]
+    warnings = [str(item) for item in payload.get("warnings", [])]
+    delta = status_delta(git_pre, git_post, planned_paths or []) if git_pre and git_post else None
+    install_payload = payload.get("install") if isinstance(payload.get("install"), dict) else {}
+    event = write_health_event(
+        repo_root=root,
+        home=home,
+        target_root=target_root,
+        operation=operation,
+        mode=mode,
+        status=_health_status_from_payload(payload),
+        payload=payload,
+        blockers=blockers,
+        warnings=warnings,
+        decisions=payload.get("decisions", []),
+        backups=payload.get("backups", []),
+        journal_path=payload.get("journal") or install_payload.get("journal"),
+        report_path=payload.get("report"),
+        git_pre=git_pre,
+        git_post=git_post,
+        localsetup_created_delta=delta,
+    )
+    summary = {
+        "event_id": event["event_id"],
+        "status": event["status"],
+        "latest": str(home / ".local" / "share" / "localsetup" / "state" / "health" / "latest.json"),
+        "repo_summary": str(target_root / ".localsetup" / "health.json"),
+        "agent_status": str(target_root / ".localsetup" / "AGENT_STATUS.md"),
+        "next_actions": event.get("next_actions", []),
+    }
+    payload["health"] = summary
+    return summary
 
 
 def _all_configured_packs(repo_root: Path) -> list[str]:
@@ -415,17 +470,62 @@ def _apply_install_plan(
     *,
     mode: str | None = None,
 ) -> tuple[dict, int]:
+    git_pre = git_status_snapshot(target_root)
+    adapter_plan_paths: list[str] = []
+    for action in plan.actions:
+        if action.kind != "attach_repo_path":
+            continue
+        try:
+            adapter_plan_paths.append(str(action.path.relative_to(target_root)))
+        except ValueError:
+            continue
+    planned_paths = [
+        ".localsetup/lock.json",
+        ".localsetup/health.json",
+        ".localsetup/AGENT_STATUS.md",
+        *adapter_plan_paths,
+    ]
     if policy["blockers"]:
         payload = {"ok": False, "policy": policy, "blockers": policy["blockers"]}
         if mode:
             payload["auto_mode"] = mode
+        git_post = git_status_snapshot(target_root)
+        _record_health_for_payload(
+            root=root,
+            home=home,
+            target_root=target_root,
+            operation="install",
+            mode=mode or "explicit",
+            payload=payload,
+            git_pre=git_pre,
+            git_post=git_post,
+            planned_paths=planned_paths,
+        )
         return payload, 1
     dependency_info = (
         ensure_dependencies(root, mode=config.dependency_mode, data_root=_config_data_root(config, home), target_root=target_root)
         if config.dependency_mode != "prompt-only"
         else None
     )
-    result = apply_plan(root, plan, home=home, dry_run=False, dependency_info=dependency_info, target_root=target_root)
+    try:
+        result = apply_plan(root, plan, home=home, dry_run=False, dependency_info=dependency_info, target_root=target_root)
+    except PackageRootLockTimeout as exc:
+        payload = {"ok": False, "status_code": exc.status_code, "blockers": [str(exc)]}
+        if mode:
+            payload["auto_mode"] = mode
+        git_post = git_status_snapshot(target_root)
+        _record_health_for_payload(
+            root=root,
+            home=home,
+            target_root=target_root,
+            operation="install",
+            mode=mode or "explicit",
+            payload=payload,
+            git_pre=git_pre,
+            git_post=git_post,
+            planned_paths=planned_paths,
+        )
+        return payload, 1
     if dependency_info:
         result["dependencies"] = dependency_info
     result["attachment"] = {
@@ -438,6 +538,19 @@ def _apply_install_plan(
     result["policy"] = policy
     if mode:
         result["auto_mode"] = mode
+    result["ok"] = True
+    git_post = git_status_snapshot(target_root)
+    _record_health_for_payload(
+        root=root,
+        home=home,
+        target_root=target_root,
+        operation="install",
+        mode=mode or "explicit",
+        payload=result,
+        git_pre=git_pre,
+        git_post=git_post,
+        planned_paths=planned_paths,
+    )
     return result, 0
 
 
@@ -586,6 +699,12 @@ def _main(argv: list[str] | None = None) -> int:
     _add_config_flags(doctor_repair_p)
     doctor_repair_p.add_argument("--yes", action="store_true", dest="apply")
     doctor_repair_p.add_argument("--platforms", "--tools", nargs="*", dest="platforms")
+    doctor_repair_p.add_argument(
+        "--repair-mode",
+        choices=["report-only", "safe-repair", "migration-plan", "apply-with-backups"],
+        default=None,
+    )
+    doctor_repair_p.add_argument("--allow", action="append", default=[])
 
     migrate_p = sub.add_parser("migrate")
     _add_config_flags(migrate_p)
@@ -643,6 +762,12 @@ def _main(argv: list[str] | None = None) -> int:
     provenance_report_p.add_argument("--platforms", "--tools", nargs="*", dest="platforms")
     repair_p = provenance_sub.add_parser("repair")
     repair_p.add_argument("--plan", action="store_true", required=True)
+    health_p = sub.add_parser("health")
+    health_p.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
+    health_p.add_argument("--target-directory", default=argparse.SUPPRESS)
+    health_sub = health_p.add_subparsers(dest="health_action")
+    health_queue = health_sub.add_parser("repair-queue")
+    health_queue.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     harness_p = sub.add_parser("harness")
     harness_sub = harness_p.add_subparsers(dest="harness_topic", required=True)
     heartbeat_p = harness_sub.add_parser("codex-heartbeat")
@@ -902,7 +1027,20 @@ def _main(argv: list[str] | None = None) -> int:
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
         target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
+        attachment_root = target_root or root
+        git_pre = git_status_snapshot(attachment_root)
         payload = verify_install(root, home=home, platform_ids=config.platforms, target_root=target_root, level=args.level)
+        _record_health_for_payload(
+            root=root,
+            home=home,
+            target_root=attachment_root,
+            operation="verify",
+            mode=args.level,
+            payload=payload,
+            git_pre=git_pre,
+            git_post=git_status_snapshot(attachment_root),
+            planned_paths=[".localsetup/health.json", ".localsetup/AGENT_STATUS.md"],
+        )
         _write_report(config.output.report, payload)
         _print_payload(payload)
         write_trace(getattr(args, "trace_json", None), event="verify", status="ok" if payload["ok"] else "failed", attributes={"level": args.level}, started_at=started_at)
@@ -962,6 +1100,8 @@ def _main(argv: list[str] | None = None) -> int:
         home = Path(config.home or home).expanduser().resolve()
         target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
         if getattr(args, "doctor_action", None) == "repair":
+            attachment_root = target_root or root
+            git_pre = git_status_snapshot(attachment_root)
             payload = run_repair(
                 root,
                 home=home,
@@ -970,6 +1110,19 @@ def _main(argv: list[str] | None = None) -> int:
                 backup_dir=Path(config.backup_dir).expanduser().resolve() if config.backup_dir else None,
                 dependency_mode=config.dependency_mode,
                 apply=bool(args.apply),
+                repair_mode=getattr(args, "repair_mode", None) or ("safe-repair" if args.apply else "report-only"),
+                allow=getattr(args, "allow", None) or [],
+            )
+            _record_health_for_payload(
+                root=root,
+                home=home,
+                target_root=attachment_root,
+                operation="doctor.repair",
+                mode=payload.get("repair_mode", "report-only"),
+                payload=payload,
+                git_pre=git_pre,
+                git_post=git_status_snapshot(attachment_root),
+                planned_paths=[".localsetup/lock.json", ".localsetup/health.json", ".localsetup/AGENT_STATUS.md"],
             )
             _write_report(config.output.report, payload)
             _print_payload(payload)
@@ -993,6 +1146,17 @@ def _main(argv: list[str] | None = None) -> int:
         payload["shell_registration"] = shell_registration_status(root, home=home)
         if payload["shell_registration"]["warnings"]:
             payload["warnings"].extend(payload["shell_registration"]["warnings"])
+        _record_health_for_payload(
+            root=root,
+            home=home,
+            target_root=target_root or root,
+            operation="doctor",
+            mode="report-only",
+            payload=payload,
+            git_pre=git_status_snapshot(target_root or root),
+            git_post=git_status_snapshot(target_root or root),
+            planned_paths=[".localsetup/health.json", ".localsetup/AGENT_STATUS.md"],
+        )
         _write_report(config.output.report, payload)
         _print_payload(payload)
         write_trace(getattr(args, "trace_json", None), event="doctor", status="ok" if payload["ok"] else "failed", attributes={"target_root": str(target_root or root)}, started_at=started_at)
@@ -1034,10 +1198,20 @@ def _main(argv: list[str] | None = None) -> int:
         _print_payload(payload)
         return 0
 
+    if args.cmd == "health":
+        target_root = Path(getattr(args, "target_directory", None)).expanduser().resolve() if getattr(args, "target_directory", None) else root
+        if getattr(args, "health_action", None) == "repair-queue":
+            _print_payload(repair_queue(home=home))
+            return 0
+        _print_payload(read_health_status(home=home, target_root=target_root))
+        return 0
+
     if args.cmd == "migrate":
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
         target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
+        attachment_root = target_root or root
+        git_pre = git_status_snapshot(attachment_root)
         apply_migration = not args.dry_run and config.migration_mode != "report-only"
         payload = conservative_migrate(
             root,
@@ -1047,6 +1221,17 @@ def _main(argv: list[str] | None = None) -> int:
             backup_dir=Path(config.backup_dir).expanduser().resolve() if config.backup_dir else None,
             apply=apply_migration,
         )
+        _record_health_for_payload(
+            root=root,
+            home=home,
+            target_root=attachment_root,
+            operation="migrate",
+            mode="apply" if apply_migration else "report-only",
+            payload=payload,
+            git_pre=git_pre,
+            git_post=git_status_snapshot(attachment_root),
+            planned_paths=[".localsetup/lock.json", ".localsetup/health.json", ".localsetup/AGENT_STATUS.md"],
+        )
         _write_report(config.output.report, payload)
         _print_payload(payload)
         return 0 if payload["ok"] else 1
@@ -1055,6 +1240,8 @@ def _main(argv: list[str] | None = None) -> int:
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
         target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
+        attachment_root = target_root or root
+        git_pre = git_status_snapshot(attachment_root)
         payload = convert_repo(
             root,
             home=home,
@@ -1082,6 +1269,17 @@ def _main(argv: list[str] | None = None) -> int:
             backup_dir=Path(config.backup_dir).expanduser().resolve() if config.backup_dir else None,
             dependency_mode=config.dependency_mode,
             apply=bool(args.apply),
+        )
+        _record_health_for_payload(
+            root=root,
+            home=home,
+            target_root=attachment_root,
+            operation="convert",
+            mode="apply" if args.apply else "report-only",
+            payload=payload,
+            git_pre=git_pre,
+            git_post=git_status_snapshot(attachment_root),
+            planned_paths=[".localsetup/lock.json", ".localsetup/health.json", ".localsetup/AGENT_STATUS.md"],
         )
         _write_report(config.output.report, payload)
         _print_payload(payload)
@@ -1351,6 +1549,8 @@ def _main(argv: list[str] | None = None) -> int:
     if args.cmd == "self-refresh":
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
+        target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else root
+        git_pre = git_status_snapshot(target_root)
         packs_override = _split_csv(getattr(args, "packs", None)) if getattr(args, "packs", None) is not None else None
         platforms_override = _split_csv(getattr(args, "platforms", None)) if getattr(args, "platforms", None) is not None else None
         payload = _run_self_refresh(
@@ -1360,6 +1560,17 @@ def _main(argv: list[str] | None = None) -> int:
             packs_override=packs_override,
             platforms_override=platforms_override,
             attach_mode_explicit=getattr(args, "mode", None) is not None,
+        )
+        _record_health_for_payload(
+            root=root,
+            home=home,
+            target_root=target_root,
+            operation="self-refresh",
+            mode="apply",
+            payload=payload,
+            git_pre=git_pre,
+            git_post=git_status_snapshot(target_root),
+            planned_paths=[".localsetup/lock.json", ".localsetup/health.json", ".localsetup/AGENT_STATUS.md"],
         )
         _write_report(config.output.report, payload)
         _print_payload(payload)

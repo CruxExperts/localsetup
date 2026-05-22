@@ -5,6 +5,7 @@ from pathlib import Path
 
 from .manifests import load_platforms
 from .paths import expand_user_path, repo_path
+from .provenance import is_managed_package
 
 ADAPTER_MARKER_JSON = ".localsetup-adapter.json"
 
@@ -163,6 +164,123 @@ def _adapter_package_integrity(repo_path: Path, global_root: Path) -> list[dict]
     return rows
 
 
+def _child_is_custom_skill(path: Path) -> bool:
+    return path.is_dir() and not path.is_symlink() and (path / "SKILL.md").is_file()
+
+
+def _child_is_managed_adapter_package(
+    path: Path,
+    global_root: Path,
+    marker_mode: str | None,
+    marker_packages: set[str] | None = None,
+) -> bool:
+    expected = global_root / path.name
+    if marker_packages is not None and path.name not in marker_packages:
+        return False
+    if marker_mode == "portable":
+        return path.is_dir() and not path.is_symlink() and is_managed_package(path)
+    if path.is_symlink():
+        return _symlink_target(path) == expected.resolve(strict=False)
+    return False
+
+
+def adapter_classification(repo_path: Path, global_root: Path, *, known_global_roots: list[Path] | None = None) -> dict:
+    managed_roots = [global_root, *(known_global_roots or [])]
+    resolved_roots = {root.resolve(strict=False) for root in managed_roots}
+    exists = repo_path.exists() or repo_path.is_symlink()
+    if not exists:
+        return {"status_code": "absent", "collision_reason": None, "custom_entries": [], "managed_entries": []}
+    if repo_path.is_symlink():
+        target = _symlink_target(repo_path)
+        if not repo_path.exists():
+            return {"status_code": "dangling_symlink", "collision_reason": "dangling symlink", "custom_entries": [], "managed_entries": []}
+        if target == global_root.resolve(strict=False):
+            return {"status_code": "legacy_monolithic_symlink", "collision_reason": None, "custom_entries": [], "managed_entries": []}
+        if target in (resolved_roots - {global_root.resolve(strict=False)}):
+            return {"status_code": "legacy_monolithic_symlink", "collision_reason": None, "custom_entries": [], "managed_entries": []}
+        return {"status_code": "unsupported_node", "collision_reason": "symlink points outside managed library", "custom_entries": [], "managed_entries": []}
+    if repo_path.is_file():
+        return {"status_code": "regular_file", "collision_reason": "regular file", "custom_entries": [], "managed_entries": []}
+    if not repo_path.is_dir():
+        return {"status_code": "unsupported_node", "collision_reason": "unsupported filesystem node", "custom_entries": [], "managed_entries": []}
+
+    marker = _adapter_marker_state(repo_path)
+    marker_mode = marker["mode"]
+    marker_packages: set[str] | None = None
+    marker_path = repo_path / ADAPTER_MARKER_JSON
+    if marker["exists"] and marker_path.is_file():
+        try:
+            marker_payload = json.loads(marker_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            marker_payload = {}
+        packages = marker_payload.get("packages") if isinstance(marker_payload, dict) else None
+        if isinstance(packages, list):
+            marker_packages = {str(item) for item in packages}
+    visible = [child for child in sorted(repo_path.iterdir()) if not child.name.startswith(".")]
+    managed_entries = [
+        child.name for child in visible if _child_is_managed_adapter_package(child, global_root, marker_mode, marker_packages)
+    ]
+    custom_entries = [
+        child.name
+        for child in visible
+        if child.name not in managed_entries and _child_is_custom_skill(child)
+    ]
+    unknown_entries = [
+        child.name for child in visible if child.name not in managed_entries and child.name not in custom_entries
+    ]
+    if marker["exists"] and marker["error"]:
+        return {
+            "status_code": "unmarked_localsetup_adapter",
+            "collision_reason": marker["error"],
+            "custom_entries": custom_entries,
+            "managed_entries": managed_entries,
+            "unknown_entries": unknown_entries,
+        }
+    if marker_mode == "portable":
+        status = "managed_portable_adapter" if not custom_entries else "mixed_managed_custom_adapter"
+        if unknown_entries:
+            status = "mixed_managed_custom_adapter" if managed_entries or custom_entries else "unmanaged_adapter_directory"
+        return {
+            "status_code": status,
+            "collision_reason": None if status != "unmanaged_adapter_directory" else "unmanaged adapter directory",
+            "custom_entries": custom_entries,
+            "managed_entries": managed_entries,
+            "unknown_entries": unknown_entries,
+        }
+    if marker_mode == "symlink":
+        status = "managed_scoped_adapter" if not custom_entries and not unknown_entries else "mixed_managed_custom_adapter"
+        return {
+            "status_code": status,
+            "collision_reason": None,
+            "custom_entries": custom_entries,
+            "managed_entries": managed_entries,
+            "unknown_entries": unknown_entries,
+        }
+    if (repo_path / ".localsetup-portable").exists():
+        return {
+            "status_code": "managed_portable_adapter",
+            "collision_reason": None,
+            "custom_entries": custom_entries,
+            "managed_entries": managed_entries,
+            "unknown_entries": unknown_entries,
+        }
+    if visible and all(_child_is_custom_skill(child) for child in visible):
+        return {
+            "status_code": "custom_repo_skills",
+            "collision_reason": "custom repo skills",
+            "custom_entries": [child.name for child in visible],
+            "managed_entries": [],
+            "unknown_entries": [],
+        }
+    return {
+        "status_code": "unmanaged_adapter_directory",
+        "collision_reason": "unmanaged adapter directory",
+        "custom_entries": custom_entries,
+        "managed_entries": managed_entries,
+        "unknown_entries": unknown_entries or [child.name for child in visible if child.name not in custom_entries],
+    }
+
+
 def adapter_path_state(repo_path: Path, global_root: Path, *, known_global_roots: list[Path] | None = None) -> dict:
     managed_roots = [global_root, *(known_global_roots or [])]
     resolved_roots = {root.resolve(strict=False) for root in managed_roots}
@@ -192,7 +310,8 @@ def adapter_path_state(repo_path: Path, global_root: Path, *, known_global_roots
     is_other = repo_path.exists() and not (
         repo_path.is_file() or repo_path.is_dir() or is_symlink
     )
-    collision_reason = None
+    classification = adapter_classification(repo_path, global_root, known_global_roots=known_global_roots)
+    collision_reason = classification["collision_reason"]
     if is_dangling_symlink:
         collision_reason = "dangling symlink"
     elif is_symlink and not is_monolithic_global_symlink:
@@ -207,6 +326,10 @@ def adapter_path_state(repo_path: Path, global_root: Path, *, known_global_roots
     package_integrity_failures = [row for row in package_integrity if not row.get("ok")]
     return {
         "exists": exists,
+        "status_code": classification["status_code"],
+        "custom_entries": classification.get("custom_entries", []),
+        "managed_entries": classification.get("managed_entries", []),
+        "unknown_entries": classification.get("unknown_entries", []),
         "is_symlink": is_symlink,
         "is_dangling_symlink": is_dangling_symlink,
         "points_to_global": points_to_global,

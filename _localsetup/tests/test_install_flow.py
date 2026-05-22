@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import time
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -6552,3 +6553,357 @@ def test_repo_finalizer_helpers_and_run_branches(tmp_path: Path, monkeypatch: py
 
     text = rf.payload_to_text({"mode": "run", "target_root": str(repo), "git_supported": True, "status": "blocked", "summary": {"total_dirty_files": 1, "blockers": 1, "stage_candidates": 0}, "files": classified[:1], "actions": [{"kind": "evaluate"}]})
     assert "actions:" in text
+
+
+def test_adapter_classification_status_codes(tmp_path: Path) -> None:
+    from _localsetup.core.adapters import ADAPTER_MARKER_JSON, adapter_path_state
+    from _localsetup.core.lockfile import save_json
+
+    global_root = tmp_path / "global"
+    managed = global_root / "ls-context"
+    managed.mkdir(parents=True)
+    (managed / "SKILL.md").write_text("# Context\n", encoding="utf-8")
+
+    assert adapter_path_state(tmp_path / "absent", global_root)["status_code"] == "absent"
+
+    scoped = tmp_path / "scoped"
+    scoped.mkdir()
+    save_json(scoped / ADAPTER_MARKER_JSON, {"version": 1, "managed_by": "localsetup", "mode": "symlink"})
+    (scoped / "ls-context").symlink_to(managed, target_is_directory=True)
+    assert adapter_path_state(scoped, global_root)["status_code"] == "managed_scoped_adapter"
+
+    custom = tmp_path / "custom-only"
+    (custom / "media-batch-ops").mkdir(parents=True)
+    (custom / "media-batch-ops" / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+    assert adapter_path_state(custom, global_root)["status_code"] == "custom_repo_skills"
+
+    (scoped / "media-batch-ops").mkdir()
+    (scoped / "media-batch-ops" / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+    mixed = adapter_path_state(scoped, global_root)
+    assert mixed["status_code"] == "mixed_managed_custom_adapter"
+    assert mixed["custom_entries"] == ["media-batch-ops"]
+
+    portable = tmp_path / "portable"
+    portable.mkdir()
+    save_json(
+        portable / ADAPTER_MARKER_JSON,
+        {"version": 1, "managed_by": "localsetup", "mode": "portable", "packages": ["ls-context"]},
+    )
+    shutil.copytree(managed, portable / "ls-context")
+    (portable / "ls-context" / MARKER_JSON).write_text("{}", encoding="utf-8")
+    (portable / "media-batch-ops").mkdir()
+    (portable / "media-batch-ops" / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+    portable_state = adapter_path_state(portable, global_root)
+    assert portable_state["status_code"] == "mixed_managed_custom_adapter"
+    assert portable_state["custom_entries"] == ["media-batch-ops"]
+
+    unmanaged = tmp_path / "unmanaged"
+    unmanaged.mkdir()
+    (unmanaged / "notes.txt").write_text("user content\n", encoding="utf-8")
+    assert adapter_path_state(unmanaged, global_root)["status_code"] == "unmanaged_adapter_directory"
+
+    dangling = tmp_path / "dangling"
+    dangling.symlink_to(tmp_path / "missing", target_is_directory=True)
+    assert adapter_path_state(dangling, global_root)["status_code"] == "dangling_symlink"
+
+
+def test_full_plan_preflight_blocks_before_adapter_mutation(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    opencode = root / ".opencode" / "skills"
+    opencode.mkdir(parents=True)
+    (opencode / "notes.txt").write_text("user content\n", encoding="utf-8")
+
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex", "opencode"])
+    with pytest.raises(RuntimeError, match="install preflight failed"):
+        apply_plan(root, plan, home=home, dry_run=False)
+
+    assert not (root / ".codex" / "skills").exists()
+
+
+def test_mixed_managed_adapter_preserves_custom_skill(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"])
+    apply_plan(root, plan, home=home, dry_run=False)
+
+    custom = root / ".codex" / "skills" / "media-batch-ops"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+
+    apply_plan(root, plan, home=home, dry_run=False)
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom\n"
+    assert (root / ".codex" / "skills" / "ls-context").exists()
+
+
+def test_in_place_adapter_update_removes_deselected_managed_packages(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    broad_plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"])
+    apply_plan(root, broad_plan, home=home, dry_run=False)
+    adapter = root / ".codex" / "skills"
+    stale_managed = adapter / "ls-test-runner"
+    assert stale_managed.exists() or stale_managed.is_symlink()
+
+    custom = adapter / "media-batch-ops"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+
+    narrow_plan = build_install_plan(
+        root,
+        home=home,
+        global_packs=["core"],
+        repo_preset="custom",
+        repo_skills=["localsetup-context"],
+        platform_ids=["codex"],
+    )
+    apply_plan(root, narrow_plan, home=home, dry_run=False)
+
+    assert (adapter / "ls-context").exists()
+    assert not stale_managed.exists()
+    assert not stale_managed.is_symlink()
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom\n"
+
+
+def test_deselected_same_name_custom_adapter_entry_is_preserved(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    broad_plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"])
+    apply_plan(root, broad_plan, home=home, dry_run=False)
+    adapter = root / ".codex" / "skills"
+    custom = adapter / "ls-test-runner"
+    custom.unlink()
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom deselected\n", encoding="utf-8")
+
+    narrow_plan = build_install_plan(
+        root,
+        home=home,
+        global_packs=["core"],
+        repo_preset="custom",
+        repo_skills=["localsetup-context"],
+        platform_ids=["codex"],
+    )
+    apply_plan(root, narrow_plan, home=home, dry_run=False)
+
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom deselected\n"
+
+
+def test_deselected_same_name_custom_portable_adapter_entry_is_preserved(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    broad_plan = build_install_plan(root, home=home, packs=["core"], attach_mode="portable", platform_ids=["codex"])
+    apply_plan(root, broad_plan, home=home, dry_run=False)
+    adapter = root / ".codex" / "skills"
+    custom = adapter / "ls-test-runner"
+    shutil.rmtree(custom)
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom portable deselected\n", encoding="utf-8")
+
+    narrow_plan = build_install_plan(
+        root,
+        home=home,
+        global_packs=["core"],
+        repo_preset="custom",
+        repo_skills=["localsetup-context"],
+        attach_mode="portable",
+        platform_ids=["codex"],
+    )
+    apply_plan(root, narrow_plan, home=home, dry_run=False)
+
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom portable deselected\n"
+
+
+def test_same_name_custom_adapter_entry_blocks_install_preflight(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"])
+    apply_plan(root, plan, home=home, dry_run=False)
+
+    adapter = root / ".codex" / "skills"
+    (adapter / "ls-context").unlink()
+    custom = adapter / "ls-context"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom override\n", encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="adapter_custom_package_name_collision"):
+        apply_plan(root, plan, home=home, dry_run=False)
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom override\n"
+
+
+def test_same_name_custom_portable_adapter_entry_blocks_install_preflight(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    plan = build_install_plan(root, home=home, packs=["core"], attach_mode="portable", platform_ids=["codex"])
+    apply_plan(root, plan, home=home, dry_run=False)
+
+    custom = root / ".codex" / "skills" / "ls-context"
+    shutil.rmtree(custom)
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom portable override\n", encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="adapter_custom_package_name_collision"):
+        apply_plan(root, plan, home=home, dry_run=False)
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom portable override\n"
+
+
+def test_doctor_repair_blocks_same_name_custom_adapter_entry(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"], target_root=target)
+    apply_plan(root, plan, home=home, dry_run=False, target_root=target)
+
+    adapter = target / ".codex" / "skills"
+    (adapter / "ls-context").unlink()
+    custom = adapter / "ls-context"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom override\n", encoding="utf-8")
+
+    report = run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
+    assert report["applied"] is False
+    assert any(item["kind"] == "adapter_content" for item in report["decisions"])
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom override\n"
+
+
+def test_health_cli_written_after_install(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+
+    status = cli_mod._main(["--source-root", str(root), "--home", str(home), "install", "--yes", "--packs", "core"])
+    assert status == 0
+    capsys.readouterr()
+
+    health = load_json(root / ".localsetup" / "health.json")
+    assert health["status"] == "ok"
+    assert health["operation"] == "install"
+    assert (root / ".localsetup" / "AGENT_STATUS.md").is_file()
+
+    assert cli_mod._main(["--source-root", str(root), "--home", str(home), "health", "repair-queue", "--json"]) == 0
+    queue = json.loads(capsys.readouterr().out)
+    assert queue["ok"] is True
+
+
+def test_package_root_lock_timeout(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from _localsetup.core.locking import PackageRootLockTimeout, package_root_lock
+
+    home = tmp_path / "home" / ".local" / "share" / "localsetup"
+    ready = tmp_path / "ready"
+    script = (
+        "import sys, time\n"
+        "from pathlib import Path\n"
+        "from _localsetup.core.locking import package_root_lock\n"
+        "home = Path(sys.argv[1])\n"
+        "ready = Path(sys.argv[2])\n"
+        "with package_root_lock(home, timeout=1):\n"
+        "    ready.write_text('ready', encoding='utf-8')\n"
+        "    time.sleep(2)\n"
+    )
+    proc = subprocess.Popen([sys.executable, "-c", script, str(home), str(ready)])
+    try:
+        deadline = time.time() + 5
+        while not ready.exists() and time.time() < deadline:
+            time.sleep(0.05)
+        assert ready.exists()
+        monkeypatch.setenv("LOCALSETUP_PACKAGE_ROOT_LOCK_TIMEOUT", "0.1")
+        with pytest.raises(PackageRootLockTimeout):
+            with package_root_lock(home):
+                pass
+    finally:
+        proc.terminate()
+        proc.wait(timeout=5)
+
+
+def test_health_uses_global_shim_target(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    from _localsetup.core.health import write_health_event
+
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    target.mkdir()
+    write_health_event(
+        repo_root=root,
+        home=home,
+        target_root=target,
+        operation="doctor",
+        mode="report-only",
+        status="ok",
+        payload={},
+    )
+    monkeypatch.setenv(cli_mod.SHIM_ENV, "1")
+    monkeypatch.setattr(cli_mod, "detect_invocation_target", lambda: target)
+
+    status = cli_mod._main(["--source-root", str(root), "--home", str(home), "health", "--json"])
+    assert status == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["ok"] is True
+    assert payload["event"]["target_root"] == str(target.resolve())
+
+
+def test_health_summary_is_ignored_in_git_worktree(tmp_path: Path) -> None:
+    from _localsetup.core.health import write_health_event
+
+    source = make_temp_repo(tmp_path / "source")
+    base = tmp_path / "base"
+    linked = tmp_path / "linked"
+    base.mkdir()
+    subprocess.run(["git", "init"], cwd=base, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=base, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.name", "Test User"], cwd=base, check=True, capture_output=True)
+    (base / "README.md").write_text("# Base\n", encoding="utf-8")
+    subprocess.run(["git", "add", "README.md"], cwd=base, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "init"], cwd=base, check=True, capture_output=True)
+    subprocess.run(["git", "worktree", "add", str(linked)], cwd=base, check=True, capture_output=True)
+
+    write_health_event(
+        repo_root=source,
+        home=tmp_path / "home",
+        target_root=linked,
+        operation="doctor",
+        mode="report-only",
+        status="ok",
+        payload={},
+    )
+
+    assert (linked / ".git").is_file()
+    assert subprocess.run(["git", "check-ignore", "-q", "--", ".localsetup/health.json"], cwd=linked, check=False).returncode == 0
+    assert subprocess.run(["git", "check-ignore", "-q", "--", ".localsetup/AGENT_STATUS.md"], cwd=linked, check=False).returncode == 0
+    assert subprocess.run(["git", "status", "--short"], cwd=linked, text=True, capture_output=True).stdout == ""
+
+
+def test_tracked_stale_framework_requires_explicit_allow(tmp_path: Path) -> None:
+    source = make_temp_repo(tmp_path / "source")
+    target = tmp_path / "target"
+    target.mkdir()
+    shutil.copytree(source / "_localsetup", target / "_localsetup")
+    subprocess.run(["git", "init"], cwd=target, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=target, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.name", "Test User"], cwd=target, check=True, capture_output=True)
+    subprocess.run(["git", "add", "_localsetup"], cwd=target, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "track framework"], cwd=target, check=True, capture_output=True)
+
+    report = run_repair(source, home=tmp_path / "home", target_root=target, apply=False)
+    assert any(item["kind"] == "tracked_framework_removal" for item in report["decisions"])
+    assert not any(action["kind"] == "backup_remove_stale_framework" for action in report["actions"])
+
+    allowed = run_repair(
+        source,
+        home=tmp_path / "home",
+        target_root=target,
+        apply=False,
+        repair_mode="apply-with-backups",
+        allow=["tracked-framework-removal"],
+    )
+    assert allowed["applied"] is False
+    assert (target / "_localsetup").exists()
+
+    allowed_apply = run_repair(
+        source,
+        home=tmp_path / "home",
+        target_root=target,
+        apply=True,
+        repair_mode="apply-with-backups",
+        allow=["tracked-framework-removal"],
+    )
+    assert allowed_apply["applied"] is True
+    assert not (target / "_localsetup").exists()

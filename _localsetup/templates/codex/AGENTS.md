@@ -24,6 +24,7 @@ Localsetup is deployed into this repo at `_localsetup/`. Framework and context a
 - Critical review: use `gpt-5.5` at medium reasoning for security, release blockers, architecture, and high-risk review findings.
 - Bounded coding: use `gpt-5.3-codex` for scoped implementation tasks with clear write ownership and tests.
 - Credit freshness: Codex credit rates are volatile. Re-check the official Codex rate card at https://help.openai.com/en/articles/20001106-codex-rate-card before changing model guidance or making cost-sensitive routing decisions.
+- If `.localsetup/AGENT_STATUS.md` exists, read it before repairs or installs. Otherwise run `localsetup health --json` for the latest Localsetup health status and next repair command.
 
 ## Bootstrap pack
 - Codex-first agent-team bootstrap materials live in `_localsetup/docs/bootstrap-packs/` and pack metadata is selected with the `bootstrap` pack in `_localsetup/config/pack.yaml`.
