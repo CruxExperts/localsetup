@@ -56,11 +56,11 @@
     "artifact_path": "_localsetup/docs/_generated/skill_aliases.json",
     "artifact_sha256": "659af67816c64cd0105411b514b5f8ca1760d168471abf76de0821e4a37b2be2",
     "emitter": "generate-docs",
-    "framework_version": "4.0.12",
+    "framework_version": "4.0.13",
     "schema_version": 1,
     "source_commit": "88379764ba054024897484b479cde07a8effc896",
     "source_dirty": false,
-    "source_provenance_hash": "192c066f228113207dca39c0762953b5d903e357be237e723269285da5eb1da1",
+    "source_provenance_hash": "5d0d9d5249b7595aa1064ce2424040be9f778d0c1335de67156dde595fb2e9f7",
     "source_root_id": "8fe99956af023565bd8e28f6cc4fcec5fb7d01177a4d474145ab162f2fadce64",
     "source_tag": null,
     "source_tree_sha": "0851791076ebd6350cea33f5ed709c41b834a293"
