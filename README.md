@@ -241,7 +241,9 @@ Use `--trace-json /path/to/events.jsonl` with `install`, `verify`, or `doctor` t
 
 For a complete option table, see the [command reference](_localsetup/docs/COMMAND_REFERENCE.md).
 
-`doctor` reports the uv-managed source checkout environment. `doctor repair` emits a dry-run JSON repair report for legacy or partial target repos, and applies only low-ambiguity Localsetup-owned repairs when rerun with `--yes`. If `doctor` sees an old `~/.local/share/localsetup/venv` from earlier releases, it reports that legacy venv as ignored and gives a repair hint instead of trying to execute it.
+`doctor` reports the uv-managed source checkout environment. `doctor repair` emits a dry-run JSON repair report for legacy or partial target repos, and applies only low-ambiguity Localsetup-owned repairs when rerun with `--yes`. Repair now treats workflow packages as first-class inferred packages, preserves custom repo skills by default, and can emit compact handoff prompts with `--agent-prompt` or `--emit-agent-prompt`. Clean legacy `_localsetup/` framework trees are removed only after backup and, when tracked, `git rm --cached`; protected, custom, dirty, symlinked, or content-divergent `_localsetup/` trees are preserved for migration planning. If `doctor` sees an old `~/.local/share/localsetup/venv` from earlier releases, it reports that legacy venv as ignored and gives a repair hint instead of trying to execute it.
+
+Release note for this repair behavior: `.localsetup/lock.json` is managed repo state and should stay visible to Git. Runtime summaries, journals, backups, health state, and context-index runtime data are local runtime state and are added to `.git/info/exclude`.
 
 ## What Localsetup is solving
 

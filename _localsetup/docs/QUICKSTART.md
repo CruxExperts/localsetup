@@ -95,7 +95,7 @@ Select packages by preset, pack, taxonomy class, tag, individual skill, or exclu
 localsetup install --tools codex --preset suggested --skill-classes development --skill-tags git --skills ls-context --exclude-skills ls-linux-patcher --yes
 ```
 
-The selector flags are additive except for `--exclude-skills`. Presets are `core`, `suggested`, `all`, and `custom`; automation defaults to `core` when no selector is supplied. `suggested` starts with `core` plus repo-detected additions, while `custom` lets the named packs, classes, tags, and skills define the footprint. Exclusions do not remove skills required by a selected workflow. The legacy selector flags apply to both the managed global baseline and repo-visible adapter selection for compatibility. Use `--global-packs` / `--global-preset` and `--repo-packs` / `--repo-preset` when you want the managed library to contain a broader baseline than a target repo exposes.
+The selector flags are additive except for `--exclude-skills`. Presets are `core`, `suggested`, `all`, and `custom`; automation defaults to `core` when no selector is supplied. `suggested` starts with `core` plus repo-detected additions, while `custom` lets the named packs, classes, tags, skills, and workflows define the footprint. Exclusions do not remove skills required by a selected workflow. The legacy selector flags apply to both the managed global baseline and repo-visible adapter selection for compatibility. Use `--global-packs` / `--global-preset` / `--global-workflows` and `--repo-packs` / `--repo-preset` / `--repo-workflows` when you want the managed library to contain a broader baseline than a target repo exposes.
 
 For a full local setup with all shipped skill and workflow packs attached to Codex, Kilo, and OpenCode:
 
@@ -244,9 +244,13 @@ Re-run install with the same directory and platform selection:
 ./install --directory . --tools codex,kilo
 ```
 
-The installer refreshes managed skills, selected adapter links or portable copies, lock metadata, and reports. A global-only re-run refreshes the managed library and records an empty platform list. The wizard reloads prior global baseline selectors from the registry and repo-visible selections from `.localsetup/lock.json`; choosing no repo setup on a prior target removes managed adapter state while keeping the shared package library intact.
+The installer refreshes managed skills, selected adapter links or portable copies, lock metadata, and reports. A global-only re-run refreshes the managed library and records an empty platform list. The wizard reloads prior global baseline selectors from the registry and repo-visible selections, including explicit workflow selectors, from `.localsetup/lock.json`; choosing no repo setup on a prior target removes managed adapter state while keeping the shared package library intact.
 
 Selected workflow packs also refresh their workflow packages and required capability skill dependencies. See [Workflow packages](WORKFLOW_PACKAGES.md) for canonical source/runtime and install details.
+
+`doctor repair` is the safe path for legacy or partial target repos. Report-only mode explains inferred platforms, repo skills, repo workflows, custom repo skills, stale framework classification, and proposed actions. Use `--agent-prompt` to include a compact handoff prompt in JSON, or `--emit-agent-prompt PATH` to write one for another agent. Safe repair only removes legacy `_localsetup/` trees when their contents match the current framework source; custom, dirty, protected, symlinked, or content-divergent framework-like trees are preserved for migration planning.
+
+`.localsetup/lock.json` is managed repo state. Runtime summaries, install journals, backups, health state, and context-index runtime data are local runtime state and are excluded through `.git/info/exclude`.
 
 Non-interactive strict policy blocks high-risk skill metadata unless the operator explicitly chooses a less restrictive mode:
 

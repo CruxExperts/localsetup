@@ -6,7 +6,7 @@ from pathlib import Path
 from .aliases import skill_alias
 from .manifests import load_pack_config
 from .skills import load_skill_catalog
-from .workflows import required_skills_for_workflows, selected_workflow_names
+from .workflows import load_workflow_catalog, required_skills_for_workflows, selected_workflow_names
 
 
 PRESETS = {"core", "suggested", "all", "custom"}
@@ -98,6 +98,29 @@ def _normalize_skill_selectors(repo_root: Path, values: list[str] | None, field_
     return out
 
 
+def _normalize_workflow_selectors(repo_root: Path, values: list[str] | None, field_name: str) -> list[str]:
+    if not values:
+        return []
+    aliases: dict[str, str] = {}
+    for workflow in load_workflow_catalog(repo_root):
+        aliases[workflow.package] = workflow.package
+        if workflow.workflow_id:
+            aliases[workflow.workflow_id] = workflow.package
+        for alias in workflow.aliases:
+            aliases[alias] = workflow.package
+    out: list[str] = []
+    unknown: list[str] = []
+    for value in values:
+        canonical = aliases.get(value)
+        if canonical is None:
+            unknown.append(value)
+        elif canonical not in out:
+            out.append(canonical)
+    if unknown:
+        raise ValueError(f"unknown {field_name}: {', '.join(sorted(unknown))}")
+    return out
+
+
 def _skills_for_classes(repo_root: Path, classes: list[str] | None) -> list[str]:
     if not classes:
         return []
@@ -129,21 +152,22 @@ def resolve_package_selection(
     skill_classes: list[str] | None = None,
     skill_tags: list[str] | None = None,
     exclude_skills: list[str] | None = None,
+    workflows: list[str] | None = None,
     target_root: Path | None = None,
 ) -> PackageSelection:
     selected_preset = preset or "core"
     pack_names = resolve_pack_names(repo_root, packs, preset=selected_preset, target_root=target_root)
-    workflows = selected_workflow_names(repo_root, pack_names)
+    selected_workflows = list(dict.fromkeys([*selected_workflow_names(repo_root, pack_names), *_normalize_workflow_selectors(repo_root, workflows, "workflow selector")]))
     selected: set[str] = set()
     pack = load_pack_config(repo_root)
     for pack_name in pack_names:
         selected.update(pack.packs.get(pack_name, []))
-    selected.update(required_skills_for_workflows(repo_root, workflows))
+    selected.update(required_skills_for_workflows(repo_root, selected_workflows))
     selected.update(_normalize_skill_selectors(repo_root, skills, "skill selector"))
     selected.update(_skills_for_classes(repo_root, skill_classes))
     selected.update(_skills_for_tags(repo_root, skill_tags))
     selected.difference_update(_normalize_skill_selectors(repo_root, exclude_skills, "excluded skill"))
-    selected.update(required_skills_for_workflows(repo_root, workflows))
+    selected.update(required_skills_for_workflows(repo_root, selected_workflows))
 
     sort_order = {skill.name: (skill.sort_priority, skill.name) for skill in load_skill_catalog(repo_root)}
     ordered_skills = sorted(selected, key=lambda name: sort_order.get(name, (1_000_000, name)))
@@ -151,11 +175,12 @@ def resolve_package_selection(
         preset=selected_preset,
         packs=pack_names,
         skills=ordered_skills,
-        workflows=workflows,
+        workflows=selected_workflows,
         selectors={
             "preset": selected_preset,
             "packs": pack_names,
             "skills": skills or [],
+            "workflows": workflows or [],
             "skill_classes": skill_classes or [],
             "skill_tags": skill_tags or [],
             "exclude_skills": exclude_skills or [],

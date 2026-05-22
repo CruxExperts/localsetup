@@ -27,6 +27,7 @@ This is the full public capability catalog for Localsetup. The [root README](../
 | Explicit multi-platform adapters | One install can attach selected Cursor, Claude Code, Codex CLI, OpenClaw, Kilo, and OpenCode adapter paths to the same managed package library. |
 | Managed home library | Skills and workflow packages install to `~/.local/share/localsetup/packages`; explicitly selected adapters point there by symlink or use portable copies. |
 | Lock and rollback metadata | `.localsetup/lock.json` and managed-path reports make installs inspectable and reversible. |
+| Repair handoff and runtime split | `doctor repair` separates managed lock state from local runtime state, preserves custom content, emits compact handoff prompts, and records repair queue metadata. |
 | Platform manifest | `_localsetup/config/platforms.yaml` is the source of truth for platform IDs, adapter paths, and verification rules. |
 
 ## Skills And Interoperability

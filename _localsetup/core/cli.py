@@ -37,7 +37,8 @@ from .manifests import load_pack_config
 from .manifests import load_platforms
 from .manifests import validate_manifest_schemas
 from .lockfile import load_json, save_json, save_text
-from .health import read_health_status, repair_queue, write_health_event
+from .handoff import agent_prompt_payload
+from .health import read_health_status, repair_queue, write_health_event, write_repair_queue_prompts
 from .locking import PackageRootLockTimeout
 from .migration import conservative_migrate, scan_legacy_references
 from .package import build_public_artifact, verify_release_artifact, write_installed_sbom, write_source_sbom
@@ -118,18 +119,21 @@ def _add_selector_flags(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--skill-classes", nargs="*", dest="skill_classes")
     parser.add_argument("--skill-tags", nargs="*", dest="skill_tags")
     parser.add_argument("--exclude-skills", nargs="*", dest="exclude_skills")
+    parser.add_argument("--workflows", nargs="*")
     parser.add_argument("--global-preset", choices=sorted(PRESETS), dest="global_preset")
     parser.add_argument("--global-packs", nargs="*", dest="global_packs")
     parser.add_argument("--global-skills", nargs="*", dest="global_skills")
     parser.add_argument("--global-skill-classes", nargs="*", dest="global_skill_classes")
     parser.add_argument("--global-skill-tags", nargs="*", dest="global_skill_tags")
     parser.add_argument("--global-exclude-skills", nargs="*", dest="global_exclude_skills")
+    parser.add_argument("--global-workflows", nargs="*", dest="global_workflows")
     parser.add_argument("--repo-preset", choices=sorted(PRESETS), dest="repo_preset")
     parser.add_argument("--repo-packs", nargs="*", dest="repo_packs")
     parser.add_argument("--repo-skills", nargs="*", dest="repo_skills")
     parser.add_argument("--repo-skill-classes", nargs="*", dest="repo_skill_classes")
     parser.add_argument("--repo-skill-tags", nargs="*", dest="repo_skill_tags")
     parser.add_argument("--repo-exclude-skills", nargs="*", dest="repo_exclude_skills")
+    parser.add_argument("--repo-workflows", nargs="*", dest="repo_workflows")
     parser.add_argument("--mode", choices=["symlink", "portable"])
     parser.add_argument("--platforms", "--tools", nargs="*", dest="platforms")
 
@@ -179,18 +183,21 @@ def _resolved_config(args: argparse.Namespace, default_home: Path) -> InstallCon
         skill_classes=_split_csv(getattr(args, "skill_classes", None)) if hasattr(args, "skill_classes") else None,
         skill_tags=_split_csv(getattr(args, "skill_tags", None)) if hasattr(args, "skill_tags") else None,
         exclude_skills=_split_csv(getattr(args, "exclude_skills", None)) if hasattr(args, "exclude_skills") else None,
+        workflows=_split_csv(getattr(args, "workflows", None)) if hasattr(args, "workflows") else None,
         global_packs=_split_csv(getattr(args, "global_packs", None)) if hasattr(args, "global_packs") else None,
         global_preset=getattr(args, "global_preset", None),
         global_skills=_split_csv(getattr(args, "global_skills", None)) if hasattr(args, "global_skills") else None,
         global_skill_classes=_split_csv(getattr(args, "global_skill_classes", None)) if hasattr(args, "global_skill_classes") else None,
         global_skill_tags=_split_csv(getattr(args, "global_skill_tags", None)) if hasattr(args, "global_skill_tags") else None,
         global_exclude_skills=_split_csv(getattr(args, "global_exclude_skills", None)) if hasattr(args, "global_exclude_skills") else None,
+        global_workflows=_split_csv(getattr(args, "global_workflows", None)) if hasattr(args, "global_workflows") else None,
         repo_packs=_split_csv(getattr(args, "repo_packs", None)) if hasattr(args, "repo_packs") else None,
         repo_preset=getattr(args, "repo_preset", None),
         repo_skills=_split_csv(getattr(args, "repo_skills", None)) if hasattr(args, "repo_skills") else None,
         repo_skill_classes=_split_csv(getattr(args, "repo_skill_classes", None)) if hasattr(args, "repo_skill_classes") else None,
         repo_skill_tags=_split_csv(getattr(args, "repo_skill_tags", None)) if hasattr(args, "repo_skill_tags") else None,
         repo_exclude_skills=_split_csv(getattr(args, "repo_exclude_skills", None)) if hasattr(args, "repo_exclude_skills") else None,
+        repo_workflows=_split_csv(getattr(args, "repo_workflows", None)) if hasattr(args, "repo_workflows") else None,
         attach_mode=getattr(args, "mode", None),
         home=cli_home,
         target_directory=getattr(args, "target_directory", None),
@@ -350,18 +357,21 @@ _SELECTOR_CONFIG_FIELDS = (
     "skill_classes",
     "skill_tags",
     "exclude_skills",
+    "workflows",
     "global_packs",
     "global_preset",
     "global_skills",
     "global_skill_classes",
     "global_skill_tags",
     "global_exclude_skills",
+    "global_workflows",
     "repo_packs",
     "repo_preset",
     "repo_skills",
     "repo_skill_classes",
     "repo_skill_tags",
     "repo_exclude_skills",
+    "repo_workflows",
 )
 
 
@@ -397,12 +407,19 @@ def _global_selector_kwargs_from_lock(target_root: Path) -> dict:
         "global_packs": selectors.get("packs") if isinstance(selectors.get("packs"), list) else None,
         "global_preset": selectors.get("preset") if isinstance(selectors.get("preset"), str) else None,
         "global_skills": selectors.get("skills") if isinstance(selectors.get("skills"), list) else None,
+        "global_workflows": selectors.get("workflows") if isinstance(selectors.get("workflows"), list) else None,
         "global_skill_classes": selectors.get("skill_classes") if isinstance(selectors.get("skill_classes"), list) else None,
         "global_skill_tags": selectors.get("skill_tags") if isinstance(selectors.get("skill_tags"), list) else None,
         "global_exclude_skills": selectors.get("exclude_skills") if isinstance(selectors.get("exclude_skills"), list) else None,
     }
     if any(value is not None for value in kwargs.values()):
         return kwargs
+    if isinstance(lock.get("global_baseline_workflows"), list):
+        return {
+            "global_preset": "custom",
+            "global_workflows": lock["global_baseline_workflows"],
+            "global_skills": lock.get("global_baseline_skills") if isinstance(lock.get("global_baseline_skills"), list) else None,
+        }
     if isinstance(lock.get("global_baseline_packs"), list):
         return {"global_packs": lock["global_baseline_packs"], "global_preset": "custom"}
     return {"global_preset": "core"}
@@ -415,7 +432,8 @@ def _build_auto_inferred_plan(root: Path, home: Path, target_root: Path, repair:
         home=home,
         **_global_selector_kwargs_from_lock(target_root),
         repo_preset="custom",
-        repo_skills=list(inferred.get("repo_packages") or []),
+        repo_skills=list(inferred.get("repo_skills") or inferred.get("repo_packages") or []),
+        repo_workflows=list(inferred.get("repo_workflows") or []),
         attach_mode=str(inferred.get("attach_mode") or "symlink"),
         platform_ids=list(inferred.get("platforms") or []),
         target_root=target_root,
@@ -615,18 +633,21 @@ def _run_self_refresh(
         packs=packs,
         preset=config.preset,
         skills=config.skills,
+        workflows=config.workflows,
         skill_classes=config.skill_classes,
         skill_tags=config.skill_tags,
         exclude_skills=config.exclude_skills,
         global_packs=config.global_packs,
         global_preset=config.global_preset,
         global_skills=config.global_skills,
+        global_workflows=config.global_workflows,
         global_skill_classes=config.global_skill_classes,
         global_skill_tags=config.global_skill_tags,
         global_exclude_skills=config.global_exclude_skills,
         repo_packs=config.repo_packs,
         repo_preset=config.repo_preset,
         repo_skills=config.repo_skills,
+        repo_workflows=config.repo_workflows,
         repo_skill_classes=config.repo_skill_classes,
         repo_skill_tags=config.repo_skill_tags,
         repo_exclude_skills=config.repo_exclude_skills,
@@ -705,6 +726,8 @@ def _main(argv: list[str] | None = None) -> int:
         default=None,
     )
     doctor_repair_p.add_argument("--allow", action="append", default=[])
+    doctor_repair_p.add_argument("--agent-prompt", action="store_true")
+    doctor_repair_p.add_argument("--emit-agent-prompt")
 
     migrate_p = sub.add_parser("migrate")
     _add_config_flags(migrate_p)
@@ -768,6 +791,7 @@ def _main(argv: list[str] | None = None) -> int:
     health_sub = health_p.add_subparsers(dest="health_action")
     health_queue = health_sub.add_parser("repair-queue")
     health_queue.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
+    health_queue.add_argument("--agent-prompts")
     harness_p = sub.add_parser("harness")
     harness_sub = harness_p.add_subparsers(dest="harness_topic", required=True)
     heartbeat_p = harness_sub.add_parser("codex-heartbeat")
@@ -933,18 +957,21 @@ def _main(argv: list[str] | None = None) -> int:
             packs=config.packs,
             preset=config.preset,
             skills=config.skills,
+            workflows=config.workflows,
             skill_classes=config.skill_classes,
             skill_tags=config.skill_tags,
             exclude_skills=config.exclude_skills,
             global_packs=config.global_packs,
             global_preset=config.global_preset,
             global_skills=config.global_skills,
+            global_workflows=config.global_workflows,
             global_skill_classes=config.global_skill_classes,
             global_skill_tags=config.global_skill_tags,
             global_exclude_skills=config.global_exclude_skills,
             repo_packs=config.repo_packs,
             repo_preset=config.repo_preset,
             repo_skills=config.repo_skills,
+            repo_workflows=config.repo_workflows,
             repo_skill_classes=config.repo_skill_classes,
             repo_skill_tags=config.repo_skill_tags,
             repo_exclude_skills=config.repo_exclude_skills,
@@ -1000,18 +1027,21 @@ def _main(argv: list[str] | None = None) -> int:
             packs=config.packs,
             preset=config.preset,
             skills=config.skills,
+            workflows=config.workflows,
             skill_classes=config.skill_classes,
             skill_tags=config.skill_tags,
             exclude_skills=config.exclude_skills,
             global_packs=config.global_packs,
             global_preset=config.global_preset,
             global_skills=config.global_skills,
+            global_workflows=config.global_workflows,
             global_skill_classes=config.global_skill_classes,
             global_skill_tags=config.global_skill_tags,
             global_exclude_skills=config.global_exclude_skills,
             repo_packs=config.repo_packs,
             repo_preset=config.repo_preset,
             repo_skills=config.repo_skills,
+            repo_workflows=config.repo_workflows,
             repo_skill_classes=config.repo_skill_classes,
             repo_skill_tags=config.repo_skill_tags,
             repo_exclude_skills=config.repo_exclude_skills,
@@ -1113,6 +1143,10 @@ def _main(argv: list[str] | None = None) -> int:
                 repair_mode=getattr(args, "repair_mode", None) or ("safe-repair" if args.apply else "report-only"),
                 allow=getattr(args, "allow", None) or [],
             )
+            emit_prompt = getattr(args, "emit_agent_prompt", None)
+            if getattr(args, "agent_prompt", False) or emit_prompt:
+                prompt_path = Path(emit_prompt).expanduser().resolve() if emit_prompt else None
+                payload["agent_prompt"] = agent_prompt_payload(payload, path=prompt_path)
             _record_health_for_payload(
                 root=root,
                 home=home,
@@ -1201,7 +1235,13 @@ def _main(argv: list[str] | None = None) -> int:
     if args.cmd == "health":
         target_root = Path(getattr(args, "target_directory", None)).expanduser().resolve() if getattr(args, "target_directory", None) else root
         if getattr(args, "health_action", None) == "repair-queue":
-            _print_payload(repair_queue(home=home))
+            output_dir = getattr(args, "agent_prompts", None)
+            payload = (
+                write_repair_queue_prompts(home=home, output_dir=Path(output_dir).expanduser().resolve())
+                if output_dir
+                else repair_queue(home=home)
+            )
+            _print_payload(payload)
             return 0
         _print_payload(read_health_status(home=home, target_root=target_root))
         return 0
@@ -1248,18 +1288,21 @@ def _main(argv: list[str] | None = None) -> int:
             packs=config.packs,
             preset=config.preset,
             skills=config.skills,
+            workflows=config.workflows,
             skill_classes=config.skill_classes,
             skill_tags=config.skill_tags,
             exclude_skills=config.exclude_skills,
             global_packs=config.global_packs,
             global_preset=config.global_preset,
             global_skills=config.global_skills,
+            global_workflows=config.global_workflows,
             global_skill_classes=config.global_skill_classes,
             global_skill_tags=config.global_skill_tags,
             global_exclude_skills=config.global_exclude_skills,
             repo_packs=config.repo_packs,
             repo_preset=config.repo_preset,
             repo_skills=config.repo_skills,
+            repo_workflows=config.repo_workflows,
             repo_skill_classes=config.repo_skill_classes,
             repo_skill_tags=config.repo_skill_tags,
             repo_exclude_skills=config.repo_exclude_skills,
@@ -1399,9 +1442,24 @@ def _main(argv: list[str] | None = None) -> int:
             packs=config.packs,
             preset=config.preset,
             skills=config.skills,
+            workflows=config.workflows,
             skill_classes=config.skill_classes,
             skill_tags=config.skill_tags,
             exclude_skills=config.exclude_skills,
+            global_packs=config.global_packs,
+            global_preset=config.global_preset,
+            global_skills=config.global_skills,
+            global_workflows=config.global_workflows,
+            global_skill_classes=config.global_skill_classes,
+            global_skill_tags=config.global_skill_tags,
+            global_exclude_skills=config.global_exclude_skills,
+            repo_packs=config.repo_packs,
+            repo_preset=config.repo_preset,
+            repo_skills=config.repo_skills,
+            repo_workflows=config.repo_workflows,
+            repo_skill_classes=config.repo_skill_classes,
+            repo_skill_tags=config.repo_skill_tags,
+            repo_exclude_skills=config.repo_exclude_skills,
             platform_ids=config.platforms,
             target_root=target_root,
             attach_mode=config.attach_mode,

@@ -5,9 +5,11 @@ import hashlib
 import json
 from pathlib import Path
 import subprocess
+import shlex
 import uuid
 
 from .git_state import git_status_snapshot
+from .handoff import agent_prompt_payload
 from .lockfile import load_json, save_json, save_text
 from .source import source_commit
 
@@ -61,7 +63,14 @@ def _ensure_repo_excludes(target_root: Path) -> None:
         exclude = target_root / exclude
     exclude.parent.mkdir(parents=True, exist_ok=True)
     existing = exclude.read_text(encoding="utf-8") if exclude.exists() else ""
-    additions = [".localsetup/health.json", ".localsetup/AGENT_STATUS.md"]
+    additions = [
+        ".localsetup/health.json",
+        ".localsetup/AGENT_STATUS.md",
+        ".localsetup/install-journal/",
+        ".localsetup/backups/",
+        ".localsetup/state/",
+        ".localsetup/context-index/",
+    ]
     missing = [item for item in additions if item not in existing.splitlines()]
     if missing:
         suffix = "" if existing.endswith("\n") or not existing else "\n"
@@ -142,6 +151,9 @@ def write_health_event(
         "blockers": blockers or [],
         "warnings": warnings or [],
         "decisions": decisions or [],
+        "detected_shape": (payload or {}).get("detected_shape", {}),
+        "inferred": (payload or {}).get("inferred", {}),
+        "actions": (payload or {}).get("actions", []),
         "repaired": (payload or {}).get("repaired", []),
         "skipped": (payload or {}).get("skipped", []),
         "backups": backups or [],
@@ -152,6 +164,7 @@ def write_health_event(
             "post": git_post,
             "localsetup_created_delta": localsetup_created_delta,
         },
+        "metrics": (payload or {}).get("metrics", {}),
         "next_actions": (payload or {}).get("next_actions") or next_actions_for(status, blockers or [], target),
     }
     events = root / "events"
@@ -208,14 +221,58 @@ def repair_queue(*, home: Path) -> dict:
             if not event:
                 continue
             if event.get("blockers") or event.get("decisions") or event.get("status") not in {"ok", "success"}:
+                target_root = str(event.get("target_root"))
+                prompt_argv = [
+                    "localsetup",
+                    "doctor",
+                    "repair",
+                    "--target-directory",
+                    target_root,
+                    "--repair-mode",
+                    "migration-plan",
+                    "--agent-prompt",
+                ]
                 items.append(
                     {
+                        "event_id": event.get("event_id"),
                         "target_root": event.get("target_root"),
                         "status": event.get("status"),
                         "operation": event.get("operation"),
                         "blockers": event.get("blockers", []),
                         "decisions": event.get("decisions", []),
+                        "decision_count": len(event.get("decisions", [])),
+                        "blocker_count": len(event.get("blockers", [])),
+                        "decision_kinds": sorted({str(item.get("kind")) for item in event.get("decisions", []) if isinstance(item, dict)}),
+                        "blocker_kinds": sorted(
+                            {
+                                str(item.get("kind")) if isinstance(item, dict) else "message"
+                                for item in event.get("blockers", [])
+                            }
+                        ),
+                        "last_report_path": event.get("report"),
+                        "prompt_argv": prompt_argv,
+                        "prompt_command": shlex.join(prompt_argv),
                         "next_actions": event.get("next_actions", []),
+                        "metrics": event.get("metrics", {}),
                     }
                 )
     return {"ok": True, "items": items}
+
+
+def write_repair_queue_prompts(*, home: Path, output_dir: Path) -> dict:
+    queue = repair_queue(home=home)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    written: list[dict] = []
+    targets = health_root(home) / "targets"
+    if targets.is_dir():
+        for path in sorted(targets.glob("*.json")):
+            event = load_json(path)
+            if not event:
+                continue
+            if not (event.get("blockers") or event.get("decisions") or event.get("status") not in {"ok", "success"}):
+                continue
+            target_root = Path(str(event.get("target_root") or "target"))
+            prompt_path = output_dir / f"{_target_hash(target_root)}-repair-handoff.md"
+            prompt = agent_prompt_payload(event, path=prompt_path, source_event_id=str(event.get("event_id") or ""))
+            written.append({"target_root": str(target_root), "path": prompt["path"], "context_hash": prompt["context_hash"]})
+    return {"ok": True, "items": queue["items"], "written": written}

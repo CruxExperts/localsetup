@@ -45,6 +45,10 @@ The root wrapper opens the interactive wizard by default. Automation must use `-
 
 Use WSL2 for Windows. Native PowerShell installation is intentionally not supported in the current framework.
 
+`doctor repair` is the conservative repair path for legacy or partial target repos. It reports inferred platforms, adapter mode, repo skills, repo workflows, custom repo skills, and stale framework state without mutating by default. Safe repair can remove a legacy `_localsetup/` only after backup and only when the target tree matches the current framework source contents exactly; tracked framework trees are untracked with `git rm --cached` before the working tree is removed. Custom, dirty, protected, symlinked, or content-divergent `_localsetup/` trees are preserved for migration planning and can produce compact agent handoff prompts.
+
+`.localsetup/lock.json` is managed repo state. Runtime summaries, install journals, backups, health state, and context-index runtime data are local runtime state and are excluded through `.git/info/exclude`.
+
 ## Directory map
 
 | Path | Purpose |

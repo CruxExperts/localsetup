@@ -59,11 +59,12 @@ Auto mode infers existing Localsetup state, applies only unambiguous safe repair
 | `--preset NAME` | Selection preset: `core`, `suggested`, `all`, or `custom`. |
 | `--packs LIST` | Comma-separated skill and workflow packs. |
 | `--skills LIST` | Comma-separated individual skill ids. |
+| `--workflows LIST` | Comma-separated workflow package ids or workflow aliases. |
 | `--skill-classes LIST` | Comma-separated taxonomy classes. |
 | `--skill-tags LIST` | Comma-separated taxonomy tags. |
 | `--exclude-skills LIST` | Skills to remove unless required by a selected workflow. |
-| `--global-*` | Selection options for the managed package-library baseline. |
-| `--repo-*` | Selection options for packages exposed through repo adapter paths. |
+| `--global-*` | Selection options for the managed package-library baseline, including `--global-workflows`. |
+| `--repo-*` | Selection options for packages exposed through repo adapter paths, including `--repo-workflows`. |
 | `--mode symlink\|portable` | Adapter write mode. Symlink is the default; portable copies selected packages. |
 | `--sync-env` | Sync the uv-managed source checkout environment from `pyproject.toml` and `uv.lock`. |
 | `--install-deps` | Deprecated alias for `--sync-env`. |
@@ -140,6 +141,32 @@ Useful install options:
 | `--apply` | Apply a planned operation when the command supports plan/apply separation. |
 | `--mode symlink\|portable` | Adapter write mode. |
 | `--platforms ...` / `--tools ...` | Platform adapter ids. |
+
+## Repair And Health Commands
+
+`doctor repair` is report-only by default. It infers platforms, adapter mode, repo-visible skills, repo-visible workflows, custom repo skills, and stale framework state, then returns a JSON report with `repair_schema_version: 2`.
+
+```bash
+localsetup doctor repair --target-directory .
+localsetup doctor repair --target-directory . --repair-mode migration-plan --agent-prompt
+localsetup doctor repair --target-directory . --repair-mode migration-plan --emit-agent-prompt /tmp/localsetup-repair.md
+localsetup doctor repair --target-directory . --repair-mode safe-repair --yes
+localsetup doctor repair --target-directory . --repair-mode apply-with-backups --yes
+```
+
+Safe repair only mutates Localsetup-owned state. It can back up and remove a legacy `_localsetup/` tree only when the target tree is framework-shaped and matches the current source framework contents byte-for-byte. Clean tracked framework trees are backed up, untracked with `git rm -r --cached -- _localsetup`, and then removed from the working tree. Protected source checkouts, symlinks, dirty trees, framework-shaped trees with extra or modified files, and custom `_localsetup/` content are preserved and reported as decisions for migration planning.
+
+Custom repo skills are repo-owned by default. Mixed adapter directories are repaired in place when selected Localsetup-managed entries are safe to update; custom entries are preserved unless they collide by name with a selected Localsetup package.
+
+Health commands surface blocked repairs and handoff prompts:
+
+```bash
+localsetup health --json
+localsetup health repair-queue --json
+localsetup health repair-queue --agent-prompts /tmp/localsetup-prompts
+```
+
+`.localsetup/lock.json` is intentional managed repo state and remains visible to Git. Runtime summaries and journals are locally excluded through `.git/info/exclude`: `.localsetup/health.json`, `.localsetup/AGENT_STATUS.md`, `.localsetup/install-journal/`, `.localsetup/backups/`, `.localsetup/state/`, and `.localsetup/context-index/`.
 
 ## Maintainer Commands
 
