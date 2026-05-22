@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 603e93ad8c489cfaba43af5af440fe1b656f16a2304ef9483aecf69d730bf187
+  source_provenance_hash: 537e26df89abe622ad5767994f03aa57f282d402a0e77dfc988c41142767d707
   emitter: generate-docs
-framework_version: 4.0.13
-source_commit: 6849061cecf9ede46d31499b487e3b37930e5c98
-artifact_sha256: 0c12ff4aa5382c9d4174c344020790d5e23c416f1d149c8d5f49813065916bee
+framework_version: 4.0.14
+source_commit: 5a1c72ea52718584bb25d331fb8c28044ebce34c
+artifact_sha256: 9f1031adb08d9d16031fd8ba2945c8730a57f67f3920b791f87b58061d211f82
 ---
 # Implementation File Map
 
@@ -92,6 +92,7 @@ artifact_sha256: 0c12ff4aa5382c9d4174c344020790d5e23c416f1d149c8d5f49813065916be
 | `refactor` | `_localsetup/core/git_state.py` |
 | `refactor` | `_localsetup/core/git_subprocess.py` |
 | `refactor` | `_localsetup/core/global_first_audit.py` |
+| `refactor` | `_localsetup/core/handoff.py` |
 | `refactor` | `_localsetup/core/harness.py` |
 | `refactor` | `_localsetup/core/health.py` |
 | `refactor` | `_localsetup/core/hooks.py` |
