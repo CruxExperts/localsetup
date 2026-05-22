@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 1de4fdbc8e9d0adaa58cb73aba43214ae4e988d6ae34f568a3b9fea2e23c669a
+  source_provenance_hash: 14e7fbfa2203900fe4d83367bcc289646f9829e79828fffb0c2c516c9060d3d8
   emitter: generate-docs
 framework_version: 4.0.11
-source_commit: 3adf221b6d8e0d52b8697200ebda0607a6f80059
-artifact_sha256: 91703efbdaa8da984e35a65893725399b4c9d2c0daf27862d4320ad5abac7367
+source_commit: 08422df26e96c8578c292c6006cd9407c01ae20b
+artifact_sha256: 0b1794162bfce4d95ba754fd61ebeceb5c342c7564d3c85027d406216746417b
 ---
 # Implementation File Map
 
@@ -19,8 +19,14 @@ artifact_sha256: 91703efbdaa8da984e35a65893725399b4c9d2c0daf27862d4320ad5abac736
 | `keep` | `.ai/qc/policies/severity.md` |
 | `keep` | `.ai/qc/prompts/patrol.md` |
 | `keep` | `.ai/qc/prompts/pr-review.md` |
+| `keep` | `.ai/qc/schemas/ai-adjudication.schema.json` |
+| `keep` | `.ai/qc/schemas/ai-adjudications.schema.json` |
+| `keep` | `.ai/qc/schemas/drift-packets.schema.json` |
 | `keep` | `.ai/qc/schemas/finding.schema.json` |
+| `keep` | `.ai/qc/schemas/inventory.schema.json` |
+| `keep` | `.ai/qc/schemas/ledger-v2.schema.json` |
 | `keep` | `.ai/qc/schemas/llm-review.schema.json` |
+| `keep` | `.ai/qc/schemas/rule-suggestions.schema.json` |
 | `keep` | `.gitattributes` |
 | `keep` | `.githooks/commit-msg` |
 | `keep` | `.githooks/post-commit` |
@@ -730,16 +736,19 @@ artifact_sha256: 91703efbdaa8da984e35a65893725399b4c9d2c0daf27862d4320ad5abac736
 | `keep` | `install` |
 | `keep` | `pyproject.toml` |
 | `keep` | `tools/qc_patrol/__init__.py` |
+| `keep` | `tools/qc_patrol/adjudication.py` |
 | `keep` | `tools/qc_patrol/chunking.py` |
 | `keep` | `tools/qc_patrol/cli.py` |
 | `keep` | `tools/qc_patrol/config.py` |
 | `keep` | `tools/qc_patrol/deterministic_checks.py` |
 | `keep` | `tools/qc_patrol/diff_reader.py` |
 | `keep` | `tools/qc_patrol/docs_drift.py` |
+| `keep` | `tools/qc_patrol/drift.py` |
 | `keep` | `tools/qc_patrol/github_api.py` |
 | `keep` | `tools/qc_patrol/issue_writer.py` |
 | `keep` | `tools/qc_patrol/ledger.py` |
 | `keep` | `tools/qc_patrol/llm_client.py` |
+| `keep` | `tools/qc_patrol/markdown_versions.py` |
 | `keep` | `tools/qc_patrol/pr_writer.py` |
 | `keep` | `tools/qc_patrol/redaction.py` |
 | `keep` | `tools/qc_patrol/release_writer.py` |
