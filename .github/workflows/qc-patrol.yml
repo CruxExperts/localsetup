@@ -2,7 +2,7 @@ name: qc-patrol
 
 on:
   schedule:
-    - cron: "4 0 * * *"
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 permissions:
