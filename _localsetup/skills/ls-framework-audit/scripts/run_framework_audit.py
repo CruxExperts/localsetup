@@ -18,13 +18,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
-from deps import require_deps  # noqa: E402
-
-require_deps(["yaml"])
-
-import yaml  # noqa: E402
-
 # Limits and patterns (INPUT_HARDENING)
 OUTPUT_PATH_MAX = 4096
 PATH_COMPONENT_MAX = 256
@@ -39,19 +32,85 @@ MAINTAINER_PATTERN = re.compile(
 )
 VERSION_LINE = re.compile(r"^\*\*Version:\*\*\s*([\d.]+)", re.MULTILINE)
 SMOKE_COMMAND_MAX = 2048
+REPO_MARKERS = (".localsetup/lock.json", "_localsetup", "VERSION", "README.md", ".git")
 
 
 def _script_dir() -> Path:
     return Path(__file__).resolve().parent
 
 
+def _preparsed_framework_root(argv: list[str] | None = None) -> Path | None:
+    values = argv if argv is not None else sys.argv[1:]
+    for index, value in enumerate(values):
+        if value == "--framework-root" and index + 1 < len(values):
+            return Path(values[index + 1]).expanduser().resolve()
+        if value.startswith("--framework-root="):
+            return Path(value.split("=", 1)[1]).expanduser().resolve()
+    return None
+
+
+def _candidate_framework_roots(script_dir: Path | None = None) -> list[Path]:
+    base = script_dir or _script_dir()
+    candidates: list[Path] = []
+    explicit = _preparsed_framework_root()
+    if explicit is not None:
+        candidates.append(explicit)
+    # Vendored checkout: _localsetup/skills/ls-framework-audit/scripts
+    candidates.append(base.parent.parent.parent)
+    # Installed package layout: localsetup/packages/ls-framework-audit/scripts
+    candidates.append(base.parent.parent.parent / "source" / "_localsetup")
+    unique: list[Path] = []
+    for candidate in candidates:
+        resolved = candidate.resolve()
+        if resolved not in unique:
+            unique.append(resolved)
+    return unique
+
+
+def _select_framework_root(script_dir: Path | None = None) -> Path:
+    for candidate in _candidate_framework_roots(script_dir):
+        if (candidate / "lib" / "deps.py").is_file():
+            return candidate
+    return _candidate_framework_roots(script_dir)[0]
+
+
 def _framework_root() -> Path:
     # scripts/ -> skill dir -> skills/ -> _localsetup/
-    return _script_dir().parent.parent.parent
+    return _select_framework_root()
 
 
 def _repo_root() -> Path:
-    return _framework_root().parent
+    cwd_root = _detect_repo_root(Path.cwd())
+    return cwd_root if cwd_root is not None else _framework_root().parent
+
+
+def _has_repo_marker(path: Path) -> bool:
+    return any((path / marker).exists() for marker in REPO_MARKERS)
+
+
+def _detect_repo_root(start: Path) -> Path | None:
+    current = start.expanduser().resolve()
+    for candidate in (current, *current.parents):
+        if candidate.name == "_localsetup" and _has_repo_marker(candidate.parent):
+            return candidate.parent
+        if _has_repo_marker(candidate):
+            return candidate
+    return None
+
+
+def _display_path(path: Path, root: Path) -> str:
+    try:
+        return str(path.relative_to(root))
+    except ValueError:
+        return str(path)
+
+
+sys.path.insert(0, str(_select_framework_root() / "lib"))
+from deps import require_deps  # noqa: E402
+
+require_deps(["yaml"])
+
+import yaml  # noqa: E402
 
 
 def _sanitize_output_path(s: str | None) -> Path | None:
@@ -69,6 +128,15 @@ def _sanitize_output_path(s: str | None) -> Path | None:
         if len(part) > PATH_COMPONENT_MAX:
             raise ValueError(f"path component too long: {part[:32]}...")
     return p
+
+
+def _sanitize_path_arg(s: str | None, label: str) -> Path | None:
+    if s is None or not s.strip():
+        return None
+    try:
+        return _sanitize_output_path(s)
+    except ValueError as exc:
+        raise ValueError(f"{label}: {exc}") from exc
 
 
 def _sanitize_report_text(text: str, limit: int = REPORT_SNIPPET_MAX) -> str:
@@ -189,17 +257,22 @@ def _read_facts_version(root: Path) -> str | None:
 
 def phase_doc_checks(root: Path, fw: Path) -> list[str]:
     errors: list[str] = []
-    required = [
+    target_required = [
         root / "VERSION",
         root / "README.md",
+    ]
+    framework_required = [
         fw / "docs" / "VERSIONING.md",
         fw / "README.md",
         fw / "docs" / "README.md",
         fw / "tests" / "skill_smoke_commands.yaml",
     ]
-    for p in required:
+    for p in target_required:
         if not p.exists():
-            errors.append(f"Missing required doc/path: {p.relative_to(root)}")
+            errors.append(f"Missing target repo doc/path: {_display_path(p, root)}")
+    for p in framework_required:
+        if not p.exists():
+            errors.append(f"Missing framework source doc/path: {_display_path(p, fw)}")
     return errors
 
 
@@ -397,15 +470,25 @@ def main() -> int:
         metavar="PATH",
         help="Write full report to this path (or set LOCALSETUP_AUDIT_OUTPUT)",
     )
+    parser.add_argument(
+        "--repo-root",
+        metavar="PATH",
+        help="Target repository to audit; defaults to the caller cwd when repo markers are present",
+    )
+    parser.add_argument(
+        "--framework-root",
+        metavar="PATH",
+        help="Framework source root containing lib/, docs/, skills/, and tests/",
+    )
     args = parser.parse_args()
     out_path = args.output or os.environ.get("LOCALSETUP_AUDIT_OUTPUT")
     try:
         out_resolved = _sanitize_output_path(out_path) if out_path else None
+        root = _sanitize_path_arg(args.repo_root, "repo root") or _repo_root()
+        fw = _sanitize_path_arg(args.framework_root, "framework root") or _framework_root()
     except ValueError as e:
         print(f"run_framework_audit: {e}", file=sys.stderr)
         return 2
-    root = _repo_root()
-    fw = _framework_root()
     all_errors: list[str] = []
     all_warnings: list[str] = []
     link_findings: list[tuple[str, int, str]] = []
@@ -435,6 +518,7 @@ def main() -> int:
     report_lines.append("# Framework audit report")
     report_lines.append("")
     report_lines.append(f"Repo root: {root}")
+    report_lines.append(f"Framework root: {fw}")
     report_lines.append("")
     report_lines.append("## Summary")
     report_lines.append(f"- Errors: {len(all_errors)}")

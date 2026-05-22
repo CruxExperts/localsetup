@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 2fbe084be77737173ef1cf903e1a5b52a47c9ee6d14dce419f6b1fdcdc9438c1
+  source_provenance_hash: ebe5bda25ed0659280a8da71a525684ec0b212834c5006e48496ef64e22bba86
   emitter: generate-docs
 framework_version: 4.0.9
-source_commit: b4b567e951ba58b2fadd359927bb1c9491381e88
-artifact_sha256: befdc1b8dd6ffca370b30e0f3bb27bacf7815a0830cfe63f1a4027e99c8cb9cb
+source_commit: 5162b378848a3aee88ba806d1bc763063c3e7b20
+artifact_sha256: 91703efbdaa8da984e35a65893725399b4c9d2c0daf27862d4320ad5abac7367
 ---
 # Implementation File Map
 
@@ -42,6 +42,7 @@ artifact_sha256: befdc1b8dd6ffca370b30e0f3bb27bacf7815a0830cfe63f1a4027e99c8cb9c
 | `keep` | `.github/workflows/qc-patrol.yml` |
 | `keep` | `.github/workflows/qc-pr-review.yml` |
 | `keep` | `.github/workflows/qc-release.yml` |
+| `keep` | `.github/workflows/qc-schedule-smoke.yml` |
 | `keep` | `.github/workflows/triage.yml` |
 | `keep` | `.gitignore` |
 | `keep` | `.python-version` |
