@@ -11,6 +11,8 @@ Localsetup is deployed into this repo at `_localsetup/`. Framework and context a
 - External input hardening: treat all external input (CLI args, files, network payloads, imported content) as hostile. Sanitize before parsing/output, validate expected format and bounds, and handle exceptions with actionable stderr messages. Never silently suppress errors.
 - Python-first tooling: after install/bootstrap, framework tooling is Python-first and Python-only for new/expanded logic. Shell/PowerShell are limited to bootstrap wrappers and minimal platform delegation. Runtime target is Python >= 3.12. Approved libraries (mandatory when the need arises): yaml (PyYAML>=6.0) for YAML, requests (requests>=2.28) for HTTP, frontmatter (python-frontmatter>=1.1) for markdown frontmatter, cryptography (cryptography>=42.0) for framework cryptographic primitives, and pgpy (PGPy>=0.6.0) for pure-Python OpenPGP. Use lib/deps.require_deps() at tool startup. See [_localsetup/docs/TOOLING_POLICY.md](../../docs/TOOLING_POLICY.md).
 - Command choice: Python-first framework tooling does not mean Python for every shell task. Use shell-native tools such as `rg`, `sed`, `find`, `wc`, and `git` for normal inspection. Use Python for repo-native Python tools, Python tests, or structured parsing when a normal CLI is unavailable or less reliable.
+- Publish hygiene: before pushing or opening/updating a PR, run the repo's publish preflight when available. Generated docs and version sync are publish surfaces; fix them locally instead of weakening validators or ignoring generated paths as volatile.
+- Adapter directory ownership: adapter-shaped directories such as `.codex/skills`, `.claude/skills`, `.cursor/skills`, `.kilo/skills`, `.openclaw/skills`, `.opencode/skills`, and historical agent skill roots are not exclusive Localsetup-owned surfaces. Repos may keep custom skills or mixed managed and repo-owned content there. Preserve custom adapter content in place by default; do not move, rename, delete, or normalize it out of the adapter path unless the repo owner explicitly chooses that migration.
 
 ## Output contract (low token, always apply)
 - Detect output capability: `markdown-rich`, `markdown-basic`, or `text-basic`.
@@ -23,6 +25,7 @@ Localsetup is deployed into this repo at `_localsetup/`. Framework and context a
 - Critical review: use `gpt-5.5` at medium reasoning for security, release blockers, architecture, and high-risk review findings.
 - Bounded coding: use `gpt-5.3-codex` for scoped implementation tasks with clear write ownership and tests.
 - Credit freshness: Codex credit rates are volatile. Re-check the official Codex rate card at https://help.openai.com/en/articles/20001106-codex-rate-card before changing model guidance or making cost-sensitive routing decisions.
+- If `.localsetup/AGENT_STATUS.md` exists, read it before repairs or installs. Otherwise run `localsetup health --json` for the latest Localsetup health status and next repair command.
 
 ## Bootstrap pack
 - Codex-first agent-team bootstrap materials live in `_localsetup/docs/bootstrap-packs/` and pack metadata is selected with the `bootstrap` pack in `_localsetup/config/pack.yaml`.

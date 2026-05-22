@@ -6,6 +6,7 @@ from typing import Any
 from .config import InstallConfig, config_to_dict
 from .dependencies import dependency_status
 from .doctor import run_doctor
+from .health import read_health_status
 from .migration import detect_legacy_artifacts
 from .plan import build_install_plan
 
@@ -23,18 +24,21 @@ def build_agent_context(repo_root: Path, *, home: Path, config: InstallConfig) -
         packs=config.packs,
         preset=config.preset,
         skills=config.skills,
+        workflows=config.workflows,
         skill_classes=config.skill_classes,
         skill_tags=config.skill_tags,
         exclude_skills=config.exclude_skills,
         global_packs=config.global_packs,
         global_preset=config.global_preset,
         global_skills=config.global_skills,
+        global_workflows=config.global_workflows,
         global_skill_classes=config.global_skill_classes,
         global_skill_tags=config.global_skill_tags,
         global_exclude_skills=config.global_exclude_skills,
         repo_packs=config.repo_packs,
         repo_preset=config.repo_preset,
         repo_skills=config.repo_skills,
+        repo_workflows=config.repo_workflows,
         repo_skill_classes=config.repo_skill_classes,
         repo_skill_tags=config.repo_skill_tags,
         repo_exclude_skills=config.repo_exclude_skills,
@@ -55,6 +59,7 @@ def build_agent_context(repo_root: Path, *, home: Path, config: InstallConfig) -
     selected_platforms = plan.rollback_metadata.get("platforms", [])
     selected_packs = plan.rollback_metadata.get("packs", config.packs)
     migration_artifacts = detect_legacy_artifacts(repo_root, home=home, platform_ids=config.platforms, target_root=target_root)
+    health = read_health_status(home=home, target_root=target_root or repo_root)
 
     commands = {
         "doctor": "localsetup doctor",
@@ -86,6 +91,7 @@ def build_agent_context(repo_root: Path, *, home: Path, config: InstallConfig) -
         "actions": _action_dicts(plan.actions),
         "blockers": doctor["blockers"],
         "warnings": doctor["warnings"],
+        "health": health.get("event"),
         "commands": commands,
         "rollback": plan.rollback_metadata,
         "verification": [
@@ -115,6 +121,16 @@ def render_markdown_report(context: dict) -> str:
     lines.extend(["", "## Warnings", ""])
     warnings = context.get("warnings") or []
     lines.extend([f"- {item}" for item in warnings] or ["- None"])
+    health = context.get("health") or {}
+    lines.extend(["", "## Health", ""])
+    if health:
+        lines.append(f"- Status: `{health.get('status', 'unknown')}`")
+        lines.append(f"- Last operation: `{health.get('operation', 'unknown')}`")
+        actions = health.get("next_actions") or []
+        if actions:
+            lines.append(f"- Next repair command: `{actions[0]}`")
+    else:
+        lines.append("- No health status recorded; run `localsetup health --json`.")
     lines.extend(["", "## Planned Actions", ""])
     for action in context.get("actions", []):
         lines.append(f"- `{action['kind']}` -> `{action['path']}`")

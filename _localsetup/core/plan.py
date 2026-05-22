@@ -20,18 +20,21 @@ def build_install_plan(
     skill_classes: list[str] | None = None,
     skill_tags: list[str] | None = None,
     exclude_skills: list[str] | None = None,
+    workflows: list[str] | None = None,
     global_packs: list[str] | None = None,
     global_preset: str | None = None,
     global_skills: list[str] | None = None,
     global_skill_classes: list[str] | None = None,
     global_skill_tags: list[str] | None = None,
     global_exclude_skills: list[str] | None = None,
+    global_workflows: list[str] | None = None,
     repo_packs: list[str] | None = None,
     repo_preset: str | None = None,
     repo_skills: list[str] | None = None,
     repo_skill_classes: list[str] | None = None,
     repo_skill_tags: list[str] | None = None,
     repo_exclude_skills: list[str] | None = None,
+    repo_workflows: list[str] | None = None,
     attach_mode: str = "symlink",
     platform_ids: list[str] | None = None,
     target_root: Path | None = None,
@@ -49,7 +52,7 @@ def build_install_plan(
 
     legacy_selector_present = any(
         value is not None
-        for value in (packs, preset, skills, skill_classes, skill_tags, exclude_skills)
+        for value in (packs, preset, skills, skill_classes, skill_tags, exclude_skills, workflows)
     )
     global_selector_present = any(
         value is not None
@@ -60,6 +63,7 @@ def build_install_plan(
             global_skill_classes,
             global_skill_tags,
             global_exclude_skills,
+            global_workflows,
         )
     )
     repo_selector_present = any(
@@ -71,6 +75,7 @@ def build_install_plan(
             repo_skill_classes,
             repo_skill_tags,
             repo_exclude_skills,
+            repo_workflows,
         )
     )
 
@@ -82,6 +87,7 @@ def build_install_plan(
         skill_classes=global_skill_classes if global_skill_classes is not None else skill_classes,
         skill_tags=global_skill_tags if global_skill_tags is not None else skill_tags,
         exclude_skills=global_exclude_skills if global_exclude_skills is not None else exclude_skills,
+        workflows=global_workflows if global_workflows is not None else workflows,
         target_root=attachment_root,
     )
     if selected_platforms:
@@ -94,6 +100,7 @@ def build_install_plan(
                 skill_classes=repo_skill_classes if repo_skill_classes is not None else skill_classes,
                 skill_tags=repo_skill_tags if repo_skill_tags is not None else skill_tags,
                 exclude_skills=repo_exclude_skills if repo_exclude_skills is not None else exclude_skills,
+                workflows=repo_workflows if repo_workflows is not None else workflows,
                 target_root=attachment_root,
             )
         elif legacy_selector_present:
@@ -105,6 +112,7 @@ def build_install_plan(
                 skill_classes=skill_classes,
                 skill_tags=skill_tags,
                 exclude_skills=exclude_skills,
+                workflows=workflows,
                 target_root=attachment_root,
             )
         else:

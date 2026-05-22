@@ -95,7 +95,7 @@ Select packages by preset, pack, taxonomy class, tag, individual skill, or exclu
 localsetup install --tools codex --preset suggested --skill-classes development --skill-tags git --skills ls-context --exclude-skills ls-linux-patcher --yes
 ```
 
-The selector flags are additive except for `--exclude-skills`. Presets are `core`, `suggested`, `all`, and `custom`; automation defaults to `core` when no selector is supplied. `suggested` starts with `core` plus repo-detected additions, while `custom` lets the named packs, classes, tags, and skills define the footprint. Exclusions do not remove skills required by a selected workflow. The legacy selector flags apply to both the managed global baseline and repo-visible adapter selection for compatibility. Use `--global-packs` / `--global-preset` and `--repo-packs` / `--repo-preset` when you want the managed library to contain a broader baseline than a target repo exposes.
+The selector flags are additive except for `--exclude-skills`. Presets are `core`, `suggested`, `all`, and `custom`; automation defaults to `core` when no selector is supplied. `suggested` starts with `core` plus repo-detected additions, while `custom` lets the named packs, classes, tags, skills, and workflows define the footprint. Exclusions do not remove skills required by a selected workflow. The legacy selector flags apply to both the managed global baseline and repo-visible adapter selection for compatibility. Use `--global-packs` / `--global-preset` / `--global-workflows` and `--repo-packs` / `--repo-preset` / `--repo-workflows` when you want the managed library to contain a broader baseline than a target repo exposes.
 
 For a full local setup with all shipped skill and workflow packs attached to Codex, Kilo, and OpenCode:
 
@@ -160,7 +160,7 @@ The first command is a dry report. Apply mode writes a timestamped backup and `c
 - A registered framework source checkout under `~/.local/share/localsetup/source` or the checkout passed with `--directory`
 - Managed skills under `~/.local/share/localsetup/packages`
 - Managed workflow packages under the same library; their source remains `_localsetup/workflows/ls-workflow-*`
-- Explicitly selected platform adapter paths such as `.codex/skills` or `.kilo/skills`
+- Explicitly selected Localsetup-managed entries inside platform adapter paths such as `.codex/skills` or `.kilo/skills`
 - `.localsetup/lock.json` and reports that support verification and rollback
 - Transaction journals under `.localsetup/install-journal/` for applied installs
 
@@ -172,7 +172,7 @@ Selected adapters use symlink mode by default. Use portable mode when symlinks a
 ./install --directory . --tools codex --mode portable
 ```
 
-Symlink mode creates a scoped adapter directory rather than a monolithic link to the whole global library. The adapter contains `.localsetup-adapter.json` and one symlink per selected repo-visible package, so the repo sees only the selected skills and workflow packages even when the global library contains a broader baseline. Portable mode uses the same marker and scoped package list, but copies selected packages into the adapter.
+Symlink mode creates a scoped marker and managed package entries inside the selected adapter directory rather than a monolithic link to the whole global library. The adapter contains `.localsetup-adapter.json` and one symlink per selected repo-visible package, so the repo sees only the selected Localsetup skills and workflow packages even when the global library contains a broader baseline. The adapter directory itself remains a shared agent surface; custom skills, files, and non-Localsetup symlinks may live beside the managed entries and are preserved. Portable mode uses the same marker and scoped package list, but copies selected managed packages into the adapter.
 
 ## Verify
 
@@ -244,9 +244,13 @@ Re-run install with the same directory and platform selection:
 ./install --directory . --tools codex,kilo
 ```
 
-The installer refreshes managed skills, selected adapter links or portable copies, lock metadata, and reports. A global-only re-run refreshes the managed library and records an empty platform list. The wizard reloads prior global baseline selectors from the registry and repo-visible selections from `.localsetup/lock.json`; choosing no repo setup on a prior target removes managed adapter state while keeping the shared package library intact.
+The installer refreshes managed skills, selected Localsetup-managed adapter links or portable copies, lock metadata, and reports. A global-only re-run refreshes the managed library and records an empty platform list. The wizard reloads prior global baseline selectors from the registry and repo-visible selections, including explicit workflow selectors, from `.localsetup/lock.json`; choosing no repo setup on a prior target removes managed adapter entries and metadata while keeping custom adapter content and the shared package library intact.
 
 Selected workflow packs also refresh their workflow packages and required capability skill dependencies. See [Workflow packages](WORKFLOW_PACKAGES.md) for canonical source/runtime and install details.
+
+`doctor repair` is the safe path for legacy or partial target repos. Report-only mode explains inferred platforms, repo skills, repo workflows, custom repo skills, stale framework classification, and proposed actions. Use `--agent-prompt` to include a compact handoff prompt in JSON, or `--emit-agent-prompt PATH` to write one for another agent. Safe repair only removes legacy `_localsetup/` trees when their contents match the current framework source; custom, dirty, protected, symlinked, or content-divergent framework-like trees are preserved for migration planning.
+
+`.localsetup/lock.json` is managed repo state. Runtime summaries, install journals, backups, health state, and context-index runtime data are local runtime state and are excluded through `.git/info/exclude`.
 
 Non-interactive strict policy blocks high-risk skill metadata unless the operator explicitly chooses a less restrictive mode:
 
@@ -254,7 +258,7 @@ Non-interactive strict policy blocks high-risk skill metadata unless the operato
 localsetup install --tools codex --policy-mode strict --yes
 ```
 
-Use `detach` when you only want to remove selected adapter paths while preserving shared managed packages and registry references:
+Use `detach` when you only want to remove selected Localsetup-managed adapter entries while preserving custom adapter content, shared managed packages, and registry references:
 
 ```bash
 localsetup detach --tools codex --target-directory .

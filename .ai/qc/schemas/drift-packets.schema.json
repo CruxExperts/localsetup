@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema_version", "packets"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": "qc.drift-packets.v1" },
+    "packets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["packet_id", "fingerprint", "kind", "reason", "severity_hint", "affected_paths", "facts", "deterministic_evidence", "snippets", "question", "redaction_applied"],
+        "additionalProperties": true,
+        "properties": {
+          "packet_id": { "type": "string" },
+          "fingerprint": { "type": "string" },
+          "kind": { "type": "string" },
+          "reason": { "type": "string" },
+          "severity_hint": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+          "affected_paths": { "type": "array", "items": { "type": "string" } },
+          "facts": { "type": "object" },
+          "deterministic_evidence": { "type": "array" },
+          "snippets": { "type": "array" },
+          "question": { "type": "string" },
+          "redaction_applied": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

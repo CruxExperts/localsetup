@@ -32,14 +32,14 @@ def _loads_strict_or_repeated_identical(text: str) -> dict[str, Any]:
         raise
 
 
-def parse_strict_json(text: str, raw_out: Path | None = None) -> dict[str, Any]:
+def parse_strict_json(text: str, raw_out: Path | None = None, schema: dict[str, Any] | None = None) -> dict[str, Any]:
     try:
         payload = _loads_strict_or_repeated_identical(text)
     except (json.JSONDecodeError, ValueError) as exc:
         if raw_out:
             write_json(raw_out, {"raw_response": text})
         raise ValueError(f"LLM response was not valid JSON: {exc}") from exc
-    errors = validate_payload(payload, LLM_REVIEW_SCHEMA)
+    errors = validate_payload(payload, schema or LLM_REVIEW_SCHEMA)
     if errors:
         if raw_out:
             write_json(raw_out, {"raw_response": text, "schema_errors": errors})

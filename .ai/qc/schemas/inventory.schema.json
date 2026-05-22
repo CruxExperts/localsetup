@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema_version", "created_at_unix", "head_sha", "tracked_file_count", "files", "surfaces", "version_truth"],
+  "additionalProperties": true,
+  "properties": {
+    "schema_version": { "const": "qc.inventory.v2" },
+    "created_at_unix": { "type": "integer" },
+    "head_sha": { "type": "string" },
+    "tracked_file_count": { "type": "integer", "minimum": 0 },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "hash"],
+        "additionalProperties": true,
+        "properties": {
+          "path": { "type": "string" },
+          "hash": { "type": "string" }
+        }
+      }
+    },
+    "surfaces": { "type": "object" },
+    "version_truth": { "type": "object" }
+  }
+}

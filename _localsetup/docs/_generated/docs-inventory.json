@@ -89,6 +89,7 @@
     "generate-docs",
     "graph",
     "harness",
+    "health",
     "hook-gate",
     "info",
     "install",
@@ -97,9 +98,11 @@
     "package",
     "plan",
     "provenance",
+    "publish-preflight",
     "register-shell",
     "release-push",
     "repair",
+    "repair-queue",
     "repo-finalizer",
     "report",
     "rollback",
@@ -120,8 +123,8 @@
     "workflow"
   ],
   "counts": {
-    "docs": 346,
-    "framework_docs": 57,
+    "docs": 347,
+    "framework_docs": 58,
     "generated_docs": 4,
     "platforms": 6,
     "public_docs": 6,
@@ -281,6 +284,16 @@
       "path": "_localsetup/README.md",
       "status": "",
       "version": ""
+    },
+    {
+      "class": "framework",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "ls-framework-compliance",
+      "path": "_localsetup/docs/ADAPTER_OWNERSHIP.md",
+      "status": "ACTIVE",
+      "version": "4.0"
     },
     {
       "class": "framework",
@@ -3637,16 +3650,16 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "e812449597c5883f53b6171f9668bcfe184500559ad15aa6749c5fe47dffed48",
+    "artifact_sha256": "544cf86c9da9f0a1d797a168fa60baffe5e8019455f2d162c34bb6fe94bcf110",
     "emitter": "docs-align",
-    "framework_version": "4.0.11",
+    "framework_version": "4.0.15",
     "schema_version": 1,
-    "source_commit": "3adf221b6d8e0d52b8697200ebda0607a6f80059",
+    "source_commit": "8ba47f3dba5562db170dd14168a17b23a7a3b34c",
     "source_dirty": true,
-    "source_provenance_hash": "1de4fdbc8e9d0adaa58cb73aba43214ae4e988d6ae34f568a3b9fea2e23c669a",
-    "source_root_id": "64480f4fa0359b687cb0d6bf8b0e1e4d57a24c5683bf15995b920b3bc2c8c676",
+    "source_provenance_hash": "6cfd7fc8688d003ac174cd81fb280c5726cc447834417b06b8eacc635851abd7",
+    "source_root_id": "ca3d1d8a98cfc2c078446a6342664de29543a44c8790ec0acb8a1951723e223e",
     "source_tag": null,
-    "source_tree_sha": "0c947099bf18b469a9617038ff2b59467aeba05b"
+    "source_tree_sha": "b9cddd781ae8e4cb4bfb586fa3a4612a6efbe6d5"
   },
   "repo": ".",
   "schema_version": "1.0",

@@ -90,7 +90,7 @@ For a smaller footprint, select by preset, taxonomy class, tag, individual skill
 localsetup install --tools codex --preset suggested --skill-classes development --skill-tags git --skills ls-context --exclude-skills ls-linux-patcher --yes
 ```
 
-Presets are `core`, `suggested`, `all`, and `custom`. Automation defaults to `core` when no selector is supplied. Interactive installs first choose the global package-library baseline, defaulting to `core` or the prior registry setting. Repo setup is a separate choice; when selected, repo-visible packs default from the target lockfile or repo-detected suggestions. `--packs`, `--skill-classes`, `--skill-tags`, and `--skills` are additive; `--exclude-skills` removes named packages unless a selected workflow requires them. The legacy selector flags apply to both the managed global baseline and repo-visible adapter selection for compatibility. Use `--global-packs` / `--global-preset` and `--repo-packs` / `--repo-preset` when you want the managed package library to contain a broader baseline than the target repo exposes.
+Presets are `core`, `suggested`, `all`, and `custom`. Automation defaults to `core` when no selector is supplied. Interactive installs first choose the global package-library baseline, defaulting to `core` or the prior registry setting. Repo setup is a separate choice; when selected, repo-visible packs default from the target lockfile or repo-detected suggestions. `--packs`, `--skill-classes`, `--skill-tags`, `--skills`, and `--workflows` are additive; `--exclude-skills` removes named packages unless a selected workflow requires them. The legacy selector flags apply to both the managed global baseline and repo-visible adapter selection for compatibility. Use `--global-packs` / `--global-preset` / `--global-workflows` and `--repo-packs` / `--repo-preset` / `--repo-workflows` when you want the managed package library to contain a broader baseline than the target repo exposes.
 
 Attach a selected adapter to another repo or directory:
 
@@ -129,8 +129,9 @@ cd /path/to/repo
 - `--skill-classes LIST`  - Comma-separated taxonomy classes to include.
 - `--skill-tags LIST`  - Comma-separated taxonomy tags to include.
 - `--exclude-skills LIST`  - Comma-separated individual skill ids to remove from the resolved selection unless a selected workflow requires them.
-- `--global-preset NAME`, `--global-packs LIST`, `--global-skills LIST`, `--global-skill-classes LIST`, `--global-skill-tags LIST`, `--global-exclude-skills LIST`  - Selector aliases for the managed package-library baseline.
-- `--repo-preset NAME`, `--repo-packs LIST`, `--repo-skills LIST`, `--repo-skill-classes LIST`, `--repo-skill-tags LIST`, `--repo-exclude-skills LIST`  - Selector aliases for packages exposed through repo adapter paths.
+- `--workflows LIST`  - Comma-separated workflow package ids or aliases to include.
+- `--global-preset NAME`, `--global-packs LIST`, `--global-skills LIST`, `--global-workflows LIST`, `--global-skill-classes LIST`, `--global-skill-tags LIST`, `--global-exclude-skills LIST`  - Selector aliases for the managed package-library baseline.
+- `--repo-preset NAME`, `--repo-packs LIST`, `--repo-skills LIST`, `--repo-workflows LIST`, `--repo-skill-classes LIST`, `--repo-skill-tags LIST`, `--repo-exclude-skills LIST`  - Selector aliases for packages exposed through repo adapter paths.
 - `--yes`  - Legacy accepted flag for interactive installs. For automation, combine with `--non-interactive`.
 - `--non-interactive`  - Automation mode. Requires `--yes` and preserves machine-readable output.
 - `--global`  - Removed legacy flag; installs the managed home library by default and exits with an explicit error if this flag is supplied.
@@ -152,7 +153,9 @@ The wizard keeps the install portable and dependency-free; it uses plain termina
 
 ## Shared home library
 
-Localsetup installs managed skills and workflow packages to `~/.local/share/localsetup/packages` and writes a registry beside them. The managed package root contains the union of the global baseline and any repo-visible packages. Explicitly selected repo adapter paths such as `.codex/skills` and `.kilo/skills` become scoped Localsetup-managed adapter directories. In symlink mode, each selected repo-visible package inside the adapter links to the managed home library. In portable mode, the selected repo-visible packages are copied. Both modes write `.localsetup-adapter.json` so Localsetup can recognize, verify, detach, and replace the adapter later.
+Localsetup installs managed skills and workflow packages to `~/.local/share/localsetup/packages` and writes a registry beside them. The managed package root contains the union of the global baseline and any repo-visible packages. Explicitly selected repo adapter paths such as `.codex/skills` and `.kilo/skills` are shared agent surfaces where Localsetup writes scoped managed entries. In symlink mode, each selected repo-visible Localsetup package inside the adapter links to the managed home library. In portable mode, the selected repo-visible packages are copied. Both modes write `.localsetup-adapter.json` so Localsetup can recognize, verify, detach, and replace its own managed entries later.
+
+Localsetup does not own an entire adapter directory merely because the path matches a supported platform. Custom skills, files, symlinks, and other agent-owned entries may live beside Localsetup-managed entries and must be preserved in place. See [Adapter ownership](ADAPTER_OWNERSHIP.md).
 
 Workflow packages are sourced from `_localsetup/workflows/ls-workflow-*`. They install beside skills because every workflow package includes a valid `SKILL.md`, while its Localsetup-specific `workflow.yaml` stays in source for validation and generated docs.
 
@@ -210,11 +213,13 @@ Do not alter system Python to satisfy Localsetup framework dependencies. Install
 
 ## Reinstall behavior
 
-On re-run, the Localsetup installer refreshes the managed shared package library, rewrites the global registry, updates selected adapter links or portable copies, and writes `.localsetup/lock.json`. The wizard reloads prior global baseline selectors from the registry and repo-visible selectors, platforms, adapter mode, and dependency mode from `.localsetup/lock.json`. Choosing no repo setup for a prior target removes managed adapter state while leaving the shared package library intact.
+On re-run, the Localsetup installer refreshes the managed shared package library, rewrites the global registry, updates selected Localsetup-managed adapter links or portable copies, and writes `.localsetup/lock.json`. The wizard reloads prior global baseline selectors from the registry and repo-visible selectors, including explicit workflow selectors, platforms, adapter mode, and dependency mode from `.localsetup/lock.json`. Choosing no repo setup for a prior target removes managed adapter entries and metadata while leaving custom adapter content and the shared package library intact.
+
+For legacy or partial targets, `localsetup doctor repair --target-directory <repo>` reports inferred state without mutating by default. `--repair-mode safe-repair --yes` applies only Localsetup-owned repairs: clean legacy `_localsetup/` trees must match the current framework source contents exactly, tracked trees are untracked with `git rm -r --cached -- _localsetup` before removal, and custom repo skills in mixed adapters are preserved. Use `--repair-mode migration-plan --agent-prompt` or `--emit-agent-prompt PATH` when a protected, dirty, symlinked, custom, or content-divergent `_localsetup/` tree needs handoff review.
 
 `--upgrade-policy` is removed. Localsetup uses managed install metadata and refuses to overwrite unmanaged skill paths.
 
-Adapter paths are conservative. The installer creates only the selected adapter subpath, for example `.cursor/skills`, and preserves neighboring project configuration such as `.cursor/rules`. It refuses unmanaged adapter directories, regular files, dangling symlinks, and symlinks that point somewhere other than the managed Localsetup library. It recognizes current scoped adapters, legacy monolithic managed symlinks, and Localsetup-managed portable copies so re-running the same install can update the adapter without exposing unrelated global packages.
+Adapter paths are conservative. The installer creates only the selected adapter subpath, for example `.cursor/skills`, and preserves neighboring project configuration such as `.cursor/rules`. Inside that adapter subpath, unmanaged entries are repo-owned by default and must survive. Same-name collisions, regular files where a managed entry is needed, dangling symlinks, and symlinks that point somewhere other than the managed Localsetup library are decisions or blockers; they are not permission to clear the directory. The installer recognizes current scoped adapters, legacy monolithic managed symlinks, and Localsetup-managed portable copies so re-running the same install can update managed entries without exposing unrelated global packages or moving custom content.
 
 ## What gets deployed
 
@@ -222,6 +227,7 @@ Adapter paths are conservative. The installer creates only the selected adapter 
 - **Workflow packages:** Managed copies of selected `_localsetup/workflows/ls-workflow-*` packages in the same library.
 - **Per-platform adapters:** Explicitly selected repo paths from `_localsetup/config/platforms.yaml`, such as `.codex/skills` and `.kilo/skills`.
 - **Lock and registry:** `.localsetup/lock.json` in the repo and `~/.local/share/localsetup/registry.json` in the Localsetup home.
+- **Runtime state:** `.localsetup/health.json`, `.localsetup/AGENT_STATUS.md`, `.localsetup/install-journal/`, `.localsetup/backups/`, `.localsetup/state/`, and `.localsetup/context-index/` are local runtime paths added to `.git/info/exclude`; `.localsetup/lock.json` remains managed repo state.
 
 ## Framework tools
 

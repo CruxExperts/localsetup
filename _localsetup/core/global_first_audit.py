@@ -94,7 +94,18 @@ def _scan_doc_claims(source_root: Path) -> list[dict]:
                 allowed_source_test = claim == "target_local_tool_command" and (
                     "Tests" in line or "source checks" in line or "source checkout" in line
                 )
-                if allowed_source_contributor_note or allowed_source_check or allowed_source_test:
+                allowed_legacy_target_venv_note = claim == "target_venv" and (
+                    "legacy target" in line.lower()
+                    or "target-local" in line.lower()
+                    or "pre-uv installs" in line.lower()
+                    or "target project's own `.venv`" in line
+                )
+                if (
+                    allowed_source_contributor_note
+                    or allowed_source_check
+                    or allowed_source_test
+                    or allowed_legacy_target_venv_note
+                ):
                     continue
                 findings.append(
                     {

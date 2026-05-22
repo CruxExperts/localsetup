@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 1de4fdbc8e9d0adaa58cb73aba43214ae4e988d6ae34f568a3b9fea2e23c669a
+  source_provenance_hash: 6cfd7fc8688d003ac174cd81fb280c5726cc447834417b06b8eacc635851abd7
   emitter: generate-docs
-framework_version: 4.0.11
-source_commit: 3adf221b6d8e0d52b8697200ebda0607a6f80059
-artifact_sha256: 91703efbdaa8da984e35a65893725399b4c9d2c0daf27862d4320ad5abac7367
+framework_version: 4.0.15
+source_commit: 8ba47f3dba5562db170dd14168a17b23a7a3b34c
+artifact_sha256: 00f49cd7608a8dae6e6cef84741b452ea3679c9e3be37d6017613757b1493212
 ---
 # Implementation File Map
 
@@ -19,8 +19,14 @@ artifact_sha256: 91703efbdaa8da984e35a65893725399b4c9d2c0daf27862d4320ad5abac736
 | `keep` | `.ai/qc/policies/severity.md` |
 | `keep` | `.ai/qc/prompts/patrol.md` |
 | `keep` | `.ai/qc/prompts/pr-review.md` |
+| `keep` | `.ai/qc/schemas/ai-adjudication.schema.json` |
+| `keep` | `.ai/qc/schemas/ai-adjudications.schema.json` |
+| `keep` | `.ai/qc/schemas/drift-packets.schema.json` |
 | `keep` | `.ai/qc/schemas/finding.schema.json` |
+| `keep` | `.ai/qc/schemas/inventory.schema.json` |
+| `keep` | `.ai/qc/schemas/ledger-v2.schema.json` |
 | `keep` | `.ai/qc/schemas/llm-review.schema.json` |
+| `keep` | `.ai/qc/schemas/rule-suggestions.schema.json` |
 | `keep` | `.gitattributes` |
 | `keep` | `.githooks/commit-msg` |
 | `keep` | `.githooks/post-commit` |
@@ -83,12 +89,16 @@ artifact_sha256: 91703efbdaa8da984e35a65893725399b4c9d2c0daf27862d4320ad5abac736
 | `refactor` | `_localsetup/core/diffing.py` |
 | `refactor` | `_localsetup/core/docs.py` |
 | `refactor` | `_localsetup/core/doctor.py` |
+| `refactor` | `_localsetup/core/git_state.py` |
 | `refactor` | `_localsetup/core/git_subprocess.py` |
 | `refactor` | `_localsetup/core/global_first_audit.py` |
+| `refactor` | `_localsetup/core/handoff.py` |
 | `refactor` | `_localsetup/core/harness.py` |
+| `refactor` | `_localsetup/core/health.py` |
 | `refactor` | `_localsetup/core/hooks.py` |
 | `refactor` | `_localsetup/core/inventory.py` |
 | `refactor` | `_localsetup/core/lockfile.py` |
+| `refactor` | `_localsetup/core/locking.py` |
 | `refactor` | `_localsetup/core/manifests.py` |
 | `refactor` | `_localsetup/core/migration.py` |
 | `refactor` | `_localsetup/core/models.py` |
@@ -113,6 +123,7 @@ artifact_sha256: 91703efbdaa8da984e35a65893725399b4c9d2c0daf27862d4320ad5abac736
 | `refactor` | `_localsetup/core/workflows.py` |
 | `keep` | `_localsetup/discovery/core/os_detector.py` |
 | `keep` | `_localsetup/discovery/core/os_detector.sh` |
+| `keep` | `_localsetup/docs/ADAPTER_OWNERSHIP.md` |
 | `keep` | `_localsetup/docs/AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md` |
 | `keep` | `_localsetup/docs/AGENTIC_AGENT_Q_PATTERN.md` |
 | `keep` | `_localsetup/docs/AGENTIC_AGENT_Q_SCENARIOS.md` |
@@ -730,16 +741,19 @@ artifact_sha256: 91703efbdaa8da984e35a65893725399b4c9d2c0daf27862d4320ad5abac736
 | `keep` | `install` |
 | `keep` | `pyproject.toml` |
 | `keep` | `tools/qc_patrol/__init__.py` |
+| `keep` | `tools/qc_patrol/adjudication.py` |
 | `keep` | `tools/qc_patrol/chunking.py` |
 | `keep` | `tools/qc_patrol/cli.py` |
 | `keep` | `tools/qc_patrol/config.py` |
 | `keep` | `tools/qc_patrol/deterministic_checks.py` |
 | `keep` | `tools/qc_patrol/diff_reader.py` |
 | `keep` | `tools/qc_patrol/docs_drift.py` |
+| `keep` | `tools/qc_patrol/drift.py` |
 | `keep` | `tools/qc_patrol/github_api.py` |
 | `keep` | `tools/qc_patrol/issue_writer.py` |
 | `keep` | `tools/qc_patrol/ledger.py` |
 | `keep` | `tools/qc_patrol/llm_client.py` |
+| `keep` | `tools/qc_patrol/markdown_versions.py` |
 | `keep` | `tools/qc_patrol/pr_writer.py` |
 | `keep` | `tools/qc_patrol/redaction.py` |
 | `keep` | `tools/qc_patrol/release_writer.py` |

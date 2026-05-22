@@ -9,6 +9,7 @@ from .github_api import GitHubAPI
 
 
 BLOCK_RE = re.compile(r"```qc.issue-handoff.v1\n(.*?)\n```", re.DOTALL)
+KNOWN_CATEGORY_LABELS = {"workflow_security", "release", "docs", "pr_review", "inventory"}
 
 
 def normalize_title(title: str) -> str:
@@ -45,7 +46,30 @@ def issue_body(finding: dict[str, Any]) -> str:
 
 
 def labels_for(finding: dict[str, Any], base_labels: list[str]) -> list[str]:
-    return sorted(set(base_labels + [f"qc/category/{finding['category']}", f"qc/severity/{finding['severity']}"]))
+    labels = set(base_labels + [f"qc/severity/{finding['severity']}"])
+    if finding["category"] in KNOWN_CATEGORY_LABELS:
+        labels.add(f"qc/category/{finding['category']}")
+    return sorted(labels)
+
+
+def issue_policy(finding: dict[str, Any], *, mode: str = "legacy") -> tuple[bool, str]:
+    check_type = str(finding.get("check_type", ""))
+    severity = str(finding.get("severity", ""))
+    if check_type == "ai_packet_adjudication":
+        if (
+            severity in {"high", "critical"}
+            and float(finding.get("confidence", 0)) >= 0.8
+            and bool(finding.get("is_actionable"))
+            and bool(finding.get("should_create_issue"))
+            and bool(finding.get("evidence"))
+        ):
+            return True, "ai_high_confidence_actionable"
+        return False, "ai_artifact_only"
+    if mode == "legacy":
+        return True, "legacy_issue_behavior"
+    if severity in {"high", "critical"}:
+        return True, "deterministic_high_or_critical"
+    return False, "deterministic_below_issue_threshold"
 
 
 def find_duplicate(issues: list[dict[str, Any]], finding: dict[str, Any]) -> dict[str, Any] | None:
@@ -57,12 +81,23 @@ def find_duplicate(issues: list[dict[str, Any]], finding: dict[str, Any]) -> dic
     return None
 
 
-def write_issues(findings: list[dict[str, Any]], labels: list[str], *, dry_run: bool = False, api: GitHubAPI | None = None) -> list[dict[str, Any]]:
+def write_issues(
+    findings: list[dict[str, Any]],
+    labels: list[str],
+    *,
+    dry_run: bool = False,
+    api: GitHubAPI | None = None,
+    policy_mode: str = "legacy",
+) -> list[dict[str, Any]]:
     api = api or GitHubAPI.from_env()
     existing = api.list_open_issues("qc-patrol") if api.enabled() and not dry_run else []
     results: list[dict[str, Any]] = []
     for finding in findings:
         title = f"[QC][{finding['category']}] {finding['title']}"
+        allowed, policy_reason = issue_policy(finding, mode=policy_mode)
+        if not allowed:
+            results.append({"action": "skip", "title": title, "fingerprint": fingerprint_for(finding), "policy_reason": policy_reason})
+            continue
         duplicate = find_duplicate(existing, finding)
         if duplicate:
             action = "comment"
@@ -72,5 +107,5 @@ def write_issues(findings: list[dict[str, Any]], labels: list[str], *, dry_run: 
             action = "create"
             if api.enabled() and not dry_run:
                 api.create_issue(title, issue_body(finding), labels_for(finding, labels))
-        results.append({"action": action, "title": title, "fingerprint": fingerprint_for(finding)})
+        results.append({"action": action, "title": title, "fingerprint": fingerprint_for(finding), "policy_reason": policy_reason})
     return results

@@ -516,7 +516,10 @@ def provenance_report(
         elif adapter.get("is_portable_copy"):
             adapter["provenance_current"] = "repo-portable-copy"
             if global_root and global_root.exists():
-                for package_path in sorted(p for p in repo_path.iterdir() if p.is_dir()):
+                managed_names = {str(name) for name in adapter.get("managed_visible_packages", [])}
+                if not managed_names and "managed_visible_packages" not in adapter:
+                    managed_names = {path.name for path in repo_path.iterdir() if path.is_dir()}
+                for package_path in sorted(p for p in repo_path.iterdir() if p.is_dir() and p.name in managed_names):
                     local_digest = package_digest(package_path)
                     global_digest = package_digest(global_root / package_path.name)
                     if local_digest and global_digest and local_digest != global_digest:
@@ -524,7 +527,7 @@ def provenance_report(
                         hints.append(f"portable adapter remains current for this repo; compare before refreshing {package_path.name}")
         elif adapter.get("is_scoped_symlink_adapter"):
             adapter["provenance_current"] = "repo-scoped-symlink-adapter"
-            visible = set(str(name) for name in adapter.get("visible_packages", []))
+            visible = set(str(name) for name in adapter.get("managed_visible_packages", adapter.get("visible_packages", [])))
             expected = set(str(name) for name in adapter.get("expected_packages", []))
             if expected and visible != expected:
                 warnings.append(f"scoped adapter package set differs from target lock: {repo_path}")

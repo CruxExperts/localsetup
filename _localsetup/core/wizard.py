@@ -12,7 +12,7 @@ import tty
 from pathlib import Path
 from typing import Sequence, TextIO
 
-from .adapters import adapter_path_state, legacy_global_roots
+from .adapters import legacy_global_roots, remove_managed_adapter_entries
 from .apply import apply_plan
 from .dependencies import ensure_dependencies
 from .doctor import run_doctor
@@ -114,18 +114,21 @@ class WizardState:
     packs: list[str] | None = None
     preset: str | None = None
     skills: list[str] | None = None
+    workflows: list[str] | None = None
     skill_classes: list[str] | None = None
     skill_tags: list[str] | None = None
     exclude_skills: list[str] | None = None
     global_packs: list[str] | None = None
     global_preset: str | None = None
     global_skills: list[str] | None = None
+    global_workflows: list[str] | None = None
     global_skill_classes: list[str] | None = None
     global_skill_tags: list[str] | None = None
     global_exclude_skills: list[str] | None = None
     repo_packs: list[str] | None = None
     repo_preset: str | None = None
     repo_skills: list[str] | None = None
+    repo_workflows: list[str] | None = None
     repo_skill_classes: list[str] | None = None
     repo_skill_tags: list[str] | None = None
     repo_exclude_skills: list[str] | None = None
@@ -962,6 +965,8 @@ def _load_prior_defaults(state: WizardState) -> None:
             state.global_preset = selectors.get("preset") or baseline.get("preset")
         if state.global_skills is None and state.skills is None:
             state.global_skills = list(selectors.get("skills") or [])
+        if state.global_workflows is None and state.workflows is None:
+            state.global_workflows = list(selectors.get("workflows") or baseline.get("workflows") or [])
         if state.global_skill_classes is None and state.skill_classes is None:
             state.global_skill_classes = list(selectors.get("skill_classes") or [])
         if state.global_skill_tags is None and state.skill_tags is None:
@@ -1002,6 +1007,10 @@ def _load_prior_defaults(state: WizardState) -> None:
             state.global_preset = baseline_selectors.get("preset") or lock.get("global_baseline_preset") or lock.get("preset")
         if state.global_skills is None and state.skills is None:
             state.global_skills = list(baseline_selectors.get("skills") or lock.get("global_baseline_skills") or [])
+        if state.global_workflows is None and state.workflows is None:
+            state.global_workflows = list(
+                baseline_selectors.get("workflows") or lock.get("global_baseline_workflows") or []
+            )
         if state.global_skill_classes is None and state.skill_classes is None:
             state.global_skill_classes = list(baseline_selectors.get("skill_classes") or [])
         if state.global_skill_tags is None and state.skill_tags is None:
@@ -1016,6 +1025,8 @@ def _load_prior_defaults(state: WizardState) -> None:
         state.repo_preset = selectors.get("preset") or lock.get("repo_preset")
     if state.repo_skills is None and state.skills is None:
         state.repo_skills = list(selectors.get("skills") or [])
+    if state.repo_workflows is None and state.workflows is None:
+        state.repo_workflows = list(selectors.get("workflows") or lock.get("repo_workflows") or [])
     if state.repo_skill_classes is None and state.skill_classes is None:
         state.repo_skill_classes = list(selectors.get("skill_classes") or [])
     if state.repo_skill_tags is None and state.skill_tags is None:
@@ -1055,20 +1066,16 @@ def _detach_prior_adapters(state: WizardState) -> list[str]:
             path.parent.resolve(strict=False).relative_to(resolved_target)
         except ValueError:
             continue
-        adapter_state = adapter_path_state(path, global_root, known_global_roots=legacy_global_roots(state.home))
         if not (path.exists() or path.is_symlink()):
             continue
-        if not (
-            adapter_state["points_to_global"]
-            or adapter_state["is_scoped_symlink_adapter"]
-            or adapter_state["is_portable_copy"]
-        ):
-            continue
-        if path.is_dir() and not path.is_symlink():
-            shutil.rmtree(path)
-        else:
-            path.unlink()
-        removed.append(str(path))
+        removed.extend(
+            remove_managed_adapter_entries(
+                path,
+                global_root,
+                known_global_roots=legacy_global_roots(state.home),
+                recorded_packages=target.get("packages") if isinstance(target, dict) else None,
+            )
+        )
     return removed
 
 
@@ -1327,6 +1334,7 @@ def _skill_individual_step(term: TerminalWizard, state: WizardState) -> str:
         packs=state.packs,
         preset=state.preset,
         skills=state.skills,
+        workflows=state.workflows,
         skill_classes=state.skill_classes,
         skill_tags=state.skill_tags,
         exclude_skills=state.exclude_skills,
@@ -1397,12 +1405,14 @@ def _review_step(term: TerminalWizard, state: WizardState) -> str:
         global_packs=global_packs,
         global_preset=state.global_preset,
         global_skills=state.global_skills,
+        global_workflows=state.global_workflows,
         global_skill_classes=state.global_skill_classes,
         global_skill_tags=state.global_skill_tags,
         global_exclude_skills=state.global_exclude_skills,
         repo_packs=repo_packs,
         repo_preset=state.repo_preset,
         repo_skills=state.repo_skills,
+        repo_workflows=state.repo_workflows,
         repo_skill_classes=state.repo_skill_classes,
         repo_skill_tags=state.repo_skill_tags,
         repo_exclude_skills=state.repo_exclude_skills,
@@ -1512,18 +1522,21 @@ def _apply_and_show_result(term: TerminalWizard, state: WizardState) -> int:
             packs=state.packs,
             preset=state.preset,
             skills=state.skills,
+            workflows=state.workflows,
             skill_classes=state.skill_classes,
             skill_tags=state.skill_tags,
             exclude_skills=state.exclude_skills,
             global_packs=global_packs,
             global_preset=state.global_preset,
             global_skills=state.global_skills,
+            global_workflows=state.global_workflows,
             global_skill_classes=state.global_skill_classes,
             global_skill_tags=state.global_skill_tags,
             global_exclude_skills=state.global_exclude_skills,
             repo_packs=repo_packs,
             repo_preset=state.repo_preset,
             repo_skills=state.repo_skills,
+            repo_workflows=state.repo_workflows,
             repo_skill_classes=state.repo_skill_classes,
             repo_skill_tags=state.repo_skill_tags,
             repo_exclude_skills=state.repo_exclude_skills,
@@ -1615,18 +1628,21 @@ def run_wizard(
     packs: list[str] | None = None,
     preset: str | None = None,
     skills: list[str] | None = None,
+    workflows: list[str] | None = None,
     skill_classes: list[str] | None = None,
     skill_tags: list[str] | None = None,
     exclude_skills: list[str] | None = None,
     global_packs: list[str] | None = None,
     global_preset: str | None = None,
     global_skills: list[str] | None = None,
+    global_workflows: list[str] | None = None,
     global_skill_classes: list[str] | None = None,
     global_skill_tags: list[str] | None = None,
     global_exclude_skills: list[str] | None = None,
     repo_packs: list[str] | None = None,
     repo_preset: str | None = None,
     repo_skills: list[str] | None = None,
+    repo_workflows: list[str] | None = None,
     repo_skill_classes: list[str] | None = None,
     repo_skill_tags: list[str] | None = None,
     repo_exclude_skills: list[str] | None = None,
@@ -1649,18 +1665,21 @@ def run_wizard(
         packs=packs,
         preset=preset,
         skills=skills,
+        workflows=workflows,
         skill_classes=skill_classes,
         skill_tags=skill_tags,
         exclude_skills=exclude_skills,
         global_packs=global_packs,
         global_preset=global_preset,
         global_skills=global_skills,
+        global_workflows=global_workflows,
         global_skill_classes=global_skill_classes,
         global_skill_tags=global_skill_tags,
         global_exclude_skills=global_exclude_skills,
         repo_packs=repo_packs,
         repo_preset=repo_preset,
         repo_skills=repo_skills,
+        repo_workflows=repo_workflows,
         repo_skill_classes=repo_skill_classes,
         repo_skill_tags=repo_skill_tags,
         repo_exclude_skills=repo_exclude_skills,

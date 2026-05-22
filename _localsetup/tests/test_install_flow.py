@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import time
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -812,6 +813,69 @@ def test_detach_removes_adapters_and_preserves_packages(tmp_path: Path) -> None:
     assert payload["packages_preserved"] is True
     assert not (root / ".codex" / "skills").exists()
     assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
+
+
+def test_detach_preserves_custom_adapter_entries(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    tool = root / "_localsetup" / "tools" / "localsetup.py"
+    apply_plan(
+        root,
+        build_install_plan(
+            root,
+            home=home,
+            global_packs=["core"],
+            repo_preset="custom",
+            repo_skills=["localsetup-context"],
+            platform_ids=["codex"],
+        ),
+        home=home,
+    )
+    custom = root / ".codex" / "skills" / "custom-skill"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+
+    completed = subprocess.run(
+        [sys.executable, str(tool), "--repo", str(root), "--home", str(home), "detach", "--tools", "codex"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr + completed.stdout
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom\n"
+    assert not (root / ".codex" / "skills" / "ls-context").exists()
+    assert not (root / ".codex" / "skills" / ".localsetup-adapter.json").exists()
+    assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
+
+
+def test_detach_legacy_portable_adapter_removes_managed_entries_only(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    tool = root / "_localsetup" / "tools" / "localsetup.py"
+    global_root = home / ".local" / "share" / "localsetup" / "packages"
+    managed = global_root / "ls-context"
+    managed.mkdir(parents=True)
+    (managed / MARKER_JSON).write_text("{}\n", encoding="utf-8")
+    adapter = root / ".codex" / "skills"
+    adapter.mkdir(parents=True)
+    (adapter / ".localsetup-portable").write_text("managed_by=localsetup\n", encoding="utf-8")
+    shutil.copytree(managed, adapter / "ls-context")
+    custom = adapter / "custom-skill"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+
+    completed = subprocess.run(
+        [sys.executable, str(tool), "--repo", str(root), "--home", str(home), "detach", "--tools", "codex"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr + completed.stdout
+    assert not (adapter / "ls-context").exists()
+    assert not (adapter / ".localsetup-portable").exists()
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom\n"
 
 
 def test_phase3_command_family_outputs_json(tmp_path: Path) -> None:
@@ -4092,6 +4156,9 @@ def test_wizard_no_repo_rerun_detaches_managed_adapters_and_preserves_global_pac
     )
     assert (root / ".codex" / "skills").is_dir()
     assert (home / ".local/share/localsetup/packages/ls-nodejs-nextjs").is_dir()
+    custom = root / ".codex" / "skills" / "custom-skill"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
 
     output = io.StringIO()
     term = TerminalWizard(
@@ -4107,7 +4174,8 @@ def test_wizard_no_repo_rerun_detaches_managed_adapters_and_preserves_global_pac
     assert code == 0
     assert "Repo Adapters" not in rendered
     assert "Detached adapters" in rendered
-    assert not (root / ".codex" / "skills").exists()
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom\n"
+    assert not (root / ".codex" / "skills" / "ls-context").exists()
     assert (home / ".local/share/localsetup/packages/ls-nodejs-nextjs").is_dir()
     assert lock["global_only"] is True
     assert lock["adapter_targets"] == []
@@ -4176,6 +4244,7 @@ def test_wizard_legacy_lock_selectors_seed_global_and_repo_defaults(tmp_path: Pa
                     "preset": "custom",
                     "packs": ["dev"],
                     "skills": ["ls-context"],
+                    "workflows": ["ls-workflow-ops-guarded"],
                     "skill_classes": ["development"],
                     "skill_tags": ["git"],
                     "exclude_skills": ["ls-linux-patcher"],
@@ -4192,12 +4261,14 @@ def test_wizard_legacy_lock_selectors_seed_global_and_repo_defaults(tmp_path: Pa
     assert state.global_packs == ["dev"]
     assert state.global_preset == "custom"
     assert state.global_skills == ["ls-context"]
+    assert state.global_workflows == ["ls-workflow-ops-guarded"]
     assert state.global_skill_classes == ["development"]
     assert state.global_skill_tags == ["git"]
     assert state.global_exclude_skills == ["ls-linux-patcher"]
     assert state.repo_packs == ["dev"]
     assert state.repo_preset == "custom"
     assert state.repo_skills == ["ls-context"]
+    assert state.repo_workflows == ["ls-workflow-ops-guarded"]
     assert state.repo_skill_classes == ["development"]
     assert state.repo_skill_tags == ["git"]
     assert state.repo_exclude_skills == ["ls-linux-patcher"]
@@ -4217,6 +4288,7 @@ def test_wizard_root_legacy_lock_selectors_seed_global_and_repo_defaults(tmp_pat
                     "preset": "custom",
                     "packs": ["dev"],
                     "skills": ["ls-context"],
+                    "workflows": ["ls-workflow-ops-guarded"],
                     "skill_classes": ["development"],
                     "skill_tags": ["git"],
                     "exclude_skills": ["ls-linux-patcher"],
@@ -4233,12 +4305,14 @@ def test_wizard_root_legacy_lock_selectors_seed_global_and_repo_defaults(tmp_pat
     assert state.global_packs == ["dev"]
     assert state.global_preset == "custom"
     assert state.global_skills == ["ls-context"]
+    assert state.global_workflows == ["ls-workflow-ops-guarded"]
     assert state.global_skill_classes == ["development"]
     assert state.global_skill_tags == ["git"]
     assert state.global_exclude_skills == ["ls-linux-patcher"]
     assert state.repo_packs == ["dev"]
     assert state.repo_preset == "custom"
     assert state.repo_skills == ["ls-context"]
+    assert state.repo_workflows == ["ls-workflow-ops-guarded"]
     assert state.repo_skill_classes == ["development"]
     assert state.repo_skill_tags == ["git"]
     assert state.repo_exclude_skills == ["ls-linux-patcher"]
@@ -4530,7 +4604,7 @@ def test_doctor_repair_converts_legacy_lockfile(tmp_path: Path) -> None:
     assert report["verify"]["ok"] is True
 
 
-def test_doctor_repair_removes_stale_consumer_framework(tmp_path: Path) -> None:
+def test_doctor_repair_preserves_framework_shaped_content_that_differs_from_source(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "target"
@@ -4541,11 +4615,12 @@ def test_doctor_repair_removes_stale_consumer_framework(tmp_path: Path) -> None:
 
     report = run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
 
-    assert report["ok"] is True
-    assert not stale.exists()
-    assert any(Path(path).name == "_localsetup" for path in report["backups"])
-    assert (target / ".codex" / "skills" / ".localsetup-adapter.json").is_file()
-    assert report["verify"]["ok"] is True
+    assert report["ok"] is False
+    assert report["applied"] is False
+    assert stale.exists()
+    assert report["detected_shape"]["stale_framework"]["classification"] == "custom_localsetup_content"
+    assert "config/pack.yaml" in report["detected_shape"]["stale_framework"]["modified_entries"]
+    assert any(item.get("code") == "custom_localsetup_content" for item in report["decisions"])
 
 
 def test_doctor_repair_protects_maintainer_source_checkout(tmp_path: Path) -> None:
@@ -4626,10 +4701,10 @@ def test_doctor_repair_retires_old_agents_codex_adapter(tmp_path: Path) -> None:
     report = run_repair(root, home=home, target_root=target, apply=True)
 
     assert dry["inferred"]["platforms"] == ["codex"]
-    assert any(action["kind"] == "backup_remove_historical_adapter" for action in dry["actions"])
-    assert not old_adapter.exists()
-    assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
-    assert report["verify"]["ok"] is True
+    assert not any(action["kind"] == "backup_remove_historical_adapter" for action in dry["actions"])
+    assert any(decision["kind"] == "adapter_content" for decision in dry["decisions"])
+    assert report["applied"] is False
+    assert old_adapter.exists()
 
 
 def test_doctor_repair_unmanaged_adapter_content_requires_decision(tmp_path: Path) -> None:
@@ -4656,6 +4731,23 @@ def test_doctor_repair_broken_adapter_symlink_is_recreated(tmp_path: Path) -> No
     adapter = target / ".codex" / "skills"
     adapter.parent.mkdir(parents=True)
     adapter.symlink_to(target / "missing-global", target_is_directory=True)
+
+    report = run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
+
+    assert report["ok"] is False
+    assert any(decision["kind"] == "adapter_collision" for decision in report["decisions"])
+    assert adapter.is_symlink()
+    assert report["verify"] is None
+
+
+def test_doctor_repair_recreates_dangling_managed_root_adapter_symlink(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    global_root = home / ".local" / "share" / "localsetup" / "packages"
+    adapter = target / ".codex" / "skills"
+    adapter.parent.mkdir(parents=True)
+    adapter.symlink_to(global_root / "missing-adapter-root", target_is_directory=True)
 
     report = run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
 
@@ -4793,7 +4885,7 @@ def test_no_selector_install_repairs_legacy_lockfile(tmp_path: Path) -> None:
     assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
 
 
-def test_no_selector_update_repairs_localsetup_owned_broken_adapter(tmp_path: Path) -> None:
+def test_no_selector_update_requires_decision_for_unknown_broken_adapter(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "target"
@@ -4805,11 +4897,11 @@ def test_no_selector_update_repairs_localsetup_owned_broken_adapter(tmp_path: Pa
     completed = run_localsetup_cli(root, home, "update", "--target-directory", str(target))
     payload = json.loads(completed.stdout)
 
-    assert completed.returncode == 0, completed.stderr
+    assert completed.returncode == 1, completed.stderr
     assert payload["auto_mode"] == "repair_required"
-    assert payload["applied"] is True
-    assert not adapter.is_symlink()
-    assert_scoped_adapter(adapter, "ls-context")
+    assert payload["applied"] is False
+    assert any(decision["kind"] == "adapter_collision" for decision in payload["decisions"])
+    assert adapter.is_symlink()
 
 
 def test_no_selector_install_blocks_unmanaged_adapter_without_mutation(tmp_path: Path) -> None:
@@ -5213,6 +5305,153 @@ def test_rollback_reads_legacy_lock_and_removes_relative_managed_adapter(tmp_pat
     assert not global_root.exists()
 
 
+def test_rollback_preserves_custom_adapter_entries(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    apply_plan(
+        root,
+        build_install_plan(
+            root,
+            home=home,
+            global_packs=["core"],
+            repo_preset="custom",
+            repo_skills=["localsetup-context"],
+            platform_ids=["codex"],
+        ),
+        home=home,
+        dry_run=False,
+    )
+    adapter = root / ".codex" / "skills"
+    custom = adapter / "custom-skill"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+
+    result = rollback(root, home=home)
+
+    assert str(adapter / "ls-context") in result["removed"]
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom\n"
+    assert not (adapter / ".localsetup-adapter.json").exists()
+    assert not (adapter / "ls-context").exists()
+
+
+def test_rollback_legacy_portable_adapter_removes_managed_entries_only(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    global_root = home / ".local" / "share" / "localsetup" / "packages"
+    managed = global_root / "ls-context"
+    managed.mkdir(parents=True)
+    (managed / MARKER_JSON).write_text("{}\n", encoding="utf-8")
+    adapter = root / ".codex" / "skills"
+    adapter.mkdir(parents=True)
+    (adapter / ".localsetup-portable").write_text("managed_by=localsetup\n", encoding="utf-8")
+    shutil.copytree(managed, adapter / "ls-context")
+    custom = adapter / "custom-skill"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+    lock = root / ".localsetup" / "lock.json"
+    lock.parent.mkdir()
+    lock.write_text(
+        json.dumps(
+            {
+                "installed_skills": [],
+                "installed_workflows": [],
+                "adapter_state": [str(adapter)],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = rollback(root, home=home)
+
+    assert str(adapter / "ls-context") in result["removed"]
+    assert not (adapter / "ls-context").exists()
+    assert not (adapter / ".localsetup-portable").exists()
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom\n"
+
+
+def test_managed_adapter_removal_ignores_unsafe_marker_package_names(tmp_path: Path) -> None:
+    from _localsetup.core.adapters import ADAPTER_MARKER_JSON, remove_managed_adapter_entries
+
+    global_root = tmp_path / "global"
+    managed = global_root / "ls-context"
+    managed.mkdir(parents=True)
+    (managed / MARKER_JSON).write_text("{}\n", encoding="utf-8")
+    adapter = tmp_path / "adapter"
+    adapter.mkdir()
+    (adapter / ADAPTER_MARKER_JSON).write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "managed_by": "localsetup",
+                "mode": "symlink",
+                "packages": ["ls-context", "../outside-link", "nested/name", str(tmp_path / "absolute-link")],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (adapter / "ls-context").symlink_to(managed, target_is_directory=True)
+    outside_link = tmp_path / "outside-link"
+    outside_link.symlink_to(managed, target_is_directory=True)
+    absolute_link = tmp_path / "absolute-link"
+    absolute_link.symlink_to(managed, target_is_directory=True)
+
+    removed = remove_managed_adapter_entries(
+        adapter,
+        global_root,
+        recorded_packages=["../outside-link", "nested/name", str(absolute_link)],
+    )
+
+    assert str(adapter / "ls-context") in removed
+    assert outside_link.is_symlink()
+    assert absolute_link.is_symlink()
+    assert not (adapter / "ls-context").exists()
+
+
+def test_adapter_update_ignores_unsafe_old_marker_package_names(tmp_path: Path) -> None:
+    from _localsetup.core.adapters import ADAPTER_MARKER_JSON
+
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    global_root = home / ".local" / "share" / "localsetup" / "packages"
+    managed = global_root / "ls-context"
+    managed.mkdir(parents=True)
+    (managed / MARKER_JSON).write_text("{}\n", encoding="utf-8")
+    (global_root / "outside-link").mkdir()
+    (global_root / "absolute-link").mkdir()
+    adapter = root / ".codex" / "skills"
+    adapter.mkdir(parents=True)
+    (adapter / ADAPTER_MARKER_JSON).write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "managed_by": "localsetup",
+                "mode": "symlink",
+                "packages": ["ls-context", "../outside-link", "nested/name", str(tmp_path / "absolute-link")],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (adapter / "ls-context").symlink_to(managed, target_is_directory=True)
+    outside_link = root / ".codex" / "outside-link"
+    outside_link.symlink_to(global_root / "outside-link", target_is_directory=True)
+    absolute_link = tmp_path / "absolute-link"
+    absolute_link.symlink_to(global_root / "absolute-link", target_is_directory=True)
+
+    plan = build_install_plan(
+        root,
+        home=home,
+        global_packs=["core"],
+        repo_preset="custom",
+        repo_skills=["localsetup-context"],
+        platform_ids=["codex"],
+    )
+    apply_plan(root, plan, home=home, dry_run=False)
+
+    assert outside_link.is_symlink()
+    assert absolute_link.is_symlink()
+    assert (adapter / "ls-context").is_symlink()
+
+
 def test_repo_path_rejects_symlink_parent_escape(tmp_path: Path) -> None:
     from _localsetup.core.paths import PathValidationError, repo_path
 
@@ -5418,6 +5657,7 @@ def test_cli_dispatches_stubbed_branches_without_heavy_side_effects(
     monkeypatch.setattr(cli_mod, "run_maintainer_gate", lambda *args, **kwargs: {"ok": True})
     monkeypatch.setattr(cli_mod, "plan_version", lambda *args, **kwargs: {"ok": True, "bump": "none", "target_version": "9.9.9"})
     monkeypatch.setattr(cli_mod, "push_lines_to_plans", lambda *args, **kwargs: [{"ok": True}])
+    monkeypatch.setattr(cli_mod, "publish_preflight", lambda *args, **kwargs: {"ok": True})
     monkeypatch.setattr(cli_mod, "check_version_files", lambda *args, **kwargs: {"ok": True})
     monkeypatch.setattr(cli_mod, "sync_version_files", lambda *args, **kwargs: {"ok": True})
     monkeypatch.setattr(cli_mod, "stage_version_files", lambda *args, **kwargs: None)
@@ -5482,6 +5722,7 @@ def test_cli_dispatches_stubbed_branches_without_heavy_side_effects(
     run_cli("version-plan")
     monkeypatch.setattr(cli_mod.sys, "stdin", io.StringIO("refs/heads/main abc refs/heads/main def\n"))
     run_cli("version-plan", "--push-stdin")
+    run_cli("publish-preflight")
     run_cli("version-sync", "--check")
     run_cli("version-sync", "--target", "9.9.9", "--stage", "--commit")
     run_cli("release-push", "--", "origin", "main")
@@ -5712,17 +5953,17 @@ def test_adapter_state_edge_cases_cover_markers_symlinks_and_child_types(tmp_pat
     state = apply_mod.adapter_path_state(adapter, global_root)
     assert state["package_integrity_failures"][0]["reason"] == "adapter marker is not a JSON object"
 
-    (adapter / ".localsetup-adapter.json").write_text('{"mode": "symlink"}', encoding="utf-8")
+    (adapter / ".localsetup-adapter.json").write_text('{"mode": "symlink", "packages": ["ls-context"]}', encoding="utf-8")
     (adapter / "ls-context").mkdir()
     (adapter / "plain.txt").write_text("plain\n", encoding="utf-8")
     integrity = apply_mod.adapter_path_state(adapter, global_root)["package_integrity_failures"]
     reasons = {row["reason"] for row in integrity}
     assert "symlink adapter package is not a symlink" in reasons
-    assert "adapter package is not a supported filesystem node" in reasons
+    assert "adapter package is not a supported filesystem node" not in reasons
 
     portable = tmp_path / "portable"
     portable.mkdir()
-    (portable / ".localsetup-adapter.json").write_text('{"mode": "portable"}', encoding="utf-8")
+    (portable / ".localsetup-adapter.json").write_text('{"mode": "portable", "packages": ["ls-context"]}', encoding="utf-8")
     (portable / "ls-context").symlink_to(global_root / "ls-context", target_is_directory=True)
     portable_failures = apply_mod.adapter_path_state(portable, global_root)["package_integrity_failures"]
     assert portable_failures[0]["reason"] == "portable adapter package is not a directory copy"
@@ -6550,3 +6791,606 @@ def test_repo_finalizer_helpers_and_run_branches(tmp_path: Path, monkeypatch: py
 
     text = rf.payload_to_text({"mode": "run", "target_root": str(repo), "git_supported": True, "status": "blocked", "summary": {"total_dirty_files": 1, "blockers": 1, "stage_candidates": 0}, "files": classified[:1], "actions": [{"kind": "evaluate"}]})
     assert "actions:" in text
+
+
+def test_adapter_classification_status_codes(tmp_path: Path) -> None:
+    from _localsetup.core.adapters import ADAPTER_MARKER_JSON, adapter_path_state
+    from _localsetup.core.lockfile import save_json
+
+    global_root = tmp_path / "global"
+    managed = global_root / "ls-context"
+    managed.mkdir(parents=True)
+    (managed / "SKILL.md").write_text("# Context\n", encoding="utf-8")
+
+    assert adapter_path_state(tmp_path / "absent", global_root)["status_code"] == "absent"
+
+    scoped = tmp_path / "scoped"
+    scoped.mkdir()
+    save_json(scoped / ADAPTER_MARKER_JSON, {"version": 1, "managed_by": "localsetup", "mode": "symlink"})
+    (scoped / "ls-context").symlink_to(managed, target_is_directory=True)
+    assert adapter_path_state(scoped, global_root)["status_code"] == "managed_scoped_adapter"
+
+    custom = tmp_path / "custom-only"
+    (custom / "media-batch-ops").mkdir(parents=True)
+    (custom / "media-batch-ops" / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+    assert adapter_path_state(custom, global_root)["status_code"] == "custom_repo_skills"
+
+    (scoped / "media-batch-ops").mkdir()
+    (scoped / "media-batch-ops" / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+    mixed = adapter_path_state(scoped, global_root)
+    assert mixed["status_code"] == "mixed_managed_custom_adapter"
+    assert mixed["custom_entries"] == ["media-batch-ops"]
+
+    portable = tmp_path / "portable"
+    portable.mkdir()
+    save_json(
+        portable / ADAPTER_MARKER_JSON,
+        {"version": 1, "managed_by": "localsetup", "mode": "portable", "packages": ["ls-context"]},
+    )
+    shutil.copytree(managed, portable / "ls-context")
+    (portable / "ls-context" / MARKER_JSON).write_text("{}", encoding="utf-8")
+    (portable / "media-batch-ops").mkdir()
+    (portable / "media-batch-ops" / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+    portable_state = adapter_path_state(portable, global_root)
+    assert portable_state["status_code"] == "mixed_managed_custom_adapter"
+    assert portable_state["custom_entries"] == ["media-batch-ops"]
+
+    unmanaged = tmp_path / "unmanaged"
+    unmanaged.mkdir()
+    (unmanaged / "notes.txt").write_text("user content\n", encoding="utf-8")
+    assert adapter_path_state(unmanaged, global_root)["status_code"] == "unmanaged_adapter_directory"
+
+    dangling = tmp_path / "dangling"
+    dangling.symlink_to(tmp_path / "missing", target_is_directory=True)
+    assert adapter_path_state(dangling, global_root)["status_code"] == "dangling_symlink"
+
+
+def test_full_plan_preflight_blocks_before_adapter_mutation(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    opencode = root / ".opencode" / "skills"
+    opencode.mkdir(parents=True)
+    (opencode / "notes.txt").write_text("user content\n", encoding="utf-8")
+
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex", "opencode"])
+    with pytest.raises(RuntimeError, match="install preflight failed"):
+        apply_plan(root, plan, home=home, dry_run=False)
+
+    assert not (root / ".codex" / "skills").exists()
+
+
+def test_mixed_managed_adapter_preserves_custom_skill(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"])
+    apply_plan(root, plan, home=home, dry_run=False)
+
+    custom = root / ".codex" / "skills" / "media-batch-ops"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+
+    apply_plan(root, plan, home=home, dry_run=False)
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom\n"
+    assert (root / ".codex" / "skills" / "ls-context").exists()
+
+
+def test_mixed_managed_adapter_custom_sidecar_does_not_fail_verify_or_doctor(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    plan = build_install_plan(
+        root,
+        home=home,
+        global_packs=["core"],
+        repo_preset="custom",
+        repo_skills=["localsetup-context"],
+        platform_ids=["codex"],
+    )
+    apply_plan(root, plan, home=home, dry_run=False)
+    custom = root / ".codex" / "skills" / "custom-skill"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+
+    verify = verify_install(root, home=home, platform_ids=["codex"])
+    doctor = run_doctor(root, home=home, platform_ids=["codex"])
+
+    adapter = verify["adapters"][0]
+    assert verify["ok"] is True
+    assert adapter["status_code"] == "mixed_managed_custom_adapter"
+    assert adapter["visible_packages"] == ["custom-skill", "ls-context"]
+    assert adapter["managed_visible_packages"] == ["ls-context"]
+    assert adapter["custom_entries"] == ["custom-skill"]
+    assert adapter["package_integrity_ok"] is True
+    assert doctor["adapter_collisions"] == []
+    assert not any("adapter package target mismatch" in blocker for blocker in doctor["blockers"])
+
+
+def test_in_place_adapter_update_removes_deselected_managed_packages(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    broad_plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"])
+    apply_plan(root, broad_plan, home=home, dry_run=False)
+    adapter = root / ".codex" / "skills"
+    stale_managed = adapter / "ls-test-runner"
+    assert stale_managed.exists() or stale_managed.is_symlink()
+
+    custom = adapter / "media-batch-ops"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+
+    narrow_plan = build_install_plan(
+        root,
+        home=home,
+        global_packs=["core"],
+        repo_preset="custom",
+        repo_skills=["localsetup-context"],
+        platform_ids=["codex"],
+    )
+    apply_plan(root, narrow_plan, home=home, dry_run=False)
+
+    assert (adapter / "ls-context").exists()
+    assert not stale_managed.exists()
+    assert not stale_managed.is_symlink()
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom\n"
+
+
+def test_deselected_same_name_custom_adapter_entry_is_preserved(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    broad_plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"])
+    apply_plan(root, broad_plan, home=home, dry_run=False)
+    adapter = root / ".codex" / "skills"
+    custom = adapter / "ls-test-runner"
+    custom.unlink()
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom deselected\n", encoding="utf-8")
+
+    narrow_plan = build_install_plan(
+        root,
+        home=home,
+        global_packs=["core"],
+        repo_preset="custom",
+        repo_skills=["localsetup-context"],
+        platform_ids=["codex"],
+    )
+    apply_plan(root, narrow_plan, home=home, dry_run=False)
+
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom deselected\n"
+
+
+def test_deselected_same_name_custom_portable_adapter_entry_is_preserved(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    broad_plan = build_install_plan(root, home=home, packs=["core"], attach_mode="portable", platform_ids=["codex"])
+    apply_plan(root, broad_plan, home=home, dry_run=False)
+    adapter = root / ".codex" / "skills"
+    custom = adapter / "ls-test-runner"
+    shutil.rmtree(custom)
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom portable deselected\n", encoding="utf-8")
+
+    narrow_plan = build_install_plan(
+        root,
+        home=home,
+        global_packs=["core"],
+        repo_preset="custom",
+        repo_skills=["localsetup-context"],
+        attach_mode="portable",
+        platform_ids=["codex"],
+    )
+    apply_plan(root, narrow_plan, home=home, dry_run=False)
+
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom portable deselected\n"
+
+
+def test_same_name_custom_adapter_entry_blocks_install_preflight(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"])
+    apply_plan(root, plan, home=home, dry_run=False)
+
+    adapter = root / ".codex" / "skills"
+    (adapter / "ls-context").unlink()
+    custom = adapter / "ls-context"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom override\n", encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="adapter_custom_package_name_collision"):
+        apply_plan(root, plan, home=home, dry_run=False)
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom override\n"
+
+
+def test_same_name_custom_portable_adapter_entry_blocks_install_preflight(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    plan = build_install_plan(root, home=home, packs=["core"], attach_mode="portable", platform_ids=["codex"])
+    apply_plan(root, plan, home=home, dry_run=False)
+
+    custom = root / ".codex" / "skills" / "ls-context"
+    shutil.rmtree(custom)
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom portable override\n", encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="adapter_custom_package_name_collision"):
+        apply_plan(root, plan, home=home, dry_run=False)
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom portable override\n"
+
+
+def test_doctor_repair_blocks_same_name_custom_adapter_entry(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"], target_root=target)
+    apply_plan(root, plan, home=home, dry_run=False, target_root=target)
+
+    adapter = target / ".codex" / "skills"
+    (adapter / "ls-context").unlink()
+    custom = adapter / "ls-context"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom override\n", encoding="utf-8")
+
+    report = run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
+    assert report["applied"] is False
+    assert any(item["kind"] == "adapter_content" for item in report["decisions"])
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom override\n"
+
+
+def test_health_cli_written_after_install(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+
+    status = cli_mod._main(["--source-root", str(root), "--home", str(home), "install", "--yes", "--packs", "core"])
+    assert status == 0
+    capsys.readouterr()
+
+    health = load_json(root / ".localsetup" / "health.json")
+    assert health["status"] == "ok"
+    assert health["operation"] == "install"
+    assert (root / ".localsetup" / "AGENT_STATUS.md").is_file()
+
+    assert cli_mod._main(["--source-root", str(root), "--home", str(home), "health", "repair-queue", "--json"]) == 0
+    queue = json.loads(capsys.readouterr().out)
+    assert queue["ok"] is True
+
+
+def test_package_root_lock_timeout(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from _localsetup.core.locking import PackageRootLockTimeout, package_root_lock
+
+    home = tmp_path / "home" / ".local" / "share" / "localsetup"
+    ready = tmp_path / "ready"
+    script = (
+        "import sys, time\n"
+        "from pathlib import Path\n"
+        "from _localsetup.core.locking import package_root_lock\n"
+        "home = Path(sys.argv[1])\n"
+        "ready = Path(sys.argv[2])\n"
+        "with package_root_lock(home, timeout=1):\n"
+        "    ready.write_text('ready', encoding='utf-8')\n"
+        "    time.sleep(2)\n"
+    )
+    proc = subprocess.Popen([sys.executable, "-c", script, str(home), str(ready)])
+    try:
+        deadline = time.time() + 5
+        while not ready.exists() and time.time() < deadline:
+            time.sleep(0.05)
+        assert ready.exists()
+        monkeypatch.setenv("LOCALSETUP_PACKAGE_ROOT_LOCK_TIMEOUT", "0.1")
+        with pytest.raises(PackageRootLockTimeout):
+            with package_root_lock(home):
+                pass
+    finally:
+        proc.terminate()
+        proc.wait(timeout=5)
+
+
+def test_health_uses_global_shim_target(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    from _localsetup.core.health import write_health_event
+
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    target.mkdir()
+    write_health_event(
+        repo_root=root,
+        home=home,
+        target_root=target,
+        operation="doctor",
+        mode="report-only",
+        status="ok",
+        payload={},
+    )
+    monkeypatch.setenv(cli_mod.SHIM_ENV, "1")
+    monkeypatch.setattr(cli_mod, "detect_invocation_target", lambda: target)
+
+    status = cli_mod._main(["--source-root", str(root), "--home", str(home), "health", "--json"])
+    assert status == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["ok"] is True
+    assert payload["event"]["target_root"] == str(target.resolve())
+
+
+def test_health_summary_is_ignored_in_git_worktree(tmp_path: Path) -> None:
+    from _localsetup.core.health import write_health_event
+
+    source = make_temp_repo(tmp_path / "source")
+    base = tmp_path / "base"
+    linked = tmp_path / "linked"
+    base.mkdir()
+    subprocess.run(["git", "init"], cwd=base, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=base, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.name", "Test User"], cwd=base, check=True, capture_output=True)
+    (base / "README.md").write_text("# Base\n", encoding="utf-8")
+    subprocess.run(["git", "add", "README.md"], cwd=base, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "init"], cwd=base, check=True, capture_output=True)
+    subprocess.run(["git", "worktree", "add", str(linked)], cwd=base, check=True, capture_output=True)
+
+    write_health_event(
+        repo_root=source,
+        home=tmp_path / "home",
+        target_root=linked,
+        operation="doctor",
+        mode="report-only",
+        status="ok",
+        payload={},
+    )
+
+    assert (linked / ".git").is_file()
+    assert subprocess.run(["git", "check-ignore", "-q", "--", ".localsetup/health.json"], cwd=linked, check=False).returncode == 0
+    assert subprocess.run(["git", "check-ignore", "-q", "--", ".localsetup/AGENT_STATUS.md"], cwd=linked, check=False).returncode == 0
+    assert subprocess.run(["git", "check-ignore", "-q", "--", ".localsetup/install-journal/x.json"], cwd=linked, check=False).returncode == 0
+    assert subprocess.run(["git", "check-ignore", "-q", "--", ".localsetup/backups/x"], cwd=linked, check=False).returncode == 0
+    assert subprocess.run(["git", "check-ignore", "-q", "--", ".localsetup/state/x"], cwd=linked, check=False).returncode == 0
+    assert subprocess.run(["git", "check-ignore", "-q", "--", ".localsetup/context-index/x"], cwd=linked, check=False).returncode == 0
+    assert subprocess.run(["git", "check-ignore", "-q", "--", ".localsetup/lock.json"], cwd=linked, check=False).returncode != 0
+    assert subprocess.run(["git", "status", "--short"], cwd=linked, text=True, capture_output=True).stdout == ""
+
+
+def test_clean_tracked_stale_framework_is_untracked_and_removed(tmp_path: Path) -> None:
+    source = make_temp_repo(tmp_path / "source")
+    target = tmp_path / "target"
+    target.mkdir()
+    shutil.copytree(source / "_localsetup", target / "_localsetup")
+    subprocess.run(["git", "init"], cwd=target, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=target, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.name", "Test User"], cwd=target, check=True, capture_output=True)
+    subprocess.run(["git", "add", "_localsetup"], cwd=target, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "track framework"], cwd=target, check=True, capture_output=True)
+
+    report = run_repair(source, home=tmp_path / "home", target_root=target, apply=False)
+    assert not any(item["kind"] == "tracked_framework_removal" for item in report["decisions"])
+    assert report["detected_shape"]["stale_framework"]["classification"] == "clean_tracked_stale_framework"
+    assert [action["kind"] for action in report["actions"][:2]] == [
+        "git_untrack_stale_framework",
+        "backup_remove_stale_framework",
+    ]
+
+    applied = run_repair(
+        source,
+        home=tmp_path / "home",
+        target_root=target,
+        apply=True,
+        repair_mode="safe-repair",
+    )
+    assert applied["applied"] is True
+    assert not (target / "_localsetup").exists()
+    tracked = subprocess.run(["git", "ls-files", "--", "_localsetup"], cwd=target, text=True, capture_output=True, check=True)
+    assert tracked.stdout == ""
+
+
+@pytest.mark.parametrize("tracked", [False, True])
+def test_framework_shaped_localsetup_with_extra_files_blocks_repair(tmp_path: Path, tracked: bool) -> None:
+    source = make_temp_repo(tmp_path / "source")
+    target = tmp_path / "target"
+    target.mkdir()
+    shutil.copytree(source / "_localsetup", target / "_localsetup")
+    extra = target / "_localsetup" / "private-notes.txt"
+    extra.write_text("custom\n", encoding="utf-8")
+    if tracked:
+        subprocess.run(["git", "init"], cwd=target, check=True, capture_output=True)
+        subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=target, check=True, capture_output=True)
+        subprocess.run(["git", "config", "user.name", "Test User"], cwd=target, check=True, capture_output=True)
+        subprocess.run(["git", "add", "_localsetup"], cwd=target, check=True, capture_output=True)
+        subprocess.run(["git", "commit", "-m", "track framework"], cwd=target, check=True, capture_output=True)
+
+    report = run_repair(source, home=tmp_path / "home", target_root=target, apply=True, repair_mode="safe-repair")
+
+    assert report["applied"] is False
+    stale = report["detected_shape"]["stale_framework"]
+    assert stale["classification"] == "custom_localsetup_content"
+    assert "private-notes.txt" in stale["unknown_entries"]
+    assert any(item.get("code") == "custom_localsetup_content" for item in report["decisions"])
+    assert extra.read_text(encoding="utf-8") == "custom\n"
+
+
+@pytest.mark.parametrize("git_mode", ["none", "untracked", "tracked"])
+def test_framework_shaped_localsetup_with_modified_existing_file_blocks_repair(tmp_path: Path, git_mode: str) -> None:
+    source = make_temp_repo(tmp_path / "source")
+    target = tmp_path / "target"
+    target.mkdir()
+    shutil.copytree(source / "_localsetup", target / "_localsetup")
+    modified = target / "_localsetup" / "config" / "pack.yaml"
+    modified.write_text(modified.read_text(encoding="utf-8") + "\n# custom edit\n", encoding="utf-8")
+    if git_mode != "none":
+        subprocess.run(["git", "init"], cwd=target, check=True, capture_output=True)
+        subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=target, check=True, capture_output=True)
+        subprocess.run(["git", "config", "user.name", "Test User"], cwd=target, check=True, capture_output=True)
+        if git_mode == "tracked":
+            subprocess.run(["git", "add", "_localsetup"], cwd=target, check=True, capture_output=True)
+            subprocess.run(["git", "commit", "-m", "track framework"], cwd=target, check=True, capture_output=True)
+
+    report = run_repair(source, home=tmp_path / "home", target_root=target, apply=True, repair_mode="safe-repair")
+
+    stale = report["detected_shape"]["stale_framework"]
+    assert report["applied"] is False
+    assert stale["classification"] == "custom_localsetup_content"
+    assert "config/pack.yaml" in stale["modified_entries"]
+    assert modified.exists()
+
+
+def test_repair_infers_visible_workflows_and_preserves_custom_repo_skills(tmp_path: Path) -> None:
+    source = make_temp_repo(tmp_path / "source")
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    target.mkdir()
+    plan = build_install_plan(source, home=home, packs=["ops"], platform_ids=["codex"], target_root=target)
+    apply_plan(source, plan, home=home, dry_run=False, target_root=target)
+    (target / ".localsetup" / "lock.json").unlink()
+
+    custom = target / ".codex" / "skills" / "media-batch-ops"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+
+    report = run_repair(source, home=home, target_root=target, apply=False)
+
+    assert report["ok"] is True
+    assert "ls-workflow-ops-tmux-session" in report["inferred"]["repo_workflows"]
+    assert "ls-workflow-pipeline-server-triage-patch" in report["inferred"]["repo_workflows"]
+    assert {"name": "media-batch-ops", "path": str(custom)} in report["inferred"]["custom_repo_skills"]
+    assert not any(item["kind"] == "package_selection" for item in report["decisions"])
+
+
+def test_doctor_repair_emits_agent_prompt(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    source = make_temp_repo(tmp_path / "source")
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    target.mkdir()
+    custom = target / "_localsetup"
+    custom.mkdir()
+    (custom / "notes.txt").write_text("custom\n", encoding="utf-8")
+    prompt_path = tmp_path / "prompt.md"
+
+    status = cli_mod._main(
+        [
+            "--source-root",
+            str(source),
+            "--home",
+            str(home),
+            "doctor",
+            "repair",
+            "--target-directory",
+            str(target),
+            "--repair-mode",
+            "migration-plan",
+            "--agent-prompt",
+            "--emit-agent-prompt",
+            str(prompt_path),
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert status == 1
+    assert payload["agent_prompt"]["path"] == str(prompt_path.resolve())
+    text = prompt_path.read_text(encoding="utf-8")
+    assert "Localsetup Repair Handoff" in text
+    assert "custom_localsetup_content" in text
+    assert "notes.txt" not in text
+
+
+def test_agent_prompt_includes_blocker_only_payload() -> None:
+    from _localsetup.core.handoff import agent_prompt_payload
+
+    first = agent_prompt_payload({"target_root": "/tmp/repo", "blockers": ["blocked by policy"]})
+    second = agent_prompt_payload({"target_root": "/tmp/repo", "blockers": ["different blocker"]})
+    spaced = agent_prompt_payload({"target_root": "/tmp/target repo", "blockers": ["blocked"]})
+
+    assert "blocked by policy" in first["text"]
+    assert "Status: `blocked`" in first["text"]
+    assert first["context_hash"] != second["context_hash"]
+    command_line = next(line[3:-1] for line in spaced["text"].splitlines() if "doctor repair" in line)
+    assert shlex.split(command_line)[4] == "/tmp/target repo"
+
+
+def test_context_and_diff_honor_explicit_workflow_selectors(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    config = InstallConfig(
+        preset="custom",
+        workflows=["ls-workflow-ops-guarded"],
+        global_preset="custom",
+        global_workflows=["ls-workflow-ops-guarded"],
+        repo_preset="custom",
+        repo_workflows=["ls-workflow-ops-guarded"],
+        platforms=["codex"],
+    )
+
+    context = build_agent_context(root, home=home, config=config)
+
+    assert "ls-workflow-ops-guarded" in context["rollback"]["workflows"]
+
+    from _localsetup.core.diffing import diff_plan_current
+
+    payload = diff_plan_current(
+        root,
+        home=home,
+        packs=None,
+        preset="custom",
+        workflows=["ls-workflow-ops-guarded"],
+        global_preset="custom",
+        global_workflows=["ls-workflow-ops-guarded"],
+        repo_preset="custom",
+        repo_workflows=["ls-workflow-ops-guarded"],
+        platform_ids=["codex"],
+        target_root=None,
+        attach_mode="symlink",
+    )
+    assert "ls-workflow-ops-guarded" in payload["workflows"]["added"]
+
+
+def test_auto_inferred_plan_preserves_global_workflows_from_lock(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    (root / ".localsetup").mkdir()
+    (root / ".localsetup" / "lock.json").write_text(
+        json.dumps(
+            {
+                "global_baseline_selectors": {
+                    "preset": "custom",
+                    "workflows": ["ls-workflow-ops-guarded"],
+                },
+                "repo_packages": ["ls-context"],
+                "repo_skills": ["ls-context"],
+                "repo_workflows": [],
+                "platforms": ["codex"],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    plan = cli_mod._build_auto_inferred_plan(
+        root,
+        home,
+        root,
+        {
+            "inferred": {
+                "platforms": ["codex"],
+                "repo_skills": ["ls-context"],
+                "repo_workflows": [],
+                "attach_mode": "symlink",
+            }
+        },
+    )
+
+    assert "ls-workflow-ops-guarded" in plan.rollback_metadata["global_baseline_workflows"]
+
+
+def test_repair_queue_prompt_command_quotes_spaced_target_and_classifies_string_blockers(tmp_path: Path) -> None:
+    from _localsetup.core.health import repair_queue, write_health_event
+
+    root = make_temp_repo(tmp_path / "source")
+    home = tmp_path / "home"
+    target = tmp_path / "target repo"
+    target.mkdir()
+    write_health_event(
+        repo_root=root,
+        home=home,
+        target_root=target,
+        operation="doctor.repair",
+        mode="report-only",
+        status="blocked",
+        payload={},
+        blockers=["blocked by policy"],
+    )
+
+    item = repair_queue(home=home)["items"][0]
+    assert item["prompt_argv"][4] == str(target.resolve())
+    assert shlex.split(item["prompt_command"])[4] == str(target.resolve())
+    assert item["blocker_kinds"] == ["message"]

@@ -19,6 +19,7 @@ from .diffing import diff_plan_current
 from .doctor import run_doctor
 from .docs import generate_alias_outputs
 from .global_first_audit import audit_global_first
+from .git_state import git_status_snapshot, status_delta
 from .harness import disable as harness_disable
 from .harness import enable as harness_enable
 from .harness import init as harness_init
@@ -36,6 +37,9 @@ from .manifests import load_pack_config
 from .manifests import load_platforms
 from .manifests import validate_manifest_schemas
 from .lockfile import load_json, save_json, save_text
+from .handoff import agent_prompt_payload
+from .health import read_health_status, repair_queue, write_health_event, write_repair_queue_prompts
+from .locking import PackageRootLockTimeout
 from .migration import conservative_migrate, scan_legacy_references
 from .package import build_public_artifact, verify_release_artifact, write_installed_sbom, write_source_sbom
 from .paths import expand_user_path
@@ -59,6 +63,7 @@ from .versioning import (
     commit_version_sync,
     plan_version,
     print_json,
+    publish_preflight,
     push_lines_to_plans,
     stage_version_files,
     sync_version_files,
@@ -114,18 +119,21 @@ def _add_selector_flags(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--skill-classes", nargs="*", dest="skill_classes")
     parser.add_argument("--skill-tags", nargs="*", dest="skill_tags")
     parser.add_argument("--exclude-skills", nargs="*", dest="exclude_skills")
+    parser.add_argument("--workflows", nargs="*")
     parser.add_argument("--global-preset", choices=sorted(PRESETS), dest="global_preset")
     parser.add_argument("--global-packs", nargs="*", dest="global_packs")
     parser.add_argument("--global-skills", nargs="*", dest="global_skills")
     parser.add_argument("--global-skill-classes", nargs="*", dest="global_skill_classes")
     parser.add_argument("--global-skill-tags", nargs="*", dest="global_skill_tags")
     parser.add_argument("--global-exclude-skills", nargs="*", dest="global_exclude_skills")
+    parser.add_argument("--global-workflows", nargs="*", dest="global_workflows")
     parser.add_argument("--repo-preset", choices=sorted(PRESETS), dest="repo_preset")
     parser.add_argument("--repo-packs", nargs="*", dest="repo_packs")
     parser.add_argument("--repo-skills", nargs="*", dest="repo_skills")
     parser.add_argument("--repo-skill-classes", nargs="*", dest="repo_skill_classes")
     parser.add_argument("--repo-skill-tags", nargs="*", dest="repo_skill_tags")
     parser.add_argument("--repo-exclude-skills", nargs="*", dest="repo_exclude_skills")
+    parser.add_argument("--repo-workflows", nargs="*", dest="repo_workflows")
     parser.add_argument("--mode", choices=["symlink", "portable"])
     parser.add_argument("--platforms", "--tools", nargs="*", dest="platforms")
 
@@ -151,7 +159,7 @@ def _target_directory_value(args: argparse.Namespace) -> str | None:
 def _inject_global_target(args: argparse.Namespace) -> None:
     if not _is_global_shim_invocation():
         return
-    if args.cmd not in {"plan", "install", "update", "verify", "rollback", "adapters", "doctor", "migrate", "context", "convert", "harness", "context-index", "provenance"}:
+    if args.cmd not in {"plan", "install", "update", "verify", "rollback", "adapters", "doctor", "migrate", "context", "convert", "harness", "context-index", "provenance", "health"}:
         return
     if _target_directory_value(args):
         return
@@ -175,18 +183,21 @@ def _resolved_config(args: argparse.Namespace, default_home: Path) -> InstallCon
         skill_classes=_split_csv(getattr(args, "skill_classes", None)) if hasattr(args, "skill_classes") else None,
         skill_tags=_split_csv(getattr(args, "skill_tags", None)) if hasattr(args, "skill_tags") else None,
         exclude_skills=_split_csv(getattr(args, "exclude_skills", None)) if hasattr(args, "exclude_skills") else None,
+        workflows=_split_csv(getattr(args, "workflows", None)) if hasattr(args, "workflows") else None,
         global_packs=_split_csv(getattr(args, "global_packs", None)) if hasattr(args, "global_packs") else None,
         global_preset=getattr(args, "global_preset", None),
         global_skills=_split_csv(getattr(args, "global_skills", None)) if hasattr(args, "global_skills") else None,
         global_skill_classes=_split_csv(getattr(args, "global_skill_classes", None)) if hasattr(args, "global_skill_classes") else None,
         global_skill_tags=_split_csv(getattr(args, "global_skill_tags", None)) if hasattr(args, "global_skill_tags") else None,
         global_exclude_skills=_split_csv(getattr(args, "global_exclude_skills", None)) if hasattr(args, "global_exclude_skills") else None,
+        global_workflows=_split_csv(getattr(args, "global_workflows", None)) if hasattr(args, "global_workflows") else None,
         repo_packs=_split_csv(getattr(args, "repo_packs", None)) if hasattr(args, "repo_packs") else None,
         repo_preset=getattr(args, "repo_preset", None),
         repo_skills=_split_csv(getattr(args, "repo_skills", None)) if hasattr(args, "repo_skills") else None,
         repo_skill_classes=_split_csv(getattr(args, "repo_skill_classes", None)) if hasattr(args, "repo_skill_classes") else None,
         repo_skill_tags=_split_csv(getattr(args, "repo_skill_tags", None)) if hasattr(args, "repo_skill_tags") else None,
         repo_exclude_skills=_split_csv(getattr(args, "repo_exclude_skills", None)) if hasattr(args, "repo_exclude_skills") else None,
+        repo_workflows=_split_csv(getattr(args, "repo_workflows", None)) if hasattr(args, "repo_workflows") else None,
         attach_mode=getattr(args, "mode", None),
         home=cli_home,
         target_directory=getattr(args, "target_directory", None),
@@ -224,6 +235,58 @@ def _print_no_command_help() -> None:
     print("  localsetup verify --level filesystem", file=sys.stderr)
     print("  localsetup self-refresh --dependency-mode uv-sync", file=sys.stderr)
     print("  localsetup --help", file=sys.stderr)
+
+
+def _health_status_from_payload(payload: dict) -> str:
+    if payload.get("ok") is False or payload.get("blockers") or payload.get("decisions"):
+        return "blocked"
+    return "ok"
+
+
+def _record_health_for_payload(
+    *,
+    root: Path,
+    home: Path,
+    target_root: Path,
+    operation: str,
+    mode: str,
+    payload: dict,
+    git_pre: dict | None = None,
+    git_post: dict | None = None,
+    planned_paths: list[str] | None = None,
+) -> dict:
+    blockers = [str(item) for item in payload.get("blockers", [])]
+    warnings = [str(item) for item in payload.get("warnings", [])]
+    delta = status_delta(git_pre, git_post, planned_paths or []) if git_pre and git_post else None
+    install_payload = payload.get("install") if isinstance(payload.get("install"), dict) else {}
+    event = write_health_event(
+        repo_root=root,
+        home=home,
+        target_root=target_root,
+        operation=operation,
+        mode=mode,
+        status=_health_status_from_payload(payload),
+        payload=payload,
+        blockers=blockers,
+        warnings=warnings,
+        decisions=payload.get("decisions", []),
+        backups=payload.get("backups", []),
+        journal_path=payload.get("journal") or install_payload.get("journal"),
+        report_path=payload.get("report"),
+        git_pre=git_pre,
+        git_post=git_post,
+        localsetup_created_delta=delta,
+    )
+    summary = {
+        "event_id": event["event_id"],
+        "status": event["status"],
+        "latest": str(home / ".local" / "share" / "localsetup" / "state" / "health" / "latest.json"),
+        "repo_summary": str(target_root / ".localsetup" / "health.json"),
+        "agent_status": str(target_root / ".localsetup" / "AGENT_STATUS.md"),
+        "next_actions": event.get("next_actions", []),
+    }
+    payload["health"] = summary
+    return summary
 
 
 def _all_configured_packs(repo_root: Path) -> list[str]:
@@ -294,18 +357,21 @@ _SELECTOR_CONFIG_FIELDS = (
     "skill_classes",
     "skill_tags",
     "exclude_skills",
+    "workflows",
     "global_packs",
     "global_preset",
     "global_skills",
     "global_skill_classes",
     "global_skill_tags",
     "global_exclude_skills",
+    "global_workflows",
     "repo_packs",
     "repo_preset",
     "repo_skills",
     "repo_skill_classes",
     "repo_skill_tags",
     "repo_exclude_skills",
+    "repo_workflows",
 )
 
 
@@ -341,12 +407,19 @@ def _global_selector_kwargs_from_lock(target_root: Path) -> dict:
         "global_packs": selectors.get("packs") if isinstance(selectors.get("packs"), list) else None,
         "global_preset": selectors.get("preset") if isinstance(selectors.get("preset"), str) else None,
         "global_skills": selectors.get("skills") if isinstance(selectors.get("skills"), list) else None,
+        "global_workflows": selectors.get("workflows") if isinstance(selectors.get("workflows"), list) else None,
         "global_skill_classes": selectors.get("skill_classes") if isinstance(selectors.get("skill_classes"), list) else None,
         "global_skill_tags": selectors.get("skill_tags") if isinstance(selectors.get("skill_tags"), list) else None,
         "global_exclude_skills": selectors.get("exclude_skills") if isinstance(selectors.get("exclude_skills"), list) else None,
     }
     if any(value is not None for value in kwargs.values()):
         return kwargs
+    if isinstance(lock.get("global_baseline_workflows"), list):
+        return {
+            "global_preset": "custom",
+            "global_workflows": lock["global_baseline_workflows"],
+            "global_skills": lock.get("global_baseline_skills") if isinstance(lock.get("global_baseline_skills"), list) else None,
+        }
     if isinstance(lock.get("global_baseline_packs"), list):
         return {"global_packs": lock["global_baseline_packs"], "global_preset": "custom"}
     return {"global_preset": "core"}
@@ -359,7 +432,8 @@ def _build_auto_inferred_plan(root: Path, home: Path, target_root: Path, repair:
         home=home,
         **_global_selector_kwargs_from_lock(target_root),
         repo_preset="custom",
-        repo_skills=list(inferred.get("repo_packages") or []),
+        repo_skills=list(inferred.get("repo_skills") or inferred.get("repo_packages") or []),
+        repo_workflows=list(inferred.get("repo_workflows") or []),
         attach_mode=str(inferred.get("attach_mode") or "symlink"),
         platform_ids=list(inferred.get("platforms") or []),
         target_root=target_root,
@@ -414,17 +488,62 @@ def _apply_install_plan(
     *,
     mode: str | None = None,
 ) -> tuple[dict, int]:
+    git_pre = git_status_snapshot(target_root)
+    adapter_plan_paths: list[str] = []
+    for action in plan.actions:
+        if action.kind != "attach_repo_path":
+            continue
+        try:
+            adapter_plan_paths.append(str(action.path.relative_to(target_root)))
+        except ValueError:
+            continue
+    planned_paths = [
+        ".localsetup/lock.json",
+        ".localsetup/health.json",
+        ".localsetup/AGENT_STATUS.md",
+        *adapter_plan_paths,
+    ]
     if policy["blockers"]:
         payload = {"ok": False, "policy": policy, "blockers": policy["blockers"]}
         if mode:
             payload["auto_mode"] = mode
+        git_post = git_status_snapshot(target_root)
+        _record_health_for_payload(
+            root=root,
+            home=home,
+            target_root=target_root,
+            operation="install",
+            mode=mode or "explicit",
+            payload=payload,
+            git_pre=git_pre,
+            git_post=git_post,
+            planned_paths=planned_paths,
+        )
         return payload, 1
     dependency_info = (
         ensure_dependencies(root, mode=config.dependency_mode, data_root=_config_data_root(config, home), target_root=target_root)
         if config.dependency_mode != "prompt-only"
         else None
     )
-    result = apply_plan(root, plan, home=home, dry_run=False, dependency_info=dependency_info, target_root=target_root)
+    try:
+        result = apply_plan(root, plan, home=home, dry_run=False, dependency_info=dependency_info, target_root=target_root)
+    except PackageRootLockTimeout as exc:
+        payload = {"ok": False, "status_code": exc.status_code, "blockers": [str(exc)]}
+        if mode:
+            payload["auto_mode"] = mode
+        git_post = git_status_snapshot(target_root)
+        _record_health_for_payload(
+            root=root,
+            home=home,
+            target_root=target_root,
+            operation="install",
+            mode=mode or "explicit",
+            payload=payload,
+            git_pre=git_pre,
+            git_post=git_post,
+            planned_paths=planned_paths,
+        )
+        return payload, 1
     if dependency_info:
         result["dependencies"] = dependency_info
     result["attachment"] = {
@@ -437,6 +556,19 @@ def _apply_install_plan(
     result["policy"] = policy
     if mode:
         result["auto_mode"] = mode
+    result["ok"] = True
+    git_post = git_status_snapshot(target_root)
+    _record_health_for_payload(
+        root=root,
+        home=home,
+        target_root=target_root,
+        operation="install",
+        mode=mode or "explicit",
+        payload=result,
+        git_pre=git_pre,
+        git_post=git_post,
+        planned_paths=planned_paths,
+    )
     return result, 0
 
 
@@ -501,18 +633,21 @@ def _run_self_refresh(
         packs=packs,
         preset=config.preset,
         skills=config.skills,
+        workflows=config.workflows,
         skill_classes=config.skill_classes,
         skill_tags=config.skill_tags,
         exclude_skills=config.exclude_skills,
         global_packs=config.global_packs,
         global_preset=config.global_preset,
         global_skills=config.global_skills,
+        global_workflows=config.global_workflows,
         global_skill_classes=config.global_skill_classes,
         global_skill_tags=config.global_skill_tags,
         global_exclude_skills=config.global_exclude_skills,
         repo_packs=config.repo_packs,
         repo_preset=config.repo_preset,
         repo_skills=config.repo_skills,
+        repo_workflows=config.repo_workflows,
         repo_skill_classes=config.repo_skill_classes,
         repo_skill_tags=config.repo_skill_tags,
         repo_exclude_skills=config.repo_exclude_skills,
@@ -585,6 +720,14 @@ def _main(argv: list[str] | None = None) -> int:
     _add_config_flags(doctor_repair_p)
     doctor_repair_p.add_argument("--yes", action="store_true", dest="apply")
     doctor_repair_p.add_argument("--platforms", "--tools", nargs="*", dest="platforms")
+    doctor_repair_p.add_argument(
+        "--repair-mode",
+        choices=["report-only", "safe-repair", "migration-plan", "apply-with-backups"],
+        default=None,
+    )
+    doctor_repair_p.add_argument("--allow", action="append", default=[])
+    doctor_repair_p.add_argument("--agent-prompt", action="store_true")
+    doctor_repair_p.add_argument("--emit-agent-prompt")
 
     migrate_p = sub.add_parser("migrate")
     _add_config_flags(migrate_p)
@@ -642,6 +785,13 @@ def _main(argv: list[str] | None = None) -> int:
     provenance_report_p.add_argument("--platforms", "--tools", nargs="*", dest="platforms")
     repair_p = provenance_sub.add_parser("repair")
     repair_p.add_argument("--plan", action="store_true", required=True)
+    health_p = sub.add_parser("health")
+    health_p.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
+    health_p.add_argument("--target-directory", default=argparse.SUPPRESS)
+    health_sub = health_p.add_subparsers(dest="health_action")
+    health_queue = health_sub.add_parser("repair-queue")
+    health_queue.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
+    health_queue.add_argument("--agent-prompts")
     harness_p = sub.add_parser("harness")
     harness_sub = harness_p.add_subparsers(dest="harness_topic", required=True)
     heartbeat_p = harness_sub.add_parser("codex-heartbeat")
@@ -695,6 +845,11 @@ def _main(argv: list[str] | None = None) -> int:
     version_sync_p.add_argument("--check", action="store_true")
     version_sync_p.add_argument("--stage", action="store_true")
     version_sync_p.add_argument("--commit", action="store_true")
+
+    publish_preflight_p = sub.add_parser("publish-preflight")
+    publish_preflight_p.add_argument("--base")
+    publish_preflight_p.add_argument("--head")
+    publish_preflight_p.add_argument("--fix", action="store_true")
 
     release_push_p = sub.add_parser("release-push")
     release_push_p.add_argument("push_args", nargs=argparse.REMAINDER)
@@ -802,18 +957,21 @@ def _main(argv: list[str] | None = None) -> int:
             packs=config.packs,
             preset=config.preset,
             skills=config.skills,
+            workflows=config.workflows,
             skill_classes=config.skill_classes,
             skill_tags=config.skill_tags,
             exclude_skills=config.exclude_skills,
             global_packs=config.global_packs,
             global_preset=config.global_preset,
             global_skills=config.global_skills,
+            global_workflows=config.global_workflows,
             global_skill_classes=config.global_skill_classes,
             global_skill_tags=config.global_skill_tags,
             global_exclude_skills=config.global_exclude_skills,
             repo_packs=config.repo_packs,
             repo_preset=config.repo_preset,
             repo_skills=config.repo_skills,
+            repo_workflows=config.repo_workflows,
             repo_skill_classes=config.repo_skill_classes,
             repo_skill_tags=config.repo_skill_tags,
             repo_exclude_skills=config.repo_exclude_skills,
@@ -869,18 +1027,21 @@ def _main(argv: list[str] | None = None) -> int:
             packs=config.packs,
             preset=config.preset,
             skills=config.skills,
+            workflows=config.workflows,
             skill_classes=config.skill_classes,
             skill_tags=config.skill_tags,
             exclude_skills=config.exclude_skills,
             global_packs=config.global_packs,
             global_preset=config.global_preset,
             global_skills=config.global_skills,
+            global_workflows=config.global_workflows,
             global_skill_classes=config.global_skill_classes,
             global_skill_tags=config.global_skill_tags,
             global_exclude_skills=config.global_exclude_skills,
             repo_packs=config.repo_packs,
             repo_preset=config.repo_preset,
             repo_skills=config.repo_skills,
+            repo_workflows=config.repo_workflows,
             repo_skill_classes=config.repo_skill_classes,
             repo_skill_tags=config.repo_skill_tags,
             repo_exclude_skills=config.repo_exclude_skills,
@@ -896,7 +1057,20 @@ def _main(argv: list[str] | None = None) -> int:
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
         target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
+        attachment_root = target_root or root
+        git_pre = git_status_snapshot(attachment_root)
         payload = verify_install(root, home=home, platform_ids=config.platforms, target_root=target_root, level=args.level)
+        _record_health_for_payload(
+            root=root,
+            home=home,
+            target_root=attachment_root,
+            operation="verify",
+            mode=args.level,
+            payload=payload,
+            git_pre=git_pre,
+            git_post=git_status_snapshot(attachment_root),
+            planned_paths=[".localsetup/health.json", ".localsetup/AGENT_STATUS.md"],
+        )
         _write_report(config.output.report, payload)
         _print_payload(payload)
         write_trace(getattr(args, "trace_json", None), event="verify", status="ok" if payload["ok"] else "failed", attributes={"level": args.level}, started_at=started_at)
@@ -956,6 +1130,8 @@ def _main(argv: list[str] | None = None) -> int:
         home = Path(config.home or home).expanduser().resolve()
         target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
         if getattr(args, "doctor_action", None) == "repair":
+            attachment_root = target_root or root
+            git_pre = git_status_snapshot(attachment_root)
             payload = run_repair(
                 root,
                 home=home,
@@ -964,6 +1140,23 @@ def _main(argv: list[str] | None = None) -> int:
                 backup_dir=Path(config.backup_dir).expanduser().resolve() if config.backup_dir else None,
                 dependency_mode=config.dependency_mode,
                 apply=bool(args.apply),
+                repair_mode=getattr(args, "repair_mode", None) or ("safe-repair" if args.apply else "report-only"),
+                allow=getattr(args, "allow", None) or [],
+            )
+            emit_prompt = getattr(args, "emit_agent_prompt", None)
+            if getattr(args, "agent_prompt", False) or emit_prompt:
+                prompt_path = Path(emit_prompt).expanduser().resolve() if emit_prompt else None
+                payload["agent_prompt"] = agent_prompt_payload(payload, path=prompt_path)
+            _record_health_for_payload(
+                root=root,
+                home=home,
+                target_root=attachment_root,
+                operation="doctor.repair",
+                mode=payload.get("repair_mode", "report-only"),
+                payload=payload,
+                git_pre=git_pre,
+                git_post=git_status_snapshot(attachment_root),
+                planned_paths=[".localsetup/lock.json", ".localsetup/health.json", ".localsetup/AGENT_STATUS.md"],
             )
             _write_report(config.output.report, payload)
             _print_payload(payload)
@@ -987,6 +1180,17 @@ def _main(argv: list[str] | None = None) -> int:
         payload["shell_registration"] = shell_registration_status(root, home=home)
         if payload["shell_registration"]["warnings"]:
             payload["warnings"].extend(payload["shell_registration"]["warnings"])
+        _record_health_for_payload(
+            root=root,
+            home=home,
+            target_root=target_root or root,
+            operation="doctor",
+            mode="report-only",
+            payload=payload,
+            git_pre=git_status_snapshot(target_root or root),
+            git_post=git_status_snapshot(target_root or root),
+            planned_paths=[".localsetup/health.json", ".localsetup/AGENT_STATUS.md"],
+        )
         _write_report(config.output.report, payload)
         _print_payload(payload)
         write_trace(getattr(args, "trace_json", None), event="doctor", status="ok" if payload["ok"] else "failed", attributes={"target_root": str(target_root or root)}, started_at=started_at)
@@ -1028,10 +1232,26 @@ def _main(argv: list[str] | None = None) -> int:
         _print_payload(payload)
         return 0
 
+    if args.cmd == "health":
+        target_root = Path(getattr(args, "target_directory", None)).expanduser().resolve() if getattr(args, "target_directory", None) else root
+        if getattr(args, "health_action", None) == "repair-queue":
+            output_dir = getattr(args, "agent_prompts", None)
+            payload = (
+                write_repair_queue_prompts(home=home, output_dir=Path(output_dir).expanduser().resolve())
+                if output_dir
+                else repair_queue(home=home)
+            )
+            _print_payload(payload)
+            return 0
+        _print_payload(read_health_status(home=home, target_root=target_root))
+        return 0
+
     if args.cmd == "migrate":
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
         target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
+        attachment_root = target_root or root
+        git_pre = git_status_snapshot(attachment_root)
         apply_migration = not args.dry_run and config.migration_mode != "report-only"
         payload = conservative_migrate(
             root,
@@ -1041,6 +1261,17 @@ def _main(argv: list[str] | None = None) -> int:
             backup_dir=Path(config.backup_dir).expanduser().resolve() if config.backup_dir else None,
             apply=apply_migration,
         )
+        _record_health_for_payload(
+            root=root,
+            home=home,
+            target_root=attachment_root,
+            operation="migrate",
+            mode="apply" if apply_migration else "report-only",
+            payload=payload,
+            git_pre=git_pre,
+            git_post=git_status_snapshot(attachment_root),
+            planned_paths=[".localsetup/lock.json", ".localsetup/health.json", ".localsetup/AGENT_STATUS.md"],
+        )
         _write_report(config.output.report, payload)
         _print_payload(payload)
         return 0 if payload["ok"] else 1
@@ -1049,24 +1280,29 @@ def _main(argv: list[str] | None = None) -> int:
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
         target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
+        attachment_root = target_root or root
+        git_pre = git_status_snapshot(attachment_root)
         payload = convert_repo(
             root,
             home=home,
             packs=config.packs,
             preset=config.preset,
             skills=config.skills,
+            workflows=config.workflows,
             skill_classes=config.skill_classes,
             skill_tags=config.skill_tags,
             exclude_skills=config.exclude_skills,
             global_packs=config.global_packs,
             global_preset=config.global_preset,
             global_skills=config.global_skills,
+            global_workflows=config.global_workflows,
             global_skill_classes=config.global_skill_classes,
             global_skill_tags=config.global_skill_tags,
             global_exclude_skills=config.global_exclude_skills,
             repo_packs=config.repo_packs,
             repo_preset=config.repo_preset,
             repo_skills=config.repo_skills,
+            repo_workflows=config.repo_workflows,
             repo_skill_classes=config.repo_skill_classes,
             repo_skill_tags=config.repo_skill_tags,
             repo_exclude_skills=config.repo_exclude_skills,
@@ -1076,6 +1312,17 @@ def _main(argv: list[str] | None = None) -> int:
             backup_dir=Path(config.backup_dir).expanduser().resolve() if config.backup_dir else None,
             dependency_mode=config.dependency_mode,
             apply=bool(args.apply),
+        )
+        _record_health_for_payload(
+            root=root,
+            home=home,
+            target_root=attachment_root,
+            operation="convert",
+            mode="apply" if args.apply else "report-only",
+            payload=payload,
+            git_pre=git_pre,
+            git_post=git_status_snapshot(attachment_root),
+            planned_paths=[".localsetup/lock.json", ".localsetup/health.json", ".localsetup/AGENT_STATUS.md"],
         )
         _write_report(config.output.report, payload)
         _print_payload(payload)
@@ -1195,9 +1442,24 @@ def _main(argv: list[str] | None = None) -> int:
             packs=config.packs,
             preset=config.preset,
             skills=config.skills,
+            workflows=config.workflows,
             skill_classes=config.skill_classes,
             skill_tags=config.skill_tags,
             exclude_skills=config.exclude_skills,
+            global_packs=config.global_packs,
+            global_preset=config.global_preset,
+            global_skills=config.global_skills,
+            global_workflows=config.global_workflows,
+            global_skill_classes=config.global_skill_classes,
+            global_skill_tags=config.global_skill_tags,
+            global_exclude_skills=config.global_exclude_skills,
+            repo_packs=config.repo_packs,
+            repo_preset=config.repo_preset,
+            repo_skills=config.repo_skills,
+            repo_workflows=config.repo_workflows,
+            repo_skill_classes=config.repo_skill_classes,
+            repo_skill_tags=config.repo_skill_tags,
+            repo_exclude_skills=config.repo_exclude_skills,
             platform_ids=config.platforms,
             target_root=target_root,
             attach_mode=config.attach_mode,
@@ -1232,24 +1494,20 @@ def _main(argv: list[str] | None = None) -> int:
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
         target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else root
-        from .adapters import adapter_targets
+        from .adapters import adapter_targets, legacy_global_roots, remove_managed_adapter_entries
         removed = []
         pack = load_pack_config(root)
         global_root = expand_user_path(pack.global_root, home)
         for target in adapter_targets(root, home, platform_ids=config.platforms, target_root=target_root):
             path = target["repo_path"]
-            state = adapter_path_state(path, global_root)
-            if (path.exists() or path.is_symlink()) and (
-                state["points_to_global"]
-                or state["is_scoped_symlink_adapter"]
-                or state["is_portable_copy"]
-            ):
-                if path.is_dir() and not path.is_symlink():
-                    import shutil
-                    shutil.rmtree(path)
-                else:
-                    path.unlink()
-                removed.append(str(path))
+            removed.extend(
+                remove_managed_adapter_entries(
+                    path,
+                    global_root,
+                    known_global_roots=legacy_global_roots(home),
+                    recorded_packages=target.get("packages"),
+                )
+            )
         _print_payload({"removed": removed, "packages_preserved": True})
         return 0
 
@@ -1318,6 +1576,11 @@ def _main(argv: list[str] | None = None) -> int:
         print_json(payload)
         return 0
 
+    if args.cmd == "publish-preflight":
+        payload = publish_preflight(root, base=args.base, head=args.head, fix=args.fix)
+        print_json(payload)
+        return 0 if payload["ok"] else 1
+
     if args.cmd == "release-push":
         plan = plan_version(root)
         if not plan["ok"] and plan.get("release_type_required"):
@@ -1340,6 +1603,8 @@ def _main(argv: list[str] | None = None) -> int:
     if args.cmd == "self-refresh":
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
+        target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else root
+        git_pre = git_status_snapshot(target_root)
         packs_override = _split_csv(getattr(args, "packs", None)) if getattr(args, "packs", None) is not None else None
         platforms_override = _split_csv(getattr(args, "platforms", None)) if getattr(args, "platforms", None) is not None else None
         payload = _run_self_refresh(
@@ -1349,6 +1614,17 @@ def _main(argv: list[str] | None = None) -> int:
             packs_override=packs_override,
             platforms_override=platforms_override,
             attach_mode_explicit=getattr(args, "mode", None) is not None,
+        )
+        _record_health_for_payload(
+            root=root,
+            home=home,
+            target_root=target_root,
+            operation="self-refresh",
+            mode="apply",
+            payload=payload,
+            git_pre=git_pre,
+            git_post=git_status_snapshot(target_root),
+            planned_paths=[".localsetup/lock.json", ".localsetup/health.json", ".localsetup/AGENT_STATUS.md"],
         )
         _write_report(config.output.report, payload)
         _print_payload(payload)

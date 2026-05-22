@@ -41,6 +41,11 @@
       "items": { "type": "string", "minLength": 1 },
       "uniqueItems": true
     },
+    "workflows": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
     "global_packs": {
       "type": "array",
       "items": { "type": "string", "minLength": 1 },
@@ -72,6 +77,11 @@
       "items": { "type": "string", "minLength": 1 },
       "uniqueItems": true
     },
+    "global_workflows": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
     "repo_packs": {
       "type": "array",
       "items": { "type": "string", "minLength": 1 },
@@ -99,6 +109,11 @@
       "uniqueItems": true
     },
     "repo_exclude_skills": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "repo_workflows": {
       "type": "array",
       "items": { "type": "string", "minLength": 1 },
       "uniqueItems": true

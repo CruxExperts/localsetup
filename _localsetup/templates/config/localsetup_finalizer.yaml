@@ -16,6 +16,8 @@ managed_output_globs:
 generated_artifact_globs:
   - _localsetup/docs/_generated/**
 runtime_ignored_globs:
+  - .localsetup/health.json
+  - .localsetup/AGENT_STATUS.md
   - .localsetup/state/repo-finalizer
   - .localsetup/state/repo-finalizer/
   - .localsetup/state/repo-finalizer/**

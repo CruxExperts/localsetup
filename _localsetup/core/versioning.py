@@ -669,6 +669,56 @@ def commit_version_sync(repo_root: Path, target_version: str) -> str | None:
     return resolve_head(repo_root)
 
 
+def commit_generated_docs_refresh(repo_root: Path, *, message: str = "docs: refresh generated artifacts") -> str | None:
+    stage_version_files(repo_root)
+    staged = _git_text(repo_root, ["diff", "--cached", "--name-only"])
+    if not staged:
+        return None
+    _run_git(repo_root, ["commit", "-m", message])
+    return resolve_head(repo_root)
+
+
+def publish_preflight(repo_root: Path, *, base: str | None = None, head: str | None = None, fix: bool = False) -> dict:
+    """
+    Run the publish-time version/docs gate agents should satisfy before pushing.
+
+    The fix mode intentionally mirrors the CI order: sync the release version
+    first, then refresh generated artifacts from that version-sync parent.
+    """
+    plan = plan_version(repo_root, base=base, head=head)
+    result: dict = {"ok": False, "fixed": False, "commits": [], "plan": plan}
+    if not plan["ok"] and plan.get("release_type_required"):
+        result["reason"] = "release_type_required"
+        return result
+
+    target = str(plan["target_version"])
+    if fix:
+        dirty = _git_text(repo_root, ["status", "--porcelain"])
+        if dirty:
+            result["reason"] = "dirty_worktree"
+            result["dirty_worktree"] = dirty
+            return result
+        if plan["bump"] != "none" and not plan["ok"]:
+            sync_version_files(repo_root, target)
+            commit = commit_version_sync(repo_root, target)
+            if commit:
+                result["commits"].append({"type": "version_sync", "sha": commit})
+                result["fixed"] = True
+        sync_version_files(repo_root, target)
+        commit = commit_generated_docs_refresh(repo_root, message="docs: refresh release version artifacts")
+        if commit:
+            result["commits"].append({"type": "generated_docs", "sha": commit})
+            result["fixed"] = True
+        plan = plan_version(repo_root, base=base, head="HEAD")
+        result["plan"] = plan
+        target = str(plan["target_version"])
+
+    check = check_version_files(repo_root, target)
+    result["version_check"] = check
+    result["ok"] = bool(plan["ok"] and check["ok"])
+    return result
+
+
 def push_lines_to_plans(repo_root: Path, lines: str) -> list[dict]:
     plans: list[dict] = []
     for raw_line in lines.splitlines():

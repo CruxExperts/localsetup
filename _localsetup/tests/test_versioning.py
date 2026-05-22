@@ -8,6 +8,7 @@ from _localsetup.core.versioning import (
     SemVer,
     classify_commit,
     plan_version,
+    publish_preflight,
     sync_version_files,
 )
 
@@ -116,6 +117,47 @@ def test_release_plan_batches_multiple_normal_commits_as_one_patch(tmp_path: Pat
     assert plan["target_version"] == str(expected)
     assert plan["commit_count"] == 2
     assert plan["net_commit_count"] == 2
+
+
+def test_publish_preflight_fix_creates_release_and_generated_docs_commits(tmp_path: Path) -> None:
+    repo = copy_full_repo(tmp_path)
+    remote = tmp_path / "remote.git"
+    run(tmp_path, "git", "init", "--bare", str(remote))
+    init_git_repo(repo, remote)
+    expected = str(repo_version(repo).bump("patch"))
+
+    (repo / "feature.txt").write_text("feature\n", encoding="utf-8")
+    run(repo, "git", "add", "feature.txt")
+    run(repo, "git", "commit", "-m", "feat: add routine capability", "--no-verify")
+
+    result = publish_preflight(repo, base="origin/main", head="HEAD", fix=True)
+
+    assert result["ok"] is True
+    assert result["fixed"] is True
+    assert [commit["type"] for commit in result["commits"]] in (
+        ["version_sync"],
+        ["version_sync", "generated_docs"],
+    )
+    subjects = run(repo, "git", "log", "--format=%s", "-2").stdout.splitlines()
+    assert f"chore: sync release version {expected}" in subjects
+    assert repo_version(repo) == SemVer.parse(expected)
+    assert run(repo, "git", "status", "--short").stdout.strip() == ""
+
+
+def test_publish_preflight_fix_requires_clean_worktree(tmp_path: Path) -> None:
+    repo = copy_full_repo(tmp_path)
+    remote = tmp_path / "remote.git"
+    run(tmp_path, "git", "init", "--bare", str(remote))
+    init_git_repo(repo, remote)
+
+    (repo / "scratch.txt").write_text("scratch\n", encoding="utf-8")
+
+    result = publish_preflight(repo, base="origin/main", head="HEAD", fix=True)
+
+    assert result["ok"] is False
+    assert result["reason"] == "dirty_worktree"
+    assert "scratch.txt" in result["dirty_worktree"]
+    assert run(repo, "git", "log", "-1", "--pretty=%s").stdout.strip() == "chore: initial"
 
 
 def test_release_type_trailers_control_effective_bump(tmp_path: Path) -> None:
