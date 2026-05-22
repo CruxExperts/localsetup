@@ -693,6 +693,11 @@ def publish_preflight(repo_root: Path, *, base: str | None = None, head: str | N
 
     target = str(plan["target_version"])
     if fix:
+        dirty = _git_text(repo_root, ["status", "--porcelain"])
+        if dirty:
+            result["reason"] = "dirty_worktree"
+            result["dirty_worktree"] = dirty
+            return result
         if plan["bump"] != "none" and not plan["ok"]:
             sync_version_files(repo_root, target)
             commit = commit_version_sync(repo_root, target)
