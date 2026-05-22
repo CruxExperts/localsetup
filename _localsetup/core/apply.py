@@ -12,7 +12,7 @@ from .locking import package_root_lock
 from .manifests import load_pack_config
 from .models import DeployPlan
 from .paths import ensure_dir, legacy_target_lockfile_path, repo_path, target_lockfile_path
-from .adapters import ADAPTER_MARKER_JSON, adapter_path_state, legacy_global_roots
+from .adapters import ADAPTER_MARKER_JSON, adapter_path_state, legacy_global_roots, _is_safe_adapter_package_name
 from .registry import upsert_target
 from .provenance import build_package_marker, is_managed_package, load_package_marker, managed_marker_path, marker_public_snapshot
 from .source import source_commit
@@ -264,7 +264,7 @@ def _write_scoped_adapter(adapter_path: Path, global_root: Path, package_names: 
             old_payload = {}
         old_raw = old_payload.get("packages") if isinstance(old_payload, dict) else None
         if isinstance(old_raw, list):
-            old_packages = {str(item) for item in old_raw}
+            old_packages = {str(item) for item in old_raw if _is_safe_adapter_package_name(str(item))}
     for stale_package in sorted(old_packages - selected):
         stale_path = adapter_path / stale_package
         if _is_current_managed_adapter_entry(stale_path, global_root, mode):

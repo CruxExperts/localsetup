@@ -160,7 +160,7 @@ The first command is a dry report. Apply mode writes a timestamped backup and `c
 - A registered framework source checkout under `~/.local/share/localsetup/source` or the checkout passed with `--directory`
 - Managed skills under `~/.local/share/localsetup/packages`
 - Managed workflow packages under the same library; their source remains `_localsetup/workflows/ls-workflow-*`
-- Explicitly selected platform adapter paths such as `.codex/skills` or `.kilo/skills`
+- Explicitly selected Localsetup-managed entries inside platform adapter paths such as `.codex/skills` or `.kilo/skills`
 - `.localsetup/lock.json` and reports that support verification and rollback
 - Transaction journals under `.localsetup/install-journal/` for applied installs
 
@@ -172,7 +172,7 @@ Selected adapters use symlink mode by default. Use portable mode when symlinks a
 ./install --directory . --tools codex --mode portable
 ```
 
-Symlink mode creates a scoped adapter directory rather than a monolithic link to the whole global library. The adapter contains `.localsetup-adapter.json` and one symlink per selected repo-visible package, so the repo sees only the selected skills and workflow packages even when the global library contains a broader baseline. Portable mode uses the same marker and scoped package list, but copies selected packages into the adapter.
+Symlink mode creates a scoped marker and managed package entries inside the selected adapter directory rather than a monolithic link to the whole global library. The adapter contains `.localsetup-adapter.json` and one symlink per selected repo-visible package, so the repo sees only the selected Localsetup skills and workflow packages even when the global library contains a broader baseline. The adapter directory itself remains a shared agent surface; custom skills, files, and non-Localsetup symlinks may live beside the managed entries and are preserved. Portable mode uses the same marker and scoped package list, but copies selected managed packages into the adapter.
 
 ## Verify
 
@@ -244,7 +244,7 @@ Re-run install with the same directory and platform selection:
 ./install --directory . --tools codex,kilo
 ```
 
-The installer refreshes managed skills, selected adapter links or portable copies, lock metadata, and reports. A global-only re-run refreshes the managed library and records an empty platform list. The wizard reloads prior global baseline selectors from the registry and repo-visible selections, including explicit workflow selectors, from `.localsetup/lock.json`; choosing no repo setup on a prior target removes managed adapter state while keeping the shared package library intact.
+The installer refreshes managed skills, selected Localsetup-managed adapter links or portable copies, lock metadata, and reports. A global-only re-run refreshes the managed library and records an empty platform list. The wizard reloads prior global baseline selectors from the registry and repo-visible selections, including explicit workflow selectors, from `.localsetup/lock.json`; choosing no repo setup on a prior target removes managed adapter entries and metadata while keeping custom adapter content and the shared package library intact.
 
 Selected workflow packs also refresh their workflow packages and required capability skill dependencies. See [Workflow packages](WORKFLOW_PACKAGES.md) for canonical source/runtime and install details.
 
@@ -258,7 +258,7 @@ Non-interactive strict policy blocks high-risk skill metadata unless the operato
 localsetup install --tools codex --policy-mode strict --yes
 ```
 
-Use `detach` when you only want to remove selected adapter paths while preserving shared managed packages and registry references:
+Use `detach` when you only want to remove selected Localsetup-managed adapter entries while preserving custom adapter content, shared managed packages, and registry references:
 
 ```bash
 localsetup detach --tools codex --target-directory .

@@ -7,7 +7,7 @@ import shutil
 import subprocess
 from typing import Any
 
-from .adapters import ADAPTER_MARKER_JSON, adapter_path_state, adapter_targets, legacy_global_roots
+from .adapters import ADAPTER_MARKER_JSON, adapter_path_state, adapter_targets, legacy_global_roots, remove_managed_adapter_entries
 from .aliases import collect_skill_aliases, skill_alias
 from .apply import apply_plan
 from .git_state import git_untrack_path, inspect_path
@@ -286,19 +286,14 @@ def _infer_packages(
 def _localsetup_owned_adapter_dir(source_root: Path, path: Path, decisions: list[dict]) -> bool:
     if not path.is_dir() or path.is_symlink():
         return False
-    known = _known_package_names(source_root)
-    aliases = collect_skill_aliases(source_root / "_localsetup" / "skills")
     unmanaged: list[str] = []
     for child in sorted(path.iterdir()):
-        if child.name.startswith("."):
+        if child.name in {ADAPTER_MARKER_JSON, ".localsetup-portable"}:
             continue
-        canonical = aliases.get(child.name, child.name)
-        if canonical not in known:
+        if child.name.startswith("."):
             unmanaged.append(child.name)
             continue
-        if child.is_symlink():
-            continue
-        if child.is_dir() and ((child / "SKILL.md").exists() or is_managed_package(child)):
+        if child.is_dir() and not child.is_symlink() and is_managed_package(child):
             continue
         unmanaged.append(child.name)
     if unmanaged:
@@ -313,6 +308,25 @@ def _localsetup_owned_adapter_dir(source_root: Path, path: Path, decisions: list
         )
         return False
     return True
+
+
+def _symlink_target_under_managed_roots(path: Path, managed_roots: list[Path]) -> bool:
+    if not path.is_symlink():
+        return False
+    link_target = path.readlink()
+    if not link_target.is_absolute():
+        link_target = path.parent / link_target
+    resolved_target = link_target.resolve(strict=False)
+    for root in managed_roots:
+        resolved_root = root.resolve(strict=False)
+        if resolved_target == resolved_root:
+            return True
+        try:
+            resolved_target.relative_to(resolved_root)
+            return True
+        except ValueError:
+            continue
+    return False
 
 
 def _framework_source_like(path: Path) -> bool:
@@ -681,6 +695,7 @@ def _plan_actions(
     pack = load_pack_config(source_root)
     global_root = expand_user_path(pack.global_root, home)
     known_roots = legacy_global_roots(home)
+    managed_roots = [global_root, *known_roots]
     selected_packages = set(packages)
     for target in adapter_targets(source_root, home, platform_ids=platform_ids, target_root=target_root):
         path = target["repo_path"]
@@ -699,8 +714,18 @@ def _plan_actions(
             continue
         reason = state["collision_reason"]
         if reason in {"dangling symlink"}:
-            actions.append(_action("backup_remove_adapter", path, safety="safe", reason=f"repairable adapter collision: {reason}"))
-            pre_action_count += 1
+            if _symlink_target_under_managed_roots(path, managed_roots):
+                actions.append(_action("backup_remove_adapter", path, safety="safe", reason=f"repairable Localsetup-owned adapter collision: {reason}"))
+                pre_action_count += 1
+            else:
+                decisions.append(
+                    {
+                        "kind": "adapter_collision",
+                        "path": str(path),
+                        "reason": reason,
+                        "required": "review this symlink before applying repair",
+                    }
+                )
         elif reason == "unmanaged adapter directory":
             if _localsetup_owned_adapter_dir(source_root, path, decisions):
                 actions.append(
@@ -724,10 +749,11 @@ def _plan_actions(
         elif state["exists"] and not state["package_integrity_ok"]:
             actions.append(
                 _action(
-                    "backup_remove_adapter",
+                    "remove_managed_adapter_entries",
                     path,
                     safety="safe",
-                    reason="adapter marker or package links are incomplete and path is Localsetup-managed",
+                    reason="refresh Localsetup-managed adapter metadata and package entries while preserving custom content",
+                    details={"packages": packages},
                 )
             )
             pre_action_count += 1
@@ -739,7 +765,7 @@ def _plan_actions(
             path = target_root / rel
             if not (path.exists() or path.is_symlink()):
                 continue
-            if path.is_symlink() or _localsetup_owned_adapter_dir(source_root, path, decisions):
+            if (path.is_symlink() and _symlink_target_under_managed_roots(path, managed_roots)) or _localsetup_owned_adapter_dir(source_root, path, decisions):
                 actions.append(
                     _action(
                         "backup_remove_historical_adapter",
@@ -794,12 +820,13 @@ def _plan_actions(
     return actions
 
 
-def _apply_pre_actions(actions: list[dict], backup_root: Path, target_root: Path) -> list[str]:
+def _apply_pre_actions(actions: list[dict], backup_root: Path, target_root: Path, global_root: Path, known_roots: list[Path]) -> list[str]:
     backups: list[str] = []
     removable = {
         "backup_remove_stale_framework",
         "backup_remove_adapter",
         "backup_remove_historical_adapter",
+        "remove_managed_adapter_entries",
     }
     for action in actions:
         if action["kind"] == "git_untrack_stale_framework":
@@ -808,6 +835,15 @@ def _apply_pre_actions(actions: list[dict], backup_root: Path, target_root: Path
             continue
         path = Path(action["path"])
         if not (path.exists() or path.is_symlink()):
+            continue
+        if action["kind"] == "remove_managed_adapter_entries":
+            backups.append(_backup_item(path, backup_root, target_root))
+            remove_managed_adapter_entries(
+                path,
+                global_root,
+                known_global_roots=known_roots,
+                recorded_packages=action.get("details", {}).get("packages", []),
+            )
             continue
         backups.append(_backup_item(path, backup_root, target_root))
         if action["kind"] == "backup_remove_stale_framework" and path.name == "_localsetup":
@@ -965,7 +1001,7 @@ def run_repair(
         return payload
 
     backup_root.mkdir(parents=True, exist_ok=True)
-    payload["backups"].extend(_apply_pre_actions(actions, backup_root, target))
+    payload["backups"].extend(_apply_pre_actions(actions, backup_root, target, global_root, legacy_global_roots(home)))
     plan = build_install_plan(
         source,
         home=home,

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import shutil
 
 from .manifests import load_platforms
 from .paths import expand_user_path, repo_path
@@ -101,6 +102,60 @@ def _adapter_marker_state(repo_path: Path) -> dict:
     return {"exists": True, "mode": str(mode), "error": None}
 
 
+def _adapter_marker_packages(repo_path: Path) -> set[str] | None:
+    marker = repo_path / ADAPTER_MARKER_JSON
+    if not marker.is_file():
+        return None
+    try:
+        payload = json.loads(marker.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(payload, dict):
+        return None
+    packages = payload.get("packages")
+    if not isinstance(packages, list):
+        return None
+    names = {str(item) for item in packages if _is_safe_adapter_package_name(str(item))}
+    return names
+
+
+def _is_safe_adapter_package_name(name: str) -> bool:
+    if not name or name in {".", ".."}:
+        return False
+    path = Path(name)
+    return not path.is_absolute() and len(path.parts) == 1 and path.parts[0] == name
+
+
+def _is_managed_portable_adapter_entry(path: Path) -> bool:
+    return path.is_dir() and not path.is_symlink() and is_managed_package(path)
+
+
+def _is_managed_symlink_adapter_entry(path: Path, global_root: Path) -> bool:
+    expected = global_root / path.name
+    return path.is_symlink() and _symlink_target(path) == expected.resolve(strict=False)
+
+
+def _managed_visible_adapter_packages(repo_path: Path, global_root: Path) -> list[str]:
+    if repo_path.is_symlink() and _symlink_target(repo_path) == global_root.resolve(strict=False):
+        if global_root.exists():
+            return sorted(path.name for path in global_root.iterdir() if path.is_dir())
+        return []
+    if not repo_path.is_dir() or repo_path.is_symlink():
+        return []
+    marker = _adapter_marker_state(repo_path)
+    marker_mode = marker["mode"]
+    legacy_portable = (repo_path / ".localsetup-portable").exists()
+    names: set[str] = set()
+    for child in sorted(repo_path.iterdir()):
+        if child.name.startswith("."):
+            continue
+        if (marker_mode == "portable" or legacy_portable) and _is_managed_portable_adapter_entry(child):
+            names.add(child.name)
+        elif _is_managed_symlink_adapter_entry(child, global_root):
+            names.add(child.name)
+    return sorted(names)
+
+
 def _adapter_package_integrity(repo_path: Path, global_root: Path) -> list[dict]:
     if not repo_path.is_dir() or repo_path.is_symlink():
         return []
@@ -120,24 +175,41 @@ def _adapter_package_integrity(repo_path: Path, global_root: Path) -> list[dict]
     if marker_mode not in {"symlink", "portable"}:
         return []
     rows: list[dict] = []
+    marker_packages = _adapter_marker_packages(repo_path) or set()
+    managed_children: set[str] = set()
     for child in sorted(repo_path.iterdir()):
         if child.name.startswith("."):
             continue
-        expected = global_root / child.name
+        if marker_mode == "portable" and _is_managed_portable_adapter_entry(child):
+            managed_children.add(child.name)
+        elif _is_managed_symlink_adapter_entry(child, global_root):
+            managed_children.add(child.name)
+    for package_name in sorted(marker_packages | managed_children):
+        child = repo_path / package_name
+        expected = global_root / package_name
         row = {
-            "package": child.name,
+            "package": package_name,
             "path": str(child),
             "expected_target": str(expected),
             "mode": marker_mode,
             "ok": False,
             "reason": None,
         }
+        if not (child.exists() or child.is_symlink()):
+            row["is_symlink"] = False
+            row["is_directory"] = False
+            row["resolved_target"] = None
+            row["reason"] = "adapter marker package is missing"
+            rows.append(row)
+            continue
         if marker_mode == "portable":
             row["is_symlink"] = child.is_symlink()
             row["is_directory"] = child.is_dir()
             row["resolved_target"] = str(child.resolve(strict=False))
-            if child.is_dir() and not child.is_symlink():
+            if _is_managed_portable_adapter_entry(child):
                 row["ok"] = True
+            elif child.is_dir() and not child.is_symlink():
+                row["reason"] = "portable adapter package lacks Localsetup provenance"
             else:
                 row["reason"] = "portable adapter package is not a directory copy"
         elif child.is_symlink():
@@ -175,13 +247,9 @@ def _child_is_managed_adapter_package(
     marker_packages: set[str] | None = None,
 ) -> bool:
     expected = global_root / path.name
-    if marker_packages is not None and path.name not in marker_packages:
-        return False
-    if marker_mode == "portable":
-        return path.is_dir() and not path.is_symlink() and is_managed_package(path)
-    if path.is_symlink():
-        return _symlink_target(path) == expected.resolve(strict=False)
-    return False
+    if marker_mode == "portable" or ((path.parent / ".localsetup-portable").exists() and not (path.parent / ADAPTER_MARKER_JSON).exists()):
+        return _is_managed_portable_adapter_entry(path)
+    return path.is_symlink() and _symlink_target(path) == expected.resolve(strict=False)
 
 
 def adapter_classification(repo_path: Path, global_root: Path, *, known_global_roots: list[Path] | None = None) -> dict:
@@ -206,16 +274,7 @@ def adapter_classification(repo_path: Path, global_root: Path, *, known_global_r
 
     marker = _adapter_marker_state(repo_path)
     marker_mode = marker["mode"]
-    marker_packages: set[str] | None = None
-    marker_path = repo_path / ADAPTER_MARKER_JSON
-    if marker["exists"] and marker_path.is_file():
-        try:
-            marker_payload = json.loads(marker_path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            marker_payload = {}
-        packages = marker_payload.get("packages") if isinstance(marker_payload, dict) else None
-        if isinstance(packages, list):
-            marker_packages = {str(item) for item in packages}
+    marker_packages = _adapter_marker_packages(repo_path)
     visible = [child for child in sorted(repo_path.iterdir()) if not child.name.startswith(".")]
     managed_entries = [
         child.name for child in visible if _child_is_managed_adapter_package(child, global_root, marker_mode, marker_packages)
@@ -342,10 +401,62 @@ def adapter_path_state(repo_path: Path, global_root: Path, *, known_global_roots
         "is_other": is_other,
         "collision_reason": collision_reason,
         "visible_packages": _visible_adapter_packages(repo_path, global_root),
+        "managed_visible_packages": _managed_visible_adapter_packages(repo_path, global_root),
         "package_integrity": package_integrity,
         "package_integrity_ok": not package_integrity_failures,
         "package_integrity_failures": package_integrity_failures,
     }
+
+
+def remove_managed_adapter_entries(
+    repo_path: Path,
+    global_root: Path,
+    *,
+    known_global_roots: list[Path] | None = None,
+    recorded_packages: list[str] | None = None,
+) -> list[str]:
+    removed: list[str] = []
+    state = adapter_path_state(repo_path, global_root, known_global_roots=known_global_roots)
+    if not (repo_path.exists() or repo_path.is_symlink()):
+        return removed
+    if repo_path.is_symlink():
+        if state["points_to_global"] or state["points_to_legacy_global"]:
+            repo_path.unlink()
+            removed.append(str(repo_path))
+        return removed
+    if not repo_path.is_dir():
+        return removed
+
+    marker = _adapter_marker_state(repo_path)
+    marker_mode = marker["mode"]
+    marker_packages = _adapter_marker_packages(repo_path) or set()
+    candidates = set(marker_packages) | {str(name) for name in recorded_packages or [] if _is_safe_adapter_package_name(str(name))}
+    if not candidates:
+        candidates = set(state.get("managed_visible_packages", []))
+    for package_name in sorted(candidates):
+        child = repo_path / package_name
+        if not (child.exists() or child.is_symlink()):
+            continue
+        if _child_is_managed_adapter_package(child, global_root, marker_mode, None):
+            if child.is_symlink() or child.is_file():
+                child.unlink()
+            else:
+                shutil.rmtree(child)
+            removed.append(str(child))
+
+    for metadata_name in [ADAPTER_MARKER_JSON, ".localsetup-portable"]:
+        metadata = repo_path / metadata_name
+        if metadata.exists() and metadata.is_file() and not metadata.is_symlink():
+            metadata.unlink()
+            removed.append(str(metadata))
+
+    try:
+        if repo_path.exists() and repo_path.is_dir() and not any(repo_path.iterdir()):
+            repo_path.rmdir()
+            removed.append(str(repo_path))
+    except OSError:
+        pass
+    return removed
 
 
 def adapter_status(

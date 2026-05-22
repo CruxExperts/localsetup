@@ -125,7 +125,8 @@ def render_agent_prompt(payload: dict[str, Any]) -> str:
             "",
             "## Warnings",
             "",
-            "- Preserve custom skills and same-name adapter content unless explicitly migrated.",
+            "- Preserve custom adapter content in place unless the repo owner explicitly approves migration.",
+            "- Treat same-name custom adapter content as a blocker until explicitly remediated.",
             "- Do not remove protected source roots, dirty framework trees, symlinks, or custom `_localsetup/` content without review.",
         ]
     )

@@ -12,7 +12,7 @@ import tty
 from pathlib import Path
 from typing import Sequence, TextIO
 
-from .adapters import adapter_path_state, legacy_global_roots
+from .adapters import legacy_global_roots, remove_managed_adapter_entries
 from .apply import apply_plan
 from .dependencies import ensure_dependencies
 from .doctor import run_doctor
@@ -1066,20 +1066,16 @@ def _detach_prior_adapters(state: WizardState) -> list[str]:
             path.parent.resolve(strict=False).relative_to(resolved_target)
         except ValueError:
             continue
-        adapter_state = adapter_path_state(path, global_root, known_global_roots=legacy_global_roots(state.home))
         if not (path.exists() or path.is_symlink()):
             continue
-        if not (
-            adapter_state["points_to_global"]
-            or adapter_state["is_scoped_symlink_adapter"]
-            or adapter_state["is_portable_copy"]
-        ):
-            continue
-        if path.is_dir() and not path.is_symlink():
-            shutil.rmtree(path)
-        else:
-            path.unlink()
-        removed.append(str(path))
+        removed.extend(
+            remove_managed_adapter_entries(
+                path,
+                global_root,
+                known_global_roots=legacy_global_roots(state.home),
+                recorded_packages=target.get("packages") if isinstance(target, dict) else None,
+            )
+        )
     return removed
 
 

@@ -25,7 +25,7 @@ owner_skill: ls-framework-compliance
 
 ## Shared home library
 
-Localsetup installs selected skills and workflow packages to `~/.local/share/localsetup/packages`. Repo adapter paths attach to that library only when selected with `--tools` or `--platforms`; omitted selectors are global-only and create no adapters. `--mode portable` creates managed copies instead of symlinks. Rollback uses `.localsetup/lock.json` and removes only managed paths recorded by that install.
+Localsetup installs selected skills and workflow packages to `~/.local/share/localsetup/packages`. Repo adapter paths attach to that library only when selected with `--tools` or `--platforms`; omitted selectors are global-only and create no adapters. Adapter directories are shared surfaces: Localsetup owns the marker and managed package entries it records, not the whole directory by path shape. `--mode portable` creates managed copies instead of symlinks. Rollback uses `.localsetup/lock.json` and removes only managed paths recorded by that install. See [Adapter ownership](ADAPTER_OWNERSHIP.md).
 
 ## Skill registration (new skills)
 

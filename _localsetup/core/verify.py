@@ -105,7 +105,7 @@ def verify_install(
             issues.append(f"adapter does not point at global library: {adapter['repo_path']}")
         expected_packages = sorted(str(name) for name in adapter.get("expected_packages", []) if name)
         if expected_packages:
-            visible_packages = sorted(str(name) for name in adapter.get("visible_packages", []))
+            visible_packages = sorted(str(name) for name in adapter.get("managed_visible_packages", adapter.get("visible_packages", [])))
             ok = visible_packages == expected_packages
             rule_results.append(
                 {
@@ -142,7 +142,7 @@ def verify_install(
         if expected_mode == "portable" and adapter.get("is_portable_copy"):
             digest_mismatches: list[str] = []
             adapter_path = Path(str(adapter["repo_path"]))
-            for package_name in expected_packages or adapter.get("visible_packages", []):
+            for package_name in expected_packages or adapter.get("managed_visible_packages", []):
                 package = str(package_name)
                 local_digest = package_digest(adapter_path / package)
                 global_digest = package_digest(global_root / package)

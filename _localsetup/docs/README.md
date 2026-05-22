@@ -35,6 +35,7 @@ This is the public documentation map for Localsetup. Start here when you want th
 | [Workflow packages](WORKFLOW_PACKAGES.md) | How workflow packages differ from skills, install, validate, and generate docs. |
 | [Workflow package standard](WORKFLOW_STANDARD.md) | Rules for first-class workflow packages and `workflow.yaml`. |
 | [Platform registry](PLATFORM_REGISTRY.md) | Canonical platform IDs, paths, and adapter rules. |
+| [Adapter ownership](ADAPTER_OWNERSHIP.md) | Shared adapter-directory ownership rules for install, repair, verify, detach, rollback, and migration planning. |
 | [Multi-platform install](MULTI_PLATFORM_INSTALL.md) | Detailed install behavior and options. |
 | [Harness automation](HARNESS_AUTOMATION.md) | Opt-in Codex heartbeat activation, runtime artifacts, cron gating, and command-policy boundaries. |
 

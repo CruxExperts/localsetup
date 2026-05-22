@@ -1494,24 +1494,20 @@ def _main(argv: list[str] | None = None) -> int:
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
         target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else root
-        from .adapters import adapter_targets
+        from .adapters import adapter_targets, legacy_global_roots, remove_managed_adapter_entries
         removed = []
         pack = load_pack_config(root)
         global_root = expand_user_path(pack.global_root, home)
         for target in adapter_targets(root, home, platform_ids=config.platforms, target_root=target_root):
             path = target["repo_path"]
-            state = adapter_path_state(path, global_root)
-            if (path.exists() or path.is_symlink()) and (
-                state["points_to_global"]
-                or state["is_scoped_symlink_adapter"]
-                or state["is_portable_copy"]
-            ):
-                if path.is_dir() and not path.is_symlink():
-                    import shutil
-                    shutil.rmtree(path)
-                else:
-                    path.unlink()
-                removed.append(str(path))
+            removed.extend(
+                remove_managed_adapter_entries(
+                    path,
+                    global_root,
+                    known_global_roots=legacy_global_roots(home),
+                    recorded_packages=target.get("packages"),
+                )
+            )
         _print_payload({"removed": removed, "packages_preserved": True})
         return 0
 

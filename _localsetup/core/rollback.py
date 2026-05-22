@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import shutil
 
-from .adapters import ADAPTER_MARKER_JSON, adapter_path_state, legacy_global_roots, validate_platform_selectors
+from .adapters import remove_managed_adapter_entries, legacy_global_roots, validate_platform_selectors
 from .lockfile import load_json
 from .manifests import load_pack_config
 from .paths import expand_user_path, legacy_target_lockfile_path, repo_path, target_lockfile_path
@@ -94,17 +94,7 @@ def rollback(
         if not p.is_absolute():
             p = attachment_root / p
         _require_adapter_under_target_root(p, attachment_root)
-        if p.exists() or p.is_symlink():
-            state = adapter_path_state(p, global_root, known_global_roots=legacy_global_roots(home))
-            if p.is_dir() and not p.is_symlink():
-                if (p / ".localsetup-portable").exists() or (p / ADAPTER_MARKER_JSON).exists():
-                    shutil.rmtree(p)
-                    removed.append(str(p))
-                continue
-            if not state["points_to_global"]:
-                continue
-            p.unlink()
-            removed.append(str(p))
+        removed.extend(remove_managed_adapter_entries(p, global_root, known_global_roots=legacy_global_roots(home)))
 
     if global_root.exists() and not any(global_root.iterdir()):
         global_root.rmdir()

@@ -156,7 +156,7 @@ localsetup doctor repair --target-directory . --repair-mode apply-with-backups -
 
 Safe repair only mutates Localsetup-owned state. It can back up and remove a legacy `_localsetup/` tree only when the target tree is framework-shaped and matches the current source framework contents byte-for-byte. Clean tracked framework trees are backed up, untracked with `git rm -r --cached -- _localsetup`, and then removed from the working tree. Protected source checkouts, symlinks, dirty trees, framework-shaped trees with extra or modified files, and custom `_localsetup/` content are preserved and reported as decisions for migration planning.
 
-Custom repo skills are repo-owned by default. Mixed adapter directories are repaired in place when selected Localsetup-managed entries are safe to update; custom entries are preserved unless they collide by name with a selected Localsetup package.
+Custom repo skills are repo-owned by default. Adapter directories such as `.codex/skills`, `.claude/skills`, `.cursor/skills`, `.kilo/skills`, `.openclaw/skills`, `.opencode/skills`, and historical `.agents/skills` are shared agent surfaces, not exclusive Localsetup-owned directories. Mixed adapter directories are repaired in place when selected Localsetup-managed entries are safe to update. Same-name collisions are reported as decisions or blockers, and custom entries remain preserved in place until the repo owner explicitly chooses a migration or remediation path. See [Adapter ownership](ADAPTER_OWNERSHIP.md).
 
 Health commands surface blocked repairs and handoff prompts:
 

@@ -815,6 +815,69 @@ def test_detach_removes_adapters_and_preserves_packages(tmp_path: Path) -> None:
     assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
 
 
+def test_detach_preserves_custom_adapter_entries(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    tool = root / "_localsetup" / "tools" / "localsetup.py"
+    apply_plan(
+        root,
+        build_install_plan(
+            root,
+            home=home,
+            global_packs=["core"],
+            repo_preset="custom",
+            repo_skills=["localsetup-context"],
+            platform_ids=["codex"],
+        ),
+        home=home,
+    )
+    custom = root / ".codex" / "skills" / "custom-skill"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+
+    completed = subprocess.run(
+        [sys.executable, str(tool), "--repo", str(root), "--home", str(home), "detach", "--tools", "codex"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr + completed.stdout
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom\n"
+    assert not (root / ".codex" / "skills" / "ls-context").exists()
+    assert not (root / ".codex" / "skills" / ".localsetup-adapter.json").exists()
+    assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
+
+
+def test_detach_legacy_portable_adapter_removes_managed_entries_only(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    tool = root / "_localsetup" / "tools" / "localsetup.py"
+    global_root = home / ".local" / "share" / "localsetup" / "packages"
+    managed = global_root / "ls-context"
+    managed.mkdir(parents=True)
+    (managed / MARKER_JSON).write_text("{}\n", encoding="utf-8")
+    adapter = root / ".codex" / "skills"
+    adapter.mkdir(parents=True)
+    (adapter / ".localsetup-portable").write_text("managed_by=localsetup\n", encoding="utf-8")
+    shutil.copytree(managed, adapter / "ls-context")
+    custom = adapter / "custom-skill"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+
+    completed = subprocess.run(
+        [sys.executable, str(tool), "--repo", str(root), "--home", str(home), "detach", "--tools", "codex"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr + completed.stdout
+    assert not (adapter / "ls-context").exists()
+    assert not (adapter / ".localsetup-portable").exists()
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom\n"
+
+
 def test_phase3_command_family_outputs_json(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
@@ -4093,6 +4156,9 @@ def test_wizard_no_repo_rerun_detaches_managed_adapters_and_preserves_global_pac
     )
     assert (root / ".codex" / "skills").is_dir()
     assert (home / ".local/share/localsetup/packages/ls-nodejs-nextjs").is_dir()
+    custom = root / ".codex" / "skills" / "custom-skill"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
 
     output = io.StringIO()
     term = TerminalWizard(
@@ -4108,7 +4174,8 @@ def test_wizard_no_repo_rerun_detaches_managed_adapters_and_preserves_global_pac
     assert code == 0
     assert "Repo Adapters" not in rendered
     assert "Detached adapters" in rendered
-    assert not (root / ".codex" / "skills").exists()
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom\n"
+    assert not (root / ".codex" / "skills" / "ls-context").exists()
     assert (home / ".local/share/localsetup/packages/ls-nodejs-nextjs").is_dir()
     assert lock["global_only"] is True
     assert lock["adapter_targets"] == []
@@ -4634,10 +4701,10 @@ def test_doctor_repair_retires_old_agents_codex_adapter(tmp_path: Path) -> None:
     report = run_repair(root, home=home, target_root=target, apply=True)
 
     assert dry["inferred"]["platforms"] == ["codex"]
-    assert any(action["kind"] == "backup_remove_historical_adapter" for action in dry["actions"])
-    assert not old_adapter.exists()
-    assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
-    assert report["verify"]["ok"] is True
+    assert not any(action["kind"] == "backup_remove_historical_adapter" for action in dry["actions"])
+    assert any(decision["kind"] == "adapter_content" for decision in dry["decisions"])
+    assert report["applied"] is False
+    assert old_adapter.exists()
 
 
 def test_doctor_repair_unmanaged_adapter_content_requires_decision(tmp_path: Path) -> None:
@@ -4664,6 +4731,23 @@ def test_doctor_repair_broken_adapter_symlink_is_recreated(tmp_path: Path) -> No
     adapter = target / ".codex" / "skills"
     adapter.parent.mkdir(parents=True)
     adapter.symlink_to(target / "missing-global", target_is_directory=True)
+
+    report = run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
+
+    assert report["ok"] is False
+    assert any(decision["kind"] == "adapter_collision" for decision in report["decisions"])
+    assert adapter.is_symlink()
+    assert report["verify"] is None
+
+
+def test_doctor_repair_recreates_dangling_managed_root_adapter_symlink(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    global_root = home / ".local" / "share" / "localsetup" / "packages"
+    adapter = target / ".codex" / "skills"
+    adapter.parent.mkdir(parents=True)
+    adapter.symlink_to(global_root / "missing-adapter-root", target_is_directory=True)
 
     report = run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
 
@@ -4801,7 +4885,7 @@ def test_no_selector_install_repairs_legacy_lockfile(tmp_path: Path) -> None:
     assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
 
 
-def test_no_selector_update_repairs_localsetup_owned_broken_adapter(tmp_path: Path) -> None:
+def test_no_selector_update_requires_decision_for_unknown_broken_adapter(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "target"
@@ -4813,11 +4897,11 @@ def test_no_selector_update_repairs_localsetup_owned_broken_adapter(tmp_path: Pa
     completed = run_localsetup_cli(root, home, "update", "--target-directory", str(target))
     payload = json.loads(completed.stdout)
 
-    assert completed.returncode == 0, completed.stderr
+    assert completed.returncode == 1, completed.stderr
     assert payload["auto_mode"] == "repair_required"
-    assert payload["applied"] is True
-    assert not adapter.is_symlink()
-    assert_scoped_adapter(adapter, "ls-context")
+    assert payload["applied"] is False
+    assert any(decision["kind"] == "adapter_collision" for decision in payload["decisions"])
+    assert adapter.is_symlink()
 
 
 def test_no_selector_install_blocks_unmanaged_adapter_without_mutation(tmp_path: Path) -> None:
@@ -5219,6 +5303,153 @@ def test_rollback_reads_legacy_lock_and_removes_relative_managed_adapter(tmp_pat
     assert str(legacy_lock) in result["removed"]
     assert not adapter.exists()
     assert not global_root.exists()
+
+
+def test_rollback_preserves_custom_adapter_entries(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    apply_plan(
+        root,
+        build_install_plan(
+            root,
+            home=home,
+            global_packs=["core"],
+            repo_preset="custom",
+            repo_skills=["localsetup-context"],
+            platform_ids=["codex"],
+        ),
+        home=home,
+        dry_run=False,
+    )
+    adapter = root / ".codex" / "skills"
+    custom = adapter / "custom-skill"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+
+    result = rollback(root, home=home)
+
+    assert str(adapter / "ls-context") in result["removed"]
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom\n"
+    assert not (adapter / ".localsetup-adapter.json").exists()
+    assert not (adapter / "ls-context").exists()
+
+
+def test_rollback_legacy_portable_adapter_removes_managed_entries_only(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    global_root = home / ".local" / "share" / "localsetup" / "packages"
+    managed = global_root / "ls-context"
+    managed.mkdir(parents=True)
+    (managed / MARKER_JSON).write_text("{}\n", encoding="utf-8")
+    adapter = root / ".codex" / "skills"
+    adapter.mkdir(parents=True)
+    (adapter / ".localsetup-portable").write_text("managed_by=localsetup\n", encoding="utf-8")
+    shutil.copytree(managed, adapter / "ls-context")
+    custom = adapter / "custom-skill"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+    lock = root / ".localsetup" / "lock.json"
+    lock.parent.mkdir()
+    lock.write_text(
+        json.dumps(
+            {
+                "installed_skills": [],
+                "installed_workflows": [],
+                "adapter_state": [str(adapter)],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = rollback(root, home=home)
+
+    assert str(adapter / "ls-context") in result["removed"]
+    assert not (adapter / "ls-context").exists()
+    assert not (adapter / ".localsetup-portable").exists()
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom\n"
+
+
+def test_managed_adapter_removal_ignores_unsafe_marker_package_names(tmp_path: Path) -> None:
+    from _localsetup.core.adapters import ADAPTER_MARKER_JSON, remove_managed_adapter_entries
+
+    global_root = tmp_path / "global"
+    managed = global_root / "ls-context"
+    managed.mkdir(parents=True)
+    (managed / MARKER_JSON).write_text("{}\n", encoding="utf-8")
+    adapter = tmp_path / "adapter"
+    adapter.mkdir()
+    (adapter / ADAPTER_MARKER_JSON).write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "managed_by": "localsetup",
+                "mode": "symlink",
+                "packages": ["ls-context", "../outside-link", "nested/name", str(tmp_path / "absolute-link")],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (adapter / "ls-context").symlink_to(managed, target_is_directory=True)
+    outside_link = tmp_path / "outside-link"
+    outside_link.symlink_to(managed, target_is_directory=True)
+    absolute_link = tmp_path / "absolute-link"
+    absolute_link.symlink_to(managed, target_is_directory=True)
+
+    removed = remove_managed_adapter_entries(
+        adapter,
+        global_root,
+        recorded_packages=["../outside-link", "nested/name", str(absolute_link)],
+    )
+
+    assert str(adapter / "ls-context") in removed
+    assert outside_link.is_symlink()
+    assert absolute_link.is_symlink()
+    assert not (adapter / "ls-context").exists()
+
+
+def test_adapter_update_ignores_unsafe_old_marker_package_names(tmp_path: Path) -> None:
+    from _localsetup.core.adapters import ADAPTER_MARKER_JSON
+
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    global_root = home / ".local" / "share" / "localsetup" / "packages"
+    managed = global_root / "ls-context"
+    managed.mkdir(parents=True)
+    (managed / MARKER_JSON).write_text("{}\n", encoding="utf-8")
+    (global_root / "outside-link").mkdir()
+    (global_root / "absolute-link").mkdir()
+    adapter = root / ".codex" / "skills"
+    adapter.mkdir(parents=True)
+    (adapter / ADAPTER_MARKER_JSON).write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "managed_by": "localsetup",
+                "mode": "symlink",
+                "packages": ["ls-context", "../outside-link", "nested/name", str(tmp_path / "absolute-link")],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (adapter / "ls-context").symlink_to(managed, target_is_directory=True)
+    outside_link = root / ".codex" / "outside-link"
+    outside_link.symlink_to(global_root / "outside-link", target_is_directory=True)
+    absolute_link = tmp_path / "absolute-link"
+    absolute_link.symlink_to(global_root / "absolute-link", target_is_directory=True)
+
+    plan = build_install_plan(
+        root,
+        home=home,
+        global_packs=["core"],
+        repo_preset="custom",
+        repo_skills=["localsetup-context"],
+        platform_ids=["codex"],
+    )
+    apply_plan(root, plan, home=home, dry_run=False)
+
+    assert outside_link.is_symlink()
+    assert absolute_link.is_symlink()
+    assert (adapter / "ls-context").is_symlink()
 
 
 def test_repo_path_rejects_symlink_parent_escape(tmp_path: Path) -> None:
@@ -5722,17 +5953,17 @@ def test_adapter_state_edge_cases_cover_markers_symlinks_and_child_types(tmp_pat
     state = apply_mod.adapter_path_state(adapter, global_root)
     assert state["package_integrity_failures"][0]["reason"] == "adapter marker is not a JSON object"
 
-    (adapter / ".localsetup-adapter.json").write_text('{"mode": "symlink"}', encoding="utf-8")
+    (adapter / ".localsetup-adapter.json").write_text('{"mode": "symlink", "packages": ["ls-context"]}', encoding="utf-8")
     (adapter / "ls-context").mkdir()
     (adapter / "plain.txt").write_text("plain\n", encoding="utf-8")
     integrity = apply_mod.adapter_path_state(adapter, global_root)["package_integrity_failures"]
     reasons = {row["reason"] for row in integrity}
     assert "symlink adapter package is not a symlink" in reasons
-    assert "adapter package is not a supported filesystem node" in reasons
+    assert "adapter package is not a supported filesystem node" not in reasons
 
     portable = tmp_path / "portable"
     portable.mkdir()
-    (portable / ".localsetup-adapter.json").write_text('{"mode": "portable"}', encoding="utf-8")
+    (portable / ".localsetup-adapter.json").write_text('{"mode": "portable", "packages": ["ls-context"]}', encoding="utf-8")
     (portable / "ls-context").symlink_to(global_root / "ls-context", target_is_directory=True)
     portable_failures = apply_mod.adapter_path_state(portable, global_root)["package_integrity_failures"]
     assert portable_failures[0]["reason"] == "portable adapter package is not a directory copy"
@@ -6641,6 +6872,36 @@ def test_mixed_managed_adapter_preserves_custom_skill(tmp_path: Path) -> None:
     apply_plan(root, plan, home=home, dry_run=False)
     assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom\n"
     assert (root / ".codex" / "skills" / "ls-context").exists()
+
+
+def test_mixed_managed_adapter_custom_sidecar_does_not_fail_verify_or_doctor(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    plan = build_install_plan(
+        root,
+        home=home,
+        global_packs=["core"],
+        repo_preset="custom",
+        repo_skills=["localsetup-context"],
+        platform_ids=["codex"],
+    )
+    apply_plan(root, plan, home=home, dry_run=False)
+    custom = root / ".codex" / "skills" / "custom-skill"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+
+    verify = verify_install(root, home=home, platform_ids=["codex"])
+    doctor = run_doctor(root, home=home, platform_ids=["codex"])
+
+    adapter = verify["adapters"][0]
+    assert verify["ok"] is True
+    assert adapter["status_code"] == "mixed_managed_custom_adapter"
+    assert adapter["visible_packages"] == ["custom-skill", "ls-context"]
+    assert adapter["managed_visible_packages"] == ["ls-context"]
+    assert adapter["custom_entries"] == ["custom-skill"]
+    assert adapter["package_integrity_ok"] is True
+    assert doctor["adapter_collisions"] == []
+    assert not any("adapter package target mismatch" in blocker for blocker in doctor["blockers"])
 
 
 def test_in_place_adapter_update_removes_deselected_managed_packages(tmp_path: Path) -> None:
