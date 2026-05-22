@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 from textwrap import dedent
+
+import pytest
 
 SCRIPT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPT_ROOT))
@@ -73,6 +76,109 @@ def test_read_facts_version_uses_top_level_version(tmp_path: Path) -> None:
     )
 
     assert audit._read_facts_version(tmp_path) == "3.8.6"
+
+
+def test_framework_root_resolves_installed_package_source_layout(tmp_path: Path) -> None:
+    installed_script_dir = tmp_path / "localsetup" / "packages" / "ls-framework-audit" / "scripts"
+    installed_script_dir.mkdir(parents=True)
+    framework = tmp_path / "localsetup" / "source" / "_localsetup"
+    (framework / "lib").mkdir(parents=True)
+    (framework / "lib" / "deps.py").write_text("# placeholder\n", encoding="utf-8")
+
+    assert audit._select_framework_root(installed_script_dir) == framework.resolve()
+
+
+def test_installed_package_script_imports_support_lib_from_source_layout(tmp_path: Path) -> None:
+    installed_script_dir = tmp_path / "localsetup" / "packages" / "ls-framework-audit" / "scripts"
+    installed_script_dir.mkdir(parents=True)
+    script = installed_script_dir / "run_framework_audit.py"
+    shutil.copy2(SCRIPT_ROOT / "run_framework_audit.py", script)
+    framework = tmp_path / "localsetup" / "source" / "_localsetup"
+    (framework / "lib").mkdir(parents=True)
+    (framework / "lib" / "deps.py").write_text(
+        "def require_deps(names):\n    return None\n",
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [sys.executable, str(script), "--help"],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+
+    assert result.returncode == 0
+    assert "--repo-root" in result.stdout
+    assert "--framework-root" in result.stdout
+
+
+def test_repo_root_defaults_to_caller_cwd_with_repo_marker(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    repo = tmp_path / "consumer"
+    nested = repo / "tools"
+    (repo / ".localsetup").mkdir(parents=True)
+    (repo / ".localsetup" / "lock.json").write_text("{}\n", encoding="utf-8")
+    nested.mkdir()
+    monkeypatch.chdir(nested)
+
+    assert audit._repo_root() == repo.resolve()
+
+
+def test_repo_root_from_framework_subdirectory_uses_containing_repo(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    repo = tmp_path / "repo"
+    script_dir = repo / "_localsetup" / "skills" / "ls-framework-audit" / "scripts"
+    script_dir.mkdir(parents=True)
+    (repo / "_localsetup" / "README.md").write_text("# Framework\n", encoding="utf-8")
+    (repo / "README.md").write_text("# Repo\n", encoding="utf-8")
+    monkeypatch.chdir(script_dir)
+
+    assert audit._repo_root() == repo.resolve()
+
+
+def test_main_honors_explicit_repo_root_and_framework_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    repo = tmp_path / "consumer"
+    framework = tmp_path / "framework" / "_localsetup"
+    repo.mkdir()
+    framework.mkdir(parents=True)
+    seen: dict[str, tuple[Path, ...]] = {}
+
+    def fake_doc_checks(root: Path, fw: Path) -> list[str]:
+        seen["doc"] = (root, fw)
+        return []
+
+    monkeypatch.setattr(audit, "phase_doc_checks", fake_doc_checks)
+    monkeypatch.setattr(audit, "phase_link_checks", lambda root: [])
+    monkeypatch.setattr(audit, "phase_skill_matrix", lambda root, fw: ([], []))
+    monkeypatch.setattr(audit, "phase_version_facts", lambda root: ([], []))
+    monkeypatch.setattr(audit, "phase_maintainer_refs", lambda root: [])
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "run_framework_audit.py",
+            "--repo-root",
+            str(repo),
+            "--framework-root",
+            str(framework),
+        ],
+    )
+
+    assert audit.main() == 0
+    assert capsys.readouterr().out.strip() == "Errors: 0, Warnings: 0"
+    assert seen["doc"] == (repo.resolve(), framework.resolve())
+
+
+def test_doc_checks_distinguish_target_and_framework_missing_paths(tmp_path: Path) -> None:
+    repo = tmp_path / "consumer"
+    framework = tmp_path / "framework" / "_localsetup"
+    repo.mkdir()
+    framework.mkdir(parents=True)
+
+    errors = audit.phase_doc_checks(repo, framework)
+
+    assert "Missing target repo doc/path: VERSION" in errors
+    assert "Missing target repo doc/path: README.md" in errors
+    assert "Missing framework source doc/path: docs/VERSIONING.md" in errors
+    assert "Missing framework source doc/path: README.md" in errors
 
 
 def test_skill_matrix_requires_one_smoke_row_per_skill(tmp_path: Path) -> None:

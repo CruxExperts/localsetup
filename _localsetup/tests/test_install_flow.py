@@ -478,6 +478,36 @@ def test_platform_selector_limits_adapters(tmp_path: Path) -> None:
         rollback(root, home, platform_ids=["codex"])
 
 
+def test_adapters_accepts_explicit_json_flag_with_platform_filter(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    home.mkdir(parents=True, exist_ok=True)
+
+    apply_plan(
+        root,
+        build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"]),
+        home=home,
+    )
+
+    code = cli_mod._main(
+        [
+            "--source-root",
+            str(root),
+            "--home",
+            str(home),
+            "adapters",
+            "--json",
+            "--platforms",
+            "codex",
+        ]
+    )
+    output = capsys.readouterr().out
+
+    assert code == 0
+    payload = json.loads(output)
+    assert {adapter["platform"] for adapter in payload} == {"codex"}
+
+
 def test_multi_platform_selector_attaches_only_requested_adapters(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"

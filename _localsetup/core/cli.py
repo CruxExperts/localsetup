@@ -569,6 +569,7 @@ def _main(argv: list[str] | None = None) -> int:
     adapters_p = sub.add_parser("adapters")
     adapters_p.add_argument("--target-directory", default=argparse.SUPPRESS)
     adapters_p.add_argument("--platforms", "--tools", nargs="*", dest="platforms")
+    adapters_p.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     adapters_p.add_argument("--provenance", action="store_true")
     configure_p = sub.add_parser("configure")
     _add_config_flags(configure_p)
