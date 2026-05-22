@@ -28,14 +28,15 @@ class LLMClient:
             headers["OpenAI-Project"] = self.config.project
         return headers
 
-    def _payload(self, prompt: str) -> dict[str, Any]:
+    def _payload(self, prompt: str, response_schema: dict[str, Any] | None = None, schema_name: str = "qc_pr_review") -> dict[str, Any]:
         prompt = redact_text(prompt)
+        schema = response_schema or LLM_REVIEW_SCHEMA
         structured_output = {
             "type": "json_schema",
             "json_schema": {
-                "name": "qc_pr_review",
+                "name": schema_name,
                 "strict": True,
-                "schema": LLM_REVIEW_SCHEMA,
+                "schema": schema,
             },
         }
         if self.config.api_style == "responses":
@@ -47,9 +48,9 @@ class LLMClient:
                 "text": {
                     "format": {
                         "type": "json_schema",
-                        "name": "qc_pr_review",
+                        "name": schema_name,
                         "strict": True,
-                        "schema": LLM_REVIEW_SCHEMA,
+                        "schema": schema,
                     }
                 },
             }
@@ -61,7 +62,7 @@ class LLMClient:
             "response_format": structured_output,
         }
 
-    def complete(self, prompt: str) -> str:
+    def complete(self, prompt: str, response_schema: dict[str, Any] | None = None, schema_name: str = "qc_pr_review") -> str:
         if not self.config.base_url:
             raise LLMDisabled("QC_LLM_BASE_URL is not configured")
         url = self.config.base_url.rstrip("/")
@@ -70,7 +71,7 @@ class LLMClient:
         last_error: Exception | None = None
         for attempt in range(self.config.retry_count + 1):
             try:
-                response = requests.post(url, headers=self._headers(), json=self._payload(prompt), timeout=self.config.timeout_seconds)
+                response = requests.post(url, headers=self._headers(), json=self._payload(prompt, response_schema, schema_name), timeout=self.config.timeout_seconds)
                 response.raise_for_status()
                 data = response.json()
                 if self.config.api_style == "responses":

@@ -6,12 +6,16 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: read
   issues: write
 
 concurrency:
   group: qc-patrol
   cancel-in-progress: false
+
+env:
+  QC_PATROL_AI_MODE: ${{ vars.QC_PATROL_AI_MODE || 'off' }}
 
 jobs:
   patrol:
@@ -32,6 +36,18 @@ jobs:
       - name: Sync dependencies
         run: uv sync --frozen --all-groups --python python3
 
+      - name: Download previous patrol baseline
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p qc-baseline
+          run_id="$(gh run list --repo "$REPOSITORY" --workflow qc-patrol.yml --status success --limit 10 --json databaseId,headSha --jq '.[] | select(.headSha != "${{ github.sha }}") | .databaseId' | head -n 1 || true)"
+          if [ -n "$run_id" ]; then
+            gh run download "$run_id" --repo "$REPOSITORY" --pattern 'qc-patrol-*' --dir qc-baseline || true
+          fi
+
       - name: Ensure QC labels exist
         env:
           GH_TOKEN: ${{ github.token }}
@@ -48,6 +64,7 @@ jobs:
           qc/category/release|fef2c0|QC release category
           qc/category/docs|fef2c0|QC docs category
           qc/category/pr_review|fef2c0|QC PR review category
+          qc/category/inventory|fef2c0|QC inventory category
           qc/severity/low|c2e0c6|Low severity QC finding
           qc/severity/medium|fbca04|Medium severity QC finding
           qc/severity/high|d93f0b|High severity QC finding
@@ -57,7 +74,14 @@ jobs:
       - name: Run patrol
         env:
           GH_TOKEN: ${{ github.token }}
-        run: uv run --frozen python tools/qc_patrol/cli.py patrol --repo . --out qc-out --write-issues
+        run: |
+          set -euo pipefail
+          baseline="$(find qc-baseline -name inventory.json -type f | head -n 1 || true)"
+          args=(patrol --repo . --out qc-out --write-issues --ai-mode "$QC_PATROL_AI_MODE")
+          if [ -n "$baseline" ]; then
+            args+=(--baseline "$baseline")
+          fi
+          uv run --frozen python tools/qc_patrol/cli.py "${args[@]}"
 
       - name: Upload QC artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

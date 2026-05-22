@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema_version", "adjudications"],
+  "additionalProperties": true,
+  "properties": {
+    "schema_version": { "const": "qc.ai-adjudication.v1" },
+    "adjudications": {
+      "type": "array",
+      "items": { "$ref": "ai-adjudication.schema.json" }
+    }
+  }
+}

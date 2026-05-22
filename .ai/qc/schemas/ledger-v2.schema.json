@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema_version", "command", "ok", "created_at_unix", "head_sha", "deterministic_findings", "ai_findings", "artifacts", "ai_mode"],
+  "additionalProperties": true,
+  "properties": {
+    "schema_version": { "const": "qc.ledger.v2" },
+    "command": { "type": "string" },
+    "ok": { "type": "boolean" },
+    "created_at_unix": { "type": "integer" },
+    "head_sha": { "type": "string" },
+    "deterministic_findings": { "type": "array" },
+    "ai_findings": { "type": "array" },
+    "artifacts": { "type": "object" },
+    "ai_mode": { "type": "string", "enum": ["off", "packets"] }
+  }
+}

@@ -5,22 +5,28 @@ import json
 import tarfile
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any
 
 import pytest
 import yaml
 
+from tools.qc_patrol.adjudication import adjudicate_packets, ai_findings_from_adjudications, build_packet_prompt
 from tools.qc_patrol.chunking import chunk_text
 from tools.qc_patrol.cli import build_pr_review_prompt
 from tools.qc_patrol.cli import main as qc_main
 from tools.qc_patrol.config import load_config
 from tools.qc_patrol.diff_reader import read_diff
+from tools.qc_patrol.drift import build_drift_packets, load_baseline
 from tools.qc_patrol.deterministic_checks import QC_WORKFLOWS, check_release_exclusions, scan_workflow_permissions
 from tools.qc_patrol.docs_drift import docs_alignment_findings
-from tools.qc_patrol.issue_writer import extract_handoff, find_duplicate, fingerprint_for, issue_body
+from tools.qc_patrol.issue_writer import extract_handoff, find_duplicate, fingerprint_for, issue_body, issue_policy
 from tools.qc_patrol.llm_client import LLMClient, LLMDisabled
+from tools.qc_patrol.markdown_versions import markdown_version_packets
 from tools.qc_patrol.pr_writer import plan_autofix
 from tools.qc_patrol.redaction import redact_text
+from tools.qc_patrol.repo_inventory import build_inventory
 from tools.qc_patrol.review_contracts import parse_strict_json
+from tools.qc_patrol.schemas import AI_ADJUDICATION_SCHEMA
 
 
 REPO = Path(__file__).resolve().parents[2]
@@ -88,6 +94,156 @@ def test_fingerprint_stability_and_duplicate_matching() -> None:
     assert duplicate and duplicate["number"] == 7
 
 
+def test_inventory_v2_classifies_core_surfaces() -> None:
+    inventory = build_inventory(REPO)
+    assert inventory["schema_version"] == "qc.inventory.v2"
+    assert inventory["tracked_file_count"] > 0
+    surfaces = inventory["surfaces"]
+    assert any(row["path"] == ".github/workflows/qc-patrol.yml" for row in surfaces["workflows"])
+    assert any(row["path"] == "pyproject.toml" and row["version"] for row in surfaces["packages"])
+    assert surfaces["registry_catalog_metadata"]["pack_config"] is True
+    assert inventory["version_truth"]["value"] == (REPO / "VERSION").read_text(encoding="utf-8").strip()
+
+
+def test_drift_packets_detect_changed_manifests() -> None:
+    current = {
+        "schema_version": "qc.inventory.v2",
+        "tracked_file_count": 2,
+        "files": [{"path": "pyproject.toml", "hash": "new"}, {"path": ".github/workflows/qc-patrol.yml", "hash": "wf"}],
+        "surfaces": {"workflows": [{"path": ".github/workflows/qc-patrol.yml"}], "generated_artifacts": []},
+    }
+    baseline = {
+        "schema_version": "qc.inventory.v2",
+        "files": [{"path": "pyproject.toml", "hash": "old"}],
+        "surfaces": {"workflows": [], "generated_artifacts": []},
+    }
+    packets = build_drift_packets(current, baseline)["packets"]
+    kinds = {packet["kind"] for packet in packets}
+    assert "shape.manifests_changed" in kinds
+    assert "shape.workflows_added" in kinds
+
+
+def test_markdown_version_packets_ignore_historical_contexts(tmp_path: Path) -> None:
+    current = tmp_path / "README.md"
+    current.write_text("Install Localsetup 1.2.3 today.\n", encoding="utf-8")
+    changelog = tmp_path / "CHANGELOG.md"
+    changelog.write_text("Released 1.2.3 historically.\n", encoding="utf-8")
+    inventory = {
+        "version_truth": {"value": "4.0.11"},
+        "surfaces": {
+            "version_references": [
+                {"path": "README.md", "line": 1, "value": "1.2.3", "doc_class": "public"},
+                {"path": "CHANGELOG.md", "line": 1, "value": "1.2.3", "doc_class": "public"},
+            ]
+        },
+    }
+    packets = markdown_version_packets(tmp_path, inventory)["packets"]
+    assert len(packets) == 1
+    assert packets[0]["affected_paths"] == ["README.md"]
+
+
+def test_ai_adjudication_schema_accepts_packet_result() -> None:
+    payload = {
+        "packet_id": "markdown.version_reference_drift:abc",
+        "finding": "README has stale Localsetup version",
+        "confidence": 0.9,
+        "category": "docs",
+        "severity": "high",
+        "affected_paths": ["README.md"],
+        "evidence": ["README.md:1"],
+        "is_actionable": True,
+        "recommended_action": "Update the current-facing version reference.",
+        "suggested_rule": None,
+        "should_create_issue": True,
+        "why_deterministic_checks_could_not_decide": "The line may be historical.",
+    }
+    assert parse_strict_json(json.dumps(payload), schema=AI_ADJUDICATION_SCHEMA) == payload
+
+
+def test_checked_in_ai_adjudication_schema_matches_runtime() -> None:
+    checked_in = json.loads((REPO / ".ai/qc/schemas/ai-adjudication.schema.json").read_text(encoding="utf-8"))
+    assert checked_in == AI_ADJUDICATION_SCHEMA
+    prompt = (REPO / ".ai/qc/prompts/patrol.md").read_text(encoding="utf-8")
+    assert "single-object schema in `ai-adjudication.schema.json`" in prompt
+
+
+def test_packet_prompt_redacts_urls() -> None:
+    prompt = build_packet_prompt(
+        {
+            "packet_id": "p1",
+            "affected_paths": ["README.md"],
+            "snippets": [{"text": "See https://example.test/private"}],
+        }
+    )
+    assert "example.test" not in prompt
+    assert "[REDACTED_URL]" in prompt
+
+
+def test_adjudicate_packets_uses_strict_schema_with_fake_client(tmp_path: Path) -> None:
+    class FakeClient:
+        def complete(self, _prompt: str, response_schema: dict[str, Any] | None = None, schema_name: str = "qc") -> str:
+            assert response_schema == AI_ADJUDICATION_SCHEMA
+            assert schema_name == "qc_ai_adjudication"
+            return json.dumps(
+                {
+                    "packet_id": "p1",
+                    "finding": "README has stale version",
+                    "confidence": 0.95,
+                    "category": "docs",
+                    "severity": "high",
+                    "affected_paths": ["README.md"],
+                    "evidence": ["packet evidence"],
+                    "is_actionable": True,
+                    "recommended_action": "Update README.",
+                    "suggested_rule": None,
+                    "should_create_issue": True,
+                    "why_deterministic_checks_could_not_decide": "Historical context was ambiguous.",
+                }
+            )
+
+    packets = {"schema_version": "qc.drift-packets.v1", "packets": [{"packet_id": "p1", "affected_paths": ["README.md"]}]}
+    result = adjudicate_packets(packets, FakeClient(), tmp_path)
+    assert result["adjudications"][0]["packet_id"] == "p1"
+    findings = ai_findings_from_adjudications(result)
+    assert findings[0]["check_type"] == "ai_packet_adjudication"
+    assert findings[0]["should_create_issue"] is True
+
+
+def test_adjudicate_packets_records_invalid_json_errors(tmp_path: Path) -> None:
+    class FakeClient:
+        def complete(self, *_args: object, **_kwargs: object) -> str:
+            return "not json"
+
+    packets = {"schema_version": "qc.drift-packets.v1", "packets": [{"packet_id": "p1"}]}
+    result = adjudicate_packets(packets, FakeClient(), tmp_path)
+    assert result["adjudications"] == []
+    assert result["errors"][0]["packet_id"] == "p1"
+    assert (tmp_path / "llm-error.json").exists()
+
+
+def test_issue_policy_is_conservative() -> None:
+    assert issue_policy(_finding(), mode="conservative")[0] is True
+    medium = {**_finding(), "severity": "medium"}
+    assert issue_policy(medium, mode="conservative") == (False, "deterministic_below_issue_threshold")
+    assert issue_policy(medium) == (True, "legacy_issue_behavior")
+    ai_medium = {**_finding(), "check_type": "ai_packet_adjudication", "confidence": 0.7, "is_actionable": True, "should_create_issue": True, "evidence": ["packet"]}
+    assert issue_policy(ai_medium, mode="conservative") == (False, "ai_artifact_only")
+    ai_high = {**ai_medium, "severity": "high", "confidence": 0.95}
+    assert issue_policy(ai_high, mode="conservative") == (True, "ai_high_confidence_actionable")
+
+
+def test_load_baseline_ignores_malformed_json(tmp_path: Path) -> None:
+    malformed = tmp_path / "inventory.json"
+    malformed.write_text("{", encoding="utf-8")
+    assert load_baseline(malformed) is None
+
+
+def test_drift_packets_ignore_malformed_file_rows() -> None:
+    current = {"schema_version": "qc.inventory.v2", "files": [{"path": "README.md"}], "surfaces": {"workflows": [], "generated_artifacts": []}}
+    packets = build_drift_packets(current, {"schema_version": "qc.inventory.v2", "files": [], "surfaces": {}})
+    assert packets["packets"] == []
+
+
 def test_workflow_permission_scan_accepts_qc_workflows() -> None:
     findings = scan_workflow_permissions(REPO)
     high_titles = {finding["title"] for finding in findings if finding["severity"] in {"high", "critical"}}
@@ -118,6 +274,10 @@ def test_new_qc_workflow_static_contracts() -> None:
         assert "permissions" in data, workflow
         text = workflow.read_text(encoding="utf-8")
         assert "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" in text
+        if workflow.name == "qc-patrol.yml":
+            assert data["permissions"]["actions"] == "read"
+            assert "qc/category/inventory" in text
+            assert "--ai-mode \"$QC_PATROL_AI_MODE\"" in text
         if workflow.name == "qc-pr-review.yml":
             assert "github.event.pull_request.head.repo.full_name == github.repository" in text
             assert "repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}" in text

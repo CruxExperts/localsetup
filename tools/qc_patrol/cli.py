@@ -9,18 +9,22 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from tools.qc_patrol.chunking import chunk_text
+from tools.qc_patrol.adjudication import adjudicate_packets, ai_findings_from_adjudications, rule_suggestions_from_adjudications
 from tools.qc_patrol.config import load_config
 from tools.qc_patrol.deterministic_checks import run_deterministic
 from tools.qc_patrol.diff_reader import fetch_ref, read_diff
 from tools.qc_patrol.docs_drift import docs_alignment_findings
+from tools.qc_patrol.drift import build_drift_packets, load_baseline, summarize_drift
 from tools.qc_patrol.issue_writer import write_issues
-from tools.qc_patrol.ledger import build_ledger, write_json
+from tools.qc_patrol.ledger import build_ledger, build_ledger_v2, write_json
 from tools.qc_patrol.llm_client import LLMClient, LLMDisabled
+from tools.qc_patrol.markdown_versions import markdown_version_packets
 from tools.qc_patrol.pr_writer import plan_autofix
 from tools.qc_patrol.redaction import redact_text
 from tools.qc_patrol.release_writer import release_readiness
 from tools.qc_patrol.repo_inventory import build_inventory
 from tools.qc_patrol.review_contracts import parse_strict_json
+from tools.qc_patrol.schemas import DRIFT_PACKETS_SCHEMA, validate_payload
 
 
 def build_pr_review_prompt(chunks: list[dict[str, object]], findings: list[dict[str, object]]) -> str:
@@ -97,9 +101,56 @@ def cmd_pr_review(args: argparse.Namespace) -> int:
 def cmd_patrol(args: argparse.Namespace) -> int:
     repo = _repo(args)
     out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    config = load_config(repo)
+    inventory = build_inventory(repo)
+    write_json(out / "inventory.json", inventory)
+    baseline = load_baseline(Path(args.baseline).resolve() if args.baseline else None)
+    drift_packets = build_drift_packets(inventory, baseline)
+    markdown_packets = markdown_version_packets(repo, inventory)
+    drift_packets["packets"].extend(markdown_packets["packets"])
+    drift_errors = validate_payload(drift_packets, DRIFT_PACKETS_SCHEMA)
+    if drift_errors:
+        raise ValueError("invalid merged QC drift packets: " + "; ".join(drift_errors))
+    write_json(out / "drift-packets.json", drift_packets)
+    ai_adjudications = {"schema_version": "qc.ai-adjudication.v1", "adjudications": [], "errors": []}
+    if args.ai_mode == "packets" and drift_packets["packets"]:
+        ai_adjudications = adjudicate_packets(drift_packets, LLMClient(config.llm), out)
+    write_json(out / "ai-adjudications.json", ai_adjudications)
+    rule_suggestions = rule_suggestions_from_adjudications(ai_adjudications)
+    write_json(out / "rule-suggestions.json", rule_suggestions)
     findings = run_deterministic(repo, "ci")
-    issue_results = write_issues(findings, load_config(repo).labels, dry_run=not args.write_issues) if findings else []
-    write_json(out / "ledger.json", build_ledger("patrol", findings, issue_results=issue_results))
+    ai_findings = ai_findings_from_adjudications(ai_adjudications)
+    issue_results = (
+        write_issues([*findings, *ai_findings], config.labels, dry_run=not args.write_issues, policy_mode="conservative")
+        if findings or ai_findings
+        else []
+    )
+    artifacts = {
+        "inventory": "inventory.json",
+        "drift_packets": "drift-packets.json",
+        "ai_adjudications": "ai-adjudications.json",
+        "rule_suggestions": "rule-suggestions.json",
+        "ledger": "ledger.json",
+    }
+    ledger = build_ledger_v2(
+        "patrol",
+        findings,
+        head_sha=str(inventory.get("head_sha", "")),
+        ai_mode=args.ai_mode,
+        ai_findings=ai_findings,
+        issue_results=issue_results,
+        artifacts=artifacts,
+        baseline={"path": args.baseline, "loaded": baseline is not None},
+        inventory_summary={
+            "tracked_file_count": inventory.get("tracked_file_count", 0),
+            "docs": len((inventory.get("surfaces") or {}).get("docs", [])),
+            "workflows": len((inventory.get("surfaces") or {}).get("workflows", [])),
+        },
+        drift_summary=summarize_drift(drift_packets),
+        rule_suggestions=rule_suggestions,
+    )
+    write_json(out / "ledger.json", ledger)
     return 0
 
 
@@ -144,7 +195,14 @@ def build_parser() -> argparse.ArgumentParser:
     pr_review.add_argument("--out", required=True)
     pr_review.add_argument("--llm-mode", choices=["auto", "off"], default="auto")
     pr_review.set_defaults(func=cmd_pr_review)
-    for name, func in [("patrol", cmd_patrol), ("docs-drift", cmd_docs_drift)]:
+    patrol = sub.add_parser("patrol")
+    patrol.add_argument("--repo", default=".")
+    patrol.add_argument("--out", required=True)
+    patrol.add_argument("--write-issues", action="store_true")
+    patrol.add_argument("--baseline", default="")
+    patrol.add_argument("--ai-mode", choices=["off", "packets"], default="off")
+    patrol.set_defaults(func=cmd_patrol)
+    for name, func in [("docs-drift", cmd_docs_drift)]:
         command = sub.add_parser(name)
         command.add_argument("--repo", default=".")
         command.add_argument("--out", required=True)
