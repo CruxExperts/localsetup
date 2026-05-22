@@ -123,8 +123,8 @@
     "workflow"
   ],
   "counts": {
-    "docs": 346,
-    "framework_docs": 57,
+    "docs": 347,
+    "framework_docs": 58,
     "generated_docs": 4,
     "platforms": 6,
     "public_docs": 6,
@@ -284,6 +284,16 @@
       "path": "_localsetup/README.md",
       "status": "",
       "version": ""
+    },
+    {
+      "class": "framework",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "ls-framework-compliance",
+      "path": "_localsetup/docs/ADAPTER_OWNERSHIP.md",
+      "status": "ACTIVE",
+      "version": "4.0"
     },
     {
       "class": "framework",
@@ -3640,16 +3650,16 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "f72d7dfd63ececcba45d9a61eb941ebee81a8ed38b8c9f0809cc2d174653e1cb",
+    "artifact_sha256": "544cf86c9da9f0a1d797a168fa60baffe5e8019455f2d162c34bb6fe94bcf110",
     "emitter": "docs-align",
-    "framework_version": "4.0.14",
+    "framework_version": "4.0.15",
     "schema_version": 1,
-    "source_commit": "5a1c72ea52718584bb25d331fb8c28044ebce34c",
+    "source_commit": "8ba47f3dba5562db170dd14168a17b23a7a3b34c",
     "source_dirty": true,
-    "source_provenance_hash": "537e26df89abe622ad5767994f03aa57f282d402a0e77dfc988c41142767d707",
-    "source_root_id": "aebbfc1b71276916f2d594be2c84f30eff9e408bd34c505d2eead361368b4c0f",
+    "source_provenance_hash": "6cfd7fc8688d003ac174cd81fb280c5726cc447834417b06b8eacc635851abd7",
+    "source_root_id": "ca3d1d8a98cfc2c078446a6342664de29543a44c8790ec0acb8a1951723e223e",
     "source_tag": null,
-    "source_tree_sha": "1bcbc181b34d3bc8dce88e86580da8034e899590"
+    "source_tree_sha": "b9cddd781ae8e4cb4bfb586fa3a4612a6efbe6d5"
   },
   "repo": ".",
   "schema_version": "1.0",

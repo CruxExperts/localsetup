@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 537e26df89abe622ad5767994f03aa57f282d402a0e77dfc988c41142767d707
+  source_provenance_hash: 6cfd7fc8688d003ac174cd81fb280c5726cc447834417b06b8eacc635851abd7
   emitter: generate-docs
-framework_version: 4.0.14
-source_commit: 5a1c72ea52718584bb25d331fb8c28044ebce34c
-artifact_sha256: 9f1031adb08d9d16031fd8ba2945c8730a57f67f3920b791f87b58061d211f82
+framework_version: 4.0.15
+source_commit: 8ba47f3dba5562db170dd14168a17b23a7a3b34c
+artifact_sha256: 00f49cd7608a8dae6e6cef84741b452ea3679c9e3be37d6017613757b1493212
 ---
 # Implementation File Map
 
@@ -123,6 +123,7 @@ artifact_sha256: 9f1031adb08d9d16031fd8ba2945c8730a57f67f3920b791f87b58061d211f8
 | `refactor` | `_localsetup/core/workflows.py` |
 | `keep` | `_localsetup/discovery/core/os_detector.py` |
 | `keep` | `_localsetup/discovery/core/os_detector.sh` |
+| `keep` | `_localsetup/docs/ADAPTER_OWNERSHIP.md` |
 | `keep` | `_localsetup/docs/AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md` |
 | `keep` | `_localsetup/docs/AGENTIC_AGENT_Q_PATTERN.md` |
 | `keep` | `_localsetup/docs/AGENTIC_AGENT_Q_SCENARIOS.md` |
