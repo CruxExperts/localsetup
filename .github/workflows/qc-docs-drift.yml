@@ -2,7 +2,7 @@ name: qc-docs-drift
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "31 8 * * 2"
   workflow_dispatch:
 
 permissions:

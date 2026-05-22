@@ -1,0 +1,25 @@
+name: qc-schedule-smoke
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qc-schedule-smoke
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    name: schedule smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirm scheduler
+        run: |
+          set -euo pipefail
+          echo "QC schedule smoke triggered at $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+          echo "event=${GITHUB_EVENT_NAME}"
+          echo "sha=${GITHUB_SHA}"
