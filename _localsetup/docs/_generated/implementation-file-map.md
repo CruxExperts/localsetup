@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 4ab690d6d30ad506376c17d5c23a151f99c8350ff21d2b7a5cffb74b007d9d02
+  source_provenance_hash: 192c066f228113207dca39c0762953b5d903e357be237e723269285da5eb1da1
   emitter: generate-docs
 framework_version: 4.0.12
-source_commit: 5cdc4759a59eac68d6483b5c2da12d16dc8527e8
-artifact_sha256: 0b1794162bfce4d95ba754fd61ebeceb5c342c7564d3c85027d406216746417b
+source_commit: 88379764ba054024897484b479cde07a8effc896
+artifact_sha256: 0c12ff4aa5382c9d4174c344020790d5e23c416f1d149c8d5f49813065916bee
 ---
 # Implementation File Map
 
@@ -89,12 +89,15 @@ artifact_sha256: 0b1794162bfce4d95ba754fd61ebeceb5c342c7564d3c85027d406216746417
 | `refactor` | `_localsetup/core/diffing.py` |
 | `refactor` | `_localsetup/core/docs.py` |
 | `refactor` | `_localsetup/core/doctor.py` |
+| `refactor` | `_localsetup/core/git_state.py` |
 | `refactor` | `_localsetup/core/git_subprocess.py` |
 | `refactor` | `_localsetup/core/global_first_audit.py` |
 | `refactor` | `_localsetup/core/harness.py` |
+| `refactor` | `_localsetup/core/health.py` |
 | `refactor` | `_localsetup/core/hooks.py` |
 | `refactor` | `_localsetup/core/inventory.py` |
 | `refactor` | `_localsetup/core/lockfile.py` |
+| `refactor` | `_localsetup/core/locking.py` |
 | `refactor` | `_localsetup/core/manifests.py` |
 | `refactor` | `_localsetup/core/migration.py` |
 | `refactor` | `_localsetup/core/models.py` |
