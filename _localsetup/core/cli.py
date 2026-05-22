@@ -59,6 +59,7 @@ from .versioning import (
     commit_version_sync,
     plan_version,
     print_json,
+    publish_preflight,
     push_lines_to_plans,
     stage_version_files,
     sync_version_files,
@@ -696,6 +697,11 @@ def _main(argv: list[str] | None = None) -> int:
     version_sync_p.add_argument("--stage", action="store_true")
     version_sync_p.add_argument("--commit", action="store_true")
 
+    publish_preflight_p = sub.add_parser("publish-preflight")
+    publish_preflight_p.add_argument("--base")
+    publish_preflight_p.add_argument("--head")
+    publish_preflight_p.add_argument("--fix", action="store_true")
+
     release_push_p = sub.add_parser("release-push")
     release_push_p.add_argument("push_args", nargs=argparse.REMAINDER)
     self_refresh_p = sub.add_parser("self-refresh")
@@ -1317,6 +1323,11 @@ def _main(argv: list[str] | None = None) -> int:
             payload["plan"] = plan
         print_json(payload)
         return 0
+
+    if args.cmd == "publish-preflight":
+        payload = publish_preflight(root, base=args.base, head=args.head, fix=args.fix)
+        print_json(payload)
+        return 0 if payload["ok"] else 1
 
     if args.cmd == "release-push":
         plan = plan_version(root)

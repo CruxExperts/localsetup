@@ -21,6 +21,7 @@ This repository packages Localsetup, a repo-local framework for agent context, s
 - `uv run --locked pytest -n auto _localsetup/tests -q`: run the Python pytest tests in parallel.
 - `./install --directory . --tools codex --sync-env --non-interactive --yes`: test a local non-interactive install path for one platform and sync the uv environment.
 - `uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .` and `uv run --locked python _localsetup/tools/localsetup.py --repo . generate-docs`: refresh generated docs artifacts when documentation inputs change.
+- `uv run --locked python _localsetup/tools/localsetup.py --repo . publish-preflight --base <base-ref> --head HEAD`: check the publish-time version and generated-document state before pushing; add `--fix` only after feature/docs changes are committed and you want the tool to create the needed sync commits.
 - `uv run --locked python _localsetup/tools/localsetup.py --repo . release-push`: compute the outgoing Conventional Commit version bump, sync versioned docs, create the release sync commit, and push.
 
 ## Command Choice Clarification
@@ -38,6 +39,8 @@ Add or update tests under `_localsetup/tests/` for changes to path resolution, d
 ## Commit & Pull Request Guidelines
 
 Use the existing Conventional Commit style: `feat:`, `fix:`, `docs:`, `chore:`, `test:`, `ci:`, or `type!:` followed by a short imperative summary. Keep PRs focused, target `main`, describe what changed and why, link related issues, and include test results. For framework, skill, or workflow changes, include a brief rationale and note compatibility impact across supported agent platforms. Do not add AI tools or assistants as co-authors or contributors.
+
+Before publishing a branch or opening/updating a PR, treat generated docs and version sync as part of the publish surface, not as volatile noise. Run `publish-preflight` locally against the intended base ref; if it creates sync commits, rerun the focused tests and push the final generated-doc refresh commit with the branch. Do not weaken generated-doc/version validators or ignore those paths merely to get past GitHub validation.
 
 ## Security & Configuration Tips
 
