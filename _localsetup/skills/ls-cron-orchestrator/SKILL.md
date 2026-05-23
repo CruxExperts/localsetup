@@ -55,9 +55,12 @@ Use `python3 _localsetup/skills/ls-cron-orchestrator/scripts/cron_ctl.py --manif
 | `remove-task --id ID` or `--trigger NAME` | Remove by id or all for trigger |
 | `reorder --trigger NAME --order id1,id2,id3` | Set run order for that trigger |
 | `enable --id ID` / `disable --id ID` | Toggle task |
-| `install` [--repo-root PATH] [--output PATH] | Generate crontab fragment (or write to file) |
+| `install` [--repo-root PATH] [--output PATH] [--log-dir PATH] | Generate crontab fragment (or write to file), optionally passing a durable log directory to the runner |
 
 Runner (used by cron): `python3 _localsetup/skills/ls-cron-orchestrator/scripts/run_trigger.py --manifest PATH --repo-root PATH TRIGGER` runs that trigger's tasks in sequence using `subprocess.run(..., shell=False)`.
+Add `--log-dir PATH` when cron output may otherwise disappear; the runner appends
+timestamped start, task exit, stdout tail, and stderr tail records to
+`PATH/<trigger>.log`.
 
 See `references/manifest.md` for the accepted manifest schema and security model.
 

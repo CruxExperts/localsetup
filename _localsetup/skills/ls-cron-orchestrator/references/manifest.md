@@ -42,3 +42,13 @@ Commands are executed with `shell=False`. Prefer an argv list so each argument i
 String commands are accepted for simple cases, but they are parsed with `shlex.split` and rejected when they contain shell-only operators such as `&&`, `||`, `;`, `|`, redirects, backticks, `$(`, or `${`. Use an argv list for literal arguments that contain shell-looking characters.
 
 Generated cron lines quote every runner argument with `shlex.join` and escape `%`, which cron treats as a newline marker in command fields. On-boot delays are passed to `run_trigger.py --delay-seconds` instead of interpolating a `sleep ... &&` shell fragment.
+
+## Runner Logs
+
+Cron hosts do not always have an MTA or other stdout/stderr sink. Use
+`cron_ctl.py install --log-dir PATH` to add `run_trigger.py --log-dir PATH` to
+generated cron lines. When enabled, `run_trigger.py` appends timestamped
+`runner_start`, `task_start`, `task_exit`, timeout/error, and `runner_exit`
+records to `PATH/<trigger>.log`. Task exit records include bounded stdout and
+stderr tails so operators can diagnose child process failures without relying
+on cron mail.

@@ -10,6 +10,7 @@ import os
 import subprocess
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 from _cron_manifest import (
@@ -22,6 +23,31 @@ from _cron_manifest import (
     validate_identifier,
     validate_manifest,
 )
+
+LOG_TAIL_CHARS = 4000
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
+def _log_file(log_dir: Path | None, trigger_name: str) -> Path | None:
+    if log_dir is None:
+        return None
+    log_dir.mkdir(parents=True, exist_ok=True)
+    safe_trigger = "".join(ch if ch.isalnum() or ch in "._@+-" else "_" for ch in trigger_name)[:MAX_TRIGGER_LEN]
+    return log_dir / f"{safe_trigger}.log"
+
+
+def _tail(text: str) -> str:
+    return text[-LOG_TAIL_CHARS:] if len(text) > LOG_TAIL_CHARS else text
+
+
+def _append_log(path: Path | None, message: str) -> None:
+    if path is None:
+        return
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(f"{_utc_now()} {message}\n")
 
 
 def _load_validated_manifest(manifest_path: Path) -> dict:
@@ -36,6 +62,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Run tasks for a trigger in sequence.")
     parser.add_argument("--manifest", required=True, help="Path to manifest.yaml")
     parser.add_argument("--repo-root", help="Working directory for commands (default: manifest parent)")
+    parser.add_argument("--log-dir", help="Append durable runner/task logs under this directory")
     parser.add_argument(
         "--delay-seconds",
         default=0,
@@ -59,6 +86,8 @@ def main() -> int:
     except ManifestError as exc:
         print(f"[run_trigger] {exc}", file=sys.stderr)
         return 1
+    log_path = _log_file(Path(args.log_dir).resolve() if args.log_dir else None, trigger_name)
+    _append_log(log_path, f"runner_start trigger={trigger_name} manifest={manifest_path} repo_root={repo_root} delay_seconds={delay_seconds}")
     if delay_seconds:
         time.sleep(delay_seconds)
 
@@ -67,6 +96,7 @@ def main() -> int:
     triggers = data.get("triggers") or {}
     if trigger_name not in triggers:
         print(f"[run_trigger] Unknown trigger: {trigger_name}", file=sys.stderr)
+        _append_log(log_path, f"runner_exit trigger={trigger_name} exit_code=1 reason=unknown_trigger")
         return 1
 
     tasks = data.get("tasks") or []
@@ -77,6 +107,7 @@ def main() -> int:
         task_id = clean_display(task["id"], 128)
         argv = task["argv"]
         timeout = task["timeout_seconds"]
+        _append_log(log_path, f"task_start id={task_id} timeout_seconds={timeout}")
         try:
             r = subprocess.run(
                 argv,
@@ -92,15 +123,25 @@ def main() -> int:
                 print(r.stdout, end="")
             if r.stderr:
                 print(r.stderr, end="", file=sys.stderr)
+            _append_log(
+                log_path,
+                f"task_exit id={task_id} exit_code={r.returncode} stdout_tail={_tail(r.stdout)!r} stderr_tail={_tail(r.stderr)!r}",
+            )
             if r.returncode != 0:
                 print(f"[run_trigger] Task {task_id} exited {r.returncode}", file=sys.stderr)
+                _append_log(log_path, f"runner_exit trigger={trigger_name} exit_code={r.returncode}")
                 return r.returncode
         except subprocess.TimeoutExpired:
             print(f"[run_trigger] Task {task_id} timed out after {timeout}s", file=sys.stderr)
+            _append_log(log_path, f"task_timeout id={task_id} timeout_seconds={timeout}")
+            _append_log(log_path, f"runner_exit trigger={trigger_name} exit_code=124")
             return 124
         except Exception as e:
             print(f"[run_trigger] Task {task_id}: {type(e).__name__}: {e}", file=sys.stderr)
+            _append_log(log_path, f"task_error id={task_id} error={type(e).__name__}: {e}")
+            _append_log(log_path, f"runner_exit trigger={trigger_name} exit_code=1")
             return 1
+    _append_log(log_path, f"runner_exit trigger={trigger_name} exit_code=0")
     return 0
 
 
