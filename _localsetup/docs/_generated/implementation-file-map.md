@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 6cfd7fc8688d003ac174cd81fb280c5726cc447834417b06b8eacc635851abd7
+  source_provenance_hash: b34942dfd61e2c60f1a65a41be166d4f8fe5d3114ab6dcffc509b98b298da689
   emitter: generate-docs
-framework_version: 4.0.15
-source_commit: 8ba47f3dba5562db170dd14168a17b23a7a3b34c
-artifact_sha256: 00f49cd7608a8dae6e6cef84741b452ea3679c9e3be37d6017613757b1493212
+framework_version: 4.0.16
+source_commit: 18e33e56fe4c5971cbea58b524f4567a99676583
+artifact_sha256: 1c2b6055d29d7d53bd435512124b237d744db1babe09216b091d95217a33fa87
 ---
 # Implementation File Map
 
@@ -717,6 +717,8 @@ artifact_sha256: 00f49cd7608a8dae6e6cef84741b452ea3679c9e3be37d6017613757b149321
 | `keep` | `_localsetup/workflows/ls-workflow-pipeline-server-triage-patch/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-pipeline-skill-onboard/SKILL.md` |
 | `keep` | `_localsetup/workflows/ls-workflow-pipeline-skill-onboard/workflow.yaml` |
+| `keep` | `_localsetup/workflows/ls-workflow-planning-critic-loop/SKILL.md` |
+| `keep` | `_localsetup/workflows/ls-workflow-planning-critic-loop/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-queue-batch-implement/SKILL.md` |
 | `keep` | `_localsetup/workflows/ls-workflow-queue-batch-implement/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-repo-finalizer/SKILL.md` |
