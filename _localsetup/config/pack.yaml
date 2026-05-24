@@ -115,6 +115,7 @@ workflow_packs:
     - ls-workflow-context-index-refresh
     - ls-workflow-documentation-alignment
     - ls-workflow-ops-guarded
+    - ls-workflow-planning-critic-loop
     - ls-workflow-pipeline-git-repair-hygiene
     - ls-workflow-pipeline-pr-feedback-loop
     - ls-workflow-pipeline-repo-convert

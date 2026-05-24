@@ -123,14 +123,14 @@
     "workflow"
   ],
   "counts": {
-    "docs": 347,
+    "docs": 348,
     "framework_docs": 58,
     "generated_docs": 4,
     "platforms": 6,
     "public_docs": 6,
     "skills": 53,
-    "workflow_packs": 28,
-    "workflows": 22
+    "workflow_packs": 29,
+    "workflows": 23
   },
   "docs": [
     {
@@ -3535,6 +3535,16 @@
       "managed_blocks": [],
       "owner_package": "",
       "owner_skill": "",
+      "path": "_localsetup/workflows/ls-workflow-planning-critic-loop/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
       "path": "_localsetup/workflows/ls-workflow-queue-batch-implement/SKILL.md",
       "status": "",
       "version": ""
@@ -3650,7 +3660,7 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "544cf86c9da9f0a1d797a168fa60baffe5e8019455f2d162c34bb6fe94bcf110",
+    "artifact_sha256": "c0815102f17a2cc9c9545c9f7cec9fb77c0814b6e026f6e5973b4aab1b14cae4",
     "emitter": "docs-align",
     "framework_version": "4.0.15",
     "schema_version": 1,
@@ -4546,6 +4556,14 @@
       ],
       "path": "_localsetup/workflows/ls-workflow-pipeline-skill-onboard",
       "workflow_id": "pipeline-skill-onboard"
+    },
+    {
+      "package": "ls-workflow-planning-critic-loop",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-planning-critic-loop",
+      "workflow_id": "planning-critic-loop"
     },
     {
       "package": "ls-workflow-queue-batch-implement",

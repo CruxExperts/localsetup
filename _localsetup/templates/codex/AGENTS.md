@@ -57,6 +57,7 @@ A large line-count reduction is a review trigger, not a success metric. Any redu
 
 ## Capability skills and workflow packages (load when task matches)
 - ls-workflow-spec-clarify-reverse: "decision tree", "reverse prompt"; .agent/queue/**, PRD
+- ls-workflow-planning-critic-loop: non-trivial planning; grounded discovery, bounded clarification, subagent delegation, critic-reviewed plan
 - ls-workflow-umbrella-run: queue/PRD scope; named workflows; impact + confirm
 - ls-workflow-queue-batch-implement: "process PRDs", "run batch from PRD folder"
 - ls-agentq-transport: ship/ingest sealed Agent Q blobs (file_drop/mail), registry, strict gpg; see AGENTIC_AGENT_Q_SCENARIOS.md

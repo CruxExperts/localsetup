@@ -5,7 +5,7 @@ localsetup_provenance:
   emitter: generate-docs
 framework_version: 4.0.15
 source_commit: 8ba47f3dba5562db170dd14168a17b23a7a3b34c
-artifact_sha256: 64bffe18dfa4488e56d2287f33dd1a055bf14ad8238f55ef4be49cead71ae95f
+artifact_sha256: ad3d89a28830e407984f4c9859b82d9eb8218c73cee2f3e9c8f44e8a36cca05b
 ---
 # Skill And Workflow Packs
 
@@ -79,6 +79,7 @@ artifact_sha256: 64bffe18dfa4488e56d2287f33dd1a055bf14ad8238f55ef4be49cead71ae95
 | `dev` | `workflow` | `ls-workflow-pipeline-repo-polish` | n/a | n/a | n/a | `n/a` |
 | `ops` | `workflow` | `ls-workflow-pipeline-server-triage-patch` | n/a | n/a | n/a | `n/a` |
 | `dev` | `workflow` | `ls-workflow-pipeline-skill-onboard` | n/a | n/a | n/a | `n/a` |
+| `dev` | `workflow` | `ls-workflow-planning-critic-loop` | n/a | n/a | n/a | `n/a` |
 | `experimental` | `workflow` | `ls-workflow-queue-batch-implement` | n/a | n/a | n/a | `n/a` |
 | `harness` | `workflow` | `ls-workflow-repo-finalizer` | n/a | n/a | n/a | `n/a` |
 | `dev` | `workflow` | `ls-workflow-skills-index-refresh` | n/a | n/a | n/a | `n/a` |

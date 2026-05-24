@@ -41,7 +41,7 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/facts.json",
-    "artifact_sha256": "534dd3e0956108abb761393341e0363d8ef4d91446cdab015b8e0ae6390ed119",
+    "artifact_sha256": "d4a317e6b1100b1a916f1dac3de3aa1c8fc96594f7ae9efa1d63a1869ce7fdfc",
     "emitter": "generate-docs",
     "framework_version": "4.0.15",
     "schema_version": 1,
@@ -917,7 +917,7 @@
     }
   ],
   "version": "4.0.15",
-  "workflow_count": 22,
+  "workflow_count": 23,
   "workflows": [
     {
       "id": "audit-framework",
@@ -1008,6 +1008,12 @@
       "name": "Pipeline Skill Onboard",
       "package": "ls-workflow-pipeline-skill-onboard",
       "path": "_localsetup/workflows/ls-workflow-pipeline-skill-onboard/SKILL.md"
+    },
+    {
+      "id": "planning-critic-loop",
+      "name": "Planning Critic Loop",
+      "package": "ls-workflow-planning-critic-loop",
+      "path": "_localsetup/workflows/ls-workflow-planning-critic-loop/SKILL.md"
     },
     {
       "id": "queue-batch-implement",

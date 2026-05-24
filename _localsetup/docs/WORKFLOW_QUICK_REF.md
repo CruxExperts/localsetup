@@ -8,7 +8,7 @@ localsetup_provenance:
   emitter: generate-docs
 framework_version: 4.0.15
 source_commit: 8ba47f3dba5562db170dd14168a17b23a7a3b34c
-artifact_sha256: a22b37d2e46e4d5d774b7c3e66a4a341ed4cd433708baed6350d53b062c0516e
+artifact_sha256: 732cbca7e55140b9b786bc7ec613c05726a937cc97d15e82c4cb326711e889ca
 ---
 # Workflow quick reference
 
@@ -33,6 +33,7 @@ This page is generated from `_localsetup/workflows/*/workflow.yaml`.
 | `pipeline-repo-polish` | Pipeline Repo Polish | repo polish pipeline | `ls-workflow-pipeline-repo-polish` | `ls-script-and-docs-quality`; `ls-humanizer`; `ls-github-publishing-workflow` |
 | `pipeline-server-triage-patch` | Pipeline Server Triage Patch | server triage patch pipeline | `ls-workflow-pipeline-server-triage-patch` | `ls-system-info`; `ls-linux-service-triage`; `ls-linux-patcher` |
 | `pipeline-skill-onboard` | Pipeline Skill Onboard | skill onboarding pipeline | `ls-workflow-pipeline-skill-onboard` | `ls-skill-vetter`; `ls-skill-importer`; `ls-skill-normalizer`; `ls-skill-sandbox-tester` |
+| `planning-critic-loop` | Planning Critic Loop | planning critic loop; planning agent critic; critic reviewed plan | `ls-workflow-planning-critic-loop` | n/a |
 | `queue-batch-implement` | Queue Batch Implement | Agent Q queue; process PRDs | `ls-workflow-queue-batch-implement` | n/a |
 | `repo-finalizer` | Repo Finalizer | repo finalizer; finalizer harness; finalization checkpoint | `ls-workflow-repo-finalizer` | `ls-framework-compliance`; `ls-git-workflows` |
 | `skills-index-refresh` | Skills Index Refresh | refresh skills; scrub index | `ls-workflow-skills-index-refresh` | `ls-skill-discovery` |
@@ -69,6 +70,9 @@ This page is generated from `_localsetup/workflows/*/workflow.yaml`.
 - "repo polish pipeline" -> `pipeline-repo-polish`
 - "server triage patch pipeline" -> `pipeline-server-triage-patch`
 - "skill onboarding pipeline" -> `pipeline-skill-onboard`
+- "planning critic loop" -> `planning-critic-loop`
+- "planning agent critic" -> `planning-critic-loop`
+- "critic reviewed plan" -> `planning-critic-loop`
 - "Agent Q queue" -> `queue-batch-implement`
 - "process PRDs" -> `queue-batch-implement`
 - "repo finalizer" -> `repo-finalizer`

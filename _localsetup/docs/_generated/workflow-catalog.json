@@ -1,8 +1,8 @@
 {
-  "count": 22,
+  "count": 23,
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/workflow-catalog.json",
-    "artifact_sha256": "68586c206d6e67f5101ade660a00bc7a28a96ba1ac85e96679e7ff1f3896d050",
+    "artifact_sha256": "d83315b8116e4fa19edb1abb72dabf3263bde02f6dc4c47ef967a555cc4b038f",
     "emitter": "generate-docs",
     "framework_version": "4.0.15",
     "schema_version": 1,
@@ -379,6 +379,29 @@
       ],
       "required_tools": [],
       "workflow_id": "pipeline-skill-onboard"
+    },
+    {
+      "aliases": [
+        "planning critic loop",
+        "planning agent critic",
+        "critic reviewed plan"
+      ],
+      "description": "Create decision-complete plans through grounding, capped clarification, subagent delegation, and critic iteration.",
+      "display_name": "Planning Critic Loop",
+      "package": "ls-workflow-planning-critic-loop",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-planning-critic-loop",
+      "required_docs": [
+        "_localsetup/docs/DECISION_TREE_WORKFLOW.md",
+        "_localsetup/docs/WORKFLOW_STANDARD.md",
+        "_localsetup/docs/WORKFLOW_PACKAGES.md",
+        "_localsetup/docs/SKILLS_AND_RULES.md"
+      ],
+      "required_skills": [],
+      "required_tools": [],
+      "workflow_id": "planning-critic-loop"
     },
     {
       "aliases": [
