@@ -41,7 +41,7 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/facts.json",
-    "artifact_sha256": "39bbea9a0e5b75f513733504c5fa0da2899af38628eca9aba911fff25f496e60",
+    "artifact_sha256": "aa1530a93e03c48bc94b591f97593e440a995de52cc1c8e903d8d5039fa76034",
     "emitter": "generate-docs",
     "framework_version": "4.0.16",
     "schema_version": 1,
@@ -52,7 +52,7 @@
     "source_tag": null,
     "source_tree_sha": "d97dc2eabc4c99aa81cb1a130efeec4c76566417"
   },
-  "skill_count": 53,
+  "skill_count": 54,
   "skills": [
     {
       "class": "core",
@@ -713,7 +713,8 @@
       "name": "ls-omniroute-admin-automation",
       "owner_scope": "skill",
       "packs": [
-        "integrations"
+        "integrations",
+        "omniroute"
       ],
       "path": "_localsetup/skills/ls-omniroute-admin-automation/SKILL.md",
       "sort_priority": 50,
@@ -729,13 +730,31 @@
       "name": "ls-omniroute-proxy",
       "owner_scope": "skill",
       "packs": [
-        "integrations"
+        "integrations",
+        "omniroute"
       ],
       "path": "_localsetup/skills/ls-omniroute-proxy/SKILL.md",
       "sort_priority": 50,
       "tags": [
         "omniroute",
         "proxy"
+      ],
+      "version": "1.0"
+    },
+    {
+      "class": "integrations",
+      "id": "ls-omniroute-skill-converter",
+      "name": "ls-omniroute-skill-converter",
+      "owner_scope": "skill",
+      "packs": [
+        "omniroute"
+      ],
+      "path": "_localsetup/skills/ls-omniroute-skill-converter/SKILL.md",
+      "sort_priority": 50,
+      "tags": [
+        "omniroute",
+        "skills",
+        "conversion"
       ],
       "version": "1.0"
     },

@@ -85,6 +85,7 @@ Kilo CLI loads project context from `.kilo/instructions.md` (repo-local) or `~/.
 | ls-scrapling | Host-first Scrapling integration; install/upgrade via pipx, run adaptive single-URL extractions. Default web scraping skill. |
 | ls-omniroute-proxy | OmniRoute proxy discovery, model catalogs, provider metadata, limits, quotas, routing combos, MCP/A2A integration, and agent client configuration |
 | ls-omniroute-admin-automation | OmniRoute administration automation for providers, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, and drift reconciliation |
+| ls-omniroute-skill-converter | OmniRoute skill conversion reporting for upstream skill discovery, Localsetup comparison, provenance metadata, and report-first import/update/removal planning |
 | ls-kilo-boss-orchestrator | Kilo headless boss-worker orchestration with repo-local state, watchdog leases, consensus validation, and safety gates |
 | ls-kilo-visual-output | Kilo CLI visual output organization guide with structured response patterns |
 | ls-nodejs-nextjs | Node.js/Next.js/React runbook for package-manager, build, migration, debugging, testing, security, deployment, and current-version verification |

@@ -33,6 +33,7 @@
   "localsetup-npm-management": "ls-npm-management",
   "localsetup-omniroute-admin-automation": "ls-omniroute-admin-automation",
   "localsetup-omniroute-proxy": "ls-omniroute-proxy",
+  "localsetup-omniroute-skill-converter": "ls-omniroute-skill-converter",
   "localsetup-pr-reviewer": "ls-pr-reviewer",
   "localsetup-public-repo-identity": "ls-public-repo-identity",
   "localsetup-receiving-code-review": "ls-receiving-code-review",
@@ -54,7 +55,7 @@
   "localsetup-unfuck-my-git-state": "ls-unfuck-my-git-state",
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/skill_aliases.json",
-    "artifact_sha256": "659af67816c64cd0105411b514b5f8ca1760d168471abf76de0821e4a37b2be2",
+    "artifact_sha256": "8cd3e91e702e514bc5b2945cc6b98e3f2b6d1a1ccd6bbb6a933d2a3b88af5ef3",
     "emitter": "generate-docs",
     "framework_version": "4.0.16",
     "schema_version": 1,

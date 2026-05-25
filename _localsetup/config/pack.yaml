@@ -21,6 +21,7 @@ optional_packs:
   - dev
   - ops
   - integrations
+  - omniroute
   - publishing
   - harness
   - experimental
@@ -83,6 +84,10 @@ packs:
     - ls-omniroute-admin-automation
     - ls-omniroute-proxy
     - ls-scrapling
+  omniroute:
+    - ls-omniroute-skill-converter
+    - ls-omniroute-proxy
+    - ls-omniroute-admin-automation
   publishing:
     - ls-automatic-versioning
     - ls-documentation-alignment
@@ -128,6 +133,7 @@ workflow_packs:
     - ls-workflow-tmux-terminal-mode
   integrations:
     - ls-workflow-transport-handoff
+  omniroute: []
   publishing:
     - ls-workflow-documentation-alignment
     - ls-workflow-pipeline-pre-publish
@@ -346,6 +352,11 @@ extensions:
       class: integrations
       sort_priority: 50
       tags: [omniroute, admin]
+      owner_scope: skill
+    ls-omniroute-skill-converter:
+      class: integrations
+      sort_priority: 50
+      tags: [omniroute, skills, conversion]
       owner_scope: skill
     ls-omniroute-proxy:
       class: integrations

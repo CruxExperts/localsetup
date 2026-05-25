@@ -5,7 +5,7 @@ localsetup_provenance:
   emitter: generate-docs
 framework_version: 4.0.16
 source_commit: 18e33e56fe4c5971cbea58b524f4567a99676583
-artifact_sha256: ad3d89a28830e407984f4c9859b82d9eb8218c73cee2f3e9c8f44e8a36cca05b
+artifact_sha256: 254afe5d29257a269353c58d877f116c22a25bec9394bbe832330be8959631d2
 ---
 # Skill And Workflow Packs
 
@@ -51,8 +51,9 @@ artifact_sha256: ad3d89a28830e407984f4c9859b82d9eb8218c73cee2f3e9c8f44e8a36cca05
 | `integrations` | `skill` | `ls-mail-protocol-control` | `integrations` | 50 | `mail, protocols` | `localsetup-mail-protocol-control` |
 | `integrations` | `skill` | `ls-mcp-builder` | `integrations` | 50 | `mcp, builder` | `localsetup-mcp-builder` |
 | `integrations` | `skill` | `ls-npm-management` | `integrations` | 50 | `nginx-proxy-manager, api` | `localsetup-npm-management` |
-| `integrations` | `skill` | `ls-omniroute-admin-automation` | `integrations` | 50 | `omniroute, admin` | `localsetup-omniroute-admin-automation` |
-| `integrations` | `skill` | `ls-omniroute-proxy` | `integrations` | 50 | `omniroute, proxy` | `localsetup-omniroute-proxy` |
+| `integrations, omniroute` | `skill` | `ls-omniroute-admin-automation` | `integrations` | 50 | `omniroute, admin` | `localsetup-omniroute-admin-automation` |
+| `integrations, omniroute` | `skill` | `ls-omniroute-proxy` | `integrations` | 50 | `omniroute, proxy` | `localsetup-omniroute-proxy` |
+| `omniroute` | `skill` | `ls-omniroute-skill-converter` | `integrations` | 50 | `omniroute, skills, conversion` | `localsetup-omniroute-skill-converter` |
 | `integrations` | `skill` | `ls-scrapling` | `integrations` | 50 | `scrapling, extraction` | `localsetup-scrapling` |
 | `experimental` | `skill` | `ls-skill-creator` | `skill-lifecycle` | 60 | `skills, authoring` | `localsetup-skill-creator` |
 | `experimental` | `skill` | `ls-skill-discovery` | `skill-lifecycle` | 60 | `skills, discovery` | `localsetup-skill-discovery` |

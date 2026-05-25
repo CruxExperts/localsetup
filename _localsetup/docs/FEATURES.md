@@ -13,7 +13,7 @@ This is the full public capability catalog for Localsetup. The [root README](../
 <!-- facts-block:start -->
 - Current version: `4.0.16`
 - Supported platforms: `cursor, claude-code, codex, openclaw, kilo, opencode`
-- Shipped skills: `53`
+- Shipped skills: `54`
 - Workflow packages: `23`
 - Source: `_localsetup/docs/_generated/facts.json`
 <!-- facts-block:end -->
@@ -35,7 +35,7 @@ This is the full public capability catalog for Localsetup. The [root README](../
 | Capability | What it gives you |
 |---|---|
 | Agent Skills compliance | Shipped skills use spec-compatible `SKILL.md` packages with `name`, `description`, and `metadata.version`. |
-| 53 shipped skills plus 23 workflow packages | Practical capabilities and orchestration flows for debugging, tests, PR review, git recovery, service triage, patching, docs, MCP building, context indexing, TypeScript code quality, opt-in heartbeat harnessing, repo finalization, and more. |
+| 54 shipped skills plus 23 workflow packages | Practical capabilities and orchestration flows for debugging, tests, PR review, git recovery, service triage, patching, docs, MCP building, context indexing, TypeScript code quality, opt-in heartbeat harnessing, repo finalization, and more. |
 | Skill import | Import skills from a URL or local path with discovery, validation, heuristic security screening, and summaries. |
 | Skill vetting | Treat third-party skills as untrusted before they can influence agent behavior. |
 | Skill normalization | Clean imported or in-tree skills for spec compliance, platform-neutral wording, and framework tooling standards. |

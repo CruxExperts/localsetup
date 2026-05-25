@@ -85,6 +85,7 @@ Kilo CLI uses `AGENTS.md` as the project initialization file at repo root.
 | ls-scrapling | Host-first Scrapling integration; install/upgrade via pipx, run adaptive single-URL extractions. Default web scraping skill. |
 | ls-omniroute-proxy | OmniRoute proxy discovery, model catalogs, provider metadata, limits, quotas, routing combos, MCP/A2A integration, and agent client configuration |
 | ls-omniroute-admin-automation | OmniRoute administration automation for providers, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, and drift reconciliation |
+| ls-omniroute-skill-converter | OmniRoute skill conversion reporting for upstream skill discovery, Localsetup comparison, provenance metadata, and report-first import/update/removal planning |
 | ls-kilo-boss-orchestrator | Kilo headless boss-worker orchestration with repo-local state, watchdog leases, consensus validation, and safety gates |
 | ls-kilo-visual-output | Kilo CLI visual output organization guide with structured response patterns |
 | ls-typescript-code-quality | TypeScript/TSX code quality, tsconfig, typed ESLint or Biome config, Node TypeScript scripts, and TypeScript-heavy framework code |

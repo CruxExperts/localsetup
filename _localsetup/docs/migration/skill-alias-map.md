@@ -8,7 +8,7 @@ localsetup_provenance:
   emitter: generate-docs
 framework_version: 4.0.16
 source_commit: 18e33e56fe4c5971cbea58b524f4567a99676583
-artifact_sha256: 1308535836ddc668a9aae86a07dc9e717543e7533b763649637046d9e529c008
+artifact_sha256: 1bd07d4bc3836b4ec3bcf7739b454f63a6fc74581412a19950970d7a83ef34e6
 ---
 # Skill Alias Map
 
@@ -48,6 +48,7 @@ artifact_sha256: 1308535836ddc668a9aae86a07dc9e717543e7533b763649637046d9e529c00
 | `localsetup-npm-management` | `ls-npm-management` |
 | `localsetup-omniroute-admin-automation` | `ls-omniroute-admin-automation` |
 | `localsetup-omniroute-proxy` | `ls-omniroute-proxy` |
+| `localsetup-omniroute-skill-converter` | `ls-omniroute-skill-converter` |
 | `localsetup-pr-reviewer` | `ls-pr-reviewer` |
 | `localsetup-public-repo-identity` | `ls-public-repo-identity` |
 | `localsetup-receiving-code-review` | `ls-receiving-code-review` |

@@ -8,13 +8,13 @@ localsetup_provenance:
   emitter: generate-docs
 framework_version: 4.0.16
 source_commit: 18e33e56fe4c5971cbea58b524f4567a99676583
-artifact_sha256: 4689ab9d042b0bc184d64b42e08f9e8fac66b244fa1651e5ab1f06b1563d52b5
+artifact_sha256: 1c1f3f50b5dec7260dd567249a5fe93e334890e34ae148a418fb87ac4c08a558
 ---
 # Shipped skills catalog
 
 This page is generated from `_localsetup/skills/*/SKILL.md`.
 
-Total shipped skills: 53
+Total shipped skills: 54
 
 | Skill ID | Class | Priority | Packs | Tags | Name | Version | Description |
 |---|---|---:|---|---|---|---|---|
@@ -58,8 +58,9 @@ Total shipped skills: 53
 | `ls-mail-protocol-control` | `integrations` | 50 | `integrations` | `mail`, `protocols` | `ls-mail-protocol-control` | `1.2` | Provide full SMTP and IMAP account control for delegated mailboxes with attachment-first MIME handling and full-envelope encryption. Use when an agent must read, send, organize, decrypt, and manage mailbox state with strict admin controls. |
 | `ls-mcp-builder` | `integrations` | 50 | `integrations` | `mcp`, `builder` | `ls-mcp-builder` | `1.2` | Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services through well-designed tools. Use when building MCP servers to integrate external APIs or services, whether in Python (FastMCP) or Node/TypeScript (MCP SDK). |
 | `ls-npm-management` | `integrations` | 50 | `integrations` | `nginx-proxy-manager`, `api` | `ls-npm-management` | `1.0` | Manage Nginx Proxy Manager (NPM) reverse proxy hosts via its REST API using the native Python client npm_api.py. Use when creating, modifying, diagnosing, removing, or cleaning up proxy hosts, or when coordinating Docker service deployments with NPM routing. |
-| `ls-omniroute-admin-automation` | `integrations` | 50 | `integrations` | `omniroute`, `admin` | `ls-omniroute-admin-automation` | `1.0` | Comprehensive OmniRoute administration and automation via Python tooling. Use when you need full API-driven control of providers, nodes, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, sync, resilience, and configuration reconciliation with safety gates. |
-| `ls-omniroute-proxy` | `integrations` | 50 | `integrations` | `omniroute`, `proxy` | `ls-omniroute-proxy` | `1.0` | Guide agents through read-only OmniRoute proxy discovery, model catalogs, provider metadata, context windows, rate limits, quotas, routing combos, MCP/A2A integration, and agent client configuration. Use when working with OmniRoute, OmniRoute proxy, AI gateway discovery, model catalogs, provider limits, context windows, routing combos, MCP/A2A integration, or configuring agents to use OmniRoute. |
+| `ls-omniroute-admin-automation` | `integrations` | 50 | `integrations`, `omniroute` | `omniroute`, `admin` | `ls-omniroute-admin-automation` | `1.0` | Comprehensive OmniRoute administration and automation via Python tooling. Use when you need full API-driven control of providers, nodes, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, sync, resilience, and configuration reconciliation with safety gates. |
+| `ls-omniroute-proxy` | `integrations` | 50 | `integrations`, `omniroute` | `omniroute`, `proxy` | `ls-omniroute-proxy` | `1.0` | Guide agents through read-only OmniRoute proxy discovery, model catalogs, provider metadata, context windows, rate limits, quotas, routing combos, MCP/A2A integration, and agent client configuration. Use when working with OmniRoute, OmniRoute proxy, AI gateway discovery, model catalogs, provider limits, context windows, routing combos, MCP/A2A integration, or configuring agents to use OmniRoute. |
+| `ls-omniroute-skill-converter` | `integrations` | 50 | `omniroute` | `omniroute`, `skills`, `conversion` | `ls-omniroute-skill-converter` | `1.0` | Discover upstream OmniRoute skills, compare them with Localsetup-converted skills, and produce a report-first update or removal plan. Use when listing, checking, updating, modifying, importing, or removing OmniRoute-derived Localsetup skills. |
 | `ls-scrapling` | `integrations` | 50 | `integrations` | `scrapling`, `extraction` | `ls-scrapling` | `1.0` | Host-first Scrapling integration skill: install or upgrade Scrapling via pipx, run single-URL extractions (simple and structured), and manage adapter and version refresh flows, with Docker as an optional escape hatch. |
 | `ls-skill-creator` | `skill-lifecycle` | 60 | `experimental` | `skills`, `authoring` | `ls-skill-creator` | `1.3` | Use when creating a new Agent Skills-compliant skill, adapting a document into a skill, importing an existing skill for Localsetup, or exporting framework skills to other spec-compliant hosts. |
 | `ls-skill-discovery` | `skill-lifecycle` | 60 | `experimental` | `skills`, `discovery` | `ls-skill-discovery` | `1.4` | Discover and recommend public skills from external registries (e.g. awesome lists, skill hubs). Use when the user is creating a new skill, importing a skill, or asking to find similar public skills. Maintains PUBLIC_SKILL_REGISTRY.urls and PUBLIC_SKILL_INDEX.yaml; returns top 5 similar matches with rich summaries and clear next actions. |
