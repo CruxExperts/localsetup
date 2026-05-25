@@ -69,6 +69,14 @@ Check state:
 localsetup harness codex-heartbeat status
 ```
 
+Inspect read-only task budget:
+
+```bash
+localsetup harness codex-heartbeat budget
+```
+
+`budget` reads `config/codex_heartbeat.yaml` and, when configured, a repo-local YAML task queue from `heartbeat.task_queue_path`. It reports policy, summary, and task reservations as JSON. It does not spawn agents, enforce scheduling, commit changes, or activate heartbeat.
+
 Disable without removing history:
 
 ```bash

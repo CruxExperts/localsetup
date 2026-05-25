@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -44,6 +45,200 @@ def parse_skill_frontmatter(skill_md: Path) -> dict:
         return {}
     data = yaml.safe_load(text[4:end])
     return data if isinstance(data, dict) else {}
+
+
+def _candidate_skill_dir(candidate: Path) -> Path:
+    path = candidate.expanduser().resolve()
+    return path.parent if path.name == "SKILL.md" else path
+
+
+def _path_under(path: Path, base: Path) -> bool:
+    try:
+        resolved_path = path.resolve()
+        resolved_base = base.expanduser().resolve()
+        return resolved_path == resolved_base or resolved_base in resolved_path.parents
+    except (OSError, RuntimeError):
+        return False
+
+
+def _candidate_managed_path_findings(repo_root: Path, skill_dir: Path, home: Path | None) -> tuple[list[str], list[str]]:
+    blockers: list[str] = []
+    warnings: list[str] = []
+    managed_roots = [repo_root / "_localsetup" / "skills"]
+    if home is None:
+        home = Path.home()
+    if home is not None:
+        managed_roots.extend(
+            [
+                home / ".local" / "share" / "localsetup" / "source",
+                home / ".local" / "share" / "localsetup" / "packages",
+            ]
+        )
+    for root in managed_roots:
+        if _path_under(skill_dir, root):
+            blockers.append(f"candidate path is inside managed Localsetup content: {root}")
+    adapter_roots = [
+        ".agents/skills",
+        ".codex/skills",
+        ".claude/skills",
+        ".cursor/skills",
+        ".kilo/skills",
+        ".openclaw/skills",
+        ".opencode/skills",
+    ]
+    for rel in adapter_roots:
+        root = repo_root / rel
+        if _path_under(skill_dir, root):
+            blockers.append(f"candidate path is inside an adapter skill directory: {rel}")
+    expected_root = repo_root / "docs" / "localsetup" / "skills"
+    if not _path_under(skill_dir, expected_root):
+        warnings.append("candidate is outside the recommended docs/localsetup/skills/<skill-name>/ contract")
+    return blockers, warnings
+
+
+def candidate_skill_path_blockers(repo_root: Path, path: Path, *, home: Path | None = None) -> list[str]:
+    blockers, _warnings = _candidate_managed_path_findings(repo_root, path.expanduser().resolve(), home)
+    return blockers
+
+
+def _candidate_safety_findings(repo_root: Path, skill_dir: Path) -> dict[str, Any]:
+    try:
+        from _localsetup.tools import skill_validation_scan
+
+        pattern_path = skill_validation_scan.resolve_pattern_file_path(None, repo_root)
+        ok, message = skill_validation_scan.ensure_pattern_file(pattern_path, fetch_if_missing=False)
+        if not ok:
+            return {"ok": False, "message": message, "findings": []}
+        patterns = skill_validation_scan.load_patterns(pattern_path)
+        hits, non_english = skill_validation_scan.scan_skill_dir(skill_dir, pattern_path, patterns)
+        findings = [
+            {
+                "file": hit["file"],
+                "line": hit["line"],
+                "col": hit["col"],
+                "pattern_id": hit["pattern_id"],
+                "description": hit["description"],
+            }
+            for hit in hits
+        ]
+        if non_english:
+            findings.append(
+                {
+                    "file": str(skill_dir / "SKILL.md"),
+                    "line": None,
+                    "col": None,
+                    "pattern_id": "possible_non_latin_language_content",
+                    "description": "Manual review for possible hidden prompt content.",
+                }
+            )
+        return {"ok": True, "message": "ok", "findings": findings}
+    except Exception as exc:
+        return {"ok": False, "message": f"{type(exc).__name__}: {exc}", "findings": []}
+
+
+def validate_candidate_skill(repo_root: Path, candidate: Path, *, home: Path | None = None) -> dict[str, Any]:
+    skill_dir = _candidate_skill_dir(candidate)
+    skill_md = skill_dir / "SKILL.md"
+    blockers, warnings = _candidate_managed_path_findings(repo_root, skill_dir, home)
+    if not skill_md.is_file():
+        blockers.append("candidate must contain SKILL.md")
+        frontmatter: dict[str, Any] = {}
+    else:
+        try:
+            frontmatter = parse_skill_frontmatter(skill_md)
+        except yaml.YAMLError as exc:
+            blockers.append(f"candidate SKILL.md frontmatter is invalid YAML: {exc.__class__.__name__}")
+            frontmatter = {}
+    name = str(frontmatter.get("name") or "")
+    description = str(frontmatter.get("description") or "")
+    if not name:
+        blockers.append("candidate SKILL.md frontmatter must include name")
+    if name and not name.startswith("ls-"):
+        warnings.append("candidate skill name should use the ls- namespace")
+    if name and skill_dir.name != name:
+        warnings.append("candidate directory name should match frontmatter name")
+    if not description:
+        blockers.append("candidate SKILL.md frontmatter must include description")
+    safety = _candidate_safety_findings(repo_root, skill_dir) if skill_md.is_file() else {"ok": True, "message": "skipped", "findings": []}
+    if not safety["ok"]:
+        warnings.append(f"content-safety scan unavailable: {safety['message']}")
+    return {
+        "ok": not blockers,
+        "schema_version": 1,
+        "candidate": {
+            "path": str(skill_dir),
+            "skill_md": str(skill_md),
+            "name": name,
+            "description": description,
+        },
+        "validation": {
+            "blockers": blockers,
+            "warnings": warnings,
+        },
+        "safety": safety,
+    }
+
+
+def candidate_skill_proposal(repo_root: Path, candidate: Path, *, home: Path | None = None) -> dict[str, Any]:
+    payload = validate_candidate_skill(repo_root, candidate, home=home)
+    candidate_data = payload["candidate"]
+    name = candidate_data["name"] or Path(candidate_data["path"]).name
+    description = candidate_data["description"] or "(description missing)"
+    issue_text = (
+        f"Propose repo-scoped Localsetup skill candidate `{name}`.\n\n"
+        f"Summary: {description}\n\n"
+        "Requested review:\n"
+        "- Confirm the skill belongs in Localsetup or should remain downstream.\n"
+        "- Review validation blockers, warnings, and content-safety references.\n"
+        "- Decide separately whether to promote into `_localsetup/skills/`."
+    )
+    adapter_preview = {
+        "supported": False,
+        "reason": "candidate-skill v1 is validation/proposal only and does not mutate adapters",
+    }
+    return {
+        "ok": payload["ok"],
+        "schema_version": 1,
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "candidate": candidate_data,
+        "validation": payload["validation"],
+        "safety": payload["safety"],
+        "suggested_upstream_text": issue_text,
+        "adapter_preview": adapter_preview,
+    }
+
+
+def candidate_skill_proposal_markdown(payload: dict[str, Any]) -> str:
+    candidate = payload["candidate"]
+    validation = payload["validation"]
+    safety = payload["safety"]
+    lines = [
+        "# Candidate skill proposal",
+        "",
+        f"- Candidate: `{candidate.get('name') or Path(str(candidate.get('path'))).name}`",
+        f"- Path: `{candidate.get('path')}`",
+        f"- Description: {candidate.get('description') or '(missing)'}",
+        f"- Validation: {'ok' if payload.get('ok') else 'blocked'}",
+        "",
+        "## Validation",
+        "",
+    ]
+    blockers = validation.get("blockers") or []
+    warnings = validation.get("warnings") or []
+    lines.extend([f"- Blocker: {item}" for item in blockers] or ["- Blocker: none"])
+    lines.extend([f"- Warning: {item}" for item in warnings] or ["- Warning: none"])
+    lines.extend(["", "## Safety Findings", ""])
+    findings = safety.get("findings") or []
+    if findings:
+        for item in findings:
+            location = item.get("file")
+            if item.get("line"):
+                location = f"{location}:{item.get('line')}:{item.get('col')}"
+            lines.append(f"- {item.get('pattern_id')}: {location} - {item.get('description')}")
+    else:
+        lines.append("- none")
+    lines.extend(["", "## Suggested Upstream Text", "", payload["suggested_upstream_text"], ""])
+    return "\n".join(lines)
 
 
 def selected_pack_names(repo_root: Path, requested_packs: list[str] | None) -> list[str]:

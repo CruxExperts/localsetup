@@ -3,6 +3,7 @@ heartbeat:
   interval_minutes: 15
   state_dir: .localsetup/state/codex-heartbeat
   stale_after_seconds: 3600
+  task_queue_path: null
 
 codex:
   enabled: false

@@ -22,6 +22,7 @@ from .global_first_audit import audit_global_first
 from .git_state import git_status_snapshot, status_delta
 from .harness import disable as harness_disable
 from .harness import enable as harness_enable
+from .harness import budget as harness_budget
 from .harness import init as harness_init
 from .harness import payload_to_text as harness_payload_to_text
 from .harness import plan as harness_plan
@@ -52,7 +53,7 @@ from .registry import load_registry
 from .rollback import rollback
 from .selection import PRESETS
 from .shell import SHIM_ENV, detect_invocation_target, register_shell_command, shell_registration_status
-from .skills import load_skill_catalog, validate_skill_catalog
+from .skills import candidate_skill_path_blockers, candidate_skill_proposal, candidate_skill_proposal_markdown, load_skill_catalog, validate_candidate_skill, validate_skill_catalog
 from .skills import parse_skill_frontmatter
 from .workflows import load_workflow_catalog, validate_workflow_catalog
 from .verify import verify_install
@@ -754,6 +755,14 @@ def _main(argv: list[str] | None = None) -> int:
     skill_search.add_argument("query", nargs="?")
     skill_info = skill_sub.add_parser("info")
     skill_info.add_argument("query")
+    candidate_skill_p = sub.add_parser("candidate-skill")
+    candidate_skill_sub = candidate_skill_p.add_subparsers(dest="candidate_skill_action", required=True)
+    candidate_validate = candidate_skill_sub.add_parser("validate")
+    candidate_validate.add_argument("--candidate", required=True)
+    candidate_validate.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
+    candidate_proposal = candidate_skill_sub.add_parser("proposal")
+    candidate_proposal.add_argument("--candidate", required=True)
+    candidate_proposal.add_argument("--output", default="-")
     workflow_p = sub.add_parser("workflow")
     workflow_sub = workflow_p.add_subparsers(dest="workflow_action", required=True)
     workflow_search = workflow_sub.add_parser("search")
@@ -797,7 +806,7 @@ def _main(argv: list[str] | None = None) -> int:
     harness_sub = harness_p.add_subparsers(dest="harness_topic", required=True)
     heartbeat_p = harness_sub.add_parser("codex-heartbeat")
     heartbeat_sub = heartbeat_p.add_subparsers(dest="harness_action", required=True)
-    for action_name in ("plan", "init", "status"):
+    for action_name in ("plan", "init", "status", "budget"):
         action_p = heartbeat_sub.add_parser(action_name)
         _add_harness_target_flags(action_p)
     for action_name in ("enable", "disable"):
@@ -1431,6 +1440,8 @@ def _main(argv: list[str] | None = None) -> int:
             payload = harness_disable(root, target_root, install_crontab=args.install_crontab, yes=args.yes)
         elif args.harness_action == "status":
             payload = harness_status(root, target_root)
+        elif args.harness_action == "budget":
+            payload = harness_budget(root, target_root)
         elif args.harness_action == "run":
             payload = harness_run(root, target_root, no_agent=args.no_agent, force=args.force)
         else:
@@ -1438,6 +1449,29 @@ def _main(argv: list[str] | None = None) -> int:
             return 2
         print(harness_payload_to_text(payload))
         return 0 if payload.get("ok") else 1
+
+    if args.cmd == "candidate-skill":
+        candidate = Path(args.candidate).expanduser()
+        if args.candidate_skill_action == "validate":
+            payload = validate_candidate_skill(root, candidate, home=home)
+            print(json.dumps(payload, indent=2, sort_keys=True))
+            return 0 if payload.get("ok") else 1
+        if args.candidate_skill_action == "proposal":
+            payload = candidate_skill_proposal(root, candidate, home=home)
+            text = candidate_skill_proposal_markdown(payload)
+            if args.output == "-":
+                print(text, end="")
+            else:
+                output = Path(args.output).expanduser().resolve()
+                output_blockers = candidate_skill_path_blockers(root, output, home=home)
+                if output_blockers:
+                    print(f"localsetup: candidate-skill proposal output path blocked: {output_blockers[0]}", file=sys.stderr)
+                    return 1
+                output.parent.mkdir(parents=True, exist_ok=True)
+                output.write_text(text, encoding="utf-8")
+            return 0 if payload.get("ok") else 1
+        print(f"localsetup: unsupported candidate-skill action: {args.candidate_skill_action}", file=sys.stderr)
+        return 2
 
     if args.cmd == "docs-align":
         tool = root / "_localsetup" / "tools" / "docs_alignment.py"
