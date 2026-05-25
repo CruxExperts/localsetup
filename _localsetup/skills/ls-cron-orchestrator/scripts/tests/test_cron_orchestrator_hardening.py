@@ -1,6 +1,7 @@
 import subprocess
 import sys
 import os
+import stat
 from pathlib import Path
 
 import yaml
@@ -159,6 +160,57 @@ def test_run_trigger_appends_durable_log(tmp_path: Path) -> None:
     assert "stdout marker" in log_text
     assert "stderr marker" in log_text
     assert "runner_exit trigger=nightly exit_code=0" in log_text
+
+
+def test_run_trigger_creates_private_durable_log_permissions(tmp_path: Path) -> None:
+    if os.name != "posix":
+        return
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    log_dir = tmp_path / "logs"
+    manifest = tmp_path / "manifest.yaml"
+    _write_manifest(
+        manifest,
+        {
+            "triggers": {"nightly": {"schedule": "0 2 * * *"}},
+            "tasks": [{"id": "log-task", "trigger": "nightly", "sequence_order": 1, "command": [sys.executable, "-c", "print('secret-ish tail')"]}],
+        },
+    )
+
+    old_umask = os.umask(0)
+    try:
+        proc = _run_trigger(manifest, "--repo-root", str(repo_root), "--log-dir", str(log_dir), "nightly")
+    finally:
+        os.umask(old_umask)
+
+    log_path = log_dir / "nightly.log"
+    assert proc.returncode == 0
+    assert stat.S_IMODE(log_dir.stat().st_mode) == 0o700
+    assert stat.S_IMODE(log_path.stat().st_mode) == 0o600
+
+
+def test_run_trigger_rejects_public_existing_log_dir(tmp_path: Path) -> None:
+    if os.name != "posix":
+        return
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    log_dir = tmp_path / "logs"
+    log_dir.mkdir()
+    os.chmod(log_dir, 0o755)
+    manifest = tmp_path / "manifest.yaml"
+    _write_manifest(
+        manifest,
+        {
+            "triggers": {"nightly": {"schedule": "0 2 * * *"}},
+            "tasks": [{"id": "task", "trigger": "nightly", "sequence_order": 1, "command": ["python3", "--version"]}],
+        },
+    )
+
+    proc = _run_trigger(manifest, "--repo-root", str(repo_root), "--log-dir", str(log_dir), "nightly")
+
+    assert proc.returncode == 1
+    assert "permissions must not allow group/other access" in proc.stderr
+    assert not (log_dir / "nightly.log").exists()
 
 
 def test_run_trigger_logs_runner_exit_for_manifest_validation_failure(tmp_path: Path) -> None:

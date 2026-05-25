@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import stat
 import subprocess
 import sys
 import time
@@ -25,6 +26,8 @@ from _cron_manifest import (
 )
 
 LOG_TAIL_CHARS = 4000
+PRIVATE_DIR_MODE = 0o700
+PRIVATE_FILE_MODE = 0o600
 
 
 class RunnerLogError(ValueError):
@@ -38,12 +41,23 @@ def _utc_now() -> str:
 def _log_file(log_dir: Path | None, trigger_name: str) -> Path | None:
     if log_dir is None:
         return None
+    existed = log_dir.exists()
     try:
         log_dir.mkdir(parents=True, exist_ok=True)
     except OSError as exc:
         raise RunnerLogError(f"Invalid log directory {log_dir}: {exc}") from exc
     if not log_dir.is_dir():
         raise RunnerLogError(f"Invalid log directory {log_dir}: not a directory")
+    if os.name == "posix":
+        try:
+            mode = stat.S_IMODE(log_dir.stat().st_mode)
+            if existed and mode & 0o077:
+                raise RunnerLogError(f"Invalid log directory {log_dir}: permissions must not allow group/other access")
+            os.chmod(log_dir, PRIVATE_DIR_MODE)
+        except RunnerLogError:
+            raise
+        except OSError as exc:
+            raise RunnerLogError(f"Invalid log directory {log_dir}: failed to set private permissions: {exc}") from exc
     safe_trigger = "".join(ch if ch.isalnum() or ch in "._@+-" else "_" for ch in trigger_name)[:MAX_TRIGGER_LEN]
     return log_dir / f"{safe_trigger}.log"
 
@@ -56,8 +70,15 @@ def _append_log(path: Path | None, message: str) -> None:
     if path is None:
         return
     try:
-        with path.open("a", encoding="utf-8") as handle:
+        if os.name == "posix" and path.exists() and stat.S_IMODE(path.stat().st_mode) & 0o077:
+            raise RunnerLogError(f"Invalid log file {path}: permissions must not allow group/other access")
+        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_APPEND, PRIVATE_FILE_MODE)
+        if os.name == "posix":
+            os.fchmod(fd, PRIVATE_FILE_MODE)
+        with os.fdopen(fd, "a", encoding="utf-8") as handle:
             handle.write(f"{_utc_now()} {message}\n")
+    except RunnerLogError:
+        raise
     except OSError as exc:
         raise RunnerLogError(f"Failed to write log file {path}: {exc}") from exc
 
