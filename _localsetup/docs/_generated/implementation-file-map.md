@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 9bcf10626766f4f79cc7bac640846ff9d3d4b5747dc80f3acba1d4e917be8d7e
+  source_provenance_hash: d82e5d163ffb7e51e0f916e2a464fe3d18de98ca736d1ff791cab23f097380f2
   emitter: generate-docs
-framework_version: 4.0.16
-source_commit: 856efa90b300a919d5e6e6c1afbe786b46ce3496
-artifact_sha256: be098518f38ad3bec1ff49f5192a95c65cc7cf28a3fc4362e8ca72653e120c06
+framework_version: 4.0.17
+source_commit: aff502123cd4f225a59a0a9ff76f6818aeb43a34
+artifact_sha256: f4c7fa6114920013511edf08a68c625926263ec2b30f486d10315de4b4019513
 ---
 # Implementation File Map
 
@@ -512,6 +512,7 @@ artifact_sha256: be098518f38ad3bec1ff49f5192a95c65cc7cf28a3fc4362e8ca72653e120c0
 | `keep` | `_localsetup/skills/ls-omniroute-mcp/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-omniroute-monitoring/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-omniroute-proxy/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-omniroute-proxy/references/model-equivalence.yaml` |
 | `keep` | `_localsetup/skills/ls-omniroute-proxy/references/omniroute-endpoints.md` |
 | `keep` | `_localsetup/skills/ls-omniroute-proxy/scripts/omniroute_discover.py` |
 | `keep` | `_localsetup/skills/ls-omniroute-routing/SKILL.md` |
@@ -631,6 +632,7 @@ artifact_sha256: be098518f38ad3bec1ff49f5192a95c65cc7cf28a3fc4362e8ca72653e120c0
 | `keep` | `_localsetup/tests/conftest.py` |
 | `keep` | `_localsetup/tests/skill_smoke_commands.yaml` |
 | `keep` | `_localsetup/tests/test_adapter_parser.py` |
+| `keep` | `_localsetup/tests/test_candidate_skill_cli.py` |
 | `keep` | `_localsetup/tests/test_codex_heartbeat.py` |
 | `keep` | `_localsetup/tests/test_context_index.py` |
 | `keep` | `_localsetup/tests/test_docs_alignment.py` |
