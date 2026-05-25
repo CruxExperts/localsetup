@@ -1,16 +1,17 @@
 {
   "artifacts": [
     {
-      "artifact_sha256": "60bea5e0e0f95eff65d177a940afbfc2eb4b9781546175b5c1659a2e9abf7fd4",
+      "artifact_sha256": "b9ad31837eeb163343749fc824365fd7feb3943f34e888cb97f9b64287a2c9f8",
       "emitter": "generate-docs",
       "framework_version": "4.0.16",
       "path": "_localsetup/docs/SKILLS.md",
-      "provenance_hash": "ef9e352a8d3831fb24e2edec6a5223bd5c2d6567c51e88c80720f1fc078dad3a",
-      "source_commit": "623e335c0633d3fbb8914f9fe2d5e9214bb0d4e2",
+      "provenance_hash": "9bcf10626766f4f79cc7bac640846ff9d3d4b5747dc80f3acba1d4e917be8d7e",
+      "source_commit": "856efa90b300a919d5e6e6c1afbe786b46ce3496",
       "source_inputs": [
         "VERSION",
         "_localsetup/skills",
         "_localsetup/config/pack.yaml",
+        "_localsetup/config/plugin-packs.yaml",
         "_localsetup/workflows",
         "_localsetup/config/platforms.yaml",
         "_localsetup/docs/PLATFORM_REGISTRY.md"
@@ -18,16 +19,17 @@
       "type": "markdown"
     },
     {
-      "artifact_sha256": "65396a31322d5d5e8aa06af420ea491e48bacac06a2d35c9f74f25b9f707119f",
+      "artifact_sha256": "2849f2b5895b20d1f2c7ef89586f05eac2dc24cb1ddda3c13edde5a8289c1c4e",
       "emitter": "generate-docs",
       "framework_version": "4.0.16",
       "path": "_localsetup/docs/WORKFLOW_QUICK_REF.md",
-      "provenance_hash": "ef9e352a8d3831fb24e2edec6a5223bd5c2d6567c51e88c80720f1fc078dad3a",
-      "source_commit": "623e335c0633d3fbb8914f9fe2d5e9214bb0d4e2",
+      "provenance_hash": "9bcf10626766f4f79cc7bac640846ff9d3d4b5747dc80f3acba1d4e917be8d7e",
+      "source_commit": "856efa90b300a919d5e6e6c1afbe786b46ce3496",
       "source_inputs": [
         "VERSION",
         "_localsetup/skills",
         "_localsetup/config/pack.yaml",
+        "_localsetup/config/plugin-packs.yaml",
         "_localsetup/workflows",
         "_localsetup/config/platforms.yaml",
         "_localsetup/docs/PLATFORM_REGISTRY.md"
@@ -35,16 +37,17 @@
       "type": "markdown"
     },
     {
-      "artifact_sha256": "b39b0a2af192b71a5cc75ee00c6fd16d3cfa180822370a88e39bd896c48f2064",
+      "artifact_sha256": "5f8902902ad524c2333a8037f63b2ef8508c3abbe690f5f8c53c3fcd43d9df02",
       "emitter": "generate-docs",
       "framework_version": "4.0.16",
       "path": "_localsetup/docs/WORKFLOW_REGISTRY.md",
-      "provenance_hash": "ef9e352a8d3831fb24e2edec6a5223bd5c2d6567c51e88c80720f1fc078dad3a",
-      "source_commit": "623e335c0633d3fbb8914f9fe2d5e9214bb0d4e2",
+      "provenance_hash": "9bcf10626766f4f79cc7bac640846ff9d3d4b5747dc80f3acba1d4e917be8d7e",
+      "source_commit": "856efa90b300a919d5e6e6c1afbe786b46ce3496",
       "source_inputs": [
         "VERSION",
         "_localsetup/skills",
         "_localsetup/config/pack.yaml",
+        "_localsetup/config/plugin-packs.yaml",
         "_localsetup/workflows",
         "_localsetup/config/platforms.yaml",
         "_localsetup/docs/PLATFORM_REGISTRY.md"
@@ -52,16 +55,17 @@
       "type": "markdown"
     },
     {
-      "artifact_sha256": "8ee6e0a48b0f8527aae7718619b4ee6808365fa4a0a00bb4d39800b3a08ed97f",
+      "artifact_sha256": "80216bfd8a5acf385c2dd818e7483cf7c85effc9f38b8d4b57405a99652eb75e",
       "emitter": "generate-docs",
       "framework_version": "4.0.16",
       "path": "_localsetup/docs/_generated/docs-alignment-summary.md",
-      "provenance_hash": "ef9e352a8d3831fb24e2edec6a5223bd5c2d6567c51e88c80720f1fc078dad3a",
-      "source_commit": "623e335c0633d3fbb8914f9fe2d5e9214bb0d4e2",
+      "provenance_hash": "9bcf10626766f4f79cc7bac640846ff9d3d4b5747dc80f3acba1d4e917be8d7e",
+      "source_commit": "856efa90b300a919d5e6e6c1afbe786b46ce3496",
       "source_inputs": [
         "VERSION",
         "_localsetup/skills",
         "_localsetup/config/pack.yaml",
+        "_localsetup/config/plugin-packs.yaml",
         "_localsetup/workflows",
         "_localsetup/config/platforms.yaml",
         "_localsetup/docs/PLATFORM_REGISTRY.md"
@@ -69,16 +73,17 @@
       "type": "markdown"
     },
     {
-      "artifact_sha256": "0876e606789362119b140beac431f5cf985b169fedc0d8264a909fcaab5a8ae4",
+      "artifact_sha256": "c04e07ceec315c179a08358c987f6a6054021dc43af9082c6689be33044d0707",
       "emitter": "generate-docs",
       "framework_version": "4.0.16",
       "path": "_localsetup/docs/_generated/docs-asset-manifest.json",
-      "provenance_hash": "ef9e352a8d3831fb24e2edec6a5223bd5c2d6567c51e88c80720f1fc078dad3a",
-      "source_commit": "623e335c0633d3fbb8914f9fe2d5e9214bb0d4e2",
+      "provenance_hash": "9bcf10626766f4f79cc7bac640846ff9d3d4b5747dc80f3acba1d4e917be8d7e",
+      "source_commit": "856efa90b300a919d5e6e6c1afbe786b46ce3496",
       "source_inputs": [
         "VERSION",
         "_localsetup/skills",
         "_localsetup/config/pack.yaml",
+        "_localsetup/config/plugin-packs.yaml",
         "_localsetup/workflows",
         "_localsetup/config/platforms.yaml",
         "_localsetup/docs/PLATFORM_REGISTRY.md"
@@ -86,16 +91,17 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "80c9b8e062afe2edfce00c2a6098b80c49149317facc83e31dc7d09d568d8254",
+      "artifact_sha256": "a9b70478b394e822448bfb546cac8323a558651cc9734774963ab90f9523111f",
       "emitter": "generate-docs",
       "framework_version": "4.0.16",
       "path": "_localsetup/docs/_generated/docs-audit-result.json",
-      "provenance_hash": "ef9e352a8d3831fb24e2edec6a5223bd5c2d6567c51e88c80720f1fc078dad3a",
-      "source_commit": "623e335c0633d3fbb8914f9fe2d5e9214bb0d4e2",
+      "provenance_hash": "9bcf10626766f4f79cc7bac640846ff9d3d4b5747dc80f3acba1d4e917be8d7e",
+      "source_commit": "856efa90b300a919d5e6e6c1afbe786b46ce3496",
       "source_inputs": [
         "VERSION",
         "_localsetup/skills",
         "_localsetup/config/pack.yaml",
+        "_localsetup/config/plugin-packs.yaml",
         "_localsetup/workflows",
         "_localsetup/config/platforms.yaml",
         "_localsetup/docs/PLATFORM_REGISTRY.md"
@@ -103,16 +109,17 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "3028f66b5b313992b12e0de653bf004caaad9f9bc0eeee9efe3a37a56d437e8a",
+      "artifact_sha256": "f1dd2093ad5af5916fd32a6c4705bc201dd9f443c4594d2d002e63e4e1006b5a",
       "emitter": "generate-docs",
       "framework_version": "4.0.16",
       "path": "_localsetup/docs/_generated/docs-inventory.json",
-      "provenance_hash": "ef9e352a8d3831fb24e2edec6a5223bd5c2d6567c51e88c80720f1fc078dad3a",
-      "source_commit": "623e335c0633d3fbb8914f9fe2d5e9214bb0d4e2",
+      "provenance_hash": "9bcf10626766f4f79cc7bac640846ff9d3d4b5747dc80f3acba1d4e917be8d7e",
+      "source_commit": "856efa90b300a919d5e6e6c1afbe786b46ce3496",
       "source_inputs": [
         "VERSION",
         "_localsetup/skills",
         "_localsetup/config/pack.yaml",
+        "_localsetup/config/plugin-packs.yaml",
         "_localsetup/workflows",
         "_localsetup/config/platforms.yaml",
         "_localsetup/docs/PLATFORM_REGISTRY.md"
@@ -120,16 +127,17 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "7810a0ff0fd829fdf63a16dcc3f37511330c1d157cec39ea07db7355664f3fae",
+      "artifact_sha256": "2ab9ab41d2ae5a428a6b3192e5000619deeb880cccaae060c93d609f6c011b89",
       "emitter": "generate-docs",
       "framework_version": "4.0.16",
       "path": "_localsetup/docs/_generated/docs-truth-map.json",
-      "provenance_hash": "ef9e352a8d3831fb24e2edec6a5223bd5c2d6567c51e88c80720f1fc078dad3a",
-      "source_commit": "623e335c0633d3fbb8914f9fe2d5e9214bb0d4e2",
+      "provenance_hash": "9bcf10626766f4f79cc7bac640846ff9d3d4b5747dc80f3acba1d4e917be8d7e",
+      "source_commit": "856efa90b300a919d5e6e6c1afbe786b46ce3496",
       "source_inputs": [
         "VERSION",
         "_localsetup/skills",
         "_localsetup/config/pack.yaml",
+        "_localsetup/config/plugin-packs.yaml",
         "_localsetup/workflows",
         "_localsetup/config/platforms.yaml",
         "_localsetup/docs/PLATFORM_REGISTRY.md"
@@ -137,16 +145,17 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "3da07ffeaf7c904b6a80038ea948e27e7ae07d4d1fd1d9a0c2f4982929627d74",
+      "artifact_sha256": "99164f973206d3066eb4e15d137290125f22c433f0bf4b9be6ce7ff0a72a81b0",
       "emitter": "generate-docs",
       "framework_version": "4.0.16",
       "path": "_localsetup/docs/_generated/facts.json",
-      "provenance_hash": "ef9e352a8d3831fb24e2edec6a5223bd5c2d6567c51e88c80720f1fc078dad3a",
-      "source_commit": "623e335c0633d3fbb8914f9fe2d5e9214bb0d4e2",
+      "provenance_hash": "9bcf10626766f4f79cc7bac640846ff9d3d4b5747dc80f3acba1d4e917be8d7e",
+      "source_commit": "856efa90b300a919d5e6e6c1afbe786b46ce3496",
       "source_inputs": [
         "VERSION",
         "_localsetup/skills",
         "_localsetup/config/pack.yaml",
+        "_localsetup/config/plugin-packs.yaml",
         "_localsetup/workflows",
         "_localsetup/config/platforms.yaml",
         "_localsetup/docs/PLATFORM_REGISTRY.md"
@@ -154,16 +163,17 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "6882309408bc87de85405eb637aa2a0f02a2a7dfd9733ef5837b8315fe1363b4",
+      "artifact_sha256": "8c763f7e519f55903cfabd752d7d464fb29d51a3c43470583010e00250eabe86",
       "emitter": "generate-docs",
       "framework_version": "4.0.16",
       "path": "_localsetup/docs/_generated/implementation-file-map.md",
-      "provenance_hash": "ef9e352a8d3831fb24e2edec6a5223bd5c2d6567c51e88c80720f1fc078dad3a",
-      "source_commit": "623e335c0633d3fbb8914f9fe2d5e9214bb0d4e2",
+      "provenance_hash": "9bcf10626766f4f79cc7bac640846ff9d3d4b5747dc80f3acba1d4e917be8d7e",
+      "source_commit": "856efa90b300a919d5e6e6c1afbe786b46ce3496",
       "source_inputs": [
         "VERSION",
         "_localsetup/skills",
         "_localsetup/config/pack.yaml",
+        "_localsetup/config/plugin-packs.yaml",
         "_localsetup/workflows",
         "_localsetup/config/platforms.yaml",
         "_localsetup/docs/PLATFORM_REGISTRY.md"
@@ -171,16 +181,17 @@
       "type": "markdown"
     },
     {
-      "artifact_sha256": "d855cf10e64711f63137beb7b89c8e856ddf9dfdbb765132490542e005292c18",
+      "artifact_sha256": "0c65f0925645146c6ac37393929d63db9b74e363cfa97e5e2df9db220916d1b3",
       "emitter": "generate-docs",
       "framework_version": "4.0.16",
       "path": "_localsetup/docs/_generated/platform-adapters.md",
-      "provenance_hash": "ef9e352a8d3831fb24e2edec6a5223bd5c2d6567c51e88c80720f1fc078dad3a",
-      "source_commit": "623e335c0633d3fbb8914f9fe2d5e9214bb0d4e2",
+      "provenance_hash": "9bcf10626766f4f79cc7bac640846ff9d3d4b5747dc80f3acba1d4e917be8d7e",
+      "source_commit": "856efa90b300a919d5e6e6c1afbe786b46ce3496",
       "source_inputs": [
         "VERSION",
         "_localsetup/skills",
         "_localsetup/config/pack.yaml",
+        "_localsetup/config/plugin-packs.yaml",
         "_localsetup/workflows",
         "_localsetup/config/platforms.yaml",
         "_localsetup/docs/PLATFORM_REGISTRY.md"
@@ -188,16 +199,53 @@
       "type": "markdown"
     },
     {
-      "artifact_sha256": "08c03c7dde09aea88bca2b9f093bbc290fb95625847406256469fc59d46814d5",
+      "artifact_sha256": "81821760fe3d2096bf1e9799b551aa3d0a7e5b62f7b7b39c5650b7a8dc8dba3d",
+      "emitter": "generate-docs",
+      "framework_version": "4.0.16",
+      "path": "_localsetup/docs/_generated/plugin-packs.json",
+      "provenance_hash": "9bcf10626766f4f79cc7bac640846ff9d3d4b5747dc80f3acba1d4e917be8d7e",
+      "source_commit": "856efa90b300a919d5e6e6c1afbe786b46ce3496",
+      "source_inputs": [
+        "VERSION",
+        "_localsetup/skills",
+        "_localsetup/config/pack.yaml",
+        "_localsetup/config/plugin-packs.yaml",
+        "_localsetup/workflows",
+        "_localsetup/config/platforms.yaml",
+        "_localsetup/docs/PLATFORM_REGISTRY.md"
+      ],
+      "type": "json"
+    },
+    {
+      "artifact_sha256": "8035a9bf3c1147f608c949f63b6e3c72088234d3ff8da96e44683a0541e55ca2",
+      "emitter": "generate-docs",
+      "framework_version": "4.0.16",
+      "path": "_localsetup/docs/_generated/plugin-packs.md",
+      "provenance_hash": "9bcf10626766f4f79cc7bac640846ff9d3d4b5747dc80f3acba1d4e917be8d7e",
+      "source_commit": "856efa90b300a919d5e6e6c1afbe786b46ce3496",
+      "source_inputs": [
+        "VERSION",
+        "_localsetup/skills",
+        "_localsetup/config/pack.yaml",
+        "_localsetup/config/plugin-packs.yaml",
+        "_localsetup/workflows",
+        "_localsetup/config/platforms.yaml",
+        "_localsetup/docs/PLATFORM_REGISTRY.md"
+      ],
+      "type": "markdown"
+    },
+    {
+      "artifact_sha256": "5abcde1f15c72f9b0beb8e9f4bb9620c8fc848e4259d08a746b10a79ed8bb365",
       "emitter": "generate-docs",
       "framework_version": "4.0.16",
       "path": "_localsetup/docs/_generated/skill-packs.md",
-      "provenance_hash": "ef9e352a8d3831fb24e2edec6a5223bd5c2d6567c51e88c80720f1fc078dad3a",
-      "source_commit": "623e335c0633d3fbb8914f9fe2d5e9214bb0d4e2",
+      "provenance_hash": "9bcf10626766f4f79cc7bac640846ff9d3d4b5747dc80f3acba1d4e917be8d7e",
+      "source_commit": "856efa90b300a919d5e6e6c1afbe786b46ce3496",
       "source_inputs": [
         "VERSION",
         "_localsetup/skills",
         "_localsetup/config/pack.yaml",
+        "_localsetup/config/plugin-packs.yaml",
         "_localsetup/workflows",
         "_localsetup/config/platforms.yaml",
         "_localsetup/docs/PLATFORM_REGISTRY.md"
@@ -205,16 +253,17 @@
       "type": "markdown"
     },
     {
-      "artifact_sha256": "5ea0ffb84f0180845fd05d97dec96f57356fb4c85952201bc756d94dc572113b",
+      "artifact_sha256": "fc2b7510c43643af26351ae49acee0ad111fdbb9bcfb6a8f1ba35527cd4bb6a1",
       "emitter": "generate-docs",
       "framework_version": "4.0.16",
       "path": "_localsetup/docs/_generated/skill-taxonomy.json",
-      "provenance_hash": "ef9e352a8d3831fb24e2edec6a5223bd5c2d6567c51e88c80720f1fc078dad3a",
-      "source_commit": "623e335c0633d3fbb8914f9fe2d5e9214bb0d4e2",
+      "provenance_hash": "9bcf10626766f4f79cc7bac640846ff9d3d4b5747dc80f3acba1d4e917be8d7e",
+      "source_commit": "856efa90b300a919d5e6e6c1afbe786b46ce3496",
       "source_inputs": [
         "VERSION",
         "_localsetup/skills",
         "_localsetup/config/pack.yaml",
+        "_localsetup/config/plugin-packs.yaml",
         "_localsetup/workflows",
         "_localsetup/config/platforms.yaml",
         "_localsetup/docs/PLATFORM_REGISTRY.md"
@@ -222,16 +271,17 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "4991aa6ebd3b18dca4d3f1dc1d5c70f876337706c14d43d91455ae5ad6d49982",
+      "artifact_sha256": "cccab384efcf7f95bfa4bb804ccaeb150e71cbfad791aa3508326e2140a2d1ac",
       "emitter": "generate-docs",
       "framework_version": "4.0.16",
       "path": "_localsetup/docs/_generated/skill_aliases.json",
-      "provenance_hash": "ef9e352a8d3831fb24e2edec6a5223bd5c2d6567c51e88c80720f1fc078dad3a",
-      "source_commit": "623e335c0633d3fbb8914f9fe2d5e9214bb0d4e2",
+      "provenance_hash": "9bcf10626766f4f79cc7bac640846ff9d3d4b5747dc80f3acba1d4e917be8d7e",
+      "source_commit": "856efa90b300a919d5e6e6c1afbe786b46ce3496",
       "source_inputs": [
         "VERSION",
         "_localsetup/skills",
         "_localsetup/config/pack.yaml",
+        "_localsetup/config/plugin-packs.yaml",
         "_localsetup/workflows",
         "_localsetup/config/platforms.yaml",
         "_localsetup/docs/PLATFORM_REGISTRY.md"
@@ -239,16 +289,17 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "cc033007ae090728a8022b39d6765aad69f2010668c0bffbad8885c70334c0b7",
+      "artifact_sha256": "bf67189632324a9cd49d3be97b08a76ba163dce08a177eb012b2795752dd42bf",
       "emitter": "generate-docs",
       "framework_version": "4.0.16",
       "path": "_localsetup/docs/_generated/workflow-catalog.json",
-      "provenance_hash": "ef9e352a8d3831fb24e2edec6a5223bd5c2d6567c51e88c80720f1fc078dad3a",
-      "source_commit": "623e335c0633d3fbb8914f9fe2d5e9214bb0d4e2",
+      "provenance_hash": "9bcf10626766f4f79cc7bac640846ff9d3d4b5747dc80f3acba1d4e917be8d7e",
+      "source_commit": "856efa90b300a919d5e6e6c1afbe786b46ce3496",
       "source_inputs": [
         "VERSION",
         "_localsetup/skills",
         "_localsetup/config/pack.yaml",
+        "_localsetup/config/plugin-packs.yaml",
         "_localsetup/workflows",
         "_localsetup/config/platforms.yaml",
         "_localsetup/docs/PLATFORM_REGISTRY.md"
@@ -256,16 +307,17 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "135ab6f3290c09666a0c5f6678650a14debc1f74dd1c455d109aff9c9bd891aa",
+      "artifact_sha256": "2155c09cec2bb6f39c3308e380d5a8b2387940285c8b213862b551c3bcb770cb",
       "emitter": "generate-docs",
       "framework_version": "4.0.16",
       "path": "_localsetup/docs/migration/skill-alias-map.md",
-      "provenance_hash": "ef9e352a8d3831fb24e2edec6a5223bd5c2d6567c51e88c80720f1fc078dad3a",
-      "source_commit": "623e335c0633d3fbb8914f9fe2d5e9214bb0d4e2",
+      "provenance_hash": "9bcf10626766f4f79cc7bac640846ff9d3d4b5747dc80f3acba1d4e917be8d7e",
+      "source_commit": "856efa90b300a919d5e6e6c1afbe786b46ce3496",
       "source_inputs": [
         "VERSION",
         "_localsetup/skills",
         "_localsetup/config/pack.yaml",
+        "_localsetup/config/plugin-packs.yaml",
         "_localsetup/workflows",
         "_localsetup/config/platforms.yaml",
         "_localsetup/docs/PLATFORM_REGISTRY.md"
@@ -277,12 +329,13 @@
       "emitter": "generate-docs",
       "framework_version": "4.0.16",
       "path": "assets/README.md",
-      "provenance_hash": "ef9e352a8d3831fb24e2edec6a5223bd5c2d6567c51e88c80720f1fc078dad3a",
-      "source_commit": "623e335c0633d3fbb8914f9fe2d5e9214bb0d4e2",
+      "provenance_hash": "9bcf10626766f4f79cc7bac640846ff9d3d4b5747dc80f3acba1d4e917be8d7e",
+      "source_commit": "856efa90b300a919d5e6e6c1afbe786b46ce3496",
       "source_inputs": [
         "VERSION",
         "_localsetup/skills",
         "_localsetup/config/pack.yaml",
+        "_localsetup/config/plugin-packs.yaml",
         "_localsetup/workflows",
         "_localsetup/config/platforms.yaml",
         "_localsetup/docs/PLATFORM_REGISTRY.md"
@@ -292,16 +345,16 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/artifact-registry.json",
-    "artifact_sha256": "105c381bc3f8af7b38239b27e64c34ac3ccc9fcba3974db2cf39218264c8df48",
+    "artifact_sha256": "bb16593cf14b7f93f09593455c1c295137910259895c096aad14e667dd6eefdb",
     "emitter": "generate-docs",
     "framework_version": "4.0.16",
     "schema_version": 1,
-    "source_commit": "623e335c0633d3fbb8914f9fe2d5e9214bb0d4e2",
+    "source_commit": "856efa90b300a919d5e6e6c1afbe786b46ce3496",
     "source_dirty": true,
-    "source_provenance_hash": "ef9e352a8d3831fb24e2edec6a5223bd5c2d6567c51e88c80720f1fc078dad3a",
-    "source_root_id": "f8e7acde84c18c3392e5e5e95ee69e436a3a6243341a4ba81284876778481460",
+    "source_provenance_hash": "9bcf10626766f4f79cc7bac640846ff9d3d4b5747dc80f3acba1d4e917be8d7e",
+    "source_root_id": "da11bcc64712a9719375c0b2c7b3c56b941ecfded23536635882a329578d109e",
     "source_tag": null,
-    "source_tree_sha": "31103b3fe9d556cce49011f88925a1279ae7db37"
+    "source_tree_sha": "c01252e84368c36e0e64853957d455c2a57134e1"
   },
   "schema_version": 1
 }

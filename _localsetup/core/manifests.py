@@ -115,4 +115,16 @@ def validate_manifest_schemas(repo_root: Path, *, require_jsonschema: bool = Tru
         issues.extend(validate_json_schema(platforms_data, config_root / "platforms.schema.json", label="platforms.yaml", required=require_jsonschema))
     except Exception as exc:
         issues.append(f"platforms.yaml schema validation failed: {exc}")
+    try:
+        plugin_packs_data = _load_yaml(config_root / "plugin-packs.yaml")
+        issues.extend(
+            validate_json_schema(
+                plugin_packs_data,
+                config_root / "plugin-packs.schema.json",
+                label="plugin-packs.yaml",
+                required=require_jsonschema,
+            )
+        )
+    except Exception as exc:
+        issues.append(f"plugin-packs.yaml schema validation failed: {exc}")
     return issues

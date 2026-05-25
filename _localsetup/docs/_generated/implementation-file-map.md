@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: ef9e352a8d3831fb24e2edec6a5223bd5c2d6567c51e88c80720f1fc078dad3a
+  source_provenance_hash: 9bcf10626766f4f79cc7bac640846ff9d3d4b5747dc80f3acba1d4e917be8d7e
   emitter: generate-docs
 framework_version: 4.0.16
-source_commit: 623e335c0633d3fbb8914f9fe2d5e9214bb0d4e2
-artifact_sha256: a15abac2ad67298efd378dfc79652ab5844f4dfaadce3a00ce5c1dcd5317878d
+source_commit: 856efa90b300a919d5e6e6c1afbe786b46ce3496
+artifact_sha256: be098518f38ad3bec1ff49f5192a95c65cc7cf28a3fc4362e8ca72653e120c06
 ---
 # Implementation File Map
 
@@ -73,6 +73,8 @@ artifact_sha256: a15abac2ad67298efd378dfc79652ab5844f4dfaadce3a00ce5c1dcd5317878
 | `refactor` | `_localsetup/config/pack.yaml` |
 | `keep` | `_localsetup/config/platforms.schema.json` |
 | `refactor` | `_localsetup/config/platforms.yaml` |
+| `keep` | `_localsetup/config/plugin-packs.schema.json` |
+| `keep` | `_localsetup/config/plugin-packs.yaml` |
 | `keep` | `_localsetup/config/skill-frontmatter.schema.json` |
 | `keep` | `_localsetup/config/workflow.schema.json` |
 | `refactor` | `_localsetup/core/__init__.py` |
@@ -105,6 +107,7 @@ artifact_sha256: a15abac2ad67298efd378dfc79652ab5844f4dfaadce3a00ce5c1dcd5317878
 | `refactor` | `_localsetup/core/package.py` |
 | `refactor` | `_localsetup/core/paths.py` |
 | `refactor` | `_localsetup/core/plan.py` |
+| `refactor` | `_localsetup/core/plugin_packs.py` |
 | `refactor` | `_localsetup/core/provenance.py` |
 | `refactor` | `_localsetup/core/query.py` |
 | `refactor` | `_localsetup/core/registry.py` |
@@ -142,6 +145,7 @@ artifact_sha256: a15abac2ad67298efd378dfc79652ab5844f4dfaadce3a00ce5c1dcd5317878
 | `keep` | `_localsetup/docs/MULTI_PLATFORM_INSTALL.md` |
 | `keep` | `_localsetup/docs/OUTPUT_AND_DOC_GENERATION.md` |
 | `keep` | `_localsetup/docs/PLATFORM_REGISTRY.md` |
+| `keep` | `_localsetup/docs/PLUGIN_PACKS.md` |
 | `keep` | `_localsetup/docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md` |
 | `keep` | `_localsetup/docs/PUBLIC_SKILL_INDEX.yaml` |
 | `keep` | `_localsetup/docs/PUBLIC_SKILL_REGISTRY.urls` |
@@ -176,6 +180,8 @@ artifact_sha256: a15abac2ad67298efd378dfc79652ab5844f4dfaadce3a00ce5c1dcd5317878
 | `generate` | `_localsetup/docs/_generated/facts.json` |
 | `generate` | `_localsetup/docs/_generated/implementation-file-map.md` |
 | `generate` | `_localsetup/docs/_generated/platform-adapters.md` |
+| `generate` | `_localsetup/docs/_generated/plugin-packs.json` |
+| `generate` | `_localsetup/docs/_generated/plugin-packs.md` |
 | `generate` | `_localsetup/docs/_generated/skill-packs.md` |
 | `generate` | `_localsetup/docs/_generated/skill-taxonomy.json` |
 | `generate` | `_localsetup/docs/_generated/skill_aliases.json` |
@@ -478,6 +484,7 @@ artifact_sha256: a15abac2ad67298efd378dfc79652ab5844f4dfaadce3a00ce5c1dcd5317878
 | `keep` | `_localsetup/skills/ls-npm-management/references/proxy-host-template.md` |
 | `keep` | `_localsetup/skills/ls-npm-management/scripts/npm_api.py` |
 | `keep` | `_localsetup/skills/ls-npm-management/scripts/test_npm_api.py` |
+| `keep` | `_localsetup/skills/ls-omniroute-a2a/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-omniroute-admin-automation/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md` |
 | `keep` | `_localsetup/skills/ls-omniroute-admin-automation/references/omniroute-auth-and-safety.md` |
@@ -493,13 +500,30 @@ artifact_sha256: a15abac2ad67298efd378dfc79652ab5844f4dfaadce3a00ce5c1dcd5317878
 | `keep` | `_localsetup/skills/ls-omniroute-admin-automation/scripts/lib/omniroute_admin/validate.py` |
 | `keep` | `_localsetup/skills/ls-omniroute-admin-automation/scripts/omniroute_admin.py` |
 | `keep` | `_localsetup/skills/ls-omniroute-admin-automation/scripts/tests/test_omniroute_admin.py` |
+| `keep` | `_localsetup/skills/ls-omniroute-chat/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-omniroute-cli-admin/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-omniroute-cli-cloud/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-omniroute-cli-eval/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-omniroute-cli-providers/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-omniroute-cli/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-omniroute-compression/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-omniroute-embeddings/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-omniroute-image/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-omniroute-mcp/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-omniroute-monitoring/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-omniroute-proxy/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-omniroute-proxy/references/omniroute-endpoints.md` |
 | `keep` | `_localsetup/skills/ls-omniroute-proxy/scripts/omniroute_discover.py` |
+| `keep` | `_localsetup/skills/ls-omniroute-routing/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-omniroute-stt/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-omniroute-tts/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-omniroute-update/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-omniroute-update/references/source-ledger.md` |
 | `keep` | `_localsetup/skills/ls-omniroute-update/references/update-workflow.md` |
 | `keep` | `_localsetup/skills/ls-omniroute-update/scripts/omniroute_update.py` |
+| `keep` | `_localsetup/skills/ls-omniroute-web-fetch/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-omniroute-web-search/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-omniroute/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-pr-reviewer/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-pr-reviewer/scripts/pr_review.py` |
 | `keep` | `_localsetup/skills/ls-pr-reviewer/scripts/tests/test_pr_review_inputs.py` |

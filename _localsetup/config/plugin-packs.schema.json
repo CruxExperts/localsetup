@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://localsetup.dev/schemas/plugin-packs.schema.json",
+  "title": "Localsetup plugin pack manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "plugin_packs"],
+  "properties": {
+    "schema_version": { "type": "integer", "minimum": 1 },
+    "plugin_packs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "display_name", "description", "category", "source_pack", "platforms", "extra_context_inputs"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+          "display_name": { "type": "string", "minLength": 1 },
+          "description": { "type": "string", "minLength": 1 },
+          "category": { "type": "string", "minLength": 1 },
+          "source_pack": { "type": "string", "minLength": 1 },
+          "platforms": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "minProperties": 1
+          },
+          "extra_context_inputs": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true
+          }
+        }
+      }
+    }
+  }
+}

@@ -41,6 +41,7 @@ ARTIFACT_SOURCE_INPUTS = [
     "VERSION",
     "_localsetup/skills",
     "_localsetup/config/pack.yaml",
+    "_localsetup/config/plugin-packs.yaml",
     "_localsetup/workflows",
     "_localsetup/config/platforms.yaml",
     "_localsetup/docs/PLATFORM_REGISTRY.md",
@@ -562,6 +563,8 @@ def main() -> int:
     print("Generated: _localsetup/docs/_generated/facts.json")
     print("Generated: _localsetup/docs/_generated/workflow-catalog.json")
     print("Generated: _localsetup/docs/_generated/skill-taxonomy.json")
+    print("Generated: _localsetup/docs/_generated/plugin-packs.json")
+    print("Generated: _localsetup/docs/_generated/plugin-packs.md")
     for output in alignment_outputs.values():
         print(f"Generated: {Path(output).relative_to(repo_root)}")
     print("Generated: _localsetup/docs/_generated/artifact-registry.json")

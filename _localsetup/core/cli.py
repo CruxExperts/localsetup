@@ -43,6 +43,7 @@ from .locking import PackageRootLockTimeout
 from .migration import conservative_migrate, scan_legacy_references
 from .package import build_public_artifact, verify_release_artifact, write_installed_sbom, write_source_sbom
 from .paths import expand_user_path
+from .plugin_packs import build_codex_plugins, load_plugin_pack_configs, plan_plugin_packs, validate_codex_plugin_path, validate_plugin_pack_manifest
 from .plan import build_install_plan
 from .provenance import provenance_report
 from .query import adopt_recommendations, graph_payload, pack_reasoning, skill_payload, workflow_payload
@@ -825,6 +826,22 @@ def _main(argv: list[str] | None = None) -> int:
     docs_align_p = sub.add_parser("docs-align")
     docs_align_p.add_argument("docs_align_args", nargs=argparse.REMAINDER)
 
+    plugin_p = sub.add_parser("plugin")
+    plugin_sub = plugin_p.add_subparsers(dest="plugin_action", required=True)
+    plugin_list_p = plugin_sub.add_parser("list")
+    plugin_list_p.add_argument("--platform", choices=["codex"], default="codex")
+    plugin_plan_p = plugin_sub.add_parser("plan")
+    plugin_plan_p.add_argument("--platform", choices=["codex"], default="codex")
+    plugin_plan_p.add_argument("--plugin-packs", nargs="*")
+    plugin_plan_p.add_argument("--output")
+    plugin_build_p = plugin_sub.add_parser("build")
+    plugin_build_p.add_argument("--platform", choices=["codex"], default="codex")
+    plugin_build_p.add_argument("--plugin-packs", nargs="*")
+    plugin_build_p.add_argument("--output", required=True)
+    plugin_validate_p = plugin_sub.add_parser("validate")
+    plugin_validate_p.add_argument("--platform", choices=["codex"], default="codex")
+    plugin_validate_p.add_argument("--path", required=True)
+
     context_index_p = sub.add_parser("context-index")
     context_index_p.add_argument("context_index_args", nargs=argparse.REMAINDER)
 
@@ -1341,6 +1358,41 @@ def _main(argv: list[str] | None = None) -> int:
         print(json.dumps(generate_alias_outputs(root), indent=2))
         return 0
 
+    if args.cmd == "plugin":
+        if args.plugin_action == "list":
+            issues = validate_plugin_pack_manifest(root)
+            configs = []
+            if not issues:
+                configs = [
+                    {
+                        "id": config.plugin_id,
+                        "display_name": config.display_name,
+                        "description": config.description,
+                        "category": config.category,
+                        "source_pack": config.source_pack,
+                    }
+                    for config in load_plugin_pack_configs(root)
+                    if args.platform in config.platforms
+                ]
+            _print_payload({"ok": not issues, "platform": args.platform, "plugin_packs": configs, "issues": issues})
+            return 0 if not issues else 1
+        if args.plugin_action == "plan":
+            payload = plan_plugin_packs(root, args.plugin_packs, platform=args.platform)
+            if args.output:
+                payload["output"] = str(Path(args.output).expanduser())
+            _print_payload(payload)
+            return 0
+        if args.plugin_action == "build":
+            payload = build_codex_plugins(root, Path(args.output).expanduser(), args.plugin_packs)
+            _print_payload(payload)
+            return 0 if payload.get("ok") else 1
+        if args.plugin_action == "validate":
+            payload = validate_codex_plugin_path(Path(args.path).expanduser())
+            _print_payload(payload)
+            return 0 if payload.get("ok") else 1
+        print(f"localsetup: unsupported plugin action: {args.plugin_action}", file=sys.stderr)
+        return 2
+
     if args.cmd == "harness":
         if args.harness_topic == "repo-finalizer":
             target_root = _harness_target(args)
@@ -1521,7 +1573,7 @@ def _main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.cmd == "validate-catalog":
-        issues = validate_manifest_schemas(root) + validate_skill_catalog(root) + validate_workflow_catalog(root)
+        issues = validate_manifest_schemas(root) + validate_plugin_pack_manifest(root) + validate_skill_catalog(root) + validate_workflow_catalog(root)
         print(json.dumps({"ok": not issues, "issues": issues}, indent=2))
         return 0 if not issues else 1
 
