@@ -161,6 +161,49 @@ def test_run_trigger_appends_durable_log(tmp_path: Path) -> None:
     assert "runner_exit trigger=nightly exit_code=0" in log_text
 
 
+def test_run_trigger_logs_runner_exit_for_manifest_validation_failure(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    log_dir = tmp_path / "logs"
+    manifest = tmp_path / "manifest.yaml"
+    _write_manifest(
+        manifest,
+        {
+            "triggers": {"nightly": {"schedule": "0 2 * * *"}},
+            "tasks": [{"id": "bad task id", "trigger": "nightly", "sequence_order": 1, "command": ["python3", "--version"]}],
+        },
+    )
+
+    proc = _run_trigger(manifest, "--repo-root", str(repo_root), "--log-dir", str(log_dir), "nightly")
+
+    log_text = (log_dir / "nightly.log").read_text(encoding="utf-8")
+    assert proc.returncode == 1
+    assert "tasks[0].id" in proc.stderr
+    assert "runner_start trigger=nightly" in log_text
+    assert "runner_exit trigger=nightly exit_code=1 reason=manifest_validation_failed" in log_text
+
+
+def test_run_trigger_log_dir_error_is_controlled(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    log_dir = tmp_path / "not-a-directory"
+    log_dir.write_text("already a file\n", encoding="utf-8")
+    manifest = tmp_path / "manifest.yaml"
+    _write_manifest(
+        manifest,
+        {
+            "triggers": {"nightly": {"schedule": "0 2 * * *"}},
+            "tasks": [{"id": "task", "trigger": "nightly", "sequence_order": 1, "command": ["python3", "--version"]}],
+        },
+    )
+
+    proc = _run_trigger(manifest, "--repo-root", str(repo_root), "--log-dir", str(log_dir), "nightly")
+
+    assert proc.returncode == 1
+    assert "[run_trigger] Invalid log directory" in proc.stderr
+    assert "Traceback" not in proc.stderr
+
+
 def test_reorder_rejects_duplicate_order_ids(tmp_path: Path) -> None:
     manifest = tmp_path / "manifest.yaml"
     _write_manifest(

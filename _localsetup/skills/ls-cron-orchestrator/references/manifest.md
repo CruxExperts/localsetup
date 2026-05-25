@@ -51,4 +51,6 @@ generated cron lines. When enabled, `run_trigger.py` appends timestamped
 `runner_start`, `task_start`, `task_exit`, timeout/error, and `runner_exit`
 records to `PATH/<trigger>.log`. Task exit records include bounded stdout and
 stderr tails so operators can diagnose child process failures without relying
-on cron mail.
+on cron mail. Store runner logs in a protected directory because stdout/stderr
+tails may contain secrets, tokens, local paths, or other sensitive operational
+data emitted by child commands.

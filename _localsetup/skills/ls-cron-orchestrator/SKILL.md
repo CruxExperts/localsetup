@@ -61,6 +61,8 @@ Runner (used by cron): `python3 _localsetup/skills/ls-cron-orchestrator/scripts/
 Add `--log-dir PATH` when cron output may otherwise disappear; the runner appends
 timestamped start, task exit, stdout tail, and stderr tail records to
 `PATH/<trigger>.log`.
+Because stdout/stderr tails can include sensitive data, use a protected log
+directory with restricted permissions.
 
 See `references/manifest.md` for the accepted manifest schema and security model.
 
