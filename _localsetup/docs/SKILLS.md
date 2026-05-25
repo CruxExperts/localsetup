@@ -4,17 +4,17 @@ version: 4.0
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: b34942dfd61e2c60f1a65a41be166d4f8fe5d3114ab6dcffc509b98b298da689
+  source_provenance_hash: ef9e352a8d3831fb24e2edec6a5223bd5c2d6567c51e88c80720f1fc078dad3a
   emitter: generate-docs
 framework_version: 4.0.16
-source_commit: 18e33e56fe4c5971cbea58b524f4567a99676583
-artifact_sha256: 1c1f3f50b5dec7260dd567249a5fe93e334890e34ae148a418fb87ac4c08a558
+source_commit: 623e335c0633d3fbb8914f9fe2d5e9214bb0d4e2
+artifact_sha256: 53811e0a9a0aae4e498e291d6d727605ed0653aabe61ff72d2904bd0b3c46287
 ---
 # Shipped skills catalog
 
 This page is generated from `_localsetup/skills/*/SKILL.md`.
 
-Total shipped skills: 54
+Total shipped skills: 72
 
 | Skill ID | Class | Priority | Packs | Tags | Name | Version | Description |
 |---|---|---:|---|---|---|---|---|
@@ -58,9 +58,27 @@ Total shipped skills: 54
 | `ls-mail-protocol-control` | `integrations` | 50 | `integrations` | `mail`, `protocols` | `ls-mail-protocol-control` | `1.2` | Provide full SMTP and IMAP account control for delegated mailboxes with attachment-first MIME handling and full-envelope encryption. Use when an agent must read, send, organize, decrypt, and manage mailbox state with strict admin controls. |
 | `ls-mcp-builder` | `integrations` | 50 | `integrations` | `mcp`, `builder` | `ls-mcp-builder` | `1.2` | Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services through well-designed tools. Use when building MCP servers to integrate external APIs or services, whether in Python (FastMCP) or Node/TypeScript (MCP SDK). |
 | `ls-npm-management` | `integrations` | 50 | `integrations` | `nginx-proxy-manager`, `api` | `ls-npm-management` | `1.0` | Manage Nginx Proxy Manager (NPM) reverse proxy hosts via its REST API using the native Python client npm_api.py. Use when creating, modifying, diagnosing, removing, or cleaning up proxy hosts, or when coordinating Docker service deployments with NPM routing. |
+| `ls-omniroute` | `integrations` | 50 | `omniroute` | `omniroute`, `gateway` | `ls-omniroute` | `1.0` | Use OmniRoute as an AI gateway entry point for OpenAI-compatible REST, model discovery, chat, media, web, MCP, A2A, routing, compression, monitoring, and CLI workflows. |
+| `ls-omniroute-a2a` | `integrations` | 50 | `omniroute` | `omniroute`, `a2a`, `json-rpc` | `ls-omniroute-a2a` | `1.0` | Use OmniRoute as an Agent-to-Agent peer through agent-card discovery and JSON-RPC 2.0 calls to the A2A endpoint. |
 | `ls-omniroute-admin-automation` | `integrations` | 50 | `integrations`, `omniroute` | `omniroute`, `admin` | `ls-omniroute-admin-automation` | `1.0` | Comprehensive OmniRoute administration and automation via Python tooling. Use when you need full API-driven control of providers, nodes, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, sync, resilience, and configuration reconciliation with safety gates. |
+| `ls-omniroute-chat` | `integrations` | 50 | `omniroute` | `omniroute`, `chat`, `llm` | `ls-omniroute-chat` | `1.0` | Run chat, code generation, summarization, and prompt workflows through OmniRoute using OpenAI-compatible or Anthropic-compatible request shapes. |
+| `ls-omniroute-cli` | `integrations` | 50 | `omniroute` | `omniroute`, `cli` | `ls-omniroute-cli` | `1.0` | Use the omniroute CLI for installation checks, global flags, environment variables, output formats, and capability-specific CLI workflows. |
+| `ls-omniroute-cli-admin` | `integrations` | 50 | `omniroute` | `omniroute`, `cli`, `admin` | `ls-omniroute-cli-admin` | `1.0` | Operate the OmniRoute server lifecycle from the CLI, including start, stop, restart, setup, diagnostics, backup, restore, autostart, and tunnel workflows. |
+| `ls-omniroute-cli-cloud` | `integrations` | 50 | `omniroute` | `omniroute`, `cli`, `cloud-agents` | `ls-omniroute-cli-cloud` | `1.0` | Control OmniRoute cloud-agent workflows from the CLI, including authentication, task creation, status tracking, approvals, messages, and source management. |
+| `ls-omniroute-cli-eval` | `integrations` | 50 | `omniroute` | `omniroute`, `cli`, `evals` | `ls-omniroute-cli-eval` | `1.0` | Create, run, watch, score, and compare OmniRoute eval suites from the CLI for model benchmarking and regression checks. |
+| `ls-omniroute-cli-providers` | `integrations` | 50 | `omniroute` | `omniroute`, `cli`, `providers` | `ls-omniroute-cli-providers` | `1.0` | Manage OmniRoute provider connections, API keys, OAuth flows, provider tests, model listing, and routing combos through the CLI. |
+| `ls-omniroute-compression` | `integrations` | 50 | `omniroute` | `omniroute`, `compression`, `tokens` | `ls-omniroute-compression` | `1.0` | Configure or inspect OmniRoute token compression modes for command output, prose, mixed sessions, and MCP accessibility-tree payloads. |
+| `ls-omniroute-embeddings` | `integrations` | 50 | `omniroute` | `omniroute`, `embeddings`, `rag` | `ls-omniroute-embeddings` | `1.0` | Create embeddings through OmniRoute using OpenAI-compatible embeddings request shapes and discovered embedding models. |
+| `ls-omniroute-image` | `integrations` | 50 | `omniroute` | `omniroute`, `image` | `ls-omniroute-image` | `1.0` | Generate, edit, or vary images through OmniRoute using OpenAI-compatible image endpoints and discovered image models. |
+| `ls-omniroute-mcp` | `integrations` | 50 | `omniroute` | `omniroute`, `mcp` | `ls-omniroute-mcp` | `1.0` | Connect OmniRoute as an MCP server for clients that support Model Context Protocol transports, tools, resources, and OAuth/auth configuration. |
+| `ls-omniroute-monitoring` | `integrations` | 50 | `omniroute` | `omniroute`, `monitoring`, `health` | `ls-omniroute-monitoring` | `1.0` | Monitor OmniRoute system health, circuit breakers, provider latency, quota usage, budgets, audit trails, and alerting signals. |
 | `ls-omniroute-proxy` | `integrations` | 50 | `integrations`, `omniroute` | `omniroute`, `proxy` | `ls-omniroute-proxy` | `1.0` | Guide agents through read-only OmniRoute proxy discovery, model catalogs, provider metadata, context windows, rate limits, quotas, routing combos, MCP/A2A integration, and agent client configuration. Use when working with OmniRoute, OmniRoute proxy, AI gateway discovery, model catalogs, provider limits, context windows, routing combos, MCP/A2A integration, or configuring agents to use OmniRoute. |
-| `ls-omniroute-skill-converter` | `integrations` | 50 | `omniroute` | `omniroute`, `skills`, `conversion` | `ls-omniroute-skill-converter` | `1.0` | Discover upstream OmniRoute skills, compare them with Localsetup-converted skills, and produce a report-first update or removal plan. Use when listing, checking, updating, modifying, importing, or removing OmniRoute-derived Localsetup skills. |
+| `ls-omniroute-routing` | `integrations` | 50 | `omniroute` | `omniroute`, `routing`, `combos` | `ls-omniroute-routing` | `1.0` | Inspect, create, and tune OmniRoute routing combos, strategies, auto-selection, load balancing, and fallback chains. |
+| `ls-omniroute-stt` | `integrations` | 50 | `omniroute` | `omniroute`, `stt`, `audio` | `ls-omniroute-stt` | `1.0` | Transcribe or translate audio through OmniRoute using OpenAI-compatible audio transcription request shapes. |
+| `ls-omniroute-tts` | `integrations` | 50 | `omniroute` | `omniroute`, `tts`, `audio` | `ls-omniroute-tts` | `1.0` | Create spoken audio through OmniRoute using OpenAI-compatible speech request shapes and discovered TTS models. |
+| `ls-omniroute-update` | `integrations` | 50 | `omniroute` | `omniroute`, `update` | `ls-omniroute-update` | `1.0` | Coordinate OmniRoute update workflows, including upstream skill discovery, Localsetup comparison, freshness validation, and report-first import, update, modification, or removal planning. Use when listing, checking, updating, modifying, importing, or removing OmniRoute-derived Localsetup skills. |
+| `ls-omniroute-web-fetch` | `integrations` | 50 | `omniroute` | `omniroute`, `web-fetch`, `fetch` | `ls-omniroute-web-fetch` | `1.0` | Fetch a URL through OmniRoute and convert page content to clean markdown or structured context for LLM use. |
+| `ls-omniroute-web-search` | `integrations` | 50 | `omniroute` | `omniroute`, `web-search`, `search` | `ls-omniroute-web-search` | `1.0` | Run live web search through OmniRoute using a unified search endpoint and discovered web-search providers. |
 | `ls-scrapling` | `integrations` | 50 | `integrations` | `scrapling`, `extraction` | `ls-scrapling` | `1.0` | Host-first Scrapling integration skill: install or upgrade Scrapling via pipx, run single-URL extractions (simple and structured), and manage adapter and version refresh flows, with Docker as an optional escape hatch. |
 | `ls-skill-creator` | `skill-lifecycle` | 60 | `experimental` | `skills`, `authoring` | `ls-skill-creator` | `1.3` | Use when creating a new Agent Skills-compliant skill, adapting a document into a skill, importing an existing skill for Localsetup, or exporting framework skills to other spec-compliant hosts. |
 | `ls-skill-discovery` | `skill-lifecycle` | 60 | `experimental` | `skills`, `discovery` | `ls-skill-discovery` | `1.4` | Discover and recommend public skills from external registries (e.g. awesome lists, skill hubs). Use when the user is creating a new skill, importing a skill, or asking to find similar public skills. Maintains PUBLIC_SKILL_REGISTRY.urls and PUBLIC_SKILL_INDEX.yaml; returns top 5 similar matches with rich summaries and clear next actions. |

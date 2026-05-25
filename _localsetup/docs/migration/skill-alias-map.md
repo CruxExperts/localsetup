@@ -4,11 +4,11 @@ version: 4.0
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: b34942dfd61e2c60f1a65a41be166d4f8fe5d3114ab6dcffc509b98b298da689
+  source_provenance_hash: ef9e352a8d3831fb24e2edec6a5223bd5c2d6567c51e88c80720f1fc078dad3a
   emitter: generate-docs
 framework_version: 4.0.16
-source_commit: 18e33e56fe4c5971cbea58b524f4567a99676583
-artifact_sha256: 1bd07d4bc3836b4ec3bcf7739b454f63a6fc74581412a19950970d7a83ef34e6
+source_commit: 623e335c0633d3fbb8914f9fe2d5e9214bb0d4e2
+artifact_sha256: cf7631cb7035539a5fad63f63cc0abf7a4c09578b6cb587b1671a6aaa7bb86cf
 ---
 # Skill Alias Map
 
@@ -46,9 +46,27 @@ artifact_sha256: 1bd07d4bc3836b4ec3bcf7739b454f63a6fc74581412a19950970d7a83ef34e
 | `localsetup-mcp-builder` | `ls-mcp-builder` |
 | `localsetup-nodejs-nextjs` | `ls-nodejs-nextjs` |
 | `localsetup-npm-management` | `ls-npm-management` |
+| `localsetup-omniroute` | `ls-omniroute` |
+| `localsetup-omniroute-a2a` | `ls-omniroute-a2a` |
 | `localsetup-omniroute-admin-automation` | `ls-omniroute-admin-automation` |
+| `localsetup-omniroute-chat` | `ls-omniroute-chat` |
+| `localsetup-omniroute-cli` | `ls-omniroute-cli` |
+| `localsetup-omniroute-cli-admin` | `ls-omniroute-cli-admin` |
+| `localsetup-omniroute-cli-cloud` | `ls-omniroute-cli-cloud` |
+| `localsetup-omniroute-cli-eval` | `ls-omniroute-cli-eval` |
+| `localsetup-omniroute-cli-providers` | `ls-omniroute-cli-providers` |
+| `localsetup-omniroute-compression` | `ls-omniroute-compression` |
+| `localsetup-omniroute-embeddings` | `ls-omniroute-embeddings` |
+| `localsetup-omniroute-image` | `ls-omniroute-image` |
+| `localsetup-omniroute-mcp` | `ls-omniroute-mcp` |
+| `localsetup-omniroute-monitoring` | `ls-omniroute-monitoring` |
 | `localsetup-omniroute-proxy` | `ls-omniroute-proxy` |
-| `localsetup-omniroute-skill-converter` | `ls-omniroute-skill-converter` |
+| `localsetup-omniroute-routing` | `ls-omniroute-routing` |
+| `localsetup-omniroute-stt` | `ls-omniroute-stt` |
+| `localsetup-omniroute-tts` | `ls-omniroute-tts` |
+| `localsetup-omniroute-update` | `ls-omniroute-update` |
+| `localsetup-omniroute-web-fetch` | `ls-omniroute-web-fetch` |
+| `localsetup-omniroute-web-search` | `ls-omniroute-web-search` |
 | `localsetup-pr-reviewer` | `ls-pr-reviewer` |
 | `localsetup-public-repo-identity` | `ls-public-repo-identity` |
 | `localsetup-receiving-code-review` | `ls-receiving-code-review` |

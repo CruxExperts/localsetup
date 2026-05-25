@@ -10,11 +10,11 @@ import yaml
 
 
 ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = ROOT / "_localsetup" / "skills" / "ls-omniroute-skill-converter" / "scripts" / "omniroute_skill_converter.py"
+SCRIPT = ROOT / "_localsetup" / "skills" / "ls-omniroute-update" / "scripts" / "omniroute_update.py"
 
 
 def load_converter():
-    spec = importlib.util.spec_from_file_location("omniroute_skill_converter_under_test", SCRIPT)
+    spec = importlib.util.spec_from_file_location("omniroute_update_under_test", SCRIPT)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -157,6 +157,26 @@ def test_classifies_missing_current_stale_local_only_and_untracked(tmp_path: Pat
     assert ("stale-local", "omniroute-tools", "ls-omniroute-tools") in statuses
     assert ("local-only", "omniroute-removed", "ls-omniroute-removed") in statuses
     assert ("untracked-local", None, "ls-omniroute-proxy") in statuses
+
+
+def test_classifies_localsetup_native_omniroute_skills() -> None:
+    converter = load_converter()
+    local = [
+        converter.LocalSkill(
+            "ls-omniroute-proxy",
+            "_localsetup/skills/ls-omniroute-proxy/SKILL.md",
+            {},
+            {"source_kind": "localsetup-native", "local_role": "proxy-discovery"},
+            ["omniroute"],
+        ),
+    ]
+
+    rows = converter.classify([], local)
+
+    assert len(rows) == 1
+    assert rows[0].status == "local-native"
+    assert rows[0].local_skill == "ls-omniroute-proxy"
+    assert "proxy-discovery" in rows[0].detail
 
 
 def test_json_and_markdown_report_output(tmp_path: Path) -> None:

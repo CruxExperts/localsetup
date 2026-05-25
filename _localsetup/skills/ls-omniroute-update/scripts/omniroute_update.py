@@ -221,6 +221,15 @@ def _is_omniroute_tagged(local: LocalSkill) -> bool:
     return local.name.startswith("ls-omniroute") or "omniroute" in local.tags or bool(local.omniroute)
 
 
+def _source_kind(local: LocalSkill) -> str | None:
+    value = local.omniroute.get("source_kind")
+    return str(value) if isinstance(value, str) and value else None
+
+
+def _is_local_native(local: LocalSkill) -> bool:
+    return _source_kind(local) == "localsetup-native"
+
+
 def classify(upstream: list[UpstreamSkill], local: list[LocalSkill]) -> list[ReportRow]:
     upstream_by_name = {row.name: row for row in upstream}
     local_by_source: dict[str, LocalSkill] = {}
@@ -278,6 +287,22 @@ def classify(upstream: list[UpstreamSkill], local: list[LocalSkill]) -> list[Rep
     for item in local:
         source_skill = item.omniroute.get("source_skill")
         if not source_skill and _is_omniroute_tagged(item):
+            if _is_local_native(item):
+                local_role = item.omniroute.get("local_role")
+                detail = "local Localsetup-native OmniRoute skill"
+                if isinstance(local_role, str) and local_role:
+                    detail = f"{detail}: {local_role}"
+                rows.append(
+                    ReportRow(
+                        status="local-native",
+                        upstream_skill=None,
+                        local_skill=item.name,
+                        intended_local=None,
+                        source_path=None,
+                        detail=detail,
+                    )
+                )
+                continue
             rows.append(
                 ReportRow(
                     status="untracked-local",
@@ -289,7 +314,14 @@ def classify(upstream: list[UpstreamSkill], local: list[LocalSkill]) -> list[Rep
                 )
             )
 
-    order = {"missing-local": 0, "stale-local": 1, "current": 2, "local-only": 3, "untracked-local": 4}
+    order = {
+        "missing-local": 0,
+        "stale-local": 1,
+        "current": 2,
+        "local-only": 3,
+        "untracked-local": 4,
+        "local-native": 5,
+    }
     return sorted(rows, key=lambda row: (order.get(row.status, 99), row.upstream_skill or "", row.local_skill or ""))
 
 
@@ -347,7 +379,7 @@ def render_markdown(report: dict[str, Any]) -> str:
     source = report["source"]
     freshness = report["summary"].get("freshness", {})
     lines = [
-        "# OmniRoute Skill Converter Report",
+        "# Omni Route Update Report",
         "",
         f"- Generated: `{report['generated_at']}`",
         f"- Source repo: `{source['source_repo']}`",
@@ -414,7 +446,7 @@ def add_source_arguments(parser: argparse.ArgumentParser) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Read-only OmniRoute skill conversion reporter.")
+    parser = argparse.ArgumentParser(description="Read-only OmniRoute update reporter.")
     subparsers = parser.add_subparsers(dest="command", required=True)
     check = subparsers.add_parser("check", help="Compare upstream OmniRoute skills with local converted skills.")
     add_source_arguments(check)

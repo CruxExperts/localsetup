@@ -4,6 +4,10 @@ description: Guide agents through read-only OmniRoute proxy discovery, model cat
 metadata:
   version: "1.0"
 compatibility: "Requires Python 3.12+, repo-installed requests, and network reachability to an OmniRoute HTTP(S) proxy. API keys must be supplied through environment variables. HTTP_PROXY, HTTPS_PROXY, and NO_PROXY behavior follows requests."
+extensions:
+  omniroute:
+    source_kind: localsetup-native
+    local_role: proxy-discovery
 ---
 
 # OmniRoute proxy

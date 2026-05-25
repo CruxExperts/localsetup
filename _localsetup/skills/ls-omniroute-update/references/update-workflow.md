@@ -1,14 +1,14 @@
-# OmniRoute Conversion Workflow
+# Omni Route Update Workflow
 
 ## List Or Check
 
-1. Run `scripts/omniroute_skill_converter.py check`.
+1. Run `scripts/omniroute_update.py check`.
 2. Save Markdown or JSON output to the run ledger or a private maintenance path if the report is long.
 3. Verify the source commit and source hash before using the report for import or update decisions.
 
 ## Freshness Check
 
-Run `scripts/omniroute_skill_converter.py freshness` before validating any converted OmniRoute skill wave against the upstream repository.
+Run `scripts/omniroute_update.py freshness` before validating any converted OmniRoute skill wave against the upstream repository.
 
 - Default blockers: `stale-local` and `local-only`.
 - Add `--strict-untracked` when every local OmniRoute skill must declare conversion metadata.

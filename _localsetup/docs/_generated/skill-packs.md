@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: b34942dfd61e2c60f1a65a41be166d4f8fe5d3114ab6dcffc509b98b298da689
+  source_provenance_hash: ef9e352a8d3831fb24e2edec6a5223bd5c2d6567c51e88c80720f1fc078dad3a
   emitter: generate-docs
 framework_version: 4.0.16
-source_commit: 18e33e56fe4c5971cbea58b524f4567a99676583
-artifact_sha256: 254afe5d29257a269353c58d877f116c22a25bec9394bbe832330be8959631d2
+source_commit: 623e335c0633d3fbb8914f9fe2d5e9214bb0d4e2
+artifact_sha256: 53b2c940026912ac6018561b6f5cac2243f79d5b54bf66e22c896cebecbb215b
 ---
 # Skill And Workflow Packs
 
@@ -51,9 +51,27 @@ artifact_sha256: 254afe5d29257a269353c58d877f116c22a25bec9394bbe832330be8959631d
 | `integrations` | `skill` | `ls-mail-protocol-control` | `integrations` | 50 | `mail, protocols` | `localsetup-mail-protocol-control` |
 | `integrations` | `skill` | `ls-mcp-builder` | `integrations` | 50 | `mcp, builder` | `localsetup-mcp-builder` |
 | `integrations` | `skill` | `ls-npm-management` | `integrations` | 50 | `nginx-proxy-manager, api` | `localsetup-npm-management` |
+| `omniroute` | `skill` | `ls-omniroute` | `integrations` | 50 | `omniroute, gateway` | `localsetup-omniroute` |
+| `omniroute` | `skill` | `ls-omniroute-a2a` | `integrations` | 50 | `omniroute, a2a, json-rpc` | `localsetup-omniroute-a2a` |
 | `integrations, omniroute` | `skill` | `ls-omniroute-admin-automation` | `integrations` | 50 | `omniroute, admin` | `localsetup-omniroute-admin-automation` |
+| `omniroute` | `skill` | `ls-omniroute-chat` | `integrations` | 50 | `omniroute, chat, llm` | `localsetup-omniroute-chat` |
+| `omniroute` | `skill` | `ls-omniroute-cli` | `integrations` | 50 | `omniroute, cli` | `localsetup-omniroute-cli` |
+| `omniroute` | `skill` | `ls-omniroute-cli-admin` | `integrations` | 50 | `omniroute, cli, admin` | `localsetup-omniroute-cli-admin` |
+| `omniroute` | `skill` | `ls-omniroute-cli-cloud` | `integrations` | 50 | `omniroute, cli, cloud-agents` | `localsetup-omniroute-cli-cloud` |
+| `omniroute` | `skill` | `ls-omniroute-cli-eval` | `integrations` | 50 | `omniroute, cli, evals` | `localsetup-omniroute-cli-eval` |
+| `omniroute` | `skill` | `ls-omniroute-cli-providers` | `integrations` | 50 | `omniroute, cli, providers` | `localsetup-omniroute-cli-providers` |
+| `omniroute` | `skill` | `ls-omniroute-compression` | `integrations` | 50 | `omniroute, compression, tokens` | `localsetup-omniroute-compression` |
+| `omniroute` | `skill` | `ls-omniroute-embeddings` | `integrations` | 50 | `omniroute, embeddings, rag` | `localsetup-omniroute-embeddings` |
+| `omniroute` | `skill` | `ls-omniroute-image` | `integrations` | 50 | `omniroute, image` | `localsetup-omniroute-image` |
+| `omniroute` | `skill` | `ls-omniroute-mcp` | `integrations` | 50 | `omniroute, mcp` | `localsetup-omniroute-mcp` |
+| `omniroute` | `skill` | `ls-omniroute-monitoring` | `integrations` | 50 | `omniroute, monitoring, health` | `localsetup-omniroute-monitoring` |
 | `integrations, omniroute` | `skill` | `ls-omniroute-proxy` | `integrations` | 50 | `omniroute, proxy` | `localsetup-omniroute-proxy` |
-| `omniroute` | `skill` | `ls-omniroute-skill-converter` | `integrations` | 50 | `omniroute, skills, conversion` | `localsetup-omniroute-skill-converter` |
+| `omniroute` | `skill` | `ls-omniroute-routing` | `integrations` | 50 | `omniroute, routing, combos` | `localsetup-omniroute-routing` |
+| `omniroute` | `skill` | `ls-omniroute-stt` | `integrations` | 50 | `omniroute, stt, audio` | `localsetup-omniroute-stt` |
+| `omniroute` | `skill` | `ls-omniroute-tts` | `integrations` | 50 | `omniroute, tts, audio` | `localsetup-omniroute-tts` |
+| `omniroute` | `skill` | `ls-omniroute-update` | `integrations` | 50 | `omniroute, update` | `localsetup-omniroute-update` |
+| `omniroute` | `skill` | `ls-omniroute-web-fetch` | `integrations` | 50 | `omniroute, web-fetch, fetch` | `localsetup-omniroute-web-fetch` |
+| `omniroute` | `skill` | `ls-omniroute-web-search` | `integrations` | 50 | `omniroute, web-search, search` | `localsetup-omniroute-web-search` |
 | `integrations` | `skill` | `ls-scrapling` | `integrations` | 50 | `scrapling, extraction` | `localsetup-scrapling` |
 | `experimental` | `skill` | `ls-skill-creator` | `skill-lifecycle` | 60 | `skills, authoring` | `localsetup-skill-creator` |
 | `experimental` | `skill` | `ls-skill-discovery` | `skill-lifecycle` | 60 | `skills, discovery` | `localsetup-skill-discovery` |

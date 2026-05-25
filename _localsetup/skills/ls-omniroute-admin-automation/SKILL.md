@@ -3,6 +3,10 @@ name: ls-omniroute-admin-automation
 description: Comprehensive OmniRoute administration and automation via Python tooling. Use when you need full API-driven control of providers, nodes, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, sync, resilience, and configuration reconciliation with safety gates.
 metadata:
   version: "1.0"
+extensions:
+  omniroute:
+    source_kind: localsetup-native
+    local_role: admin-automation
 ---
 
 # OmniRoute administration automation

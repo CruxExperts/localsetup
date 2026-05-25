@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: b34942dfd61e2c60f1a65a41be166d4f8fe5d3114ab6dcffc509b98b298da689
+  source_provenance_hash: ef9e352a8d3831fb24e2edec6a5223bd5c2d6567c51e88c80720f1fc078dad3a
   emitter: generate-docs
 framework_version: 4.0.16
-source_commit: 18e33e56fe4c5971cbea58b524f4567a99676583
-artifact_sha256: 1c2b6055d29d7d53bd435512124b237d744db1babe09216b091d95217a33fa87
+source_commit: 623e335c0633d3fbb8914f9fe2d5e9214bb0d4e2
+artifact_sha256: a15abac2ad67298efd378dfc79652ab5844f4dfaadce3a00ce5c1dcd5317878d
 ---
 # Implementation File Map
 
@@ -496,6 +496,10 @@ artifact_sha256: 1c2b6055d29d7d53bd435512124b237d744db1babe09216b091d95217a33fa8
 | `keep` | `_localsetup/skills/ls-omniroute-proxy/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-omniroute-proxy/references/omniroute-endpoints.md` |
 | `keep` | `_localsetup/skills/ls-omniroute-proxy/scripts/omniroute_discover.py` |
+| `keep` | `_localsetup/skills/ls-omniroute-update/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-omniroute-update/references/source-ledger.md` |
+| `keep` | `_localsetup/skills/ls-omniroute-update/references/update-workflow.md` |
+| `keep` | `_localsetup/skills/ls-omniroute-update/scripts/omniroute_update.py` |
 | `keep` | `_localsetup/skills/ls-pr-reviewer/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-pr-reviewer/scripts/pr_review.py` |
 | `keep` | `_localsetup/skills/ls-pr-reviewer/scripts/tests/test_pr_review_inputs.py` |
@@ -618,6 +622,7 @@ artifact_sha256: 1c2b6055d29d7d53bd435512124b237d744db1babe09216b091d95217a33fa8
 | `keep` | `_localsetup/tests/test_ls_kilo_boss_orchestrator_runner.py` |
 | `keep` | `_localsetup/tests/test_ls_linux_patcher_patch_cli.py` |
 | `keep` | `_localsetup/tests/test_manifests.py` |
+| `keep` | `_localsetup/tests/test_omniroute_update.py` |
 | `keep` | `_localsetup/tests/test_provenance.py` |
 | `keep` | `_localsetup/tests/test_python_runtime_contract.py` |
 | `keep` | `_localsetup/tests/test_qc_patrol.py` |
