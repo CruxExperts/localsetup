@@ -213,6 +213,33 @@ def test_run_trigger_rejects_public_existing_log_dir(tmp_path: Path) -> None:
     assert not (log_dir / "nightly.log").exists()
 
 
+def test_run_trigger_rejects_public_existing_log_file(tmp_path: Path) -> None:
+    if os.name != "posix":
+        return
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    log_dir = tmp_path / "logs"
+    log_dir.mkdir(mode=0o700)
+    log_path = log_dir / "nightly.log"
+    log_path.write_text("existing\n", encoding="utf-8")
+    os.chmod(log_path, 0o644)
+    manifest = tmp_path / "manifest.yaml"
+    _write_manifest(
+        manifest,
+        {
+            "triggers": {"nightly": {"schedule": "0 2 * * *"}},
+            "tasks": [{"id": "task", "trigger": "nightly", "sequence_order": 1, "command": ["python3", "--version"]}],
+        },
+    )
+
+    proc = _run_trigger(manifest, "--repo-root", str(repo_root), "--log-dir", str(log_dir), "nightly")
+
+    assert proc.returncode == 1
+    assert "permissions must not allow group/other access" in proc.stderr
+    assert log_path.read_text(encoding="utf-8") == "existing\n"
+    assert stat.S_IMODE(log_path.stat().st_mode) == 0o644
+
+
 def test_run_trigger_logs_runner_exit_for_manifest_validation_failure(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
