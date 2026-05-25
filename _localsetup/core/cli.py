@@ -22,6 +22,7 @@ from .global_first_audit import audit_global_first
 from .git_state import git_status_snapshot, status_delta
 from .harness import disable as harness_disable
 from .harness import enable as harness_enable
+from .harness import budget as harness_budget
 from .harness import init as harness_init
 from .harness import payload_to_text as harness_payload_to_text
 from .harness import plan as harness_plan
@@ -43,6 +44,7 @@ from .locking import PackageRootLockTimeout
 from .migration import conservative_migrate, scan_legacy_references
 from .package import build_public_artifact, verify_release_artifact, write_installed_sbom, write_source_sbom
 from .paths import expand_user_path
+from .plugin_packs import build_codex_plugins, load_plugin_pack_configs, plan_plugin_packs, validate_codex_plugin_path, validate_plugin_pack_manifest
 from .plan import build_install_plan
 from .provenance import provenance_report
 from .query import adopt_recommendations, graph_payload, pack_reasoning, skill_payload, workflow_payload
@@ -51,7 +53,7 @@ from .registry import load_registry
 from .rollback import rollback
 from .selection import PRESETS
 from .shell import SHIM_ENV, detect_invocation_target, register_shell_command, shell_registration_status
-from .skills import load_skill_catalog, validate_skill_catalog
+from .skills import candidate_skill_path_blockers, candidate_skill_proposal, candidate_skill_proposal_markdown, load_skill_catalog, validate_candidate_skill, validate_skill_catalog
 from .skills import parse_skill_frontmatter
 from .workflows import load_workflow_catalog, validate_workflow_catalog
 from .verify import verify_install
@@ -753,6 +755,14 @@ def _main(argv: list[str] | None = None) -> int:
     skill_search.add_argument("query", nargs="?")
     skill_info = skill_sub.add_parser("info")
     skill_info.add_argument("query")
+    candidate_skill_p = sub.add_parser("candidate-skill")
+    candidate_skill_sub = candidate_skill_p.add_subparsers(dest="candidate_skill_action", required=True)
+    candidate_validate = candidate_skill_sub.add_parser("validate")
+    candidate_validate.add_argument("--candidate", required=True)
+    candidate_validate.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
+    candidate_proposal = candidate_skill_sub.add_parser("proposal")
+    candidate_proposal.add_argument("--candidate", required=True)
+    candidate_proposal.add_argument("--output", default="-")
     workflow_p = sub.add_parser("workflow")
     workflow_sub = workflow_p.add_subparsers(dest="workflow_action", required=True)
     workflow_search = workflow_sub.add_parser("search")
@@ -796,7 +806,7 @@ def _main(argv: list[str] | None = None) -> int:
     harness_sub = harness_p.add_subparsers(dest="harness_topic", required=True)
     heartbeat_p = harness_sub.add_parser("codex-heartbeat")
     heartbeat_sub = heartbeat_p.add_subparsers(dest="harness_action", required=True)
-    for action_name in ("plan", "init", "status"):
+    for action_name in ("plan", "init", "status", "budget"):
         action_p = heartbeat_sub.add_parser(action_name)
         _add_harness_target_flags(action_p)
     for action_name in ("enable", "disable"):
@@ -824,6 +834,22 @@ def _main(argv: list[str] | None = None) -> int:
     finalizer_run_p.add_argument("--message")
     docs_align_p = sub.add_parser("docs-align")
     docs_align_p.add_argument("docs_align_args", nargs=argparse.REMAINDER)
+
+    plugin_p = sub.add_parser("plugin")
+    plugin_sub = plugin_p.add_subparsers(dest="plugin_action", required=True)
+    plugin_list_p = plugin_sub.add_parser("list")
+    plugin_list_p.add_argument("--platform", choices=["codex"], default="codex")
+    plugin_plan_p = plugin_sub.add_parser("plan")
+    plugin_plan_p.add_argument("--platform", choices=["codex"], default="codex")
+    plugin_plan_p.add_argument("--plugin-packs", nargs="*")
+    plugin_plan_p.add_argument("--output")
+    plugin_build_p = plugin_sub.add_parser("build")
+    plugin_build_p.add_argument("--platform", choices=["codex"], default="codex")
+    plugin_build_p.add_argument("--plugin-packs", nargs="*")
+    plugin_build_p.add_argument("--output", required=True)
+    plugin_validate_p = plugin_sub.add_parser("validate")
+    plugin_validate_p.add_argument("--platform", choices=["codex"], default="codex")
+    plugin_validate_p.add_argument("--path", required=True)
 
     context_index_p = sub.add_parser("context-index")
     context_index_p.add_argument("context_index_args", nargs=argparse.REMAINDER)
@@ -1341,6 +1367,41 @@ def _main(argv: list[str] | None = None) -> int:
         print(json.dumps(generate_alias_outputs(root), indent=2))
         return 0
 
+    if args.cmd == "plugin":
+        if args.plugin_action == "list":
+            issues = validate_plugin_pack_manifest(root)
+            configs = []
+            if not issues:
+                configs = [
+                    {
+                        "id": config.plugin_id,
+                        "display_name": config.display_name,
+                        "description": config.description,
+                        "category": config.category,
+                        "source_pack": config.source_pack,
+                    }
+                    for config in load_plugin_pack_configs(root)
+                    if args.platform in config.platforms
+                ]
+            _print_payload({"ok": not issues, "platform": args.platform, "plugin_packs": configs, "issues": issues})
+            return 0 if not issues else 1
+        if args.plugin_action == "plan":
+            payload = plan_plugin_packs(root, args.plugin_packs, platform=args.platform)
+            if args.output:
+                payload["output"] = str(Path(args.output).expanduser())
+            _print_payload(payload)
+            return 0
+        if args.plugin_action == "build":
+            payload = build_codex_plugins(root, Path(args.output).expanduser(), args.plugin_packs)
+            _print_payload(payload)
+            return 0 if payload.get("ok") else 1
+        if args.plugin_action == "validate":
+            payload = validate_codex_plugin_path(Path(args.path).expanduser())
+            _print_payload(payload)
+            return 0 if payload.get("ok") else 1
+        print(f"localsetup: unsupported plugin action: {args.plugin_action}", file=sys.stderr)
+        return 2
+
     if args.cmd == "harness":
         if args.harness_topic == "repo-finalizer":
             target_root = _harness_target(args)
@@ -1379,6 +1440,8 @@ def _main(argv: list[str] | None = None) -> int:
             payload = harness_disable(root, target_root, install_crontab=args.install_crontab, yes=args.yes)
         elif args.harness_action == "status":
             payload = harness_status(root, target_root)
+        elif args.harness_action == "budget":
+            payload = harness_budget(root, target_root)
         elif args.harness_action == "run":
             payload = harness_run(root, target_root, no_agent=args.no_agent, force=args.force)
         else:
@@ -1386,6 +1449,29 @@ def _main(argv: list[str] | None = None) -> int:
             return 2
         print(harness_payload_to_text(payload))
         return 0 if payload.get("ok") else 1
+
+    if args.cmd == "candidate-skill":
+        candidate = Path(args.candidate).expanduser()
+        if args.candidate_skill_action == "validate":
+            payload = validate_candidate_skill(root, candidate, home=home)
+            print(json.dumps(payload, indent=2, sort_keys=True))
+            return 0 if payload.get("ok") else 1
+        if args.candidate_skill_action == "proposal":
+            payload = candidate_skill_proposal(root, candidate, home=home)
+            text = candidate_skill_proposal_markdown(payload)
+            if args.output == "-":
+                print(text, end="")
+            else:
+                output = Path(args.output).expanduser().resolve()
+                output_blockers = candidate_skill_path_blockers(root, output, home=home)
+                if output_blockers:
+                    print(f"localsetup: candidate-skill proposal output path blocked: {output_blockers[0]}", file=sys.stderr)
+                    return 1
+                output.parent.mkdir(parents=True, exist_ok=True)
+                output.write_text(text, encoding="utf-8")
+            return 0 if payload.get("ok") else 1
+        print(f"localsetup: unsupported candidate-skill action: {args.candidate_skill_action}", file=sys.stderr)
+        return 2
 
     if args.cmd == "docs-align":
         tool = root / "_localsetup" / "tools" / "docs_alignment.py"
@@ -1521,7 +1607,7 @@ def _main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.cmd == "validate-catalog":
-        issues = validate_manifest_schemas(root) + validate_skill_catalog(root) + validate_workflow_catalog(root)
+        issues = validate_manifest_schemas(root) + validate_plugin_pack_manifest(root) + validate_skill_catalog(root) + validate_workflow_catalog(root)
         print(json.dumps({"ok": not issues, "issues": issues}, indent=2))
         return 0 if not issues else 1
 

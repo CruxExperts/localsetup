@@ -8,19 +8,19 @@
     "skill-lifecycle",
     "specialized"
   ],
-  "count": 53,
+  "count": 72,
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/skill-taxonomy.json",
-    "artifact_sha256": "e6edb8c7029c39a5d5153e12b196473b66ada04a39e910bc2a099b527ea7348b",
+    "artifact_sha256": "4b9b85cefde5fefed3045aba0e5aacb5797289de80c5c196d4cf9bc22124ab81",
     "emitter": "generate-docs",
-    "framework_version": "4.0.16",
+    "framework_version": "4.0.17",
     "schema_version": 1,
-    "source_commit": "debe3e0dcb4f3daf23f392cf95e1cf9905cb3cd6",
+    "source_commit": "aff502123cd4f225a59a0a9ff76f6818aeb43a34",
     "source_dirty": true,
-    "source_provenance_hash": "7e2d6c56d3349c23600385f9d873f65b1ef5ec172acf90dd93b05eb13d8c708f",
-    "source_root_id": "1b74671e43f36f48f34ae92ba653eef4c4062d8090ad14050ab94aa5fdd5c340",
+    "source_provenance_hash": "d82e5d163ffb7e51e0f916e2a464fe3d18de98ca736d1ff791cab23f097380f2",
+    "source_root_id": "6288d52acd7f2704ce68e4203cf79b13b312b6ac116a62f3a9b652eb047347b0",
     "source_tag": null,
-    "source_tree_sha": "b025d102c2816ccbe1aa4e503816c43c6420423b"
+    "source_tree_sha": "5827f88fafb84602db4202fee93b257e17a6f2f2"
   },
   "schema_version": 1,
   "skills": [
@@ -599,10 +599,40 @@
     },
     {
       "class": "integrations",
+      "id": "ls-omniroute",
+      "owner_scope": "skill",
+      "packs": [
+        "omniroute"
+      ],
+      "path": "_localsetup/skills/ls-omniroute",
+      "sort_priority": 50,
+      "tags": [
+        "omniroute",
+        "gateway"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-omniroute-a2a",
+      "owner_scope": "skill",
+      "packs": [
+        "omniroute"
+      ],
+      "path": "_localsetup/skills/ls-omniroute-a2a",
+      "sort_priority": 50,
+      "tags": [
+        "omniroute",
+        "a2a",
+        "json-rpc"
+      ]
+    },
+    {
+      "class": "integrations",
       "id": "ls-omniroute-admin-automation",
       "owner_scope": "skill",
       "packs": [
-        "integrations"
+        "integrations",
+        "omniroute"
       ],
       "path": "_localsetup/skills/ls-omniroute-admin-automation",
       "sort_priority": 50,
@@ -613,16 +643,268 @@
     },
     {
       "class": "integrations",
+      "id": "ls-omniroute-chat",
+      "owner_scope": "skill",
+      "packs": [
+        "omniroute"
+      ],
+      "path": "_localsetup/skills/ls-omniroute-chat",
+      "sort_priority": 50,
+      "tags": [
+        "omniroute",
+        "chat",
+        "llm"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-omniroute-cli",
+      "owner_scope": "skill",
+      "packs": [
+        "omniroute"
+      ],
+      "path": "_localsetup/skills/ls-omniroute-cli",
+      "sort_priority": 50,
+      "tags": [
+        "omniroute",
+        "cli"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-omniroute-cli-admin",
+      "owner_scope": "skill",
+      "packs": [
+        "omniroute"
+      ],
+      "path": "_localsetup/skills/ls-omniroute-cli-admin",
+      "sort_priority": 50,
+      "tags": [
+        "omniroute",
+        "cli",
+        "admin"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-omniroute-cli-cloud",
+      "owner_scope": "skill",
+      "packs": [
+        "omniroute"
+      ],
+      "path": "_localsetup/skills/ls-omniroute-cli-cloud",
+      "sort_priority": 50,
+      "tags": [
+        "omniroute",
+        "cli",
+        "cloud-agents"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-omniroute-cli-eval",
+      "owner_scope": "skill",
+      "packs": [
+        "omniroute"
+      ],
+      "path": "_localsetup/skills/ls-omniroute-cli-eval",
+      "sort_priority": 50,
+      "tags": [
+        "omniroute",
+        "cli",
+        "evals"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-omniroute-cli-providers",
+      "owner_scope": "skill",
+      "packs": [
+        "omniroute"
+      ],
+      "path": "_localsetup/skills/ls-omniroute-cli-providers",
+      "sort_priority": 50,
+      "tags": [
+        "omniroute",
+        "cli",
+        "providers"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-omniroute-compression",
+      "owner_scope": "skill",
+      "packs": [
+        "omniroute"
+      ],
+      "path": "_localsetup/skills/ls-omniroute-compression",
+      "sort_priority": 50,
+      "tags": [
+        "omniroute",
+        "compression",
+        "tokens"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-omniroute-embeddings",
+      "owner_scope": "skill",
+      "packs": [
+        "omniroute"
+      ],
+      "path": "_localsetup/skills/ls-omniroute-embeddings",
+      "sort_priority": 50,
+      "tags": [
+        "omniroute",
+        "embeddings",
+        "rag"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-omniroute-image",
+      "owner_scope": "skill",
+      "packs": [
+        "omniroute"
+      ],
+      "path": "_localsetup/skills/ls-omniroute-image",
+      "sort_priority": 50,
+      "tags": [
+        "omniroute",
+        "image"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-omniroute-mcp",
+      "owner_scope": "skill",
+      "packs": [
+        "omniroute"
+      ],
+      "path": "_localsetup/skills/ls-omniroute-mcp",
+      "sort_priority": 50,
+      "tags": [
+        "omniroute",
+        "mcp"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-omniroute-monitoring",
+      "owner_scope": "skill",
+      "packs": [
+        "omniroute"
+      ],
+      "path": "_localsetup/skills/ls-omniroute-monitoring",
+      "sort_priority": 50,
+      "tags": [
+        "omniroute",
+        "monitoring",
+        "health"
+      ]
+    },
+    {
+      "class": "integrations",
       "id": "ls-omniroute-proxy",
       "owner_scope": "skill",
       "packs": [
-        "integrations"
+        "integrations",
+        "omniroute"
       ],
       "path": "_localsetup/skills/ls-omniroute-proxy",
       "sort_priority": 50,
       "tags": [
         "omniroute",
         "proxy"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-omniroute-routing",
+      "owner_scope": "skill",
+      "packs": [
+        "omniroute"
+      ],
+      "path": "_localsetup/skills/ls-omniroute-routing",
+      "sort_priority": 50,
+      "tags": [
+        "omniroute",
+        "routing",
+        "combos"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-omniroute-stt",
+      "owner_scope": "skill",
+      "packs": [
+        "omniroute"
+      ],
+      "path": "_localsetup/skills/ls-omniroute-stt",
+      "sort_priority": 50,
+      "tags": [
+        "omniroute",
+        "stt",
+        "audio"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-omniroute-tts",
+      "owner_scope": "skill",
+      "packs": [
+        "omniroute"
+      ],
+      "path": "_localsetup/skills/ls-omniroute-tts",
+      "sort_priority": 50,
+      "tags": [
+        "omniroute",
+        "tts",
+        "audio"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-omniroute-update",
+      "owner_scope": "skill",
+      "packs": [
+        "omniroute"
+      ],
+      "path": "_localsetup/skills/ls-omniroute-update",
+      "sort_priority": 50,
+      "tags": [
+        "omniroute",
+        "update"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-omniroute-web-fetch",
+      "owner_scope": "skill",
+      "packs": [
+        "omniroute"
+      ],
+      "path": "_localsetup/skills/ls-omniroute-web-fetch",
+      "sort_priority": 50,
+      "tags": [
+        "omniroute",
+        "web-fetch",
+        "fetch"
+      ]
+    },
+    {
+      "class": "integrations",
+      "id": "ls-omniroute-web-search",
+      "owner_scope": "skill",
+      "packs": [
+        "omniroute"
+      ],
+      "path": "_localsetup/skills/ls-omniroute-web-search",
+      "sort_priority": 50,
+      "tags": [
+        "omniroute",
+        "web-search",
+        "search"
       ]
     },
     {

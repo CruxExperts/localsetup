@@ -4,11 +4,11 @@ version: 4.0
 owner_package: docs-align
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 7e2d6c56d3349c23600385f9d873f65b1ef5ec172acf90dd93b05eb13d8c708f
+  source_provenance_hash: d82e5d163ffb7e51e0f916e2a464fe3d18de98ca736d1ff791cab23f097380f2
   emitter: docs-align
-framework_version: 4.0.16
-source_commit: debe3e0dcb4f3daf23f392cf95e1cf9905cb3cd6
-artifact_sha256: 2023feb2e084e18bc9b18f6f6f6e23eb25499a3bb7a9d79274fcb3de24360e59
+framework_version: 4.0.17
+source_commit: aff502123cd4f225a59a0a9ff76f6818aeb43a34
+artifact_sha256: e9cf77268a6c88fb8a8607620e531caa2da5f1e51fc549fb0b0964b72a455674
 ---
 # Documentation Alignment Summary
 
@@ -16,10 +16,10 @@ This page is generated from repository inventory, source-truth manifests, asset 
 
 | Signal | Value |
 |---|---:|
-| Version | `4.0.16` |
-| Public/framework docs scanned | 347 |
-| Shipped skills | 53 |
-| Workflow packages | 22 |
+| Version | `4.0.17` |
+| Public/framework docs scanned | 371 |
+| Shipped skills | 72 |
+| Workflow packages | 23 |
 | Supported platforms | 6 |
 | Audit findings | 0 |
 | Critical findings | 0 |

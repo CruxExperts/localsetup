@@ -4,6 +4,10 @@ description: Guide agents through read-only OmniRoute proxy discovery, model cat
 metadata:
   version: "1.0"
 compatibility: "Requires Python 3.12+, repo-installed requests, and network reachability to an OmniRoute HTTP(S) proxy. API keys must be supplied through environment variables. HTTP_PROXY, HTTPS_PROXY, and NO_PROXY behavior follows requests."
+extensions:
+  omniroute:
+    source_kind: localsetup-native
+    local_role: proxy-discovery
 ---
 
 # OmniRoute proxy
@@ -105,4 +109,5 @@ If MCP is available, prefer purpose-built tools for quota and cost summaries, su
 ## Bundled helpers
 
 - Endpoint cheat sheet: `references/omniroute-endpoints.md`.
+- Opaque-route model-equivalence advisory (closest-reference guidance only, not exact model parity): `references/model-equivalence.yaml`.
 - Read-only local probe: `scripts/omniroute_discover.py`. It reads credentials from an environment variable, probes safe endpoints with `requests`, and emits JSON or Markdown with per-endpoint status, failure reason, and repair hints.

@@ -57,6 +57,7 @@ A large line-count reduction is a review trigger, not a success metric. Any redu
 
 ## Capability skills and workflow packages (load when task matches)
 - ls-workflow-spec-clarify-reverse: "decision tree", "reverse prompt"; .agent/queue/**, PRD
+- ls-workflow-planning-critic-loop: non-trivial planning; grounded discovery, bounded clarification, subagent delegation, critic-reviewed plan
 - ls-workflow-umbrella-run: queue/PRD scope; named workflows; impact + confirm
 - ls-workflow-queue-batch-implement: "process PRDs", "run batch from PRD folder"
 - ls-agentq-transport: ship/ingest sealed Agent Q blobs (file_drop/mail), registry, strict gpg; see AGENTIC_AGENT_Q_SCENARIOS.md
@@ -105,6 +106,7 @@ A large line-count reduction is a review trigger, not a success metric. Any redu
 - ls-scrapling: host-first Scrapling integration; install and upgrade Scrapling via pipx, run adaptive single-URL extractions (simple or structured) with job status/cancel, and keep adapters aligned with Scrapling releases via parsed CLI/docs state. Use this as the default method for fetching websites and web content from the internet.
 - ls-omniroute-proxy: OmniRoute proxy discovery, model catalogs, provider metadata, limits, quotas, routing combos, MCP/A2A integration, and agent client configuration.
 - ls-omniroute-admin-automation: OmniRoute administration automation for providers, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, and drift reconciliation.
+- ls-omniroute-update: OmniRoute update reporting for upstream skill discovery, Localsetup comparison, provenance metadata, and report-first import/update/removal planning.
 - ls-kilo-boss-orchestrator: Kilo headless boss-worker orchestration with repo-local state, watchdog leases, consensus validation, and safety gates.
 - ls-kilo-visual-output: Kilo CLI visual output organization guide with structured response patterns.
 - ls-nodejs-nextjs: Node.js/Next.js/React runbook for package-manager, build, migration, debugging, testing, security, deployment, and current-version verification.

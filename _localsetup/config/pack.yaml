@@ -21,6 +21,7 @@ optional_packs:
   - dev
   - ops
   - integrations
+  - omniroute
   - publishing
   - harness
   - experimental
@@ -83,6 +84,28 @@ packs:
     - ls-omniroute-admin-automation
     - ls-omniroute-proxy
     - ls-scrapling
+  omniroute:
+    - ls-omniroute
+    - ls-omniroute-a2a
+    - ls-omniroute-chat
+    - ls-omniroute-cli
+    - ls-omniroute-cli-admin
+    - ls-omniroute-cli-cloud
+    - ls-omniroute-cli-eval
+    - ls-omniroute-cli-providers
+    - ls-omniroute-compression
+    - ls-omniroute-embeddings
+    - ls-omniroute-image
+    - ls-omniroute-mcp
+    - ls-omniroute-monitoring
+    - ls-omniroute-routing
+    - ls-omniroute-stt
+    - ls-omniroute-tts
+    - ls-omniroute-web-fetch
+    - ls-omniroute-web-search
+    - ls-omniroute-update
+    - ls-omniroute-proxy
+    - ls-omniroute-admin-automation
   publishing:
     - ls-automatic-versioning
     - ls-documentation-alignment
@@ -115,6 +138,7 @@ workflow_packs:
     - ls-workflow-context-index-refresh
     - ls-workflow-documentation-alignment
     - ls-workflow-ops-guarded
+    - ls-workflow-planning-critic-loop
     - ls-workflow-pipeline-git-repair-hygiene
     - ls-workflow-pipeline-pr-feedback-loop
     - ls-workflow-pipeline-repo-convert
@@ -127,6 +151,7 @@ workflow_packs:
     - ls-workflow-tmux-terminal-mode
   integrations:
     - ls-workflow-transport-handoff
+  omniroute: []
   publishing:
     - ls-workflow-documentation-alignment
     - ls-workflow-pipeline-pre-publish
@@ -341,15 +366,110 @@ extensions:
       sort_priority: 50
       tags: [nginx-proxy-manager, api]
       owner_scope: skill
+    ls-omniroute:
+      class: integrations
+      sort_priority: 50
+      tags: [omniroute, gateway]
+      owner_scope: skill
+    ls-omniroute-a2a:
+      class: integrations
+      sort_priority: 50
+      tags: [omniroute, a2a, json-rpc]
+      owner_scope: skill
     ls-omniroute-admin-automation:
       class: integrations
       sort_priority: 50
       tags: [omniroute, admin]
       owner_scope: skill
+    ls-omniroute-chat:
+      class: integrations
+      sort_priority: 50
+      tags: [omniroute, chat, llm]
+      owner_scope: skill
+    ls-omniroute-cli:
+      class: integrations
+      sort_priority: 50
+      tags: [omniroute, cli]
+      owner_scope: skill
+    ls-omniroute-cli-admin:
+      class: integrations
+      sort_priority: 50
+      tags: [omniroute, cli, admin]
+      owner_scope: skill
+    ls-omniroute-cli-cloud:
+      class: integrations
+      sort_priority: 50
+      tags: [omniroute, cli, cloud-agents]
+      owner_scope: skill
+    ls-omniroute-cli-eval:
+      class: integrations
+      sort_priority: 50
+      tags: [omniroute, cli, evals]
+      owner_scope: skill
+    ls-omniroute-cli-providers:
+      class: integrations
+      sort_priority: 50
+      tags: [omniroute, cli, providers]
+      owner_scope: skill
+    ls-omniroute-compression:
+      class: integrations
+      sort_priority: 50
+      tags: [omniroute, compression, tokens]
+      owner_scope: skill
+    ls-omniroute-embeddings:
+      class: integrations
+      sort_priority: 50
+      tags: [omniroute, embeddings, rag]
+      owner_scope: skill
+    ls-omniroute-image:
+      class: integrations
+      sort_priority: 50
+      tags: [omniroute, image]
+      owner_scope: skill
+    ls-omniroute-mcp:
+      class: integrations
+      sort_priority: 50
+      tags: [omniroute, mcp]
+      owner_scope: skill
+    ls-omniroute-monitoring:
+      class: integrations
+      sort_priority: 50
+      tags: [omniroute, monitoring, health]
+      owner_scope: skill
+    ls-omniroute-update:
+      class: integrations
+      sort_priority: 50
+      tags: [omniroute, update]
+      owner_scope: skill
     ls-omniroute-proxy:
       class: integrations
       sort_priority: 50
       tags: [omniroute, proxy]
+      owner_scope: skill
+    ls-omniroute-routing:
+      class: integrations
+      sort_priority: 50
+      tags: [omniroute, routing, combos]
+      owner_scope: skill
+    ls-omniroute-stt:
+      class: integrations
+      sort_priority: 50
+      tags: [omniroute, stt, audio]
+      owner_scope: skill
+    ls-omniroute-tts:
+      class: integrations
+      sort_priority: 50
+      tags: [omniroute, tts, audio]
+      owner_scope: skill
+    ls-omniroute-web-fetch:
+      class: integrations
+      sort_priority: 50
+      tags: [omniroute, web-fetch, fetch]
+      owner_scope: skill
+    ls-omniroute-web-search:
+      class: integrations
+      sort_priority: 50
+      tags: [omniroute, web-search, search]
       owner_scope: skill
     ls-scrapling:
       class: integrations

@@ -103,11 +103,13 @@ The top-level CLI currently exposes these commands:
 ```text
 plan, install, verify, rollback, update, adapters, configure, doctor,
 migrate, context, convert, catalog, diff, skill, workflow, why, graph,
-adopt, detach, sbom, scan-migration, audit-global-first, validate-catalog,
-generate-docs, provenance, harness, docs-align, context-index, hook-gate,
+candidate-skill, adopt, detach, sbom, scan-migration, audit-global-first,
+validate-catalog, generate-docs, provenance, harness, docs-align, context-index, hook-gate,
 version-plan, version-sync, release-push, self-refresh, install-hooks,
 register-shell, wizard, package, verify-release
 ```
+
+`candidate-skill validate --candidate <path> --json` and `candidate-skill proposal --candidate <path> --output -` inspect repo-scoped candidate skills without promoting them into managed packages or adapter directories.
 
 Most commands emit JSON by default. Commands with explicit human-readable modes, such as `context --markdown`, document that mode in their own help.
 

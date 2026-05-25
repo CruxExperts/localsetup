@@ -1565,6 +1565,40 @@ def test_rejects_unknown_platform_selectors(tmp_path: Path) -> None:
         rollback(root, home, platform_ids=["typo"])
 
 
+def test_plugin_list_reports_malformed_manifest_without_traceback(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    home.mkdir()
+    manifest = root / "_localsetup" / "config" / "plugin-packs.yaml"
+    manifest.write_text(
+        """
+schema_version: 1
+plugin_packs:
+  - id: localsetup-broken
+    source_pack: bootstrap
+    category: broken
+    platforms:
+      codex:
+        interface: v1
+    extra_context_inputs: []
+""",
+        encoding="utf-8",
+    )
+
+    code = cli_mod._main(["--source-root", str(root), "--home", str(home), "plugin", "list", "--platform", "codex"])
+    output = capsys.readouterr()
+
+    assert code == 1
+    payload = json.loads(output.out)
+    assert payload["ok"] is False
+    assert payload["plugin_packs"] == []
+    assert "Traceback" not in output.err
+    assert any("plugin-packs.yaml" in issue for issue in payload["issues"])
+
+
 def test_cli_csv_selector_normalization() -> None:
     assert _split_csv(["codex,kilo", "cursor"]) == ["codex", "kilo", "cursor"]
     assert _split_csv(None) is None
@@ -5637,6 +5671,7 @@ def test_cli_dispatches_stubbed_branches_without_heavy_side_effects(
     monkeypatch.setattr(cli_mod, "harness_enable", lambda *args, **kwargs: {"ok": True, "action": "enable"})
     monkeypatch.setattr(cli_mod, "harness_disable", lambda *args, **kwargs: {"ok": True, "action": "disable"})
     monkeypatch.setattr(cli_mod, "harness_status", lambda *args, **kwargs: {"ok": True, "action": "status"})
+    monkeypatch.setattr(cli_mod, "harness_budget", lambda *args, **kwargs: {"ok": True, "action": "budget"})
     monkeypatch.setattr(cli_mod, "harness_run", lambda *args, **kwargs: {"ok": True, "action": "run"})
     monkeypatch.setattr(cli_mod, "harness_payload_to_text", lambda payload: f"{payload['action']}\n")
     monkeypatch.setattr(cli_mod, "load_skill_catalog", lambda *args, **kwargs: [])
@@ -5650,6 +5685,24 @@ def test_cli_dispatches_stubbed_branches_without_heavy_side_effects(
     monkeypatch.setattr(cli_mod, "write_source_sbom", lambda *args, **kwargs: {"ok": True, "kind": "source"})
     monkeypatch.setattr(cli_mod, "write_installed_sbom", lambda *args, **kwargs: {"ok": True, "kind": "installed"})
     monkeypatch.setattr(cli_mod, "validate_manifest_schemas", lambda *args, **kwargs: [])
+    monkeypatch.setattr(cli_mod, "validate_plugin_pack_manifest", lambda *args, **kwargs: [])
+    monkeypatch.setattr(
+        cli_mod,
+        "load_plugin_pack_configs",
+        lambda *args, **kwargs: [
+            SimpleNamespace(
+                plugin_id="localsetup-bootstrap",
+                display_name="Localsetup Bootstrap",
+                description="Bootstrap plugin pack.",
+                category="bootstrap",
+                source_pack="bootstrap",
+                platforms={"codex": {"interface": "v1"}},
+            )
+        ],
+    )
+    monkeypatch.setattr(cli_mod, "plan_plugin_packs", lambda *args, **kwargs: {"ok": True, "plugin_packs": []})
+    monkeypatch.setattr(cli_mod, "build_codex_plugins", lambda *args, **kwargs: {"ok": True, "plugins": []})
+    monkeypatch.setattr(cli_mod, "validate_codex_plugin_path", lambda *args, **kwargs: {"ok": True, "issues": []})
     monkeypatch.setattr(cli_mod, "validate_skill_catalog", lambda *args, **kwargs: [])
     monkeypatch.setattr(cli_mod, "validate_workflow_catalog", lambda *args, **kwargs: [])
     monkeypatch.setattr(cli_mod, "scan_legacy_references", lambda *args, **kwargs: [])
@@ -5694,6 +5747,10 @@ def test_cli_dispatches_stubbed_branches_without_heavy_side_effects(
     run_cli("convert", "--apply", "--global-packs", "core", "--repo-packs", "dev", "--platforms", "codex")
     run_cli("context", "--markdown", "--report", str(tmp_path / "context.md"))
     run_cli("generate-docs")
+    run_cli("plugin", "list", "--platform", "codex")
+    run_cli("plugin", "plan", "--platform", "codex", "--plugin-packs", "bootstrap", "--output", str(tmp_path / "plugin-plan"))
+    run_cli("plugin", "build", "--platform", "codex", "--plugin-packs", "bootstrap", "--output", str(tmp_path / "plugin-build"))
+    run_cli("plugin", "validate", "--platform", "codex", "--path", str(tmp_path / "plugin-build"))
     run_cli("harness", "repo-finalizer", "plan", "--json")
     run_cli("harness", "repo-finalizer", "status")
     run_cli("harness", "repo-finalizer", "run", "--json", "--no-commit", "--checkpoint", "--message", "checkpoint")
@@ -5702,6 +5759,7 @@ def test_cli_dispatches_stubbed_branches_without_heavy_side_effects(
     run_cli("harness", "codex-heartbeat", "enable", "--install-crontab", "--yes")
     run_cli("harness", "codex-heartbeat", "disable", "--install-crontab", "--yes")
     run_cli("harness", "codex-heartbeat", "status")
+    run_cli("harness", "codex-heartbeat", "budget")
     run_cli("harness", "codex-heartbeat", "run", "--no-agent", "--force")
     run_cli("docs-align", "inventory")
     run_cli("context-index", "refresh")

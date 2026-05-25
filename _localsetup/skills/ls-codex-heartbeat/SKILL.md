@@ -35,9 +35,12 @@ localsetup harness codex-heartbeat plan
 localsetup harness codex-heartbeat init
 localsetup harness codex-heartbeat enable
 localsetup harness codex-heartbeat status
+localsetup harness codex-heartbeat budget
 localsetup harness codex-heartbeat run --no-agent
 localsetup harness codex-heartbeat disable
 ```
+
+`budget` is read-only. It reports policy, summary, and task reservations from `heartbeat.task_queue_path` when configured; it does not spawn agents or enforce scheduling.
 
 Standalone runtime script:
 

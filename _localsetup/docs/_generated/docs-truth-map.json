@@ -42,18 +42,18 @@
     ],
     "provenance": {
       "artifact_path": "_localsetup/docs/_generated/facts.json",
-      "artifact_sha256": "b39a008d52f52880578f2d500ea3be3d8127b0bbe38cabaa8ccd1fc1be766db7",
+      "artifact_sha256": "e776f34ca38865c6c071cd9fec829381cef89c69e2874749be698fe6eb9233cf",
       "emitter": "generate-docs",
-      "framework_version": "4.0.16",
+      "framework_version": "4.0.17",
       "schema_version": 1,
-      "source_commit": "debe3e0dcb4f3daf23f392cf95e1cf9905cb3cd6",
+      "source_commit": "aff502123cd4f225a59a0a9ff76f6818aeb43a34",
       "source_dirty": true,
-      "source_provenance_hash": "7e2d6c56d3349c23600385f9d873f65b1ef5ec172acf90dd93b05eb13d8c708f",
-      "source_root_id": "1b74671e43f36f48f34ae92ba653eef4c4062d8090ad14050ab94aa5fdd5c340",
+      "source_provenance_hash": "d82e5d163ffb7e51e0f916e2a464fe3d18de98ca736d1ff791cab23f097380f2",
+      "source_root_id": "6288d52acd7f2704ce68e4203cf79b13b312b6ac116a62f3a9b652eb047347b0",
       "source_tag": null,
-      "source_tree_sha": "b025d102c2816ccbe1aa4e503816c43c6420423b"
+      "source_tree_sha": "5827f88fafb84602db4202fee93b257e17a6f2f2"
     },
-    "skill_count": 53,
+    "skill_count": 72,
     "skills": [
       {
         "class": "core",
@@ -710,11 +710,45 @@
       },
       {
         "class": "integrations",
+        "id": "ls-omniroute",
+        "name": "ls-omniroute",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute/SKILL.md",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "gateway"
+        ],
+        "version": "1.0"
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-a2a",
+        "name": "ls-omniroute-a2a",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-a2a/SKILL.md",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "a2a",
+          "json-rpc"
+        ],
+        "version": "1.0"
+      },
+      {
+        "class": "integrations",
         "id": "ls-omniroute-admin-automation",
         "name": "ls-omniroute-admin-automation",
         "owner_scope": "skill",
         "packs": [
-          "integrations"
+          "integrations",
+          "omniroute"
         ],
         "path": "_localsetup/skills/ls-omniroute-admin-automation/SKILL.md",
         "sort_priority": 50,
@@ -726,17 +760,303 @@
       },
       {
         "class": "integrations",
+        "id": "ls-omniroute-chat",
+        "name": "ls-omniroute-chat",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-chat/SKILL.md",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "chat",
+          "llm"
+        ],
+        "version": "1.0"
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-cli",
+        "name": "ls-omniroute-cli",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-cli/SKILL.md",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "cli"
+        ],
+        "version": "1.0"
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-cli-admin",
+        "name": "ls-omniroute-cli-admin",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-cli-admin/SKILL.md",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "cli",
+          "admin"
+        ],
+        "version": "1.0"
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-cli-cloud",
+        "name": "ls-omniroute-cli-cloud",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-cli-cloud/SKILL.md",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "cli",
+          "cloud-agents"
+        ],
+        "version": "1.0"
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-cli-eval",
+        "name": "ls-omniroute-cli-eval",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-cli-eval/SKILL.md",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "cli",
+          "evals"
+        ],
+        "version": "1.0"
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-cli-providers",
+        "name": "ls-omniroute-cli-providers",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-cli-providers/SKILL.md",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "cli",
+          "providers"
+        ],
+        "version": "1.0"
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-compression",
+        "name": "ls-omniroute-compression",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-compression/SKILL.md",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "compression",
+          "tokens"
+        ],
+        "version": "1.0"
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-embeddings",
+        "name": "ls-omniroute-embeddings",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-embeddings/SKILL.md",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "embeddings",
+          "rag"
+        ],
+        "version": "1.0"
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-image",
+        "name": "ls-omniroute-image",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-image/SKILL.md",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "image"
+        ],
+        "version": "1.0"
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-mcp",
+        "name": "ls-omniroute-mcp",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-mcp/SKILL.md",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "mcp"
+        ],
+        "version": "1.0"
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-monitoring",
+        "name": "ls-omniroute-monitoring",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-monitoring/SKILL.md",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "monitoring",
+          "health"
+        ],
+        "version": "1.0"
+      },
+      {
+        "class": "integrations",
         "id": "ls-omniroute-proxy",
         "name": "ls-omniroute-proxy",
         "owner_scope": "skill",
         "packs": [
-          "integrations"
+          "integrations",
+          "omniroute"
         ],
         "path": "_localsetup/skills/ls-omniroute-proxy/SKILL.md",
         "sort_priority": 50,
         "tags": [
           "omniroute",
           "proxy"
+        ],
+        "version": "1.0"
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-routing",
+        "name": "ls-omniroute-routing",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-routing/SKILL.md",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "routing",
+          "combos"
+        ],
+        "version": "1.0"
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-stt",
+        "name": "ls-omniroute-stt",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-stt/SKILL.md",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "stt",
+          "audio"
+        ],
+        "version": "1.0"
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-tts",
+        "name": "ls-omniroute-tts",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-tts/SKILL.md",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "tts",
+          "audio"
+        ],
+        "version": "1.0"
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-update",
+        "name": "ls-omniroute-update",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-update/SKILL.md",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "update"
+        ],
+        "version": "1.0"
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-web-fetch",
+        "name": "ls-omniroute-web-fetch",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-web-fetch/SKILL.md",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "web-fetch",
+          "fetch"
+        ],
+        "version": "1.0"
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-web-search",
+        "name": "ls-omniroute-web-search",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-web-search/SKILL.md",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "web-search",
+          "search"
         ],
         "version": "1.0"
       },
@@ -917,8 +1237,8 @@
         "version": "1.0"
       }
     ],
-    "version": "4.0.16",
-    "workflow_count": 22,
+    "version": "4.0.17",
+    "workflow_count": 23,
     "workflows": [
       {
         "id": "audit-framework",
@@ -1011,6 +1331,12 @@
         "path": "_localsetup/workflows/ls-workflow-pipeline-skill-onboard/SKILL.md"
       },
       {
+        "id": "planning-critic-loop",
+        "name": "Planning Critic Loop",
+        "package": "ls-workflow-planning-critic-loop",
+        "path": "_localsetup/workflows/ls-workflow-planning-critic-loop/SKILL.md"
+      },
+      {
         "id": "queue-batch-implement",
         "name": "Queue Batch Implement",
         "package": "ls-workflow-queue-batch-implement",
@@ -1064,19 +1390,19 @@
       "skill-lifecycle",
       "specialized"
     ],
-    "count": 53,
+    "count": 72,
     "provenance": {
       "artifact_path": "_localsetup/docs/_generated/skill-taxonomy.json",
-      "artifact_sha256": "e6edb8c7029c39a5d5153e12b196473b66ada04a39e910bc2a099b527ea7348b",
+      "artifact_sha256": "4b9b85cefde5fefed3045aba0e5aacb5797289de80c5c196d4cf9bc22124ab81",
       "emitter": "generate-docs",
-      "framework_version": "4.0.16",
+      "framework_version": "4.0.17",
       "schema_version": 1,
-      "source_commit": "debe3e0dcb4f3daf23f392cf95e1cf9905cb3cd6",
+      "source_commit": "aff502123cd4f225a59a0a9ff76f6818aeb43a34",
       "source_dirty": true,
-      "source_provenance_hash": "7e2d6c56d3349c23600385f9d873f65b1ef5ec172acf90dd93b05eb13d8c708f",
-      "source_root_id": "1b74671e43f36f48f34ae92ba653eef4c4062d8090ad14050ab94aa5fdd5c340",
+      "source_provenance_hash": "d82e5d163ffb7e51e0f916e2a464fe3d18de98ca736d1ff791cab23f097380f2",
+      "source_root_id": "6288d52acd7f2704ce68e4203cf79b13b312b6ac116a62f3a9b652eb047347b0",
       "source_tag": null,
-      "source_tree_sha": "b025d102c2816ccbe1aa4e503816c43c6420423b"
+      "source_tree_sha": "5827f88fafb84602db4202fee93b257e17a6f2f2"
     },
     "schema_version": 1,
     "skills": [
@@ -1655,10 +1981,40 @@
       },
       {
         "class": "integrations",
+        "id": "ls-omniroute",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "gateway"
+        ]
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-a2a",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-a2a",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "a2a",
+          "json-rpc"
+        ]
+      },
+      {
+        "class": "integrations",
         "id": "ls-omniroute-admin-automation",
         "owner_scope": "skill",
         "packs": [
-          "integrations"
+          "integrations",
+          "omniroute"
         ],
         "path": "_localsetup/skills/ls-omniroute-admin-automation",
         "sort_priority": 50,
@@ -1669,16 +2025,268 @@
       },
       {
         "class": "integrations",
+        "id": "ls-omniroute-chat",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-chat",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "chat",
+          "llm"
+        ]
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-cli",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-cli",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "cli"
+        ]
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-cli-admin",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-cli-admin",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "cli",
+          "admin"
+        ]
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-cli-cloud",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-cli-cloud",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "cli",
+          "cloud-agents"
+        ]
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-cli-eval",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-cli-eval",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "cli",
+          "evals"
+        ]
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-cli-providers",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-cli-providers",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "cli",
+          "providers"
+        ]
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-compression",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-compression",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "compression",
+          "tokens"
+        ]
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-embeddings",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-embeddings",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "embeddings",
+          "rag"
+        ]
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-image",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-image",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "image"
+        ]
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-mcp",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-mcp",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "mcp"
+        ]
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-monitoring",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-monitoring",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "monitoring",
+          "health"
+        ]
+      },
+      {
+        "class": "integrations",
         "id": "ls-omniroute-proxy",
         "owner_scope": "skill",
         "packs": [
-          "integrations"
+          "integrations",
+          "omniroute"
         ],
         "path": "_localsetup/skills/ls-omniroute-proxy",
         "sort_priority": 50,
         "tags": [
           "omniroute",
           "proxy"
+        ]
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-routing",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-routing",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "routing",
+          "combos"
+        ]
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-stt",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-stt",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "stt",
+          "audio"
+        ]
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-tts",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-tts",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "tts",
+          "audio"
+        ]
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-update",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-update",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "update"
+        ]
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-web-fetch",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-web-fetch",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "web-fetch",
+          "fetch"
+        ]
+      },
+      {
+        "class": "integrations",
+        "id": "ls-omniroute-web-search",
+        "owner_scope": "skill",
+        "packs": [
+          "omniroute"
+        ],
+        "path": "_localsetup/skills/ls-omniroute-web-search",
+        "sort_priority": 50,
+        "tags": [
+          "omniroute",
+          "web-search",
+          "search"
         ]
       },
       {
@@ -1839,16 +2447,16 @@
   },
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "95a964d9f360258e084813b40d580cd11f1488b2ab41095b20bc0447ec8b64c9",
+    "artifact_sha256": "33bbb178caf091b5a401a9a0651a36de72354bca137e7372fe199a8bc2fd7d63",
     "emitter": "docs-align",
-    "framework_version": "4.0.16",
+    "framework_version": "4.0.17",
     "schema_version": 1,
-    "source_commit": "debe3e0dcb4f3daf23f392cf95e1cf9905cb3cd6",
+    "source_commit": "aff502123cd4f225a59a0a9ff76f6818aeb43a34",
     "source_dirty": true,
-    "source_provenance_hash": "7e2d6c56d3349c23600385f9d873f65b1ef5ec172acf90dd93b05eb13d8c708f",
-    "source_root_id": "1b74671e43f36f48f34ae92ba653eef4c4062d8090ad14050ab94aa5fdd5c340",
+    "source_provenance_hash": "d82e5d163ffb7e51e0f916e2a464fe3d18de98ca736d1ff791cab23f097380f2",
+    "source_root_id": "6288d52acd7f2704ce68e4203cf79b13b312b6ac116a62f3a9b652eb047347b0",
     "source_tag": null,
-    "source_tree_sha": "b025d102c2816ccbe1aa4e503816c43c6420423b"
+    "source_tree_sha": "5827f88fafb84602db4202fee93b257e17a6f2f2"
   },
   "schema_version": "1.0",
   "truths": {
@@ -1951,6 +2559,11 @@
           "owner_package": "",
           "owner_skill": "ls-framework-compliance",
           "path": "_localsetup/docs/PLATFORM_REGISTRY.md"
+        },
+        {
+          "owner_package": "",
+          "owner_skill": "ls-docs-organization",
+          "path": "_localsetup/docs/PLUGIN_PACKS.md"
         },
         {
           "owner_package": "",
@@ -2156,7 +2769,7 @@
         "_localsetup/skills/ls-*/SKILL.md",
         "_localsetup/config/pack.yaml"
       ],
-      "value": 53
+      "value": 72
     },
     "skill_taxonomy": {
       "sources": [
@@ -2173,7 +2786,7 @@
           "skill-lifecycle",
           "specialized"
         ],
-        "count": 53,
+        "count": 72,
         "schema_version": 1,
         "skills": [
           {
@@ -2751,10 +3364,40 @@
           },
           {
             "class": "integrations",
+            "id": "ls-omniroute",
+            "owner_scope": "skill",
+            "packs": [
+              "omniroute"
+            ],
+            "path": "_localsetup/skills/ls-omniroute",
+            "sort_priority": 50,
+            "tags": [
+              "omniroute",
+              "gateway"
+            ]
+          },
+          {
+            "class": "integrations",
+            "id": "ls-omniroute-a2a",
+            "owner_scope": "skill",
+            "packs": [
+              "omniroute"
+            ],
+            "path": "_localsetup/skills/ls-omniroute-a2a",
+            "sort_priority": 50,
+            "tags": [
+              "omniroute",
+              "a2a",
+              "json-rpc"
+            ]
+          },
+          {
+            "class": "integrations",
             "id": "ls-omniroute-admin-automation",
             "owner_scope": "skill",
             "packs": [
-              "integrations"
+              "integrations",
+              "omniroute"
             ],
             "path": "_localsetup/skills/ls-omniroute-admin-automation",
             "sort_priority": 50,
@@ -2765,16 +3408,268 @@
           },
           {
             "class": "integrations",
+            "id": "ls-omniroute-chat",
+            "owner_scope": "skill",
+            "packs": [
+              "omniroute"
+            ],
+            "path": "_localsetup/skills/ls-omniroute-chat",
+            "sort_priority": 50,
+            "tags": [
+              "omniroute",
+              "chat",
+              "llm"
+            ]
+          },
+          {
+            "class": "integrations",
+            "id": "ls-omniroute-cli",
+            "owner_scope": "skill",
+            "packs": [
+              "omniroute"
+            ],
+            "path": "_localsetup/skills/ls-omniroute-cli",
+            "sort_priority": 50,
+            "tags": [
+              "omniroute",
+              "cli"
+            ]
+          },
+          {
+            "class": "integrations",
+            "id": "ls-omniroute-cli-admin",
+            "owner_scope": "skill",
+            "packs": [
+              "omniroute"
+            ],
+            "path": "_localsetup/skills/ls-omniroute-cli-admin",
+            "sort_priority": 50,
+            "tags": [
+              "omniroute",
+              "cli",
+              "admin"
+            ]
+          },
+          {
+            "class": "integrations",
+            "id": "ls-omniroute-cli-cloud",
+            "owner_scope": "skill",
+            "packs": [
+              "omniroute"
+            ],
+            "path": "_localsetup/skills/ls-omniroute-cli-cloud",
+            "sort_priority": 50,
+            "tags": [
+              "omniroute",
+              "cli",
+              "cloud-agents"
+            ]
+          },
+          {
+            "class": "integrations",
+            "id": "ls-omniroute-cli-eval",
+            "owner_scope": "skill",
+            "packs": [
+              "omniroute"
+            ],
+            "path": "_localsetup/skills/ls-omniroute-cli-eval",
+            "sort_priority": 50,
+            "tags": [
+              "omniroute",
+              "cli",
+              "evals"
+            ]
+          },
+          {
+            "class": "integrations",
+            "id": "ls-omniroute-cli-providers",
+            "owner_scope": "skill",
+            "packs": [
+              "omniroute"
+            ],
+            "path": "_localsetup/skills/ls-omniroute-cli-providers",
+            "sort_priority": 50,
+            "tags": [
+              "omniroute",
+              "cli",
+              "providers"
+            ]
+          },
+          {
+            "class": "integrations",
+            "id": "ls-omniroute-compression",
+            "owner_scope": "skill",
+            "packs": [
+              "omniroute"
+            ],
+            "path": "_localsetup/skills/ls-omniroute-compression",
+            "sort_priority": 50,
+            "tags": [
+              "omniroute",
+              "compression",
+              "tokens"
+            ]
+          },
+          {
+            "class": "integrations",
+            "id": "ls-omniroute-embeddings",
+            "owner_scope": "skill",
+            "packs": [
+              "omniroute"
+            ],
+            "path": "_localsetup/skills/ls-omniroute-embeddings",
+            "sort_priority": 50,
+            "tags": [
+              "omniroute",
+              "embeddings",
+              "rag"
+            ]
+          },
+          {
+            "class": "integrations",
+            "id": "ls-omniroute-image",
+            "owner_scope": "skill",
+            "packs": [
+              "omniroute"
+            ],
+            "path": "_localsetup/skills/ls-omniroute-image",
+            "sort_priority": 50,
+            "tags": [
+              "omniroute",
+              "image"
+            ]
+          },
+          {
+            "class": "integrations",
+            "id": "ls-omniroute-mcp",
+            "owner_scope": "skill",
+            "packs": [
+              "omniroute"
+            ],
+            "path": "_localsetup/skills/ls-omniroute-mcp",
+            "sort_priority": 50,
+            "tags": [
+              "omniroute",
+              "mcp"
+            ]
+          },
+          {
+            "class": "integrations",
+            "id": "ls-omniroute-monitoring",
+            "owner_scope": "skill",
+            "packs": [
+              "omniroute"
+            ],
+            "path": "_localsetup/skills/ls-omniroute-monitoring",
+            "sort_priority": 50,
+            "tags": [
+              "omniroute",
+              "monitoring",
+              "health"
+            ]
+          },
+          {
+            "class": "integrations",
             "id": "ls-omniroute-proxy",
             "owner_scope": "skill",
             "packs": [
-              "integrations"
+              "integrations",
+              "omniroute"
             ],
             "path": "_localsetup/skills/ls-omniroute-proxy",
             "sort_priority": 50,
             "tags": [
               "omniroute",
               "proxy"
+            ]
+          },
+          {
+            "class": "integrations",
+            "id": "ls-omniroute-routing",
+            "owner_scope": "skill",
+            "packs": [
+              "omniroute"
+            ],
+            "path": "_localsetup/skills/ls-omniroute-routing",
+            "sort_priority": 50,
+            "tags": [
+              "omniroute",
+              "routing",
+              "combos"
+            ]
+          },
+          {
+            "class": "integrations",
+            "id": "ls-omniroute-stt",
+            "owner_scope": "skill",
+            "packs": [
+              "omniroute"
+            ],
+            "path": "_localsetup/skills/ls-omniroute-stt",
+            "sort_priority": 50,
+            "tags": [
+              "omniroute",
+              "stt",
+              "audio"
+            ]
+          },
+          {
+            "class": "integrations",
+            "id": "ls-omniroute-tts",
+            "owner_scope": "skill",
+            "packs": [
+              "omniroute"
+            ],
+            "path": "_localsetup/skills/ls-omniroute-tts",
+            "sort_priority": 50,
+            "tags": [
+              "omniroute",
+              "tts",
+              "audio"
+            ]
+          },
+          {
+            "class": "integrations",
+            "id": "ls-omniroute-update",
+            "owner_scope": "skill",
+            "packs": [
+              "omniroute"
+            ],
+            "path": "_localsetup/skills/ls-omniroute-update",
+            "sort_priority": 50,
+            "tags": [
+              "omniroute",
+              "update"
+            ]
+          },
+          {
+            "class": "integrations",
+            "id": "ls-omniroute-web-fetch",
+            "owner_scope": "skill",
+            "packs": [
+              "omniroute"
+            ],
+            "path": "_localsetup/skills/ls-omniroute-web-fetch",
+            "sort_priority": 50,
+            "tags": [
+              "omniroute",
+              "web-fetch",
+              "fetch"
+            ]
+          },
+          {
+            "class": "integrations",
+            "id": "ls-omniroute-web-search",
+            "owner_scope": "skill",
+            "packs": [
+              "omniroute"
+            ],
+            "path": "_localsetup/skills/ls-omniroute-web-search",
+            "sort_priority": 50,
+            "tags": [
+              "omniroute",
+              "web-search",
+              "search"
             ]
           },
           {
@@ -2935,21 +3830,21 @@
       }
     },
     "version": {
-      "facts_version": "4.0.16",
-      "pyproject_version": "4.0.16",
+      "facts_version": "4.0.17",
+      "pyproject_version": "4.0.17",
       "sources": [
         "VERSION",
         "pyproject.toml",
         "_localsetup/docs/_generated/facts.json"
       ],
-      "value": "4.0.16"
+      "value": "4.0.17"
     },
     "workflow_catalog": {
       "sources": [
         "_localsetup/workflows/*/workflow.yaml"
       ],
       "value": {
-        "count": 22,
+        "count": 23,
         "workflows": [
           {
             "aliases": [
@@ -3319,6 +4214,29 @@
           },
           {
             "aliases": [
+              "planning critic loop",
+              "planning agent critic",
+              "critic reviewed plan"
+            ],
+            "description": "Create decision-complete plans through grounding, capped clarification, subagent delegation, and critic iteration.",
+            "display_name": "Planning Critic Loop",
+            "package": "ls-workflow-planning-critic-loop",
+            "packs": [
+              "dev"
+            ],
+            "path": "_localsetup/workflows/ls-workflow-planning-critic-loop",
+            "required_docs": [
+              "_localsetup/docs/DECISION_TREE_WORKFLOW.md",
+              "_localsetup/docs/WORKFLOW_STANDARD.md",
+              "_localsetup/docs/WORKFLOW_PACKAGES.md",
+              "_localsetup/docs/SKILLS_AND_RULES.md"
+            ],
+            "required_skills": [],
+            "required_tools": [],
+            "workflow_id": "planning-critic-loop"
+          },
+          {
+            "aliases": [
               "Agent Q queue",
               "process PRDs"
             ],
@@ -3478,7 +4396,7 @@
       "sources": [
         "_localsetup/workflows/ls-workflow-*/workflow.yaml"
       ],
-      "value": 22
+      "value": 23
     }
   }
 }

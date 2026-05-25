@@ -10,7 +10,7 @@
   <a href="_localsetup/docs/PLATFORM_REGISTRY.md"><img src="https://img.shields.io/badge/platforms-cursor%20%7C%20claude--code%20%7C%20codex%20%7C%20openclaw%20%7C%20kilo%20%7C%20opencode-1f6feb" alt="Supported platforms"></a>
 </p>
 
-**Version:** 4.0.16<br>
+**Version:** 4.0.17<br>
 
 **Localsetup gives coding agents a repo-local operating layer.**
 
@@ -25,7 +25,7 @@ Use it when you want agents to stop improvising from hidden local setup and star
 Localsetup packages:
 
 - Global framework source under `~/.local/share/localsetup/source` for installed users; source checkouts keep `_localsetup/` for contributors
-- 53 shipped capability skills plus 22 first-class workflow packages for debugging, testing, PR review, infrastructure, docs, git recovery, skill import, security vetting, context indexing, TypeScript code quality, opt-in harness automation, and agent workflow control
+- 72 shipped capability skills plus 23 first-class workflow packages for debugging, testing, PR review, infrastructure, docs, git recovery, skill import, security vetting, context indexing, TypeScript code quality, opt-in harness automation, and agent workflow control
 - Cross-platform adapters for Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode
 - Agent Skills-compatible `SKILL.md` packages that can be imported, normalized, vetted, installed, and reused
 - Workflow packages under `_localsetup/workflows/` that stay executable as skills while carrying Localsetup `workflow.yaml` metadata for aliases, gates, dependencies, and generated registries
@@ -62,10 +62,10 @@ Start with the [workflow packages guide](_localsetup/docs/WORKFLOW_PACKAGES.md) 
 <!-- facts-block:start -->
 | Fact | Value |
 |---|---|
-| Current version | `4.0.16` |
+| Current version | `4.0.17` |
 | Supported platforms | `cursor, claude-code, codex, openclaw, kilo, opencode` |
-| Shipped skills | `53` |
-| Workflow packages | `22` |
+| Shipped skills | `72` |
+| Workflow packages | `23` |
 | Source | `_localsetup/docs/_generated/facts.json` |
 <!-- facts-block:end -->
 
@@ -169,7 +169,7 @@ Windows support is WSL2-only in the current framework. Open WSL2, change to the 
 Full install docs: [_localsetup/docs/QUICKSTART.md](_localsetup/docs/QUICKSTART.md) and [_localsetup/docs/MULTI_PLATFORM_INSTALL.md](_localsetup/docs/MULTI_PLATFORM_INSTALL.md).
 Copy-paste command reference: [_localsetup/docs/COMMAND_REFERENCE.md](_localsetup/docs/COMMAND_REFERENCE.md).
 
-Opt-in harness automation is documented separately because normal installs never schedule autonomous work. See [_localsetup/docs/HARNESS_AUTOMATION.md](_localsetup/docs/HARNESS_AUTOMATION.md) for `localsetup harness codex-heartbeat plan/init/enable/status/run/disable`.
+Opt-in harness automation is documented separately because normal installs never schedule autonomous work. See [_localsetup/docs/HARNESS_AUTOMATION.md](_localsetup/docs/HARNESS_AUTOMATION.md) for `localsetup harness codex-heartbeat plan/init/enable/status/budget/run/disable`.
 
 ## 10 reasons to use Localsetup
 

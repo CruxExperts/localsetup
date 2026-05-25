@@ -1,0 +1,255 @@
+{
+  "count": 8,
+  "plugin_packs": [
+    {
+      "category": "bootstrap",
+      "context_skill": "ls-plugin-bootstrap-context",
+      "description": "Essential context, safety, git, testing, and review skills for starting work in a Localsetup-aware repository.",
+      "display_name": "Localsetup Bootstrap",
+      "id": "localsetup-bootstrap",
+      "platforms": [
+        "codex"
+      ],
+      "skills": [
+        "ls-communication-and-tools",
+        "ls-context",
+        "ls-safety-and-backup",
+        "ls-script-and-docs-quality",
+        "ls-task-skill-matcher",
+        "ls-test-runner",
+        "ls-docs-organization",
+        "ls-framework-audit",
+        "ls-framework-compliance",
+        "ls-git-workflows",
+        "ls-unfuck-my-git-state",
+        "ls-pr-reviewer"
+      ],
+      "source_pack": "bootstrap",
+      "workflows": [
+        "ls-workflow-audit-framework",
+        "ls-workflow-ops-guarded",
+        "ls-workflow-pipeline-git-repair-hygiene",
+        "ls-workflow-pipeline-repo-convert"
+      ]
+    },
+    {
+      "category": "core",
+      "context_skill": "ls-plugin-core-context",
+      "description": "Core Localsetup context, indexing, doctor, safety, testing, and TDD capabilities.",
+      "display_name": "Localsetup Core",
+      "id": "localsetup-core",
+      "platforms": [
+        "codex"
+      ],
+      "skills": [
+        "ls-communication-and-tools",
+        "ls-context",
+        "ls-context-index",
+        "ls-safety-and-backup",
+        "ls-script-and-docs-quality",
+        "ls-task-skill-matcher",
+        "ls-test-runner",
+        "ls-localsetup-doctor",
+        "ls-tdd-guide"
+      ],
+      "source_pack": "core",
+      "workflows": []
+    },
+    {
+      "category": "development",
+      "context_skill": "ls-plugin-dev-context",
+      "description": "Development, debugging, documentation, audit, Git, review, UI, and TypeScript skills.",
+      "display_name": "Localsetup Dev",
+      "id": "localsetup-dev",
+      "platforms": [
+        "codex"
+      ],
+      "skills": [
+        "ls-context-index",
+        "ls-safety-and-backup",
+        "ls-script-and-docs-quality",
+        "ls-test-runner",
+        "ls-docs-organization",
+        "ls-documentation-alignment",
+        "ls-framework-audit",
+        "ls-framework-compliance",
+        "ls-git-workflows",
+        "ls-github-publishing-workflow",
+        "ls-markdown-reference-validator",
+        "ls-receiving-code-review",
+        "ls-unfuck-my-git-state",
+        "ls-agentlens",
+        "ls-debug-pro",
+        "ls-nodejs-nextjs",
+        "ls-pr-reviewer",
+        "ls-shadcn-ui",
+        "ls-tdd-guide",
+        "ls-typescript-code-quality",
+        "ls-skill-discovery",
+        "ls-skill-importer",
+        "ls-skill-normalizer",
+        "ls-skill-sandbox-tester",
+        "ls-skill-vetter",
+        "ls-humanizer"
+      ],
+      "source_pack": "dev",
+      "workflows": [
+        "ls-workflow-audit-framework",
+        "ls-workflow-audit-markdown-references",
+        "ls-workflow-context-index-query",
+        "ls-workflow-context-index-refresh",
+        "ls-workflow-documentation-alignment",
+        "ls-workflow-ops-guarded",
+        "ls-workflow-pipeline-git-repair-hygiene",
+        "ls-workflow-pipeline-pr-feedback-loop",
+        "ls-workflow-pipeline-repo-convert",
+        "ls-workflow-pipeline-repo-polish",
+        "ls-workflow-pipeline-skill-onboard",
+        "ls-workflow-planning-critic-loop",
+        "ls-workflow-skills-index-refresh"
+      ]
+    },
+    {
+      "category": "operations",
+      "context_skill": "ls-plugin-ops-context",
+      "description": "Operations skills for servers, cron, patching, triage, system inspection, and infrastructure automation.",
+      "display_name": "Localsetup Ops",
+      "id": "localsetup-ops",
+      "platforms": [
+        "codex"
+      ],
+      "skills": [
+        "ls-ansible-skill",
+        "ls-backlog-and-reminders",
+        "ls-cron-orchestrator",
+        "ls-linux-patcher",
+        "ls-linux-service-triage",
+        "ls-system-info"
+      ],
+      "source_pack": "ops",
+      "workflows": [
+        "ls-workflow-ops-tmux-session",
+        "ls-workflow-pipeline-server-triage-patch",
+        "ls-workflow-tmux-terminal-mode"
+      ]
+    },
+    {
+      "category": "integrations",
+      "context_skill": "ls-plugin-integrations-context",
+      "description": "Integration skills for transport, DNS, secrets, mail, MCP, proxy management, OmniRoute, and web extraction.",
+      "display_name": "Localsetup Integrations",
+      "id": "localsetup-integrations",
+      "platforms": [
+        "codex"
+      ],
+      "skills": [
+        "ls-agentq-transport",
+        "ls-cloudflare-dns",
+        "ls-github-starredrepos",
+        "ls-keepass-secrets",
+        "ls-mail-protocol-control",
+        "ls-mcp-builder",
+        "ls-npm-management",
+        "ls-omniroute-admin-automation",
+        "ls-omniroute-proxy",
+        "ls-scrapling"
+      ],
+      "source_pack": "integrations",
+      "workflows": [
+        "ls-workflow-transport-handoff"
+      ]
+    },
+    {
+      "category": "publishing",
+      "context_skill": "ls-plugin-publishing-context",
+      "description": "Publishing, release, documentation alignment, PR review, and public repository identity skills.",
+      "display_name": "Localsetup Publishing",
+      "id": "localsetup-publishing",
+      "platforms": [
+        "codex"
+      ],
+      "skills": [
+        "ls-script-and-docs-quality",
+        "ls-test-runner",
+        "ls-automatic-versioning",
+        "ls-docs-organization",
+        "ls-documentation-alignment",
+        "ls-framework-audit",
+        "ls-github-publishing-workflow",
+        "ls-markdown-reference-validator",
+        "ls-public-repo-identity",
+        "ls-pr-reviewer"
+      ],
+      "source_pack": "publishing",
+      "workflows": [
+        "ls-workflow-documentation-alignment",
+        "ls-workflow-pipeline-pre-publish"
+      ]
+    },
+    {
+      "category": "harness",
+      "context_skill": "ls-plugin-harness-context",
+      "description": "Automation harness skills and workflows for Codex heartbeat, context-index refresh, cron, and repo finalization.",
+      "display_name": "Localsetup Harness",
+      "id": "localsetup-harness",
+      "platforms": [
+        "codex"
+      ],
+      "skills": [
+        "ls-context-index",
+        "ls-framework-compliance",
+        "ls-git-workflows",
+        "ls-codex-heartbeat",
+        "ls-cron-orchestrator"
+      ],
+      "source_pack": "harness",
+      "workflows": [
+        "ls-workflow-codex-heartbeat",
+        "ls-workflow-context-index-refresh",
+        "ls-workflow-repo-finalizer"
+      ]
+    },
+    {
+      "category": "experimental",
+      "context_skill": "ls-plugin-experimental-context",
+      "description": "Experimental and specialist skill lifecycle, review, orchestration, and queue workflows.",
+      "display_name": "Localsetup Experimental",
+      "id": "localsetup-experimental",
+      "platforms": [
+        "codex"
+      ],
+      "skills": [
+        "ls-skill-creator",
+        "ls-skill-discovery",
+        "ls-skill-importer",
+        "ls-skill-normalizer",
+        "ls-skill-sandbox-tester",
+        "ls-skill-vetter",
+        "ls-arbiter",
+        "ls-humanizer",
+        "ls-kilo-boss-orchestrator",
+        "ls-kilo-visual-output"
+      ],
+      "source_pack": "experimental",
+      "workflows": [
+        "ls-workflow-queue-batch-implement",
+        "ls-workflow-spec-clarify-reverse",
+        "ls-workflow-umbrella-run"
+      ]
+    }
+  ],
+  "provenance": {
+    "artifact_path": "_localsetup/docs/_generated/plugin-packs.json",
+    "artifact_sha256": "2133cac2a1b65ab01858a3afe01f1e2942c89aa2a030fbdc7a5942e84d724b5b",
+    "emitter": "generate-docs",
+    "framework_version": "4.0.17",
+    "schema_version": 1,
+    "source_commit": "aff502123cd4f225a59a0a9ff76f6818aeb43a34",
+    "source_dirty": true,
+    "source_provenance_hash": "d82e5d163ffb7e51e0f916e2a464fe3d18de98ca736d1ff791cab23f097380f2",
+    "source_root_id": "6288d52acd7f2704ce68e4203cf79b13b312b6ac116a62f3a9b652eb047347b0",
+    "source_tag": null,
+    "source_tree_sha": "5827f88fafb84602db4202fee93b257e17a6f2f2"
+  },
+  "schema_version": 1
+}

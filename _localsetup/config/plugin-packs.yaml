@@ -1,0 +1,79 @@
+schema_version: 1
+plugin_packs:
+  - id: localsetup-bootstrap
+    display_name: Localsetup Bootstrap
+    description: Essential context, safety, git, testing, and review skills for starting work in a Localsetup-aware repository.
+    category: bootstrap
+    source_pack: bootstrap
+    platforms:
+      codex:
+        interface: v1
+    extra_context_inputs:
+      - _localsetup/docs/TOOLING_POLICY.md
+      - _localsetup/docs/INPUT_HARDENING_STANDARD.md
+  - id: localsetup-core
+    display_name: Localsetup Core
+    description: Core Localsetup context, indexing, doctor, safety, testing, and TDD capabilities.
+    category: core
+    source_pack: core
+    platforms:
+      codex:
+        interface: v1
+    extra_context_inputs:
+      - _localsetup/docs/AGENTIC_DESIGN_INDEX.md
+  - id: localsetup-dev
+    display_name: Localsetup Dev
+    description: Development, debugging, documentation, audit, Git, review, UI, and TypeScript skills.
+    category: development
+    source_pack: dev
+    platforms:
+      codex:
+        interface: v1
+    extra_context_inputs:
+      - _localsetup/docs/WORKFLOW_REGISTRY.md
+  - id: localsetup-ops
+    display_name: Localsetup Ops
+    description: Operations skills for servers, cron, patching, triage, system inspection, and infrastructure automation.
+    category: operations
+    source_pack: ops
+    platforms:
+      codex:
+        interface: v1
+    extra_context_inputs: []
+  - id: localsetup-integrations
+    display_name: Localsetup Integrations
+    description: Integration skills for transport, DNS, secrets, mail, MCP, proxy management, OmniRoute, and web extraction.
+    category: integrations
+    source_pack: integrations
+    platforms:
+      codex:
+        interface: v1
+    extra_context_inputs: []
+  - id: localsetup-publishing
+    display_name: Localsetup Publishing
+    description: Publishing, release, documentation alignment, PR review, and public repository identity skills.
+    category: publishing
+    source_pack: publishing
+    platforms:
+      codex:
+        interface: v1
+    extra_context_inputs:
+      - _localsetup/docs/WORKFLOW_REGISTRY.md
+  - id: localsetup-harness
+    display_name: Localsetup Harness
+    description: Automation harness skills and workflows for Codex heartbeat, context-index refresh, cron, and repo finalization.
+    category: harness
+    source_pack: harness
+    platforms:
+      codex:
+        interface: v1
+    extra_context_inputs: []
+  - id: localsetup-experimental
+    display_name: Localsetup Experimental
+    description: Experimental and specialist skill lifecycle, review, orchestration, and queue workflows.
+    category: experimental
+    source_pack: experimental
+    platforms:
+      codex:
+        interface: v1
+    extra_context_inputs: []

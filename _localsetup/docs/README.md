@@ -15,10 +15,10 @@ This is the public documentation map for Localsetup. Start here when you want th
 ## Generated Facts
 
 <!-- facts-block:start -->
-- Current version: `4.0.16`
+- Current version: `4.0.17`
 - Supported platforms: `cursor, claude-code, codex, openclaw, kilo, opencode`
-- Shipped skills: `53`
-- Workflow packages: `22`
+- Shipped skills: `72`
+- Workflow packages: `23`
 - Source: `_localsetup/docs/_generated/facts.json`
 <!-- facts-block:end -->
 
@@ -77,6 +77,7 @@ Registered capability highlights:
 - `ls-github-starredrepos`: GitHub starred repository archive workflow for authenticated context checks, dry-run sync, repo scouting, metadata snapshots, and guarded publish flows.
 - `ls-shadcn-ui`: shadcn/ui component workflow for setup, components, CLI/MCP, registry, theming, forms, aliases, Radix/Base UI, updates, and troubleshooting.
 - `ls-typescript-code-quality`: TypeScript/TSX code quality, tsconfig, typed ESLint or Biome config, Node TypeScript scripts, and TypeScript-heavy framework code.
+- `ls-omniroute-update`: OmniRoute update reporting for upstream skill discovery, Localsetup comparison, provenance metadata, and report-first import/update/removal planning.
 
 ## Agent Q Transport
 

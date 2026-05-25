@@ -87,6 +87,17 @@ class PackConfig:
 
 
 @dataclass
+class PluginPackConfig:
+    plugin_id: str
+    display_name: str
+    description: str
+    category: str
+    source_pack: str
+    platforms: dict[str, dict[str, Any]] = field(default_factory=dict)
+    extra_context_inputs: list[str] = field(default_factory=list)
+
+
+@dataclass
 class PlatformConfig:
     platform_id: str
     repo_paths: list[str]

@@ -1,17 +1,17 @@
 {
-  "count": 22,
+  "count": 23,
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/workflow-catalog.json",
-    "artifact_sha256": "68586c206d6e67f5101ade660a00bc7a28a96ba1ac85e96679e7ff1f3896d050",
+    "artifact_sha256": "d83315b8116e4fa19edb1abb72dabf3263bde02f6dc4c47ef967a555cc4b038f",
     "emitter": "generate-docs",
-    "framework_version": "4.0.16",
+    "framework_version": "4.0.17",
     "schema_version": 1,
-    "source_commit": "debe3e0dcb4f3daf23f392cf95e1cf9905cb3cd6",
+    "source_commit": "aff502123cd4f225a59a0a9ff76f6818aeb43a34",
     "source_dirty": true,
-    "source_provenance_hash": "7e2d6c56d3349c23600385f9d873f65b1ef5ec172acf90dd93b05eb13d8c708f",
-    "source_root_id": "1b74671e43f36f48f34ae92ba653eef4c4062d8090ad14050ab94aa5fdd5c340",
+    "source_provenance_hash": "d82e5d163ffb7e51e0f916e2a464fe3d18de98ca736d1ff791cab23f097380f2",
+    "source_root_id": "6288d52acd7f2704ce68e4203cf79b13b312b6ac116a62f3a9b652eb047347b0",
     "source_tag": null,
-    "source_tree_sha": "b025d102c2816ccbe1aa4e503816c43c6420423b"
+    "source_tree_sha": "5827f88fafb84602db4202fee93b257e17a6f2f2"
   },
   "workflows": [
     {
@@ -379,6 +379,29 @@
       ],
       "required_tools": [],
       "workflow_id": "pipeline-skill-onboard"
+    },
+    {
+      "aliases": [
+        "planning critic loop",
+        "planning agent critic",
+        "critic reviewed plan"
+      ],
+      "description": "Create decision-complete plans through grounding, capped clarification, subagent delegation, and critic iteration.",
+      "display_name": "Planning Critic Loop",
+      "package": "ls-workflow-planning-critic-loop",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-planning-critic-loop",
+      "required_docs": [
+        "_localsetup/docs/DECISION_TREE_WORKFLOW.md",
+        "_localsetup/docs/WORKFLOW_STANDARD.md",
+        "_localsetup/docs/WORKFLOW_PACKAGES.md",
+        "_localsetup/docs/SKILLS_AND_RULES.md"
+      ],
+      "required_skills": [],
+      "required_tools": [],
+      "workflow_id": "planning-critic-loop"
     },
     {
       "aliases": [

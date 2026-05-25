@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import math
 import os
 import subprocess
 import sys
@@ -205,6 +206,144 @@ def _load_target_config(repo_root: Path, target_root: Path) -> dict[str, Any]:
     if not config_path.is_file():
         init(repo_root, target_root)
     return _read_yaml(config_path)
+
+
+def _read_existing_target_config(target_root: Path) -> dict[str, Any]:
+    config_path = target_root / HEARTBEAT_CONFIG
+    return _read_yaml(config_path) if config_path.is_file() else {}
+
+
+def _int_or_default(value: Any, default: int) -> int:
+    try:
+        if isinstance(value, float) and not math.isfinite(value):
+            return default
+        return int(value)
+    except (OverflowError, TypeError, ValueError):
+        return default
+
+
+def _positive_int_or_default(value: Any, default: int) -> int:
+    parsed = _int_or_default(value, default)
+    return parsed if parsed > 0 else default
+
+
+def _float_or_default(value: Any, default: float) -> float:
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError):
+        return default
+    return parsed if math.isfinite(parsed) else default
+
+
+def _heartbeat_budget_policy(config: dict[str, Any], queue_policy: dict[str, Any] | None = None) -> dict[str, Any]:
+    heartbeat = config.get("heartbeat") if isinstance(config.get("heartbeat"), dict) else {}
+    codex = config.get("codex") if isinstance(config.get("codex"), dict) else {}
+    profiles = config.get("agent_profiles") if isinstance(config.get("agent_profiles"), dict) else {}
+    profile_name = str(codex.get("profile") or "heartbeat")
+    profile = profiles.get(profile_name) if isinstance(profiles.get(profile_name), dict) else {}
+    direct_policy = config.get("direct_command_policy") if isinstance(config.get("direct_command_policy"), dict) else {}
+    queue_policy = queue_policy or {}
+
+    interval_minutes = max(1, _int_or_default(heartbeat.get("interval_minutes"), 15))
+    occupancy_ratio = _float_or_default(queue_policy.get("max_subagent_occupancy_ratio"), 0.8)
+    if occupancy_ratio < 0:
+        occupancy_ratio = 0.0
+    if occupancy_ratio > 1:
+        occupancy_ratio = 1.0
+    default_timeout = _positive_int_or_default(codex.get("timeout_seconds"), 0)
+    if default_timeout <= 0:
+        default_timeout = _positive_int_or_default(profile.get("timeout_seconds"), 1800)
+    return {
+        "interval_minutes": interval_minutes,
+        "max_subagent_occupancy_ratio": occupancy_ratio,
+        "effective_runtime_seconds": math.floor(interval_minutes * 60 * occupancy_ratio),
+        "max_parallel": _positive_int_or_default(queue_policy.get("max_parallel"), 1),
+        "max_total": _positive_int_or_default(queue_policy.get("max_total"), 1),
+        "max_depth": _positive_int_or_default(queue_policy.get("max_depth"), 1),
+        "execution_order": str(queue_policy.get("execution_order") or "serial"),
+        "default_timeout_seconds": default_timeout,
+        "allow_git_writes": bool(direct_policy.get("allow_git_writes", False)),
+        "allow_destructive": bool(direct_policy.get("allow_destructive", False)),
+    }
+
+
+def _task_consumption(task: dict[str, Any], default_timeout: int) -> dict[str, Any]:
+    status = str(task.get("status") or "unknown")
+    allocated = _positive_int_or_default(task.get("allocated_runtime_seconds"), 0)
+    if allocated <= 0:
+        allocated = _positive_int_or_default(task.get("timeout_seconds"), default_timeout)
+    actual_raw = task.get("actual_runtime_seconds")
+    actual = _int_or_default(actual_raw, -1)
+    if status == "completed" and actual >= 0:
+        consumed = actual
+        rule = "actual"
+    else:
+        consumed = allocated
+        rule = "allocated"
+    return {
+        "id": str(task.get("id") or ""),
+        "status": status,
+        "allocated_runtime_seconds": allocated,
+        "actual_runtime_seconds": actual if actual >= 0 else None,
+        "reserved_runtime_seconds": consumed,
+        "reservation_rule": rule,
+    }
+
+
+def budget(repo_root: Path, target_root: Path | None = None) -> dict[str, Any]:
+    target = _target(target_root, repo_root)
+    config = _read_existing_target_config(target)
+    heartbeat = config.get("heartbeat") if isinstance(config.get("heartbeat"), dict) else {}
+    queue_path_value = heartbeat.get("task_queue_path")
+    queue_path: Path | None = None
+    queue: dict[str, Any] = {}
+    queue_exists = False
+    queue_error: str | None = None
+    if isinstance(queue_path_value, str) and queue_path_value.strip():
+        candidate = Path(queue_path_value).expanduser()
+        if candidate.is_absolute():
+            queue_error = "heartbeat.task_queue_path must be repo-local, not absolute"
+            queue_path = candidate
+        else:
+            queue_path = (target / candidate).resolve()
+        if queue_error is None:
+            try:
+                queue_path.relative_to(target)
+            except ValueError:
+                queue_error = "heartbeat.task_queue_path must stay under target_root"
+        if queue_error is None:
+            try:
+                queue_exists = queue_path.is_file()
+                queue = _read_yaml(queue_path) if queue_exists else {}
+                if not queue_exists:
+                    queue = {}
+            except ValueError as exc:
+                queue_error = str(exc)
+                queue = {}
+        else:
+            queue = {}
+    queue_policy = queue.get("policy") if isinstance(queue.get("policy"), dict) else {}
+    policy = _heartbeat_budget_policy(config, queue_policy)
+    raw_tasks = queue.get("tasks") if isinstance(queue.get("tasks"), list) else []
+    tasks = [_task_consumption(task, policy["default_timeout_seconds"]) for task in raw_tasks if isinstance(task, dict)]
+    reserved = sum(task["reserved_runtime_seconds"] for task in tasks)
+    return {
+        "ok": queue_error is None,
+        "target_root": str(target),
+        "config_path": str(target / HEARTBEAT_CONFIG),
+        "task_queue_path": str(queue_path) if queue_path else None,
+        "policy": policy,
+        "summary": {
+            "config_exists": bool(config),
+            "task_queue_configured": queue_path is not None,
+            "task_queue_exists": queue_exists,
+            "task_count": len(tasks),
+            "reserved_runtime_seconds": reserved,
+            "remaining_runtime_seconds": max(policy["effective_runtime_seconds"] - reserved, 0),
+            "queue_error": queue_error,
+        },
+        "tasks": tasks,
+    }
 
 
 def plan(repo_root: Path, target_root: Path | None = None) -> dict[str, Any]:

@@ -6,6 +6,7 @@ from pathlib import Path
 from .aliases import collect_skill_aliases
 from .baseline import implementation_file_map
 from .manifests import load_platforms
+from .plugin_packs import plugin_pack_catalog_payload
 from .provenance import artifact_registry_entry, base_provenance, json_with_provenance, markdown_with_provenance
 from .skills import load_skill_catalog, skill_taxonomy_payload
 from .workflows import load_workflow_catalog, workflow_catalog_payload
@@ -15,6 +16,7 @@ ARTIFACT_SOURCE_INPUTS = [
     "VERSION",
     "_localsetup/skills",
     "_localsetup/config/pack.yaml",
+    "_localsetup/config/plugin-packs.yaml",
     "_localsetup/workflows",
     "_localsetup/config/platforms.yaml",
     "_localsetup/docs/PLATFORM_REGISTRY.md",
@@ -145,12 +147,34 @@ def generate_alias_outputs(repo_root: Path) -> dict:
     skill_taxonomy = repo_root / "_localsetup" / "docs" / "_generated" / "skill-taxonomy.json"
     _write_json(skill_taxonomy, skill_taxonomy_payload(repo_root), repo_root)
 
+    plugin_packs_json = repo_root / "_localsetup" / "docs" / "_generated" / "plugin-packs.json"
+    plugin_payload = plugin_pack_catalog_payload(repo_root)
+    _write_json(plugin_packs_json, plugin_payload, repo_root)
+
+    plugin_packs_md = repo_root / "_localsetup" / "docs" / "_generated" / "plugin-packs.md"
+    plugin_lines = [
+        "# Plugin Packs",
+        "",
+        "Portable plugin pack metadata is generated from `_localsetup/config/plugin-packs.yaml`.",
+        "",
+        "| Plugin pack | Source pack | Category | Platforms | Skills | Workflows | Context skill |",
+        "|---|---|---|---|---:|---:|---|",
+    ]
+    for item in plugin_payload["plugin_packs"]:
+        plugin_lines.append(
+            f"| `{item['id']}` | `{item['source_pack']}` | `{item['category']}` | `{', '.join(item['platforms'])}` | {len(item['skills'])} | {len(item['workflows'])} | `{item['context_skill']}` |"
+        )
+    _write_markdown(plugin_packs_md, "\n".join(plugin_lines) + "\n", repo_root)
+
     file_map_md = repo_root / "_localsetup" / "docs" / "_generated" / "implementation-file-map.md"
     map_lines = ["# Implementation File Map", "", "| Classification | Path |", "|---|---|"]
     for entry in implementation_file_map(repo_root):
         map_lines.append(f"| `{entry['classification']}` | `{entry['path']}` |")
     _write_markdown(file_map_md, "\n".join(map_lines) + "\n", repo_root)
-    _write_artifact_registry(repo_root, [aliases_path, migration_md, platforms_md, packs_md, workflow_catalog, skill_taxonomy, file_map_md])
+    _write_artifact_registry(
+        repo_root,
+        [aliases_path, migration_md, platforms_md, packs_md, workflow_catalog, skill_taxonomy, plugin_packs_json, plugin_packs_md, file_map_md],
+    )
 
     return {
         "aliases": str(aliases_path),
@@ -159,6 +183,8 @@ def generate_alias_outputs(repo_root: Path) -> dict:
         "packs": str(packs_md),
         "workflow_catalog": str(workflow_catalog),
         "skill_taxonomy": str(skill_taxonomy),
+        "plugin_packs": str(plugin_packs_json),
+        "plugin_packs_markdown": str(plugin_packs_md),
         "file_map": str(file_map_md),
         "count": len(aliases),
     }

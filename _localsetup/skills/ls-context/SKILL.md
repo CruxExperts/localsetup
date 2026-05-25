@@ -45,6 +45,7 @@ Localsetup is deployed at `_localsetup/`. Framework and context are repo-local (
 - `ls-github-starredrepos`: GitHub starred repository archive workflow for authenticated context checks, dry-run sync, repo scouting, metadata snapshots, and guarded publish flows.
 - `ls-codex-heartbeat`: opt-in heartbeat harness for target repos; activation is explicit through `localsetup harness codex-heartbeat ...`.
 - `ls-shadcn-ui`: shadcn/ui component workflow for setup, components, CLI/MCP, registry, theming, forms, aliases, Radix/Base UI, updates, and troubleshooting.
+- `ls-omniroute-update`: OmniRoute update reporting for upstream skill discovery, Localsetup comparison, provenance metadata, and report-first import/update/removal planning.
 - `ls-typescript-code-quality`: TypeScript/TSX code quality, tsconfig, typed ESLint or Biome config, Node TypeScript scripts, and TypeScript-heavy framework code.
 
 ## Key docs
