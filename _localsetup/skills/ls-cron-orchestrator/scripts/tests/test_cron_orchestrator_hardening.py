@@ -9,6 +9,7 @@ import yaml
 SCRIPT_DIR = Path(__file__).resolve().parents[1]
 ROOT = SCRIPT_DIR.parents[3]
 CRON_CTL = SCRIPT_DIR / "cron_ctl.py"
+RUN_TRIGGER = SCRIPT_DIR / "run_trigger.py"
 
 
 def _write_manifest(path: Path, payload: dict) -> None:
@@ -25,6 +26,16 @@ def _run_cron_ctl(
         [sys.executable, str(CRON_CTL), "--manifest", str(manifest), *args],
         cwd=cwd or ROOT,
         env=env,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+
+
+def _run_trigger(manifest: Path, *args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, str(RUN_TRIGGER), "--manifest", str(manifest), *args],
+        cwd=cwd or ROOT,
         capture_output=True,
         text=True,
         timeout=20,
@@ -91,6 +102,106 @@ def test_install_quotes_runner_args_without_shell_chaining(tmp_path: Path) -> No
     assert " && " not in proc.stdout
     assert "\tcd " not in proc.stdout
     assert "\tsleep " not in proc.stdout
+
+
+def test_install_can_pass_log_dir_to_runner(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    log_dir = tmp_path / "cron logs"
+    manifest = tmp_path / "manifest.yaml"
+    _write_manifest(
+        manifest,
+        {
+            "triggers": {"nightly": {"schedule": "0 2 * * *"}},
+            "tasks": [{"id": "night-task", "trigger": "nightly", "sequence_order": 1, "command": ["python3", "--version"]}],
+        },
+    )
+
+    proc = _run_cron_ctl(manifest, "install", "--repo-root", str(repo_root), "--log-dir", str(log_dir))
+
+    assert proc.returncode == 0
+    assert f"--log-dir '{log_dir}'" in proc.stdout
+
+
+def test_run_trigger_appends_durable_log(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    log_dir = tmp_path / "logs"
+    manifest = tmp_path / "manifest.yaml"
+    _write_manifest(
+        manifest,
+        {
+            "triggers": {"nightly": {"schedule": "0 2 * * *"}},
+            "tasks": [
+                {
+                    "id": "log-task",
+                    "trigger": "nightly",
+                    "sequence_order": 1,
+                    "command": [
+                        sys.executable,
+                        "-c",
+                        "import sys; print('stdout marker'); print('stderr marker', file=sys.stderr)",
+                    ],
+                }
+            ],
+        },
+    )
+
+    proc = _run_trigger(manifest, "--repo-root", str(repo_root), "--log-dir", str(log_dir), "nightly")
+
+    log_text = (log_dir / "nightly.log").read_text(encoding="utf-8")
+    assert proc.returncode == 0
+    assert "stdout marker" in proc.stdout
+    assert "stderr marker" in proc.stderr
+    assert "runner_start trigger=nightly" in log_text
+    assert "task_start id=log-task" in log_text
+    assert "task_exit id=log-task exit_code=0" in log_text
+    assert "stdout marker" in log_text
+    assert "stderr marker" in log_text
+    assert "runner_exit trigger=nightly exit_code=0" in log_text
+
+
+def test_run_trigger_logs_runner_exit_for_manifest_validation_failure(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    log_dir = tmp_path / "logs"
+    manifest = tmp_path / "manifest.yaml"
+    _write_manifest(
+        manifest,
+        {
+            "triggers": {"nightly": {"schedule": "0 2 * * *"}},
+            "tasks": [{"id": "bad task id", "trigger": "nightly", "sequence_order": 1, "command": ["python3", "--version"]}],
+        },
+    )
+
+    proc = _run_trigger(manifest, "--repo-root", str(repo_root), "--log-dir", str(log_dir), "nightly")
+
+    log_text = (log_dir / "nightly.log").read_text(encoding="utf-8")
+    assert proc.returncode == 1
+    assert "tasks[0].id" in proc.stderr
+    assert "runner_start trigger=nightly" in log_text
+    assert "runner_exit trigger=nightly exit_code=1 reason=manifest_validation_failed" in log_text
+
+
+def test_run_trigger_log_dir_error_is_controlled(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    log_dir = tmp_path / "not-a-directory"
+    log_dir.write_text("already a file\n", encoding="utf-8")
+    manifest = tmp_path / "manifest.yaml"
+    _write_manifest(
+        manifest,
+        {
+            "triggers": {"nightly": {"schedule": "0 2 * * *"}},
+            "tasks": [{"id": "task", "trigger": "nightly", "sequence_order": 1, "command": ["python3", "--version"]}],
+        },
+    )
+
+    proc = _run_trigger(manifest, "--repo-root", str(repo_root), "--log-dir", str(log_dir), "nightly")
+
+    assert proc.returncode == 1
+    assert "[run_trigger] Invalid log directory" in proc.stderr
+    assert "Traceback" not in proc.stderr
 
 
 def test_reorder_rejects_duplicate_order_ids(tmp_path: Path) -> None:
