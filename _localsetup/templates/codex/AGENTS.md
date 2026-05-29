@@ -21,14 +21,17 @@ Localsetup is deployed into this repo at `_localsetup/`. Framework and context a
 - Use tables only when capability clearly supports readable tables.
 
 ## Agent orchestration and model budget
-- Inventory and scouting: use `gpt-5.4-mini` for cheap repo/file inventory, low-risk search, and parallel subagent scouting.
-- Critical review: use `gpt-5.5` at medium reasoning for security, release blockers, architecture, and high-risk review findings.
-- Bounded coding: use `gpt-5.3-codex` for scoped implementation tasks with clear write ownership and tests.
-- Credit freshness: Codex credit rates are volatile. Re-check the official Codex rate card at https://help.openai.com/en/articles/20001106-codex-rate-card before changing model guidance or making cost-sensitive routing decisions.
+- Default to a generic controller model for non-trivial Codex CLI work: clarify requirements, split the task into small verifiable units, keep the main context compact, and own final acceptance.
+- Use direct single-agent work only for obvious small tasks with one or two expected files, simple validation, and low context risk.
+- Use native subagents when work is broad, unclear, risky, current-fact-dependent, likely to produce long logs, or likely to risk compaction.
+- Keep fanout small: one or two agents is normal; use three only for clearly independent discovery, research, or validation scopes. Treat configured thread capacity as headroom, not policy.
+- Keep the existing generic roles: `explorer` maps relevant files, systems, docs, workflows, data, dependencies, tests, and risks; `researcher` verifies current or source-backed facts; `worker` executes one bounded task with exact write scope; `tester` runs validations, benchmarks, measurements, and failure summaries; `reviewer` checks final risk, correctness, regression, scope, and evidence.
+- Explicit user instructions, tool restrictions, sandbox/approval policy, and active modes override delegation defaults. In Plan Mode or other no-write contexts, plan the ledger and subtasks but do not create ledger files or edit state until writes are allowed.
+- Model, credit, and rate guidance is volatile. Re-check official Codex docs or the current local config before changing model guidance or making cost-sensitive routing decisions.
 - If `.localsetup/AGENT_STATUS.md` exists, read it before repairs or installs. Otherwise run `localsetup health --json` for the latest Localsetup health status and next repair command.
 
 ## Bootstrap pack
-- Codex-first agent-team bootstrap materials live in `_localsetup/docs/bootstrap-packs/` and pack metadata is selected with the `bootstrap` pack in `_localsetup/config/pack.yaml`.
+- Generic Codex agent-team bootstrap materials live in `_localsetup/docs/bootstrap-packs/` and pack metadata is selected with the `bootstrap` pack in `_localsetup/config/pack.yaml`.
 - Treat writes to `$CODEX_HOME`, `~/.codex`, sibling repos, and runtime mirrors as approval-gated; bootstrap-pack audits may inspect those surfaces but must keep replacement plans non-destructive until approved.
 
 ## Skill And Context Preservation

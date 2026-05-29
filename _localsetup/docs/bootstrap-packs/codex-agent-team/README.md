@@ -6,7 +6,7 @@ owner_skill: ls-framework-compliance
 
 # Codex Agent Team Bootstrap Pack
 
-This pack captures the Codex-first controller/subagent workflow used to audit and maintain a global Codex agent-team bootstrap.
+This pack captures the generic Codex controller/subagent workflow used to audit and maintain a global Codex agent-team bootstrap.
 
 It is intentionally native to Codex:
 
@@ -17,6 +17,14 @@ It is intentionally native to Codex:
 - native subagents
 - plan mode and goal mode
 - markdown runbooks and small YAML metadata
+
+The default is throughput-oriented, not specialist-heavy: the controller keeps task units small, uses direct mode for obvious small work, and delegates only when a scoped subtask is independent or clearly bounded. Normal fanout is one or two agents; three is reserved for clearly independent discovery, research, or validation. Existing native roles stay generic:
+
+- `explorer`: read-only mapping of relevant files, systems, docs, workflows, data, dependencies, tests, and risks
+- `researcher`: current or source-backed fact verification
+- `worker`: one bounded execution task with exact write scope
+- `tester`: validation, benchmarks, measurements, and failure summaries
+- `reviewer`: final risk, correctness, regression, scope, and evidence review
 
 ## Localsetup Pack
 
@@ -32,7 +40,7 @@ The pack composes existing Localsetup skills and workflow packages instead of co
 
 ## Prompt
 
-Use [AUDIT_PROMPT.md](AUDIT_PROMPT.md) when asking Codex to audit a prior global bootstrap and produce durable artifacts.
+Use [AUDIT_PROMPT.md](AUDIT_PROMPT.md) when asking Codex to audit a prior global bootstrap or refresh the durable generic controller defaults.
 
 ## Approval Boundary
 
