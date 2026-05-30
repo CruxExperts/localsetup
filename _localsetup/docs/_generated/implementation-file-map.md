@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: e5bb5cff3b6b3cbccef9ff083ebfbef944d154725310cbfeec0a9bbe1e2bcf75
+  source_provenance_hash: 91d834f4a9b7ce83b72698844bdbc1fda52f0c7f253213405ffe186571aac974
   emitter: generate-docs
-framework_version: 4.0.18
-source_commit: ec335339e7eb950211e25804600e0923d4c67bc0
-artifact_sha256: f4c7fa6114920013511edf08a68c625926263ec2b30f486d10315de4b4019513
+framework_version: 4.0.19
+source_commit: f2ba77ebfc11e0b9aff9da0e59222a10337455dc
+artifact_sha256: 9b8a1a001c54dac8b07945bfe7f51997ac81385c967c27e473171cd2612ac0a4
 ---
 # Implementation File Map
 
@@ -200,6 +200,10 @@ artifact_sha256: f4c7fa6114920013511edf08a68c625926263ec2b30f486d10315de4b401951
 | `keep` | `_localsetup/docs/bootstrap-packs/codex-agent-team/AUDIT_PROMPT.md` |
 | `keep` | `_localsetup/docs/bootstrap-packs/codex-agent-team/README.md` |
 | `keep` | `_localsetup/docs/bootstrap-packs/codex-agent-team/metadata.yaml` |
+| `keep` | `_localsetup/docs/bootstrap-packs/opencode-agent-team/AUDIT_PROMPT.md` |
+| `keep` | `_localsetup/docs/bootstrap-packs/opencode-agent-team/MODEL_MAP.md` |
+| `keep` | `_localsetup/docs/bootstrap-packs/opencode-agent-team/README.md` |
+| `keep` | `_localsetup/docs/bootstrap-packs/opencode-agent-team/metadata.yaml` |
 | `keep` | `_localsetup/docs/migration/overview.md` |
 | `keep` | `_localsetup/docs/migration/skill-alias-map.md` |
 | `keep` | `_localsetup/docs/ops/tmux-ops-managed.md` |
