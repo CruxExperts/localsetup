@@ -14,8 +14,9 @@ related_packs:
 localsetup_pack: bootstrap
 description: Generic Codex controller and subagent bootstrap pack with subagent-first throughput defaults, audit prompts, native config surfaces, and safe remediation boundaries.
 source_of_truth:
-  pack_membership: _localsetup/config/pack.yaml
-  generated_pack_index: _localsetup/docs/_generated/skill-packs.md
+  skill_workflow_pack_membership: _localsetup/config/pack.yaml
+  generated_skill_workflow_pack_index: _localsetup/docs/_generated/skill-packs.md
+  document_bundle_index: _localsetup/docs/bootstrap-packs/INDEX.md
   docs_index: _localsetup/docs/bootstrap-packs/INDEX.md
   audit_prompt: _localsetup/docs/bootstrap-packs/codex-agent-team/AUDIT_PROMPT.md
 native_codex_surfaces:

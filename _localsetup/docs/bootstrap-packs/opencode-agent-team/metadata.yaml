@@ -14,8 +14,9 @@ localsetup_pack: bootstrap
 description: Generic OpenCode controller and subagent bootstrap pack with OpenCode-native agent, permission, model-slot, audit, and validation guidance.
 verified_on: "2026-05-29"
 source_of_truth:
-  pack_membership: _localsetup/config/pack.yaml
-  generated_pack_index: _localsetup/docs/_generated/skill-packs.md
+  skill_workflow_pack_membership: _localsetup/config/pack.yaml
+  generated_skill_workflow_pack_index: _localsetup/docs/_generated/skill-packs.md
+  document_bundle_index: _localsetup/docs/bootstrap-packs/INDEX.md
   docs_index: _localsetup/docs/bootstrap-packs/INDEX.md
   readme: _localsetup/docs/bootstrap-packs/opencode-agent-team/README.md
   audit_prompt: _localsetup/docs/bootstrap-packs/opencode-agent-team/AUDIT_PROMPT.md

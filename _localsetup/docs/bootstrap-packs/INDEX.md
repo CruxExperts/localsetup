@@ -19,8 +19,9 @@ The initial bootstrap pack targeted OpenAI Codex CLI first. OpenCode now has a s
 
 ## Source Of Truth
 
-- Pack membership: [`_localsetup/config/pack.yaml`](../../config/pack.yaml)
-- Generated pack map: [`_generated/skill-packs.md`](../_generated/skill-packs.md)
+- Skill/workflow pack membership: [`_localsetup/config/pack.yaml`](../../config/pack.yaml)
+- Generated skill/workflow pack map: [`_generated/skill-packs.md`](../_generated/skill-packs.md)
+- Bootstrap document bundle index: this file
 - Codex platform context: [`_localsetup/templates/codex/AGENTS.md`](../../templates/codex/AGENTS.md)
 - OpenCode platform context: [`_localsetup/templates/opencode/AGENTS.md`](../../templates/opencode/AGENTS.md)
 
