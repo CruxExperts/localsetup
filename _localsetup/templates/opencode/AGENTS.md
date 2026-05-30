@@ -22,10 +22,11 @@ OpenCode uses `AGENTS.md` as the project initialization file. This context is lo
 - Use tables only when capability clearly supports readable tables.
 
 ## Agent orchestration and model budget
-- Inventory and scouting: use `gpt-5.4-mini` for cheap repo/file inventory, low-risk search, and parallel subagent scouting.
-- Critical review: use `gpt-5.5` at medium reasoning for security, release blockers, architecture, and high-risk review findings.
-- Bounded coding: use `gpt-5.3-codex` for scoped implementation tasks with clear write ownership and tests.
-- Credit freshness: Codex credit rates are volatile. Re-check the official Codex rate card at https://help.openai.com/en/articles/20001106-codex-rate-card before changing model guidance or making cost-sensitive routing decisions.
+- Use portable OpenCode model slots from `_localsetup/docs/bootstrap-packs/opencode-agent-team/MODEL_MAP.md`: `Agent-Frontier`, `Agent-Main`, `Agent-Coder`, `Agent-Scout`, and `Agent-Lowcost`.
+- Default to `Agent-Main` for the primary controller/build agent. Use `Agent-Scout` for cheap repo/file inventory, low-risk search, validation summaries, and parallel subagent scouting.
+- Use `Agent-Coder` for scoped implementation tasks with clear write ownership and tests. Use `Agent-Frontier` for security, release blockers, architecture, high-risk decisions, and final review.
+- Model, credit, and rate guidance is volatile. Re-check official provider docs, current OpenCode config, and the local model-slot map before changing model guidance or making cost-sensitive routing decisions.
+- Generic OpenCode agent-team bootstrap materials live in `_localsetup/docs/bootstrap-packs/opencode-agent-team/`; Codex-specific sibling materials live in `_localsetup/docs/bootstrap-packs/codex-agent-team/`.
 - If `.localsetup/AGENT_STATUS.md` exists, read it before repairs or installs. Otherwise run `localsetup health --json` for the latest Localsetup health status and next repair command.
 
 ## Capability skills and workflow packages (load when task matches)

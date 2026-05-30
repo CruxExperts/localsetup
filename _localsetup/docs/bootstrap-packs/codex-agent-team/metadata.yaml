@@ -5,13 +5,14 @@ status: audit-ready
 version: "1.0"
 primary_platform: codex
 future_platforms:
-  - opencode
   - kilo
   - cursor
   - claude-code
   - openclaw
+related_packs:
+  - _localsetup/docs/bootstrap-packs/opencode-agent-team/metadata.yaml
 localsetup_pack: bootstrap
-description: Generic Codex controller and subagent bootstrap pack with throughput-oriented defaults, audit prompts, native config surfaces, and safe remediation boundaries.
+description: Generic Codex controller and subagent bootstrap pack with subagent-first throughput defaults, audit prompts, native config surfaces, and safe remediation boundaries.
 source_of_truth:
   pack_membership: _localsetup/config/pack.yaml
   generated_pack_index: _localsetup/docs/_generated/skill-packs.md
@@ -69,10 +70,10 @@ approval_boundaries:
   - permission changes outside the current repo
   - destructive replacement of legacy skills or prompts
 operating_defaults:
-  controller: Own requirements, task decomposition, state tracking, verification, and final acceptance for non-trivial work.
-  direct_mode: Use for obvious small tasks with one or two expected files, simple validation, and low context risk.
-  delegation: Use existing native roles for bounded independent work; do not create specialist role files by default.
-  normal_fanout: 1-2 agents; use 3 only for clearly independent discovery, research, or validation.
+  controller: Own requirements, task decomposition, state tracking, verification, and final acceptance while defaulting non-trivial work to subagent-first routing.
+  direct_mode: Use only for trivial one-step tasks, simple questions, cases with no useful independent subtask, or active tool/mode constraints.
+  delegation: Look for useful existing native role assignments before doing substantial work directly; do not create specialist role files by default.
+  normal_fanout: 1-2 agents for non-trivial tasks; use 3 only for clearly independent discovery, research, or validation.
   no_write_modes: In Plan Mode or other no-write contexts, plan ledgers and subtasks but do not create or edit state until writes are allowed.
   roles:
     explorer: Map relevant files, systems, docs, workflows, data, dependencies, tests, and risks.

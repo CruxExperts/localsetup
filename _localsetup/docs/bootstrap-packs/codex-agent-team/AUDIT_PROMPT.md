@@ -10,14 +10,14 @@ Use this prompt when the current repository is Localsetup and the goal is to aud
 
 ## Mission
 
-Act as the main Codex controller, planner, auditor, and verifier. Inspect whether the global Codex bootstrap is implemented correctly, completely, and deterministically as a generic throughput-oriented controller model. Create or update the repo-local bootstrap-pack artifacts needed to reuse, version, audit, and later adapt this workflow for other agent frameworks.
+Act as the main Codex controller, planner, auditor, and verifier. Inspect whether the global Codex bootstrap is implemented correctly, completely, and deterministically as a generic subagent-first controller model for non-trivial work with bounded fanout. Create or update the repo-local bootstrap-pack artifacts needed to reuse, version, audit, and later adapt this workflow for other agent frameworks.
 
 Answer these questions:
 
 1. Was the prior global Codex bootstrap implemented as requested?
 2. Are there discrepancies, conflicts, omissions, unsafe assumptions, or quality issues?
 3. Are the Codex global instructions, custom agents, runbook, and config coherent with current Codex CLI behavior?
-4. Do the instructions favor small verifiable task units, low main-context growth, direct mode for obvious small tasks, and bounded delegation rather than specialist proliferation?
+4. Do the instructions favor subagent-first routing for non-trivial work, small verifiable task units, low main-context growth, direct mode only for trivial or constrained cases, and bounded delegation rather than specialist proliferation?
 5. Is there a reusable bootstrap-pack structure in Localsetup?
 6. Does that structure target OpenAI Codex CLI first while leaving room for other frameworks later?
 7. Is there a deterministic remediation plan for anything missing?
@@ -39,7 +39,7 @@ Answer these questions:
 
 ## Recommended Subagent Scopes
 
-Use narrow native Codex subagents only when they materially improve throughput or keep context clean:
+Use narrow native Codex subagents whenever they can materially improve throughput, preserve context, reduce risk, or strengthen verification:
 
 - `reviewer`: audit `$CODEX_HOME` or `~/.codex` bootstrap files for risk, conflicts, scope, and evidence.
 - `explorer`: map repo pack, workflow, docs, template, index, and validation surfaces.
