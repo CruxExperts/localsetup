@@ -102,6 +102,7 @@ def make_temp_repo(tmp_path: Path) -> Path:
     repo = tmp_path / "repo"
     (repo / "_localsetup").mkdir(parents=True)
     shutil.copytree(source / "_localsetup" / "config", repo / "_localsetup" / "config")
+    shutil.copytree(source / "_localsetup" / "adapters", repo / "_localsetup" / "adapters")
     shutil.copytree(source / "_localsetup" / "core", repo / "_localsetup" / "core")
     shutil.copytree(source / "_localsetup" / "skills", repo / "_localsetup" / "skills")
     shutil.copytree(source / "_localsetup" / "workflows", repo / "_localsetup" / "workflows")
@@ -200,6 +201,43 @@ def test_selected_workflows_install_as_skill_packages(tmp_path: Path) -> None:
     assert "ls-workflow-ops-tmux-session" in lock["workflows"]
     assert any(path.endswith("ls-workflow-ops-tmux-session") for path in lock["installed_workflows"])
     assert verify_install(root, home, platform_ids=["codex"])["ok"] is True
+
+
+def test_codex_platform_installs_guardian_subagent(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"])
+    agent_action = next(a for a in plan.actions if a.kind == "install_codex_agents")
+    assert agent_action.path == home / ".codex" / "agents"
+    assert agent_action.details["agents"] == ["guardian_subagent"]
+
+    result = apply_plan(root, plan, home=home)
+    agent_path = home / ".codex" / "agents" / "guardian_subagent.toml"
+    lock = load_json(root / ".localsetup/lock.json")
+    text = agent_path.read_text(encoding="utf-8")
+
+    assert agent_path.is_file()
+    assert 'model = "gpt-5.5"' in text
+    assert 'model_reasoning_effort = "low"' in text
+    assert str(agent_path) in result["installed_codex_agents"]
+    assert str(agent_path) in lock["installed_codex_agents"]
+    assert lock["codex_agents"] == ["guardian_subagent"]
+
+
+def test_codex_agent_conflict_blocks_overwrite(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    agent_path = home / ".codex" / "agents" / "guardian_subagent.toml"
+    agent_path.parent.mkdir(parents=True)
+    agent_path.write_text("name = \"guardian_subagent\"\nmodel = \"custom\"\n", encoding="utf-8")
+
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"])
+
+    with pytest.raises(RuntimeError, match="codex_agent_conflict"):
+        apply_plan(root, plan, home=home)
+
+    assert agent_path.read_text(encoding="utf-8") == "name = \"guardian_subagent\"\nmodel = \"custom\"\n"
 
 
 def test_selection_resolves_preset_classes_tags_skills_and_exclusions(tmp_path: Path) -> None:

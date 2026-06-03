@@ -28,6 +28,14 @@ This repository packages Localsetup, a repo-local framework for agent context, s
 
 Python-first framework tooling does not mean using Python for every shell task. Use standard shell tools for normal inspection and file discovery, such as `rg`, `sed`, `find`, `wc`, and `git`. Use Python when running repo-native Python tools, testing Python code, or parsing structured data where a normal CLI tool is unavailable or less reliable.
 
+## Single Checkout Development Boundary
+
+Localsetup development is consolidated in this checkout. Do not create sibling clones, extra Git worktrees, release staging checkouts, PR-specific checkouts, or other repo-shaped directories for Localsetup work unless the user explicitly authorizes that specific path and purpose in the current task.
+
+Work within the active repository by default. Use normal branches, local commits, stashes, ledgers, and tightly scoped subagent assignments inside this checkout instead of creating filesystem-level copies. Subagents may inspect and edit bounded paths in the active checkout; they do not need separate worktrees merely for isolation.
+
+If a separate checkout or worktree is genuinely necessary, stop and explain why the active checkout cannot satisfy the requirement. Record the approved path, branch, reason, owner, expected lifetime, and cleanup command in the run ledger before creating it. Remove the temporary worktree with `git worktree remove` as soon as the approved purpose is complete.
+
 ## Coding Style & Naming Conventions
 
 Keep scripts portable and explicit: Bash files should use `set -euo pipefail`; PowerShell should prefer clear parameter names and non-interactive modes for automation. Python code uses 4-space indentation, standard-library path handling via `pathlib` where practical, and small helper functions in `_localsetup/lib/`. Skill directories use `ls-<topic>` naming and each skill must include a spec-compatible `SKILL.md` with `name` and `description` frontmatter. Markdown should use clear headings, relative links, and concise task-oriented language.
@@ -35,6 +43,8 @@ Keep scripts portable and explicit: Bash files should use `set -euo pipefail`; P
 ## Testing Guidelines
 
 Add or update tests under `_localsetup/tests/` for changes to path resolution, discovery, parsing, deploy behavior, or skill tooling. Name Python tests `test_<feature>.py` and keep shell wrappers thin. Before opening a PR, run `uv run --locked ./_localsetup/tests/automated_test.sh` and `uv run --locked pytest -n auto _localsetup/tests -q`; Windows support is WSL2-only in the current framework.
+
+Test effort must be proportional to risk. For tiny docs, policy, metadata, or one-line behavior changes, prefer static checks such as `git diff --check`, targeted syntax checks, or no test run when there is no executable surface. Do not add broad or repetitive tests merely to increase evidence. Add tests only for behavior that can realistically regress, and keep test code smaller than the implementation unless the behavior is safety-critical or has multiple important edge cases. Run the smallest relevant validation first; run full suites only for shared runtime behavior, release/publish work, dependency changes, or user-requested validation.
 
 ## Commit & Pull Request Guidelines
 
@@ -98,7 +108,7 @@ Use agent-team mode by default for non-trivial work, especially when work may to
 
 Normal fanout is one or two agents for non-trivial tasks. Use three only when the scopes are clearly independent discovery, research, or validation tasks. Treat configured thread capacity as operational headroom, not a target. Explicit user instructions, tool restrictions, sandbox/approval policy, and active modes override delegation defaults.
 
-Keep the existing native roles generic: `explorer` maps relevant files, systems, docs, workflows, data, dependencies, tests, and risks; `researcher` verifies current or source-backed facts; `worker` executes one bounded task with exact write scope; `tester` runs validations, benchmarks, measurements, and failure summaries; `reviewer` checks final risk, correctness, regression, scope, and evidence.
+Keep the existing native roles generic: `explorer` maps relevant files, systems, docs, workflows, data, dependencies, tests, and risks; `researcher` verifies current or source-backed facts; `worker` executes one bounded task with exact write scope; `tester` runs validations, benchmarks, measurements, and failure summaries; `reviewer` checks final risk, correctness, regression, scope, and evidence. The `guardian_subagent` role is reserved for approval and permission review, not normal task delegation.
 
 For agent-team work, keep a repo-local ledger at `.codex/runs/<YYYYMMDD-HHMMSS>-<task-slug>.md`. If `.codex/runs/` is not already excluded from Git, add it to `.git/info/exclude`, not `.gitignore`. In Plan Mode or other no-write contexts, plan the ledger and subtasks but do not create ledger files or edit state until writes are allowed. Record objective, phase, plan, subtasks, checkpoints, validation, decisions, resume notes, and final acceptance criteria. After interruption or compaction, read the ledger, run `git status --short`, inspect outstanding diffs, and resume from the first non-completed task whose dependencies are satisfied.
 

@@ -219,6 +219,21 @@ def _install_managed_workflows(repo_root: Path, global_root: Path, workflow_name
     return _install_managed_packages(repo_root, global_root, workflow_names, "workflows")
 
 
+def _codex_agent_source(repo_root: Path, agent_name: str) -> Path:
+    return repo_root / "_localsetup" / "adapters" / "codex" / "agents" / f"{agent_name}.toml"
+
+
+def _install_codex_agents(repo_root: Path, agents_root: Path, agent_names: list[str]) -> list[str]:
+    ensure_dir(agents_root)
+    installed: list[str] = []
+    for agent_name in sorted(set(str(name) for name in agent_names)):
+        src = _codex_agent_source(repo_root, agent_name)
+        dest = agents_root / f"{agent_name}.toml"
+        dest.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+        installed.append(str(dest))
+    return installed
+
+
 def _prune_unreferenced_managed_packages(
     global_root: Path,
     registry: dict,
@@ -341,6 +356,43 @@ def preflight_install_plan(repo_root: Path, plan: DeployPlan, home: Path) -> dic
                     blockers.append({"path": str(src), "status_code": "missing_source_package", "reason": "selected package source is missing"})
                 elif dest.exists() and not is_managed_package(dest):
                     blockers.append({"path": str(dest), "status_code": "unmanaged_package_path", "reason": "refusing to overwrite unmanaged package path"})
+        elif action.kind == "install_codex_agents":
+            for name in action.details.get("agents", []):
+                src = _codex_agent_source(repo_root, str(name))
+                dest = action.path / f"{name}.toml"
+                if not src.is_file():
+                    blockers.append({"path": str(src), "status_code": "missing_source_agent", "reason": "selected Codex agent source is missing"})
+                    continue
+                if dest.is_symlink() or (dest.exists() and not dest.is_file()):
+                    blockers.append(
+                        {
+                            "path": str(dest),
+                            "status_code": "codex_agent_conflict",
+                            "reason": "refusing to overwrite existing Codex agent path that is not a regular file",
+                        }
+                    )
+                    continue
+                if dest.is_file():
+                    try:
+                        existing = dest.read_text(encoding="utf-8")
+                    except (OSError, UnicodeDecodeError) as exc:
+                        blockers.append(
+                            {
+                                "path": str(dest),
+                                "status_code": "codex_agent_conflict",
+                                "reason": f"refusing to overwrite unreadable existing Codex agent file: {exc}",
+                            }
+                        )
+                        continue
+                    if existing == src.read_text(encoding="utf-8"):
+                        continue
+                    blockers.append(
+                        {
+                            "path": str(dest),
+                            "status_code": "codex_agent_conflict",
+                            "reason": "refusing to overwrite existing Codex agent file with different content",
+                        }
+                    )
         elif action.kind == "attach_repo_path":
             global_root = Path(action.details["global_root"])
             state = adapter_path_state(action.path, global_root, known_global_roots=legacy_global_roots(home))
@@ -377,6 +429,7 @@ def _apply_plan_unlocked(
     executed: list[str] = []
     installed_skills: list[str] = []
     installed_workflows: list[str] = []
+    installed_codex_agents: list[str] = []
     metadata_target_root = plan.rollback_metadata.get("target_root")
     metadata_attachment_root = Path(metadata_target_root) if metadata_target_root else None
     if target_root is not None and metadata_attachment_root is not None:
@@ -436,6 +489,13 @@ def _apply_plan_unlocked(
                         journal_path=journal_path,
                     )
                 executed.append(f"install_workflows:{action.path}")
+            elif action.kind == "install_codex_agents":
+                if not dry_run:
+                    ensure_dir(action.path)
+                    for name in action.details.get("agents", []):
+                        _record_file_state(journal, journal_path, action.path / f"{name}.toml")
+                    installed_codex_agents = _install_codex_agents(repo_root, action.path, action.details["agents"])
+                executed.append(f"install_codex_agents:{action.path}")
             elif action.kind == "attach_repo_path":
                 if not dry_run:
                     ensure_dir(action.path.parent)
@@ -494,6 +554,7 @@ def _apply_plan_unlocked(
         "aliases": plan.rollback_metadata.get("aliases", {}),
         "skills": plan.rollback_metadata.get("skills", []),
         "workflows": plan.rollback_metadata.get("workflows", []),
+        "codex_agents": plan.rollback_metadata.get("codex_agents", []),
         "global_baseline_selectors": plan.rollback_metadata.get("global_baseline_selectors", {}),
         "global_baseline_packs": plan.rollback_metadata.get("global_baseline_packs", []),
         "global_baseline_skills": plan.rollback_metadata.get("global_baseline_skills", []),
@@ -520,6 +581,7 @@ def _apply_plan_unlocked(
         "attach_mode": plan.rollback_metadata.get("attach_mode", "symlink"),
         "installed_skills": installed_skills,
         "installed_workflows": installed_workflows,
+        "installed_codex_agents": installed_codex_agents,
         "adapter_packages": plan.rollback_metadata.get("adapter_packages", []),
         "dependency_mode": (dependency_info or {}).get("mode"),
         "python_interpreter": (dependency_info or {}).get("interpreter"),
@@ -601,4 +663,12 @@ def _apply_plan_unlocked(
             _restore_failed_mutations(journal)
             _write_journal(journal_path, journal)
             raise
-    return {"executed": executed, "lockfile": str(lockfile_path), "dry_run": dry_run, "transaction": txid if not dry_run else None, "journal": str(journal_path) if not dry_run else None, "preflight": preflight}
+    return {
+        "executed": executed,
+        "lockfile": str(lockfile_path),
+        "dry_run": dry_run,
+        "transaction": txid if not dry_run else None,
+        "journal": str(journal_path) if not dry_run else None,
+        "preflight": preflight,
+        "installed_codex_agents": installed_codex_agents,
+    }

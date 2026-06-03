@@ -135,6 +135,11 @@ def build_install_plan(
     ]
     if selected_workflows:
         actions.append(PlanAction("install_workflows", global_root, {"workflows": selected_workflows}))
+    if "codex" in selected_ids:
+        codex_agents = ["guardian_subagent"]
+        actions.append(PlanAction("install_codex_agents", home / ".codex" / "agents", {"agents": codex_agents}))
+    else:
+        codex_agents = []
 
     for target in adapter_targets(repo_root, home, platform_ids=platform_ids, target_root=attachment_root):
         actions.append(
@@ -176,5 +181,6 @@ def build_install_plan(
         "workflows": selected_workflows,
         "packages": sorted(set([*global_selection.packages, *repo_selection.packages])),
         "adapter_packages": repo_selection.packages,
+        "codex_agents": codex_agents,
     }
     return DeployPlan(actions=actions, rollback_metadata=rollback)

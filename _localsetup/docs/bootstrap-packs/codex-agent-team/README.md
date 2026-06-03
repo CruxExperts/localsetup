@@ -26,6 +26,8 @@ The default is subagent-first and throughput-oriented, not specialist-heavy: the
 - `tester`: validation, benchmarks, measurements, and failure summaries
 - `reviewer`: final risk, correctness, regression, scope, and evidence review
 
+The shipped `guardian_subagent` is a Codex approvals reviewer role for permission and rules checks. Do not use it as a normal task-delegation role.
+
 ## Localsetup Pack
 
 Install or select the pack as `bootstrap`. The source membership lives in [`_localsetup/config/pack.yaml`](../../../config/pack.yaml), and the generated index lives in [`_generated/skill-packs.md`](../../_generated/skill-packs.md).
