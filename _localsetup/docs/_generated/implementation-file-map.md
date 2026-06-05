@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 6d4dd804ed99e55bf50eddaa269d5bc8b403db285bad89115e165065e1e2fa32
+  source_provenance_hash: db1c2a330b0acf407eb64b72886c974f60060b3a6270fb76c00471ecad2a6560
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: c5b8ff68fa09e9fc4fb90ba87794edde9d10829b
-artifact_sha256: 36bdffbf57b98d056972d5875a0134be0fe5d9c61e3429130c267bf2b56ed61f
+source_commit: f7d2cae5375da3674edd4f9f0da0c91ba4133ae0
+artifact_sha256: 2e9fb8c092e38671456ab31d5832f0bafbd907ef551888fdce8682e1bb0e94cd
 ---
 # Implementation File Map
 
@@ -527,6 +527,10 @@ artifact_sha256: 36bdffbf57b98d056972d5875a0134be0fe5d9c61e3429130c267bf2b56ed61
 | `keep` | `_localsetup/skills/ls-mail-protocol-control/scripts/tests/test_mail_protocol_mcp_errors.py` |
 | `keep` | `_localsetup/skills/ls-markdown-reference-validator/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py` |
+| `keep` | `_localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_config.py` |
+| `keep` | `_localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_discovery.py` |
+| `keep` | `_localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_links.py` |
+| `keep` | `_localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_report.py` |
 | `keep` | `_localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_validator.py` |
 | `keep` | `_localsetup/skills/ls-markdown-reference-validator/templates/markdown_reference_audit.yaml` |
 | `keep` | `_localsetup/skills/ls-markdown-reference-validator/templates/markdown_reference_host_aware.yaml` |

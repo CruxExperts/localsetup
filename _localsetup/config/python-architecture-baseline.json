@@ -31,16 +31,6 @@
       "threshold": 700
     },
     {
-      "current_value": 957,
-      "id": "pya-baseline-skill-cloudflare-dns-cf-dns",
-      "metric": "lines",
-      "notes": "Skill helper spans DNS record CRUD, dry-run/apply flows, and Cloudflare API error handling.",
-      "owner": "ls-cloudflare-dns",
-      "path": "_localsetup/skills/ls-cloudflare-dns/scripts/cf_dns.py",
-      "reason": "Existing skill script debt found during repo-wide standards audit; split only with API fixture coverage.",
-      "threshold": 700
-    },
-    {
       "current_value": 1203,
       "id": "pya-baseline-skill-mail-protocol-control",
       "metric": "lines",

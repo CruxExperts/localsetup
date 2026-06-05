@@ -4,16 +4,12 @@
 from __future__ import annotations
 
 import argparse
-import csv
 import hashlib
-import ipaddress
-import json
 import os
 import sys
 import time
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable, Mapping
+from typing import Any
 
 for parent in Path(__file__).resolve().parents:
     if (parent / "lib" / "deps.py").is_file():
@@ -28,385 +24,24 @@ try:
 except ImportError as exc:  # pragma: no cover - environment guidance
     raise SystemExit("Missing dependency: requests. Run `uv sync --locked --no-dev` from the Localsetup source checkout.") from exc
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
 
-DEFAULT_API_BASE = "https://api.cloudflare.com/client/v4"
-TOKEN_ENV_VARS = ("CLOUDFLARE_API_TOKEN", "CF_API_TOKEN")
-CONFIRM_DELETE = "confirm delete"
-CONFIRM_APPLY = "confirm apply"
-CONFIRM_OVERWRITE = "confirm overwrite"
-CONFIRM_SETTINGS = "confirm settings"
-HIGH_RISK_TYPES = {"NS", "MX", "SRV", "CAA", "DS", "DNSKEY", "SVCB", "HTTPS"}
-EXIT_AUTH = 4
-EXIT_CONFIRMATION = 5
-EXIT_AMBIGUOUS_ZONE = 6
-EXIT_API = 8
-
-
-class CliError(Exception):
-    def __init__(self, message: str, exit_code: int = 2, details: Mapping[str, Any] | None = None):
-        super().__init__(message)
-        self.exit_code = exit_code
-        self.details = dict(details or {})
-
-
-def canonical_json(data: Any) -> str:
-    return json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
-
-
-def sha256_obj(data: Any) -> str:
-    return hashlib.sha256(canonical_json(data).encode("utf-8")).hexdigest()
-
-
-def redact(value: Any) -> Any:
-    if isinstance(value, str):
-        redacted = value
-        for env_name in TOKEN_ENV_VARS:
-            token = os.environ.get(env_name)
-            if token:
-                redacted = redacted.replace(token, "<redacted>")
-        if redacted.lower().startswith("bearer "):
-            return "Bearer <redacted>"
-        return redacted
-    if isinstance(value, list):
-        return [redact(item) for item in value]
-    if isinstance(value, dict):
-        safe: dict[str, Any] = {}
-        for key, item in value.items():
-            if key.lower() in {"authorization", "token", "api_token", "api-key", "x-auth-key"}:
-                safe[key] = "<redacted>"
-            else:
-                safe[key] = redact(item)
-        return safe
-    return value
-
-
-def emit_json(payload: Mapping[str, Any]) -> None:
-    print(json.dumps(redact(payload), indent=2, sort_keys=True, ensure_ascii=True))
-
-
-def read_json_file(path: str | None) -> Any:
-    try:
-        if not path or path == "-":
-            return json.load(sys.stdin)
-        with Path(path).expanduser().open("r", encoding="utf-8") as handle:
-            return json.load(handle)
-    except json.JSONDecodeError as exc:
-        raise CliError("JSON input could not be parsed.", 2, {"path": path or "-", "error": str(exc)}) from exc
-    except OSError as exc:
-        raise CliError("JSON input could not be read.", 2, {"path": path or "-", "error": str(exc)}) from exc
-
-
-def read_text_file(path: str) -> str:
-    try:
-        return Path(path).expanduser().read_text(encoding="utf-8")
-    except OSError as exc:
-        raise CliError("Text input could not be read.", 2, {"path": path, "error": str(exc)}) from exc
-
-
-def write_table(rows: list[Mapping[str, Any]], fields: list[str]) -> None:
-    writer = csv.DictWriter(sys.stdout, fieldnames=fields, extrasaction="ignore")
-    writer.writeheader()
-    for row in rows:
-        writer.writerow({field: row.get(field, "") for field in fields})
-
-
-def token_from_env(required: bool = True) -> str | None:
-    for name in TOKEN_ENV_VARS:
-        token = os.environ.get(name)
-        if token:
-            return token
-    if required:
-        raise CliError(
-            "Cloudflare API token missing. Set CLOUDFLARE_API_TOKEN or CF_API_TOKEN.",
-            EXIT_AUTH,
-            {"env": list(TOKEN_ENV_VARS)},
-        )
-    return None
-
-
-def rate_limit_from_headers(headers: Mapping[str, str]) -> dict[str, str]:
-    wanted = ("ratelimit", "ratelimit-policy", "retry-after")
-    return {key: value for key, value in headers.items() if key.lower() in wanted}
-
-
-@dataclass
-class ApiResponse:
-    status_code: int
-    envelope: dict[str, Any]
-    rate_limit: dict[str, str]
-
-
-class CloudflareClient:
-    def __init__(
-        self,
-        api_base: str = DEFAULT_API_BASE,
-        token: str | None = None,
-        timeout: float = 30.0,
-        retries: int = 2,
-        session: requests.Session | None = None,
-    ):
-        self.api_base = api_base.rstrip("/")
-        self.token = token or token_from_env(required=True)
-        self.timeout = timeout
-        self.retries = max(0, retries)
-        self.session = session or requests.Session()
-
-    def request(
-        self,
-        method: str,
-        path: str,
-        *,
-        params: Mapping[str, Any] | None = None,
-        json_body: Any = None,
-        data: Any = None,
-        headers: Mapping[str, str] | None = None,
-        expected: Iterable[int] = (200, 201, 202, 204),
-    ) -> ApiResponse:
-        url = f"{self.api_base}/{path.lstrip('/')}"
-        request_headers = {
-            "Authorization": f"Bearer {self.token}",
-            "Accept": "application/json",
-        }
-        if json_body is not None:
-            request_headers["Content-Type"] = "application/json"
-        if headers:
-            request_headers.update(headers)
-
-        last_response: requests.Response | None = None
-        for attempt in range(self.retries + 1):
-            try:
-                response = self.session.request(
-                    method.upper(),
-                    url,
-                    params=dict(params or {}),
-                    json=json_body,
-                    data=data,
-                    headers=request_headers,
-                    timeout=self.timeout,
-                )
-            except requests.RequestException as exc:
-                raise CliError(
-                    "Cloudflare API request could not be completed.",
-                    EXIT_API,
-                    {"method": method.upper(), "path": path, "error": str(exc)},
-                ) from exc
-            last_response = response
-            if response.status_code not in {429, 500, 502, 503, 504} or attempt >= self.retries:
-                break
-            retry_after = response.headers.get("retry-after")
-            sleep_for = min(float(retry_after), 5.0) if retry_after and retry_after.isdigit() else min(0.25 * (attempt + 1), 1.0)
-            time.sleep(sleep_for)
-
-        assert last_response is not None
-        envelope = self._envelope(last_response)
-        api_response = ApiResponse(
-            status_code=last_response.status_code,
-            envelope=envelope,
-            rate_limit=rate_limit_from_headers(last_response.headers),
-        )
-        if last_response.status_code not in set(expected) or envelope.get("success") is False:
-            raise CliError(
-                "Cloudflare API request failed.",
-                EXIT_API,
-                {
-                    "method": method.upper(),
-                    "path": path,
-                    "status_code": last_response.status_code,
-                    "errors": envelope.get("errors", []),
-                    "messages": envelope.get("messages", []),
-                    "rate_limit": api_response.rate_limit,
-                },
-            )
-        return api_response
-
-    @staticmethod
-    def _envelope(response: requests.Response) -> dict[str, Any]:
-        if response.status_code == 204 or not response.text:
-            return {"success": True, "errors": [], "messages": [], "result": None}
-        try:
-            data = response.json()
-        except ValueError:
-            return {"success": False, "errors": [{"message": "Cloudflare API response was not valid JSON.", "body": response.text}], "messages": [], "result": None}
-        if isinstance(data, dict) and {"success", "result"} & set(data):
-            data.setdefault("errors", [])
-            data.setdefault("messages", [])
-            return data
-        return {"success": response.ok, "errors": [], "messages": [], "result": data}
-
-    def paged(self, path: str, params: Mapping[str, Any] | None = None) -> tuple[list[Any], dict[str, Any], dict[str, str]]:
-        page = 1
-        results: list[Any] = []
-        final_info: dict[str, Any] = {}
-        final_rate: dict[str, str] = {}
-        while True:
-            query = dict(params or {})
-            query.setdefault("per_page", 100)
-            query["page"] = page
-            response = self.request("GET", path, params=query)
-            result = response.envelope.get("result")
-            if isinstance(result, list):
-                results.extend(result)
-            elif result is not None:
-                results.append(result)
-            final_info = dict(response.envelope.get("result_info") or {})
-            final_rate = response.rate_limit
-            total_pages = int(final_info.get("total_pages") or page)
-            if page >= total_pages:
-                break
-            page += 1
-        return results, final_info, final_rate
-
-
-def output_ok(command: str, result: Any, *, rate_limit: Mapping[str, Any] | None = None, extra: Mapping[str, Any] | None = None) -> dict[str, Any]:
-    payload: dict[str, Any] = {
-        "ok": True,
-        "command": command,
-        "result": result,
-        "errors": [],
-        "messages": [],
-        "rate_limit": dict(rate_limit or {}),
-    }
-    if extra:
-        payload.update(extra)
-    return payload
-
-
-def output_error(command: str, exc: CliError) -> dict[str, Any]:
-    return {
-        "ok": False,
-        "command": command,
-        "result": None,
-        "errors": [{"message": str(exc), "details": redact(exc.details)}],
-        "messages": [],
-        "rate_limit": dict(exc.details.get("rate_limit") or {}),
-    }
+from cf_dns_parser import build_parser as _build_parser  # noqa: E402
+from cf_dns_support import (  # noqa: E402
+    CONFIRM_APPLY, CONFIRM_DELETE, CONFIRM_OVERWRITE, CONFIRM_SETTINGS,
+    DEFAULT_API_BASE, EXIT_AMBIGUOUS_ZONE, EXIT_API, EXIT_AUTH,
+    EXIT_CONFIRMATION, HIGH_RISK_TYPES, TOKEN_ENV_VARS, ApiResponse,
+    CliError, CloudflareClient, dry_run_plan, emit_json, ensure_plan_hash,
+    normalize_record, output_error, output_ok, read_json_file, read_text_file,
+    redact, require_apply, resolve_zone, sha256_obj, token_from_env,
+    validate_record_args, write_table,
+)
 
 
 def client_from_args(args: argparse.Namespace) -> CloudflareClient:
     return CloudflareClient(args.api_base, timeout=args.timeout, retries=args.retries)
-
-
-def normalize_record(record: Mapping[str, Any], zone: Mapping[str, Any] | None = None) -> dict[str, Any]:
-    known = {
-        "id",
-        "zone_id",
-        "zone_name",
-        "name",
-        "type",
-        "content",
-        "proxied",
-        "ttl",
-        "priority",
-        "comment",
-        "tags",
-        "settings",
-        "meta",
-        "created_on",
-        "modified_on",
-        "comment_modified_on",
-        "tags_modified_on",
-    }
-    normalized = {key: record.get(key) for key in sorted(known) if key in record}
-    if zone:
-        normalized.setdefault("zone_id", zone.get("id"))
-        normalized.setdefault("zone_name", zone.get("name"))
-    unknown = {key: value for key, value in record.items() if key not in known}
-    if unknown:
-        normalized["provider_fields"] = unknown
-    normalized["record_hash"] = sha256_obj({key: value for key, value in normalized.items() if key != "record_hash"})
-    return normalized
-
-
-def validate_record_args(args: argparse.Namespace) -> dict[str, Any]:
-    if not args.type:
-        raise CliError("Record type is required.")
-    if not args.name or not args.content:
-        raise CliError("Record name and content are required unless --json is supplied.")
-    record_type = args.type.upper()
-    body: dict[str, Any] = {"type": record_type, "name": args.name, "content": args.content}
-    if args.ttl is not None:
-        body["ttl"] = args.ttl
-    if args.proxied is not None:
-        body["proxied"] = args.proxied
-    if args.priority is not None:
-        body["priority"] = args.priority
-    if args.comment is not None:
-        body["comment"] = args.comment
-    if args.tags:
-        body["tags"] = args.tags
-    if record_type in {"A", "AAAA"}:
-        try:
-            ipaddress.ip_address(args.content)
-        except ValueError as exc:
-            raise CliError(f"{record_type} record content must be an IP address.") from exc
-    return body
-
-
-def resolve_zone(client: CloudflareClient, zone: str) -> dict[str, Any]:
-    if len(zone) >= 16 and "." not in zone:
-        response = client.request("GET", f"/zones/{zone}")
-        result = response.envelope.get("result")
-        if not isinstance(result, dict):
-            raise CliError("Zone ID lookup returned an unexpected result.", EXIT_API)
-        return result
-    zones, _, _ = client.paged("/zones", {"name": zone, "status": "active"})
-    matches = [item for item in zones if isinstance(item, dict) and item.get("name") == zone]
-    if len(matches) == 1:
-        return matches[0]
-    if not matches:
-        zones, _, _ = client.paged("/zones", {"name": zone})
-        matches = [item for item in zones if isinstance(item, dict) and item.get("name") == zone]
-        if len(matches) == 1:
-            return matches[0]
-    raise CliError(
-        "Zone name did not resolve to exactly one visible zone.",
-        EXIT_AMBIGUOUS_ZONE,
-        {"zone": zone, "candidates": [{"id": item.get("id"), "name": item.get("name"), "status": item.get("status")} for item in matches]},
-    )
-
-
-def require_apply(args: argparse.Namespace, action: str, phrase: str) -> None:
-    if not getattr(args, "apply", False):
-        raise CliError(
-            f"{action} requires --apply and --confirm '{phrase}'.",
-            EXIT_CONFIRMATION,
-            {"required_confirmation": phrase},
-        )
-    require_confirmation(args, action, phrase)
-
-
-def require_confirmation(args: argparse.Namespace, action: str, phrase: str) -> None:
-    if not getattr(args, "apply", False):
-        return
-    if getattr(args, "confirm", "") != phrase:
-        raise CliError(
-            f"{action} requires --confirm '{phrase}' when --apply is used.",
-            EXIT_CONFIRMATION,
-            {"required_confirmation": phrase},
-        )
-
-
-def dry_run_plan(action: str, endpoint: str, method: str, body: Any, args: argparse.Namespace, live_state: Any = None) -> dict[str, Any]:
-    plan = {
-        "action": action,
-        "endpoint": endpoint,
-        "method": method.upper(),
-        "body": body,
-        "live_state_hash": sha256_obj(live_state) if live_state is not None else None,
-        "snapshot_required": bool(getattr(args, "require_snapshot", False)),
-        "snapshot_waived": bool(getattr(args, "snapshot_waiver", False)),
-    }
-    plan["plan_hash"] = sha256_obj({key: value for key, value in plan.items() if key != "plan_hash"})
-    return plan
-
-
-def ensure_plan_hash(args: argparse.Namespace, plan: Mapping[str, Any]) -> None:
-    expected = plan.get("plan_hash")
-    supplied = getattr(args, "plan_hash", None)
-    if getattr(args, "apply", False) and supplied and supplied != expected:
-        raise CliError("Supplied --plan-hash does not match the canonical plan hash.", EXIT_CONFIRMATION, {"expected": expected, "supplied": supplied})
-    if getattr(args, "apply", False) and not supplied and getattr(args, "require_plan_hash", True):
-        raise CliError("Apply requires --plan-hash matching the dry-run plan.", EXIT_CONFIRMATION, {"expected": expected})
 
 
 def cmd_auth_verify(args: argparse.Namespace) -> dict[str, Any]:
@@ -726,210 +361,41 @@ def cmd_plan_diff_live(args: argparse.Namespace) -> dict[str, Any]:
     live_hash = sha256_obj([normalize_record(record, zone) for record in records])
     return output_ok("plan diff-live", {"plan_hash": plan.get("plan_hash") or sha256_obj(plan), "live_hash": live_hash, "matches_live_state": plan.get("live_state_hash") == live_hash}, rate_limit=rate, extra={"zone": zone})
 
-
-def add_common(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--api-base", default=DEFAULT_API_BASE, help="Cloudflare API base URL; override for mocks.")
-    parser.add_argument("--timeout", type=float, default=30.0, help="HTTP timeout in seconds.")
-    parser.add_argument("--retries", type=int, default=2, help="Retries for 429/5xx responses.")
-    parser.add_argument("--output", choices=("json", "table"), default="json", help="Output format. JSON is deterministic default.")
-
-
-def add_apply_flags(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--apply", action="store_true", help="Apply the mutation. Without this, mutations emit a dry-run plan.")
-    parser.add_argument("--confirm", default="", help="Required exact confirmation phrase for --apply.")
-    parser.add_argument("--plan-hash", help="Canonical SHA-256 plan hash from dry-run output.")
-    parser.add_argument("--snapshot-waiver", action="store_true", help="Explicitly waive snapshot requirement for this operation.")
-    parser.set_defaults(require_plan_hash=True)
-
-
-def add_record_body_args(parser: argparse.ArgumentParser, *, required: bool = True) -> None:
-    parser.add_argument("--type", required=False, help="DNS record type.")
-    parser.add_argument("--name", required=required, help="DNS record name.")
-    parser.add_argument("--content", required=required, help="DNS record content.")
-    parser.add_argument("--ttl", type=int, help="Record TTL; use 1 for automatic.")
-    proxied = parser.add_mutually_exclusive_group()
-    proxied.add_argument("--proxied", dest="proxied", action="store_true", help="Proxy through Cloudflare.")
-    proxied.add_argument("--dns-only", dest="proxied", action="store_false", help="Disable Cloudflare proxy.")
-    parser.set_defaults(proxied=None)
-    parser.add_argument("--priority", type=int, help="MX/SRV priority.")
-    parser.add_argument("--comment", help="Cloudflare record comment.")
-    parser.add_argument("--tag", dest="tags", action="append", help="Cloudflare record tag. Repeatable.")
-
-
-def set_func(parser: argparse.ArgumentParser, func: Any) -> None:
-    parser.set_defaults(func=func)
-
+PARSER_COMMANDS = {
+    "cmd_auth_verify": cmd_auth_verify,
+    "cmd_permissions_summarize": cmd_permissions_summarize,
+    "cmd_zones_list": cmd_zones_list,
+    "cmd_zones_get": cmd_zones_get,
+    "cmd_zone_mutation": cmd_zone_mutation,
+    "cmd_zone_activation_check": cmd_zone_activation_check,
+    "cmd_dns_settings_get": cmd_dns_settings_get,
+    "cmd_dns_settings_patch": cmd_dns_settings_patch,
+    "cmd_zone_settings_list": cmd_zone_settings_list,
+    "cmd_zone_settings_get": cmd_zone_settings_get,
+    "cmd_zone_settings_patch": cmd_zone_settings_patch,
+    "cmd_records_list": cmd_records_list,
+    "cmd_records_find": cmd_records_find,
+    "cmd_records_get": cmd_records_get,
+    "cmd_records_create": cmd_records_create,
+    "cmd_records_update": cmd_records_update,
+    "cmd_records_delete": cmd_records_delete,
+    "cmd_records_upsert": cmd_records_upsert,
+    "cmd_records_export": cmd_records_export,
+    "cmd_records_import": cmd_records_import,
+    "cmd_records_batch_plan": cmd_records_batch_plan,
+    "cmd_records_batch_apply": cmd_records_batch_apply,
+    "cmd_scan": cmd_scan,
+    "cmd_snapshot_create": cmd_snapshot_create,
+    "cmd_snapshot_create_all": cmd_snapshot_create_all,
+    "cmd_snapshot_diff": cmd_snapshot_diff,
+    "cmd_plan_diff_live": cmd_plan_diff_live,
+}
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Manage Cloudflare DNS using direct v4 REST API calls.")
-    add_common(parser)
-    sub = parser.add_subparsers(dest="resource", required=True)
+    return _build_parser(PARSER_COMMANDS)
 
-    auth = sub.add_parser("auth", help="Token verification commands.")
-    auth_sub = auth.add_subparsers(dest="action", required=True)
-    set_func(auth_sub.add_parser("verify", help="Verify the API token."), cmd_auth_verify)
-
-    permissions = sub.add_parser("permissions", help="Permission guidance.")
-    perm_sub = permissions.add_subparsers(dest="action", required=True)
-    set_func(perm_sub.add_parser("summarize", help="Summarize recommended token scopes."), cmd_permissions_summarize)
-
-    zones = sub.add_parser("zones", help="Cloudflare zone operations.")
-    zones_sub = zones.add_subparsers(dest="action", required=True)
-    z_list = zones_sub.add_parser("list")
-    z_list.add_argument("--name")
-    z_list.add_argument("--status")
-    z_list.add_argument("--account-id")
-    z_list.add_argument("--all", action="store_true")
-    z_list.add_argument("--limit", type=int, default=100)
-    set_func(z_list, cmd_zones_list)
-    z_get = zones_sub.add_parser("get")
-    z_get.add_argument("zone")
-    set_func(z_get, cmd_zones_get)
-    z_create = zones_sub.add_parser("create")
-    z_create.add_argument("--account-id", required=True)
-    z_create.add_argument("--name", required=True)
-    z_create.add_argument("--type", default="full")
-    add_apply_flags(z_create)
-    set_func(z_create, lambda args: cmd_zone_mutation(args, "create"))
-    z_edit = zones_sub.add_parser("edit")
-    z_edit.add_argument("zone")
-    z_edit.add_argument("--paused", action="store_true")
-    z_edit.add_argument("--vanity-name-server", dest="vanity_name_servers", action="append")
-    add_apply_flags(z_edit)
-    set_func(z_edit, lambda args: cmd_zone_mutation(args, "edit"))
-    z_delete = zones_sub.add_parser("delete")
-    z_delete.add_argument("zone")
-    add_apply_flags(z_delete)
-    set_func(z_delete, lambda args: cmd_zone_mutation(args, "delete"))
-    z_activation = zones_sub.add_parser("activation-check")
-    z_activation.add_argument("zone")
-    set_func(z_activation, cmd_zone_activation_check)
-
-    dns_settings = sub.add_parser("dns-settings", help="Zone DNS settings.")
-    ds_sub = dns_settings.add_subparsers(dest="action", required=True)
-    ds_get = ds_sub.add_parser("get")
-    ds_get.add_argument("zone")
-    set_func(ds_get, cmd_dns_settings_get)
-    ds_patch = ds_sub.add_parser("patch")
-    ds_patch.add_argument("zone")
-    ds_patch.add_argument("--json", required=True)
-    add_apply_flags(ds_patch)
-    set_func(ds_patch, cmd_dns_settings_patch)
-
-    zone_settings = sub.add_parser("zone-settings", help="General zone settings endpoints.")
-    zs_sub = zone_settings.add_subparsers(dest="action", required=True)
-    zs_list = zs_sub.add_parser("list")
-    zs_list.add_argument("zone")
-    set_func(zs_list, cmd_zone_settings_list)
-    zs_get = zs_sub.add_parser("get")
-    zs_get.add_argument("zone")
-    zs_get.add_argument("setting_id")
-    set_func(zs_get, cmd_zone_settings_get)
-    zs_patch = zs_sub.add_parser("patch")
-    zs_patch.add_argument("zone")
-    zs_patch.add_argument("setting_id")
-    zs_patch.add_argument("--json", required=True)
-    add_apply_flags(zs_patch)
-    set_func(zs_patch, cmd_zone_settings_patch)
-
-    records = sub.add_parser("records", help="DNS record operations.", description="DNS record operations.")
-    rec_sub = records.add_subparsers(dest="action", required=True)
-    rec_list = rec_sub.add_parser("list")
-    rec_list.add_argument("zone")
-    rec_list.add_argument("--type")
-    rec_list.add_argument("--name")
-    rec_list.add_argument("--content")
-    rec_list.add_argument("--proxied", action="store_true")
-    set_func(rec_list, cmd_records_list)
-    rec_find = rec_sub.add_parser("find")
-    rec_find.add_argument("zone")
-    rec_find.add_argument("--type")
-    rec_find.add_argument("--name")
-    rec_find.add_argument("--content")
-    rec_find.add_argument("--proxied", action="store_true")
-    set_func(rec_find, cmd_records_find)
-    rec_get = rec_sub.add_parser("get")
-    rec_get.add_argument("zone")
-    rec_get.add_argument("record_id")
-    set_func(rec_get, cmd_records_get)
-    rec_create = rec_sub.add_parser("create")
-    rec_create.add_argument("zone")
-    add_record_body_args(rec_create)
-    add_apply_flags(rec_create)
-    set_func(rec_create, cmd_records_create)
-    rec_create_json = rec_sub.add_parser("create-json")
-    rec_create_json.add_argument("zone")
-    rec_create_json.add_argument("--json", required=True)
-    add_apply_flags(rec_create_json)
-    set_func(rec_create_json, cmd_records_create)
-    for action, method in (("patch", "PATCH"), ("put", "PUT")):
-        rec_update = rec_sub.add_parser(action)
-        rec_update.add_argument("zone")
-        rec_update.add_argument("record_id")
-        rec_update.add_argument("--json")
-        add_record_body_args(rec_update, required=False)
-        add_apply_flags(rec_update)
-        set_func(rec_update, lambda args, m=method: cmd_records_update(args, m))
-    rec_delete = rec_sub.add_parser("delete")
-    rec_delete.add_argument("zone")
-    rec_delete.add_argument("record_id")
-    add_apply_flags(rec_delete)
-    set_func(rec_delete, cmd_records_delete)
-    rec_upsert = rec_sub.add_parser("upsert")
-    rec_upsert.add_argument("zone")
-    add_record_body_args(rec_upsert)
-    add_apply_flags(rec_upsert)
-    set_func(rec_upsert, cmd_records_upsert)
-    rec_export = rec_sub.add_parser("export")
-    rec_export.add_argument("zone")
-    set_func(rec_export, cmd_records_export)
-    rec_import = rec_sub.add_parser("import")
-    rec_import.add_argument("zone")
-    rec_import.add_argument("--file", required=True)
-    add_apply_flags(rec_import)
-    set_func(rec_import, cmd_records_import)
-    rec_batch_plan = rec_sub.add_parser("batch-plan")
-    rec_batch_plan.add_argument("zone")
-    rec_batch_plan.add_argument("--json", required=True)
-    set_func(rec_batch_plan, cmd_records_batch_plan)
-    rec_batch_apply = rec_sub.add_parser("batch-apply")
-    rec_batch_apply.add_argument("zone")
-    rec_batch_apply.add_argument("--json", required=True)
-    add_apply_flags(rec_batch_apply)
-    set_func(rec_batch_apply, cmd_records_batch_apply)
-    scan = rec_sub.add_parser("scan")
-    scan_sub = scan.add_subparsers(dest="scan_action", required=True)
-    for scan_action in ("trigger", "list", "review"):
-        scan_parser = scan_sub.add_parser(scan_action)
-        scan_parser.add_argument("zone")
-        if scan_action == "review":
-            scan_parser.add_argument("--json")
-            add_apply_flags(scan_parser)
-        set_func(scan_parser, lambda args, a=scan_action: cmd_scan(args, a))
-
-    snapshot = sub.add_parser("snapshot", help="Create and diff DNS snapshots.")
-    snap_sub = snapshot.add_subparsers(dest="action", required=True)
-    snap_create = snap_sub.add_parser("create")
-    snap_create.add_argument("zone")
-    snap_create.add_argument("--type")
-    snap_create.add_argument("--name")
-    snap_create.add_argument("--content")
-    snap_create.add_argument("--proxied", action="store_true")
-    set_func(snap_create, cmd_snapshot_create)
-    set_func(snap_sub.add_parser("create-all"), cmd_snapshot_create_all)
-    snap_diff = snap_sub.add_parser("diff")
-    snap_diff.add_argument("before")
-    snap_diff.add_argument("after")
-    set_func(snap_diff, cmd_snapshot_diff)
-
-    plan = sub.add_parser("plan", help="Compare plans with live state.")
-    plan_sub = plan.add_subparsers(dest="action", required=True)
-    diff_live = plan_sub.add_parser("diff-live")
-    diff_live.add_argument("zone")
-    diff_live.add_argument("--plan", required=True)
-    set_func(diff_live, cmd_plan_diff_live)
-
-    return parser
+def build_parser() -> argparse.ArgumentParser:
+    return _build_parser(globals())
 
 
 def main(argv: list[str] | None = None) -> int:
