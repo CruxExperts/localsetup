@@ -3,94 +3,22 @@ from __future__ import annotations
 import json
 import re
 import subprocess
-import sys
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
-from .docs import generate_alias_outputs
 from .git_subprocess import run_git
-
-
-ZERO_SHA = "0" * 40
-VERSION_SYNC_PREFIX = "chore: sync release version"
-RELEASE_TYPE_RE = re.compile(r"^Release-Type:\s*(major|minor|patch|none)\s*$", re.MULTILINE | re.IGNORECASE)
-BREAKING_CHANGE_RE = re.compile(r"^BREAKING CHANGE:", re.MULTILINE)
-BREAKING_SUBJECT_RE = re.compile(r"^[a-zA-Z]+(?:\([^)]+\))?!:")
-KNOWN_PATCH_TYPES = {
-    "fix",
-    "docs",
-    "chore",
-    "style",
-    "refactor",
-    "perf",
-    "test",
-    "ci",
-    "build",
-    "revert",
-}
-VERSIONED_DOC_GLOBS = ("_localsetup/docs/**/*.md",)
-VERSIONED_DOC_EXCLUDED_PARTS = {"_generated", "local-context"}
-INTERNAL_PATCH_PATHS = (
-    ".gitignore",
-    ".githooks/",
-    ".github/",
-    "AGENTS.md",
-    "CONTRIBUTING.md",
-    "README.md",
-    "install",
-    "_localsetup/README.md",
-    "_localsetup/config/",
-    "_localsetup/docs/",
-    "_localsetup/skills/",
-    "_localsetup/skills/ls-automatic-versioning/",
-    "_localsetup/templates/",
-    "_localsetup/tests/",
-    "_localsetup/core/",
+from . import versioning_sync as _sync
+from .versioning_constants import (
+    BREAKING_CHANGE_RE,
+    BREAKING_SUBJECT_RE,
+    INTERNAL_PATCH_PATHS,
+    KNOWN_PATCH_TYPES,
+    RELEASE_TOOLING_PATHS,
+    RELEASE_TYPE_RE,
+    VERSION_SYNC_PREFIX,
+    ZERO_SHA,
 )
-RELEASE_TOOLING_PATHS = (
-    "_localsetup/core/cli.py",
-    "_localsetup/core/versioning.py",
-)
-
-
-@dataclass(frozen=True)
-class SemVer:
-    major: int
-    minor: int
-    patch: int
-
-    @classmethod
-    def parse(cls, value: str) -> "SemVer":
-        match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)", value.strip())
-        if not match:
-            raise ValueError(f"invalid semantic version: {value!r}")
-        return cls(*(int(part) for part in match.groups()))
-
-    def bump(self, bump_type: str) -> "SemVer":
-        if bump_type == "major":
-            return SemVer(self.major + 1, 0, 0)
-        if bump_type == "minor":
-            return SemVer(self.major, self.minor + 1, 0)
-        if bump_type == "patch":
-            return SemVer(self.major, self.minor, self.patch + 1)
-        if bump_type == "none":
-            return self
-        raise ValueError(f"unknown bump type: {bump_type}")
-
-    @property
-    def major_minor(self) -> str:
-        return f"{self.major}.{self.minor}"
-
-    def __str__(self) -> str:
-        return f"{self.major}.{self.minor}.{self.patch}"
-
-
-@dataclass(frozen=True)
-class CommitInfo:
-    sha: str
-    subject: str
-    body: str
+from .versioning_models import CommitInfo, SemVer
 
 
 def _run_git(repo_root: Path, args: list[str], *, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -447,241 +375,44 @@ def plan_version(repo_root: Path, *, base: str | None = None, head: str | None =
     }
 
 
-def _replace_regex(path: Path, pattern: str, replacement: str, *, flags: int = re.MULTILINE) -> bool:
-    if not path.exists():
-        return False
-    text = path.read_text(encoding="utf-8")
-    new_text = re.sub(pattern, replacement, text, flags=flags)
-    if new_text == text:
-        return False
-    path.write_text(new_text, encoding="utf-8")
-    return True
-
-
-def _update_doc_frontmatter_versions(repo_root: Path, version: SemVer) -> list[str]:
-    changed: list[str] = []
-    for pattern in VERSIONED_DOC_GLOBS:
-        for path in sorted(repo_root.glob(pattern)):
-            if any(part in VERSIONED_DOC_EXCLUDED_PARTS for part in path.relative_to(repo_root).parts):
-                continue
-            text = path.read_text(encoding="utf-8")
-            if not text.startswith("---\n"):
-                continue
-            parts = text.split("---", 2)
-            if len(parts) < 3:
-                continue
-            frontmatter = parts[1]
-            new_frontmatter = re.sub(
-                r'(?m)^version:\s*["\']?[0-9]+(?:\.[0-9]+){1,2}["\']?\s*$',
-                f"version: {version.major_minor}",
-                frontmatter,
-            )
-            if not new_frontmatter.endswith("\n"):
-                new_frontmatter = f"{new_frontmatter}\n"
-            new_text = f"---{new_frontmatter}---{parts[2]}"
-            if new_text != text:
-                path.write_text(new_text, encoding="utf-8")
-                changed.append(str(path.relative_to(repo_root)))
-    return changed
-
-
 def sync_version_files(repo_root: Path, target_version: str) -> dict:
-    target = SemVer.parse(target_version)
-    changed: list[str] = []
-    tracked_updates = [
-        ("VERSION", lambda path: path.write_text(f"{target}\n", encoding="utf-8")),
-    ]
-    for rel_path, writer in tracked_updates:
-        path = repo_root / rel_path
-        before = path.read_text(encoding="utf-8") if path.exists() else None
-        writer(path)
-        after = path.read_text(encoding="utf-8")
-        if before != after:
-            changed.append(rel_path)
-
-    replacements = [
-        ("pyproject.toml", r'(?m)^version = "[0-9]+\.[0-9]+\.[0-9]+"$', f'version = "{target}"'),
-        ("README.md", r"(?m)^\*\*Version:\*\* [0-9]+\.[0-9]+\.[0-9]+<br>$", f"**Version:** {target}<br>"),
-        ("_localsetup/README.md", r"(?m)^\*\*Version:\*\* [0-9]+\.[0-9]+\.[0-9]+<br>$", f"**Version:** {target}<br>"),
-        (
-            "_localsetup/docs/VERSIONING.md",
-            r"(?m)^- Current value: `[0-9]+\.[0-9]+\.[0-9]+`$",
-            f"- Current value: `{target}`",
-        ),
-        (
-            "uv.lock",
-            r'(?m)(^\[\[package\]\]\nname = "localsetup"\nversion = ")[0-9]+\.[0-9]+\.[0-9]+(")',
-            rf"\g<1>{target}\2",
-        ),
-    ]
-    for rel_path, pattern, replacement in replacements:
-        if _replace_regex(repo_root / rel_path, pattern, replacement):
-            changed.append(rel_path)
-
-    changed.extend(_update_doc_frontmatter_versions(repo_root, target))
-    generator = repo_root / "_localsetup" / "tools" / "generate_docs_artifacts.py"
-    subprocess.run(
-        [sys.executable, str(generator), "--repo-root", str(repo_root)],
-        cwd=repo_root,
-        text=True,
-        capture_output=True,
-        check=True,
-    )
-    generate_alias_outputs(repo_root)
-
-    generated_paths = [
-        "README.md",
-        "_localsetup/docs/README.md",
-        "_localsetup/docs/FEATURES.md",
-        "_localsetup/docs/SKILLS.md",
-        "_localsetup/docs/WORKFLOW_REGISTRY.md",
-        "_localsetup/docs/WORKFLOW_QUICK_REF.md",
-        "_localsetup/docs/_generated/facts.json",
-        "_localsetup/docs/_generated/workflow-catalog.json",
-        "_localsetup/docs/_generated/skill-taxonomy.json",
-        "_localsetup/docs/_generated/plugin-packs.json",
-        "_localsetup/docs/_generated/plugin-packs.md",
-        "_localsetup/docs/_generated/docs-inventory.json",
-        "_localsetup/docs/_generated/docs-truth-map.json",
-        "_localsetup/docs/_generated/docs-audit-result.json",
-        "_localsetup/docs/_generated/docs-asset-manifest.json",
-        "_localsetup/docs/_generated/docs-alignment-summary.md",
-        "_localsetup/docs/_generated/artifact-registry.json",
-        "assets/README.md",
-        "_localsetup/docs/migration/skill-alias-map.md",
-        "_localsetup/docs/_generated/platform-adapters.md",
-        "_localsetup/docs/_generated/skill-packs.md",
-        "_localsetup/docs/_generated/skill_aliases.json",
-        "_localsetup/docs/_generated/implementation-file-map.md",
-    ]
-    for rel_path in generated_paths:
-        if rel_path not in changed:
-            changed.append(rel_path)
-
-    return {
-        "version": str(target),
-        "major_minor": target.major_minor,
-        "changed_candidates": sorted(set(changed)),
-    }
+    return _sync.sync_version_files(repo_root, target_version)
 
 
 def check_version_files(repo_root: Path, target_version: str) -> dict:
-    candidates = {
-        repo_root / "VERSION",
-        repo_root / "pyproject.toml",
-        repo_root / "uv.lock",
-        repo_root / "README.md",
-        repo_root / "_localsetup" / "README.md",
-        repo_root / "_localsetup" / "docs" / "VERSIONING.md",
-        repo_root / "_localsetup" / "docs" / "README.md",
-        repo_root / "_localsetup" / "docs" / "FEATURES.md",
-        repo_root / "_localsetup" / "docs" / "SKILLS.md",
-        repo_root / "_localsetup" / "docs" / "WORKFLOW_REGISTRY.md",
-        repo_root / "_localsetup" / "docs" / "WORKFLOW_QUICK_REF.md",
-        repo_root / "_localsetup" / "docs" / "_generated" / "facts.json",
-        repo_root / "_localsetup" / "docs" / "_generated" / "workflow-catalog.json",
-        repo_root / "_localsetup" / "docs" / "_generated" / "skill-taxonomy.json",
-        repo_root / "_localsetup" / "docs" / "_generated" / "plugin-packs.json",
-        repo_root / "_localsetup" / "docs" / "_generated" / "plugin-packs.md",
-        repo_root / "_localsetup" / "docs" / "_generated" / "docs-inventory.json",
-        repo_root / "_localsetup" / "docs" / "_generated" / "docs-truth-map.json",
-        repo_root / "_localsetup" / "docs" / "_generated" / "docs-audit-result.json",
-        repo_root / "_localsetup" / "docs" / "_generated" / "docs-asset-manifest.json",
-        repo_root / "_localsetup" / "docs" / "_generated" / "docs-alignment-summary.md",
-        repo_root / "_localsetup" / "docs" / "_generated" / "artifact-registry.json",
-        repo_root / "assets" / "README.md",
-        repo_root / "_localsetup" / "docs" / "_generated" / "implementation-file-map.md",
-        repo_root / "_localsetup" / "docs" / "_generated" / "platform-adapters.md",
-        repo_root / "_localsetup" / "docs" / "_generated" / "skill-packs.md",
-        repo_root / "_localsetup" / "docs" / "_generated" / "skill_aliases.json",
-        repo_root / "_localsetup" / "docs" / "migration" / "skill-alias-map.md",
-    }
-    candidates.update(
-        path
-        for path in (repo_root / "_localsetup" / "docs").glob("**/*.md")
-        if not any(part in VERSIONED_DOC_EXCLUDED_PARTS for part in path.relative_to(repo_root).parts)
+    return _sync.check_version_files(
+        repo_root,
+        target_version,
+        git_text=_git_text,
+        run_git=_run_git,
+        sync=sync_version_files,
     )
-    before_contents = {
-        path: path.read_text(encoding="utf-8") if path.exists() else None
-        for path in candidates
-    }
-    before = _git_text(repo_root, ["status", "--porcelain"])
-    before_diff = _run_git(repo_root, ["diff", "--name-only"], check=False).stdout.splitlines()
-    before_staged = _run_git(repo_root, ["diff", "--cached", "--name-only"], check=False).stdout.splitlines()
-    sync_version_files(repo_root, target_version)
-    after = _git_text(repo_root, ["status", "--porcelain"])
-    diff = _run_git(repo_root, ["diff", "--name-only"], check=False).stdout.splitlines()
-    staged = _run_git(repo_root, ["diff", "--cached", "--name-only"], check=False).stdout.splitlines()
-    ok = before == after and diff == before_diff and staged == before_staged
-    for path, content in before_contents.items():
-        if content is None:
-            if path.exists():
-                path.unlink()
-            continue
-        path.write_text(content, encoding="utf-8")
-    return {
-        "ok": ok,
-        "dirty_before": before,
-        "dirty_after": after,
-        "diff_before": before_diff,
-        "diff_after": diff,
-        "staged_before": before_staged,
-        "staged_after": staged,
-    }
 
 
 def stage_version_files(repo_root: Path) -> None:
-    fixed_paths = [
-        "VERSION",
-        "pyproject.toml",
-        "uv.lock",
-        "README.md",
-        "_localsetup/README.md",
-        "_localsetup/docs/VERSIONING.md",
-        "_localsetup/docs/_generated/facts.json",
-        "_localsetup/docs/_generated/workflow-catalog.json",
-        "_localsetup/docs/_generated/skill-taxonomy.json",
-        "_localsetup/docs/_generated/plugin-packs.json",
-        "_localsetup/docs/_generated/plugin-packs.md",
-        "_localsetup/docs/_generated/docs-inventory.json",
-        "_localsetup/docs/_generated/docs-truth-map.json",
-        "_localsetup/docs/_generated/docs-audit-result.json",
-        "_localsetup/docs/_generated/docs-asset-manifest.json",
-        "_localsetup/docs/_generated/docs-alignment-summary.md",
-        "_localsetup/docs/_generated/artifact-registry.json",
-        "_localsetup/docs/_generated/implementation-file-map.md",
-        "_localsetup/docs/_generated/platform-adapters.md",
-        "_localsetup/docs/_generated/skill-packs.md",
-        "_localsetup/docs/_generated/skill_aliases.json",
-        "_localsetup/docs/migration/skill-alias-map.md",
-        "_localsetup/docs/SKILLS.md",
-        "assets/README.md",
-    ]
-    doc_paths = [
-        str(path.relative_to(repo_root))
-        for path in (repo_root / "_localsetup" / "docs").glob("**/*.md")
-        if not any(part in VERSIONED_DOC_EXCLUDED_PARTS for part in path.relative_to(repo_root).parts)
-    ]
-    paths = sorted(set(fixed_paths + doc_paths))
-    _run_git(repo_root, ["add", *paths])
+    _sync.stage_version_files(repo_root, run_git=_run_git)
 
 
 def commit_version_sync(repo_root: Path, target_version: str) -> str | None:
-    stage_version_files(repo_root)
-    staged = _git_text(repo_root, ["diff", "--cached", "--name-only"])
-    if not staged:
-        return None
-    _run_git(repo_root, ["commit", "-m", f"{VERSION_SYNC_PREFIX} {target_version}"])
-    return resolve_head(repo_root)
+    return _sync.commit_version_sync(
+        repo_root,
+        target_version,
+        git_text=_git_text,
+        run_git=_run_git,
+        resolve_head=resolve_head,
+        stage=stage_version_files,
+    )
 
 
 def commit_generated_docs_refresh(repo_root: Path, *, message: str = "docs: refresh generated artifacts") -> str | None:
-    stage_version_files(repo_root)
-    staged = _git_text(repo_root, ["diff", "--cached", "--name-only"])
-    if not staged:
-        return None
-    _run_git(repo_root, ["commit", "-m", message])
-    return resolve_head(repo_root)
+    return _sync.commit_generated_docs_refresh(
+        repo_root,
+        git_text=_git_text,
+        run_git=_run_git,
+        resolve_head=resolve_head,
+        stage=stage_version_files,
+        message=message,
+    )
 
 
 def publish_preflight(repo_root: Path, *, base: str | None = None, head: str | None = None, fix: bool = False) -> dict:

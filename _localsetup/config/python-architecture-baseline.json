@@ -21,16 +21,6 @@
       "threshold": 700
     },
     {
-      "current_value": 744,
-      "id": "pya-baseline-core-versioning",
-      "metric": "lines",
-      "notes": "Versioning is release-sensitive; refactor only with publish-preflight coverage.",
-      "owner": "ls-script-and-docs-quality",
-      "path": "_localsetup/core/versioning.py",
-      "reason": "Existing versioning workflow debt predates this architecture standard and is release-contract-sensitive.",
-      "threshold": 700
-    },
-    {
       "current_value": 1725,
       "id": "pya-baseline-core-wizard",
       "metric": "lines",

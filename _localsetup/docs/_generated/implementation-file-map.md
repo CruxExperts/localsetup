@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 7999b65d17edf1072e2c945a40037a335842667919f4d19e09a28d9ed19a8f82
+  source_provenance_hash: 69ca368c6d2ca1af3288ef0f8814ffd866c8ee05a000ac1edeea38b15e269633
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: d29ecbc8d03e627fd3eb08e860bd03cc6ae71a63
-artifact_sha256: fbd72c01d5a0335bf53eb8fc9dc2a3200badd830b4f282d21575d5fe69d4c14a
+source_commit: 3ed663064efd13c061fb20d36c5b86e17bac8ad4
+artifact_sha256: 42b01d0b184e9d8464f7cc56d9e37e70c0a01fb33c45b43f0e13f56dc4f33bf0
 ---
 # Implementation File Map
 
@@ -189,6 +189,9 @@ artifact_sha256: fbd72c01d5a0335bf53eb8fc9dc2a3200badd830b4f282d21575d5fe69d4c14
 | `refactor` | `_localsetup/core/trace.py` |
 | `refactor` | `_localsetup/core/verify.py` |
 | `refactor` | `_localsetup/core/versioning.py` |
+| `refactor` | `_localsetup/core/versioning_constants.py` |
+| `refactor` | `_localsetup/core/versioning_models.py` |
+| `refactor` | `_localsetup/core/versioning_sync.py` |
 | `refactor` | `_localsetup/core/wizard.py` |
 | `refactor` | `_localsetup/core/workflows.py` |
 | `keep` | `_localsetup/discovery/core/os_detector.py` |
