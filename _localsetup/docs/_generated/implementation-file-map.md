@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: b688c43177377007a4717c5920db7b9537f90cf190dd10e9d733442502849fcc
+  source_provenance_hash: efd5211223492a337c91de3dc2977f4d22ac21664bf8724eec867b06c6126ede
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: e9f7ccf6edf51ac49a4e93de7f04bc9995fe5e5f
-artifact_sha256: dbdd65c8c59ca919979b3405d78952b713796a84361838a9c61dec3336a0e503
+source_commit: 10b401d6eb27d43be392e21abd7e304be5e203fe
+artifact_sha256: 564b1315fd79f9b3c39e2b7373c5132c0948ca522b82b7b16b55d01c79923284
 ---
 # Implementation File Map
 
@@ -80,6 +80,7 @@ artifact_sha256: dbdd65c8c59ca919979b3405d78952b713796a84361838a9c61dec3336a0e50
 | `keep` | `_localsetup/config/skill-frontmatter.schema.json` |
 | `keep` | `_localsetup/config/workflow.schema.json` |
 | `refactor` | `_localsetup/core/__init__.py` |
+| `refactor` | `_localsetup/core/adapter_markers.py` |
 | `refactor` | `_localsetup/core/adapters.py` |
 | `refactor` | `_localsetup/core/aliases.py` |
 | `refactor` | `_localsetup/core/apply.py` |

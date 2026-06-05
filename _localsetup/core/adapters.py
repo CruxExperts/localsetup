@@ -1,14 +1,19 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 import shutil
 
+from .adapter_markers import (
+    ADAPTER_MARKER_JSON,
+    adapter_marker_packages,
+    adapter_marker_state,
+    is_safe_adapter_package_name,
+)
 from .manifests import load_platforms
 from .paths import expand_user_path, repo_path
 from .provenance import is_managed_package
 
-ADAPTER_MARKER_JSON = ".localsetup-adapter.json"
+_is_safe_adapter_package_name = is_safe_adapter_package_name
 
 
 def validate_platform_selectors(repo_root: Path, platform_ids: list[str] | None) -> list[str]:
@@ -82,50 +87,6 @@ def _visible_adapter_packages(repo_path: Path, global_root: Path) -> list[str]:
     return names
 
 
-def _adapter_marker_state(repo_path: Path) -> dict:
-    marker = repo_path / ADAPTER_MARKER_JSON
-    if not marker.exists():
-        return {"exists": False, "mode": None, "error": None}
-    try:
-        payload = json.loads(marker.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return {"exists": True, "mode": None, "error": "adapter marker is not valid JSON"}
-    if not isinstance(payload, dict):
-        return {"exists": True, "mode": None, "error": "adapter marker is not a JSON object"}
-    mode = payload.get("mode")
-    if mode not in {"symlink", "portable"}:
-        return {
-            "exists": True,
-            "mode": str(mode) if mode is not None else None,
-            "error": "adapter marker has unsupported mode",
-        }
-    return {"exists": True, "mode": str(mode), "error": None}
-
-
-def _adapter_marker_packages(repo_path: Path) -> set[str] | None:
-    marker = repo_path / ADAPTER_MARKER_JSON
-    if not marker.is_file():
-        return None
-    try:
-        payload = json.loads(marker.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return None
-    if not isinstance(payload, dict):
-        return None
-    packages = payload.get("packages")
-    if not isinstance(packages, list):
-        return None
-    names = {str(item) for item in packages if _is_safe_adapter_package_name(str(item))}
-    return names
-
-
-def _is_safe_adapter_package_name(name: str) -> bool:
-    if not name or name in {".", ".."}:
-        return False
-    path = Path(name)
-    return not path.is_absolute() and len(path.parts) == 1 and path.parts[0] == name
-
-
 def _is_managed_portable_adapter_entry(path: Path) -> bool:
     return path.is_dir() and not path.is_symlink() and is_managed_package(path)
 
@@ -142,7 +103,7 @@ def _managed_visible_adapter_packages(repo_path: Path, global_root: Path) -> lis
         return []
     if not repo_path.is_dir() or repo_path.is_symlink():
         return []
-    marker = _adapter_marker_state(repo_path)
+    marker = adapter_marker_state(repo_path)
     marker_mode = marker["mode"]
     legacy_portable = (repo_path / ".localsetup-portable").exists()
     names: set[str] = set()
@@ -159,7 +120,7 @@ def _managed_visible_adapter_packages(repo_path: Path, global_root: Path) -> lis
 def _adapter_package_integrity(repo_path: Path, global_root: Path) -> list[dict]:
     if not repo_path.is_dir() or repo_path.is_symlink():
         return []
-    marker = _adapter_marker_state(repo_path)
+    marker = adapter_marker_state(repo_path)
     marker_mode = marker["mode"]
     if marker["exists"] and marker["error"]:
         return [
@@ -175,7 +136,7 @@ def _adapter_package_integrity(repo_path: Path, global_root: Path) -> list[dict]
     if marker_mode not in {"symlink", "portable"}:
         return []
     rows: list[dict] = []
-    marker_packages = _adapter_marker_packages(repo_path) or set()
+    marker_packages = adapter_marker_packages(repo_path) or set()
     managed_children: set[str] = set()
     for child in sorted(repo_path.iterdir()):
         if child.name.startswith("."):
@@ -272,9 +233,9 @@ def adapter_classification(repo_path: Path, global_root: Path, *, known_global_r
     if not repo_path.is_dir():
         return {"status_code": "unsupported_node", "collision_reason": "unsupported filesystem node", "custom_entries": [], "managed_entries": []}
 
-    marker = _adapter_marker_state(repo_path)
+    marker = adapter_marker_state(repo_path)
     marker_mode = marker["mode"]
-    marker_packages = _adapter_marker_packages(repo_path)
+    marker_packages = adapter_marker_packages(repo_path)
     visible = [child for child in sorted(repo_path.iterdir()) if not child.name.startswith(".")]
     managed_entries = [
         child.name for child in visible if _child_is_managed_adapter_package(child, global_root, marker_mode, marker_packages)
@@ -427,10 +388,10 @@ def remove_managed_adapter_entries(
     if not repo_path.is_dir():
         return removed
 
-    marker = _adapter_marker_state(repo_path)
+    marker = adapter_marker_state(repo_path)
     marker_mode = marker["mode"]
-    marker_packages = _adapter_marker_packages(repo_path) or set()
-    candidates = set(marker_packages) | {str(name) for name in recorded_packages or [] if _is_safe_adapter_package_name(str(name))}
+    marker_packages = adapter_marker_packages(repo_path) or set()
+    candidates = set(marker_packages) | {str(name) for name in recorded_packages or [] if is_safe_adapter_package_name(str(name))}
     if not candidates:
         candidates = set(state.get("managed_visible_packages", []))
     for package_name in sorted(candidates):
