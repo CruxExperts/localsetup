@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 7e73a3bd9a247fd888f209b52f0e0a8af83f0d9a9e17bc47150733cfdea987df
+  source_provenance_hash: 9a997953283e30eda0841b569d4189a73f5ba53d08f7f040544b6d7bd9617769
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: 7a9c45ffae6224983ad7de88f8895aa6bb7b9b3a
-artifact_sha256: 738a2b596e5e9aed0dd069fc4913bf9e78e1f4e5eef5e541f67e7343c19b6f7c
+source_commit: 0c2b1026b2fdec5efac0b00f3912e5138d03dfdd
+artifact_sha256: 7de9200b6261c6ed25256f5e57c793f8e42b5ec9d8e267c74e9da4be5653bf9a
 ---
 # Implementation File Map
 
@@ -105,6 +105,20 @@ artifact_sha256: 738a2b596e5e9aed0dd069fc4913bf9e78e1f4e5eef5e541f67e7343c19b6f7
 | `refactor` | `_localsetup/core/dependencies.py` |
 | `refactor` | `_localsetup/core/diffing.py` |
 | `refactor` | `_localsetup/core/docs.py` |
+| `refactor` | `_localsetup/core/docs_alignment/__init__.py` |
+| `refactor` | `_localsetup/core/docs_alignment/assets.py` |
+| `refactor` | `_localsetup/core/docs_alignment/audit.py` |
+| `refactor` | `_localsetup/core/docs_alignment/cli.py` |
+| `refactor` | `_localsetup/core/docs_alignment/constants.py` |
+| `refactor` | `_localsetup/core/docs_alignment/inventory.py` |
+| `refactor` | `_localsetup/core/docs_alignment/io.py` |
+| `refactor` | `_localsetup/core/docs_alignment/models.py` |
+| `refactor` | `_localsetup/core/docs_alignment/writers.py` |
+| `refactor` | `_localsetup/core/docs_artifacts/__init__.py` |
+| `refactor` | `_localsetup/core/docs_artifacts/cli.py` |
+| `refactor` | `_localsetup/core/docs_artifacts/collectors.py` |
+| `refactor` | `_localsetup/core/docs_artifacts/common.py` |
+| `refactor` | `_localsetup/core/docs_artifacts/writers.py` |
 | `refactor` | `_localsetup/core/doctor.py` |
 | `refactor` | `_localsetup/core/git_state.py` |
 | `refactor` | `_localsetup/core/git_subprocess.py` |

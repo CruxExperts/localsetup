@@ -41,16 +41,6 @@
       "threshold": 700
     },
     {
-      "current_value": 807,
-      "id": "pya-baseline-tools-docs-alignment",
-      "metric": "lines",
-      "notes": "Docs alignment spans generated artifacts and public documentation contracts.",
-      "owner": "ls-docs-organization",
-      "path": "_localsetup/tools/docs_alignment.py",
-      "reason": "Existing docs-alignment debt predates this architecture standard and is public-doc-contract-sensitive.",
-      "threshold": 700
-    },
-    {
       "current_value": 775,
       "id": "pya-baseline-tools-skill-index-scrub",
       "metric": "lines",
