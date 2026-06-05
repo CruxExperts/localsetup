@@ -23,9 +23,6 @@ OUTPUT_PATH_MAX = 4096
 PATH_COMPONENT_MAX = 256
 REPORT_SNIPPET_MAX = 2000
 CONTROL_CHARS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
-# Plain "see docs/..." or "See _localsetup/..." that should be markdown links
-PLAIN_SEE_DOCS = re.compile(r"\b[Ss]ee\s+docs/[^\s\]\)\"']+")
-PLAIN_SEE_LOCALSETUP = re.compile(r"\b[Ss]ee\s+_localsetup/[^\s\]\)\"']+")
 MAINTAINER_PATTERN = re.compile(
     r"\b(?:maintainer-only|maintainer repo|private maintainer|scripts/generate-doc-artifacts)\b",
     re.IGNORECASE,
@@ -278,149 +275,22 @@ def phase_doc_checks(root: Path, fw: Path) -> list[str]:
 
 def phase_link_checks(root: Path) -> list[tuple[str, int, str]]:
     """Return list of (file, line_no, snippet) for plain 'see docs/...' or 'See _localsetup/...'."""
-    findings: list[tuple[str, int, str]] = []
-    for md in root.rglob("*.md"):
-        try:
-            rel = md.relative_to(root)
-            if "_generated" in rel.parts or "node_modules" in rel.parts:
-                continue
-            text = md.read_text(encoding="utf-8", errors="replace")
-        except (OSError, ValueError):
-            continue
-        for i, line in enumerate(text.split("\n"), 1):
-            if "](docs/" in line or "](_localsetup/" in line:
-                continue
-            if PLAIN_SEE_DOCS.search(line) or PLAIN_SEE_LOCALSETUP.search(line):
-                findings.append((str(rel), i, line.strip()[:80]))
-    return findings
+    from audit_links import phase_link_checks as _phase_link_checks
+
+    return _phase_link_checks(root)
 
 
 def phase_skill_matrix(root: Path, fw: Path) -> tuple[list[str], list[str]]:
-    """Run sandbox smoke for each skill with a command. Return (errors, warnings)."""
-    errors: list[str] = []
-    warnings: list[str] = []
-    smoke_file = fw / "tests" / "skill_smoke_commands.yaml"
-    if not smoke_file.is_file():
-        errors.append("Missing skill_smoke_commands.yaml")
-        return (errors, warnings)
-    try:
-        data = yaml.safe_load(smoke_file.read_text(encoding="utf-8", errors="replace"))
-    except (OSError, yaml.YAMLError) as e:
-        errors.append(f"Could not load smoke list: {e}")
-        return (errors, warnings)
-    if not isinstance(data, dict):
-        errors.append("skill_smoke_commands.yaml must be a YAML map")
-        return (errors, warnings)
-    skills_dir = fw / "skills"
-    invalid_keys = [
-        repr(key) for key in data if not isinstance(key, str) or not key.strip()
-    ]
-    if invalid_keys:
-        errors.append(
-            "skill_smoke_commands.yaml keys must be non-empty skill ids: "
-            + ", ".join(invalid_keys)
-        )
-        return (errors, warnings)
-    skill_ids = sorted(p.name for p in skills_dir.iterdir() if p.is_dir())
-    smoke_ids = set(data)
-    missing_smoke_rows = [
-        skill_id for skill_id in skill_ids if skill_id not in smoke_ids
-    ]
-    if missing_smoke_rows:
-        errors.append(
-            "skill_smoke_commands.yaml missing entries for skill dirs: "
-            + ", ".join(missing_smoke_rows)
-        )
-        return (errors, warnings)
-    create_sandbox = (
-        fw
-        / "skills"
-        / "ls-skill-sandbox-tester"
-        / "scripts"
-        / "create_sandbox.py"
+    from audit_skill_matrix import phase_skill_matrix as _phase_skill_matrix
+
+    return _phase_skill_matrix(
+        root,
+        fw,
+        yaml,
+        _normalize_smoke_entry,
+        _sanitize_smoke_command,
+        _format_subprocess_failure,
     )
-    run_smoke = (
-        fw / "skills" / "ls-skill-sandbox-tester" / "scripts" / "run_smoke.py"
-    )
-    if not create_sandbox.is_file() or not run_smoke.is_file():
-        errors.append("Sandbox tooling (create_sandbox.py, run_smoke.py) not found")
-        return (errors, warnings)
-    for skill_id, entry in data.items():
-        try:
-            smoke = _normalize_smoke_entry(entry)
-        except ValueError as exc:
-            errors.append(f"Skill matrix {skill_id}: invalid smoke entry: {exc}")
-            continue
-        if smoke is None:
-            continue
-        cwd_mode, cmd = smoke
-        skill_path = skills_dir / skill_id
-        if not skill_path.is_dir():
-            warnings.append(f"Smoke list references missing skill dir: {skill_id}")
-            continue
-        try:
-            if cwd_mode == "repo-root":
-                argv = _sanitize_smoke_command(cmd)
-                cp = subprocess.run(
-                    argv,
-                    cwd=str(root),
-                    capture_output=True,
-                    text=True,
-                    timeout=120,
-                )
-                if cp.returncode != 0:
-                    errors.append(
-                        _format_subprocess_failure(
-                            f"Skill matrix {skill_id}: repo-root smoke",
-                            cp,
-                        )
-                    )
-                continue
-            cp = subprocess.run(
-                [sys.executable, str(create_sandbox), "--skill-path", str(skill_path)],
-                cwd=str(root),
-                capture_output=True,
-                text=True,
-                timeout=60,
-            )
-            if cp.returncode != 0:
-                errors.append(
-                    _format_subprocess_failure(
-                        f"Skill matrix {skill_id}: create_sandbox",
-                        cp,
-                    )
-                )
-                continue
-            sandbox_dir = cp.stdout.strip().split("\n")[-1].strip()
-            if not sandbox_dir:
-                errors.append(f"Skill matrix {skill_id}: empty sandbox path")
-                continue
-            cp2 = subprocess.run(
-                [
-                    sys.executable,
-                    str(run_smoke),
-                    "--sandbox-dir",
-                    sandbox_dir,
-                    "--command",
-                    cmd,
-                ],
-                cwd=str(root),
-                capture_output=True,
-                text=True,
-                timeout=120,
-            )
-            if cp2.returncode != 0:
-                errors.append(
-                    _format_subprocess_failure(
-                        f"Skill matrix {skill_id}: smoke",
-                        cp2,
-                    )
-                )
-        except subprocess.TimeoutExpired:
-            errors.append(f"Skill matrix {skill_id}: timeout")
-        except Exception as e:
-            errors.append(f"Skill matrix {skill_id}: {e}")
-    return (errors, warnings)
 
 
 def phase_version_facts(root: Path) -> tuple[list[str], list[str]]:
