@@ -41,16 +41,6 @@
       "threshold": 700
     },
     {
-      "current_value": 862,
-      "id": "pya-baseline-skill-keepass-secrets",
-      "metric": "lines",
-      "notes": "Secrets helper spans ID validation, redaction, KeePass/FakeVault backends, and JSON CLI behavior.",
-      "owner": "ls-keepass-secrets",
-      "path": "_localsetup/skills/ls-keepass-secrets/scripts/localsetup_secrets.py",
-      "reason": "Existing skill script debt found during repo-wide standards audit; split only with secret-redaction and backend coverage.",
-      "threshold": 700
-    },
-    {
       "current_value": 1203,
       "id": "pya-baseline-skill-mail-protocol-control",
       "metric": "lines",

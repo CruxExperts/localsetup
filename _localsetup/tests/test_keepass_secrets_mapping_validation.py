@@ -49,7 +49,7 @@ def test_map_rejects_common_secret_key_names(tmp_path: Path) -> None:
                 "      app:",
                 "        path: App/API",
                 "        meta:",
-                "          api_key: sk-live-example",
+                "          api-key: sk-live-example",
             ]
         ),
         encoding="utf-8",

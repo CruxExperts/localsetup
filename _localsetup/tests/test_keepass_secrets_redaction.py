@@ -48,7 +48,18 @@ def test_export_env_redacted_by_default() -> None:
 
 
 def test_redacts_common_secret_key_names() -> None:
-    payload = module.envelope("x", {"api_key": "sk-live-example", "private_key_pem": "pem", "passphrase_hint": "hint"})
+    payload = module.envelope(
+        "x",
+        {
+            "api-key": "sk-live-example",
+            "api_key": "sk-live-example",
+            "private-key-pem": "pem",
+            "private_key_pem": "pem",
+            "passphrase_hint": "hint",
+        },
+    )
+    assert payload["data"]["api-key"] == "<redacted>"
     assert payload["data"]["api_key"] == "<redacted>"
+    assert payload["data"]["private-key-pem"] == "<redacted>"
     assert payload["data"]["private_key_pem"] == "<redacted>"
     assert payload["data"]["passphrase_hint"] == "<redacted>"
