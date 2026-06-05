@@ -1,6 +1,4 @@
 import json
-import shutil
-import subprocess
 import sys
 from pathlib import Path
 
@@ -8,58 +6,9 @@ from _localsetup.core.versioning import (
     SemVer,
     classify_commit,
     plan_version,
-    publish_preflight,
     sync_version_files,
 )
-
-
-def copy_full_repo(tmp_path: Path) -> Path:
-    source = Path(__file__).resolve().parents[2]
-    repo = tmp_path / "repo"
-    shutil.copytree(
-        source,
-        repo,
-        ignore=shutil.ignore_patterns(
-            ".git",
-            ".venv",
-            ".venv-*",
-            "__pycache__",
-            ".pytest_cache",
-            "localsetup.egg-info",
-            "logs",
-            "scrapling_output",
-        ),
-    )
-    return repo
-
-
-def run(repo: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        list(args),
-        cwd=repo,
-        text=True,
-        capture_output=True,
-        check=check,
-    )
-
-
-def init_git_repo(repo: Path, remote: Path) -> None:
-    run(repo, "git", "init", "-q")
-    run(repo, "git", "config", "user.email", "test@example.com")
-    run(repo, "git", "config", "user.name", "Test User")
-    run(repo, "git", "add", ".")
-    run(repo, "git", "commit", "-m", "chore: initial", "--no-verify")
-    run(repo, "git", "branch", "-M", "main")
-    run(repo, "git", "remote", "add", "origin", str(remote))
-    run(repo, "git", "push", "-u", "origin", "main", "--no-verify")
-
-
-def repo_version(repo: Path) -> SemVer:
-    return SemVer.parse((repo / "VERSION").read_text(encoding="utf-8").strip())
-
-
-def next_patch_version(repo: Path) -> str:
-    return str(repo_version(repo).bump("patch"))
+from _localsetup.tests.versioning_test_helpers import copy_full_repo, init_git_repo, repo_version, run
 
 
 def test_semver_and_commit_classification() -> None:
@@ -117,47 +66,6 @@ def test_release_plan_batches_multiple_normal_commits_as_one_patch(tmp_path: Pat
     assert plan["target_version"] == str(expected)
     assert plan["commit_count"] == 2
     assert plan["net_commit_count"] == 2
-
-
-def test_publish_preflight_fix_creates_release_and_generated_docs_commits(tmp_path: Path) -> None:
-    repo = copy_full_repo(tmp_path)
-    remote = tmp_path / "remote.git"
-    run(tmp_path, "git", "init", "--bare", str(remote))
-    init_git_repo(repo, remote)
-    expected = str(repo_version(repo).bump("patch"))
-
-    (repo / "feature.txt").write_text("feature\n", encoding="utf-8")
-    run(repo, "git", "add", "feature.txt")
-    run(repo, "git", "commit", "-m", "feat: add routine capability", "--no-verify")
-
-    result = publish_preflight(repo, base="origin/main", head="HEAD", fix=True)
-
-    assert result["ok"] is True
-    assert result["fixed"] is True
-    assert [commit["type"] for commit in result["commits"]] in (
-        ["version_sync"],
-        ["version_sync", "generated_docs"],
-    )
-    subjects = run(repo, "git", "log", "--format=%s", "-2").stdout.splitlines()
-    assert f"chore: sync release version {expected}" in subjects
-    assert repo_version(repo) == SemVer.parse(expected)
-    assert run(repo, "git", "status", "--short").stdout.strip() == ""
-
-
-def test_publish_preflight_fix_requires_clean_worktree(tmp_path: Path) -> None:
-    repo = copy_full_repo(tmp_path)
-    remote = tmp_path / "remote.git"
-    run(tmp_path, "git", "init", "--bare", str(remote))
-    init_git_repo(repo, remote)
-
-    (repo / "scratch.txt").write_text("scratch\n", encoding="utf-8")
-
-    result = publish_preflight(repo, base="origin/main", head="HEAD", fix=True)
-
-    assert result["ok"] is False
-    assert result["reason"] == "dirty_worktree"
-    assert "scratch.txt" in result["dirty_worktree"]
-    assert run(repo, "git", "log", "-1", "--pretty=%s").stdout.strip() == "chore: initial"
 
 
 def test_release_type_trailers_control_effective_bump(tmp_path: Path) -> None:
@@ -243,65 +151,6 @@ def test_version_plan_cli_fails_for_breaking_marker_without_release_type(tmp_pat
     assert payload["ok"] is False
     assert payload["release_type_required"] is True
     assert "Release-Type: major|minor|patch|none" in payload["release_type_required_commits"][0]["message"]
-
-
-def test_pre_push_hook_blocks_breaking_marker_without_sync_commit(tmp_path: Path) -> None:
-    repo = copy_full_repo(tmp_path)
-    remote = tmp_path / "remote.git"
-    run(tmp_path, "git", "init", "--bare", str(remote))
-    init_git_repo(repo, remote)
-    original_version = repo_version(repo)
-
-    (repo / "breaking.txt").write_text("breaking\n", encoding="utf-8")
-    run(repo, "git", "add", "breaking.txt")
-    run(repo, "git", "commit", "-m", "feat!: replace API", "--no-verify")
-    local_sha = run(repo, "git", "rev-parse", "HEAD").stdout.strip()
-    remote_sha = run(repo, "git", "rev-parse", "origin/main").stdout.strip()
-
-    completed = subprocess.run(
-        [str(repo / ".githooks/pre-push"), "origin", str(remote)],
-        cwd=repo,
-        input=f"refs/heads/main {local_sha} refs/heads/main {remote_sha}\n",
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-
-    assert completed.returncode == 1
-    assert "requires Release-Type: major|minor|patch|none" in completed.stderr
-    assert run(repo, "git", "log", "-1", "--pretty=%s").stdout.strip() == "feat!: replace API"
-    assert repo_version(repo) == original_version
-    assert run(repo, "git", "status", "--short").stdout.strip() == ""
-
-
-def test_release_push_blocks_breaking_marker_without_sync_commit(tmp_path: Path) -> None:
-    repo = copy_full_repo(tmp_path)
-    remote = tmp_path / "remote.git"
-    run(tmp_path, "git", "init", "--bare", str(remote))
-    init_git_repo(repo, remote)
-    original_version = repo_version(repo)
-
-    (repo / "breaking.txt").write_text("breaking\n", encoding="utf-8")
-    run(repo, "git", "add", "breaking.txt")
-    run(repo, "git", "commit", "-m", "feat!: replace API", "--no-verify")
-
-    completed = run(
-        repo,
-        sys.executable,
-        "_localsetup/tools/localsetup.py",
-        "release-push",
-        "origin",
-        "HEAD:main",
-        check=False,
-    )
-
-    assert completed.returncode == 1
-    payload = json.loads(completed.stdout)
-    assert payload["release_type_required"] is True
-    assert run(repo, "git", "log", "-1", "--pretty=%s").stdout.strip() == "feat!: replace API"
-    assert run(repo, "git", "rev-parse", "origin/main").stdout.strip() == run(repo, "git", "rev-parse", "HEAD~1").stdout.strip()
-    assert repo_version(repo) == original_version
-    assert run(repo, "git", "status", "--short").stdout.strip() == ""
 
 
 def test_sync_version_files_updates_known_surfaces(tmp_path: Path) -> None:
@@ -439,35 +288,6 @@ def test_version_plan_invalid_explicit_base_fails_instead_of_falling_back(tmp_pa
     assert "explicit base ref did not resolve: definitely-missing-ref" in completed.stderr
 
 
-def test_pre_push_hook_creates_sync_commit_and_blocks_stale_push(tmp_path: Path) -> None:
-    repo = copy_full_repo(tmp_path)
-    remote = tmp_path / "remote.git"
-    run(tmp_path, "git", "init", "--bare", str(remote))
-    init_git_repo(repo, remote)
-    expected_version = next_patch_version(repo)
-
-    (repo / "feature.txt").write_text("feature\n", encoding="utf-8")
-    run(repo, "git", "add", "feature.txt")
-    run(repo, "git", "commit", "-m", "feat: add prepush feature", "--no-verify")
-    local_sha = run(repo, "git", "rev-parse", "HEAD").stdout.strip()
-    remote_sha = run(repo, "git", "rev-parse", "origin/main").stdout.strip()
-
-    completed = subprocess.run(
-        [str(repo / ".githooks/pre-push"), "origin", str(remote)],
-        cwd=repo,
-        input=f"refs/heads/main {local_sha} refs/heads/main {remote_sha}\n",
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-
-    assert completed.returncode == 1
-    assert "push stopped" in completed.stderr
-    assert run(repo, "git", "log", "-1", "--pretty=%s").stdout.strip() == f"chore: sync release version {expected_version}"
-    assert (repo / "VERSION").read_text(encoding="utf-8").strip() == expected_version
-    assert run(repo, "git", "status", "--short").stdout.strip() == ""
-
-
 def test_internal_release_tooling_feat_is_patch(tmp_path: Path) -> None:
     repo = copy_full_repo(tmp_path)
     remote = tmp_path / "remote.git"
@@ -516,29 +336,3 @@ def test_installer_adapter_maintenance_feat_is_patch(tmp_path: Path) -> None:
     assert plan["commits"][0]["raw_bump"] == "minor"
     assert plan["bump"] == "patch"
     assert plan["target_version"] == str(expected)
-
-
-def test_release_push_commits_sync_and_pushes(tmp_path: Path) -> None:
-    repo = copy_full_repo(tmp_path)
-    remote = tmp_path / "remote.git"
-    run(tmp_path, "git", "init", "--bare", str(remote))
-    init_git_repo(repo, remote)
-    expected_version = next_patch_version(repo)
-
-    (repo / "feature.txt").write_text("feature\n", encoding="utf-8")
-    run(repo, "git", "add", "feature.txt")
-    run(repo, "git", "commit", "-m", "feat: add release feature", "--no-verify")
-
-    completed = run(
-        repo,
-        sys.executable,
-        "_localsetup/tools/localsetup.py",
-        "release-push",
-        "origin",
-        "HEAD:main",
-        check=False,
-    )
-
-    assert completed.returncode == 0, completed.stderr
-    assert run(repo, "git", "show", "origin/main:VERSION").stdout.strip() == expected_version
-    assert run(repo, "git", "log", "-1", "--pretty=%s", "origin/main").stdout.strip() == f"chore: sync release version {expected_version}"
