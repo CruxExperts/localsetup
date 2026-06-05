@@ -23,15 +23,10 @@ Environment variables:
 
 from __future__ import annotations
 
-import argparse
-import json
 import os
-import re
 import sys
 import time
-import unicodedata
-from configparser import ConfigParser
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -43,159 +38,26 @@ require_deps(["requests"])
 
 import requests  # noqa: E402
 
-# ---------------------------------------------------------------------------
-# Constants
-# ---------------------------------------------------------------------------
-
-SCRIPT_DIR = Path(__file__).parent.resolve()
-DEFAULT_CONF = SCRIPT_DIR / "npm-api.conf"
-TOKEN_EXPIRY_HOURS = 24
-TOKEN_REFRESH_BUFFER_SECONDS = 3600  # refresh if less than 1 hour remains
-MAX_FIELD_LENGTH = 4096
-MAX_DOMAIN_LENGTH = 253
-CONNECT_TIMEOUT = 10
-READ_TIMEOUT = 30
-DEBUG = os.environ.get("LOCALSETUP_DEBUG", "0") == "1"
-
-
-# ---------------------------------------------------------------------------
-# Input hardening helpers
-# ---------------------------------------------------------------------------
-
-def _sanitize_str(value: Any, max_len: int = MAX_FIELD_LENGTH, field: str = "field") -> str:
-    """Normalize and validate a string from external input."""
-    if not isinstance(value, (str, int, float)):
-        _die(f"Expected string for {field}, got {type(value).__name__}")
-    raw = str(value)
-    # Strip control characters (keep printable + whitespace)
-    cleaned = "".join(
-        ch for ch in raw
-        if unicodedata.category(ch)[0] != "C" or ch in ("\t", "\n", "\r")
-    )
-    cleaned = cleaned.strip()
-    if len(cleaned) > max_len:
-        _die(f"{field} exceeds maximum length {max_len}: got {len(cleaned)} chars")
-    return cleaned
-
-
-def _validate_port(value: Any) -> int:
-    try:
-        port = int(value)
-    except (TypeError, ValueError):
-        _die(f"Invalid port value: {value!r} (must be an integer)")
-    if not 1 <= port <= 65535:
-        _die(f"Port {port} is out of valid range 1-65535")
-    return port
-
-
-def _validate_domain(domain: str) -> str:
-    domain = _sanitize_str(domain, MAX_DOMAIN_LENGTH, "domain")
-    # RFC 1123 relaxed: labels separated by dots, alphanumeric + hyphens + wildcards
-    pattern = re.compile(
-        r"^(\*\.)?([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$"
-    )
-    if not pattern.match(domain):
-        _die(f"Invalid domain name: {domain!r}")
-    # Wildcard domains are rejected for host creation (same rule as upstream)
-    if domain.startswith("*."):
-        _die(f"Wildcard domains are not allowed for proxy host creation: {domain!r}")
-    return domain
-
-
-def _validate_scheme(scheme: str) -> str:
-    scheme = _sanitize_str(scheme, 8, "scheme").lower()
-    if scheme not in ("http", "https"):
-        _die(f"Invalid forward_scheme {scheme!r}; must be 'http' or 'https'")
-    return scheme
-
-
-def _validate_host_id(value: Any) -> int:
-    try:
-        hid = int(value)
-    except (TypeError, ValueError):
-        _die(f"Invalid host ID: {value!r} (must be an integer)")
-    if hid < 1:
-        _die(f"Host ID must be a positive integer, got {hid}")
-    return hid
-
-
-def _validate_access_list_id(value: Any) -> int | None:
-    """Validate an NPM access list ID; 0/empty clears the access list."""
-    if value is None or value == "":
-        return None
-    try:
-        acl_id = int(value)
-    except (TypeError, ValueError):
-        _die(f"Invalid access_list_id: {value!r} (must be an integer)")
-    if acl_id < 0:
-        _die(f"Access list ID must be 0 or a positive integer, got {acl_id}")
-    return acl_id or None
-
-
-def _die(msg: str, exc: BaseException | None = None) -> None:
-    """Emit actionable error to stderr and exit non-zero."""
-    label = "[npm_api ERROR]"
-    print(f"{label} {msg}", file=sys.stderr)
-    if exc is not None and DEBUG:
-        import traceback
-        traceback.print_exc(file=sys.stderr)
-    sys.exit(1)
-
-
-def _warn(msg: str) -> None:
-    print(f"[npm_api WARN] {msg}", file=sys.stderr)
-
-
-def _debug(msg: str) -> None:
-    if DEBUG:
-        print(f"[npm_api DEBUG] {msg}", file=sys.stderr)
-
-
-# ---------------------------------------------------------------------------
-# Config loader
-# ---------------------------------------------------------------------------
-
-class Config:
-    """Load and validate npm-api.conf."""
-
-    def __init__(self, conf_path: Path | None = None) -> None:
-        path = conf_path or Path(os.environ.get("NPM_CONF", str(DEFAULT_CONF)))
-        if not path.exists():
-            _die(
-                f"Config file not found: {path}\n"
-                "  Create it with: NGINX_IP, NGINX_PORT, API_USER, API_PASS\n"
-                "  See references/npm-api-conf-example.md for the current template."
-            )
-        if oct(path.stat().st_mode)[-3:] not in ("600", "400"):
-            _warn(f"Config file {path} is world-readable; run: chmod 600 {path}")
-
-        # ConfigParser requires a section header; we fake one
-        raw = path.read_text(encoding="utf-8", errors="replace")
-        ini = "[conf]\n" + raw
-        cp = ConfigParser(interpolation=None)
-        cp.read_string(ini)
-        section = cp["conf"]
-
-        self.nginx_ip   = _sanitize_str(section.get("NGINX_IP", "127.0.0.1"), 64, "NGINX_IP")
-        self.nginx_port = _validate_port(section.get("NGINX_PORT", "81"))
-        self.api_user   = _sanitize_str(section.get("API_USER", ""), 256, "API_USER")
-        self.api_pass   = _sanitize_str(section.get("API_PASS", ""), 256, "API_PASS")
-
-        if not self.api_user or not self.api_pass:
-            _die("API_USER and API_PASS must be set in the config file")
-
-        default_data_dir = SCRIPT_DIR / "data"
-        raw_data_dir = section.get("DATA_DIR", str(default_data_dir))
-        self.data_dir = Path(_sanitize_str(raw_data_dir, 512, "DATA_DIR")).expanduser().resolve()
-
-        self.base_url = f"http://{self.nginx_ip}:{self.nginx_port}/api"
-
-        # Per-instance token paths (scoped by IP+port to support multiple NPM instances)
-        slug = f"{self.nginx_ip.replace('.', '_')}_{self.nginx_port}"
-        self.token_dir  = self.data_dir / slug / "token"
-        self.token_file = self.token_dir / "token.txt"
-        self.expiry_file = self.token_dir / "expiry.txt"
-        self.backup_dir = self.data_dir / slug / "backups"
+from npm_api_support import CONNECT_TIMEOUT
+from npm_api_support import MAX_DOMAIN_LENGTH
+from npm_api_support import MAX_FIELD_LENGTH
+from npm_api_support import READ_TIMEOUT
+from npm_api_support import TOKEN_EXPIRY_HOURS
+from npm_api_support import TOKEN_REFRESH_BUFFER_SECONDS
+from npm_api_support import Config
+from npm_api_support import backup_client as _backup_client
+from npm_api_support import build_parser as _build_parser
+from npm_api_support import debug as _debug
+from npm_api_support import die as _die
+from npm_api_support import fmt_host_detail as _fmt_host_detail
+from npm_api_support import fmt_hosts_table as _fmt_hosts_table
+from npm_api_support import sanitize_str as _sanitize_str
+from npm_api_support import validate_access_list_id as _validate_access_list_id
+from npm_api_support import validate_domain as _validate_domain
+from npm_api_support import validate_host_id as _validate_host_id
+from npm_api_support import validate_port as _validate_port
+from npm_api_support import validate_scheme as _validate_scheme
+from npm_api_support import warn as _warn
 
 
 # ---------------------------------------------------------------------------
@@ -474,168 +336,7 @@ class NPMClient:
     # --- Backup -------------------------------------------------------------
 
     def backup(self, backup_dir: Path | None = None) -> Path:
-        """
-        Snapshot proxy hosts, users, settings, and access lists to JSON files.
-        Returns the path of the timestamped backup directory created.
-        """
-        ts = datetime.now(tz=timezone.utc).strftime("%Y_%m_%d__%H_%M_%S")
-        out = (backup_dir or self.cfg.backup_dir) / ts
-        out.mkdir(parents=True, mode=0o700, exist_ok=True)
-
-        endpoints: list[tuple[str, str]] = [
-            ("/nginx/proxy-hosts", "proxy_hosts"),
-            ("/users",             "users"),
-            ("/settings",         "settings"),
-            ("/nginx/access-lists", "access_lists"),
-            ("/nginx/certificates", "certificates"),
-        ]
-        summary: dict[str, int] = {}
-        errors: list[str] = []
-
-        for api_path, name in endpoints:
-            try:
-                data = self.request("GET", api_path)
-                dest = out / f"{name}.json"
-                dest.write_text(
-                    json.dumps(data, indent=2, ensure_ascii=False),
-                    encoding="utf-8",
-                )
-                os.chmod(dest, 0o600)
-                count = len(data) if isinstance(data, list) else 1
-                summary[name] = count
-                _debug(f"Backed up {name}: {count} item(s)")
-            except SystemExit:
-                # _die was called; record and continue for partial backup
-                errors.append(name)
-
-        full: dict[str, Any] = {"backup_timestamp": ts, "items": summary}
-        manifest = out / "manifest.json"
-        manifest.write_text(json.dumps(full, indent=2), encoding="utf-8")
-        os.chmod(manifest, 0o600)
-
-        if errors:
-            _warn(f"Backup completed with errors on: {', '.join(errors)}")
-
-        return out
-
-
-# ---------------------------------------------------------------------------
-# Output formatting (GFM-compatible per TOOLING_POLICY.md)
-# ---------------------------------------------------------------------------
-
-def _fmt_hosts_table(hosts: list[dict]) -> str:
-    if not hosts:
-        return "*No proxy hosts found.*"
-    lines = ["| ID | Domain | Enabled | SSL | Target | Cert ID |",
-             "|----|--------|---------|-----|--------|---------|"]
-    for h in hosts:
-        hid      = h.get("id", "?")
-        domains  = ", ".join(h.get("domain_names", []))
-        enabled  = "yes" if h.get("enabled") else "no"
-        cert_id  = h.get("certificate_id") or "-"
-        ssl      = "yes" if cert_id != "-" else "no"
-        scheme   = h.get("forward_scheme", "http")
-        fhost    = h.get("forward_host", "?")
-        fport    = h.get("forward_port", "?")
-        target   = f"`{scheme}://{fhost}:{fport}`"
-        lines.append(f"| {hid} | {domains} | {enabled} | {ssl} | {target} | {cert_id} |")
-    return "\n".join(lines)
-
-
-def _fmt_host_detail(h: dict) -> str:
-    hid      = h.get("id", "?")
-    domains  = ", ".join(h.get("domain_names", []))
-    enabled  = "yes" if h.get("enabled") else "no"
-    scheme   = h.get("forward_scheme", "http")
-    fhost    = h.get("forward_host", "?")
-    fport    = h.get("forward_port", "?")
-    cert_id  = h.get("certificate_id") or "-"
-    ssl_f    = "yes" if h.get("ssl_forced") else "no"
-    http2    = "yes" if h.get("http2_support") else "no"
-    hsts     = "yes" if h.get("hsts_enabled") else "no"
-    ws       = "yes" if h.get("allow_websocket_upgrade") else "no"
-    caching  = "yes" if h.get("caching_enabled") else "no"
-    exploits = "yes" if h.get("block_exploits") else "no"
-    adv      = h.get("advanced_config") or "-"
-    acl_id   = h.get("access_list_id") or "-"
-
-    return (
-        f"## Proxy host {hid}\n\n"
-        f"| Field | Value |\n"
-        f"|-------|-------|\n"
-        f"| **Domain(s)** | {domains} |\n"
-        f"| **Enabled** | {enabled} |\n"
-        f"| **Target** | `{scheme}://{fhost}:{fport}` |\n"
-        f"| **Certificate ID** | {cert_id} |\n"
-        f"| **SSL forced** | {ssl_f} |\n"
-        f"| **HTTP/2** | {http2} |\n"
-        f"| **HSTS** | {hsts} |\n"
-        f"| **WebSocket upgrade** | {ws} |\n"
-        f"| **Caching** | {caching} |\n"
-        f"| **Block exploits** | {exploits} |\n"
-        f"| **Access list ID** | {acl_id} |\n"
-        f"| **Advanced config** | {adv} |\n"
-    )
-
-
-# ---------------------------------------------------------------------------
-# CLI
-# ---------------------------------------------------------------------------
-
-def _build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(
-        prog="npm_api.py",
-        description="Nginx Proxy Manager API client (Python, no shell dependencies)",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=(
-            "Examples:\n"
-            "  python3 npm_api.py --info\n"
-            "  python3 npm_api.py --host-list\n"
-            "  python3 npm_api.py --host-create example.com -i mycontainer -p 8080\n"
-            "  python3 npm_api.py --host-create app.example.com -i appcontainer -p 3000 --websocket\n"
-            "  python3 npm_api.py --host-search example.com\n"
-            "  python3 npm_api.py --host-show 5\n"
-            "  python3 npm_api.py --host-update 5 forward_port=9000\n"
-            "  python3 npm_api.py --host-enable 5\n"
-            "  python3 npm_api.py --host-disable 5\n"
-            "  python3 npm_api.py --host-delete 5\n"
-            "  python3 npm_api.py --backup\n"
-        ),
-    )
-
-    ops = p.add_mutually_exclusive_group(required=True)
-    ops.add_argument("--info",         action="store_true", help="Check API connectivity and token")
-    ops.add_argument("--host-list",    action="store_true", help="List all proxy hosts")
-    ops.add_argument("--host-search",  metavar="DOMAIN",    help="Search proxy hosts by domain")
-    ops.add_argument("--host-show",    metavar="ID",        help="Show details for a proxy host ID")
-    ops.add_argument("--host-create",  metavar="DOMAIN",    help="Create a proxy host for DOMAIN")
-    ops.add_argument("--host-update",  metavar="ID",        help="Update fields on a proxy host ID")
-    ops.add_argument("--host-enable",  metavar="ID",        help="Enable a proxy host by ID")
-    ops.add_argument("--host-disable", metavar="ID",        help="Disable a proxy host by ID")
-    ops.add_argument("--host-delete",  metavar="ID",        help="Delete a proxy host by ID")
-    ops.add_argument("--backup",       action="store_true", help="Backup NPM configuration to DATA_DIR")
-
-    # Create options
-    p.add_argument("-i", "--forward-host",   metavar="HOST",   help="Backend container name or hostname")
-    p.add_argument("-p", "--forward-port",   metavar="PORT",   type=int, help="Backend port")
-    p.add_argument("--scheme",               metavar="SCHEME", default="http", help="forward_scheme: http or https (default: http)")
-    p.add_argument("--websocket",            action="store_true", help="Enable WebSocket upgrade")
-    p.add_argument("--no-ssl-force",         action="store_true", help="Do not force SSL redirect (default: ssl_forced=true)")
-    p.add_argument("--no-http2",             action="store_true", help="Disable HTTP/2 (default: enabled)")
-    p.add_argument("--hsts",                 action="store_true", help="Enable HSTS header")
-    p.add_argument("--caching",              action="store_true", help="Enable NPM caching")
-    p.add_argument("--no-block-exploits",    action="store_true", help="Disable exploit blocking (default: enabled)")
-    p.add_argument("--access-list-id",       metavar="ACL_ID", type=int, default=0, help="NPM access list ID (default: 0 = none)")
-    p.add_argument("--advanced-config",      metavar="CONFIG", default="", help="Raw nginx config block")
-
-    # Update options (KEY=VALUE pairs)
-    p.add_argument("fields", nargs="*", help="KEY=VALUE pairs for --host-update")
-
-    # Shared
-    p.add_argument("--conf", metavar="PATH", help="Path to npm-api.conf (overrides NPM_CONF env)")
-    p.add_argument("--backup-dir", metavar="PATH", help="Override backup output directory")
-
-    return p
+        return _backup_client(self, backup_dir)
 
 
 def main() -> None:  # noqa: C901 (complexity acceptable for CLI dispatcher)

@@ -81,16 +81,6 @@
       "threshold": 700
     },
     {
-      "current_value": 757,
-      "id": "pya-baseline-skill-npm-api",
-      "metric": "lines",
-      "notes": "NPM API helper spans auth, host CRUD, certificate handling, and JSON reporting.",
-      "owner": "ls-npm-management",
-      "path": "_localsetup/skills/ls-npm-management/scripts/npm_api.py",
-      "reason": "Existing skill script debt found during repo-wide standards audit; split only with API fixture coverage.",
-      "threshold": 700
-    },
-    {
       "current_value": 7492,
       "id": "pya-baseline-tests-install-flow",
       "metric": "lines",

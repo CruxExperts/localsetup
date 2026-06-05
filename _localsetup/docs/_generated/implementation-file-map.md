@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 110b57988884b15dda9dd9aabdffecd1bf1c19c4204aefdb7269b1906b9e9e3a
+  source_provenance_hash: edf375ba73b6eaa21caeaec1546c0945f78987a894b9a74266b943b00f16fecc
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: 15fe981de2effae0dfb20998a3ff5b5bb434561a
-artifact_sha256: 6dc3c05c946d959587a1c31ce45389a41ff0babdb4a88e191f7e7688fa9a89c9
+source_commit: 88c59b6ea11064a8c937b394b4ddc4d96cf11a18
+artifact_sha256: 6df445e5660ef47e30ae86a6479038bdb6564731af9ba260b9cdeb2fbe53aee6
 ---
 # Implementation File Map
 
@@ -563,6 +563,7 @@ artifact_sha256: 6dc3c05c946d959587a1c31ce45389a41ff0babdb4a88e191f7e7688fa9a89c
 | `keep` | `_localsetup/skills/ls-npm-management/references/npm-api-conf-example.md` |
 | `keep` | `_localsetup/skills/ls-npm-management/references/proxy-host-template.md` |
 | `keep` | `_localsetup/skills/ls-npm-management/scripts/npm_api.py` |
+| `keep` | `_localsetup/skills/ls-npm-management/scripts/npm_api_support.py` |
 | `keep` | `_localsetup/skills/ls-npm-management/scripts/npm_api_test_helpers.py` |
 | `keep` | `_localsetup/skills/ls-npm-management/scripts/test_npm_api.py` |
 | `keep` | `_localsetup/skills/ls-npm-management/scripts/test_npm_api_client.py` |
