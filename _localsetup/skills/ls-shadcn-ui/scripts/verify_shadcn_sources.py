@@ -7,10 +7,20 @@ import argparse
 import json
 import re
 import sys
-import urllib.error
-import urllib.request
 from pathlib import Path
 
+for parent in Path(__file__).resolve().parents:
+    if (parent / "lib" / "deps.py").is_file():
+        sys.path.insert(0, str(parent / "lib"))
+        from deps import require_deps
+
+        require_deps(["requests"])
+        break
+
+try:
+    import requests
+except ImportError as exc:  # pragma: no cover - environment guidance
+    raise SystemExit("Missing dependency: requests. Run `uv sync --locked --no-dev` from the Localsetup source checkout.") from exc
 
 REQUIRED_FILES = [
     "SKILL.md",
@@ -76,21 +86,19 @@ OFFICIAL_URLS = [
 
 
 def fetch_url(url: str, timeout: int) -> dict[str, object]:
-    request = urllib.request.Request(url, headers={"User-Agent": "ls-shadcn-ui-verifier/1.0"})
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
-            data = response.read(1024 * 1024)
-            return {"url": url, "ok": 200 <= response.status < 400, "status": response.status, "bytes": len(data)}
-    except urllib.error.HTTPError as exc:
-        return {"url": url, "ok": False, "status": exc.code, "error": str(exc)}
-    except (urllib.error.URLError, TimeoutError) as exc:
+        response = requests.get(url, headers={"User-Agent": "ls-shadcn-ui-verifier/1.0"}, timeout=timeout)
+        data = response.content[: 1024 * 1024]
+        return {"url": url, "ok": 200 <= response.status_code < 400, "status": response.status_code, "bytes": len(data)}
+    except requests.RequestException as exc:
         return {"url": url, "ok": False, "status": None, "error": str(exc)}
 
 
 def fetch_json(url: str, timeout: int) -> dict[str, object]:
-    request = urllib.request.Request(url, headers={"User-Agent": "ls-shadcn-ui-verifier/1.0"})
-    with urllib.request.urlopen(request, timeout=timeout) as response:
-        return json.loads(response.read().decode("utf-8"))
+    response = requests.get(url, headers={"User-Agent": "ls-shadcn-ui-verifier/1.0"}, timeout=timeout)
+    response.raise_for_status()
+    data = response.json()
+    return data if isinstance(data, dict) else {}
 
 
 def ledger_expected_npm(ledger_text: str) -> tuple[str | None, str | None]:
@@ -168,7 +176,7 @@ def main(argv: list[str] | None = None) -> int:
                 if expected_timestamp and latest_time != expected_timestamp:
                     npm_check["ok"] = False
                     errors.append(f"npm timestamp mismatch: ledger {expected_timestamp}, live {latest_time}")
-            except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
+            except (requests.RequestException, ValueError) as exc:
                 npm_check = {"url": NPM_URL, "ok": False, "error": str(exc)}
                 errors.append(f"npm metadata check failed: {exc}")
 

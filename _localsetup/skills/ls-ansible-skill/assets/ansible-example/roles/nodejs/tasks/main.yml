@@ -62,7 +62,7 @@
 
 - name: Setup PM2 startup script
   ansible.builtin.command: "pm2 startup systemd -u {{ nodejs_pm2_user }} --hp /home/{{ nodejs_pm2_user }}"
-  when: 
+  when:
     - nodejs_pm2_enabled | default(false) | bool
     - nodejs_pm2_user is defined
   tags: [nodejs, pm2]

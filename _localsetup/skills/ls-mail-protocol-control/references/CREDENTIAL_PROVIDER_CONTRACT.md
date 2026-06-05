@@ -35,4 +35,3 @@ def get_crypto_bundle(account_id: str, key_ref: str = "default") -> dict[str, st
 - Do not persist credentials to disk.
 - Do not log secrets.
 - Optional cache TTL must stay short, default is no cache.
-

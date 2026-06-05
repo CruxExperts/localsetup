@@ -35,4 +35,3 @@ When server `MOVE` capability is missing:
 1. `UID COPY`
 2. `UID STORE +FLAGS (\Deleted)`
 3. `EXPUNGE`
-

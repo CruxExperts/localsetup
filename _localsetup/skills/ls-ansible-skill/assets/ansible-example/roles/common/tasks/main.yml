@@ -40,7 +40,7 @@
     user: "{{ common_deploy_user }}"
     key: "{{ common_deploy_ssh_pubkey }}"
     state: present
-  when: 
+  when:
     - common_deploy_user is defined
     - common_deploy_ssh_pubkey is defined
   tags: [common, users, ssh]
@@ -52,7 +52,7 @@
     create: yes
     mode: '0440'
     validate: 'visudo -cf %s'
-  when: 
+  when:
     - common_deploy_user is defined
     - common_deploy_user_nopasswd_sudo | default(false) | bool
   tags: [common, users, sudo]

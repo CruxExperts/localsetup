@@ -33,13 +33,21 @@ class InputError(ValueError):
 
 
 def _load_frontmatter_module():
+    for parent in Path(__file__).resolve().parents:
+        if (parent / "lib" / "deps.py").is_file():
+            sys.path.insert(0, str(parent / "lib"))
+            from deps import require_deps
+
+            require_deps(["frontmatter"])
+            break
+
     try:
         import frontmatter  # type: ignore[import-not-found]
-    except ImportError as exc:
-        raise InputError(
-            "python-frontmatter is required; run "
-            "`uv sync --locked --no-dev` from the Localsetup source checkout"
+    except ImportError as exc:  # pragma: no cover - environment guidance
+        raise SystemExit(
+            "Missing dependency: python-frontmatter. Run `uv sync --locked --no-dev` from the Localsetup source checkout."
         ) from exc
+
     return frontmatter
 
 

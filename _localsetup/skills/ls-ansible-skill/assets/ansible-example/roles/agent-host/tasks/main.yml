@@ -61,7 +61,7 @@
   ansible.builtin.systemd:
     name: "{{ agent_host_service_name }}"
     state: started
-  when: 
+  when:
     - agent_host_service_enabled | default(false) | bool
     - agent_host_service_started | default(false) | bool
   tags: [agent-host, systemd]

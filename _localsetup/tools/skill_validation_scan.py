@@ -18,15 +18,16 @@ substantial runs of non-Latin natural-language script (CJK, Cyrillic, Arabic, et
 
 import re
 import sys
-import urllib.request
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
-try:
-    import yaml
-except ImportError:
-    print("PyYAML required: run `uv sync --locked --no-dev` from the Localsetup source checkout", file=sys.stderr)
-    sys.exit(1)
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+from deps import require_deps
+
+require_deps(["requests", "yaml"])
+
+import requests
+import yaml
 
 # Canonical GitHub raw URL for the pattern file (documented in SKILL_VALIDATION_PATTERNS.md)
 PATTERN_FILE_RAW_URL = "https://raw.githubusercontent.com/CruxExperts/localsetup/main/_localsetup/docs/SKILL_VALIDATION_PATTERNS.yaml"
@@ -107,9 +108,9 @@ def sanitize_for_output(s: str, max_len: int = OUTPUT_MAX_FIELD_LEN) -> str:
 
 
 def fetch_text(url: str) -> str:
-    req = urllib.request.Request(url, headers={"User-Agent": "Localsetup-Skill-Validation/1.0"})
-    with urllib.request.urlopen(req, timeout=30) as r:
-        return r.read().decode("utf-8", errors="replace")
+    response = requests.get(url, headers={"User-Agent": "Localsetup-Skill-Validation/1.0"}, timeout=30)
+    response.raise_for_status()
+    return response.text
 
 
 def resolve_pattern_file_path(pattern_file: Path | None, scan_root: Path) -> Path:

@@ -94,4 +94,3 @@ def parse_current_features(cfg: ScraplingConfig) -> AdapterState:
         mcp_features={},
         flags=flags,
     )
-

@@ -50,4 +50,3 @@ For encrypted send, the encrypted payload is serialized to JSON and sent as mess
 - Attachment count and size limits enforced before encryption.
 - Invalid base64 payloads rejected.
 - Decryption fails with deterministic error codes on malformed payloads or wrong key material.
-

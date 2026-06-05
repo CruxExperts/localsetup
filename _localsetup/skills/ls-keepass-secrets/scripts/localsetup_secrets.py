@@ -14,10 +14,18 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+for parent in Path(__file__).resolve().parents:
+    if (parent / "lib" / "deps.py").is_file():
+        sys.path.insert(0, str(parent / "lib"))
+        from deps import require_deps
+
+        require_deps(["yaml"])
+        break
+
 try:
     import yaml
 except ImportError as exc:  # pragma: no cover - exercised by environments
-    raise SystemExit("PyYAML is required; run `uv sync --locked --no-dev` from the Localsetup source checkout") from exc
+    raise SystemExit("Missing dependency: PyYAML. Run `uv sync --locked --no-dev` from the Localsetup source checkout.") from exc
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:

@@ -108,4 +108,3 @@ def test_extract_url_structured_adaptive_respects_mode_hint(tmp_path: Path, monk
     assert result["mode"] == "dynamic"
     assert len(result["attempts"]) == 1
     assert result["attempts"][0]["mode"] == "dynamic"
-

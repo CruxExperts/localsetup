@@ -5,13 +5,22 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+for parent in Path(__file__).resolve().parents:
+    if (parent / "lib" / "deps.py").is_file():
+        sys.path.insert(0, str(parent / "lib"))
+        from deps import require_deps
+
+        require_deps(["requests"])
+        break
+
 try:
     import requests
-except ImportError as exc:  # pragma: no cover
+except ImportError as exc:  # pragma: no cover - environment guidance
     raise SystemExit("Missing dependency: requests. Run `uv sync --locked --no-dev` from the Localsetup source checkout.") from exc
 
 

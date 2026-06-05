@@ -14,7 +14,7 @@
   hosts: all
   gather_facts: yes
   become: yes
-  
+
   vars:
     # Override these in inventory/group_vars
     deploy_user: deploy
@@ -27,7 +27,7 @@
     common_deploy_user_groups: "{{ deploy_user_groups }}"
     common_deploy_ssh_pubkey: "{{ deploy_ssh_pubkey }}"
     common_deploy_user_nopasswd_sudo: "{{ deploy_user_nopasswd_sudo }}"
-    
+
   pre_tasks:
     - name: Validate required variables
       ansible.builtin.assert:
@@ -51,10 +51,10 @@
   hosts: all
   gather_facts: no
   become: no
-  
+
   vars:
     deploy_user: deploy
-    
+
   tasks:
     - name: Test SSH as deploy user
       ansible.builtin.wait_for_connection:
@@ -62,27 +62,27 @@
       vars:
         ansible_user: "{{ deploy_user }}"
         ansible_ssh_pass: ""
-        
+
     - name: Summary
       ansible.builtin.debug:
         msg: |
           VPS setup complete.
-          
+
           Server: {{ inventory_hostname }} ({{ ansible_host }})
           User: {{ deploy_user }}
-          
+
           Installed:
           - Essential packages
           - UFW firewall (22, 80, 443 open)
           - fail2ban (SSH protection)
           - Node.js
           - {{ agent_host_package_name | default('openclaw') }} sample agent package
-          
+
           Security:
           - Root login disabled
           - Password auth disabled
           - SSH key required
-          
+
           Next steps:
           1. ssh {{ deploy_user }}@{{ ansible_host }}
           2. {{ agent_host_command | default('openclaw') }} init

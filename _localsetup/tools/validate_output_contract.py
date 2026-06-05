@@ -6,11 +6,12 @@
 from pathlib import Path
 import sys
 
-try:
-    import yaml
-except ImportError:
-    print("[FAIL] PyYAML is required (run `uv sync --locked --no-dev` from the Localsetup source checkout)", file=sys.stderr)
-    sys.exit(2)
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+from deps import require_deps
+
+require_deps(["yaml"])
+
+import yaml
 
 
 REQUIRED_INDEX_FIELDS = (

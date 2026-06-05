@@ -43,7 +43,7 @@ PUBLIC_WRAPPER_PATHS = (
 )
 
 
-def evaluate_files(metrics: list[FileMetric], baseline: Baseline, include_scope: str) -> list[Finding]:
+def evaluate_files(repo_root: Path, metrics: list[FileMetric], baseline: Baseline, include_scope: str) -> list[Finding]:
     findings: list[Finding] = []
     baseline_by_path = {entry.path: entry for entry in baseline.entries}
     scanned_paths = {metric.path for metric in metrics}
@@ -51,7 +51,7 @@ def evaluate_files(metrics: list[FileMetric], baseline: Baseline, include_scope:
     findings.extend(baseline_metadata_findings(baseline))
 
     for entry in baseline.entries:
-        if entry.path not in scanned_paths:
+        if entry.path not in scanned_paths and not (repo_root / entry.path).is_file():
             findings.append(
                 Finding(
                     code="PYA102_STALE_BASELINE_ENTRY",
@@ -173,6 +173,6 @@ def evaluate_contract_files(repo_root: Path) -> list[Finding]:
 
 
 def evaluate(repo_root: Path, metrics: list[FileMetric], baseline: Baseline, include_scope: str) -> list[Finding]:
-    findings = evaluate_files(metrics, baseline, include_scope)
+    findings = evaluate_files(repo_root, metrics, baseline, include_scope)
     findings.extend(evaluate_contract_files(repo_root))
     return sorted(findings, key=lambda item: (item.severity != "error", item.path, item.code))

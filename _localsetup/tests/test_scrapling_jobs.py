@@ -57,4 +57,3 @@ def test_list_jobs_filters_by_kind(tmp_path: Path, monkeypatch) -> None:
     spider_jobs = job_registry.list_jobs(cfg, kind="spider")
     assert len(spider_jobs) == 1
     assert spider_jobs[0].kind == "spider"
-

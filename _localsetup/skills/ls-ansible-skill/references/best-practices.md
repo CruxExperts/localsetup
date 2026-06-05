@@ -194,7 +194,7 @@ ansible-playbook site.yml --skip-tags "packages"
 ```yaml
 - hosts: all
   gather_facts: no  # Skip if not needed
-  
+
 - hosts: all
   gather_subset:
     - network
@@ -222,7 +222,7 @@ ansible-playbook site.yml --skip-tags "packages"
 ```yaml
 - hosts: all
   serial: 5  # 5 hosts at a time
-  
+
 - hosts: all
   serial: "25%"  # 25% of hosts at a time
 ```

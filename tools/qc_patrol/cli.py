@@ -8,6 +8,11 @@ from pathlib import Path
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "_localsetup" / "lib"))
+from deps import require_deps
+
+require_deps(["jsonschema", "requests", "yaml"])
+
 from tools.qc_patrol.chunking import chunk_text
 from tools.qc_patrol.adjudication import adjudicate_packets, ai_findings_from_adjudications, rule_suggestions_from_adjudications
 from tools.qc_patrol.config import load_config

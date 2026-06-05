@@ -64,4 +64,3 @@ def write_status_artifact(
         payload["created_at"] = utc_now_iso()
     status_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return status_path
-

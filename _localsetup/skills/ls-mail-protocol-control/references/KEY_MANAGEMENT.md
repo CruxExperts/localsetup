@@ -39,4 +39,3 @@ Optional `key_ref` allows suffix-based lookups:
 - Rotate keys and secrets regularly.
 - Use account-specific values first for least privilege.
 - Keep plaintext attachment payloads out of logs.
-

@@ -3,7 +3,7 @@
 # Created: 2026-02-25
 # Last updated: 2026-02-25
 
-set -e
+set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TOOL="${SCRIPT_DIR}/tmux_ops.py"
 REMOTE_HOST="${REMOTE_TMUX_HOST:-}"

@@ -57,4 +57,3 @@ profiles:
         - password
         - openpgp
 accounts: {}
-

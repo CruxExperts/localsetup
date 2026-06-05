@@ -101,7 +101,7 @@ all:
           ansible_host: 203.0.113.10
           ansible_user: deploy
           ansible_ssh_private_key_file: "~/.ssh/id_ed25519_example"
-    
+
     agent_hosts:
       hosts:
         example_agent_host:

@@ -175,6 +175,34 @@ def test_checker_stale_baseline_entry_warns(tmp_path: Path) -> None:
     assert "PYA102_STALE_BASELINE_ENTRY" in finding_codes(result)
 
 
+def test_checker_out_of_scope_existing_baseline_entry_is_not_stale(tmp_path: Path) -> None:
+    repo = make_repo(tmp_path)
+    write(repo / "_localsetup/skills/ls-demo/scripts/demo.py", "x = 1\n")
+    subprocess.run(["git", "add", "."], cwd=repo, check=True)
+    baseline = {
+        "schema_version": "1.0",
+        "generated_at": "2026-06-05",
+        "scope": "framework",
+        "entries": [
+            {
+                "id": "skill-demo",
+                "path": "_localsetup/skills/ls-demo/scripts/demo.py",
+                "metric": "lines",
+                "current_value": 701,
+                "threshold": 700,
+                "reason": "Existing skill debt outside default framework scope.",
+                "owner": "test",
+            }
+        ],
+    }
+    write(repo / "_localsetup/config/python-architecture-baseline.json", json.dumps(baseline) + "\n")
+
+    result = run_checker(repo)
+
+    assert result.returncode == 0
+    assert "PYA102_STALE_BASELINE_ENTRY" not in finding_codes(result)
+
+
 def test_checker_malformed_baseline_exits_two(tmp_path: Path) -> None:
     repo = make_repo(tmp_path)
     write(repo / "_localsetup/config/python-architecture-baseline.json", "{nope\n")

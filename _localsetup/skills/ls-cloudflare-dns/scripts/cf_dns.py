@@ -15,6 +15,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
+for parent in Path(__file__).resolve().parents:
+    if (parent / "lib" / "deps.py").is_file():
+        sys.path.insert(0, str(parent / "lib"))
+        from deps import require_deps
+
+        require_deps(["requests"])
+        break
+
 try:
     import requests
 except ImportError as exc:  # pragma: no cover - environment guidance

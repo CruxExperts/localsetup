@@ -14,7 +14,18 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-import yaml
+for parent in Path(__file__).resolve().parents:
+    if (parent / "lib" / "deps.py").is_file():
+        sys.path.insert(0, str(parent / "lib"))
+        from deps import require_deps
+
+        require_deps(["yaml"])
+        break
+
+try:
+    import yaml
+except ImportError as exc:  # pragma: no cover - environment guidance
+    raise SystemExit("Missing dependency: PyYAML. Run `uv sync --locked --no-dev` from the Localsetup source checkout.") from exc
 
 
 DEFAULT_SOURCE_REPO = "https://github.com/diegosouzapw/OmniRoute.git"

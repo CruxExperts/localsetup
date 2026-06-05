@@ -339,7 +339,7 @@ describe('{{Feature Name}}', () => {{
 
     def _generate_pytest_file(self, module_name: str, test_cases: List[Dict[str, Any]]) -> str:
         """Generate complete Pytest test file."""
-        imports = f"import pytest\nfrom {module_name} import *\n\n\n"
+        imports = f"import importlib\n\nimport pytest\n\nmodule_under_test = importlib.import_module({module_name!r})\n\n\n"
 
         stubs = []
         for test_case in test_cases:

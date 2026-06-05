@@ -17,10 +17,18 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+for parent in Path(__file__).resolve().parents:
+    if (parent / "lib" / "deps.py").is_file():
+        sys.path.insert(0, str(parent / "lib"))
+        from deps import require_deps
+
+        require_deps(["yaml"])
+        break
+
 try:
     import yaml
-except Exception:  # pragma: no cover - surfaced as a CLI error when config is loaded.
-    yaml = None  # type: ignore[assignment]
+except ImportError as exc:  # pragma: no cover - environment guidance
+    raise SystemExit("Missing dependency: PyYAML. Run `uv sync --locked --no-dev` from the Localsetup source checkout.") from exc
 
 
 SCHEMA_VERSION = "1.0"

@@ -13,6 +13,7 @@ FRAMEWORK_PREFIXES = (
     "_localsetup/lib/",
 )
 SKILL_PREFIX = "_localsetup/skills/"
+TEST_PREFIX = "_localsetup/tests/"
 EXCLUDED_PARTS = {
     ".venv",
     ".localsetup",
@@ -51,6 +52,9 @@ def tracked_python_paths(repo_root: Path, include_scope: str) -> list[str]:
             paths.append(path)
             continue
         if include_scope in {"skills", "all"} and path.startswith(SKILL_PREFIX):
+            paths.append(path)
+            continue
+        if include_scope == "all" and path.startswith(TEST_PREFIX):
             paths.append(path)
     return sorted(set(paths))
 

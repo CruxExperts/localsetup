@@ -14,6 +14,7 @@ Localsetup is deployed into this repo at `_localsetup/`. All framework and conte
 - **Python-first tooling:** After install/bootstrap, framework tooling is Python-first and Python-only for new/expanded logic. Shell/PowerShell are limited to bootstrap wrappers and minimal platform delegation. Runtime target is Python >= 3.12. **Approved libraries** (mandatory when the need arises): `yaml` (PyYAML>=6.0) for YAML, `requests` (requests>=2.28) for HTTP, `frontmatter` (python-frontmatter>=1.1) for markdown frontmatter, `cryptography` (cryptography>=42.0) for framework cryptographic primitives, and `pgpy` (PGPy>=0.6.0) for pure-Python OpenPGP. Use `lib/deps.require_deps()` at tool startup. See `_localsetup/docs/TOOLING_POLICY.md`.
 - **Python architecture:** Python architecture: new and substantially refactored Python tooling follows _localsetup/docs/PYTHON_ARCHITECTURE_STANDARD.md; keep entrypoints thin, package responsibilities explicit, and existing debt baseline-managed.
 - **Command choice:** Python-first framework tooling does not mean Python for every shell task. Use shell-native tools such as `rg`, `sed`, `find`, `wc`, and `git` for normal inspection. Use Python for repo-native Python tools, Python tests, or structured parsing when a normal CLI is unavailable or less reliable.
+- **Public/private boundary:** Keep repo-maintenance plans, private audits, ledgers, local indexes, credentials, logs, caches, and planning transcripts out of public framework docs/templates. Use private ignored paths such as `.codex/runs/` and `.localsetup-maint/` for maintenance state, and do not stage private/local paths.
 - **Skill/context preservation:** When editing skill or context files, preserve task capability over brevity. Material reductions require a preservation inventory; large reductions are review triggers. Full rule lives in `ls-context`.
 
 ## Output contract (low token, always apply)
@@ -98,6 +99,7 @@ Localsetup is deployed into this repo at `_localsetup/`. All framework and conte
 - _localsetup/docs/DECISION_TREE_WORKFLOW.md
 - _localsetup/docs/INPUT_HARDENING_STANDARD.md
 - _localsetup/docs/TOOLING_POLICY.md
+- _localsetup/docs/PYTHON_ARCHITECTURE_STANDARD.md
 
 ## Task-to-skill matching (default)
 
