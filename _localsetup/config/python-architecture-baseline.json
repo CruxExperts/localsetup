@@ -11,16 +11,6 @@
       "threshold": 700
     },
     {
-      "current_value": 1725,
-      "id": "pya-baseline-core-wizard",
-      "metric": "lines",
-      "notes": "Interactive flow should be split only with focused install/wizard coverage.",
-      "owner": "ls-script-and-docs-quality",
-      "path": "_localsetup/core/wizard.py",
-      "reason": "Existing wizard debt predates this architecture standard and spans many install prompts.",
-      "threshold": 700
-    },
-    {
       "current_value": 7492,
       "id": "pya-baseline-tests-install-flow",
       "metric": "lines",

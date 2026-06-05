@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 1608c58565262d2c29860d147038360eeeaa2a4535fbda0e974977fa1f5d5a65
+  source_provenance_hash: 5e00c91bc51453b94789cd3b71d192c6af847bb2396627a8aac323f3c4c53830
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: 82d43847bcb1d6047714690e347c6834d7e9685b
-artifact_sha256: 3634bb73c39fa9c25d44c08bfe9fe2c1f5642f464cd838b622addfa902f4a460
+source_commit: 7a0cb9123c8d63683fef1d390ab1456e0e8a16f2
+artifact_sha256: 9a91944dafaa74b13296d7664cf6ee745d86a8b5871c4faccd6ea352613637c0
 ---
 # Implementation File Map
 
@@ -155,6 +155,10 @@ artifact_sha256: 3634bb73c39fa9c25d44c08bfe9fe2c1f5642f464cd838b622addfa902f4a46
 | `refactor` | `_localsetup/core/query.py` |
 | `refactor` | `_localsetup/core/registry.py` |
 | `refactor` | `_localsetup/core/repair.py` |
+| `refactor` | `_localsetup/core/repair_actions.py` |
+| `refactor` | `_localsetup/core/repair_common.py` |
+| `refactor` | `_localsetup/core/repair_inference.py` |
+| `refactor` | `_localsetup/core/repair_safety.py` |
 | `refactor` | `_localsetup/core/repo_finalizer.py` |
 | `refactor` | `_localsetup/core/rollback.py` |
 | `refactor` | `_localsetup/core/schema.py` |
