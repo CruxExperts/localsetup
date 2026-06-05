@@ -111,16 +111,6 @@
       "threshold": 700
     },
     {
-      "current_value": 775,
-      "id": "pya-baseline-tests-codex-heartbeat",
-      "metric": "lines",
-      "notes": "Test module covers heartbeat runtime policies and state artifacts.",
-      "owner": "ls-codex-heartbeat",
-      "path": "_localsetup/tests/test_codex_heartbeat.py",
-      "reason": "Existing shared test debt found during repo-wide standards audit; split only with no coverage loss.",
-      "threshold": 700
-    },
-    {
       "current_value": 7492,
       "id": "pya-baseline-tests-install-flow",
       "metric": "lines",

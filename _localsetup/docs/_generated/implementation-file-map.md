@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 584ecc3bb5c8fdac025bd9131d0d7710de5e75ccf8760cbdc8c29e3ddd2f5b0b
+  source_provenance_hash: 86e97cb4011e633bcd0aefec286bb0f8dd7ef53708c2657e00929a1c2b582655
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: 402ec490f3f00ba7965087d3b98417be86147cb8
-artifact_sha256: 741c5670848e68f4d2efe269fad9f3e2d340b86a31b69bb6c930f8db93c00bfa
+source_commit: 12d78a41c1d995d83d31dbbf80eb6ccd0e944b20
+artifact_sha256: 7cd52cd7034450c4d1652edbe6a7a0885791550bc45c699ac87fc2cb2d4b06a5
 ---
 # Implementation File Map
 
@@ -713,12 +713,14 @@ artifact_sha256: 741c5670848e68f4d2efe269fad9f3e2d340b86a31b69bb6c930f8db93c00bf
 | `keep` | `_localsetup/templates/opencode/AGENTS.md` |
 | `keep` | `_localsetup/tests/automated_test.py` |
 | `keep` | `_localsetup/tests/automated_test.sh` |
+| `keep` | `_localsetup/tests/codex_heartbeat_test_helpers.py` |
 | `keep` | `_localsetup/tests/conftest.py` |
 | `keep` | `_localsetup/tests/manifest_test_helpers.py` |
 | `keep` | `_localsetup/tests/skill_smoke_commands.yaml` |
 | `keep` | `_localsetup/tests/test_adapter_parser.py` |
 | `keep` | `_localsetup/tests/test_candidate_skill_cli.py` |
 | `keep` | `_localsetup/tests/test_codex_heartbeat.py` |
+| `keep` | `_localsetup/tests/test_codex_heartbeat_harness.py` |
 | `keep` | `_localsetup/tests/test_context_index.py` |
 | `keep` | `_localsetup/tests/test_docs_alignment.py` |
 | `keep` | `_localsetup/tests/test_github_starredrepos_skill.py` |
