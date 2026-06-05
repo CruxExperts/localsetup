@@ -91,16 +91,6 @@
       "threshold": 700
     },
     {
-      "current_value": 852,
-      "id": "pya-baseline-skill-npm-api-tests",
-      "metric": "lines",
-      "notes": "Test module covers NPM API behavior fixtures and regression cases.",
-      "owner": "ls-npm-management",
-      "path": "_localsetup/skills/ls-npm-management/scripts/test_npm_api.py",
-      "reason": "Existing test debt found during repo-wide standards audit; split only when preserving fixture coverage.",
-      "threshold": 700
-    },
-    {
       "current_value": 7492,
       "id": "pya-baseline-tests-install-flow",
       "metric": "lines",

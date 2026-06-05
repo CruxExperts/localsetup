@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: a7198766346b9d64a124a1b1e1ec252a127aef0cf099b235e537ab08b9fcd788
+  source_provenance_hash: 110b57988884b15dda9dd9aabdffecd1bf1c19c4204aefdb7269b1906b9e9e3a
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: dd294f59a3466807fe54ab053b4f94b1814c35c7
-artifact_sha256: a5b81a0545ed246c1a133b3ad3f12818de28e6feb1fc79c00a2e61c47f90c3d0
+source_commit: 15fe981de2effae0dfb20998a3ff5b5bb434561a
+artifact_sha256: 6dc3c05c946d959587a1c31ce45389a41ff0babdb4a88e191f7e7688fa9a89c9
 ---
 # Implementation File Map
 
@@ -563,7 +563,9 @@ artifact_sha256: a5b81a0545ed246c1a133b3ad3f12818de28e6feb1fc79c00a2e61c47f90c3d
 | `keep` | `_localsetup/skills/ls-npm-management/references/npm-api-conf-example.md` |
 | `keep` | `_localsetup/skills/ls-npm-management/references/proxy-host-template.md` |
 | `keep` | `_localsetup/skills/ls-npm-management/scripts/npm_api.py` |
+| `keep` | `_localsetup/skills/ls-npm-management/scripts/npm_api_test_helpers.py` |
 | `keep` | `_localsetup/skills/ls-npm-management/scripts/test_npm_api.py` |
+| `keep` | `_localsetup/skills/ls-npm-management/scripts/test_npm_api_client.py` |
 | `keep` | `_localsetup/skills/ls-omniroute-a2a/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-omniroute-admin-automation/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md` |
