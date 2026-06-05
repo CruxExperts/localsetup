@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: bde52953fe0355b530878cd9dd7d6f8773b1f9ddcf4b8b6af4cb9ba6823225c5
+  source_provenance_hash: 9187694d2016b40924d6cb83587bdf2a62d0f45fcf950d9b91295182ff9a0451
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: ef4df60490051f7ea6e0a494bb729ca4f020c125
-artifact_sha256: 6965f61e03152fe30293336566b3f73d703438ae8605884e1909f836c86502fe
+source_commit: 93f8928326e795079a9c638b9bdd79763f0112ae
+artifact_sha256: 4185a735853d6984bd96f668325e61bf455d5bf92f9070fbb796d1ed7a0f36ff
 ---
 # Implementation File Map
 
@@ -555,6 +555,7 @@ artifact_sha256: 6965f61e03152fe30293336566b3f73d703438ae8605884e1909f836c86502f
 | `keep` | `_localsetup/skills/ls-omniroute-admin-automation/scripts/lib/omniroute_admin/__init__.py` |
 | `keep` | `_localsetup/skills/ls-omniroute-admin-automation/scripts/lib/omniroute_admin/audit.py` |
 | `keep` | `_localsetup/skills/ls-omniroute-admin-automation/scripts/lib/omniroute_admin/client.py` |
+| `keep` | `_localsetup/skills/ls-omniroute-admin-automation/scripts/lib/omniroute_admin/commands.py` |
 | `keep` | `_localsetup/skills/ls-omniroute-admin-automation/scripts/lib/omniroute_admin/reconcile.py` |
 | `keep` | `_localsetup/skills/ls-omniroute-admin-automation/scripts/lib/omniroute_admin/safety.py` |
 | `keep` | `_localsetup/skills/ls-omniroute-admin-automation/scripts/lib/omniroute_admin/util.py` |

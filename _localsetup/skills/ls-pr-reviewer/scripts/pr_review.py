@@ -10,59 +10,22 @@ PR review CLI. Requires gh CLI. Uses PR_REVIEW_REPO, PR_REVIEW_DIR, PR_REVIEW_ST
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 import time
 from pathlib import Path
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from pr_review_analysis import analyze_diff, categorize_files, check_test_coverage, run_local_lint
+from pr_review_report import compose_report
+
 PATH_MAX = 4096
 PR_NUM_MAX = 999999
 REPO_MAX = 256
 REPO_PATTERN = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
-
-# Pattern lists: (regex, category, message)
-SECRET_PATTERNS = [
-    (r"(?i)(password|passwd|secret|api[_-]?key|token|auth)\s*[:=]\s*[\"'][^\"']{8,}[\"']", "SECURITY", "Possible hardcoded credential/secret"),
-    (r"(?i)AWS[_A-Z]*KEY\s*[:=]", "SECURITY", "Possible hardcoded AWS key"),
-    (r"(?i)-----BEGIN\s+(RSA\s+)?PRIVATE\s+KEY", "SECURITY", "Private key in source code"),
-]
-GO_PATTERNS = [
-    (r"^\+.*,\s*_\s*:?=.*\(", "ERROR_HANDLING", "Discarded error return value (Go)"),
-    (r"^\+.*\.Close\(\)\s*$", "ERROR_HANDLING", "Unchecked Close()"),
-    (r"^\+.*panic\(", "RISK", "Direct panic() call"),
-    (r"^\+.*fmt\.Print", "STYLE", "fmt.Print in production code"),
-    (r"^\+.*os\.Exit\(", "RISK", "Direct os.Exit()"),
-]
-PYTHON_PATTERNS = [
-    (r"^\+.*except\s*:", "ERROR_HANDLING", "Bare except clause"),
-    (r"^\+.*except Exception:", "ERROR_HANDLING", "Broad except Exception"),
-    (r"^\+.*print\(", "STYLE", "print() in production code"),
-    (r"^\+.*# type: ignore", "TYPING", "Type ignore comment"),
-]
-JS_PATTERNS = [
-    (r"^\+.*console\.log\(", "STYLE", "console.log in production code"),
-    (r"^\+.*debugger", "STYLE", "Debugger statement"),
-    (r"^\+.*process\.exit\(", "RISK", "Direct process.exit()"),
-    (r"^\+.*eval\(", "SECURITY", "eval() usage"),
-    (r"^\+.*\bany\b", "TYPING", "TypeScript any type"),
-]
-GENERAL_PATTERNS = [
-    (r"^\+.*TODO", "TODO", "TODO marker"),
-    (r"^\+.*FIXME", "TODO", "FIXME marker"),
-    (r"^\+.*HACK", "TODO", "HACK marker"),
-    (r"^\+.*XXX", "TODO", "XXX marker"),
-    (r"^\+.{200,}", "STYLE", "Very long line (>200 chars)"),
-]
-
-CAT_ICONS = {
-    "SECURITY": "[FAIL]",
-    "ERROR_HANDLING": "[WARNING]",
-    "RISK": "[WARNING]",
-    "STYLE": "[NOTE]",
-    "TODO": "[NOTE]",
-    "TYPING": "[NOTE]",
-}
 
 
 class ReviewInputError(RuntimeError):
@@ -279,132 +242,6 @@ def is_reviewed(repo: str, pr_num: int, state_path: Path) -> bool:
     return pr.get("head_sha") == head_sha and pr.get("status") == "reviewed"
 
 
-def categorize_files(files: list[str]) -> dict[str, list[str]]:
-    from collections import defaultdict
-    cats = defaultdict(list)
-    for f in files:
-        if not f:
-            continue
-        ext = f.rsplit(".", 1)[-1] if "." in f else ""
-        if ext == "go":
-            cats["go"].append(f)
-        elif ext == "py":
-            cats["python"].append(f)
-        elif ext in ("ts", "tsx", "js", "jsx"):
-            cats["frontend"].append(f)
-        elif ext in ("yml", "yaml", "toml", "json", "env"):
-            cats["config"].append(f)
-        elif ext in ("md", "txt", "rst"):
-            cats["docs"].append(f)
-        elif ext == "sql":
-            cats["sql"].append(f)
-        elif "Dockerfile" in f or f == "docker-compose.yml":
-            cats["docker"].append(f)
-        elif f.startswith(".github/"):
-            cats["ci"].append(f)
-        else:
-            cats["other"].append(f)
-    return dict(cats)
-
-
-def analyze_diff(diff_text: str) -> list[dict]:
-    findings = []
-    current_file = None
-    line_num = 0
-    for line in diff_text.split("\n"):
-        m = re.match(r"^\+\+\+ b/(.*)", line)
-        if m:
-            current_file = m.group(1)
-            continue
-        m = re.match(r"^@@ -\d+(?:,\d+)? \+(\d+)", line)
-        if m:
-            line_num = int(m.group(1))
-            continue
-        if line.startswith("+") and not line.startswith("+++"):
-            line_num += 1
-            all_p = SECRET_PATTERNS + GENERAL_PATTERNS
-            if current_file:
-                if current_file.endswith(".go"):
-                    all_p = all_p + GO_PATTERNS
-                elif current_file.endswith(".py"):
-                    all_p = all_p + PYTHON_PATTERNS
-                elif current_file.endswith((".js", ".jsx", ".ts", ".tsx")):
-                    all_p = all_p + JS_PATTERNS
-            for pat, cat, msg in all_p:
-                if re.search(pat, line):
-                    findings.append({
-                        "file": current_file or "unknown",
-                        "line": line_num,
-                        "category": cat,
-                        "message": msg,
-                        "context": (line[1:].strip())[:120],
-                    })
-        elif not line.startswith("-"):
-            line_num += 1
-    return findings
-
-
-def check_test_coverage(files: list[str]) -> str:
-    src, tests = [], []
-    for f in files:
-        f = f.strip()
-        if not f:
-            continue
-        name = f.split("/")[-1]
-        if f.endswith("_test.go") or name.startswith("test_") or f.endswith("_test.py") or ".test." in f or ".spec." in f:
-            tests.append(f)
-        elif f.endswith((".go", ".py", ".ts", ".tsx", ".js", ".jsx")):
-            src.append(f)
-    missing = []
-    for s in src:
-        has_test = False
-        s_dir = "/".join(s.split("/")[:-1])
-        s_name = s.split("/")[-1].rsplit(".", 1)[0]
-        for t in tests:
-            t_dir = "/".join(t.split("/")[:-1])
-            if t_dir == s_dir or f"test_{s_name}" in t or f"{s_name}_test" in t or f"{s_name}.test" in t or f"{s_name}.spec" in t:
-                has_test = True
-                break
-        skip = any(k in s for k in ["__init__", "main.go", "main.py", "config", "types", "models", "schema", "index.ts", "index.js"])
-        if not has_test and not skip:
-            missing.append(s)
-    if missing:
-        return "Files without corresponding test changes:\n" + "\n".join(f"  - {f}" for f in missing)
-    return "Test coverage looks adequate for changed files."
-
-
-def run_local_lint(files: list[str], local_dir: Path | None) -> str:
-    if not local_dir or not local_dir.is_dir():
-        return ""
-    out_parts = []
-    go_files = [f for f in files if f.endswith(".go")]
-    if go_files and _which("golangci-lint"):
-        dirs = sorted(set("/".join(f.split("/")[:-1]) for f in go_files))
-        for d in dirs:
-            full = local_dir / d
-            if full.is_dir():
-                r = subprocess.run(
-                    ["golangci-lint", "run", "--timeout", "2m", "--new-from-rev=HEAD~1"],
-                    cwd=str(full),
-                    capture_output=True,
-                    text=True,
-                    timeout=120,
-                )
-                if r.stdout or r.stderr:
-                    out_parts.append(f"### golangci-lint ({d})\n```\n{r.stdout or r.stderr}\n```")
-    py_files = [f for f in files if f.endswith(".py")]
-    if py_files and _which("ruff"):
-        paths = [str(local_dir / f) for f in py_files]
-        r = subprocess.run(["ruff", "check"] + paths, capture_output=True, text=True, timeout=60, cwd=str(local_dir))
-        if r.returncode != 0 and r.stdout and "All checks passed" not in r.stdout:
-            out_parts.append("### ruff\n```\n" + (r.stdout or r.stderr or "") + "\n```")
-    return "\n\n".join(out_parts) if out_parts else ""
-
-
-def _which(cmd: str) -> bool:
-    return shutil.which(cmd) is not None
-
-
 def generate_report(repo: str, pr_num: int, state_path: Path, outdir: Path, local_dir: Path | None, force: bool) -> Path | None:
     if not force and is_reviewed(repo, pr_num, state_path):
         _log(f"PR #{pr_num} already reviewed at current HEAD. Use 'review' to force.")
@@ -414,14 +251,6 @@ def generate_report(repo: str, pr_num: int, state_path: Path, outdir: Path, loca
     if not view:
         print(f"Error: Could not load PR #{pr_num}", file=sys.stderr)
         return None
-    title = view.get("title", "")
-    author = (view.get("author") or {}).get("login", "")
-    branch = view.get("headRefName", "")
-    head_sha = view.get("headRefOid", "")[:8]
-    additions = view.get("additions", 0)
-    deletions = view.get("deletions", 0)
-    body = view.get("body") or "_No description provided._"
-    created = view.get("createdAt", "")
     files = get_pr_files(repo, pr_num)
     diff = get_pr_diff(repo, pr_num)
     commits = get_pr_commits(repo, pr_num)
@@ -429,85 +258,16 @@ def generate_report(repo: str, pr_num: int, state_path: Path, outdir: Path, loca
     findings = analyze_diff(diff)
     test_cov = check_test_coverage(files)
     lint_results = run_local_lint(files, local_dir)
-
-    from collections import Counter
-    counts = Counter(f["category"] for f in findings)
-    findings_summary_lines = []
-    for cat, count in sorted(counts.items()):
-        icon = CAT_ICONS.get(cat, "[NOTE]")
-        findings_summary_lines.append(f"{icon} {cat}: {count}")
-    findings_summary = "\n".join(findings_summary_lines) if findings_summary_lines else "[OK] No issues found in diff analysis"
-
-    cat_icons = {"go": "[GO]", "python": "[PY]", "frontend": "[FE]", "ci": "[CI]", "config": "[CFG]", "docs": "[DOC]", "docker": "[DOCKER]", "sql": "[SQL]", "other": "[OTHER]"}
-    changed_files_md = []
-    for cat, flist in sorted(categories.items()):
-        changed_files_md.append(f"### {cat_icons.get(cat, '[F]')} {cat.title()} ({len(flist)} files)")
-        for f in flist:
-            changed_files_md.append(f"- `{f}`")
-        changed_files_md.append("")
-    changed_files_md = "\n".join(changed_files_md)
-
-    findings_table = ""
-    if findings:
-        findings_table = "| File | Line | Category | Finding | Context |\n|------|------|----------|---------|--------|\n"
-        for f in findings[:50]:
-            ctx = (f["context"] or "").replace("|", "\\|")[:60]
-            short_file = f["file"].split("/")[-1]
-            findings_table += f"| `{short_file}` | {f['line']} | {f['category']} | {f['message']} | `{ctx}` |\n"
-
-    sec = [x for x in findings if x["category"] == "SECURITY"]
-    err = [x for x in findings if x["category"] in ("ERROR_HANDLING", "RISK")]
-    sty = [x for x in findings if x["category"] in ("STYLE", "TODO", "TYPING")]
-    if sec:
-        summary_verdict = "[FAIL] **SECURITY CONCERNS** — Review security findings before merging."
-    elif err:
-        summary_verdict = "[WARNING] **NEEDS ATTENTION** — Error handling / risk items to review."
-    elif sty:
-        summary_verdict = "[NOTE] **MINOR STYLE NOTES** — Looks good overall, minor suggestions above."
-    else:
-        summary_verdict = "[OK] **LOOKS GOOD** — No automated issues found. Ready for human review."
-
-    report = f"""# PR #{pr_num} Review: {title}
-
-**Author:** {author}
-**Branch:** `{branch}`
-**HEAD:** `{head_sha}`
-**Created:** {created}
-**Changes:** +{additions} / -{deletions}
-**Reviewed:** {time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
-
-## Description
-
-{body}
-
-## Commits
-
-```
-{commits}
-```
-
-## Changed Files
-
-{changed_files_md}
-
-## Automated Analysis
-
-### Diff Findings
-
-{findings_summary}
-
-{findings_table}
-
-### Test Coverage
-
-{test_cov}
-
-"""
-    if lint_results:
-        report += "### Local Lint Results\n\n" + lint_results + "\n\n"
-    else:
-        report += "### Local Lint\n\n_Skipped (repo not checked out locally or linters not found)._\n\n"
-    report += f"## Summary\n\n{summary_verdict}\n\n---\n_Automated PR review • {time.strftime('%Y-%m-%d %H:%M')}_\n"
+    report = compose_report(
+        repo=repo,
+        pr_num=pr_num,
+        view=view,
+        commits=commits,
+        categories=categories,
+        findings=findings,
+        test_cov=test_cov,
+        lint_results=lint_results,
+    )
 
     report_file = outdir / f"{pr_num}.md"
     report_file.write_text(report, encoding="utf-8", errors="replace")
