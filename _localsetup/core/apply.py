@@ -7,6 +7,25 @@ import shutil
 import time
 import uuid
 
+from .apply_journal import (
+    archive_legacy_lockfile,
+    cleanup_backups,
+    cleanup_staging,
+    journal_path,
+    record_file_state,
+    remove_path,
+    restore_failed_mutations,
+    staging_root,
+    write_journal,
+)
+from .apply_lock import build_lock_payload
+from .apply_packages import install_managed_packages
+from .apply_preflight import (
+    SAFE_ADAPTER_STATUS_CODES,
+    codex_agent_source,
+    preflight_install_plan,
+    unsafe_same_name_adapter_entries,
+)
 from .lockfile import save_json
 from .locking import package_root_lock
 from .manifests import load_pack_config
@@ -14,118 +33,31 @@ from .models import DeployPlan
 from .paths import ensure_dir, legacy_target_lockfile_path, repo_path, target_lockfile_path
 from .adapters import ADAPTER_MARKER_JSON, adapter_path_state, legacy_global_roots, _is_safe_adapter_package_name
 from .registry import upsert_target
-from .provenance import build_package_marker, is_managed_package, load_package_marker, managed_marker_path, marker_public_snapshot
+from .provenance import is_managed_package
 from .source import source_commit
 
 
-SAFE_ADAPTER_STATUS_CODES = {
-    "absent",
-    "managed_scoped_adapter",
-    "managed_portable_adapter",
-    "legacy_monolithic_symlink",
-    "mixed_managed_custom_adapter",
-}
-
-
-def _unsafe_same_name_adapter_entries(action, state: dict) -> list[str]:
-    selected = {str(name) for name in action.details.get("packages", [])}
-    unsafe = set(state.get("custom_entries", [])) | set(state.get("unknown_entries", []))
-    return sorted(selected & unsafe)
-
-
-def _journal_root(attachment_root: Path) -> Path:
-    return attachment_root / ".localsetup" / "install-journal"
-
-
-def _journal_path(attachment_root: Path, txid: str) -> Path:
-    return _journal_root(attachment_root) / f"{int(time.time() * 1000)}-{txid}.json"
-
-
-def _staging_root(global_root: Path, txid: str) -> Path:
-    return global_root / ".localsetup-staging" / txid
+_archive_legacy_lockfile = archive_legacy_lockfile
+_cleanup_backups = cleanup_backups
+_cleanup_staging = cleanup_staging
+_codex_agent_source = codex_agent_source
+_journal_path = journal_path
+_remove_path = remove_path
+_staging_root = staging_root
+_unsafe_same_name_adapter_entries = unsafe_same_name_adapter_entries
+_write_journal = write_journal
 
 
 def _same_filesystem_replace(src: Path, dest: Path) -> None:
     os.replace(src, dest)
 
 
-def _write_journal(path: Path, payload: dict) -> None:
-    save_json(path, payload)
-
-
-def _remove_path(path: Path) -> None:
-    if path.is_symlink() or path.is_file():
-        path.unlink()
-    elif path.exists():
-        shutil.rmtree(path)
-
-
-def _cleanup_staging(journal: dict) -> None:
-    staging_roots = {
-        Path(item["staging_root"])
-        for item in journal.get("touched", [])
-        if isinstance(item, dict) and item.get("kind") == "staging_root" and item.get("staging_root")
-    }
-    for root in staging_roots:
-        if root.exists() or root.is_symlink():
-            _remove_path(root)
-
-
-def _cleanup_backups(journal: dict) -> None:
-    for item in journal.get("touched", []):
-        if not isinstance(item, dict) or item.get("kind") not in {"managed_package", "adapter", "file_state"}:
-            continue
-        backup = item.get("backup")
-        if backup:
-            backup_path = Path(backup)
-            if backup_path.exists() or backup_path.is_symlink():
-                _remove_path(backup_path)
+def _record_file_state(journal: dict, journal_path: Path, path: Path) -> None:
+    record_file_state(journal, journal_path, path, _same_filesystem_replace)
 
 
 def _restore_failed_mutations(journal: dict) -> None:
-    for item in reversed(journal.get("touched", [])):
-        if not isinstance(item, dict) or item.get("kind") not in {"managed_package", "adapter", "file_state", "legacy_lockfile"}:
-            continue
-        path = Path(str(item["path"]))
-        backup = Path(str(item["backup"])) if item.get("backup") else None
-        existed = bool(item.get("existed"))
-        if path.exists() or path.is_symlink():
-            _remove_path(path)
-        if existed and backup and (backup.exists() or backup.is_symlink()):
-            _same_filesystem_replace(backup, path)
-        elif backup and (backup.exists() or backup.is_symlink()):
-            _remove_path(backup)
-
-
-def _record_file_state(journal: dict, journal_path: Path, path: Path) -> None:
-    if any(item.get("kind") == "file_state" and item.get("path") == str(path) for item in journal.get("touched", []) if isinstance(item, dict)):
-        return
-    backup = path.with_name(f".{path.name}.localsetup-backup-{uuid.uuid4().hex}")
-    existed = path.exists() or path.is_symlink()
-    if existed:
-        if path.is_symlink():
-            _same_filesystem_replace(path, backup)
-            _same_filesystem_replace(backup, path)
-        else:
-            shutil.copy2(path, backup)
-    journal.setdefault("touched", []).append(
-        {"kind": "file_state", "path": str(path), "backup": str(backup), "existed": existed}
-    )
-    _write_journal(journal_path, journal)
-
-
-def _archive_legacy_lockfile(legacy_lockfile: Path, attachment_root: Path, txid: str) -> str | None:
-    if not (legacy_lockfile.exists() or legacy_lockfile.is_symlink()):
-        return None
-    backup = attachment_root / ".localsetup" / "backups" / f"legacy-lock-{txid}" / legacy_lockfile.name
-    backup.parent.mkdir(parents=True, exist_ok=True)
-    if legacy_lockfile.is_symlink():
-        backup.write_text(f"symlink -> {legacy_lockfile.readlink()}\n", encoding="utf-8")
-        legacy_lockfile.unlink()
-    else:
-        shutil.copy2(legacy_lockfile, backup)
-        legacy_lockfile.unlink()
-    return str(backup)
+    restore_failed_mutations(journal, _same_filesystem_replace)
 
 
 def _install_managed_packages(
@@ -138,77 +70,16 @@ def _install_managed_packages(
     journal: dict | None = None,
     journal_path: Path | None = None,
 ) -> list[str]:
-    ensure_dir(global_root)
-    installed: list[str] = []
-    source_root = repo_root / "_localsetup" / source_subdir
-
-    for package_name in sorted(package_names):
-        src = source_root / package_name
-        dest = global_root / package_name
-        staged = (staging_root / source_subdir / package_name) if staging_root else dest
-        if dest.exists() and not is_managed_package(dest):
-            raise RuntimeError(f"refusing to overwrite unmanaged package path: {dest}")
-        package_type = "workflow" if source_subdir == "workflows" else "skill"
-        if staging_root:
-            if journal is not None and not any(
-                item.get("kind") == "staging_root" and item.get("staging_root") == str(staging_root)
-                for item in journal.get("touched", [])
-                if isinstance(item, dict)
-            ):
-                journal.setdefault("touched", []).append({"kind": "staging_root", "staging_root": str(staging_root)})
-                if journal_path:
-                    _write_journal(journal_path, journal)
-            if staged.exists():
-                shutil.rmtree(staged)
-            staged.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copytree(src, staged)
-            save_json(
-                managed_marker_path(staged),
-                build_package_marker(
-                    repo_root,
-                    staged,
-                    package_name=package_name,
-                    package_type=package_type,
-                    source_path=src,
-                    emitter="package-install",
-                    artifact_path=dest,
-                ),
-            )
-            backup = dest.with_name(f".{dest.name}.localsetup-backup-{uuid.uuid4().hex}")
-            existed = dest.exists() or dest.is_symlink()
-            if journal is not None:
-                journal.setdefault("touched", []).append(
-                    {
-                        "kind": "managed_package",
-                        "path": str(dest),
-                        "staged": str(staged),
-                        "backup": str(backup),
-                        "existed": existed,
-                    }
-                )
-                if journal_path:
-                    _write_journal(journal_path, journal)
-            if existed:
-                _same_filesystem_replace(dest, backup)
-            _same_filesystem_replace(staged, dest)
-        else:
-            if dest.exists() or dest.is_symlink():
-                _remove_path(dest)
-            shutil.copytree(src, dest)
-            save_json(
-                managed_marker_path(dest),
-                build_package_marker(
-                    repo_root,
-                    dest,
-                    package_name=package_name,
-                    package_type=package_type,
-                    source_path=src,
-                    emitter="package-install",
-                ),
-            )
-        installed.append(str(dest))
-
-    return installed
+    return install_managed_packages(
+        repo_root,
+        global_root,
+        package_names,
+        source_subdir,
+        replace_func=_same_filesystem_replace,
+        staging_root=staging_root,
+        journal=journal,
+        journal_path=journal_path,
+    )
 
 
 def _install_managed_skills(repo_root: Path, global_root: Path, skill_names: list[str]) -> list[str]:
@@ -217,10 +88,6 @@ def _install_managed_skills(repo_root: Path, global_root: Path, skill_names: lis
 
 def _install_managed_workflows(repo_root: Path, global_root: Path, workflow_names: list[str]) -> list[str]:
     return _install_managed_packages(repo_root, global_root, workflow_names, "workflows")
-
-
-def _codex_agent_source(repo_root: Path, agent_name: str) -> Path:
-    return repo_root / "_localsetup" / "adapters" / "codex" / "agents" / f"{agent_name}.toml"
 
 
 def _install_codex_agents(repo_root: Path, agents_root: Path, agent_names: list[str]) -> list[str]:
@@ -341,81 +208,6 @@ def apply_plan(
         )
         result["package_root_lock"] = lock
         return result
-
-
-def preflight_install_plan(repo_root: Path, plan: DeployPlan, home: Path) -> dict:
-    blockers: list[dict] = []
-    for action in plan.actions:
-        if action.kind in {"install_skills", "install_workflows"}:
-            source_subdir = "skills" if action.kind == "install_skills" else "workflows"
-            names = action.details.get("skills", action.details.get("workflows", []))
-            for name in names:
-                src = repo_root / "_localsetup" / source_subdir / str(name)
-                dest = action.path / str(name)
-                if not src.is_dir():
-                    blockers.append({"path": str(src), "status_code": "missing_source_package", "reason": "selected package source is missing"})
-                elif dest.exists() and not is_managed_package(dest):
-                    blockers.append({"path": str(dest), "status_code": "unmanaged_package_path", "reason": "refusing to overwrite unmanaged package path"})
-        elif action.kind == "install_codex_agents":
-            for name in action.details.get("agents", []):
-                src = _codex_agent_source(repo_root, str(name))
-                dest = action.path / f"{name}.toml"
-                if not src.is_file():
-                    blockers.append({"path": str(src), "status_code": "missing_source_agent", "reason": "selected Codex agent source is missing"})
-                    continue
-                if dest.is_symlink() or (dest.exists() and not dest.is_file()):
-                    blockers.append(
-                        {
-                            "path": str(dest),
-                            "status_code": "codex_agent_conflict",
-                            "reason": "refusing to overwrite existing Codex agent path that is not a regular file",
-                        }
-                    )
-                    continue
-                if dest.is_file():
-                    try:
-                        existing = dest.read_text(encoding="utf-8")
-                    except (OSError, UnicodeDecodeError) as exc:
-                        blockers.append(
-                            {
-                                "path": str(dest),
-                                "status_code": "codex_agent_conflict",
-                                "reason": f"refusing to overwrite unreadable existing Codex agent file: {exc}",
-                            }
-                        )
-                        continue
-                    if existing == src.read_text(encoding="utf-8"):
-                        continue
-                    blockers.append(
-                        {
-                            "path": str(dest),
-                            "status_code": "codex_agent_conflict",
-                            "reason": "refusing to overwrite existing Codex agent file with different content",
-                        }
-                    )
-        elif action.kind == "attach_repo_path":
-            global_root = Path(action.details["global_root"])
-            state = adapter_path_state(action.path, global_root, known_global_roots=legacy_global_roots(home))
-            if state["status_code"] not in SAFE_ADAPTER_STATUS_CODES:
-                blockers.append(
-                    {
-                        "path": str(action.path),
-                        "status_code": state["status_code"],
-                        "reason": state["collision_reason"] or "adapter target is not safe to mutate",
-                    }
-                )
-                continue
-            unsafe_entries = _unsafe_same_name_adapter_entries(action, state)
-            if unsafe_entries:
-                blockers.append(
-                    {
-                        "path": str(action.path),
-                        "status_code": "adapter_custom_package_name_collision",
-                        "reason": "adapter contains custom or unknown entries with selected Localsetup package names",
-                        "entries": unsafe_entries,
-                    }
-                )
-    return {"ok": not blockers, "blockers": blockers}
 
 
 def _apply_plan_unlocked(
@@ -542,61 +334,23 @@ def _apply_plan_unlocked(
     lockfile_path = repo_path(attachment_root, pack.lockfile, "repo.lockfile")
     if lockfile_path.name != "lock.json" or lockfile_path.parent.name != ".localsetup":
         lockfile_path = target_lockfile_path(attachment_root)
-    adapter_actions = [a for a in plan.actions if a.kind == "attach_repo_path"]
-    lock_payload = {
-        "version": 2,
-        "pack": pack.pack_id,
-        "namespace": pack.namespace,
-        "source_commit": source_commit(repo_root),
-        "source_root": str(repo_root),
-        "localsetup_home": str(home / ".local" / "share" / "localsetup"),
-        "target_root": str(attachment_root),
-        "aliases": plan.rollback_metadata.get("aliases", {}),
-        "skills": plan.rollback_metadata.get("skills", []),
-        "workflows": plan.rollback_metadata.get("workflows", []),
-        "codex_agents": plan.rollback_metadata.get("codex_agents", []),
-        "global_baseline_selectors": plan.rollback_metadata.get("global_baseline_selectors", {}),
-        "global_baseline_packs": plan.rollback_metadata.get("global_baseline_packs", []),
-        "global_baseline_skills": plan.rollback_metadata.get("global_baseline_skills", []),
-        "global_baseline_workflows": plan.rollback_metadata.get("global_baseline_workflows", []),
-        "global_baseline_packages": plan.rollback_metadata.get("global_baseline_packages", []),
-        "repo_selectors": plan.rollback_metadata.get("repo_selectors", {}),
-        "repo_packs": plan.rollback_metadata.get("repo_packs", []),
-        "repo_skills": plan.rollback_metadata.get("repo_skills", []),
-        "repo_workflows": plan.rollback_metadata.get("repo_workflows", []),
-        "repo_packages": plan.rollback_metadata.get("repo_packages", []),
-        "adapter_state": [s for s in plan.rollback_metadata.get("repo_links", [])],
-        "adapter_targets": [
-            {
-                "platform": action.details.get("platform"),
-                "path": str(action.path),
-                "mode": action.details.get("mode", "symlink"),
-                "global_root": action.details.get("global_root"),
-                "packages": action.details.get("packages", []),
-            }
-            for action in adapter_actions
-        ],
-        "platforms": plan.rollback_metadata.get("platforms", []),
-        "global_only": plan.rollback_metadata.get("global_only", False),
-        "attach_mode": plan.rollback_metadata.get("attach_mode", "symlink"),
-        "installed_skills": installed_skills,
-        "installed_workflows": installed_workflows,
-        "installed_codex_agents": installed_codex_agents,
-        "adapter_packages": plan.rollback_metadata.get("adapter_packages", []),
-        "dependency_mode": (dependency_info or {}).get("mode"),
-        "python_interpreter": (dependency_info or {}).get("interpreter"),
-        "dependency_state": (dependency_info or {}).get("lock"),
-    }
+    lock_payload = build_lock_payload(
+        repo_root=repo_root,
+        home=home,
+        attachment_root=attachment_root,
+        pack=pack,
+        plan=plan,
+        installed_skills=installed_skills,
+        installed_workflows=installed_workflows,
+        installed_codex_agents=installed_codex_agents,
+        dependency_info=dependency_info,
+    )
     registry_actions = [a for a in plan.actions if a.kind == "write_registry"]
     if registry_actions:
         lock_payload["registry_path"] = str(registry_actions[0].path)
     global_roots = [a.path for a in plan.actions if a.kind in {"install_skills", "install_workflows"}]
     if global_roots:
         lock_payload["package_root"] = str(global_roots[0])
-    lock_payload["package_provenance"] = {
-        Path(path).name: marker_public_snapshot(load_package_marker(Path(path)))
-        for path in [*installed_skills, *installed_workflows]
-    }
     legacy_lockfile = legacy_target_lockfile_path(attachment_root)
     if legacy_lockfile.exists() and legacy_lockfile != lockfile_path:
         lock_payload["migration_origin"] = {"legacy_lockfile": str(legacy_lockfile)}
