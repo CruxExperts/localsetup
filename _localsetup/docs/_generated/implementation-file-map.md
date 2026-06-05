@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 86e97cb4011e633bcd0aefec286bb0f8dd7ef53708c2657e00929a1c2b582655
+  source_provenance_hash: a7198766346b9d64a124a1b1e1ec252a127aef0cf099b235e537ab08b9fcd788
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: 12d78a41c1d995d83d31dbbf80eb6ccd0e944b20
-artifact_sha256: 7cd52cd7034450c4d1652edbe6a7a0885791550bc45c699ac87fc2cb2d4b06a5
+source_commit: dd294f59a3466807fe54ab053b4f94b1814c35c7
+artifact_sha256: a5b81a0545ed246c1a133b3ad3f12818de28e6feb1fc79c00a2e61c47f90c3d0
 ---
 # Implementation File Map
 
@@ -482,6 +482,7 @@ artifact_sha256: 7cd52cd7034450c4d1652edbe6a7a0885791550bc45c699ac87fc2cb2d4b06a
 | `keep` | `_localsetup/skills/ls-kilo-boss-orchestrator/scripts/lib/boss_orchestrator/__init__.py` |
 | `keep` | `_localsetup/skills/ls-kilo-boss-orchestrator/scripts/lib/boss_orchestrator/command.py` |
 | `keep` | `_localsetup/skills/ls-kilo-boss-orchestrator/scripts/lib/boss_orchestrator/consensus.py` |
+| `keep` | `_localsetup/skills/ls-kilo-boss-orchestrator/scripts/lib/boss_orchestrator/retry_watchdog.py` |
 | `keep` | `_localsetup/skills/ls-kilo-boss-orchestrator/scripts/lib/boss_orchestrator/state.py` |
 | `keep` | `_localsetup/skills/ls-kilo-boss-orchestrator/scripts/lib/boss_orchestrator/util.py` |
 | `keep` | `_localsetup/skills/ls-kilo-boss-orchestrator/scripts/tests/test_boss_orchestrator_hardening.py` |

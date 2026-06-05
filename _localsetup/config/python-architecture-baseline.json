@@ -61,16 +61,6 @@
       "threshold": 700
     },
     {
-      "current_value": 701,
-      "id": "pya-baseline-skill-kilo-retry-watchdog",
-      "metric": "lines",
-      "notes": "Watchdog script spans retry policy, state inspection, and Kilo orchestration behavior.",
-      "owner": "ls-kilo-boss-orchestrator",
-      "path": "_localsetup/skills/ls-kilo-boss-orchestrator/scripts/kilo_retry_watchdog.py",
-      "reason": "Existing skill script debt found during repo-wide standards audit; split only with orchestrator behavior coverage.",
-      "threshold": 700
-    },
-    {
       "current_value": 1203,
       "id": "pya-baseline-skill-mail-protocol-control",
       "metric": "lines",

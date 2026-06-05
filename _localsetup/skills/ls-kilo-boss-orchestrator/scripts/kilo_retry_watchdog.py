@@ -11,18 +11,30 @@ Design goals:
 from __future__ import annotations
 
 import argparse
-import hashlib
-import json
-import os
-import platform
-import re
-import socket
-import subprocess
 import time
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable
+
+from lib.boss_orchestrator.retry_watchdog import acquire_lock as _acquire_lock
+from lib.boss_orchestrator.retry_watchdog import capture_tail as _capture_tail
+from lib.boss_orchestrator.retry_watchdog import emit_hermes_message as _emit_hermes_message
+from lib.boss_orchestrator.retry_watchdog import ensure_tmux_session as _ensure_tmux_session
+from lib.boss_orchestrator.retry_watchdog import has_tmux_session as _has_tmux_session
+from lib.boss_orchestrator.retry_watchdog import hash_text as _hash_text
+from lib.boss_orchestrator.retry_watchdog import list_tmux_sessions as _list_tmux_sessions
+from lib.boss_orchestrator.retry_watchdog import load_state as _load_state
+from lib.boss_orchestrator.retry_watchdog import match_any as _match_any
+from lib.boss_orchestrator.retry_watchdog import now_iso as _now_iso
+from lib.boss_orchestrator.retry_watchdog import pane_current_command as _pane_current_command
+from lib.boss_orchestrator.retry_watchdog import pane_pid as _pane_pid
+from lib.boss_orchestrator.retry_watchdog import process_alive as _process_alive
+from lib.boss_orchestrator.retry_watchdog import read_recent as _read_recent
+from lib.boss_orchestrator.retry_watchdog import release_lock as _release_lock
+from lib.boss_orchestrator.retry_watchdog import run as _run
+from lib.boss_orchestrator.retry_watchdog import send_command as _send_command
+from lib.boss_orchestrator.retry_watchdog import send_ctrl_c as _send_ctrl_c
+from lib.boss_orchestrator.retry_watchdog import send_prompt as _send_prompt
+from lib.boss_orchestrator.retry_watchdog import write_state as _write_state
 
 SCRIPT_VERSION = "1.1.1"
 SERVICE_NAME = "kilo-boss-orchestrator"
@@ -54,176 +66,6 @@ class RetryConfig:
     unresponsive_threshold_seconds: int
     lock_file: Path
     lock_stale_seconds: int
-
-
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
-
-
-def _run(cmd: list[str]) -> subprocess.CompletedProcess:
-    return subprocess.run(cmd, capture_output=True, text=True, check=False)
-
-
-def _tail_lines(path: Path, lines: int) -> list[str]:
-    if not path.exists() or not path.is_file():
-        return []
-    try:
-        return path.read_text(encoding="utf-8", errors="replace").splitlines()[-lines:]
-    except Exception:
-        return []
-
-
-def _has_tmux_session(session: str) -> bool:
-    return _run(["tmux", "has-session", "-t", session]).returncode == 0
-
-
-def _ensure_tmux_session(session: str) -> tuple[bool, str]:
-    if _has_tmux_session(session):
-        return True, "session exists"
-    proc = _run(["tmux", "new-session", "-d", "-s", session])
-    if proc.returncode == 0:
-        return True, "session created"
-    return False, (proc.stderr or proc.stdout or "failed to create session").strip()
-
-
-def _capture_tail(session: str, lines: int = 40) -> str:
-    proc = _run(["tmux", "capture-pane", "-t", session, "-p", "-S", f"-{lines}"])
-    return proc.stdout.strip() if proc.returncode == 0 else ""
-
-
-def _pane_current_command(session: str) -> str:
-    proc = _run(
-        ["tmux", "display-message", "-p", "-t", session, "#{pane_current_command}"]
-    )
-    return (proc.stdout or "").strip().lower() if proc.returncode == 0 else ""
-
-
-def _pane_pid(session: str) -> int | None:
-    proc = _run(["tmux", "display-message", "-p", "-t", session, "#{pane_pid}"])
-    if proc.returncode != 0:
-        return None
-    raw = (proc.stdout or "").strip()
-    return int(raw) if raw.isdigit() else None
-
-
-def _process_alive(pid: int | None) -> bool:
-    return bool(pid and Path(f"/proc/{pid}").exists())
-
-
-def _send_keys(
-    session: str, key_or_text: str, literal: bool = False
-) -> tuple[bool, str]:
-    cmd = ["tmux", "send-keys", "-t", session]
-    if literal:
-        cmd += ["-l", key_or_text]
-    else:
-        cmd += [key_or_text]
-    proc = _run(cmd)
-    if proc.returncode != 0:
-        return False, (proc.stderr or proc.stdout or "tmux send-keys failed").strip()
-    return True, "ok"
-
-
-def _send_prompt(session: str, prompt: str) -> tuple[bool, str]:
-    ok, msg = _send_keys(session, prompt, literal=True)
-    if not ok:
-        return False, msg
-    ok, msg = _send_keys(session, "Enter")
-    return (ok, msg)
-
-
-def _send_ctrl_c(session: str) -> None:
-    _send_keys(session, "C-c")
-
-
-def _send_command(session: str, command: str) -> tuple[bool, str]:
-    if not command.strip():
-        return False, "empty launch command"
-    ok, msg = _send_keys(session, command, literal=True)
-    if not ok:
-        return False, msg
-    ok, msg = _send_keys(session, "Enter")
-    return (ok, msg)
-
-
-def _load_state(path: Path) -> dict:
-    if not path.exists():
-        return {}
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
-        return {}
-
-
-def _write_state(path: Path, payload: dict) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
-
-
-def _read_recent(log_files: Iterable[Path], tail_lines: int) -> dict[str, list[str]]:
-    return {str(p): _tail_lines(p, tail_lines) for p in log_files}
-
-
-def _match_any(lines_by_file: dict[str, list[str]], pattern: str) -> bool:
-    rx = re.compile(pattern)
-    for lines in lines_by_file.values():
-        for line in lines:
-            if rx.search(line):
-                return True
-    return False
-
-
-def _hash_text(value: str) -> str:
-    return hashlib.sha256(value.encode("utf-8", errors="ignore")).hexdigest()
-
-
-def _list_tmux_sessions() -> list[str]:
-    proc = _run(["tmux", "list-sessions", "-F", "#{session_name}"])
-    if proc.returncode != 0:
-        return []
-    return [x.strip() for x in proc.stdout.splitlines() if x.strip()]
-
-
-def _collect_log_meta(paths: list[Path]) -> list[dict]:
-    out: list[dict] = []
-    for p in paths:
-        item = {"path": str(p), "exists": p.exists()}
-        if p.exists() and p.is_file():
-            st = p.stat()
-            item.update(
-                {
-                    "size_bytes": st.st_size,
-                    "mtime_epoch": int(st.st_mtime),
-                    "mtime_utc": datetime.fromtimestamp(
-                        st.st_mtime, timezone.utc
-                    ).isoformat(),
-                }
-            )
-        out.append(item)
-    return out
-
-
-def _host_telemetry() -> dict:
-    host = socket.gethostname()
-    fqdn = socket.getfqdn()
-    ip = ""
-    try:
-        ip = socket.gethostbyname(host)
-    except Exception:
-        ip = ""
-    return {
-        "hostname": host,
-        "fqdn": fqdn,
-        "primary_ipv4": ip,
-        "platform": platform.platform(),
-        "system": platform.system(),
-        "release": platform.release(),
-        "python_version": platform.python_version(),
-        "pid": os.getpid(),
-        "cwd": str(Path.cwd()),
-    }
 
 
 def _assess_health(cfg: RetryConfig, state: dict) -> dict:
@@ -360,97 +202,6 @@ def _choose_strategy(
         else "interrupt_then_prompt",
         "last recovery attempt",
     )
-
-
-def _emit_hermes_message(
-    cfg: RetryConfig,
-    reason: str,
-    debug_bundle: dict[str, list[str]],
-    attempts: int,
-    strategies_used: list[dict],
-    health: dict,
-) -> Path:
-    cfg.hermes_outbox.mkdir(parents=True, exist_ok=True)
-    msg = {
-        "schema_version": "1",
-        "event_type": "kilo_deadman_retry_exhausted",
-        "timestamp_utc": _now_iso(),
-        "source": "kilo_retry_watchdog",
-        "script_version": SCRIPT_VERSION,
-        "service": SERVICE_NAME,
-        "phase": PHASE_LABEL,
-        "host": _host_telemetry(),
-        "reason": reason,
-        "tmux": {
-            "session": cfg.session,
-            "kilo_launch_command": cfg.kilo_launch_command,
-            "health": health,
-        },
-        "recovery_policy": {
-            "restart_on_unhealthy": cfg.restart_on_unhealthy,
-            "retry_interval_seconds": cfg.retry_interval_seconds,
-            "max_retries": cfg.max_retries,
-            "cooldown_seconds": cfg.cooldown_seconds,
-            "startup_grace_seconds": cfg.startup_grace_seconds,
-            "health_probe_delay_seconds": cfg.health_probe_delay_seconds,
-            "unresponsive_threshold_seconds": cfg.unresponsive_threshold_seconds,
-            "resume_prompt": cfg.prompt,
-            "failure_regex": cfg.failure_regex,
-            "recovery_regex": cfg.recovery_regex,
-        },
-        "paths": {
-            "state_root": str(cfg.state_root),
-            "state_file": str(cfg.state_root / "retry_watchdog_state.json"),
-            "lock_file": str(cfg.lock_file),
-            "hermes_outbox": str(cfg.hermes_outbox),
-            "log_files": [str(p) for p in cfg.log_files],
-        },
-        "log_file_metadata": _collect_log_meta(cfg.log_files),
-        "attempts": attempts,
-        "strategies_used": strategies_used,
-        "log_tail": debug_bundle,
-        "next_action": "Hermes should notify operator and trigger higher-tier recovery workflow.",
-    }
-    out = cfg.hermes_outbox / f"kilo-deadman-exhausted-{int(time.time())}.json"
-    out.write_text(json.dumps(msg, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    return out
-
-
-def _acquire_lock(lock_file: Path, stale_seconds: int) -> tuple[bool, str, int | None]:
-    lock_file.parent.mkdir(parents=True, exist_ok=True)
-
-    if lock_file.exists():
-        try:
-            age = int(time.time() - lock_file.stat().st_mtime)
-            if age >= stale_seconds:
-                lock_file.unlink(missing_ok=True)
-            else:
-                return False, f"lock active ({age}s old)", None
-        except Exception as exc:
-            return False, f"lock check failed: {exc}", None
-
-    flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
-    try:
-        fd = os.open(str(lock_file), flags, 0o644)
-        os.write(fd, json.dumps({"pid": os.getpid(), "ts": _now_iso()}).encode("utf-8"))
-        os.fsync(fd)
-        return True, "lock acquired", fd
-    except FileExistsError:
-        return False, "lock exists", None
-    except Exception as exc:
-        return False, f"lock create failed: {exc}", None
-
-
-def _release_lock(lock_file: Path, fd: int | None) -> None:
-    try:
-        if fd is not None:
-            os.close(fd)
-    except Exception:
-        pass
-    try:
-        lock_file.unlink(missing_ok=True)
-    except Exception:
-        pass
 
 
 def _build_config(args: argparse.Namespace) -> RetryConfig:
@@ -595,6 +346,9 @@ def run_once(cfg: RetryConfig) -> int:
             attempts=attempts,
             strategies_used=strategies_used,
             health=health,
+            script_version=SCRIPT_VERSION,
+            service_name=SERVICE_NAME,
+            phase_label=PHASE_LABEL,
         )
         _write_state(
             state_file,
