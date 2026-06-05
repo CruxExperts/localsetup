@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 432a1d9ace39822ba4d72e28b85d59bd9a16a41e3d4be6faa52093c43165055d
+  source_provenance_hash: b01df381843896fd8b71e8d3f544a3ce4d4f09c86592d461cc992e0d918e8e60
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: a4d9725db8e35dc59145e80662f08e2fde5e59e5
-artifact_sha256: d141ba4e31fa243c8bcc098f0232202b4aeaea25477153102ee138b1cd07e5ed
+source_commit: d58e831dbc26618a52f1c81c91343271c6d482ff
+artifact_sha256: 6965f61e03152fe30293336566b3f73d703438ae8605884e1909f836c86502fe
 ---
 # Implementation File Map
 
@@ -501,7 +501,9 @@ artifact_sha256: d141ba4e31fa243c8bcc098f0232202b4aeaea25477153102ee138b1cd07e5e
 | `keep` | `_localsetup/skills/ls-mail-protocol-control/scripts/mail_utils.py` |
 | `keep` | `_localsetup/skills/ls-mail-protocol-control/scripts/mcp_server.py` |
 | `keep` | `_localsetup/skills/ls-mail-protocol-control/scripts/policy_engine.py` |
+| `keep` | `_localsetup/skills/ls-mail-protocol-control/scripts/tests/mail_protocol_test_helpers.py` |
 | `keep` | `_localsetup/skills/ls-mail-protocol-control/scripts/tests/test_mail_protocol_control.py` |
+| `keep` | `_localsetup/skills/ls-mail-protocol-control/scripts/tests/test_mail_protocol_mcp_errors.py` |
 | `keep` | `_localsetup/skills/ls-markdown-reference-validator/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py` |
 | `keep` | `_localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_validator.py` |
