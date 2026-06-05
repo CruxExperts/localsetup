@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: b25d0ffd1fbfed2bac7715396cb45910a736c7fb3760bb6d34ef0a59e83f945a
+  source_provenance_hash: 6d4dd804ed99e55bf50eddaa269d5bc8b403db285bad89115e165065e1e2fa32
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: 855e2c983c04a824cc04f5a9a5da66e9160b5a6b
-artifact_sha256: 85fc22f828f888e9d03af04125f53860d666f643a5d1f13ec457fc6e4cfeefc9
+source_commit: c5b8ff68fa09e9fc4fb90ba87794edde9d10829b
+artifact_sha256: 36bdffbf57b98d056972d5875a0134be0fe5d9c61e3429130c267bf2b56ed61f
 ---
 # Implementation File Map
 
@@ -470,6 +470,7 @@ artifact_sha256: 85fc22f828f888e9d03af04125f53860d666f643a5d1f13ec457fc6e4cfeefc
 | `keep` | `_localsetup/skills/ls-keepass-secrets/schemas/reference.schema.json` |
 | `keep` | `_localsetup/skills/ls-keepass-secrets/scripts/fake_vault_backend.py` |
 | `keep` | `_localsetup/skills/ls-keepass-secrets/scripts/localsetup_secrets.py` |
+| `keep` | `_localsetup/skills/ls-keepass-secrets/scripts/localsetup_secrets_support.py` |
 | `keep` | `_localsetup/skills/ls-keepass-secrets/scripts/verify_keepassxc.py` |
 | `keep` | `_localsetup/skills/ls-kilo-boss-orchestrator/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-kilo-boss-orchestrator/references/examples/task.sample.yaml` |

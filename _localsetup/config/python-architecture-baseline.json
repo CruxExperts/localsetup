@@ -51,16 +51,6 @@
       "threshold": 700
     },
     {
-      "current_value": 1111,
-      "id": "pya-baseline-skill-markdown-reference-validator",
-      "metric": "lines",
-      "notes": "Validator spans markdown parsing, sidecar config, anchors, references, and reporting.",
-      "owner": "ls-markdown-reference-validator",
-      "path": "_localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_validator.py",
-      "reason": "Existing skill script debt found during repo-wide standards audit; split only with markdown fixture coverage.",
-      "threshold": 700
-    },
-    {
       "current_value": 7492,
       "id": "pya-baseline-tests-install-flow",
       "metric": "lines",
