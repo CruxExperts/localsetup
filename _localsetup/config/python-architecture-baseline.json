@@ -31,16 +31,6 @@
       "threshold": 700
     },
     {
-      "current_value": 1203,
-      "id": "pya-baseline-skill-mail-protocol-control",
-      "metric": "lines",
-      "notes": "Mail control script spans MIME, SMTP/IMAP, crypto handoff, and attachment workflows.",
-      "owner": "ls-mail-protocol-control",
-      "path": "_localsetup/skills/ls-mail-protocol-control/scripts/mail_protocol_control.py",
-      "reason": "Existing skill script debt found during repo-wide standards audit; split only with protocol and encryption coverage.",
-      "threshold": 700
-    },
-    {
       "current_value": 7492,
       "id": "pya-baseline-tests-install-flow",
       "metric": "lines",

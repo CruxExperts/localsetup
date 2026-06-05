@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: db1c2a330b0acf407eb64b72886c974f60060b3a6270fb76c00471ecad2a6560
+  source_provenance_hash: 6e073b51dbc09f403b9d643d30239789812e4cd62d87c62e815c8a4e0e2bd8dd
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: f7d2cae5375da3674edd4f9f0da0c91ba4133ae0
-artifact_sha256: 2e9fb8c092e38671456ab31d5832f0bafbd907ef551888fdce8682e1bb0e94cd
+source_commit: b7d88c72afa658389ec65ddf41f0f4ba80bc247c
+artifact_sha256: 9bab0cd46796556ee94b1558336f8844dea46ad86d3fe9bbf34647a73b3f1e62
 ---
 # Implementation File Map
 
@@ -341,6 +341,8 @@ artifact_sha256: 2e9fb8c092e38671456ab31d5832f0bafbd907ef551888fdce8682e1bb0e94c
 | `keep` | `_localsetup/skills/ls-cloudflare-dns/schemas/dns-record-normalized.schema.json` |
 | `keep` | `_localsetup/skills/ls-cloudflare-dns/schemas/dns-snapshot.schema.json` |
 | `keep` | `_localsetup/skills/ls-cloudflare-dns/scripts/cf_dns.py` |
+| `keep` | `_localsetup/skills/ls-cloudflare-dns/scripts/cf_dns_parser.py` |
+| `keep` | `_localsetup/skills/ls-cloudflare-dns/scripts/cf_dns_support.py` |
 | `keep` | `_localsetup/skills/ls-cloudflare-dns/scripts/refresh_cloudflare_dns_schema.py` |
 | `keep` | `_localsetup/skills/ls-cloudflare-dns/scripts/validate_cf_dns_skill.py` |
 | `keep` | `_localsetup/skills/ls-cloudflare-dns/tests/fixtures/change-plan.json` |

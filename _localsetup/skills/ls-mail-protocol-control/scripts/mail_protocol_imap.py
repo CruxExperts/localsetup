@@ -1,0 +1,341 @@
+"""IMAP adapter for mail protocol control."""
+
+from __future__ import annotations
+
+import base64
+import email
+import imaplib
+from typing import Any
+
+try:
+    from .mail_types import AccountConfig
+    from .mail_utils import as_bool, clamp_int, sanitize_list, sanitize_text
+    from .mail_protocol_support import MailControlError
+except ImportError:  # pragma: no cover - direct script import compatibility
+    from mail_types import AccountConfig  # type: ignore
+    from mail_utils import as_bool, clamp_int, sanitize_list, sanitize_text  # type: ignore
+    from mail_protocol_support import MailControlError  # type: ignore
+
+class ImapAdapter:
+    def __init__(self, timeout_seconds: int = 30):
+        self.timeout_seconds = timeout_seconds
+
+    def _connect(self, account: AccountConfig, creds: dict[str, str]) -> imaplib.IMAP4:
+        if account.imap_tls:
+            client: imaplib.IMAP4 = imaplib.IMAP4_SSL(
+                account.imap_host, account.imap_port, timeout=self.timeout_seconds
+            )
+        else:
+            client = imaplib.IMAP4(
+                account.imap_host, account.imap_port, timeout=self.timeout_seconds
+            )
+        status, _ = client.login(creds["username"], creds["password"])
+        if status != "OK":
+            raise MailControlError("AUTH_FAILED", "IMAP authentication failed.")
+        return client
+
+    def _fetch_message_object(
+        self, client: imaplib.IMAP4, uid: str, fetch_spec: str = "(BODY.PEEK[] FLAGS)"
+    ) -> email.message.Message:
+        f_status, f_data = client.uid("FETCH", uid, fetch_spec)
+        if f_status != "OK" or not f_data:
+            raise MailControlError("IMAP_FETCH_FAILED", f"Unable to fetch uid={uid}")
+        raw = b""
+        for part in f_data:
+            if (
+                isinstance(part, tuple)
+                and len(part) > 1
+                and isinstance(part[1], (bytes, bytearray))
+            ):
+                raw += bytes(part[1])
+        return email.message_from_bytes(raw)
+
+    def get_capabilities(
+        self, account: AccountConfig, creds: dict[str, str]
+    ) -> dict[str, Any]:
+        with self._connect(account, creds) as client:
+            caps = sorted(
+                [
+                    c.decode("utf-8", errors="replace")
+                    for c in (client.capabilities or [])
+                ]
+            )
+            return {"capabilities": caps}
+
+    def list_mailboxes(
+        self, account: AccountConfig, creds: dict[str, str]
+    ) -> dict[str, Any]:
+        with self._connect(account, creds) as client:
+            status, data = client.list()
+            if status != "OK":
+                raise MailControlError("IMAP_LIST_FAILED", "Unable to list mailboxes.")
+            boxes = [
+                line.decode("utf-8", errors="replace") for line in (data or []) if line
+            ]
+            return {"mailboxes": boxes}
+
+    def query_messages(
+        self, account: AccountConfig, creds: dict[str, str], payload: dict[str, Any]
+    ) -> dict[str, Any]:
+        mailbox = sanitize_text(payload.get("mailbox", "INBOX"), 128)
+        query = sanitize_text(payload.get("query", "ALL"), 256)
+        lim = clamp_int(payload.get("lim"), 25, 1, 100)
+        offset = clamp_int(payload.get("offset"), 0, 0, 1_000_000)
+        with self._connect(account, creds) as client:
+            status, _ = client.select(mailbox, readonly=True)
+            if status != "OK":
+                raise MailControlError(
+                    "IMAP_SELECT_FAILED", f"Cannot select mailbox: {mailbox}"
+                )
+            status, data = client.uid("SEARCH", None, query)
+            if status != "OK":
+                raise MailControlError("IMAP_SEARCH_FAILED", "Search failed.")
+            uids = (data[0] or b"").decode("utf-8", errors="replace").split()
+            window = uids[offset : offset + lim]
+            items: list[dict[str, Any]] = []
+            for uid in window:
+                msg = self._fetch_message_object(
+                    client, uid, "(BODY.PEEK[HEADER.FIELDS (FROM SUBJECT DATE)] FLAGS)"
+                )
+                items.append(
+                    {
+                        "id": uid,
+                        "from": sanitize_text(msg.get("From", ""), 256),
+                        "sub": sanitize_text(msg.get("Subject", ""), 256),
+                        "dt": sanitize_text(msg.get("Date", ""), 128),
+                    }
+                )
+            next_offset = offset + len(window)
+            return {
+                "items": items,
+                "total": len(uids),
+                "next": next_offset if next_offset < len(uids) else None,
+            }
+
+    def get_message(
+        self, account: AccountConfig, creds: dict[str, str], payload: dict[str, Any]
+    ) -> dict[str, Any]:
+        mailbox = sanitize_text(payload.get("mailbox", "INBOX"), 128)
+        uid = sanitize_text(payload.get("id"), 64)
+        detail = as_bool(payload.get("detail"), False)
+        include_attachment_content = as_bool(
+            payload.get("include_attachment_content"), False
+        )
+        max_attachment_content = clamp_int(
+            payload.get("max_attachment_content_bytes"),
+            1024 * 1024,
+            1024,
+            100 * 1024 * 1024,
+        )
+        if not uid:
+            raise MailControlError("INVALID_ARGUMENT", "Message id is required.")
+        with self._connect(account, creds) as client:
+            status, _ = client.select(mailbox, readonly=True)
+            if status != "OK":
+                raise MailControlError(
+                    "IMAP_SELECT_FAILED", f"Cannot select mailbox: {mailbox}"
+                )
+            fetch_spec = (
+                "(BODY.PEEK[] FLAGS)"
+                if detail
+                else "(BODY.PEEK[HEADER] FLAGS BODYSTRUCTURE)"
+            )
+            msg = self._fetch_message_object(client, uid, fetch_spec=fetch_spec)
+            result: dict[str, Any] = {
+                "id": uid,
+                "from": sanitize_text(msg.get("From", ""), 256),
+                "to": sanitize_text(msg.get("To", ""), 256),
+                "cc": sanitize_text(msg.get("Cc", ""), 256),
+                "sub": sanitize_text(msg.get("Subject", ""), 256),
+                "dt": sanitize_text(msg.get("Date", ""), 128),
+            }
+            attachments: list[dict[str, Any]] = []
+            if detail:
+                body = ""
+                html_body = ""
+                if msg.is_multipart():
+                    for index, part in enumerate(msg.walk()):
+                        if part.is_multipart():
+                            continue
+                        ctype = part.get_content_type()
+                        disp = str(part.get("Content-Disposition", "")).lower()
+                        filename = sanitize_text(part.get_filename() or "", 256)
+                        payload_bytes = part.get_payload(decode=True) or b""
+                        if filename or "attachment" in disp:
+                            row = {
+                                "attachment_index": index,
+                                "filename": filename or f"attachment-{index}",
+                                "content_type": ctype,
+                                "size": len(payload_bytes),
+                                "content_id": sanitize_text(
+                                    str(part.get("Content-ID", "")), 128
+                                ),
+                                "content_disposition": disp,
+                            }
+                            if include_attachment_content:
+                                if len(payload_bytes) > max_attachment_content:
+                                    row["content_truncated"] = True
+                                    row["content_bytes_base64"] = base64.b64encode(
+                                        payload_bytes[:max_attachment_content]
+                                    ).decode("utf-8")
+                                else:
+                                    row["content_bytes_base64"] = base64.b64encode(
+                                        payload_bytes
+                                    ).decode("utf-8")
+                            attachments.append(row)
+                            continue
+                        if ctype == "text/plain":
+                            body = payload_bytes.decode(errors="replace")
+                        elif ctype == "text/html":
+                            html_body = payload_bytes.decode(errors="replace")
+                else:
+                    raw_body = msg.get_payload(decode=True) or b""
+                    body = raw_body.decode(errors="replace")
+                    html_body = ""
+                result["body"] = sanitize_text(body, 400000)
+                if html_body:
+                    result["body_html"] = sanitize_text(html_body, 800000)
+            result["attachments"] = attachments
+            return result
+
+    def get_attachment(
+        self, account: AccountConfig, creds: dict[str, str], payload: dict[str, Any]
+    ) -> dict[str, Any]:
+        mailbox = sanitize_text(payload.get("mailbox", "INBOX"), 128)
+        uid = sanitize_text(payload.get("id"), 64)
+        attachment_index = clamp_int(payload.get("attachment_index"), -1, -1, 10_000)
+        if not uid:
+            raise MailControlError("INVALID_ARGUMENT", "Message id is required.")
+        if attachment_index < 0:
+            raise MailControlError("INVALID_ARGUMENT", "attachment_index is required.")
+        chunk_size = clamp_int(payload.get("chunk_size"), 256 * 1024, 1024, 1024 * 1024)
+        offset = clamp_int(payload.get("offset"), 0, 0, 1_000_000_000)
+        with self._connect(account, creds) as client:
+            status, _ = client.select(mailbox, readonly=True)
+            if status != "OK":
+                raise MailControlError(
+                    "IMAP_SELECT_FAILED", f"Cannot select mailbox: {mailbox}"
+                )
+            msg = self._fetch_message_object(
+                client, uid, fetch_spec="(BODY.PEEK[] FLAGS)"
+            )
+            candidates: list[email.message.Message] = []
+            for part in msg.walk():
+                if part.is_multipart():
+                    continue
+                disp = str(part.get("Content-Disposition", "")).lower()
+                filename = part.get_filename()
+                if filename or "attachment" in disp:
+                    candidates.append(part)
+            if attachment_index >= len(candidates):
+                raise MailControlError(
+                    "ATTACHMENT_NOT_FOUND", "attachment_index out of range."
+                )
+            target = candidates[attachment_index]
+            content = target.get_payload(decode=True) or b""
+            end = min(len(content), offset + chunk_size)
+            chunk = content[offset:end]
+            filename = sanitize_text(
+                target.get_filename() or f"attachment-{attachment_index}", 256
+            )
+            return {
+                "id": uid,
+                "attachment_index": attachment_index,
+                "filename": filename,
+                "content_type": target.get_content_type(),
+                "size": len(content),
+                "offset": offset,
+                "chunk_size": len(chunk),
+                "content_bytes_base64": base64.b64encode(chunk).decode("utf-8"),
+                "next_offset": end if end < len(content) else None,
+                "done": end >= len(content),
+            }
+
+    def mutate(
+        self, account: AccountConfig, creds: dict[str, str], payload: dict[str, Any]
+    ) -> dict[str, Any]:
+        action = sanitize_text(payload.get("mutate_action"), 64)
+        mailbox = sanitize_text(payload.get("mailbox", "INBOX"), 128)
+        uids = sanitize_list(payload.get("uids", []), 64, 1000)
+        with self._connect(account, creds) as client:
+            status, _ = client.select(mailbox)
+            if status != "OK":
+                raise MailControlError(
+                    "IMAP_SELECT_FAILED", f"Cannot select mailbox: {mailbox}"
+                )
+            uid_set = ",".join(uids)
+            if action in {"set_flags", "clear_flags"}:
+                flags = sanitize_text(payload.get("flags", "\\Seen"), 128)
+                op = "+FLAGS" if action == "set_flags" else "-FLAGS"
+                m_status, _ = client.uid("STORE", uid_set, op, flags)
+                if m_status != "OK":
+                    raise MailControlError("IMAP_STORE_FAILED", "Flag update failed.")
+                return {"updated": len(uids), "action": action}
+            if action == "copy_messages":
+                target = sanitize_text(payload.get("target_mailbox"), 128)
+                m_status, _ = client.uid("COPY", uid_set, target)
+                if m_status != "OK":
+                    raise MailControlError("IMAP_COPY_FAILED", "Copy failed.")
+                return {"copied": len(uids), "target": target}
+            if action == "move_messages":
+                target = sanitize_text(payload.get("target_mailbox"), 128)
+                supports_move = b"MOVE" in (client.capabilities or ())
+                if supports_move:
+                    m_status, _ = client.uid("MOVE", uid_set, target)
+                    if m_status != "OK":
+                        raise MailControlError("IMAP_MOVE_FAILED", "MOVE failed.")
+                else:
+                    c_status, _ = client.uid("COPY", uid_set, target)
+                    if c_status != "OK":
+                        raise MailControlError(
+                            "IMAP_MOVE_FAILED", "MOVE fallback COPY failed."
+                        )
+                    s_status, _ = client.uid("STORE", uid_set, "+FLAGS", "(\\Deleted)")
+                    if s_status != "OK":
+                        raise MailControlError(
+                            "IMAP_MOVE_FAILED", "MOVE fallback STORE failed."
+                        )
+                    e_status, _ = client.expunge()
+                    if e_status != "OK":
+                        raise MailControlError(
+                            "IMAP_MOVE_FAILED", "MOVE fallback EXPUNGE failed."
+                        )
+                return {"moved": len(uids), "target": target}
+            if action == "delete_messages":
+                s_status, _ = client.uid("STORE", uid_set, "+FLAGS", "(\\Deleted)")
+                if s_status != "OK":
+                    raise MailControlError("IMAP_DELETE_FAILED", "Delete mark failed.")
+                return {"deleted_marked": len(uids)}
+            if action == "expunge_mailbox":
+                e_status, _ = client.expunge()
+                if e_status != "OK":
+                    raise MailControlError("IMAP_EXPUNGE_FAILED", "Expunge failed.")
+                return {"expunged": True}
+            if action == "create_mailbox":
+                target = sanitize_text(payload.get("target_mailbox"), 128)
+                c_status, _ = client.create(target)
+                if c_status != "OK":
+                    raise MailControlError(
+                        "IMAP_CREATE_FAILED", "Create mailbox failed."
+                    )
+                return {"created": target}
+            if action == "rename_mailbox":
+                src = sanitize_text(payload.get("source_mailbox"), 128)
+                dst = sanitize_text(payload.get("target_mailbox"), 128)
+                r_status, _ = client.rename(src, dst)
+                if r_status != "OK":
+                    raise MailControlError(
+                        "IMAP_RENAME_FAILED", "Rename mailbox failed."
+                    )
+                return {"renamed": {"from": src, "to": dst}}
+            if action == "delete_mailbox":
+                target = sanitize_text(payload.get("target_mailbox"), 128)
+                d_status, _ = client.delete(target)
+                if d_status != "OK":
+                    raise MailControlError(
+                        "IMAP_DELETE_MAILBOX_FAILED", "Delete mailbox failed."
+                    )
+                return {"deleted_mailbox": target}
+        raise MailControlError(
+            "INVALID_ARGUMENT", f"Unsupported mutate action: {action}"
+        )
