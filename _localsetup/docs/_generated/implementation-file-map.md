@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 6e073b51dbc09f403b9d643d30239789812e4cd62d87c62e815c8a4e0e2bd8dd
+  source_provenance_hash: 1608c58565262d2c29860d147038360eeeaa2a4535fbda0e974977fa1f5d5a65
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: b7d88c72afa658389ec65ddf41f0f4ba80bc247c
-artifact_sha256: 9bab0cd46796556ee94b1558336f8844dea46ad86d3fe9bbf34647a73b3f1e62
+source_commit: 82d43847bcb1d6047714690e347c6834d7e9685b
+artifact_sha256: 3634bb73c39fa9c25d44c08bfe9fe2c1f5642f464cd838b622addfa902f4a460
 ---
 # Implementation File Map
 
@@ -520,6 +520,8 @@ artifact_sha256: 9bab0cd46796556ee94b1558336f8844dea46ad86d3fe9bbf34647a73b3f1e6
 | `keep` | `_localsetup/skills/ls-mail-protocol-control/scripts/crypto_engine.py` |
 | `keep` | `_localsetup/skills/ls-mail-protocol-control/scripts/crypto_types.py` |
 | `keep` | `_localsetup/skills/ls-mail-protocol-control/scripts/mail_protocol_control.py` |
+| `keep` | `_localsetup/skills/ls-mail-protocol-control/scripts/mail_protocol_imap.py` |
+| `keep` | `_localsetup/skills/ls-mail-protocol-control/scripts/mail_protocol_support.py` |
 | `keep` | `_localsetup/skills/ls-mail-protocol-control/scripts/mail_types.py` |
 | `keep` | `_localsetup/skills/ls-mail-protocol-control/scripts/mail_utils.py` |
 | `keep` | `_localsetup/skills/ls-mail-protocol-control/scripts/mcp_server.py` |
