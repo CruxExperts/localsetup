@@ -9,6 +9,15 @@ import argparse
 from enum import Enum
 
 from cli_support import SkillCliError, emit_json, fail, read_json, read_text
+from tdd_quality import (
+    avg_identifier_length,
+    check_minimal_implementation,
+    check_quality_improvement,
+    duplicate_line_count,
+    max_nesting_depth,
+    significant_line_count,
+    suggest_refactorings,
+)
 
 
 class TDDPhase(Enum):
@@ -266,137 +275,25 @@ class TDDWorkflow:
             }
 
     def _check_minimal_implementation(self, code: str) -> bool:
-        """Check if implementation is minimal (heuristic)."""
-        # Simple heuristics:
-        # - Not too long (< 50 lines for unit tests)
-        # - Not too complex (few nested structures)
-
-        lines = code.split('\n')
-        non_empty_lines = [line for line in lines if line.strip() and not line.strip().startswith('#')]
-
-        # Check length
-        if len(non_empty_lines) > 50:
-            return False
-
-        # Check nesting depth (simplified)
-        max_depth = 0
-        current_depth = 0
-        for line in lines:
-            stripped = line.lstrip()
-            if stripped:
-                indent = len(line) - len(stripped)
-                depth = indent // 4  # Assuming 4-space indent
-                max_depth = max(max_depth, depth)
-
-        # Max nesting of 3 levels for simple implementation
-        return max_depth <= 3
+        return check_minimal_implementation(code)
 
     def _check_quality_improvement(self, original: str, refactored: str) -> bool:
-        """Check if refactoring improved code quality."""
-        if not original.strip() or not refactored.strip():
-            return False
-        if original == refactored:
-            return False
-
-        original_duplicates = self._duplicate_line_count(original)
-        refactored_duplicates = self._duplicate_line_count(refactored)
-        original_nesting = self._max_nesting_depth(original)
-        refactored_nesting = self._max_nesting_depth(refactored)
-        original_lines = self._significant_line_count(original)
-        refactored_lines = self._significant_line_count(refactored)
-
-        original_avg_identifier_length = self._avg_identifier_length(original)
-        refactored_avg_identifier_length = self._avg_identifier_length(refactored)
-
-        checks = [
-            refactored_duplicates < original_duplicates,
-            refactored_nesting < original_nesting,
-            (
-                refactored_avg_identifier_length > original_avg_identifier_length
-                and refactored_lines <= max(original_lines + 5, int(original_lines * 1.25))
-            ),
-            refactored_lines < original_lines and refactored_nesting <= original_nesting,
-        ]
-        return any(checks)
+        return check_quality_improvement(original, refactored)
 
     def _significant_line_count(self, code: str) -> int:
-        """Count non-empty, non-comment lines."""
-        return sum(
-            1 for line in code.split('\n')
-            if line.strip() and not line.strip().startswith(('#', '//'))
-        )
+        return significant_line_count(code)
 
     def _duplicate_line_count(self, code: str) -> int:
-        """Count repeated non-trivial lines."""
-        counts = {}
-        for line in code.split('\n'):
-            stripped = line.strip()
-            if len(stripped) > 10:
-                counts[stripped] = counts.get(stripped, 0) + 1
-        return sum(count - 1 for count in counts.values() if count > 1)
+        return duplicate_line_count(code)
 
     def _max_nesting_depth(self, code: str) -> int:
-        """Estimate maximum indentation-based nesting depth."""
-        max_depth = 0
-        for line in code.split('\n'):
-            stripped = line.lstrip()
-            if stripped:
-                indent = len(line) - len(stripped)
-                max_depth = max(max_depth, indent // 4)
-        return max_depth
+        return max_nesting_depth(code)
 
     def _avg_identifier_length(self, code: str) -> float:
-        """Calculate average identifier length (proxy for naming quality)."""
-        import re
-        identifiers = re.findall(r'\b[a-zA-Z_][a-zA-Z0-9_]*\b', code)
-
-        # Filter out keywords
-        keywords = {'if', 'else', 'for', 'while', 'def', 'class', 'return', 'import', 'from'}
-        identifiers = [i for i in identifiers if i.lower() not in keywords]
-
-        if not identifiers:
-            return 0.0
-
-        return sum(len(i) for i in identifiers) / len(identifiers)
+        return avg_identifier_length(code)
 
     def _suggest_refactorings(self, code: str) -> List[str]:
-        """Suggest potential refactorings."""
-        suggestions = []
-
-        # Check for long functions
-        lines = code.split('\n')
-        if len(lines) > 30:
-            suggestions.append('Consider breaking long function into smaller functions')
-
-        # Check for duplication (simple check)
-        line_counts = {}
-        for line in lines:
-            stripped = line.strip()
-            if len(stripped) > 10:  # Ignore very short lines
-                line_counts[stripped] = line_counts.get(stripped, 0) + 1
-
-        duplicates = [line for line, count in line_counts.items() if count > 2]
-        if duplicates:
-            suggestions.append(f'Found {len(duplicates)} duplicated code patterns - consider extraction')
-
-        # Check for magic numbers
-        import re
-        magic_numbers = re.findall(r'\b\d+\b', code)
-        if len(magic_numbers) > 5:
-            suggestions.append('Consider extracting magic numbers to named constants')
-
-        # Check for long parameter lists
-        if 'def ' in code or 'function' in code:
-            param_matches = re.findall(r'\(([^)]+)\)', code)
-            for params in param_matches:
-                if params.count(',') > 3:
-                    suggestions.append('Consider using parameter object for functions with many parameters')
-                    break
-
-        if not suggestions:
-            suggestions.append('Code looks clean - no obvious refactorings needed')
-
-        return suggestions
+        return suggest_refactorings(code)
 
     def generate_workflow_summary(self) -> str:
         """Generate summary of TDD workflow progress."""

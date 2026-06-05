@@ -10,6 +10,12 @@ import argparse
 import re
 
 from cli_support import SkillCliError, emit_json, fail, read_json, read_text
+from metrics_complexity import (
+    cognitive_complexity,
+    complexity_assessment,
+    cyclomatic_complexity,
+    testability_score,
+)
 
 
 class MetricsCalculator:
@@ -70,100 +76,16 @@ class MetricsCalculator:
         }
 
     def _cyclomatic_complexity(self, code: str) -> int:
-        """
-        Calculate cyclomatic complexity (simplified).
-
-        Counts decision points: if, for, while, case, catch, &&, ||
-        """
-        # Count decision points
-        decision_points = 0
-
-        # Control flow keywords
-        keywords = ['if', 'for', 'while', 'case', 'catch', 'except']
-        for keyword in keywords:
-            # Use word boundaries to avoid matching substrings
-            pattern = r'\b' + keyword + r'\b'
-            decision_points += len(re.findall(pattern, code))
-
-        # Logical operators
-        decision_points += len(re.findall(r'\&\&|\|\|', code))
-
-        # Base complexity is 1
-        return decision_points + 1
+        return cyclomatic_complexity(code)
 
     def _cognitive_complexity(self, code: str) -> int:
-        """
-        Calculate cognitive complexity (simplified).
-
-        Similar to cyclomatic but penalizes nesting and non-obvious flow.
-        """
-        lines = code.split('\n')
-        cognitive_score = 0
-        nesting_level = 0
-
-        for line in lines:
-            stripped = line.strip()
-
-            # Increase nesting level
-            if any(keyword in stripped for keyword in ['if ', 'for ', 'while ', 'def ', 'function ', 'class ']):
-                cognitive_score += (1 + nesting_level)
-                if stripped.endswith(':') or stripped.endswith('{'):
-                    nesting_level += 1
-
-            # Decrease nesting level
-            if stripped.startswith('}') or (stripped and not stripped.startswith(' ') and nesting_level > 0):
-                nesting_level = max(0, nesting_level - 1)
-
-            # Penalize complex conditions
-            if '&&' in stripped or '||' in stripped:
-                cognitive_score += 1
-
-        return cognitive_score
+        return cognitive_complexity(code)
 
     def _testability_score(self, code: str, cyclomatic: int) -> float:
-        """
-        Calculate testability score (0-100).
-
-        Based on:
-        - Complexity (lower is better)
-        - Dependencies (fewer is better)
-        - Pure functions (more is better)
-        """
-        score = 100.0
-
-        # Penalize high complexity
-        if cyclomatic > 10:
-            score -= (cyclomatic - 10) * 5
-        elif cyclomatic > 5:
-            score -= (cyclomatic - 5) * 2
-
-        # Penalize many dependencies
-        imports = len(re.findall(r'import |require\(|from .* import', code))
-        if imports > 10:
-            score -= (imports - 10) * 2
-
-        # Reward small functions
-        functions = len(re.findall(r'def |function ', code))
-        lines = len(code.split('\n'))
-        if functions > 0:
-            avg_function_size = lines / functions
-            if avg_function_size < 20:
-                score += 10
-            elif avg_function_size > 50:
-                score -= 10
-
-        return max(0.0, min(100.0, score))
+        return testability_score(code, cyclomatic)
 
     def _complexity_assessment(self, cyclomatic: int, cognitive: int) -> str:
-        """Generate complexity assessment."""
-        if cyclomatic <= 5 and cognitive <= 10:
-            return "Low complexity - easy to test"
-        elif cyclomatic <= 10 and cognitive <= 20:
-            return "Medium complexity - moderately testable"
-        elif cyclomatic <= 15 and cognitive <= 30:
-            return "High complexity - challenging to test"
-        else:
-            return "Very high complexity - consider refactoring"
+        return complexity_assessment(cyclomatic, cognitive)
 
     def calculate_test_quality(self, test_code: str) -> Dict[str, Any]:
         """

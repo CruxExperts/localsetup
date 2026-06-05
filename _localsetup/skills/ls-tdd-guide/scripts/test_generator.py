@@ -1,9 +1,4 @@
-"""
-Test case generation module.
-
-Generates test cases from requirements, user stories, API specs, and code analysis.
-Supports multiple testing frameworks with intelligent test scaffolding.
-"""
+"""Generate test cases and test files from requirement inputs."""
 
 from typing import Dict, List, Any, Optional
 import argparse
@@ -32,13 +27,6 @@ class TestGenerator:
     """Generate test cases and test stubs from requirements and code."""
 
     def __init__(self, framework: TestFramework, language: str):
-        """
-        Initialize test generator.
-
-        Args:
-            framework: Testing framework to use
-            language: Programming language (typescript, javascript, python, java)
-        """
         self.framework = framework
         self.language = language
         self.test_cases = []
