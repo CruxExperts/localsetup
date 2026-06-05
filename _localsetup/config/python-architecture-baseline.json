@@ -51,16 +51,6 @@
       "threshold": 700
     },
     {
-      "current_value": 708,
-      "id": "pya-baseline-tools-tmux-terminal-mode",
-      "metric": "lines",
-      "notes": "Terminal mode edits user shell/profile state and needs guarded refactor coverage.",
-      "owner": "ls-workflow-tmux-terminal-mode",
-      "path": "_localsetup/tools/tmux_terminal_mode.py",
-      "reason": "Existing terminal-mode workflow debt predates this architecture standard and is user-environment-sensitive.",
-      "threshold": 700
-    },
-    {
       "current_value": 957,
       "id": "pya-baseline-skill-cloudflare-dns-cf-dns",
       "metric": "lines",

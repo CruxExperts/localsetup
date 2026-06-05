@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 9187694d2016b40924d6cb83587bdf2a62d0f45fcf950d9b91295182ff9a0451
+  source_provenance_hash: 9cc16f15f6523b8383d83674690b7f64c16baae7db2a1e1ed9f6feb189b9ded5
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: 93f8928326e795079a9c638b9bdd79763f0112ae
-artifact_sha256: 4185a735853d6984bd96f668325e61bf455d5bf92f9070fbb796d1ed7a0f36ff
+source_commit: 206e9244fddc577b4ef65d2ca50b113d078a1bea
+artifact_sha256: 60ccae8fc1c5828c35f5d5d2078c4f1fe148fb3de8acdef4af6787d220eaa0ec
 ---
 # Implementation File Map
 
@@ -171,6 +171,11 @@ artifact_sha256: 4185a735853d6984bd96f668325e61bf455d5bf92f9070fbb796d1ed7a0f36f
 | `refactor` | `_localsetup/core/tmux_ops/session.py` |
 | `refactor` | `_localsetup/core/tmux_ops/state.py` |
 | `refactor` | `_localsetup/core/tmux_ops/tmux.py` |
+| `refactor` | `_localsetup/core/tmux_terminal_mode/__init__.py` |
+| `refactor` | `_localsetup/core/tmux_terminal_mode/cli.py` |
+| `refactor` | `_localsetup/core/tmux_terminal_mode/constants.py` |
+| `refactor` | `_localsetup/core/tmux_terminal_mode/io.py` |
+| `refactor` | `_localsetup/core/tmux_terminal_mode/layers.py` |
 | `refactor` | `_localsetup/core/trace.py` |
 | `refactor` | `_localsetup/core/verify.py` |
 | `refactor` | `_localsetup/core/versioning.py` |
@@ -589,6 +594,8 @@ artifact_sha256: 4185a735853d6984bd96f668325e61bf455d5bf92f9070fbb796d1ed7a0f36f
 | `keep` | `_localsetup/skills/ls-omniroute/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-pr-reviewer/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-pr-reviewer/scripts/pr_review.py` |
+| `keep` | `_localsetup/skills/ls-pr-reviewer/scripts/pr_review_analysis.py` |
+| `keep` | `_localsetup/skills/ls-pr-reviewer/scripts/pr_review_report.py` |
 | `keep` | `_localsetup/skills/ls-pr-reviewer/scripts/tests/test_pr_review_inputs.py` |
 | `keep` | `_localsetup/skills/ls-public-repo-identity/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-receiving-code-review/SKILL.md` |
@@ -722,6 +729,7 @@ artifact_sha256: 4185a735853d6984bd96f668325e61bf455d5bf92f9070fbb796d1ed7a0f36f
 | `keep` | `_localsetup/tests/test_scrapling_jobs.py` |
 | `keep` | `_localsetup/tests/test_skill_sandbox_tester.py` |
 | `keep` | `_localsetup/tests/test_tmux_ops.py` |
+| `keep` | `_localsetup/tests/test_tmux_terminal_mode.py` |
 | `keep` | `_localsetup/tests/test_validation_tooling.py` |
 | `keep` | `_localsetup/tests/test_versioning.py` |
 | `keep` | `_localsetup/tests/test_versioning_release_push.py` |
