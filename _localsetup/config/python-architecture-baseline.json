@@ -129,16 +129,6 @@
       "path": "_localsetup/tests/test_install_flow.py",
       "reason": "Existing shared test debt found during repo-wide standards audit; split only with install compatibility inventory.",
       "threshold": 700
-    },
-    {
-      "current_value": 890,
-      "id": "pya-baseline-tests-manifests",
-      "metric": "lines",
-      "notes": "Manifest tests cover schema, parsing, catalog, and install-facing contracts.",
-      "owner": "ls-script-and-docs-quality",
-      "path": "_localsetup/tests/test_manifests.py",
-      "reason": "Existing shared test debt found during repo-wide standards audit; split only with schema fixture coverage preserved.",
-      "threshold": 700
     }
   ],
   "generated_at": "2026-06-05",

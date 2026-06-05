@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 69ca368c6d2ca1af3288ef0f8814ffd866c8ee05a000ac1edeea38b15e269633
+  source_provenance_hash: 584ecc3bb5c8fdac025bd9131d0d7710de5e75ccf8760cbdc8c29e3ddd2f5b0b
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: 3ed663064efd13c061fb20d36c5b86e17bac8ad4
-artifact_sha256: 42b01d0b184e9d8464f7cc56d9e37e70c0a01fb33c45b43f0e13f56dc4f33bf0
+source_commit: 402ec490f3f00ba7965087d3b98417be86147cb8
+artifact_sha256: 741c5670848e68f4d2efe269fad9f3e2d340b86a31b69bb6c930f8db93c00bfa
 ---
 # Implementation File Map
 
@@ -714,6 +714,7 @@ artifact_sha256: 42b01d0b184e9d8464f7cc56d9e37e70c0a01fb33c45b43f0e13f56dc4f33bf
 | `keep` | `_localsetup/tests/automated_test.py` |
 | `keep` | `_localsetup/tests/automated_test.sh` |
 | `keep` | `_localsetup/tests/conftest.py` |
+| `keep` | `_localsetup/tests/manifest_test_helpers.py` |
 | `keep` | `_localsetup/tests/skill_smoke_commands.yaml` |
 | `keep` | `_localsetup/tests/test_adapter_parser.py` |
 | `keep` | `_localsetup/tests/test_candidate_skill_cli.py` |
@@ -733,6 +734,7 @@ artifact_sha256: 42b01d0b184e9d8464f7cc56d9e37e70c0a01fb33c45b43f0e13f56dc4f33bf
 | `keep` | `_localsetup/tests/test_ls_linux_patcher_patch_cli.py` |
 | `keep` | `_localsetup/tests/test_manifests.py` |
 | `keep` | `_localsetup/tests/test_omniroute_update.py` |
+| `keep` | `_localsetup/tests/test_plugin_packs.py` |
 | `keep` | `_localsetup/tests/test_provenance.py` |
 | `keep` | `_localsetup/tests/test_python_architecture_check.py` |
 | `keep` | `_localsetup/tests/test_python_runtime_contract.py` |
@@ -746,6 +748,7 @@ artifact_sha256: 42b01d0b184e9d8464f7cc56d9e37e70c0a01fb33c45b43f0e13f56dc4f33bf
 | `keep` | `_localsetup/tests/test_validation_tooling.py` |
 | `keep` | `_localsetup/tests/test_versioning.py` |
 | `keep` | `_localsetup/tests/test_versioning_release_push.py` |
+| `keep` | `_localsetup/tests/test_workflow_manifests.py` |
 | `keep` | `_localsetup/tests/versioning_test_helpers.py` |
 | `keep` | `_localsetup/tools/agentq_transport_client/README.md` |
 | `keep` | `_localsetup/tools/agentq_transport_client/agentq_cli.py` |
