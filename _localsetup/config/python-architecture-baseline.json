@@ -1,0 +1,87 @@
+{
+  "entries": [
+    {
+      "current_value": 1755,
+      "id": "pya-baseline-core-cli",
+      "metric": "lines",
+      "notes": "Broad command dispatcher; future work should move large command families into domain packages.",
+      "owner": "ls-script-and-docs-quality",
+      "path": "_localsetup/core/cli.py",
+      "reason": "Existing command dispatcher debt predates this architecture standard and is compatibility-sensitive.",
+      "threshold": 700
+    },
+    {
+      "current_value": 1027,
+      "id": "pya-baseline-core-repair",
+      "metric": "lines",
+      "notes": "Repair workflows span adapter preservation, dependency repair, and install-state checks.",
+      "owner": "ls-script-and-docs-quality",
+      "path": "_localsetup/core/repair.py",
+      "reason": "Existing repair workflow debt predates this architecture standard and requires compatibility inventory before splitting.",
+      "threshold": 700
+    },
+    {
+      "current_value": 744,
+      "id": "pya-baseline-core-versioning",
+      "metric": "lines",
+      "notes": "Versioning is release-sensitive; refactor only with publish-preflight coverage.",
+      "owner": "ls-script-and-docs-quality",
+      "path": "_localsetup/core/versioning.py",
+      "reason": "Existing versioning workflow debt predates this architecture standard and is release-contract-sensitive.",
+      "threshold": 700
+    },
+    {
+      "current_value": 1725,
+      "id": "pya-baseline-core-wizard",
+      "metric": "lines",
+      "notes": "Interactive flow should be split only with focused install/wizard coverage.",
+      "owner": "ls-script-and-docs-quality",
+      "path": "_localsetup/core/wizard.py",
+      "reason": "Existing wizard debt predates this architecture standard and spans many install prompts.",
+      "threshold": 700
+    },
+    {
+      "current_value": 807,
+      "id": "pya-baseline-tools-docs-alignment",
+      "metric": "lines",
+      "notes": "Docs alignment spans generated artifacts and public documentation contracts.",
+      "owner": "ls-docs-organization",
+      "path": "_localsetup/tools/docs_alignment.py",
+      "reason": "Existing docs-alignment debt predates this architecture standard and is public-doc-contract-sensitive.",
+      "threshold": 700
+    },
+    {
+      "current_value": 775,
+      "id": "pya-baseline-tools-skill-index-scrub",
+      "metric": "lines",
+      "notes": "Skill index scrub includes external fetch and schema repair paths.",
+      "owner": "ls-skill-discovery",
+      "path": "_localsetup/tools/skill_index_scrub.py",
+      "reason": "Existing skill-index maintenance debt predates this architecture standard and should be split only with fixture coverage.",
+      "threshold": 700
+    },
+    {
+      "current_value": 708,
+      "id": "pya-baseline-tools-tmux-terminal-mode",
+      "metric": "lines",
+      "notes": "Terminal mode edits user shell/profile state and needs guarded refactor coverage.",
+      "owner": "ls-workflow-tmux-terminal-mode",
+      "path": "_localsetup/tools/tmux_terminal_mode.py",
+      "reason": "Existing terminal-mode workflow debt predates this architecture standard and is user-environment-sensitive.",
+      "threshold": 700
+    },
+    {
+      "current_value": 859,
+      "id": "pya-baseline-tools-tmux-ops",
+      "metric": "lines",
+      "notes": "Tmux ops includes command execution, status, cancellation, and JSON contracts.",
+      "owner": "ls-workflow-ops-tmux-session",
+      "path": "_localsetup/tools/tmux_ops.py",
+      "reason": "Existing tmux ops workflow debt predates this architecture standard and is command-contract-sensitive.",
+      "threshold": 700
+    }
+  ],
+  "generated_at": "2026-06-05",
+  "schema_version": "1.0",
+  "scope": "framework"
+}

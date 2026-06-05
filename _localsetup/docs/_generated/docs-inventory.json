@@ -129,8 +129,8 @@
     "workflow"
   ],
   "counts": {
-    "docs": 374,
-    "framework_docs": 62,
+    "docs": 375,
+    "framework_docs": 63,
     "generated_docs": 5,
     "platforms": 6,
     "public_docs": 6,
@@ -500,6 +500,16 @@
       "owner_package": "",
       "owner_skill": "ls-agentq-transport",
       "path": "_localsetup/docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md",
+      "status": "ACTIVE",
+      "version": "4.0"
+    },
+    {
+      "class": "framework",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "ls-script-and-docs-quality",
+      "path": "_localsetup/docs/PYTHON_ARCHITECTURE_STANDARD.md",
       "status": "ACTIVE",
       "version": "4.0"
     },
@@ -3926,16 +3936,16 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "7ce07fd4bc6c5143e13f2b66ec8a97eb873306ff2df9be4658fe6ea22ff889ae",
+    "artifact_sha256": "d98cd6c3c1f2a6a02854d74a4809a729c70d1f2b688c7c47abe4b8ae4f9b4072",
     "emitter": "docs-align",
     "framework_version": "4.0.20",
     "schema_version": 1,
-    "source_commit": "ef14ec1a95500622aba5e1a5bac04b95c6beb6df",
+    "source_commit": "7cb5ec690256d3ea39d1ad3b259cb4a608a1acae",
     "source_dirty": true,
-    "source_provenance_hash": "b3270f2e07da47c09ed5a41414a5bff4c82eea6c5f17265a16249cf93a0672e0",
-    "source_root_id": "07b917f799729e113e2c3b8b3855232f3117e4b7a89eae04f27ff3ed841cded7",
+    "source_provenance_hash": "5168c1a88d61b98a911db8266b8baaa764b9811ef7a572cba3caba7c5996ef78",
+    "source_root_id": "efa05d0addb654fe683bf537ab8c5210e294cfafb85406c911e2a2b46d0591d3",
     "source_tag": null,
-    "source_tree_sha": "0e337bd9eb557ad8587c2dcefcc1ccd6463c51cf"
+    "source_tree_sha": "680a04a7c49b4cf3aca8f542fce027fe5393c43c"
   },
   "repo": ".",
   "schema_version": "1.0",

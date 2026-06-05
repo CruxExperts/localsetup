@@ -101,6 +101,7 @@ Agent Q is the bidirectional handoff layer for PRD/spec exchange over file_drop 
 | [Document lifecycle](DOCUMENT_LIFECYCLE_MANAGEMENT.md) | ACTIVE, DRAFT, PROPOSAL, and deprecation rules. |
 | [Repo and data separation](REPO_AND_DATA_SEPARATION.md) | What belongs in source vs. local/generated state. |
 | [Tooling policy](TOOLING_POLICY.md) | Python-first tooling expectations and public docs constraints. |
+| [Python architecture standard](PYTHON_ARCHITECTURE_STANDARD.md) | Python architecture: new and substantially refactored Python tooling follows _localsetup/docs/PYTHON_ARCHITECTURE_STANDARD.md; keep entrypoints thin, package responsibilities explicit, and existing debt baseline-managed. |
 
 ## Public Project Links
 

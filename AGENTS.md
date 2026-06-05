@@ -28,6 +28,8 @@ This repository packages Localsetup, a repo-local framework for agent context, s
 
 Python-first framework tooling does not mean using Python for every shell task. Use standard shell tools for normal inspection and file discovery, such as `rg`, `sed`, `find`, `wc`, and `git`. Use Python when running repo-native Python tools, testing Python code, or parsing structured data where a normal CLI tool is unavailable or less reliable.
 
+Python architecture: new and substantially refactored Python tooling follows _localsetup/docs/PYTHON_ARCHITECTURE_STANDARD.md; keep entrypoints thin, package responsibilities explicit, and existing debt baseline-managed.
+
 ## Single Checkout Development Boundary
 
 Localsetup development is consolidated in this checkout. Do not create sibling clones, extra Git worktrees, release staging checkouts, PR-specific checkouts, or other repo-shaped directories for Localsetup work unless the user explicitly authorizes that specific path and purpose in the current task.

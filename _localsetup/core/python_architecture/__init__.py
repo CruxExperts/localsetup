@@ -1,0 +1,1 @@
+"""Python architecture checker package."""

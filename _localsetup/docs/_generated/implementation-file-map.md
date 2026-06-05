@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: b3270f2e07da47c09ed5a41414a5bff4c82eea6c5f17265a16249cf93a0672e0
+  source_provenance_hash: 5168c1a88d61b98a911db8266b8baaa764b9811ef7a572cba3caba7c5996ef78
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: ef14ec1a95500622aba5e1a5bac04b95c6beb6df
-artifact_sha256: 9b8a1a001c54dac8b07945bfe7f51997ac81385c967c27e473171cd2612ac0a4
+source_commit: 7cb5ec690256d3ea39d1ad3b259cb4a608a1acae
+artifact_sha256: 738a2b596e5e9aed0dd069fc4913bf9e78e1f4e5eef5e541f67e7343c19b6f7c
 ---
 # Implementation File Map
 
@@ -63,6 +63,7 @@ artifact_sha256: 9b8a1a001c54dac8b07945bfe7f51997ac81385c967c27e473171cd2612ac0a
 | `keep` | `VERSION` |
 | `keep` | `_localsetup/README.md` |
 | `keep` | `_localsetup/__init__.py` |
+| `keep` | `_localsetup/adapters/codex/agents/guardian_subagent.toml` |
 | `keep` | `_localsetup/config/agent_queue.example.yaml` |
 | `keep` | `_localsetup/config/agent_trust_registry.example.yaml` |
 | `keep` | `_localsetup/config/defaults/system_config.yaml` |
@@ -75,6 +76,7 @@ artifact_sha256: 9b8a1a001c54dac8b07945bfe7f51997ac81385c967c27e473171cd2612ac0a
 | `refactor` | `_localsetup/config/platforms.yaml` |
 | `keep` | `_localsetup/config/plugin-packs.schema.json` |
 | `keep` | `_localsetup/config/plugin-packs.yaml` |
+| `keep` | `_localsetup/config/python-architecture-baseline.json` |
 | `keep` | `_localsetup/config/skill-frontmatter.schema.json` |
 | `keep` | `_localsetup/config/workflow.schema.json` |
 | `refactor` | `_localsetup/core/__init__.py` |
@@ -86,6 +88,19 @@ artifact_sha256: 9b8a1a001c54dac8b07945bfe7f51997ac81385c967c27e473171cd2612ac0a
 | `refactor` | `_localsetup/core/cli.py` |
 | `refactor` | `_localsetup/core/config.py` |
 | `refactor` | `_localsetup/core/context.py` |
+| `refactor` | `_localsetup/core/context_index/__init__.py` |
+| `refactor` | `_localsetup/core/context_index/chunking.py` |
+| `refactor` | `_localsetup/core/context_index/cli.py` |
+| `refactor` | `_localsetup/core/context_index/common.py` |
+| `refactor` | `_localsetup/core/context_index/config.py` |
+| `refactor` | `_localsetup/core/context_index/embeddings.py` |
+| `refactor` | `_localsetup/core/context_index/inventory.py` |
+| `refactor` | `_localsetup/core/context_index/logs.py` |
+| `refactor` | `_localsetup/core/context_index/maintenance.py` |
+| `refactor` | `_localsetup/core/context_index/mcp.py` |
+| `refactor` | `_localsetup/core/context_index/operations.py` |
+| `refactor` | `_localsetup/core/context_index/search.py` |
+| `refactor` | `_localsetup/core/context_index/storage.py` |
 | `refactor` | `_localsetup/core/conversion.py` |
 | `refactor` | `_localsetup/core/dependencies.py` |
 | `refactor` | `_localsetup/core/diffing.py` |
@@ -109,6 +124,13 @@ artifact_sha256: 9b8a1a001c54dac8b07945bfe7f51997ac81385c967c27e473171cd2612ac0a
 | `refactor` | `_localsetup/core/plan.py` |
 | `refactor` | `_localsetup/core/plugin_packs.py` |
 | `refactor` | `_localsetup/core/provenance.py` |
+| `refactor` | `_localsetup/core/python_architecture/__init__.py` |
+| `refactor` | `_localsetup/core/python_architecture/cli.py` |
+| `refactor` | `_localsetup/core/python_architecture/config.py` |
+| `refactor` | `_localsetup/core/python_architecture/models.py` |
+| `refactor` | `_localsetup/core/python_architecture/reporting.py` |
+| `refactor` | `_localsetup/core/python_architecture/rules.py` |
+| `refactor` | `_localsetup/core/python_architecture/scanner.py` |
 | `refactor` | `_localsetup/core/query.py` |
 | `refactor` | `_localsetup/core/registry.py` |
 | `refactor` | `_localsetup/core/repair.py` |
@@ -149,6 +171,7 @@ artifact_sha256: 9b8a1a001c54dac8b07945bfe7f51997ac81385c967c27e473171cd2612ac0a
 | `keep` | `_localsetup/docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md` |
 | `keep` | `_localsetup/docs/PUBLIC_SKILL_INDEX.yaml` |
 | `keep` | `_localsetup/docs/PUBLIC_SKILL_REGISTRY.urls` |
+| `keep` | `_localsetup/docs/PYTHON_ARCHITECTURE_STANDARD.md` |
 | `keep` | `_localsetup/docs/QUICKSTART.md` |
 | `keep` | `_localsetup/docs/README.md` |
 | `keep` | `_localsetup/docs/REPO_AND_DATA_SEPARATION.md` |
@@ -654,6 +677,7 @@ artifact_sha256: 9b8a1a001c54dac8b07945bfe7f51997ac81385c967c27e473171cd2612ac0a
 | `keep` | `_localsetup/tests/test_manifests.py` |
 | `keep` | `_localsetup/tests/test_omniroute_update.py` |
 | `keep` | `_localsetup/tests/test_provenance.py` |
+| `keep` | `_localsetup/tests/test_python_architecture_check.py` |
 | `keep` | `_localsetup/tests/test_python_runtime_contract.py` |
 | `keep` | `_localsetup/tests/test_qc_patrol.py` |
 | `keep` | `_localsetup/tests/test_repo_finalizer.py` |
@@ -698,6 +722,7 @@ artifact_sha256: 9b8a1a001c54dac8b07945bfe7f51997ac81385c967c27e473171cd2612ac0a
 | `keep` | `_localsetup/tools/docs_alignment.py` |
 | `keep` | `_localsetup/tools/generate_docs_artifacts.py` |
 | `refactor` | `_localsetup/tools/localsetup.py` |
+| `keep` | `_localsetup/tools/python_architecture_check.py` |
 | `keep` | `_localsetup/tools/refresh_public_skill_index.py` |
 | `keep` | `_localsetup/tools/scrapling_helper/__init__.py` |
 | `keep` | `_localsetup/tools/scrapling_helper/adapter_parser.py` |

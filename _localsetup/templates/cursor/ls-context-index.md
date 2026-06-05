@@ -3,6 +3,7 @@
 | Asset | Description | When applied |
 |-------|-------------|--------------|
 | ls-context.mdc | Master rule: overview, invariants, skills index, docs index | Always |
+| _localsetup/docs/PYTHON_ARCHITECTURE_STANDARD.md | Python architecture: new and substantially refactored Python tooling follows _localsetup/docs/PYTHON_ARCHITECTURE_STANDARD.md; keep entrypoints thin, package responsibilities explicit, and existing debt baseline-managed. | Python framework tooling changes |
 | ls-workflow-spec-clarify-reverse | Decision tree / reverse prompt; one Q per turn, 4 options A-D | User says "decision tree" or "reverse prompt"; editing .agent/queue/**, PRD |
 | ls-workflow-umbrella-run | Umbrella/queue; named workflows; impact summary + confirmation | Queue/PRD in scope |
 | ls-workflow-queue-batch-implement | Process PRDs; implement per spec; status; outcome | "Process PRDs", "run batch from PRD folder" |

@@ -17,6 +17,8 @@ Purpose: define project-wide tooling language and dependency rules.
   - environment orchestration outside framework runtime
 - Native PowerShell wrappers are not active Localsetup surfaces; use WSL2 plus Bash on Windows.
 
+Python architecture: new and substantially refactored Python tooling follows _localsetup/docs/PYTHON_ARCHITECTURE_STANDARD.md; keep entrypoints thin, package responsibilities explicit, and existing debt baseline-managed.
+
 ## Python runtime target
 
 - Minimum supported version: Python 3.12.
@@ -87,9 +89,10 @@ The `require_deps()` call always does a live `importlib` check. It never reads t
 
 ## Lint and quality
 
-- Python tooling must be lint-clean before merge. Single source of truth for commands and expectations:
-  - **Linter:** Run `ruff check` (or project-configured equivalent) from repo root or script directory. Fix all reported issues or document an explicit exception.
-  - **Format:** Run `ruff format` for style; no trailing whitespace, consistent quotes.
+- Python tooling must be lint-clean before merge. Ruff is the preferred configured lint, format, and import-sort tool, but it is not a hard installed requirement unless the project declares Ruff in `pyproject.toml` or equivalent tool configuration. Single source of truth for commands and expectations:
+  - **Import sort:** In projects that declare Ruff, run `ruff check --select I --fix`.
+  - **Format:** In projects that declare Ruff, run `ruff format` for style; no trailing whitespace, consistent quotes.
+  - **Linter:** In projects that declare Ruff, run `ruff check` from repo root or script directory. Fix all reported issues or document an explicit exception. If a project declares a different linter or formatter, use that configured equivalent.
   - **Types:** Use type hints for public functions and module boundaries. Use `pyright` or `mypy` in strict or standard mode if the project enables it; resolve type errors or add targeted ignores with a short comment.
   - **Best practice:** Prefer explicit error handling and small functions; avoid broad `except` and untyped `**kwargs` in public APIs. See [INPUT_HARDENING_STANDARD.md](INPUT_HARDENING_STANDARD.md) for input handling; this section covers static checks and style only.
 - Audit and CI scripts may read this section to determine which commands to run for tooling/lint.
