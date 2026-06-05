@@ -41,16 +41,6 @@
       "threshold": 700
     },
     {
-      "current_value": 851,
-      "id": "pya-baseline-skill-codex-heartbeat",
-      "metric": "lines",
-      "notes": "Heartbeat runtime covers locks, command policy, scheduling, and artifact writes.",
-      "owner": "ls-codex-heartbeat",
-      "path": "_localsetup/skills/ls-codex-heartbeat/scripts/codex_heartbeat.py",
-      "reason": "Existing skill script debt found during repo-wide standards audit; split only with heartbeat fixture coverage.",
-      "threshold": 700
-    },
-    {
       "current_value": 862,
       "id": "pya-baseline-skill-keepass-secrets",
       "metric": "lines",

@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: edf375ba73b6eaa21caeaec1546c0945f78987a894b9a74266b943b00f16fecc
+  source_provenance_hash: 34ccedbddcaae8e1afd65c65bfb49135698f2c88bf6c46e390c649836cedcdfc
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: 88c59b6ea11064a8c937b394b4ddc4d96cf11a18
-artifact_sha256: 6df445e5660ef47e30ae86a6479038bdb6564731af9ba260b9cdeb2fbe53aee6
+source_commit: 504f0b90997435a2a103288197db485efc490fb1
+artifact_sha256: 85fc22f828f888e9d03af04125f53860d666f643a5d1f13ec457fc6e4cfeefc9
 ---
 # Implementation File Map
 
@@ -356,6 +356,7 @@ artifact_sha256: 6df445e5660ef47e30ae86a6479038bdb6564731af9ba260b9cdeb2fbe53aee
 | `keep` | `_localsetup/skills/ls-codex-heartbeat/references/recovery.md` |
 | `keep` | `_localsetup/skills/ls-codex-heartbeat/references/transactions.md` |
 | `keep` | `_localsetup/skills/ls-codex-heartbeat/scripts/codex_heartbeat.py` |
+| `keep` | `_localsetup/skills/ls-codex-heartbeat/scripts/codex_heartbeat_support.py` |
 | `keep` | `_localsetup/skills/ls-codex-heartbeat/templates/HEARTBEAT.md` |
 | `keep` | `_localsetup/skills/ls-codex-heartbeat/templates/codex_heartbeat.yaml` |
 | `keep` | `_localsetup/skills/ls-communication-and-tools/SKILL.md` |
