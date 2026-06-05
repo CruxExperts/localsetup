@@ -1,0 +1,58 @@
+"""Machine-readable Scrapling helper capability index."""
+
+from __future__ import annotations
+
+from typing import Any, Dict
+
+from .config import ScraplingConfig
+
+
+def build_capability_index(cfg: ScraplingConfig) -> Dict[str, Any]:
+    """Return the machine-readable helper capability index without writing files."""
+    return {
+        "scrapling_status": {
+            "cli": "scrapling --help",
+            "helper": "scrapling_status()",
+            "description": "Detect Scrapling availability, environment type, Docker availability, and basic health.",
+        },
+        "extract_url_simple": {
+            "cli": "scrapling extract <mode> <url> <output_path>",
+            "helper": "extract_url_simple(url, output_path, selector=None, mode_hint=None, use_docker=False)",
+            "description": "Single URL extraction to HTML/Markdown/text using modes like get, fetch, or stealthy-fetch.",
+        },
+        "extract_url_structured": {
+            "cli": "scrapling extract <mode> <url> <output_path>",
+            "helper": "extract_url_structured(url, output_path, selectors_schema, mode_hint=None, use_docker=False)",
+            "description": "Single URL structured extraction to JSONL based on a selector schema.",
+        },
+        "run_spider": {
+            "cli": "scrapling spider <name> [options]",
+            "helper": "run_spider(project_dir, spider_name, crawl_dir=None, extra_args=None, use_docker=False)",
+            "description": "Run a named Scrapling spider in a project directory.",
+        },
+        "scrapling_job_status": {
+            "cli": "n/a (filesystem-backed job registry)",
+            "helper": "scrapling_job_status(job_id)",
+            "description": "Inspect the status of recorded Scrapling jobs.",
+        },
+        "scrapling_cancel_job": {
+            "cli": "n/a (filesystem-backed job registry)",
+            "helper": "scrapling_cancel_job(job_id)",
+            "description": "Attempt to cancel a running Scrapling job by job_id.",
+        },
+        "upgrade_scrapling": {
+            "cli": f"{cfg.pipx_binary} upgrade scrapling",
+            "helper": "upgrade_scrapling(host=True, dry_run=False, auto_confirm=False)",
+            "description": "Upgrade the Scrapling CLI via pipx or Docker.",
+        },
+        "refresh_adapters": {
+            "cli": "scrapling --help; scrapling extract --help; scrapling spider --help",
+            "helper": "refresh_adapters(dry_run=True)",
+            "description": "Parse current CLI help output and refresh the adapter state model.",
+        },
+        "scrapling_self_test": {
+            "cli": "scrapling extract get <fixture> <output_path>",
+            "helper": "scrapling_self_test(mode='auto')",
+            "description": "Run an offline-first self-test and write a status file.",
+        },
+    }

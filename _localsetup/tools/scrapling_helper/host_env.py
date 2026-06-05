@@ -14,7 +14,11 @@ from pathlib import Path
 from typing import List, Optional
 
 from .config import ScraplingConfig
-from ..cli_helpers import augment_path_for_pipx_apps, pipx_app_bin_dir
+
+try:
+    from ..cli_helpers import augment_path_for_pipx_apps, pipx_app_bin_dir
+except ImportError:  # pragma: no cover - package-local pytest collection path
+    from _localsetup.tools.cli_helpers import augment_path_for_pipx_apps, pipx_app_bin_dir
 
 
 @dataclass

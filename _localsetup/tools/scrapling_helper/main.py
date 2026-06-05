@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Sequence
 
 from .config import ScraplingConfig, load_config
+from .capabilities import build_capability_index as _build_capability_index
 from .host_env import (
     HostEnvStatus,
     apply_command_plan,
@@ -20,10 +21,17 @@ from .host_env import (
     propose_pipx_bootstrap,
     propose_pipx_install,
 )
-from ..cli_helpers import augment_path_for_pipx_apps
+try:
+    from ..cli_helpers import augment_path_for_pipx_apps
+except ImportError:  # pragma: no cover - package-local pytest collection path
+    from _localsetup.tools.cli_helpers import augment_path_for_pipx_apps
 from .docker_env import DockerEnvStatus, build_scrapling_docker_command, detect_docker
 from .adapter_state import AdapterState, load_state, save_state, save_capability_index
 from .adapter_parser import parse_current_features
+from .extraction import (
+    extract_url_simple as _extract_url_simple,
+    extract_url_structured as _extract_url_structured,
+)
 from .job_registry import (
     JobRecord,
     JobRegistryError,
@@ -247,67 +255,18 @@ def extract_url_simple(
     mode_hint: Optional[str] = None,
     use_docker: bool = False,
 ) -> Dict[str, Any]:
-    """
-    Run a single-URL extraction with an opinionated adaptive mode strategy.
-
-    Behavior:
-    - When mode_hint is provided, use it directly for a single attempt. Valid
-      modes align with the Scrapling CLI cheat sheet: "get", "post", "put",
-      "delete", "fetch", and "stealthy-fetch".
-    - When mode_hint is None, start with "get" and, on failure, escalate once
-      to a more expensive dynamic mode such as "fetch".
-    The response includes an attempts list so callers can inspect each try.
-    """
     cfg = load_config()
-    attempts: list[Dict[str, Any]] = []
-
-    # Ensure the output directory exists so CLI writes do not fail silently
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    def _run_once(mode: str) -> Dict[str, Any]:
-        args: list[str] = ["extract", mode, url, str(output_path)]
-        if selector:
-            args.extend(["--css-selector", selector])
-        cmd = _build_scrapling_command(cfg, args, use_docker=use_docker, workdir=output_path.parent)
-        result = apply_command_plan(cmd)
-        attempts.append(
-            {
-                "mode": mode,
-                "returncode": result.get("returncode"),
-                "stderr": result.get("stderr"),
-            }
-        )
-        return result
-
-    if mode_hint:
-        final_mode = mode_hint
-        result = _run_once(final_mode)
-    else:
-        # First attempt: cheap "get" mode.
-        final_mode = "get"
-        result = _run_once(final_mode)
-        # Escalate once on non-zero return code to a dynamic browser-based mode.
-        if result.get("returncode", 1) != 0:
-            final_mode = "fetch"
-            result = _run_once(final_mode)
-
-    payload: Dict[str, Any] = {
-        "command": result["command"],
-        "returncode": result["returncode"],
-        "stdout": result["stdout"],
-        "stderr": result["stderr"],
-        "mode": final_mode,
-        "output_path": str(output_path),
-        "attempts": attempts,
-    }
-
-    # Persist a status JSON alongside the output so agents limited to filesystem
-    # inspection (for example, tmux-only flows) can reliably detect success,
-    # failure, and failure reasons without needing live stdout/stderr.
-    status_path = output_path.with_suffix(output_path.suffix + ".status.json")
-    _write_status_json(status_path, payload)
-
-    return payload
+    return _extract_url_simple(
+        cfg=cfg,
+        apply_command_plan=apply_command_plan,
+        build_scrapling_command=_build_scrapling_command,
+        write_status_json=_write_status_json,
+        url=url,
+        output_path=output_path,
+        selector=selector,
+        mode_hint=mode_hint,
+        use_docker=use_docker,
+    )
 
 
 def extract_url_structured(
@@ -317,57 +276,18 @@ def extract_url_structured(
     mode_hint: Optional[str] = None,
     use_docker: bool = False,
 ) -> Dict[str, Any]:
-    """
-    Run a structured extraction with the same adaptive mode strategy used for
-    simple extractions, but with a conservative escalation rule.
-    """
     cfg = load_config()
-    attempts: list[Dict[str, Any]] = []
-
-    # Ensure the output directory exists so CLI writes do not fail silently
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    def _run_once(mode: str) -> Dict[str, Any]:
-        # For v1 we pass a single root CSS selector and let Scrapling handle per-field logic on the client side.
-        args: list[str] = ["extract", mode, url, str(output_path)]
-        # Callers are expected to persist selectors_schema alongside the JSONL file.
-        cmd = _build_scrapling_command(cfg, args, use_docker=use_docker, workdir=output_path.parent)
-        result = apply_command_plan(cmd)
-        attempts.append(
-            {
-                "mode": mode,
-                "returncode": result.get("returncode"),
-                "stderr": result.get("stderr"),
-            }
-        )
-        return result
-
-    if mode_hint:
-        final_mode = mode_hint
-        result = _run_once(final_mode)
-    else:
-        final_mode = "get"
-        result = _run_once(final_mode)
-        # For structured extractions, only escalate when the first attempt clearly fails.
-        if result.get("returncode", 1) != 0:
-            final_mode = "fetch"
-            result = _run_once(final_mode)
-
-    payload: Dict[str, Any] = {
-        "command": result["command"],
-        "returncode": result["returncode"],
-        "stdout": result["stdout"],
-        "stderr": result["stderr"],
-        "mode": final_mode,
-        "output_path": str(output_path),
-        "selectors_schema": selectors_schema,
-        "attempts": attempts,
-    }
-
-    status_path = output_path.with_suffix(output_path.suffix + ".status.json")
-    _write_status_json(status_path, payload)
-
-    return payload
+    return _extract_url_structured(
+        cfg=cfg,
+        apply_command_plan=apply_command_plan,
+        build_scrapling_command=_build_scrapling_command,
+        write_status_json=_write_status_json,
+        url=url,
+        output_path=output_path,
+        selectors_schema=selectors_schema,
+        mode_hint=mode_hint,
+        use_docker=use_docker,
+    )
 
 
 def run_shell(use_docker: bool = False) -> Dict[str, Any]:
@@ -422,9 +342,6 @@ def resume_spider(
 
 
 def scrapling_job_status(job_id: str) -> Dict[str, Any]:
-    """
-    Check the status of a previously recorded job.
-    """
     cfg = load_config()
     try:
         job = load_job(cfg, job_id)
@@ -448,17 +365,11 @@ def scrapling_job_status(job_id: str) -> Dict[str, Any]:
 
 
 def scrapling_cancel_job(job_id: str) -> Dict[str, Any]:
-    """
-    Attempt to cancel a running job by job_id using the job registry.
-    """
     cfg = load_config()
     return cancel_job(cfg, job_id)
 
 
 def scrapling_list_jobs(kind: Optional[str] = None) -> Dict[str, Any]:
-    """
-    List known jobs, optionally filtered by kind.
-    """
     cfg = load_config()
     jobs, errors = list_jobs_with_errors(cfg, kind=kind)
     return {
@@ -494,54 +405,7 @@ def launch_mcp_server(
 
 
 def build_capability_index(cfg: ScraplingConfig) -> Dict[str, Any]:
-    """Return the machine-readable helper capability index without writing files."""
-    return {
-        "scrapling_status": {
-            "cli": "scrapling --help",
-            "helper": "scrapling_status()",
-            "description": "Detect Scrapling availability, environment type, Docker availability, and basic health.",
-        },
-        "extract_url_simple": {
-            "cli": "scrapling extract <mode> <url> <output_path>",
-            "helper": "extract_url_simple(url, output_path, selector=None, mode_hint=None, use_docker=False)",
-            "description": "Single URL extraction to HTML/Markdown/text using modes like get, fetch, or stealthy-fetch.",
-        },
-        "extract_url_structured": {
-            "cli": "scrapling extract <mode> <url> <output_path>",
-            "helper": "extract_url_structured(url, output_path, selectors_schema, mode_hint=None, use_docker=False)",
-            "description": "Single URL structured extraction to JSONL based on a selector schema.",
-        },
-        "run_spider": {
-            "cli": "scrapling spider <name> [options]",
-            "helper": "run_spider(project_dir, spider_name, crawl_dir=None, extra_args=None, use_docker=False)",
-            "description": "Run a named Scrapling spider in a project directory.",
-        },
-        "scrapling_job_status": {
-            "cli": "n/a (filesystem-backed job registry)",
-            "helper": "scrapling_job_status(job_id)",
-            "description": "Inspect the status of recorded Scrapling jobs.",
-        },
-        "scrapling_cancel_job": {
-            "cli": "n/a (filesystem-backed job registry)",
-            "helper": "scrapling_cancel_job(job_id)",
-            "description": "Attempt to cancel a running Scrapling job by job_id.",
-        },
-        "upgrade_scrapling": {
-            "cli": f"{cfg.pipx_binary} upgrade scrapling",
-            "helper": "upgrade_scrapling(host=True, dry_run=False, auto_confirm=False)",
-            "description": "Upgrade the Scrapling CLI via pipx or Docker.",
-        },
-        "refresh_adapters": {
-            "cli": "scrapling --help; scrapling extract --help; scrapling spider --help",
-            "helper": "refresh_adapters(dry_run=True)",
-            "description": "Parse current CLI help output and refresh the adapter state model.",
-        },
-        "scrapling_self_test": {
-            "cli": "scrapling extract get <fixture> <output_path>",
-            "helper": "scrapling_self_test(mode='auto')",
-            "description": "Run an offline-first self-test and write a status file.",
-        },
-    }
+    return _build_capability_index(cfg)
 
 
 def refresh_adapters(dry_run: bool = True) -> Dict[str, Any]:

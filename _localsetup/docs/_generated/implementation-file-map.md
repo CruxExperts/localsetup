@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 9fa0283536145a0da81b9c046f4ebfaf368bc8621956f6ef67231356779e5997
+  source_provenance_hash: cfaec9fa0a91c750578a72a3b7b7f58a27b1dc239af970ce4fc8bc5c11446e51
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: 5482c4291fa64d50faca236ff10902fe6d2c1cd4
-artifact_sha256: 13947060915d9264d0930bbffadb6af6f57d45e9a1472eb1f609f05e92246b1c
+source_commit: 1de929344a13180d826a168b940d7dc93475b585
+artifact_sha256: 1fb8baaecf7c1fe794971c4ecf3bab0fda15ba75f940502200cb09ef9ee7628d
 ---
 # Implementation File Map
 
@@ -759,8 +759,10 @@ artifact_sha256: 13947060915d9264d0930bbffadb6af6f57d45e9a1472eb1f609f05e92246b1
 | `keep` | `_localsetup/tools/scrapling_helper/__init__.py` |
 | `keep` | `_localsetup/tools/scrapling_helper/adapter_parser.py` |
 | `keep` | `_localsetup/tools/scrapling_helper/adapter_state.py` |
+| `keep` | `_localsetup/tools/scrapling_helper/capabilities.py` |
 | `keep` | `_localsetup/tools/scrapling_helper/config.py` |
 | `keep` | `_localsetup/tools/scrapling_helper/docker_env.py` |
+| `keep` | `_localsetup/tools/scrapling_helper/extraction.py` |
 | `keep` | `_localsetup/tools/scrapling_helper/host_env.py` |
 | `keep` | `_localsetup/tools/scrapling_helper/job_registry.py` |
 | `keep` | `_localsetup/tools/scrapling_helper/main.py` |
