@@ -61,16 +61,6 @@
       "threshold": 700
     },
     {
-      "current_value": 859,
-      "id": "pya-baseline-tools-tmux-ops",
-      "metric": "lines",
-      "notes": "Tmux ops includes command execution, status, cancellation, and JSON contracts.",
-      "owner": "ls-workflow-ops-tmux-session",
-      "path": "_localsetup/tools/tmux_ops.py",
-      "reason": "Existing tmux ops workflow debt predates this architecture standard and is command-contract-sensitive.",
-      "threshold": 700
-    },
-    {
       "current_value": 957,
       "id": "pya-baseline-skill-cloudflare-dns-cf-dns",
       "metric": "lines",
