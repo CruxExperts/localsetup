@@ -41,16 +41,6 @@
       "threshold": 700
     },
     {
-      "current_value": 775,
-      "id": "pya-baseline-tools-skill-index-scrub",
-      "metric": "lines",
-      "notes": "Skill index scrub includes external fetch and schema repair paths.",
-      "owner": "ls-skill-discovery",
-      "path": "_localsetup/tools/skill_index_scrub.py",
-      "reason": "Existing skill-index maintenance debt predates this architecture standard and should be split only with fixture coverage.",
-      "threshold": 700
-    },
-    {
       "current_value": 957,
       "id": "pya-baseline-skill-cloudflare-dns-cf-dns",
       "metric": "lines",

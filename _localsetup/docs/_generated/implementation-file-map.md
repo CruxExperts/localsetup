@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 9cc16f15f6523b8383d83674690b7f64c16baae7db2a1e1ed9f6feb189b9ded5
+  source_provenance_hash: 7999b65d17edf1072e2c945a40037a335842667919f4d19e09a28d9ed19a8f82
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: 206e9244fddc577b4ef65d2ca50b113d078a1bea
-artifact_sha256: 60ccae8fc1c5828c35f5d5d2078c4f1fe148fb3de8acdef4af6787d220eaa0ec
+source_commit: d29ecbc8d03e627fd3eb08e860bd03cc6ae71a63
+artifact_sha256: fbd72c01d5a0335bf53eb8fc9dc2a3200badd830b4f282d21575d5fe69d4c14a
 ---
 # Implementation File Map
 
@@ -160,6 +160,16 @@ artifact_sha256: 60ccae8fc1c5828c35f5d5d2078c4f1fe148fb3de8acdef4af6787d220eaa0e
 | `refactor` | `_localsetup/core/schema.py` |
 | `refactor` | `_localsetup/core/selection.py` |
 | `refactor` | `_localsetup/core/shell.py` |
+| `refactor` | `_localsetup/core/skill_index_scrub/__init__.py` |
+| `refactor` | `_localsetup/core/skill_index_scrub/audit.py` |
+| `refactor` | `_localsetup/core/skill_index_scrub/cli.py` |
+| `refactor` | `_localsetup/core/skill_index_scrub/config.py` |
+| `refactor` | `_localsetup/core/skill_index_scrub/constants.py` |
+| `refactor` | `_localsetup/core/skill_index_scrub/description.py` |
+| `refactor` | `_localsetup/core/skill_index_scrub/diagnostics.py` |
+| `refactor` | `_localsetup/core/skill_index_scrub/http.py` |
+| `refactor` | `_localsetup/core/skill_index_scrub/index_io.py` |
+| `refactor` | `_localsetup/core/skill_index_scrub/reporting.py` |
 | `refactor` | `_localsetup/core/skills.py` |
 | `refactor` | `_localsetup/core/source.py` |
 | `refactor` | `_localsetup/core/tmux_ops/__init__.py` |
