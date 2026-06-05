@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 8610b907436dcf802dbbc90abb08b4ab04e6080a642dab6f23d5d9575f500f94
+  source_provenance_hash: 9fa0283536145a0da81b9c046f4ebfaf368bc8621956f6ef67231356779e5997
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: 954195fe1da39a00af3548fc7d794db6f60338c8
-artifact_sha256: eb68d04ed764c13c85bdf0e61bef7e71953428fac340cbd1675b364c101a0423
+source_commit: 5482c4291fa64d50faca236ff10902fe6d2c1cd4
+artifact_sha256: 13947060915d9264d0930bbffadb6af6f57d45e9a1472eb1f609f05e92246b1c
 ---
 # Implementation File Map
 
@@ -723,6 +723,8 @@ artifact_sha256: eb68d04ed764c13c85bdf0e61bef7e71953428fac340cbd1675b364c101a042
 | `keep` | `_localsetup/tools/agentq_transport_client/agentq_transport_client/adapters.py` |
 | `keep` | `_localsetup/tools/agentq_transport_client/agentq_transport_client/attachments_extract.py` |
 | `keep` | `_localsetup/tools/agentq_transport_client/agentq_transport_client/bundle.py` |
+| `keep` | `_localsetup/tools/agentq_transport_client/agentq_transport_client/cli_commands.py` |
+| `keep` | `_localsetup/tools/agentq_transport_client/agentq_transport_client/cli_parser.py` |
 | `keep` | `_localsetup/tools/agentq_transport_client/agentq_transport_client/crypto_pipeline.py` |
 | `keep` | `_localsetup/tools/agentq_transport_client/agentq_transport_client/file_drop.py` |
 | `keep` | `_localsetup/tools/agentq_transport_client/agentq_transport_client/gpg_crypto.py` |
