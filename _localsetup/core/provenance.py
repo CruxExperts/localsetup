@@ -6,8 +6,32 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from . import provenance_source as _provenance_source
 from .git_subprocess import run_git
 from .lockfile import load_json
+from .provenance_source import (
+    GENERATED_DOCS_SUBJECT_PREFIX,
+    GENERATED_SOURCE_DIRTY_PATHS,
+    GENERATED_SOURCE_DIRTY_PREFIXES,
+    VERSION_SYNC_SUBJECT_PREFIX,
+    changed_paths_for_ref,
+    framework_version,
+    generated_artifact_parent_source_commit,
+    generated_docs_source_ref,
+    git_text,
+    head_subject,
+    is_generated_output_path,
+    release_sync_parent_dirty,
+    source_dirty,
+    source_remote_url,
+    source_root_id,
+    source_root_id_for_commit,
+    source_tag_for_ref,
+    source_tree_sha,
+    status_entry_paths,
+    subject_for_ref,
+    tree_sha_for_ref,
+)
 from .source import source_commit, source_tag
 
 
@@ -15,18 +39,88 @@ PROVENANCE_SCHEMA_VERSION = 1
 MARKER_JSON = ".localsetup-managed.json"
 MARKER_LEGACY = ".localsetup-managed"
 PORTABLE_MARKER = ".localsetup-portable"
-GENERATED_SOURCE_DIRTY_PATHS = {
-    "assets/README.md",
-    "_localsetup/docs/SKILLS.md",
-    "_localsetup/docs/WORKFLOW_QUICK_REF.md",
-    "_localsetup/docs/WORKFLOW_REGISTRY.md",
-    "_localsetup/docs/migration/skill-alias-map.md",
-}
-GENERATED_SOURCE_DIRTY_PREFIXES = (
-    "_localsetup/docs/_generated/",
-)
-VERSION_SYNC_SUBJECT_PREFIX = "chore: sync release version "
-GENERATED_DOCS_SUBJECT_PREFIX = "docs: refresh "
+
+_changed_paths_for_ref = changed_paths_for_ref
+_is_generated_output_path = is_generated_output_path
+_status_entry_paths = status_entry_paths
+
+
+def _sync_source_runner() -> None:
+    _provenance_source.run_git = run_git
+
+
+def _tree_sha_for_ref(repo_root: Path, ref: str) -> str:
+    _sync_source_runner()
+    return tree_sha_for_ref(repo_root, ref)
+
+
+def source_tree_sha(repo_root: Path) -> str:
+    _sync_source_runner()
+    return _provenance_source.source_tree_sha(repo_root)
+
+
+def _git_text(repo_root: Path, args: list[str]) -> str | None:
+    _sync_source_runner()
+    return git_text(repo_root, args)
+
+
+def _source_tag_for_ref(repo_root: Path, ref: str) -> str | None:
+    _sync_source_runner()
+    return source_tag_for_ref(repo_root, ref)
+
+
+def source_dirty(repo_root: Path) -> bool:
+    _sync_source_runner()
+    return _provenance_source.source_dirty(repo_root)
+
+
+def _head_subject(repo_root: Path) -> str:
+    _sync_source_runner()
+    return head_subject(repo_root)
+
+
+def _subject_for_ref(repo_root: Path, ref: str) -> str | None:
+    _sync_source_runner()
+    return subject_for_ref(repo_root, ref)
+
+
+def _changed_paths_for_ref(repo_root: Path, ref: str) -> list[str]:
+    _sync_source_runner()
+    return changed_paths_for_ref(repo_root, ref)
+
+
+def _generated_docs_source_ref(repo_root: Path, ref: str) -> str | None:
+    _sync_source_runner()
+    return generated_docs_source_ref(repo_root, ref)
+
+
+def release_sync_parent_dirty(repo_root: Path) -> bool:
+    _sync_source_runner()
+    return _provenance_source.release_sync_parent_dirty(repo_root)
+
+
+def generated_artifact_parent_source_commit(repo_root: Path) -> str | None:
+    _sync_source_runner()
+    return _provenance_source.generated_artifact_parent_source_commit(repo_root)
+
+
+def source_remote_url(repo_root: Path) -> str | None:
+    _sync_source_runner()
+    return _provenance_source.source_remote_url(repo_root)
+
+
+def framework_version(repo_root: Path) -> str:
+    return _provenance_source.framework_version(repo_root)
+
+
+def source_root_id(repo_root: Path) -> str:
+    _sync_source_runner()
+    return _provenance_source.source_root_id(repo_root)
+
+
+def _source_root_id_for_commit(repo_root: Path, commit: str) -> str:
+    _sync_source_runner()
+    return source_root_id_for_commit(repo_root, commit)
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -39,184 +133,6 @@ def sha256_file(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
-
-
-def source_tree_sha(repo_root: Path) -> str:
-    return _tree_sha_for_ref(repo_root, "HEAD")
-
-
-def _tree_sha_for_ref(repo_root: Path, ref: str) -> str:
-    completed = run_git(
-        repo_root,
-        ["rev-parse", f"{ref}^{{tree}}"],
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    if completed.returncode != 0:
-        return "unknown"
-    return completed.stdout.strip()
-
-
-def _git_text(repo_root: Path, args: list[str]) -> str | None:
-    completed = run_git(
-        repo_root,
-        args,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    if completed.returncode != 0:
-        return None
-    value = completed.stdout.strip()
-    return value or None
-
-
-def _source_tag_for_ref(repo_root: Path, ref: str) -> str | None:
-    return _git_text(repo_root, ["describe", "--tags", "--exact-match", ref])
-
-
-def _status_entry_paths(line: str) -> list[str]:
-    if len(line) < 4:
-        return []
-    path = line[3:].strip()
-    if " -> " in path:
-        return [part.strip() for part in path.split(" -> ", 1)]
-    return [path]
-
-
-def _is_generated_output_path(path: str) -> bool:
-    normalized = path.strip().strip('"')
-    return normalized in GENERATED_SOURCE_DIRTY_PATHS or any(
-        normalized.startswith(prefix) for prefix in GENERATED_SOURCE_DIRTY_PREFIXES
-    )
-
-
-def source_dirty(repo_root: Path) -> bool:
-    completed = run_git(
-        repo_root,
-        ["status", "--porcelain", "--untracked-files=all"],
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    if completed.returncode != 0:
-        return False
-    for line in completed.stdout.splitlines():
-        paths = _status_entry_paths(line)
-        if not paths or any(not _is_generated_output_path(path) for path in paths):
-            return True
-    return False
-
-
-def _head_subject(repo_root: Path) -> str:
-    return _git_text(repo_root, ["log", "-1", "--pretty=%s"]) or ""
-
-
-def _head_changed_paths(repo_root: Path) -> list[str]:
-    output = _git_text(repo_root, ["diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"])
-    return [line for line in (output or "").splitlines() if line]
-
-
-def release_sync_parent_dirty(repo_root: Path) -> bool:
-    """Return the pre-commit dirty flag encoded by a generated release-sync commit."""
-    if _head_subject(repo_root).startswith(VERSION_SYNC_SUBJECT_PREFIX):
-        return True
-    merge_head_subject = _subject_for_ref(repo_root, "HEAD^2")
-    return bool(merge_head_subject and merge_head_subject.startswith(VERSION_SYNC_SUBJECT_PREFIX))
-
-
-def _subject_for_ref(repo_root: Path, ref: str) -> str | None:
-    return _git_text(repo_root, ["log", "-1", "--pretty=%s", ref])
-
-
-def _changed_paths_for_ref(repo_root: Path, ref: str) -> list[str]:
-    output = _git_text(repo_root, ["diff-tree", "--no-commit-id", "--name-only", "-r", ref])
-    return [line for line in (output or "").splitlines() if line]
-
-
-def _generated_docs_source_ref(repo_root: Path, ref: str) -> str | None:
-    current = ref
-    subject = _subject_for_ref(repo_root, current) or ""
-    if not subject.startswith(GENERATED_DOCS_SUBJECT_PREFIX):
-        return None
-
-    while subject.startswith(GENERATED_DOCS_SUBJECT_PREFIX):
-        changed_paths = _changed_paths_for_ref(repo_root, current)
-        if not changed_paths or any(not _is_generated_output_path(path) for path in changed_paths):
-            return None
-        parent = _git_text(repo_root, ["rev-parse", f"{current}^"])
-        if not parent:
-            return None
-        current = parent
-        subject = _subject_for_ref(repo_root, current) or ""
-
-    return current
-
-
-def generated_artifact_parent_source_commit(repo_root: Path) -> str | None:
-    """
-    Generated artifact commits are produced from their parent source state.
-
-    Without this, a clean CI regeneration rewrites committed provenance from the
-    parent commit to the generated-docs commit itself, creating unavoidable drift.
-    The parent mode is opt-in so package/install provenance still points at the
-    actual current checkout.
-    """
-    subject = _head_subject(repo_root)
-    if subject.startswith(VERSION_SYNC_SUBJECT_PREFIX):
-        return _git_text(repo_root, ["rev-parse", "HEAD^"])
-    if not subject.startswith(GENERATED_DOCS_SUBJECT_PREFIX):
-        merge_head_subject = _subject_for_ref(repo_root, "HEAD^2")
-        if merge_head_subject and merge_head_subject.startswith(VERSION_SYNC_SUBJECT_PREFIX):
-            return _git_text(repo_root, ["rev-parse", "HEAD^2^"])
-        if merge_head_subject and merge_head_subject.startswith(GENERATED_DOCS_SUBJECT_PREFIX):
-            return _generated_docs_source_ref(repo_root, "HEAD^2")
-        return None
-    return _generated_docs_source_ref(repo_root, "HEAD")
-
-
-def source_remote_url(repo_root: Path) -> str | None:
-    completed = run_git(
-        repo_root,
-        ["config", "--get", "remote.origin.url"],
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    if completed.returncode != 0:
-        return None
-    value = completed.stdout.strip()
-    if not value:
-        return None
-    if value.startswith("git@github.com:"):
-        value = "https://github.com/" + value.removeprefix("git@github.com:")
-    if value.endswith(".git"):
-        value = value[:-4]
-    return value.rstrip("/") or None
-
-
-def framework_version(repo_root: Path) -> str:
-    version_file = repo_root / "VERSION"
-    if not version_file.exists():
-        return "unknown"
-    return version_file.read_text(encoding="utf-8").strip() or "unknown"
-
-
-def source_root_id(repo_root: Path) -> str:
-    seed = {
-        "source_commit": source_commit(repo_root),
-        "remote_url": source_remote_url(repo_root),
-    }
-    return sha256_bytes(json.dumps(seed, sort_keys=True).encode("utf-8"))
-
-
-def _source_root_id_for_commit(repo_root: Path, commit: str) -> str:
-    seed = {
-        "source_commit": commit,
-        "remote_url": source_remote_url(repo_root),
-    }
-    return sha256_bytes(json.dumps(seed, sort_keys=True).encode("utf-8"))
 
 
 def source_provenance_hash(payload: dict[str, Any]) -> str:
