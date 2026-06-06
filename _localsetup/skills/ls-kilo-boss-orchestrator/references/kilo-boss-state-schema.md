@@ -18,7 +18,7 @@
     "analyze repo"
   ],
   "command": "kilo run --auto --agent sidekick 'analyze repo'",
-  "repo_root": "/home/cptnfren/myrig",
+  "repo_root": "/path/to/repo",
   "timeout_seconds": 600,
   "destructive": false,
   "consensus_required": true,

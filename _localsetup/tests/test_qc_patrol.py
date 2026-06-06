@@ -41,7 +41,7 @@ def test_qc_config_loads_defaults_and_blank_env(monkeypatch: pytest.MonkeyPatch)
 
 
 def test_redaction_removes_secret_shapes() -> None:
-    text = """API_TOKEN=ghp_abcdefghijklmnopqrstuvwxyz123456
+    text = """API_TOKEN=fake-secret-token-value
 password: supersecret
 https://user:token@example.com/path
 -----BEGIN PRIVATE KEY-----
@@ -49,7 +49,7 @@ abc
 -----END PRIVATE KEY-----
 """
     redacted = redact_text(text)
-    assert "ghp_" not in redacted
+    assert "fake-secret-token-value" not in redacted
     assert "supersecret" not in redacted
     assert "user:token" not in redacted
     assert "example.com" not in redacted

@@ -11,7 +11,7 @@ command_argv:
   - --format
   - json
   - Summarize current repo risks in 8 bullets
-repo_root: "/home/cptnfren/myrig"
+repo_root: "/path/to/repo"
 timeout_seconds: 600
 destructive: false
 consensus_required: true
