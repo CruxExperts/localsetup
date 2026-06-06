@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 184a198da9962f8fc2a6469ac51ce00f6bca6e088e965f42e26e39b1a2e01a2d
+  source_provenance_hash: d9287a37ddf6c3cc05a125c867380e8ee7914919cbb275b77c0989752a70d449
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: 8e6cf4d77e7ede81999569524042166c6cfa169a
-artifact_sha256: 78e0852d9e9ee4e743f1c13d0254e726116c88af5820d7ae3e39feabed11b3ec
+source_commit: 5698bde98dc4cc4170ff5b05199ab856c279e9bf
+artifact_sha256: 5c5ad61b2495151dba4b1a3af5e08448b448a6eba3ebe708c8209237df0b33d6
 ---
 # Implementation File Map
 
@@ -91,6 +91,12 @@ artifact_sha256: 78e0852d9e9ee4e743f1c13d0254e726116c88af5820d7ae3e39feabed11b3e
 | `refactor` | `_localsetup/core/baseline.py` |
 | `refactor` | `_localsetup/core/boundary.py` |
 | `refactor` | `_localsetup/core/cli.py` |
+| `refactor` | `_localsetup/core/cli_handler_sync.py` |
+| `refactor` | `_localsetup/core/cli_install_commands.py` |
+| `refactor` | `_localsetup/core/cli_install_support.py` |
+| `refactor` | `_localsetup/core/cli_misc_commands.py` |
+| `refactor` | `_localsetup/core/cli_parser.py` |
+| `refactor` | `_localsetup/core/cli_state_commands.py` |
 | `refactor` | `_localsetup/core/config.py` |
 | `refactor` | `_localsetup/core/context.py` |
 | `refactor` | `_localsetup/core/context_index/__init__.py` |
@@ -99,11 +105,14 @@ artifact_sha256: 78e0852d9e9ee4e743f1c13d0254e726116c88af5820d7ae3e39feabed11b3e
 | `refactor` | `_localsetup/core/context_index/common.py` |
 | `refactor` | `_localsetup/core/context_index/config.py` |
 | `refactor` | `_localsetup/core/context_index/embeddings.py` |
+| `refactor` | `_localsetup/core/context_index/identity.py` |
 | `refactor` | `_localsetup/core/context_index/inventory.py` |
 | `refactor` | `_localsetup/core/context_index/logs.py` |
 | `refactor` | `_localsetup/core/context_index/maintenance.py` |
 | `refactor` | `_localsetup/core/context_index/mcp.py` |
+| `refactor` | `_localsetup/core/context_index/models.py` |
 | `refactor` | `_localsetup/core/context_index/operations.py` |
+| `refactor` | `_localsetup/core/context_index/reporting.py` |
 | `refactor` | `_localsetup/core/context_index/search.py` |
 | `refactor` | `_localsetup/core/context_index/storage.py` |
 | `refactor` | `_localsetup/core/conversion.py` |

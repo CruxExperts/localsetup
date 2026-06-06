@@ -260,6 +260,12 @@ def test_ingest_search_lookup_freshness_and_rebuild(tmp_path: Path) -> None:
     assert lookup["chunk"]["line_start"] >= 1
     assert lookup["chunk"]["line_end"] >= lookup["chunk"]["line_start"]
 
+    missing_lookup = run_context_raw(repo, home, "lookup", "--chunk-id", "missing")
+    assert missing_lookup.returncode != 0
+    missing_lookup_payload = json.loads(missing_lookup.stdout)
+    assert missing_lookup_payload["ok"] is False
+    assert missing_lookup_payload["error"]["code"] == "NOT_FOUND"
+
     mcp = run_context(repo, home, "mcp", "config")
     assert mcp["ok"] is True
     assert "context_mcp_server.py" in " ".join(mcp["server"]["args"])

@@ -2,7 +2,7 @@ import json
 import sqlite3
 from typing import Any
 
-from .common import DEFAULT_VECTOR_DIMENSIONS, Runtime, iso_from_ns
+from .common import DEFAULT_VECTOR_DIMENSIONS, ContextIndexError, Runtime, iso_from_ns
 from .embeddings import cosine, embedding_vector, safe_fts_query, unpack_vector
 from .inventory import inventory
 from .maintenance import status_for_item
