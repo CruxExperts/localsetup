@@ -1,16 +1,5 @@
 {
-  "entries": [
-    {
-      "current_value": 1755,
-      "id": "pya-baseline-core-cli",
-      "metric": "lines",
-      "notes": "Broad command dispatcher; future work should move large command families into domain packages.",
-      "owner": "ls-script-and-docs-quality",
-      "path": "_localsetup/core/cli.py",
-      "reason": "Existing command dispatcher debt predates this architecture standard and is compatibility-sensitive.",
-      "threshold": 700
-    }
-  ],
+  "entries": [],
   "generated_at": "2026-06-05",
   "schema_version": "1.0",
   "scope": "framework"

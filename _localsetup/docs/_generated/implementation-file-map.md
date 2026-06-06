@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 5b5b202d5c505653432da63831a3e997f8ee539c4b60017e96d49b133b8ee9da
+  source_provenance_hash: 184a198da9962f8fc2a6469ac51ce00f6bca6e088e965f42e26e39b1a2e01a2d
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: 58b19e1cc567c2f7be9e18a77433183d78cf76f2
-artifact_sha256: 695d723c5f86ad119f21f06f47dd600feb2d5093e4591ad3e046f31fd306dbd0
+source_commit: 8e6cf4d77e7ede81999569524042166c6cfa169a
+artifact_sha256: 78e0852d9e9ee4e743f1c13d0254e726116c88af5820d7ae3e39feabed11b3ec
 ---
 # Implementation File Map
 
@@ -748,6 +748,31 @@ artifact_sha256: 695d723c5f86ad119f21f06f47dd600feb2d5093e4591ad3e046f31fd306dbd
 | `keep` | `_localsetup/tests/test_docs_alignment.py` |
 | `keep` | `_localsetup/tests/test_github_starredrepos_skill.py` |
 | `keep` | `_localsetup/tests/test_install_flow.py` |
+| `keep` | `_localsetup/tests/test_install_flow_auto_convert_apply_a.py` |
+| `keep` | `_localsetup/tests/test_install_flow_commands_policy_shell_a.py` |
+| `keep` | `_localsetup/tests/test_install_flow_commands_policy_shell_b.py` |
+| `keep` | `_localsetup/tests/test_install_flow_commands_policy_shell_b_2.py` |
+| `keep` | `_localsetup/tests/test_install_flow_dependencies_env_a.py` |
+| `keep` | `_localsetup/tests/test_install_flow_dependencies_env_b.py` |
+| `keep` | `_localsetup/tests/test_install_flow_docs_package_a.py` |
+| `keep` | `_localsetup/tests/test_install_flow_harness_health_adapters.py` |
+| `keep` | `_localsetup/tests/test_install_flow_harness_health_adapters_2.py` |
+| `keep` | `_localsetup/tests/test_install_flow_migration_repair_a.py` |
+| `keep` | `_localsetup/tests/test_install_flow_package_version_provenance.py` |
+| `keep` | `_localsetup/tests/test_install_flow_repair_context_tail.py` |
+| `keep` | `_localsetup/tests/test_install_flow_rollback_query_cli_a.py` |
+| `keep` | `_localsetup/tests/test_install_flow_rollback_query_cli_a_2.py` |
+| `keep` | `_localsetup/tests/test_install_flow_root_installer_basic.py` |
+| `keep` | `_localsetup/tests/test_install_flow_root_installer_bootstrap_a.py` |
+| `keep` | `_localsetup/tests/test_install_flow_root_installer_bootstrap_b.py` |
+| `keep` | `_localsetup/tests/test_install_flow_root_installer_interactive.py` |
+| `keep` | `_localsetup/tests/test_install_flow_selection_adapters_a.py` |
+| `keep` | `_localsetup/tests/test_install_flow_selection_adapters_b.py` |
+| `keep` | `_localsetup/tests/test_install_flow_selection_adapters_b_2.py` |
+| `keep` | `_localsetup/tests/test_install_flow_wizard_config_edges.py` |
+| `keep` | `_localsetup/tests/test_install_flow_wizard_config_edges_2.py` |
+| `keep` | `_localsetup/tests/test_install_flow_wizard_controls.py` |
+| `keep` | `_localsetup/tests/test_install_flow_wizard_flow.py` |
 | `keep` | `_localsetup/tests/test_keepass_secrets_cli_json.py` |
 | `keep` | `_localsetup/tests/test_keepass_secrets_config_resolution.py` |
 | `keep` | `_localsetup/tests/test_keepass_secrets_fake_backend.py` |
