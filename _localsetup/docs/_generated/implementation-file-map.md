@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 5e00c91bc51453b94789cd3b71d192c6af847bb2396627a8aac323f3c4c53830
+  source_provenance_hash: 5b5b202d5c505653432da63831a3e997f8ee539c4b60017e96d49b133b8ee9da
   emitter: generate-docs
 framework_version: 4.0.20
-source_commit: 7a0cb9123c8d63683fef1d390ab1456e0e8a16f2
-artifact_sha256: 9a91944dafaa74b13296d7664cf6ee745d86a8b5871c4faccd6ea352613637c0
+source_commit: 58b19e1cc567c2f7be9e18a77433183d78cf76f2
+artifact_sha256: 695d723c5f86ad119f21f06f47dd600feb2d5093e4591ad3e046f31fd306dbd0
 ---
 # Implementation File Map
 
@@ -197,6 +197,11 @@ artifact_sha256: 9a91944dafaa74b13296d7664cf6ee745d86a8b5871c4faccd6ea352613637c
 | `refactor` | `_localsetup/core/versioning_models.py` |
 | `refactor` | `_localsetup/core/versioning_sync.py` |
 | `refactor` | `_localsetup/core/wizard.py` |
+| `refactor` | `_localsetup/core/wizard_apply.py` |
+| `refactor` | `_localsetup/core/wizard_catalog.py` |
+| `refactor` | `_localsetup/core/wizard_models.py` |
+| `refactor` | `_localsetup/core/wizard_selection.py` |
+| `refactor` | `_localsetup/core/wizard_steps.py` |
 | `refactor` | `_localsetup/core/workflows.py` |
 | `keep` | `_localsetup/discovery/core/os_detector.py` |
 | `keep` | `_localsetup/discovery/core/os_detector.sh` |

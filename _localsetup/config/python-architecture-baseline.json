@@ -9,16 +9,6 @@
       "path": "_localsetup/core/cli.py",
       "reason": "Existing command dispatcher debt predates this architecture standard and is compatibility-sensitive.",
       "threshold": 700
-    },
-    {
-      "current_value": 7492,
-      "id": "pya-baseline-tests-install-flow",
-      "metric": "lines",
-      "notes": "Large integration-style install-flow suite covers many installer and adapter contracts.",
-      "owner": "ls-script-and-docs-quality",
-      "path": "_localsetup/tests/test_install_flow.py",
-      "reason": "Existing shared test debt found during repo-wide standards audit; split only with install compatibility inventory.",
-      "threshold": 700
     }
   ],
   "generated_at": "2026-06-05",
