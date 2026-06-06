@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.0
+version: 4.1
 owner_skill: ls-docs-organization
 ---
 
@@ -11,7 +11,7 @@ This is the full public capability catalog for Localsetup. The [root README](../
 ## Generated Facts
 
 <!-- facts-block:start -->
-- Current version: `4.0.20`
+- Current version: `4.1.0`
 - Supported platforms: `cursor, claude-code, codex, openclaw, kilo, opencode`
 - Shipped skills: `72`
 - Workflow packages: `23`

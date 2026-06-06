@@ -75,13 +75,13 @@
     "artifact_path": "_localsetup/docs/_generated/skill_aliases.json",
     "artifact_sha256": "fa89976cf9b3ca82c5c8e46cbaa8107229809784d995b32dfbf23703c5d9c839",
     "emitter": "generate-docs",
-    "framework_version": "4.0.20",
+    "framework_version": "4.1.0",
     "schema_version": 1,
-    "source_commit": "5698bde98dc4cc4170ff5b05199ab856c279e9bf",
+    "source_commit": "d698f9385ae50493693c100458b895a463eb418b",
     "source_dirty": true,
-    "source_provenance_hash": "d9287a37ddf6c3cc05a125c867380e8ee7914919cbb275b77c0989752a70d449",
-    "source_root_id": "326c4f1f20f0d06e7fabe873718f59c0e1a11182a9360b43977ed09809a2ae76",
+    "source_provenance_hash": "6b5c1f99fd271a01983bda6504b5fb598dc2066ffb85a6086351765aa0510745",
+    "source_root_id": "c4ceb7f475a77cec2831dd91ff4d7f515c49cb020e941f4b53449f4156135969",
     "source_tag": null,
-    "source_tree_sha": "b4fc9772be569194c87b1d6b1deca096742c4f40"
+    "source_tree_sha": "9d564c2c375e2e31de9ae872bfafe0b36fcfce24"
   }
 }
