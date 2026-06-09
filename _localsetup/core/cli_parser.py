@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 
+from .repo_profiles import REPO_PROFILES
+
 
 def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_harness_target_flags) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="localsetup")
@@ -218,6 +220,9 @@ def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_har
     wizard_p = sub.add_parser("wizard")
     add_config_flags(wizard_p)
     add_selector_flags(wizard_p)
+    wizard_p.add_argument("--repo-profile", choices=sorted(REPO_PROFILES))
+    wizard_p.add_argument("--dry-run", action="store_true")
+    wizard_p.add_argument("--apply", action="store_true")
     wizard_p.add_argument("--caller-directory")
     wizard_p.add_argument("--no-register-shell", action="store_true")
     wizard_p.add_argument("--target-directory-origin", choices=["explicit", "inferred"], default="explicit")

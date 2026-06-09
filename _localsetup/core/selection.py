@@ -162,7 +162,6 @@ def resolve_package_selection(
     pack = load_pack_config(repo_root)
     for pack_name in pack_names:
         selected.update(pack.packs.get(pack_name, []))
-    selected.update(required_skills_for_workflows(repo_root, selected_workflows))
     selected.update(_normalize_skill_selectors(repo_root, skills, "skill selector"))
     selected.update(_skills_for_classes(repo_root, skill_classes))
     selected.update(_skills_for_tags(repo_root, skill_tags))

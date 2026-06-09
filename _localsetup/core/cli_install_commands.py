@@ -136,6 +136,17 @@ def handle(cli, args, root, home) -> int | None:
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
         target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
+        if args.repo_profile:
+            if not target_root:
+                print("localsetup: wizard --repo-profile requires --target-directory", file=sys.stderr)
+                return 2
+            if args.apply and args.dry_run:
+                print("localsetup: use either --apply or --dry-run with --repo-profile, not both", file=sys.stderr)
+                return 2
+            payload = render_repo_profile(args.repo_profile, target_root, apply=bool(args.apply))
+            _write_report(config.output.report, payload)
+            _print_payload(payload)
+            return 0 if payload.get("ok") else 1
         caller_directory = Path(args.caller_directory).expanduser().resolve() if args.caller_directory else None
         return run_wizard(
             repo_root=root,

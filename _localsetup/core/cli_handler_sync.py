@@ -76,6 +76,7 @@ NAMES = (
     "workflow_payload",
     "run_repair",
     "load_registry",
+    "render_repo_profile",
     "rollback",
     "PRESETS",
     "SHIM_ENV",

@@ -111,6 +111,8 @@ register-shell, wizard, package, verify-release
 
 `candidate-skill validate --candidate <path> --json` and `candidate-skill proposal --candidate <path> --output -` inspect repo-scoped candidate skills without promoting them into managed packages or adapter directories.
 
+`wizard --repo-profile universal-agent-repo --target-directory <path> --dry-run --report <path>` plans the lean universal agent repository shape without entering the interactive installer. Re-run with `--apply` to create the missing shape files. Existing files with different content are blockers; Localsetup does not overwrite them.
+
 Most commands emit JSON by default. Commands with explicit human-readable modes, such as `context --markdown`, document that mode in their own help.
 
 ## Install Command Options

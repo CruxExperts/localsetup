@@ -50,6 +50,7 @@ from .provenance import provenance_report
 from .query import adopt_recommendations, graph_payload, pack_reasoning, skill_payload, workflow_payload
 from .repair import run_repair
 from .registry import load_registry
+from .repo_profiles import REPO_PROFILES, render_repo_profile
 from .rollback import rollback
 from .selection import PRESETS
 from .shell import SHIM_ENV, detect_invocation_target, register_shell_command, shell_registration_status
