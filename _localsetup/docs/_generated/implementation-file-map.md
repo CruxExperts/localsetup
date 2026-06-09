@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: e2a9373dc995d7af79aadc059f0b13ccf576f6b11106319c384717ac4cc75bd5
+  source_provenance_hash: 891a736c4faec6b723c76fb072d4eae345911dd9f2ff1d274436857787fb2d93
   emitter: generate-docs
-framework_version: 4.1.0
-source_commit: dd682b9df38c3492b50731a49a5fc5ca81f6c7da
-artifact_sha256: 5c5ad61b2495151dba4b1a3af5e08448b448a6eba3ebe708c8209237df0b33d6
+framework_version: 4.1.1
+source_commit: 9ab78f561f69cda6796191bf487c59839623b786
+artifact_sha256: 6b853c4125152cf374b2d89f3a2ee6ddbfaa11d3d4ffe3d6f214ca01fbdedaa3
 ---
 # Implementation File Map
 
@@ -169,6 +169,7 @@ artifact_sha256: 5c5ad61b2495151dba4b1a3af5e08448b448a6eba3ebe708c8209237df0b33d
 | `refactor` | `_localsetup/core/repair_inference.py` |
 | `refactor` | `_localsetup/core/repair_safety.py` |
 | `refactor` | `_localsetup/core/repo_finalizer.py` |
+| `refactor` | `_localsetup/core/repo_profiles.py` |
 | `refactor` | `_localsetup/core/rollback.py` |
 | `refactor` | `_localsetup/core/schema.py` |
 | `refactor` | `_localsetup/core/selection.py` |
@@ -799,6 +800,7 @@ artifact_sha256: 5c5ad61b2495151dba4b1a3af5e08448b448a6eba3ebe708c8209237df0b33d
 | `keep` | `_localsetup/tests/test_python_runtime_contract.py` |
 | `keep` | `_localsetup/tests/test_qc_patrol.py` |
 | `keep` | `_localsetup/tests/test_repo_finalizer.py` |
+| `keep` | `_localsetup/tests/test_repo_profile_universal_agent_repo.py` |
 | `keep` | `_localsetup/tests/test_scrapling_helper.py` |
 | `keep` | `_localsetup/tests/test_scrapling_jobs.py` |
 | `keep` | `_localsetup/tests/test_skill_sandbox_tester.py` |
