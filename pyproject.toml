@@ -11,14 +11,14 @@ dependencies = [
   "PyYAML>=6.0.3",
   "requests>=2.34.2",
   "python-frontmatter>=1.3.0",
-  "cryptography>=48.0.0",
+  "cryptography>=49.0.0",
   "PGPy>=0.6.0",
   "jsonschema>=4.26.0",
 ]
 
 [dependency-groups]
 dev = [
-  "pytest>=8.0",
+  "pytest>=9.1.0",
   "pytest-xdist>=3.6",
 ]
 
