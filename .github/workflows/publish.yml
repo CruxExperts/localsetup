@@ -69,7 +69,7 @@ jobs:
           uv run --frozen python _localsetup/tools/localsetup.py --source-root . generate-docs
           git diff --exit-code
           uv run --frozen python _localsetup/tools/localsetup.py --source-root . validate-catalog
-          uv run --frozen python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-framework-audit.md
+          uv run --frozen python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/ls-framework-audit.md
           uv run --frozen pytest -n auto _localsetup/tests -q
           uv run --frozen ./_localsetup/tests/automated_test.sh
           git diff --check

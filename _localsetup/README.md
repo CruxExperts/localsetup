@@ -110,7 +110,7 @@ Run these before release-oriented changes:
 uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .
 uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog
 uv run --locked python _localsetup/tools/localsetup.py --source-root . scan-migration
-uv run --locked python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-framework-audit.md
+uv run --locked python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/ls-framework-audit.md
 uv run --locked pytest -n auto _localsetup/tests -q
 git diff --check
 ```

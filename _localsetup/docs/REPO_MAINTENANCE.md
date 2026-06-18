@@ -25,7 +25,7 @@ uv run --locked python _localsetup/tools/localsetup.py --source-root . scan-migr
 uv run --locked python _localsetup/tools/localsetup.py --source-root . audit-global-first
 uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .
 uv run --locked python _localsetup/tools/localsetup.py --source-root . generate-docs
-uv run --locked python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-framework-audit.md
+uv run --locked python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/ls-framework-audit.md
 uv run --locked pytest -n auto _localsetup/tests -q
 uv run --locked ./_localsetup/tests/automated_test.sh
 git diff --check

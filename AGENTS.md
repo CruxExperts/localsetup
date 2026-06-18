@@ -20,9 +20,9 @@ This repository packages Localsetup, a repo-local framework for agent context, s
 - `uv run --locked ./_localsetup/tests/automated_test.sh`: run the core Linux/macOS smoke test suite.
 - `uv run --locked pytest -n auto _localsetup/tests -q`: run the Python pytest tests in parallel.
 - `./install --directory . --tools codex --sync-env --non-interactive --yes`: test a local non-interactive install path for one platform and sync the uv environment.
-- `uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .` and `uv run --locked python _localsetup/tools/localsetup.py --repo . generate-docs`: refresh generated docs artifacts when documentation inputs change.
-- `uv run --locked python _localsetup/tools/localsetup.py --repo . publish-preflight --base <base-ref> --head HEAD`: check the publish-time version and generated-document state before pushing; add `--fix` only after feature/docs changes are committed and you want the tool to create the needed sync commits.
-- `uv run --locked python _localsetup/tools/localsetup.py --repo . release-push`: compute the outgoing Conventional Commit version bump, sync versioned docs, create the release sync commit, and push.
+- `uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .` and `uv run --locked python _localsetup/tools/localsetup.py --source-root . generate-docs`: refresh generated docs artifacts when documentation inputs change.
+- `uv run --locked python _localsetup/tools/localsetup.py --source-root . publish-preflight --base <base-ref> --head HEAD`: check the publish-time version and generated-document state before pushing; add `--fix` only after feature/docs changes are committed and you want the tool to create the needed sync commits.
+- `uv run --locked python _localsetup/tools/localsetup.py --source-root . release-push`: compute the outgoing Conventional Commit version bump, sync versioned docs, create the release sync commit, and push.
 
 ## Command Choice Clarification
 

@@ -30,6 +30,16 @@ MAINTAINER_PATTERN = re.compile(
 VERSION_LINE = re.compile(r"^\*\*Version:\*\*\s*([\d.]+)", re.MULTILINE)
 SMOKE_COMMAND_MAX = 2048
 REPO_MARKERS = (".localsetup/lock.json", "_localsetup", "VERSION", "README.md", ".git")
+PRIVATE_RUNTIME_PREFIXES = (
+    (".codex", "runs"),
+    (".codex", "sessions"),
+    (".codex", "logs"),
+    (".codex", "tmp"),
+    (".localsetup-maint",),
+    ("graphify-out",),
+    ("state",),
+    ("data",),
+)
 
 
 def _script_dir() -> Path:
@@ -100,6 +110,10 @@ def _display_path(path: Path, root: Path) -> str:
         return str(path.relative_to(root))
     except ValueError:
         return str(path)
+
+
+def _is_private_runtime_path(rel: Path) -> bool:
+    return any(rel.parts[: len(prefix)] == prefix for prefix in PRIVATE_RUNTIME_PREFIXES)
 
 
 sys.path.insert(0, str(_select_framework_root() / "lib"))
@@ -319,7 +333,7 @@ def phase_maintainer_refs(root: Path) -> list[str]:
     for md in root.rglob("*.md"):
         try:
             rel = md.relative_to(root)
-            if "_generated" in rel.parts:
+            if "_generated" in rel.parts or _is_private_runtime_path(rel):
                 continue
             text = md.read_text(encoding="utf-8", errors="replace")
         except (OSError, ValueError):

@@ -26,7 +26,7 @@ Snapshot date: 2026-05-12.
 - `uv run --locked python -m json.tool _localsetup/skills/ls-context-index/schemas/config.schema.json`
 - `uv run --locked python -m py_compile _localsetup/tools/context_index.py`
 - `uv run --locked pytest _localsetup/tests/test_context_index.py -q`
-- `uv run --locked python _localsetup/tools/localsetup.py --repo . validate-catalog`
+- `uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog`
 - `uv run --locked python _localsetup/tools/context_index.py --repo . stats --json`
 - `uv run --locked python _localsetup/tools/context_index.py --repo . vector-rebuild plan --json`
 - `uv run --locked python _localsetup/tools/context_index.py --repo . prune plan --json`

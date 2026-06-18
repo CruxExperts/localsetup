@@ -167,6 +167,31 @@ def test_main_honors_explicit_repo_root_and_framework_root(tmp_path: Path, monke
     assert seen["doc"] == (repo.resolve(), framework.resolve())
 
 
+@pytest.mark.parametrize(
+    "runtime_path",
+    [
+        Path(".codex/runs/ledger.md"),
+        Path(".codex/sessions/session.md"),
+        Path(".codex/logs/log.md"),
+        Path(".codex/tmp/scratch.md"),
+        Path(".localsetup-maint/audit.md"),
+        Path("graphify-out/report.md"),
+        Path("state/report.md"),
+        Path("data/report.md"),
+    ],
+)
+def test_maintainer_ref_scan_skips_private_runtime_paths(tmp_path: Path, runtime_path: Path) -> None:
+    public_doc = tmp_path / "README.md"
+    private_doc = tmp_path / runtime_path
+    private_doc.parent.mkdir(parents=True)
+    public_doc.write_text("This mentions private maintainer context.\n", encoding="utf-8")
+    private_doc.write_text("This mentions private maintainer context.\n", encoding="utf-8")
+
+    findings = audit.phase_maintainer_refs(tmp_path)
+
+    assert findings == ["README.md:1: This mentions private maintainer context."]
+
+
 def test_doc_checks_distinguish_target_and_framework_missing_paths(tmp_path: Path) -> None:
     repo = tmp_path / "consumer"
     framework = tmp_path / "framework" / "_localsetup"

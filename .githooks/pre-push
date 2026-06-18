@@ -9,7 +9,7 @@ plan_json="$(mktemp)"
 trap 'rm -f "$payload" "$plan_json"' EXIT
 cat >"$payload"
 
-if python3 _localsetup/tools/localsetup.py --repo . version-plan --push-stdin <"$payload" >"$plan_json"; then
+if python3 _localsetup/tools/localsetup.py --source-root . version-plan --push-stdin <"$payload" >"$plan_json"; then
   exit 0
 fi
 

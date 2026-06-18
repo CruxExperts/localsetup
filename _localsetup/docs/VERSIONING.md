@@ -64,7 +64,7 @@ uv lock --check
 uv sync --locked --all-groups
 uv run --locked python _localsetup/tools/localsetup.py --source-root . version-plan
 uv run --locked python _localsetup/tools/localsetup.py --source-root . version-sync --check --target "$(cat VERSION)"
-uv run --locked python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/localsetup-framework-audit.md
+uv run --locked python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/ls-framework-audit.md
 uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog
 uv run --locked python _localsetup/tools/localsetup.py --source-root . scan-migration
 uv run --locked python _localsetup/tools/localsetup.py --source-root . audit-global-first
