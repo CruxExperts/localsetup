@@ -65,6 +65,73 @@ def test_materializer_rewrites_markdown_refs_and_copies_public_doc_closure(tmp_p
     assert validate_materialized_package(output, repo_root=repo)["ok"] is True
 
 
+def test_materializer_rejects_rewritten_public_doc_when_source_doc_is_missing(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill = repo / "_localsetup" / "skills" / "ls-demo"
+    (repo / "_localsetup" / "docs").mkdir(parents=True)
+    (repo / "_localsetup" / "config").mkdir(parents=True)
+    skill.mkdir(parents=True)
+    (repo / "_localsetup" / "config" / "reference-bundle.schema.json").write_text(
+        (Path(__file__).resolve().parents[1] / "config" / "reference-bundle.schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (skill / "SKILL.md").write_text(
+        "---\nname: ls-demo\ndescription: Demo.\n---\n\n"
+        "Read [_localsetup/docs/MISSING.md](_localsetup/docs/MISSING.md).\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="rewrite target is missing"):
+        materialize_package_artifact(
+            repo,
+            skill,
+            tmp_path / "out" / "ls-demo",
+            package_name="ls-demo",
+            package_type="skill",
+            private_paths=[],
+            emitter="test",
+        )
+
+    output = tmp_path / "out" / "ls-demo"
+    assert not (output / "references/localsetup/docs/MISSING.md").exists()
+    validation = validate_materialized_package(output, repo_root=repo, check_digest=False)
+    assert validation["ok"] is False
+    assert any("rewrite target is missing" in issue for issue in validation["issues"])
+
+
+def test_materializer_leaves_directory_like_doc_literals_unrewritten(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill = repo / "_localsetup" / "skills" / "ls-demo"
+    (repo / "_localsetup" / "docs" / "_generated").mkdir(parents=True)
+    (repo / "_localsetup" / "config").mkdir(parents=True)
+    skill.mkdir(parents=True)
+    (repo / "_localsetup" / "config" / "reference-bundle.schema.json").write_text(
+        (Path(__file__).resolve().parents[1] / "config" / "reference-bundle.schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (skill / "SKILL.md").write_text(
+        "---\nname: ls-demo\ndescription: Demo.\n---\n\n"
+        "Generated artifacts live under `_localsetup/docs/_generated/`.\n",
+        encoding="utf-8",
+    )
+
+    manifest = materialize_package_artifact(
+        repo,
+        skill,
+        tmp_path / "out" / "ls-demo",
+        package_name="ls-demo",
+        package_type="skill",
+        private_paths=[],
+        emitter="test",
+    )
+
+    output = tmp_path / "out" / "ls-demo"
+    assert "_localsetup/docs/_generated/" in (output / "SKILL.md").read_text(encoding="utf-8")
+    assert manifest["copied_refs"] == []
+    assert manifest["rewrites"] == []
+    assert validate_materialized_package(output, repo_root=repo)["ok"] is True
+
+
 def test_materializer_records_workflow_required_docs_as_source_only_metadata(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     workflow = repo / "_localsetup" / "workflows" / "ls-workflow-demo"

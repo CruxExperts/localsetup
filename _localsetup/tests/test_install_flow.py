@@ -111,10 +111,11 @@ def make_temp_repo(tmp_path: Path) -> Path:
     shutil.copy2(source / "pyproject.toml", repo / "pyproject.toml")
     shutil.copy2(source / "uv.lock", repo / "uv.lock")
     shutil.copytree(source / "assets", repo / "assets")
-    (repo / "_localsetup" / "docs" / "_generated").mkdir(parents=True)
-    (repo / "_localsetup" / "docs" / "migration").mkdir(parents=True)
-    for rel_path in ("README.md", "FEATURES.md", "PLATFORM_REGISTRY.md"):
-        shutil.copy2(source / "_localsetup" / "docs" / rel_path, repo / "_localsetup" / "docs" / rel_path)
+    shutil.copytree(
+        source / "_localsetup" / "docs",
+        repo / "_localsetup" / "docs",
+        ignore=shutil.ignore_patterns("local-context", "audits"),
+    )
     (repo / ".github").mkdir()
     (repo / "README.md").write_text("# Localsetup\n", encoding="utf-8")
     (repo / "AGENTS.md").write_text("# Agents\n", encoding="utf-8")

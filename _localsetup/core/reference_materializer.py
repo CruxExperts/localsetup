@@ -48,7 +48,9 @@ PRIVATE_PREFIXES = (
     "docs/",
 )
 PRIVATE_EXACT = {".localsetup-maint", "graphify-out", "state", "data", "docs"}
-DOC_REF_RE = re.compile(r"(?P<path>(?:_localsetup/docs|\.\./\.\./docs)/[A-Za-z0-9_./#%+@~:-]+)")
+DOC_REF_RE = re.compile(
+    r"(?P<path>(?:_localsetup/docs|\.\./\.\./docs)/[A-Za-z0-9_./%+@~:-]+\.(?:md|json|ya?ml)(?:#[A-Za-z0-9_.:-]+)?)"
+)
 INLINE_CODE_RE = re.compile(r"`([^`\n]+)`")
 LINK_RE = re.compile(r"(!?\[[^\]]*\]\()([^\)\s]+)(\))")
 
@@ -105,10 +107,25 @@ def classify_reference(value: str, *, private_paths: list[str] | None = None) ->
     return ClassifiedReference(raw, normalized, "runtime_resolved", "package-local or external runtime reference")
 
 
-def _repo_doc_for_ref(ref: str, source_file: Path, source_root: Path, repo_root: Path) -> str | None:
+def _repo_doc_for_ref(
+    ref: str,
+    source_file: Path,
+    source_root: Path,
+    repo_root: Path,
+    *,
+    require_existing: bool = False,
+) -> str | None:
     path_part, _sep, _fragment = ref.partition("#")
     normalized = path_part.replace("\\", "/")
+    if (
+        not normalized.endswith((".md", ".json", ".yaml", ".yml"))
+        or any(char.isspace() for char in normalized)
+        or any(char in normalized for char in "*<>{}$`")
+    ):
+        return None
     if normalized.startswith("_localsetup/docs/"):
+        if require_existing and not (repo_root / normalized).is_file():
+            return None
         return normalized
     if normalized.startswith("../../docs/"):
         candidate = (source_file.parent / normalized).resolve(strict=False)
@@ -117,6 +134,8 @@ def _repo_doc_for_ref(ref: str, source_file: Path, source_root: Path, repo_root:
             rel = candidate.relative_to(docs_root).as_posix()
         except ValueError:
             return None
+        if require_existing and not candidate.is_file():
+            return None
         return f"_localsetup/docs/{rel}"
     if normalized.endswith(".md") and not normalized.startswith(("http://", "https://", "mailto:")):
         candidate = (source_file.parent / normalized).resolve(strict=False)
@@ -124,6 +143,8 @@ def _repo_doc_for_ref(ref: str, source_file: Path, source_root: Path, repo_root:
         try:
             rel = candidate.relative_to(docs_root).as_posix()
         except ValueError:
+            return None
+        if not candidate.is_file():
             return None
         return f"_localsetup/docs/{rel}"
     return None
@@ -187,7 +208,7 @@ def _rewrite_markdown_text(
 
         def replace_inline(match: re.Match[str]) -> str:
             target = match.group(1)
-            repo_doc = _repo_doc_for_ref(target, source_file, source_root, repo_root)
+            repo_doc = _repo_doc_for_ref(target, source_file, source_root, repo_root, require_existing=True)
             if repo_doc is None:
                 return match.group(0)
             _path_part, _sep, fragment = target.partition("#")
@@ -207,7 +228,7 @@ def _rewrite_markdown_text(
         def replace_bare(match: re.Match[str]) -> str:
             target = match.group("path").rstrip(".,:;")
             suffix = match.group("path")[len(target) :]
-            repo_doc = _repo_doc_for_ref(target, source_file, source_root, repo_root)
+            repo_doc = _repo_doc_for_ref(target, source_file, source_root, repo_root, require_existing=True)
             if repo_doc is None:
                 return match.group(0)
             classified = classify_reference(repo_doc, private_paths=private_paths)
@@ -365,6 +386,27 @@ def _validate_manifest_shape(manifest: dict[str, Any]) -> list[str]:
     return issues
 
 
+def _manifest_reference_target_issues(package_root: Path, manifest: dict[str, Any]) -> list[str]:
+    issues: list[str] = []
+    for ref in manifest.get("copied_refs", []) if isinstance(manifest.get("copied_refs"), list) else []:
+        if not isinstance(ref, str) or not ref.startswith("_localsetup/docs/"):
+            continue
+        target = package_root / REFERENCE_DOC_ROOT / ref.removeprefix("_localsetup/docs/")
+        if not target.is_file():
+            issues.append(f"reference bundle copied_ref target is missing: {ref} -> {target.relative_to(package_root)}")
+    for item in manifest.get("rewrites", []) if isinstance(manifest.get("rewrites"), list) else []:
+        if not isinstance(item, dict) or not isinstance(item.get("to"), str):
+            continue
+        target_text = item["to"]
+        target_path, _sep, _fragment = target_text.partition("#")
+        if not target_path.startswith(REFERENCE_DOC_ROOT.as_posix() + "/"):
+            continue
+        target = package_root / target_path
+        if not target.is_file():
+            issues.append(f"reference bundle rewrite target is missing: {target_text}")
+    return issues
+
+
 def materialize_package_artifact(
     repo_root: Path,
     source: Path,
@@ -491,6 +533,7 @@ def validate_materialized_package(package_root: Path, *, repo_root: Path | None 
         expected = _manifest_digest(manifest)
         if check_digest and manifest.get("digest") != expected:
             issues.append("reference bundle digest mismatch")
+        issues.extend(_manifest_reference_target_issues(package_root, manifest))
 
     for md_path in package_root.rglob("*.md"):
         if REFERENCE_BUNDLE_PATH.as_posix() in md_path.as_posix():
@@ -508,6 +551,8 @@ def validate_materialized_package(package_root: Path, *, repo_root: Path | None 
                 continue
             if in_fence:
                 continue
-            for match in DOC_REF_RE.finditer(line):
-                issues.append(f"unmaterialized runtime doc reference in {md_path.relative_to(package_root)}: {match.group('path')}")
+            for match in LINK_RE.finditer(line):
+                target = match.group(2)
+                if DOC_REF_RE.fullmatch(target):
+                    issues.append(f"unmaterialized runtime doc reference in {md_path.relative_to(package_root)}: {target}")
     return {"ok": not issues, "issues": issues}
