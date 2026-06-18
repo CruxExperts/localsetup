@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 891a736c4faec6b723c76fb072d4eae345911dd9f2ff1d274436857787fb2d93
+  source_provenance_hash: da6de6e8d44ebaa26f96d0d77a298fdfd1b90c63ea0afec82af5f4594c6079e5
   emitter: generate-docs
-framework_version: 4.1.1
-source_commit: 9ab78f561f69cda6796191bf487c59839623b786
-artifact_sha256: 6b853c4125152cf374b2d89f3a2ee6ddbfaa11d3d4ffe3d6f214ca01fbdedaa3
+framework_version: 4.1.2
+source_commit: 349652eb59ba35a60bbf098ee8fedbeabfc211fd
+artifact_sha256: 99b94eab0bc09cb25a1bf71cacc64df5efae65454d6852a97fc7f65533f7eb63
 ---
 # Implementation File Map
 
@@ -77,6 +77,7 @@ artifact_sha256: 6b853c4125152cf374b2d89f3a2ee6ddbfaa11d3d4ffe3d6f214ca01fbdedaa
 | `keep` | `_localsetup/config/plugin-packs.schema.json` |
 | `keep` | `_localsetup/config/plugin-packs.yaml` |
 | `keep` | `_localsetup/config/python-architecture-baseline.json` |
+| `keep` | `_localsetup/config/reference-bundle.schema.json` |
 | `keep` | `_localsetup/config/skill-frontmatter.schema.json` |
 | `keep` | `_localsetup/config/workflow.schema.json` |
 | `refactor` | `_localsetup/core/__init__.py` |
@@ -162,6 +163,7 @@ artifact_sha256: 6b853c4125152cf374b2d89f3a2ee6ddbfaa11d3d4ffe3d6f214ca01fbdedaa
 | `refactor` | `_localsetup/core/python_architecture/rules.py` |
 | `refactor` | `_localsetup/core/python_architecture/scanner.py` |
 | `refactor` | `_localsetup/core/query.py` |
+| `refactor` | `_localsetup/core/reference_materializer.py` |
 | `refactor` | `_localsetup/core/registry.py` |
 | `refactor` | `_localsetup/core/repair.py` |
 | `refactor` | `_localsetup/core/repair_actions.py` |
@@ -799,6 +801,7 @@ artifact_sha256: 6b853c4125152cf374b2d89f3a2ee6ddbfaa11d3d4ffe3d6f214ca01fbdedaa
 | `keep` | `_localsetup/tests/test_python_architecture_check.py` |
 | `keep` | `_localsetup/tests/test_python_runtime_contract.py` |
 | `keep` | `_localsetup/tests/test_qc_patrol.py` |
+| `keep` | `_localsetup/tests/test_reference_materializer.py` |
 | `keep` | `_localsetup/tests/test_repo_finalizer.py` |
 | `keep` | `_localsetup/tests/test_repo_profile_universal_agent_repo.py` |
 | `keep` | `_localsetup/tests/test_scrapling_helper.py` |
