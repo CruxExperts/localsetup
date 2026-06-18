@@ -20,6 +20,7 @@ def test_reference_classifier_covers_public_private_and_source_paths() -> None:
     assert classify_reference("_localsetup/config/pack.yaml").category == "public_source_file"
     assert classify_reference("_localsetup/lib/internal.py").category == "source_only_metadata"
     assert classify_reference("../escape.md").category == "blocked_escape"
+    assert classify_reference("_localsetup/docs/../../.localsetup-maint/secret.md").category == "blocked_escape"
 
 
 def test_materializer_rewrites_markdown_refs_and_copies_public_doc_closure(tmp_path: Path) -> None:
@@ -130,6 +131,75 @@ def test_materializer_leaves_directory_like_doc_literals_unrewritten(tmp_path: P
     assert manifest["copied_refs"] == []
     assert manifest["rewrites"] == []
     assert validate_materialized_package(output, repo_root=repo)["ok"] is True
+
+
+def test_materializer_rejects_doc_reference_with_embedded_parent_traversal(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill = repo / "_localsetup" / "skills" / "ls-demo"
+    (repo / "_localsetup" / "docs").mkdir(parents=True)
+    (repo / ".localsetup-maint").mkdir(parents=True)
+    (repo / "_localsetup" / "config").mkdir(parents=True)
+    skill.mkdir(parents=True)
+    (repo / ".localsetup-maint" / "secret.md").write_text("# Secret\n", encoding="utf-8")
+    (repo / "_localsetup" / "config" / "reference-bundle.schema.json").write_text(
+        (Path(__file__).resolve().parents[1] / "config" / "reference-bundle.schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (skill / "SKILL.md").write_text(
+        "---\nname: ls-demo\ndescription: Demo.\n---\n\n"
+        "Read [Secret](_localsetup/docs/../../.localsetup-maint/secret.md).\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="unmaterialized runtime doc reference"):
+        materialize_package_artifact(
+            repo,
+            skill,
+            tmp_path / "out" / "ls-demo",
+            package_name="ls-demo",
+            package_type="skill",
+            private_paths=[],
+            emitter="test",
+        )
+
+    output = tmp_path / "out" / "ls-demo"
+    assert not (output / "references/localsetup/.localsetup-maint/secret.md").exists()
+
+
+def test_validate_materialized_package_rejects_manifest_reference_escapes(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill = repo / "_localsetup" / "skills" / "ls-demo"
+    (repo / "_localsetup" / "docs").mkdir(parents=True)
+    (repo / "_localsetup" / "config").mkdir(parents=True)
+    skill.mkdir(parents=True)
+    (repo / "_localsetup" / "config" / "reference-bundle.schema.json").write_text(
+        (Path(__file__).resolve().parents[1] / "config" / "reference-bundle.schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (skill / "SKILL.md").write_text("---\nname: ls-demo\ndescription: Demo.\n---\n", encoding="utf-8")
+    materialize_package_artifact(
+        repo,
+        skill,
+        tmp_path / "out" / "ls-demo",
+        package_name="ls-demo",
+        package_type="skill",
+        private_paths=[],
+        emitter="test",
+    )
+    output = tmp_path / "out" / "ls-demo"
+    manifest_path = output / REFERENCE_BUNDLE_PATH
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["copied_refs"] = ["_localsetup/docs/../config/pack.yaml"]
+    manifest["rewrites"] = [
+        {"file": "_localsetup/skills/ls-demo/SKILL.md", "from": "_localsetup/docs/../config/pack.yaml", "to": "references/localsetup/docs/../config/pack.yaml"}
+    ]
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    validation = validate_materialized_package(output, repo_root=repo, check_digest=False)
+
+    assert validation["ok"] is False
+    assert any("copied_ref is not a public doc" in issue for issue in validation["issues"])
+    assert any("rewrite target escapes bundled docs" in issue for issue in validation["issues"])
 
 
 def test_materializer_records_workflow_required_docs_as_source_only_metadata(tmp_path: Path) -> None:

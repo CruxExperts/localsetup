@@ -86,6 +86,11 @@ def classify_reference(value: str, *, private_paths: list[str] | None = None) ->
     normalized = _normalize_slashes(path_part)
     if normalized.startswith("../") or normalized in {"..", "."}:
         return ClassifiedReference(raw, normalized, "blocked_escape", "parent path references are not portable")
+    if normalized:
+        try:
+            validate_repo_relative_path(normalized, "reference")
+        except PathValidationError:
+            return ClassifiedReference(raw, normalized, "blocked_escape", "unsafe path")
     if normalized.startswith("references/localsetup/"):
         return ClassifiedReference(raw, normalized, "runtime_resolved", "package-local materialized reference")
     if normalized in PRIVATE_EXACT or any(normalized.startswith(prefix) for prefix in PRIVATE_PREFIXES) or _is_configured_private(normalized, private_paths):
@@ -100,10 +105,6 @@ def classify_reference(value: str, *, private_paths: list[str] | None = None) ->
         return ClassifiedReference(raw, normalized, "source_only_metadata", "framework source paths are not runtime package references")
     if fragment and not normalized:
         return ClassifiedReference(raw, normalized, "runtime_resolved", "same-file anchor")
-    try:
-        validate_repo_relative_path(normalized, "reference")
-    except PathValidationError:
-        return ClassifiedReference(raw, normalized, "blocked_escape", "unsafe path")
     return ClassifiedReference(raw, normalized, "runtime_resolved", "package-local or external runtime reference")
 
 
@@ -388,10 +389,21 @@ def _validate_manifest_shape(manifest: dict[str, Any]) -> list[str]:
 
 def _manifest_reference_target_issues(package_root: Path, manifest: dict[str, Any]) -> list[str]:
     issues: list[str] = []
+    package_resolved = package_root.resolve(strict=False)
+    doc_root_resolved = (package_root / REFERENCE_DOC_ROOT).resolve(strict=False)
     for ref in manifest.get("copied_refs", []) if isinstance(manifest.get("copied_refs"), list) else []:
         if not isinstance(ref, str) or not ref.startswith("_localsetup/docs/"):
             continue
+        classified = classify_reference(ref)
+        if classified.category not in {"public_doc", "generated_public_doc"}:
+            issues.append(f"reference bundle copied_ref is not a public doc: {ref}: {classified.category}")
+            continue
         target = package_root / REFERENCE_DOC_ROOT / ref.removeprefix("_localsetup/docs/")
+        try:
+            target.resolve(strict=False).relative_to(doc_root_resolved)
+        except ValueError:
+            issues.append(f"reference bundle copied_ref target escapes bundled docs: {ref} -> {target.relative_to(package_root)}")
+            continue
         if not target.is_file():
             issues.append(f"reference bundle copied_ref target is missing: {ref} -> {target.relative_to(package_root)}")
     for item in manifest.get("rewrites", []) if isinstance(manifest.get("rewrites"), list) else []:
@@ -402,6 +414,12 @@ def _manifest_reference_target_issues(package_root: Path, manifest: dict[str, An
         if not target_path.startswith(REFERENCE_DOC_ROOT.as_posix() + "/"):
             continue
         target = package_root / target_path
+        try:
+            target.resolve(strict=False).relative_to(package_resolved)
+            target.resolve(strict=False).relative_to(doc_root_resolved)
+        except ValueError:
+            issues.append(f"reference bundle rewrite target escapes bundled docs: {target_text}")
+            continue
         if not target.is_file():
             issues.append(f"reference bundle rewrite target is missing: {target_text}")
     return issues
