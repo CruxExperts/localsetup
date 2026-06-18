@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import shutil
 from pathlib import Path
@@ -12,9 +13,15 @@ from _localsetup.core.plugin_packs import plan_plugin_packs
 from _localsetup.core.plugin_packs import plugin_pack_catalog_payload
 from _localsetup.core.plugin_packs import validate_codex_plugin_path
 from _localsetup.core.plugin_packs import validate_plugin_pack_manifest
+from _localsetup.core.reference_materializer import REFERENCE_BUNDLE_PATH
 
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def _reference_bundle_digest(payload: dict) -> str:
+    data = {key: value for key, value in payload.items() if key != "digest"}
+    return hashlib.sha256(json.dumps(data, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
 
 
 def test_plugin_pack_manifest_loads_and_resolves_source_packs() -> None:
@@ -114,6 +121,8 @@ def test_codex_plugin_generator_emits_marketplace_manifest_and_context(tmp_path:
     assert "ls-workflow-audit-framework" in manifest["skills"]
     assert "ls-plugin-bootstrap-context" in manifest["skills"]
     assert (plugin_root / "skills" / "ls-plugin-bootstrap-context" / "SKILL.md").is_file()
+    assert (plugin_root / "skills" / "ls-context" / REFERENCE_BUNDLE_PATH).is_file()
+    assert (plugin_root / "skills" / "ls-plugin-bootstrap-context" / REFERENCE_BUNDLE_PATH).is_file()
     assert validation["ok"] is True
     assert plan["plugin_packs"][0]["context_skill"] == "ls-plugin-bootstrap-context"
 
@@ -127,7 +136,7 @@ def test_codex_plugin_generator_rejects_external_symlink_target(tmp_path: Path) 
     link = root / "_localsetup" / "skills" / "ls-context" / "external-link"
     link.symlink_to(outside)
 
-    with pytest.raises(ValueError, match="symlink resolves outside allowed roots"):
+    with pytest.raises(ValueError, match="symlink resolves outside"):
         build_codex_plugins(root, tmp_path / "plugin-out", ["bootstrap"])
 
 
@@ -162,6 +171,48 @@ def test_codex_plugin_validator_rejects_private_paths_and_skill_traversal(tmp_pa
     assert validation["ok"] is False
     assert any("private maintenance path" in issue for issue in validation["issues"])
     assert any("parent path" in issue for issue in validation["issues"])
+
+
+def test_codex_plugin_validator_rejects_schema_invalid_reference_bundle(tmp_path: Path) -> None:
+    output = tmp_path / "plugin-out"
+    build_codex_plugins(ROOT, output, ["bootstrap"])
+    bundle = output / "plugins" / "localsetup-bootstrap" / "skills" / "ls-context" / REFERENCE_BUNDLE_PATH
+    payload = json.loads(bundle.read_text(encoding="utf-8"))
+    payload["schema_version"] = "1"
+    payload["package_type"] = "invalid"
+    payload["copied_refs"] = "_localsetup/docs/QUICKSTART.md"
+    payload["digest"] = _reference_bundle_digest(payload)
+    bundle.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    validation = validate_codex_plugin_path(output)
+
+    assert validation["ok"] is False
+    assert any("schema_version must be 1" in issue for issue in validation["issues"])
+    assert any("package_type must be skill or workflow" in issue for issue in validation["issues"])
+    assert any("copied_refs must be a string list" in issue for issue in validation["issues"])
+
+
+def test_codex_plugin_validator_rejects_reference_bundle_additional_properties(tmp_path: Path) -> None:
+    output = tmp_path / "plugin-out"
+    build_codex_plugins(ROOT, output, ["bootstrap"])
+    bundle = output / "plugins" / "localsetup-bootstrap" / "skills" / "ls-context" / REFERENCE_BUNDLE_PATH
+    payload = json.loads(bundle.read_text(encoding="utf-8"))
+    payload["unexpected"] = "extra"
+    payload["rewrites"].append({"file": "SKILL.md", "from": "a", "to": "b", "unexpected": "extra"})
+    payload["excluded_refs"].append({"path": "x", "category": "private_doc", "source": "test", "unexpected": "extra"})
+    payload["source_only_metadata"].append({"path": "x", "source": "test", "unexpected": "extra"})
+    payload["validation"]["unexpected"] = "extra"
+    payload["digest"] = _reference_bundle_digest(payload)
+    bundle.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    validation = validate_codex_plugin_path(output)
+
+    assert validation["ok"] is False
+    assert any("unsupported fields: unexpected" in issue for issue in validation["issues"])
+    assert any("rewrites entries contain unsupported fields: unexpected" in issue for issue in validation["issues"])
+    assert any("excluded_refs entries contain unsupported fields: unexpected" in issue for issue in validation["issues"])
+    assert any("source_only_metadata entries contain unsupported fields: unexpected" in issue for issue in validation["issues"])
+    assert any("validation contains unsupported fields: unexpected" in issue for issue in validation["issues"])
 
 
 def test_codex_plugin_validator_rejects_malformed_marketplace(tmp_path: Path) -> None:

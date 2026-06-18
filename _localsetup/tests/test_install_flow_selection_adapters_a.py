@@ -37,8 +37,10 @@ def test_plan_apply_verify_rollback(tmp_path: Path) -> None:
     assert marker["package_name"] == "ls-context"
     assert marker["package_type"] == "skill"
     assert marker["artifact_sha256"] == marker["package_digest"]
+    assert marker["transform_manifest_digest"]
     assert marker["artifact_path"] == str(home / ".local/share/localsetup/packages/ls-context")
     assert marker["marker_path"] == str(home / ".local/share/localsetup/packages/ls-context" / MARKER_JSON)
+    assert (home / ".local/share/localsetup/packages/ls-context/references/localsetup/.localsetup-reference-bundle.json").is_file()
     assert not (home / ".local/share/localsetup/packages/ls-cloudflare-dns").exists()
     assert verify["adapters"] == []
     lock = load_json(root / ".localsetup/lock.json")

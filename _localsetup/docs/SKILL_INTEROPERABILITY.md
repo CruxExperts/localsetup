@@ -24,9 +24,10 @@ owner_skill: ls-skill-creator
 
 ## Using a framework skill elsewhere (export)
 
-- **Copy the skill directory**  - Use `_localsetup/skills/<name>/` as source. After install, managed copies live in `~/.local/share/localsetup/packages`. If an adapter is explicitly selected with `--tools` or `--platforms`, platform paths such as `.cursor/skills/<name>` or `.codex/skills/<name>` attach to that library by symlink or portable copy.
+- **Copy the skill directory**  - Use `_localsetup/skills/<name>/` as source when you want canonical framework source. After install, managed emitted copies live in `~/.local/share/localsetup/packages`. If an adapter is explicitly selected with `--tools` or `--platforms`, platform paths such as `.cursor/skills/<name>` or `.codex/skills/<name>` attach to that emitted library by symlink or portable copy.
 - **Use in any Agent Skills host**  - The directory is a valid Agent Skills skill. The host only needs to support the [Agent Skills](https://agentskills.io/specification) format (SKILL.md with `name` and `description`, optional dirs). No need to change the skill; `ls-*` is a naming choice and does not affect spec validity.
-- **Optional**  - If the target host expects a different name, rename the directory and the `name` field so they match (spec requirement). Paths inside the skill (e.g. `_localsetup/docs/...`) may be framework-specific; the host can ignore or map them as needed.
+- **Prefer emitted copies for lean hosts**  - Managed installed packages and Codex plugin packs rewrite runtime-facing public framework doc links to package-local `references/localsetup/docs/...` files and include a transform manifest at `references/localsetup/.localsetup-reference-bundle.json`. Use these emitted copies when the target host does not have a Localsetup source checkout.
+- **Optional**  - If the target host expects a different name, rename the directory and the `name` field so they match (spec requirement). Treat source-checkout paths such as `_localsetup/docs/...` as authoring references unless they have been materialized into `references/localsetup/...`.
 
 ## Using a workflow package elsewhere
 
@@ -35,7 +36,7 @@ Workflow packages can be copied to another Agent Skills-compatible host as execu
 - Copy `_localsetup/workflows/<name>/` when you want the workflow instructions plus metadata.
 - Copy only the `SKILL.md` package content when the target host only needs executable instructions.
 - Preserve the directory name and `name` field match.
-- Treat `workflow.yaml` as advisory metadata outside Localsetup unless the target host has explicit support for it.
+- Treat `workflow.yaml` as advisory metadata outside Localsetup unless the target host has explicit support for it. `workflow.yaml.required_docs` remains source-repo validation metadata; emitted packages record those entries as source-only metadata in the transform manifest instead of rewriting the YAML contract.
 
 ## Specification and design references
 

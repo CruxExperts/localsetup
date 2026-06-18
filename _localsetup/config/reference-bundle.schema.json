@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "materializer_version",
+    "classifier_version",
+    "package_name",
+    "package_type",
+    "source_path",
+    "source_commit",
+    "emitter",
+    "copied_refs",
+    "rewrites",
+    "excluded_refs",
+    "source_only_metadata",
+    "runtime_resolved",
+    "validation",
+    "digest"
+  ],
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "materializer_version": { "type": "integer", "minimum": 1 },
+    "classifier_version": { "type": "integer", "minimum": 1 },
+    "package_name": { "type": "string", "minLength": 1 },
+    "package_type": { "type": "string", "enum": ["skill", "workflow"] },
+    "source_path": { "type": "string", "minLength": 1 },
+    "source_commit": { "type": "string", "minLength": 1 },
+    "emitter": { "type": "string", "minLength": 1 },
+    "copied_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "rewrites": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["file", "from", "to"],
+        "properties": {
+          "file": { "type": "string" },
+          "from": { "type": "string" },
+          "to": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "excluded_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "category", "source"],
+        "properties": {
+          "path": { "type": "string" },
+          "category": { "type": "string" },
+          "source": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "source_only_metadata": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "source"],
+        "properties": {
+          "path": { "type": "string" },
+          "source": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "runtime_resolved": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "validation": {
+      "type": "object",
+      "required": ["ok", "issues"],
+      "properties": {
+        "ok": { "type": "boolean" },
+        "issues": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "digest": { "type": "string", "minLength": 64, "maxLength": 64 }
+  },
+  "additionalProperties": false
+}

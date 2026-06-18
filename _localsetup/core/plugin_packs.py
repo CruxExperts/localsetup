@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -11,6 +12,7 @@ import yaml
 from .manifests import ManifestError, load_pack_config
 from .models import PluginPackConfig
 from .paths import PathValidationError, repo_path, validate_repo_relative_path
+from .reference_materializer import materialize_package_artifact, validate_materialized_package
 from .schema import validate_json_schema
 from .selection import resolve_package_selection
 
@@ -204,25 +206,6 @@ def _validated_context_input(repo_root: Path, rel: str, private_paths: list[str]
     return path
 
 
-def _copy_package_tree(source: Path, destination: Path, allowed_roots: list[Path], private_paths: list[str], repo_root: Path) -> None:
-    if not source.is_dir():
-        raise ValueError(f"missing package source: {source}")
-    source_resolved = source.resolve(strict=True)
-    if not any(source_resolved.is_relative_to(root.resolve(strict=True)) for root in allowed_roots):
-        raise ValueError(f"package source outside allowed roots: {source}")
-    for path in source.rglob("*"):
-        rel = path.relative_to(repo_root).as_posix()
-        if _is_private_path(rel, private_paths):
-            raise ValueError(f"package includes private path: {rel}")
-        if path.is_symlink():
-            resolved = path.resolve(strict=True)
-            if not any(resolved.is_relative_to(root.resolve(strict=True)) for root in allowed_roots):
-                raise ValueError(f"package symlink resolves outside allowed roots: {rel}")
-    if destination.exists():
-        shutil.rmtree(destination)
-    shutil.copytree(source, destination, symlinks=True)
-
-
 def _write_context_skill(repo_root: Path, destination: Path, resolved: ResolvedPluginPack) -> None:
     pack = load_pack_config(repo_root)
     destination.mkdir(parents=True, exist_ok=True)
@@ -260,7 +243,6 @@ def build_codex_plugins(repo_root: Path, output_root: Path, plugin_packs: list[s
     output_root.mkdir(parents=True, exist_ok=True)
     plugins_root = output_root / "plugins"
     plugins_root.mkdir(parents=True, exist_ok=True)
-    allowed_roots = [repo_root / "_localsetup" / "skills", repo_root / "_localsetup" / "workflows"]
     built: list[dict[str, Any]] = []
 
     for resolved in resolved_packs:
@@ -272,10 +254,37 @@ def build_codex_plugins(repo_root: Path, output_root: Path, plugin_packs: list[s
         skills_dir.mkdir(parents=True, exist_ok=True)
         manifest_dir.mkdir(parents=True, exist_ok=True)
         for skill in resolved.skills:
-            _copy_package_tree(repo_root / "_localsetup" / "skills" / skill, skills_dir / skill, allowed_roots, pack.private_paths, repo_root)
+            materialize_package_artifact(
+                repo_root,
+                repo_root / "_localsetup" / "skills" / skill,
+                skills_dir / skill,
+                package_name=skill,
+                package_type="skill",
+                private_paths=pack.private_paths,
+                emitter="codex-plugin-build",
+            )
         for workflow in resolved.workflows:
-            _copy_package_tree(repo_root / "_localsetup" / "workflows" / workflow, skills_dir / workflow, allowed_roots, pack.private_paths, repo_root)
-        _write_context_skill(repo_root, skills_dir / resolved.context_skill, resolved)
+            materialize_package_artifact(
+                repo_root,
+                repo_root / "_localsetup" / "workflows" / workflow,
+                skills_dir / workflow,
+                package_name=workflow,
+                package_type="workflow",
+                private_paths=pack.private_paths,
+                emitter="codex-plugin-build",
+            )
+        with tempfile.TemporaryDirectory(prefix="localsetup-plugin-context-") as temp:
+            context_source = Path(temp) / resolved.context_skill
+            _write_context_skill(repo_root, context_source, resolved)
+            materialize_package_artifact(
+                repo_root,
+                context_source,
+                skills_dir / resolved.context_skill,
+                package_name=resolved.context_skill,
+                package_type="skill",
+                private_paths=pack.private_paths,
+                emitter="codex-plugin-build",
+            )
         skill_names = resolved.all_skill_packages
         manifest = {
             "name": resolved.config.plugin_id,
@@ -414,6 +423,13 @@ def validate_codex_plugin_path(path: Path) -> dict[str, Any]:
         for skill in skills:
             if not (plugin_dir / "skills" / skill / "SKILL.md").is_file():
                 issues.append(f"Codex plugin missing skill package: {plugin_dir / 'skills' / skill}")
+            else:
+                package_validation = validate_materialized_package(plugin_dir / "skills" / skill)
+                if not package_validation["ok"]:
+                    issues.extend(
+                        f"Codex plugin materialized package invalid: {plugin_dir / 'skills' / skill}: {issue}"
+                        for issue in package_validation["issues"]
+                    )
         issues.extend(_validate_plugin_tree(plugin_dir, skills))
         plugins.append({"name": manifest.get("name"), "path": str(plugin_dir), "skills": skills})
     return {"ok": not issues, "issues": issues, "plugins": plugins}

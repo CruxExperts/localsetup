@@ -7,6 +7,7 @@ from .lockfile import load_json
 from .manifests import load_pack_config, load_platforms
 from .paths import expand_user_path, legacy_target_lockfile_path, repo_path, target_lockfile_path
 from .provenance import is_managed_package, package_digest, provenance_report
+from .reference_materializer import validate_materialized_package
 from .registry import load_registry
 from .workflows import validate_workflow_catalog
 
@@ -53,6 +54,10 @@ def verify_install(
             issues.append(f"missing managed skill: {skill_path}")
         elif not is_managed_package(skill_path):
             issues.append(f"managed marker missing: {skill_path}")
+        else:
+            package_validation = validate_materialized_package(skill_path, repo_root=repo_root)
+            if not package_validation["ok"]:
+                issues.extend(f"managed skill package invalid: {skill_path}: {issue}" for issue in package_validation["issues"])
 
     workflows = lock.get("workflows", []) if isinstance(lock, dict) else []
     for workflow_name in sorted(set(workflows)):
@@ -61,6 +66,10 @@ def verify_install(
             issues.append(f"missing managed workflow: {workflow_path}")
         elif not is_managed_package(workflow_path):
             issues.append(f"managed marker missing: {workflow_path}")
+        else:
+            package_validation = validate_materialized_package(workflow_path, repo_root=repo_root)
+            if not package_validation["ok"]:
+                issues.extend(f"managed workflow package invalid: {workflow_path}: {issue}" for issue in package_validation["issues"])
 
     adapters = (
         adapter_status(repo_root, home, global_root, platform_ids=platform_ids, target_root=attachment_root)

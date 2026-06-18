@@ -6,8 +6,10 @@ import uuid
 
 from .apply_journal import remove_path, write_journal
 from .lockfile import save_json
+from .manifests import load_pack_config
 from .paths import ensure_dir
 from .provenance import build_package_marker, is_managed_package, managed_marker_path
+from .reference_materializer import materialize_package_artifact
 
 
 def install_managed_packages(
@@ -24,6 +26,7 @@ def install_managed_packages(
     ensure_dir(global_root)
     installed: list[str] = []
     source_root = repo_root / "_localsetup" / source_subdir
+    pack = load_pack_config(repo_root)
 
     for package_name in sorted(package_names):
         src = source_root / package_name
@@ -44,18 +47,29 @@ def install_managed_packages(
             if staged.exists():
                 shutil.rmtree(staged)
             staged.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copytree(src, staged)
+            transform_manifest = materialize_package_artifact(
+                repo_root,
+                src,
+                staged,
+                package_name=package_name,
+                package_type=package_type,
+                private_paths=pack.private_paths,
+                emitter="package-install",
+            )
             save_json(
                 managed_marker_path(staged),
-                build_package_marker(
-                    repo_root,
-                    staged,
-                    package_name=package_name,
-                    package_type=package_type,
-                    source_path=src,
-                    emitter="package-install",
-                    artifact_path=dest,
-                ),
+                {
+                    **build_package_marker(
+                        repo_root,
+                        staged,
+                        package_name=package_name,
+                        package_type=package_type,
+                        source_path=src,
+                        emitter="package-install",
+                        artifact_path=dest,
+                    ),
+                    "transform_manifest_digest": transform_manifest["digest"],
+                },
             )
             backup = dest.with_name(f".{dest.name}.localsetup-backup-{uuid.uuid4().hex}")
             existed = dest.exists() or dest.is_symlink()
@@ -77,17 +91,28 @@ def install_managed_packages(
         else:
             if dest.exists() or dest.is_symlink():
                 remove_path(dest)
-            shutil.copytree(src, dest)
+            transform_manifest = materialize_package_artifact(
+                repo_root,
+                src,
+                dest,
+                package_name=package_name,
+                package_type=package_type,
+                private_paths=pack.private_paths,
+                emitter="package-install",
+            )
             save_json(
                 managed_marker_path(dest),
-                build_package_marker(
-                    repo_root,
-                    dest,
-                    package_name=package_name,
-                    package_type=package_type,
-                    source_path=src,
-                    emitter="package-install",
-                ),
+                {
+                    **build_package_marker(
+                        repo_root,
+                        dest,
+                        package_name=package_name,
+                        package_type=package_type,
+                        source_path=src,
+                        emitter="package-install",
+                    ),
+                    "transform_manifest_digest": transform_manifest["digest"],
+                },
             )
         installed.append(str(dest))
 

@@ -37,9 +37,13 @@ Codex builds create a marketplace root with relative plugin paths:
 
 Each generated plugin includes selected skill packages, selected workflow packages, and one generated context skill named `ls-plugin-<source-pack>-context`.
 
+Generated plugin skill directories are derived artifacts. The canonical source remains under `_localsetup/skills/` and `_localsetup/workflows/`. During build, runtime-facing Markdown references to public framework docs are rewritten into package-local files under `references/localsetup/docs/`, and each package receives `references/localsetup/.localsetup-reference-bundle.json` with provenance, copied references, rewrites, exclusions, and validation status.
+
+Do not hand-edit generated plugin packages. Update the source package or framework docs, then rebuild and re-run `localsetup plugin validate`.
+
 ## Safety
 
-The generator copies only packages from `_localsetup/skills/` and `_localsetup/workflows/`. It rejects absolute paths, parent traversal, private maintenance paths, missing context inputs, and package symlinks that resolve outside allowed package roots.
+The generator materializes only packages from `_localsetup/skills/` and `_localsetup/workflows/`. It rejects absolute paths, parent traversal, private maintenance paths, missing context inputs, package symlinks that resolve outside allowed package roots, missing transform manifests, invalid emitted package metadata, and runtime Markdown references that still point at source-checkout docs.
 
 Rebuilding replaces generated plugin directories matching selected plugin pack IDs under `<output>/plugins/`. Keep unrelated files outside those generated plugin directories.
 
