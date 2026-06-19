@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 250760d598afdba4b587126bb28b5f7a9ae78837b60b35891f06647c069cd425
+  source_provenance_hash: 7c1a4d2c4b8ef17523ce02cf7fc6ee0b6c925bbc65ac027f41200585adf853a5
   emitter: generate-docs
-framework_version: 4.1.2
-source_commit: 967490063d76a8de22164ba95ad093c747c72900
-artifact_sha256: 99b94eab0bc09cb25a1bf71cacc64df5efae65454d6852a97fc7f65533f7eb63
+framework_version: 4.1.3
+source_commit: 5a719cda6264e2f08ac9a3e36e32d3823c8f67d8
+artifact_sha256: bf90e69f1617904d6574cd169bcad8af76cff05d15669481c7c336b2ccf3d247
 ---
 # Implementation File Map
 
@@ -150,6 +150,9 @@ artifact_sha256: 99b94eab0bc09cb25a1bf71cacc64df5efae65454d6852a97fc7f65533f7eb6
 | `refactor` | `_localsetup/core/migration.py` |
 | `refactor` | `_localsetup/core/models.py` |
 | `refactor` | `_localsetup/core/package.py` |
+| `refactor` | `_localsetup/core/package_surface.py` |
+| `refactor` | `_localsetup/core/path_contract.py` |
+| `refactor` | `_localsetup/core/path_reprocessor.py` |
 | `refactor` | `_localsetup/core/paths.py` |
 | `refactor` | `_localsetup/core/plan.py` |
 | `refactor` | `_localsetup/core/plugin_packs.py` |
@@ -188,6 +191,7 @@ artifact_sha256: 99b94eab0bc09cb25a1bf71cacc64df5efae65454d6852a97fc7f65533f7eb6
 | `refactor` | `_localsetup/core/skill_index_scrub/reporting.py` |
 | `refactor` | `_localsetup/core/skills.py` |
 | `refactor` | `_localsetup/core/source.py` |
+| `refactor` | `_localsetup/core/test_workers.py` |
 | `refactor` | `_localsetup/core/tmux_ops/__init__.py` |
 | `refactor` | `_localsetup/core/tmux_ops/cli.py` |
 | `refactor` | `_localsetup/core/tmux_ops/constants.py` |
@@ -796,6 +800,7 @@ artifact_sha256: 99b94eab0bc09cb25a1bf71cacc64df5efae65454d6852a97fc7f65533f7eb6
 | `keep` | `_localsetup/tests/test_ls_linux_patcher_patch_cli.py` |
 | `keep` | `_localsetup/tests/test_manifests.py` |
 | `keep` | `_localsetup/tests/test_omniroute_update.py` |
+| `keep` | `_localsetup/tests/test_path_contract.py` |
 | `keep` | `_localsetup/tests/test_plugin_packs.py` |
 | `keep` | `_localsetup/tests/test_provenance.py` |
 | `keep` | `_localsetup/tests/test_python_architecture_check.py` |
