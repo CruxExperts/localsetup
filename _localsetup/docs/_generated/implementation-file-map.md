@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 7c1a4d2c4b8ef17523ce02cf7fc6ee0b6c925bbc65ac027f41200585adf853a5
+  source_provenance_hash: 01492b3956365ce309f2ea642490a68e25099618540048056f4ebdc72cb74b8e
   emitter: generate-docs
-framework_version: 4.1.3
-source_commit: 5a719cda6264e2f08ac9a3e36e32d3823c8f67d8
-artifact_sha256: bf90e69f1617904d6574cd169bcad8af76cff05d15669481c7c336b2ccf3d247
+framework_version: 4.1.4
+source_commit: 9e50bf85d6114120a95a325924d309bb477f36b5
+artifact_sha256: 9ea7e115d36b076aac729f32f3a7b113d88f47af6699b85d3d257dd3d97a6ae0
 ---
 # Implementation File Map
 
@@ -191,6 +191,7 @@ artifact_sha256: bf90e69f1617904d6574cd169bcad8af76cff05d15669481c7c336b2ccf3d24
 | `refactor` | `_localsetup/core/skill_index_scrub/reporting.py` |
 | `refactor` | `_localsetup/core/skills.py` |
 | `refactor` | `_localsetup/core/source.py` |
+| `refactor` | `_localsetup/core/terminal_mode_health.py` |
 | `refactor` | `_localsetup/core/test_workers.py` |
 | `refactor` | `_localsetup/core/tmux_ops/__init__.py` |
 | `refactor` | `_localsetup/core/tmux_ops/cli.py` |
@@ -200,6 +201,7 @@ artifact_sha256: bf90e69f1617904d6574cd169bcad8af76cff05d15669481c7c336b2ccf3d24
 | `refactor` | `_localsetup/core/tmux_ops/sanitize.py` |
 | `refactor` | `_localsetup/core/tmux_ops/session.py` |
 | `refactor` | `_localsetup/core/tmux_ops/state.py` |
+| `refactor` | `_localsetup/core/tmux_ops/sudo_gate.py` |
 | `refactor` | `_localsetup/core/tmux_ops/tmux.py` |
 | `refactor` | `_localsetup/core/tmux_terminal_mode/__init__.py` |
 | `refactor` | `_localsetup/core/tmux_terminal_mode/cli.py` |
