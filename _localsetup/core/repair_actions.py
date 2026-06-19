@@ -183,8 +183,11 @@ def _plan_actions(
     selected_packages = set(packages)
     aliases = collect_skill_aliases(source_root / "_localsetup" / "skills")
     legacy_alias_entries = set(aliases) | set(aliases.values())
+    current_adapter_targets: set[Path] = set()
     for target in adapter_targets(source_root, home, platform_ids=platform_ids, target_root=target_root):
         path = target["repo_path"]
+        if path.is_symlink() and path.exists():
+            current_adapter_targets.add(path.resolve(strict=False))
         state = adapter_path_state(path, global_root, known_global_roots=known_roots, target_root=target_root)
         same_name_custom = selected_packages & (set(state.get("custom_entries", [])) | set(state.get("unknown_entries", [])))
         if same_name_custom:
@@ -250,6 +253,8 @@ def _plan_actions(
         for rel in rel_paths:
             path = target_root / rel
             if not (path.exists() or path.is_symlink()):
+                continue
+            if path.resolve(strict=False) in current_adapter_targets:
                 continue
             state = adapter_path_state(path, global_root, known_global_roots=known_roots, target_root=target_root)
             custom_entries = set(state.get("custom_entries", []))

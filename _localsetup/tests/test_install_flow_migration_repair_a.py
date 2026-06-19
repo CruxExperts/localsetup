@@ -356,6 +356,10 @@ def test_doctor_repair_repo_local_symlink_adapter_preserves_target(tmp_path: Pat
     assert adapter.is_symlink()
     assert (historical / "ls-context").is_symlink()
 
+    refreshed = run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
+    assert refreshed["ok"] is True
+    assert refreshed["decisions"] == []
+
 
 def test_doctor_repair_broken_adapter_symlink_is_recreated(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
