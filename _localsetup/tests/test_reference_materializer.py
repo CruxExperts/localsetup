@@ -166,6 +166,42 @@ def test_materializer_rejects_doc_reference_with_embedded_parent_traversal(tmp_p
     assert not (output / "references/localsetup/.localsetup-maint/secret.md").exists()
 
 
+@pytest.mark.parametrize(
+    "body",
+    [
+        "Read `_localsetup/docs/../../.localsetup-maint/secret.md`.\n",
+        "Read _localsetup/docs/../../.localsetup-maint/secret.md before continuing.\n",
+    ],
+)
+def test_materializer_rejects_inline_and_bare_doc_reference_traversals(tmp_path: Path, body: str) -> None:
+    repo = tmp_path / "repo"
+    skill = repo / "_localsetup" / "skills" / "ls-demo"
+    (repo / "_localsetup" / "docs").mkdir(parents=True)
+    (repo / ".localsetup-maint").mkdir(parents=True)
+    (repo / "_localsetup" / "config").mkdir(parents=True)
+    skill.mkdir(parents=True)
+    (repo / ".localsetup-maint" / "secret.md").write_text("# Secret\n", encoding="utf-8")
+    (repo / "_localsetup" / "config" / "reference-bundle.schema.json").write_text(
+        (Path(__file__).resolve().parents[1] / "config" / "reference-bundle.schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (skill / "SKILL.md").write_text(
+        "---\nname: ls-demo\ndescription: Demo.\n---\n\n" + body,
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="unsafe runtime doc reference"):
+        materialize_package_artifact(
+            repo,
+            skill,
+            tmp_path / "out" / "ls-demo",
+            package_name="ls-demo",
+            package_type="skill",
+            private_paths=[],
+            emitter="test",
+        )
+
+
 def test_validate_materialized_package_rejects_manifest_reference_escapes(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     skill = repo / "_localsetup" / "skills" / "ls-demo"

@@ -569,6 +569,10 @@ def validate_materialized_package(package_root: Path, *, repo_root: Path | None 
                 continue
             if in_fence:
                 continue
+            for match in DOC_REF_RE.finditer(line):
+                classified = classify_reference(match.group("path"))
+                if classified.category == "blocked_escape":
+                    issues.append(f"unsafe runtime doc reference in {md_path.relative_to(package_root)}: {match.group('path')}")
             for match in LINK_RE.finditer(line):
                 target = match.group(2)
                 if DOC_REF_RE.fullmatch(target):
