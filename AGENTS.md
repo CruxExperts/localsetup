@@ -18,7 +18,7 @@ This repository packages Localsetup, a repo-local framework for agent context, s
 
 - `uv sync --locked --all-groups`: sync the repo-local uv project environment from `pyproject.toml` and `uv.lock`.
 - `uv run --locked ./_localsetup/tests/automated_test.sh`: run the core Linux/macOS smoke test suite.
-- `uv run --locked pytest -n auto _localsetup/tests -q`: run the Python pytest tests in parallel.
+- `workers="$(uv run --locked python _localsetup/tools/localsetup.py --source-root . test-workers)" && uv run --locked pytest -n "$workers" _localsetup/tests -q`: run the full Python pytest suite using Localsetup's hardened worker default. Use this as final consolidation verification for broad/shared changes, release or publish readiness, dependency changes, or explicit user requests, not as the first validation step for routine edits.
 - `./install --directory . --tools codex --sync-env --non-interactive --yes`: test a local non-interactive install path for one platform and sync the uv environment.
 - `uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .` and `uv run --locked python _localsetup/tools/localsetup.py --source-root . generate-docs`: refresh generated docs artifacts when documentation inputs change.
 - `uv run --locked python _localsetup/tools/localsetup.py --source-root . publish-preflight --base <base-ref> --head HEAD`: check the publish-time version and generated-document state before pushing; add `--fix` only after feature/docs changes are committed and you want the tool to create the needed sync commits.
@@ -44,9 +44,11 @@ Keep scripts portable and explicit: Bash files should use `set -euo pipefail`; P
 
 ## Testing Guidelines
 
-Add or update tests under `_localsetup/tests/` for changes to path resolution, discovery, parsing, deploy behavior, or skill tooling. Name Python tests `test_<feature>.py` and keep shell wrappers thin. Before opening a PR, run `uv run --locked ./_localsetup/tests/automated_test.sh` and `uv run --locked pytest -n auto _localsetup/tests -q`; Windows support is WSL2-only in the current framework.
+Add or update tests under `_localsetup/tests/` for changes to path resolution, discovery, parsing, deploy behavior, or skill tooling. Name Python tests `test_<feature>.py` and keep shell wrappers thin. Before the full suite, run compliance and validation checks that match the code you changed, such as focused pytest files or test functions, `validate-catalog`, `validate-package-surface`, `doctor`, generated-doc drift checks, schema checks, and `git diff --check`.
 
-Test effort must be proportional to risk. For tiny docs, policy, metadata, or one-line behavior changes, prefer static checks such as `git diff --check`, targeted syntax checks, or no test run when there is no executable surface. Do not add broad or repetitive tests merely to increase evidence. Add tests only for behavior that can realistically regress, and keep test code smaller than the implementation unless the behavior is safety-critical or has multiple important edge cases. Run the smallest relevant validation first; run full suites only for shared runtime behavior, release/publish work, dependency changes, or user-requested validation.
+Use the full Python suite as final consolidation verification for broad framework changes, shared runtime behavior, release/publish work, dependency changes, or explicit user requests. Compute the default worker count with `localsetup test-workers`, which uses `ceil(available CPU cores / 2)` clamped to `1..255`; override with `LOCALSETUP_TEST_WORKERS` or `localsetup test-workers --workers <n>` when needed. Do not run the full suite as the default first-pass validation for routine daily work; the codebase is large and full-suite runs have noticeable CPU cost. Windows support is WSL2-only in the current framework.
+
+Test effort must be proportional to risk. For tiny docs, policy, metadata, or one-line behavior changes, prefer static checks such as `git diff --check`, targeted syntax checks, or no test run when there is no executable surface. Do not add broad or repetitive tests merely to increase evidence. Add tests only for behavior that can realistically regress, and keep test code smaller than the implementation unless the behavior is safety-critical or has multiple important edge cases. Run the smallest relevant validation first; broaden only after focused checks pass or when the affected surface justifies it.
 
 ## Commit & Pull Request Guidelines
 

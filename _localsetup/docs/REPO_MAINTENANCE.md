@@ -21,15 +21,19 @@ uv run --locked python _localsetup/tools/localsetup.py --source-root . version-s
 ./_localsetup/tools/verify_context
 ./_localsetup/tools/verify_rules
 uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog
+uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-package-surface
 uv run --locked python _localsetup/tools/localsetup.py --source-root . scan-migration
 uv run --locked python _localsetup/tools/localsetup.py --source-root . audit-global-first
 uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .
 uv run --locked python _localsetup/tools/localsetup.py --source-root . generate-docs
 uv run --locked python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/ls-framework-audit.md
-uv run --locked pytest -n auto _localsetup/tests -q
+workers="$(uv run --locked python _localsetup/tools/localsetup.py --source-root . test-workers)"
+uv run --locked pytest -n "$workers" _localsetup/tests -q
 uv run --locked ./_localsetup/tests/automated_test.sh
 git diff --check
 ```
+
+For daily maintenance and ordinary framework edits, run focused tests and matching Localsetup validators first. Use the full Python suite above as final consolidation for broad automation changes, release or publish readiness, dependency changes, or explicit maintainer requests. The default worker count is `ceil(available CPU cores / 2)`, clamped to `1..255`, with `LOCALSETUP_TEST_WORKERS` or `--workers` overrides.
 
 ## Managed Adapter Refresh
 

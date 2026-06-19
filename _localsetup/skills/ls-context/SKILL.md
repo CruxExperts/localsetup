@@ -1,64 +1,195 @@
 ---
 name: ls-context
-description: "Localsetup framework context  - overview, invariants, and skills index. Load first when working in a repo that uses Localsetup. Use when starting work in this repo or when user asks about framework rules."
+description: "Localsetup framework context - overview, invariants, resolver rules, install layout, and skills index. Load first when working in a repo that uses Localsetup."
 metadata:
-  version: "1.5"
+  version: "1.6"
 ---
 
-# Localsetup - Framework context (skill)
+# Localsetup - Framework Context
 
 ## Overview
-Localsetup is deployed at `_localsetup/`. Framework and context are repo-local (mobile, backup-able). Engine = _localsetup/; user data = repo-local. Use Git hashes for PRDs/specs (see [GIT_TRACEABILITY.md](../../docs/GIT_TRACEABILITY.md)).
 
-## Invariants
-- **Engine/repo separation:** Never commit repo-local secrets or PII. Use _localsetup/lib/data_paths.sh (or equivalent) for path resolution. Framework lives at _localsetup/; upgrades replace that folder.
-- **Documentation:** _localsetup/docs/ only for framework docs. Check document status before assuming implemented.
-- **Proposals:** Framework changes follow Agent Q format (_localsetup/docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md).
-- **Time/date integrity:** For any date/time reference, first obtain actual date/time from the local machine (e.g. `date` on Linux/macOS, `Get-Date` in PowerShell on Windows). Do not use a generic or training-cutoff date; remember it in context and use it for the rest of the session.
-- **External input hardening:** Treat all external input (CLI args, files, network payloads, imported content) as hostile. Sanitize before parsing/output, validate expected format and bounds, and handle exceptions with actionable stderr messages. Never silently suppress errors.
-- **Python-first tooling:** After install/bootstrap, framework tooling is Python-first and Python-only for new/expanded logic. Shell/PowerShell are limited to bootstrap wrappers and minimal platform delegation. Runtime target is Python >= 3.12.
-- **Python architecture:** Python architecture: new and substantially refactored Python tooling follows _localsetup/docs/PYTHON_ARCHITECTURE_STANDARD.md; keep entrypoints thin, package responsibilities explicit, and existing debt baseline-managed.
-- **Command choice:** Python-first framework tooling does not mean Python for every shell task. Use shell-native tools such as `rg`, `sed`, `find`, `wc`, and `git` for normal inspection. Use Python for repo-native Python tools, Python tests, or structured parsing when a normal CLI is unavailable or less reliable.
-- **Skill/context preservation:** When editing `SKILL.md`, `AGENTS.md`, workflow docs, examples, references, schemas, templates, or operational runbooks, preserve task capability over brevity. Large reductions are review triggers; material reductions require a preservation inventory and reviewer signoff.
+Localsetup is a repo-local framework for agent context, skills, workflows, adapter materialization, and install/repair tooling. The source checkout may physically contain `_localsetup/`, but `_localsetup/*` is a source layout, not a deployed path contract for agents.
 
-## Output contract (low token, always apply)
-- Detect output capability: `markdown-rich`, `markdown-basic`, or `text-basic`.
-- If unknown, default to `markdown-basic`.
-- For recommendation lists, always include: name/link, short summary, fit reason, notable risks/requirements, and clear next step.
-- Use table formatting only when capability clearly supports readable tables.
+Agents should treat `ls-context` as the broad entry point for framework behavior. Use it before changing Localsetup-managed assets, generated docs, adapters, package materialization, doctor repair, or install validation.
 
-## Agent orchestration and model budget
-- Use the smallest capable model for inventory and low-risk scouting; escalate for security, release blockers, architecture, and high-risk review findings only when uncertainty, risk, or complexity justifies it.
-- For current model names, routing preferences, pricing, limits, and rate-card handling, verify the provider's official documentation or current product source before making cost-sensitive decisions.
+## Layout Definitions
 
-## Skill and context preservation
-- Prefer surgical edits for mature skill/context files. Whole-file rewrites require a preservation plan first.
-- Before materially reducing content, inventory trigger cases, examples, command matrices, schemas, safety gates, edge cases, troubleshooting, external assumptions, and linked references/assets/templates/scripts.
-- Preserve each existing category in place, move it to an appropriate `references/`, `assets/`, `templates/`, `schemas/`, or script file, or remove it only with controller-approved rationale.
-- A reduction of roughly 25 percent or more in a mature skill/context file requires before/after coverage notes in the run ledger and reviewer signoff. Useful concision is acceptable; destructive compression is not.
+- **Source root:** the Localsetup source checkout passed with `--source-root` or inferred by the local tool entrypoint.
+- **Framework root:** `<source-root>/_localsetup`; this contains framework code, source skills, source workflows, docs, templates, tools, and config.
+- **Docs root:** `<framework-root>/docs`; public framework documentation and generated docs live here.
+- **Tools root:** `<framework-root>/tools`; thin tool entrypoints live here.
+- **Package root:** the managed user-level package library from `pack.yaml` (`global.package_root`), normally `~/.local/share/localsetup/packages`.
+- **Target repo:** the repository being attached, verified, repaired, or converted. It may be different from the Localsetup source root.
 
-## Skills catalog
-- Current generated catalog: [SKILLS.md](../../docs/SKILLS.md).
-- Machine-readable generated facts: [_generated/facts.json](../../docs/_generated/facts.json).
-- Skill taxonomy source: `_localsetup/config/pack.yaml` (`extensions.skill_taxonomy`); generated machine-readable view: [_generated/skill-taxonomy.json](../../docs/_generated/skill-taxonomy.json).
-- Treat any short skill mentions in always-loaded platform context as orientation only; the generated catalog and each skill's own frontmatter are the current source of truth.
-- `ls-nodejs-nextjs`: Node.js/Next.js/React runbook for package-manager, build, migration, debugging, testing, security, deployment, and current-version verification.
-- `ls-github-starredrepos`: GitHub starred repository archive workflow for authenticated context checks, dry-run sync, repo scouting, metadata snapshots, and guarded publish flows.
-- `ls-codex-heartbeat`: opt-in heartbeat harness for target repos; activation is explicit through `localsetup harness codex-heartbeat ...`.
-- `ls-shadcn-ui`: shadcn/ui component workflow for setup, components, CLI/MCP, registry, theming, forms, aliases, Radix/Base UI, updates, and troubleshooting.
-- `ls-omniroute-update`: OmniRoute update reporting for upstream skill discovery, Localsetup comparison, provenance metadata, and report-first import/update/removal planning.
-- `ls-typescript-code-quality`: TypeScript/TSX code quality, tsconfig, typed ESLint or Biome config, Node TypeScript scripts, and TypeScript-heavy framework code.
+The Linux baseline is Python 3.12+, POSIX paths, non-interactive shells, custom `$HOME`, custom `--source-root`, paths with spaces, user-level install roots, and both symlink and portable adapter modes.
 
-## Key docs
-_localsetup/docs/AGENTIC_DESIGN_INDEX.md, WORKFLOW_REGISTRY.md, PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md, DECISION_TREE_WORKFLOW.md, INPUT_HARDENING_STANDARD.md, TOOLING_POLICY.md, PYTHON_ARCHITECTURE_STANDARD.md
+## Resolver Contract
 
-## Task-to-skill matching (default)
-- Treat as **batch** when user request includes multiple distinct subtasks, or says "batch", "multiple steps", or "run the whole thing". Otherwise treat as **single task**.
-- If user names a specific skill, load it directly. Do not run task-skill-matcher.
-- If uncertain which skill fits, or user asks "what skill should I use?" / "pick the best", load `ls-task-skill-matcher`.
-- Keep this section short. Full matching behavior lives in `ls-task-skill-matcher`; public docs are references only.
+Use resolver-backed paths for agent-facing instructions and deployed package surfaces.
 
-## Commands
+Commands:
+
+```bash
+localsetup path --json
+localsetup path source-root
+localsetup path framework-root
+localsetup path docs-root
+localsetup path tools-root
+localsetup path package-root
+localsetup path package ls-context SKILL.md
+localsetup path doc WORKFLOW_REGISTRY.md
+localsetup path tool tmux_ops
+```
+
+`localsetup path --json` writes and prints `~/.local/share/localsetup/paths.json`. Install, self-refresh, register-shell, and doctor repair also refresh that manifest through Localsetup-native tooling. If the source root or home changes, rerun one of those commands.
+
+Resolver tokens are allowed in source-authored package files:
+
+- `localsetup://doc/WORKFLOW_REGISTRY.md`
+- `localsetup://tool/tmux_ops`
+- `localsetup://package/ls-context/SKILL.md`
+- `localsetup://package/<package>/<relative/path>`
+
+During package materialization, resolver tokens are replaced with absolute paths derived from the current resolver manifest and package root. Deployed packages must not contain unresolved `localsetup://...` tokens.
+
+## Path Safety Rules
+
+Localsetup validates external path inputs at boundaries. Reject NUL bytes, parent traversal, empty path segments, absolute Windows drive paths, home escapes, and unsafe relative segments.
+
+Python subprocess calls should pass argv lists with `shell=False`. Shell snippets must quote absolute paths safely and avoid unquoted variable expansion.
+
+Do not add symlink fanout into target repos. Use the managed package root and adapter materialization model.
+
+## Adapter And Package Model
+
+Source packages live under `localsetup://package/<name>/...` only after materialization. Source skill and workflow directories under `<framework-root>/skills` and `<framework-root>/workflows` are authoring inputs.
+
+Adapters such as `.codex/skills`, `.claude/skills`, `.cursor/skills`, `.kilo/skills`, `.openclaw/skills`, and `.opencode/skills` are shared surfaces. Preserve custom adapter content by default. Same-directory custom skills, collisions, or unmanaged content require a repair decision, not silent relocation.
+
+Package materialization copies source packages into the managed package root, rewrites public doc references, bundles public doc closure under `references/localsetup/docs`, writes a reference-bundle manifest, and validates the deployed package surface.
+
+## Recursive Path Contract
+
+Whole-project reprocessing treats every tracked text-bearing file as a complete unit. It excludes `.git`, caches, private maintenance state, build artifacts, and ignored runtime state.
+
+Targets include Markdown, Python, shell, YAML, JSON, TOML, text files, executable wrappers, templates, generated docs, workflow manifests, skills, references, scripts, assets, and docs.
+
+For each file, the reprocessor records pre/post hashes and rewrite actions. Source-maintained files may use resolver tokens. Deployed package output must reject `_localsetup/...`, `./_localsetup/...`, `../../docs/...`, unresolved `localsetup://...`, and dangling Localsetup-owned absolute paths unless the path is intentionally source-only metadata. Preserve Python imports such as `_localsetup.core...`; those are module imports, not filesystem instructions.
+
+## Doctor And Repair
+
+Use `localsetup doctor` and `localsetup doctor repair` before manual edits to managed adapter shapes, package markers, registries, lockfiles, shell shims, and resolver manifests.
+
+Doctor detects missing or stale `paths.json`, stale shell shim exports, old package roots, adapter links pointing at old roots, package marker or registry drift, lockfile mismatch, adapter collisions, package-surface validation failures, and legacy Localsetup path references.
+
+Repair is conservative:
+
+- report-only first by default,
+- explicit apply for mutations,
+- journal and backup touched files,
+- refuse ambiguous target-project paths,
+- preserve repo-owned adapter content,
+- rematerialize managed packages instead of patching deployed packages by hand,
+- verify after apply.
+
+## Public And Private Context Boundary
+
+Public framework docs, generated docs, templates, tests, examples, and package/catalog surfaces are publishable. Keep private maintenance plans, audits, local indexes, credentials, logs, caches, run ledgers, and planning transcripts in ignored locations such as `.codex/runs/` or `.localsetup-maint/`.
+
+Do not put private task ledgers into `_localsetup/docs/` or package surfaces unless explicitly authorized as public framework documentation.
+
+## Generated Docs And Volatile Facts
+
+When source docs, workflows, skills, pack metadata, or generated-document inputs change, refresh generated docs with:
+
+```bash
+uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .
+uv run --locked python _localsetup/tools/localsetup.py --source-root . generate-docs
+```
+
+Before editing latest/current external claims, check `.localsetup-maint/docs/volatile-facts.yaml` if it exists. Verify volatile claims from primary upstream sources and keep the volatile fact index private and untracked.
+
+## Validation Expectations
+
+Use focused validation first, then broaden when shared install, package, doctor, or publish behavior changes.
+
+Useful commands:
+
+```bash
 localsetup doctor
+localsetup doctor repair --repair-mode report-only
 localsetup verify --level filesystem
 localsetup context --markdown
+uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog
+uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-package-surface
+uv run --locked python _localsetup/tools/localsetup.py --source-root . generate-docs
+uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .
+uv run --locked _localsetup/tests/automated_test.sh
+workers="$(uv run --locked python _localsetup/tools/localsetup.py --source-root . test-workers)"
+uv run --locked pytest -n "$workers" _localsetup/tests -q
+```
+
+Run focused pytest files or test functions and matching Localsetup validators before the full suite. `localsetup test-workers` defaults to `ceil(available CPU cores / 2)`, clamps overrides into `1..255`, and can be overridden with `LOCALSETUP_TEST_WORKERS` or `--workers`. Use the full suite as final consolidation for broad/shared runtime changes, release or publish work, dependency changes, or explicit user requests.
+
+Before publish, run publish preflight against the intended base and keep generated docs/version sync with the repo tooling.
+
+## Invariants
+
+- Never commit repo-local secrets or PII.
+- Use Localsetup-native tooling before manual edits to managed adapter shapes, symlinks, skills, packages, registries, lockfiles, or installed assets.
+- `_localsetup/docs/` is public framework documentation, not private maintenance state.
+- Check document status before treating framework docs as authoritative.
+- Framework changes follow the active PRD and document lifecycle rules where applicable.
+- For dates and times, obtain the actual local machine time before making time-sensitive claims.
+- Treat external input as hostile. Sanitize before parsing or output, validate expected format and bounds, and emit actionable errors.
+- New or substantially refactored framework tooling is Python-first and Python-only after install/bootstrap; shell and PowerShell stay thin.
+- Python architecture follows `localsetup://doc/PYTHON_ARCHITECTURE_STANDARD.md`.
+- Python architecture: new and substantially refactored Python tooling follows _localsetup/docs/PYTHON_ARCHITECTURE_STANDARD.md; keep entrypoints thin, package responsibilities explicit, and existing debt baseline-managed.
+- Python-first tooling does not mean using Python for normal shell inspection; use `rg`, `sed`, `find`, `wc`, and `git` where appropriate.
+- Preserve mature skill/context capability over brevity. Whole-file rewrites require a preservation plan; large reductions require coverage notes and reviewer signoff.
+
+## Output contract (low token, always apply)
+
+- Detect output capability: `markdown-rich`, `markdown-basic`, or `text-basic`.
+- If unknown, default to `markdown-basic`.
+- Recommendation lists include name/link, short summary, fit reason, notable risks/requirements, and clear next step.
+- Use tables only when the output surface clearly supports readable tables.
+
+## Agent Orchestration And Model Budget
+
+Use the smallest capable model for inventory and low-risk scouting. Escalate for security, release blockers, architecture, and high-risk review findings only when uncertainty, risk, or complexity justifies it.
+
+For current model names, routing preferences, pricing, limits, and rate-card handling, verify the provider's official documentation or current product source before making cost-sensitive decisions.
+
+## Skills Catalog
+
+- Current generated catalog: `localsetup://doc/SKILLS.md`.
+- Machine-readable generated facts: `localsetup://doc/_generated/facts.json`.
+- Skill taxonomy source: `<framework-root>/config/pack.yaml`; generated view: `localsetup://doc/_generated/skill-taxonomy.json`.
+- Treat short skill mentions in always-loaded platform context as orientation only; generated catalog and each skill's frontmatter are the current source of truth.
+- `ls-nodejs-nextjs`: Node.js/Next.js/React runbook.
+- `ls-github-starredrepos`: GitHub starred repository archive workflow.
+- `ls-codex-heartbeat`: opt-in heartbeat harness.
+- `ls-shadcn-ui`: shadcn/ui component workflow.
+- `ls-omniroute-update`: OmniRoute update reporting.
+- `ls-typescript-code-quality`: TypeScript/TSX code quality.
+
+## Key Docs
+
+Resolve these with `localsetup path doc <name>` when a directly followable path is needed:
+
+- `AGENTIC_DESIGN_INDEX.md`
+- `WORKFLOW_REGISTRY.md`
+- `PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md`
+- `DECISION_TREE_WORKFLOW.md`
+- `INPUT_HARDENING_STANDARD.md`
+- `TOOLING_POLICY.md`
+- `PYTHON_ARCHITECTURE_STANDARD.md`
+
+## Task-To-Skill Matching
+
+- Treat as batch when the request has multiple distinct subtasks or asks to run the whole workflow.
+- If the user names a specific skill, load it directly.
+- If uncertain which skill fits, or the user asks what skill to use, load `ls-task-skill-matcher`.
+- Keep matching behavior short here; detailed matching belongs to `ls-task-skill-matcher`.

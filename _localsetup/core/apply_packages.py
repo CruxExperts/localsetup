@@ -18,6 +18,7 @@ def install_managed_packages(
     package_names: list[str],
     source_subdir: str,
     *,
+    home: Path | None = None,
     replace_func,
     staging_root: Path | None = None,
     journal: dict | None = None,
@@ -54,6 +55,8 @@ def install_managed_packages(
                 package_name=package_name,
                 package_type=package_type,
                 private_paths=pack.private_paths,
+                home=home,
+                runtime_package_root=global_root,
                 emitter="package-install",
             )
             save_json(
@@ -98,6 +101,8 @@ def install_managed_packages(
                 package_name=package_name,
                 package_type=package_type,
                 private_paths=pack.private_paths,
+                home=home,
+                runtime_package_root=global_root,
                 emitter="package-install",
             )
             save_json(

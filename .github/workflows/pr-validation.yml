@@ -140,7 +140,9 @@ jobs:
           uv run --frozen python _localsetup/tools/localsetup.py --source-root . sbom --out /tmp/localsetup-source.cdx.json
 
       - name: Run pytest
-        run: uv run --frozen pytest -n auto _localsetup/tests -q
+        run: |
+          workers="$(uv run --frozen python _localsetup/tools/localsetup.py --source-root . test-workers)"
+          uv run --frozen pytest -n "$workers" _localsetup/tests -q
 
   shell-smoke-and-audit:
     name: shell smoke and framework audit

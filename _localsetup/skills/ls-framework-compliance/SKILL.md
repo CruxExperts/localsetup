@@ -74,16 +74,18 @@ uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-
 uv run --locked python _localsetup/tools/localsetup.py --source-root . scan-migration
 uv run --locked python _localsetup/tools/localsetup.py --source-root . audit-global-first
 uv run --locked ./_localsetup/tests/automated_test.sh
-uv run --locked pytest -n auto _localsetup/tests -q
+workers="$(uv run --locked python _localsetup/tools/localsetup.py --source-root . test-workers)"
+uv run --locked pytest -n "$workers" _localsetup/tests -q
 git diff --check
 ```
 
 - Run `verify_context` when validating that the framework context is present.
 - Run `verify_rules` after framework or rule-related changes.
 - Run `validate-catalog` after skill, catalog, platform, or registry changes.
+- Run `validate-package-surface` after package materialization, deployed docs, resolver-token, workflow, or path-contract changes.
 - Run `scan-migration` when migration, installer, adapter, generated-artifact, or source-boundary behavior may be affected.
 - Run `audit-global-first` when global-first layout, lockfile, target-state, PowerShell removal, or source/target docs claims may be affected.
-- Run focused tests for narrow changes; run the full smoke and pytest suites before release or broad framework changes.
+- Run focused tests and compliance checks for the code you changed before broad suites. Use the full pytest suite only as final consolidation for broad/shared runtime behavior, release/publish work, dependency changes, or explicit user requests. `localsetup test-workers` defaults to `ceil(available CPU cores / 2)` and clamps overrides into `1..255`.
 
 ## Git And Handoff
 

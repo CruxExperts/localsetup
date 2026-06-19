@@ -29,10 +29,14 @@ Before opening a release-impacting PR, run the relevant subset of:
 uv run --locked python _localsetup/tools/localsetup.py --source-root . version-plan
 uv run --locked python _localsetup/tools/localsetup.py --source-root . version-sync --check --target "$(cat VERSION)"
 uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog
+uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-package-surface
 uv run --locked python _localsetup/tools/localsetup.py --source-root . docs-align check --ci
-uv run --locked pytest -n auto _localsetup/tests -q
+workers="$(uv run --locked python _localsetup/tools/localsetup.py --source-root . test-workers)"
+uv run --locked pytest -n "$workers" _localsetup/tests -q
 git diff --check
 ```
+
+Run focused tests and Localsetup validators for the code you changed before the full Python suite. Treat the full Python suite as final consolidation for broad framework changes, release/publish work, dependency changes, or explicit maintainer review requests. `localsetup test-workers` computes a safe default from available CPU cores and clamps overrides into `1..255`.
 
 ## Repository layout
 

@@ -58,7 +58,7 @@ def test_materializer_rewrites_markdown_refs_and_copies_public_doc_closure(tmp_p
     text = (output / "SKILL.md").read_text(encoding="utf-8")
     assert "references/localsetup/docs/QUICKSTART.md" in text
     assert "`references/localsetup/docs/PLATFORM_REGISTRY.md`" in text
-    assert "cat _localsetup/docs/QUICKSTART.md" in text
+    assert f"cat {(repo / '_localsetup' / 'docs' / 'QUICKSTART.md').resolve(strict=False)}" in text
     assert (output / "references/localsetup/docs/QUICKSTART.md").is_file()
     assert (output / "references/localsetup/docs/PLATFORM_REGISTRY.md").is_file()
     assert (output / REFERENCE_BUNDLE_PATH).is_file()
@@ -100,6 +100,63 @@ def test_materializer_rejects_rewritten_public_doc_when_source_doc_is_missing(tm
     assert any("rewrite target is missing" in issue for issue in validation["issues"])
 
 
+def test_materializer_rejects_dangling_localsetup_absolute_paths(tmp_path: Path) -> None:
+    package = tmp_path / "package"
+    package.mkdir()
+    stale = tmp_path / "old" / "_localsetup" / "tools" / "missing"
+    (package / "SKILL.md").write_text(f"Run `{stale}`.\n", encoding="utf-8")
+
+    validation = validate_materialized_package(package, repo_root=tmp_path)
+
+    assert validation["ok"] is False
+    assert any("dangling Localsetup absolute path" in issue for issue in validation["issues"])
+
+
+def test_materializer_rejects_forbidden_paths_in_python_files(tmp_path: Path) -> None:
+    package = tmp_path / "package"
+    package.mkdir()
+    (package / "helper.py").write_text('DOC = "_localsetup/docs/TOOLING_POLICY.md"\n', encoding="utf-8")
+
+    validation = validate_materialized_package(package, repo_root=tmp_path)
+
+    assert validation["ok"] is False
+    assert any("forbidden Localsetup path reference in helper.py" in issue for issue in validation["issues"])
+
+
+def test_materializer_rejects_dangling_package_root_absolute_paths(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    package = tmp_path / "package"
+    home = tmp_path / "home with spaces"
+    package_root = home / ".local" / "share" / "localsetup" / "packages"
+    package.mkdir(parents=True)
+    (repo / "_localsetup" / "config").mkdir(parents=True)
+    (repo / "_localsetup" / "config" / "pack.yaml").write_text(
+        """
+pack_id: localsetup
+namespace: ls
+version: 3
+global:
+  home: ~/.local/share/localsetup
+  package_root: ~/.local/share/localsetup/packages
+  registry: ~/.local/share/localsetup/registry.json
+repo:
+  lockfile: .localsetup/lock.json
+packs: {}
+public_private:
+  public_paths: []
+  private_paths: []
+""",
+        encoding="utf-8",
+    )
+    stale = package_root / "ls-missing" / "SKILL.md"
+    (package / "SKILL.md").write_text(f"Open `{stale}`.\n", encoding="utf-8")
+
+    validation = validate_materialized_package(package, repo_root=repo, home=home, runtime_package_root=package_root)
+
+    assert validation["ok"] is False
+    assert any("dangling Localsetup absolute path" in issue for issue in validation["issues"])
+
+
 def test_materializer_leaves_directory_like_doc_literals_unrewritten(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     skill = repo / "_localsetup" / "skills" / "ls-demo"
@@ -127,9 +184,9 @@ def test_materializer_leaves_directory_like_doc_literals_unrewritten(tmp_path: P
     )
 
     output = tmp_path / "out" / "ls-demo"
-    assert "_localsetup/docs/_generated/" in (output / "SKILL.md").read_text(encoding="utf-8")
+    assert str(repo / "_localsetup" / "docs" / "_generated") in (output / "SKILL.md").read_text(encoding="utf-8")
     assert manifest["copied_refs"] == []
-    assert manifest["rewrites"] == []
+    assert manifest["rewrites"]
     assert validate_materialized_package(output, repo_root=repo)["ok"] is True
 
 
@@ -151,7 +208,7 @@ def test_materializer_rejects_doc_reference_with_embedded_parent_traversal(tmp_p
         encoding="utf-8",
     )
 
-    with pytest.raises(ValueError, match="unmaterialized runtime doc reference"):
+    with pytest.raises(ValueError, match="unsafe runtime doc reference"):
         materialize_package_artifact(
             repo,
             skill,
@@ -248,6 +305,8 @@ def test_materializer_records_workflow_required_docs_as_source_only_metadata(tmp
         encoding="utf-8",
     )
     (workflow / "SKILL.md").write_text("---\nname: ls-workflow-demo\ndescription: Demo.\n---\n", encoding="utf-8")
+    (repo / "_localsetup" / "docs").mkdir(parents=True)
+    (repo / "_localsetup" / "docs" / "QUICKSTART.md").write_text("# Quickstart\n", encoding="utf-8")
     (workflow / "workflow.yaml").write_text(
         "id: demo\nname: Demo\nsummary: Demo\nrequired_docs:\n  - _localsetup/docs/QUICKSTART.md\n",
         encoding="utf-8",
@@ -268,6 +327,72 @@ def test_materializer_records_workflow_required_docs_as_source_only_metadata(tmp
         {"path": "_localsetup/docs/QUICKSTART.md", "source": "workflow.yaml.required_docs"}
     ]
     assert "_localsetup/docs/QUICKSTART.md" in (tmp_path / "out" / "ls-workflow-demo" / "workflow.yaml").read_text(encoding="utf-8")
+
+
+def test_materializer_rewrites_localsetup_resolver_tokens(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill = repo / "_localsetup" / "skills" / "ls-demo"
+    (repo / "_localsetup" / "docs" / "ops").mkdir(parents=True)
+    (repo / "_localsetup" / "tools").mkdir(parents=True)
+    (repo / "_localsetup" / "config").mkdir(parents=True)
+    skill.mkdir(parents=True)
+    (repo / "_localsetup" / "config" / "reference-bundle.schema.json").write_text(
+        (Path(__file__).resolve().parents[1] / "config" / "reference-bundle.schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (repo / "_localsetup" / "docs" / "ops" / "tmux-ops-managed.md").write_text("# Managed\n", encoding="utf-8")
+    (repo / "_localsetup" / "tools" / "tmux_ops").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    (skill / "SKILL.md").write_text(
+        "---\nname: ls-demo\ndescription: Demo.\n---\n\n"
+        "Read `localsetup://doc/ops/tmux-ops-managed.md`.\n"
+        "Run `localsetup://tool/tmux_ops pick`.\n"
+        "Open `localsetup://package/ls-context/SKILL.md`.\n",
+        encoding="utf-8",
+    )
+
+    home = tmp_path / "home with spaces"
+    package_root = home / ".local" / "share" / "localsetup" / "packages"
+
+    materialize_package_artifact(
+        repo,
+        skill,
+        tmp_path / "out" / "ls-demo",
+        package_name="ls-demo",
+        package_type="skill",
+        private_paths=[],
+        home=home,
+        runtime_package_root=package_root,
+        emitter="test",
+    )
+
+    text = (tmp_path / "out" / "ls-demo" / "SKILL.md").read_text(encoding="utf-8")
+    assert "localsetup://" not in text
+    assert "references/localsetup/docs/ops/tmux-ops-managed.md" in text
+    assert (tmp_path / "out" / "ls-demo" / "references" / "localsetup" / "docs" / "ops" / "tmux-ops-managed.md").is_file()
+    assert str(repo / "_localsetup" / "tools" / "tmux_ops") in text
+    assert str(package_root / "ls-context" / "SKILL.md") in text
+    assert validate_materialized_package(
+        tmp_path / "out" / "ls-demo",
+        repo_root=repo,
+        home=home,
+        runtime_package_root=package_root,
+    )["ok"] is True
+
+
+def test_validate_materialized_package_rejects_unresolved_resolver_tokens(tmp_path: Path) -> None:
+    package = tmp_path / "package"
+    manifest = package / REFERENCE_BUNDLE_PATH
+    manifest.parent.mkdir(parents=True)
+    (package / "SKILL.md").write_text(
+        "---\nname: ls-demo\ndescription: Demo.\n---\n\nRun `localsetup://tool/tmux_ops pick`.\n",
+        encoding="utf-8",
+    )
+    manifest.write_text('{"schema_version": 1, "digest": "0"}\n', encoding="utf-8")
+
+    validation = validate_materialized_package(package, check_digest=False)
+
+    assert validation["ok"] is False
+    assert any("unresolved resolver token" in issue for issue in validation["issues"])
 
 
 def test_materializer_rejects_private_workflow_required_docs(tmp_path: Path) -> None:

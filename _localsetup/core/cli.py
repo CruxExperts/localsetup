@@ -43,6 +43,16 @@ from .health import read_health_status, repair_queue, write_health_event, write_
 from .locking import PackageRootLockTimeout
 from .migration import conservative_migrate, scan_legacy_references
 from .package import build_public_artifact, verify_release_artifact, write_installed_sbom, write_source_sbom
+from .package_surface import validate_package_surfaces
+from .path_contract import (
+    build_paths_manifest,
+    resolve_doc_path,
+    resolve_named_path,
+    resolve_package_path,
+    resolve_tool_path,
+    write_paths_manifest,
+)
+from .path_reprocessor import reprocess_localsetup_paths
 from .paths import expand_user_path
 from .plugin_packs import build_codex_plugins, load_plugin_pack_configs, plan_plugin_packs, validate_codex_plugin_path, validate_plugin_pack_manifest
 from .plan import build_install_plan
@@ -56,6 +66,7 @@ from .selection import PRESETS
 from .shell import SHIM_ENV, detect_invocation_target, register_shell_command, shell_registration_status
 from .skills import candidate_skill_path_blockers, candidate_skill_proposal, candidate_skill_proposal_markdown, load_skill_catalog, validate_candidate_skill, validate_skill_catalog
 from .skills import parse_skill_frontmatter
+from .test_workers import test_workers_payload
 from .workflows import load_workflow_catalog, validate_workflow_catalog
 from .verify import verify_install
 from .trace import write_trace

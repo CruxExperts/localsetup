@@ -3,10 +3,10 @@ display_name: Ops Tmux Session
 aliases: [tmux shared session]
 invocation: Use when commands must run through managed tmux sessions.
 required_skills: []
-required_tools: [_localsetup/tools/tmux_ops]
+required_tools: [localsetup://tool/tmux_ops]
 required_docs:
-  - _localsetup/docs/ops/tmux-ops-managed.md
-  - _localsetup/docs/ops/tmux-ops-remote.md
+  - localsetup://doc/ops/tmux-ops-managed.md
+  - localsetup://doc/ops/tmux-ops-remote.md
 gates:
   - id: probe_gate
     rule: Probe session and sudo readiness before run.
@@ -23,7 +23,7 @@ outputs:
   - Tmux run evidence
 smoke:
   - id: tmux_ops_exists
-    check: _localsetup/tools/tmux_ops exists
+    check: localsetup://tool/tmux_ops exists
 migration:
-  source: _localsetup/docs/ops/tmux-ops-managed.md
+  source: localsetup://doc/ops/tmux-ops-managed.md
   note: Package references managed and remote guidance.

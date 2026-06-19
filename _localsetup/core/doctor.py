@@ -11,6 +11,7 @@ from .inventory import install_inventory
 from .manifests import load_pack_config, load_platforms
 from .migration import detect_legacy_artifacts, scan_legacy_references
 from .paths import expand_user_path
+from .path_contract import paths_manifest_issues
 from .provenance import provenance_report
 from .lockfile import load_json
 from .registry import load_registry
@@ -66,6 +67,8 @@ def run_doctor(
         warnings.append("target directory was provided but no platforms were selected; install will be global-only with no repo adapters")
     if platform.system().lower().startswith("windows"):
         blockers.append("native Windows is unsupported; run Localsetup from WSL2")
+    resolver_issues = paths_manifest_issues(repo_root, home)
+    warnings.extend(f"resolver: {issue}" for issue in resolver_issues)
 
     try:
         pack = load_pack_config(repo_root)
@@ -161,6 +164,10 @@ def run_doctor(
         "adapter_collisions": collisions,
         "legacy": legacy,
         "inventory": install_inventory(repo_root, home=home, target_root=target_root, platform_ids=platform_ids),
+        "resolver": {
+            "ok": not resolver_issues,
+            "issues": resolver_issues,
+        },
         "provenance": provenance,
         "provenance_warnings": provenance["warnings"],
         "provenance_repair_hints": provenance["repair_hints"],

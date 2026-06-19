@@ -41,7 +41,7 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/facts.json",
-    "artifact_sha256": "2573b0064ff6dc3f9282a9e0bec11c065cac598204fdfa2308d8b1545b3d6422",
+    "artifact_sha256": "5dda4b77436ab269f3862a4b4c73f7383bd1138378c61b81e7071d9b10a85bf3",
     "emitter": "generate-docs",
     "framework_version": "4.1.2",
     "schema_version": 1,
@@ -86,7 +86,7 @@
         "context",
         "bootstrap"
       ],
-      "version": "1.5"
+      "version": "1.6"
     },
     {
       "class": "core",

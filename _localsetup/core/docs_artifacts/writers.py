@@ -79,7 +79,9 @@ def write_skills_md(path: Path, major_minor: str, skills: list[dict[str, Any]], 
 
 def write_workflow_registry(path: Path, major_minor: str, workflows: list[dict[str, Any]], repo_root: Path) -> None:
     def doc_link(doc: str) -> str:
-        if doc.startswith("_localsetup/docs/"):
+        if doc.startswith("localsetup://doc/"):
+            target = doc.removeprefix("localsetup://doc/")
+        elif doc.startswith("_localsetup/docs/"):
             target = doc.removeprefix("_localsetup/docs/")
         else:
             target = f"../../{doc}"

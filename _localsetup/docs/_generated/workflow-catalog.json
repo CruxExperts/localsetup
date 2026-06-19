@@ -2,7 +2,7 @@
   "count": 23,
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/workflow-catalog.json",
-    "artifact_sha256": "d83315b8116e4fa19edb1abb72dabf3263bde02f6dc4c47ef967a555cc4b038f",
+    "artifact_sha256": "ba80036364190cc7395c67e0846bf55c429c774487f641ec9bde818af049ba42",
     "emitter": "generate-docs",
     "framework_version": "4.1.2",
     "schema_version": 1,
@@ -203,12 +203,12 @@
       ],
       "path": "_localsetup/workflows/ls-workflow-ops-tmux-session",
       "required_docs": [
-        "_localsetup/docs/ops/tmux-ops-managed.md",
-        "_localsetup/docs/ops/tmux-ops-remote.md"
+        "localsetup://doc/ops/tmux-ops-managed.md",
+        "localsetup://doc/ops/tmux-ops-remote.md"
       ],
       "required_skills": [],
       "required_tools": [
-        "_localsetup/tools/tmux_ops"
+        "localsetup://tool/tmux_ops"
       ],
       "workflow_id": "ops-tmux-session"
     },

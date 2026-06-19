@@ -7,6 +7,7 @@ from .apply import apply_plan
 from .lockfile import load_json, save_json
 from .manifests import load_pack_config
 from .paths import expand_user_path
+from .path_contract import paths_manifest_issues, paths_manifest_path, write_paths_manifest
 from .plan import build_install_plan
 from .repair_actions import _apply_pre_actions, _plan_actions
 from .repair_common import _default_backup_root, _latest_version, _read_json
@@ -60,6 +61,7 @@ def run_repair(
     pack = load_pack_config(source)
     global_root = expand_user_path(pack.global_root, home)
     stale_framework_info = _classify_stale_framework(source, home, target, protected_reasons)
+    resolver_issues = paths_manifest_issues(source, home)
     detected_shape = {
         "modern_lockfile": str(modern_lock_path) if modern_lock_path.exists() else None,
         "legacy_lockfile": str(legacy_lock_path) if legacy_lock_path.exists() else None,
@@ -99,6 +101,15 @@ def run_repair(
         blockers=blockers,
         allow=allowed,
     )
+    resolver_action = {
+        "kind": "refresh_paths_manifest",
+        "path": str(paths_manifest_path(home)),
+        "safety": "safe",
+        "reason": "resolver manifest is missing or stale",
+        "details": {"issues": resolver_issues},
+    }
+    if resolver_issues:
+        actions.append(resolver_action)
     payload = {
         "repair_schema_version": 2,
         "ok": not blockers and not decisions,
@@ -109,6 +120,11 @@ def run_repair(
         "repair_mode": repair_mode,
         "allowed": allowed,
         "detected_shape": detected_shape,
+        "resolver": {
+            "ok": not resolver_issues,
+            "issues": resolver_issues,
+            "manifest": str(paths_manifest_path(home)),
+        },
         "inferred": {
             "platforms": inferred_platforms,
             "platform_reasons": platform_reasons,
@@ -159,7 +175,22 @@ def run_repair(
         return payload
 
     backup_root.mkdir(parents=True, exist_ok=True)
-    payload["backups"].extend(_apply_pre_actions(actions, backup_root, target, global_root, legacy_global_roots(home)))
+    if resolver_issues:
+        payload["paths_manifest"] = write_paths_manifest(source, home)["manifest"]
+        refreshed_resolver_issues = paths_manifest_issues(source, home)
+        payload["resolver"] = {
+            "ok": not refreshed_resolver_issues,
+            "issues": refreshed_resolver_issues,
+            "manifest": str(paths_manifest_path(home)),
+        }
+    pre_actions = [action for action in actions if action.get("kind") != "refresh_paths_manifest"]
+    if not pre_actions:
+        payload["ok"] = True
+        payload["applied"] = True
+        payload["report"] = str(backup_root / "repair-report.json")
+        save_json(backup_root / "repair-report.json", payload)
+        return payload
+    payload["backups"].extend(_apply_pre_actions(pre_actions, backup_root, target, global_root, legacy_global_roots(home)))
     plan = build_install_plan(
         source,
         home=home,

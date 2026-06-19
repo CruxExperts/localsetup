@@ -57,6 +57,7 @@ def test_cli_dispatches_stubbed_branches_without_heavy_side_effects(
     monkeypatch.setattr(cli_mod, "write_installed_sbom", lambda *args, **kwargs: {"ok": True, "kind": "installed"})
     monkeypatch.setattr(cli_mod, "validate_manifest_schemas", lambda *args, **kwargs: [])
     monkeypatch.setattr(cli_mod, "validate_plugin_pack_manifest", lambda *args, **kwargs: [])
+    monkeypatch.setattr(cli_mod, "validate_package_surfaces", lambda *args, **kwargs: {"ok": True, "issues": []})
     monkeypatch.setattr(
         cli_mod,
         "load_plugin_pack_configs",

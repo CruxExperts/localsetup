@@ -209,6 +209,27 @@ def handle(cli, args, root, home) -> int | None:
         _print_payload(graph_payload(root))
         return 0
 
+    if args.cmd == "path":
+        if args.json or args.path_action is None:
+            payload = build_paths_manifest(root, home)
+            payload["manifest"] = str(write_paths_manifest(root, home)["manifest"])
+            _print_payload(payload)
+            return 0
+        if args.path_action in {"source-root", "framework-root", "docs-root", "tools-root", "package-root"}:
+            print(resolve_named_path(root, home, args.path_action))
+            return 0
+        if args.path_action == "package":
+            print(resolve_package_path(home, args.name, args.relative_path, package_root=resolve_named_path(root, home, "package-root")))
+            return 0
+        if args.path_action == "doc":
+            print(resolve_doc_path(root, args.relative_path))
+            return 0
+        if args.path_action == "tool":
+            print(resolve_tool_path(root, args.relative_path))
+            return 0
+        print(f"localsetup: unsupported path action: {args.path_action}", file=sys.stderr)
+        return 2
+
     if args.cmd == "adopt":
         target_root = Path(getattr(args, "target_directory", None) or root).expanduser().resolve()
         _print_payload(adopt_recommendations(target_root))
@@ -245,13 +266,45 @@ def handle(cli, args, root, home) -> int | None:
         return 0
 
     if args.cmd == "validate-catalog":
-        issues = validate_manifest_schemas(root) + validate_plugin_pack_manifest(root) + validate_skill_catalog(root) + validate_workflow_catalog(root)
+        package_surface = validate_package_surfaces(root, home=home)
+        issues = (
+            validate_manifest_schemas(root)
+            + validate_plugin_pack_manifest(root)
+            + validate_skill_catalog(root)
+            + validate_workflow_catalog(root)
+            + [f"package surface: {issue}" for issue in package_surface["issues"]]
+        )
         print(json.dumps({"ok": not issues, "issues": issues}, indent=2))
         return 0 if not issues else 1
+
+    if args.cmd == "validate-package-surface":
+        payload = validate_package_surfaces(root, home=home)
+        _print_payload(payload)
+        return 0 if payload["ok"] else 1
+
+    if args.cmd == "test-workers":
+        try:
+            payload = test_workers_payload(getattr(args, "workers", None))
+        except ValueError as exc:
+            print(f"localsetup: invalid test worker configuration: {exc}", file=sys.stderr)
+            return 2
+        if args.json:
+            _print_payload(payload)
+        else:
+            print(payload["workers"])
+        return 0
 
     if args.cmd == "scan-migration":
         print(json.dumps({"findings": scan_legacy_references(root, include_expected=args.include_expected)}, indent=2))
         return 0
+
+    if args.cmd == "reprocess-paths":
+        if args.apply:
+            print("localsetup: reprocess-paths --apply is disabled until allowlisted rewrites are implemented", file=sys.stderr)
+            return 2
+        payload = reprocess_localsetup_paths(root, apply=bool(args.apply))
+        _print_payload(payload)
+        return 0 if payload["ok"] else 1
 
     if args.cmd == "audit-global-first":
         target_root = Path(getattr(args, "target_directory", None)).expanduser().resolve() if getattr(args, "target_directory", None) else None
@@ -360,7 +413,9 @@ def handle(cli, args, root, home) -> int | None:
         return 0
 
     if args.cmd == "register-shell":
+        paths = write_paths_manifest(root, home)
         payload = register_shell_command(root, home=home)
+        payload["paths_manifest"] = paths["manifest"]
         _print_payload(payload)
         return 0
 

@@ -42,7 +42,7 @@
     ],
     "provenance": {
       "artifact_path": "_localsetup/docs/_generated/facts.json",
-      "artifact_sha256": "2573b0064ff6dc3f9282a9e0bec11c065cac598204fdfa2308d8b1545b3d6422",
+      "artifact_sha256": "5dda4b77436ab269f3862a4b4c73f7383bd1138378c61b81e7071d9b10a85bf3",
       "emitter": "generate-docs",
       "framework_version": "4.1.2",
       "schema_version": 1,
@@ -87,7 +87,7 @@
           "context",
           "bootstrap"
         ],
-        "version": "1.5"
+        "version": "1.6"
       },
       {
         "class": "core",
@@ -2447,7 +2447,7 @@
   },
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "a706098f09dea790225fb93e05b9b8ac10c031fb829036ced934a1fa652b78c8",
+    "artifact_sha256": "681fdc6815a4a3109d6813f7c20b6927d1b79b6574b4029e63534ea4f7198150",
     "emitter": "docs-align",
     "framework_version": "4.1.2",
     "schema_version": 1,
@@ -4055,12 +4055,12 @@
             ],
             "path": "_localsetup/workflows/ls-workflow-ops-tmux-session",
             "required_docs": [
-              "_localsetup/docs/ops/tmux-ops-managed.md",
-              "_localsetup/docs/ops/tmux-ops-remote.md"
+              "localsetup://doc/ops/tmux-ops-managed.md",
+              "localsetup://doc/ops/tmux-ops-remote.md"
             ],
             "required_skills": [],
             "required_tools": [
-              "_localsetup/tools/tmux_ops"
+              "localsetup://tool/tmux_ops"
             ],
             "workflow_id": "ops-tmux-session"
           },

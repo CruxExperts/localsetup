@@ -31,6 +31,7 @@ from .locking import package_root_lock
 from .manifests import load_pack_config
 from .models import DeployPlan
 from .paths import ensure_dir, legacy_target_lockfile_path, repo_path, target_lockfile_path
+from .path_contract import paths_manifest_path, write_paths_manifest
 from .adapters import ADAPTER_MARKER_JSON, adapter_path_state, legacy_global_roots, _is_safe_adapter_package_name
 from .registry import upsert_target
 from .provenance import is_managed_package
@@ -66,6 +67,7 @@ def _install_managed_packages(
     package_names: list[str],
     source_subdir: str,
     *,
+    home: Path | None = None,
     staging_root: Path | None = None,
     journal: dict | None = None,
     journal_path: Path | None = None,
@@ -75,6 +77,7 @@ def _install_managed_packages(
         global_root,
         package_names,
         source_subdir,
+        home=home,
         replace_func=_same_filesystem_replace,
         staging_root=staging_root,
         journal=journal,
@@ -264,6 +267,7 @@ def _apply_plan_unlocked(
                         action.path,
                         action.details["skills"],
                         "skills",
+                        home=home,
                         staging_root=_staging_root(action.path, txid),
                         journal=journal,
                         journal_path=journal_path,
@@ -276,6 +280,7 @@ def _apply_plan_unlocked(
                         action.path,
                         action.details["workflows"],
                         "workflows",
+                        home=home,
                         staging_root=_staging_root(action.path, txid),
                         journal=journal,
                         journal_path=journal_path,
@@ -356,6 +361,9 @@ def _apply_plan_unlocked(
         lock_payload["migration_origin"] = {"legacy_lockfile": str(legacy_lockfile)}
     if not dry_run:
         try:
+            paths_manifest = write_paths_manifest(repo_root, home)
+            journal["touched"].append({"kind": "paths_manifest", "path": str(paths_manifest["manifest"])})
+            _write_journal(journal_path, journal)
             if registry_actions:
                 _record_file_state(journal, journal_path, registry_actions[0].path)
                 registry_payload = upsert_target(
@@ -420,6 +428,7 @@ def _apply_plan_unlocked(
     return {
         "executed": executed,
         "lockfile": str(lockfile_path),
+        "paths_manifest": str(paths_manifest_path(home)) if dry_run else str(paths_manifest["manifest"]),
         "dry_run": dry_run,
         "transaction": txid if not dry_run else None,
         "journal": str(journal_path) if not dry_run else None,

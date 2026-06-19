@@ -109,11 +109,15 @@ Run these before release-oriented changes:
 ```bash
 uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .
 uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog
+uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-package-surface
 uv run --locked python _localsetup/tools/localsetup.py --source-root . scan-migration
 uv run --locked python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/ls-framework-audit.md
-uv run --locked pytest -n auto _localsetup/tests -q
+workers="$(uv run --locked python _localsetup/tools/localsetup.py --source-root . test-workers)"
+uv run --locked pytest -n "$workers" _localsetup/tests -q
 git diff --check
 ```
+
+For ordinary edits, run focused tests and matching Localsetup validators before this broad release-oriented set. Treat the full Python suite as final consolidation, not the first validation step. The `test-workers` default is `ceil(available CPU cores / 2)` clamped to `1..255`.
 
 For the full version and release flow, see [docs/VERSIONING.md](docs/VERSIONING.md).
 

@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from _localsetup.core.docs_artifacts.writers import write_workflow_registry
 from _localsetup.core.manifests import load_pack_config, load_platforms
 from _localsetup.core.paths import PathValidationError
 from _localsetup.core.skills import validate_skill_catalog
@@ -57,6 +58,64 @@ def test_workflow_catalog_rejects_unsafe_required_paths(tmp_path: Path) -> None:
     issues = validate_workflow_catalog(root)
     assert sum("workflow requires unsafe tool path" in issue for issue in issues) == 2
     assert sum("workflow requires unsafe doc path" in issue for issue in issues) == 3
+
+
+def test_workflow_catalog_accepts_localsetup_resolver_tokens(tmp_path: Path) -> None:
+    root = make_workflow_validation_repo(tmp_path)
+    tools = root / "_localsetup" / "tools"
+    tools.mkdir(parents=True)
+    (tools / "tmux_ops").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    docs = root / "_localsetup" / "docs" / "ops"
+    docs.mkdir(parents=True)
+    (docs / "tmux-ops-managed.md").write_text("# Managed\n", encoding="utf-8")
+    manifest = root / "_localsetup" / "workflows" / "ls-workflow-demo" / "workflow.yaml"
+    text = manifest.read_text(encoding="utf-8")
+    manifest.write_text(
+        text.replace("required_tools: []", "required_tools: [localsetup://tool/tmux_ops]")
+        .replace("  - _localsetup/docs/README.md", "  - localsetup://doc/ops/tmux-ops-managed.md")
+        .replace("migration: {}", "migration:\n  source: localsetup://doc/ops/tmux-ops-managed.md"),
+        encoding="utf-8",
+    )
+
+    issues = validate_workflow_catalog(root)
+
+    assert issues == []
+
+
+def test_workflow_registry_renders_resolver_doc_tokens_as_local_links(tmp_path: Path) -> None:
+    path = tmp_path / "WORKFLOW_REGISTRY.md"
+    workflow = {
+        "id": "tmux",
+        "package": "ls-workflow-ops-tmux-session",
+        "name": "Ops Tmux Session",
+        "description": "Run tmux.",
+        "aliases": [],
+        "required_skills": [],
+        "required_docs": ["localsetup://doc/ops/tmux-ops-managed.md"],
+        "required_tools": ["localsetup://tool/tmux_ops"],
+    }
+
+    write_workflow_registry(path, "4.1", [workflow], tmp_path)
+    text = path.read_text(encoding="utf-8")
+
+    assert "../../localsetup://doc" not in text
+    assert "[tmux-ops-managed.md](ops/tmux-ops-managed.md)" in text
+
+
+def test_workflow_catalog_rejects_unsafe_smoke_and_migration_strings(tmp_path: Path) -> None:
+    root = make_workflow_validation_repo(tmp_path)
+    manifest = root / "_localsetup" / "workflows" / "ls-workflow-demo" / "workflow.yaml"
+    text = manifest.read_text(encoding="utf-8")
+    manifest.write_text(
+        text.replace("check: _localsetup/docs/README.md exists", "check: ../escape exists")
+        .replace("migration: {}", "migration:\n  source: ../escape.md"),
+        encoding="utf-8",
+    )
+
+    issues = validate_workflow_catalog(root)
+
+    assert any("workflow smoke.check is unsafe" in issue for issue in issues)
+    assert any("workflow migration.source is unsafe" in issue for issue in issues)
 
 
 def test_workflow_catalog_reports_missing_package_files(tmp_path: Path) -> None:

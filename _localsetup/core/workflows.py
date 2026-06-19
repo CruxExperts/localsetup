@@ -30,6 +30,8 @@ REQUIRED_WORKFLOW_KEYS = {
     "smoke",
     "migration",
 }
+LOCALSETUP_DOC_TOKEN = "localsetup://doc/"
+LOCALSETUP_TOOL_TOKEN = "localsetup://tool/"
 
 
 @dataclass(frozen=True)
@@ -81,6 +83,40 @@ def _mapping_list(data: dict[str, Any], field: str) -> list[dict[str, Any]]:
     if not isinstance(value, list) or not all(isinstance(item, dict) for item in value):
         raise ValueError(f"{field} must be a list of mappings")
     return value
+
+
+def _unsafe_text_value(value: str) -> str | None:
+    if "\x00" in value:
+        return "contains NUL byte"
+    normalized = value.replace("\\", "/")
+    if re.search(r"(^|[^A-Za-z])[A-Za-z]:/", value):
+        return "contains Windows drive path"
+    if "../" in normalized or normalized.startswith(".."):
+        return "contains parent traversal"
+    return None
+
+
+def _looks_path_like(value: str) -> bool:
+    return (
+        value.startswith(("localsetup://", "_localsetup/", "./", "../", "~/", "/"))
+        or value.endswith((".md", ".json", ".yaml", ".yml", ".sh", ".py", ".txt"))
+        or "/" in value
+        or "\\" in value
+    )
+
+
+def _repo_or_token_path(repo_root: Path, value: str, field: str, *, token_prefix: str, token_root: str) -> tuple[Path | None, str | None]:
+    if value.startswith(token_prefix):
+        rel = f"{token_root.rstrip('/')}/{value.removeprefix(token_prefix)}"
+        try:
+            path = repo_path(repo_root, rel, field)
+        except PathValidationError as exc:
+            return None, str(exc)
+        return path, None
+    try:
+        return repo_path(repo_root, value, field), None
+    except PathValidationError as exc:
+        return None, str(exc)
 
 
 def _reverse_workflow_packs(repo_root: Path) -> dict[str, list[str]]:
@@ -274,21 +310,62 @@ def validate_workflow_catalog(
                 if skill_name not in skill_names:
                     issues.append(f"workflow requires missing skill: {workflow.package}:{skill_name}")
             for tool in workflow.required_tools:
-                if "/" in tool or "\\" in tool or tool.startswith((".", "~", "_localsetup")):
-                    try:
-                        tool_path = repo_path(repo_root, tool, f"workflow required_tools {workflow.package}")
-                    except PathValidationError as exc:
-                        issues.append(f"workflow requires unsafe tool path: {workflow.package}:{tool}: {exc}")
+                if "/" in tool or "\\" in tool or tool.startswith((".", "~", "_localsetup", "localsetup://")):
+                    tool_path, error = _repo_or_token_path(
+                        repo_root,
+                        tool,
+                        f"workflow required_tools {workflow.package}",
+                        token_prefix=LOCALSETUP_TOOL_TOKEN,
+                        token_root="_localsetup/tools",
+                    )
+                    if error:
+                        issues.append(f"workflow requires unsafe tool path: {workflow.package}:{tool}: {error}")
                         continue
                     if not tool_path.exists():
                         issues.append(f"workflow requires missing tool: {workflow.package}:{tool}")
             for doc in workflow.required_docs:
-                try:
-                    doc_path = repo_path(repo_root, doc, f"workflow required_docs {workflow.package}")
-                except PathValidationError as exc:
-                    issues.append(f"workflow requires unsafe doc path: {workflow.package}:{doc}: {exc}")
+                doc_path, error = _repo_or_token_path(
+                    repo_root,
+                    doc,
+                    f"workflow required_docs {workflow.package}",
+                    token_prefix=LOCALSETUP_DOC_TOKEN,
+                    token_root="_localsetup/docs",
+                )
+                if error:
+                    issues.append(f"workflow requires unsafe doc path: {workflow.package}:{doc}: {error}")
                     continue
                 if not doc_path.is_file():
                     issues.append(f"workflow requires missing doc: {workflow.package}:{doc}")
+            for row in workflow.smoke:
+                check = row.get("check")
+                if isinstance(check, str):
+                    reason = _unsafe_text_value(check)
+                    if reason:
+                        issues.append(f"workflow smoke.check is unsafe: {workflow.package}:{check}: {reason}")
+            for row in workflow.validation:
+                check = row.get("check")
+                command = row.get("command")
+                for field_name, value in (("validation.check", check), ("validation.command", command)):
+                    if isinstance(value, str):
+                        reason = _unsafe_text_value(value)
+                        if reason:
+                            issues.append(f"workflow {field_name} is unsafe: {workflow.package}:{value}: {reason}")
+            migration_source = workflow.migration.get("source") if isinstance(workflow.migration, dict) else None
+            if isinstance(migration_source, str):
+                reason = _unsafe_text_value(migration_source)
+                if reason:
+                    issues.append(f"workflow migration.source is unsafe: {workflow.package}:{migration_source}: {reason}")
+                elif _looks_path_like(migration_source):
+                    doc_path, error = _repo_or_token_path(
+                        repo_root,
+                        migration_source,
+                        f"workflow migration.source {workflow.package}",
+                        token_prefix=LOCALSETUP_DOC_TOKEN,
+                        token_root="_localsetup/docs",
+                    )
+                    if error:
+                        issues.append(f"workflow migration.source is unsafe: {workflow.package}:{migration_source}: {error}")
+                    elif not doc_path.is_file():
+                        issues.append(f"workflow migration.source is missing: {workflow.package}:{migration_source}")
 
     return issues

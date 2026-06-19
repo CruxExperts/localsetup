@@ -172,6 +172,47 @@ localsetup health repair-queue --agent-prompts /tmp/localsetup-prompts
 
 `.localsetup/lock.json` is intentional managed repo state and remains visible to Git. Runtime summaries and journals are locally excluded through `.git/info/exclude`: `.localsetup/health.json`, `.localsetup/AGENT_STATUS.md`, `.localsetup/install-journal/`, `.localsetup/backups/`, `.localsetup/state/`, and `.localsetup/context-index/`.
 
+## Resolver And Validation Commands
+
+Use resolver commands when scripts, docs, workflows, or agents need directly followable Localsetup paths:
+
+```bash
+localsetup path --json
+localsetup path source-root
+localsetup path framework-root
+localsetup path docs-root
+localsetup path tools-root
+localsetup path package-root
+localsetup path package ls-context SKILL.md
+localsetup path doc WORKFLOW_REGISTRY.md
+localsetup path tool tmux_ops
+```
+
+`localsetup path --json` refreshes `paths.json` under the configured Localsetup home. Named path commands print one absolute path.
+
+Use package-surface validation after changing skills, workflows, resolver tokens, materialization rules, or deployed path contracts:
+
+```bash
+localsetup validate-package-surface
+localsetup validate-catalog
+```
+
+Use `reprocess-paths` for whole-project path-contract reporting. Apply mode is intentionally disabled until allowlisted rewrites are implemented:
+
+```bash
+localsetup reprocess-paths
+```
+
+Use `test-workers` to compute the default full-suite pytest worker count:
+
+```bash
+localsetup test-workers
+localsetup test-workers --json
+localsetup test-workers --workers 4
+```
+
+The default is `ceil(available CPU cores / 2)`, clamped to `1..255`. `LOCALSETUP_TEST_WORKERS` or `--workers` can override the value; non-integer overrides fail with an explicit configuration error.
+
 ## Maintainer Commands
 
 Run these from the repository root when changing docs, catalogs, release metadata, skills, workflows, or platform manifests:
@@ -182,10 +223,14 @@ uv run --locked python _localsetup/tools/docs_alignment.py --repo-root . check -
 uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .
 uv run --locked python _localsetup/tools/localsetup.py --source-root . generate-docs
 uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog
+uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-package-surface
 uv run --locked ./_localsetup/tests/automated_test.sh
-uv run --locked pytest -n auto _localsetup/tests -q
+workers="$(uv run --locked python _localsetup/tools/localsetup.py --source-root . test-workers)"
+uv run --locked pytest -n "$workers" _localsetup/tests -q
 git diff --check
 ```
+
+Run focused pytest targets and matching Localsetup validators before broad suites. Reserve the full Python suite for final consolidation on broad/shared runtime changes, release or publish work, dependency changes, or explicit maintainer requests. `test-workers` computes `ceil(available CPU cores / 2)` and clamps overrides into `1..255`.
 
 Use `release-push` only when the release wave explicitly includes publishing:
 

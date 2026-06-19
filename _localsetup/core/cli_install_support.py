@@ -312,7 +312,11 @@ def _auto_default_context(root: Path, home: Path, config: InstallConfig, target_
         return {"mode": "repair_required", "repair": repair, "plan": None}
     if not _repair_detected_existing_state(repair):
         return {"mode": "default_new_repo", "repair": repair, "plan": _build_auto_new_repo_plan(root, home, target_root)}
-    if repair.get("actions"):
+    non_resolver_actions = [
+        action for action in repair.get("actions", [])
+        if action.get("kind") != "refresh_paths_manifest"
+    ]
+    if non_resolver_actions:
         return {"mode": "repair_required", "repair": repair, "plan": None}
     return {"mode": "inferred_existing", "repair": repair, "plan": _build_auto_inferred_plan(root, home, target_root, repair)}
 

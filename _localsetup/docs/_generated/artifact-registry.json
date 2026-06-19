@@ -1,7 +1,7 @@
 {
   "artifacts": [
     {
-      "artifact_sha256": "0edb242b7546dd98a1c45934c66d02e6b9cf595e8743ba02f5edc91e20717137",
+      "artifact_sha256": "864c8de4a0c48a6eb7c109d19dfe1347edd82e58f063b9d40375fc3d405344f2",
       "emitter": "generate-docs",
       "framework_version": "4.1.2",
       "path": "_localsetup/docs/SKILLS.md",
@@ -37,7 +37,7 @@
       "type": "markdown"
     },
     {
-      "artifact_sha256": "46a7ad5aa676cac07fec13a18215d84c8b53f3cd20a44f0c9a879aabd21311f4",
+      "artifact_sha256": "cb7f93ef307f86075bb5210525a175d2282bafd71453087b91507fb2b4730814",
       "emitter": "generate-docs",
       "framework_version": "4.1.2",
       "path": "_localsetup/docs/WORKFLOW_REGISTRY.md",
@@ -127,7 +127,7 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "924b5dfb5ce35e0631d491451e6b12fe9fbc377ff551347231e0f8348cde2f9d",
+      "artifact_sha256": "22b6a2bd9a42f83a18b674e08c94802f26892995ca2a3ac4d04e2bd048743b7a",
       "emitter": "generate-docs",
       "framework_version": "4.1.2",
       "path": "_localsetup/docs/_generated/docs-truth-map.json",
@@ -145,7 +145,7 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "8e63e3dd97fc6a1741abf1a95d3cde24e9eda0ec6c3f55a5310e357c9ac7e3d1",
+      "artifact_sha256": "f7aedc1cc8ed360ae44ef4cc6d8b0d8afc556f6e1b29461967aa5ac61412918e",
       "emitter": "generate-docs",
       "framework_version": "4.1.2",
       "path": "_localsetup/docs/_generated/facts.json",
@@ -289,7 +289,7 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "306d78488e7e84cdd70ed1b421bf606ae8e5b9453a1c4e9167b40723e9f63cc0",
+      "artifact_sha256": "750298290ea86bd03ad3b0e19b5cbf6fad019de82f40c57a50cda51df770af75",
       "emitter": "generate-docs",
       "framework_version": "4.1.2",
       "path": "_localsetup/docs/_generated/workflow-catalog.json",
@@ -345,7 +345,7 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/artifact-registry.json",
-    "artifact_sha256": "c401618cb29a9ef738c912b5fbc7bfdd9e3e1444eb4a5c9acba838980027b9c4",
+    "artifact_sha256": "28c2351bc124d956e57f03e7a324cea632ad549da17929d22a2db30d7a9bf92a",
     "emitter": "generate-docs",
     "framework_version": "4.1.2",
     "schema_version": 1,

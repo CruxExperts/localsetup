@@ -22,7 +22,8 @@ uv run --locked python _localsetup/tools/localsetup.py --source-root . version-p
 uv run --locked python _localsetup/tools/localsetup.py --source-root . version-sync --check --target "$(cat VERSION)"
 uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog
 uv run --locked python _localsetup/tools/localsetup.py --source-root . docs-align check --ci
-uv run --locked pytest -n auto _localsetup/tests -q
+workers="$(uv run --locked python _localsetup/tools/localsetup.py --source-root . test-workers)"
+uv run --locked pytest -n "$workers" _localsetup/tests -q
 git diff --check
 ```
 

@@ -8,7 +8,7 @@ localsetup_provenance:
   emitter: generate-docs
 framework_version: 4.1.2
 source_commit: 967490063d76a8de22164ba95ad093c747c72900
-artifact_sha256: ad6545e16fbd3f099bd3adcb145adfb2fa5a41aac6282a64fb9c8e10ac6c737f
+artifact_sha256: 6c08a8934f0b4d63775ec4b2ff13e54f48a59154adc49d77ff9dcdabca190170
 ---
 # Workflow and module registry (Localsetup)
 
@@ -34,7 +34,7 @@ For the framework rules, see [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md).
 | `context-index-refresh` | `ls-workflow-context-index-refresh` | Context Index Refresh | Run deterministic context-index refresh lifecycle checks and choose reset/rebuild/vector-rebuild paths. | context refresh; refresh context index | `ls-context-index` | [README.md](../../_localsetup/skills/ls-context-index/README.md); [architecture.md](../../_localsetup/skills/ls-context-index/docs/architecture.md) |
 | `documentation-alignment` | `ls-workflow-documentation-alignment` | Documentation Alignment | Run automated repo documentation alignment with source-truth scouting, current-doc research, generated artifacts, CI checks, and final review. | docs alignment; documentation sync; repo docs audit | `ls-documentation-alignment`; `ls-docs-organization`; `ls-markdown-reference-validator`; `ls-script-and-docs-quality`; `ls-test-runner` | [SKILL.md](../../_localsetup/skills/ls-documentation-alignment/SKILL.md); [OUTPUT_AND_DOC_GENERATION.md](OUTPUT_AND_DOC_GENERATION.md); [DOCUMENT_LIFECYCLE_MANAGEMENT.md](DOCUMENT_LIFECYCLE_MANAGEMENT.md); `_localsetup/tools/docs_alignment.py`; `_localsetup/tools/generate_docs_artifacts.py` |
 | `ops-guarded` | `ls-workflow-ops-guarded` | Ops Guarded | Apply guarded operations protocol for risky commands with explicit checkpoints. | lazy admin; manual execution | `ls-framework-compliance` | [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md) |
-| `ops-tmux-session` | `ls-workflow-ops-tmux-session` | Ops Tmux Session | Run guarded operations through managed tmux sessions with explicit run tracking. | tmux shared session | n/a | [tmux-ops-managed.md](ops/tmux-ops-managed.md); [tmux-ops-remote.md](ops/tmux-ops-remote.md); `_localsetup/tools/tmux_ops` |
+| `ops-tmux-session` | `ls-workflow-ops-tmux-session` | Ops Tmux Session | Run guarded operations through managed tmux sessions with explicit run tracking. | tmux shared session | n/a | [tmux-ops-managed.md](ops/tmux-ops-managed.md); [tmux-ops-remote.md](ops/tmux-ops-remote.md); `localsetup://tool/tmux_ops` |
 | `pipeline-git-repair-hygiene` | `ls-workflow-pipeline-git-repair-hygiene` | Pipeline Git Repair Hygiene | Recover Git state issues and enforce workflow hygiene checks. | git repair pipeline | `ls-unfuck-my-git-state`; `ls-git-workflows`; `ls-framework-compliance` | [WORKFLOW_QUICK_REF.md](WORKFLOW_QUICK_REF.md); [GIT_TRACEABILITY.md](GIT_TRACEABILITY.md) |
 | `pipeline-pr-feedback-loop` | `ls-workflow-pipeline-pr-feedback-loop` | Pipeline PR Feedback Loop | Turn PR feedback into fixes, tests, and follow-up review. | pr feedback pipeline | `ls-receiving-code-review`; `ls-tdd-guide`; `ls-pr-reviewer` | [WORKFLOW_QUICK_REF.md](WORKFLOW_QUICK_REF.md) |
 | `pipeline-pre-publish` | `ls-workflow-pipeline-pre-publish` | Pipeline Pre Publish | Run pre-publish checks, version sync, and framework audit before release actions. | pre publish pipeline | `ls-github-publishing-workflow`; `ls-automatic-versioning`; `ls-framework-audit` | [VERSIONING.md](VERSIONING.md); [WORKFLOW_QUICK_REF.md](WORKFLOW_QUICK_REF.md) |

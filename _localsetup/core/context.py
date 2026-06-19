@@ -95,10 +95,12 @@ def build_agent_context(repo_root: Path, *, home: Path, config: InstallConfig) -
         "commands": commands,
         "rollback": plan.rollback_metadata,
         "verification": [
-            "uv run --locked pytest -n auto _localsetup/tests -q",
-            "uv run --locked ./_localsetup/tests/automated_test.sh",
+            "uv run --locked pytest <focused-test-file-or-node> -q",
             "uv run --locked python _localsetup/tools/localsetup.py validate-catalog",
+            "uv run --locked python _localsetup/tools/localsetup.py validate-package-surface",
             "uv run --locked python _localsetup/tools/localsetup.py scan-migration",
+            "uv run --locked ./_localsetup/tests/automated_test.sh",
+            "uv run --locked pytest -n \"$(uv run --locked python _localsetup/tools/localsetup.py --source-root . test-workers)\" _localsetup/tests -q",
         ],
     }
 
