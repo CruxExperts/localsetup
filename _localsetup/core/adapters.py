@@ -71,12 +71,25 @@ def _symlink_target(repo_path: Path) -> Path | None:
     return link_target.resolve(strict=False)
 
 
-def _visible_adapter_packages(repo_path: Path, global_root: Path) -> list[str]:
+def _is_repo_local_symlink_adapter(repo_path: Path, target_root: Path | None) -> bool:
+    if target_root is None or not repo_path.is_symlink() or not repo_path.exists():
+        return False
+    target = _symlink_target(repo_path)
+    if target is None or not target.is_dir():
+        return False
+    try:
+        target.relative_to(target_root.resolve(strict=False))
+    except ValueError:
+        return False
+    return True
+
+
+def _visible_adapter_packages(repo_path: Path, global_root: Path, *, target_root: Path | None = None) -> list[str]:
     if repo_path.is_symlink() and _symlink_target(repo_path) == global_root.resolve(strict=False):
         if global_root.exists():
             return sorted(path.name for path in global_root.iterdir() if path.is_dir())
         return []
-    if not repo_path.is_dir() or repo_path.is_symlink():
+    if not repo_path.is_dir() or (repo_path.is_symlink() and not _is_repo_local_symlink_adapter(repo_path, target_root)):
         return []
     names: list[str] = []
     for child in sorted(repo_path.iterdir()):
@@ -96,12 +109,12 @@ def _is_managed_symlink_adapter_entry(path: Path, global_root: Path) -> bool:
     return path.is_symlink() and _symlink_target(path) == expected.resolve(strict=False)
 
 
-def _managed_visible_adapter_packages(repo_path: Path, global_root: Path) -> list[str]:
+def _managed_visible_adapter_packages(repo_path: Path, global_root: Path, *, target_root: Path | None = None) -> list[str]:
     if repo_path.is_symlink() and _symlink_target(repo_path) == global_root.resolve(strict=False):
         if global_root.exists():
             return sorted(path.name for path in global_root.iterdir() if path.is_dir())
         return []
-    if not repo_path.is_dir() or repo_path.is_symlink():
+    if not repo_path.is_dir() or (repo_path.is_symlink() and not _is_repo_local_symlink_adapter(repo_path, target_root)):
         return []
     marker = adapter_marker_state(repo_path)
     marker_mode = marker["mode"]
@@ -117,8 +130,8 @@ def _managed_visible_adapter_packages(repo_path: Path, global_root: Path) -> lis
     return sorted(names)
 
 
-def _adapter_package_integrity(repo_path: Path, global_root: Path) -> list[dict]:
-    if not repo_path.is_dir() or repo_path.is_symlink():
+def _adapter_package_integrity(repo_path: Path, global_root: Path, *, target_root: Path | None = None) -> list[dict]:
+    if not repo_path.is_dir() or (repo_path.is_symlink() and not _is_repo_local_symlink_adapter(repo_path, target_root)):
         return []
     marker = adapter_marker_state(repo_path)
     marker_mode = marker["mode"]
@@ -213,26 +226,7 @@ def _child_is_managed_adapter_package(
     return path.is_symlink() and _symlink_target(path) == expected.resolve(strict=False)
 
 
-def adapter_classification(repo_path: Path, global_root: Path, *, known_global_roots: list[Path] | None = None) -> dict:
-    managed_roots = [global_root, *(known_global_roots or [])]
-    resolved_roots = {root.resolve(strict=False) for root in managed_roots}
-    exists = repo_path.exists() or repo_path.is_symlink()
-    if not exists:
-        return {"status_code": "absent", "collision_reason": None, "custom_entries": [], "managed_entries": []}
-    if repo_path.is_symlink():
-        target = _symlink_target(repo_path)
-        if not repo_path.exists():
-            return {"status_code": "dangling_symlink", "collision_reason": "dangling symlink", "custom_entries": [], "managed_entries": []}
-        if target == global_root.resolve(strict=False):
-            return {"status_code": "legacy_monolithic_symlink", "collision_reason": None, "custom_entries": [], "managed_entries": []}
-        if target in (resolved_roots - {global_root.resolve(strict=False)}):
-            return {"status_code": "legacy_monolithic_symlink", "collision_reason": None, "custom_entries": [], "managed_entries": []}
-        return {"status_code": "unsupported_node", "collision_reason": "symlink points outside managed library", "custom_entries": [], "managed_entries": []}
-    if repo_path.is_file():
-        return {"status_code": "regular_file", "collision_reason": "regular file", "custom_entries": [], "managed_entries": []}
-    if not repo_path.is_dir():
-        return {"status_code": "unsupported_node", "collision_reason": "unsupported filesystem node", "custom_entries": [], "managed_entries": []}
-
+def _directory_adapter_classification(repo_path: Path, global_root: Path) -> dict:
     marker = adapter_marker_state(repo_path)
     marker_mode = marker["mode"]
     marker_packages = adapter_marker_packages(repo_path)
@@ -287,7 +281,7 @@ def adapter_classification(repo_path: Path, global_root: Path, *, known_global_r
     if visible and all(_child_is_custom_skill(child) for child in visible):
         return {
             "status_code": "custom_repo_skills",
-            "collision_reason": "custom repo skills",
+            "collision_reason": None,
             "custom_entries": [child.name for child in visible],
             "managed_entries": [],
             "unknown_entries": [],
@@ -301,12 +295,49 @@ def adapter_classification(repo_path: Path, global_root: Path, *, known_global_r
     }
 
 
-def adapter_path_state(repo_path: Path, global_root: Path, *, known_global_roots: list[Path] | None = None) -> dict:
+def adapter_classification(
+    repo_path: Path,
+    global_root: Path,
+    *,
+    known_global_roots: list[Path] | None = None,
+    target_root: Path | None = None,
+) -> dict:
+    managed_roots = [global_root, *(known_global_roots or [])]
+    resolved_roots = {root.resolve(strict=False) for root in managed_roots}
+    exists = repo_path.exists() or repo_path.is_symlink()
+    if not exists:
+        return {"status_code": "absent", "collision_reason": None, "custom_entries": [], "managed_entries": []}
+    if repo_path.is_symlink():
+        target = _symlink_target(repo_path)
+        if not repo_path.exists():
+            return {"status_code": "dangling_symlink", "collision_reason": "dangling symlink", "custom_entries": [], "managed_entries": []}
+        if target == global_root.resolve(strict=False):
+            return {"status_code": "legacy_monolithic_symlink", "collision_reason": None, "custom_entries": [], "managed_entries": []}
+        if target in (resolved_roots - {global_root.resolve(strict=False)}):
+            return {"status_code": "legacy_monolithic_symlink", "collision_reason": None, "custom_entries": [], "managed_entries": []}
+        if _is_repo_local_symlink_adapter(repo_path, target_root):
+            return _directory_adapter_classification(repo_path, global_root)
+        return {"status_code": "unsupported_node", "collision_reason": "symlink points outside managed library", "custom_entries": [], "managed_entries": []}
+    if repo_path.is_file():
+        return {"status_code": "regular_file", "collision_reason": "regular file", "custom_entries": [], "managed_entries": []}
+    if not repo_path.is_dir():
+        return {"status_code": "unsupported_node", "collision_reason": "unsupported filesystem node", "custom_entries": [], "managed_entries": []}
+    return _directory_adapter_classification(repo_path, global_root)
+
+
+def adapter_path_state(
+    repo_path: Path,
+    global_root: Path,
+    *,
+    known_global_roots: list[Path] | None = None,
+    target_root: Path | None = None,
+) -> dict:
     managed_roots = [global_root, *(known_global_roots or [])]
     resolved_roots = {root.resolve(strict=False) for root in managed_roots}
     exists = repo_path.exists() or repo_path.is_symlink()
     is_symlink = repo_path.is_symlink()
     is_dangling_symlink = is_symlink and not repo_path.exists()
+    is_repo_local_symlink_adapter = _is_repo_local_symlink_adapter(repo_path, target_root)
     points_to_global = False
     points_to_legacy_global = False
     is_monolithic_global_symlink = False
@@ -317,7 +348,7 @@ def adapter_path_state(repo_path: Path, global_root: Path, *, known_global_roots
         is_monolithic_global_symlink = bool(link_target and link_target in resolved_roots)
     is_scoped_symlink_adapter = (
         repo_path.is_dir()
-        and not is_symlink
+        and (not is_symlink or is_repo_local_symlink_adapter)
         and (repo_path / ADAPTER_MARKER_JSON).exists()
     )
     is_portable_copy = (
@@ -325,24 +356,34 @@ def adapter_path_state(repo_path: Path, global_root: Path, *, known_global_roots
         and not is_symlink
         and (repo_path / ".localsetup-portable").exists()
     )
-    is_unmanaged_directory = repo_path.is_dir() and not is_symlink and not is_portable_copy and not is_scoped_symlink_adapter
+    is_unmanaged_directory = (
+        repo_path.is_dir()
+        and (not is_symlink or is_repo_local_symlink_adapter)
+        and not is_portable_copy
+        and not is_scoped_symlink_adapter
+    )
     is_regular_file = repo_path.exists() and repo_path.is_file() and not is_symlink
     is_other = repo_path.exists() and not (
         repo_path.is_file() or repo_path.is_dir() or is_symlink
     )
-    classification = adapter_classification(repo_path, global_root, known_global_roots=known_global_roots)
+    classification = adapter_classification(
+        repo_path,
+        global_root,
+        known_global_roots=known_global_roots,
+        target_root=target_root,
+    )
     collision_reason = classification["collision_reason"]
     if is_dangling_symlink:
         collision_reason = "dangling symlink"
-    elif is_symlink and not is_monolithic_global_symlink:
+    elif is_symlink and not is_monolithic_global_symlink and not is_repo_local_symlink_adapter:
         collision_reason = "symlink points outside managed library"
     elif is_regular_file:
         collision_reason = "regular file"
-    elif is_unmanaged_directory:
+    elif is_unmanaged_directory and classification["status_code"] != "custom_repo_skills":
         collision_reason = "unmanaged adapter directory"
     elif is_other:
         collision_reason = "unsupported filesystem node"
-    package_integrity = _adapter_package_integrity(repo_path, global_root)
+    package_integrity = _adapter_package_integrity(repo_path, global_root, target_root=target_root)
     package_integrity_failures = [row for row in package_integrity if not row.get("ok")]
     return {
         "exists": exists,
@@ -351,6 +392,7 @@ def adapter_path_state(repo_path: Path, global_root: Path, *, known_global_roots
         "managed_entries": classification.get("managed_entries", []),
         "unknown_entries": classification.get("unknown_entries", []),
         "is_symlink": is_symlink,
+        "is_repo_local_symlink_adapter": is_repo_local_symlink_adapter,
         "is_dangling_symlink": is_dangling_symlink,
         "points_to_global": points_to_global,
         "points_to_legacy_global": points_to_legacy_global,
@@ -361,8 +403,8 @@ def adapter_path_state(repo_path: Path, global_root: Path, *, known_global_roots
         "is_regular_file": is_regular_file,
         "is_other": is_other,
         "collision_reason": collision_reason,
-        "visible_packages": _visible_adapter_packages(repo_path, global_root),
-        "managed_visible_packages": _managed_visible_adapter_packages(repo_path, global_root),
+        "visible_packages": _visible_adapter_packages(repo_path, global_root, target_root=target_root),
+        "managed_visible_packages": _managed_visible_adapter_packages(repo_path, global_root, target_root=target_root),
         "package_integrity": package_integrity,
         "package_integrity_ok": not package_integrity_failures,
         "package_integrity_failures": package_integrity_failures,
@@ -432,7 +474,7 @@ def adapter_status(
     known_roots = legacy_global_roots(home)
     for target in adapter_targets(repo_root, home, platform_ids=platform_ids, target_root=target_root):
         repo_path = target["repo_path"]
-        path_state = adapter_path_state(repo_path, global_root, known_global_roots=known_roots)
+        path_state = adapter_path_state(repo_path, global_root, known_global_roots=known_roots, target_root=target_root)
         status.append(
             {
                 "platform": target["platform"],
@@ -463,7 +505,7 @@ def recorded_adapter_status(lock: dict, global_root: Path) -> list[dict]:
                 "repo_path": str(path),
                 "expected_mode": item.get("mode", lock.get("attach_mode", "symlink")),
                 "expected_packages": item.get("packages", lock.get("repo_packages", lock.get("adapter_packages", []))),
-                **adapter_path_state(path, expected_global),
+                **adapter_path_state(path, expected_global, target_root=Path(str(lock.get("target_root"))).resolve(strict=False) if lock.get("target_root") else None),
                 "verify_rules": [],
             }
         )

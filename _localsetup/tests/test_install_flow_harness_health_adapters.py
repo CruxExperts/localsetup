@@ -253,6 +253,45 @@ def test_mixed_managed_adapter_preserves_custom_skill(tmp_path: Path) -> None:
     assert (root / ".codex" / "skills" / "ls-context").exists()
 
 
+def test_initial_install_into_custom_skill_directory_preserves_custom_skill(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    adapter = root / ".codex" / "skills"
+    custom = adapter / "media-batch-ops"
+    custom.mkdir(parents=True)
+    (custom / "SKILL.md").write_text("# Custom before install\n", encoding="utf-8")
+
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"])
+    apply_plan(root, plan, home=home, dry_run=False)
+    verify = verify_install(root, home=home, platform_ids=["codex"])
+
+    assert verify["ok"] is True
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom before install\n"
+    assert (adapter / "ls-context").is_symlink()
+
+
+def test_repo_local_symlink_adapter_preserves_custom_skill_target(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = root / ".agents" / "skills"
+    custom = target / "fleetctl"
+    custom.mkdir(parents=True)
+    (custom / "SKILL.md").write_text("# Fleet custom\n", encoding="utf-8")
+    codex = root / ".codex" / "skills"
+    codex.parent.mkdir(parents=True)
+    codex.symlink_to(Path("..") / ".agents" / "skills", target_is_directory=True)
+
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"])
+    apply_plan(root, plan, home=home, dry_run=False)
+    verify = verify_install(root, home=home)
+
+    adapter = verify["adapters"][0]
+    assert verify["ok"] is True
+    assert adapter["is_repo_local_symlink_adapter"] is True
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Fleet custom\n"
+    assert (target / "ls-context").is_symlink()
+
+
 def test_mixed_managed_adapter_custom_sidecar_does_not_fail_verify_or_doctor(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"

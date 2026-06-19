@@ -7,6 +7,7 @@ from .provenance import is_managed_package
 
 SAFE_ADAPTER_STATUS_CODES = {
     "absent",
+    "custom_repo_skills",
     "managed_scoped_adapter",
     "managed_portable_adapter",
     "legacy_monolithic_symlink",
@@ -24,7 +25,7 @@ def codex_agent_source(repo_root: Path, agent_name: str) -> Path:
     return repo_root / "_localsetup" / "adapters" / "codex" / "agents" / f"{agent_name}.toml"
 
 
-def preflight_install_plan(repo_root: Path, plan, home: Path) -> dict:
+def preflight_install_plan(repo_root: Path, plan, home: Path, *, target_root: Path | None = None) -> dict:
     blockers: list[dict] = []
     for action in plan.actions:
         if action.kind in {"install_skills", "install_workflows"}:
@@ -86,7 +87,12 @@ def preflight_install_plan(repo_root: Path, plan, home: Path) -> dict:
                     )
         elif action.kind == "attach_repo_path":
             global_root = Path(action.details["global_root"])
-            state = adapter_path_state(action.path, global_root, known_global_roots=legacy_global_roots(home))
+            state = adapter_path_state(
+                action.path,
+                global_root,
+                known_global_roots=legacy_global_roots(home),
+                target_root=target_root,
+            )
             if state["status_code"] not in SAFE_ADAPTER_STATUS_CODES:
                 blockers.append(
                     {

@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 import shutil
 
+from .aliases import collect_skill_aliases
 from .adapters import ADAPTER_MARKER_JSON, adapter_path_state, adapter_targets, legacy_global_roots, remove_managed_adapter_entries
 from .git_state import git_untrack_path, inspect_path
 from .manifests import load_pack_config
@@ -180,9 +181,11 @@ def _plan_actions(
     known_roots = legacy_global_roots(home)
     managed_roots = [global_root, *known_roots]
     selected_packages = set(packages)
+    aliases = collect_skill_aliases(source_root / "_localsetup" / "skills")
+    legacy_alias_entries = set(aliases) | set(aliases.values())
     for target in adapter_targets(source_root, home, platform_ids=platform_ids, target_root=target_root):
         path = target["repo_path"]
-        state = adapter_path_state(path, global_root, known_global_roots=known_roots)
+        state = adapter_path_state(path, global_root, known_global_roots=known_roots, target_root=target_root)
         same_name_custom = selected_packages & (set(state.get("custom_entries", [])) | set(state.get("unknown_entries", [])))
         if same_name_custom:
             decisions.append(
@@ -248,6 +251,10 @@ def _plan_actions(
             path = target_root / rel
             if not (path.exists() or path.is_symlink()):
                 continue
+            state = adapter_path_state(path, global_root, known_global_roots=known_roots, target_root=target_root)
+            custom_entries = set(state.get("custom_entries", []))
+            if state["status_code"] == "custom_repo_skills" and not (custom_entries & legacy_alias_entries):
+                continue
             if (path.is_symlink() and _symlink_target_under_managed_roots(path, managed_roots)) or _localsetup_owned_adapter_dir(source_root, path, decisions):
                 actions.append(
                     _action(
@@ -262,8 +269,15 @@ def _plan_actions(
     lock_exists = (target_root / ".localsetup" / "lock.json").is_file()
     adapters_modern = True
     for target in adapter_targets(source_root, home, platform_ids=platform_ids, target_root=target_root):
-        state = adapter_path_state(target["repo_path"], global_root, known_global_roots=known_roots)
-        if not state["is_scoped_symlink_adapter"] or not state["package_integrity_ok"]:
+        state = adapter_path_state(
+            target["repo_path"],
+            global_root,
+            known_global_roots=known_roots,
+            target_root=target_root,
+        )
+        if not (
+            state["is_scoped_symlink_adapter"] or state.get("is_repo_local_symlink_adapter")
+        ) or not state["package_integrity_ok"]:
             adapters_modern = False
             break
     if pre_action_count == 0 and lock_exists and (not platform_ids or adapters_modern):

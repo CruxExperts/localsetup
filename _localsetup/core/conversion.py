@@ -65,7 +65,7 @@ def _conversion_blockers(
     global_root = expand_user_path(pack.global_root, home)
     aliases = collect_skill_aliases(source_root / "_localsetup" / "skills")
     for target in adapter_targets(source_root, home, platform_ids=platform_ids, target_root=target_root):
-        state = adapter_path_state(target["repo_path"], global_root)
+        state = adapter_path_state(target["repo_path"], global_root, target_root=target_root)
         if state["collision_reason"]:
             blockers.append(
                 {

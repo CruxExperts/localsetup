@@ -84,7 +84,12 @@ def run_repair(
         "protected_reasons": protected_reasons,
     }
     for adapter in adapter_targets(source, home, platform_ids=inferred_platforms, target_root=target):
-        state = adapter_path_state(adapter["repo_path"], global_root, known_global_roots=legacy_global_roots(home))
+        state = adapter_path_state(
+            adapter["repo_path"],
+            global_root,
+            known_global_roots=legacy_global_roots(home),
+            target_root=target,
+        )
         if state["exists"] and (state["collision_reason"] or not state["package_integrity_ok"]):
             detected_shape["partial_adapters"].append({"path": str(adapter["repo_path"]), "state": state})
 

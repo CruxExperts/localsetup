@@ -98,7 +98,15 @@ def verify_install(
             if not ok:
                 issues.append(f"verify rule adapter_path_exists failed: {adapter['repo_path']}")
         if "adapter_points_to_managed_root" in rules or expected_mode != "portable":
-            ok = bool(adapter["points_to_global"] or adapter.get("is_scoped_symlink_adapter")) if expected_mode != "portable" else True
+            ok = (
+                bool(
+                    adapter["points_to_global"]
+                    or adapter.get("is_scoped_symlink_adapter")
+                    or adapter.get("is_repo_local_symlink_adapter")
+                )
+                if expected_mode != "portable"
+                else True
+            )
             rule_results.append({"rule": "adapter_points_to_managed_root", "platform": adapter.get("platform"), "ok": ok, "path": adapter["repo_path"]})
             if not ok:
                 issues.append(f"verify rule adapter_points_to_managed_root failed: {adapter['repo_path']}")
@@ -111,7 +119,9 @@ def verify_install(
             issues.append(f"missing adapter path: {adapter['repo_path']}")
         elif expected_mode == "portable" and not adapter["is_portable_copy"]:
             issues.append(f"adapter is not a managed portable copy: {adapter['repo_path']}")
-        elif expected_mode != "portable" and not (adapter["points_to_global"] or adapter.get("is_scoped_symlink_adapter")):
+        elif expected_mode != "portable" and not (
+            adapter["points_to_global"] or adapter.get("is_scoped_symlink_adapter") or adapter.get("is_repo_local_symlink_adapter")
+        ):
             issues.append(f"adapter does not point at global library: {adapter['repo_path']}")
         expected_packages = sorted(str(name) for name in adapter.get("expected_packages", []) if name)
         if expected_packages:
@@ -140,7 +150,7 @@ def verify_install(
                 }
             )
             issues.append(f"adapter package target mismatch: {adapter['repo_path']}")
-        elif adapter.get("is_scoped_symlink_adapter") or adapter.get("is_portable_copy"):
+        elif adapter.get("is_scoped_symlink_adapter") or adapter.get("is_repo_local_symlink_adapter") or adapter.get("is_portable_copy"):
             rule_results.append(
                 {
                     "rule": "adapter_package_targets_match_managed_root",

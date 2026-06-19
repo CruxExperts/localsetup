@@ -317,6 +317,46 @@ def test_doctor_repair_unmanaged_adapter_content_requires_decision(tmp_path: Pat
     assert not (target / ".localsetup" / "lock.json").exists()
 
 
+def test_doctor_repair_custom_skill_directory_preserves_content(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    adapter = target / ".codex" / "skills"
+    custom = adapter / "media-batch-ops"
+    custom.mkdir(parents=True)
+    (custom / "SKILL.md").write_text("# Custom repo skill\n", encoding="utf-8")
+
+    report = run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
+
+    assert report["ok"] is True
+    assert report["applied"] is True
+    assert report["decisions"] == []
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom repo skill\n"
+    assert (adapter / "ls-context").is_symlink()
+
+
+def test_doctor_repair_repo_local_symlink_adapter_preserves_target(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    historical = target / ".agents" / "skills"
+    custom = historical / "fleetctl"
+    custom.mkdir(parents=True)
+    (custom / "SKILL.md").write_text("# Fleet custom skill\n", encoding="utf-8")
+    adapter = target / ".codex" / "skills"
+    adapter.parent.mkdir(parents=True)
+    adapter.symlink_to(Path("..") / ".agents" / "skills", target_is_directory=True)
+
+    report = run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
+
+    assert report["ok"] is True
+    assert report["applied"] is True
+    assert report["decisions"] == []
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Fleet custom skill\n"
+    assert adapter.is_symlink()
+    assert (historical / "ls-context").is_symlink()
+
+
 def test_doctor_repair_broken_adapter_symlink_is_recreated(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"

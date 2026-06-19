@@ -135,7 +135,10 @@ def _prune_unreferenced_managed_packages(
 
 
 def _write_scoped_adapter(adapter_path: Path, global_root: Path, package_names: list[str], *, mode: str) -> None:
-    ensure_dir(adapter_path)
+    if adapter_path.is_symlink() and adapter_path.exists() and adapter_path.is_dir():
+        pass
+    else:
+        ensure_dir(adapter_path)
     portable_marker = adapter_path / ".localsetup-portable"
     if mode != "portable" and portable_marker.exists():
         portable_marker.unlink()
@@ -231,7 +234,7 @@ def _apply_plan_unlocked(
         if target_root.resolve(strict=False) != metadata_attachment_root.resolve(strict=False):
             raise ValueError("target_root does not match install plan target_root")
     attachment_root = target_root or metadata_attachment_root or repo_root
-    preflight = preflight_install_plan(repo_root, plan, home)
+    preflight = preflight_install_plan(repo_root, plan, home, target_root=attachment_root)
     if not preflight["ok"]:
         raise RuntimeError(f"install preflight failed: {preflight['blockers']}")
     txid = uuid.uuid4().hex
@@ -299,10 +302,16 @@ def _apply_plan_unlocked(
                     mode = action.details.get("mode", "symlink")
                     global_root = Path(action.details["global_root"])
                     package_names = [str(name) for name in action.details.get("packages", [])]
-                    state = adapter_path_state(action.path, global_root, known_global_roots=legacy_global_roots(home))
+                    state = adapter_path_state(
+                        action.path,
+                        global_root,
+                        known_global_roots=legacy_global_roots(home),
+                        target_root=attachment_root,
+                    )
                     backup = action.path.with_name(f".{action.path.name}.localsetup-backup-{uuid.uuid4().hex}")
                     existed = action.path.exists() or action.path.is_symlink()
                     in_place = state["status_code"] in {
+                        "custom_repo_skills",
                         "managed_scoped_adapter",
                         "managed_portable_adapter",
                         "mixed_managed_custom_adapter",

@@ -25,6 +25,8 @@ This includes repo-local and global paths such as:
 
 A repo, user profile, or other agent tool may intentionally keep custom skills, files, symlinks, generated outputs, or mixed managed and repo-owned content in those directories.
 
+An adapter path may also be a repo-local symlink to another adapter-shaped directory in the same target repo, such as `.codex/skills -> ../.agents/skills`. When the symlink target resolves inside the target repo and contains valid custom skill packages, Localsetup must treat that as a shared repo adapter surface and write only selected Localsetup-managed entries into the target directory.
+
 ## Localsetup-Owned Content
 
 Localsetup owns only the entries it explicitly creates and records. Localsetup may create:
@@ -46,6 +48,7 @@ Required handling:
 - mutate only Localsetup-managed entries that are recorded or otherwise proven Localsetup-owned
 - report same-name collisions as decisions before mutation
 - report ambiguous unmanaged content as a preservation decision, not as permission to move or delete it
+- preserve repo-local adapter symlinks whose targets stay inside the target repo and contain valid custom skill packages
 - avoid moving, renaming, deleting, or normalizing repo-owned content out of an adapter path unless the repo owner explicitly chooses that migration
 
 `adapter_content`, `adapter_collision`, custom skills, non-Localsetup symlinks, and same-directory mixed content are evidence that the path is shared. They are not evidence that Localsetup should claim or clear the directory.
