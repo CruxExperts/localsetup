@@ -49,6 +49,7 @@ Kilo CLI loads project context from `.kilo/instructions.md` (repo-local) or `~/.
 | ls-script-and-docs-quality | Generating scripts, markdown/docs |
 | ls-communication-and-tools | Communication style, tool choice, MCP/context updates |
 | ls-workflow-ops-tmux-session | Server/system commands, deployments, tmux, shared session, human-in-the-loop ops |
+| ls-workflow-tmux-terminal-mode | Enable, disable, and status checks for tmux-default terminal mode |
 | ls-automatic-versioning | Version bumps, release workflow, conventional commits, versioning docs |
 | ls-github-publishing-workflow | Publishing to GitHub, public release prep, publishing checklist, repo readiness |
 | ls-github-starredrepos | Manage a GitHub starred repositories archive named starredrepos; authenticated context checks, dry-run sync, repo scouting, metadata snapshots, and guarded publish workflows |

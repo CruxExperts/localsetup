@@ -21,6 +21,29 @@ def tmux_env(tmp_path):
         pytest.skip("tmux is not installed")
     socket = f"localsetup-test-{uuid.uuid4().hex}"
     env = os.environ.copy()
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    sudo_mode_file = tmp_path / "sudo-mode"
+    sudo_mode_file.write_text("ready\n", encoding="utf-8")
+    sudo = fake_bin / "sudo"
+    sudo.write_text(
+        """#!/usr/bin/env bash
+mode="${FAKE_SUDO_MODE:-ready}"
+if [ -n "${FAKE_SUDO_MODE_FILE:-}" ] && [ -f "$FAKE_SUDO_MODE_FILE" ]; then
+  mode="$(cat "$FAKE_SUDO_MODE_FILE")"
+fi
+case "$mode:$1" in
+  ready:-Nnv|ready:-vn) exit 0 ;;
+  password:-Nnv|password:-vn) echo "sudo: a password is required" >&2; exit 1 ;;
+  failed:-Nnv|failed:-vn) echo "testuser is not in the sudoers file" >&2; exit 1 ;;
+  *) echo "unexpected sudo invocation: $*" >&2; exit 1 ;;
+esac
+""",
+        encoding="utf-8",
+    )
+    sudo.chmod(0o700)
+    env["PATH"] = f"{fake_bin}{os.pathsep}{env['PATH']}"
+    env["FAKE_SUDO_MODE_FILE"] = str(sudo_mode_file)
     env["TMUX_OPS_TMUX"] = f"tmux -L {socket}"
     env["TMUX_OPS_STATE_ROOT"] = str(tmp_path / "state")
     try:
@@ -77,6 +100,49 @@ def tmux_calls(log_path):
     return [shlex.split(line) for line in log_path.read_text(encoding="utf-8").splitlines()]
 
 
+def pane_identity(socket: str, session: str = "ops") -> tuple[str, str]:
+    pane_id = subprocess.check_output(
+        ["tmux", "-L", socket, "list-panes", "-t", session, "-F", "#{pane_id}"],
+        text=True,
+    ).strip()
+    pane_tty = subprocess.check_output(
+        ["tmux", "-L", socket, "display-message", "-t", pane_id, "-p", "-F", "#{pane_tty}"],
+        text=True,
+    ).strip()
+    return pane_id, pane_tty
+
+
+def write_gate(env: dict[str, str], socket: str, *, state: str = "ready", checked_at: float | None = None) -> dict:
+    pane_id, pane_tty = pane_identity(socket)
+    payload = {
+        "session": "ops",
+        "sudo": state,
+        "gate_state": state,
+        "action_required": state != "ready",
+        "user_command": "sudo -v" if state == "password_required" else None,
+        "attach_command": "tmux new-session -A -s ops",
+        "next_probe_command": "tmux_ops probe -t ops",
+        "pane_id": pane_id,
+        "pane_tty": pane_tty,
+        "checked_at": time.time() if checked_at is None else checked_at,
+        "ts": time.time() if checked_at is None else checked_at,
+        "probe_command": "sudo -Nnv",
+        "detail": "",
+    }
+    state_dir = Path(env["TMUX_OPS_STATE_ROOT"]) / "ops"
+    state_dir.mkdir(parents=True, exist_ok=True)
+    for name in ("sudo_gate.json", "probe.status.json"):
+        (state_dir / name).write_text(json.dumps(payload, sort_keys=True) + "\n", encoding="utf-8")
+    return payload
+
+
+def set_sudo_mode(env: dict[str, str], mode: str) -> None:
+    mode_file = env.get("FAKE_SUDO_MODE_FILE")
+    if mode_file:
+        Path(mode_file).write_text(mode + "\n", encoding="utf-8")
+    env["FAKE_SUDO_MODE"] = mode
+
+
 def send_targets(log_path, *, contains=None):
     targets = []
     for call in tmux_calls(log_path):
@@ -108,6 +174,7 @@ def test_run_captures_output_and_preserves_nonzero_exit(tmux_env):
     env, socket = tmux_env
     log_path = install_tmux_wrapper(Path(env["TMUX_OPS_STATE_ROOT"]).parent, env, socket)
     run_ops(env, "pick")
+    write_gate(env, socket)
     log_path.write_text("", encoding="utf-8")
 
     _, payload = run_ops(
@@ -142,6 +209,7 @@ def test_run_timeout_stays_active_and_blocks_second_run(tmux_env):
     env, socket = tmux_env
     log_path = install_tmux_wrapper(Path(env["TMUX_OPS_STATE_ROOT"]).parent, env, socket)
     run_ops(env, "pick")
+    write_gate(env, socket)
     log_path.write_text("", encoding="utf-8")
 
     _, first = run_ops(
@@ -199,14 +267,14 @@ def test_run_timeout_stays_active_and_blocks_second_run(tmux_env):
 def test_probe_classifies_sudo_states(tmux_env, tmp_path):
     env, _socket = tmux_env
     fake_bin = tmp_path / "bin"
-    fake_bin.mkdir()
+    fake_bin.mkdir(exist_ok=True)
     sudo = fake_bin / "sudo"
     sudo.write_text(
         """#!/usr/bin/env bash
 case "${FAKE_SUDO_MODE:-ready}:$1" in
-  ready:-vn) exit 0 ;;
-  password:-vn) echo "sudo: a password is required" >&2; exit 1 ;;
-  failed:-vn) echo "testuser is not in the sudoers file" >&2; exit 1 ;;
+  ready:-Nnv|ready:-vn) exit 0 ;;
+  password:-Nnv|password:-vn) echo "sudo: a password is required" >&2; exit 1 ;;
+  failed:-Nnv|failed:-vn) echo "testuser is not in the sudoers file" >&2; exit 1 ;;
   password:-v) echo "[sudo] password for testuser:" >&2; sleep 30 ;;
   *) exit 1 ;;
 esac
@@ -230,17 +298,79 @@ esac
             log_path = install_tmux_wrapper(tmp_path, env, socket)
             probe = run_ops(env, "probe", "-t", pick["session"])[1]
             assert probe["sudo"] == expected
+            assert probe["gate_state"] == expected
             assert probe["attach_command"] == "tmux new-session -A -s ops"
             assert send_targets(log_path, contains="probe.sh")
             assert all(target.startswith("%") for target in send_targets(log_path, contains="probe.sh"))
+            assert not send_targets(log_path, contains="sudo -v")
+            gate = json.loads((Path(env["TMUX_OPS_STATE_ROOT"]) / "ops" / "sudo_gate.json").read_text())
+            alias = json.loads((Path(env["TMUX_OPS_STATE_ROOT"]) / "ops" / "probe.status.json").read_text())
+            assert gate == alias
         finally:
             subprocess.run(["tmux", "-L", socket, "kill-server"], capture_output=True, text=True)
+
+
+def test_probe_falls_back_when_sudo_n_is_unsupported(tmux_env, tmp_path):
+    env, _socket = tmux_env
+    fake_bin = tmp_path / "fallback-bin"
+    fake_bin.mkdir()
+    sudo = fake_bin / "sudo"
+    sudo.write_text(
+        """#!/usr/bin/env bash
+case "$1" in
+  -Nnv) echo "sudo: invalid option -- N" >&2; exit 1 ;;
+  -vn) exit 0 ;;
+  *) exit 1 ;;
+esac
+""",
+        encoding="utf-8",
+    )
+    sudo.chmod(0o700)
+    env["PATH"] = f"{fake_bin}{os.pathsep}{env['PATH']}"
+
+    run_ops(env, "pick")
+    _, probe = run_ops(env, "probe", "-t", "ops")
+
+    assert probe["sudo"] == "ready"
+    assert probe["probe_command"] == "sudo -vn"
+
+
+def test_run_refuses_unready_gates_without_creating_run_state(tmux_env):
+    env, socket = tmux_env
+    run_ops(env, "pick")
+    state_dir = Path(env["TMUX_OPS_STATE_ROOT"]) / "ops"
+
+    cases = [
+        (None, "password"),
+        ({"state": "ready", "checked_at": time.time() - 120}, "password"),
+        ({"state": "failed"}, "failed"),
+        ({"state": "password_required"}, "password"),
+    ]
+    for case, sudo_mode in cases:
+        set_sudo_mode(env, sudo_mode)
+        for child in ("active.json", "runs", "logs", "scripts", "sudo_gate.json", "probe.status.json"):
+            path = state_dir / child
+            if path.is_dir():
+                shutil.rmtree(path)
+            elif path.exists():
+                path.unlink()
+        if case:
+            write_gate(env, socket, **case)
+        proc, payload = run_ops(env, "run", "-t", "ops", "--", "echo", "blocked", check=False)
+        assert proc.returncode == 1
+        assert payload["action_required"] is True
+        assert "run_id" not in payload
+        assert not (state_dir / "active.json").exists()
+        assert not (state_dir / "runs").exists()
+        assert not (state_dir / "logs").exists()
+        assert not (state_dir / "scripts").exists()
 
 
 def test_cancel_uses_resolved_pane_target(tmux_env):
     env, socket = tmux_env
     log_path = install_tmux_wrapper(Path(env["TMUX_OPS_STATE_ROOT"]).parent, env, socket)
     run_ops(env, "pick")
+    write_gate(env, socket)
     _, run_payload = run_ops(
         env,
         "run",
@@ -283,6 +413,7 @@ def test_run_send_keys_failure_reports_resolved_pane_target(tmux_env):
     tmp_path = Path(env["TMUX_OPS_STATE_ROOT"]).parent
     install_tmux_wrapper(tmp_path, env, socket)
     run_ops(env, "pick")
+    write_gate(env, socket)
     install_tmux_wrapper(tmp_path, env, socket, fail_run_send=True)
 
     proc, payload = run_ops(env, "run", "-t", "ops", "--", "echo", "blocked", check=False)

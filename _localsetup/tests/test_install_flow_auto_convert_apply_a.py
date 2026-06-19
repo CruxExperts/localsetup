@@ -23,7 +23,11 @@ def test_no_selector_plan_install_and_update_infer_existing_modern_repo(tmp_path
     plan_payload = json.loads(planned.stdout)
     assert plan_payload["auto_mode"] == "inferred_existing"
     assert plan_payload["attachment"]["platforms"] == ["codex"]
-    assert plan_payload["rollback"]["repo_packages"] == ["ls-context"]
+    assert plan_payload["rollback"]["repo_packages"] == [
+        "ls-context",
+        "ls-workflow-ops-tmux-session",
+        "ls-workflow-tmux-terminal-mode",
+    ]
 
     installed = run_localsetup_cli(root, home, "install", "--target-directory", str(target), "--apply")
     assert installed.returncode == 0, installed.stderr
@@ -37,7 +41,11 @@ def test_no_selector_plan_install_and_update_infer_existing_modern_repo(tmp_path
     lock = load_json(target / ".localsetup" / "lock.json")
     assert update_payload["auto_mode"] == "inferred_existing"
     assert lock["platforms"] == ["codex"]
-    assert lock["repo_packages"] == ["ls-context"]
+    assert lock["repo_packages"] == [
+        "ls-context",
+        "ls-workflow-ops-tmux-session",
+        "ls-workflow-tmux-terminal-mode",
+    ]
     assert lock["global_baseline_selectors"]["preset"] == "suggested"
 
 

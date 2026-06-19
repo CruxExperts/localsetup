@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -14,6 +15,7 @@ from .layers import (
     apply_shell_layer,
     default_shell_rc,
     detect_settings_file,
+    detect_existing_settings_file,
     ide_layer_active,
     remove_ide_layer,
     remove_rule_layer,
@@ -21,7 +23,7 @@ from .layers import (
     resolve_tmux,
     rule_layer_active,
     shell_layer_active,
-    tmux_ops_path,
+    terminal_mode_status,
 )
 
 DESCRIPTION = """tmux_terminal_mode - Toggleable framework feature: tmux-default terminal mode.
@@ -158,13 +160,23 @@ def _settings_path_with_backup() -> Path | None:
 
 def cmd_status(args: argparse.Namespace, *, tools_dir: Path | None = None) -> int:
     rules_path = Path(args.rules_file).expanduser()
-    settings_path = Path(args.settings_file).expanduser() if args.settings_file else detect_settings_file()
+    settings_path = Path(args.settings_file).expanduser() if args.settings_file else detect_existing_settings_file()
     rc_path = Path(args.shell_rc).expanduser() if args.shell_rc else default_shell_rc()
+    status = terminal_mode_status(
+        settings_path=settings_path,
+        rc_path=rc_path,
+        rules_path=rules_path,
+        tools_dir=tools_dir or _default_tools_dir(),
+    )
 
-    ide_session = ide_layer_active(settings_path)
-    shell_session = shell_layer_active(rc_path)
-    rule_active = rule_layer_active(rules_path)
-    tmux_ops = tmux_ops_path(tools_dir or _default_tools_dir())
+    if args.json:
+        print(json.dumps(status, sort_keys=True))
+        return 0
+
+    ide_session = status["layers"]["ide"]["session"]
+    shell_session = status["layers"]["shell"]["session"]
+    rule_active = status["layers"]["rules"]["active"]
+    tmux_ops = status["layers"]["tmux_ops"]["path"]
 
     if ide_session:
         detected_mode = "ide"
@@ -232,6 +244,7 @@ def build_parser() -> argparse.ArgumentParser:
     status.add_argument("--settings-file", metavar="PATH", help="IDE settings.json path (auto-detected if omitted)")
     status.add_argument("--shell-rc", metavar="PATH", help="Shell RC file path (default: ~/.bashrc or ~/.bash_profile on macOS)")
     status.add_argument("--rules-file", default=DEFAULT_RULES_FILE, metavar="PATH", help=f"Agent rules file (default: {DEFAULT_RULES_FILE})")
+    status.add_argument("--json", action="store_true", help="Emit machine-readable read-only status")
     status.set_defaults(func=cmd_status)
     return parser
 

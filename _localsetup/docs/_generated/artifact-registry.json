@@ -37,7 +37,7 @@
       "type": "markdown"
     },
     {
-      "artifact_sha256": "1d65dfc8e9e02d854cda191e5c6ff3002fac7c766e94be04322556e4314466f8",
+      "artifact_sha256": "7941dad0d5afdd07e1ed7aee62e43a506259867b2ef44f9cc0472f8b97aeb185",
       "emitter": "generate-docs",
       "framework_version": "4.1.3",
       "path": "_localsetup/docs/WORKFLOW_REGISTRY.md",
@@ -109,7 +109,7 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "3fee539fe9e2e8785869d81e4a4663a9a1c7f5d2027aee52eb6b2778d7b81c8b",
+      "artifact_sha256": "45dd6122636835fd36bb3490ca4f9a42df88deed59d0c001a0f0c2b85564b418",
       "emitter": "generate-docs",
       "framework_version": "4.1.3",
       "path": "_localsetup/docs/_generated/docs-inventory.json",
@@ -127,7 +127,7 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "88db4bd3ff9a229cf75601e69a1adf6c623d8eb32f483ca0b4de9c278a038b25",
+      "artifact_sha256": "8351f66850159091bd9fd64444a1a794f22d9c1be0f0274ee19c84399aded7ee",
       "emitter": "generate-docs",
       "framework_version": "4.1.3",
       "path": "_localsetup/docs/_generated/docs-truth-map.json",
@@ -199,7 +199,7 @@
       "type": "markdown"
     },
     {
-      "artifact_sha256": "5459b6a936d21d2298765045c1fe5c0903068a4fc8941a956f7ac43e711df6c1",
+      "artifact_sha256": "1c8479300e6ea98bb2c45c3558c0f108e04fb3b9b0f46c59186152be70f85d06",
       "emitter": "generate-docs",
       "framework_version": "4.1.3",
       "path": "_localsetup/docs/_generated/plugin-packs.json",
@@ -217,7 +217,7 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "d0228263ecf3a8a93b8926c9c87e764bbf8423d8fc0234b1bdf1130b3d2e8b4b",
+      "artifact_sha256": "fbfb3bafcb1dbb81fd03ed8a4fbf5c725ef34e52f6770aeb85cd28e1861e3fc6",
       "emitter": "generate-docs",
       "framework_version": "4.1.3",
       "path": "_localsetup/docs/_generated/plugin-packs.md",
@@ -235,7 +235,7 @@
       "type": "markdown"
     },
     {
-      "artifact_sha256": "91d7ddcbfc3947a88196097fa84a8846b13ef05476659cb4dce5b59aaf441482",
+      "artifact_sha256": "70c686a0a53fb9e00ff13399e60aadbeeac4dfc3e4fdbe4fcddef2167598fc20",
       "emitter": "generate-docs",
       "framework_version": "4.1.3",
       "path": "_localsetup/docs/_generated/skill-packs.md",
@@ -289,7 +289,7 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "c37cd8dbbdfa485d748d24b07ae7019841b6559f5621118889a16cb2e85c7a28",
+      "artifact_sha256": "99046127747b730c0b2833d4307ac7707cb6f61b218368abe5b38ee22e8cf887",
       "emitter": "generate-docs",
       "framework_version": "4.1.3",
       "path": "_localsetup/docs/_generated/workflow-catalog.json",
@@ -345,7 +345,7 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/artifact-registry.json",
-    "artifact_sha256": "f2b4657be17c8c90501e17c9eeccb0e3450070969b422f1241b5c57ee08c70c3",
+    "artifact_sha256": "0349863731a506dd3c7c983fbec676ce74ee4b2dcfbeee7f4da436149ba8bf1b",
     "emitter": "generate-docs",
     "framework_version": "4.1.3",
     "schema_version": 1,

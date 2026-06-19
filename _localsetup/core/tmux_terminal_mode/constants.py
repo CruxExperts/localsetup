@@ -31,9 +31,12 @@ session from `tmux ls` or parse capture yourself.
    the returned `attach_command`. Do not wait for the user to confirm they
    joined. Then run the probe.
 
-2. **Gate.** Run `./_localsetup/tools/tmux_ops probe -t <session>`. If
-   `"sudo": "password_required"`: stop. Ask user to attach, enter password,
-   reply "sudo ready", then probe again. If `"sudo": "ready"`, proceed.
+2. **Gate.** Run `./_localsetup/tools/tmux_ops probe -t <session>`. If the
+   response has `"action_required": true` or `"sudo": "password_required"`:
+   stop. Tell the user to attach with the returned `attach_command`, run
+   `sudo -v` in that exact tmux pane, enter the password, and reply
+   "sudo ready". Wait for that reply before probing again. If
+   `"sudo": "ready"`, proceed.
 
 3. **Run.** One logical step per managed run:
    `./_localsetup/tools/tmux_ops run -t <session> -- <cmd>`. Read the returned
@@ -42,7 +45,8 @@ session from `tmux ls` or parse capture yourself.
    only with `cancel -t <session> --run-id <run_id>`. If sudo expires, probe
    again.
 
-Full procedure: **ls-workflow-ops-tmux-session** workflow package.
+Full procedure: **ls-workflow-ops-tmux-session** and
+**ls-workflow-tmux-terminal-mode** workflow packages.
 {sentinel_end}
 """.format(sentinel_begin=SENTINEL_BEGIN, sentinel_end=SENTINEL_END)
 

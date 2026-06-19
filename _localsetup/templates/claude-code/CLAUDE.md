@@ -44,6 +44,7 @@ Localsetup is deployed into this repo at `_localsetup/`. All framework and conte
 - **ls-script-and-docs-quality**  - Scripts, markdown/docs
 - **ls-communication-and-tools**  - Communication, tools, MCP
 - **ls-workflow-ops-tmux-session**  - Server commands, deployments, tmux, human-in-the-loop ops
+- **ls-workflow-tmux-terminal-mode**  - Enable, disable, and status checks for tmux-default terminal mode
 - **ls-automatic-versioning**  - Version bumps, release workflow, conventional commits, versioning docs
 - **ls-github-publishing-workflow**  - Publishing to GitHub, public release prep, publishing checklist, repo readiness
 - **ls-github-starredrepos**  - Manage a GitHub starred repositories archive named starredrepos; authenticated context checks, dry-run sync, repo scouting, metadata snapshots, and guarded publish workflows

@@ -13,6 +13,7 @@
 | ls-script-and-docs-quality | Markdown/encoding, script quality, file/docs discipline | Generating scripts, editing markdown/docs |
 | ls-communication-and-tools | Communication, tool selection, periodic updates | Communication style, tools, MCP |
 | ls-workflow-ops-tmux-session | Shared tmux session; sudo discovery and single-prompt gate (join session, trigger, batch until timeout); agent captures output; human can attach/sudo | Server commands, deployments, tmux, human-in-the-loop ops |
+| ls-workflow-tmux-terminal-mode | Tmux-default terminal mode setup and read-only status checks | Terminal mode enable/disable/status, tmux workflow rule injection |
 | ls-automatic-versioning | Automatic semantic versioning from conventional commits; VERSION, sync to READMEs/docs | Version bumps, release workflow, conventional commits, versioning docs |
 | ls-github-publishing-workflow | Publishing checklist, doc structure, licensing, scrub for PII/secrets | Publishing to GitHub, public release prep, publishing checklist, repo readiness |
 | ls-github-starredrepos | GitHub starred repositories archive named starredrepos | Authenticated context checks, dry-run sync, repo scouting, metadata snapshots, and guarded publish workflows |

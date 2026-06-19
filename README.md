@@ -204,6 +204,7 @@ These are not toy prompts. They are practical skills and workflows from the ship
 | `ls-keepass-secrets` | Resolves logical secrets through KeePassXC with safe mapping files and redacted output defaults. |
 | `ls-cloudflare-dns` | Manages Cloudflare DNS through deterministic JSON plans, snapshots, dry runs, and guarded apply flows. |
 | `ls-workflow-ops-tmux-session` | Keeps human-controlled server operations visible, resumable, and sudo-aware. |
+| `ls-workflow-tmux-terminal-mode` | Manages tmux-default terminal mode setup and read-only health checks. |
 
 See the generated catalogs for all shipped skills and workflows: [_localsetup/docs/SKILLS.md](_localsetup/docs/SKILLS.md) and [_localsetup/docs/WORKFLOW_QUICK_REF.md](_localsetup/docs/WORKFLOW_QUICK_REF.md).
 

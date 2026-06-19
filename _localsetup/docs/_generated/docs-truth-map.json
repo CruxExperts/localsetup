@@ -2447,7 +2447,7 @@
   },
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "cdbd8478c12cdfe913facbe5c56cad30a97693d9d875266ba21690c19c7ab41c",
+    "artifact_sha256": "30715be63515a5896f8cea3e392d1e3a54b89a423d4c4eae7e80ad8442cc726a",
     "emitter": "docs-align",
     "framework_version": "4.1.3",
     "schema_version": 1,
@@ -4051,6 +4051,7 @@
             "display_name": "Ops Tmux Session",
             "package": "ls-workflow-ops-tmux-session",
             "packs": [
+              "core",
               "ops"
             ],
             "path": "_localsetup/workflows/ls-workflow-ops-tmux-session",
@@ -4352,16 +4353,17 @@
             "display_name": "Tmux Terminal Mode",
             "package": "ls-workflow-tmux-terminal-mode",
             "packs": [
+              "core",
               "ops"
             ],
             "path": "_localsetup/workflows/ls-workflow-tmux-terminal-mode",
             "required_docs": [
-              "_localsetup/docs/TMUX_TERMINAL_MODE.md",
-              "_localsetup/docs/WORKFLOW_REGISTRY.md"
+              "localsetup://doc/TMUX_TERMINAL_MODE.md",
+              "localsetup://doc/WORKFLOW_REGISTRY.md"
             ],
             "required_skills": [],
             "required_tools": [
-              "_localsetup/tools/tmux_terminal_mode"
+              "localsetup://tool/tmux_terminal_mode"
             ],
             "workflow_id": "tmux-terminal-mode"
           },

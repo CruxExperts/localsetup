@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import shlex
+import os
+import shutil
 import time
 from pathlib import Path
 from typing import Any
@@ -10,13 +12,13 @@ from .sanitize import _ops_session_sequence, _sanitize_session
 from .state import (
     _attach_command,
     _is_managed,
-    _json_load,
     _json_write,
     _live_active,
     _prompt_channel,
     _state_dir,
     _status_payload,
 )
+from .sudo_gate import probe_sudo_gate
 from .tmux import (
     _is_pane_idle,
     _is_pane_waiting_sudo,
@@ -37,7 +39,7 @@ def _write_bootstrap(session: str) -> Path:
 export TMUX_OPS_MANAGED=1
 export TMUX_OPS_SESSION={shlex.quote(session)}
 export TMUX_OPS_STATE_DIR={shlex.quote(str(state))}
-__tmux_ops_prompt() {{
+__tmux_ops_idle_hook() {{
   printf '{{"session":"%s","idle":true,"ts":%s}}\\n' "$TMUX_OPS_SESSION" "$(date +%s)" > "$TMUX_OPS_STATE_DIR/idle.json"
   if [ -f "$TMUX_OPS_STATE_DIR/last_run_id" ]; then
     __tmux_ops_last_run="$(cat "$TMUX_OPS_STATE_DIR/last_run_id" 2>/dev/null || true)"
@@ -48,21 +50,51 @@ __tmux_ops_prompt() {{
   fi
   tmux wait-for -S "{_prompt_channel(session)}" 2>/dev/null || true
 }}
-PROMPT_COMMAND=__tmux_ops_prompt
-PS1='__tmux_ops__{session} \\$ '
+if [ -z "${{PS1:-}}" ]; then
+  PS1='\\u@\\h:\\w\\$ '
+fi
+if declare -p PROMPT_COMMAND >/dev/null 2>&1 && declare -p PROMPT_COMMAND 2>/dev/null | grep -q '^declare \\-a'; then
+  PROMPT_COMMAND+=(__tmux_ops_idle_hook)
+elif [ -n "${{PROMPT_COMMAND:-}}" ]; then
+  PROMPT_COMMAND="${{PROMPT_COMMAND%';'}}; __tmux_ops_idle_hook"
+else
+  PROMPT_COMMAND=__tmux_ops_idle_hook
+fi
 """
     script.write_text(content, encoding="utf-8")
     script.chmod(0o700)
     return script
 
 
+def _interactive_bash() -> str:
+    shell_env = os.environ.get("SHELL", "")
+    shell = shutil.which(Path(shell_env).name) if shell_env else None
+    if shell and Path(shell).name in {"bash", "rbash"}:
+        return shell
+    return shutil.which("bash") or "/bin/bash"
+
+
+def _apply_session_options(session: str) -> tuple[bool, str | None]:
+    for args in (
+        ["set-option", "-t", session, "mouse", "on"],
+        ["set-option", "-t", session, "history-limit", "100000"],
+    ):
+        result = _run_tmux(args)
+        if result.returncode != 0:
+            return False, result.stderr or result.stdout or f"tmux {' '.join(args)} exited {result.returncode}"
+    return True, None
+
+
 def _bootstrap_session(session: str, create: bool) -> tuple[bool, str | None]:
     state = _state_dir(session)
     state.mkdir(parents=True, exist_ok=True)
     if create:
-        r = _run_tmux(["new-session", "-d", "-s", session, "bash", "--noprofile", "--norc", "-i"])
+        r = _run_tmux(["new-session", "-d", "-s", session, _interactive_bash(), "-i"])
         if r.returncode != 0:
             return False, r.stderr or f"tmux new-session exited {r.returncode}"
+    ok, err = _apply_session_options(session)
+    if not ok:
+        return False, err
     script = _write_bootstrap(session)
     wait = _start_tmux_wait(_prompt_channel(session))
     r = _targeted_tmux(session, ["send-keys", "-t", "{target}", f"source {shlex.quote(str(script))}", "Enter"])
@@ -142,53 +174,6 @@ def cmd_pick() -> dict[str, Any]:
     }
 
 
-def _write_probe_script(session: str) -> Path:
-    state = _state_dir(session)
-    path = state / "probe.sh"
-    status_path = state / "probe.status.json"
-    content = f"""#!/usr/bin/env bash
-set +e
-status_path={shlex.quote(str(status_path))}
-session={shlex.quote(session)}
-attach={shlex.quote(_attach_command(session))}
-if ! command -v sudo >/dev/null 2>&1; then
-  sudo_state=failed
-  detail="sudo unavailable"
-else
-  output="$(sudo -vn 2>&1)"
-  rc=$?
-  if [ "$rc" -eq 0 ]; then
-    sudo_state=ready
-    detail=""
-  elif printf '%s' "$output" | grep -Eiq 'password.*required|a password is required|terminal is required|authentication required'; then
-    sudo_state=password_required
-    detail="$output"
-  else
-    sudo_state=failed
-    detail="$output"
-  fi
-fi
-TMUX_PROBE_STATUS="$status_path" TMUX_PROBE_SESSION="$session" TMUX_PROBE_SUDO="$sudo_state" TMUX_PROBE_DETAIL="$detail" TMUX_PROBE_ATTACH="$attach" python3 - <<'PY'
-import json, os, time
-path = os.environ["TMUX_PROBE_STATUS"]
-payload = {{
-    "session": os.environ["TMUX_PROBE_SESSION"],
-    "sudo": os.environ["TMUX_PROBE_SUDO"],
-    "detail": os.environ.get("TMUX_PROBE_DETAIL", ""),
-    "attach_command": os.environ["TMUX_PROBE_ATTACH"],
-    "ts": time.time(),
-}}
-with open(path, "w", encoding="utf-8") as f:
-    json.dump(payload, f, sort_keys=True)
-    f.write("\\n")
-PY
-tmux wait-for -S "{WAIT_PREFIX}-{session}-probe"
-"""
-    path.write_text(content, encoding="utf-8")
-    path.chmod(0o700)
-    return path
-
-
 def cmd_probe(target: str) -> dict[str, Any]:
     san = _sanitize_session(target)
     if san is None:
@@ -205,32 +190,4 @@ def cmd_probe(target: str) -> dict[str, Any]:
             "source": "probe",
         }
 
-    script = _write_probe_script(san)
-    channel = f"{WAIT_PREFIX}-{san}-probe"
-    wait = _start_tmux_wait(channel)
-    r = _targeted_tmux(san, ["send-keys", "-t", "{target}", f"bash {shlex.quote(str(script))}", "Enter"])
-    if r.returncode != 0:
-        return {"error": "tmux send-keys failed", "detail": r.stderr, "session": san, "source": "probe"}
-    if not _wait_proc(wait, 10.0):
-        return {"error": "sudo probe timed out", "session": san, "source": "probe", "attach_command": _attach_command(san)}
-
-    payload = _json_load(_state_dir(san) / "probe.status.json")
-    if not payload:
-        return {"error": "sudo probe status missing", "session": san, "source": "probe"}
-    if payload.get("sudo") == "password_required":
-        r2 = _targeted_tmux(san, ["send-keys", "-t", "{target}", "sudo -v", "Enter"])
-        if r2.returncode != 0:
-            return {"error": "tmux send-keys failed", "detail": r2.stderr, "session": san, "source": "probe"}
-    if payload.get("sudo") == "failed":
-        return {
-            "session": san,
-            "sudo": "failed",
-            "detail": payload.get("detail", ""),
-            "attach_command": _attach_command(san),
-        }
-    return {
-        "session": san,
-        "sudo": payload.get("sudo", "unknown"),
-        "detail": payload.get("detail", ""),
-        "attach_command": _attach_command(san),
-    }
+    return probe_sudo_gate(san)

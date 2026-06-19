@@ -4,4 +4,4 @@ description: Manage tmux terminal mode enable, disable, and status behavior.
 ---
 
 Use this workflow package for tmux terminal mode setup and checks.
-Primary references: `_localsetup/docs/TMUX_TERMINAL_MODE.md` and `_localsetup/tools/tmux_terminal_mode`.
+Primary references: `localsetup://doc/TMUX_TERMINAL_MODE.md` and `localsetup://tool/tmux_terminal_mode`.

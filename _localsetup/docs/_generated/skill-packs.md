@@ -5,7 +5,7 @@ localsetup_provenance:
   emitter: generate-docs
 framework_version: 4.1.3
 source_commit: 5a719cda6264e2f08ac9a3e36e32d3823c8f67d8
-artifact_sha256: 53b2c940026912ac6018561b6f5cac2243f79d5b54bf66e22c896cebecbb215b
+artifact_sha256: 4af28faee4f0a8fe8633db66f171daed1345cfb52f1b9f38d47f6a2a8c5fb0e8
 ---
 # Skill And Workflow Packs
 
@@ -90,7 +90,7 @@ artifact_sha256: 53b2c940026912ac6018561b6f5cac2243f79d5b54bf66e22c896cebecbb215
 | `dev, harness` | `workflow` | `ls-workflow-context-index-refresh` | n/a | n/a | n/a | `n/a` |
 | `dev, publishing` | `workflow` | `ls-workflow-documentation-alignment` | n/a | n/a | n/a | `n/a` |
 | `bootstrap, dev` | `workflow` | `ls-workflow-ops-guarded` | n/a | n/a | n/a | `n/a` |
-| `ops` | `workflow` | `ls-workflow-ops-tmux-session` | n/a | n/a | n/a | `n/a` |
+| `core, ops` | `workflow` | `ls-workflow-ops-tmux-session` | n/a | n/a | n/a | `n/a` |
 | `bootstrap, dev` | `workflow` | `ls-workflow-pipeline-git-repair-hygiene` | n/a | n/a | n/a | `n/a` |
 | `dev` | `workflow` | `ls-workflow-pipeline-pr-feedback-loop` | n/a | n/a | n/a | `n/a` |
 | `publishing` | `workflow` | `ls-workflow-pipeline-pre-publish` | n/a | n/a | n/a | `n/a` |
@@ -103,6 +103,6 @@ artifact_sha256: 53b2c940026912ac6018561b6f5cac2243f79d5b54bf66e22c896cebecbb215
 | `harness` | `workflow` | `ls-workflow-repo-finalizer` | n/a | n/a | n/a | `n/a` |
 | `dev` | `workflow` | `ls-workflow-skills-index-refresh` | n/a | n/a | n/a | `n/a` |
 | `experimental` | `workflow` | `ls-workflow-spec-clarify-reverse` | n/a | n/a | n/a | `n/a` |
-| `ops` | `workflow` | `ls-workflow-tmux-terminal-mode` | n/a | n/a | n/a | `n/a` |
+| `core, ops` | `workflow` | `ls-workflow-tmux-terminal-mode` | n/a | n/a | n/a | `n/a` |
 | `integrations` | `workflow` | `ls-workflow-transport-handoff` | n/a | n/a | n/a | `n/a` |
 | `experimental` | `workflow` | `ls-workflow-umbrella-run` | n/a | n/a | n/a | `n/a` |

@@ -9,6 +9,7 @@ from .paths import expand_user_path, legacy_target_lockfile_path, repo_path, tar
 from .provenance import is_managed_package, package_digest, provenance_report
 from .reference_materializer import validate_materialized_package
 from .registry import load_registry
+from .terminal_mode_health import terminal_mode_health
 from .workflows import validate_workflow_catalog
 
 
@@ -192,13 +193,25 @@ def verify_install(
         issues.append(f"missing global registry: {registry_path}")
     registry = load_registry(registry_path) if registry_path.exists() else {}
     provenance = provenance_report(repo_root, lock=lock, registry=registry, global_root=global_root, adapters=adapters)
+    tmux_terminal_mode = terminal_mode_health(
+        repo_root,
+        home=home,
+        global_root=global_root,
+        lock=lock,
+        adapters=adapters,
+        target_root=attachment_root,
+    )
 
     return {
         "ok": not issues,
         "issues": issues,
+        "warnings": tmux_terminal_mode["warnings"],
         "provenance": provenance,
         "provenance_warnings": provenance["warnings"],
         "provenance_repair_hints": provenance["repair_hints"],
+        "tmux_terminal_mode": tmux_terminal_mode,
+        "tmux_terminal_mode_warnings": tmux_terminal_mode["warnings"],
+        "tmux_terminal_mode_repair_hints": tmux_terminal_mode["repair_hints"],
         "adapters": adapters,
         "level": level,
         "rules": rule_results,

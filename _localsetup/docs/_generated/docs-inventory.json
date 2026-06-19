@@ -80,7 +80,7 @@
     "platforms": 6,
     "public_docs": 6,
     "skills": 72,
-    "workflow_packs": 29,
+    "workflow_packs": 31,
     "workflows": 23
   },
   "docs": [
@@ -3881,7 +3881,7 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "5984955e782afa4fa48aaa5fe1939b1e57621da7e6ed8cf855b9f5af9eaab37f",
+    "artifact_sha256": "eb1e0a76a6466a0c88aed6034929d4eeb26ff7de43ad279dc3fae0e2c5734094",
     "emitter": "docs-align",
     "framework_version": "4.1.3",
     "schema_version": 1,
@@ -4997,6 +4997,7 @@
     {
       "package": "ls-workflow-ops-tmux-session",
       "packs": [
+        "core",
         "ops"
       ],
       "path": "_localsetup/workflows/ls-workflow-ops-tmux-session",
@@ -5103,6 +5104,7 @@
     {
       "package": "ls-workflow-tmux-terminal-mode",
       "packs": [
+        "core",
         "ops"
       ],
       "path": "_localsetup/workflows/ls-workflow-tmux-terminal-mode",

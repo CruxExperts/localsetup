@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from _localsetup.core.tmux_terminal_mode.constants import SENTINEL_BEGIN
+from _localsetup.core.tmux_terminal_mode.constants import AGENT_RULE_BLOCK, SENTINEL_BEGIN
 from _localsetup.core.tmux_terminal_mode.layers import load_json_settings
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -138,3 +138,52 @@ def test_direct_wrapper_help_and_version() -> None:
     version_result = _run("--version")
     assert version_result.returncode == 0
     assert "tmux_terminal_mode 1.0.0" in version_result.stdout
+
+
+def test_status_json_schema_is_read_only(tmp_path: Path) -> None:
+    settings_path = tmp_path / "missing-settings.json"
+    rc_path = tmp_path / "missing-bashrc"
+    rules_path = tmp_path / ".cursor/rules/operator-rules.mdc"
+
+    result = _run(
+        "status",
+        "--json",
+        "--settings-file",
+        str(settings_path),
+        "--shell-rc",
+        str(rc_path),
+        "--rules-file",
+        str(rules_path),
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["mode"] == "none"
+    assert payload["session"] is None
+    assert payload["layers"]["ide"] == {
+        "active": False,
+        "session": None,
+        "settings_path": str(settings_path),
+    }
+    assert payload["layers"]["shell"] == {
+        "active": False,
+        "session": None,
+        "rc_path": str(rc_path),
+    }
+    assert payload["layers"]["rules"] == {
+        "active": False,
+        "current": False,
+        "rules_path": str(rules_path),
+    }
+    assert "present" in payload["layers"]["tmux_ops"]
+    assert not settings_path.exists()
+    assert not rc_path.exists()
+    assert not rules_path.exists()
+
+
+def test_injected_rule_names_both_workflows_and_stop_contract() -> None:
+    assert "ls-workflow-ops-tmux-session" in AGENT_RULE_BLOCK
+    assert "ls-workflow-tmux-terminal-mode" in AGENT_RULE_BLOCK
+    assert '"action_required": true' in AGENT_RULE_BLOCK
+    assert "`sudo -v` in that exact tmux pane" in AGENT_RULE_BLOCK
+    assert "Wait for that reply before probing again" in AGENT_RULE_BLOCK

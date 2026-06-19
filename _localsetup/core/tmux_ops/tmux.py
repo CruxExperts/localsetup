@@ -77,6 +77,14 @@ def _pane_target(session: str) -> tuple[str | None, str | None]:
     return panes[0], None
 
 
+def _pane_tty(session: str) -> tuple[str | None, str | None]:
+    result = _targeted_tmux(session, ["display-message", "-t", "{target}", "-p", "-F", "#{pane_tty}"])
+    if result.returncode != 0:
+        return None, result.stderr or f"tmux display-message exited {result.returncode}"
+    tty = result.stdout.strip()
+    return (tty or None), None
+
+
 def _targeted_tmux(session: str, args: list[str], timeout: float = 5.0) -> TmuxResult:
     pane, err = _pane_target(session)
     if pane is None:

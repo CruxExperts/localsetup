@@ -27,6 +27,7 @@ export REMOTE_TMUX_HOST=sh0t
 ```
 
 The returned `attach_command`, `state_dir`, `log_path`, and `run_id` all refer to the remote host.
+If `probe` or `run` returns `action_required: true`, attach on the remote tmux host with the returned `attach_command`, run `sudo -v` in that exact pane, enter the password, then tell the agent `sudo ready` so it can probe again.
 
 If a run returns `status: "running"`, keep watching by run ID:
 

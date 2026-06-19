@@ -16,6 +16,7 @@ from .provenance import provenance_report
 from .lockfile import load_json
 from .registry import load_registry
 from .skills import validate_skill_catalog
+from .terminal_mode_health import terminal_mode_health
 from .workflows import validate_workflow_catalog
 
 
@@ -154,6 +155,15 @@ def run_doctor(
         global_root=global_root,
         adapters=adapters,
     )
+    tmux_terminal_mode = terminal_mode_health(
+        repo_root,
+        home=home,
+        global_root=global_root,
+        lock=lock,
+        adapters=adapters,
+        target_root=attachment_root,
+    )
+    warnings.extend(tmux_terminal_mode["warnings"])
 
     return {
         "ok": not blockers,
@@ -171,6 +181,9 @@ def run_doctor(
         "provenance": provenance,
         "provenance_warnings": provenance["warnings"],
         "provenance_repair_hints": provenance["repair_hints"],
+        "tmux_terminal_mode": tmux_terminal_mode,
+        "tmux_terminal_mode_warnings": tmux_terminal_mode["warnings"],
+        "tmux_terminal_mode_repair_hints": tmux_terminal_mode["repair_hints"],
         "writable_paths": writable_paths,
         "blockers": blockers,
         "warnings": warnings,

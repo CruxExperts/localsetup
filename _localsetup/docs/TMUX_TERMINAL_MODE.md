@@ -134,10 +134,10 @@ After disabling shell mode: open a new terminal to get a plain shell.
 
 ```
 ./_localsetup/tools/tmux_terminal_mode status [--settings-file PATH]
-    [--shell-rc PATH] [--rules-file PATH]
+    [--shell-rc PATH] [--rules-file PATH] [--json]
 ```
 
-Reports all layers unconditionally regardless of which mode was used at enable time. Example output:
+Reports all layers unconditionally regardless of which mode was used at enable time. Status is read-only: it does not create IDE settings files, shell RC files, rules files, or adapter entries. Example output:
 
 ```
 tmux-default terminal mode status
@@ -150,6 +150,8 @@ tmux-default terminal mode status
 ```
 
 Partial or mixed states (e.g. Layer 1a active but Layer 2 missing) are reported as-is so you can diagnose and re-run enable for the missing layer.
+
+Use `--json` for the stable machine-readable schema used by doctor and verify checks.
 
 ---
 

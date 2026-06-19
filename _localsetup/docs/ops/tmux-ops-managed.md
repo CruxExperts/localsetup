@@ -70,7 +70,7 @@ The session directory is returned as `state_dir` by `pick`. Logs and generated s
    ./_localsetup/tools/tmux_ops probe -t ops
    ```
 
-4. If the probe says `password_required`, type the sudo password in the tmux pane, then have the agent probe again.
+4. If the probe says `password_required` or `action_required: true`, attach with the returned `attach_command`, run `sudo -v` in that exact tmux pane, enter the password, then tell the agent `sudo ready` so it can probe again.
 
 5. Run commands:
 
@@ -100,7 +100,7 @@ Agents should follow this script exactly:
 2. Parse JSON. If it has `error`, report the error and stop.
 3. Show `attach_command` to the user in a copy-paste code block.
 4. Run `./_localsetup/tools/tmux_ops probe -t <session>`.
-5. If `sudo` is `password_required`, ask the user to attach, enter the password, and reply `sudo ready`. Do not run commands yet.
+5. If `action_required` is `true` or `sudo` is `password_required`, tell the user to attach with the returned `attach_command`, run `sudo -v` in that exact tmux pane, enter the password, and reply `sudo ready`. Do not run commands yet.
 6. After `sudo ready`, run `probe` again.
 7. If `sudo` is `failed`, report `detail` and stop.
 8. If `sudo` is `ready`, run exactly one logical command with:
@@ -185,13 +185,13 @@ When `run` returns `status: "running"`:
 
 ## Sudo semantics
 
-`probe` checks `sudo -vn` first.
+`probe` checks `sudo -Nnv` first and falls back to `sudo -vn` only when `-N` is unsupported. It never sends `sudo -v` automatically.
 
 - `ready`: cached sudo credentials are available; continue.
-- `password_required`: the pane starts visible `sudo -v`; the user must enter the password in tmux, then the agent probes again.
+- `password_required`: the user must attach to the returned tmux session, run `sudo -v` in that pane, enter the password, then have the agent probe again.
 - `failed`: sudo is unavailable or denied; report `detail` and stop.
 
-Do not treat a shell prompt as proof of sudo readiness. Trust the `probe` JSON.
+Do not treat a shell prompt as proof of sudo readiness. Trust the `probe` JSON. `tmux_ops run` also checks for a fresh `ready` sudo gate before sending a command and refuses without creating run state when sudo action is required.
 
 ## Remote hosts
 

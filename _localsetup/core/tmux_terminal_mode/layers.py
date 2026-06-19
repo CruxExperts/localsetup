@@ -46,6 +46,14 @@ def detect_settings_file() -> Path | None:
     return None
 
 
+def detect_existing_settings_file() -> Path | None:
+    for candidate in IDE_SETTINGS_CANDIDATES:
+        p = Path(candidate).expanduser()
+        if p.exists():
+            return p
+    return None
+
+
 def load_json_settings(path: Path) -> dict:
     if not path.exists():
         return {}
@@ -236,6 +244,61 @@ def rule_layer_active(rules_path: Path) -> bool:
     return has_sentinel(safe_read(rules_path))
 
 
+def rule_layer_current(rules_path: Path) -> bool:
+    if not rules_path.exists():
+        return False
+    text = safe_read(rules_path)
+    return has_sentinel(text) and AGENT_RULE_BLOCK.strip() in text
+
+
 def tmux_ops_path(tools_dir: Path) -> Path | None:
     p = tools_dir / "tmux_ops"
     return p if p.exists() else None
+
+
+def terminal_mode_status(
+    *,
+    settings_path: Path | None,
+    rc_path: Path,
+    rules_path: Path,
+    tools_dir: Path,
+) -> dict:
+    ide_session = ide_layer_active(settings_path)
+    shell_session = shell_layer_active(rc_path)
+    rule_active = rule_layer_active(rules_path)
+    rule_current = rule_layer_current(rules_path)
+    tmux_ops = tmux_ops_path(tools_dir)
+    if ide_session:
+        detected_mode = "ide"
+        detected_session = ide_session
+    elif shell_session:
+        detected_mode = "shell"
+        detected_session = shell_session
+    else:
+        detected_mode = "none"
+        detected_session = None
+    return {
+        "mode": detected_mode,
+        "session": detected_session,
+        "layers": {
+            "ide": {
+                "active": bool(ide_session),
+                "session": ide_session,
+                "settings_path": str(settings_path) if settings_path else None,
+            },
+            "shell": {
+                "active": bool(shell_session),
+                "session": shell_session,
+                "rc_path": str(rc_path),
+            },
+            "rules": {
+                "active": rule_active,
+                "current": rule_current,
+                "rules_path": str(rules_path),
+            },
+            "tmux_ops": {
+                "present": bool(tmux_ops),
+                "path": str(tmux_ops) if tmux_ops else None,
+            },
+        },
+    }

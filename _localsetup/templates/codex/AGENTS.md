@@ -75,6 +75,7 @@ A large line-count reduction is a review trigger, not a success metric. Any redu
 - ls-script-and-docs-quality: scripts, markdown/docs
 - ls-communication-and-tools: communication, tools, MCP
 - ls-workflow-ops-tmux-session: server commands, deployments, tmux, human-in-the-loop ops
+- ls-workflow-tmux-terminal-mode: enable, disable, and status checks for tmux-default terminal mode
 - ls-automatic-versioning: version bumps, release workflow, conventional commits, versioning docs
 - ls-github-publishing-workflow: publishing to GitHub, public release prep, publishing checklist, repo readiness
 - ls-github-starredrepos: manage a GitHub starred repositories archive named starredrepos; authenticated context checks, dry-run sync, repo scouting, metadata snapshots, and guarded publish workflows

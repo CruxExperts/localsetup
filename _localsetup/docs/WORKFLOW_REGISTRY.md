@@ -8,7 +8,7 @@ localsetup_provenance:
   emitter: generate-docs
 framework_version: 4.1.3
 source_commit: 5a719cda6264e2f08ac9a3e36e32d3823c8f67d8
-artifact_sha256: 6c08a8934f0b4d63775ec4b2ff13e54f48a59154adc49d77ff9dcdabca190170
+artifact_sha256: 3d57384929a2651ade67337f3605c534413d4a91bff94312a92188ac1a410ee4
 ---
 # Workflow and module registry (Localsetup)
 
@@ -47,7 +47,7 @@ For the framework rules, see [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md).
 | `repo-finalizer` | `ls-workflow-repo-finalizer` | Repo Finalizer | Safely inspect repo dirty state and optionally checkpoint allowlisted managed outputs without destructive git operations. | repo finalizer; finalizer harness; finalization checkpoint | `ls-framework-compliance`; `ls-git-workflows` | [HARNESS_AUTOMATION.md](HARNESS_AUTOMATION.md); [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md); `_localsetup/tools/localsetup.py` |
 | `skills-index-refresh` | `ls-workflow-skills-index-refresh` | Skills Index Refresh | Refresh and scrub the public skill index in the required sequence. | refresh skills; scrub index | `ls-skill-discovery` | [SKILL_DISCOVERY.md](SKILL_DISCOVERY.md); [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md) |
 | `spec-clarify-reverse` | `ls-workflow-spec-clarify-reverse` | Reverse Prompt Spec Clarify | Run reverse-prompt spec clarification with one question per turn and bounded choices. | decision tree; reverse prompt | n/a | [DECISION_TREE_WORKFLOW.md](DECISION_TREE_WORKFLOW.md); [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md) |
-| `tmux-terminal-mode` | `ls-workflow-tmux-terminal-mode` | Tmux Terminal Mode | Manage tmux terminal mode enable, disable, and status behavior. | tmux terminal mode; always-on tmux | n/a | [TMUX_TERMINAL_MODE.md](TMUX_TERMINAL_MODE.md); [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md); `_localsetup/tools/tmux_terminal_mode` |
+| `tmux-terminal-mode` | `ls-workflow-tmux-terminal-mode` | Tmux Terminal Mode | Manage tmux terminal mode enable, disable, and status behavior. | tmux terminal mode; always-on tmux | n/a | [TMUX_TERMINAL_MODE.md](TMUX_TERMINAL_MODE.md); [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md); `localsetup://tool/tmux_terminal_mode` |
 | `transport-handoff` | `ls-workflow-transport-handoff` | Transport Handoff | Handle sealed Agent Q handoff payload transport over file_drop or mail adapters. | Agent Q bidirectional | `ls-agentq-transport`; `ls-mail-protocol-control` | [AGENTIC_AGENT_TO_AGENT_PROTOCOL.md](AGENTIC_AGENT_TO_AGENT_PROTOCOL.md); [AGENTIC_AGENT_Q_SCENARIOS.md](AGENTIC_AGENT_Q_SCENARIOS.md); [AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md](AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md); `_localsetup/tools/agentq_transport_client/agentq_cli.py` |
 | `umbrella-run` | `ls-workflow-umbrella-run` | Umbrella Run | Execute a named multi-phase umbrella workflow with explicit pre-human-confirmation gates. | umbrella workflow | n/a | [AGENTIC_UMBRELLA_WORKFLOWS.md](AGENTIC_UMBRELLA_WORKFLOWS.md); [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md) |
 

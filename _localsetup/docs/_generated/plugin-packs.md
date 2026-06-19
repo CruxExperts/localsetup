@@ -5,7 +5,7 @@ localsetup_provenance:
   emitter: generate-docs
 framework_version: 4.1.3
 source_commit: 5a719cda6264e2f08ac9a3e36e32d3823c8f67d8
-artifact_sha256: 080da9dedf26cdbacf8c6b3aa964bc1e61c1f293a2df43d2aa907aeb7c4dedeb
+artifact_sha256: f52b13065083ea9efd443e87e079a6a4e9f734fa76f567e84ce5110036048923
 ---
 # Plugin Packs
 
@@ -14,7 +14,7 @@ Portable plugin pack metadata is generated from `_localsetup/config/plugin-packs
 | Plugin pack | Source pack | Category | Platforms | Skills | Workflows | Context skill |
 |---|---|---|---|---:|---:|---|
 | `localsetup-bootstrap` | `bootstrap` | `bootstrap` | `codex` | 12 | 4 | `ls-plugin-bootstrap-context` |
-| `localsetup-core` | `core` | `core` | `codex` | 9 | 0 | `ls-plugin-core-context` |
+| `localsetup-core` | `core` | `core` | `codex` | 9 | 2 | `ls-plugin-core-context` |
 | `localsetup-dev` | `dev` | `development` | `codex` | 26 | 13 | `ls-plugin-dev-context` |
 | `localsetup-ops` | `ops` | `operations` | `codex` | 6 | 3 | `ls-plugin-ops-context` |
 | `localsetup-integrations` | `integrations` | `integrations` | `codex` | 10 | 1 | `ls-plugin-integrations-context` |

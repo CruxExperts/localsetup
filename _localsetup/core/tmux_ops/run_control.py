@@ -18,6 +18,7 @@ from .state import (
     _status_path,
     _status_payload,
 )
+from .sudo_gate import DEFAULT_GATE_FRESHNESS_SECONDS, ensure_ready_gate, sudo_blocked_payload
 from .tmux import _start_tmux_wait, _targeted_tmux, _wait_proc
 
 
@@ -104,6 +105,14 @@ def cmd_run(target: str, command: str, timeout: float, tail_lines: int) -> dict[
             "source": "run",
         }
 
+    gate = ensure_ready_gate(san, freshness=DEFAULT_GATE_FRESHNESS_SECONDS)
+    if gate.get("sudo") != "ready" or gate.get("gate_state") != "ready":
+        return {
+            "error": "sudo gate not ready",
+            **gate,
+            "source": "run",
+        }
+
     run_id = f"{int(time.time())}-{uuid.uuid4().hex[:10]}"
     started_at = time.time()
     script_path, log_path = _write_run_script(san, run_id, command, started_at)
@@ -167,7 +176,12 @@ def cmd_status(target: str, run_id: str | None, wait: bool, timeout: float, tail
     active = _live_active(san)
     rid = run_id or (str(active.get("run_id")) if active else None)
     if rid is None:
-        return {"session": san, "status": "idle", "attach_command": _attach_command(san), "tail": ""}
+        status = {"session": san, "status": "idle", "attach_command": _attach_command(san), "tail": ""}
+        blocked = sudo_blocked_payload(san)
+        if blocked:
+            status.update(blocked)
+            status["status"] = "idle"
+        return status
     status = _status_payload(san, rid, tail_lines)
     if wait and status.get("status") == "running":
         proc = _start_tmux_wait(_run_channel(san, rid))
@@ -175,6 +189,23 @@ def cmd_status(target: str, run_id: str | None, wait: bool, timeout: float, tail
         status = _status_payload(san, rid, tail_lines)
         if status.get("status") == "running":
             status["elapsed_s"] = round(time.time() - float(status.get("started_at", time.time())), 3)
+    blocked = sudo_blocked_payload(san)
+    if blocked:
+        status.update(
+            {
+                "action_required": True,
+                "sudo": blocked.get("sudo"),
+                "gate_state": blocked.get("gate_state"),
+                "user_command": blocked.get("user_command"),
+                "attach_command": blocked.get("attach_command", status.get("attach_command")),
+                "next_probe_command": blocked.get("next_probe_command"),
+                "pane_id": blocked.get("pane_id"),
+                "pane_tty": blocked.get("pane_tty"),
+                "checked_at": blocked.get("checked_at"),
+                "probe_command": blocked.get("probe_command"),
+                "detail": blocked.get("detail", status.get("detail", "")),
+            }
+        )
     return status
 
 
