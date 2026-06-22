@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: d48378259d19131d24100222cfdf96d2aaab568262d2238640a5967fc8d91dbc
+  source_provenance_hash: 327b393c45fa0d5b651e5f3b6a69f906c62492f66fc014ba03bb88591e14b19f
   emitter: generate-docs
-framework_version: 4.1.6
-source_commit: 906996e8e12375820915d9fb3b1eea22f91483d2
-artifact_sha256: 833a6bed2c83ebd17fc546facd48354e266e4ed96208ae675c59d6d5bb6b93ad
+framework_version: 4.2.0
+source_commit: efaa62ce439542c72cabe8cdf712b8c5b7694426
+artifact_sha256: 5ac0ac0df5adc9f9e340476884202ca2ddd577b276f1902782d6b4b443c6ae57
 ---
 # Implementation File Map
 
@@ -620,6 +620,10 @@ artifact_sha256: 833a6bed2c83ebd17fc546facd48354e266e4ed96208ae675c59d6d5bb6b93a
 | `keep` | `_localsetup/skills/ls-omniroute-admin-automation/scripts/lib/omniroute_admin/validate.py` |
 | `keep` | `_localsetup/skills/ls-omniroute-admin-automation/scripts/omniroute_admin.py` |
 | `keep` | `_localsetup/skills/ls-omniroute-admin-automation/scripts/tests/test_omniroute_admin.py` |
+| `keep` | `_localsetup/skills/ls-omniroute-codex/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-omniroute-context/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-omniroute-integrations/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-omniroute-observability/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-omniroute-proxy/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-omniroute-proxy/references/model-equivalence.yaml` |
 | `keep` | `_localsetup/skills/ls-omniroute-proxy/references/omniroute-endpoints.md` |
@@ -629,6 +633,8 @@ artifact_sha256: 833a6bed2c83ebd17fc546facd48354e266e4ed96208ae675c59d6d5bb6b93a
 | `keep` | `_localsetup/skills/ls-omniroute-update/references/update-workflow.md` |
 | `keep` | `_localsetup/skills/ls-omniroute-update/scripts/omniroute_update.py` |
 | `keep` | `_localsetup/skills/ls-omniroute/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-omniroute/references/upstream-skill-coverage.md` |
+| `keep` | `_localsetup/skills/ls-omniroute/scripts/omniroute_api.py` |
 | `keep` | `_localsetup/skills/ls-pr-reviewer/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-pr-reviewer/scripts/pr_review.py` |
 | `keep` | `_localsetup/skills/ls-pr-reviewer/scripts/pr_review_analysis.py` |
@@ -784,6 +790,8 @@ artifact_sha256: 833a6bed2c83ebd17fc546facd48354e266e4ed96208ae675c59d6d5bb6b93a
 | `keep` | `_localsetup/tests/test_ls_kilo_boss_orchestrator_runner.py` |
 | `keep` | `_localsetup/tests/test_ls_linux_patcher_patch_cli.py` |
 | `keep` | `_localsetup/tests/test_manifests.py` |
+| `keep` | `_localsetup/tests/test_omniroute_api_cli.py` |
+| `keep` | `_localsetup/tests/test_omniroute_proxy_preflight.py` |
 | `keep` | `_localsetup/tests/test_omniroute_update.py` |
 | `keep` | `_localsetup/tests/test_path_contract.py` |
 | `keep` | `_localsetup/tests/test_plugin_packs.py` |

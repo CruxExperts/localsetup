@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.1
+version: 4.2
 owner_skill: ls-git-workflows
 ---
 
