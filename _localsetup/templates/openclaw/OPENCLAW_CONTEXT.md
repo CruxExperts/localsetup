@@ -80,9 +80,14 @@ Load when task matches:
 - ls-mail-protocol-control  - SMTP/IMAP; preencrypted_openpgp_armored for Agent Q strict mail; agent-driven mailbox read/send/mutate/encrypt workflows
 - ls-docs-organization  - docs organization router; classify docs, pick folder slugs, and keep docs indexes up to date.
 - ls-scrapling  - host-first Scrapling integration; install and upgrade Scrapling via pipx, run adaptive single-URL extractions (simple HTML/Markdown/text or structured JSONL) with job status/cancel, and keep adapters aligned with Scrapling releases via parsed CLI/docs state. Treat this as the default way to fetch websites and web content from the internet.
-- ls-omniroute-proxy  - OmniRoute proxy discovery, model catalogs, provider metadata, limits, quotas, routing combos, MCP/A2A integration, and agent client configuration.
+- ls-omniroute  - Main OmniRoute router for issue triage, env/API-key preflight, access compatibility checks, and choosing the focused OmniRoute skill.
+- ls-omniroute-proxy  - OmniRoute runtime discovery, model catalogs, provider metadata, limits, quotas, routing combos, MCP/A2A discovery, and agent client configuration.
 - ls-omniroute-admin-automation  - OmniRoute administration automation for providers, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, and drift reconciliation.
-- ls-omniroute-update  - OmniRoute update reporting for upstream skill discovery, Localsetup comparison, provenance metadata, and report-first import/update/removal planning.
+- ls-omniroute-observability  - OmniRoute health, usage, quota, cost, policy, audit, resilience, and evaluation diagnostics.
+- ls-omniroute-context  - OmniRoute context engineering, compression, memory, cache, RTK, and Qdrant configuration workflows.
+- ls-omniroute-integrations  - OmniRoute MCP, A2A, CLI tools, plugins, skills, tunnels, webhooks, and external integration diagnostics.
+- ls-omniroute-codex  - OmniRoute Codex CLI onboarding, setup/launch guidance, profile files, and `wire_api = "responses"` configuration.
+- ls-omniroute-update  - OmniRoute update reporting for upstream skill discovery, Localsetup coverage comparison, provenance metadata, and report-first maintenance planning.
 - ls-kilo-boss-orchestrator  - Kilo headless boss-worker orchestration with repo-local state, watchdog leases, consensus validation, and safety gates.
 - ls-kilo-visual-output  - Kilo CLI visual output organization guide with structured response patterns.
 - ls-nodejs-nextjs  - Node.js/Next.js/React runbook for package-manager, build, migration, debugging, testing, security, deployment, and current-version verification.

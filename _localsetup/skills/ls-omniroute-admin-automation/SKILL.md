@@ -61,6 +61,10 @@ Use this skill when a task requires any of the following:
 
 ## Core workflows
 
+0. Preflight credentials and access before any admin workflow:
+   - `python3 scripts/omniroute_admin.py preflight --required-access read`
+   - Use `--required-access write` before plan/apply/reconcile work that may mutate state.
+   - Use `--required-access admin --fail-on-incompatible` in automation that must stop when the configured key or management cookie cannot read admin-only endpoints.
 1. Snapshot live state:
    - `python3 scripts/omniroute_admin.py snapshot --out state/live.json`
 2. Plan changes from desired manifest:
@@ -113,8 +117,16 @@ Recommended loop for unattended maintenance:
 - Validate scripts:
   - `python3 scripts/omniroute_admin.py validate --desired manifests/example.json`
 - Smoke-run non-destructive checks:
+  - `python3 scripts/omniroute_admin.py preflight --required-access read`
   - `python3 scripts/omniroute_admin.py health`
   - `python3 scripts/omniroute_admin.py snapshot --out /tmp/omniroute-live.json`
+
+## Env and access handling
+
+- Admin tooling reads secrets only from environment variables named by `--api-key-env` and `--management-cookie-env`.
+- Use `ls-omniroute-proxy` preflight with `--print-env-commands` when the user needs durable user-level registration for `OMNIROUTE_BASE_URL` and `OMNIROUTE_API_KEY`.
+- `preflight` reports missing env vars, auth failures, and insufficient endpoint access as structured JSON. It does not print key values.
+- `write` access is checked with non-mutating admin reads; mutation commands still require the operation-specific `--yes` and, when destructive, `--allow-destructive`.
 
 ## References
 

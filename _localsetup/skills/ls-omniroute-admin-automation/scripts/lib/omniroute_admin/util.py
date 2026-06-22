@@ -24,6 +24,12 @@ SENSITIVE_KEY_TOKENS = {
     "private_key",
 }
 REDACTED = "***REDACTED***"
+ENV_NAME_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*\Z")
+SAFE_ENV_KEYS = {
+    "api_key_env",
+    "base_url_env",
+    "management_cookie_env",
+}
 
 
 def now_iso() -> str:
@@ -141,8 +147,16 @@ def redact_payload(value: Any) -> Any:
         redacted: dict[str, Any] = {}
         for key, item in value.items():
             key_text = str(key).lower().replace("-", "_")
-            if any(token in key_text for token in SENSITIVE_KEY_TOKENS):
+            if key_text in SAFE_ENV_KEYS and isinstance(item, str) and ENV_NAME_RE.fullmatch(item):
+                redacted[str(key)] = redact_payload(item)
+            elif any(token in key_text for token in SENSITIVE_KEY_TOKENS):
                 redacted[str(key)] = REDACTED
+            elif key_text.endswith("_env"):
+                redacted[str(key)] = (
+                    redact_payload(item)
+                    if isinstance(item, str) and ENV_NAME_RE.fullmatch(item)
+                    else REDACTED
+                )
             else:
                 redacted[str(key)] = redact_payload(item)
         return redacted

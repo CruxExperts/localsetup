@@ -34,6 +34,16 @@ Use this skill when the task involves OmniRoute, an OmniRoute proxy, AI gateway 
 - If the environment sets `HTTP_PROXY`, `HTTPS_PROXY`, or `NO_PROXY`, `requests` applies those proxy settings to the probe.
 - The probe accepts only `http` or `https` base URLs and rejects URLs with embedded credentials.
 
+## Current v3.8.32 notes
+
+- The verified source for this wave is OmniRoute `v3.8.32` at commit `bfaf459f3c15e5260a6284eee5e9824f22a8e00d`.
+- The upstream skill inventory contains 43 `skills/*/SKILL.md` files. Some upstream docs still say 42; treat the actual inventory as authoritative.
+- CLI setup distinguishes persistent profile writers such as `omniroute setup-codex` from launchers such as `omniroute launch-codex`, which inject runtime config without permanently editing profiles.
+- For Codex configuration through OmniRoute, prefer `wire_api = "responses"` and do not rely on `model_max_output_tokens` as an effective Codex setting when active upstream guidance says Codex ignores it.
+- `/v1/models` may include richer model catalog metadata and can be affected by permissions, provider visibility, and server configuration.
+- Compression settings are unified under management settings and can be changed through admin endpoints; treat those as mutations.
+- Memory and Qdrant are opt-in. Qdrant settings can include host, port, collection, API key, embedding model, vector size, and quantization fields; never print Qdrant credentials.
+
 ## Base URL
 
 - Use the user-provided URL if one is given.
@@ -45,12 +55,39 @@ Use this skill when the task involves OmniRoute, an OmniRoute proxy, AI gateway 
 
 ## Discovery workflow
 
-1. Establish reachability with `GET /api/monitoring/health`. If that fails or is unavailable, try `GET /v1/models`.
-2. Query `GET /api/models/catalog` first for rich model metadata.
-3. Fall back to `GET /v1/models`, `GET /v1beta/models`, and `GET /api/tags` when catalog data is missing or unavailable.
-4. Query `GET /.well-known/agent.json` to inspect A2A capability advertising.
-5. Query MCP tools only when MCP is configured in the host and the OmniRoute MCP server is available.
-6. Keep per-endpoint status. A failed optional endpoint should not invalidate successful results from other read-only endpoints.
+1. Run the preflight check before normal discovery:
+   - `python3 scripts/omniroute_discover.py --preflight --required-access runtime --markdown`
+   - Use `--required-access read`, `write`, or `admin` when the requested task needs management endpoints.
+   - Use `--print-env-commands` when `OMNIROUTE_BASE_URL` or the API-key env var is missing and the user needs durable user-level registration commands.
+   - Use `--fail-on-incompatible` in automation when the calling workflow should stop on missing env vars, invalid keys, or insufficient endpoint access.
+2. Establish reachability with `GET /api/monitoring/health`. If that fails or is unavailable, try `GET /v1/models`.
+3. Query `GET /api/models/catalog` first for rich model metadata.
+4. Fall back to `GET /v1/models`, `GET /v1beta/models`, and `GET /api/tags` when catalog data is missing or unavailable.
+5. Query `GET /.well-known/agent.json` to inspect A2A capability advertising.
+6. Query MCP tools only when MCP is configured in the host and the OmniRoute MCP server is available.
+7. Keep per-endpoint status. A failed optional endpoint should not invalidate successful results from other read-only endpoints.
+
+## Environment and access preflight
+
+The bundled probe can help users register missing OmniRoute env vars and verify that the configured API key is compatible with the intended task:
+
+```bash
+python3 scripts/omniroute_discover.py \
+  --base-url http://localhost:20128 \
+  --api-key-env OMNIROUTE_API_KEY \
+  --preflight \
+  --required-access read \
+  --print-env-commands \
+  --markdown
+```
+
+Preflight rules:
+
+- It reads key material only from the named environment variable and never prints the value.
+- It emits copy-ready durable user-level setup commands for `~/.config/environment.d/omniroute.conf` and `~/.profile` when requested.
+- It warns that existing shells, tmux sessions, GUI apps, and running agent CLIs must be relaunched before they inherit newly registered environment variables.
+- It checks access with non-mutating GET endpoints. `write` means admin-compatible read access was confirmed; actual writes still require explicit user approval and mutation-specific safety flags.
+- It reports `access_ok: false` instead of throwing when credentials are absent, invalid, or insufficient, so calling tooling can show a repair path.
 
 ## Model evaluation workflow
 
@@ -110,4 +147,4 @@ If MCP is available, prefer purpose-built tools for quota and cost summaries, su
 
 - Endpoint cheat sheet: `references/omniroute-endpoints.md`.
 - Opaque-route model-equivalence advisory (closest-reference guidance only, not exact model parity): `references/model-equivalence.yaml`.
-- Read-only local probe: `scripts/omniroute_discover.py`. It reads credentials from an environment variable, probes safe endpoints with `requests`, and emits JSON or Markdown with per-endpoint status, failure reason, and repair hints.
+- Read-only local probe: `scripts/omniroute_discover.py`. It reads credentials from an environment variable, performs env/access preflight, probes safe endpoints with `requests`, and emits JSON or Markdown with per-endpoint status, failure reason, and repair hints.

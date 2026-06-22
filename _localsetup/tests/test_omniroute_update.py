@@ -71,15 +71,21 @@ extensions:
 def test_upstream_to_local_name_mapping() -> None:
     converter = load_converter()
 
-    assert converter.upstream_to_local_name("omniroute") == "ls-omniroute"
-    assert converter.upstream_to_local_name("omniroute-chat") == "ls-omniroute-chat"
+    assert converter.upstream_to_local_name("cli-chat") == "ls-cli-chat"
+    assert converter.upstream_to_local_name("omni-auth") == "ls-omni-auth"
+
+
+def test_default_ref_is_pinned_to_validated_release_commit() -> None:
+    converter = load_converter()
+
+    assert converter.DEFAULT_REF == "bfaf459f3c15e5260a6284eee5e9824f22a8e00d"
 
 
 def test_reads_upstream_skill_manifests_from_local_fixture(tmp_path: Path) -> None:
     converter = load_converter()
     source = tmp_path / "OmniRoute"
     write_skill(source / "skills" / "omniroute", "omniroute")
-    write_skill(source / "skills" / "omniroute-chat", "omniroute-chat")
+    write_skill(source / "skills" / "cli-chat", "cli-chat")
 
     skills, metadata = converter.read_upstream_skills(
         source_path=source,
@@ -88,8 +94,8 @@ def test_reads_upstream_skill_manifests_from_local_fixture(tmp_path: Path) -> No
         timeout=5,
     )
 
-    assert [skill.name for skill in skills] == ["omniroute", "omniroute-chat"]
-    assert skills[0].path == "skills/omniroute/SKILL.md"
+    assert [skill.name for skill in skills] == ["cli-chat", "omniroute"]
+    assert skills[0].path == "skills/cli-chat/SKILL.md"
     assert len(skills[0].sha256) == 64
     assert metadata["skills_root"].endswith("OmniRoute/skills")
 
@@ -98,11 +104,11 @@ def test_reads_local_frontmatter_omniroute_extension(tmp_path: Path) -> None:
     converter = load_converter()
     repo = make_local_repo(tmp_path)
     write_skill(
-        repo / "_localsetup" / "skills" / "ls-omniroute-chat",
-        "ls-omniroute-chat",
+        repo / "_localsetup" / "skills" / "ls-cli-chat",
+        "ls-cli-chat",
         extensions={
             "omniroute": {
-                "source_skill": "omniroute-chat",
+                "source_skill": "cli-chat",
                 "source_sha256": "abc",
                 "source_commit": "def",
             }
@@ -111,8 +117,8 @@ def test_reads_local_frontmatter_omniroute_extension(tmp_path: Path) -> None:
 
     [local] = converter.read_local_skills(repo)
 
-    assert local.name == "ls-omniroute-chat"
-    assert local.omniroute["source_skill"] == "omniroute-chat"
+    assert local.name == "ls-cli-chat"
+    assert local.omniroute["source_skill"] == "cli-chat"
 
 
 def test_classifies_missing_current_stale_local_only_and_untracked(tmp_path: Path) -> None:
@@ -120,30 +126,30 @@ def test_classifies_missing_current_stale_local_only_and_untracked(tmp_path: Pat
     current_hash = "a" * 64
     stale_hash = "b" * 64
     upstream = [
-        converter.UpstreamSkill("omniroute", "skills/omniroute/SKILL.md", current_hash, "commit1", "2026-05-24T00:00:00Z"),
-        converter.UpstreamSkill("omniroute-chat", "skills/omniroute-chat/SKILL.md", current_hash, None, None),
-        converter.UpstreamSkill("omniroute-tools", "skills/omniroute-tools/SKILL.md", stale_hash, "commit2", "2026-05-24T00:00:00Z"),
+        converter.UpstreamSkill("cli-a2a", "skills/cli-a2a/SKILL.md", current_hash, "commit1", "2026-05-24T00:00:00Z"),
+        converter.UpstreamSkill("cli-chat", "skills/cli-chat/SKILL.md", current_hash, None, None),
+        converter.UpstreamSkill("cli-tools", "skills/cli-tools/SKILL.md", stale_hash, "commit2", "2026-05-24T00:00:00Z"),
     ]
     local = [
         converter.LocalSkill(
-            "ls-omniroute-chat",
-            "_localsetup/skills/ls-omniroute-chat/SKILL.md",
+            "ls-cli-chat",
+            "_localsetup/skills/ls-cli-chat/SKILL.md",
             {},
-            {"source_skill": "omniroute-chat", "source_sha256": current_hash},
+            {"source_skill": "cli-chat", "source_sha256": current_hash},
             ["omniroute"],
         ),
         converter.LocalSkill(
-            "ls-omniroute-tools",
+            "ls-cli-tools",
             "_localsetup/skills/ls-omniroute-tools/SKILL.md",
             {},
-            {"source_skill": "omniroute-tools", "source_sha256": "c" * 64, "source_commit": "commit1"},
+            {"source_skill": "cli-tools", "source_sha256": "c" * 64, "source_commit": "commit1"},
             ["omniroute"],
         ),
         converter.LocalSkill(
-            "ls-omniroute-removed",
+            "ls-cli-removed",
             "_localsetup/skills/ls-omniroute-removed/SKILL.md",
             {},
-            {"source_skill": "omniroute-removed", "source_sha256": "d" * 64},
+            {"source_skill": "cli-removed", "source_sha256": "d" * 64},
             ["omniroute"],
         ),
         converter.LocalSkill("ls-omniroute-proxy", "_localsetup/skills/ls-omniroute-proxy/SKILL.md", {}, {}, ["omniroute"]),
@@ -152,11 +158,42 @@ def test_classifies_missing_current_stale_local_only_and_untracked(tmp_path: Pat
     rows = converter.classify(upstream, local)
     statuses = {(row.status, row.upstream_skill, row.local_skill) for row in rows}
 
-    assert ("missing-local", "omniroute", None) in statuses
-    assert ("current", "omniroute-chat", "ls-omniroute-chat") in statuses
-    assert ("stale-local", "omniroute-tools", "ls-omniroute-tools") in statuses
-    assert ("local-only", "omniroute-removed", "ls-omniroute-removed") in statuses
+    assert ("missing-local", "cli-a2a", None) in statuses
+    assert ("current", "cli-chat", "ls-cli-chat") in statuses
+    assert ("stale-local", "cli-tools", "ls-cli-tools") in statuses
+    assert ("local-only", "cli-removed", "ls-cli-removed") in statuses
     assert ("untracked-local", None, "ls-omniroute-proxy") in statuses
+
+
+def test_classifies_consolidated_native_coverage() -> None:
+    converter = load_converter()
+    current_hash = "a" * 64
+    upstream = [
+        converter.UpstreamSkill("cli-chat", "skills/cli-chat/SKILL.md", current_hash, "commit1", "2026-06-21T00:00:00Z"),
+        converter.UpstreamSkill("omni-cache", "skills/omni-cache/SKILL.md", current_hash, "commit1", "2026-06-21T00:00:00Z"),
+    ]
+    local = [
+        converter.LocalSkill(
+            "ls-omniroute-proxy",
+            "_localsetup/skills/ls-omniroute-proxy/SKILL.md",
+            {},
+            {"source_kind": "localsetup-native", "local_role": "proxy-discovery"},
+            ["omniroute"],
+        ),
+        converter.LocalSkill(
+            "ls-omniroute-context",
+            "_localsetup/skills/ls-omniroute-context/SKILL.md",
+            {},
+            {"source_kind": "localsetup-native", "local_role": "context-compression"},
+            ["omniroute"],
+        ),
+    ]
+
+    rows = converter.classify(upstream, local)
+    statuses = {(row.status, row.upstream_skill, row.local_skill) for row in rows}
+
+    assert ("covered-native", "cli-chat", "ls-omniroute-proxy") in statuses
+    assert ("covered-native", "omni-cache", "ls-omniroute-context") in statuses
 
 
 def test_classifies_localsetup_native_omniroute_skills() -> None:
@@ -208,9 +245,10 @@ def test_json_and_markdown_report_output(tmp_path: Path) -> None:
 def test_freshness_summary_defaults_to_converted_skill_blockers_only() -> None:
     converter = load_converter()
     rows = [
-        converter.ReportRow("missing-local", "omniroute", None, "ls-omniroute", "skills/omniroute/SKILL.md", "missing"),
+        converter.ReportRow("missing-local", "cli-a2a", None, "ls-cli-a2a", "skills/cli-a2a/SKILL.md", "missing"),
         converter.ReportRow("untracked-local", None, "ls-omniroute-proxy", None, None, "untracked"),
-        converter.ReportRow("current", "omniroute-chat", "ls-omniroute-chat", "ls-omniroute-chat", "skills/omniroute-chat/SKILL.md", "ok"),
+        converter.ReportRow("covered-native", "omni-cache", "ls-omniroute-context", "ls-omniroute-context", "skills/omni-cache/SKILL.md", "covered"),
+        converter.ReportRow("current", "cli-chat", "ls-cli-chat", "ls-cli-chat", "skills/cli-chat/SKILL.md", "ok"),
     ]
 
     summary = converter.freshness_summary(rows)
@@ -222,7 +260,7 @@ def test_freshness_summary_defaults_to_converted_skill_blockers_only() -> None:
 def test_freshness_summary_can_require_full_and_strict_validation() -> None:
     converter = load_converter()
     rows = [
-        converter.ReportRow("missing-local", "omniroute", None, "ls-omniroute", "skills/omniroute/SKILL.md", "missing"),
+        converter.ReportRow("missing-local", "cli-a2a", None, "ls-cli-a2a", "skills/cli-a2a/SKILL.md", "missing"),
         converter.ReportRow("untracked-local", None, "ls-omniroute-proxy", None, None, "untracked"),
     ]
 

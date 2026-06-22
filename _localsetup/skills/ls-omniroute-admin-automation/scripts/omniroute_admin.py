@@ -55,6 +55,24 @@ from lib.omniroute_admin.util import (
 )
 from lib.omniroute_admin.validate import validate_desired_manifest
 
+ACCESS_TARGETS = {
+    "runtime": {"openai_models": "/v1/models"},
+    "read": {
+        "health": "/api/monitoring/health",
+        "model_catalog": "/api/models/catalog",
+    },
+    "write": {
+        "health": "/api/monitoring/health",
+        "model_catalog": "/api/models/catalog",
+        "settings_read": "/api/settings",
+    },
+    "admin": {
+        "health": "/api/monitoring/health",
+        "keys_read": "/api/keys",
+        "settings_read": "/api/settings",
+    },
+}
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -92,6 +110,22 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     sub = parser.add_subparsers(dest="command", required=True)
+
+    preflight = sub.add_parser(
+        "preflight",
+        help="Check env presence and non-mutating access compatibility",
+    )
+    preflight.add_argument(
+        "--required-access",
+        choices=["runtime", "read", "write", "admin"],
+        default="read",
+        help="Access level needed by the intended operation",
+    )
+    preflight.add_argument(
+        "--fail-on-incompatible",
+        action="store_true",
+        help="Return exit code 1 when access is not compatible",
+    )
 
     sub.add_parser("health", help="Check OmniRoute health endpoint")
 
@@ -245,6 +279,44 @@ def build_client(args: argparse.Namespace) -> OmniRouteAdminClient:
 def command_health(client: OmniRouteAdminClient) -> int:
     result = client.health()
     print_json(result)
+    return 0
+
+
+def command_preflight(
+    client: OmniRouteAdminClient, args: argparse.Namespace
+) -> int:
+    targets = ACCESS_TARGETS[args.required_access]
+    checks: dict[str, Any] = {}
+    for name, path in targets.items():
+        try:
+            client.get(path)
+            checks[name] = {"ok": True, "path": path}
+        except RuntimeError as exc:
+            checks[name] = {"ok": False, "path": path, "error": str(exc)}
+    env = {
+        "base_url": args.base_url,
+        "base_url_env_set": bool(os.environ.get("OMNIROUTE_BASE_URL")),
+        "api_key_env": args.api_key_env,
+        "api_key_env_set": bool(load_text_env(args.api_key_env)),
+        "management_cookie_env": args.management_cookie_env,
+        "management_cookie_env_set": bool(load_text_env(args.management_cookie_env)),
+    }
+    failed = [name for name, check in checks.items() if not check.get("ok")]
+    report = {
+        "ok": bool(env["api_key_env_set"] or env["management_cookie_env_set"])
+        and not failed,
+        "required_access": args.required_access,
+        "env": env,
+        "checks": checks,
+        "notes": [
+            "Preflight uses non-mutating GET endpoints only.",
+            "Write access is checked as admin-compatible read access; actual mutations still require explicit operation approval and safety flags.",
+            "If env vars were just registered, relaunch terminals, tmux sessions, GUI apps, and agent CLIs before retrying.",
+        ],
+    }
+    print_json(report)
+    if args.fail_on_incompatible and not report["ok"]:
+        return 1
     return 0
 
 
@@ -448,6 +520,8 @@ def main() -> int:
 
         client = build_client(args)
 
+        if args.command == "preflight":
+            return command_preflight(client, args)
         if args.command == "health":
             return command_health(client)
         if args.command == "provider":

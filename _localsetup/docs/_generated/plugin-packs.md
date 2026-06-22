@@ -5,7 +5,7 @@ localsetup_provenance:
   emitter: generate-docs
 framework_version: 4.1.6
 source_commit: 906996e8e12375820915d9fb3b1eea22f91483d2
-artifact_sha256: f52b13065083ea9efd443e87e079a6a4e9f734fa76f567e84ce5110036048923
+artifact_sha256: 06139fb096845e3d857f34b68f9e796315726172ec7d0d24317d3e3c55099d84
 ---
 # Plugin Packs
 
@@ -17,7 +17,7 @@ Portable plugin pack metadata is generated from `_localsetup/config/plugin-packs
 | `localsetup-core` | `core` | `core` | `codex` | 9 | 2 | `ls-plugin-core-context` |
 | `localsetup-dev` | `dev` | `development` | `codex` | 26 | 13 | `ls-plugin-dev-context` |
 | `localsetup-ops` | `ops` | `operations` | `codex` | 6 | 3 | `ls-plugin-ops-context` |
-| `localsetup-integrations` | `integrations` | `integrations` | `codex` | 10 | 1 | `ls-plugin-integrations-context` |
+| `localsetup-integrations` | `integrations` | `integrations` | `codex` | 11 | 1 | `ls-plugin-integrations-context` |
 | `localsetup-publishing` | `publishing` | `publishing` | `codex` | 10 | 2 | `ls-plugin-publishing-context` |
 | `localsetup-harness` | `harness` | `harness` | `codex` | 5 | 3 | `ls-plugin-harness-context` |
 | `localsetup-experimental` | `experimental` | `experimental` | `codex` | 10 | 3 | `ls-plugin-experimental-context` |

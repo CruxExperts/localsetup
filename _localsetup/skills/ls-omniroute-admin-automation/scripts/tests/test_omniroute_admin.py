@@ -109,6 +109,19 @@ def test_client_rejects_invalid_base_url():
         pass
 
 
+def test_client_rejects_base_url_with_embedded_credentials():
+    client_mod = _load_module(CLIENT_PATH, "client_mod_userinfo")
+    try:
+        client_mod.OmniRouteAdminClient(
+            base_url="http://user:secret@localhost:20128",
+            api_key=None,
+            management_cookie=None,
+        )
+        assert False, "expected ValueError"
+    except ValueError as exc:
+        assert "credentials" in str(exc)
+
+
 def test_url_path_segment_encoder_validates_and_encodes_ids():
     util_mod = _load_module(UTIL_PATH, "util_mod_url")
     assert util_mod.encode_path_segment("provider/a b?c") == "provider%2Fa%20b%3Fc"
@@ -196,6 +209,36 @@ def test_cli_help_runs():
     assert "OmniRoute administration automation CLI" in result.stdout
 
 
+def test_admin_preflight_reports_incompatible_access(monkeypatch, capsys):
+    admin_mod = _load_module(SCRIPT, "admin_mod_preflight")
+
+    class DummyClient:
+        def get(self, path):
+            raise RuntimeError(f"HTTP 403 on GET {path}: forbidden")
+
+    args = type(
+        "Args",
+        (),
+        {
+            "required_access": "admin",
+            "base_url": "http://localhost:20128",
+            "api_key_env": "OMNIROUTE_API_KEY",
+            "management_cookie_env": "OMNIROUTE_MGMT_COOKIE",
+            "fail_on_incompatible": True,
+        },
+    )()
+    monkeypatch.delenv("OMNIROUTE_API_KEY", raising=False)
+    monkeypatch.delenv("OMNIROUTE_MGMT_COOKIE", raising=False)
+
+    exit_code = admin_mod.command_preflight(DummyClient(), args)
+    output = capsys.readouterr().out
+
+    assert exit_code == 1
+    assert '"ok": false' in output
+    assert "OMNIROUTE_API_KEY" in output
+    assert "forbidden" in output
+
+
 def test_redact_payload_masks_sensitive_values():
     util_mod = _load_module(UTIL_PATH, "util_mod")
     payload = {
@@ -209,6 +252,23 @@ def test_redact_payload_masks_sensitive_values():
     assert redacted["Authorization"] == "***REDACTED***"
     assert redacted["nested"]["token"] == "***REDACTED***"
     assert redacted["normal"] == "ok"
+
+
+def test_redact_payload_preserves_only_safe_env_names():
+    util_mod = _load_module(UTIL_PATH, "util_mod_env")
+    payload = {
+        "api_key_env": "OMNIROUTE_API_KEY",
+        "custom_env": "CUSTOM_ENV",
+        "token_env": "OMNIROUTE_TOKEN",
+        "cookie_env": "OMNIROUTE_COOKIE",
+        "bad_env": "not a valid env value",
+    }
+    redacted = util_mod.redact_payload(payload)
+    assert redacted["api_key_env"] == "OMNIROUTE_API_KEY"
+    assert redacted["custom_env"] == "CUSTOM_ENV"
+    assert redacted["token_env"] == "***REDACTED***"
+    assert redacted["cookie_env"] == "***REDACTED***"
+    assert redacted["bad_env"] == "***REDACTED***"
 
 
 def test_redact_string_masks_embedded_patterns():

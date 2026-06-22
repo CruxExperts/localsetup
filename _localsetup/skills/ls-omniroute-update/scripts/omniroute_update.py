@@ -29,8 +29,53 @@ except ImportError as exc:  # pragma: no cover - environment guidance
 
 
 DEFAULT_SOURCE_REPO = "https://github.com/diegosouzapw/OmniRoute.git"
-DEFAULT_REF = "main"
+DEFAULT_REF = "bfaf459f3c15e5260a6284eee5e9824f22a8e00d"
 CONVERTER_VERSION = "1.0"
+NATIVE_COVERAGE: dict[str, list[str]] = {
+    "cli-a2a": ["ls-omniroute-integrations"],
+    "cli-backup-sync": ["ls-omniroute-admin-automation"],
+    "cli-batches": ["ls-omniroute-proxy"],
+    "cli-chat": ["ls-omniroute-proxy"],
+    "cli-compression": ["ls-omniroute-context"],
+    "cli-contexts": ["ls-omniroute-context"],
+    "cli-cost-usage": ["ls-omniroute-observability"],
+    "cli-eval": ["ls-omniroute-observability"],
+    "cli-health": ["ls-omniroute-observability"],
+    "cli-keys": ["ls-omniroute-admin-automation"],
+    "cli-mcp": ["ls-omniroute-integrations"],
+    "cli-models": ["ls-omniroute-proxy"],
+    "cli-plugins-skills": ["ls-omniroute-integrations"],
+    "cli-policy-audit": ["ls-omniroute-observability"],
+    "cli-providers": ["ls-omniroute-admin-automation"],
+    "cli-resilience": ["ls-omniroute-observability"],
+    "cli-routing": ["ls-omniroute-proxy"],
+    "cli-serve": ["ls-omniroute-codex"],
+    "cli-setup": ["ls-omniroute-codex"],
+    "cli-tunnel": ["ls-omniroute-integrations"],
+    "config-codex-cli": ["ls-omniroute-codex"],
+    "omni-agents-a2a": ["ls-omniroute-integrations"],
+    "omni-api-keys": ["ls-omniroute-admin-automation"],
+    "omni-auth": ["ls-omniroute-admin-automation"],
+    "omni-budget": ["ls-omniroute-observability"],
+    "omni-cache": ["ls-omniroute-context"],
+    "omni-cli-tools": ["ls-omniroute-integrations"],
+    "omni-combos-routing": ["ls-omniroute-proxy"],
+    "omni-compression": ["ls-omniroute-context"],
+    "omni-context-rtk": ["ls-omniroute-context"],
+    "omni-db-backups": ["ls-omniroute-admin-automation"],
+    "omni-inference": ["ls-omniroute-proxy"],
+    "omni-mcp": ["ls-omniroute-integrations"],
+    "omni-models": ["ls-omniroute-proxy"],
+    "omni-providers": ["ls-omniroute-admin-automation"],
+    "omni-proxies": ["ls-omniroute-admin-automation"],
+    "omni-resilience": ["ls-omniroute-observability"],
+    "omni-settings": ["ls-omniroute-admin-automation"],
+    "omni-sync-cloud": ["ls-omniroute-admin-automation"],
+    "omni-tunnels": ["ls-omniroute-integrations"],
+    "omni-usage-logs": ["ls-omniroute-observability"],
+    "omni-version-manager": ["ls-omniroute-admin-automation", "ls-omniroute-codex"],
+    "omni-webhooks": ["ls-omniroute-integrations"],
+}
 
 
 class ConverterError(RuntimeError):
@@ -66,8 +111,6 @@ class ReportRow:
 
 
 def upstream_to_local_name(upstream_name: str) -> str:
-    if upstream_name == "omniroute":
-        return "ls-omniroute"
     return f"ls-{upstream_name}"
 
 
@@ -244,6 +287,7 @@ def _is_local_native(local: LocalSkill) -> bool:
 def classify(upstream: list[UpstreamSkill], local: list[LocalSkill]) -> list[ReportRow]:
     upstream_by_name = {row.name: row for row in upstream}
     local_by_source: dict[str, LocalSkill] = {}
+    local_by_name = {row.name: row for row in local}
     rows: list[ReportRow] = []
 
     for item in local:
@@ -255,6 +299,23 @@ def classify(upstream: list[UpstreamSkill], local: list[LocalSkill]) -> list[Rep
         local_item = local_by_source.get(source.name)
         intended = upstream_to_local_name(source.name)
         if local_item is None:
+            coverage = [
+                skill_name
+                for skill_name in NATIVE_COVERAGE.get(source.name, [])
+                if skill_name in local_by_name and _is_local_native(local_by_name[skill_name])
+            ]
+            if coverage:
+                rows.append(
+                    ReportRow(
+                        status="covered-native",
+                        upstream_skill=source.name,
+                        local_skill=", ".join(coverage),
+                        intended_local=", ".join(coverage),
+                        source_path=source.path,
+                        detail="covered by consolidated Localsetup-native OmniRoute skill",
+                    )
+                )
+                continue
             rows.append(
                 ReportRow(
                     status="missing-local",
@@ -329,9 +390,10 @@ def classify(upstream: list[UpstreamSkill], local: list[LocalSkill]) -> list[Rep
         "missing-local": 0,
         "stale-local": 1,
         "current": 2,
-        "local-only": 3,
-        "untracked-local": 4,
-        "local-native": 5,
+        "covered-native": 3,
+        "local-only": 4,
+        "untracked-local": 5,
+        "local-native": 6,
     }
     return sorted(rows, key=lambda row: (order.get(row.status, 99), row.upstream_skill or "", row.local_skill or ""))
 

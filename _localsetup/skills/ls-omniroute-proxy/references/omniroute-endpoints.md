@@ -4,6 +4,14 @@ This is a compact endpoint map for discovery and diagnosis. Schemas may vary by 
 
 The bundled probe at `scripts/omniroute_discover.py` requires Python 3.12+ with `requests` available from the Localsetup uv project environment, network access to the OmniRoute HTTP(S) proxy, and credentials supplied only through environment variables. Host `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` settings are honored by `requests`.
 
+Use preflight before discovery or automation:
+
+```bash
+python3 scripts/omniroute_discover.py --preflight --required-access read --print-env-commands --markdown
+```
+
+The preflight path checks whether `OMNIROUTE_BASE_URL` and the named API-key env var are present, emits durable user-level registration commands when requested, and probes non-mutating endpoints to verify the key is compatible with `runtime`, `read`, `write`, or `admin` needs. `write` is checked as admin-compatible read access; actual mutations still require explicit approval.
+
 ## Discovery and health
 
 | Endpoint | Method | Use |

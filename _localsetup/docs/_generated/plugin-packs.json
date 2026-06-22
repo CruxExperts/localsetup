@@ -146,6 +146,7 @@
         "codex"
       ],
       "skills": [
+        "ls-omniroute",
         "ls-agentq-transport",
         "ls-cloudflare-dns",
         "ls-github-starredrepos",
@@ -243,7 +244,7 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/plugin-packs.json",
-    "artifact_sha256": "b2e3d7eb116bf3ef791472940c51db0f291c46054e9f44528545475b286b0d78",
+    "artifact_sha256": "a322c4ca73659fcbecbb5eb74417514aeef4c6667158a49fb660a319ced93701",
     "emitter": "generate-docs",
     "framework_version": "4.1.6",
     "schema_version": 1,

@@ -1,563 +1,603 @@
 pack_id: localsetup
 namespace: ls
 version: 3
-
 global:
   home: ~/.local/share/localsetup
   package_root: ~/.local/share/localsetup/packages
   registry: ~/.local/share/localsetup/registry.json
-
 repo:
   lockfile: .localsetup/lock.json
-
 alias_policy:
   mode: metadata_only
   legacy_prefix: localsetup-
   new_prefix: ls-
-
 optional_packs:
-  - bootstrap
-  - core
-  - dev
-  - ops
-  - integrations
-  - omniroute
-  - publishing
-  - harness
-  - experimental
-
+- bootstrap
+- core
+- dev
+- ops
+- integrations
+- omniroute
+- publishing
+- harness
+- experimental
 packs:
   bootstrap:
-    - ls-context
-    - ls-communication-and-tools
-    - ls-docs-organization
-    - ls-framework-compliance
-    - ls-git-workflows
-    - ls-pr-reviewer
-    - ls-safety-and-backup
-    - ls-script-and-docs-quality
-    - ls-task-skill-matcher
-    - ls-test-runner
+  - ls-context
+  - ls-communication-and-tools
+  - ls-docs-organization
+  - ls-framework-compliance
+  - ls-git-workflows
+  - ls-pr-reviewer
+  - ls-safety-and-backup
+  - ls-script-and-docs-quality
+  - ls-task-skill-matcher
+  - ls-test-runner
   core:
-    - ls-context
-    - ls-context-index
-    - ls-communication-and-tools
-    - ls-localsetup-doctor
-    - ls-script-and-docs-quality
-    - ls-safety-and-backup
-    - ls-task-skill-matcher
-    - ls-test-runner
-    - ls-tdd-guide
+  - ls-context
+  - ls-context-index
+  - ls-communication-and-tools
+  - ls-localsetup-doctor
+  - ls-script-and-docs-quality
+  - ls-safety-and-backup
+  - ls-task-skill-matcher
+  - ls-test-runner
+  - ls-tdd-guide
   dev:
-    - ls-agentlens
-    - ls-context-index
-    - ls-debug-pro
-    - ls-documentation-alignment
-    - ls-docs-organization
-    - ls-framework-audit
-    - ls-framework-compliance
-    - ls-git-workflows
-    - ls-markdown-reference-validator
-    - ls-nodejs-nextjs
-    - ls-receiving-code-review
-    - ls-shadcn-ui
-    - ls-typescript-code-quality
-    - ls-unfuck-my-git-state
+  - ls-agentlens
+  - ls-context-index
+  - ls-debug-pro
+  - ls-documentation-alignment
+  - ls-docs-organization
+  - ls-framework-audit
+  - ls-framework-compliance
+  - ls-git-workflows
+  - ls-markdown-reference-validator
+  - ls-nodejs-nextjs
+  - ls-receiving-code-review
+  - ls-shadcn-ui
+  - ls-typescript-code-quality
+  - ls-unfuck-my-git-state
   ops:
-    - ls-ansible-skill
-    - ls-backlog-and-reminders
-    - ls-cron-orchestrator
-    - ls-linux-patcher
-    - ls-linux-service-triage
-    - ls-system-info
+  - ls-ansible-skill
+  - ls-backlog-and-reminders
+  - ls-cron-orchestrator
+  - ls-linux-patcher
+  - ls-linux-service-triage
+  - ls-system-info
   harness:
-    - ls-codex-heartbeat
-    - ls-cron-orchestrator
+  - ls-codex-heartbeat
+  - ls-cron-orchestrator
   integrations:
-    - ls-agentq-transport
-    - ls-cloudflare-dns
-    - ls-github-starredrepos
-    - ls-keepass-secrets
-    - ls-mail-protocol-control
-    - ls-mcp-builder
-    - ls-npm-management
-    - ls-omniroute-admin-automation
-    - ls-omniroute-proxy
-    - ls-scrapling
+  - ls-agentq-transport
+  - ls-cloudflare-dns
+  - ls-github-starredrepos
+  - ls-keepass-secrets
+  - ls-mail-protocol-control
+  - ls-mcp-builder
+  - ls-npm-management
+  - ls-omniroute
+  - ls-omniroute-admin-automation
+  - ls-omniroute-proxy
+  - ls-scrapling
   omniroute:
-    - ls-omniroute
-    - ls-omniroute-a2a
-    - ls-omniroute-chat
-    - ls-omniroute-cli
-    - ls-omniroute-cli-admin
-    - ls-omniroute-cli-cloud
-    - ls-omniroute-cli-eval
-    - ls-omniroute-cli-providers
-    - ls-omniroute-compression
-    - ls-omniroute-embeddings
-    - ls-omniroute-image
-    - ls-omniroute-mcp
-    - ls-omniroute-monitoring
-    - ls-omniroute-routing
-    - ls-omniroute-stt
-    - ls-omniroute-tts
-    - ls-omniroute-web-fetch
-    - ls-omniroute-web-search
-    - ls-omniroute-update
-    - ls-omniroute-proxy
-    - ls-omniroute-admin-automation
+  - ls-omniroute
+  - ls-omniroute-proxy
+  - ls-omniroute-admin-automation
+  - ls-omniroute-observability
+  - ls-omniroute-context
+  - ls-omniroute-integrations
+  - ls-omniroute-codex
+  - ls-omniroute-update
   publishing:
-    - ls-automatic-versioning
-    - ls-documentation-alignment
-    - ls-github-publishing-workflow
-    - ls-pr-reviewer
-    - ls-public-repo-identity
+  - ls-automatic-versioning
+  - ls-documentation-alignment
+  - ls-github-publishing-workflow
+  - ls-pr-reviewer
+  - ls-public-repo-identity
   experimental:
-    - ls-arbiter
-    - ls-humanizer
-    - ls-kilo-boss-orchestrator
-    - ls-kilo-visual-output
-    - ls-skill-creator
-    - ls-skill-discovery
-    - ls-skill-importer
-    - ls-skill-normalizer
-    - ls-skill-sandbox-tester
-    - ls-skill-vetter
-
+  - ls-arbiter
+  - ls-humanizer
+  - ls-kilo-boss-orchestrator
+  - ls-kilo-visual-output
+  - ls-skill-creator
+  - ls-skill-discovery
+  - ls-skill-importer
+  - ls-skill-normalizer
+  - ls-skill-sandbox-tester
+  - ls-skill-vetter
 workflow_packs:
   bootstrap:
-    - ls-workflow-audit-framework
-    - ls-workflow-ops-guarded
-    - ls-workflow-pipeline-git-repair-hygiene
-    - ls-workflow-pipeline-repo-convert
+  - ls-workflow-audit-framework
+  - ls-workflow-ops-guarded
+  - ls-workflow-pipeline-git-repair-hygiene
+  - ls-workflow-pipeline-repo-convert
   core:
-    - ls-workflow-ops-tmux-session
-    - ls-workflow-tmux-terminal-mode
+  - ls-workflow-ops-tmux-session
+  - ls-workflow-tmux-terminal-mode
   dev:
-    - ls-workflow-audit-framework
-    - ls-workflow-audit-markdown-references
-    - ls-workflow-context-index-query
-    - ls-workflow-context-index-refresh
-    - ls-workflow-documentation-alignment
-    - ls-workflow-ops-guarded
-    - ls-workflow-planning-critic-loop
-    - ls-workflow-pipeline-git-repair-hygiene
-    - ls-workflow-pipeline-pr-feedback-loop
-    - ls-workflow-pipeline-repo-convert
-    - ls-workflow-pipeline-repo-polish
-    - ls-workflow-pipeline-skill-onboard
-    - ls-workflow-skills-index-refresh
+  - ls-workflow-audit-framework
+  - ls-workflow-audit-markdown-references
+  - ls-workflow-context-index-query
+  - ls-workflow-context-index-refresh
+  - ls-workflow-documentation-alignment
+  - ls-workflow-ops-guarded
+  - ls-workflow-planning-critic-loop
+  - ls-workflow-pipeline-git-repair-hygiene
+  - ls-workflow-pipeline-pr-feedback-loop
+  - ls-workflow-pipeline-repo-convert
+  - ls-workflow-pipeline-repo-polish
+  - ls-workflow-pipeline-skill-onboard
+  - ls-workflow-skills-index-refresh
   ops:
-    - ls-workflow-ops-tmux-session
-    - ls-workflow-pipeline-server-triage-patch
-    - ls-workflow-tmux-terminal-mode
+  - ls-workflow-ops-tmux-session
+  - ls-workflow-pipeline-server-triage-patch
+  - ls-workflow-tmux-terminal-mode
   integrations:
-    - ls-workflow-transport-handoff
+  - ls-workflow-transport-handoff
   omniroute: []
   publishing:
-    - ls-workflow-documentation-alignment
-    - ls-workflow-pipeline-pre-publish
+  - ls-workflow-documentation-alignment
+  - ls-workflow-pipeline-pre-publish
   harness:
-    - ls-workflow-codex-heartbeat
-    - ls-workflow-context-index-refresh
-    - ls-workflow-repo-finalizer
+  - ls-workflow-codex-heartbeat
+  - ls-workflow-context-index-refresh
+  - ls-workflow-repo-finalizer
   experimental:
-    - ls-workflow-queue-batch-implement
-    - ls-workflow-spec-clarify-reverse
-    - ls-workflow-umbrella-run
-
+  - ls-workflow-queue-batch-implement
+  - ls-workflow-spec-clarify-reverse
+  - ls-workflow-umbrella-run
 extensions:
   skill_taxonomy:
     ls-context:
       class: core
       sort_priority: 10
-      tags: [context, bootstrap]
+      tags:
+      - context
+      - bootstrap
       owner_scope: skill
     ls-context-index:
       class: core
       sort_priority: 10
-      tags: [context, index]
+      tags:
+      - context
+      - index
       owner_scope: skill
     ls-communication-and-tools:
       class: core
       sort_priority: 10
-      tags: [communication, tools]
+      tags:
+      - communication
+      - tools
       owner_scope: skill
     ls-safety-and-backup:
       class: core
       sort_priority: 10
-      tags: [safety, backup]
+      tags:
+      - safety
+      - backup
       owner_scope: skill
     ls-script-and-docs-quality:
       class: core
       sort_priority: 10
-      tags: [scripts, docs]
+      tags:
+      - scripts
+      - docs
       owner_scope: skill
     ls-task-skill-matcher:
       class: core
       sort_priority: 10
-      tags: [routing, skills]
+      tags:
+      - routing
+      - skills
       owner_scope: skill
     ls-test-runner:
       class: core
       sort_priority: 10
-      tags: [testing, validation]
+      tags:
+      - testing
+      - validation
       owner_scope: skill
     ls-automatic-versioning:
       class: framework-governance
       sort_priority: 20
-      tags: [versioning, release]
+      tags:
+      - versioning
+      - release
       owner_scope: skill
     ls-docs-organization:
       class: framework-governance
       sort_priority: 20
-      tags: [docs, organization]
+      tags:
+      - docs
+      - organization
       owner_scope: skill
     ls-documentation-alignment:
       class: framework-governance
       sort_priority: 20
-      tags: [docs, alignment]
+      tags:
+      - docs
+      - alignment
       owner_scope: skill
     ls-framework-audit:
       class: framework-governance
       sort_priority: 20
-      tags: [audit, release]
+      tags:
+      - audit
+      - release
       owner_scope: skill
     ls-framework-compliance:
       class: framework-governance
       sort_priority: 20
-      tags: [compliance, framework]
+      tags:
+      - compliance
+      - framework
       owner_scope: skill
     ls-git-workflows:
       class: framework-governance
       sort_priority: 20
-      tags: [git, workflows]
+      tags:
+      - git
+      - workflows
       owner_scope: skill
     ls-localsetup-doctor:
       class: framework-governance
       sort_priority: 20
-      tags: [doctor, repair]
+      tags:
+      - doctor
+      - repair
       owner_scope: skill
     ls-github-publishing-workflow:
       class: framework-governance
       sort_priority: 20
-      tags: [github, publishing]
+      tags:
+      - github
+      - publishing
       owner_scope: skill
     ls-markdown-reference-validator:
       class: framework-governance
       sort_priority: 20
-      tags: [markdown, references]
+      tags:
+      - markdown
+      - references
       owner_scope: skill
     ls-public-repo-identity:
       class: framework-governance
       sort_priority: 20
-      tags: [identity, publishing]
+      tags:
+      - identity
+      - publishing
       owner_scope: skill
     ls-receiving-code-review:
       class: framework-governance
       sort_priority: 20
-      tags: [review, feedback]
+      tags:
+      - review
+      - feedback
       owner_scope: skill
     ls-unfuck-my-git-state:
       class: framework-governance
       sort_priority: 20
-      tags: [git, recovery]
+      tags:
+      - git
+      - recovery
       owner_scope: skill
     ls-agentlens:
       class: development
       sort_priority: 30
-      tags: [codebase, navigation]
+      tags:
+      - codebase
+      - navigation
       owner_scope: skill
     ls-debug-pro:
       class: development
       sort_priority: 30
-      tags: [debugging, diagnostics]
+      tags:
+      - debugging
+      - diagnostics
       owner_scope: skill
     ls-nodejs-nextjs:
       class: development
       sort_priority: 30
-      tags: [nodejs, nextjs]
+      tags:
+      - nodejs
+      - nextjs
       owner_scope: skill
     ls-pr-reviewer:
       class: development
       sort_priority: 30
-      tags: [review, pull-requests]
+      tags:
+      - review
+      - pull-requests
       owner_scope: skill
     ls-shadcn-ui:
       class: development
       sort_priority: 30
-      tags: [react, ui]
+      tags:
+      - react
+      - ui
       owner_scope: skill
     ls-tdd-guide:
       class: development
       sort_priority: 30
-      tags: [tdd, testing]
+      tags:
+      - tdd
+      - testing
       owner_scope: skill
     ls-typescript-code-quality:
       class: development
       sort_priority: 30
-      tags: [typescript, quality]
+      tags:
+      - typescript
+      - quality
       owner_scope: skill
     ls-ansible-skill:
       class: operations
       sort_priority: 40
-      tags: [ansible, infrastructure]
+      tags:
+      - ansible
+      - infrastructure
       owner_scope: skill
     ls-backlog-and-reminders:
       class: operations
       sort_priority: 40
-      tags: [backlog, reminders]
+      tags:
+      - backlog
+      - reminders
       owner_scope: skill
     ls-codex-heartbeat:
       class: operations
       sort_priority: 40
-      tags: [heartbeat, automation]
+      tags:
+      - heartbeat
+      - automation
       owner_scope: skill
     ls-cron-orchestrator:
       class: operations
       sort_priority: 40
-      tags: [cron, scheduling]
+      tags:
+      - cron
+      - scheduling
       owner_scope: skill
     ls-linux-patcher:
       class: operations
       sort_priority: 40
-      tags: [linux, patching]
+      tags:
+      - linux
+      - patching
       owner_scope: skill
     ls-linux-service-triage:
       class: operations
       sort_priority: 40
-      tags: [linux, services]
+      tags:
+      - linux
+      - services
       owner_scope: skill
     ls-system-info:
       class: operations
       sort_priority: 40
-      tags: [system, diagnostics]
+      tags:
+      - system
+      - diagnostics
       owner_scope: skill
     ls-agentq-transport:
       class: integrations
       sort_priority: 50
-      tags: [agentq, transport]
+      tags:
+      - agentq
+      - transport
       owner_scope: skill
     ls-cloudflare-dns:
       class: integrations
       sort_priority: 50
-      tags: [cloudflare, dns]
+      tags:
+      - cloudflare
+      - dns
       owner_scope: skill
     ls-github-starredrepos:
       class: integrations
       sort_priority: 50
-      tags: [github, archive]
+      tags:
+      - github
+      - archive
       owner_scope: skill
     ls-keepass-secrets:
       class: integrations
       sort_priority: 50
-      tags: [keepass, secrets]
+      tags:
+      - keepass
+      - secrets
       owner_scope: skill
     ls-mail-protocol-control:
       class: integrations
       sort_priority: 50
-      tags: [mail, protocols]
+      tags:
+      - mail
+      - protocols
       owner_scope: skill
     ls-mcp-builder:
       class: integrations
       sort_priority: 50
-      tags: [mcp, builder]
+      tags:
+      - mcp
+      - builder
       owner_scope: skill
     ls-npm-management:
       class: integrations
       sort_priority: 50
-      tags: [nginx-proxy-manager, api]
-      owner_scope: skill
-    ls-omniroute:
-      class: integrations
-      sort_priority: 50
-      tags: [omniroute, gateway]
-      owner_scope: skill
-    ls-omniroute-a2a:
-      class: integrations
-      sort_priority: 50
-      tags: [omniroute, a2a, json-rpc]
+      tags:
+      - nginx-proxy-manager
+      - api
       owner_scope: skill
     ls-omniroute-admin-automation:
       class: integrations
       sort_priority: 50
-      tags: [omniroute, admin]
-      owner_scope: skill
-    ls-omniroute-chat:
-      class: integrations
-      sort_priority: 50
-      tags: [omniroute, chat, llm]
-      owner_scope: skill
-    ls-omniroute-cli:
-      class: integrations
-      sort_priority: 50
-      tags: [omniroute, cli]
-      owner_scope: skill
-    ls-omniroute-cli-admin:
-      class: integrations
-      sort_priority: 50
-      tags: [omniroute, cli, admin]
-      owner_scope: skill
-    ls-omniroute-cli-cloud:
-      class: integrations
-      sort_priority: 50
-      tags: [omniroute, cli, cloud-agents]
-      owner_scope: skill
-    ls-omniroute-cli-eval:
-      class: integrations
-      sort_priority: 50
-      tags: [omniroute, cli, evals]
-      owner_scope: skill
-    ls-omniroute-cli-providers:
-      class: integrations
-      sort_priority: 50
-      tags: [omniroute, cli, providers]
-      owner_scope: skill
-    ls-omniroute-compression:
-      class: integrations
-      sort_priority: 50
-      tags: [omniroute, compression, tokens]
-      owner_scope: skill
-    ls-omniroute-embeddings:
-      class: integrations
-      sort_priority: 50
-      tags: [omniroute, embeddings, rag]
-      owner_scope: skill
-    ls-omniroute-image:
-      class: integrations
-      sort_priority: 50
-      tags: [omniroute, image]
-      owner_scope: skill
-    ls-omniroute-mcp:
-      class: integrations
-      sort_priority: 50
-      tags: [omniroute, mcp]
-      owner_scope: skill
-    ls-omniroute-monitoring:
-      class: integrations
-      sort_priority: 50
-      tags: [omniroute, monitoring, health]
+      tags:
+      - omniroute
+      - admin
+      - automation
       owner_scope: skill
     ls-omniroute-update:
       class: integrations
       sort_priority: 50
-      tags: [omniroute, update]
+      tags:
+      - omniroute
+      - update
+      - provenance
       owner_scope: skill
     ls-omniroute-proxy:
       class: integrations
       sort_priority: 50
-      tags: [omniroute, proxy]
-      owner_scope: skill
-    ls-omniroute-routing:
-      class: integrations
-      sort_priority: 50
-      tags: [omniroute, routing, combos]
-      owner_scope: skill
-    ls-omniroute-stt:
-      class: integrations
-      sort_priority: 50
-      tags: [omniroute, stt, audio]
-      owner_scope: skill
-    ls-omniroute-tts:
-      class: integrations
-      sort_priority: 50
-      tags: [omniroute, tts, audio]
-      owner_scope: skill
-    ls-omniroute-web-fetch:
-      class: integrations
-      sort_priority: 50
-      tags: [omniroute, web-fetch, fetch]
-      owner_scope: skill
-    ls-omniroute-web-search:
-      class: integrations
-      sort_priority: 50
-      tags: [omniroute, web-search, search]
+      tags:
+      - omniroute
+      - proxy
+      - runtime
       owner_scope: skill
     ls-scrapling:
       class: integrations
       sort_priority: 50
-      tags: [scrapling, extraction]
+      tags:
+      - scrapling
+      - extraction
       owner_scope: skill
     ls-skill-creator:
       class: skill-lifecycle
       sort_priority: 60
-      tags: [skills, authoring]
+      tags:
+      - skills
+      - authoring
       owner_scope: skill
     ls-skill-discovery:
       class: skill-lifecycle
       sort_priority: 60
-      tags: [skills, discovery]
+      tags:
+      - skills
+      - discovery
       owner_scope: skill
     ls-skill-importer:
       class: skill-lifecycle
       sort_priority: 60
-      tags: [skills, import]
+      tags:
+      - skills
+      - import
       owner_scope: skill
     ls-skill-normalizer:
       class: skill-lifecycle
       sort_priority: 60
-      tags: [skills, normalization]
+      tags:
+      - skills
+      - normalization
       owner_scope: skill
     ls-skill-sandbox-tester:
       class: skill-lifecycle
       sort_priority: 60
-      tags: [skills, sandbox]
+      tags:
+      - skills
+      - sandbox
       owner_scope: skill
     ls-skill-vetter:
       class: skill-lifecycle
       sort_priority: 60
-      tags: [skills, security]
+      tags:
+      - skills
+      - security
       owner_scope: skill
     ls-arbiter:
       class: specialized
       sort_priority: 70
-      tags: [arbiter, review]
+      tags:
+      - arbiter
+      - review
       owner_scope: skill
     ls-humanizer:
       class: specialized
       sort_priority: 70
-      tags: [writing, editing]
+      tags:
+      - writing
+      - editing
       owner_scope: skill
     ls-kilo-boss-orchestrator:
       class: specialized
       sort_priority: 70
-      tags: [kilo, orchestration]
+      tags:
+      - kilo
+      - orchestration
       owner_scope: skill
     ls-kilo-visual-output:
       class: specialized
       sort_priority: 70
-      tags: [kilo, output]
+      tags:
+      - kilo
+      - output
       owner_scope: skill
-
+    ls-omniroute:
+      class: integrations
+      sort_priority: 45
+      tags:
+      - omniroute
+      - main
+      - router
+      owner_scope: skill
+    ls-omniroute-observability:
+      class: integrations
+      sort_priority: 50
+      tags:
+      - omniroute
+      - observability
+      owner_scope: skill
+    ls-omniroute-context:
+      class: integrations
+      sort_priority: 50
+      tags:
+      - omniroute
+      - context
+      - compression
+      owner_scope: skill
+    ls-omniroute-integrations:
+      class: integrations
+      sort_priority: 50
+      tags:
+      - omniroute
+      - mcp
+      - a2a
+      - integrations
+      owner_scope: skill
+    ls-omniroute-codex:
+      class: integrations
+      sort_priority: 50
+      tags:
+      - omniroute
+      - codex
+      - onboarding
+      owner_scope: skill
 distribution_channels:
-  - git
-  - shell_installer
-  - python_cli
-
+- git
+- shell_installer
+- python_cli
 public_private:
   public_paths:
-    - VERSION
-    - pyproject.toml
-    - uv.lock
-    - README.md
-    - AGENTS.md
-    - assets
-    - config/localsetup_finalizer.yaml
-    - install
-    - .github
-    - _localsetup
+  - VERSION
+  - pyproject.toml
+  - uv.lock
+  - README.md
+  - AGENTS.md
+  - assets
+  - config/localsetup_finalizer.yaml
+  - install
+  - .github
+  - _localsetup
   private_paths:
-    - .github/workflows/qc-autofix.yml
-    - .github/workflows/qc-ci.yml
-    - .github/workflows/qc-docs-drift.yml
-    - .github/workflows/qc-patrol.yml
-    - .github/workflows/qc-pr-review.yml
-    - .github/workflows/qc-release.yml
-    - scripts
-    - docs
-    - .localsetup-maint
-    - _localsetup/.cache
-    - _localsetup/docs/local-context
-    - _localsetup/logs
-    - _internal_docs
-    - state
+  - .github/workflows/qc-autofix.yml
+  - .github/workflows/qc-ci.yml
+  - .github/workflows/qc-docs-drift.yml
+  - .github/workflows/qc-patrol.yml
+  - .github/workflows/qc-pr-review.yml
+  - .github/workflows/qc-release.yml
+  - scripts
+  - docs
+  - .localsetup-maint
+  - _localsetup/.cache
+  - _localsetup/docs/local-context
+  - _localsetup/logs
+  - _internal_docs
+  - state

@@ -5,12 +5,14 @@
 - Runtime (`/v1/*`) credentials can differ from management (`/api/*`) credentials.
 - Use dedicated management token/cookie for admin calls.
 - Do not assume a runtime key can mutate admin resources.
+- Run `python3 scripts/omniroute_admin.py preflight --required-access <runtime|read|write|admin>` before automation. The check uses non-mutating GET endpoints and reports missing env vars, invalid credentials, or insufficient access as structured JSON.
 
 ## Secret handling
 
 - Pull secrets from env vars only.
 - Never print raw tokens.
 - Do not store secrets in manifests, logs, or git history.
+- If required env vars are missing, use `ls-omniroute-proxy` preflight with `--print-env-commands` to emit durable user-level registration commands, then relaunch shells, tmux sessions, GUI apps, and agent CLIs.
 
 ## Mutation safety
 

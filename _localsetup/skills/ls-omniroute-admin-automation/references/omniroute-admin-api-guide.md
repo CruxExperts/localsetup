@@ -1,16 +1,16 @@
 # OmniRoute Administration API Guide
 
 ---
-title: "OmniRoute current framework.6.9 Administration API Guide"
+title: "OmniRoute v3.8.32 Administration API Guide"
 category: reference
 status: ACTIVE
-last_updated: "2026-04-22"
+last_updated: "2026-06-21"
 tags: [omniroute, api, administration, proxy, routing, budget, resilience, automation]
 ---
 
 ## 1. Overview
 
-OmniRoute is an open-source AI gateway written in TypeScript/Next.js that presents a single OpenAI-compatible `/v1/*` endpoint and routes traffic across many providers. Version `3.6.9` includes routing combos, fallback chains, quota tracking, resilience controls, cloud sync, and rich management APIs.
+OmniRoute is an open-source AI gateway written in TypeScript/Next.js that presents OpenAI-compatible `/v1/*` endpoints and routes traffic across many providers. Version `3.8.32` includes routing combos, fallback chains, quota tracking, resilience controls, cloud sync, compression settings, optional memory/Qdrant support, and rich management APIs.
 
 This guide focuses on full administration through `/api/*` endpoints.
 
@@ -31,6 +31,7 @@ Important behavior:
 - Use environment variables only.
 - Never embed secrets in files, scripts, or commit history.
 - Rotate keys through `/api/keys` workflows.
+- Run `python3 scripts/omniroute_admin.py preflight --required-access read` before admin automation. Use `write` or `admin` for workflows that need stronger endpoint access.
 
 ## 3. Endpoint Inventory (high-level)
 

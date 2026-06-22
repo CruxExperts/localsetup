@@ -52,6 +52,18 @@
 | POST | /api/resilience/reset | mgmt |
 | GET/POST | /api/usage/budget | mgmt |
 
+## Settings, compression, and memory
+
+| Method | Path | Auth |
+|---|---|---|
+| GET/PUT | /api/settings | mgmt |
+| GET/PUT | /api/settings/compression | mgmt |
+| GET/PUT | /api/settings/qdrant | mgmt |
+| GET | /api/settings/qdrant/health | mgmt |
+| POST | /api/settings/qdrant/search | mgmt |
+| POST | /api/settings/qdrant/cleanup | mgmt |
+| GET | /api/settings/qdrant/embedding-models | mgmt |
+
 ## Backup and sync
 
 | Method | Path | Auth |

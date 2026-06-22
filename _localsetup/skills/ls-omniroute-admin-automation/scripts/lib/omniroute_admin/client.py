@@ -27,6 +27,9 @@ class OmniRouteAdminClient:
         base = (base_url or "").strip().rstrip("/")
         if not base.startswith(("http://", "https://")):
             raise ValueError("base_url must start with http:// or https://")
+        parsed_base = urlsplit(base)
+        if parsed_base.username or parsed_base.password:
+            raise ValueError("base_url must not include credentials")
         if timeout <= 0 or timeout > 120:
             raise ValueError("timeout must be > 0 and <= 120")
         if retries < 0 or retries > 10:

@@ -15,6 +15,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
+import shlex
 import sys
 import time
 import urllib.parse
@@ -36,6 +38,14 @@ import requests  # noqa: E402
 DEFAULT_BASE_URL = "http://localhost:20128"
 MAX_BODY_BYTES = 2_000_000
 MAX_TEXT = 500
+REDACTED = "***REDACTED***"
+SECRET_PATTERNS = (
+    (r"sk-[A-Za-z0-9._-]+", REDACTED),
+    (r"Bearer\s+[A-Za-z0-9._:-]+", f"Bearer {REDACTED}"),
+    (r"(api[_-]?key\s*[=:]\s*)([^\s,;]+)", rf"\1{REDACTED}"),
+    (r"(token\s*[=:]\s*)([^\s,;]+)", rf"\1{REDACTED}"),
+    (r"(authorization\s*[=:]\s*)([^\s,;]+)", rf"\1{REDACTED}"),
+)
 
 
 @dataclass(frozen=True)
@@ -55,15 +65,40 @@ TARGETS = [
     ProbeTarget("telemetry_summary", "/api/telemetry/summary"),
 ]
 
+ACCESS_TARGETS = {
+    "runtime": [ProbeTarget("openai_models", "/v1/models")],
+    "read": [
+        ProbeTarget("health", "/api/monitoring/health"),
+        ProbeTarget("model_catalog", "/api/models/catalog"),
+    ],
+    "write": [
+        ProbeTarget("health", "/api/monitoring/health"),
+        ProbeTarget("model_catalog", "/api/models/catalog"),
+        ProbeTarget("settings_read", "/api/settings"),
+    ],
+    "admin": [
+        ProbeTarget("health", "/api/monitoring/health"),
+        ProbeTarget("keys_read", "/api/keys"),
+        ProbeTarget("settings_read", "/api/settings"),
+    ],
+}
+
 
 def sanitize_text(value: object, limit: int = MAX_TEXT) -> str:
     """Return printable text with control characters stripped."""
-    text = str(value)
+    text = redact_text(str(value))
     cleaned = "".join(ch if ch.isprintable() or ch in "\n\t" else "?" for ch in text)
     cleaned = " ".join(cleaned.split())
     if len(cleaned) > limit:
         return cleaned[: limit - 3] + "..."
     return cleaned
+
+
+def redact_text(value: str) -> str:
+    redacted = value
+    for pattern, replacement in SECRET_PATTERNS:
+        redacted = re.sub(pattern, replacement, redacted, flags=re.IGNORECASE)
+    return redacted
 
 
 def parse_base_url(raw_url: str) -> str:
@@ -108,7 +143,7 @@ def load_api_key(env_name: str | None) -> str | None:
     """Read API key from an environment variable name only."""
     if not env_name:
         return None
-    if not env_name.replace("_", "").isalnum():
+    if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", env_name):
         raise ValueError(
             "api key environment variable name contains invalid characters"
         )
@@ -233,6 +268,92 @@ def run_probe(base_url: str, api_key: str | None, timeout: float) -> dict[str, A
     }
 
 
+def env_registration_commands(base_url: str, api_key_env: str) -> list[str]:
+    """Return copy-ready commands for durable user-level OmniRoute env vars."""
+    quoted_base = shlex.quote(base_url)
+    quoted_api_placeholder = shlex.quote("PASTE_OMNIROUTE_API_KEY_HERE")
+    quoted_base_assignment = shlex.quote(f"OMNIROUTE_BASE_URL={base_url}")
+    quoted_key_assignment = shlex.quote(f"{api_key_env}=PASTE_OMNIROUTE_API_KEY_HERE")
+    return [
+        "mkdir -p ~/.config/environment.d",
+        "touch ~/.config/environment.d/omniroute.conf",
+        (
+            "grep -q '^OMNIROUTE_BASE_URL=' ~/.config/environment.d/omniroute.conf || "
+            "printf '%s\\n' "
+            f"{quoted_base_assignment} "
+            ">> ~/.config/environment.d/omniroute.conf"
+        ),
+        (
+            f"grep -q '^{api_key_env}=' ~/.config/environment.d/omniroute.conf || "
+            "printf '%s\\n' "
+            f"{quoted_key_assignment} "
+            ">> ~/.config/environment.d/omniroute.conf"
+        ),
+        "touch ~/.profile",
+        (
+            "grep -q '^export OMNIROUTE_BASE_URL=' ~/.profile || "
+            "printf '\\nexport OMNIROUTE_BASE_URL=\"${OMNIROUTE_BASE_URL:-%s}\"\\n' "
+            f"{quoted_base} >> ~/.profile"
+        ),
+        (
+            f"grep -q '^export {api_key_env}=' ~/.profile || "
+            f"printf 'export {api_key_env}=\"${{{api_key_env}:-%s}}\"\\n' "
+            f"{quoted_api_placeholder} >> ~/.profile"
+        ),
+        (
+            "printf 'Relaunch terminals, tmux sessions, GUI apps, and Codex/OpenCode "
+            "processes before expecting them to inherit the new environment.\\n'"
+        ),
+    ]
+
+
+def access_preflight(
+    base_url: str,
+    api_key_env: str,
+    api_key: str | None,
+    required_access: str,
+    timeout: float,
+    include_env_commands: bool,
+) -> dict[str, Any]:
+    """Check env presence and non-mutating endpoint access for a target level."""
+    targets = ACCESS_TARGETS[required_access]
+    checks = {}
+    with requests.Session() as session:
+        for target in targets:
+            checks[target.name] = fetch_json(
+                session, join_url(base_url, target.path), api_key, timeout
+            )
+    failed = {
+        name: result
+        for name, result in checks.items()
+        if not isinstance(result, dict) or not result.get("ok")
+    }
+    env = {
+        "base_url_env_set": bool(os.environ.get("OMNIROUTE_BASE_URL")),
+        "api_key_env": api_key_env,
+        "api_key_env_set": bool(api_key),
+        "api_key_value_redacted": "***REDACTED***" if api_key else None,
+    }
+    notes = [
+        "Preflight uses non-mutating GET endpoints only.",
+        "A write requirement is treated as admin-compatible read access; actual writes still require explicit user approval.",
+        "New terminals, tmux sessions, GUI apps, and already-running CLIs may not inherit env changes until relaunched.",
+    ]
+    report: dict[str, Any] = {
+        "base_url": base_url,
+        "required_access": required_access,
+        "env": env,
+        "access_ok": bool(api_key) and not failed,
+        "access_checks": checks,
+        "notes": notes,
+    }
+    if include_env_commands:
+        report["registration_commands"] = env_registration_commands(
+            base_url, api_key_env
+        )
+    return report
+
+
 def render_markdown(report: dict[str, Any]) -> str:
     """Render a compact Markdown report."""
     lines = [
@@ -276,6 +397,49 @@ def render_markdown(report: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def render_preflight_markdown(report: dict[str, Any]) -> str:
+    """Render preflight output for humans."""
+    env = report.get("env", {})
+    lines = [
+        "# OmniRoute preflight report",
+        "",
+        f"Base URL: `{report.get('base_url')}`",
+        f"Required access: `{report.get('required_access')}`",
+        f"API key env var: `{env.get('api_key_env')}`",
+        f"API key present: `{'yes' if env.get('api_key_env_set') else 'no'}`",
+        f"Access compatible: `{'yes' if report.get('access_ok') else 'no'}`",
+        "",
+        "| Check | OK | Status | Detail |",
+        "|---|---:|---:|---|",
+    ]
+    checks = report.get("access_checks", {})
+    if isinstance(checks, dict):
+        for name, result in checks.items():
+            if not isinstance(result, dict):
+                continue
+            detail = result.get("summary") if result.get("ok") else result.get("error")
+            if not result.get("ok") and result.get("hint"):
+                detail = f"{detail}; hint: {result['hint']}"
+            status = result.get("status") if result.get("status") is not None else "n/a"
+            lines.append(
+                f"| `{sanitize_text(name)}` | {'yes' if result.get('ok') else 'no'} | "
+                f"{status} | {sanitize_text(detail)} |"
+            )
+    commands = report.get("registration_commands")
+    if isinstance(commands, list) and commands:
+        lines.extend(["", "## Persistent user env registration", ""])
+        lines.append("Run these in a terminal, replacing `PASTE_OMNIROUTE_API_KEY_HERE` with the real key:")
+        lines.append("")
+        lines.append("```bash")
+        lines.extend(str(command) for command in commands)
+        lines.append("```")
+    notes = report.get("notes")
+    if isinstance(notes, list) and notes:
+        lines.extend(["", "Notes:"])
+        lines.extend(f"- {sanitize_text(note)}" for note in notes)
+    return "\n".join(lines)
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Build CLI argument parser."""
     parser = argparse.ArgumentParser(description="Read-only OmniRoute discovery probe")
@@ -295,6 +459,27 @@ def build_parser() -> argparse.ArgumentParser:
         default=5.0,
         help="Per-endpoint timeout in seconds, default: 5",
     )
+    parser.add_argument(
+        "--preflight",
+        action="store_true",
+        help="Check required OmniRoute env vars and non-mutating access compatibility",
+    )
+    parser.add_argument(
+        "--required-access",
+        choices=["runtime", "read", "write", "admin"],
+        default="runtime",
+        help="Access level to check when --preflight is used",
+    )
+    parser.add_argument(
+        "--print-env-commands",
+        action="store_true",
+        help="Include durable user-level env registration commands in preflight output",
+    )
+    parser.add_argument(
+        "--fail-on-incompatible",
+        action="store_true",
+        help="Return exit code 1 when --preflight access is not compatible",
+    )
     output = parser.add_mutually_exclusive_group()
     output.add_argument("--json", action="store_true", help="Emit JSON report")
     output.add_argument("--markdown", action="store_true", help="Emit Markdown report")
@@ -313,7 +498,19 @@ def main() -> int:
         base_url = parse_base_url(args.base_url)
         api_key_env = args.api_key_env.strip() or None
         api_key = load_api_key(api_key_env)
-        report = run_probe(base_url, api_key, args.timeout)
+        if args.preflight:
+            if not api_key_env:
+                raise ValueError("--preflight requires a non-empty --api-key-env")
+            report = access_preflight(
+                base_url,
+                api_key_env,
+                api_key,
+                args.required_access,
+                args.timeout,
+                args.print_env_commands,
+            )
+        else:
+            report = run_probe(base_url, api_key, args.timeout)
     except ValueError as exc:
         print(
             "omniroute_discover.py: invalid input: "
@@ -326,9 +523,14 @@ def main() -> int:
         return 2
 
     if args.markdown:
-        print(render_markdown(report))
+        if args.preflight:
+            print(render_preflight_markdown(report))
+        else:
+            print(render_markdown(report))
     else:
         print(json.dumps(report, indent=2, sort_keys=True))
+    if args.preflight and args.fail_on_incompatible and not report.get("access_ok"):
+        return 1
     return 0
 
 
