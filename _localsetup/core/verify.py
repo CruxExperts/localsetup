@@ -9,6 +9,7 @@ from .paths import expand_user_path, legacy_target_lockfile_path, repo_path, tar
 from .provenance import is_managed_package, package_digest, provenance_report
 from .reference_materializer import validate_materialized_package
 from .registry import load_registry
+from .repair_safety import _protected_target_reasons
 from .terminal_mode_health import terminal_mode_health
 from .workflows import validate_workflow_catalog
 
@@ -41,7 +42,8 @@ def verify_install(
     if legacy_lock.exists():
         issues.append(f"legacy root lockfile remains; migrate to .localsetup/lock.json: {legacy_lock}")
     target_framework = attachment_root / "_localsetup"
-    if target_framework.exists() and attachment_root.resolve(strict=False) != repo_root.resolve(strict=False):
+    protected_reasons = _protected_target_reasons(repo_root, home, attachment_root)
+    if target_framework.exists() and attachment_root.resolve(strict=False) != repo_root.resolve(strict=False) and not protected_reasons:
         issues.append(f"stale target framework source is not supported: {target_framework}")
     attach_mode = lock.get("attach_mode", "symlink") if isinstance(lock, dict) else "symlink"
 

@@ -89,7 +89,7 @@ def test_no_selector_update_requires_decision_for_unknown_broken_adapter(tmp_pat
     assert adapter.is_symlink()
 
 
-def test_no_selector_install_blocks_unmanaged_adapter_without_mutation(tmp_path: Path) -> None:
+def test_no_selector_install_preserves_benign_adapter_file(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "target"
@@ -100,11 +100,12 @@ def test_no_selector_install_blocks_unmanaged_adapter_without_mutation(tmp_path:
     completed = run_localsetup_cli(root, home, "install", "--target-directory", str(target), "--apply")
     payload = json.loads(completed.stdout)
 
-    assert completed.returncode == 1
+    assert completed.returncode == 0, completed.stderr
     assert payload["auto_mode"] == "repair_required"
-    assert payload["decisions"]
+    assert payload["decisions"] == []
     assert (collision / "custom.txt").is_file()
-    assert not (target / ".localsetup" / "lock.json").exists()
+    assert_scoped_adapter(collision, "ls-context")
+    assert (target / ".localsetup" / "lock.json").exists()
 
 
 def test_no_selector_install_new_repo_uses_suggested_global_without_adapters(tmp_path: Path) -> None:
@@ -155,20 +156,25 @@ def test_explicit_selectors_bypass_no_selector_auto_mode(tmp_path: Path) -> None
     assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
 
 
-def test_no_selector_install_protects_source_checkout_from_auto_repair(tmp_path: Path) -> None:
+def test_no_selector_install_protected_source_checkout_allows_safe_refresh(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "maintainer"
     shutil.copytree(root, target)
+    adapter = target / ".codex" / "skills"
+    adapter.mkdir(parents=True)
+    (adapter / "README.md").write_text("repo note\n", encoding="utf-8")
 
     completed = run_localsetup_cli(root, home, "install", "--target-directory", str(target), "--apply")
     payload = json.loads(completed.stdout)
 
-    assert completed.returncode == 1
+    assert completed.returncode == 0, completed.stderr
     assert payload["auto_mode"] == "repair_required"
-    assert any(decision["kind"] == "protected_source_root" for decision in payload["decisions"])
+    assert payload["decisions"] == []
     assert (target / "_localsetup" / "config" / "pack.yaml").is_file()
-    assert not (target / ".localsetup" / "lock.json").exists()
+    assert (adapter / "README.md").is_file()
+    assert_scoped_adapter(adapter, "ls-context")
+    assert (target / ".localsetup" / "lock.json").exists()
 
 
 def test_convert_cli_accepts_split_selector_flags(tmp_path: Path) -> None:

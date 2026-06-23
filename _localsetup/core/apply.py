@@ -315,6 +315,7 @@ def _apply_plan_unlocked(
                         "managed_scoped_adapter",
                         "managed_portable_adapter",
                         "mixed_managed_custom_adapter",
+                        "shared_adapter_directory",
                     }
                     journal["touched"].append(
                         {

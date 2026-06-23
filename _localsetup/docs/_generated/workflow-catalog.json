@@ -4,14 +4,14 @@
     "artifact_path": "_localsetup/docs/_generated/workflow-catalog.json",
     "artifact_sha256": "3258d37482d77672a85d644934bf54c4a4b011e40315254dc9a11296fe3a7fab",
     "emitter": "generate-docs",
-    "framework_version": "4.2.1",
+    "framework_version": "4.2.2",
     "schema_version": 1,
-    "source_commit": "413893be27a2689efddd4d34d762ae70f432a02b",
+    "source_commit": "4971da5d4a7af0998397b01b276bd8b49d3b87ed",
     "source_dirty": true,
-    "source_provenance_hash": "5c0352e6a3dd4e5e3b668bdd8b5f7d76861de184b034d1528417699563e1744f",
-    "source_root_id": "9c31b15df375e3edc0d6eafe8f1cf46908d2a6fdf242a90361d5bd2452f65760",
+    "source_provenance_hash": "a988ad86c512b47f34d62d952749c5a90b03a5917db3808611b6798ef2634fb4",
+    "source_root_id": "f803a71d9177d4462a9a2fa11a9233229f4c72798f9b7386e521db34a17652a4",
     "source_tag": null,
-    "source_tree_sha": "f6c2c6bf9b597259d1e19a937aab61217674ced9"
+    "source_tree_sha": "cd68d5281fbd16740adaddcb5de84f2855bbfc8c"
   },
   "workflows": [
     {
