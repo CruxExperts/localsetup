@@ -1,5 +1,5 @@
 {
-  "verifiedAt": "2026-05-20T19:03:29Z",
+  "verifiedAt": "2026-06-23T15:16:03Z",
   "sources": {
     "nextRegistry": "https://registry.npmjs.org/next",
     "reactRegistry": "https://registry.npmjs.org/react",
@@ -19,13 +19,14 @@
   },
   "packages": {
     "next": {
-      "latest": "16.2.6",
+      "latest": "16.2.9",
       "distTags": {
-        "latest": "16.2.6",
-        "canary": "16.3.0-canary.24",
+        "latest": "16.2.9",
+        "canary": "16.3.0-canary.61",
         "beta": "16.0.0-beta.0",
         "rc": "15.0.0-rc.1",
-        "backport": "15.5.18"
+        "backport": "16.2.8",
+        "preview": "16.3.0-preview.3"
       },
       "engines": {
         "node": ">=20.9.0"
@@ -46,12 +47,13 @@
       }
     },
     "react": {
-      "latest": "19.2.6",
+      "latest": "19.2.7",
       "distTags": {
-        "latest": "19.2.6",
-        "canary": "19.3.0-canary-d5736f09-20260507",
-        "experimental": "0.0.0-experimental-d5736f09-20260507",
+        "latest": "19.2.7",
+        "canary": "19.3.0-canary-247fbb45-20260622",
+        "experimental": "0.0.0-experimental-247fbb45-20260622",
         "next": "19.3.0-canary-d5736f09-20260507",
+        "backport": "19.1.8",
         "beta": "19.0.0-beta-26f2496093-20240514",
         "rc": "19.0.0-rc.1"
       },
@@ -68,17 +70,18 @@
       }
     },
     "react-dom": {
-      "latest": "19.2.6",
+      "latest": "19.2.7",
       "distTags": {
-        "latest": "19.2.6",
-        "canary": "19.3.0-canary-d5736f09-20260507",
-        "experimental": "0.0.0-experimental-d5736f09-20260507",
+        "latest": "19.2.7",
+        "canary": "19.3.0-canary-247fbb45-20260622",
+        "experimental": "0.0.0-experimental-247fbb45-20260622",
         "next": "19.3.0-canary-d5736f09-20260507",
+        "backport": "19.1.8",
         "beta": "19.0.0-beta-26f2496093-20240514",
         "rc": "19.0.0-rc.1"
       },
       "peerDependencies": {
-        "react": "^19.2.6"
+        "react": "^19.2.7"
       },
       "channelNotes": {
         "latest": "Stable npm channel.",
@@ -114,10 +117,10 @@
         "lts": "2024-10-29",
         "maintenance": "2025-10-21",
         "end": "2027-04-30",
-        "latestDist": "v22.22.3",
-        "latestDistDate": "2026-05-13",
+        "latestDist": "v22.23.0",
+        "latestDistDate": "2026-06-17",
         "latestDistLts": "Jod",
-        "latestDistSecurity": false,
+        "latestDistSecurity": true,
         "channelNotes": "Supported maintenance LTS line."
       },
       "24": {
@@ -128,16 +131,16 @@
         "lts": "2025-10-28",
         "maintenance": "2026-10-20",
         "end": "2028-04-30",
-        "latestDist": "v24.15.0",
-        "latestDistDate": "2026-04-15",
+        "latestDist": "v24.17.0",
+        "latestDistDate": "2026-06-17",
         "latestDistLts": "Krypton",
-        "latestDistSecurity": false,
+        "latestDistSecurity": true,
         "channelNotes": "Preferred production baseline when project and host support it."
       },
       "25": {
         "scheduleKey": "v25",
         "codename": null,
-        "status": "Current",
+        "status": "EOL",
         "start": "2025-10-15",
         "maintenance": "2026-04-01",
         "end": "2026-06-01",
@@ -145,7 +148,7 @@
         "latestDistDate": "2026-03-31",
         "latestDistLts": false,
         "latestDistSecurity": false,
-        "channelNotes": "Current release line near EOL; not a default production baseline."
+        "channelNotes": "End-of-life as of 2026-06-01; not a default production baseline."
       },
       "26": {
         "scheduleKey": "v26",
@@ -155,10 +158,10 @@
         "lts": "2026-10-28",
         "maintenance": "2027-10-20",
         "end": "2029-04-30",
-        "latestDist": "v26.2.0",
-        "latestDistDate": "2026-05-20",
+        "latestDist": "v26.3.1",
+        "latestDistDate": "2026-06-17",
         "latestDistLts": false,
-        "latestDistSecurity": false,
+        "latestDistSecurity": true,
         "channelNotes": "Current release line; not a default production baseline before LTS."
       }
     }

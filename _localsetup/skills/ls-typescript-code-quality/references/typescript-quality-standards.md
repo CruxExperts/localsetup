@@ -1,6 +1,6 @@
 # TypeScript Quality Standards Snapshot
 
-Source snapshot checked: 2026-05-11.
+Source snapshot checked: 2026-06-23.
 
 This reference is a dated starting point for agents. Always verify official
 project docs before changing version-sensitive TypeScript, Node, framework,
@@ -9,7 +9,7 @@ lint, or build configuration.
 ## Current Version Signals
 
 - TypeScript latest on npm: `6.0.3`, verified with
-  `npm view typescript version dist-tags --json` on 2026-05-11. The official
+  `npm view typescript version dist-tags --json` on 2026-06-23. The official
   TypeScript 6.0 announcement was published on 2026-03-23 and says TypeScript
   6.0 is a bridge release toward the new Go-based TypeScript 7 line.
 - Do not upgrade framework-pinned projects blindly. Angular, Next.js, Vite, and
@@ -66,11 +66,11 @@ it costs more because TypeScript has to analyze the project.
   strictness.
 - For typescript-eslint v8 and newer, `parserOptions.projectService: true` is
   the recommended parser option for typed linting.
-- typescript-eslint currently documents ESLint support as
+- typescript-eslint currently declares ESLint support as
   `^8.57.0 || ^9.0.0 || ^10.0.0`, Node support as
-  `^18.18.0 || ^20.9.0 || >=21.1.0`, and TypeScript support as the
-  DefinitelyTyped less-than-two-years support window. Verify that page before
-  changing dependencies.
+  `^18.18.0 || ^20.9.0 || >=21.1.0`, and TypeScript support as
+  `>=4.8.4 <6.1.0`. Verify the dependency-versions page before changing
+  dependencies.
 
 ## Framework Compatibility Examples
 
@@ -82,8 +82,9 @@ project's pinned framework version before changing TypeScript or Node versions.
   Node line when the latest LTS works.
 - Vite guide docs list Node.js `20.19+` or `22.12+`. The Vite 8 announcement
   says Vite 8 keeps the same Node requirements as Vite 7.
-- Angular compatibility docs for Angular `21.0.x` list Node
-  `^20.19.0 || ^22.12.0 || ^24.0.0` and TypeScript `>=5.9.0 <6.0.0`.
+- Angular compatibility docs for Angular `22.0.x` list Node
+  `^22.22.3 || ^24.15.0 || ^26.0.0` and TypeScript `>=6.0.0 <6.1.0`;
+  Angular `21.x` remains on TypeScript `>=5.9.0 <6.0.0`.
 
 ## Practical Defaults
 

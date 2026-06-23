@@ -1,6 +1,6 @@
 # Source Ledger
 
-Verified on 2026-05-20 UTC unless a source entry states otherwise.
+Verified on 2026-06-23 UTC unless a source entry states otherwise.
 
 ## Package Metadata
 
