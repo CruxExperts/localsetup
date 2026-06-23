@@ -133,6 +133,7 @@ def _infer_packages(
         reasons.append("legacy lock repo_workflows/workflows")
     pack_names = set(load_pack_config(source_root).packs)
     values = [value for value in values if value not in pack_names]
+    metadata_values = bool(values)
     known_packages = _known_package_names(source_root)
     for target in adapter_targets(source_root, home, platform_ids=platform_ids, target_root=target_root):
         entries = _visible_package_entries(target["repo_path"])
@@ -142,7 +143,7 @@ def _infer_packages(
             for entry in entries
             if entry["name"] not in known_packages and entry["custom_skill"]
         )
-        if visible:
+        if visible and not metadata_values:
             values.extend(visible)
             reasons.append(f"visible adapter packages at {target['repo_path'].relative_to(target_root)}")
     for rel_paths in HISTORICAL_ADAPTERS.values():
@@ -154,7 +155,7 @@ def _infer_packages(
                 for entry in entries
                 if entry["name"] not in known_packages and entry["custom_skill"]
             )
-            if visible:
+            if visible and not metadata_values:
                 values.extend(visible)
                 reasons.append(f"visible historical adapter packages at {rel}")
     normalized = _normalize_package_names(source_root, values, decisions)

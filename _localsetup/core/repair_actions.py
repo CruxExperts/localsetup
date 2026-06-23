@@ -5,7 +5,6 @@ from __future__ import annotations
 from pathlib import Path
 import shutil
 
-from .aliases import collect_skill_aliases
 from .adapters import ADAPTER_MARKER_JSON, adapter_path_state, adapter_targets, legacy_global_roots, remove_managed_adapter_entries
 from .git_state import git_untrack_path, inspect_path
 from .manifests import load_pack_config
@@ -62,17 +61,7 @@ def _plan_actions(
     stale_class = stale_framework_info.get("classification")
     if stale_class and stale_class != "absent":
         if stale_class == "protected_source_root":
-            decisions.append(
-                {
-                    "kind": "protected_source_root",
-                    "code": "protected_source_root",
-                    "path": str(target_root),
-                    "reason": "target is a legitimate Localsetup source location",
-                    "values": protected_reasons,
-                    "required": "do not remove or replace target _localsetup from doctor repair",
-                    "prompt_hint": "Use maintainer/source checkout commands instead of target repair.",
-                }
-            )
+            pass
         elif stale_class == "clean_tracked_stale_framework":
             actions.append(
                 _action(
@@ -181,8 +170,6 @@ def _plan_actions(
     known_roots = legacy_global_roots(home)
     managed_roots = [global_root, *known_roots]
     selected_packages = set(packages)
-    aliases = collect_skill_aliases(source_root / "_localsetup" / "skills")
-    legacy_alias_entries = set(aliases) | set(aliases.values())
     current_adapter_targets: set[Path] = set()
     for target in adapter_targets(source_root, home, platform_ids=platform_ids, target_root=target_root):
         path = target["repo_path"]
@@ -257,8 +244,20 @@ def _plan_actions(
             if path.resolve(strict=False) in current_adapter_targets:
                 continue
             state = adapter_path_state(path, global_root, known_global_roots=known_roots, target_root=target_root)
-            custom_entries = set(state.get("custom_entries", []))
-            if state["status_code"] == "custom_repo_skills" and not (custom_entries & legacy_alias_entries):
+            if state.get("unsafe_entries"):
+                decisions.append(
+                    {
+                        "kind": "adapter_collision",
+                        "path": str(path),
+                        "reason": state["collision_reason"] or "adapter directory contains unsupported or unsafe entries",
+                        "values": state.get("unsafe_entries", []),
+                        "required": "review this adapter content before applying repair",
+                    }
+                )
+                continue
+            if state["status_code"] in {"custom_repo_skills", "shared_adapter_directory", "mixed_managed_custom_adapter"} and (
+                state.get("custom_entries") or state.get("unknown_entries")
+            ):
                 continue
             if (path.is_symlink() and _symlink_target_under_managed_roots(path, managed_roots)) or _localsetup_owned_adapter_dir(source_root, path, decisions):
                 actions.append(
@@ -307,16 +306,6 @@ def _plan_actions(
             reason="record modern Localsetup target state",
         )
     )
-    if protected_reasons and actions:
-        decisions.append(
-            {
-                "kind": "protected_source_root",
-                "path": str(target_root),
-                "reason": "repair would modify a legitimate Localsetup source location",
-                "values": protected_reasons,
-                "required": "run install or maintainer commands explicitly from the source checkout instead",
-            }
-        )
     if blockers:
         return actions
     return actions

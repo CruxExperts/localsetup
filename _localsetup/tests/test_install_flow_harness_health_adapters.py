@@ -217,7 +217,9 @@ def test_adapter_classification_status_codes(tmp_path: Path) -> None:
     unmanaged = tmp_path / "unmanaged"
     unmanaged.mkdir()
     (unmanaged / "notes.txt").write_text("user content\n", encoding="utf-8")
-    assert adapter_path_state(unmanaged, global_root)["status_code"] == "unmanaged_adapter_directory"
+    shared = adapter_path_state(unmanaged, global_root)
+    assert shared["status_code"] == "shared_adapter_directory"
+    assert shared["unknown_entries"] == ["notes.txt"]
 
     dangling = tmp_path / "dangling"
     dangling.symlink_to(tmp_path / "missing", target_is_directory=True)
@@ -229,7 +231,7 @@ def test_full_plan_preflight_blocks_before_adapter_mutation(tmp_path: Path) -> N
     home = tmp_path / "home"
     opencode = root / ".opencode" / "skills"
     opencode.mkdir(parents=True)
-    (opencode / "notes.txt").write_text("user content\n", encoding="utf-8")
+    (opencode / "ls-context").write_text("user content\n", encoding="utf-8")
 
     plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex", "opencode"])
     with pytest.raises(RuntimeError, match="install preflight failed"):

@@ -230,8 +230,8 @@ def test_refuses_unmanaged_adapter_collisions(tmp_path: Path, collision_kind: st
     adapter.parent.mkdir(parents=True)
     if collision_kind == "directory":
         adapter.mkdir()
-        (adapter / "custom.txt").write_text("user content\n", encoding="utf-8")
-        expected = "unmanaged adapter directory"
+        (adapter / "ls-context").write_text("user content\n", encoding="utf-8")
+        expected = "adapter contains custom or unknown entries with selected Localsetup package names"
     elif collision_kind == "file":
         adapter.write_text("not a directory\n", encoding="utf-8")
         expected = "regular file"
@@ -269,7 +269,8 @@ def test_doctor_reports_selected_adapter_collisions_only(tmp_path: Path) -> None
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     collision = root / ".cursor" / "skills"
-    collision.mkdir(parents=True)
+    collision.parent.mkdir(parents=True)
+    collision.write_text("not a directory\n", encoding="utf-8")
 
     global_only = run_doctor(root, home=home)
     selected = run_doctor(root, home=home, platform_ids=["cursor"])
@@ -277,7 +278,7 @@ def test_doctor_reports_selected_adapter_collisions_only(tmp_path: Path) -> None
     assert global_only["adapter_collisions"] == []
     assert not any("adapter collision" in blocker for blocker in global_only["blockers"])
     assert selected["ok"] is False
-    assert selected["adapter_collisions"][0]["reason"] == "unmanaged adapter directory"
+    assert selected["adapter_collisions"][0]["reason"] == "regular file"
 
 
 def test_cli_rejects_empty_csv_selectors() -> None:

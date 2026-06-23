@@ -81,7 +81,7 @@ def test_conservative_migration_renames_managed_legacy_global_skill(tmp_path: Pa
     assert (tmp_path / "backup" / "migration-report.json").exists()
 
 
-def test_conservative_migration_refuses_unmanaged_adapter(tmp_path: Path) -> None:
+def test_conservative_migration_preserves_benign_adapter_file(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     collision = root / ".codex" / "skills"
@@ -90,12 +90,12 @@ def test_conservative_migration_refuses_unmanaged_adapter(tmp_path: Path) -> Non
 
     report = conservative_migrate(root, home=home, platform_ids=["codex"], backup_dir=tmp_path / "backup")
 
-    assert report["ok"] is False
-    assert report["blockers"]
-    assert "mv " in report["blockers"][0]["remediation"]
+    assert report["ok"] is True
+    assert report["blockers"] == []
+    assert (collision / "custom.txt").is_file()
 
 
-def test_convert_blocks_unmanaged_adapter_content(tmp_path: Path) -> None:
+def test_convert_preserves_benign_adapter_content(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "target"
@@ -105,8 +105,8 @@ def test_convert_blocks_unmanaged_adapter_content(tmp_path: Path) -> None:
 
     report = convert_repo(root, home=home, platform_ids=["codex"], target_root=target, apply=False)
 
-    assert report["ok"] is False
-    assert any(blocker["kind"] == "adapter_collision" for blocker in report["blockers"])
+    assert report["ok"] is True
+    assert report["blockers"] == []
     assert not (target / ".localsetup/lock.json").exists()
 
 
@@ -216,19 +216,25 @@ def test_doctor_repair_preserves_framework_shaped_content_that_differs_from_sour
     assert any(item.get("code") == "custom_localsetup_content" for item in report["decisions"])
 
 
-def test_doctor_repair_protects_maintainer_source_checkout(tmp_path: Path) -> None:
+def test_doctor_repair_protected_maintainer_source_checkout_allows_safe_adapter_refresh(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "maintainer"
     shutil.copytree(root, target)
+    adapter = target / ".codex" / "skills"
+    adapter.mkdir(parents=True)
+    (adapter / "README.md").write_text("repo note\n", encoding="utf-8")
 
     report = run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
 
-    assert report["ok"] is False
-    assert report["applied"] is False
-    assert any(decision["kind"] == "protected_source_root" for decision in report["decisions"])
+    assert report["ok"] is True
+    assert report["applied"] is True
+    assert report["decisions"] == []
+    assert report["detected_shape"]["protected_source_root"] is True
     assert (target / "_localsetup" / "config" / "pack.yaml").is_file()
-    assert not (target / ".localsetup" / "lock.json").exists()
+    assert (adapter / "README.md").is_file()
+    assert_scoped_adapter(adapter, "ls-context")
+    assert (target / ".localsetup" / "lock.json").exists()
 
 
 def test_doctor_repair_protects_managed_source_checkout_path(tmp_path: Path) -> None:
@@ -239,12 +245,12 @@ def test_doctor_repair_protects_managed_source_checkout_path(tmp_path: Path) -> 
 
     report = run_repair(root, home=home, target_root=managed_source, platform_ids=["codex"], apply=True)
 
-    assert report["ok"] is False
-    assert report["applied"] is False
+    assert report["ok"] is True
+    assert report["applied"] is True
     assert "default managed Localsetup source checkout" in report["detected_shape"]["protected_reasons"]
-    assert any(decision["kind"] == "protected_source_root" for decision in report["decisions"])
+    assert report["decisions"] == []
     assert (managed_source / "_localsetup" / "core").is_dir()
-    assert not (managed_source / ".localsetup" / "lock.json").exists()
+    assert (managed_source / ".localsetup" / "lock.json").exists()
 
 
 def test_doctor_repair_protects_registered_custom_source_checkout(tmp_path: Path) -> None:
@@ -256,15 +262,15 @@ def test_doctor_repair_protects_registered_custom_source_checkout(tmp_path: Path
 
     report = run_repair(root, home=home, target_root=registered_source, platform_ids=["codex"], apply=True)
 
-    assert report["ok"] is False
-    assert report["applied"] is False
+    assert report["ok"] is True
+    assert report["applied"] is True
     assert "registered Localsetup shell source checkout" in report["detected_shape"]["protected_reasons"]
-    assert any(decision["kind"] == "protected_source_root" for decision in report["decisions"])
+    assert report["decisions"] == []
     assert (registered_source / "_localsetup" / "tools" / "localsetup.py").is_file()
-    assert not (registered_source / ".localsetup" / "lock.json").exists()
+    assert (registered_source / ".localsetup" / "lock.json").exists()
 
 
-def test_doctor_repair_blocks_nonempty_plan_for_protected_source_checkout(tmp_path: Path) -> None:
+def test_doctor_repair_keeps_source_tree_when_protected_checkout_has_legacy_lock(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "maintainer"
@@ -273,12 +279,13 @@ def test_doctor_repair_blocks_nonempty_plan_for_protected_source_checkout(tmp_pa
 
     report = run_repair(root, home=home, target_root=target, apply=True)
 
-    assert report["ok"] is False
-    assert report["applied"] is False
+    assert report["ok"] is True
+    assert report["applied"] is True
     assert any(action["kind"] == "backup_remove_legacy_lock" for action in report["actions"])
-    assert any(decision["kind"] == "protected_source_root" for decision in report["decisions"])
-    assert (target / "localsetup.lock.json").is_file()
-    assert not (target / ".localsetup" / "lock.json").exists()
+    assert report["decisions"] == []
+    assert not (target / "localsetup.lock.json").exists()
+    assert (target / ".localsetup" / "lock.json").exists()
+    assert (target / "_localsetup" / "config" / "pack.yaml").is_file()
 
 
 def test_doctor_repair_retires_old_agents_codex_adapter(tmp_path: Path) -> None:
@@ -295,12 +302,14 @@ def test_doctor_repair_retires_old_agents_codex_adapter(tmp_path: Path) -> None:
 
     assert dry["inferred"]["platforms"] == ["codex"]
     assert not any(action["kind"] == "backup_remove_historical_adapter" for action in dry["actions"])
-    assert any(decision["kind"] == "adapter_content" for decision in dry["decisions"])
-    assert report["applied"] is False
+    assert dry["decisions"] == []
+    assert report["ok"] is True
+    assert report["applied"] is True
     assert old_adapter.exists()
+    assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
 
 
-def test_doctor_repair_unmanaged_adapter_content_requires_decision(tmp_path: Path) -> None:
+def test_doctor_repair_benign_adapter_file_preserves_content(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "target"
@@ -310,10 +319,28 @@ def test_doctor_repair_unmanaged_adapter_content_requires_decision(tmp_path: Pat
 
     report = run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
 
+    assert report["ok"] is True
+    assert report["applied"] is True
+    assert report["decisions"] == []
+    assert (collision / "custom.txt").is_file()
+    assert (collision / "ls-context").is_symlink()
+    assert (target / ".localsetup" / "lock.json").exists()
+
+
+def test_doctor_repair_selected_same_name_adapter_file_requires_decision(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    collision = target / ".codex" / "skills"
+    collision.mkdir(parents=True)
+    (collision / "ls-context").write_text("user content\n", encoding="utf-8")
+
+    report = run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
+
     assert report["ok"] is False
     assert report["applied"] is False
-    assert report["decisions"]
-    assert (collision / "custom.txt").is_file()
+    assert any(decision["kind"] == "adapter_content" for decision in report["decisions"])
+    assert (collision / "ls-context").is_file()
     assert not (target / ".localsetup" / "lock.json").exists()
 
 
@@ -359,6 +386,55 @@ def test_doctor_repair_repo_local_symlink_adapter_preserves_target(tmp_path: Pat
     refreshed = run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
     assert refreshed["ok"] is True
     assert refreshed["decisions"] == []
+
+
+def test_doctor_repair_preserves_repo_local_custom_symlink_not_selected(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    target.mkdir()
+    plan = build_install_plan(
+        root,
+        home=home,
+        repo_preset="custom",
+        repo_skills=["ls-context"],
+        platform_ids=["codex"],
+        target_root=target,
+    )
+    apply_plan(root, plan, home=home, target_root=target)
+    repo_local_skill = target / "custom-skills" / "ls-omniroute-update"
+    repo_local_skill.mkdir(parents=True)
+    (repo_local_skill / "SKILL.md").write_text("# OmniRoute custom skill\n", encoding="utf-8")
+    custom = target / ".codex" / "skills" / "ls-omniroute-update"
+    custom.symlink_to(Path("..") / ".." / "custom-skills" / "ls-omniroute-update", target_is_directory=True)
+
+    report = run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
+
+    assert report["ok"] is True
+    assert report["decisions"] == []
+    assert custom.is_symlink()
+    assert custom.resolve(strict=False) == repo_local_skill.resolve(strict=False)
+    lock = load_json(target / ".localsetup" / "lock.json")
+    assert "ls-omniroute-update" not in lock["repo_packages"]
+
+
+def test_doctor_repair_external_child_symlink_requires_decision(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    adapter = target / ".codex" / "skills"
+    adapter.mkdir(parents=True)
+    (adapter / "external").symlink_to(outside, target_is_directory=True)
+
+    report = run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
+
+    assert report["ok"] is False
+    assert report["applied"] is False
+    assert any(decision["kind"] == "adapter_collision" for decision in report["decisions"])
+    assert (adapter / "external").is_symlink()
+    assert not (target / ".localsetup" / "lock.json").exists()
 
 
 def test_doctor_repair_broken_adapter_symlink_is_recreated(tmp_path: Path) -> None:

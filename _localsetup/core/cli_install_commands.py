@@ -35,10 +35,15 @@ def handle(cli, args, root, home) -> int | None:
                 write_trace(getattr(args, "trace_json", None), event=args.cmd, status="ok" if status == 0 else "failed", attributes={"target_root": str(attachment_root), "auto_mode": mode}, started_at=started_at)
                 return status
 
+            policy = _policy_findings(
+                root,
+                repair.get("inferred", {}).get("repo_skills", []),
+                getattr(args, "policy_mode", "standard"),
+            )
             if args.cmd == "plan" or (args.cmd == "install" and not args.apply):
                 payload = {
                     "auto_mode": mode,
-                    "ok": bool(repair.get("ok")),
+                    "ok": bool(repair.get("ok")) and not bool(policy.get("blockers")),
                     "config": config_to_dict(config),
                     "attachment": {
                         "target_root": str(attachment_root),
@@ -46,15 +51,36 @@ def handle(cli, args, root, home) -> int | None:
                         "global_only": not bool(repair.get("inferred", {}).get("platforms", [])),
                     },
                     "repair": repair,
+                    "policy": policy,
                     "actions": repair.get("actions", []),
-                    "warnings": repair.get("warnings", []),
+                    "warnings": [*repair.get("warnings", []), *policy.get("warnings", [])],
                     "decisions": repair.get("decisions", []),
-                    "blockers": repair.get("blockers", []),
+                    "blockers": [*repair.get("blockers", []), *policy.get("blockers", [])],
                 }
                 _write_report(config.output.report, payload)
                 _print_payload(payload)
                 write_trace(getattr(args, "trace_json", None), event=args.cmd, status="ok" if payload["ok"] else "failed", attributes={"dry_run": True, "auto_mode": mode}, started_at=started_at)
                 return 0
+
+            if policy["blockers"]:
+                payload = {
+                    "auto_mode": mode,
+                    "ok": False,
+                    "attachment": {
+                        "target_root": str(attachment_root),
+                        "platforms": repair.get("inferred", {}).get("platforms", []),
+                        "global_only": not bool(repair.get("inferred", {}).get("platforms", [])),
+                    },
+                    "repair": repair,
+                    "policy": policy,
+                    "warnings": [*repair.get("warnings", []), *policy.get("warnings", [])],
+                    "decisions": repair.get("decisions", []),
+                    "blockers": [*repair.get("blockers", []), *policy["blockers"]],
+                }
+                _write_report(config.output.report, payload)
+                _print_payload(payload)
+                write_trace(getattr(args, "trace_json", None), event=args.cmd, status="failed", attributes={"target_root": str(attachment_root), "auto_mode": mode}, started_at=started_at)
+                return 1
 
             applied = run_repair(
                 root,

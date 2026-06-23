@@ -226,7 +226,26 @@ def _child_is_managed_adapter_package(
     return path.is_symlink() and _symlink_target(path) == expected.resolve(strict=False)
 
 
-def _directory_adapter_classification(repo_path: Path, global_root: Path) -> dict:
+def _child_is_repo_local_symlink(path: Path, target_root: Path | None) -> bool:
+    if target_root is None or not path.is_symlink() or not path.exists():
+        return False
+    target = _symlink_target(path)
+    if target is None:
+        return False
+    try:
+        target.relative_to(target_root.resolve(strict=False))
+    except ValueError:
+        return False
+    return True
+
+
+def _child_is_supported_custom_entry(path: Path, target_root: Path | None) -> bool:
+    if path.is_symlink():
+        return _child_is_repo_local_symlink(path, target_root)
+    return path.is_file() or path.is_dir()
+
+
+def _directory_adapter_classification(repo_path: Path, global_root: Path, *, target_root: Path | None = None) -> dict:
     marker = adapter_marker_state(repo_path)
     marker_mode = marker["mode"]
     marker_packages = adapter_marker_packages(repo_path)
@@ -239,9 +258,25 @@ def _directory_adapter_classification(repo_path: Path, global_root: Path) -> dic
         for child in visible
         if child.name not in managed_entries and _child_is_custom_skill(child)
     ]
-    unknown_entries = [
-        child.name for child in visible if child.name not in managed_entries and child.name not in custom_entries
+    unsafe_entries = [
+        child.name
+        for child in visible
+        if child.name not in managed_entries and child.name not in custom_entries and not _child_is_supported_custom_entry(child, target_root)
     ]
+    unknown_entries = [
+        child.name
+        for child in visible
+        if child.name not in managed_entries and child.name not in custom_entries and child.name not in unsafe_entries
+    ]
+    if unsafe_entries:
+        return {
+            "status_code": "unsafe_adapter_content",
+            "collision_reason": "adapter directory contains unsupported or unsafe entries",
+            "custom_entries": custom_entries,
+            "managed_entries": managed_entries,
+            "unknown_entries": unknown_entries,
+            "unsafe_entries": unsafe_entries,
+        }
     if marker["exists"] and marker["error"]:
         return {
             "status_code": "unmarked_localsetup_adapter",
@@ -249,17 +284,19 @@ def _directory_adapter_classification(repo_path: Path, global_root: Path) -> dic
             "custom_entries": custom_entries,
             "managed_entries": managed_entries,
             "unknown_entries": unknown_entries,
+            "unsafe_entries": unsafe_entries,
         }
     if marker_mode == "portable":
         status = "managed_portable_adapter" if not custom_entries else "mixed_managed_custom_adapter"
         if unknown_entries:
-            status = "mixed_managed_custom_adapter" if managed_entries or custom_entries else "unmanaged_adapter_directory"
+            status = "mixed_managed_custom_adapter" if managed_entries or custom_entries else "shared_adapter_directory"
         return {
             "status_code": status,
-            "collision_reason": None if status != "unmanaged_adapter_directory" else "unmanaged adapter directory",
+            "collision_reason": None,
             "custom_entries": custom_entries,
             "managed_entries": managed_entries,
             "unknown_entries": unknown_entries,
+            "unsafe_entries": unsafe_entries,
         }
     if marker_mode == "symlink":
         status = "managed_scoped_adapter" if not custom_entries and not unknown_entries else "mixed_managed_custom_adapter"
@@ -269,6 +306,7 @@ def _directory_adapter_classification(repo_path: Path, global_root: Path) -> dic
             "custom_entries": custom_entries,
             "managed_entries": managed_entries,
             "unknown_entries": unknown_entries,
+            "unsafe_entries": unsafe_entries,
         }
     if (repo_path / ".localsetup-portable").exists():
         return {
@@ -277,6 +315,7 @@ def _directory_adapter_classification(repo_path: Path, global_root: Path) -> dic
             "custom_entries": custom_entries,
             "managed_entries": managed_entries,
             "unknown_entries": unknown_entries,
+            "unsafe_entries": unsafe_entries,
         }
     if visible and all(_child_is_custom_skill(child) for child in visible):
         return {
@@ -285,13 +324,16 @@ def _directory_adapter_classification(repo_path: Path, global_root: Path) -> dic
             "custom_entries": [child.name for child in visible],
             "managed_entries": [],
             "unknown_entries": [],
+            "unsafe_entries": unsafe_entries,
         }
     return {
-        "status_code": "unmanaged_adapter_directory",
-        "collision_reason": "unmanaged adapter directory",
+        "status_code": "shared_adapter_directory",
+        "collision_reason": None,
         "custom_entries": custom_entries,
         "managed_entries": managed_entries,
-        "unknown_entries": unknown_entries or [child.name for child in visible if child.name not in custom_entries],
+        "unknown_entries": unknown_entries
+        or [child.name for child in visible if child.name not in custom_entries and child.name not in managed_entries],
+        "unsafe_entries": unsafe_entries,
     }
 
 
@@ -306,23 +348,23 @@ def adapter_classification(
     resolved_roots = {root.resolve(strict=False) for root in managed_roots}
     exists = repo_path.exists() or repo_path.is_symlink()
     if not exists:
-        return {"status_code": "absent", "collision_reason": None, "custom_entries": [], "managed_entries": []}
+        return {"status_code": "absent", "collision_reason": None, "custom_entries": [], "managed_entries": [], "unknown_entries": [], "unsafe_entries": []}
     if repo_path.is_symlink():
         target = _symlink_target(repo_path)
         if not repo_path.exists():
-            return {"status_code": "dangling_symlink", "collision_reason": "dangling symlink", "custom_entries": [], "managed_entries": []}
+            return {"status_code": "dangling_symlink", "collision_reason": "dangling symlink", "custom_entries": [], "managed_entries": [], "unknown_entries": [], "unsafe_entries": []}
         if target == global_root.resolve(strict=False):
-            return {"status_code": "legacy_monolithic_symlink", "collision_reason": None, "custom_entries": [], "managed_entries": []}
+            return {"status_code": "legacy_monolithic_symlink", "collision_reason": None, "custom_entries": [], "managed_entries": [], "unknown_entries": [], "unsafe_entries": []}
         if target in (resolved_roots - {global_root.resolve(strict=False)}):
-            return {"status_code": "legacy_monolithic_symlink", "collision_reason": None, "custom_entries": [], "managed_entries": []}
+            return {"status_code": "legacy_monolithic_symlink", "collision_reason": None, "custom_entries": [], "managed_entries": [], "unknown_entries": [], "unsafe_entries": []}
         if _is_repo_local_symlink_adapter(repo_path, target_root):
-            return _directory_adapter_classification(repo_path, global_root)
-        return {"status_code": "unsupported_node", "collision_reason": "symlink points outside managed library", "custom_entries": [], "managed_entries": []}
+            return _directory_adapter_classification(repo_path, global_root, target_root=target_root)
+        return {"status_code": "unsupported_node", "collision_reason": "symlink points outside managed library", "custom_entries": [], "managed_entries": [], "unknown_entries": [], "unsafe_entries": []}
     if repo_path.is_file():
-        return {"status_code": "regular_file", "collision_reason": "regular file", "custom_entries": [], "managed_entries": []}
+        return {"status_code": "regular_file", "collision_reason": "regular file", "custom_entries": [], "managed_entries": [], "unknown_entries": [], "unsafe_entries": []}
     if not repo_path.is_dir():
-        return {"status_code": "unsupported_node", "collision_reason": "unsupported filesystem node", "custom_entries": [], "managed_entries": []}
-    return _directory_adapter_classification(repo_path, global_root)
+        return {"status_code": "unsupported_node", "collision_reason": "unsupported filesystem node", "custom_entries": [], "managed_entries": [], "unknown_entries": [], "unsafe_entries": []}
+    return _directory_adapter_classification(repo_path, global_root, target_root=target_root)
 
 
 def adapter_path_state(
@@ -379,7 +421,7 @@ def adapter_path_state(
         collision_reason = "symlink points outside managed library"
     elif is_regular_file:
         collision_reason = "regular file"
-    elif is_unmanaged_directory and classification["status_code"] != "custom_repo_skills":
+    elif is_unmanaged_directory and classification["status_code"] == "unmanaged_adapter_directory":
         collision_reason = "unmanaged adapter directory"
     elif is_other:
         collision_reason = "unsupported filesystem node"
@@ -391,6 +433,7 @@ def adapter_path_state(
         "custom_entries": classification.get("custom_entries", []),
         "managed_entries": classification.get("managed_entries", []),
         "unknown_entries": classification.get("unknown_entries", []),
+        "unsafe_entries": classification.get("unsafe_entries", []),
         "is_symlink": is_symlink,
         "is_repo_local_symlink_adapter": is_repo_local_symlink_adapter,
         "is_dangling_symlink": is_dangling_symlink,

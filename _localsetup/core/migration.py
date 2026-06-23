@@ -4,7 +4,7 @@ from pathlib import Path
 import shutil
 from datetime import datetime, timezone
 
-from .adapters import ADAPTER_MARKER_JSON, adapter_targets
+from .adapters import ADAPTER_MARKER_JSON, adapter_path_state, adapter_targets
 from .aliases import collect_skill_aliases
 from .lockfile import save_json
 from .manifests import load_pack_config
@@ -124,7 +124,9 @@ def detect_legacy_artifacts(
             and not (path / ".localsetup-portable").exists()
             and not (path / ADAPTER_MARKER_JSON).exists()
         ):
-            artifacts.append(_artifact("unmanaged_adapter", path, False, {"platform": target["platform"]}))
+            state = adapter_path_state(path, global_root, target_root=attachment_root)
+            if state["collision_reason"]:
+                artifacts.append(_artifact("unmanaged_adapter", path, False, {"platform": target["platform"], "state": state}))
 
     for rel in [".deps-missing", "_localsetup/.deps-missing", "_localsetup/tools/deploy", "_localsetup/tools/deploy.py", "_localsetup/tools/deploy.ps1"]:
         path = repo_root / rel

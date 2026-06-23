@@ -46,18 +46,19 @@ Required handling:
 
 - preserve custom adapter content in place
 - mutate only Localsetup-managed entries that are recorded or otherwise proven Localsetup-owned
-- report same-name collisions as decisions before mutation
-- report ambiguous unmanaged content as a preservation decision, not as permission to move or delete it
+- preserve ordinary repo-owned files, custom skill directories, and repo-local symlinks that are not selected Localsetup package targets
+- report selected same-name collisions as decisions before mutation
+- report unsafe adapter nodes, dangling external symlinks, and symlinks outside managed or repo-local safe roots as decisions before mutation
 - preserve repo-local adapter symlinks whose targets stay inside the target repo and contain valid custom skill packages
 - avoid moving, renaming, deleting, or normalizing repo-owned content out of an adapter path unless the repo owner explicitly chooses that migration
 
-`adapter_content`, `adapter_collision`, custom skills, non-Localsetup symlinks, and same-directory mixed content are evidence that the path is shared. They are not evidence that Localsetup should claim or clear the directory.
+Custom skills, benign files, repo-local symlinks, and same-directory mixed content are evidence that the path is shared. They are not evidence that Localsetup should claim or clear the directory. `adapter_content` and `adapter_collision` decisions are reserved for cases that would overwrite selected Localsetup package names or touch unsafe filesystem nodes.
 
 ## Repair Planning
 
 Repair plans must describe the managed entries they intend to change. A plan that targets an entire adapter directory is safe only when every entry in that directory is proven Localsetup-owned or the operator explicitly approved a full-directory migration.
 
-When ownership is unclear, the safe repair output is a migration or preservation prompt. The default migration path is to leave repo-owned adapter content where it is and repair only the Localsetup-managed entries around it.
+When ownership is unclear or unsafe, the safe repair output is a migration or preservation prompt. Benign repo-owned adapter content does not require a prompt; the default repair path is to leave that content where it is and refresh only the Localsetup-managed entries around it.
 
 ## Documentation Rule
 

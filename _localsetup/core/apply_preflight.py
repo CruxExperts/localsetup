@@ -12,6 +12,7 @@ SAFE_ADAPTER_STATUS_CODES = {
     "managed_portable_adapter",
     "legacy_monolithic_symlink",
     "mixed_managed_custom_adapter",
+    "shared_adapter_directory",
 }
 
 
