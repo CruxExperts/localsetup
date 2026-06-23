@@ -1,10 +1,18 @@
 ---
 name: ls-workflow-ops-tmux-session
-description: Run guarded operations through managed tmux sessions with explicit run tracking.
+description: Use when commands need sudo, root/admin elevation, require_escalated, pseudo-terminal/PTY handling, interactive sudo or elevated terminal password prompts, or managed tmux run tracking.
+metadata:
+  version: "1.0"
 ---
 
 Use this workflow package for server or remote ops through tmux wrappers.
 Primary references: `localsetup://doc/ops/tmux-ops-managed.md` and `localsetup://doc/ops/tmux-ops-remote.md`.
+
+## When to use
+
+Use this workflow when a command needs `sudo`, root/admin elevation, `require_escalated`, pseudo-terminal/PTY behavior, interactive sudo or elevated terminal password prompt handoff, or durable managed tmux run tracking through `localsetup://tool/tmux_ops`.
+
+Do not use this workflow for normal repo-local coding, API authentication, token setup, non-privileged file edits, or commands that can run safely without managed terminal state.
 
 ## Sequence
 

@@ -1,6 +1,8 @@
 ---
 name: ls-workflow-transport-handoff
-description: Handle sealed Agent Q handoff payload transport over file_drop or mail adapters.
+description: Use when handling sealed Agent Q handoff payload transport over file_drop or mail adapters.
+metadata:
+  version: "1.0"
 ---
 
 Use this workflow package for agent-to-agent transport handoff with validation gates.

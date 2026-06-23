@@ -1,6 +1,8 @@
 ---
 name: ls-workflow-pipeline-pr-feedback-loop
-description: Turn PR feedback into fixes, tests, and follow-up review.
+description: Use when turning pull request feedback into fixes, tests, and follow-up review.
+metadata:
+  version: "1.0"
 ---
 
 Use this pipeline package for structured PR feedback loops.

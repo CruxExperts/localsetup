@@ -2,16 +2,16 @@
   "count": 23,
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/workflow-catalog.json",
-    "artifact_sha256": "142302c9ff672ff95b2599f31902a79f7676e0e3333b02672f0c949bd7b392db",
+    "artifact_sha256": "3258d37482d77672a85d644934bf54c4a4b011e40315254dc9a11296fe3a7fab",
     "emitter": "generate-docs",
     "framework_version": "4.2.0",
     "schema_version": 1,
-    "source_commit": "efaa62ce439542c72cabe8cdf712b8c5b7694426",
+    "source_commit": "21d36b68d7e2b5fd553c94b3afd5168e73b215d1",
     "source_dirty": true,
-    "source_provenance_hash": "327b393c45fa0d5b651e5f3b6a69f906c62492f66fc014ba03bb88591e14b19f",
-    "source_root_id": "93ad2ac020de914e9d5764b5f09f550c2c5998ae9eb383c0172b4924f191a2a6",
+    "source_provenance_hash": "7b8efca8236e4f80a61d6b60788f32a6ff2b2752f4316647a13fa6c4658ae12f",
+    "source_root_id": "58c349cd891bd783fa893d6769f33171da3f653e0418d97c041ffa27a8d4a0be",
     "source_tag": null,
-    "source_tree_sha": "698fa46441c62be2be696d5188c597a6da2d506c"
+    "source_tree_sha": "16bc49585994c8405e776e7d110e77a7acb448b0"
   },
   "workflows": [
     {
@@ -19,7 +19,7 @@
         "run audit",
         "framework audit"
       ],
-      "description": "Run framework audit workflow with explicit report path and summarized findings.",
+      "description": "Use when running a Localsetup framework audit with an explicit report path and summarized findings.",
       "display_name": "Audit Framework",
       "package": "ls-workflow-audit-framework",
       "packs": [
@@ -44,7 +44,7 @@
         "reference audit",
         "link integrity audit"
       ],
-      "description": "Validate markdown references and anchors across configured documentation targets.",
+      "description": "Use when validating markdown references and anchors across configured documentation targets.",
       "display_name": "Audit Markdown References",
       "package": "ls-workflow-audit-markdown-references",
       "packs": [
@@ -69,7 +69,7 @@
         "heartbeat harness",
         "harness heartbeat"
       ],
-      "description": "Initialize, activate, run, inspect, and disable the opt-in Codex heartbeat harness with transaction evidence and cron manifest validation.",
+      "description": "Use when initializing, activating, running, inspecting, or disabling the opt-in Codex heartbeat harness with transaction evidence and cron manifest validation.",
       "display_name": "Codex Heartbeat",
       "package": "ls-workflow-codex-heartbeat",
       "packs": [
@@ -97,7 +97,7 @@
         "query context index",
         "context search"
       ],
-      "description": "Query context index with vector-first retrieval and deterministic preflight/logging controls.",
+      "description": "Use when querying the Localsetup context index with vector-first retrieval and deterministic preflight/logging controls.",
       "display_name": "Context Index Query",
       "package": "ls-workflow-context-index-query",
       "packs": [
@@ -119,7 +119,7 @@
         "context refresh",
         "refresh context index"
       ],
-      "description": "Run deterministic context-index refresh lifecycle checks and choose reset/rebuild/vector-rebuild paths.",
+      "description": "Use when refreshing the Localsetup context index with deterministic lifecycle checks and reset/rebuild/vector-rebuild decisions.",
       "display_name": "Context Index Refresh",
       "package": "ls-workflow-context-index-refresh",
       "packs": [
@@ -143,7 +143,7 @@
         "documentation sync",
         "repo docs audit"
       ],
-      "description": "Run automated repo documentation alignment with source-truth scouting, current-doc research, generated artifacts, CI checks, and final review.",
+      "description": "Use when running automated repo documentation alignment with source-truth scouting, current-doc research, generated artifacts, CI checks, and final review.",
       "display_name": "Documentation Alignment",
       "package": "ls-workflow-documentation-alignment",
       "packs": [
@@ -174,7 +174,7 @@
         "lazy admin",
         "manual execution"
       ],
-      "description": "Apply guarded operations protocol for risky commands with explicit checkpoints.",
+      "description": "Use when risky operations need approval checkpoints, impact review, or guarded execution; hand off sudo, elevated, PTY, or interactive password execution to ls-workflow-ops-tmux-session.",
       "display_name": "Ops Guarded",
       "package": "ls-workflow-ops-guarded",
       "packs": [
@@ -193,9 +193,16 @@
     },
     {
       "aliases": [
-        "tmux shared session"
+        "tmux shared session",
+        "sudo tmux",
+        "elevated permissions",
+        "interactive sudo prompt",
+        "sudo password prompt handoff",
+        "require_escalated",
+        "pseudo-terminal ops",
+        "managed tmux ops"
       ],
-      "description": "Run guarded operations through managed tmux sessions with explicit run tracking.",
+      "description": "Use when commands need sudo, root/admin elevation, require_escalated, pseudo-terminal/PTY handling, interactive sudo or elevated terminal password prompts, or managed tmux run tracking.",
       "display_name": "Ops Tmux Session",
       "package": "ls-workflow-ops-tmux-session",
       "packs": [
@@ -217,7 +224,7 @@
       "aliases": [
         "git repair pipeline"
       ],
-      "description": "Recover Git state issues and enforce workflow hygiene checks.",
+      "description": "Use when recovering broken Git state and enforcing follow-up workflow hygiene checks.",
       "display_name": "Pipeline Git Repair Hygiene",
       "package": "ls-workflow-pipeline-git-repair-hygiene",
       "packs": [
@@ -241,7 +248,7 @@
       "aliases": [
         "pr feedback pipeline"
       ],
-      "description": "Turn PR feedback into fixes, tests, and follow-up review.",
+      "description": "Use when turning pull request feedback into fixes, tests, and follow-up review.",
       "display_name": "Pipeline PR Feedback Loop",
       "package": "ls-workflow-pipeline-pr-feedback-loop",
       "packs": [
@@ -263,7 +270,7 @@
       "aliases": [
         "pre publish pipeline"
       ],
-      "description": "Run pre-publish checks, version sync, and framework audit before release actions.",
+      "description": "Use when running pre-publish checks, version sync, and framework audit before release actions.",
       "display_name": "Pipeline Pre Publish",
       "package": "ls-workflow-pipeline-pre-publish",
       "packs": [
@@ -288,7 +295,7 @@
         "convert repo",
         "localsetup convert"
       ],
-      "description": "Convert an existing repo to the current Localsetup framework with backup, blocker, install, and verification gates.",
+      "description": "Use when converting an existing repo to the current Localsetup framework with backup, blocker, install, and verification gates.",
       "display_name": "Pipeline Repo Convert",
       "package": "ls-workflow-pipeline-repo-convert",
       "packs": [
@@ -315,7 +322,7 @@
       "aliases": [
         "repo polish pipeline"
       ],
-      "description": "Polish repository docs and scripts for sharing readiness.",
+      "description": "Use when polishing repository docs and scripts for sharing readiness.",
       "display_name": "Pipeline Repo Polish",
       "package": "ls-workflow-pipeline-repo-polish",
       "packs": [
@@ -338,7 +345,7 @@
       "aliases": [
         "server triage patch pipeline"
       ],
-      "description": "Capture server baseline, triage issues, and apply patch operations.",
+      "description": "Use when capturing a server baseline, triaging service issues, and planning or applying patch operations.",
       "display_name": "Pipeline Server Triage Patch",
       "package": "ls-workflow-pipeline-server-triage-patch",
       "packs": [
@@ -354,14 +361,16 @@
         "ls-linux-service-triage",
         "ls-linux-patcher"
       ],
-      "required_tools": [],
+      "required_tools": [
+        "localsetup://tool/tmux_ops"
+      ],
       "workflow_id": "pipeline-server-triage-patch"
     },
     {
       "aliases": [
         "skill onboarding pipeline"
       ],
-      "description": "Run the skill onboarding pipeline from vetting through sandbox testing.",
+      "description": "Use when running the skill onboarding pipeline from vetting through sandbox testing.",
       "display_name": "Pipeline Skill Onboard",
       "package": "ls-workflow-pipeline-skill-onboard",
       "packs": [
@@ -387,7 +396,7 @@
         "planning agent critic",
         "critic reviewed plan"
       ],
-      "description": "Create decision-complete plans through grounding, capped clarification, subagent delegation, and critic iteration.",
+      "description": "Use when creating decision-complete plans through grounding, capped clarification, subagent delegation, and critic iteration.",
       "display_name": "Planning Critic Loop",
       "package": "ls-workflow-planning-critic-loop",
       "packs": [
@@ -409,7 +418,7 @@
         "Agent Q queue",
         "process PRDs"
       ],
-      "description": "Process queued PRD tasks in batch with status tracking and outcome reporting.",
+      "description": "Use when processing queued PRD tasks in batch with status tracking and outcome reporting.",
       "display_name": "Queue Batch Implement",
       "package": "ls-workflow-queue-batch-implement",
       "packs": [
@@ -430,7 +439,7 @@
         "finalizer harness",
         "finalization checkpoint"
       ],
-      "description": "Safely inspect repo dirty state and optionally checkpoint allowlisted managed outputs without destructive git operations.",
+      "description": "Use when safely inspecting repo dirty state and optionally checkpointing allowlisted managed outputs without destructive git operations.",
       "display_name": "Repo Finalizer",
       "package": "ls-workflow-repo-finalizer",
       "packs": [
@@ -455,7 +464,7 @@
         "refresh skills",
         "scrub index"
       ],
-      "description": "Refresh and scrub the public skill index in the required sequence.",
+      "description": "Use when refreshing and scrubbing the public skill index in the required sequence.",
       "display_name": "Skills Index Refresh",
       "package": "ls-workflow-skills-index-refresh",
       "packs": [
@@ -477,7 +486,7 @@
         "decision tree",
         "reverse prompt"
       ],
-      "description": "Run reverse-prompt spec clarification with one question per turn and bounded choices.",
+      "description": "Use when running reverse-prompt spec clarification with one question per turn and bounded choices.",
       "display_name": "Reverse Prompt Spec Clarify",
       "package": "ls-workflow-spec-clarify-reverse",
       "packs": [
@@ -497,7 +506,7 @@
         "tmux terminal mode",
         "always-on tmux"
       ],
-      "description": "Manage tmux terminal mode enable, disable, and status behavior.",
+      "description": "Use when enabling, disabling, defaulting, or checking tmux terminal mode; do not use for one-off sudo or interactive password handoff.",
       "display_name": "Tmux Terminal Mode",
       "package": "ls-workflow-tmux-terminal-mode",
       "packs": [
@@ -519,7 +528,7 @@
       "aliases": [
         "Agent Q bidirectional"
       ],
-      "description": "Handle sealed Agent Q handoff payload transport over file_drop or mail adapters.",
+      "description": "Use when handling sealed Agent Q handoff payload transport over file_drop or mail adapters.",
       "display_name": "Transport Handoff",
       "package": "ls-workflow-transport-handoff",
       "packs": [
@@ -544,7 +553,7 @@
       "aliases": [
         "umbrella workflow"
       ],
-      "description": "Execute a named multi-phase umbrella workflow with explicit pre-human-confirmation gates.",
+      "description": "Use when executing a named multi-phase umbrella workflow with explicit pre-human-confirmation gates.",
       "display_name": "Umbrella Run",
       "package": "ls-workflow-umbrella-run",
       "packs": [

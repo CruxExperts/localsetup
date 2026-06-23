@@ -1,6 +1,8 @@
 ---
 name: ls-workflow-audit-markdown-references
-description: Validate markdown references and anchors across configured documentation targets.
+description: Use when validating markdown references and anchors across configured documentation targets.
+metadata:
+  version: "1.0"
 ---
 
 Use this workflow package for markdown reference integrity checks.

@@ -1,7 +1,15 @@
 workflow_id: ops-tmux-session
 display_name: Ops Tmux Session
-aliases: [tmux shared session]
-invocation: Use when commands must run through managed tmux sessions.
+aliases:
+  - tmux shared session
+  - sudo tmux
+  - elevated permissions
+  - interactive sudo prompt
+  - sudo password prompt handoff
+  - require_escalated
+  - pseudo-terminal ops
+  - managed tmux ops
+invocation: Use when commands need sudo, root/admin elevation, require_escalated, pseudo-terminal/PTY handling, interactive sudo or elevated terminal password prompts, or managed tmux run tracking through tmux_ops run/status evidence.
 required_skills: []
 required_tools: [localsetup://tool/tmux_ops]
 required_docs:

@@ -1,6 +1,8 @@
 ---
 name: ls-workflow-umbrella-run
-description: Execute a named multi-phase umbrella workflow with explicit pre-human-confirmation gates.
+description: Use when executing a named multi-phase umbrella workflow with explicit pre-human-confirmation gates.
+metadata:
+  version: "1.0"
 ---
 
 Use this workflow package for one-kickoff, multi-phase runs.

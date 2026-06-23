@@ -1,6 +1,6 @@
 ---
 name: ls-markdown-reference-validator
-description: "Validate markdown local references and anchors across configured global+repo paths; scheduled-safe report generator with YAML sidecar config."
+description: "Use when validating markdown local references and anchors across configured global+repo paths; scheduled-safe report generator with YAML sidecar config."
 metadata:
   version: "1.0"
 compatibility: "Python 3.12+, PyYAML. Config-driven targets and Kilo manifest discovery."

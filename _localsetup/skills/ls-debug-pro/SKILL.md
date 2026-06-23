@@ -1,6 +1,6 @@
 ---
 name: ls-debug-pro
-description: Systematic debugging methodology and language-specific debugging commands (Node, Python, Swift, CSS/layout, network, git bisect).
+description: Use when debugging reproducible failures with a systematic method and language-specific commands for Node, Python, Swift, CSS/layout, network, or git bisect.
 metadata:
   version: "1.2"
 ---

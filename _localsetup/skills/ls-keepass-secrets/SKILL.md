@@ -1,6 +1,6 @@
 ---
 name: ls-keepass-secrets
-description: Resolve logical secret IDs through KeePassXC using safe mapping files, JSON-first CLI commands, and redacted output by default.
+description: Use when resolving logical secret IDs through KeePassXC using safe mapping files, JSON-first CLI commands, and redacted output by default.
 metadata:
   version: "1.1"
 compatibility: "Linux/WSL2 focused; Python 3.12+; PyYAML; keepassxc-cli 2.7+ for the operational KeePassXC backend."

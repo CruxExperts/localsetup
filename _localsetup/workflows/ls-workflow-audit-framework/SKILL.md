@@ -1,6 +1,8 @@
 ---
 name: ls-workflow-audit-framework
-description: Run framework audit workflow with explicit report path and summarized findings.
+description: Use when running a Localsetup framework audit with an explicit report path and summarized findings.
+metadata:
+  version: "1.0"
 ---
 
 Use this workflow package when asked to run framework audits.

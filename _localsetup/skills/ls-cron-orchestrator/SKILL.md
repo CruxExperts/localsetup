@@ -1,6 +1,6 @@
 ---
 name: ls-cron-orchestrator
-description: "Manage cron from a repo-local manifest: time triggers, on-boot-with-delay, sequenced tasks; create, remove, reorder, install."
+description: "Use when managing cron from a repo-local manifest: time triggers, on-boot-with-delay, sequenced tasks; create, remove, reorder, install."
 metadata:
   version: "1.0"
 compatibility: "Linux cron; Python 3.12+ and PyYAML (framework). Manifest at cron/manifest.yaml."

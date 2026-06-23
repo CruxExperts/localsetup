@@ -4,11 +4,11 @@ version: 4.2
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 327b393c45fa0d5b651e5f3b6a69f906c62492f66fc014ba03bb88591e14b19f
+  source_provenance_hash: 7b8efca8236e4f80a61d6b60788f32a6ff2b2752f4316647a13fa6c4658ae12f
   emitter: generate-docs
 framework_version: 4.2.0
-source_commit: efaa62ce439542c72cabe8cdf712b8c5b7694426
-artifact_sha256: e9acc429208e0bdbf7924624e0c487d733fd2a136b27f446c5e1871bc3fddb42
+source_commit: 21d36b68d7e2b5fd553c94b3afd5168e73b215d1
+artifact_sha256: cecbbfdae88dc94a499ee4341dfda6232b7000f1a3096b870960cf5fe4c874c8
 ---
 # Workflow quick reference
 
@@ -25,7 +25,7 @@ This page is generated from `_localsetup/workflows/*/workflow.yaml`.
 | `context-index-refresh` | Context Index Refresh | context refresh; refresh context index | `ls-workflow-context-index-refresh` | `ls-context-index` |
 | `documentation-alignment` | Documentation Alignment | docs alignment; documentation sync; repo docs audit | `ls-workflow-documentation-alignment` | `ls-documentation-alignment`; `ls-docs-organization`; `ls-markdown-reference-validator`; `ls-script-and-docs-quality`; `ls-test-runner` |
 | `ops-guarded` | Ops Guarded | lazy admin; manual execution | `ls-workflow-ops-guarded` | `ls-framework-compliance` |
-| `ops-tmux-session` | Ops Tmux Session | tmux shared session | `ls-workflow-ops-tmux-session` | n/a |
+| `ops-tmux-session` | Ops Tmux Session | tmux shared session; sudo tmux; elevated permissions; interactive sudo prompt; sudo password prompt handoff; require_escalated; pseudo-terminal ops; managed tmux ops | `ls-workflow-ops-tmux-session` | n/a |
 | `pipeline-git-repair-hygiene` | Pipeline Git Repair Hygiene | git repair pipeline | `ls-workflow-pipeline-git-repair-hygiene` | `ls-unfuck-my-git-state`; `ls-git-workflows`; `ls-framework-compliance` |
 | `pipeline-pr-feedback-loop` | Pipeline PR Feedback Loop | pr feedback pipeline | `ls-workflow-pipeline-pr-feedback-loop` | `ls-receiving-code-review`; `ls-tdd-guide`; `ls-pr-reviewer` |
 | `pipeline-pre-publish` | Pipeline Pre Publish | pre publish pipeline | `ls-workflow-pipeline-pre-publish` | `ls-github-publishing-workflow`; `ls-automatic-versioning`; `ls-framework-audit` |
@@ -61,6 +61,13 @@ This page is generated from `_localsetup/workflows/*/workflow.yaml`.
 - "lazy admin" -> `ops-guarded`
 - "manual execution" -> `ops-guarded`
 - "tmux shared session" -> `ops-tmux-session`
+- "sudo tmux" -> `ops-tmux-session`
+- "elevated permissions" -> `ops-tmux-session`
+- "interactive sudo prompt" -> `ops-tmux-session`
+- "sudo password prompt handoff" -> `ops-tmux-session`
+- "require_escalated" -> `ops-tmux-session`
+- "pseudo-terminal ops" -> `ops-tmux-session`
+- "managed tmux ops" -> `ops-tmux-session`
 - "git repair pipeline" -> `pipeline-git-repair-hygiene`
 - "pr feedback pipeline" -> `pipeline-pr-feedback-loop`
 - "pre publish pipeline" -> `pipeline-pre-publish`

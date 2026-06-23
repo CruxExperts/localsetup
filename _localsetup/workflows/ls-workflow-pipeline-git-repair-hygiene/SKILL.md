@@ -1,6 +1,8 @@
 ---
 name: ls-workflow-pipeline-git-repair-hygiene
-description: Recover Git state issues and enforce workflow hygiene checks.
+description: Use when recovering broken Git state and enforcing follow-up workflow hygiene checks.
+metadata:
+  version: "1.0"
 ---
 
 Use this pipeline package for broken Git state recovery plus compliance hardening.

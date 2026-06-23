@@ -1,6 +1,8 @@
 ---
 name: ls-workflow-queue-batch-implement
-description: Process queued PRD tasks in batch with status tracking and outcome reporting.
+description: Use when processing queued PRD tasks in batch with status tracking and outcome reporting.
+metadata:
+  version: "1.0"
 ---
 
 Use this workflow package for queue-driven implementation runs.

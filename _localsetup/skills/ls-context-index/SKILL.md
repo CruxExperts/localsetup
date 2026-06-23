@@ -1,6 +1,6 @@
 ---
 name: ls-context-index
-description: Build and query the Localsetup context index with vector-first SQLite RAG, deterministic freshness/worklist surfaces, and agent-preflight checks.
+description: Use when building or querying the Localsetup context index with vector-first SQLite RAG, deterministic freshness/worklist surfaces, and agent-preflight checks.
 metadata:
   version: "0.1"
 ---

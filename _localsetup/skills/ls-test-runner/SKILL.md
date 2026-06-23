@@ -1,6 +1,6 @@
 ---
 name: ls-test-runner
-description: Write and run tests across languages and frameworks (Vitest, Jest, pytest, XCTest, Playwright). TDD workflow, coverage, and test patterns.
+description: Use when writing or running tests across languages and frameworks (Vitest, Jest, pytest, XCTest, Playwright), including TDD workflow, coverage, and test patterns.
 metadata:
   version: "1.1"
 compatibility: "Examples assume the relevant local test runners are installed. Python ASGI API tests require pytest, pytest-asyncio, and httpx with ASGITransport support."

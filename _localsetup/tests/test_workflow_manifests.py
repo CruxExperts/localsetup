@@ -4,6 +4,7 @@ import shutil
 from pathlib import Path
 
 import pytest
+import yaml
 
 from _localsetup.core.docs_artifacts.writers import write_workflow_registry
 from _localsetup.core.manifests import load_pack_config, load_platforms
@@ -100,6 +101,20 @@ def test_workflow_registry_renders_resolver_doc_tokens_as_local_links(tmp_path: 
 
     assert "../../localsetup://doc" not in text
     assert "[tmux-ops-managed.md](ops/tmux-ops-managed.md)" in text
+
+
+def test_tmux_ops_workflow_trigger_metadata_covers_elevated_execution() -> None:
+    workflow_dir = ROOT / "_localsetup" / "workflows" / "ls-workflow-ops-tmux-session"
+    skill_text = (workflow_dir / "SKILL.md").read_text(encoding="utf-8").lower()
+    manifest = yaml.safe_load((workflow_dir / "workflow.yaml").read_text(encoding="utf-8"))
+    manifest_text = yaml.safe_dump(manifest, sort_keys=True).lower()
+    trigger_surface = f"{skill_text}\n{manifest_text}"
+
+    for term in ("sudo", "elevated", "password prompt", "require_escalated", "tmux_ops run"):
+        assert term in trigger_surface
+
+    assert "raw tmux send-keys" not in trigger_surface
+    assert "tmux send-keys" not in trigger_surface
 
 
 def test_workflow_catalog_rejects_unsafe_smoke_and_migration_strings(tmp_path: Path) -> None:

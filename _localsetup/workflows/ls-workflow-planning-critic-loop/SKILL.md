@@ -1,6 +1,8 @@
 ---
 name: ls-workflow-planning-critic-loop
-description: Create decision-complete plans through grounding, capped clarification, subagent delegation, and critic iteration.
+description: Use when creating decision-complete plans through grounding, capped clarification, subagent delegation, and critic iteration.
+metadata:
+  version: "1.0"
 ---
 
 Use this workflow package for non-trivial planning work where the agent must produce a structured plan before implementation, handoff, or approval.

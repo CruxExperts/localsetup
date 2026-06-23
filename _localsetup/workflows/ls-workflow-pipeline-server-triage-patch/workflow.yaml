@@ -6,7 +6,8 @@ required_skills:
   - ls-system-info
   - ls-linux-service-triage
   - ls-linux-patcher
-required_tools: []
+required_tools:
+  - localsetup://tool/tmux_ops
 required_docs:
   - _localsetup/docs/WORKFLOW_QUICK_REF.md
   - _localsetup/docs/ops/tmux-ops-managed.md

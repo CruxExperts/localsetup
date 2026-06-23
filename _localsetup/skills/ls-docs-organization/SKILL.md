@@ -1,6 +1,6 @@
 ---
 name: ls-docs-organization
-description: "Repo-level docs router: classify documentation requests, propose paths and filenames, and keep indexes in sync."
+description: "Use when creating, moving, renaming, or significantly updating repo docs; classifies documentation requests, proposes paths, and keeps indexes in sync."
 metadata:
   version: "0.1.0"
 ---
