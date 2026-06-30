@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 17f2268dfb28d1baf21fb24e5ffc14d37f1b529542755d5d13b98f5ae24d4278
+  source_provenance_hash: e26885f172b4ee987c74e9acc22c48cd1444243c04c9d2eaa25e64285d0a041f
   emitter: generate-docs
-framework_version: 4.2.2
-source_commit: 67811e101895f6d01e0b3c5a827da8a8e8be0a7d
-artifact_sha256: beb034e7d7748f4c5c422cd8fbe562c9179961388361f67ea9cdbb1313f4f602
+framework_version: 4.2.3
+source_commit: 71c565fc7cb86351d3a64e8a8a92312a3b3227a5
+artifact_sha256: 1f9f679f9d6bef8083a903d33dc3e703a1d5e1cccc0e87290a300158660c4e52
 ---
 # Implementation File Map
 
@@ -725,6 +725,15 @@ artifact_sha256: beb034e7d7748f4c5c422cd8fbe562c9179961388361f67ea9cdbb1313f4f60
 | `keep` | `_localsetup/skills/ls-test-runner/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-typescript-code-quality/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-typescript-code-quality/references/typescript-quality-standards.md` |
+| `keep` | `_localsetup/skills/ls-ui-browser-debugging/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-ui-browser-debugging/references/browser-mcp-landscape.md` |
+| `keep` | `_localsetup/skills/ls-ui-browser-debugging/references/browser-session-management.md` |
+| `keep` | `_localsetup/skills/ls-ui-browser-debugging/references/mcp-bootstrap-and-repair.md` |
+| `keep` | `_localsetup/skills/ls-ui-browser-debugging/references/source-ledger.md` |
+| `keep` | `_localsetup/skills/ls-ui-browser-debugging/references/subagent-browser-workflows.md` |
+| `keep` | `_localsetup/skills/ls-ui-browser-debugging/references/ui-feasibility-review.md` |
+| `keep` | `_localsetup/skills/ls-ui-browser-debugging/scripts/chrome_devtools_mcp_environment.py` |
+| `keep` | `_localsetup/skills/ls-ui-browser-debugging/scripts/verify_ui_browser_debugging_sources.py` |
 | `keep` | `_localsetup/skills/ls-unfuck-my-git-state/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-unfuck-my-git-state/references/overview.md` |
 | `keep` | `_localsetup/skills/ls-unfuck-my-git-state/references/recovery-checklist.md` |
@@ -807,6 +816,7 @@ artifact_sha256: beb034e7d7748f4c5c422cd8fbe562c9179961388361f67ea9cdbb1313f4f60
 | `keep` | `_localsetup/tests/test_skill_sandbox_tester.py` |
 | `keep` | `_localsetup/tests/test_tmux_ops.py` |
 | `keep` | `_localsetup/tests/test_tmux_terminal_mode.py` |
+| `keep` | `_localsetup/tests/test_ui_browser_debugging_skill.py` |
 | `keep` | `_localsetup/tests/test_validation_tooling.py` |
 | `keep` | `_localsetup/tests/test_versioning.py` |
 | `keep` | `_localsetup/tests/test_versioning_release_push.py` |
