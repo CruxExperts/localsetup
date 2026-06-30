@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 27d8754689a42df8aea1e9518c0444b1d59a63e1c71bbc505af736e598e71bac
+  source_provenance_hash: 17f2268dfb28d1baf21fb24e5ffc14d37f1b529542755d5d13b98f5ae24d4278
   emitter: generate-docs
 framework_version: 4.2.2
-source_commit: ea30d62e15f084ad34409a5f274f5c428e492341
-artifact_sha256: cc0b8ce5a97199f4e7f949e02321b98db52113487db254b65f31d2673d11e4dc
+source_commit: 67811e101895f6d01e0b3c5a827da8a8e8be0a7d
+artifact_sha256: e3961d6309ebb3ac812d0e87e6b10a61bb3df75557a9a2d57c3cf63390521116
 ---
 # Skill And Workflow Packs
 
@@ -37,6 +37,7 @@ artifact_sha256: cc0b8ce5a97199f4e7f949e02321b98db52113487db254b65f31d2673d11e4d
 | `dev` | `skill` | `ls-shadcn-ui` | `development` | 30 | `react, ui` | `localsetup-shadcn-ui` |
 | `core` | `skill` | `ls-tdd-guide` | `development` | 30 | `tdd, testing` | `localsetup-tdd-guide` |
 | `dev` | `skill` | `ls-typescript-code-quality` | `development` | 30 | `typescript, quality` | `localsetup-typescript-code-quality` |
+| `dev` | `skill` | `ls-ui-browser-debugging` | `development` | 30 | `ui, browser, debugging, mcp` | `localsetup-ui-browser-debugging` |
 | `ops` | `skill` | `ls-ansible-skill` | `operations` | 40 | `ansible, infrastructure` | `localsetup-ansible-skill` |
 | `ops` | `skill` | `ls-backlog-and-reminders` | `operations` | 40 | `backlog, reminders` | `localsetup-backlog-and-reminders` |
 | `harness` | `skill` | `ls-codex-heartbeat` | `operations` | 40 | `heartbeat, automation` | `localsetup-codex-heartbeat` |

@@ -104,6 +104,7 @@ Load the appropriate skill when the task matches. Runtime skills are managed in 
 | ls-nodejs-nextjs | Node.js/Next.js/React runbook | Package-manager, build, migration, debugging, testing, security, deployment, and current-version verification |
 | ls-shadcn-ui | shadcn/ui component workflow | Setup, components, CLI/MCP, registry, theming, forms, aliases, Radix/Base UI, updates, and troubleshooting |
 | ls-typescript-code-quality | TypeScript code quality guide | TypeScript/TSX code quality, tsconfig, typed ESLint or Biome config, Node TypeScript scripts, and TypeScript-heavy framework code |
+| ls-ui-browser-debugging | UI browser debugging workflow | UI review, Chrome DevTools MCP, Playwright MCP/CLI, browser ownership, evidence capture, minimal fixes, durable UI regression tests |
 
 ## Framework docs index
 

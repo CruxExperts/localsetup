@@ -4,17 +4,17 @@ version: 4.2
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 27d8754689a42df8aea1e9518c0444b1d59a63e1c71bbc505af736e598e71bac
+  source_provenance_hash: 17f2268dfb28d1baf21fb24e5ffc14d37f1b529542755d5d13b98f5ae24d4278
   emitter: generate-docs
 framework_version: 4.2.2
-source_commit: ea30d62e15f084ad34409a5f274f5c428e492341
-artifact_sha256: bb6515a7b6e8fd447740d3270a531626ab120c85a7e56338492c52fdc2f9614a
+source_commit: 67811e101895f6d01e0b3c5a827da8a8e8be0a7d
+artifact_sha256: 8f803e87b062fd849dd30f7ecac6d7b50bb010f8df6fefaed5c2f24bba03e1f4
 ---
 # Shipped skills catalog
 
 This page is generated from `_localsetup/skills/*/SKILL.md`.
 
-Total shipped skills: 59
+Total shipped skills: 60
 
 | Skill ID | Class | Priority | Packs | Tags | Name | Version | Description |
 |---|---|---:|---|---|---|---|---|
@@ -44,6 +44,7 @@ Total shipped skills: 59
 | `ls-shadcn-ui` | `development` | 30 | `dev` | `react`, `ui` | `ls-shadcn-ui` | `1.0` | Project-aware shadcn/ui guide. Use for shadcn setup, components, CLI/MCP, registry, theming, forms, Radix/Base UI, aliases, updates, and troubleshooting in React UI projects. |
 | `ls-tdd-guide` | `development` | 30 | `core` | `tdd`, `testing` | `ls-tdd-guide` | `1.1` | Use when following a test-driven development workflow with test generation, coverage analysis, and multi-framework support. |
 | `ls-typescript-code-quality` | `development` | 30 | `dev` | `typescript`, `quality` | `ls-typescript-code-quality` | `1.0` | Guide TypeScript code quality work. Use when touching TypeScript, TSX, tsconfig, typed ESLint or Biome config, Node TypeScript scripts, or TypeScript-heavy framework code. |
+| `ls-ui-browser-debugging` | `development` | 30 | `dev` | `ui`, `browser`, `debugging`, `mcp` | `ls-ui-browser-debugging` | `1.0` | UI review and browser-driven debugging workflow for Chrome DevTools MCP, Playwright MCP/CLI, browser ownership, evidence capture, minimal fixes, and durable UI regression tests. |
 | `ls-ansible-skill` | `operations` | 40 | `ops` | `ansible`, `infrastructure` | `ls-ansible-skill` | `1.1` | Infrastructure automation with Ansible. Use for server provisioning, configuration management, application deployment, and multi-host orchestration. Includes example playbooks for VPS setup, security hardening, and common server configurations. Bundled examples may reference one platform; adapt paths and commands for your environment. |
 | `ls-backlog-and-reminders` | `operations` | 40 | `ops` | `backlog`, `reminders` | `ls-backlog-and-reminders` | `1.1` | Record deferred ideas, to-dos, and reminders (with optional due date or 'whenever'); show due/overdue when user starts a session or asks. Use when user says 'add to backlog', 'remind me', 'I'll do this later', 'what's due?', 'show my backlog', 'start my session', or wants to capture ideas for later. |
 | `ls-codex-heartbeat` | `operations` | 40 | `harness` | `heartbeat`, `automation` | `ls-codex-heartbeat` | `1.0` | Opt-in Codex heartbeat harness for target repositories: initialize config, run transaction-safe heartbeat checks, preserve artifacts, and wire cron only after explicit activation. |

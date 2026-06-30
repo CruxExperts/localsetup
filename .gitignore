@@ -93,3 +93,6 @@ state/
 .localsetup-maint/reports/
 .localsetup-maint/state/
 .localsetup-maint/docs/
+.localsetup-maint/ui-browser-artifacts/
+.localsetup-maint/ui-browser-profiles/
+.localsetup-maint/ui-browser-sessions/

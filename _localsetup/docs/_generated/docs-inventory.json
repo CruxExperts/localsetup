@@ -74,12 +74,12 @@
   ],
   "cli_commands": [],
   "counts": {
-    "docs": 363,
+    "docs": 370,
     "framework_docs": 63,
     "generated_docs": 5,
     "platforms": 6,
     "public_docs": 6,
-    "skills": 59,
+    "skills": 60,
     "workflow_packs": 31,
     "workflows": 23
   },
@@ -3306,6 +3306,76 @@
       "managed_blocks": [],
       "owner_package": "",
       "owner_skill": "",
+      "path": "_localsetup/skills/ls-ui-browser-debugging/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-ui-browser-debugging/references/browser-mcp-landscape.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-ui-browser-debugging/references/browser-session-management.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-ui-browser-debugging/references/mcp-bootstrap-and-repair.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-ui-browser-debugging/references/source-ledger.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-ui-browser-debugging/references/subagent-browser-workflows.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-ui-browser-debugging/references/ui-feasibility-review.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
       "path": "_localsetup/skills/ls-unfuck-my-git-state/SKILL.md",
       "status": "",
       "version": ""
@@ -3761,16 +3831,16 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "edf7e15f5884c8f1e3eec319bcf12055c5e82570f470e38c6150660b1cc7b50d",
+    "artifact_sha256": "a292dea6f9819b733b228ab185a8c64c742b90768122825157ce7b529d3d3f03",
     "emitter": "docs-align",
     "framework_version": "4.2.2",
     "schema_version": 1,
-    "source_commit": "ea30d62e15f084ad34409a5f274f5c428e492341",
-    "source_dirty": false,
-    "source_provenance_hash": "27d8754689a42df8aea1e9518c0444b1d59a63e1c71bbc505af736e598e71bac",
-    "source_root_id": "31e5cc9f9025d86e529652bb0931817acb772674ffc79a2b591e108e1364fe3b",
+    "source_commit": "67811e101895f6d01e0b3c5a827da8a8e8be0a7d",
+    "source_dirty": true,
+    "source_provenance_hash": "17f2268dfb28d1baf21fb24e5ffc14d37f1b529542755d5d13b98f5ae24d4278",
+    "source_root_id": "8a29856e7d2dc3ae4855b32198c93f9c4c21c4dbfe7d44a55344d8f2e67a242b",
     "source_tag": null,
-    "source_tree_sha": "e7ceb9c68961723a40247f6febf4feb0829993e5"
+    "source_tree_sha": "7bc60239045c32ef38eaae3f0698de5fa9dc1743"
   },
   "repo": ".",
   "schema_version": "1.0",
@@ -4149,6 +4219,22 @@
       "tags": [
         "typescript",
         "quality"
+      ]
+    },
+    {
+      "class": "development",
+      "name": "ls-ui-browser-debugging",
+      "owner_scope": "skill",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/skills/ls-ui-browser-debugging",
+      "sort_priority": 30,
+      "tags": [
+        "ui",
+        "browser",
+        "debugging",
+        "mcp"
       ]
     },
     {

@@ -4,11 +4,11 @@ version: 4.2
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 27d8754689a42df8aea1e9518c0444b1d59a63e1c71bbc505af736e598e71bac
+  source_provenance_hash: 17f2268dfb28d1baf21fb24e5ffc14d37f1b529542755d5d13b98f5ae24d4278
   emitter: generate-docs
 framework_version: 4.2.2
-source_commit: ea30d62e15f084ad34409a5f274f5c428e492341
-artifact_sha256: 4160a6d43cff88a014d147e024c5b25c5198e4efd9bf072dc62da8f52c6b30ff
+source_commit: 67811e101895f6d01e0b3c5a827da8a8e8be0a7d
+artifact_sha256: 476d84e80f6b1363466b8fa1868e9f1b9ea22535809623ad77b017716749dac7
 ---
 # Skill Alias Map
 
@@ -72,4 +72,5 @@ artifact_sha256: 4160a6d43cff88a014d147e024c5b25c5198e4efd9bf072dc62da8f52c6b30f
 | `localsetup-tdd-guide` | `ls-tdd-guide` |
 | `localsetup-test-runner` | `ls-test-runner` |
 | `localsetup-typescript-code-quality` | `ls-typescript-code-quality` |
+| `localsetup-ui-browser-debugging` | `ls-ui-browser-debugging` |
 | `localsetup-unfuck-my-git-state` | `ls-unfuck-my-git-state` |

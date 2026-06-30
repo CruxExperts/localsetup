@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 27d8754689a42df8aea1e9518c0444b1d59a63e1c71bbc505af736e598e71bac
+  source_provenance_hash: 17f2268dfb28d1baf21fb24e5ffc14d37f1b529542755d5d13b98f5ae24d4278
   emitter: generate-docs
 framework_version: 4.2.2
-source_commit: ea30d62e15f084ad34409a5f274f5c428e492341
-artifact_sha256: 5ac0ac0df5adc9f9e340476884202ca2ddd577b276f1902782d6b4b443c6ae57
+source_commit: 67811e101895f6d01e0b3c5a827da8a8e8be0a7d
+artifact_sha256: beb034e7d7748f4c5c422cd8fbe562c9179961388361f67ea9cdbb1313f4f602
 ---
 # Implementation File Map
 
@@ -922,6 +922,7 @@ artifact_sha256: 5ac0ac0df5adc9f9e340476884202ca2ddd577b276f1902782d6b4b443c6ae5
 | `keep` | `_localsetup/workflows/ls-workflow-transport-handoff/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-umbrella-run/SKILL.md` |
 | `keep` | `_localsetup/workflows/ls-workflow-umbrella-run/workflow.yaml` |
+| `keep` | `agent-repo-shape.json` |
 | `keep` | `assets/README.md` |
 | `keep` | `assets/localsetup-architecture.svg` |
 | `keep` | `assets/localsetup-install-lifecycle.svg` |
@@ -929,6 +930,7 @@ artifact_sha256: 5ac0ac0df5adc9f9e340476884202ca2ddd577b276f1902782d6b4b443c6ae5
 | `keep` | `assets/localsetup-readme-hero.svg` |
 | `keep` | `config/localsetup_finalizer.yaml` |
 | `keep` | `docs.config.yaml` |
+| `keep` | `external_skills.lock.json` |
 | `keep` | `install` |
 | `keep` | `pyproject.toml` |
 | `keep` | `tools/qc_patrol/__init__.py` |

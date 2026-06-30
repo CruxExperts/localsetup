@@ -205,7 +205,7 @@ def test_skill_taxonomy_covers_all_shipped_skills_and_allowed_classes() -> None:
     taxonomy = pack.skill_taxonomy
 
     assert set(taxonomy) == skill_names
-    assert len(taxonomy) == 59
+    assert len(taxonomy) == 60
     assert {row["class"] for row in taxonomy.values()} <= ALLOWED_SKILL_TAXONOMY_CLASSES
     assert {row["owner_scope"] for row in taxonomy.values()} == {"skill"}
 
@@ -218,7 +218,7 @@ def test_skill_catalog_uses_taxonomy_sort_order_and_payload_fields() -> None:
 
     assert sort_keys == sorted(sort_keys)
     assert [row["id"] for row in payload["skills"]] == [skill.name for skill in catalog]
-    assert payload["count"] == len(catalog) == 59
+    assert payload["count"] == len(catalog) == 60
     assert payload["skills"][0]["sort_priority"] == 10
     assert {"class", "sort_priority", "tags", "owner_scope", "packs"} <= set(payload["skills"][0])
 

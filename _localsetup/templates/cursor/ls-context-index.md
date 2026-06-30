@@ -65,5 +65,6 @@
 | ls-shadcn-ui | shadcn/ui component workflow | Setup, components, CLI/MCP, registry, theming, forms, aliases, Radix/Base UI, updates, and troubleshooting |
 | ls-scrapling | Host-first Scrapling integration; install/upgrade via pipx, run single-URL extractions with adaptive fetch modes and job tracking, and keep adapters current via parsed CLI/docs state | **Default** web scraping and website fetching skill; use for most tasks that need content from public web pages |
 | ls-typescript-code-quality | TypeScript code quality guide | TypeScript/TSX code quality, tsconfig, typed ESLint or Biome config, Node TypeScript scripts, and TypeScript-heavy framework code |
+| ls-ui-browser-debugging | UI browser debugging workflow | UI review, Chrome DevTools MCP, Playwright MCP/CLI, browser ownership, evidence capture, minimal fixes, durable UI regression tests |
 
 Framework docs: _localsetup/docs/ (AGENTIC_DESIGN_INDEX.md, WORKFLOW_REGISTRY.md, PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md).

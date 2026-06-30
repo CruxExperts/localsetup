@@ -88,6 +88,7 @@
         "ls-shadcn-ui",
         "ls-tdd-guide",
         "ls-typescript-code-quality",
+        "ls-ui-browser-debugging",
         "ls-skill-discovery",
         "ls-skill-importer",
         "ls-skill-normalizer",
@@ -244,16 +245,16 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/plugin-packs.json",
-    "artifact_sha256": "a322c4ca73659fcbecbb5eb74417514aeef4c6667158a49fb660a319ced93701",
+    "artifact_sha256": "55b0f9eac57602d147864ab97fe33ad82ffe0d1aedba42f5dfee29477ca79467",
     "emitter": "generate-docs",
     "framework_version": "4.2.2",
     "schema_version": 1,
-    "source_commit": "ea30d62e15f084ad34409a5f274f5c428e492341",
-    "source_dirty": false,
-    "source_provenance_hash": "27d8754689a42df8aea1e9518c0444b1d59a63e1c71bbc505af736e598e71bac",
-    "source_root_id": "31e5cc9f9025d86e529652bb0931817acb772674ffc79a2b591e108e1364fe3b",
+    "source_commit": "67811e101895f6d01e0b3c5a827da8a8e8be0a7d",
+    "source_dirty": true,
+    "source_provenance_hash": "17f2268dfb28d1baf21fb24e5ffc14d37f1b529542755d5d13b98f5ae24d4278",
+    "source_root_id": "8a29856e7d2dc3ae4855b32198c93f9c4c21c4dbfe7d44a55344d8f2e67a242b",
     "source_tag": null,
-    "source_tree_sha": "e7ceb9c68961723a40247f6febf4feb0829993e5"
+    "source_tree_sha": "7bc60239045c32ef38eaae3f0698de5fa9dc1743"
   },
   "schema_version": 1
 }

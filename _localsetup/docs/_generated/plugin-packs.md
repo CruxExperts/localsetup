@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 27d8754689a42df8aea1e9518c0444b1d59a63e1c71bbc505af736e598e71bac
+  source_provenance_hash: 17f2268dfb28d1baf21fb24e5ffc14d37f1b529542755d5d13b98f5ae24d4278
   emitter: generate-docs
 framework_version: 4.2.2
-source_commit: ea30d62e15f084ad34409a5f274f5c428e492341
-artifact_sha256: 06139fb096845e3d857f34b68f9e796315726172ec7d0d24317d3e3c55099d84
+source_commit: 67811e101895f6d01e0b3c5a827da8a8e8be0a7d
+artifact_sha256: 0c56ce653787d749cfa1bd295d59036635d548518287561c5f5ce4ccfc94844a
 ---
 # Plugin Packs
 
@@ -15,7 +15,7 @@ Portable plugin pack metadata is generated from `_localsetup/config/plugin-packs
 |---|---|---|---|---:|---:|---|
 | `localsetup-bootstrap` | `bootstrap` | `bootstrap` | `codex` | 12 | 4 | `ls-plugin-bootstrap-context` |
 | `localsetup-core` | `core` | `core` | `codex` | 9 | 2 | `ls-plugin-core-context` |
-| `localsetup-dev` | `dev` | `development` | `codex` | 26 | 13 | `ls-plugin-dev-context` |
+| `localsetup-dev` | `dev` | `development` | `codex` | 27 | 13 | `ls-plugin-dev-context` |
 | `localsetup-ops` | `ops` | `operations` | `codex` | 6 | 3 | `ls-plugin-ops-context` |
 | `localsetup-integrations` | `integrations` | `integrations` | `codex` | 11 | 1 | `ls-plugin-integrations-context` |
 | `localsetup-publishing` | `publishing` | `publishing` | `codex` | 10 | 2 | `ls-plugin-publishing-context` |

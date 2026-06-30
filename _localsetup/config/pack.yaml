@@ -57,6 +57,7 @@ packs:
   - ls-receiving-code-review
   - ls-shadcn-ui
   - ls-typescript-code-quality
+  - ls-ui-browser-debugging
   - ls-unfuck-my-git-state
   ops:
   - ls-ansible-skill
@@ -330,6 +331,15 @@ extensions:
       tags:
       - typescript
       - quality
+      owner_scope: skill
+    ls-ui-browser-debugging:
+      class: development
+      sort_priority: 30
+      tags:
+      - ui
+      - browser
+      - debugging
+      - mcp
       owner_scope: skill
     ls-ansible-skill:
       class: operations

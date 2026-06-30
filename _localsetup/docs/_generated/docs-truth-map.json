@@ -42,18 +42,18 @@
     ],
     "provenance": {
       "artifact_path": "_localsetup/docs/_generated/facts.json",
-      "artifact_sha256": "d3291bbc50a73e01996d0fa194bcef664a0d3c7fa31131d18ba45ece0684abbd",
+      "artifact_sha256": "9e533622c80cf14ed9615c2bfa640c1276bf3f71cdce4bfd875ba10e7f499334",
       "emitter": "generate-docs",
       "framework_version": "4.2.2",
       "schema_version": 1,
-      "source_commit": "ea30d62e15f084ad34409a5f274f5c428e492341",
-      "source_dirty": false,
-      "source_provenance_hash": "27d8754689a42df8aea1e9518c0444b1d59a63e1c71bbc505af736e598e71bac",
-      "source_root_id": "31e5cc9f9025d86e529652bb0931817acb772674ffc79a2b591e108e1364fe3b",
+      "source_commit": "67811e101895f6d01e0b3c5a827da8a8e8be0a7d",
+      "source_dirty": true,
+      "source_provenance_hash": "17f2268dfb28d1baf21fb24e5ffc14d37f1b529542755d5d13b98f5ae24d4278",
+      "source_root_id": "8a29856e7d2dc3ae4855b32198c93f9c4c21c4dbfe7d44a55344d8f2e67a242b",
       "source_tag": null,
-      "source_tree_sha": "e7ceb9c68961723a40247f6febf4feb0829993e5"
+      "source_tree_sha": "7bc60239045c32ef38eaae3f0698de5fa9dc1743"
     },
-    "skill_count": 59,
+    "skill_count": 60,
     "skills": [
       {
         "class": "core",
@@ -480,6 +480,24 @@
         "tags": [
           "typescript",
           "quality"
+        ],
+        "version": "1.0"
+      },
+      {
+        "class": "development",
+        "id": "ls-ui-browser-debugging",
+        "name": "ls-ui-browser-debugging",
+        "owner_scope": "skill",
+        "packs": [
+          "dev"
+        ],
+        "path": "_localsetup/skills/ls-ui-browser-debugging/SKILL.md",
+        "sort_priority": 30,
+        "tags": [
+          "ui",
+          "browser",
+          "debugging",
+          "mcp"
         ],
         "version": "1.0"
       },
@@ -1177,19 +1195,19 @@
       "skill-lifecycle",
       "specialized"
     ],
-    "count": 59,
+    "count": 60,
     "provenance": {
       "artifact_path": "_localsetup/docs/_generated/skill-taxonomy.json",
-      "artifact_sha256": "87c0597c463b198540fbccb809a375d585fdf631140c45cd4ff8b594be4e9301",
+      "artifact_sha256": "7602af9582b5536d9182377d86f4120d51799d0e1f83b0d145913816151e24b9",
       "emitter": "generate-docs",
       "framework_version": "4.2.2",
       "schema_version": 1,
-      "source_commit": "ea30d62e15f084ad34409a5f274f5c428e492341",
-      "source_dirty": false,
-      "source_provenance_hash": "27d8754689a42df8aea1e9518c0444b1d59a63e1c71bbc505af736e598e71bac",
-      "source_root_id": "31e5cc9f9025d86e529652bb0931817acb772674ffc79a2b591e108e1364fe3b",
+      "source_commit": "67811e101895f6d01e0b3c5a827da8a8e8be0a7d",
+      "source_dirty": true,
+      "source_provenance_hash": "17f2268dfb28d1baf21fb24e5ffc14d37f1b529542755d5d13b98f5ae24d4278",
+      "source_root_id": "8a29856e7d2dc3ae4855b32198c93f9c4c21c4dbfe7d44a55344d8f2e67a242b",
       "source_tag": null,
-      "source_tree_sha": "e7ceb9c68961723a40247f6febf4feb0829993e5"
+      "source_tree_sha": "7bc60239045c32ef38eaae3f0698de5fa9dc1743"
     },
     "schema_version": 1,
     "skills": [
@@ -1567,6 +1585,22 @@
         "tags": [
           "typescript",
           "quality"
+        ]
+      },
+      {
+        "class": "development",
+        "id": "ls-ui-browser-debugging",
+        "owner_scope": "skill",
+        "packs": [
+          "dev"
+        ],
+        "path": "_localsetup/skills/ls-ui-browser-debugging",
+        "sort_priority": 30,
+        "tags": [
+          "ui",
+          "browser",
+          "debugging",
+          "mcp"
         ]
       },
       {
@@ -2047,16 +2081,16 @@
   },
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "0feb1fb92df1f0676d93b19fef4463bb5ab73ea4ac9b783a02dff50d3823c457",
+    "artifact_sha256": "30a3f266b7034b4f11611427d94ee527319094f77f15dd55960e837b7417a360",
     "emitter": "docs-align",
     "framework_version": "4.2.2",
     "schema_version": 1,
-    "source_commit": "ea30d62e15f084ad34409a5f274f5c428e492341",
-    "source_dirty": false,
-    "source_provenance_hash": "27d8754689a42df8aea1e9518c0444b1d59a63e1c71bbc505af736e598e71bac",
-    "source_root_id": "31e5cc9f9025d86e529652bb0931817acb772674ffc79a2b591e108e1364fe3b",
+    "source_commit": "67811e101895f6d01e0b3c5a827da8a8e8be0a7d",
+    "source_dirty": true,
+    "source_provenance_hash": "17f2268dfb28d1baf21fb24e5ffc14d37f1b529542755d5d13b98f5ae24d4278",
+    "source_root_id": "8a29856e7d2dc3ae4855b32198c93f9c4c21c4dbfe7d44a55344d8f2e67a242b",
     "source_tag": null,
-    "source_tree_sha": "e7ceb9c68961723a40247f6febf4feb0829993e5"
+    "source_tree_sha": "7bc60239045c32ef38eaae3f0698de5fa9dc1743"
   },
   "schema_version": "1.0",
   "truths": {
@@ -2389,7 +2423,7 @@
         "_localsetup/skills/ls-*/SKILL.md",
         "_localsetup/config/pack.yaml"
       ],
-      "value": 59
+      "value": 60
     },
     "skill_taxonomy": {
       "sources": [
@@ -2406,7 +2440,7 @@
           "skill-lifecycle",
           "specialized"
         ],
-        "count": 59,
+        "count": 60,
         "schema_version": 1,
         "skills": [
           {
@@ -2783,6 +2817,22 @@
             "tags": [
               "typescript",
               "quality"
+            ]
+          },
+          {
+            "class": "development",
+            "id": "ls-ui-browser-debugging",
+            "owner_scope": "skill",
+            "packs": [
+              "dev"
+            ],
+            "path": "_localsetup/skills/ls-ui-browser-debugging",
+            "sort_priority": 30,
+            "tags": [
+              "ui",
+              "browser",
+              "debugging",
+              "mcp"
             ]
           },
           {

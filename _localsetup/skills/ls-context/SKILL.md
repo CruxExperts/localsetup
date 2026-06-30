@@ -174,6 +174,7 @@ For current model names, routing preferences, pricing, limits, and rate-card han
 - `ls-shadcn-ui`: shadcn/ui component workflow.
 - `ls-omniroute-update`: OmniRoute update reporting.
 - `ls-typescript-code-quality`: TypeScript/TSX code quality.
+- `ls-ui-browser-debugging`: UI review and browser-driven debugging with Chrome DevTools MCP.
 
 ## Key Docs
 
