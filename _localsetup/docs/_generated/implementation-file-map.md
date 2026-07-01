@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: e26885f172b4ee987c74e9acc22c48cd1444243c04c9d2eaa25e64285d0a041f
+  source_provenance_hash: 18a26ea1c9777bd07b21f55405830c5f38457fcb6c33d3a0828278f4311a15ca
   emitter: generate-docs
-framework_version: 4.2.3
-source_commit: 71c565fc7cb86351d3a64e8a8a92312a3b3227a5
-artifact_sha256: 1f9f679f9d6bef8083a903d33dc3e703a1d5e1cccc0e87290a300158660c4e52
+framework_version: 4.2.4
+source_commit: 58cd8efdb8847b1e5a38cdec22c0f1dbe497ad68
+artifact_sha256: ada327f14f679dac37e42ff5ac6c0100b84aaff221e61bc9629b8944127a48ac
 ---
 # Implementation File Map
 
@@ -150,6 +150,7 @@ artifact_sha256: 1f9f679f9d6bef8083a903d33dc3e703a1d5e1cccc0e87290a300158660c4e5
 | `refactor` | `_localsetup/core/migration.py` |
 | `refactor` | `_localsetup/core/models.py` |
 | `refactor` | `_localsetup/core/package.py` |
+| `refactor` | `_localsetup/core/package_cleanup.py` |
 | `refactor` | `_localsetup/core/package_surface.py` |
 | `refactor` | `_localsetup/core/path_contract.py` |
 | `refactor` | `_localsetup/core/path_reprocessor.py` |
