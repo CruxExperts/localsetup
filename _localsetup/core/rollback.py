@@ -6,6 +6,7 @@ import shutil
 from .adapters import remove_managed_adapter_entries, legacy_global_roots, validate_platform_selectors
 from .lockfile import load_json
 from .manifests import load_pack_config
+from .package_cleanup import is_package_backup_artifact
 from .paths import expand_user_path, legacy_target_lockfile_path, repo_path, target_lockfile_path
 from .provenance import is_managed_package
 from .registry import load_registry, package_has_other_refs, remove_target
@@ -39,7 +40,7 @@ def _remove_unreferenced_managed_packages(global_root: Path, registry_payload: d
     }
     removed: list[str] = []
     for path in sorted(global_root.iterdir(), key=lambda item: item.name):
-        if path.name.startswith(".localsetup-") or path.name in referenced:
+        if path.name.startswith(".localsetup-") or is_package_backup_artifact(path) or path.name in referenced:
             continue
         if path.exists() and is_managed_package(path):
             shutil.rmtree(path)
