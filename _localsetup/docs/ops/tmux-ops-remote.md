@@ -12,7 +12,7 @@ For the local managed workflow, state layout, JSON examples, and agent script, s
 
 ## Configuration
 
-- `REMOTE_TMUX_HOST` - Hostname or IP of the machine where tmux runs. When set, `_localsetup/tools/tmux_ops` runs the Python tool over SSH on that host and returns the same JSON.
+- `REMOTE_TMUX_HOST` - Hostname or IP of the machine where tmux runs. When set, `localsetup://tool/tmux_ops` runs the Python tool over SSH on that host and returns the same JSON.
 - `REMOTE_TMUX_CWD` - Optional repo path on the remote host. Default: `/opt/devzone/devops`.
 
 ## Flow
@@ -21,9 +21,9 @@ Use the same managed commands locally or remotely:
 
 ```bash
 export REMOTE_TMUX_HOST=sh0t
-./_localsetup/tools/tmux_ops pick
-./_localsetup/tools/tmux_ops probe -t ops
-./_localsetup/tools/tmux_ops run -t ops -- sudo apt update
+localsetup://tool/tmux_ops pick
+localsetup://tool/tmux_ops probe -t ops
+localsetup://tool/tmux_ops run -t ops -- sudo apt update
 ```
 
 The returned `attach_command`, `state_dir`, `log_path`, and `run_id` all refer to the remote host.
@@ -32,13 +32,13 @@ If `probe` or `run` returns `action_required: true`, attach on the remote tmux h
 If a run returns `status: "running"`, keep watching by run ID:
 
 ```bash
-./_localsetup/tools/tmux_ops status -t ops --run-id <run_id> --wait --timeout 120
+localsetup://tool/tmux_ops status -t ops --run-id <run_id> --wait --timeout 120
 ```
 
 Interrupt only through the managed cancel path:
 
 ```bash
-./_localsetup/tools/tmux_ops cancel -t ops --run-id <run_id>
+localsetup://tool/tmux_ops cancel -t ops --run-id <run_id>
 ```
 
 ## Agent rules
@@ -50,4 +50,4 @@ Interrupt only through the managed cancel path:
 
 ## When not to set it
 
-If the agent process already runs on the same host as tmux, do not set `REMOTE_TMUX_HOST`. Run `_localsetup/tools/tmux_ops` directly.
+If the agent process already runs on the same host as tmux, do not set `REMOTE_TMUX_HOST`. Run `localsetup://tool/tmux_ops` directly.

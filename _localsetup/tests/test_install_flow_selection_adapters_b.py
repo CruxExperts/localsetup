@@ -324,6 +324,45 @@ def test_narrowed_rerun_reconciles_registry_refs_and_prunes_packages(tmp_path: P
     assert not (home / ".local/share/localsetup/packages/ls-context").exists()
 
 
+def test_package_prune_skips_hidden_backup_artifacts(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    package_root = home / ".local/share/localsetup/packages"
+
+    apply_plan(
+        root,
+        build_install_plan(root, home=home, global_packs=["dev"], repo_packs=["dev"], platform_ids=["codex"]),
+        home=home,
+    )
+    backup_artifact = package_root / ".ls-context.localsetup-backup-seeded"
+    backup_artifact.mkdir()
+    (backup_artifact / ".localsetup-managed.json").write_text("{}\n", encoding="utf-8")
+
+    apply_plan(
+        root,
+        build_install_plan(root, home=home, global_packs=["core"], repo_packs=["core"], platform_ids=["codex"]),
+        home=home,
+    )
+
+    assert backup_artifact.is_dir()
+    assert not list(package_root.glob("..ls-context.localsetup-backup-*.localsetup-backup-*"))
+
+
+def test_rollback_cleanup_skips_hidden_backup_artifacts(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    package_root = home / ".local/share/localsetup/packages"
+
+    apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"]), home=home)
+    backup_artifact = package_root / ".ls-context.localsetup-backup-seeded"
+    backup_artifact.mkdir()
+    (backup_artifact / ".localsetup-managed.json").write_text("{}\n", encoding="utf-8")
+
+    rollback(root, home=home)
+
+    assert backup_artifact.is_dir()
+
+
 def test_provenance_report_cli_is_report_only(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"

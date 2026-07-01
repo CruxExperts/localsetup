@@ -58,6 +58,10 @@ INLINE_CODE_RE = re.compile(r"`([^`\n]+)`")
 LINK_RE = re.compile(r"(!?\[[^\]]*\]\()([^\)\s]+)(\))")
 RESOLVER_TOKEN_RE = re.compile(r"localsetup://(?:doc|tool|package)/[A-Za-z0-9_./%+@~:-]+")
 ABSOLUTE_PATH_RE = re.compile(r"(?<![A-Za-z0-9+.-])/(?:[^\s`'\"<>|)]+)")
+RAW_LOCALSETUP_PATH_RE = re.compile(
+    r"(?<!/)(?P<path>(?:\./)?_localsetup/(?:docs|tools|skills|workflows|config|core|lib|tests|templates)/[^\s`'\"<>|)]+|"
+    r"\.\./\.\./docs/[^\s`'\"<>|)]+)"
+)
 TEXT_SUFFIXES = {".md", ".yaml", ".yml", ".json", ".toml", ".txt", ".sh", ".py", ".cfg", ".ini"}
 
 
@@ -279,10 +283,24 @@ def _rewrite_resolver_tokens(
     repo_root: Path,
     home: Path,
     runtime_package_root: Path | None,
+    copied_refs: set[str] | None = None,
     rewrites: list[dict[str, str]],
+    runtime_resolved: list[str] | None = None,
 ) -> str:
     def replace(match: re.Match[str]) -> str:
         token = match.group(0)
+        body = token.removeprefix("localsetup://")
+        kind, _sep, remainder = body.partition("/")
+        if kind == "doc":
+            repo_doc = f"_localsetup/docs/{remainder}"
+            classified = classify_reference(repo_doc)
+            if classified.category not in {"public_doc", "generated_public_doc"}:
+                return token
+            if copied_refs is not None:
+                copied_refs.add(repo_doc)
+            replacement = _bundle_ref(repo_doc)
+            rewrites.append({"file": str(source_file), "from": token, "to": replacement})
+            return replacement
         replacement = str(
             resolve_token(
                 token,
@@ -292,35 +310,139 @@ def _rewrite_resolver_tokens(
             )
         )
         rewrites.append({"file": str(source_file), "from": token, "to": replacement})
+        if kind in {"tool", "package"} and runtime_resolved is not None:
+            runtime_resolved.append(replacement)
         return replacement
 
     return RESOLVER_TOKEN_RE.sub(replace, text)
 
 
-def _rewrite_legacy_localsetup_paths(text: str, *, repo_root: Path, source_file: Path, rewrites: list[dict[str, str]]) -> str:
+def _rewrite_legacy_doc_paths(
+    text: str,
+    *,
+    source_file: Path,
+    copied_refs: set[str],
+    rewrites: list[dict[str, str]],
+) -> str:
+    def replace(match: re.Match[str]) -> str:
+        target = match.group("path").rstrip(".,:;")
+        suffix = match.group("path")[len(target) :]
+        normalized = _normalized_raw_localsetup_path(target)
+        classified = classify_reference(normalized)
+        if classified.category not in {"public_doc", "generated_public_doc"}:
+            return match.group(0)
+        copied_refs.add(normalized)
+        replacement = _bundle_ref(normalized)
+        rewrites.append({"file": str(source_file), "from": target, "to": replacement})
+        return replacement + suffix
+
+    return DOC_REF_RE.sub(replace, text)
+
+
+def _record_source_metadata(
+    source_only_metadata: list[dict[str, str]],
+    *,
+    path: str,
+    source: str,
+) -> None:
+    if any(item.get("path") == path for item in source_only_metadata):
+        return
+    item = {"path": path, "source": source}
+    source_only_metadata.append(item)
+
+
+def _rewrite_package_local_source_paths(
+    text: str,
+    *,
+    source_root: Path,
+    repo_root: Path,
+    source_file: Path,
+    rewrites: list[dict[str, str]],
+) -> str:
+    try:
+        source_rel = source_root.relative_to(repo_root).as_posix()
+    except ValueError:
+        return text
+    rewritten = text
+    for prefix in (source_rel + "/", "./" + source_rel + "/"):
+        if prefix not in rewritten:
+            continue
+
+        def replace(match: re.Match[str]) -> str:
+            raw = match.group("path").rstrip(".,;:]}>)")
+            suffix = match.group("path")[len(raw) :]
+            rel = _normalize_slashes(raw).removeprefix("./").removeprefix(source_rel + "/")
+            rewrites.append({"file": str(source_file), "from": raw, "to": rel})
+            return rel + suffix
+
+        rewritten = re.sub(r"(?<!/)(?P<path>" + re.escape(prefix) + r"[^\s`'\"<>|)]+)", replace, rewritten)
+    return rewritten
+
+
+def _rewrite_legacy_localsetup_paths(
+    text: str,
+    *,
+    source_root: Path,
+    repo_root: Path,
+    source_file: Path,
+    preserve_doc_paths: bool = False,
+    copied_refs: set[str],
+    rewrites: list[dict[str, str]],
+    runtime_resolved: list[str],
+    source_only_metadata: list[dict[str, str]],
+) -> str:
+    rewritten = text if preserve_doc_paths else _rewrite_legacy_doc_paths(text, source_file=source_file, copied_refs=copied_refs, rewrites=rewrites)
+    rewritten = _rewrite_package_local_source_paths(
+        rewritten,
+        source_root=source_root,
+        repo_root=repo_root,
+        source_file=source_file,
+        rewrites=rewrites,
+    )
     replacements = (
-        (re.compile(r"(?<!/)\./_localsetup/docs/"), str(repo_root / "_localsetup" / "docs") + "/", "./_localsetup/docs/"),
-        (re.compile(r"(?<!/)_localsetup/docs/"), str(repo_root / "_localsetup" / "docs") + "/", "_localsetup/docs/"),
-        (re.compile(r"(?<!/)\.\./\.\./docs/"), str(repo_root / "_localsetup" / "docs") + "/", "../../docs/"),
         (re.compile(r"(?<!/)\./_localsetup/tools/"), str(repo_root / "_localsetup" / "tools") + "/", "./_localsetup/tools/"),
         (re.compile(r"(?<!/)_localsetup/tools/"), str(repo_root / "_localsetup" / "tools") + "/", "_localsetup/tools/"),
     )
-    rewritten = text
     for pattern, replacement, label in replacements:
         rewritten, count = pattern.subn(replacement, rewritten)
         if count:
             rewrites.append({"file": str(source_file), "from": label, "to": replacement})
+            runtime_resolved.append(replacement)
+    for match in RAW_LOCALSETUP_PATH_RE.finditer(rewritten):
+        normalized = _normalized_raw_localsetup_path(match.group("path"))
+        if normalized.startswith("_localsetup/tools/"):
+            continue
+        _record_source_metadata(source_only_metadata, path=normalized, source=str(source_file))
     return rewritten
 
 
-def _rewrite_remaining_legacy_paths(package_root: Path, *, source_root: Path, repo_root: Path, rewrites: list[dict[str, str]]) -> None:
+def _rewrite_remaining_legacy_paths(
+    package_root: Path,
+    *,
+    source_root: Path,
+    repo_root: Path,
+    copied_refs: set[str],
+    rewrites: list[dict[str, str]],
+    runtime_resolved: list[str],
+    source_only_metadata: list[dict[str, str]],
+) -> None:
     for text_path in sorted(path for path in package_root.rglob("*") if path.is_file() and path.suffix in TEXT_SUFFIXES):
         if REFERENCE_BUNDLE_PATH.as_posix() in text_path.as_posix():
             continue
         rel = text_path.relative_to(package_root)
         source_file = source_root / rel
         text = text_path.read_text(encoding="utf-8")
-        rewritten = _rewrite_legacy_localsetup_paths(text, repo_root=repo_root, source_file=source_file, rewrites=rewrites)
+        rewritten = _rewrite_legacy_localsetup_paths(
+            text,
+            source_root=source_root,
+            repo_root=repo_root,
+            source_file=source_file,
+            preserve_doc_paths=rel.as_posix() == "workflow.yaml",
+            copied_refs=copied_refs,
+            rewrites=rewrites,
+            runtime_resolved=runtime_resolved,
+            source_only_metadata=source_only_metadata,
+        )
         if rewritten != text:
             text_path.write_text(rewritten, encoding="utf-8")
 
@@ -359,6 +481,7 @@ def _copy_doc_closure(
     copied_refs: set[str],
     excluded_refs: list[dict[str, str]],
     rewrites: list[dict[str, str]],
+    runtime_resolved: list[str],
 ) -> None:
     pending = sorted(copied_refs)
     seen: set[str] = set()
@@ -384,7 +507,9 @@ def _copy_doc_closure(
             repo_root=repo_root,
             home=home,
             runtime_package_root=runtime_package_root,
+            copied_refs=copied_refs,
             rewrites=rewrites,
+            runtime_resolved=runtime_resolved,
         )
         rewritten = _rewrite_markdown_text(
             text,
@@ -537,6 +662,17 @@ def _manifest_reference_target_issues(package_root: Path, manifest: dict[str, An
     return issues
 
 
+def _normalized_raw_localsetup_path(value: str) -> str:
+    normalized = _normalize_slashes(value.rstrip(".,;:]}>)"))
+    if normalized.startswith("../../docs/"):
+        return "_localsetup/docs/" + normalized.removeprefix("../../docs/")
+    return normalized.removeprefix("./")
+
+
+def _is_allowed_runtime_path(candidate: str, allowed_runtime_paths: set[str]) -> bool:
+    return any(candidate == allowed.rstrip("/") or candidate.startswith(allowed.rstrip("/") + "/") for allowed in allowed_runtime_paths)
+
+
 def materialize_package_artifact(
     repo_root: Path,
     source: Path,
@@ -564,6 +700,7 @@ def materialize_package_artifact(
     copied_refs: set[str] = set()
     excluded_refs: list[dict[str, str]] = []
     rewrites: list[dict[str, str]] = []
+    runtime_resolved: list[str] = []
     for text_path in sorted(path for path in destination.rglob("*") if path.is_file() and path.suffix in TEXT_SUFFIXES):
         if REFERENCE_BUNDLE_PATH.as_posix() in text_path.as_posix():
             continue
@@ -577,7 +714,9 @@ def materialize_package_artifact(
                 repo_root=repo_root,
                 home=home,
                 runtime_package_root=runtime_package_root,
+                copied_refs=copied_refs,
                 rewrites=rewrites,
+                runtime_resolved=runtime_resolved,
             ),
             encoding="utf-8",
         )
@@ -602,6 +741,15 @@ def materialize_package_artifact(
             encoding="utf-8",
         )
 
+    _rewrite_remaining_legacy_paths(
+        destination,
+        source_root=source,
+        repo_root=repo_root,
+        copied_refs=copied_refs,
+        rewrites=rewrites,
+        runtime_resolved=runtime_resolved,
+        source_only_metadata=source_only_metadata,
+    )
     _copy_doc_closure(
         destination,
         repo_root=repo_root,
@@ -611,8 +759,8 @@ def materialize_package_artifact(
         copied_refs=copied_refs,
         excluded_refs=excluded_refs,
         rewrites=rewrites,
+        runtime_resolved=runtime_resolved,
     )
-    _rewrite_remaining_legacy_paths(destination, source_root=source, repo_root=repo_root, rewrites=rewrites)
     manifest: dict[str, Any] = {
         "schema_version": MANIFEST_SCHEMA_VERSION,
         "materializer_version": MATERIALIZER_VERSION,
@@ -626,7 +774,7 @@ def materialize_package_artifact(
         "rewrites": rewrites,
         "excluded_refs": excluded_refs,
         "source_only_metadata": source_only_metadata,
-        "runtime_resolved": [],
+        "runtime_resolved": sorted(set(runtime_resolved)),
         "validation": {"ok": True, "issues": []},
         "digest": "0" * 64,
     }
@@ -701,10 +849,22 @@ def validate_materialized_package(
         if check_digest and manifest.get("digest") != expected:
             issues.append("reference bundle digest mismatch")
         issues.extend(_manifest_reference_target_issues(package_root, manifest))
+    manifest_payload = manifest or {}
     allowed_runtime_paths = {
+        str(item)
+        for item in manifest_payload.get("runtime_resolved", [])
+        if isinstance(item, str)
+    }
+    allowed_runtime_paths.update(
         str(rewrite.get("to"))
-        for rewrite in (manifest or {}).get("rewrites", [])
-        if isinstance(rewrite, dict) and str(rewrite.get("from", "")).startswith("localsetup://package/")
+        for rewrite in manifest_payload.get("rewrites", [])
+        if isinstance(rewrite, dict)
+        and str(rewrite.get("from", "")).startswith(("localsetup://tool/", "localsetup://package/"))
+    )
+    allowed_source_metadata = {
+        str(item.get("path"))
+        for item in manifest_payload.get("source_only_metadata", [])
+        if isinstance(item, dict) and isinstance(item.get("path"), str)
     }
 
     for md_path in package_root.rglob("*.md"):
@@ -744,19 +904,20 @@ def validate_materialized_package(
     for text_path in sorted(path for path in package_root.rglob("*") if path.is_file() and path.suffix in TEXT_SUFFIXES):
         if REFERENCE_BUNDLE_PATH.as_posix() in text_path.as_posix():
             continue
+        rel_text_path = text_path.relative_to(package_root).as_posix()
+        if rel_text_path in {".localsetup-managed.json", ".localsetup-managed"}:
+            continue
         text = text_path.read_text(encoding="utf-8", errors="replace")
         if RESOLVER_TOKEN_RE.search(text):
             issues.append(f"unresolved resolver token in {text_path.relative_to(package_root)}")
-        forbidden_patterns = (
-            (re.compile(r"(?<!/)_localsetup/docs/"), "_localsetup/docs/"),
-            (re.compile(r"(?<!/)\./_localsetup/docs/"), "./_localsetup/docs/"),
-            (re.compile(r"(?<!/)\.\./\.\./docs/"), "../../docs/"),
-            (re.compile(r"(?<!/)_localsetup/tools/"), "_localsetup/tools/"),
-            (re.compile(r"(?<!/)\./_localsetup/tools/"), "./_localsetup/tools/"),
-        )
-        for pattern, label in forbidden_patterns:
-            if pattern.search(text):
-                issues.append(f"forbidden Localsetup path reference in {text_path.relative_to(package_root)}: {label}")
+        if rel_text_path.startswith(REFERENCE_DOC_ROOT.as_posix() + "/"):
+            continue
+        for match in RAW_LOCALSETUP_PATH_RE.finditer(text):
+            raw_path = match.group("path")
+            normalized = _normalized_raw_localsetup_path(raw_path)
+            if normalized in allowed_source_metadata:
+                continue
+            issues.append(f"forbidden Localsetup path reference in {text_path.relative_to(package_root)}: {raw_path}")
         for owned_root_path in localsetup_roots:
             owned_root_text = str(owned_root_path)
             cursor = 0
@@ -769,11 +930,17 @@ def validate_materialized_package(
                     continue
                 candidate = _candidate_from_known_root(text, start=start, root_text=owned_root_text)
                 cursor = start + max(len(str(candidate)), 1)
-                if _is_source_docs_candidate(candidate) or any(char in str(candidate) for char in "*?["):
+                if any(char in str(candidate) for char in "*?["):
                     continue
+                if _is_allowed_runtime_path(str(candidate), allowed_runtime_paths):
+                    continue
+                if repo_root is not None:
+                    source_root = (repo_root / "_localsetup").resolve(strict=False)
+                    resolved_candidate = candidate.resolve(strict=False)
+                    if resolved_candidate == source_root or source_root in resolved_candidate.parents:
+                        issues.append(f"unrecorded Localsetup absolute path in {text_path.relative_to(package_root)}: {candidate}")
+                        continue
                 if _existing_prefix(candidate, root_text=owned_root_text) is not None:
-                    continue
-                if str(candidate) in allowed_runtime_paths:
                     continue
                 if not candidate.exists():
                     issues.append(f"dangling Localsetup absolute path in {text_path.relative_to(package_root)}: {candidate}")
@@ -787,11 +954,10 @@ def validate_materialized_package(
             resolved_candidate = candidate.resolve(strict=False)
             owned_root = any(resolved_candidate == root or root in resolved_candidate.parents for root in localsetup_roots)
             source_owned = "_localsetup" in candidate.parts and candidate.parts.index("_localsetup") > 1
-            if _is_source_docs_candidate(candidate):
-                source_owned = False
-                owned_root = False
-            if str(candidate) in allowed_runtime_paths:
+            if _is_allowed_runtime_path(str(candidate), allowed_runtime_paths):
                 continue
-            if (source_owned or owned_root) and not candidate.exists():
+            if (source_owned or owned_root) and candidate.exists():
+                issues.append(f"unrecorded Localsetup absolute path in {text_path.relative_to(package_root)}: {candidate}")
+            elif source_owned or owned_root:
                 issues.append(f"dangling Localsetup absolute path in {text_path.relative_to(package_root)}: {candidate}")
     return {"ok": not issues, "issues": issues}

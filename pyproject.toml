@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "localsetup"
-version = "4.2.3"
+version = "4.2.4"
 description = "Global-first Localsetup skill pack manager"
 requires-python = ">=3.12"
 dependencies = [
@@ -18,7 +18,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-  "pytest>=9.1.0",
+  "pytest>=9.1.1",
   "pytest-xdist>=3.6",
 ]
 

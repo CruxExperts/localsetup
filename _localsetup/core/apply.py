@@ -33,6 +33,7 @@ from .models import DeployPlan
 from .paths import ensure_dir, legacy_target_lockfile_path, repo_path, target_lockfile_path
 from .path_contract import paths_manifest_path, write_paths_manifest
 from .adapters import ADAPTER_MARKER_JSON, adapter_path_state, legacy_global_roots, _is_safe_adapter_package_name
+from .package_cleanup import is_package_backup_artifact
 from .registry import upsert_target
 from .provenance import is_managed_package
 from .source import source_commit
@@ -120,7 +121,7 @@ def _prune_unreferenced_managed_packages(
     }
     removed: list[str] = []
     for path in sorted(global_root.iterdir(), key=lambda item: item.name):
-        if path.name.startswith(".localsetup-") or path.name in referenced:
+        if path.name.startswith(".localsetup-") or is_package_backup_artifact(path) or path.name in referenced:
             continue
         if not is_managed_package(path):
             continue
