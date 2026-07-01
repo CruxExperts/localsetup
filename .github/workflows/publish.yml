@@ -22,12 +22,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
 
       - name: Setup Python
-        uses: actions/setup-python@v6.3.0
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.12"
 
@@ -94,7 +94,7 @@ jobs:
             dist/localsetup-v*.tar.gz.cdx.json
 
       - name: Attest release tarball
-        uses: actions/attest-build-provenance@v4.1.1
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
         with:
           subject-path: dist/localsetup-v*.tar.gz
 

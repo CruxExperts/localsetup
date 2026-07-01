@@ -273,7 +273,7 @@ def test_new_qc_workflow_static_contracts() -> None:
         data = yaml.safe_load(workflow.read_text(encoding="utf-8"))
         assert "permissions" in data, workflow
         text = workflow.read_text(encoding="utf-8")
-        assert "actions/checkout@v7.0.0" in text
+        assert "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" in text
         if workflow.name == "qc-patrol.yml":
             assert data["permissions"]["actions"] == "read"
             assert "qc/category/inventory" in text
