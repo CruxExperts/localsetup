@@ -472,6 +472,267 @@ def test_materializer_rewrites_localsetup_resolver_tokens(tmp_path: Path) -> Non
     )["ok"] is True
 
 
+def test_materializer_normalizes_prefixed_doc_resolver_tokens(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill = repo / "_localsetup" / "skills" / "ls-demo"
+    (repo / "_localsetup" / "docs" / "ops").mkdir(parents=True)
+    (repo / "_localsetup" / "config").mkdir(parents=True)
+    skill.mkdir(parents=True)
+    (repo / "_localsetup" / "config" / "reference-bundle.schema.json").write_text(
+        (Path(__file__).resolve().parents[1] / "config" / "reference-bundle.schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (repo / "_localsetup" / "docs" / "ops" / "file.md").write_text("# File\n", encoding="utf-8")
+    (skill / "SKILL.md").write_text(
+        "---\nname: ls-demo\ndescription: Demo.\n---\n\n"
+        "Read `localsetup://doc/_localsetup/docs/ops/file.md`.\n",
+        encoding="utf-8",
+    )
+
+    manifest = materialize_package_artifact(
+        repo,
+        skill,
+        tmp_path / "out" / "ls-demo",
+        package_name="ls-demo",
+        package_type="skill",
+        private_paths=[],
+        emitter="test",
+    )
+
+    output = tmp_path / "out" / "ls-demo"
+    assert (output / "references" / "localsetup" / "docs" / "ops" / "file.md").is_file()
+    assert manifest["copied_refs"] == ["_localsetup/docs/ops/file.md"]
+    assert "references/localsetup/docs/ops/file.md" in (output / "SKILL.md").read_text(encoding="utf-8")
+
+
+def test_materializer_rejects_configured_private_resolver_doc_token(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill = repo / "_localsetup" / "skills" / "ls-demo"
+    (repo / "_localsetup" / "docs" / "ops" / "private").mkdir(parents=True)
+    (repo / "_localsetup" / "config").mkdir(parents=True)
+    skill.mkdir(parents=True)
+    (repo / "_localsetup" / "config" / "reference-bundle.schema.json").write_text(
+        (Path(__file__).resolve().parents[1] / "config" / "reference-bundle.schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (repo / "_localsetup" / "docs" / "ops" / "private" / "secret.md").write_text("# Secret\n", encoding="utf-8")
+    (skill / "SKILL.md").write_text(
+        "---\nname: ls-demo\ndescription: Demo.\n---\n\n"
+        "Read `localsetup://doc/ops/private/secret.md`.\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="unresolved resolver token"):
+        materialize_package_artifact(
+            repo,
+            skill,
+            tmp_path / "out" / "ls-demo",
+            package_name="ls-demo",
+            package_type="skill",
+            private_paths=["_localsetup/docs/ops/private"],
+            emitter="test",
+        )
+
+    output = tmp_path / "out" / "ls-demo"
+    assert not (output / "references" / "localsetup" / "docs" / "ops" / "private" / "secret.md").exists()
+
+
+def test_materializer_rejects_private_raw_doc_reference_without_source_metadata(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill = repo / "_localsetup" / "skills" / "ls-demo"
+    (repo / "_localsetup" / "docs" / "private").mkdir(parents=True)
+    (repo / "_localsetup" / "config").mkdir(parents=True)
+    skill.mkdir(parents=True)
+    (repo / "_localsetup" / "config" / "reference-bundle.schema.json").write_text(
+        (Path(__file__).resolve().parents[1] / "config" / "reference-bundle.schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (repo / "_localsetup" / "docs" / "private" / "secret.md").write_text("# Secret\n", encoding="utf-8")
+    (skill / "SKILL.md").write_text("---\nname: ls-demo\ndescription: Demo.\n---\n", encoding="utf-8")
+    (skill / "notes.txt").write_text("Read _localsetup/docs/private/secret.md.\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="forbidden Localsetup path reference"):
+        materialize_package_artifact(
+            repo,
+            skill,
+            tmp_path / "out" / "ls-demo",
+            package_name="ls-demo",
+            package_type="skill",
+            private_paths=["_localsetup/docs/private"],
+            emitter="test",
+        )
+
+    manifest = json.loads(((tmp_path / "out" / "ls-demo") / REFERENCE_BUNDLE_PATH).read_text(encoding="utf-8"))
+    assert manifest["source_only_metadata"] == []
+
+
+def test_materializer_omits_private_legacy_doc_refs_inside_copied_docs(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs = repo / "_localsetup" / "docs"
+    skill = repo / "_localsetup" / "skills" / "ls-demo"
+    (docs / "private").mkdir(parents=True)
+    (repo / "_localsetup" / "config").mkdir(parents=True)
+    skill.mkdir(parents=True)
+    (repo / "_localsetup" / "config" / "reference-bundle.schema.json").write_text(
+        (Path(__file__).resolve().parents[1] / "config" / "reference-bundle.schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (docs / "private" / "secret.md").write_text("# Secret\n", encoding="utf-8")
+    (docs / "QUICKSTART.md").write_text(
+        "# Quickstart\n\n"
+        "Read _localsetup/docs/private/secret.md.\n"
+        "Open [Secret](./_localsetup/docs/private/secret.md).\n"
+        "See `./_localsetup/docs/private/secret.md`.\n\n"
+        "```bash\ncat ./_localsetup/docs/private/secret.md\n```\n",
+        encoding="utf-8",
+    )
+    (skill / "SKILL.md").write_text(
+        "---\nname: ls-demo\ndescription: Demo.\n---\n\nRead `_localsetup/docs/QUICKSTART.md`.\n",
+        encoding="utf-8",
+    )
+
+    manifest = materialize_package_artifact(
+        repo,
+        skill,
+        tmp_path / "out" / "ls-demo",
+        package_name="ls-demo",
+        package_type="skill",
+        private_paths=["_localsetup/docs/private"],
+        emitter="test",
+    )
+
+    output = tmp_path / "out" / "ls-demo"
+    copied = (output / "references" / "localsetup" / "docs" / "QUICKSTART.md").read_text(encoding="utf-8")
+    assert "_localsetup/docs/private/secret.md" not in copied
+    assert "private/secret.md" not in copied
+    assert copied.count("omitted-private-reference") == 4
+    assert "_localsetup/docs/private/secret.md" not in manifest["copied_refs"]
+    assert any(item["path"] == "_localsetup/docs/private/secret.md" for item in manifest["excluded_refs"])
+    assert validate_materialized_package(output, repo_root=repo)["ok"] is True
+
+
+def test_materializer_preserves_doc_anchor_without_recording_anchor_in_copied_refs(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs = repo / "_localsetup" / "docs"
+    skill = repo / "_localsetup" / "skills" / "ls-demo"
+    docs.mkdir(parents=True)
+    (repo / "_localsetup" / "config").mkdir(parents=True)
+    skill.mkdir(parents=True)
+    (repo / "_localsetup" / "config" / "reference-bundle.schema.json").write_text(
+        (Path(__file__).resolve().parents[1] / "config" / "reference-bundle.schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (docs / "QUICKSTART.md").write_text("# Quickstart\n\nSee `../../docs/DETAIL.md#part`.\n", encoding="utf-8")
+    (docs / "DETAIL.md").write_text("# Detail\n\n## Part\n", encoding="utf-8")
+    (skill / "SKILL.md").write_text(
+        "---\nname: ls-demo\ndescription: Demo.\n---\n\nRead `_localsetup/docs/QUICKSTART.md`.\n",
+        encoding="utf-8",
+    )
+
+    manifest = materialize_package_artifact(
+        repo,
+        skill,
+        tmp_path / "out" / "ls-demo",
+        package_name="ls-demo",
+        package_type="skill",
+        private_paths=[],
+        emitter="test",
+    )
+
+    output = tmp_path / "out" / "ls-demo"
+    bundled = output / "references" / "localsetup" / "docs"
+    assert (bundled / "DETAIL.md").is_file()
+    assert "references/localsetup/docs/DETAIL.md#part" in (bundled / "QUICKSTART.md").read_text(encoding="utf-8")
+    assert "_localsetup/docs/DETAIL.md" in manifest["copied_refs"]
+    assert "_localsetup/docs/DETAIL.md#part" not in manifest["copied_refs"]
+
+
+def test_materializer_rewrites_legacy_tool_refs_in_copied_docs_with_exact_runtime_path(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs = repo / "_localsetup" / "docs"
+    skill = repo / "_localsetup" / "skills" / "ls-demo"
+    tools = repo / "_localsetup" / "tools"
+    docs.mkdir(parents=True)
+    tools.mkdir(parents=True)
+    (repo / "_localsetup" / "config").mkdir(parents=True)
+    skill.mkdir(parents=True)
+    (repo / "_localsetup" / "config" / "reference-bundle.schema.json").write_text(
+        (Path(__file__).resolve().parents[1] / "config" / "reference-bundle.schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (tools / "tmux_ops").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    (tools / "localsetup.py").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+    (docs / "QUICKSTART.md").write_text(
+        "# Quickstart\n\n"
+        "Run `_localsetup/tools/tmux_ops pick`.\n"
+        "See `_localsetup/tools/tmux_ops.` and `_localsetup/tools/localsetup.py,`.\n",
+        encoding="utf-8",
+    )
+    (skill / "SKILL.md").write_text(
+        "---\nname: ls-demo\ndescription: Demo.\n---\n\nRead `_localsetup/docs/QUICKSTART.md`.\n",
+        encoding="utf-8",
+    )
+
+    manifest = materialize_package_artifact(
+        repo,
+        skill,
+        tmp_path / "out" / "ls-demo",
+        package_name="ls-demo",
+        package_type="skill",
+        private_paths=[],
+        emitter="test",
+    )
+
+    tool_path = str(repo / "_localsetup" / "tools" / "tmux_ops")
+    python_tool_path = str(repo / "_localsetup" / "tools" / "localsetup.py")
+    output = tmp_path / "out" / "ls-demo"
+    copied = (output / "references" / "localsetup" / "docs" / "QUICKSTART.md").read_text(encoding="utf-8")
+    assert f"`{tool_path} pick`" in copied
+    assert f"`{tool_path}.`" in copied
+    assert f"`{python_tool_path},`" in copied
+    assert manifest["runtime_resolved"] == sorted([python_tool_path, tool_path])
+
+
+def test_validate_materialized_package_rejects_unrelated_absolute_tool_path(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    package = tmp_path / "package"
+    tool = repo / "_localsetup" / "tools" / "tmux_ops"
+    other_tool = repo / "_localsetup" / "tools" / "tmux_ops_helper"
+    tool.parent.mkdir(parents=True)
+    package.mkdir()
+    tool.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    other_tool.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    (package / "SKILL.md").write_text(f"Run `{other_tool}`.\n", encoding="utf-8")
+    (package / REFERENCE_BUNDLE_PATH).parent.mkdir(parents=True)
+    (package / REFERENCE_BUNDLE_PATH).write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "materializer_version": 1,
+                "classifier_version": 1,
+                "package_name": "ls-demo",
+                "package_type": "skill",
+                "source_path": "_localsetup/skills/ls-demo",
+                "source_commit": "unknown",
+                "emitter": "test",
+                "copied_refs": [],
+                "rewrites": [],
+                "excluded_refs": [],
+                "source_only_metadata": [],
+                "runtime_resolved": [str(tool)],
+                "validation": {"ok": True, "issues": []},
+                "digest": "0" * 64,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    validation = validate_materialized_package(package, repo_root=repo, check_digest=False)
+
+    assert validation["ok"] is False
+    assert any(f"unrecorded Localsetup absolute path in SKILL.md: {other_tool}" in issue for issue in validation["issues"])
+
+
 def test_validate_materialized_package_rejects_unresolved_resolver_tokens(tmp_path: Path) -> None:
     package = tmp_path / "package"
     manifest = package / REFERENCE_BUNDLE_PATH

@@ -53,7 +53,7 @@ The session directory is returned as `state_dir` by `pick`. Logs and generated s
 1. Pick a session:
 
    ```bash
-   localsetup://tool/tmux_ops pick
+   ./_localsetup/tools/tmux_ops pick
    ```
 
 2. Attach if you want to watch or enter a sudo password:
@@ -67,7 +67,7 @@ The session directory is returned as `state_dir` by `pick`. Logs and generated s
 3. Probe sudo:
 
    ```bash
-   localsetup://tool/tmux_ops probe -t ops
+   ./_localsetup/tools/tmux_ops probe -t ops
    ```
 
 4. If the probe says `password_required` or `action_required: true`, attach with the returned `attach_command`, run `sudo -v` in that exact tmux pane, enter the password, then tell the agent `sudo ready` so it can probe again.
@@ -75,7 +75,7 @@ The session directory is returned as `state_dir` by `pick`. Logs and generated s
 5. Run commands:
 
    ```bash
-   localsetup://tool/tmux_ops run -t ops -- sudo apt update
+   ./_localsetup/tools/tmux_ops run -t ops -- sudo apt update
    ```
 
 6. Read the returned `tail` first. If you need more context, read the returned `log_path`.
@@ -83,30 +83,30 @@ The session directory is returned as `state_dir` by `pick`. Logs and generated s
 7. If the command is still active:
 
    ```bash
-   localsetup://tool/tmux_ops status -t ops --run-id <run_id> --wait --timeout 120
+   ./_localsetup/tools/tmux_ops status -t ops --run-id <run_id> --wait --timeout 120
    ```
 
 8. Cancel only when you intend to interrupt that exact run:
 
    ```bash
-   localsetup://tool/tmux_ops cancel -t ops --run-id <run_id>
+   ./_localsetup/tools/tmux_ops cancel -t ops --run-id <run_id>
    ```
 
 ## Agent workflow
 
 Agents should follow this script exactly:
 
-1. Run `localsetup://tool/tmux_ops pick`.
+1. Run `./_localsetup/tools/tmux_ops pick`.
 2. Parse JSON. If it has `error`, report the error and stop.
 3. Show `attach_command` to the user in a copy-paste code block.
-4. Run `localsetup://tool/tmux_ops probe -t <session>`.
+4. Run `./_localsetup/tools/tmux_ops probe -t <session>`.
 5. If `action_required` is `true` or `sudo` is `password_required`, tell the user to attach with the returned `attach_command`, run `sudo -v` in that exact tmux pane, enter the password, and reply `sudo ready`. Do not run commands yet.
 6. After `sudo ready`, run `probe` again.
 7. If `sudo` is `failed`, report `detail` and stop.
 8. If `sudo` is `ready`, run exactly one logical command with:
 
    ```bash
-   localsetup://tool/tmux_ops run -t <session> -- <command>
+   ./_localsetup/tools/tmux_ops run -t <session> -- <command>
    ```
 
 9. Check `status`:
@@ -116,7 +116,7 @@ Agents should follow this script exactly:
 11. Interrupt only with:
 
    ```bash
-   localsetup://tool/tmux_ops cancel -t <session> --run-id <run_id>
+   ./_localsetup/tools/tmux_ops cancel -t <session> --run-id <run_id>
    ```
 
 ## Command reference

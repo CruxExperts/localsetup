@@ -52,7 +52,7 @@ PRIVATE_PREFIXES = (
 )
 PRIVATE_EXACT = {".localsetup-maint", "graphify-out", "state", "data", "docs"}
 DOC_REF_RE = re.compile(
-    r"(?P<path>(?:_localsetup/docs|\.\./\.\./docs)/[A-Za-z0-9_./%+@~:-]+\.(?:md|json|ya?ml)(?:#[A-Za-z0-9_.:-]+)?)"
+    r"(?P<path>(?:(?:\./)?_localsetup/docs|\.\./\.\./docs)/[A-Za-z0-9_./%+@~:-]+\.(?:md|json|ya?ml)(?:#[A-Za-z0-9_.:-]+)?)"
 )
 INLINE_CODE_RE = re.compile(r"`([^`\n]+)`")
 LINK_RE = re.compile(r"(!?\[[^\]]*\]\()([^\)\s]+)(\))")
@@ -89,6 +89,13 @@ def _is_configured_private(rel: str, private_paths: list[str]) -> bool:
     return False
 
 
+def _normalize_resolver_doc_remainder(remainder: str) -> str:
+    normalized = _normalize_slashes(remainder)
+    if normalized.startswith("_localsetup/docs/"):
+        return normalized
+    return f"_localsetup/docs/{normalized}"
+
+
 def classify_reference(value: str, *, private_paths: list[str] | None = None) -> ClassifiedReference:
     private_paths = private_paths or []
     raw = value.strip()
@@ -97,12 +104,15 @@ def classify_reference(value: str, *, private_paths: list[str] | None = None) ->
         if kind not in {"doc", "tool", "package"} or not remainder:
             return ClassifiedReference(raw, raw, "blocked_escape", "unsupported resolver token")
         if kind in {"doc", "tool"}:
+            token_path = _normalize_resolver_doc_remainder(remainder) if kind == "doc" else remainder
             try:
-                validate_repo_relative_path(remainder, f"localsetup token {kind}")
+                validate_repo_relative_path(token_path, f"localsetup token {kind}")
             except PathValidationError:
                 return ClassifiedReference(raw, raw, "blocked_escape", "unsafe resolver token path")
-            category = "public_doc" if kind == "doc" else "runtime_resolved"
-            return ClassifiedReference(raw, raw, category, "resolver token")
+            if kind == "doc":
+                classified = classify_reference(token_path, private_paths=private_paths)
+                return ClassifiedReference(raw, token_path, classified.category, "resolver token")
+            return ClassifiedReference(raw, raw, "runtime_resolved", "resolver token")
         package, _package_sep, package_rel = remainder.partition("/")
         try:
             validate_repo_relative_path(package, "localsetup token package")
@@ -283,6 +293,7 @@ def _rewrite_resolver_tokens(
     repo_root: Path,
     home: Path,
     runtime_package_root: Path | None,
+    private_paths: list[str],
     copied_refs: set[str] | None = None,
     rewrites: list[dict[str, str]],
     runtime_resolved: list[str] | None = None,
@@ -292,8 +303,8 @@ def _rewrite_resolver_tokens(
         body = token.removeprefix("localsetup://")
         kind, _sep, remainder = body.partition("/")
         if kind == "doc":
-            repo_doc = f"_localsetup/docs/{remainder}"
-            classified = classify_reference(repo_doc)
+            repo_doc = _normalize_resolver_doc_remainder(remainder)
+            classified = classify_reference(repo_doc, private_paths=private_paths)
             if classified.category not in {"public_doc", "generated_public_doc"}:
                 return token
             if copied_refs is not None:
@@ -321,18 +332,26 @@ def _rewrite_legacy_doc_paths(
     text: str,
     *,
     source_file: Path,
+    private_paths: list[str],
     copied_refs: set[str],
     rewrites: list[dict[str, str]],
+    excluded_refs: list[dict[str, str]] | None = None,
+    private_doc_handling: str = "preserve",
 ) -> str:
     def replace(match: re.Match[str]) -> str:
         target = match.group("path").rstrip(".,:;")
         suffix = match.group("path")[len(target) :]
         normalized = _normalized_raw_localsetup_path(target)
-        classified = classify_reference(normalized)
+        path_part, _sep, fragment = normalized.partition("#")
+        classified = classify_reference(path_part, private_paths=private_paths)
         if classified.category not in {"public_doc", "generated_public_doc"}:
+            if excluded_refs is not None and classified.category in {"private_doc", "private_maintenance"}:
+                excluded_refs.append({"path": path_part, "category": classified.category, "source": str(source_file)})
+            if private_doc_handling == "omit" and classified.category in {"private_doc", "private_maintenance"}:
+                return "omitted-private-reference" + suffix
             return match.group(0)
-        copied_refs.add(normalized)
-        replacement = _bundle_ref(normalized)
+        copied_refs.add(path_part)
+        replacement = _bundle_ref(path_part, fragment)
         rewrites.append({"file": str(source_file), "from": target, "to": replacement})
         return replacement + suffix
 
@@ -390,27 +409,47 @@ def _rewrite_legacy_localsetup_paths(
     rewrites: list[dict[str, str]],
     runtime_resolved: list[str],
     source_only_metadata: list[dict[str, str]],
+    private_paths: list[str],
+    excluded_refs: list[dict[str, str]] | None = None,
+    private_doc_handling: str = "preserve",
+    rewrite_package_local_source_paths: bool = True,
 ) -> str:
-    rewritten = text if preserve_doc_paths else _rewrite_legacy_doc_paths(text, source_file=source_file, copied_refs=copied_refs, rewrites=rewrites)
-    rewritten = _rewrite_package_local_source_paths(
-        rewritten,
-        source_root=source_root,
-        repo_root=repo_root,
+    rewritten = text if preserve_doc_paths else _rewrite_legacy_doc_paths(
+        text,
         source_file=source_file,
+        private_paths=private_paths,
+        copied_refs=copied_refs,
         rewrites=rewrites,
+        excluded_refs=excluded_refs,
+        private_doc_handling=private_doc_handling,
     )
-    replacements = (
-        (re.compile(r"(?<!/)\./_localsetup/tools/"), str(repo_root / "_localsetup" / "tools") + "/", "./_localsetup/tools/"),
-        (re.compile(r"(?<!/)_localsetup/tools/"), str(repo_root / "_localsetup" / "tools") + "/", "_localsetup/tools/"),
-    )
-    for pattern, replacement, label in replacements:
-        rewritten, count = pattern.subn(replacement, rewritten)
-        if count:
-            rewrites.append({"file": str(source_file), "from": label, "to": replacement})
-            runtime_resolved.append(replacement)
+    if rewrite_package_local_source_paths:
+        rewritten = _rewrite_package_local_source_paths(
+            rewritten,
+            source_root=source_root,
+            repo_root=repo_root,
+            source_file=source_file,
+            rewrites=rewrites,
+        )
+    tool_pattern = re.compile(r"(?<!/)(?P<path>(?:\./)?_localsetup/tools/[A-Za-z0-9_.@%+-]+)")
+
+    def replace_tool(match: re.Match[str]) -> str:
+        matched = match.group("path")
+        raw = matched.rstrip(".,;:]}>)")
+        suffix = matched[len(raw) :]
+        normalized = _normalize_slashes(raw).removeprefix("./")
+        replacement = str(repo_root / normalized)
+        rewrites.append({"file": str(source_file), "from": raw, "to": replacement})
+        runtime_resolved.append(replacement)
+        return replacement + suffix
+
+    rewritten = tool_pattern.sub(replace_tool, rewritten)
     for match in RAW_LOCALSETUP_PATH_RE.finditer(rewritten):
         normalized = _normalized_raw_localsetup_path(match.group("path"))
         if normalized.startswith("_localsetup/tools/"):
+            continue
+        classified = classify_reference(normalized, private_paths=private_paths)
+        if classified.category in {"private_doc", "private_maintenance"}:
             continue
         _record_source_metadata(source_only_metadata, path=normalized, source=str(source_file))
     return rewritten
@@ -425,6 +464,7 @@ def _rewrite_remaining_legacy_paths(
     rewrites: list[dict[str, str]],
     runtime_resolved: list[str],
     source_only_metadata: list[dict[str, str]],
+    private_paths: list[str],
 ) -> None:
     for text_path in sorted(path for path in package_root.rglob("*") if path.is_file() and path.suffix in TEXT_SUFFIXES):
         if REFERENCE_BUNDLE_PATH.as_posix() in text_path.as_posix():
@@ -442,6 +482,7 @@ def _rewrite_remaining_legacy_paths(
             rewrites=rewrites,
             runtime_resolved=runtime_resolved,
             source_only_metadata=source_only_metadata,
+            private_paths=private_paths,
         )
         if rewritten != text:
             text_path.write_text(rewritten, encoding="utf-8")
@@ -507,9 +548,24 @@ def _copy_doc_closure(
             repo_root=repo_root,
             home=home,
             runtime_package_root=runtime_package_root,
+            private_paths=private_paths,
             copied_refs=copied_refs,
             rewrites=rewrites,
             runtime_resolved=runtime_resolved,
+        )
+        text = _rewrite_legacy_localsetup_paths(
+            text,
+            source_root=repo_root / "_localsetup" / "docs",
+            repo_root=repo_root,
+            source_file=src,
+            copied_refs=copied_refs,
+            rewrites=rewrites,
+            runtime_resolved=runtime_resolved,
+            source_only_metadata=[],
+            private_paths=private_paths,
+            excluded_refs=excluded_refs,
+            private_doc_handling="omit",
+            rewrite_package_local_source_paths=False,
         )
         rewritten = _rewrite_markdown_text(
             text,
@@ -523,8 +579,9 @@ def _copy_doc_closure(
         )
         dest.write_text(rewritten, encoding="utf-8")
         for added in sorted(copied_refs - seen):
-            if added not in pending:
-                pending.append(added)
+            added_path, _sep, _fragment = added.partition("#")
+            if added_path not in seen and added_path not in pending:
+                pending.append(added_path)
 
 
 def _copy_source_tree(source: Path, destination: Path) -> None:
@@ -673,6 +730,13 @@ def _is_allowed_runtime_path(candidate: str, allowed_runtime_paths: set[str]) ->
     return any(candidate == allowed.rstrip("/") or candidate.startswith(allowed.rstrip("/") + "/") for allowed in allowed_runtime_paths)
 
 
+def _is_allowed_runtime_candidate(candidate: Path, *, root_text: str, allowed_runtime_paths: set[str]) -> bool:
+    if _is_allowed_runtime_path(str(candidate), allowed_runtime_paths):
+        return True
+    existing_prefix = _existing_prefix(candidate, root_text=root_text)
+    return existing_prefix is not None and _is_allowed_runtime_path(str(existing_prefix), allowed_runtime_paths)
+
+
 def materialize_package_artifact(
     repo_root: Path,
     source: Path,
@@ -714,6 +778,7 @@ def materialize_package_artifact(
                 repo_root=repo_root,
                 home=home,
                 runtime_package_root=runtime_package_root,
+                private_paths=private_paths,
                 copied_refs=copied_refs,
                 rewrites=rewrites,
                 runtime_resolved=runtime_resolved,
@@ -749,6 +814,7 @@ def materialize_package_artifact(
         rewrites=rewrites,
         runtime_resolved=runtime_resolved,
         source_only_metadata=source_only_metadata,
+        private_paths=private_paths,
     )
     _copy_doc_closure(
         destination,
@@ -925,14 +991,11 @@ def validate_materialized_package(
                 start = text.find(owned_root_text, cursor)
                 if start < 0:
                     break
-                if any(text.startswith(runtime_path, start) for runtime_path in allowed_runtime_paths):
-                    cursor = start + max(len(owned_root_text), 1)
-                    continue
                 candidate = _candidate_from_known_root(text, start=start, root_text=owned_root_text)
                 cursor = start + max(len(str(candidate)), 1)
                 if any(char in str(candidate) for char in "*?["):
                     continue
-                if _is_allowed_runtime_path(str(candidate), allowed_runtime_paths):
+                if _is_allowed_runtime_candidate(candidate, root_text=owned_root_text, allowed_runtime_paths=allowed_runtime_paths):
                     continue
                 if repo_root is not None:
                     source_root = (repo_root / "_localsetup").resolve(strict=False)

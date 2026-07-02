@@ -21,9 +21,9 @@ Use the same managed commands locally or remotely:
 
 ```bash
 export REMOTE_TMUX_HOST=sh0t
-localsetup://tool/tmux_ops pick
-localsetup://tool/tmux_ops probe -t ops
-localsetup://tool/tmux_ops run -t ops -- sudo apt update
+./_localsetup/tools/tmux_ops pick
+./_localsetup/tools/tmux_ops probe -t ops
+./_localsetup/tools/tmux_ops run -t ops -- sudo apt update
 ```
 
 The returned `attach_command`, `state_dir`, `log_path`, and `run_id` all refer to the remote host.
@@ -32,13 +32,13 @@ If `probe` or `run` returns `action_required: true`, attach on the remote tmux h
 If a run returns `status: "running"`, keep watching by run ID:
 
 ```bash
-localsetup://tool/tmux_ops status -t ops --run-id <run_id> --wait --timeout 120
+./_localsetup/tools/tmux_ops status -t ops --run-id <run_id> --wait --timeout 120
 ```
 
 Interrupt only through the managed cancel path:
 
 ```bash
-localsetup://tool/tmux_ops cancel -t ops --run-id <run_id>
+./_localsetup/tools/tmux_ops cancel -t ops --run-id <run_id>
 ```
 
 ## Agent rules
@@ -50,4 +50,4 @@ localsetup://tool/tmux_ops cancel -t ops --run-id <run_id>
 
 ## When not to set it
 
-If the agent process already runs on the same host as tmux, do not set `REMOTE_TMUX_HOST`. Run `localsetup://tool/tmux_ops` directly.
+If the agent process already runs on the same host as tmux, do not set `REMOTE_TMUX_HOST`. Run `./_localsetup/tools/tmux_ops` directly.
