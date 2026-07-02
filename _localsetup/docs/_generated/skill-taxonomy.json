@@ -13,14 +13,14 @@
     "artifact_path": "_localsetup/docs/_generated/skill-taxonomy.json",
     "artifact_sha256": "7602af9582b5536d9182377d86f4120d51799d0e1f83b0d145913816151e24b9",
     "emitter": "generate-docs",
-    "framework_version": "4.2.4",
+    "framework_version": "4.2.5",
     "schema_version": 1,
-    "source_commit": "3840c540b2919e40ce75d21680e0aea2b2f96b07",
-    "source_dirty": false,
-    "source_provenance_hash": "681d8c4563b7611731927a35312eace570f1ad3a10ada79cae7cdb1fa88dd617",
-    "source_root_id": "33dfe9493537daef6caf7884186e6b504172549bb6b1d5694d73ffc21dd6cc0d",
+    "source_commit": "6d541339c9f629f383f5a844dab3d8c388700adc",
+    "source_dirty": true,
+    "source_provenance_hash": "c4d56824334fda78a477c076fc28eaad5e098e4adcbbfd36bcb6439edc541cfb",
+    "source_root_id": "2a83e3f74b9e339aac08f3e9cf96461613f61e57a6144adcab7c5070ad120e36",
     "source_tag": null,
-    "source_tree_sha": "4ad07e944dfa4f3c3242b1091154619d597724da"
+    "source_tree_sha": "efb70b6aa5e30e5b9f5abc688883d8d54ae84802"
   },
   "schema_version": 1,
   "skills": [
