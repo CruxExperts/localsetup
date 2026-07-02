@@ -52,15 +52,24 @@ For local agent work, prefer privacy-oriented defaults:
 
 ```bash
 npx -y chrome-devtools-mcp@latest \
-  --user-data-dir=.localsetup-maint/ui-browser-profiles/chrome-devtools \
   --no-usage-statistics \
   --no-performance-crux \
-  --redactNetworkHeaders
+  --redactNetworkHeaders \
+  --isolated=true
 ```
 
-Use a dedicated profile for agent-owned sessions. Do not attach to a user's
-everyday Chrome profile unless the user explicitly authorizes that browser
-state.
+Use isolated, ephemeral browser state by default. Choose persistent profile
+mode only when login or state reuse is required, and then use the dedicated
+`.localsetup-maint/ui-browser-profiles/chrome-devtools` profile. Do not attach
+to a user's everyday Chrome profile unless the user explicitly authorizes that
+browser state.
+
+Before opening a new page, use the browser tool's page listing capability
+(`list_pages` for Chrome DevTools MCP) and reuse the owned active page for the
+same app or route family when practical. Record every agent-created page with
+`browser_session_guard.py` before use, and close or mark closed every owned
+page at task end. Never close user or pre-existing pages unless the user
+explicitly authorizes that action.
 
 ## Helper Commands
 
@@ -68,13 +77,23 @@ state.
 python3 scripts/chrome_devtools_mcp_environment.py inspect --json
 python3 scripts/chrome_devtools_mcp_environment.py inspect --json --require
 python3 scripts/chrome_devtools_mcp_environment.py standard-config --json
+python3 scripts/chrome_devtools_mcp_environment.py standard-config --mode persistent --json
+python3 scripts/browser_session_guard.py start --tool chrome-devtools --mode isolated --owner <agent> --purpose <text> --json
+python3 scripts/browser_session_guard.py record-page --session-id <id> --page-id <id> --url <url> --purpose <text> --json
+python3 scripts/browser_session_guard.py select-page --session-id <id> --page-id <id> --json
+python3 scripts/browser_session_guard.py mark-closed --session-id <id> --page-id <id> --json
+python3 scripts/browser_session_guard.py finish --session-id <id> --json
+python3 scripts/browser_session_guard.py audit --session-id <id> --json
 python3 scripts/chrome_devtools_mcp_environment.py example --agent codex --json
 python3 scripts/verify_ui_browser_debugging_sources.py
 python3 scripts/verify_ui_browser_debugging_sources.py --refresh --json
 ```
 
-The helpers are read-only. They do not edit agent config, delete profiles, kill
-browsers, install packages, or change existing MCP profiles.
+The environment and verifier helpers are read-only. The session guard writes
+private ownership records under `.localsetup-maint/ui-browser-sessions/` and
+reports cleanup guidance only. These helpers do not edit agent config, delete
+profiles, kill browsers, install packages, change existing MCP profiles, call
+MCP tools, or close user pages directly.
 
 ## Evidence Rules
 

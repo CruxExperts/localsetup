@@ -163,7 +163,7 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "e78105b55f4b1d2f1b21526e3ef3d06d488e2f89ae165c32fd00c2c83d385990",
+      "artifact_sha256": "6fef4bd7336381a5fa9421a624c608679965d44e7a99eb8cef6d884d00e5dfd5",
       "emitter": "generate-docs",
       "framework_version": "4.2.5",
       "path": "_localsetup/docs/_generated/implementation-file-map.md",
@@ -345,7 +345,7 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/artifact-registry.json",
-    "artifact_sha256": "b2dfddc4f99cfaa5e00a31c115c31b7a7a4510d9d8a786acaf1ddf27019a97d6",
+    "artifact_sha256": "49f5d780c4af0fa9f0b9a404bf6a1a913f362914a94275a11a404756371e0c57",
     "emitter": "generate-docs",
     "framework_version": "4.2.5",
     "schema_version": 1,

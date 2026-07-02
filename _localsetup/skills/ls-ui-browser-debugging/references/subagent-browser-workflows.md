@@ -16,8 +16,24 @@ not require concurrent control of the same page.
 ## Browser Boundaries
 
 - Do not ask subagents to drive the same browser page concurrently.
-- If a subagent needs browser control, assign an isolated profile or a specific
-  page-id routing model and record it in the ownership record.
+- A subagent may drive a browser only when the controller assigns one of these
+  ownership models before the subagent starts:
+  - `--experimentalPageIdRouting` with an explicit page id assigned to that
+    subagent.
+  - A separate isolated profile or isolated Chrome DevTools MCP session owned
+    by that subagent.
+- Record the assigned page id, isolated profile, owner, and purpose with
+  `browser_session_guard.py` before the subagent uses the page.
+- If neither page-id routing nor an isolated profile is assigned, the subagent
+  must not use live browser MCP tools. It may review saved screenshots,
+  snapshots, console excerpts, traces, or run non-browser tests.
 - Subagents may review screenshots, snapshots, console excerpts, and traces
   saved by the controller.
 - The controller verifies subagent findings before marking an issue fixed.
+
+## Closeout
+
+The controller owns final browser closeout. At task end, each subagent-owned
+record must be audited. Close only recorded owned pages with `close_page`, mark
+them closed, and leave user or pre-existing pages alone unless the user
+explicitly authorized closing them.

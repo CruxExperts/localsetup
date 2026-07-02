@@ -21,14 +21,15 @@ PINNED_SNAPSHOT = {
     "source": "https://www.npmjs.com/package/chrome-devtools-mcp",
 }
 DEFAULT_PROFILE = ".localsetup-maint/ui-browser-profiles/chrome-devtools"
-RECOMMENDED_ARGS = [
+PRIVACY_ARGS = [
     "-y",
     MCP_PACKAGE,
-    f"--user-data-dir={DEFAULT_PROFILE}",
     "--no-usage-statistics",
     "--no-performance-crux",
     "--redactNetworkHeaders",
 ]
+ISOLATED_ARGS = [*PRIVACY_ARGS, "--isolated=true"]
+PERSISTENT_ARGS = [*PRIVACY_ARGS, f"--userDataDir={DEFAULT_PROFILE}"]
 SUPPORTED_AGENTS = {"codex", "claude-code", "cursor", "kilo", "opencode", "openclaw"}
 
 
@@ -80,13 +81,18 @@ def chrome_fact() -> dict[str, Any]:
     return {"available": bool(found), "paths": found, "checked": checked}
 
 
-def standard_config() -> dict[str, Any]:
+def standard_config(mode: str = "isolated") -> dict[str, Any]:
+    if mode not in {"isolated", "persistent"}:
+        raise ValueError("mode must be isolated or persistent")
+    args = ISOLATED_ARGS if mode == "isolated" else PERSISTENT_ARGS
     return {
         "name": MCP_NAME,
+        "mode": mode,
         "transport": "stdio",
         "command": "npx",
-        "args": RECOMMENDED_ARGS,
-        "recommended_profile_dir": DEFAULT_PROFILE,
+        "args": args,
+        "recommended_profile_dir": None if mode == "isolated" else DEFAULT_PROFILE,
+        "persistent_profile_dir": DEFAULT_PROFILE,
         "pinned_reproducibility_snapshot": PINNED_SNAPSHOT,
     }
 
@@ -261,6 +267,12 @@ def build_parser() -> argparse.ArgumentParser:
     inspect_parser.add_argument("--require", action="store_true", help="Exit non-zero when node, npx, or Chrome are missing.")
 
     standard_parser = subparsers.add_parser("standard-config", help="Emit a client-neutral MCP server definition.")
+    standard_parser.add_argument(
+        "--mode",
+        choices=["isolated", "persistent"],
+        default="isolated",
+        help="Browser profile mode. Defaults to isolated ephemeral sessions.",
+    )
     standard_parser.add_argument("--json", action="store_true", help="Print JSON output.")
 
     example_parser = subparsers.add_parser("example", help="Emit a source-backed agent config example when available.")
@@ -277,7 +289,7 @@ def main(argv: list[str] | None = None) -> int:
         emit(payload, args.json)
         return code
     if args.command == "standard-config":
-        emit({"schema_version": 1, "status": "ok", "mcp_server": standard_config()}, args.json)
+        emit({"schema_version": 1, "status": "ok", "mcp_server": standard_config(args.mode)}, args.json)
         return 0
     if args.command == "example":
         emit(example(args.agent), args.json)

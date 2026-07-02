@@ -5,7 +5,7 @@ localsetup_provenance:
   emitter: generate-docs
 framework_version: 4.2.5
 source_commit: 6d541339c9f629f383f5a844dab3d8c388700adc
-artifact_sha256: ada327f14f679dac37e42ff5ac6c0100b84aaff221e61bc9629b8944127a48ac
+artifact_sha256: 86377d04650569968aea88063ee9ac4a509d8d94ab2f41293bb19131e4d8d7d9
 ---
 # Implementation File Map
 
@@ -733,6 +733,7 @@ artifact_sha256: ada327f14f679dac37e42ff5ac6c0100b84aaff221e61bc9629b8944127a48a
 | `keep` | `_localsetup/skills/ls-ui-browser-debugging/references/source-ledger.md` |
 | `keep` | `_localsetup/skills/ls-ui-browser-debugging/references/subagent-browser-workflows.md` |
 | `keep` | `_localsetup/skills/ls-ui-browser-debugging/references/ui-feasibility-review.md` |
+| `keep` | `_localsetup/skills/ls-ui-browser-debugging/scripts/browser_session_guard.py` |
 | `keep` | `_localsetup/skills/ls-ui-browser-debugging/scripts/chrome_devtools_mcp_environment.py` |
 | `keep` | `_localsetup/skills/ls-ui-browser-debugging/scripts/verify_ui_browser_debugging_sources.py` |
 | `keep` | `_localsetup/skills/ls-unfuck-my-git-state/SKILL.md` |

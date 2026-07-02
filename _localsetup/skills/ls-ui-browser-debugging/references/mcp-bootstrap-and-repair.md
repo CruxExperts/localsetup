@@ -17,25 +17,47 @@ From this skill directory:
 ```bash
 python3 scripts/chrome_devtools_mcp_environment.py inspect --json
 python3 scripts/chrome_devtools_mcp_environment.py standard-config --json
+python3 scripts/chrome_devtools_mcp_environment.py standard-config --mode persistent --json
 ```
 
-`inspect` reports `node`, `npx`, Chrome executable candidates, the recommended
-agent-owned profile path, and warning-only host issues. Use `--require` only in
-automation that should fail when host prerequisites are missing.
+`inspect` reports `node`, `npx`, Chrome executable candidates, the dedicated
+persistent agent-owned profile path, and warning-only host issues. Use
+`--require` only in automation that should fail when host prerequisites are
+missing.
 
-`standard-config` emits a client-neutral stdio MCP server definition:
+`standard-config` emits a client-neutral stdio MCP server definition. Isolated
+ephemeral browser state is the default:
 
 ```json
 {
   "name": "chrome-devtools",
+  "mode": "isolated",
   "command": "npx",
   "args": [
     "-y",
     "chrome-devtools-mcp@latest",
-    "--user-data-dir=.localsetup-maint/ui-browser-profiles/chrome-devtools",
     "--no-usage-statistics",
     "--no-performance-crux",
-    "--redactNetworkHeaders"
+    "--redactNetworkHeaders",
+    "--isolated=true"
+  ]
+}
+```
+
+Use persistent mode only when login or state reuse is required:
+
+```json
+{
+  "name": "chrome-devtools",
+  "mode": "persistent",
+  "command": "npx",
+  "args": [
+    "-y",
+    "chrome-devtools-mcp@latest",
+    "--no-usage-statistics",
+    "--no-performance-crux",
+    "--redactNetworkHeaders",
+    "--userDataDir=.localsetup-maint/ui-browser-profiles/chrome-devtools"
   ]
 }
 ```
@@ -53,7 +75,11 @@ syntax for unsupported or undocumented platforms.
   unavailable and adjust evidence collection.
 - If network headers are not redacted, recommend adding
   `--redactNetworkHeaders`.
-- If a user data dir points to a personal profile, recommend a dedicated
+- If persistent mode points to a personal profile, recommend a dedicated
   agent-owned profile unless the user explicitly authorized reuse.
+- If a profile tries to attach remote debugging to the default Chrome data
+  directory, note that Chrome 136 restricts remote debugging on the default
+  profile and recommend `--isolated=true` or `--userDataDir` with a non-default
+  agent profile.
 - Do not delete profiles, kill browsers, or edit existing MCP config without a
   user-approved platform-specific workflow.
