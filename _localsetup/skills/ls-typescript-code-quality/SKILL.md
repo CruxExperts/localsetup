@@ -130,3 +130,7 @@ uses in CI. Record any skipped checks and why.
 ## Reference
 
 - [TypeScript quality standards snapshot](./references/typescript-quality-standards.md)
+
+## Strict Mode Refresh Note
+
+For strict-mode work, inspect the current `tsconfig` inheritance tree before changing compiler options. Treat `strict` as the umbrella setting, and evaluate stricter flags such as `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes` only when the project can absorb the migration.

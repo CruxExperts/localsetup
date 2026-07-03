@@ -418,3 +418,7 @@ This skill is based on [Wikipedia:Signs of AI writing](https://en.wikipedia.org/
 Key insight from Wikipedia: "LLMs use statistical algorithms to guess what should come next. The result tends toward the most statistically likely result that applies to the widest variety of cases."
 
 See [references/overview.md](references/overview.md) only when you need supplemental source links or provenance notes. The pattern taxonomy above is the working checklist.
+
+## Import Wave Refresh Note
+
+Classification: retain this existing Wikipedia-pattern-based Localsetup skill. Do not import policy-sensitive duplicate humanizer skills from public bundles without a separate content and safety review.

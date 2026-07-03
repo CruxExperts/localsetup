@@ -4,7 +4,21 @@ from _localsetup.tests.test_install_flow import *
 
 def test_migration_scanner_and_hook_gate(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
-    (root / "README.md").write_text("Use localsetup-context during migration.\n", encoding="utf-8")
+    (root / "README.md").write_text(
+        "Use localsetup-context during migration.\nUse localsetup-context.\n",
+        encoding="utf-8",
+    )
+    (root / "ARCHITECTURE.md").write_text("![architecture](assets/localsetup-architecture.svg)\n", encoding="utf-8")
+    (root / "assets" / "localsetup-architecture.svg").write_text("<svg></svg>\n", encoding="utf-8")
+    (root / "_localsetup" / "README.md").write_text(
+        '<img src="../assets/localsetup-architecture.svg" alt="architecture">\n',
+        encoding="utf-8",
+    )
+    (root / "localsetup.egg-info").mkdir()
+    (root / "localsetup.egg-info" / "SOURCES.txt").write_text(
+        "assets/localsetup-architecture.svg\n",
+        encoding="utf-8",
+    )
     alias_doc = root / "_localsetup" / "docs" / "_generated" / "skill_aliases.json"
     alias_doc.write_text('{"localsetup-context": "ls-context"}\n', encoding="utf-8")
     pack_doc = root / "_localsetup" / "docs" / "_generated" / "skill-packs.md"
@@ -27,8 +41,11 @@ def test_migration_scanner_and_hook_gate(tmp_path: Path) -> None:
     paths = {finding["path"] for finding in findings}
     by_path = {finding["path"]: finding for finding in findings}
     assert "README.md" in paths
+    assert "ARCHITECTURE.md" not in paths
     assert by_path["README.md"]["category"] == "actionable"
     assert by_path["README.md"]["actionable"] is True
+    assert any(finding["path"] == "README.md" and finding["text"] == "Use localsetup-context." for finding in findings)
+    assert all("localsetup-architecture.svg" not in finding["text"] for finding in findings)
     assert by_path["_localsetup/docs/_generated/skill_aliases.json"]["category"] == "expected_alias_surface"
     assert by_path["_localsetup/docs/_generated/skill_aliases.json"]["actionable"] is False
     assert by_path["_localsetup/docs/_generated/skill-packs.md"]["category"] == "expected_alias_surface"

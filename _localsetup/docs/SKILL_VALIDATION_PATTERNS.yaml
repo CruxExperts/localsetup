@@ -134,5 +134,5 @@ sources:
 - OWASP LLM prompt injection guidance
 - pr1m8/prompt-injections taxonomy
 - Existing SECURITY_PATTERNS in skill_importer_scan
-updated: '2026-05-09T19:36:01Z'
+updated: '2026-07-03T06:45:00Z'
 version: '1.0'

@@ -114,3 +114,7 @@ For scenario examples and optional config schema, see `references/docs-routing-r
 ## References
 
 - `references/docs-routing-reference.md` - schemas, examples, configuration fields, and validation scenarios.
+
+## Documentation Skill Refresh Note
+
+Classification: route documentation organization and lifecycle questions here. Use `ls-documentation-alignment` for generated docs and public framework alignment checks.

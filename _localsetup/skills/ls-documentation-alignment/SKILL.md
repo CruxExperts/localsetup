@@ -134,3 +134,7 @@ The controller verifies each report and records checkpoints in the ledger.
 - `_localsetup/docs/OUTPUT_AND_DOC_GENERATION.md`
 - `_localsetup/docs/DOCUMENT_LIFECYCLE_MANAGEMENT.md`
 - `_localsetup/docs/WORKFLOW_STANDARD.md`
+
+## Documentation Skill Refresh Note
+
+Classification: route docs drift, generated artifact sync, and public documentation alignment here rather than creating a duplicate generic documentation skill.

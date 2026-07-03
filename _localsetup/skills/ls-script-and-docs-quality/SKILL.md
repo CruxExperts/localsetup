@@ -50,3 +50,7 @@ This skill owns script-quality, input-hardening, tooling-policy, and generated-o
 - Prefer structured parsers and approved dependencies over ad hoc parsing.
 - New framework tooling is Python 3.12+ unless it is a minimal bootstrap or platform entrypoint.
 - Generated docs should be produced by the repo generators and carry provenance; do not hand-edit generated artifacts except to repair the generator.
+
+## Documentation Skill Refresh Note
+
+Classification: keep documentation authoring, script quality, and durable Markdown rules consolidated here; do not create a duplicate `ls-documentation` skill for generic docs requests.

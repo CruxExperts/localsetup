@@ -6,6 +6,7 @@ from pathlib import Path
 import yaml
 
 from .audit import is_prunable_dead_url
+from .audit import NO_LICENSE_DESCRIPTION_SOURCE_REGISTRIES
 
 
 def apply_fixes(index_path: Path, results: list[dict], *, prune_dead_urls: bool = False) -> tuple[int, int]:
@@ -17,7 +18,11 @@ def apply_fixes(index_path: Path, results: list[dict], *, prune_dead_urls: bool 
     fix_map: dict[tuple[str, str], str] = {}
     dead_keys: set[tuple[str, str]] = set()
     for result in results:
-        if result["action"] == "fixable" and result["fetched_desc"]:
+        if (
+            result["action"] == "fixable"
+            and result["fetched_desc"]
+            and result.get("source_registry") not in NO_LICENSE_DESCRIPTION_SOURCE_REGISTRIES
+        ):
             fix_map[(result["name"], result["url"])] = result["fetched_desc"]
         if prune_dead_urls and is_prunable_dead_url(result):
             dead_keys.add((result["name"], result["url"]))

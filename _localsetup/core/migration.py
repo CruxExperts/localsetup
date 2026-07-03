@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import shutil
+import re
 from datetime import datetime, timezone
 
 from .adapters import ADAPTER_MARKER_JSON, adapter_path_state, adapter_targets
@@ -26,6 +27,8 @@ RUNTIME_SKIP_PREFIXES = {
 def _is_runtime_skip_path(rel: Path) -> bool:
     if rel.parts == (".localsetup", "lock.json"):
         return True
+    if rel.parts and rel.parts[0].endswith(".egg-info"):
+        return True
     return any(rel.parts[: len(prefix)] == prefix for prefix in RUNTIME_SKIP_PREFIXES)
 
 
@@ -38,9 +41,29 @@ def _legacy_reference_category(rel: Path) -> str:
         "_localsetup/docs/_generated/skill-packs.md",
     }:
         return "expected_alias_surface"
+    if parts[:3] == ("_localsetup", "docs", "_generated"):
+        return "expected_alias_surface"
+    if rel.as_posix() in {"_localsetup/docs/README.md", "assets/README.md"}:
+        return "expected_alias_surface"
     if rel.as_posix() == "_localsetup/docs/migration/skill-alias-map.md":
         return "expected_migration_map"
     return "actionable"
+
+
+def _line_has_legacy_skill_reference(line: str, legacy_skill_names: set[str]) -> bool:
+    """Match legacy package names without treating asset filenames as packages."""
+    for name in legacy_skill_names:
+        for match in re.finditer(re.escape(name), line):
+            next_char = line[match.end() : match.end() + 1]
+            if next_char and (next_char.isalnum() or next_char == "-"):
+                continue
+            if next_char == ".":
+                extension_match = re.match(r"\.[A-Za-z0-9]{1,8}(?:\b|$)", line[match.end() :])
+                if extension_match:
+                    continue
+                return True
+            return True
+    return False
 
 
 def scan_legacy_references(
@@ -71,7 +94,7 @@ def scan_legacy_references(
             continue
         for line_no, line in enumerate(lines, start=1):
             if needle in line:
-                if legacy_skill_names and not any(name in line for name in legacy_skill_names):
+                if legacy_skill_names and not _line_has_legacy_skill_reference(line, legacy_skill_names):
                     continue
                 category = _legacy_reference_category(rel)
                 actionable = category == "actionable"

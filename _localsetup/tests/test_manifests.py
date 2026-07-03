@@ -62,6 +62,13 @@ skills:
   summary_short: "Anthropic skill: placeholder."
   summary_long: "Anthropic skill: placeholder."
   quality_signals: {}
+- name: no-license
+  description: "Anthropic skill: No License"
+  url: https://github.com/anthropics/skills/tree/main/skills/no-license
+  source_registry: https://github.com/anthropics/skills/tree/main/skills
+  summary_short: "Anthropic skill: No License"
+  summary_long: "Anthropic skill: No License"
+  quality_signals: {}
 """,
         encoding="utf-8",
     )
@@ -96,6 +103,14 @@ skills:
                 "action": "fixable",
                 "fetched_desc": "Real upstream description.",
             },
+            {
+                "name": "no-license",
+                "url": "https://github.com/anthropics/skills/tree/main/skills/no-license",
+                "source_registry": "https://github.com/anthropics/skills/tree/main/skills",
+                "url_live": True,
+                "action": "fixable",
+                "fetched_desc": "Copied no-license upstream description.",
+            },
         ],
         prune_dead_urls=True,
     )
@@ -103,8 +118,9 @@ skills:
     payload = yaml.safe_load(index.read_text(encoding="utf-8"))
     assert updated == 1
     assert pruned == 1
-    assert [skill["name"] for skill in payload["skills"]] == ["transient", "network", "fixable"]
+    assert [skill["name"] for skill in payload["skills"]] == ["transient", "network", "fixable", "no-license"]
     assert payload["skills"][2]["description"] == "Real upstream description."
+    assert payload["skills"][3]["description"] == "Anthropic skill: No License"
 
 
 def test_pack_manifest_loads() -> None:
@@ -205,7 +221,7 @@ def test_skill_taxonomy_covers_all_shipped_skills_and_allowed_classes() -> None:
     taxonomy = pack.skill_taxonomy
 
     assert set(taxonomy) == skill_names
-    assert len(taxonomy) == 60
+    assert len(taxonomy) == 105
     assert {row["class"] for row in taxonomy.values()} <= ALLOWED_SKILL_TAXONOMY_CLASSES
     assert {row["owner_scope"] for row in taxonomy.values()} == {"skill"}
 
@@ -218,7 +234,7 @@ def test_skill_catalog_uses_taxonomy_sort_order_and_payload_fields() -> None:
 
     assert sort_keys == sorted(sort_keys)
     assert [row["id"] for row in payload["skills"]] == [skill.name for skill in catalog]
-    assert payload["count"] == len(catalog) == 60
+    assert payload["count"] == len(catalog) == 105
     assert payload["skills"][0]["sort_priority"] == 10
     assert {"class", "sort_priority", "tags", "owner_scope", "packs"} <= set(payload["skills"][0])
 

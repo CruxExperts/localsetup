@@ -97,16 +97,61 @@ packs:
   - ls-pr-reviewer
   - ls-public-repo-identity
   experimental:
+  - ls-accessibility-review
+  - ls-agent-email-inbox
+  - ls-alirezarezvani-skills
+  - ls-antigravity-awesome-skills
   - ls-arbiter
+  - ls-architecture
+  - ls-composio
+  - ls-corey-haines-marketing
+  - ls-cro-patterns
+  - ls-deploy-checklist
+  - ls-docker-best-practices
+  - ls-email-best-practices
+  - ls-email-sequence-builder
+  - ls-firebase-hosting-basics
+  - ls-firecrawl
+  - ls-frontend-design
+  - ls-github-actions-builder
   - ls-humanizer
+  - ls-incident-response
   - ls-kilo-boss-orchestrator
   - ls-kilo-visual-output
+  - ls-next-js-app-router
+  - ls-notion-api
+  - ls-openclaudia-skills
+  - ls-paddle-agent-skills
+  - ls-prisma-orm
+  - ls-react-email
+  - ls-redis-cache-patterns
+  - ls-remotion-best-practices
+  - ls-resend
+  - ls-sentry-error-handling
+  - ls-seo-geo-claude-skills
+  - ls-shopify-storefront
   - ls-skill-creator
   - ls-skill-discovery
   - ls-skill-importer
   - ls-skill-normalizer
   - ls-skill-sandbox-tester
   - ls-skill-vetter
+  - ls-stripe-payments
+  - ls-supabase
+  - ls-superpowers
+  - ls-system-architecture-diagrams
+  - ls-system-design
+  - ls-tailwind-best-practices
+  - ls-tech-debt
+  - ls-trail-of-bits
+  - ls-twilio
+  - ls-valyu
+  - ls-vercel-react-best-practices
+  - ls-vercel-web-design-guidelines
+  - ls-web-artifacts-builder
+  - ls-web-scraping-patterns
+  - ls-workos
+  - ls-workos-widgets
 workflow_packs:
   bootstrap:
   - ls-workflow-audit-framework
@@ -579,6 +624,321 @@ extensions:
       - omniroute
       - codex
       - onboarding
+      owner_scope: skill
+    ls-frontend-design:
+      class: development
+      sort_priority: 60
+      tags:
+      - frontend
+      - design
+      owner_scope: skill
+    ls-antigravity-awesome-skills:
+      class: skill-lifecycle
+      sort_priority: 60
+      tags:
+      - skills
+      - inventory
+      owner_scope: skill
+    ls-firebase-hosting-basics:
+      class: integrations
+      sort_priority: 60
+      tags:
+      - external-service
+      - integration
+      owner_scope: skill
+    ls-remotion-best-practices:
+      class: development
+      sort_priority: 60
+      tags:
+      - workflow
+      - guidance
+      owner_scope: skill
+    ls-email-best-practices:
+      class: integrations
+      sort_priority: 60
+      tags:
+      - external-service
+      - integration
+      owner_scope: skill
+    ls-react-email:
+      class: integrations
+      sort_priority: 60
+      tags:
+      - external-service
+      - integration
+      owner_scope: skill
+    ls-resend:
+      class: integrations
+      sort_priority: 60
+      tags:
+      - external-service
+      - integration
+      owner_scope: skill
+    ls-agent-email-inbox:
+      class: integrations
+      sort_priority: 60
+      tags:
+      - external-service
+      - integration
+      owner_scope: skill
+    ls-superpowers:
+      class: skill-lifecycle
+      sort_priority: 60
+      tags:
+      - skills
+      - inventory
+      owner_scope: skill
+    ls-paddle-agent-skills:
+      class: integrations
+      sort_priority: 60
+      tags:
+      - external-service
+      - integration
+      owner_scope: skill
+    ls-openclaudia-skills:
+      class: skill-lifecycle
+      sort_priority: 60
+      tags:
+      - skills
+      - inventory
+      owner_scope: skill
+    ls-twilio:
+      class: integrations
+      sort_priority: 60
+      tags:
+      - external-service
+      - integration
+      owner_scope: skill
+    ls-workos:
+      class: integrations
+      sort_priority: 60
+      tags:
+      - external-service
+      - integration
+      owner_scope: skill
+    ls-workos-widgets:
+      class: integrations
+      sort_priority: 60
+      tags:
+      - external-service
+      - integration
+      owner_scope: skill
+    ls-accessibility-review:
+      class: development
+      sort_priority: 60
+      tags:
+      - workflow
+      - guidance
+      owner_scope: skill
+    ls-composio:
+      class: integrations
+      sort_priority: 60
+      tags:
+      - external-service
+      - integration
+      owner_scope: skill
+    ls-architecture:
+      class: development
+      sort_priority: 60
+      tags:
+      - workflow
+      - guidance
+      owner_scope: skill
+    ls-deploy-checklist:
+      class: development
+      sort_priority: 60
+      tags:
+      - workflow
+      - guidance
+      owner_scope: skill
+    ls-incident-response:
+      class: development
+      sort_priority: 60
+      tags:
+      - workflow
+      - guidance
+      owner_scope: skill
+    ls-system-design:
+      class: development
+      sort_priority: 60
+      tags:
+      - workflow
+      - guidance
+      owner_scope: skill
+    ls-tech-debt:
+      class: development
+      sort_priority: 60
+      tags:
+      - workflow
+      - guidance
+      owner_scope: skill
+    ls-web-artifacts-builder:
+      class: development
+      sort_priority: 60
+      tags:
+      - frontend
+      - design
+      owner_scope: skill
+    ls-supabase:
+      class: integrations
+      sort_priority: 60
+      tags:
+      - external-service
+      - integration
+      owner_scope: skill
+    ls-tailwind-best-practices:
+      class: development
+      sort_priority: 60
+      tags:
+      - frontend
+      - design
+      owner_scope: skill
+    ls-stripe-payments:
+      class: integrations
+      sort_priority: 60
+      tags:
+      - external-service
+      - integration
+      owner_scope: skill
+    ls-shopify-storefront:
+      class: integrations
+      sort_priority: 60
+      tags:
+      - external-service
+      - integration
+      owner_scope: skill
+    ls-sentry-error-handling:
+      class: integrations
+      sort_priority: 60
+      tags:
+      - external-service
+      - integration
+      owner_scope: skill
+    ls-vercel-web-design-guidelines:
+      class: development
+      sort_priority: 60
+      tags:
+      - frontend
+      - design
+      owner_scope: skill
+    ls-vercel-react-best-practices:
+      class: development
+      sort_priority: 60
+      tags:
+      - workflow
+      - guidance
+      owner_scope: skill
+    ls-trail-of-bits:
+      class: skill-lifecycle
+      sort_priority: 60
+      tags:
+      - skills
+      - inventory
+      owner_scope: skill
+    ls-firecrawl:
+      class: integrations
+      sort_priority: 60
+      tags:
+      - external-service
+      - integration
+      owner_scope: skill
+    ls-valyu:
+      class: integrations
+      sort_priority: 60
+      tags:
+      - external-service
+      - integration
+      owner_scope: skill
+    ls-next-js-app-router:
+      class: development
+      sort_priority: 60
+      tags:
+      - workflow
+      - guidance
+      owner_scope: skill
+    ls-seo-geo-claude-skills:
+      class: skill-lifecycle
+      sort_priority: 60
+      tags:
+      - skills
+      - inventory
+      owner_scope: skill
+    ls-alirezarezvani-skills:
+      class: skill-lifecycle
+      sort_priority: 60
+      tags:
+      - skills
+      - inventory
+      owner_scope: skill
+    ls-corey-haines-marketing:
+      class: skill-lifecycle
+      sort_priority: 60
+      tags:
+      - skills
+      - inventory
+      owner_scope: skill
+    ls-prisma-orm:
+      class: integrations
+      sort_priority: 60
+      tags:
+      - external-service
+      - integration
+      owner_scope: skill
+    ls-redis-cache-patterns:
+      class: integrations
+      sort_priority: 60
+      tags:
+      - external-service
+      - integration
+      owner_scope: skill
+    ls-system-architecture-diagrams:
+      class: development
+      sort_priority: 60
+      tags:
+      - workflow
+      - guidance
+      owner_scope: skill
+    ls-cro-patterns:
+      class: development
+      sort_priority: 60
+      tags:
+      - workflow
+      - guidance
+      owner_scope: skill
+    ls-email-sequence-builder:
+      class: integrations
+      sort_priority: 60
+      tags:
+      - external-service
+      - integration
+      owner_scope: skill
+    ls-docker-best-practices:
+      class: development
+      sort_priority: 60
+      tags:
+      - workflow
+      - guidance
+      owner_scope: skill
+    ls-github-actions-builder:
+      class: development
+      sort_priority: 60
+      tags:
+      - workflow
+      - guidance
+      owner_scope: skill
+    ls-web-scraping-patterns:
+      class: development
+      sort_priority: 60
+      tags:
+      - workflow
+      - guidance
+      owner_scope: skill
+    ls-notion-api:
+      class: integrations
+      sort_priority: 60
+      tags:
+      - external-service
+      - integration
       owner_scope: skill
 distribution_channels:
 - git

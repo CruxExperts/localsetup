@@ -13,7 +13,7 @@ This is the full public capability catalog for Localsetup. The [root README](../
 <!-- facts-block:start -->
 - Current version: `4.2.6`
 - Supported platforms: `cursor, claude-code, codex, openclaw, kilo, opencode`
-- Shipped skills: `60`
+- Shipped skills: `105`
 - Workflow packages: `23`
 - Source: `_localsetup/docs/_generated/facts.json`
 <!-- facts-block:end -->

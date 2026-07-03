@@ -112,3 +112,7 @@ Scripts are both importable Python modules and command-line tools. Run examples 
 - E2E testing: Playwright, Cypress, Selenium
 - Performance testing: k6, JMeter, Locust
 - Security testing: OWASP ZAP, Burp Suite
+
+## 2026-07 Refresh Note
+
+Refresh classification: existing Localsetup-native TDD coverage remains the target for TDD imports. Do not create a duplicate `ls-tdd-skill`; route TDD requests here and use `ls-test-runner` for framework-specific commands.

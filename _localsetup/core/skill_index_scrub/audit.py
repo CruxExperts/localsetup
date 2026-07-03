@@ -5,6 +5,10 @@ from .description import fetch_upstream_description, is_stub_description
 from .diagnostics import debug
 from .http import check_url_liveness
 
+NO_LICENSE_DESCRIPTION_SOURCE_REGISTRIES = {
+    "https://github.com/anthropics/skills/tree/main/skills",
+}
+
 
 def is_prunable_dead_url(result: dict) -> bool:
     """Return True only for hard-dead URLs that are safe to prune automatically."""
@@ -26,10 +30,12 @@ def audit_skill(
     name = skill.get("name", "")
     url = skill.get("url", "")
     desc = (skill.get("description") or "").strip()
+    source_registry = skill.get("source_registry", "")
 
     result = {
         "name": name,
         "url": url,
+        "source_registry": source_registry,
         "original_desc": desc,
         "url_live": None,
         "url_status": None,
@@ -54,6 +60,9 @@ def audit_skill(
 
     if stub and result["action"] == "ok":
         result["action"] = "stub_desc"
+
+    if source_registry in NO_LICENSE_DESCRIPTION_SOURCE_REGISTRIES:
+        skip_desc_fetch = True
 
     if stub and not skip_desc_fetch and url:
         fetched, source = fetch_upstream_description(url, timeout=timeout)

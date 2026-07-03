@@ -190,3 +190,7 @@ open htmlcov/index.html        # Python
 - Framework internals (React rendering, Express routing)
 - Trivial getters/setters
 - Third-party library behavior
+
+## Vitest Planning Note
+
+For Vitest work, inspect the repo's package manager, `vitest.config.*`, test environment, setup files, coverage provider, and UI/component test stack before adding commands. Prefer the repo's existing `npm test`, `npm run test`, or `npm run test:unit` scripts when present.

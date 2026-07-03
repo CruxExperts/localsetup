@@ -74,12 +74,12 @@
   ],
   "cli_commands": [],
   "counts": {
-    "docs": 370,
+    "docs": 425,
     "framework_docs": 63,
     "generated_docs": 5,
     "platforms": 6,
     "public_docs": 6,
-    "skills": 60,
+    "skills": 105,
     "workflow_packs": 31,
     "workflows": 23
   },
@@ -926,6 +926,26 @@
       "managed_blocks": [],
       "owner_package": "",
       "owner_skill": "",
+      "path": "_localsetup/skills/ls-accessibility-review/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-agent-email-inbox/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
       "path": "_localsetup/skills/ls-agentlens/SKILL.md",
       "status": "",
       "version": ""
@@ -957,6 +977,26 @@
       "owner_package": "",
       "owner_skill": "",
       "path": "_localsetup/skills/ls-agentq-transport/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-alirezarezvani-skills/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-alirezarezvani-skills/references/upstream-coverage.md",
       "status": "",
       "version": ""
     },
@@ -1006,6 +1046,26 @@
       "managed_blocks": [],
       "owner_package": "",
       "owner_skill": "",
+      "path": "_localsetup/skills/ls-antigravity-awesome-skills/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-antigravity-awesome-skills/references/upstream-coverage.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
       "path": "_localsetup/skills/ls-arbiter/SKILL.md",
       "status": "",
       "version": ""
@@ -1029,6 +1089,16 @@
       "path": "_localsetup/skills/ls-arbiter/templates/decision.md",
       "status": "pending",
       "version": "1"
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-architecture/SKILL.md",
+      "status": "",
+      "version": ""
     },
     {
       "class": "skill",
@@ -1316,6 +1386,26 @@
       "managed_blocks": [],
       "owner_package": "",
       "owner_skill": "",
+      "path": "_localsetup/skills/ls-composio/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-composio/references/upstream-coverage.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
       "path": "_localsetup/skills/ls-context/SKILL.md",
       "status": "",
       "version": ""
@@ -1396,6 +1486,36 @@
       "managed_blocks": [],
       "owner_package": "",
       "owner_skill": "",
+      "path": "_localsetup/skills/ls-corey-haines-marketing/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-corey-haines-marketing/references/upstream-coverage.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-cro-patterns/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
       "path": "_localsetup/skills/ls-cron-orchestrator/SKILL.md",
       "status": "",
       "version": ""
@@ -1417,6 +1537,26 @@
       "owner_package": "",
       "owner_skill": "",
       "path": "_localsetup/skills/ls-debug-pro/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-deploy-checklist/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-docker-best-practices/SKILL.md",
       "status": "",
       "version": ""
     },
@@ -1546,6 +1686,46 @@
       "managed_blocks": [],
       "owner_package": "",
       "owner_skill": "",
+      "path": "_localsetup/skills/ls-email-best-practices/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-email-sequence-builder/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-firebase-hosting-basics/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-firecrawl/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
       "path": "_localsetup/skills/ls-framework-audit/SKILL.md",
       "status": "",
       "version": ""
@@ -1557,6 +1737,16 @@
       "owner_package": "",
       "owner_skill": "",
       "path": "_localsetup/skills/ls-framework-compliance/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-frontend-design/SKILL.md",
       "status": "",
       "version": ""
     },
@@ -1607,6 +1797,16 @@
       "owner_package": "",
       "owner_skill": "",
       "path": "_localsetup/skills/ls-git-workflows/references/worktrees-recovery-and-history.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-github-actions-builder/SKILL.md",
       "status": "",
       "version": ""
     },
@@ -1857,6 +2057,16 @@
       "owner_package": "",
       "owner_skill": "",
       "path": "_localsetup/skills/ls-humanizer/references/overview.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-incident-response/SKILL.md",
       "status": "",
       "version": ""
     },
@@ -2356,6 +2566,16 @@
       "managed_blocks": [],
       "owner_package": "",
       "owner_skill": "",
+      "path": "_localsetup/skills/ls-next-js-app-router/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
       "path": "_localsetup/skills/ls-nodejs-nextjs/SKILL.md",
       "status": "",
       "version": ""
@@ -2457,6 +2677,16 @@
       "owner_package": "",
       "owner_skill": "",
       "path": "_localsetup/skills/ls-nodejs-nextjs/references/version-matrix.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-notion-api/SKILL.md",
       "status": "",
       "version": ""
     },
@@ -2656,7 +2886,57 @@
       "managed_blocks": [],
       "owner_package": "",
       "owner_skill": "",
+      "path": "_localsetup/skills/ls-openclaudia-skills/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-openclaudia-skills/references/upstream-coverage.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-paddle-agent-skills/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-paddle-agent-skills/references/upstream-coverage.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
       "path": "_localsetup/skills/ls-pr-reviewer/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-prisma-orm/SKILL.md",
       "status": "",
       "version": ""
     },
@@ -2676,7 +2956,47 @@
       "managed_blocks": [],
       "owner_package": "",
       "owner_skill": "",
+      "path": "_localsetup/skills/ls-react-email/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
       "path": "_localsetup/skills/ls-receiving-code-review/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-redis-cache-patterns/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-remotion-best-practices/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-resend/SKILL.md",
       "status": "",
       "version": ""
     },
@@ -2707,6 +3027,36 @@
       "owner_package": "",
       "owner_skill": "",
       "path": "_localsetup/skills/ls-script-and-docs-quality/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-sentry-error-handling/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-seo-geo-claude-skills/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-seo-geo-claude-skills/references/upstream-coverage.md",
       "status": "",
       "version": ""
     },
@@ -3136,6 +3486,16 @@
       "managed_blocks": [],
       "owner_package": "",
       "owner_skill": "",
+      "path": "_localsetup/skills/ls-shopify-storefront/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
       "path": "_localsetup/skills/ls-skill-creator/SKILL.md",
       "status": "",
       "version": ""
@@ -3196,7 +3556,77 @@
       "managed_blocks": [],
       "owner_package": "",
       "owner_skill": "",
+      "path": "_localsetup/skills/ls-stripe-payments/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-supabase/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-superpowers/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-superpowers/references/upstream-coverage.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-system-architecture-diagrams/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-system-design/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
       "path": "_localsetup/skills/ls-system-info/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-tailwind-best-practices/SKILL.md",
       "status": "",
       "version": ""
     },
@@ -3276,7 +3706,57 @@
       "managed_blocks": [],
       "owner_package": "",
       "owner_skill": "",
+      "path": "_localsetup/skills/ls-tech-debt/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
       "path": "_localsetup/skills/ls-test-runner/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-trail-of-bits/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-trail-of-bits/references/upstream-coverage.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-twilio/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-twilio/references/upstream-coverage.md",
       "status": "",
       "version": ""
     },
@@ -3407,6 +3887,76 @@
       "owner_package": "",
       "owner_skill": "",
       "path": "_localsetup/skills/ls-unfuck-my-git-state/references/symptom-map.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-valyu/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-vercel-react-best-practices/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-vercel-web-design-guidelines/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-web-artifacts-builder/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-web-scraping-patterns/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-workos/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-workos-widgets/SKILL.md",
       "status": "",
       "version": ""
     },
@@ -3831,7 +4381,7 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "a292dea6f9819b733b228ab185a8c64c742b90768122825157ce7b529d3d3f03",
+    "artifact_sha256": "a118f6227e2eaff059b158cc17b9f0fa5c0539c337e3f470955c9e113b91d173",
     "emitter": "docs-align",
     "framework_version": "4.2.6",
     "schema_version": 1,
@@ -4572,6 +5122,412 @@
       ]
     },
     {
+      "class": "development",
+      "name": "ls-accessibility-review",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-accessibility-review",
+      "sort_priority": 60,
+      "tags": [
+        "workflow",
+        "guidance"
+      ]
+    },
+    {
+      "class": "integrations",
+      "name": "ls-agent-email-inbox",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-agent-email-inbox",
+      "sort_priority": 60,
+      "tags": [
+        "external-service",
+        "integration"
+      ]
+    },
+    {
+      "class": "skill-lifecycle",
+      "name": "ls-alirezarezvani-skills",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-alirezarezvani-skills",
+      "sort_priority": 60,
+      "tags": [
+        "skills",
+        "inventory"
+      ]
+    },
+    {
+      "class": "skill-lifecycle",
+      "name": "ls-antigravity-awesome-skills",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-antigravity-awesome-skills",
+      "sort_priority": 60,
+      "tags": [
+        "skills",
+        "inventory"
+      ]
+    },
+    {
+      "class": "development",
+      "name": "ls-architecture",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-architecture",
+      "sort_priority": 60,
+      "tags": [
+        "workflow",
+        "guidance"
+      ]
+    },
+    {
+      "class": "integrations",
+      "name": "ls-composio",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-composio",
+      "sort_priority": 60,
+      "tags": [
+        "external-service",
+        "integration"
+      ]
+    },
+    {
+      "class": "skill-lifecycle",
+      "name": "ls-corey-haines-marketing",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-corey-haines-marketing",
+      "sort_priority": 60,
+      "tags": [
+        "skills",
+        "inventory"
+      ]
+    },
+    {
+      "class": "development",
+      "name": "ls-cro-patterns",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-cro-patterns",
+      "sort_priority": 60,
+      "tags": [
+        "workflow",
+        "guidance"
+      ]
+    },
+    {
+      "class": "development",
+      "name": "ls-deploy-checklist",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-deploy-checklist",
+      "sort_priority": 60,
+      "tags": [
+        "workflow",
+        "guidance"
+      ]
+    },
+    {
+      "class": "development",
+      "name": "ls-docker-best-practices",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-docker-best-practices",
+      "sort_priority": 60,
+      "tags": [
+        "workflow",
+        "guidance"
+      ]
+    },
+    {
+      "class": "integrations",
+      "name": "ls-email-best-practices",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-email-best-practices",
+      "sort_priority": 60,
+      "tags": [
+        "external-service",
+        "integration"
+      ]
+    },
+    {
+      "class": "integrations",
+      "name": "ls-email-sequence-builder",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-email-sequence-builder",
+      "sort_priority": 60,
+      "tags": [
+        "external-service",
+        "integration"
+      ]
+    },
+    {
+      "class": "integrations",
+      "name": "ls-firebase-hosting-basics",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-firebase-hosting-basics",
+      "sort_priority": 60,
+      "tags": [
+        "external-service",
+        "integration"
+      ]
+    },
+    {
+      "class": "integrations",
+      "name": "ls-firecrawl",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-firecrawl",
+      "sort_priority": 60,
+      "tags": [
+        "external-service",
+        "integration"
+      ]
+    },
+    {
+      "class": "development",
+      "name": "ls-frontend-design",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-frontend-design",
+      "sort_priority": 60,
+      "tags": [
+        "frontend",
+        "design"
+      ]
+    },
+    {
+      "class": "development",
+      "name": "ls-github-actions-builder",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-github-actions-builder",
+      "sort_priority": 60,
+      "tags": [
+        "workflow",
+        "guidance"
+      ]
+    },
+    {
+      "class": "development",
+      "name": "ls-incident-response",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-incident-response",
+      "sort_priority": 60,
+      "tags": [
+        "workflow",
+        "guidance"
+      ]
+    },
+    {
+      "class": "development",
+      "name": "ls-next-js-app-router",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-next-js-app-router",
+      "sort_priority": 60,
+      "tags": [
+        "workflow",
+        "guidance"
+      ]
+    },
+    {
+      "class": "integrations",
+      "name": "ls-notion-api",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-notion-api",
+      "sort_priority": 60,
+      "tags": [
+        "external-service",
+        "integration"
+      ]
+    },
+    {
+      "class": "skill-lifecycle",
+      "name": "ls-openclaudia-skills",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-openclaudia-skills",
+      "sort_priority": 60,
+      "tags": [
+        "skills",
+        "inventory"
+      ]
+    },
+    {
+      "class": "integrations",
+      "name": "ls-paddle-agent-skills",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-paddle-agent-skills",
+      "sort_priority": 60,
+      "tags": [
+        "external-service",
+        "integration"
+      ]
+    },
+    {
+      "class": "integrations",
+      "name": "ls-prisma-orm",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-prisma-orm",
+      "sort_priority": 60,
+      "tags": [
+        "external-service",
+        "integration"
+      ]
+    },
+    {
+      "class": "integrations",
+      "name": "ls-react-email",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-react-email",
+      "sort_priority": 60,
+      "tags": [
+        "external-service",
+        "integration"
+      ]
+    },
+    {
+      "class": "integrations",
+      "name": "ls-redis-cache-patterns",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-redis-cache-patterns",
+      "sort_priority": 60,
+      "tags": [
+        "external-service",
+        "integration"
+      ]
+    },
+    {
+      "class": "development",
+      "name": "ls-remotion-best-practices",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-remotion-best-practices",
+      "sort_priority": 60,
+      "tags": [
+        "workflow",
+        "guidance"
+      ]
+    },
+    {
+      "class": "integrations",
+      "name": "ls-resend",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-resend",
+      "sort_priority": 60,
+      "tags": [
+        "external-service",
+        "integration"
+      ]
+    },
+    {
+      "class": "integrations",
+      "name": "ls-sentry-error-handling",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-sentry-error-handling",
+      "sort_priority": 60,
+      "tags": [
+        "external-service",
+        "integration"
+      ]
+    },
+    {
+      "class": "skill-lifecycle",
+      "name": "ls-seo-geo-claude-skills",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-seo-geo-claude-skills",
+      "sort_priority": 60,
+      "tags": [
+        "skills",
+        "inventory"
+      ]
+    },
+    {
+      "class": "integrations",
+      "name": "ls-shopify-storefront",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-shopify-storefront",
+      "sort_priority": 60,
+      "tags": [
+        "external-service",
+        "integration"
+      ]
+    },
+    {
       "class": "skill-lifecycle",
       "name": "ls-skill-creator",
       "owner_scope": "skill",
@@ -4653,6 +5609,230 @@
       "tags": [
         "skills",
         "security"
+      ]
+    },
+    {
+      "class": "integrations",
+      "name": "ls-stripe-payments",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-stripe-payments",
+      "sort_priority": 60,
+      "tags": [
+        "external-service",
+        "integration"
+      ]
+    },
+    {
+      "class": "integrations",
+      "name": "ls-supabase",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-supabase",
+      "sort_priority": 60,
+      "tags": [
+        "external-service",
+        "integration"
+      ]
+    },
+    {
+      "class": "skill-lifecycle",
+      "name": "ls-superpowers",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-superpowers",
+      "sort_priority": 60,
+      "tags": [
+        "skills",
+        "inventory"
+      ]
+    },
+    {
+      "class": "development",
+      "name": "ls-system-architecture-diagrams",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-system-architecture-diagrams",
+      "sort_priority": 60,
+      "tags": [
+        "workflow",
+        "guidance"
+      ]
+    },
+    {
+      "class": "development",
+      "name": "ls-system-design",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-system-design",
+      "sort_priority": 60,
+      "tags": [
+        "workflow",
+        "guidance"
+      ]
+    },
+    {
+      "class": "development",
+      "name": "ls-tailwind-best-practices",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-tailwind-best-practices",
+      "sort_priority": 60,
+      "tags": [
+        "frontend",
+        "design"
+      ]
+    },
+    {
+      "class": "development",
+      "name": "ls-tech-debt",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-tech-debt",
+      "sort_priority": 60,
+      "tags": [
+        "workflow",
+        "guidance"
+      ]
+    },
+    {
+      "class": "skill-lifecycle",
+      "name": "ls-trail-of-bits",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-trail-of-bits",
+      "sort_priority": 60,
+      "tags": [
+        "skills",
+        "inventory"
+      ]
+    },
+    {
+      "class": "integrations",
+      "name": "ls-twilio",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-twilio",
+      "sort_priority": 60,
+      "tags": [
+        "external-service",
+        "integration"
+      ]
+    },
+    {
+      "class": "integrations",
+      "name": "ls-valyu",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-valyu",
+      "sort_priority": 60,
+      "tags": [
+        "external-service",
+        "integration"
+      ]
+    },
+    {
+      "class": "development",
+      "name": "ls-vercel-react-best-practices",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-vercel-react-best-practices",
+      "sort_priority": 60,
+      "tags": [
+        "workflow",
+        "guidance"
+      ]
+    },
+    {
+      "class": "development",
+      "name": "ls-vercel-web-design-guidelines",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-vercel-web-design-guidelines",
+      "sort_priority": 60,
+      "tags": [
+        "frontend",
+        "design"
+      ]
+    },
+    {
+      "class": "development",
+      "name": "ls-web-artifacts-builder",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-web-artifacts-builder",
+      "sort_priority": 60,
+      "tags": [
+        "frontend",
+        "design"
+      ]
+    },
+    {
+      "class": "development",
+      "name": "ls-web-scraping-patterns",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-web-scraping-patterns",
+      "sort_priority": 60,
+      "tags": [
+        "workflow",
+        "guidance"
+      ]
+    },
+    {
+      "class": "integrations",
+      "name": "ls-workos",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-workos",
+      "sort_priority": 60,
+      "tags": [
+        "external-service",
+        "integration"
+      ]
+    },
+    {
+      "class": "integrations",
+      "name": "ls-workos-widgets",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "_localsetup/skills/ls-workos-widgets",
+      "sort_priority": 60,
+      "tags": [
+        "external-service",
+        "integration"
       ]
     },
     {
