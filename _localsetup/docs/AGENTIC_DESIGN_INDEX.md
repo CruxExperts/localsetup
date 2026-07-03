@@ -31,6 +31,7 @@ Released under the MIT License. See the repository root [LICENSE](../../LICENSE)
 | [PYTHON_ARCHITECTURE_STANDARD.md](PYTHON_ARCHITECTURE_STANDARD.md) | Python architecture: new and substantially refactored Python tooling follows _localsetup/docs/PYTHON_ARCHITECTURE_STANDARD.md; keep entrypoints thin, package responsibilities explicit, and existing debt baseline-managed. |
 | [GIT_TRACEABILITY.md](GIT_TRACEABILITY.md) | Attach git hash when referencing PRDs, specs, outcomes |
 | [SKILLS_AND_RULES.md](SKILLS_AND_RULES.md) | How master rule and skills interact; when to load which skill |
+| [FRONTEND_WEB_APP_SKILL_ROUTING.md](FRONTEND_WEB_APP_SKILL_ROUTING.md) | Canonical Localsetup routing for frontend web-app skills that overlap with the cached Build Web Apps plugin |
 | [MULTI_PLATFORM_INSTALL.md](MULTI_PLATFORM_INSTALL.md) | Install for supported platforms |
 | [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md) | **Canonical list of supported AI agent platforms**; context and skills paths; skill registration file list |
 | [ADAPTER_OWNERSHIP.md](ADAPTER_OWNERSHIP.md) | Shared adapter-directory ownership boundary; Localsetup owns managed entries, not whole adapter paths |

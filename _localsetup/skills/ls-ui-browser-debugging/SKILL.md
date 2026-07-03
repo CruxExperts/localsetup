@@ -107,3 +107,11 @@ MCP tools, or close user pages directly.
   and artifact path when one exists.
 - Convert confirmed user-facing issues into a focused regression test whenever
   the project has a suitable test stack.
+
+## Frontend App QA Fallback
+
+When a frontend app task does not name a browser-testing skill, keep this skill
+canonical for QA. Use Chrome DevTools MCP or Playwright to verify at least one
+desktop and one mobile viewport, capture screenshots for visual regressions,
+check console and network errors, exercise the primary interaction path, and
+record the exact route, viewport, and command or tool used.

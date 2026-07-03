@@ -74,8 +74,8 @@
   ],
   "cli_commands": [],
   "counts": {
-    "docs": 425,
-    "framework_docs": 63,
+    "docs": 426,
+    "framework_docs": 64,
     "generated_docs": 5,
     "platforms": 6,
     "public_docs": 6,
@@ -367,6 +367,16 @@
       "path": "_localsetup/docs/FEATURES.md",
       "status": "ACTIVE",
       "version": "4.2"
+    },
+    {
+      "class": "framework",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "ls-task-skill-matcher",
+      "path": "_localsetup/docs/FRONTEND_WEB_APP_SKILL_ROUTING.md",
+      "status": "ACTIVE",
+      "version": "1.0"
     },
     {
       "class": "framework",
@@ -4381,7 +4391,7 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "57a9b6bd8ad682fef831eb4e30ccc6370ed7e2bc98791f09587e8c068cc9af9f",
+    "artifact_sha256": "69e68767634f76ed2649a82977f72e8a10c4ab1a9149683ea0bc1ec3d04cd959",
     "emitter": "docs-align",
     "framework_version": "4.2.9",
     "schema_version": 1,

@@ -26,6 +26,10 @@ Use this skill when working on web artifacts tasks.
 - Choose the simplest artifact shape that satisfies the interaction: static HTML, vanilla JS, or React only when state complexity warrants it.
 - Keep artifacts self-contained, accessible, responsive, and free of secrets or live credentials.
 - Test rendered output in a browser or Playwright when layout, interaction, or canvas behavior matters.
+- For design-heavy work, use image generation only as a concept aid: create candidate visuals, ask the user which direction to implement, then treat the accepted design as the implementation spec.
+- Extract the accepted design into concrete system decisions: layout grid, hierarchy, typography, color roles, spacing, component states, imagery, and interaction details.
+- Implement faithfully against those decisions, cross-routing to `ls-frontend-design` for visual direction and `ls-ui-browser-debugging` for screenshot evidence.
+- Compare desktop and mobile browser screenshots against the accepted concept, then adjust layout, spacing, contrast, and responsive behavior before claiming visual parity.
 
 ## Boundaries
 
@@ -33,6 +37,9 @@ Use this skill when working on web artifacts tasks.
 - Prefer existing project patterns, declared package managers, and documented validation commands.
 - Do not expose secrets, credentials, private user data, or production account identifiers in source, examples, or logs.
 - When external APIs or current vendor behavior matter, verify against official docs before implementation.
+- For OpenAI image generation workflows, verify current API behavior against:
+  - https://developers.openai.com/api/docs/guides/image-generation
+  - https://developers.openai.com/api/reference/resources/images
 
 
 ## License Boundary

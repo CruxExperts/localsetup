@@ -26,6 +26,10 @@ Use this skill when working on Stripe payments tasks.
 - Choose the Stripe integration surface before coding: Checkout, Payment Element, Billing, Connect, or direct API.
 - Keep secret keys server-side, verify webhook signatures, handle idempotency, and test with Stripe test mode.
 - Validate tax, currency, refunds, disputes, subscription lifecycle, and customer data handling for the business model.
+- Prefer Checkout for hosted payment flows with minimal PCI and UI ownership; prefer Payment Element with PaymentIntents when the app must own the payment UI.
+- Use Billing for subscriptions, invoices, trials, and recurring lifecycle logic; use Connect for marketplaces or platform money movement; use Treasury only for eligible financial-account workflows.
+- Avoid hard-coding volatile API-version claims. Confirm the account API version, SDK behavior, changelog notes, and current endpoint docs before changing integration shape.
+- Keep webhook handlers idempotent, signature-verified, and event-type explicit; avoid trusting client-return URLs as payment confirmation.
 
 ## Boundaries
 
@@ -33,6 +37,13 @@ Use this skill when working on Stripe payments tasks.
 - Prefer existing project patterns, declared package managers, and documented validation commands.
 - Do not expose secrets, credentials, private user data, or production account identifiers in source, examples, or logs.
 - When external APIs or current vendor behavior matter, verify against official docs before implementation.
+- Primary Stripe docs for current routing decisions:
+  - https://docs.stripe.com/payments/checkout
+  - https://docs.stripe.com/payments/payment-element
+  - https://docs.stripe.com/connect
+  - https://docs.stripe.com/billing
+  - https://docs.stripe.com/treasury
+  - https://docs.stripe.com/api/versioning
 
 ## Provenance
 
