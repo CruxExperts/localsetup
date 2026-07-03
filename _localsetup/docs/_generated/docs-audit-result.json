@@ -46,14 +46,14 @@
     "artifact_path": "_localsetup/docs/_generated/docs-audit-result.json",
     "artifact_sha256": "9066059583986d36bd21f87411b27d273478826f157456538df2fa211fac5468",
     "emitter": "docs-align",
-    "framework_version": "4.2.6",
+    "framework_version": "4.2.7",
     "schema_version": 1,
-    "source_commit": "d9b5652b6d1e36aa1865e4055a0ba97d22d5a286",
-    "source_dirty": false,
-    "source_provenance_hash": "a00e1492fe5c18444c3d358f734d978bac740735f5b176a9b78c7f29659c1e18",
-    "source_root_id": "5705379756a819b9c969a45cff4999956d039487962958913c4fecfbba6f1d4b",
+    "source_commit": "855c9a22927bec2db99b4dcdf78ebea49901e977",
+    "source_dirty": true,
+    "source_provenance_hash": "8f2caaa1053a269978b61fbae9b5191b295aaea40592c172cb0986a00ad173c8",
+    "source_root_id": "ac17449cb5cf234ce3daee0d3c6bff9e364edd7dcbfb65773ebac06d672e45cd",
     "source_tag": null,
-    "source_tree_sha": "aded23ca31735e62b1302758d0bdc45de555f4cd"
+    "source_tree_sha": "8d02d47dc1f6b044be5d99622ab49459b63bf620"
   },
   "schema_version": "1.0"
 }
