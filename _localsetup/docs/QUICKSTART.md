@@ -55,7 +55,7 @@ uv run --locked python _localsetup/tools/localsetup.py --source-root . verify-re
   --sbom dist/localsetup-v$(cat VERSION).tar.gz.cdx.json
 ```
 
-Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.codex/skills` to the selected target. If no tools are selected, the install is global-library-only. Interactive installs first choose the global package-library baseline, defaulting to `core` or the prior registry setting. Repo setup is a separate choice; when selected, repo-visible packs default from the target lockfile or repo-detected suggestions.
+Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.codex/skills` to the selected target. If no tools are selected, the install is global-library-only. Interactive installs first choose the global package-library baseline, defaulting to `normal` or the prior registry setting. Repo setup is a separate choice; when selected, repo-visible packs default from the target lockfile or repo-detected suggestions.
 
 For scripts and CI, use explicit automation mode:
 
@@ -73,7 +73,7 @@ From a local checkout:
 ./install --directory .
 ```
 
-The local checkout command uses that checkout as the registered source. Like the raw global bootstrap, it installs the default `core` pack into the managed library, registers `~/.local/bin/localsetup`, and does not create repo adapter paths unless you pass `--tools` or `--platforms`. If `~/.local/bin` is not on `PATH`, the installer warns and the command becomes available after you add that directory to your shell path.
+The local checkout command uses that checkout as the registered source. Like the raw global bootstrap, it installs the default `normal` baseline into the managed library, registers `~/.local/bin/localsetup`, and does not create repo adapter paths unless you pass `--tools` or `--platforms`. If `~/.local/bin` is not on `PATH`, the installer warns and the command becomes available after you add that directory to your shell path.
 
 After registration, run Localsetup from any project:
 
@@ -95,7 +95,7 @@ Select packages by preset, pack, taxonomy class, tag, individual skill, or exclu
 localsetup install --tools codex --preset suggested --skill-classes development --skill-tags git --skills ls-context --exclude-skills ls-linux-patcher --yes
 ```
 
-The selector flags are additive except for `--exclude-skills`. Presets are `core`, `suggested`, `all`, and `custom`; automation defaults to `core` when no selector is supplied. `suggested` starts with `core` plus repo-detected additions, while `custom` lets the named packs, classes, tags, skills, and workflows define the footprint. Exclusions do not remove skills required by a selected workflow. The legacy selector flags apply to both the managed global baseline and repo-visible adapter selection for compatibility. Use `--global-packs` / `--global-preset` / `--global-workflows` and `--repo-packs` / `--repo-preset` / `--repo-workflows` when you want the managed library to contain a broader baseline than a target repo exposes.
+The selector flags are additive except for `--exclude-skills`. Presets are `core`, `normal`, `suggested`, `all`, and `custom`; fresh selector-free installs default the managed global baseline to `normal`. `core` is the compact baseline, `normal` includes bootstrap, core, dev, frontend, architecture, ops, and publishing packs, `suggested` starts with `core` plus repo-detected additions, and `custom` lets the named packs, classes, tags, skills, and workflows define the footprint. Exclusions do not remove skills required by a selected workflow. The legacy selector flags apply to both the managed global baseline and repo-visible adapter selection for compatibility. Use `--global-packs` / `--global-preset` / `--global-workflows` and `--repo-packs` / `--repo-preset` / `--repo-workflows` when you want the managed library to contain a broader baseline than a target repo exposes.
 
 For a full local setup with all shipped skill and workflow packs attached to Codex, Kilo, and OpenCode:
 
@@ -138,7 +138,7 @@ localsetup install --target-directory . --apply
 localsetup update --target-directory .
 ```
 
-Auto mode refreshes inferred existing adapters, applies only safe legacy repairs, or installs the suggested global baseline for a brand-new repo without creating adapter paths.
+Auto mode refreshes inferred existing adapters, applies only safe legacy repairs, or installs the `normal` global baseline for a brand-new repo without creating adapter paths.
 
 Attach an adapter to another repo or directory while using this checkout as the source:
 

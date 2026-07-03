@@ -14,12 +14,12 @@
       "type": "array",
       "items": { "type": "string", "minLength": 1 },
       "uniqueItems": true,
-      "default": ["core"]
+      "description": "Legacy shared pack selector. Omit selector fields for the fresh normal global baseline."
     },
     "preset": {
       "type": "string",
-      "enum": ["core", "suggested", "all", "custom"],
-      "description": "Named selection preset. Omit for the conservative core default in automation."
+      "enum": ["core", "normal", "suggested", "all", "custom"],
+      "description": "Named selection preset. Fresh selector-free installs use the normal global baseline."
     },
     "skills": {
       "type": "array",
@@ -54,7 +54,7 @@
     },
     "global_preset": {
       "type": "string",
-      "enum": ["core", "suggested", "all", "custom"],
+      "enum": ["core", "normal", "suggested", "all", "custom"],
       "description": "Managed package-library baseline preset."
     },
     "global_skills": {
@@ -90,7 +90,7 @@
     },
     "repo_preset": {
       "type": "string",
-      "enum": ["core", "suggested", "all", "custom"],
+      "enum": ["core", "normal", "suggested", "all", "custom"],
       "description": "Repo-visible selection preset."
     },
     "repo_skills": {

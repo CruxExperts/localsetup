@@ -30,6 +30,18 @@ Python-first framework tooling does not mean using Python for every shell task. 
 
 Python architecture: new and substantially refactored Python tooling follows _localsetup/docs/PYTHON_ARCHITECTURE_STANDARD.md; keep entrypoints thin, package responsibilities explicit, and existing debt baseline-managed.
 
+## Sandboxed `uv` Cache
+
+When running `uv` commands from an agent sandbox, first check whether the sandbox already allows writes to the user uv cache, normally `~/.cache/uv` or `$XDG_CACHE_HOME/uv`. If the sandbox policy can be adjusted for the session or workspace, prefer adding that cache directory as a writable cache exception; it is host cache state, not repository content.
+
+If the sandbox cannot be changed from the current agent session, do not let `uv` default to a read-only user-level cache. That causes avoidable `Could not acquire lock` or read-only filesystem failures before pytest starts. Use a repo-local ignored cache:
+
+```bash
+UV_CACHE_DIR="$PWD/.localsetup-maint/state/uv-cache" uv run --locked pytest _localsetup/tests -q
+```
+
+Use the same `UV_CACHE_DIR="$PWD/.localsetup-maint/state/uv-cache"` prefix for `uv run`, `uv sync`, and related validation commands unless the command intentionally needs the user cache. If the repo-local state path is unavailable, use a writable `/tmp` cache such as `UV_CACHE_DIR=/tmp/localsetup-uv-cache`. Escalate for `uv` cache access only when using the real user cache is required or after trying a writable cache location and confirming the command still fails for a reason that requires approval.
+
 ## Single Checkout Development Boundary
 
 Localsetup development is consolidated in this checkout. Do not create sibling clones, extra Git worktrees, release staging checkouts, PR-specific checkouts, or other repo-shaped directories for Localsetup work unless the user explicitly authorizes that specific path and purpose in the current task.

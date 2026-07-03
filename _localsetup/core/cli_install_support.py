@@ -167,7 +167,7 @@ def _build_auto_new_repo_plan(root: Path, home: Path, target_root: Path):
     return build_install_plan(
         root,
         home=home,
-        global_preset="suggested",
+        global_preset="normal",
         platform_ids=[],
         target_root=target_root,
     )

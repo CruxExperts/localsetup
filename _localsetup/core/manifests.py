@@ -60,6 +60,19 @@ def load_pack_config(repo_root: Path) -> PackConfig:
         if not isinstance(row, dict):
             raise ManifestError(f"extensions.skill_taxonomy.{skill_name} must be a mapping")
         skill_taxonomy[str(skill_name)] = dict(row)
+    raw_profiles = data.get("selection_profiles", {})
+    if raw_profiles is None:
+        raw_profiles = {}
+    if not isinstance(raw_profiles, dict):
+        raise ManifestError("selection_profiles must be a mapping")
+    selection_profiles: dict[str, dict[str, str | list[str]]] = {}
+    for profile_name, row in raw_profiles.items():
+        if not isinstance(row, dict):
+            raise ManifestError(f"selection_profiles.{profile_name} must be a mapping")
+        selection_profiles[str(profile_name)] = {
+            "description": str(row.get("description", "")),
+            "packs": [str(v) for v in row.get("packs", [])],
+        }
     return PackConfig(
         pack_id=str(data["pack_id"]),
         namespace=str(data["namespace"]),
@@ -71,6 +84,7 @@ def load_pack_config(repo_root: Path) -> PackConfig:
         global_registry=registry_path,
         lockfile=lockfile,
         optional_packs=[str(v) for v in data.get("optional_packs", [])],
+        selection_profiles=selection_profiles,
         packs={str(k): [str(v) for v in values] for k, values in data.get("packs", {}).items()},
         workflow_packs={str(k): [str(v) for v in values] for k, values in data.get("workflow_packs", {}).items()},
         channels=[str(v) for v in data.get("distribution_channels", [])],

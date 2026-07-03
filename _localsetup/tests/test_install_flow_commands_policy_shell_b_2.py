@@ -99,6 +99,28 @@ def test_config_file_and_cli_precedence(tmp_path: Path) -> None:
     assert merged.dependency_mode == "uv-sync"
 
 
+def test_config_file_accepts_normal_preset_values(tmp_path: Path) -> None:
+    config_path = tmp_path / "install-normal.json"
+    config_path.write_text(
+        json.dumps(
+            {
+                "preset": "normal",
+                "global_preset": "normal",
+                "repo_preset": "normal",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    config = load_install_config(config_path)
+
+    assert config.preset == "normal"
+    assert config.global_preset == "normal"
+    assert config.repo_preset == "normal"
+    schema = json.loads((Path(__file__).resolve().parents[2] / "_localsetup" / "config" / "install.schema.json").read_text(encoding="utf-8"))
+    assert "default" not in schema["properties"]["packs"]
+
+
 def test_schema_validation_is_optional_without_jsonschema(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     import builtins
 

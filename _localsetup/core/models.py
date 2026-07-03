@@ -78,6 +78,7 @@ class PackConfig:
     global_registry: str
     lockfile: str
     optional_packs: list[str] = field(default_factory=list)
+    selection_profiles: dict[str, dict[str, str | list[str]]] = field(default_factory=dict)
     packs: dict[str, list[str]] = field(default_factory=dict)
     workflow_packs: dict[str, list[str]] = field(default_factory=dict)
     channels: list[str] = field(default_factory=list)

@@ -78,11 +78,14 @@ def build_install_plan(
             repo_workflows,
         )
     )
+    global_selection_preset = global_preset if global_preset is not None else preset
+    if not legacy_selector_present and not global_selector_present:
+        global_selection_preset = "normal"
 
     global_selection = resolve_package_selection(
         repo_root,
         packs=global_packs if global_packs is not None else packs,
-        preset=global_preset if global_preset is not None else preset,
+        preset=global_selection_preset,
         skills=global_skills if global_skills is not None else skills,
         skill_classes=global_skill_classes if global_skill_classes is not None else skill_classes,
         skill_tags=global_skill_tags if global_skill_tags is not None else skill_tags,

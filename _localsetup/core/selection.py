@@ -9,7 +9,8 @@ from .skills import load_skill_catalog
 from .workflows import load_workflow_catalog, required_skills_for_workflows, selected_workflow_names
 
 
-PRESETS = {"core", "suggested", "all", "custom"}
+PRESETS = {"core", "normal", "suggested", "all", "custom"}
+PROFILE_PRESETS = {"normal"}
 
 
 @dataclass(frozen=True)
@@ -61,10 +62,14 @@ def resolve_pack_names(
         names = requested_packs
     elif selected_preset == "all":
         names = list(pack.packs)
+    elif selected_preset in pack.selection_profiles:
+        names = list(pack.selection_profiles[selected_preset].get("packs", []))
     elif selected_preset == "suggested":
         names = recommended_packs_for_target(target_root or repo_root)
     elif selected_preset == "custom":
         names = []
+    elif selected_preset in PROFILE_PRESETS:
+        raise ValueError(f"preset is not configured: {selected_preset}")
     else:
         names = ["core"]
     unknown = [name for name in names if name not in pack.packs]

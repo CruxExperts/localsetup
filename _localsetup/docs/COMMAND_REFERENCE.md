@@ -43,7 +43,7 @@ localsetup install --target-directory . --apply
 localsetup update --target-directory .
 ```
 
-Auto mode infers existing Localsetup state, applies only unambiguous safe repairs, or installs the suggested global baseline for a brand-new repo without adapter paths.
+Auto mode infers existing Localsetup state, applies only unambiguous safe repairs, or installs the `normal` global baseline for a brand-new repo without adapter paths.
 
 ## Installer Options
 
@@ -56,7 +56,7 @@ Auto mode infers existing Localsetup state, applies only unambiguous safe repair
 | `--non-interactive` | Automation mode. Requires `--yes` and preserves machine-readable output. |
 | `--tools LIST` | Comma-separated platform ids. Alias for `--platforms`. |
 | `--platforms LIST` | Platform adapter ids. Explicit values override auto mode. |
-| `--preset NAME` | Selection preset: `core`, `suggested`, `all`, or `custom`. |
+| `--preset NAME` | Selection preset: `core`, `normal`, `suggested`, `all`, or `custom`. |
 | `--packs LIST` | Comma-separated skill and workflow packs. |
 | `--skills LIST` | Comma-separated individual skill ids. |
 | `--workflows LIST` | Comma-separated workflow package ids or workflow aliases. |

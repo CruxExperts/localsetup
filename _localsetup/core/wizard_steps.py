@@ -12,6 +12,7 @@ from .wizard_catalog import (
     _action_summary,
     _attach_choices,
     _dependency_choices,
+    _global_pack_defaults,
     _global_root,
     _pack_choices,
     _platform_choices,
@@ -211,19 +212,9 @@ def _pack_step(term: TerminalWizard, state: WizardState) -> str:
     term.title("Global Package Library")
     default_packs = state.global_packs if state.global_packs is not None else state.packs
     if default_packs is None:
-        if state.global_preset is not None or state.preset is not None:
-            default_packs = resolve_package_selection(
-                state.repo_root,
-                preset=state.global_preset or state.preset,
-                skills=state.global_skills if state.global_skills is not None else state.skills,
-                skill_classes=state.global_skill_classes if state.global_skill_classes is not None else state.skill_classes,
-                skill_tags=state.global_skill_tags if state.global_skill_tags is not None else state.skill_tags,
-                exclude_skills=state.global_exclude_skills if state.global_exclude_skills is not None else state.exclude_skills,
-                target_root=state.caller_directory,
-            ).packs
-        else:
-            default_packs = ["core"]
-            state.global_preset = "core"
+        default_packs, inferred_global_preset = _global_pack_defaults(state)
+        if inferred_global_preset == "normal" and state.global_preset is None:
+            state.global_preset = "normal"
     selected = choose_many_checkbox(
         term,
         "Select global packs",
@@ -231,11 +222,13 @@ def _pack_step(term: TerminalWizard, state: WizardState) -> str:
         default=default_packs,
         allow_none=True,
         decides="Which baseline packages are kept in the managed Localsetup library.",
-        suggested_reason="Core is the conservative global baseline unless prior registry settings or CLI selectors are present.",
+        suggested_reason="Normal is the default global baseline unless prior registry settings or CLI selectors are present.",
         help_text="Choose one or more packs for the shared package library. Repo adapter visibility is selected separately.",
     )
     if isinstance(selected, str) and selected in {BACK, CANCEL}:
         return selected
+    if set(selected) == set(default_packs):
+        selected = default_packs
     state.global_packs = selected
     if state.global_preset is None:
         state.global_preset = state.preset or ("core" if selected == ["core"] else "custom")
@@ -334,7 +327,7 @@ def _review_step(term: TerminalWizard, state: WizardState) -> str:
     term.detail_line("Decides: Whether the planned install should be applied.")
     target_root = state.target_directory
     platforms = state.platforms or []
-    global_packs = state.global_packs if state.global_packs is not None else (state.packs if state.packs is not None else ["core"])
+    global_packs, global_preset = _global_pack_defaults(state)
     repo_packs = state.repo_packs if state.repo_packs is not None else (state.packs if platforms and state.packs is not None else [])
     plan = build_install_plan(
         state.repo_root,
@@ -346,7 +339,7 @@ def _review_step(term: TerminalWizard, state: WizardState) -> str:
         skill_tags=state.skill_tags,
         exclude_skills=state.exclude_skills,
         global_packs=global_packs,
-        global_preset=state.global_preset,
+        global_preset=global_preset,
         global_skills=state.global_skills,
         global_workflows=state.global_workflows,
         global_skill_classes=state.global_skill_classes,

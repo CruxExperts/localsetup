@@ -131,6 +131,16 @@ def test_pack_manifest_loads() -> None:
     assert pack.lockfile == ".localsetup/lock.json"
     assert "core" in pack.packs
     assert "experimental" in pack.packs
+    assert pack.selection_profiles["normal"]["packs"] == [
+        "bootstrap",
+        "core",
+        "dev",
+        "frontend",
+        "architecture",
+        "ops",
+        "publishing",
+    ]
+    assert pack.selection_profiles["normal"]["description"]
 
 
 def test_platform_manifest_has_six_platforms() -> None:

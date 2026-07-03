@@ -37,8 +37,8 @@ def _pack_choices(repo_root: Path) -> list[Choice]:
     metadata = {
         "core": (
             "Everyday Localsetup context, safety, task matching, and test workflow basics.",
-            "Installs the normal starter set for interactive agent work.",
-            "You want the suggested default for regular use.",
+            "Installs the compact starter set for interactive agent work.",
+            "You want a smaller baseline than the normal fresh-install profile.",
             "Keeps the install compact; specialized ops, publishing, and integrations stay out until selected.",
         ),
         "bootstrap": (
@@ -211,6 +211,60 @@ def _dependency_choices() -> list[Choice]:
 
 def _global_root(repo_root: Path, home: Path) -> Path:
     return expand_user_path(load_pack_config(repo_root).global_root, home)
+
+def _normal_pack_defaults(repo_root: Path, target_root: Path) -> list[str]:
+    return resolve_package_selection(repo_root, preset="normal", target_root=target_root).packs
+
+def _wizard_legacy_selector_present(state: WizardState) -> bool:
+    return any(
+        value is not None
+        for value in (
+            state.packs,
+            state.preset,
+            state.skills,
+            state.skill_classes,
+            state.skill_tags,
+            state.exclude_skills,
+            state.workflows,
+        )
+    )
+
+def _wizard_global_selector_present(state: WizardState) -> bool:
+    return any(
+        value is not None
+        for value in (
+            state.global_packs,
+            state.global_preset,
+            state.global_skills,
+            state.global_skill_classes,
+            state.global_skill_tags,
+            state.global_exclude_skills,
+            state.global_workflows,
+        )
+    )
+
+def _use_normal_global_fallback(state: WizardState) -> bool:
+    return not _wizard_legacy_selector_present(state) and not _wizard_global_selector_present(state)
+
+def _global_pack_defaults(state: WizardState) -> tuple[list[str], str | None]:
+    if state.global_packs is not None:
+        return state.global_packs, state.global_preset
+    if state.packs is not None:
+        return state.packs, state.global_preset
+    if _use_normal_global_fallback(state):
+        return _normal_pack_defaults(state.repo_root, state.caller_directory), "normal"
+
+    selection = resolve_package_selection(
+        state.repo_root,
+        preset=state.global_preset if state.global_preset is not None else state.preset,
+        skills=state.global_skills if state.global_skills is not None else state.skills,
+        workflows=state.global_workflows if state.global_workflows is not None else state.workflows,
+        skill_classes=state.global_skill_classes if state.global_skill_classes is not None else state.skill_classes,
+        skill_tags=state.global_skill_tags if state.global_skill_tags is not None else state.skill_tags,
+        exclude_skills=state.global_exclude_skills if state.global_exclude_skills is not None else state.exclude_skills,
+        target_root=state.caller_directory,
+    )
+    return selection.packs, state.global_preset
 
 def _registry_path(repo_root: Path, home: Path) -> Path:
     return expand_user_path(load_pack_config(repo_root).global_registry, home)

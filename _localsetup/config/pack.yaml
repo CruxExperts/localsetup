@@ -26,6 +26,17 @@ optional_packs:
 - growth-content
 - specialized
 - experimental
+selection_profiles:
+  normal:
+    description: Standard fresh global baseline for everyday Localsetup agent work.
+    packs:
+    - bootstrap
+    - core
+    - dev
+    - frontend
+    - architecture
+    - ops
+    - publishing
 packs:
   bootstrap:
   - ls-context

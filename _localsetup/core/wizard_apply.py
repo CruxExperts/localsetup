@@ -7,14 +7,14 @@ from .dependencies import ensure_dependencies
 from .plan import build_install_plan
 from .shell import register_shell_command
 from .verify import verify_install
-from .wizard_catalog import _detach_prior_adapters, _global_root
+from .wizard_catalog import _detach_prior_adapters, _global_pack_defaults, _global_root
 from .wizard_models import TerminalWizard, WizardState
 
 def _apply_and_show_result(term: TerminalWizard, state: WizardState) -> int:
     term.title("Applying")
     target_root = state.target_directory
     platforms = state.platforms or []
-    global_packs = state.global_packs if state.global_packs is not None else (state.packs if state.packs is not None else ["core"])
+    global_packs, global_preset = _global_pack_defaults(state)
     repo_packs = state.repo_packs if state.repo_packs is not None else (state.packs if platforms and state.packs is not None else [])
     try:
         dependency_info = (
@@ -38,7 +38,7 @@ def _apply_and_show_result(term: TerminalWizard, state: WizardState) -> int:
             skill_tags=state.skill_tags,
             exclude_skills=state.exclude_skills,
             global_packs=global_packs,
-            global_preset=state.global_preset,
+            global_preset=global_preset,
             global_skills=state.global_skills,
             global_workflows=state.global_workflows,
             global_skill_classes=state.global_skill_classes,

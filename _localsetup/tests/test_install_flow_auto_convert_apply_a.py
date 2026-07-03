@@ -108,7 +108,7 @@ def test_no_selector_install_preserves_benign_adapter_file(tmp_path: Path) -> No
     assert (target / ".localsetup" / "lock.json").exists()
 
 
-def test_no_selector_install_new_repo_uses_suggested_global_without_adapters(tmp_path: Path) -> None:
+def test_no_selector_install_new_repo_uses_normal_global_without_adapters(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "new-target"
@@ -125,8 +125,16 @@ def test_no_selector_install_new_repo_uses_suggested_global_without_adapters(tmp
     assert lock["global_only"] is True
     assert lock["platforms"] == []
     assert lock["repo_packages"] == []
-    assert lock["global_baseline_selectors"]["preset"] == "suggested"
-    assert "dev" in lock["global_baseline_packs"]
+    assert lock["global_baseline_selectors"]["preset"] == "normal"
+    assert lock["global_baseline_packs"] == [
+        "bootstrap",
+        "core",
+        "dev",
+        "frontend",
+        "architecture",
+        "ops",
+        "publishing",
+    ]
     assert "publishing" in lock["global_baseline_packs"]
     assert "ls-nodejs-nextjs" in lock["global_baseline_packages"]
     assert not (target / ".codex" / "skills").exists()

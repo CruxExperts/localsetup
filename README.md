@@ -97,7 +97,7 @@ For release verification, download the GitHub release tarball with its `.sha256`
 uv run --locked python _localsetup/tools/localsetup.py --source-root . verify-release dist/localsetup-v$(cat VERSION).tar.gz
 ```
 
-Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.codex/skills` to the chosen target. For repo-targeted CLI automation with no platform or package selectors, Localsetup uses auto mode: existing Localsetup state is inferred and refreshed, safe legacy repairs are applied only when unambiguous, and a brand-new repo gets the suggested global package baseline with no repo adapter paths. Interactive installs first choose the global package-library baseline, defaulting to `core` or the prior registry setting. Repo setup is a separate choice; when selected, repo-visible packs default from the target lockfile or repo-detected suggestions.
+Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.codex/skills` to the chosen target. For repo-targeted CLI automation with no platform or package selectors, Localsetup uses auto mode: existing Localsetup state is inferred and refreshed, safe legacy repairs are applied only when unambiguous, and a brand-new repo gets the `normal` global package baseline with no repo adapter paths. Interactive installs first choose the global package-library baseline, defaulting to `normal` or the prior registry setting. Repo setup is a separate choice; when selected, repo-visible packs default from the target lockfile or repo-detected suggestions.
 
 For automation, opt in explicitly:
 
@@ -139,7 +139,7 @@ Tune the package footprint by preset, pack, taxonomy class, tag, individual skil
 localsetup install --tools codex --preset suggested --skill-classes development --skill-tags git --skills ls-context --exclude-skills ls-linux-patcher --yes
 ```
 
-Presets are `core`, `suggested`, `all`, and `custom`. `core` is the conservative default for automation when no selector is provided; `suggested` starts with `core` plus repo-detected categories; `all` installs every shipped skill and workflow package; `custom` relies on the packs, classes, tags, and skills you name. `--exclude-skills` removes named skills from the resolved selection unless a selected workflow requires them. The legacy selector flags apply to both the managed global baseline and repo-visible adapter selection for compatibility. Use `--global-packs` / `--global-preset` and `--repo-packs` / `--repo-preset` when you want the managed library to contain a broader baseline than a target repo exposes.
+Presets are `core`, `normal`, `suggested`, `all`, and `custom`. `core` is the compact baseline; `normal` is the fresh global default with bootstrap, core, dev, frontend, architecture, ops, and publishing packs; `suggested` starts with `core` plus repo-detected categories; `all` installs every shipped skill and workflow package; `custom` relies on the packs, classes, tags, and skills you name. `--exclude-skills` removes named skills from the resolved selection unless a selected workflow requires them. The legacy selector flags apply to both the managed global baseline and repo-visible adapter selection for compatibility. Use `--global-packs` / `--global-preset` and `--repo-packs` / `--repo-preset` when you want the managed library to contain a broader baseline than a target repo exposes.
 
 Install every shipped skill and workflow package for Codex, Kilo, and OpenCode, while syncing the uv-managed Python dependency environment:
 

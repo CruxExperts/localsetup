@@ -53,6 +53,22 @@
       "items": { "type": "string", "minLength": 1 },
       "uniqueItems": true
     },
+    "selection_profiles": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["description", "packs"],
+        "properties": {
+          "description": { "type": "string", "minLength": 1 },
+          "packs": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true
+          }
+        }
+      }
+    },
     "packs": {
       "type": "object",
       "additionalProperties": {

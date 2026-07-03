@@ -82,6 +82,189 @@ def test_wizard_review_blockers_apply_failure_and_warning_result(
     assert "path warning" in warning_term.output.getvalue()
 
 
+def test_wizard_first_run_global_pack_step_defaults_to_normal_profile(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    state = wizard.WizardState(
+        repo_root=root,
+        home=tmp_path / "home",
+        caller_directory=root,
+    )
+    term = TerminalWizard(io.StringIO("\n"), io.StringIO(), color=False)
+
+    assert wizard._pack_step(term, state) == "continue"
+
+    assert state.global_preset == "normal"
+    assert state.global_packs == [
+        "bootstrap",
+        "core",
+        "dev",
+        "frontend",
+        "architecture",
+        "ops",
+        "publishing",
+    ]
+
+
+def test_wizard_global_skill_selector_does_not_use_normal_pack_step_fallback(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    state = wizard.WizardState(
+        repo_root=root,
+        home=tmp_path / "home",
+        caller_directory=root,
+        global_skills=["ls-context"],
+    )
+    term = TerminalWizard(io.StringIO("\n"), io.StringIO(), color=False)
+
+    assert wizard._pack_step(term, state) == "continue"
+
+    assert state.global_packs == ["core"]
+    assert state.global_preset == "core"
+
+
+def test_wizard_review_fallback_uses_normal_profile_packs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    root = make_temp_repo(tmp_path)
+    state = wizard.WizardState(
+        repo_root=root,
+        home=tmp_path / "home",
+        caller_directory=root,
+    )
+    captured: dict[str, object] = {}
+    fake_plan = SimpleNamespace(
+        actions=[],
+        rollback_metadata={
+            "global_baseline_packs": ["bootstrap", "core", "dev", "frontend", "architecture", "ops", "publishing"],
+            "repo_packs": [],
+            "global_baseline_packages": ["ls-context"],
+            "repo_packages": [],
+            "skills": ["ls-context"],
+            "workflows": [],
+        },
+    )
+
+    def fake_build_install_plan(*args: object, **kwargs: object) -> object:
+        captured.update(kwargs)
+        return fake_plan
+
+    monkeypatch.setattr(wizard, "build_install_plan", fake_build_install_plan)
+    monkeypatch.setattr(wizard, "run_doctor", lambda *args, **kwargs: {"warnings": [], "blockers": []})
+
+    assert wizard._review_step(TerminalWizard(io.StringIO("\n"), io.StringIO(), color=False), state) == wizard.BACK
+
+    assert captured["global_packs"] == [
+        "bootstrap",
+        "core",
+        "dev",
+        "frontend",
+        "architecture",
+        "ops",
+        "publishing",
+    ]
+    assert captured["global_preset"] == "normal"
+
+
+def test_wizard_review_global_skill_selector_does_not_use_normal_fallback(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root = make_temp_repo(tmp_path)
+    state = wizard.WizardState(
+        repo_root=root,
+        home=tmp_path / "home",
+        caller_directory=root,
+        global_skills=["ls-context"],
+    )
+    captured: dict[str, object] = {}
+    fake_plan = SimpleNamespace(
+        actions=[],
+        rollback_metadata={
+            "global_baseline_packs": ["core"],
+            "repo_packs": [],
+            "global_baseline_packages": ["ls-context"],
+            "repo_packages": [],
+            "skills": ["ls-context"],
+            "workflows": [],
+        },
+    )
+
+    def fake_build_install_plan(*args: object, **kwargs: object) -> object:
+        captured.update(kwargs)
+        return fake_plan
+
+    monkeypatch.setattr(wizard, "build_install_plan", fake_build_install_plan)
+    monkeypatch.setattr(wizard, "run_doctor", lambda *args, **kwargs: {"warnings": [], "blockers": []})
+
+    assert wizard._review_step(TerminalWizard(io.StringIO("\n"), io.StringIO(), color=False), state) == wizard.BACK
+
+    assert captured["global_packs"] == ["core"]
+    assert captured["global_preset"] is None
+    assert captured["global_skills"] == ["ls-context"]
+
+
+def test_wizard_apply_fallback_uses_normal_profile_packs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    root = make_temp_repo(tmp_path)
+    state = wizard.WizardState(
+        repo_root=root,
+        home=tmp_path / "home",
+        caller_directory=root,
+        register_shell=False,
+    )
+    captured: dict[str, object] = {}
+    fake_plan = SimpleNamespace(actions=[], rollback_metadata={"platforms": [], "global_only": True})
+
+    def fake_build_install_plan(*args: object, **kwargs: object) -> object:
+        captured.update(kwargs)
+        return fake_plan
+
+    monkeypatch.setattr(wizard, "build_install_plan", fake_build_install_plan)
+    monkeypatch.setattr(wizard, "apply_plan", lambda *args, **kwargs: {"ok": True})
+    monkeypatch.setattr(wizard, "verify_install", lambda *args, **kwargs: {"ok": True})
+
+    code = wizard._apply_and_show_result(TerminalWizard(io.StringIO(), io.StringIO(), color=False), state)
+
+    assert code == 0
+    assert captured["global_packs"] == [
+        "bootstrap",
+        "core",
+        "dev",
+        "frontend",
+        "architecture",
+        "ops",
+        "publishing",
+    ]
+    assert captured["global_preset"] == "normal"
+
+
+def test_wizard_apply_global_skill_selector_does_not_use_normal_fallback(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root = make_temp_repo(tmp_path)
+    state = wizard.WizardState(
+        repo_root=root,
+        home=tmp_path / "home",
+        caller_directory=root,
+        global_skills=["ls-context"],
+        register_shell=False,
+    )
+    captured: dict[str, object] = {}
+    fake_plan = SimpleNamespace(actions=[], rollback_metadata={"platforms": [], "global_only": True})
+
+    def fake_build_install_plan(*args: object, **kwargs: object) -> object:
+        captured.update(kwargs)
+        return fake_plan
+
+    monkeypatch.setattr(wizard, "build_install_plan", fake_build_install_plan)
+    monkeypatch.setattr(wizard, "apply_plan", lambda *args, **kwargs: {"ok": True})
+    monkeypatch.setattr(wizard, "verify_install", lambda *args, **kwargs: {"ok": True})
+
+    code = wizard._apply_and_show_result(TerminalWizard(io.StringIO(), io.StringIO(), color=False), state)
+
+    assert code == 0
+    assert captured["global_packs"] == ["core"]
+    assert captured["global_preset"] is None
+    assert captured["global_skills"] == ["ls-context"]
+
+
 def test_config_rejects_invalid_shapes_and_modes(tmp_path: Path) -> None:
     from _localsetup.core.config import validate_install_config
     from _localsetup.core.paths import PathValidationError

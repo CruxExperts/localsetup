@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from _localsetup.tests.test_install_flow import *
+from _localsetup.core.selection import resolve_package_selection
 
 def test_plan_apply_verify_rollback(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
@@ -167,6 +168,47 @@ def test_selection_resolves_preset_classes_tags_skills_and_exclusions(tmp_path: 
     assert plan.rollback_metadata["packs"] == []
     assert plan.rollback_metadata["selectors"]["skill_classes"] == ["operations"]
     assert plan.rollback_metadata["selectors"]["skill_tags"] == ["git"]
+
+
+def test_selection_resolves_normal_profile_from_pack_config(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+
+    selected = resolve_package_selection(root, preset="normal")
+
+    assert selected.preset == "normal"
+    assert selected.packs == ["bootstrap", "core", "dev", "frontend", "architecture", "ops", "publishing"]
+    assert selected.selectors["preset"] == "normal"
+    assert selected.selectors["packs"] == selected.packs
+
+
+def test_selection_explicit_packs_override_normal_profile_contents(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+
+    selected = resolve_package_selection(root, preset="normal", packs=["core"])
+
+    assert selected.preset == "normal"
+    assert selected.packs == ["core"]
+    assert selected.selectors["packs"] == ["core"]
+
+
+def test_selector_free_plan_uses_normal_global_baseline_without_repo_adapters(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+
+    plan = build_install_plan(root, home=home)
+
+    assert plan.rollback_metadata["global_baseline_selectors"]["preset"] == "normal"
+    assert plan.rollback_metadata["global_baseline_packs"] == [
+        "bootstrap",
+        "core",
+        "dev",
+        "frontend",
+        "architecture",
+        "ops",
+        "publishing",
+    ]
+    assert plan.rollback_metadata["repo_packs"] == []
+    assert not any(action.kind == "attach_repo_path" for action in plan.actions)
 
 
 @pytest.mark.parametrize(
