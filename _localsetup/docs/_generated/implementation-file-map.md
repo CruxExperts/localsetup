@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 6310b6f30a75e43680f093c8f65e87a755134608c89fafc7aad08ebfb2b21ca6
+  source_provenance_hash: a00e1492fe5c18444c3d358f734d978bac740735f5b176a9b78c7f29659c1e18
   emitter: generate-docs
 framework_version: 4.2.6
-source_commit: 1fe67ac8aa07f85f9454758a22f4bb4a87912b99
-artifact_sha256: 86377d04650569968aea88063ee9ac4a509d8d94ab2f41293bb19131e4d8d7d9
+source_commit: d9b5652b6d1e36aa1865e4055a0ba97d22d5a286
+artifact_sha256: da1ddccde6e43e247bad672d2f55e019f750fe6c45a0991710c84709f4a9b81f
 ---
 # Implementation File Map
 
@@ -312,10 +312,14 @@ artifact_sha256: 86377d04650569968aea88063ee9ac4a509d8d94ab2f41293bb19131e4d8d7d
 | `keep` | `_localsetup/lib/deps.py` |
 | `keep` | `_localsetup/lib/json_formatter.sh` |
 | `keep` | `_localsetup/lib/path_resolution.py` |
+| `keep` | `_localsetup/skills/ls-accessibility-review/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-agent-email-inbox/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-agentlens/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-agentlens/references/navigation.md` |
 | `keep` | `_localsetup/skills/ls-agentlens/references/structure.md` |
 | `keep` | `_localsetup/skills/ls-agentq-transport/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-alirezarezvani-skills/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-alirezarezvani-skills/references/upstream-coverage.md` |
 | `keep` | `_localsetup/skills/ls-ansible-skill/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-ansible-skill/assets/ansible-example/ansible.cfg` |
 | `keep` | `_localsetup/skills/ls-ansible-skill/assets/ansible-example/collections/requirements.yml` |
@@ -340,10 +344,13 @@ artifact_sha256: 86377d04650569968aea88063ee9ac4a509d8d94ab2f41293bb19131e4d8d7d
 | `keep` | `_localsetup/skills/ls-ansible-skill/references/best-practices.md` |
 | `keep` | `_localsetup/skills/ls-ansible-skill/references/modules-cheatsheet.md` |
 | `keep` | `_localsetup/skills/ls-ansible-skill/references/troubleshooting.md` |
+| `keep` | `_localsetup/skills/ls-antigravity-awesome-skills/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-antigravity-awesome-skills/references/upstream-coverage.md` |
 | `keep` | `_localsetup/skills/ls-arbiter/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-arbiter/references/overview.md` |
 | `keep` | `_localsetup/skills/ls-arbiter/scripts/arbiter_cli.py` |
 | `keep` | `_localsetup/skills/ls-arbiter/templates/decision.md` |
+| `keep` | `_localsetup/skills/ls-architecture/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-automatic-versioning/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-backlog-and-reminders/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-backlog-and-reminders/references/backlog-template.md` |
@@ -390,6 +397,8 @@ artifact_sha256: 86377d04650569968aea88063ee9ac4a509d8d94ab2f41293bb19131e4d8d7d
 | `keep` | `_localsetup/skills/ls-codex-heartbeat/templates/HEARTBEAT.md` |
 | `keep` | `_localsetup/skills/ls-codex-heartbeat/templates/codex_heartbeat.yaml` |
 | `keep` | `_localsetup/skills/ls-communication-and-tools/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-composio/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-composio/references/upstream-coverage.md` |
 | `keep` | `_localsetup/skills/ls-context-index/README.md` |
 | `keep` | `_localsetup/skills/ls-context-index/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-context-index/docs/agent-usage.md` |
@@ -399,6 +408,9 @@ artifact_sha256: 86377d04650569968aea88063ee9ac4a509d8d94ab2f41293bb19131e4d8d7d
 | `keep` | `_localsetup/skills/ls-context-index/docs/source-ledger.md` |
 | `keep` | `_localsetup/skills/ls-context-index/schemas/config.schema.json` |
 | `keep` | `_localsetup/skills/ls-context/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-corey-haines-marketing/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-corey-haines-marketing/references/upstream-coverage.md` |
+| `keep` | `_localsetup/skills/ls-cro-patterns/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-cron-orchestrator/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-cron-orchestrator/references/manifest.md` |
 | `keep` | `_localsetup/skills/ls-cron-orchestrator/scripts/_cron_manifest.py` |
@@ -406,6 +418,8 @@ artifact_sha256: 86377d04650569968aea88063ee9ac4a509d8d94ab2f41293bb19131e4d8d7d
 | `keep` | `_localsetup/skills/ls-cron-orchestrator/scripts/run_trigger.py` |
 | `keep` | `_localsetup/skills/ls-cron-orchestrator/scripts/tests/test_cron_orchestrator_hardening.py` |
 | `keep` | `_localsetup/skills/ls-debug-pro/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-deploy-checklist/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-docker-best-practices/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-docs-organization/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-docs-organization/references/docs-routing-reference.md` |
 | `keep` | `_localsetup/skills/ls-documentation-alignment/SKILL.md` |
@@ -418,17 +432,23 @@ artifact_sha256: 86377d04650569968aea88063ee9ac4a509d8d94ab2f41293bb19131e4d8d7d
 | `keep` | `_localsetup/skills/ls-documentation-alignment/source-ledger.md` |
 | `keep` | `_localsetup/skills/ls-documentation-alignment/troubleshooting.md` |
 | `keep` | `_localsetup/skills/ls-documentation-alignment/truth-map.md` |
+| `keep` | `_localsetup/skills/ls-email-best-practices/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-email-sequence-builder/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-firebase-hosting-basics/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-firecrawl/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-framework-audit/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-framework-audit/scripts/audit_links.py` |
 | `keep` | `_localsetup/skills/ls-framework-audit/scripts/audit_skill_matrix.py` |
 | `keep` | `_localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py` |
 | `keep` | `_localsetup/skills/ls-framework-audit/scripts/tests/test_framework_audit_hardening.py` |
 | `keep` | `_localsetup/skills/ls-framework-compliance/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-frontend-design/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-git-workflows/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-git-workflows/references/rebase-and-bisect.md` |
 | `keep` | `_localsetup/skills/ls-git-workflows/references/repo-structure-and-conflicts.md` |
 | `keep` | `_localsetup/skills/ls-git-workflows/references/tags-releases-and-tips.md` |
 | `keep` | `_localsetup/skills/ls-git-workflows/references/worktrees-recovery-and-history.md` |
+| `keep` | `_localsetup/skills/ls-github-actions-builder/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-github-publishing-workflow/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-github-starredrepos/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-github-starredrepos/data/examples/manifest.example.json` |
@@ -471,6 +491,7 @@ artifact_sha256: 86377d04650569968aea88063ee9ac4a509d8d94ab2f41293bb19131e4d8d7d
 | `keep` | `_localsetup/skills/ls-github-starredrepos/templates/sync-summary.md` |
 | `keep` | `_localsetup/skills/ls-humanizer/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-humanizer/references/overview.md` |
+| `keep` | `_localsetup/skills/ls-incident-response/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-keepass-secrets/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-keepass-secrets/docs/agent-usage-patterns.md` |
 | `keep` | `_localsetup/skills/ls-keepass-secrets/docs/architecture.md` |
@@ -584,6 +605,7 @@ artifact_sha256: 86377d04650569968aea88063ee9ac4a509d8d94ab2f41293bb19131e4d8d7d
 | `keep` | `_localsetup/skills/ls-mcp-builder/scripts/llm_providers/emulation.py` |
 | `keep` | `_localsetup/skills/ls-mcp-builder/scripts/llm_providers/openai_compat.py` |
 | `keep` | `_localsetup/skills/ls-mcp-builder/scripts/llm_providers/serialization.py` |
+| `keep` | `_localsetup/skills/ls-next-js-app-router/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-nodejs-nextjs/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-nodejs-nextjs/data/verified-versions.json` |
 | `keep` | `_localsetup/skills/ls-nodejs-nextjs/references/debugging-runbooks.md` |
@@ -597,6 +619,7 @@ artifact_sha256: 86377d04650569968aea88063ee9ac4a509d8d94ab2f41293bb19131e4d8d7d
 | `keep` | `_localsetup/skills/ls-nodejs-nextjs/references/update-procedure.md` |
 | `keep` | `_localsetup/skills/ls-nodejs-nextjs/references/version-matrix.md` |
 | `keep` | `_localsetup/skills/ls-nodejs-nextjs/scripts/verify-current-versions.mjs` |
+| `keep` | `_localsetup/skills/ls-notion-api/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-npm-management/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-npm-management/references/npm-api-conf-example.md` |
 | `keep` | `_localsetup/skills/ls-npm-management/references/proxy-host-template.md` |
@@ -636,16 +659,28 @@ artifact_sha256: 86377d04650569968aea88063ee9ac4a509d8d94ab2f41293bb19131e4d8d7d
 | `keep` | `_localsetup/skills/ls-omniroute/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-omniroute/references/upstream-skill-coverage.md` |
 | `keep` | `_localsetup/skills/ls-omniroute/scripts/omniroute_api.py` |
+| `keep` | `_localsetup/skills/ls-openclaudia-skills/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-openclaudia-skills/references/upstream-coverage.md` |
+| `keep` | `_localsetup/skills/ls-paddle-agent-skills/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-paddle-agent-skills/references/upstream-coverage.md` |
 | `keep` | `_localsetup/skills/ls-pr-reviewer/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-pr-reviewer/scripts/pr_review.py` |
 | `keep` | `_localsetup/skills/ls-pr-reviewer/scripts/pr_review_analysis.py` |
 | `keep` | `_localsetup/skills/ls-pr-reviewer/scripts/pr_review_report.py` |
 | `keep` | `_localsetup/skills/ls-pr-reviewer/scripts/tests/test_pr_review_inputs.py` |
+| `keep` | `_localsetup/skills/ls-prisma-orm/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-public-repo-identity/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-react-email/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-receiving-code-review/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-redis-cache-patterns/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-remotion-best-practices/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-resend/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-safety-and-backup/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-scrapling/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-script-and-docs-quality/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-sentry-error-handling/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-seo-geo-claude-skills/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-seo-geo-claude-skills/references/upstream-coverage.md` |
 | `keep` | `_localsetup/skills/ls-shadcn-ui/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-shadcn-ui/components/buttons-actions.md` |
 | `keep` | `_localsetup/skills/ls-shadcn-ui/components/data-display-dashboards.md` |
@@ -689,6 +724,7 @@ artifact_sha256: 86377d04650569968aea88063ee9ac4a509d8d94ab2f41293bb19131e4d8d7d
 | `keep` | `_localsetup/skills/ls-shadcn-ui/scripts/verify_shadcn_sources.py` |
 | `keep` | `_localsetup/skills/ls-shadcn-ui/tests/fixtures/README.md` |
 | `keep` | `_localsetup/skills/ls-shadcn-ui/tests/validation-checklist.md` |
+| `keep` | `_localsetup/skills/ls-shopify-storefront/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-skill-creator/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-skill-discovery/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-skill-importer/SKILL.md` |
@@ -699,8 +735,15 @@ artifact_sha256: 86377d04650569968aea88063ee9ac4a509d8d94ab2f41293bb19131e4d8d7d
 | `keep` | `_localsetup/skills/ls-skill-sandbox-tester/scripts/tests/test_create_sandbox.py` |
 | `keep` | `_localsetup/skills/ls-skill-sandbox-tester/scripts/tests/test_run_smoke.py` |
 | `keep` | `_localsetup/skills/ls-skill-vetter/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-stripe-payments/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-supabase/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-superpowers/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-superpowers/references/upstream-coverage.md` |
+| `keep` | `_localsetup/skills/ls-system-architecture-diagrams/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-system-design/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-system-info/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-system-info/scripts/system_snapshot.py` |
+| `keep` | `_localsetup/skills/ls-tailwind-best-practices/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-task-skill-matcher/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-tdd-guide/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-tdd-guide/assets/expected_output.json` |
@@ -723,7 +766,12 @@ artifact_sha256: 86377d04650569968aea88063ee9ac4a509d8d94ab2f41293bb19131e4d8d7d
 | `keep` | `_localsetup/skills/ls-tdd-guide/scripts/tdd_workflow.py` |
 | `keep` | `_localsetup/skills/ls-tdd-guide/scripts/test_cli_contract.py` |
 | `keep` | `_localsetup/skills/ls-tdd-guide/scripts/test_generator.py` |
+| `keep` | `_localsetup/skills/ls-tech-debt/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-test-runner/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-trail-of-bits/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-trail-of-bits/references/upstream-coverage.md` |
+| `keep` | `_localsetup/skills/ls-twilio/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-twilio/references/upstream-coverage.md` |
 | `keep` | `_localsetup/skills/ls-typescript-code-quality/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-typescript-code-quality/references/typescript-quality-standards.md` |
 | `keep` | `_localsetup/skills/ls-ui-browser-debugging/SKILL.md` |
@@ -743,6 +791,13 @@ artifact_sha256: 86377d04650569968aea88063ee9ac4a509d8d94ab2f41293bb19131e4d8d7d
 | `keep` | `_localsetup/skills/ls-unfuck-my-git-state/scripts/guided_repair_plan.py` |
 | `keep` | `_localsetup/skills/ls-unfuck-my-git-state/scripts/regression_harness.py` |
 | `keep` | `_localsetup/skills/ls-unfuck-my-git-state/scripts/snapshot_git_state.py` |
+| `keep` | `_localsetup/skills/ls-valyu/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-vercel-react-best-practices/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-vercel-web-design-guidelines/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-web-artifacts-builder/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-web-scraping-patterns/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-workos-widgets/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-workos/SKILL.md` |
 | `keep` | `_localsetup/templates/claude-code/CLAUDE.md` |
 | `keep` | `_localsetup/templates/codex/AGENTS.md` |
 | `keep` | `_localsetup/templates/config/localsetup_finalizer.yaml` |
