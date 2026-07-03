@@ -5,7 +5,7 @@ localsetup_provenance:
   emitter: generate-docs
 framework_version: 4.2.7
 source_commit: 16c41c7c2805977c75b2dde0610ab358dfcc7aef
-artifact_sha256: 879440d315787f39012a22e47bb8153e58dc90254004a1db9a6cb23f1b4a12f0
+artifact_sha256: 3f47cd0a32b2219c311d30d1cd89b013eee5bd39eeda09d8d4cd25085109a245
 ---
 # Skill And Workflow Packs
 
@@ -34,10 +34,10 @@ artifact_sha256: 879440d315787f39012a22e47bb8153e58dc90254004a1db9a6cb23f1b4a12f
 | `dev` | `skill` | `ls-debug-pro` | `development` | 30 | `debugging, diagnostics` | `localsetup-debug-pro` |
 | `dev` | `skill` | `ls-nodejs-nextjs` | `development` | 30 | `nodejs, nextjs` | `localsetup-nodejs-nextjs` |
 | `bootstrap, publishing` | `skill` | `ls-pr-reviewer` | `development` | 30 | `review, pull-requests` | `localsetup-pr-reviewer` |
-| `dev` | `skill` | `ls-shadcn-ui` | `development` | 30 | `react, ui` | `localsetup-shadcn-ui` |
+| `dev, frontend` | `skill` | `ls-shadcn-ui` | `development` | 30 | `react, ui` | `localsetup-shadcn-ui` |
 | `core` | `skill` | `ls-tdd-guide` | `development` | 30 | `tdd, testing` | `localsetup-tdd-guide` |
 | `dev` | `skill` | `ls-typescript-code-quality` | `development` | 30 | `typescript, quality` | `localsetup-typescript-code-quality` |
-| `dev` | `skill` | `ls-ui-browser-debugging` | `development` | 30 | `ui, browser, debugging, mcp` | `localsetup-ui-browser-debugging` |
+| `dev, frontend` | `skill` | `ls-ui-browser-debugging` | `development` | 30 | `ui, browser, debugging, mcp` | `localsetup-ui-browser-debugging` |
 | `ops` | `skill` | `ls-ansible-skill` | `operations` | 40 | `ansible, infrastructure` | `localsetup-ansible-skill` |
 | `ops` | `skill` | `ls-backlog-and-reminders` | `operations` | 40 | `backlog, reminders` | `localsetup-backlog-and-reminders` |
 | `harness` | `skill` | `ls-codex-heartbeat` | `operations` | 40 | `heartbeat, automation` | `localsetup-codex-heartbeat` |
@@ -61,61 +61,61 @@ artifact_sha256: 879440d315787f39012a22e47bb8153e58dc90254004a1db9a6cb23f1b4a12f
 | `integrations, omniroute` | `skill` | `ls-omniroute-proxy` | `integrations` | 50 | `omniroute, proxy, runtime` | `localsetup-omniroute-proxy` |
 | `omniroute` | `skill` | `ls-omniroute-update` | `integrations` | 50 | `omniroute, update, provenance` | `localsetup-omniroute-update` |
 | `integrations` | `skill` | `ls-scrapling` | `integrations` | 50 | `scrapling, extraction` | `localsetup-scrapling` |
-| `experimental` | `skill` | `ls-accessibility-review` | `development` | 60 | `workflow, guidance` | `localsetup-accessibility-review` |
-| `experimental` | `skill` | `ls-agent-email-inbox` | `integrations` | 60 | `external-service, integration` | `localsetup-agent-email-inbox` |
-| `experimental` | `skill` | `ls-alirezarezvani-skills` | `skill-lifecycle` | 60 | `skills, inventory` | `localsetup-alirezarezvani-skills` |
-| `experimental` | `skill` | `ls-antigravity-awesome-skills` | `skill-lifecycle` | 60 | `skills, inventory` | `localsetup-antigravity-awesome-skills` |
-| `experimental` | `skill` | `ls-architecture` | `development` | 60 | `workflow, guidance` | `localsetup-architecture` |
-| `experimental` | `skill` | `ls-composio` | `integrations` | 60 | `external-service, integration` | `localsetup-composio` |
-| `experimental` | `skill` | `ls-corey-haines-marketing` | `skill-lifecycle` | 60 | `skills, inventory` | `localsetup-corey-haines-marketing` |
-| `experimental` | `skill` | `ls-cro-patterns` | `development` | 60 | `workflow, guidance` | `localsetup-cro-patterns` |
-| `experimental` | `skill` | `ls-deploy-checklist` | `development` | 60 | `workflow, guidance` | `localsetup-deploy-checklist` |
-| `experimental` | `skill` | `ls-docker-best-practices` | `development` | 60 | `workflow, guidance` | `localsetup-docker-best-practices` |
-| `experimental` | `skill` | `ls-email-best-practices` | `integrations` | 60 | `external-service, integration` | `localsetup-email-best-practices` |
-| `experimental` | `skill` | `ls-email-sequence-builder` | `integrations` | 60 | `external-service, integration` | `localsetup-email-sequence-builder` |
-| `experimental` | `skill` | `ls-firebase-hosting-basics` | `integrations` | 60 | `external-service, integration` | `localsetup-firebase-hosting-basics` |
-| `experimental` | `skill` | `ls-firecrawl` | `integrations` | 60 | `external-service, integration` | `localsetup-firecrawl` |
-| `experimental` | `skill` | `ls-frontend-design` | `development` | 60 | `frontend, design` | `localsetup-frontend-design` |
-| `experimental` | `skill` | `ls-github-actions-builder` | `development` | 60 | `workflow, guidance` | `localsetup-github-actions-builder` |
-| `experimental` | `skill` | `ls-incident-response` | `development` | 60 | `workflow, guidance` | `localsetup-incident-response` |
-| `experimental` | `skill` | `ls-next-js-app-router` | `development` | 60 | `workflow, guidance` | `localsetup-next-js-app-router` |
-| `experimental` | `skill` | `ls-notion-api` | `integrations` | 60 | `external-service, integration` | `localsetup-notion-api` |
-| `experimental` | `skill` | `ls-openclaudia-skills` | `skill-lifecycle` | 60 | `skills, inventory` | `localsetup-openclaudia-skills` |
-| `experimental` | `skill` | `ls-paddle-agent-skills` | `integrations` | 60 | `external-service, integration` | `localsetup-paddle-agent-skills` |
-| `experimental` | `skill` | `ls-prisma-orm` | `integrations` | 60 | `external-service, integration` | `localsetup-prisma-orm` |
-| `experimental` | `skill` | `ls-react-email` | `integrations` | 60 | `external-service, integration` | `localsetup-react-email` |
-| `experimental` | `skill` | `ls-redis-cache-patterns` | `integrations` | 60 | `external-service, integration` | `localsetup-redis-cache-patterns` |
-| `experimental` | `skill` | `ls-remotion-best-practices` | `development` | 60 | `workflow, guidance` | `localsetup-remotion-best-practices` |
-| `experimental` | `skill` | `ls-resend` | `integrations` | 60 | `external-service, integration` | `localsetup-resend` |
-| `experimental` | `skill` | `ls-sentry-error-handling` | `integrations` | 60 | `external-service, integration` | `localsetup-sentry-error-handling` |
-| `experimental` | `skill` | `ls-seo-geo-claude-skills` | `skill-lifecycle` | 60 | `skills, inventory` | `localsetup-seo-geo-claude-skills` |
-| `experimental` | `skill` | `ls-shopify-storefront` | `integrations` | 60 | `external-service, integration` | `localsetup-shopify-storefront` |
-| `experimental` | `skill` | `ls-skill-creator` | `skill-lifecycle` | 60 | `skills, authoring` | `localsetup-skill-creator` |
-| `experimental` | `skill` | `ls-skill-discovery` | `skill-lifecycle` | 60 | `skills, discovery` | `localsetup-skill-discovery` |
-| `experimental` | `skill` | `ls-skill-importer` | `skill-lifecycle` | 60 | `skills, import` | `localsetup-skill-importer` |
-| `experimental` | `skill` | `ls-skill-normalizer` | `skill-lifecycle` | 60 | `skills, normalization` | `localsetup-skill-normalizer` |
-| `experimental` | `skill` | `ls-skill-sandbox-tester` | `skill-lifecycle` | 60 | `skills, sandbox` | `localsetup-skill-sandbox-tester` |
-| `experimental` | `skill` | `ls-skill-vetter` | `skill-lifecycle` | 60 | `skills, security` | `localsetup-skill-vetter` |
-| `experimental` | `skill` | `ls-stripe-payments` | `integrations` | 60 | `external-service, integration` | `localsetup-stripe-payments` |
-| `experimental` | `skill` | `ls-supabase` | `integrations` | 60 | `external-service, integration` | `localsetup-supabase` |
-| `experimental` | `skill` | `ls-superpowers` | `skill-lifecycle` | 60 | `skills, inventory` | `localsetup-superpowers` |
-| `experimental` | `skill` | `ls-system-architecture-diagrams` | `development` | 60 | `workflow, guidance` | `localsetup-system-architecture-diagrams` |
-| `experimental` | `skill` | `ls-system-design` | `development` | 60 | `workflow, guidance` | `localsetup-system-design` |
-| `experimental` | `skill` | `ls-tailwind-best-practices` | `development` | 60 | `frontend, design` | `localsetup-tailwind-best-practices` |
-| `experimental` | `skill` | `ls-tech-debt` | `development` | 60 | `workflow, guidance` | `localsetup-tech-debt` |
-| `experimental` | `skill` | `ls-trail-of-bits` | `skill-lifecycle` | 60 | `skills, inventory` | `localsetup-trail-of-bits` |
-| `experimental` | `skill` | `ls-twilio` | `integrations` | 60 | `external-service, integration` | `localsetup-twilio` |
-| `experimental` | `skill` | `ls-valyu` | `integrations` | 60 | `external-service, integration` | `localsetup-valyu` |
-| `experimental` | `skill` | `ls-vercel-react-best-practices` | `development` | 60 | `workflow, guidance` | `localsetup-vercel-react-best-practices` |
-| `experimental` | `skill` | `ls-vercel-web-design-guidelines` | `development` | 60 | `frontend, design` | `localsetup-vercel-web-design-guidelines` |
-| `experimental` | `skill` | `ls-web-artifacts-builder` | `development` | 60 | `frontend, design` | `localsetup-web-artifacts-builder` |
-| `experimental` | `skill` | `ls-web-scraping-patterns` | `development` | 60 | `workflow, guidance` | `localsetup-web-scraping-patterns` |
-| `experimental` | `skill` | `ls-workos` | `integrations` | 60 | `external-service, integration` | `localsetup-workos` |
-| `experimental` | `skill` | `ls-workos-widgets` | `integrations` | 60 | `external-service, integration` | `localsetup-workos-widgets` |
-| `experimental` | `skill` | `ls-arbiter` | `specialized` | 70 | `arbiter, review` | `localsetup-arbiter` |
-| `experimental` | `skill` | `ls-humanizer` | `specialized` | 70 | `writing, editing` | `localsetup-humanizer` |
-| `experimental` | `skill` | `ls-kilo-boss-orchestrator` | `specialized` | 70 | `kilo, orchestration` | `localsetup-kilo-boss-orchestrator` |
-| `experimental` | `skill` | `ls-kilo-visual-output` | `specialized` | 70 | `kilo, output` | `localsetup-kilo-visual-output` |
+| `dev, frontend` | `skill` | `ls-accessibility-review` | `development` | 60 | `workflow, guidance` | `localsetup-accessibility-review` |
+| `integrations` | `skill` | `ls-agent-email-inbox` | `integrations` | 60 | `external-service, integration` | `localsetup-agent-email-inbox` |
+| `skill-lifecycle` | `skill` | `ls-alirezarezvani-skills` | `skill-lifecycle` | 60 | `skills, inventory` | `localsetup-alirezarezvani-skills` |
+| `skill-lifecycle` | `skill` | `ls-antigravity-awesome-skills` | `skill-lifecycle` | 60 | `skills, inventory` | `localsetup-antigravity-awesome-skills` |
+| `architecture, dev` | `skill` | `ls-architecture` | `development` | 60 | `workflow, guidance` | `localsetup-architecture` |
+| `integrations` | `skill` | `ls-composio` | `integrations` | 60 | `external-service, integration` | `localsetup-composio` |
+| `growth-content, skill-lifecycle` | `skill` | `ls-corey-haines-marketing` | `skill-lifecycle` | 60 | `skills, inventory` | `localsetup-corey-haines-marketing` |
+| `growth-content` | `skill` | `ls-cro-patterns` | `development` | 60 | `workflow, guidance` | `localsetup-cro-patterns` |
+| `architecture, dev, ops, publishing` | `skill` | `ls-deploy-checklist` | `development` | 60 | `workflow, guidance` | `localsetup-deploy-checklist` |
+| `dev, ops` | `skill` | `ls-docker-best-practices` | `development` | 60 | `workflow, guidance` | `localsetup-docker-best-practices` |
+| `growth-content, integrations` | `skill` | `ls-email-best-practices` | `integrations` | 60 | `external-service, integration` | `localsetup-email-best-practices` |
+| `growth-content, integrations` | `skill` | `ls-email-sequence-builder` | `integrations` | 60 | `external-service, integration` | `localsetup-email-sequence-builder` |
+| `integrations` | `skill` | `ls-firebase-hosting-basics` | `integrations` | 60 | `external-service, integration` | `localsetup-firebase-hosting-basics` |
+| `integrations` | `skill` | `ls-firecrawl` | `integrations` | 60 | `external-service, integration` | `localsetup-firecrawl` |
+| `dev, frontend` | `skill` | `ls-frontend-design` | `development` | 60 | `frontend, design` | `localsetup-frontend-design` |
+| `dev, publishing` | `skill` | `ls-github-actions-builder` | `development` | 60 | `workflow, guidance` | `localsetup-github-actions-builder` |
+| `architecture, dev, ops` | `skill` | `ls-incident-response` | `development` | 60 | `workflow, guidance` | `localsetup-incident-response` |
+| `dev, frontend` | `skill` | `ls-next-js-app-router` | `development` | 60 | `workflow, guidance` | `localsetup-next-js-app-router` |
+| `integrations` | `skill` | `ls-notion-api` | `integrations` | 60 | `external-service, integration` | `localsetup-notion-api` |
+| `growth-content, skill-lifecycle` | `skill` | `ls-openclaudia-skills` | `skill-lifecycle` | 60 | `skills, inventory` | `localsetup-openclaudia-skills` |
+| `integrations` | `skill` | `ls-paddle-agent-skills` | `integrations` | 60 | `external-service, integration` | `localsetup-paddle-agent-skills` |
+| `integrations` | `skill` | `ls-prisma-orm` | `integrations` | 60 | `external-service, integration` | `localsetup-prisma-orm` |
+| `frontend, integrations` | `skill` | `ls-react-email` | `integrations` | 60 | `external-service, integration` | `localsetup-react-email` |
+| `integrations` | `skill` | `ls-redis-cache-patterns` | `integrations` | 60 | `external-service, integration` | `localsetup-redis-cache-patterns` |
+| `dev, frontend` | `skill` | `ls-remotion-best-practices` | `development` | 60 | `workflow, guidance` | `localsetup-remotion-best-practices` |
+| `integrations` | `skill` | `ls-resend` | `integrations` | 60 | `external-service, integration` | `localsetup-resend` |
+| `integrations` | `skill` | `ls-sentry-error-handling` | `integrations` | 60 | `external-service, integration` | `localsetup-sentry-error-handling` |
+| `growth-content, skill-lifecycle` | `skill` | `ls-seo-geo-claude-skills` | `skill-lifecycle` | 60 | `skills, inventory` | `localsetup-seo-geo-claude-skills` |
+| `integrations` | `skill` | `ls-shopify-storefront` | `integrations` | 60 | `external-service, integration` | `localsetup-shopify-storefront` |
+| `skill-lifecycle` | `skill` | `ls-skill-creator` | `skill-lifecycle` | 60 | `skills, authoring` | `localsetup-skill-creator` |
+| `skill-lifecycle` | `skill` | `ls-skill-discovery` | `skill-lifecycle` | 60 | `skills, discovery` | `localsetup-skill-discovery` |
+| `skill-lifecycle` | `skill` | `ls-skill-importer` | `skill-lifecycle` | 60 | `skills, import` | `localsetup-skill-importer` |
+| `skill-lifecycle` | `skill` | `ls-skill-normalizer` | `skill-lifecycle` | 60 | `skills, normalization` | `localsetup-skill-normalizer` |
+| `skill-lifecycle` | `skill` | `ls-skill-sandbox-tester` | `skill-lifecycle` | 60 | `skills, sandbox` | `localsetup-skill-sandbox-tester` |
+| `skill-lifecycle` | `skill` | `ls-skill-vetter` | `skill-lifecycle` | 60 | `skills, security` | `localsetup-skill-vetter` |
+| `integrations` | `skill` | `ls-stripe-payments` | `integrations` | 60 | `external-service, integration` | `localsetup-stripe-payments` |
+| `integrations` | `skill` | `ls-supabase` | `integrations` | 60 | `external-service, integration` | `localsetup-supabase` |
+| `skill-lifecycle` | `skill` | `ls-superpowers` | `skill-lifecycle` | 60 | `skills, inventory` | `localsetup-superpowers` |
+| `architecture, dev` | `skill` | `ls-system-architecture-diagrams` | `development` | 60 | `workflow, guidance` | `localsetup-system-architecture-diagrams` |
+| `architecture, dev` | `skill` | `ls-system-design` | `development` | 60 | `workflow, guidance` | `localsetup-system-design` |
+| `dev, frontend` | `skill` | `ls-tailwind-best-practices` | `development` | 60 | `frontend, design` | `localsetup-tailwind-best-practices` |
+| `architecture, dev` | `skill` | `ls-tech-debt` | `development` | 60 | `workflow, guidance` | `localsetup-tech-debt` |
+| `skill-lifecycle` | `skill` | `ls-trail-of-bits` | `skill-lifecycle` | 60 | `skills, inventory` | `localsetup-trail-of-bits` |
+| `integrations` | `skill` | `ls-twilio` | `integrations` | 60 | `external-service, integration` | `localsetup-twilio` |
+| `integrations` | `skill` | `ls-valyu` | `integrations` | 60 | `external-service, integration` | `localsetup-valyu` |
+| `dev, frontend` | `skill` | `ls-vercel-react-best-practices` | `development` | 60 | `workflow, guidance` | `localsetup-vercel-react-best-practices` |
+| `dev, frontend` | `skill` | `ls-vercel-web-design-guidelines` | `development` | 60 | `frontend, design` | `localsetup-vercel-web-design-guidelines` |
+| `dev, frontend` | `skill` | `ls-web-artifacts-builder` | `development` | 60 | `frontend, design` | `localsetup-web-artifacts-builder` |
+| `dev, integrations` | `skill` | `ls-web-scraping-patterns` | `development` | 60 | `workflow, guidance` | `localsetup-web-scraping-patterns` |
+| `integrations` | `skill` | `ls-workos` | `integrations` | 60 | `external-service, integration` | `localsetup-workos` |
+| `integrations` | `skill` | `ls-workos-widgets` | `integrations` | 60 | `external-service, integration` | `localsetup-workos-widgets` |
+| `specialized` | `skill` | `ls-arbiter` | `specialized` | 70 | `arbiter, review` | `localsetup-arbiter` |
+| `growth-content, specialized` | `skill` | `ls-humanizer` | `specialized` | 70 | `writing, editing` | `localsetup-humanizer` |
+| `specialized` | `skill` | `ls-kilo-boss-orchestrator` | `specialized` | 70 | `kilo, orchestration` | `localsetup-kilo-boss-orchestrator` |
+| `specialized` | `skill` | `ls-kilo-visual-output` | `specialized` | 70 | `kilo, output` | `localsetup-kilo-visual-output` |
 | `bootstrap, dev` | `workflow` | `ls-workflow-audit-framework` | n/a | n/a | n/a | `n/a` |
 | `dev` | `workflow` | `ls-workflow-audit-markdown-references` | n/a | n/a | n/a | `n/a` |
 | `harness` | `workflow` | `ls-workflow-codex-heartbeat` | n/a | n/a | n/a | `n/a` |
@@ -130,12 +130,12 @@ artifact_sha256: 879440d315787f39012a22e47bb8153e58dc90254004a1db9a6cb23f1b4a12f
 | `bootstrap, dev` | `workflow` | `ls-workflow-pipeline-repo-convert` | n/a | n/a | n/a | `n/a` |
 | `dev` | `workflow` | `ls-workflow-pipeline-repo-polish` | n/a | n/a | n/a | `n/a` |
 | `ops` | `workflow` | `ls-workflow-pipeline-server-triage-patch` | n/a | n/a | n/a | `n/a` |
-| `dev` | `workflow` | `ls-workflow-pipeline-skill-onboard` | n/a | n/a | n/a | `n/a` |
+| `dev, skill-lifecycle` | `workflow` | `ls-workflow-pipeline-skill-onboard` | n/a | n/a | n/a | `n/a` |
 | `dev` | `workflow` | `ls-workflow-planning-critic-loop` | n/a | n/a | n/a | `n/a` |
-| `experimental` | `workflow` | `ls-workflow-queue-batch-implement` | n/a | n/a | n/a | `n/a` |
+| `dev` | `workflow` | `ls-workflow-queue-batch-implement` | n/a | n/a | n/a | `n/a` |
 | `harness` | `workflow` | `ls-workflow-repo-finalizer` | n/a | n/a | n/a | `n/a` |
 | `dev` | `workflow` | `ls-workflow-skills-index-refresh` | n/a | n/a | n/a | `n/a` |
-| `experimental` | `workflow` | `ls-workflow-spec-clarify-reverse` | n/a | n/a | n/a | `n/a` |
+| `dev` | `workflow` | `ls-workflow-spec-clarify-reverse` | n/a | n/a | n/a | `n/a` |
 | `core, ops` | `workflow` | `ls-workflow-tmux-terminal-mode` | n/a | n/a | n/a | `n/a` |
 | `integrations` | `workflow` | `ls-workflow-transport-handoff` | n/a | n/a | n/a | `n/a` |
-| `experimental` | `workflow` | `ls-workflow-umbrella-run` | n/a | n/a | n/a | `n/a` |
+| `specialized` | `workflow` | `ls-workflow-umbrella-run` | n/a | n/a | n/a | `n/a` |

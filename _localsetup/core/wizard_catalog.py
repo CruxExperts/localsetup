@@ -65,6 +65,18 @@ def _pack_choices(repo_root: Path) -> list[Choice]:
             "You expect agents to work with integrations after setup.",
             "Some workflows may require credentials or extra host tools before use.",
         ),
+        "frontend": (
+            "Frontend, UI, accessibility, design, React, Next.js, Tailwind, and browser-debugging skills.",
+            "Adds focused web-interface and frontend implementation guidance.",
+            "You expect agents to build, review, or debug frontend experiences.",
+            "Adds UI-specific guidance that may be unnecessary for backend-only repositories.",
+        ),
+        "architecture": (
+            "Architecture, system design, diagrams, deploy readiness, incident response, and tech-debt planning.",
+            "Adds planning and review skills for larger technical decisions and operational readiness.",
+            "You need design tradeoff support, diagrams, or release/incident planning.",
+            "Adds broader planning workflows that may be more than a small script repo needs.",
+        ),
         "publishing": (
             "Release, public repo identity, PR review, GitHub publishing, and automatic versioning support.",
             "Installs skills for publishing and release hygiene.",
@@ -77,11 +89,29 @@ def _pack_choices(repo_root: Path) -> list[Choice]:
             "You want a target repo to support scheduled heartbeat runs after a deliberate enable step.",
             "Does not create config, cron entries, or state during normal install.",
         ),
+        "skill-lifecycle": (
+            "Skill authoring, discovery, import, normalization, vetting, sandbox testing, and bundle inventories.",
+            "Adds the skill maintenance pipeline and upstream skill bundle wrappers.",
+            "You maintain or import Localsetup/Agent Skills content.",
+            "Not usually needed for ordinary application development.",
+        ),
+        "growth-content": (
+            "Marketing, CRO, SEO/GEO, lifecycle email, deliverability, and writing/editing support.",
+            "Adds product-growth and content workflow guidance.",
+            "You work on conversion, content, email, SEO, or messaging tasks.",
+            "Can add non-engineering guidance that is irrelevant for infrastructure-only repos.",
+        ),
+        "specialized": (
+            "Specialized human-review, writing, Kilo orchestration, Kilo output, and umbrella workflow support.",
+            "Adds narrow skills for specialized agent orchestration and review cases.",
+            "You use those specialized agent/operator workflows.",
+            "Narrow scope; review the pack contents before using as a broad default.",
+        ),
         "experimental": (
-            "Advanced, less-conservative, or specialist workflows.",
-            "Installs exploratory skills for orchestration, skill import/vetting, and higher-risk workflows.",
-            "You know you need these advanced tools and accept extra review responsibility.",
-            "Less conservative by design; review before relying on them in production workflows.",
+            "Reserved empty pack for future incubating skills.",
+            "Currently installs no skills or workflows.",
+            "Only useful for compatibility with older selectors.",
+            "Prefer a concrete pack such as frontend, architecture, skill-lifecycle, growth-content, or specialized.",
         ),
     }
     out: list[Choice] = []

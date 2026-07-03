@@ -80,7 +80,7 @@
     "platforms": 6,
     "public_docs": 6,
     "skills": 105,
-    "workflow_packs": 31,
+    "workflow_packs": 32,
     "workflows": 23
   },
   "docs": [
@@ -4381,7 +4381,7 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "a118f6227e2eaff059b158cc17b9f0fa5c0539c337e3f470955c9e113b91d173",
+    "artifact_sha256": "57a9b6bd8ad682fef831eb4e30ccc6370ed7e2bc98791f09587e8c068cc9af9f",
     "emitter": "docs-align",
     "framework_version": "4.2.7",
     "schema_version": 1,
@@ -4734,7 +4734,8 @@
       "name": "ls-shadcn-ui",
       "owner_scope": "skill",
       "packs": [
-        "dev"
+        "dev",
+        "frontend"
       ],
       "path": "_localsetup/skills/ls-shadcn-ui",
       "sort_priority": 30,
@@ -4776,7 +4777,8 @@
       "name": "ls-ui-browser-debugging",
       "owner_scope": "skill",
       "packs": [
-        "dev"
+        "dev",
+        "frontend"
       ],
       "path": "_localsetup/skills/ls-ui-browser-debugging",
       "sort_priority": 30,
@@ -5126,7 +5128,8 @@
       "name": "ls-accessibility-review",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "dev",
+        "frontend"
       ],
       "path": "_localsetup/skills/ls-accessibility-review",
       "sort_priority": 60,
@@ -5140,7 +5143,7 @@
       "name": "ls-agent-email-inbox",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "integrations"
       ],
       "path": "_localsetup/skills/ls-agent-email-inbox",
       "sort_priority": 60,
@@ -5154,7 +5157,7 @@
       "name": "ls-alirezarezvani-skills",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "skill-lifecycle"
       ],
       "path": "_localsetup/skills/ls-alirezarezvani-skills",
       "sort_priority": 60,
@@ -5168,7 +5171,7 @@
       "name": "ls-antigravity-awesome-skills",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "skill-lifecycle"
       ],
       "path": "_localsetup/skills/ls-antigravity-awesome-skills",
       "sort_priority": 60,
@@ -5182,7 +5185,8 @@
       "name": "ls-architecture",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "architecture",
+        "dev"
       ],
       "path": "_localsetup/skills/ls-architecture",
       "sort_priority": 60,
@@ -5196,7 +5200,7 @@
       "name": "ls-composio",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "integrations"
       ],
       "path": "_localsetup/skills/ls-composio",
       "sort_priority": 60,
@@ -5210,7 +5214,8 @@
       "name": "ls-corey-haines-marketing",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "growth-content",
+        "skill-lifecycle"
       ],
       "path": "_localsetup/skills/ls-corey-haines-marketing",
       "sort_priority": 60,
@@ -5224,7 +5229,7 @@
       "name": "ls-cro-patterns",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "growth-content"
       ],
       "path": "_localsetup/skills/ls-cro-patterns",
       "sort_priority": 60,
@@ -5238,7 +5243,10 @@
       "name": "ls-deploy-checklist",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "architecture",
+        "dev",
+        "ops",
+        "publishing"
       ],
       "path": "_localsetup/skills/ls-deploy-checklist",
       "sort_priority": 60,
@@ -5252,7 +5260,8 @@
       "name": "ls-docker-best-practices",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "dev",
+        "ops"
       ],
       "path": "_localsetup/skills/ls-docker-best-practices",
       "sort_priority": 60,
@@ -5266,7 +5275,8 @@
       "name": "ls-email-best-practices",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "growth-content",
+        "integrations"
       ],
       "path": "_localsetup/skills/ls-email-best-practices",
       "sort_priority": 60,
@@ -5280,7 +5290,8 @@
       "name": "ls-email-sequence-builder",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "growth-content",
+        "integrations"
       ],
       "path": "_localsetup/skills/ls-email-sequence-builder",
       "sort_priority": 60,
@@ -5294,7 +5305,7 @@
       "name": "ls-firebase-hosting-basics",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "integrations"
       ],
       "path": "_localsetup/skills/ls-firebase-hosting-basics",
       "sort_priority": 60,
@@ -5308,7 +5319,7 @@
       "name": "ls-firecrawl",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "integrations"
       ],
       "path": "_localsetup/skills/ls-firecrawl",
       "sort_priority": 60,
@@ -5322,7 +5333,8 @@
       "name": "ls-frontend-design",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "dev",
+        "frontend"
       ],
       "path": "_localsetup/skills/ls-frontend-design",
       "sort_priority": 60,
@@ -5336,7 +5348,8 @@
       "name": "ls-github-actions-builder",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "dev",
+        "publishing"
       ],
       "path": "_localsetup/skills/ls-github-actions-builder",
       "sort_priority": 60,
@@ -5350,7 +5363,9 @@
       "name": "ls-incident-response",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "architecture",
+        "dev",
+        "ops"
       ],
       "path": "_localsetup/skills/ls-incident-response",
       "sort_priority": 60,
@@ -5364,7 +5379,8 @@
       "name": "ls-next-js-app-router",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "dev",
+        "frontend"
       ],
       "path": "_localsetup/skills/ls-next-js-app-router",
       "sort_priority": 60,
@@ -5378,7 +5394,7 @@
       "name": "ls-notion-api",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "integrations"
       ],
       "path": "_localsetup/skills/ls-notion-api",
       "sort_priority": 60,
@@ -5392,7 +5408,8 @@
       "name": "ls-openclaudia-skills",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "growth-content",
+        "skill-lifecycle"
       ],
       "path": "_localsetup/skills/ls-openclaudia-skills",
       "sort_priority": 60,
@@ -5406,7 +5423,7 @@
       "name": "ls-paddle-agent-skills",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "integrations"
       ],
       "path": "_localsetup/skills/ls-paddle-agent-skills",
       "sort_priority": 60,
@@ -5420,7 +5437,7 @@
       "name": "ls-prisma-orm",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "integrations"
       ],
       "path": "_localsetup/skills/ls-prisma-orm",
       "sort_priority": 60,
@@ -5434,7 +5451,8 @@
       "name": "ls-react-email",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "frontend",
+        "integrations"
       ],
       "path": "_localsetup/skills/ls-react-email",
       "sort_priority": 60,
@@ -5448,7 +5466,7 @@
       "name": "ls-redis-cache-patterns",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "integrations"
       ],
       "path": "_localsetup/skills/ls-redis-cache-patterns",
       "sort_priority": 60,
@@ -5462,7 +5480,8 @@
       "name": "ls-remotion-best-practices",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "dev",
+        "frontend"
       ],
       "path": "_localsetup/skills/ls-remotion-best-practices",
       "sort_priority": 60,
@@ -5476,7 +5495,7 @@
       "name": "ls-resend",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "integrations"
       ],
       "path": "_localsetup/skills/ls-resend",
       "sort_priority": 60,
@@ -5490,7 +5509,7 @@
       "name": "ls-sentry-error-handling",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "integrations"
       ],
       "path": "_localsetup/skills/ls-sentry-error-handling",
       "sort_priority": 60,
@@ -5504,7 +5523,8 @@
       "name": "ls-seo-geo-claude-skills",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "growth-content",
+        "skill-lifecycle"
       ],
       "path": "_localsetup/skills/ls-seo-geo-claude-skills",
       "sort_priority": 60,
@@ -5518,7 +5538,7 @@
       "name": "ls-shopify-storefront",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "integrations"
       ],
       "path": "_localsetup/skills/ls-shopify-storefront",
       "sort_priority": 60,
@@ -5532,7 +5552,7 @@
       "name": "ls-skill-creator",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "skill-lifecycle"
       ],
       "path": "_localsetup/skills/ls-skill-creator",
       "sort_priority": 60,
@@ -5546,7 +5566,7 @@
       "name": "ls-skill-discovery",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "skill-lifecycle"
       ],
       "path": "_localsetup/skills/ls-skill-discovery",
       "sort_priority": 60,
@@ -5560,7 +5580,7 @@
       "name": "ls-skill-importer",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "skill-lifecycle"
       ],
       "path": "_localsetup/skills/ls-skill-importer",
       "sort_priority": 60,
@@ -5574,7 +5594,7 @@
       "name": "ls-skill-normalizer",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "skill-lifecycle"
       ],
       "path": "_localsetup/skills/ls-skill-normalizer",
       "sort_priority": 60,
@@ -5588,7 +5608,7 @@
       "name": "ls-skill-sandbox-tester",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "skill-lifecycle"
       ],
       "path": "_localsetup/skills/ls-skill-sandbox-tester",
       "sort_priority": 60,
@@ -5602,7 +5622,7 @@
       "name": "ls-skill-vetter",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "skill-lifecycle"
       ],
       "path": "_localsetup/skills/ls-skill-vetter",
       "sort_priority": 60,
@@ -5616,7 +5636,7 @@
       "name": "ls-stripe-payments",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "integrations"
       ],
       "path": "_localsetup/skills/ls-stripe-payments",
       "sort_priority": 60,
@@ -5630,7 +5650,7 @@
       "name": "ls-supabase",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "integrations"
       ],
       "path": "_localsetup/skills/ls-supabase",
       "sort_priority": 60,
@@ -5644,7 +5664,7 @@
       "name": "ls-superpowers",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "skill-lifecycle"
       ],
       "path": "_localsetup/skills/ls-superpowers",
       "sort_priority": 60,
@@ -5658,7 +5678,8 @@
       "name": "ls-system-architecture-diagrams",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "architecture",
+        "dev"
       ],
       "path": "_localsetup/skills/ls-system-architecture-diagrams",
       "sort_priority": 60,
@@ -5672,7 +5693,8 @@
       "name": "ls-system-design",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "architecture",
+        "dev"
       ],
       "path": "_localsetup/skills/ls-system-design",
       "sort_priority": 60,
@@ -5686,7 +5708,8 @@
       "name": "ls-tailwind-best-practices",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "dev",
+        "frontend"
       ],
       "path": "_localsetup/skills/ls-tailwind-best-practices",
       "sort_priority": 60,
@@ -5700,7 +5723,8 @@
       "name": "ls-tech-debt",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "architecture",
+        "dev"
       ],
       "path": "_localsetup/skills/ls-tech-debt",
       "sort_priority": 60,
@@ -5714,7 +5738,7 @@
       "name": "ls-trail-of-bits",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "skill-lifecycle"
       ],
       "path": "_localsetup/skills/ls-trail-of-bits",
       "sort_priority": 60,
@@ -5728,7 +5752,7 @@
       "name": "ls-twilio",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "integrations"
       ],
       "path": "_localsetup/skills/ls-twilio",
       "sort_priority": 60,
@@ -5742,7 +5766,7 @@
       "name": "ls-valyu",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "integrations"
       ],
       "path": "_localsetup/skills/ls-valyu",
       "sort_priority": 60,
@@ -5756,7 +5780,8 @@
       "name": "ls-vercel-react-best-practices",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "dev",
+        "frontend"
       ],
       "path": "_localsetup/skills/ls-vercel-react-best-practices",
       "sort_priority": 60,
@@ -5770,7 +5795,8 @@
       "name": "ls-vercel-web-design-guidelines",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "dev",
+        "frontend"
       ],
       "path": "_localsetup/skills/ls-vercel-web-design-guidelines",
       "sort_priority": 60,
@@ -5784,7 +5810,8 @@
       "name": "ls-web-artifacts-builder",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "dev",
+        "frontend"
       ],
       "path": "_localsetup/skills/ls-web-artifacts-builder",
       "sort_priority": 60,
@@ -5798,7 +5825,8 @@
       "name": "ls-web-scraping-patterns",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "dev",
+        "integrations"
       ],
       "path": "_localsetup/skills/ls-web-scraping-patterns",
       "sort_priority": 60,
@@ -5812,7 +5840,7 @@
       "name": "ls-workos",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "integrations"
       ],
       "path": "_localsetup/skills/ls-workos",
       "sort_priority": 60,
@@ -5826,7 +5854,7 @@
       "name": "ls-workos-widgets",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "integrations"
       ],
       "path": "_localsetup/skills/ls-workos-widgets",
       "sort_priority": 60,
@@ -5840,7 +5868,7 @@
       "name": "ls-arbiter",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "specialized"
       ],
       "path": "_localsetup/skills/ls-arbiter",
       "sort_priority": 70,
@@ -5854,7 +5882,8 @@
       "name": "ls-humanizer",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "growth-content",
+        "specialized"
       ],
       "path": "_localsetup/skills/ls-humanizer",
       "sort_priority": 70,
@@ -5868,7 +5897,7 @@
       "name": "ls-kilo-boss-orchestrator",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "specialized"
       ],
       "path": "_localsetup/skills/ls-kilo-boss-orchestrator",
       "sort_priority": 70,
@@ -5882,7 +5911,7 @@
       "name": "ls-kilo-visual-output",
       "owner_scope": "skill",
       "packs": [
-        "experimental"
+        "specialized"
       ],
       "path": "_localsetup/skills/ls-kilo-visual-output",
       "sort_priority": 70,
@@ -6015,7 +6044,8 @@
     {
       "package": "ls-workflow-pipeline-skill-onboard",
       "packs": [
-        "dev"
+        "dev",
+        "skill-lifecycle"
       ],
       "path": "_localsetup/workflows/ls-workflow-pipeline-skill-onboard",
       "workflow_id": "pipeline-skill-onboard"
@@ -6031,7 +6061,7 @@
     {
       "package": "ls-workflow-queue-batch-implement",
       "packs": [
-        "experimental"
+        "dev"
       ],
       "path": "_localsetup/workflows/ls-workflow-queue-batch-implement",
       "workflow_id": "queue-batch-implement"
@@ -6055,7 +6085,7 @@
     {
       "package": "ls-workflow-spec-clarify-reverse",
       "packs": [
-        "experimental"
+        "dev"
       ],
       "path": "_localsetup/workflows/ls-workflow-spec-clarify-reverse",
       "workflow_id": "spec-clarify-reverse"
@@ -6080,7 +6110,7 @@
     {
       "package": "ls-workflow-umbrella-run",
       "packs": [
-        "experimental"
+        "specialized"
       ],
       "path": "_localsetup/workflows/ls-workflow-umbrella-run",
       "workflow_id": "umbrella-run"

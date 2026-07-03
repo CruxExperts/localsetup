@@ -2,7 +2,7 @@
   "count": 23,
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/workflow-catalog.json",
-    "artifact_sha256": "3258d37482d77672a85d644934bf54c4a4b011e40315254dc9a11296fe3a7fab",
+    "artifact_sha256": "4f9dd99d2969548a0f6e7a96d8da66c3a7854665e4874942a683773bcf4a3517",
     "emitter": "generate-docs",
     "framework_version": "4.2.7",
     "schema_version": 1,
@@ -374,7 +374,8 @@
       "display_name": "Pipeline Skill Onboard",
       "package": "ls-workflow-pipeline-skill-onboard",
       "packs": [
-        "dev"
+        "dev",
+        "skill-lifecycle"
       ],
       "path": "_localsetup/workflows/ls-workflow-pipeline-skill-onboard",
       "required_docs": [
@@ -422,7 +423,7 @@
       "display_name": "Queue Batch Implement",
       "package": "ls-workflow-queue-batch-implement",
       "packs": [
-        "experimental"
+        "dev"
       ],
       "path": "_localsetup/workflows/ls-workflow-queue-batch-implement",
       "required_docs": [
@@ -490,7 +491,7 @@
       "display_name": "Reverse Prompt Spec Clarify",
       "package": "ls-workflow-spec-clarify-reverse",
       "packs": [
-        "experimental"
+        "dev"
       ],
       "path": "_localsetup/workflows/ls-workflow-spec-clarify-reverse",
       "required_docs": [
@@ -557,7 +558,7 @@
       "display_name": "Umbrella Run",
       "package": "ls-workflow-umbrella-run",
       "packs": [
-        "experimental"
+        "specialized"
       ],
       "path": "_localsetup/workflows/ls-workflow-umbrella-run",
       "required_docs": [

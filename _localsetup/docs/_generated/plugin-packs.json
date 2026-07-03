@@ -1,5 +1,5 @@
 {
-  "count": 8,
+  "count": 12,
   "plugin_packs": [
     {
       "category": "bootstrap",
@@ -61,7 +61,7 @@
     {
       "category": "development",
       "context_skill": "ls-plugin-dev-context",
-      "description": "Development, debugging, documentation, audit, Git, review, UI, and TypeScript skills.",
+      "description": "Development, debugging, documentation, audit, Git, review, UI, TypeScript, architecture, release-readiness, and runtime-pattern skills.",
       "display_name": "Localsetup Dev",
       "id": "localsetup-dev",
       "platforms": [
@@ -89,11 +89,28 @@
         "ls-tdd-guide",
         "ls-typescript-code-quality",
         "ls-ui-browser-debugging",
+        "ls-accessibility-review",
+        "ls-architecture",
+        "ls-deploy-checklist",
+        "ls-docker-best-practices",
+        "ls-frontend-design",
+        "ls-github-actions-builder",
+        "ls-incident-response",
+        "ls-next-js-app-router",
+        "ls-remotion-best-practices",
         "ls-skill-discovery",
         "ls-skill-importer",
         "ls-skill-normalizer",
         "ls-skill-sandbox-tester",
         "ls-skill-vetter",
+        "ls-system-architecture-diagrams",
+        "ls-system-design",
+        "ls-tailwind-best-practices",
+        "ls-tech-debt",
+        "ls-vercel-react-best-practices",
+        "ls-vercel-web-design-guidelines",
+        "ls-web-artifacts-builder",
+        "ls-web-scraping-patterns",
         "ls-humanizer"
       ],
       "source_pack": "dev",
@@ -110,13 +127,60 @@
         "ls-workflow-pipeline-repo-polish",
         "ls-workflow-pipeline-skill-onboard",
         "ls-workflow-planning-critic-loop",
-        "ls-workflow-skills-index-refresh"
+        "ls-workflow-queue-batch-implement",
+        "ls-workflow-skills-index-refresh",
+        "ls-workflow-spec-clarify-reverse"
       ]
+    },
+    {
+      "category": "frontend",
+      "context_skill": "ls-plugin-frontend-context",
+      "description": "Frontend, UI, design, accessibility, React, Next.js, Tailwind, browser-debugging, and rich web artifact skills.",
+      "display_name": "Localsetup Frontend",
+      "id": "localsetup-frontend",
+      "platforms": [
+        "codex"
+      ],
+      "skills": [
+        "ls-shadcn-ui",
+        "ls-ui-browser-debugging",
+        "ls-accessibility-review",
+        "ls-frontend-design",
+        "ls-next-js-app-router",
+        "ls-react-email",
+        "ls-remotion-best-practices",
+        "ls-tailwind-best-practices",
+        "ls-vercel-react-best-practices",
+        "ls-vercel-web-design-guidelines",
+        "ls-web-artifacts-builder"
+      ],
+      "source_pack": "frontend",
+      "workflows": []
+    },
+    {
+      "category": "architecture",
+      "context_skill": "ls-plugin-architecture-context",
+      "description": "Architecture, system design, deployment readiness, incident response, diagrams, and technical-debt planning skills.",
+      "display_name": "Localsetup Architecture",
+      "id": "localsetup-architecture",
+      "platforms": [
+        "codex"
+      ],
+      "skills": [
+        "ls-architecture",
+        "ls-deploy-checklist",
+        "ls-incident-response",
+        "ls-system-architecture-diagrams",
+        "ls-system-design",
+        "ls-tech-debt"
+      ],
+      "source_pack": "architecture",
+      "workflows": []
     },
     {
       "category": "operations",
       "context_skill": "ls-plugin-ops-context",
-      "description": "Operations skills for servers, cron, patching, triage, system inspection, and infrastructure automation.",
+      "description": "Operations skills for servers, cron, patching, triage, system inspection, infrastructure automation, Docker, deploy checks, and incident response.",
       "display_name": "Localsetup Ops",
       "id": "localsetup-ops",
       "platforms": [
@@ -128,7 +192,10 @@
         "ls-cron-orchestrator",
         "ls-linux-patcher",
         "ls-linux-service-triage",
-        "ls-system-info"
+        "ls-system-info",
+        "ls-deploy-checklist",
+        "ls-docker-best-practices",
+        "ls-incident-response"
       ],
       "source_pack": "ops",
       "workflows": [
@@ -140,7 +207,7 @@
     {
       "category": "integrations",
       "context_skill": "ls-plugin-integrations-context",
-      "description": "Integration skills for transport, DNS, secrets, mail, MCP, proxy management, OmniRoute, and web extraction.",
+      "description": "Integration skills for provider APIs, transport, DNS, secrets, mail, MCP, proxy management, OmniRoute, data stores, payments, observability, and web extraction.",
       "display_name": "Localsetup Integrations",
       "id": "localsetup-integrations",
       "platforms": [
@@ -157,7 +224,28 @@
         "ls-npm-management",
         "ls-omniroute-admin-automation",
         "ls-omniroute-proxy",
-        "ls-scrapling"
+        "ls-scrapling",
+        "ls-agent-email-inbox",
+        "ls-composio",
+        "ls-email-best-practices",
+        "ls-email-sequence-builder",
+        "ls-firebase-hosting-basics",
+        "ls-firecrawl",
+        "ls-notion-api",
+        "ls-paddle-agent-skills",
+        "ls-prisma-orm",
+        "ls-react-email",
+        "ls-redis-cache-patterns",
+        "ls-resend",
+        "ls-sentry-error-handling",
+        "ls-shopify-storefront",
+        "ls-stripe-payments",
+        "ls-supabase",
+        "ls-twilio",
+        "ls-valyu",
+        "ls-web-scraping-patterns",
+        "ls-workos",
+        "ls-workos-widgets"
       ],
       "source_pack": "integrations",
       "workflows": [
@@ -183,7 +271,9 @@
         "ls-github-publishing-workflow",
         "ls-markdown-reference-validator",
         "ls-public-repo-identity",
-        "ls-pr-reviewer"
+        "ls-pr-reviewer",
+        "ls-deploy-checklist",
+        "ls-github-actions-builder"
       ],
       "source_pack": "publishing",
       "workflows": [
@@ -215,82 +305,79 @@
       ]
     },
     {
-      "category": "experimental",
-      "context_skill": "ls-plugin-experimental-context",
-      "description": "Experimental and specialist skill lifecycle, review, orchestration, and queue workflows.",
-      "display_name": "Localsetup Experimental",
-      "id": "localsetup-experimental",
+      "category": "skill-lifecycle",
+      "context_skill": "ls-plugin-skill-lifecycle-context",
+      "description": "Skill authoring, discovery, import, normalization, vetting, sandbox testing, and upstream bundle inventory wrappers.",
+      "display_name": "Localsetup Skill Lifecycle",
+      "id": "localsetup-skill-lifecycle",
       "platforms": [
         "codex"
       ],
       "skills": [
-        "ls-accessibility-review",
-        "ls-agent-email-inbox",
         "ls-alirezarezvani-skills",
         "ls-antigravity-awesome-skills",
-        "ls-architecture",
-        "ls-composio",
         "ls-corey-haines-marketing",
-        "ls-cro-patterns",
-        "ls-deploy-checklist",
-        "ls-docker-best-practices",
-        "ls-email-best-practices",
-        "ls-email-sequence-builder",
-        "ls-firebase-hosting-basics",
-        "ls-firecrawl",
-        "ls-frontend-design",
-        "ls-github-actions-builder",
-        "ls-incident-response",
-        "ls-next-js-app-router",
-        "ls-notion-api",
         "ls-openclaudia-skills",
-        "ls-paddle-agent-skills",
-        "ls-prisma-orm",
-        "ls-react-email",
-        "ls-redis-cache-patterns",
-        "ls-remotion-best-practices",
-        "ls-resend",
-        "ls-sentry-error-handling",
         "ls-seo-geo-claude-skills",
-        "ls-shopify-storefront",
         "ls-skill-creator",
         "ls-skill-discovery",
         "ls-skill-importer",
         "ls-skill-normalizer",
         "ls-skill-sandbox-tester",
         "ls-skill-vetter",
-        "ls-stripe-payments",
-        "ls-supabase",
         "ls-superpowers",
-        "ls-system-architecture-diagrams",
-        "ls-system-design",
-        "ls-tailwind-best-practices",
-        "ls-tech-debt",
-        "ls-trail-of-bits",
-        "ls-twilio",
-        "ls-valyu",
-        "ls-vercel-react-best-practices",
-        "ls-vercel-web-design-guidelines",
-        "ls-web-artifacts-builder",
-        "ls-web-scraping-patterns",
-        "ls-workos",
-        "ls-workos-widgets",
+        "ls-trail-of-bits"
+      ],
+      "source_pack": "skill-lifecycle",
+      "workflows": [
+        "ls-workflow-pipeline-skill-onboard"
+      ]
+    },
+    {
+      "category": "growth-content",
+      "context_skill": "ls-plugin-growth-content-context",
+      "description": "Marketing, CRO, SEO/GEO, lifecycle email, deliverability, and writing/editing support skills.",
+      "display_name": "Localsetup Growth Content",
+      "id": "localsetup-growth-content",
+      "platforms": [
+        "codex"
+      ],
+      "skills": [
+        "ls-corey-haines-marketing",
+        "ls-cro-patterns",
+        "ls-email-best-practices",
+        "ls-email-sequence-builder",
+        "ls-openclaudia-skills",
+        "ls-seo-geo-claude-skills",
+        "ls-humanizer"
+      ],
+      "source_pack": "growth-content",
+      "workflows": []
+    },
+    {
+      "category": "specialized",
+      "context_skill": "ls-plugin-specialized-context",
+      "description": "Specialized human-review, writing, Kilo orchestration, Kilo output, and umbrella workflow skills.",
+      "display_name": "Localsetup Specialized",
+      "id": "localsetup-specialized",
+      "platforms": [
+        "codex"
+      ],
+      "skills": [
         "ls-arbiter",
         "ls-humanizer",
         "ls-kilo-boss-orchestrator",
         "ls-kilo-visual-output"
       ],
-      "source_pack": "experimental",
+      "source_pack": "specialized",
       "workflows": [
-        "ls-workflow-queue-batch-implement",
-        "ls-workflow-spec-clarify-reverse",
         "ls-workflow-umbrella-run"
       ]
     }
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/plugin-packs.json",
-    "artifact_sha256": "6e9319ca0078edaa9795ea59be866b2a5c29c62a05b99e6b6ac636fb4b221cba",
+    "artifact_sha256": "0f06fc233a41f0d376ead5e1b2ac5b74952495eea5e7d016bfcec92c005f883d",
     "emitter": "generate-docs",
     "framework_version": "4.2.7",
     "schema_version": 1,

@@ -144,7 +144,7 @@ Presets are `core`, `suggested`, `all`, and `custom`. `core` is the conservative
 Install every shipped skill and workflow package for Codex, Kilo, and OpenCode, while syncing the uv-managed Python dependency environment:
 
 ```bash
-./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,harness,experimental --sync-env
+./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,frontend,architecture,ops,integrations,publishing,harness,skill-lifecycle,growth-content,specialized --sync-env
 ```
 
 In symlink mode, Localsetup writes a scoped marker and managed per-package links inside each selected repo adapter path. The adapter directory itself remains a shared agent surface: custom skills, ordinary files, and repo-local symlinks may live beside Localsetup-managed entries and must be preserved. Same-name selected package collisions and unsafe symlinks still block before mutation. That means a repo sees only the repo-visible Localsetup skills and workflow packages even when the global library contains a larger baseline. Portable mode uses the same scoped marker and package list, but copies selected managed packages instead of linking them. See [_localsetup/docs/ADAPTER_OWNERSHIP.md](_localsetup/docs/ADAPTER_OWNERSHIP.md) for the ownership boundary.

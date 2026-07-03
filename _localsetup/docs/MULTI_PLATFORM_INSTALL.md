@@ -77,7 +77,7 @@ localsetup update --target-directory .
 Full local setup for the Codex, Kilo, and OpenCode adapters:
 
 ```bash
-./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,harness,experimental --sync-env
+./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,frontend,architecture,ops,integrations,publishing,harness,skill-lifecycle,growth-content,specialized --sync-env
 ```
 
 That command installs every declared skill and workflow pack, attaches only `.codex/skills`, `.kilo/skills`, and `.opencode/skills`, and syncs the uv-managed source checkout `.venv` dependency environment.
@@ -147,7 +147,7 @@ cd /path/to/repo
 The wizard keeps the install portable and dependency-free; it uses plain terminal output with optional ANSI styling and no curses/Textual dependency. Single-choice prompts can be selected by number or label. Multi-select prompts use spacebar toggles in real terminals and comma-separated values in scripted fallback mode.
 
 - **Source and release:** shows the source checkout, current source ref, and latest upstream release result when the raw managed bootstrap path performed a release check.
-- **Global package library:** `core` is the suggested baseline for normal use. `bootstrap` adds agent-team startup and audit workflows. `dev` adds code, docs, git, test, and repo repair workflows. `ops` adds server and maintenance workflows. `integrations` adds external system connectors. `publishing` adds release and public-repo support. `harness` adds opt-in autonomous harness capability without activating it. `experimental` adds advanced or less-conservative workflows.
+- **Global package library:** `core` is the suggested baseline for normal use. `bootstrap` adds agent-team startup and audit workflows. `dev` adds code, docs, git, test, repo repair, and engineering workflow guidance. `frontend` adds UI, design, accessibility, React, Next.js, Tailwind, and browser-debugging coverage. `architecture` adds system design, diagrams, deployment readiness, incident response, and tech-debt planning. `ops` adds server and maintenance workflows. `integrations` adds external system connectors and provider/API guidance. `publishing` adds release and public-repo support. `harness` adds opt-in autonomous harness capability without activating it. `skill-lifecycle` adds skill authoring, import, vetting, and bundle inventory workflows. `growth-content` adds marketing, CRO, SEO/GEO, lifecycle email, and writing/editing support. `specialized` adds narrow human-review, Kilo, and umbrella workflow support. `experimental` is reserved for future incubation and is currently empty.
 - **Repo setup:** `No repo setup` refreshes the managed package library without repo adapter paths. `Current directory` prepares the directory you launched from. `Another target directory` prepares a different repo while using this checkout as the source.
 - **Repo adapters:** each selected platform shows the adapter path it writes, such as `.codex/skills` for Codex or `.cursor/skills` for Cursor. Repo-visible packs are selected separately from the global baseline.
 

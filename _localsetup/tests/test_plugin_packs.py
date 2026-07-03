@@ -33,13 +33,17 @@ def test_plugin_pack_manifest_loads_and_resolves_source_packs() -> None:
         "bootstrap",
         "core",
         "dev",
+        "frontend",
+        "architecture",
         "ops",
         "integrations",
         "publishing",
         "harness",
-        "experimental",
+        "skill-lifecycle",
+        "growth-content",
+        "specialized",
     }
-    assert payload["count"] == len(configs) == 8
+    assert payload["count"] == len(configs) == 12
     assert any(item["id"] == "localsetup-bootstrap" and "ls-context" in item["skills"] for item in payload["plugin_packs"])
 
 

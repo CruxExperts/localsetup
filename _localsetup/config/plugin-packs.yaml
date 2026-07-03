@@ -23,7 +23,7 @@ plugin_packs:
       - _localsetup/docs/AGENTIC_DESIGN_INDEX.md
   - id: localsetup-dev
     display_name: Localsetup Dev
-    description: Development, debugging, documentation, audit, Git, review, UI, and TypeScript skills.
+    description: Development, debugging, documentation, audit, Git, review, UI, TypeScript, architecture, release-readiness, and runtime-pattern skills.
     category: development
     source_pack: dev
     platforms:
@@ -31,9 +31,28 @@ plugin_packs:
         interface: v1
     extra_context_inputs:
       - _localsetup/docs/WORKFLOW_REGISTRY.md
+  - id: localsetup-frontend
+    display_name: Localsetup Frontend
+    description: Frontend, UI, design, accessibility, React, Next.js, Tailwind, browser-debugging, and rich web artifact skills.
+    category: frontend
+    source_pack: frontend
+    platforms:
+      codex:
+        interface: v1
+    extra_context_inputs: []
+  - id: localsetup-architecture
+    display_name: Localsetup Architecture
+    description: Architecture, system design, deployment readiness, incident response, diagrams, and technical-debt planning skills.
+    category: architecture
+    source_pack: architecture
+    platforms:
+      codex:
+        interface: v1
+    extra_context_inputs:
+      - _localsetup/docs/WORKFLOW_REGISTRY.md
   - id: localsetup-ops
     display_name: Localsetup Ops
-    description: Operations skills for servers, cron, patching, triage, system inspection, and infrastructure automation.
+    description: Operations skills for servers, cron, patching, triage, system inspection, infrastructure automation, Docker, deploy checks, and incident response.
     category: operations
     source_pack: ops
     platforms:
@@ -42,7 +61,7 @@ plugin_packs:
     extra_context_inputs: []
   - id: localsetup-integrations
     display_name: Localsetup Integrations
-    description: Integration skills for transport, DNS, secrets, mail, MCP, proxy management, OmniRoute, and web extraction.
+    description: Integration skills for provider APIs, transport, DNS, secrets, mail, MCP, proxy management, OmniRoute, data stores, payments, observability, and web extraction.
     category: integrations
     source_pack: integrations
     platforms:
@@ -68,11 +87,31 @@ plugin_packs:
       codex:
         interface: v1
     extra_context_inputs: []
-  - id: localsetup-experimental
-    display_name: Localsetup Experimental
-    description: Experimental and specialist skill lifecycle, review, orchestration, and queue workflows.
-    category: experimental
-    source_pack: experimental
+  - id: localsetup-skill-lifecycle
+    display_name: Localsetup Skill Lifecycle
+    description: Skill authoring, discovery, import, normalization, vetting, sandbox testing, and upstream bundle inventory wrappers.
+    category: skill-lifecycle
+    source_pack: skill-lifecycle
+    platforms:
+      codex:
+        interface: v1
+    extra_context_inputs:
+      - _localsetup/docs/SKILL_IMPORTING.md
+      - _localsetup/docs/SKILL_NORMALIZATION.md
+  - id: localsetup-growth-content
+    display_name: Localsetup Growth Content
+    description: Marketing, CRO, SEO/GEO, lifecycle email, deliverability, and writing/editing support skills.
+    category: growth-content
+    source_pack: growth-content
+    platforms:
+      codex:
+        interface: v1
+    extra_context_inputs: []
+  - id: localsetup-specialized
+    display_name: Localsetup Specialized
+    description: Specialized human-review, writing, Kilo orchestration, Kilo output, and umbrella workflow skills.
+    category: specialized
+    source_pack: specialized
     platforms:
       codex:
         interface: v1

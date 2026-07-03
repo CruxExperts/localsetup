@@ -15,11 +15,16 @@ optional_packs:
 - bootstrap
 - core
 - dev
+- frontend
+- architecture
 - ops
 - integrations
 - omniroute
 - publishing
 - harness
+- skill-lifecycle
+- growth-content
+- specialized
 - experimental
 packs:
   bootstrap:
@@ -44,25 +49,64 @@ packs:
   - ls-test-runner
   - ls-tdd-guide
   dev:
+  - ls-accessibility-review
   - ls-agentlens
+  - ls-architecture
   - ls-context-index
   - ls-debug-pro
+  - ls-deploy-checklist
+  - ls-docker-best-practices
   - ls-documentation-alignment
   - ls-docs-organization
   - ls-framework-audit
   - ls-framework-compliance
+  - ls-frontend-design
   - ls-git-workflows
+  - ls-github-actions-builder
+  - ls-incident-response
   - ls-markdown-reference-validator
+  - ls-next-js-app-router
   - ls-nodejs-nextjs
   - ls-receiving-code-review
+  - ls-remotion-best-practices
   - ls-shadcn-ui
+  - ls-system-architecture-diagrams
+  - ls-system-design
+  - ls-tailwind-best-practices
+  - ls-tech-debt
   - ls-typescript-code-quality
   - ls-ui-browser-debugging
   - ls-unfuck-my-git-state
+  - ls-vercel-react-best-practices
+  - ls-vercel-web-design-guidelines
+  - ls-web-artifacts-builder
+  - ls-web-scraping-patterns
+  frontend:
+  - ls-accessibility-review
+  - ls-frontend-design
+  - ls-next-js-app-router
+  - ls-react-email
+  - ls-remotion-best-practices
+  - ls-shadcn-ui
+  - ls-tailwind-best-practices
+  - ls-ui-browser-debugging
+  - ls-vercel-react-best-practices
+  - ls-vercel-web-design-guidelines
+  - ls-web-artifacts-builder
+  architecture:
+  - ls-architecture
+  - ls-deploy-checklist
+  - ls-incident-response
+  - ls-system-architecture-diagrams
+  - ls-system-design
+  - ls-tech-debt
   ops:
   - ls-ansible-skill
   - ls-backlog-and-reminders
   - ls-cron-orchestrator
+  - ls-deploy-checklist
+  - ls-docker-best-practices
+  - ls-incident-response
   - ls-linux-patcher
   - ls-linux-service-triage
   - ls-system-info
@@ -70,17 +114,38 @@ packs:
   - ls-codex-heartbeat
   - ls-cron-orchestrator
   integrations:
+  - ls-agent-email-inbox
   - ls-agentq-transport
   - ls-cloudflare-dns
+  - ls-composio
+  - ls-email-best-practices
+  - ls-email-sequence-builder
+  - ls-firebase-hosting-basics
+  - ls-firecrawl
   - ls-github-starredrepos
   - ls-keepass-secrets
   - ls-mail-protocol-control
   - ls-mcp-builder
+  - ls-notion-api
   - ls-npm-management
   - ls-omniroute
   - ls-omniroute-admin-automation
   - ls-omniroute-proxy
+  - ls-paddle-agent-skills
+  - ls-prisma-orm
+  - ls-react-email
+  - ls-redis-cache-patterns
+  - ls-resend
   - ls-scrapling
+  - ls-sentry-error-handling
+  - ls-shopify-storefront
+  - ls-stripe-payments
+  - ls-supabase
+  - ls-twilio
+  - ls-valyu
+  - ls-web-scraping-patterns
+  - ls-workos
+  - ls-workos-widgets
   omniroute:
   - ls-omniroute
   - ls-omniroute-proxy
@@ -92,66 +157,40 @@ packs:
   - ls-omniroute-update
   publishing:
   - ls-automatic-versioning
+  - ls-deploy-checklist
   - ls-documentation-alignment
+  - ls-github-actions-builder
   - ls-github-publishing-workflow
   - ls-pr-reviewer
   - ls-public-repo-identity
-  experimental:
-  - ls-accessibility-review
-  - ls-agent-email-inbox
+  skill-lifecycle:
   - ls-alirezarezvani-skills
   - ls-antigravity-awesome-skills
-  - ls-arbiter
-  - ls-architecture
-  - ls-composio
   - ls-corey-haines-marketing
-  - ls-cro-patterns
-  - ls-deploy-checklist
-  - ls-docker-best-practices
-  - ls-email-best-practices
-  - ls-email-sequence-builder
-  - ls-firebase-hosting-basics
-  - ls-firecrawl
-  - ls-frontend-design
-  - ls-github-actions-builder
-  - ls-humanizer
-  - ls-incident-response
-  - ls-kilo-boss-orchestrator
-  - ls-kilo-visual-output
-  - ls-next-js-app-router
-  - ls-notion-api
   - ls-openclaudia-skills
-  - ls-paddle-agent-skills
-  - ls-prisma-orm
-  - ls-react-email
-  - ls-redis-cache-patterns
-  - ls-remotion-best-practices
-  - ls-resend
-  - ls-sentry-error-handling
   - ls-seo-geo-claude-skills
-  - ls-shopify-storefront
   - ls-skill-creator
   - ls-skill-discovery
   - ls-skill-importer
   - ls-skill-normalizer
   - ls-skill-sandbox-tester
   - ls-skill-vetter
-  - ls-stripe-payments
-  - ls-supabase
   - ls-superpowers
-  - ls-system-architecture-diagrams
-  - ls-system-design
-  - ls-tailwind-best-practices
-  - ls-tech-debt
   - ls-trail-of-bits
-  - ls-twilio
-  - ls-valyu
-  - ls-vercel-react-best-practices
-  - ls-vercel-web-design-guidelines
-  - ls-web-artifacts-builder
-  - ls-web-scraping-patterns
-  - ls-workos
-  - ls-workos-widgets
+  growth-content:
+  - ls-corey-haines-marketing
+  - ls-cro-patterns
+  - ls-email-best-practices
+  - ls-email-sequence-builder
+  - ls-humanizer
+  - ls-openclaudia-skills
+  - ls-seo-geo-claude-skills
+  specialized:
+  - ls-arbiter
+  - ls-humanizer
+  - ls-kilo-boss-orchestrator
+  - ls-kilo-visual-output
+  experimental: []
 workflow_packs:
   bootstrap:
   - ls-workflow-audit-framework
@@ -174,7 +213,11 @@ workflow_packs:
   - ls-workflow-pipeline-repo-convert
   - ls-workflow-pipeline-repo-polish
   - ls-workflow-pipeline-skill-onboard
+  - ls-workflow-queue-batch-implement
+  - ls-workflow-spec-clarify-reverse
   - ls-workflow-skills-index-refresh
+  frontend: []
+  architecture: []
   ops:
   - ls-workflow-ops-tmux-session
   - ls-workflow-pipeline-server-triage-patch
@@ -189,10 +232,12 @@ workflow_packs:
   - ls-workflow-codex-heartbeat
   - ls-workflow-context-index-refresh
   - ls-workflow-repo-finalizer
-  experimental:
-  - ls-workflow-queue-batch-implement
-  - ls-workflow-spec-clarify-reverse
+  skill-lifecycle:
+  - ls-workflow-pipeline-skill-onboard
+  growth-content: []
+  specialized:
   - ls-workflow-umbrella-run
+  experimental: []
 extensions:
   skill_taxonomy:
     ls-context:

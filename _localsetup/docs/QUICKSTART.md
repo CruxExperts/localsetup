@@ -100,7 +100,7 @@ The selector flags are additive except for `--exclude-skills`. Presets are `core
 For a full local setup with all shipped skill and workflow packs attached to Codex, Kilo, and OpenCode:
 
 ```bash
-./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,ops,integrations,publishing,experimental --sync-env
+./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,frontend,architecture,ops,integrations,publishing,harness,skill-lifecycle,growth-content,specialized --sync-env
 ```
 
 If Python dependencies are missing or you want the uv project environment prepared:
