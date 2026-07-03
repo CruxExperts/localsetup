@@ -25,6 +25,8 @@ def test_migration_scanner_and_hook_gate(tmp_path: Path) -> None:
     pack_doc.write_text("| `core` | `skill` | `ls-context` | `localsetup-context` |\n", encoding="utf-8")
     migration_doc = root / "_localsetup" / "docs" / "migration" / "skill-alias-map.md"
     migration_doc.write_text("| `localsetup-context` | `ls-context` |\n", encoding="utf-8")
+    plugin_pack_config = root / "_localsetup" / "config" / "plugin-packs.yaml"
+    plugin_pack_config.write_text("legacy_aliases:\n- localsetup-context\n", encoding="utf-8")
     private_backup = root / ".localsetup" / "backups" / "audit" / "localsetup.lock.json"
     private_backup.parent.mkdir(parents=True)
     private_backup.write_text('{"aliases": {"localsetup-context": "ls-context"}}\n', encoding="utf-8")
@@ -49,6 +51,7 @@ def test_migration_scanner_and_hook_gate(tmp_path: Path) -> None:
     assert by_path["_localsetup/docs/_generated/skill_aliases.json"]["category"] == "expected_alias_surface"
     assert by_path["_localsetup/docs/_generated/skill_aliases.json"]["actionable"] is False
     assert by_path["_localsetup/docs/_generated/skill-packs.md"]["category"] == "expected_alias_surface"
+    assert by_path["_localsetup/config/plugin-packs.yaml"]["category"] == "expected_alias_surface"
     assert by_path["_localsetup/docs/migration/skill-alias-map.md"]["category"] == "expected_migration_map"
     assert by_path[".localsetup/backups/audit/localsetup.lock.json"]["category"] == "ignored_private_backup"
     assert all({"path", "line", "text"} <= set(finding) for finding in findings)

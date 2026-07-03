@@ -45,6 +45,8 @@ def _legacy_reference_category(rel: Path) -> str:
         return "expected_alias_surface"
     if rel.as_posix() in {"_localsetup/docs/README.md", "assets/README.md"}:
         return "expected_alias_surface"
+    if rel.as_posix() == "_localsetup/config/plugin-packs.yaml":
+        return "expected_alias_surface"
     if rel.as_posix() == "_localsetup/docs/migration/skill-alias-map.md":
         return "expected_migration_map"
     return "actionable"
