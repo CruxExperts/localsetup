@@ -10,9 +10,11 @@ from .sanitize import _sanitize_command, _sanitize_session
 from .session import _ensure_managed_session
 from .state import (
     _active_path,
+    _acquire_pane_operation_lock,
     _attach_command,
     _json_write,
     _live_active,
+    _release_pane_operation_lock,
     _run_channel,
     _state_dir,
     _status_path,
@@ -113,35 +115,54 @@ def cmd_run(target: str, command: str, timeout: float, tail_lines: int) -> dict[
             "source": "run",
         }
 
-    run_id = f"{int(time.time())}-{uuid.uuid4().hex[:10]}"
-    started_at = time.time()
-    script_path, log_path = _write_run_script(san, run_id, command, started_at)
-    status = {
-        "run_id": run_id,
-        "session": san,
-        "status": "running",
-        "exit_code": None,
-        "started_at": started_at,
-        "elapsed_s": 0.0,
-        "log_path": str(log_path),
-        "script_path": str(script_path),
-        "attach_command": _attach_command(san),
-    }
-    _json_write(_status_path(san, run_id), status)
-    _json_write(_active_path(san), status)
+    lock_fd = _acquire_pane_operation_lock(san)
+    if lock_fd is None:
+        return {
+            "error": "tmux pane operation already active",
+            "detail": "use status or retry after the current pane operation finishes",
+            "session": san,
+            "source": "run",
+        }
+    try:
+        active = _live_active(san)
+        if active:
+            return {
+                "error": "run already active",
+                "detail": "use status or cancel before starting another run",
+                **_status_payload(san, str(active.get("run_id", "")), tail_lines),
+                "source": "run",
+            }
+        run_id = f"{int(time.time())}-{uuid.uuid4().hex[:10]}"
+        started_at = time.time()
+        script_path, log_path = _write_run_script(san, run_id, command, started_at)
+        status = {
+            "run_id": run_id,
+            "session": san,
+            "status": "running",
+            "exit_code": None,
+            "started_at": started_at,
+            "elapsed_s": 0.0,
+            "log_path": str(log_path),
+            "script_path": str(script_path),
+            "attach_command": _attach_command(san),
+        }
+        _json_write(_status_path(san, run_id), status)
+        _json_write(_active_path(san), status)
 
-    channel = _run_channel(san, run_id)
-    wait = _start_tmux_wait(channel)
-    r = _targeted_tmux(
-        san,
-        [
-            "send-keys",
-            "-t",
-            "{target}",
-            f"TMUX_OPS_RUN_ID={shlex.quote(run_id)} bash {shlex.quote(str(script_path))}",
-            "Enter",
-        ],
-    )
+        channel = _run_channel(san, run_id)
+        wait = _start_tmux_wait(channel)
+        r = _targeted_tmux(
+            san,
+            [
+                "send-keys",
+                "-t",
+                "{target}",
+                f"TMUX_OPS_RUN_ID={shlex.quote(run_id)} bash {shlex.quote(str(script_path))}",
+                "Enter",
+            ],
+        )
+    finally:
+        _release_pane_operation_lock(san, lock_fd)
     if r.returncode != 0:
         status.update({"status": "failed", "detail": r.stderr})
         _json_write(_status_path(san, run_id), status)

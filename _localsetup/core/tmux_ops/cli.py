@@ -7,6 +7,15 @@ import sys
 from typing import Any
 
 from .constants import DEFAULT_RUN_TIMEOUT, DEFAULT_TAIL_LINES, DEFAULT_WAIT_TIMEOUT
+from .keepalive import (
+    MAX_REFRESHES,
+    MAX_TTL_SECONDS,
+    cmd_keepalive_clear,
+    cmd_keepalive_refresh,
+    cmd_keepalive_request,
+    cmd_keepalive_status,
+    cmd_keepalive_sweep,
+)
 from .legacy import cmd_send, cmd_wait
 from .run_control import _command_from_remainder, cmd_cancel, cmd_run, cmd_status
 from .sanitize import _compile_idle_re
@@ -66,6 +75,28 @@ def main() -> int:
         wait_p.add_argument("--idle-re", default=None, metavar="PATTERN")
         wait_p.add_argument("--pre-cursor-y", type=int, default=None, metavar="N")
 
+        keepalive_p = subparsers.add_parser("keepalive", help="Manage sudo keepalive markers")
+        keepalive_sub = keepalive_p.add_subparsers(dest="keepalive_command", required=True)
+
+        keepalive_request_p = keepalive_sub.add_parser("request", help="Request bounded sudo keepalive refreshes")
+        keepalive_request_p.add_argument("-t", "--target", required=True, metavar="SESSION")
+        keepalive_request_p.add_argument("--owner", required=True, metavar="ID")
+        keepalive_request_p.add_argument("--ttl-seconds", type=int, default=MAX_TTL_SECONDS, metavar="N")
+        keepalive_request_p.add_argument("--max-refreshes", type=int, default=MAX_REFRESHES, metavar="N")
+        keepalive_request_p.add_argument("--reason", required=True, metavar="TEXT")
+
+        keepalive_refresh_p = keepalive_sub.add_parser("refresh", help="Refresh sudo credentials once")
+        keepalive_refresh_p.add_argument("-t", "--target", required=True, metavar="SESSION")
+
+        keepalive_sub.add_parser("sweep", help="Disable expired or invalid keepalive markers")
+
+        keepalive_status_p = keepalive_sub.add_parser("status", help="Report keepalive marker status")
+        keepalive_status_p.add_argument("-t", "--target", default=None, metavar="SESSION")
+
+        keepalive_clear_p = keepalive_sub.add_parser("clear", help="Disable a keepalive marker")
+        keepalive_clear_p.add_argument("-t", "--target", required=True, metavar="SESSION")
+        keepalive_clear_p.add_argument("--owner", required=True, metavar="ID")
+
         args = parser.parse_args()
 
         if args.command == "pick":
@@ -109,6 +140,25 @@ def main() -> int:
                     pre_cursor_y=args.pre_cursor_y,
                 )
             )
+        elif args.command == "keepalive":
+            if args.keepalive_command == "request":
+                out = cmd_keepalive_request(
+                    args.target,
+                    args.owner,
+                    args.ttl_seconds,
+                    args.max_refreshes,
+                    args.reason,
+                )
+            elif args.keepalive_command == "refresh":
+                out = cmd_keepalive_refresh(args.target)
+            elif args.keepalive_command == "sweep":
+                out = cmd_keepalive_sweep()
+            elif args.keepalive_command == "status":
+                out = cmd_keepalive_status(args.target)
+            elif args.keepalive_command == "clear":
+                out = cmd_keepalive_clear(args.target, args.owner)
+            else:
+                out = {"error": "unknown keepalive command", "source": "keepalive"}
         else:
             out = {"error": "unknown command", "source": "main"}
 

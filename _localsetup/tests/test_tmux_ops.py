@@ -33,6 +33,9 @@ if [ -n "${FAKE_SUDO_MODE_FILE:-}" ] && [ -f "$FAKE_SUDO_MODE_FILE" ]; then
   mode="$(cat "$FAKE_SUDO_MODE_FILE")"
 fi
 case "$mode:$1" in
+  ready:-n) [ "${2:-}" = "-v" ] && exit 0 ;;
+  password:-n) [ "${2:-}" = "-v" ] && echo "sudo: a password is required" >&2 && exit 1 ;;
+  failed:-n) [ "${2:-}" = "-v" ] && echo "testuser is not in the sudoers file" >&2 && exit 1 ;;
   ready:-Nnv|ready:-vn) exit 0 ;;
   password:-Nnv|password:-vn) echo "sudo: a password is required" >&2; exit 1 ;;
   failed:-Nnv|failed:-vn) echo "testuser is not in the sudoers file" >&2; exit 1 ;;
@@ -422,6 +425,468 @@ def test_run_send_keys_failure_reports_resolved_pane_target(tmux_env):
     assert payload["error"] == "tmux send-keys failed"
     assert "not in a mode" in payload["detail"]
     assert "resolved_target=%" in payload["detail"]
+
+
+def test_keepalive_request_status_and_caps(tmux_env):
+    env, socket = tmux_env
+    run_ops(env, "pick")
+    write_gate(env, socket)
+
+    _, payload = run_ops(
+        env,
+        "keepalive",
+        "request",
+        "-t",
+        "ops",
+        "--owner",
+        "agent-1",
+        "--ttl-seconds",
+        "999999",
+        "--max-refreshes",
+        "999",
+        "--reason",
+        "bounded sudo maintenance",
+    )
+
+    assert payload["ok"] is True
+    assert payload["session"] == "ops"
+    assert payload["state"] == "active"
+    marker = json.loads((Path(env["TMUX_OPS_STATE_ROOT"]) / "ops" / "keepalive.json").read_text())
+    assert marker["ttl_seconds"] == 7200
+    assert marker["max_refreshes"] == 24
+    assert marker["refresh_count"] == 0
+    assert marker["owner"] == "agent-1"
+    assert marker["reason"] == "bounded sudo maintenance"
+    assert marker["pane_id"].startswith("%")
+
+    _, status = run_ops(env, "keepalive", "status", "-t", "ops")
+
+    assert status["ok"] is True
+    assert len(status["sessions"]) == 1
+    assert status["sessions"][0]["state"] == "active"
+    assert status["sessions"][0]["owner"] == "agent-1"
+
+
+def test_keepalive_refresh_uses_hard_coded_sudo_in_resolved_pane(tmux_env):
+    env, socket = tmux_env
+    log_path = install_tmux_wrapper(Path(env["TMUX_OPS_STATE_ROOT"]).parent, env, socket)
+    run_ops(env, "pick")
+    write_gate(env, socket)
+    run_ops(
+        env,
+        "keepalive",
+        "request",
+        "-t",
+        "ops",
+        "--owner",
+        "agent-1",
+        "--ttl-seconds",
+        "60",
+        "--max-refreshes",
+        "2",
+        "--reason",
+        "test refresh",
+    )
+    log_path.write_text("", encoding="utf-8")
+
+    _, payload = run_ops(env, "keepalive", "refresh", "-t", "ops")
+
+    assert payload["ok"] is True
+    assert payload["refresh_count"] == 1
+    assert payload["last_refresh_ok"] is True
+    assert send_targets(log_path, contains="keepalive-refresh-")
+    assert all(target.startswith("%") for target in send_targets(log_path, contains="keepalive-refresh-"))
+    scripts = sorted((Path(env["TMUX_OPS_STATE_ROOT"]) / "ops").glob("keepalive-refresh-*.sh"))
+    assert len(scripts) == 1
+    script = scripts[0].read_text(encoding="utf-8")
+    assert "sudo -n -v" in script
+    assert "sudo -v" not in script.replace("sudo -n -v", "")
+
+
+def test_keepalive_refresh_failure_disables_marker(tmux_env):
+    env, socket = tmux_env
+    run_ops(env, "pick")
+    write_gate(env, socket)
+    run_ops(
+        env,
+        "keepalive",
+        "request",
+        "-t",
+        "ops",
+        "--owner",
+        "agent-1",
+        "--ttl-seconds",
+        "60",
+        "--max-refreshes",
+        "2",
+        "--reason",
+        "test refresh failure",
+    )
+    set_sudo_mode(env, "failed")
+
+    proc, payload = run_ops(env, "keepalive", "refresh", "-t", "ops", check=False)
+
+    assert proc.returncode == 1
+    assert payload["action_required"] is True
+    assert payload["state"] == "disabled"
+    assert payload["last_refresh_ok"] is False
+    assert payload["disabled_reason"] == "sudo keepalive refresh failed"
+
+
+def test_keepalive_refresh_blocks_when_run_active_without_sending(tmux_env):
+    env, socket = tmux_env
+    log_path = install_tmux_wrapper(Path(env["TMUX_OPS_STATE_ROOT"]).parent, env, socket)
+    run_ops(env, "pick")
+    write_gate(env, socket)
+    run_ops(
+        env,
+        "keepalive",
+        "request",
+        "-t",
+        "ops",
+        "--owner",
+        "agent-1",
+        "--ttl-seconds",
+        "60",
+        "--max-refreshes",
+        "2",
+        "--reason",
+        "active run",
+    )
+    state_dir = Path(env["TMUX_OPS_STATE_ROOT"]) / "ops"
+    (state_dir / "active.json").write_text(
+        json.dumps({"session": "ops", "run_id": "running-1", "status": "running"}, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    log_path.write_text("", encoding="utf-8")
+
+    proc, payload = run_ops(env, "keepalive", "refresh", "-t", "ops", check=False)
+
+    assert proc.returncode == 1
+    assert payload["error"] == "keepalive pane operation blocked"
+    assert "run already active" in payload["detail"]
+    assert not send_targets(log_path, contains="keepalive-refresh")
+
+
+def test_keepalive_refresh_blocks_when_refresh_lock_exists(tmux_env):
+    env, socket = tmux_env
+    log_path = install_tmux_wrapper(Path(env["TMUX_OPS_STATE_ROOT"]).parent, env, socket)
+    run_ops(env, "pick")
+    write_gate(env, socket)
+    run_ops(
+        env,
+        "keepalive",
+        "request",
+        "-t",
+        "ops",
+        "--owner",
+        "agent-1",
+        "--ttl-seconds",
+        "60",
+        "--max-refreshes",
+        "1",
+        "--reason",
+        "locked refresh",
+    )
+    lock_path = Path(env["TMUX_OPS_STATE_ROOT"]) / "ops" / "pane-operation.lock"
+    lock_path.write_text("locked\n", encoding="utf-8")
+    log_path.write_text("", encoding="utf-8")
+
+    proc, payload = run_ops(env, "keepalive", "refresh", "-t", "ops", check=False)
+
+    assert proc.returncode == 1
+    assert payload["error"] == "keepalive pane operation blocked"
+    assert payload["detail"] == "tmux pane operation already in progress"
+    assert not send_targets(log_path, contains="keepalive-refresh")
+
+
+def test_keepalive_request_blocks_when_run_active_without_sending_probe(tmux_env):
+    env, socket = tmux_env
+    log_path = install_tmux_wrapper(Path(env["TMUX_OPS_STATE_ROOT"]).parent, env, socket)
+    run_ops(env, "pick")
+    write_gate(env, socket, checked_at=time.time() - 120)
+    state_dir = Path(env["TMUX_OPS_STATE_ROOT"]) / "ops"
+    (state_dir / "active.json").write_text(
+        json.dumps({"session": "ops", "run_id": "running-1", "status": "running"}, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    log_path.write_text("", encoding="utf-8")
+
+    proc, payload = run_ops(
+        env,
+        "keepalive",
+        "request",
+        "-t",
+        "ops",
+        "--owner",
+        "agent-1",
+        "--ttl-seconds",
+        "60",
+        "--max-refreshes",
+        "2",
+        "--reason",
+        "active request",
+        check=False,
+    )
+
+    assert proc.returncode == 1
+    assert payload["error"] == "keepalive pane operation blocked"
+    assert "run already active" in payload["detail"]
+    assert not send_targets(log_path, contains="probe.sh")
+    assert not (state_dir / "keepalive.json").exists()
+
+
+def test_keepalive_request_blocks_when_pane_operation_lock_exists_without_sending_probe(tmux_env):
+    env, socket = tmux_env
+    log_path = install_tmux_wrapper(Path(env["TMUX_OPS_STATE_ROOT"]).parent, env, socket)
+    run_ops(env, "pick")
+    write_gate(env, socket, checked_at=time.time() - 120)
+    state_dir = Path(env["TMUX_OPS_STATE_ROOT"]) / "ops"
+    (state_dir / "pane-operation.lock").write_text("locked\n", encoding="utf-8")
+    log_path.write_text("", encoding="utf-8")
+
+    proc, payload = run_ops(
+        env,
+        "keepalive",
+        "request",
+        "-t",
+        "ops",
+        "--owner",
+        "agent-1",
+        "--ttl-seconds",
+        "60",
+        "--max-refreshes",
+        "2",
+        "--reason",
+        "locked request",
+        check=False,
+    )
+
+    assert proc.returncode == 1
+    assert payload["error"] == "keepalive pane operation blocked"
+    assert payload["detail"] == "tmux pane operation already in progress"
+    assert not send_targets(log_path, contains="probe.sh")
+    assert not (state_dir / "keepalive.json").exists()
+
+
+def test_keepalive_request_blocks_when_pane_not_idle_without_sending_probe(tmux_env):
+    env, socket = tmux_env
+    log_path = install_tmux_wrapper(Path(env["TMUX_OPS_STATE_ROOT"]).parent, env, socket)
+    run_ops(env, "pick")
+    write_gate(env, socket, checked_at=time.time() - 120)
+    state_dir = Path(env["TMUX_OPS_STATE_ROOT"]) / "ops"
+    subprocess.run(
+        ["tmux", "-L", socket, "send-keys", "-t", "ops", "sleep 5", "Enter"],
+        check=True,
+    )
+    time.sleep(0.2)
+    log_path.write_text("", encoding="utf-8")
+
+    proc, payload = run_ops(
+        env,
+        "keepalive",
+        "request",
+        "-t",
+        "ops",
+        "--owner",
+        "agent-1",
+        "--ttl-seconds",
+        "60",
+        "--max-refreshes",
+        "2",
+        "--reason",
+        "busy request",
+        check=False,
+    )
+
+    assert proc.returncode == 1
+    assert payload["error"] == "keepalive pane operation blocked"
+    assert payload["detail"] == "pane is not idle"
+    assert not send_targets(log_path, contains="probe.sh")
+    assert not (state_dir / "keepalive.json").exists()
+    subprocess.run(["tmux", "-L", socket, "send-keys", "-t", "ops", "C-c"], check=False)
+
+
+def test_probe_blocks_when_pane_operation_lock_exists_without_sending(tmux_env):
+    env, socket = tmux_env
+    log_path = install_tmux_wrapper(Path(env["TMUX_OPS_STATE_ROOT"]).parent, env, socket)
+    run_ops(env, "pick")
+    state_dir = Path(env["TMUX_OPS_STATE_ROOT"]) / "ops"
+    (state_dir / "pane-operation.lock").write_text("locked\n", encoding="utf-8")
+    log_path.write_text("", encoding="utf-8")
+
+    _, payload = run_ops(env, "probe", "-t", "ops")
+
+    assert payload["sudo"] == "failed"
+    assert payload["detail"] == "tmux pane operation already in progress"
+    assert not send_targets(log_path, contains="probe.sh")
+
+
+def test_run_blocks_when_pane_operation_lock_exists_without_sending(tmux_env):
+    env, socket = tmux_env
+    log_path = install_tmux_wrapper(Path(env["TMUX_OPS_STATE_ROOT"]).parent, env, socket)
+    run_ops(env, "pick")
+    write_gate(env, socket)
+    state_dir = Path(env["TMUX_OPS_STATE_ROOT"]) / "ops"
+    (state_dir / "pane-operation.lock").write_text("locked\n", encoding="utf-8")
+    log_path.write_text("", encoding="utf-8")
+
+    proc, payload = run_ops(env, "run", "-t", "ops", "--", "echo", "blocked", check=False)
+
+    assert proc.returncode == 1
+    assert payload["error"] == "tmux pane operation already active"
+    assert not send_targets(log_path, contains="TMUX_OPS_RUN_ID=")
+    assert not (state_dir / "active.json").exists()
+
+
+def test_keepalive_status_disables_expired_marker(tmux_env):
+    env, socket = tmux_env
+    run_ops(env, "pick")
+    write_gate(env, socket)
+    run_ops(
+        env,
+        "keepalive",
+        "request",
+        "-t",
+        "ops",
+        "--owner",
+        "agent-1",
+        "--ttl-seconds",
+        "60",
+        "--max-refreshes",
+        "2",
+        "--reason",
+        "expires",
+    )
+    marker_path = Path(env["TMUX_OPS_STATE_ROOT"]) / "ops" / "keepalive.json"
+    marker = json.loads(marker_path.read_text(encoding="utf-8"))
+    marker["expires_at"] = time.time() - 1
+    marker_path.write_text(json.dumps(marker, sort_keys=True) + "\n", encoding="utf-8")
+
+    _, status = run_ops(env, "keepalive", "status", "-t", "ops")
+
+    row = status["sessions"][0]
+    assert row["state"] == "disabled"
+    assert row["disabled_reason"] == "keepalive marker expired"
+
+
+def test_keepalive_status_disables_malformed_marker(tmux_env):
+    env, _socket = tmux_env
+    run_ops(env, "pick")
+    marker_path = Path(env["TMUX_OPS_STATE_ROOT"]) / "ops" / "keepalive.json"
+    marker_path.write_text("[]\n", encoding="utf-8")
+
+    _, status = run_ops(env, "keepalive", "status", "-t", "ops")
+
+    row = status["sessions"][0]
+    assert row["state"] == "disabled"
+    assert row["disabled_reason"] == "keepalive marker is malformed"
+    stored = json.loads(marker_path.read_text(encoding="utf-8"))
+    assert stored["state"] == "disabled"
+    assert stored["disabled_reason"] == "keepalive marker is malformed"
+
+
+def test_keepalive_sweep_disables_malformed_marker(tmux_env):
+    env, _socket = tmux_env
+    run_ops(env, "pick")
+    marker_path = Path(env["TMUX_OPS_STATE_ROOT"]) / "ops" / "keepalive.json"
+    marker_path.write_text('"bad"\n', encoding="utf-8")
+
+    _, sweep = run_ops(env, "keepalive", "sweep")
+
+    row = sweep["sessions"][0]
+    assert row["state"] == "disabled"
+    assert row["disabled_reason"] == "keepalive marker is malformed"
+
+
+def test_keepalive_refresh_disables_malformed_marker_without_sending(tmux_env):
+    env, socket = tmux_env
+    log_path = install_tmux_wrapper(Path(env["TMUX_OPS_STATE_ROOT"]).parent, env, socket)
+    run_ops(env, "pick")
+    marker_path = Path(env["TMUX_OPS_STATE_ROOT"]) / "ops" / "keepalive.json"
+    marker_path.write_text("1\n", encoding="utf-8")
+    log_path.write_text("", encoding="utf-8")
+
+    proc, payload = run_ops(env, "keepalive", "refresh", "-t", "ops", check=False)
+
+    assert proc.returncode == 1
+    assert payload["error"] == "keepalive marker disabled"
+    assert payload["state"] == "disabled"
+    assert payload["disabled_reason"] == "keepalive marker is malformed"
+    assert not send_targets(log_path, contains="keepalive-refresh")
+
+
+def test_keepalive_clear_requires_matching_owner(tmux_env):
+    env, socket = tmux_env
+    run_ops(env, "pick")
+    write_gate(env, socket)
+    run_ops(
+        env,
+        "keepalive",
+        "request",
+        "-t",
+        "ops",
+        "--owner",
+        "agent-1",
+        "--ttl-seconds",
+        "60",
+        "--max-refreshes",
+        "2",
+        "--reason",
+        "test clear",
+    )
+
+    proc, mismatch = run_ops(env, "keepalive", "clear", "-t", "ops", "--owner", "other", check=False)
+    assert proc.returncode == 1
+    assert mismatch["error"] == "keepalive owner mismatch"
+
+    _, cleared = run_ops(env, "keepalive", "clear", "-t", "ops", "--owner", "agent-1")
+    assert cleared["ok"] is True
+    assert cleared["state"] == "disabled"
+    assert cleared["disabled_reason"] == "cleared"
+
+
+def test_keepalive_rejects_invalid_and_unmanaged_sessions(tmux_env):
+    env, socket = tmux_env
+
+    proc, invalid = run_ops(
+        env,
+        "keepalive",
+        "request",
+        "-t",
+        "not-ops",
+        "--owner",
+        "agent-1",
+        "--ttl-seconds",
+        "60",
+        "--max-refreshes",
+        "2",
+        "--reason",
+        "invalid",
+        check=False,
+    )
+    assert proc.returncode == 1
+    assert invalid["error"] == "invalid session name"
+
+    subprocess.run(["tmux", "-L", socket, "new-session", "-d", "-s", "ops"], check=True)
+    proc, unmanaged = run_ops(
+        env,
+        "keepalive",
+        "request",
+        "-t",
+        "ops",
+        "--owner",
+        "agent-1",
+        "--ttl-seconds",
+        "60",
+        "--max-refreshes",
+        "2",
+        "--reason",
+        "unmanaged",
+        check=False,
+    )
+    assert proc.returncode == 1
+    assert unmanaged["error"] == "session is not managed"
 
 
 def test_skill_documents_managed_run_path():

@@ -2,6 +2,102 @@ from __future__ import annotations
 
 from .cli_handler_sync import sync
 
+
+def _adapter_check_commands(platform_ids: list[str] | None, *, has_issues: bool) -> list[dict]:
+    selector = f" --tools {','.join(platform_ids)}" if platform_ids else ""
+    commands = [
+        {
+            "command": f"localsetup verify{selector}",
+            "reason": "run the full filesystem verification report",
+        },
+        {
+            "command": f"localsetup doctor{selector}",
+            "reason": "inspect target health and repair planning context",
+        },
+    ]
+    if has_issues:
+        commands.extend(
+            [
+                {
+                    "command": f"localsetup doctor repair{selector}",
+                    "reason": "plan or apply existing Localsetup repair behavior after review",
+                },
+                {
+                    "command": f"localsetup install{selector}",
+                    "reason": "refresh selected adapter attachments using the existing installer",
+                },
+            ]
+        )
+    return commands
+
+
+def _adapter_check_payload(root, home, *, target_root, platform_ids, include_provenance: bool) -> dict:
+    verify = verify_install(
+        root,
+        home=home,
+        platform_ids=platform_ids,
+        target_root=target_root,
+        level="filesystem",
+    )
+    adapters = verify["adapters"]
+    platforms = sorted({str(adapter.get("platform")) for adapter in adapters if adapter.get("platform")})
+    managed_packages = sorted(
+        {
+            str(package)
+            for adapter in adapters
+            for package in adapter.get("managed_visible_packages", adapter.get("visible_packages", []))
+            if package
+        }
+    )
+    visible_packages = sorted(
+        {
+            str(package)
+            for adapter in adapters
+            for package in adapter.get("visible_packages", [])
+            if package
+        }
+    )
+    issues = list(verify.get("issues", []))
+    warnings = sorted(set([*verify.get("warnings", []), *verify.get("provenance_warnings", [])]))
+    repair_hints = sorted(
+        set(
+            [
+                *verify.get("provenance_repair_hints", []),
+                *verify.get("tmux_terminal_mode_repair_hints", []),
+            ]
+        )
+    )
+    if issues:
+        repair_hints.extend(
+            [
+                "run localsetup verify for the full rule report",
+                "run localsetup doctor before applying repair commands",
+            ]
+        )
+        repair_hints = sorted(set(repair_hints))
+
+    payload = {
+        "ok": bool(verify.get("ok")),
+        "adapters": adapters,
+        "issues": issues,
+        "warnings": warnings,
+        "repair_hints": repair_hints,
+        "summary": {
+            "adapter_count": len(adapters),
+            "platforms": platforms,
+            "managed_packages": managed_packages,
+            "visible_packages": visible_packages,
+            "issue_count": len(issues),
+            "warning_count": len(warnings),
+        },
+        "commands": _adapter_check_commands(platform_ids, has_issues=bool(issues)),
+        "rules": verify.get("rules", []),
+    }
+    if include_provenance:
+        payload["provenance"] = verify.get("provenance", {})
+    return payload
+
+
 def handle(cli, args, root, home) -> int | None:
     sync(globals(), cli)
 
@@ -42,11 +138,22 @@ def handle(cli, args, root, home) -> int | None:
         pack = load_pack_config(root)
         target_root = Path(getattr(args, "target_directory", None)).expanduser().resolve() if getattr(args, "target_directory", None) else None
         global_root = expand_user_path(pack.global_root, home)
+        platform_ids = _split_csv(args.platforms)
+        if getattr(args, "adapter_action", None) == "check":
+            payload = _adapter_check_payload(
+                root,
+                home,
+                target_root=target_root,
+                platform_ids=platform_ids,
+                include_provenance=bool(args.provenance),
+            )
+            print(json.dumps(payload, indent=2, sort_keys=True))
+            return 0 if payload["ok"] else 1
         payload = adapter_status(
             root,
             home,
             global_root,
-            platform_ids=_split_csv(args.platforms),
+            platform_ids=platform_ids,
             target_root=target_root,
         )
         if args.provenance:

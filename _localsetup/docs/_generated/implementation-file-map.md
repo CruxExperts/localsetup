@@ -5,7 +5,7 @@ localsetup_provenance:
   emitter: generate-docs
 framework_version: 4.2.10
 source_commit: 60263370eae8c4151cc5a456a70e4057724bea50
-artifact_sha256: 2baee813be0ac147ec31b11e0b0503e2c98c360d035edf99f1f543fcceb2f091
+artifact_sha256: e0cff0fe31e02da8ecec8bfb3eb7ee370e28a88b091ff8ab09f13c2672038702
 ---
 # Implementation File Map
 
@@ -197,6 +197,7 @@ artifact_sha256: 2baee813be0ac147ec31b11e0b0503e2c98c360d035edf99f1f543fcceb2f09
 | `refactor` | `_localsetup/core/tmux_ops/__init__.py` |
 | `refactor` | `_localsetup/core/tmux_ops/cli.py` |
 | `refactor` | `_localsetup/core/tmux_ops/constants.py` |
+| `refactor` | `_localsetup/core/tmux_ops/keepalive.py` |
 | `refactor` | `_localsetup/core/tmux_ops/legacy.py` |
 | `refactor` | `_localsetup/core/tmux_ops/run_control.py` |
 | `refactor` | `_localsetup/core/tmux_ops/sanitize.py` |
