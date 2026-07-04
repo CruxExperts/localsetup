@@ -48,7 +48,9 @@ def _remove_unreferenced_managed_packages(global_root: Path, registry_payload: d
     return removed
 
 
-def _remove_managed_shared_runtime_helper(repo_root: Path, global_root: Path) -> list[str]:
+def _remove_managed_shared_runtime_helper(repo_root: Path, global_root: Path, registry_payload: dict) -> list[str]:
+    if registry_payload.get("targets") or registry_payload.get("packages"):
+        return []
     source = repo_root / "_localsetup" / "lib" / "deps.py"
     target = global_root.parent / "lib" / "deps.py"
     if not source.is_file() or not target.is_file() or target.is_symlink():
@@ -116,7 +118,7 @@ def rollback(
         global_root.rmdir()
         removed.append(str(global_root))
 
-    removed.extend(_remove_managed_shared_runtime_helper(repo_root, global_root))
+    removed.extend(_remove_managed_shared_runtime_helper(repo_root, global_root, registry_payload))
 
     if lock_path.exists():
         lock_path.unlink()
