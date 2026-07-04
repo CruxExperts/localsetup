@@ -15,7 +15,7 @@ Run `scripts/omniroute_update.py freshness` before validating any converted or c
 - Add `--require-all-upstream` when the task requires every upstream OmniRoute skill to have converted or native Localsetup coverage.
 - A non-zero exit means the skill set is not fresh enough for the chosen validation policy.
 
-For consolidated native waves, use both `--require-all-upstream` and `--strict-untracked`. The expected healthy state for OmniRoute `v3.8.32` is 43 upstream skills reported as `covered-native` or `current`, the Localsetup-native OmniRoute skills reported as `local-native`, and zero `missing-local`, `stale-local`, `local-only`, or `untracked-local` rows.
+For consolidated native waves, use both `--require-all-upstream` and `--strict-untracked`. The expected healthy state for OmniRoute `v3.8.43` is 43 upstream skills reported as `covered-native` or `current`, the Localsetup-native OmniRoute skills reported as `local-native`, and zero `missing-local`, `stale-local`, `local-only`, or `untracked-local` rows.
 
 ## Import
 

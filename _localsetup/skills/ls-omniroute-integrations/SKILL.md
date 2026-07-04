@@ -8,8 +8,10 @@ extensions:
     source_kind: localsetup-native
     local_role: integrations
     source_repo: https://github.com/diegosouzapw/OmniRoute
-    source_ref: v3.8.32
-    source_commit: bfaf459f3c15e5260a6284eee5e9824f22a8e00d
+    source_ref: main
+    source_commit: 0c7f756f922fe3c0408e41852577027b496489bf
+    package_version: 3.8.43
+    release_package_commit: b729a8f27364f072c87082e03bb8e122f3d76251
 ---
 
 # OmniRoute Integrations
@@ -19,7 +21,7 @@ Purpose: work with OmniRoute integration surfaces without loading the whole admi
 ## Start With Preflight
 
 ```bash
-python3 _localsetup/skills/ls-omniroute/scripts/omniroute_api.py preflight \
+python3 "$(python3 _localsetup/tools/localsetup.py --source-root . path package ls-omniroute scripts/omniroute_api.py)" preflight \
   --required-access read
 ```
 
@@ -41,16 +43,16 @@ Routes that can spawn child processes or expose local services must remain local
 ## Commands
 
 ```bash
-python3 _localsetup/skills/ls-omniroute/scripts/omniroute_api.py request GET /api/mcp/tools
-python3 _localsetup/skills/ls-omniroute/scripts/omniroute_api.py request GET /api/cli-tools
-python3 _localsetup/skills/ls-omniroute/scripts/omniroute_api.py request GET /api/webhooks
+python3 "$(python3 _localsetup/tools/localsetup.py --source-root . path package ls-omniroute scripts/omniroute_api.py)" request GET /api/mcp/tools
+python3 "$(python3 _localsetup/tools/localsetup.py --source-root . path package ls-omniroute scripts/omniroute_api.py)" request GET /api/cli-tools
+python3 "$(python3 _localsetup/tools/localsetup.py --source-root . path package ls-omniroute scripts/omniroute_api.py)" request GET /api/webhooks
 ```
 
 For provider credentials, key scopes, or persistent settings behind an integration, route to `ls-omniroute-admin-automation`.
 
 ## Upstream Coverage
 
-Covers upstream v3.8.32 skills:
+Covers upstream v3.8.43 skills:
 
 - `omni-mcp`
 - `omni-agents-a2a`

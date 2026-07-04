@@ -1,16 +1,16 @@
 # OmniRoute Administration API Guide
 
 ---
-title: "OmniRoute v3.8.32 Administration API Guide"
+title: "OmniRoute v3.8.43 Administration API Guide"
 category: reference
 status: ACTIVE
-last_updated: "2026-06-21"
+last_updated: "2026-07-04"
 tags: [omniroute, api, administration, proxy, routing, budget, resilience, automation]
 ---
 
 ## 1. Overview
 
-OmniRoute is an open-source AI gateway written in TypeScript/Next.js that presents OpenAI-compatible `/v1/*` endpoints and routes traffic across many providers. Version `3.8.32` includes routing combos, fallback chains, quota tracking, resilience controls, cloud sync, compression settings, optional memory/Qdrant support, and rich management APIs.
+OmniRoute is an open-source AI gateway written in TypeScript/Next.js that presents OpenAI-compatible `/v1/*` endpoints and routes traffic across many providers. Version `3.8.43` includes routing combos, fallback chains, quota tracking, resilience controls, cloud sync, compression settings, optional memory/Qdrant support, and rich management APIs.
 
 This guide focuses on full administration through `/api/*` endpoints.
 
@@ -31,7 +31,7 @@ Important behavior:
 - Use environment variables only.
 - Never embed secrets in files, scripts, or commit history.
 - Rotate keys through `/api/keys` workflows.
-- Run `python3 scripts/omniroute_admin.py preflight --required-access read` before admin automation. Use `write` or `admin` for workflows that need stronger endpoint access.
+- Run `python3 scripts/omniroute_admin.py preflight --required-access read` from inside the installed package directory before admin automation. From a Localsetup repo root, resolve the helper with `python3 _localsetup/tools/localsetup.py --source-root . path package ls-omniroute-admin-automation scripts/omniroute_admin.py`. Use `write` or `admin` for workflows that need stronger endpoint access.
 
 ## 3. Endpoint Inventory (high-level)
 
@@ -131,6 +131,8 @@ python3 scripts/omniroute_admin.py snapshot --out state/live.json
 python3 scripts/omniroute_admin.py plan --desired manifests/prod.json --out state/plan.json
 python3 scripts/omniroute_admin.py apply --plan state/plan.json --yes
 ```
+
+These examples assume the installed package directory as the current working directory.
 
 For destructive operations, require both:
 

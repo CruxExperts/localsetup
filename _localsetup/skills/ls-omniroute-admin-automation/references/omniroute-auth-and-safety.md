@@ -5,7 +5,7 @@
 - Runtime (`/v1/*`) credentials can differ from management (`/api/*`) credentials.
 - Use dedicated management token/cookie for admin calls.
 - Do not assume a runtime key can mutate admin resources.
-- Run `python3 scripts/omniroute_admin.py preflight --required-access <runtime|read|write|admin>` before automation. The check uses non-mutating GET endpoints and reports missing env vars, invalid credentials, or insufficient access as structured JSON.
+- Run `python3 scripts/omniroute_admin.py preflight --required-access <runtime|read|write|admin>` from inside the installed package directory before automation. From a Localsetup repo root, resolve the helper with `python3 _localsetup/tools/localsetup.py --source-root . path package ls-omniroute-admin-automation scripts/omniroute_admin.py`. The check uses non-mutating GET endpoints and reports missing env vars, invalid credentials, or insufficient access as structured JSON.
 
 ## Secret handling
 

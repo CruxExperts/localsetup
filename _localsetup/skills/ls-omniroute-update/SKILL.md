@@ -7,6 +7,11 @@ extensions:
   omniroute:
     source_kind: localsetup-native
     local_role: update-workflow
+    source_repo: https://github.com/diegosouzapw/OmniRoute
+    source_ref: main
+    source_commit: 0c7f756f922fe3c0408e41852577027b496489bf
+    package_version: 3.8.43
+    release_package_commit: b729a8f27364f072c87082e03bb8e122f3d76251
 ---
 
 # Omni Route Update
@@ -42,8 +47,8 @@ Do not use this skill for live OmniRoute proxy/model discovery; use `ls-omnirout
 
 - Upstream repository: `https://github.com/diegosouzapw/OmniRoute`
 - Upstream skills root: `skills/`
-- Planning-time checked branch head: `bfaf459f3c15e5260a6284eee5e9824f22a8e00d`
-- Current strict-replace source: OmniRoute `v3.8.32` at `bfaf459f3c15e5260a6284eee5e9824f22a8e00d`
+- Planning-time checked branch head: `0c7f756f922fe3c0408e41852577027b496489bf`
+- Current strict-replace source: OmniRoute `v3.8.43` at `0c7f756f922fe3c0408e41852577027b496489bf`
 - Upstream skill inventory: `43` files under `skills/*/SKILL.md`
 
 Refresh these facts before a real import or update wave. Record the refreshed source in `references/source-ledger.md`. Treat the actual `skills/*/SKILL.md` inventory as authoritative when upstream prose has stale count text.
@@ -56,7 +61,7 @@ Run the read-only check from the Localsetup checkout:
 python3 _localsetup/skills/ls-omniroute-update/scripts/omniroute_update.py check \
   --repo-root . \
   --source-repo https://github.com/diegosouzapw/OmniRoute.git \
-  --ref bfaf459f3c15e5260a6284eee5e9824f22a8e00d \
+  --ref 0c7f756f922fe3c0408e41852577027b496489bf \
   --output markdown
 ```
 
@@ -80,7 +85,7 @@ Use the freshness check when validating converted or consolidated OmniRoute skil
 python3 _localsetup/skills/ls-omniroute-update/scripts/omniroute_update.py freshness \
   --repo-root . \
   --source-repo https://github.com/diegosouzapw/OmniRoute.git \
-  --ref bfaf459f3c15e5260a6284eee5e9824f22a8e00d \
+  --ref 0c7f756f922fe3c0408e41852577027b496489bf \
   --output markdown
 ```
 
@@ -96,7 +101,7 @@ extensions:
     source_kind: upstream-converted
     source_repo: https://github.com/diegosouzapw/OmniRoute
     source_path: skills/<skill>/SKILL.md
-    source_ref: bfaf459f3c15e5260a6284eee5e9824f22a8e00d
+    source_ref: 0c7f756f922fe3c0408e41852577027b496489bf
     source_commit: <commit-sha>
     source_commit_date: <iso-date>
     source_sha256: <sha256-of-source-skill-md>

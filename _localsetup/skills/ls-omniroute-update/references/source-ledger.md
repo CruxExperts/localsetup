@@ -4,14 +4,13 @@
 
 - Repository: `https://github.com/diegosouzapw/OmniRoute`
 - Skills root: `skills/`
-- Current Localsetup source version: `v3.8.32`
-- Current Localsetup source commit: `bfaf459f3c15e5260a6284eee5e9824f22a8e00d`
-- Current Localsetup source commit date: `2026-06-21T08:56:51-03:00`
-- Annotated tag object: `f2755d7cfa0cf016e2e235d639a8a7ea09135192`
-- Annotated tag date: `2026-06-21T08:58:10-03:00`
-- Upstream package version: `3.8.32`
-- npm `latest`: `3.8.32`
-- Checked date: 2026-06-21
+- Current Localsetup source version: `v3.8.43`
+- Current Localsetup source commit: `0c7f756f922fe3c0408e41852577027b496489bf`
+- Current Localsetup source commit date: `2026-07-03T21:16:16Z`
+- Upstream package version: `3.8.43`
+- npm `latest`: `3.8.43`
+- Release/package commit: `b729a8f27364f072c87082e03bb8e122f3d76251` for tag/npm `v3.8.43`
+- Checked date: 2026-07-04
 
 ## Source Priority
 
@@ -24,12 +23,12 @@
 - Refresh this ledger before importing, updating, consolidating, or removing any OmniRoute skill coverage.
 - Prefer a pinned commit for conversion or coverage metadata.
 - Record the commit SHA, commit date, source path, source SHA-256 when applicable, and access date for every converted skill or native coverage wave.
-- Treat the actual `skills/*/SKILL.md` inventory as authoritative when upstream prose has stale count text. For `v3.8.32`, the actual inventory is 43 skills even though two upstream docs still mention a 42-skill catalog.
+- Treat the actual `skills/*/SKILL.md` inventory as authoritative when upstream prose has stale count text. For `v3.8.43`, the actual inventory is 43 skills even though two upstream docs still mention a 42-skill catalog.
 - If upstream disappears or a skill is renamed, classify the local coverage as `local-only` or `missing-local` until a maintainer confirms removal or migration.
 
-## 2026-06-21 Consolidated Native Pack
+## 2026-07-04 Consolidated Native Pack
 
-Localsetup intentionally consolidates OmniRoute `v3.8.32` into a small native skill pack instead of shipping one Localsetup skill per upstream skill document.
+Localsetup intentionally consolidates OmniRoute `v3.8.43` into a small native skill pack instead of shipping one Localsetup skill per upstream skill document.
 
 Current native pack:
 
@@ -47,7 +46,7 @@ Authoritative coverage map:
 - Human-readable: `../ls-omniroute/references/upstream-skill-coverage.md`
 - Machine-readable: `../ls-omniroute-update/scripts/omniroute_update.py` `NATIVE_COVERAGE`
 
-Strict coverage acceptance for `v3.8.32` is:
+Strict coverage acceptance for `v3.8.43` is:
 
 - 43 upstream skills discovered from the pinned source tree.
 - 43 upstream skills reported as `covered-native` or `current`.

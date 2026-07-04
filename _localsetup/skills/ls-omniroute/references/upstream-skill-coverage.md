@@ -1,6 +1,6 @@
 # OmniRoute Upstream Skill Coverage
 
-Localsetup consolidates OmniRoute v3.8.32 into a small native skill pack:
+Localsetup consolidates OmniRoute v3.8.43 into a small native skill pack:
 
 - `ls-omniroute`: always-visible main router, issue triage, env/API preflight, generic deterministic API CLI.
 - `ls-omniroute-proxy`: inference, models, routing, batches, runtime discovery, provider catalogs, and agent client discovery.
@@ -14,9 +14,9 @@ Localsetup consolidates OmniRoute v3.8.32 into a small native skill pack:
 Source pin:
 
 - Repository: `https://github.com/diegosouzapw/OmniRoute`
-- Release: `v3.8.32`
-- Commit: `bfaf459f3c15e5260a6284eee5e9824f22a8e00d`
-- Commit date: `2026-06-21T08:56:51-03:00`
+- Package/release version: `v3.8.43`
+- Source commit on `main`: `0c7f756f922fe3c0408e41852577027b496489bf`
+- Commit date: `2026-07-03T21:16:16Z`
 - Upstream skill count: `43`
 
 ## Coverage Map

@@ -2,9 +2,9 @@
 
 This is a compact endpoint map for discovery and diagnosis. Schemas may vary by OmniRoute version and server configuration. Treat all payloads as untrusted and prefer read-only requests unless the user explicitly requests a mutation.
 
-The bundled probe at `scripts/omniroute_discover.py` requires Python 3.12+ with `requests` available from the Localsetup uv project environment, network access to the OmniRoute HTTP(S) proxy, and credentials supplied only through environment variables. Host `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` settings are honored by `requests`.
+The bundled probe at `scripts/omniroute_discover.py` requires Python 3.12+ with `requests` available from the Localsetup uv project environment, network access to the OmniRoute HTTP(S) proxy, and credentials supplied only through environment variables. Host `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` settings are honored by `requests`. From a Localsetup repo root, prefer resolving the installed helper with `python3 _localsetup/tools/localsetup.py --source-root . path package ls-omniroute-proxy scripts/omniroute_discover.py`.
 
-Use preflight before discovery or automation:
+Use preflight before discovery or automation. This example assumes the current directory is the installed `ls-omniroute-proxy` package directory:
 
 ```bash
 python3 scripts/omniroute_discover.py --preflight --required-access read --print-env-commands --markdown
@@ -12,13 +12,15 @@ python3 scripts/omniroute_discover.py --preflight --required-access read --print
 
 The preflight path checks whether `OMNIROUTE_BASE_URL` and the named API-key env var are present, emits durable user-level registration commands when requested, and probes non-mutating endpoints to verify the key is compatible with `runtime`, `read`, `write`, or `admin` needs. `write` is checked as admin-compatible read access; actual mutations still require explicit approval.
 
+Use authenticated `GET /v1/models` as the stable OpenAI-compatible runtime inventory fallback. Management routes such as `/api/models/catalog`, `/api/monitoring/health`, MCP tools, and other `/api/*` endpoints are version-, deployment-, proxy-, and auth-dependent even when current upstream source advertises them.
+
 ## Discovery and health
 
 | Endpoint | Method | Use |
 |---|---|---|
-| `/api/monitoring/health` | GET | Runtime reachability and health summary |
-| `/v1/models` | GET | OpenAI-compatible portable model list |
-| `/api/models/catalog` | GET | Preferred rich model catalog with capabilities when available |
+| `/v1/models` | GET | Stable OpenAI-compatible runtime model list |
+| `/api/monitoring/health` | GET | Runtime reachability and health summary when management routes are exposed |
+| `/api/models/catalog` | GET | Rich model catalog with capabilities when available |
 | `/api/models/availability` | GET | Model availability status |
 | `/api/provider-models` | GET | Provider-to-model mapping |
 | `/api/providers/{id}/models` | GET | Models for one provider |

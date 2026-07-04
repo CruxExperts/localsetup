@@ -24,8 +24,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-LIB_DIR = SCRIPT_DIR.parents[2] / "lib"
+LIB_DIR = Path(__file__).resolve().parents[3] / "lib"
 if str(LIB_DIR) not in sys.path:
     sys.path.insert(0, str(LIB_DIR))
 
