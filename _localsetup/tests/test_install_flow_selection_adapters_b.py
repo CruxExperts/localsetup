@@ -356,6 +356,8 @@ def test_registry_refs_preserve_shared_packages_until_last_rollback(tmp_path: Pa
     home = tmp_path / "home"
     target_one = tmp_path / "one"
     target_two = tmp_path / "two"
+    source = Path(__file__).resolve().parents[1]
+    shutil.copytree(source / "lib", root / "_localsetup/lib")
     target_one.mkdir()
     target_two.mkdir()
     apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"], target_root=target_one), home=home, target_root=target_one)
@@ -366,11 +368,15 @@ def test_registry_refs_preserve_shared_packages_until_last_rollback(tmp_path: Pa
     assert len(registry["packages"]["ls-context"]["refs"]) == 2
     assert registry["packages"]["ls-context"]["provenance"]["package_name"] == "ls-context"
     assert registry["targets"][str(target_one.resolve())]["package_provenance"]["ls-context"]["package_digest"]
+    shared_helper = home / ".local/share/localsetup/lib/deps.py"
+    assert shared_helper.is_file()
 
     rollback(root, home=home, target_root=target_one)
     assert managed_skill.is_dir()
+    assert shared_helper.is_file()
     rollback(root, home=home, target_root=target_two)
     assert not managed_skill.exists()
+    assert not shared_helper.exists()
 
 
 def test_narrowed_rerun_reconciles_registry_refs_and_prunes_packages(tmp_path: Path) -> None:
