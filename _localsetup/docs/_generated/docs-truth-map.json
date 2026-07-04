@@ -42,16 +42,16 @@
     ],
     "provenance": {
       "artifact_path": "_localsetup/docs/_generated/facts.json",
-      "artifact_sha256": "34eb258c56749a76de1392d66010d0fdda390d25ed4ec821018eff5e9eae41e9",
+      "artifact_sha256": "b9df3b00f5a89de5d0ee8b421fdd7cdbc14b331f63ef82fbf1e8772d1cf94c7b",
       "emitter": "generate-docs",
-      "framework_version": "4.2.11",
+      "framework_version": "4.2.12",
       "schema_version": 1,
-      "source_commit": "524276f9e4a1ef967f8b47e463bd07cf0754b865",
+      "source_commit": "0e9c10bdddeb6623f95f3bab18bf793ec01b1c76",
       "source_dirty": true,
-      "source_provenance_hash": "3d05301fc4d6a6cdafc66983e9078dbbf88d99e41e0c084e20f7ff939e790266",
-      "source_root_id": "a08a825ba441dcae630343914e6be46e7adf8dee554b0e2af50d99a0e9953378",
+      "source_provenance_hash": "65c99848363d82e2d20597f4f5b9881c9fb8a8bc9c5cbe29835c5265b107ef24",
+      "source_root_id": "074507087074c46f473c865d90a9ab2363bc968091805f413227d1ff770650c1",
       "source_tag": null,
-      "source_tree_sha": "3a5085188aa4866d7f05ff072d9c8342384e0792"
+      "source_tree_sha": "b2796789ac21b0da750ac09f3a11fe5410c81bb9"
     },
     "skill_count": 106,
     "skills": [
@@ -1807,7 +1807,7 @@
         "version": "1.0"
       }
     ],
-    "version": "4.2.11",
+    "version": "4.2.12",
     "workflow_count": 23,
     "workflows": [
       {
@@ -1965,14 +1965,14 @@
       "artifact_path": "_localsetup/docs/_generated/skill-taxonomy.json",
       "artifact_sha256": "b304fdad632116576965459df707785898b38581d201109ea8cdc10a3f4a2235",
       "emitter": "generate-docs",
-      "framework_version": "4.2.11",
+      "framework_version": "4.2.12",
       "schema_version": 1,
-      "source_commit": "524276f9e4a1ef967f8b47e463bd07cf0754b865",
+      "source_commit": "0e9c10bdddeb6623f95f3bab18bf793ec01b1c76",
       "source_dirty": true,
-      "source_provenance_hash": "3d05301fc4d6a6cdafc66983e9078dbbf88d99e41e0c084e20f7ff939e790266",
-      "source_root_id": "a08a825ba441dcae630343914e6be46e7adf8dee554b0e2af50d99a0e9953378",
+      "source_provenance_hash": "65c99848363d82e2d20597f4f5b9881c9fb8a8bc9c5cbe29835c5265b107ef24",
+      "source_root_id": "074507087074c46f473c865d90a9ab2363bc968091805f413227d1ff770650c1",
       "source_tag": null,
-      "source_tree_sha": "3a5085188aa4866d7f05ff072d9c8342384e0792"
+      "source_tree_sha": "b2796789ac21b0da750ac09f3a11fe5410c81bb9"
     },
     "schema_version": 1,
     "skills": [
@@ -3519,16 +3519,16 @@
   },
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "534d8fa3432e4d69a9b340a7daf21df9c6ad78a922b608371dbeab4d02ae0c8c",
+    "artifact_sha256": "f3168502463b3530304e73a989f9288903bc8745a7a7bf5a39db9733fbe83277",
     "emitter": "docs-align",
-    "framework_version": "4.2.11",
+    "framework_version": "4.2.12",
     "schema_version": 1,
-    "source_commit": "524276f9e4a1ef967f8b47e463bd07cf0754b865",
+    "source_commit": "0e9c10bdddeb6623f95f3bab18bf793ec01b1c76",
     "source_dirty": true,
-    "source_provenance_hash": "3d05301fc4d6a6cdafc66983e9078dbbf88d99e41e0c084e20f7ff939e790266",
-    "source_root_id": "a08a825ba441dcae630343914e6be46e7adf8dee554b0e2af50d99a0e9953378",
+    "source_provenance_hash": "65c99848363d82e2d20597f4f5b9881c9fb8a8bc9c5cbe29835c5265b107ef24",
+    "source_root_id": "074507087074c46f473c865d90a9ab2363bc968091805f413227d1ff770650c1",
     "source_tag": null,
-    "source_tree_sha": "3a5085188aa4866d7f05ff072d9c8342384e0792"
+    "source_tree_sha": "b2796789ac21b0da750ac09f3a11fe5410c81bb9"
   },
   "schema_version": "1.0",
   "truths": {
@@ -5429,14 +5429,14 @@
       }
     },
     "version": {
-      "facts_version": "4.2.11",
-      "pyproject_version": "4.2.11",
+      "facts_version": "4.2.12",
+      "pyproject_version": "4.2.12",
       "sources": [
         "VERSION",
         "pyproject.toml",
         "_localsetup/docs/_generated/facts.json"
       ],
-      "value": "4.2.11"
+      "value": "4.2.12"
     },
     "workflow_catalog": {
       "sources": [
