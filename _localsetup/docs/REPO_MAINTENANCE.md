@@ -45,6 +45,31 @@ uv run --locked python _localsetup/tools/localsetup.py --source-root . self-refr
 
 The command installs every configured pack from this checkout into the managed Localsetup library and refreshes only adapter paths that are already attached in the target repo. It is maintenance tooling for local machine state, not a release or publish step.
 
+## Maintainer Codex Adapter Reconciliation
+
+This source checkout is allowed to expose every public Localsetup skill and workflow package through its repo-local `.codex/skills` adapter while keeping the global/default skill stance curated. Use this only for the Localsetup maintainer repo, not as a normal consumer-repo default.
+
+Dry-run first:
+
+```bash
+UV_CACHE_DIR=/tmp/localsetup-uv-cache uv run --locked python _localsetup/tools/localsetup.py --source-root . install --target-directory . --platforms codex --global-packs bootstrap core dev frontend architecture ops publishing omniroute --global-skills ls-firecrawl ls-cloudflare-dns --global-exclude-skills ls-superpowers --repo-preset all --mode symlink --json
+```
+
+Apply the same plan only after the dry-run has no warnings; the apply-time preflight remains authoritative and will still stop before mutation on same-name adapter collisions:
+
+```bash
+UV_CACHE_DIR=/tmp/localsetup-uv-cache uv run --locked python _localsetup/tools/localsetup.py --source-root . install --target-directory . --platforms codex --global-packs bootstrap core dev frontend architecture ops publishing omniroute --global-skills ls-firecrawl ls-cloudflare-dns --global-exclude-skills ls-superpowers --repo-preset all --mode symlink --apply --json
+```
+
+Same-name selected package collisions still block before mutation. If a repo-local adapter entry intentionally shadows a selected Localsetup package, resolve that one entry deliberately before rerunning the native installer; do not clear the adapter directory or broaden the global Codex adapter to make the apply pass.
+
+Verify the reconciled shape:
+
+```bash
+UV_CACHE_DIR=/tmp/localsetup-uv-cache uv run --locked python _localsetup/tools/localsetup.py --source-root . verify --target-directory . --platforms codex --level filesystem --json
+UV_CACHE_DIR=/tmp/localsetup-uv-cache uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog
+```
+
 ## GitHub Actions
 
 - `pr-validation` is the required PR and merge-queue validation workflow.
