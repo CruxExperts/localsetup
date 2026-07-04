@@ -26,3 +26,24 @@ Do not use this workflow for normal repo-local coding, API authentication, token
 5. Interrupt only with `localsetup://tool/tmux_ops cancel -t <session> --run-id <id>`.
 
 Use the returned `run_id`, `status`, `tail`, and `log_path` as evidence.
+
+## Sudo keepalive
+
+For active privileged work where the user has already entered sudo in the same managed pane, use bounded one-shot keepalive commands instead of ad hoc loops.
+
+1. Request a marker only after `probe` reports sudo `ready`:
+
+   ```bash
+   localsetup://tool/tmux_ops keepalive request -t <session> --owner <id> --ttl-seconds 7200 --max-refreshes 24 --reason "<reason>"
+   ```
+
+2. Refresh only as an explicit one-shot action while privileged work remains active and the managed pane is idle between commands:
+
+   ```bash
+   localsetup://tool/tmux_ops keepalive refresh -t <session>
+   ```
+
+3. Report state with `localsetup://tool/tmux_ops keepalive status -t <session>`.
+4. Clear the marker with `localsetup://tool/tmux_ops keepalive clear -t <session> --owner <id>` when privileged work ends.
+
+Keepalive is restricted to managed `ops*` sessions, caps TTL at 7200 seconds and refreshes at 24, and runs only hard-coded `sudo -n -v` during refresh. It must not start a background loop, prompt for a password, or refresh while a managed run is active, another refresh is in progress, or the pane is not idle.

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import time
 from pathlib import Path
 from typing import Any
@@ -21,6 +22,30 @@ def _run_channel(session: str, run_id: str) -> str:
 
 def _prompt_channel(session: str) -> str:
     return f"{WAIT_PREFIX}-{session}-idle"
+
+
+def _pane_operation_lock_path(session: str) -> Path:
+    return _state_dir(session) / "pane-operation.lock"
+
+
+def _acquire_pane_operation_lock(session: str) -> int | None:
+    path = _pane_operation_lock_path(session)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        return os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    except FileExistsError:
+        return None
+
+
+def _release_pane_operation_lock(session: str, fd: int) -> None:
+    try:
+        os.close(fd)
+    except OSError:
+        pass
+    try:
+        _pane_operation_lock_path(session).unlink()
+    except OSError:
+        pass
 
 
 def _status_path(session: str, run_id: str) -> Path:

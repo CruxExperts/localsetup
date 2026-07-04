@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from .constants import WAIT_PREFIX
-from .state import _attach_command, _json_load, _json_write, _state_dir
+from .state import _acquire_pane_operation_lock, _attach_command, _json_load, _json_write, _release_pane_operation_lock, _state_dir
 from .tmux import (
     _is_pane_waiting_sudo,
     _pane_target,
@@ -156,26 +156,39 @@ def probe_sudo_gate(session: str) -> dict[str, Any]:
         )
     script = _write_probe_script(session)
     channel = f"{WAIT_PREFIX}-{session}-probe"
-    wait = _start_tmux_wait(channel)
-    r = _targeted_tmux(session, ["send-keys", "-t", "{target}", f"bash {shlex.quote(str(script))}", "Enter"])
-    if r.returncode != 0:
+    lock_fd = _acquire_pane_operation_lock(session)
+    if lock_fd is None:
         payload = _action_payload(
             session,
             sudo="failed",
-            detail=r.stderr,
+            detail="tmux pane operation already in progress",
             pane_id=identity.get("pane_id"),
             pane_tty=identity.get("pane_tty"),
         )
         return _write_gate_payload(session, payload)
-    if not _wait_proc(wait, 10.0):
-        payload = _action_payload(
-            session,
-            sudo="failed",
-            detail="sudo probe timed out",
-            pane_id=identity.get("pane_id"),
-            pane_tty=identity.get("pane_tty"),
-        )
-        return _write_gate_payload(session, payload)
+    try:
+        wait = _start_tmux_wait(channel)
+        r = _targeted_tmux(session, ["send-keys", "-t", "{target}", f"bash {shlex.quote(str(script))}", "Enter"])
+        if r.returncode != 0:
+            payload = _action_payload(
+                session,
+                sudo="failed",
+                detail=r.stderr,
+                pane_id=identity.get("pane_id"),
+                pane_tty=identity.get("pane_tty"),
+            )
+            return _write_gate_payload(session, payload)
+        if not _wait_proc(wait, 10.0):
+            payload = _action_payload(
+                session,
+                sudo="failed",
+                detail="sudo probe timed out",
+                pane_id=identity.get("pane_id"),
+                pane_tty=identity.get("pane_tty"),
+            )
+            return _write_gate_payload(session, payload)
+    finally:
+        _release_pane_operation_lock(session, lock_fd)
     payload = _json_load(_sudo_gate_path(session)) or _json_load(_probe_status_path(session))
     if not payload:
         payload = _action_payload(

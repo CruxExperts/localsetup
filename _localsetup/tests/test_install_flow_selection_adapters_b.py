@@ -107,6 +107,83 @@ def test_adapters_accepts_explicit_json_flag_with_platform_filter(tmp_path: Path
     assert {adapter["platform"] for adapter in payload} == {"codex"}
 
 
+def test_adapters_check_reports_codex_adapter_summary(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    home.mkdir(parents=True, exist_ok=True)
+
+    apply_plan(
+        root,
+        build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"]),
+        home=home,
+    )
+
+    code = cli_mod._main(
+        [
+            "--source-root",
+            str(root),
+            "--home",
+            str(home),
+            "adapters",
+            "check",
+            "--platforms",
+            "codex",
+        ]
+    )
+    output = capsys.readouterr().out
+
+    assert code == 0
+    payload = json.loads(output)
+    assert payload["ok"] is True
+    assert "codex" in payload["summary"]["platforms"]
+    assert "ls-context" in payload["summary"]["managed_packages"]
+    assert {adapter["platform"] for adapter in payload["adapters"]} == {"codex"}
+    assert "ls-context" in payload["adapters"][0]["visible_packages"]
+    assert "ls-context" in payload["adapters"][0]["managed_visible_packages"]
+    assert any(command["command"] == "localsetup verify --tools codex" for command in payload["commands"])
+
+
+def test_adapters_check_reports_tampered_adapter_without_mutating_custom_content(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    home.mkdir(parents=True, exist_ok=True)
+
+    apply_plan(
+        root,
+        build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"]),
+        home=home,
+    )
+    adapter = root / ".codex" / "skills"
+    custom = adapter / "custom-skill"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+    (adapter / "ls-context").unlink()
+
+    code = cli_mod._main(
+        [
+            "--source-root",
+            str(root),
+            "--home",
+            str(home),
+            "adapters",
+            "check",
+            "--platforms",
+            "codex",
+        ]
+    )
+    output = capsys.readouterr().out
+
+    assert code == 1
+    payload = json.loads(output)
+    assert payload["ok"] is False
+    assert payload["issues"]
+    assert payload["repair_hints"]
+    assert any(command["command"] == "localsetup doctor repair --tools codex" for command in payload["commands"])
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom\n"
+
+
 def test_multi_platform_selector_attaches_only_requested_adapters(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"

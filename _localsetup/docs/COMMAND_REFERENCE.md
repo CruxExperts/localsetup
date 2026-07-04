@@ -83,6 +83,7 @@ After registration, `localsetup` uses the registered framework source and target
 ```bash
 localsetup install --tools codex --yes
 localsetup verify --tools codex --level filesystem
+localsetup adapters check --tools codex
 localsetup doctor
 localsetup diff --tools codex
 localsetup rollback
@@ -114,6 +115,8 @@ register-shell, wizard, package, verify-release
 `wizard --repo-profile universal-agent-repo --target-directory <path> --dry-run --report <path>` plans the lean universal agent repository shape without entering the interactive installer. Re-run with `--apply` to create the missing shape files. Existing files with different content are blockers; Localsetup does not overwrite them.
 
 Most commands emit JSON by default. Commands with explicit human-readable modes, such as `context --markdown`, document that mode in their own help.
+
+`localsetup adapters` preserves the legacy adapter status list output. Use `localsetup adapters check --tools codex` for a structured, report-only adapter compatibility payload with `ok`, `adapters`, `issues`, `warnings`, `repair_hints`, `summary`, and suggested existing commands. It exits `0` when the adapter check is OK and `1` when verifier issues are present.
 
 ## Install Command Options
 
