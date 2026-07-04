@@ -1,6 +1,12 @@
 from __future__ import annotations
 
+import os
+import shutil
+import subprocess
+import sys
+
 from _localsetup.tests.test_install_flow import *
+from _localsetup.core.apply_packages import install_managed_packages, install_shared_runtime_lib
 from _localsetup.core.selection import resolve_package_selection
 
 def test_plan_apply_verify_rollback(tmp_path: Path) -> None:
@@ -107,6 +113,78 @@ def test_core_installs_tmux_workflow_packages(tmp_path: Path) -> None:
     ]
     assert verify["tmux_terminal_mode"]["workflows"]["adapters"][0]["missing_workflows"] == []
     assert doctor["tmux_terminal_mode"]["workflows"]["adapters"][0]["missing_workflows"] == []
+
+
+def test_installed_omniroute_helpers_can_import_shared_deps(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    global_root = home / ".local/share/localsetup/packages"
+    source = Path(__file__).resolve().parents[1]
+    shutil.copytree(source / "lib", root / "_localsetup/lib")
+
+    install_managed_packages(
+        root,
+        global_root,
+        ["ls-omniroute", "ls-omniroute-admin-automation", "ls-omniroute-proxy"],
+        "skills",
+        home=home,
+        replace_func=os.replace,
+    )
+
+    assert (home / ".local/share/localsetup/lib/deps.py").is_file()
+    for helper in (
+        global_root / "ls-omniroute/scripts/omniroute_api.py",
+        global_root / "ls-omniroute-proxy/scripts/omniroute_discover.py",
+        global_root / "ls-omniroute-admin-automation/scripts/omniroute_admin.py",
+    ):
+        result = subprocess.run(
+            [sys.executable, str(helper), "--help"],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        assert "ModuleNotFoundError" not in result.stderr
+
+
+def test_shared_runtime_lib_replaces_symlink_without_following(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    source = Path(__file__).resolve().parents[1]
+    shutil.copytree(source / "lib", root / "_localsetup/lib")
+    home = tmp_path / "home"
+    global_root = home / ".local/share/localsetup/packages"
+    runtime_lib = home / ".local/share/localsetup/lib"
+    runtime_lib.mkdir(parents=True)
+    outside = tmp_path / "outside-deps.py"
+    outside.write_text("outside sentinel\n", encoding="utf-8")
+    (runtime_lib / "deps.py").symlink_to(outside)
+
+    installed = install_shared_runtime_lib(root, global_root, replace_func=os.replace)
+
+    target = runtime_lib / "deps.py"
+    assert installed == [str(target)]
+    assert target.is_file()
+    assert not target.is_symlink()
+    assert target.read_text(encoding="utf-8") == (source / "lib/deps.py").read_text(encoding="utf-8")
+    assert outside.read_text(encoding="utf-8") == "outside sentinel\n"
+
+
+def test_shared_runtime_lib_refuses_symlinked_lib_dir(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    source = Path(__file__).resolve().parents[1]
+    shutil.copytree(source / "lib", root / "_localsetup/lib")
+    home = tmp_path / "home"
+    global_root = home / ".local/share/localsetup/packages"
+    localsetup_home = home / ".local/share/localsetup"
+    localsetup_home.mkdir(parents=True)
+    outside_lib = tmp_path / "outside-lib"
+    outside_lib.mkdir()
+    (localsetup_home / "lib").symlink_to(outside_lib, target_is_directory=True)
+
+    with pytest.raises(RuntimeError, match="refusing to install shared runtime lib through symlink"):
+        install_shared_runtime_lib(root, global_root, replace_func=os.replace)
+
+    assert not (outside_lib / "deps.py").exists()
 
 
 def test_codex_platform_installs_guardian_subagent(tmp_path: Path) -> None:

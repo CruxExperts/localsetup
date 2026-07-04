@@ -8,6 +8,11 @@ extensions:
   omniroute:
     source_kind: localsetup-native
     local_role: proxy-discovery
+    source_repo: https://github.com/diegosouzapw/OmniRoute
+    source_ref: main
+    source_commit: 0c7f756f922fe3c0408e41852577027b496489bf
+    package_version: 3.8.43
+    release_package_commit: b729a8f27364f072c87082e03bb8e122f3d76251
 ---
 
 # OmniRoute proxy
@@ -34,9 +39,9 @@ Use this skill when the task involves OmniRoute, an OmniRoute proxy, AI gateway 
 - If the environment sets `HTTP_PROXY`, `HTTPS_PROXY`, or `NO_PROXY`, `requests` applies those proxy settings to the probe.
 - The probe accepts only `http` or `https` base URLs and rejects URLs with embedded credentials.
 
-## Current v3.8.32 notes
+## Current v3.8.43 notes
 
-- The verified source for this wave is OmniRoute `v3.8.32` at commit `bfaf459f3c15e5260a6284eee5e9824f22a8e00d`.
+- The verified source for this wave is OmniRoute `v3.8.43` at commit `0c7f756f922fe3c0408e41852577027b496489bf`.
 - The upstream skill inventory contains 43 `skills/*/SKILL.md` files. Some upstream docs still say 42; treat the actual inventory as authoritative.
 - CLI setup distinguishes persistent profile writers such as `omniroute setup-codex` from launchers such as `omniroute launch-codex`, which inject runtime config without permanently editing profiles.
 - For Codex configuration through OmniRoute, prefer `wire_api = "responses"` and do not rely on `model_max_output_tokens` as an effective Codex setting when active upstream guidance says Codex ignores it.
@@ -55,14 +60,14 @@ Use this skill when the task involves OmniRoute, an OmniRoute proxy, AI gateway 
 
 ## Discovery workflow
 
-1. Run the preflight check before normal discovery:
-   - `python3 scripts/omniroute_discover.py --preflight --required-access runtime --markdown`
+1. Run the preflight check before normal discovery from the Localsetup repo root:
+   - `python3 "$(python3 _localsetup/tools/localsetup.py --source-root . path package ls-omniroute-proxy scripts/omniroute_discover.py)" --preflight --required-access runtime --markdown`
    - Use `--required-access read`, `write`, or `admin` when the requested task needs management endpoints.
    - Use `--print-env-commands` when `OMNIROUTE_BASE_URL` or the API-key env var is missing and the user needs durable user-level registration commands.
    - Use `--fail-on-incompatible` in automation when the calling workflow should stop on missing env vars, invalid keys, or insufficient endpoint access.
-2. Establish reachability with `GET /api/monitoring/health`. If that fails or is unavailable, try `GET /v1/models`.
-3. Query `GET /api/models/catalog` first for rich model metadata.
-4. Fall back to `GET /v1/models`, `GET /v1beta/models`, and `GET /api/tags` when catalog data is missing or unavailable.
+2. Establish runtime model inventory with authenticated `GET /v1/models`; this is the stable OpenAI-compatible fallback when management routes are unavailable.
+3. Query `GET /api/models/catalog` for richer model metadata when the deployed version, proxy path, and authentication mode expose it.
+4. Use `GET /api/monitoring/health`, `GET /v1beta/models`, and `GET /api/tags` as deployment-specific compatibility checks when relevant.
 5. Query `GET /.well-known/agent.json` to inspect A2A capability advertising.
 6. Query MCP tools only when MCP is configured in the host and the OmniRoute MCP server is available.
 7. Keep per-endpoint status. A failed optional endpoint should not invalidate successful results from other read-only endpoints.
@@ -71,8 +76,22 @@ Use this skill when the task involves OmniRoute, an OmniRoute proxy, AI gateway 
 
 The bundled probe can help users register missing OmniRoute env vars and verify that the configured API key is compatible with the intended task:
 
+From inside the installed `ls-omniroute-proxy` package directory:
+
 ```bash
 python3 scripts/omniroute_discover.py \
+  --base-url http://localhost:20128 \
+  --api-key-env OMNIROUTE_API_KEY \
+  --preflight \
+  --required-access read \
+  --print-env-commands \
+  --markdown
+```
+
+From a Localsetup repo root, resolve the installed helper first:
+
+```bash
+python3 "$(python3 _localsetup/tools/localsetup.py --source-root . path package ls-omniroute-proxy scripts/omniroute_discover.py)" \
   --base-url http://localhost:20128 \
   --api-key-env OMNIROUTE_API_KEY \
   --preflight \

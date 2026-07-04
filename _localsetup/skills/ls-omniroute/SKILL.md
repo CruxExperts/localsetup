@@ -8,8 +8,10 @@ extensions:
     source_kind: localsetup-native
     local_role: main-router
     source_repo: https://github.com/diegosouzapw/OmniRoute
-    source_ref: v3.8.32
-    source_commit: bfaf459f3c15e5260a6284eee5e9824f22a8e00d
+    source_ref: main
+    source_commit: 0c7f756f922fe3c0408e41852577027b496489bf
+    package_version: 3.8.43
+    release_package_commit: b729a8f27364f072c87082e03bb8e122f3d76251
 ---
 
 # OmniRoute
@@ -26,7 +28,7 @@ Purpose: keep OmniRoute work grounded in a small Localsetup-native skill surface
 2. Run a preflight before troubleshooting, registering env vars, or invoking live OmniRoute API calls:
 
 ```bash
-python3 _localsetup/skills/ls-omniroute/scripts/omniroute_api.py preflight \
+python3 "$(python3 _localsetup/tools/localsetup.py --source-root . path package ls-omniroute scripts/omniroute_api.py)" preflight \
   --base-url "${OMNIROUTE_BASE_URL:-http://localhost:20128}" \
   --api-key-env OMNIROUTE_API_KEY \
   --required-access read
@@ -35,7 +37,7 @@ python3 _localsetup/skills/ls-omniroute/scripts/omniroute_api.py preflight \
 3. If env vars are missing, print durable user-level registration commands:
 
 ```bash
-python3 _localsetup/skills/ls-omniroute/scripts/omniroute_api.py env-commands \
+python3 "$(python3 _localsetup/tools/localsetup.py --source-root . path package ls-omniroute scripts/omniroute_api.py)" env-commands \
   --base-url "http://localhost:20128" \
   --api-key-env OMNIROUTE_API_KEY
 ```
@@ -63,9 +65,9 @@ The bundled `omniroute_api.py` tool is the stable Localsetup CLI surface for gen
 Examples:
 
 ```bash
-python3 _localsetup/skills/ls-omniroute/scripts/omniroute_api.py request GET /api/monitoring/health
-python3 _localsetup/skills/ls-omniroute/scripts/omniroute_api.py request GET /v1/models --required-access runtime
-python3 _localsetup/skills/ls-omniroute/scripts/omniroute_api.py request POST /api/settings \
+python3 "$(python3 _localsetup/tools/localsetup.py --source-root . path package ls-omniroute scripts/omniroute_api.py)" request GET /api/monitoring/health
+python3 "$(python3 _localsetup/tools/localsetup.py --source-root . path package ls-omniroute scripts/omniroute_api.py)" request GET /v1/models --required-access runtime
+python3 "$(python3 _localsetup/tools/localsetup.py --source-root . path package ls-omniroute scripts/omniroute_api.py)" request POST /api/settings \
   --body-json '{"example": true}' \
   --required-access admin \
   --allow-mutation
@@ -73,9 +75,9 @@ python3 _localsetup/skills/ls-omniroute/scripts/omniroute_api.py request POST /a
 
 Prefer the focused admin automation skill for planned mutations because it has snapshots, dry-run planning, audit logs, and operation-specific validation. Use the generic CLI for deterministic probes, compatibility checks, and API coverage gaps.
 
-## v3.8.32 coverage
+## v3.8.43 coverage
 
-Localsetup intentionally consolidates OmniRoute v3.8.32 into a small native pack. The upstream repository has 43 skill documents at commit `bfaf459f3c15e5260a6284eee5e9824f22a8e00d`; their coverage is tracked in `references/upstream-skill-coverage.md` rather than exposed as 43 separate Localsetup skills.
+Localsetup intentionally consolidates OmniRoute v3.8.43 into a small native pack. The upstream repository has 43 skill documents at commit `0c7f756f922fe3c0408e41852577027b496489bf`; their coverage is tracked in `references/upstream-skill-coverage.md` rather than exposed as 43 separate Localsetup skills.
 
 Coverage groups:
 

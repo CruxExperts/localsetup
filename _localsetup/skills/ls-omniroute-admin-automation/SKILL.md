@@ -7,6 +7,11 @@ extensions:
   omniroute:
     source_kind: localsetup-native
     local_role: admin-automation
+    source_repo: https://github.com/diegosouzapw/OmniRoute
+    source_ref: main
+    source_commit: 0c7f756f922fe3c0408e41852577027b496489bf
+    package_version: 3.8.43
+    release_package_commit: b729a8f27364f072c87082e03bb8e122f3d76251
 ---
 
 # OmniRoute administration automation
@@ -61,8 +66,10 @@ Use this skill when a task requires any of the following:
 
 ## Core workflows
 
+Except for the repo-root preflight example below, `scripts/omniroute_admin.py` commands in this skill are package-local examples. From a Localsetup repo root, resolve the installed helper first with `python3 _localsetup/tools/localsetup.py --source-root . path package ls-omniroute-admin-automation scripts/omniroute_admin.py`.
+
 0. Preflight credentials and access before any admin workflow:
-   - `python3 scripts/omniroute_admin.py preflight --required-access read`
+   - `python3 "$(python3 _localsetup/tools/localsetup.py --source-root . path package ls-omniroute-admin-automation scripts/omniroute_admin.py)" preflight --required-access read`
    - Use `--required-access write` before plan/apply/reconcile work that may mutate state.
    - Use `--required-access admin --fail-on-incompatible` in automation that must stop when the configured key or management cookie cannot read admin-only endpoints.
 1. Snapshot live state:
@@ -114,6 +121,8 @@ Recommended loop for unattended maintenance:
 
 ## Validation and tests
 
+The following commands assume the current directory is the installed `ls-omniroute-admin-automation` package directory. From a Localsetup repo root, resolve `scripts/omniroute_admin.py` with `localsetup path package` first.
+
 - Validate scripts:
   - `python3 scripts/omniroute_admin.py validate --desired manifests/example.json`
 - Smoke-run non-destructive checks:
@@ -127,6 +136,7 @@ Recommended loop for unattended maintenance:
 - Use `ls-omniroute-proxy` preflight with `--print-env-commands` when the user needs durable user-level registration for `OMNIROUTE_BASE_URL` and `OMNIROUTE_API_KEY`.
 - `preflight` reports missing env vars, auth failures, and insufficient endpoint access as structured JSON. It does not print key values.
 - `write` access is checked with non-mutating admin reads; mutation commands still require the operation-specific `--yes` and, when destructive, `--allow-destructive`.
+- Management routes are version-, deployment-, proxy-, and auth-dependent. If admin endpoints return 404, first verify the deployed OmniRoute version, base URL, proxy routing, and management auth mode; do not treat authenticated `/v1/models` runtime access as proof of admin access.
 
 ## References
 

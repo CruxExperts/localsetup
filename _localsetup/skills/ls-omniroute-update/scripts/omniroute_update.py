@@ -29,7 +29,7 @@ except ImportError as exc:  # pragma: no cover - environment guidance
 
 
 DEFAULT_SOURCE_REPO = "https://github.com/diegosouzapw/OmniRoute.git"
-DEFAULT_REF = "bfaf459f3c15e5260a6284eee5e9824f22a8e00d"
+DEFAULT_REF = "0c7f756f922fe3c0408e41852577027b496489bf"
 CONVERTER_VERSION = "1.0"
 NATIVE_COVERAGE: dict[str, list[str]] = {
     "cli-a2a": ["ls-omniroute-integrations"],

@@ -75,10 +75,10 @@ def test_upstream_to_local_name_mapping() -> None:
     assert converter.upstream_to_local_name("omni-auth") == "ls-omni-auth"
 
 
-def test_default_ref_is_pinned_to_validated_release_commit() -> None:
+def test_default_ref_is_pinned_to_validated_source_commit() -> None:
     converter = load_converter()
 
-    assert converter.DEFAULT_REF == "bfaf459f3c15e5260a6284eee5e9824f22a8e00d"
+    assert converter.DEFAULT_REF == "0c7f756f922fe3c0408e41852577027b496489bf"
 
 
 def test_reads_upstream_skill_manifests_from_local_fixture(tmp_path: Path) -> None:
@@ -169,8 +169,8 @@ def test_classifies_consolidated_native_coverage() -> None:
     converter = load_converter()
     current_hash = "a" * 64
     upstream = [
-        converter.UpstreamSkill("cli-chat", "skills/cli-chat/SKILL.md", current_hash, "commit1", "2026-06-21T00:00:00Z"),
-        converter.UpstreamSkill("omni-cache", "skills/omni-cache/SKILL.md", current_hash, "commit1", "2026-06-21T00:00:00Z"),
+        converter.UpstreamSkill("cli-chat", "skills/cli-chat/SKILL.md", current_hash, "commit1", "2026-07-04T00:00:00Z"),
+        converter.UpstreamSkill("omni-cache", "skills/omni-cache/SKILL.md", current_hash, "commit1", "2026-07-04T00:00:00Z"),
     ]
     local = [
         converter.LocalSkill(

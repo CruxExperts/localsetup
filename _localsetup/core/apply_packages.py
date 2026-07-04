@@ -1,15 +1,44 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 import shutil
 import uuid
 
-from .apply_journal import remove_path, write_journal
+from .apply_journal import record_file_state, remove_path, write_journal
 from .lockfile import save_json
 from .manifests import load_pack_config
 from .paths import ensure_dir
 from .provenance import build_package_marker, is_managed_package, managed_marker_path
 from .reference_materializer import materialize_package_artifact
+
+
+def install_shared_runtime_lib(
+    repo_root: Path,
+    global_root: Path,
+    *,
+    journal: dict | None = None,
+    journal_path: Path | None = None,
+    replace_func=None,
+) -> list[str]:
+    source = repo_root / "_localsetup" / "lib" / "deps.py"
+    if not source.is_file():
+        return []
+    runtime_lib = global_root.parent / "lib"
+    if runtime_lib.is_symlink():
+        raise RuntimeError(f"refusing to install shared runtime lib through symlink: {runtime_lib}")
+    target = runtime_lib / "deps.py"
+    runtime_lib.mkdir(parents=True, exist_ok=True)
+    if journal is not None and journal_path is not None and replace_func is not None:
+        record_file_state(journal, journal_path, target, replace_func)
+    staged = runtime_lib / f".{target.name}.localsetup-staging-{uuid.uuid4().hex}"
+    shutil.copy2(source, staged)
+    try:
+        (replace_func or os.replace)(staged, target)
+    finally:
+        if staged.exists() or staged.is_symlink():
+            remove_path(staged)
+    return [str(target)]
 
 
 def install_managed_packages(
@@ -28,6 +57,13 @@ def install_managed_packages(
     installed: list[str] = []
     source_root = repo_root / "_localsetup" / source_subdir
     pack = load_pack_config(repo_root)
+    install_shared_runtime_lib(
+        repo_root,
+        global_root,
+        journal=journal,
+        journal_path=journal_path,
+        replace_func=replace_func,
+    )
 
     for package_name in sorted(package_names):
         src = source_root / package_name
