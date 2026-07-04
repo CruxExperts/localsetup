@@ -16,6 +16,8 @@ Run these before a maintainer release or broad automation change:
 git status --short --branch
 uv lock --check
 uv sync --locked --all-groups
+git fetch --tags origin
+uv run --locked python _localsetup/tools/localsetup.py --source-root . publish-preflight --base origin/main --head HEAD --fix
 uv run --locked python _localsetup/tools/localsetup.py --source-root . version-plan
 uv run --locked python _localsetup/tools/localsetup.py --source-root . version-sync --check --target "$(cat VERSION)"
 ./_localsetup/tools/verify_context
@@ -139,7 +141,15 @@ The triage workflow bootstraps these labels. Run the workflow manually once befo
 
 ## Release Policy
 
-`VERSION` is the source of truth. Use [`VERSIONING.md`](VERSIONING.md) for the policy and command flow. Version sync should be produced locally before push through the hook or:
+`VERSION` is the source of truth. Use [`VERSIONING.md`](VERSIONING.md) for the policy and command flow. Fetch tags before diagnosing a version or release mismatch, because stale local tags can make an already-published GitHub release look missing. For a pending release batch, `version-plan` is expected to report `ok: false` until the version-sync commit exists.
+
+Prepare the local release commit with:
+
+```bash
+uv run --locked python _localsetup/tools/localsetup.py --source-root . publish-preflight --base origin/main --head HEAD --fix
+```
+
+Then push through:
 
 ```bash
 uv run --locked python _localsetup/tools/localsetup.py --source-root . release-push

@@ -40,6 +40,20 @@ For normal release pushes, use:
 uv run --locked python _localsetup/tools/localsetup.py --source-root . release-push
 ```
 
+Before diagnosing a version or tag mismatch, fetch remote tags so local state
+matches GitHub:
+
+```bash
+git fetch --tags origin
+```
+
+For an unpublished release batch, `version-plan` normally reports `ok: false`
+until a version-sync commit exists. Prepare that commit with:
+
+```bash
+uv run --locked python _localsetup/tools/localsetup.py --source-root . publish-preflight --base origin/main --head HEAD --fix
+```
+
 Raw `git push` is guarded by `.githooks/pre-push`. If a version-sync commit is needed, the hook creates it and stops that push; rerun the push after reviewing the generated commit. This two-step guard is intentional because Git determines the commit being pushed before the `pre-push` hook runs.
 
 Useful read-only checks:
@@ -49,7 +63,7 @@ uv run --locked python _localsetup/tools/localsetup.py --source-root . version-p
 uv run --locked python _localsetup/tools/localsetup.py --source-root . version-sync --check --target "$(cat VERSION)"
 ```
 
-The `version-plan` output includes `policy: "patch-default"`, diagnostic `raw_bump` values from Conventional Commit parsing, and the effective release `bump` after patch-default policy is applied.
+The `version-plan` output includes `policy: "patch-default"`, diagnostic `raw_bump` values from Conventional Commit parsing, and the effective release `bump` after patch-default policy is applied. `version-sync --check --target "$(cat VERSION)"` checks whether the current checked-out version is already synced; it is not the command that chooses the next release version.
 
 ## GitHub release workflow
 
@@ -62,6 +76,8 @@ Before release, run:
 ```bash
 uv lock --check
 uv sync --locked --all-groups
+git fetch --tags origin
+uv run --locked python _localsetup/tools/localsetup.py --source-root . publish-preflight --base origin/main --head HEAD --fix
 uv run --locked python _localsetup/tools/localsetup.py --source-root . version-plan
 uv run --locked python _localsetup/tools/localsetup.py --source-root . version-sync --check --target "$(cat VERSION)"
 uv run --locked python _localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/ls-framework-audit.md

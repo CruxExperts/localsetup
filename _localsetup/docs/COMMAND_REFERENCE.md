@@ -237,3 +237,5 @@ Use `release-push` only when the release wave explicitly includes publishing:
 ```bash
 uv run --locked python _localsetup/tools/localsetup.py --source-root . release-push
 ```
+
+For release preparation without pushing, run `publish-preflight --base origin/main --head HEAD --fix` first; it creates the required version-sync/generated-doc commit before the guarded push.
