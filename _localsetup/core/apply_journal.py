@@ -79,8 +79,7 @@ def record_file_state(journal: dict, journal_path: Path, path: Path, replace_fun
     existed = path.exists() or path.is_symlink()
     if existed:
         if path.is_symlink():
-            replace_func(path, backup)
-            replace_func(backup, path)
+            backup.symlink_to(path.readlink())
         else:
             shutil.copy2(path, backup)
     journal.setdefault("touched", []).append(
