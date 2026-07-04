@@ -6,6 +6,7 @@ import subprocess
 import sys
 
 from _localsetup.tests.test_install_flow import *
+from _localsetup.core.apply_journal import restore_failed_mutations, write_journal
 from _localsetup.core.apply_packages import install_managed_packages, install_shared_runtime_lib
 from _localsetup.core.selection import resolve_package_selection
 
@@ -169,6 +170,30 @@ def test_shared_runtime_lib_replaces_symlink_without_following(tmp_path: Path) -
     assert outside.read_text(encoding="utf-8") == "outside sentinel\n"
 
 
+def test_failed_shared_runtime_install_restores_existing_symlink(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    source = Path(__file__).resolve().parents[1]
+    shutil.copytree(source / "lib", root / "_localsetup/lib")
+    home = tmp_path / "home"
+    global_root = home / ".local/share/localsetup/packages"
+    runtime_lib = home / ".local/share/localsetup/lib"
+    runtime_lib.mkdir(parents=True)
+    outside = tmp_path / "outside-deps.py"
+    outside.write_text("outside sentinel\n", encoding="utf-8")
+    target = runtime_lib / "deps.py"
+    target.symlink_to(outside)
+    journal_path = tmp_path / "journal.json"
+    journal = {"touched": []}
+    write_journal(journal_path, journal)
+
+    install_shared_runtime_lib(root, global_root, journal=journal, journal_path=journal_path, replace_func=os.replace)
+    restore_failed_mutations(journal, os.replace)
+
+    assert target.is_symlink()
+    assert target.readlink() == outside
+    assert target.read_text(encoding="utf-8") == "outside sentinel\n"
+
+
 def test_shared_runtime_lib_refuses_symlinked_lib_dir(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     source = Path(__file__).resolve().parents[1]
@@ -185,6 +210,46 @@ def test_shared_runtime_lib_refuses_symlinked_lib_dir(tmp_path: Path) -> None:
         install_shared_runtime_lib(root, global_root, replace_func=os.replace)
 
     assert not (outside_lib / "deps.py").exists()
+
+
+def test_full_rollback_removes_managed_shared_runtime_helper(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    source = Path(__file__).resolve().parents[1]
+    shutil.copytree(source / "lib", root / "_localsetup/lib")
+    lock = root / ".localsetup/lock.json"
+    lock.parent.mkdir(parents=True)
+    lock.write_text(
+        json.dumps({"installed_skills": [], "installed_workflows": [], "adapter_state": []}),
+        encoding="utf-8",
+    )
+    target = home / ".local/share/localsetup/lib/deps.py"
+    target.parent.mkdir(parents=True)
+    shutil.copy2(root / "_localsetup/lib/deps.py", target)
+
+    result = rollback(root, home)
+
+    assert str(target) in result["removed"]
+    assert not target.exists()
+
+
+def test_full_rollback_preserves_custom_shared_runtime_helper(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    lock = root / ".localsetup/lock.json"
+    lock.parent.mkdir(parents=True)
+    lock.write_text(
+        json.dumps({"installed_skills": [], "installed_workflows": [], "adapter_state": []}),
+        encoding="utf-8",
+    )
+    target = home / ".local/share/localsetup/lib/deps.py"
+    target.parent.mkdir(parents=True)
+    target.write_text("custom helper\n", encoding="utf-8")
+
+    result = rollback(root, home)
+
+    assert str(target) not in result["removed"]
+    assert target.read_text(encoding="utf-8") == "custom helper\n"
 
 
 def test_codex_platform_installs_guardian_subagent(tmp_path: Path) -> None:
