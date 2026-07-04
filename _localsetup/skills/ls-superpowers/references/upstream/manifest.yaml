@@ -1,0 +1,115 @@
+source:
+  url: https://github.com/obra/superpowers
+  release: v6.1.1
+  commit: d884ae04edebef577e82ff7c4e143debd0bbec99
+  license: MIT
+  license_path: LICENSE
+  license_sha256: a37e0e9697144819e1d965176ac4ae5bc3fa02d11e7812036bbcadf6dafe2400
+  release_archive_sha256: 625911fa9bed8938eeb109d3aeeaefdf7466f6870290ac9138e123f2f85dac08
+  inventory_sha256: 14160b0f47047b1d8df87e05f166991f1e8a3ecb4a12a45be30ccb133dae9315
+  staged_source_regular_file_tree_sha256: dff38ef598ef4f247d5f1de276fdf847c34cadd4b711bc76645c32ba5a3e7bce
+  staged_source: .localsetup-maint/imports/obra-superpowers/d884ae04edebef577e82ff7c4e143debd0bbec99/source
+import_policy:
+  active_runtime_surfaces: Localsetup-native skills and workflows only.
+  imported_artifacts: Inert upstream SKILL.md source copies and LICENSE only.
+  excluded_artifacts: Upstream scripts, plugins, hooks, tests, package metadata, webserver tooling, and symlinks.
+  nested_skill_files: No file named SKILL.md is imported under references/upstream.
+upstream_skills:
+  - name: brainstorming
+    source_path: skills/brainstorming/SKILL.md
+    source_sha256: e14914605f640e0841758e45d0ab2a53243b59b921f929e47921c99668f2e61d
+    inert_copy: brainstorming/UPSTREAM_SKILL.source.md
+    disposition: route-to-localsetup
+    localsetup_route: ls-workflow-planning-critic-loop
+    notes: Localsetup planning critic workflow remains canonical.
+  - name: dispatching-parallel-agents
+    source_path: skills/dispatching-parallel-agents/SKILL.md
+    source_sha256: f0df13f584049059cc5619f90061405b89dcc6e28ab3f2a8517d27d99c7a46a6
+    inert_copy: dispatching-parallel-agents/UPSTREAM_SKILL.source.md
+    disposition: route-to-localsetup-policy
+    localsetup_route: Localsetup controller subagent policy / planning workflow
+    notes: Controller policy owns delegation boundaries.
+  - name: executing-plans
+    source_path: skills/executing-plans/SKILL.md
+    source_sha256: bbd8d28bb655a52817cc129ce49f9e46fa7c6303f72ed5de95bfe914ef8e0ce8
+    inert_copy: executing-plans/UPSTREAM_SKILL.source.md
+    disposition: route-to-localsetup-policy
+    localsetup_route: Localsetup controller worker/tester/reviewer flow
+    notes: Localsetup ledger and role flow remain canonical.
+  - name: finishing-a-development-branch
+    source_path: skills/finishing-a-development-branch/SKILL.md
+    source_sha256: e6d4a812de900d33c6eacfb40747f99427f25c304a7b7099120f9373b115a47f
+    inert_copy: finishing-a-development-branch/UPSTREAM_SKILL.source.md
+    disposition: route-to-localsetup
+    localsetup_route: ls-workflow-repo-finalizer, ls-git-workflows, ls-github-publishing-workflow
+    notes: Use repo finalization, git, and publishing workflows instead of upstream branch tooling.
+  - name: receiving-code-review
+    source_path: skills/receiving-code-review/SKILL.md
+    source_sha256: 647036bbdab7bf2317e14e079595e984c9030f64295e2b4c0fb57dbeb48f25dd
+    inert_copy: receiving-code-review/UPSTREAM_SKILL.source.md
+    disposition: route-to-localsetup
+    localsetup_route: ls-receiving-code-review
+    notes: Existing Localsetup review-reception skill is canonical.
+  - name: requesting-code-review
+    source_path: skills/requesting-code-review/SKILL.md
+    source_sha256: 1017ccdd5bc61fab67c654cf118cbdb520464b313073a0a6b9a6b9aa647a3ad6
+    inert_copy: requesting-code-review/UPSTREAM_SKILL.source.md
+    disposition: adapted-active-skill
+    localsetup_route: ls-requesting-code-review
+    notes: Imported as the one active Superpowers-derived skill in this task.
+  - name: subagent-driven-development
+    source_path: skills/subagent-driven-development/SKILL.md
+    source_sha256: 41ab239a6ad1c487cd839fdac972a8c9cf0f5e90efa59a63f963767864f0df4c
+    inert_copy: subagent-driven-development/UPSTREAM_SKILL.source.md
+    disposition: route-to-localsetup-policy
+    localsetup_route: Localsetup controller subagent policy / ls-workflow-planning-critic-loop
+    notes: Localsetup controller policy owns subagent orchestration.
+  - name: systematic-debugging
+    source_path: skills/systematic-debugging/SKILL.md
+    source_sha256: 3b20719eca4f0461cb51a195221320d775dcf03b6859271066a03a5132a6ce7a
+    inert_copy: systematic-debugging/UPSTREAM_SKILL.source.md
+    disposition: route-to-localsetup
+    localsetup_route: ls-debug-pro
+    notes: Localsetup debugging skill remains canonical.
+  - name: test-driven-development
+    source_path: skills/test-driven-development/SKILL.md
+    source_sha256: b5b4717b8b761cce15a6cfe9022e33fd959e0894c0c39d72c9cb49c23486c10e
+    inert_copy: test-driven-development/UPSTREAM_SKILL.source.md
+    disposition: route-to-localsetup
+    localsetup_route: ls-tdd-guide, ls-test-runner
+    notes: Localsetup TDD and test-runner skills remain canonical.
+  - name: using-git-worktrees
+    source_path: skills/using-git-worktrees/SKILL.md
+    source_sha256: e2c3ec142e52868a51af246c620cd76ab648dcf27d6900d47e6ffd07159a9794
+    inert_copy: using-git-worktrees/UPSTREAM_SKILL.source.md
+    disposition: route-to-localsetup
+    localsetup_route: ls-git-workflows plus repo single-checkout policy
+    notes: Repo-local single-checkout policy constrains worktree use.
+  - name: using-superpowers
+    source_path: skills/using-superpowers/SKILL.md
+    source_sha256: 55379fe7c1c473a02c61961c822996bff30e1320d6921d9062509bc508482c05
+    inert_copy: using-superpowers/UPSTREAM_SKILL.source.md
+    disposition: route-to-localsetup
+    localsetup_route: ls-superpowers
+    notes: This router owns Superpowers name mapping.
+  - name: verification-before-completion
+    source_path: skills/verification-before-completion/SKILL.md
+    source_sha256: ea52d15aabaf72bc6b558efe2c126f161b53961090ddcd712000273bfe8c7b6c
+    inert_copy: verification-before-completion/UPSTREAM_SKILL.source.md
+    disposition: route-to-localsetup
+    localsetup_route: ls-framework-compliance
+    notes: Localsetup compliance and evidence gates remain canonical.
+  - name: writing-plans
+    source_path: skills/writing-plans/SKILL.md
+    source_sha256: 272e1af349f5062c28dc282b3e21b220d58d683a7314a10c455b7432ec91d845
+    inert_copy: writing-plans/UPSTREAM_SKILL.source.md
+    disposition: route-to-localsetup
+    localsetup_route: ls-workflow-planning-critic-loop
+    notes: Localsetup planning critic workflow remains canonical.
+  - name: writing-skills
+    source_path: skills/writing-skills/SKILL.md
+    source_sha256: 6b8d08fe863318be8480ae8428e169640309fa9208df84bb0510012764454146
+    inert_copy: writing-skills/UPSTREAM_SKILL.source.md
+    disposition: route-to-localsetup
+    localsetup_route: ls-skill-creator, ls-skill-importer, ls-skill-normalizer, ls-skill-vetter
+    notes: Localsetup skill lifecycle skills remain canonical.

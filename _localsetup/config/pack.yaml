@@ -79,6 +79,7 @@ packs:
   - ls-next-js-app-router
   - ls-nodejs-nextjs
   - ls-receiving-code-review
+  - ls-requesting-code-review
   - ls-remotion-best-practices
   - ls-shadcn-ui
   - ls-system-architecture-diagrams
@@ -371,6 +372,13 @@ extensions:
       - publishing
       owner_scope: skill
     ls-receiving-code-review:
+      class: framework-governance
+      sort_priority: 20
+      tags:
+      - review
+      - feedback
+      owner_scope: skill
+    ls-requesting-code-review:
       class: framework-governance
       sort_priority: 20
       tags:

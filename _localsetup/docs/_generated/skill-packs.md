@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 1ce59af85c850b2c775fc39d27b200229d9d809b51934a3373445f1718bc30dc
+  source_provenance_hash: 48f1c0616269dab33b425998bb7ce94c2318c8c7d6105ca8b1bd0b8c12c2cca6
   emitter: generate-docs
 framework_version: 4.2.9
-source_commit: befb112f2d7c8ffe215dead3525e324719bbfc9d
-artifact_sha256: 3f47cd0a32b2219c311d30d1cd89b013eee5bd39eeda09d8d4cd25085109a245
+source_commit: 930eaad0513e5d316646d3aa11c2db01c18a5b95
+artifact_sha256: 1e7e7006d66d56d9945d026d267b6e7e3bdfed6326f562b111ef9d654e645af8
 ---
 # Skill And Workflow Packs
 
@@ -29,6 +29,7 @@ artifact_sha256: 3f47cd0a32b2219c311d30d1cd89b013eee5bd39eeda09d8d4cd25085109a24
 | `dev` | `skill` | `ls-markdown-reference-validator` | `framework-governance` | 20 | `markdown, references` | `localsetup-markdown-reference-validator` |
 | `publishing` | `skill` | `ls-public-repo-identity` | `framework-governance` | 20 | `identity, publishing` | `localsetup-public-repo-identity` |
 | `dev` | `skill` | `ls-receiving-code-review` | `framework-governance` | 20 | `review, feedback` | `localsetup-receiving-code-review` |
+| `dev` | `skill` | `ls-requesting-code-review` | `framework-governance` | 20 | `review, feedback` | `localsetup-requesting-code-review` |
 | `dev` | `skill` | `ls-unfuck-my-git-state` | `framework-governance` | 20 | `git, recovery` | `localsetup-unfuck-my-git-state` |
 | `dev` | `skill` | `ls-agentlens` | `development` | 30 | `codebase, navigation` | `localsetup-agentlens` |
 | `dev` | `skill` | `ls-debug-pro` | `development` | 30 | `debugging, diagnostics` | `localsetup-debug-pro` |

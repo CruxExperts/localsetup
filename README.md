@@ -25,7 +25,7 @@ Use it when you want agents to stop improvising from hidden local setup and star
 Localsetup packages:
 
 - Global framework source under `~/.local/share/localsetup/source` for installed users; source checkouts keep `_localsetup/` for contributors
-- 60 shipped capability skills plus 23 first-class workflow packages for debugging, testing, PR review, infrastructure, docs, git recovery, skill import, security vetting, context indexing, TypeScript code quality, opt-in harness automation, OmniRoute integration, and agent workflow control
+- 106 shipped capability skills plus 23 first-class workflow packages for debugging, testing, PR review, infrastructure, docs, git recovery, skill import, security vetting, context indexing, TypeScript code quality, opt-in harness automation, OmniRoute integration, and agent workflow control
 - Cross-platform adapters for Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode
 - Agent Skills-compatible `SKILL.md` packages that can be imported, normalized, vetted, installed, and reused
 - Workflow packages under `_localsetup/workflows/` that stay executable as skills while carrying Localsetup `workflow.yaml` metadata for aliases, gates, dependencies, and generated registries
@@ -64,7 +64,7 @@ Start with the [workflow packages guide](_localsetup/docs/WORKFLOW_PACKAGES.md) 
 |---|---|
 | Current version | `4.2.9` |
 | Supported platforms | `cursor, claude-code, codex, openclaw, kilo, opencode` |
-| Shipped skills | `105` |
+| Shipped skills | `106` |
 | Workflow packages | `23` |
 | Source | `_localsetup/docs/_generated/facts.json` |
 <!-- facts-block:end -->

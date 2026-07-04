@@ -89,6 +89,7 @@ _localsetup/.kilo/
 state/
 .localsetup-maint/boundary.yaml
 .localsetup-maint/config/
+.localsetup-maint/imports/
 .localsetup-maint/prompts/
 .localsetup-maint/reports/
 .localsetup-maint/state/

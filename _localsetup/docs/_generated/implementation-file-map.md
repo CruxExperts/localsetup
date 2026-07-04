@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 1ce59af85c850b2c775fc39d27b200229d9d809b51934a3373445f1718bc30dc
+  source_provenance_hash: 48f1c0616269dab33b425998bb7ce94c2318c8c7d6105ca8b1bd0b8c12c2cca6
   emitter: generate-docs
 framework_version: 4.2.9
-source_commit: befb112f2d7c8ffe215dead3525e324719bbfc9d
-artifact_sha256: da1ddccde6e43e247bad672d2f55e019f750fe6c45a0991710c84709f4a9b81f
+source_commit: 930eaad0513e5d316646d3aa11c2db01c18a5b95
+artifact_sha256: 49012a3ed6128f8b5c7235b94f8b1df4c7d6ded24ec400453b13a3fc4e58318d
 ---
 # Implementation File Map
 
@@ -237,6 +237,7 @@ artifact_sha256: da1ddccde6e43e247bad672d2f55e019f750fe6c45a0991710c84709f4a9b81
 | `keep` | `_localsetup/docs/DECISION_TREE_WORKFLOW.md` |
 | `keep` | `_localsetup/docs/DOCUMENT_LIFECYCLE_MANAGEMENT.md` |
 | `keep` | `_localsetup/docs/FEATURES.md` |
+| `keep` | `_localsetup/docs/FRONTEND_WEB_APP_SKILL_ROUTING.md` |
 | `keep` | `_localsetup/docs/GIT_TRACEABILITY.md` |
 | `keep` | `_localsetup/docs/HARNESS_AUTOMATION.md` |
 | `keep` | `_localsetup/docs/INPUT_HARDENING_STANDARD.md` |

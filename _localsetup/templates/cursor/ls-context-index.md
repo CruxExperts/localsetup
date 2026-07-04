@@ -27,6 +27,7 @@
 | ls-test-runner | Write and run tests across languages and frameworks (Vitest, Jest, pytest, Playwright) | Generating or running tests, TDD, coverage |
 | ls-tdd-guide | TDD workflow, test generation, coverage analysis, red-green-refactor | Generate tests, analyze coverage, TDD cycles |
 | ls-receiving-code-review | Use when receiving code review feedback; verify before implementing | After code review; implementing or responding to feedback |
+| ls-requesting-code-review | Use when requesting code review before merge or after substantial changes; provide focused requirements, diff range, and severity-calibrated review instructions. | Requesting review before merge or after substantial changes |
 | ls-pr-reviewer | Automated GitHub PR code review with diff analysis, lint | Reviewing pull requests before merge |
 | ls-debug-pro | Systematic debugging methodology and language-specific debugging commands | Debugging failures, reproducing bugs, regression tests |
 | ls-git-workflows | Advanced git (rebase, bisect, worktree, reflog, conflicts) | Rebase, bisect, worktrees, recovery |

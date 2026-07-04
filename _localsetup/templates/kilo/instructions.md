@@ -63,6 +63,7 @@ Kilo CLI loads project context from `.kilo/instructions.md` (repo-local) or `~/.
 | ls-test-runner | Write and run tests across languages and frameworks; TDD, coverage |
 | ls-tdd-guide | TDD workflow, test generation, coverage analysis |
 | ls-receiving-code-review | Use when receiving code review feedback; verify before implementing |
+| ls-requesting-code-review | Use when requesting code review before merge or after substantial changes; provide focused requirements, diff range, and severity-calibrated review instructions. |
 | ls-pr-reviewer | Automated GitHub PR code review with diff analysis, lint |
 | ls-debug-pro | Systematic debugging methodology and language-specific debugging |
 | ls-git-workflows | Advanced git (rebase, bisect, worktree, reflog) |

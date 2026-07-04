@@ -74,12 +74,12 @@
   ],
   "cli_commands": [],
   "counts": {
-    "docs": 426,
+    "docs": 442,
     "framework_docs": 64,
     "generated_docs": 5,
     "platforms": 6,
     "public_docs": 6,
-    "skills": 105,
+    "skills": 106,
     "workflow_packs": 32,
     "workflows": 23
   },
@@ -3006,6 +3006,26 @@
       "managed_blocks": [],
       "owner_package": "",
       "owner_skill": "",
+      "path": "_localsetup/skills/ls-requesting-code-review/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-requesting-code-review/references/code-reviewer.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
       "path": "_localsetup/skills/ls-resend/SKILL.md",
       "status": "",
       "version": ""
@@ -3587,6 +3607,146 @@
       "owner_package": "",
       "owner_skill": "",
       "path": "_localsetup/skills/ls-superpowers/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-superpowers/references/upstream/brainstorming/UPSTREAM_SKILL.source.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-superpowers/references/upstream/dispatching-parallel-agents/UPSTREAM_SKILL.source.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-superpowers/references/upstream/executing-plans/UPSTREAM_SKILL.source.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-superpowers/references/upstream/finishing-a-development-branch/UPSTREAM_SKILL.source.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-superpowers/references/upstream/receiving-code-review/UPSTREAM_SKILL.source.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-superpowers/references/upstream/requesting-code-review/UPSTREAM_SKILL.source.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-superpowers/references/upstream/subagent-driven-development/UPSTREAM_SKILL.source.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-superpowers/references/upstream/systematic-debugging/UPSTREAM_SKILL.source.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-superpowers/references/upstream/test-driven-development/UPSTREAM_SKILL.source.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-superpowers/references/upstream/using-git-worktrees/UPSTREAM_SKILL.source.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-superpowers/references/upstream/using-superpowers/UPSTREAM_SKILL.source.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-superpowers/references/upstream/verification-before-completion/UPSTREAM_SKILL.source.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-superpowers/references/upstream/writing-plans/UPSTREAM_SKILL.source.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "other",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "_localsetup/skills/ls-superpowers/references/upstream/writing-skills/UPSTREAM_SKILL.source.md",
       "status": "",
       "version": ""
     },
@@ -4391,16 +4551,16 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "69e68767634f76ed2649a82977f72e8a10c4ab1a9149683ea0bc1ec3d04cd959",
+    "artifact_sha256": "addcf8d788772707221c9e96d5121b2ff2fb184776b487952e1a4fcabc2533cb",
     "emitter": "docs-align",
     "framework_version": "4.2.9",
     "schema_version": 1,
-    "source_commit": "befb112f2d7c8ffe215dead3525e324719bbfc9d",
+    "source_commit": "930eaad0513e5d316646d3aa11c2db01c18a5b95",
     "source_dirty": true,
-    "source_provenance_hash": "1ce59af85c850b2c775fc39d27b200229d9d809b51934a3373445f1718bc30dc",
-    "source_root_id": "d4fd843d267b7b590ad0c486b7f604e13aff05b71dbe8c170ca777c5213caee0",
+    "source_provenance_hash": "48f1c0616269dab33b425998bb7ce94c2318c8c7d6105ca8b1bd0b8c12c2cca6",
+    "source_root_id": "44d665aae5bf27deb736c4b759bfdd8f91366533f2d5ace559385d023aa6543e",
     "source_tag": null,
-    "source_tree_sha": "276ad545355d02a5480e2a62c425f1c8626e69c2"
+    "source_tree_sha": "6fb98d28ae0679755132a334e11c2f3fe486be93"
   },
   "repo": ".",
   "schema_version": "1.0",
@@ -4662,6 +4822,20 @@
         "dev"
       ],
       "path": "_localsetup/skills/ls-receiving-code-review",
+      "sort_priority": 20,
+      "tags": [
+        "review",
+        "feedback"
+      ]
+    },
+    {
+      "class": "framework-governance",
+      "name": "ls-requesting-code-review",
+      "owner_scope": "skill",
+      "packs": [
+        "dev"
+      ],
+      "path": "_localsetup/skills/ls-requesting-code-review",
       "sort_priority": 20,
       "tags": [
         "review",

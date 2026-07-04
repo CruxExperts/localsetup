@@ -67,10 +67,13 @@ def audit(repo_root: Path) -> dict[str, Any]:
                 if owner_package and owner_package not in valid_owner_packages:
                     findings.append(Finding(f"ownership_package.{rel}", "major", "ownership", rel, 1, "active framework doc references missing owner_package", sorted(valid_owner_packages), owner_package, "workflow catalog and generated packages", "public"))
 
+        source_snapshot = path.name.endswith(".source.md")
         for kind, target, offset, label in _markdown_links(text):
             line = _line_for_offset(text, offset)
             if kind == "image" and not label:
                 findings.append(Finding(f"image_alt.{rel}:{line}", "minor", "asset", rel, line, "image is missing non-empty alt text", "non-empty alt text", label, "GitHub Markdown guidance", "public"))
+            if source_snapshot:
+                continue
             resolved = _resolve_markdown_target(repo_root, path, target)
             if resolved and not resolved.exists():
                 findings.append(Finding(f"link.{rel}:{line}", "major", "link", rel, line, f"relative {kind} target does not exist: {target}", "existing path", target, rel, "public"))

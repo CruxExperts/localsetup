@@ -56,6 +56,7 @@ Load when task matches:
 - ls-test-runner  - write and run tests across languages and frameworks; TDD, coverage
 - ls-tdd-guide  - TDD workflow, test generation, coverage analysis
 - ls-receiving-code-review  - use when receiving code review feedback; verify before implementing
+- ls-requesting-code-review  - Use when requesting code review before merge or after substantial changes; provide focused requirements, diff range, and severity-calibrated review instructions.
 - ls-pr-reviewer  - automated GitHub PR code review with diff analysis, lint
 - ls-debug-pro  - systematic debugging methodology and language-specific debugging
 - ls-git-workflows  - advanced git (rebase, bisect, worktree, reflog)

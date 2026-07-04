@@ -13,6 +13,8 @@ Localsetup is a repo-local framework for agent context, skills, workflows, adapt
 
 Agents should treat `ls-context` as the broad entry point for framework behavior. Use it before changing Localsetup-managed assets, generated docs, adapters, package materialization, doctor repair, or install validation.
 
+Related skill: `ls-requesting-code-review` - Use when requesting code review before merge or after substantial changes; provide focused requirements, diff range, and severity-calibrated review instructions.
+
 ## Layout Definitions
 
 - **Source root:** the Localsetup source checkout passed with `--source-root` or inferred by the local tool entrypoint.

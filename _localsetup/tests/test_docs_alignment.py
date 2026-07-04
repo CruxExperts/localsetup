@@ -141,6 +141,20 @@ def test_audit_catches_lifecycle_links_images_and_fences(tmp_path: Path) -> None
     assert "markdown" in categories
 
 
+def test_audit_skips_links_inside_inert_source_snapshots(tmp_path: Path) -> None:
+    repo = copy_docs_alignment_repo(tmp_path)
+    source_snapshot = repo / "_localsetup" / "skills" / "ls-context" / "references" / "upstream" / "UPSTREAM_SKILL.source.md"
+    source_snapshot.parent.mkdir(parents=True, exist_ok=True)
+    source_snapshot.write_text("# Upstream\n\n[missing upstream sidecar](sidecar.md)\n", encoding="utf-8")
+
+    payload = json.loads(run_tool(repo, "audit").stdout)
+
+    assert not any(
+        finding["category"] == "link" and finding["path"].endswith("UPSTREAM_SKILL.source.md")
+        for finding in payload["findings"]
+    )
+
+
 def test_apply_dry_run_does_not_mutate_files(tmp_path: Path) -> None:
     repo = copy_docs_alignment_repo(tmp_path)
     readme = repo / "README.md"

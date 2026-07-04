@@ -4,17 +4,17 @@ version: 4.2
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 1ce59af85c850b2c775fc39d27b200229d9d809b51934a3373445f1718bc30dc
+  source_provenance_hash: 48f1c0616269dab33b425998bb7ce94c2318c8c7d6105ca8b1bd0b8c12c2cca6
   emitter: generate-docs
 framework_version: 4.2.9
-source_commit: befb112f2d7c8ffe215dead3525e324719bbfc9d
-artifact_sha256: f76b0cb1d27c63841b9b64c234c7b0d922878ec4c84e436f2454c35d284f7d06
+source_commit: 930eaad0513e5d316646d3aa11c2db01c18a5b95
+artifact_sha256: f49b5a3929395379c65a8d3dcf88cb3d3b5cf9f869d31eb3cbb9fae181be5697
 ---
 # Shipped skills catalog
 
 This page is generated from `_localsetup/skills/*/SKILL.md`.
 
-Total shipped skills: 105
+Total shipped skills: 106
 
 | Skill ID | Class | Priority | Packs | Tags | Name | Version | Description |
 |---|---|---:|---|---|---|---|---|
@@ -36,6 +36,7 @@ Total shipped skills: 105
 | `ls-markdown-reference-validator` | `framework-governance` | 20 | `dev` | `markdown`, `references` | `ls-markdown-reference-validator` | `1.0` | Use when validating markdown local references and anchors across configured global+repo paths; scheduled-safe report generator with YAML sidecar config. |
 | `ls-public-repo-identity` | `framework-governance` | 20 | `publishing` | `identity`, `publishing` | `ls-public-repo-identity` | `1.2` | Public repo identity - use in README and published repos. For real identity details, use a local-only identity file that is not committed. Use when editing README*, CONTRIBUTING*. |
 | `ls-receiving-code-review` | `framework-governance` | 20 | `dev` | `review`, `feedback` | `ls-receiving-code-review` | `1.2` | Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable. Requires technical rigor and verification, not performative agreement or blind implementation. |
+| `ls-requesting-code-review` | `framework-governance` | 20 | `dev` | `review`, `feedback` | `ls-requesting-code-review` | `1.0` | Use when requesting code review before merge or after substantial changes; provide focused requirements, diff range, and severity-calibrated review instructions. |
 | `ls-unfuck-my-git-state` | `framework-governance` | 20 | `dev` | `git`, `recovery` | `ls-unfuck-my-git-state` | `1.2` | Diagnose and recover broken Git state and worktree metadata with a staged, low-risk recovery flow. Use when Git reports detached or contradictory HEAD state, phantom worktree locks, orphaned worktree entries, missing refs, 0000000000000000000000000000000000000000 hashes, or branch operations fail with errors like already checked out, unknown revision, not a valid object name, or cannot lock ref. |
 | `ls-agentlens` | `development` | 30 | `dev` | `codebase`, `navigation` | `ls-agentlens` | `1.0` | Navigate and understand codebases using agentlens hierarchical documentation. Use when exploring new projects, finding modules, locating symbols in large files, finding TODOs/warnings, or understanding code structure. |
 | `ls-debug-pro` | `development` | 30 | `dev` | `debugging`, `diagnostics` | `ls-debug-pro` | `1.2` | Use when debugging reproducible failures with a systematic method and language-specific commands for Node, Python, Swift, CSS/layout, network, or git bisect. |
@@ -105,7 +106,7 @@ Total shipped skills: 105
 | `ls-skill-vetter` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `security` | `ls-skill-vetter` | `1.2` | Security-first skill vetting for AI agent skills. Use before installing any skill from public registries (e.g. skill hubs, GitHub) or other sources. Checks for red flags, permission scope, and suspicious patterns. |
 | `ls-stripe-payments` | `integrations` | 60 | `integrations` | `external-service`, `integration` | `ls-stripe-payments` | `1.0` | Guide Stripe payments integration. Use for Checkout, PaymentIntents, subscriptions, webhooks, Connect, billing, and payment security review. |
 | `ls-supabase` | `integrations` | 60 | `integrations` | `external-service`, `integration` | `ls-supabase` | `1.0` | Guide Supabase application work. Use for Supabase Auth, Postgres, RLS, Edge Functions, Storage, Realtime, migrations, and local development. |
-| `ls-superpowers` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `inventory` | `ls-superpowers` | `1.0` | Wrapper for the Superpowers workflow bundle. Use to map Superpowers workflows to Localsetup-native process skills without bulk-importing duplicates. |
+| `ls-superpowers` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `inventory` | `ls-superpowers` | `1.1` | Use when mapping upstream Superpowers skill names to Localsetup-native skills and workflows without activating duplicate upstream runtime tooling. |
 | `ls-system-architecture-diagrams` | `development` | 60 | `architecture`, `dev` | `workflow`, `guidance` | `ls-system-architecture-diagrams` | `1.0` | Guide system architecture diagrams. Use for C4, deployment, sequence, data-flow, trust-boundary, and operational diagrams. |
 | `ls-system-design` | `development` | 60 | `architecture`, `dev` | `workflow`, `guidance` | `ls-system-design` | `1.0` | Guide system design work. Use for requirements, APIs, data models, service boundaries, scalability, reliability, security, and tradeoff analysis. |
 | `ls-tailwind-best-practices` | `development` | 60 | `dev`, `frontend` | `frontend`, `design` | `ls-tailwind-best-practices` | `1.0` | Guide Tailwind CSS best practices. Use for utility-class architecture, responsive design, theming, component styling, and CSS cleanup. |

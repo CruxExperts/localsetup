@@ -246,6 +246,18 @@
       "action": "adapted-import",
       "import_date": "2026-07-03",
       "license": "MIT",
+      "name": "ls-requesting-code-review",
+      "source_commit": "d884ae04edebef577e82ff7c4e143debd0bbec99",
+      "source_path": "skills/requesting-code-review/SKILL.md",
+      "source_ref": "v6.1.1",
+      "source_sha256": "1017ccdd5bc61fab67c654cf118cbdb520464b313073a0a6b9a6b9aa647a3ad6",
+      "source_url": "https://github.com/obra/superpowers",
+      "vetting_status": "provenance-recorded-no-bundled-tooling-executed"
+    },
+    {
+      "action": "adapted-import",
+      "import_date": "2026-07-03",
+      "license": "MIT",
       "name": "ls-resend",
       "source_commit": "298207bbe7a43d1886dc9490ecf880b5442600f9",
       "source_path": "skills/resend/SKILL.md",
@@ -321,7 +333,7 @@
       "name": "ls-superpowers",
       "source_commit": "d884ae04edebef577e82ff7c4e143debd0bbec99",
       "source_path": "<repository inventory>",
-      "source_ref": "main",
+      "source_ref": "v6.1.1",
       "source_sha256": "14160b0f47047b1d8df87e05f166991f1e8a3ecb4a12a45be30ccb133dae9315",
       "source_url": "https://github.com/obra/superpowers",
       "vetting_status": "provenance-recorded-no-bundled-tooling-executed"

@@ -1,48 +1,62 @@
 ---
 name: ls-superpowers
-description: Wrapper for the Superpowers workflow bundle. Use to map Superpowers workflows
-  to Localsetup-native process skills without bulk-importing duplicates.
+description: Use when mapping upstream Superpowers skill names to Localsetup-native skills and workflows without activating duplicate upstream runtime tooling.
 metadata:
-  version: '1.0'
+  version: "1.1"
 extensions:
   external_skill:
-    source_kind: wrapper
+    source_kind: router
     source_url: https://github.com/obra/superpowers
     source_path: <repository inventory>
     source_commit: d884ae04edebef577e82ff7c4e143debd0bbec99
-    source_ref: main
+    source_ref: v6.1.1
     source_sha256: 14160b0f47047b1d8df87e05f166991f1e8a3ecb4a12a45be30ccb133dae9315
     license: MIT
-    import_date: '2026-07-03'
+    import_date: "2026-07-03"
     vetting_status: provenance-recorded-no-bundled-tooling-executed
 ---
 
-# Superpowers Workflow Bundle
+# Superpowers Router
 
-Use this skill when working on Superpowers workflow bundle tasks.
+This skill is a compact provenance and routing layer for upstream Superpowers release `v6.1.1`.
+Localsetup-native skills remain canonical when workflows overlap.
 
-## Workflow
+## Routing Matrix
 
-- Prefer existing Localsetup-native process skills such as `ls-tdd-guide`, `ls-test-runner`, `ls-debug-pro`, and review workflows.
-- Use the upstream bundle as a comparison source for workflow gaps, not as an automatic replacement.
-- When importing an individual workflow later, check overlap and preserve stronger Localsetup safety gates.
+| Upstream Superpowers skill | Localsetup route |
+|---|---|
+| `brainstorming` | `ls-workflow-planning-critic-loop` |
+| `dispatching-parallel-agents` | Localsetup controller subagent policy / planning workflow |
+| `executing-plans` | Localsetup controller worker/tester/reviewer flow |
+| `finishing-a-development-branch` | `ls-workflow-repo-finalizer`, `ls-git-workflows`, `ls-github-publishing-workflow` |
+| `receiving-code-review` | `ls-receiving-code-review` |
+| `requesting-code-review` | `ls-requesting-code-review` |
+| `subagent-driven-development` | Localsetup controller subagent policy / `ls-workflow-planning-critic-loop` |
+| `systematic-debugging` | `ls-debug-pro` |
+| `test-driven-development` | `ls-tdd-guide`, `ls-test-runner` |
+| `using-git-worktrees` | `ls-git-workflows` plus repo single-checkout policy |
+| `using-superpowers` | `ls-superpowers` |
+| `verification-before-completion` | `ls-framework-compliance` |
+| `writing-plans` | `ls-workflow-planning-critic-loop` |
+| `writing-skills` | `ls-skill-creator`, `ls-skill-importer`, `ls-skill-normalizer`, `ls-skill-vetter` |
 
-## Boundaries
+## Import Policy
 
-- Inspect the target repository before making changes.
-- Prefer existing project patterns, declared package managers, and documented validation commands.
-- Do not expose secrets, credentials, private user data, or production account identifiers in source, examples, or logs.
-- When external APIs or current vendor behavior matter, verify against official docs before implementation.
+- Use this skill to translate upstream Superpowers names into Localsetup-native workflows.
+- Do not reimplement TDD, debugging, planning, worktree, review, or subagent orchestration here.
+- Existing Localsetup skills are the active runtime guidance for overlapping workflows.
+- The upstream release is kept as inert provenance under [references/upstream/manifest.yaml](./references/upstream/manifest.yaml).
 
+## Runtime Boundary
 
-## Upstream Coverage
-
-See [upstream coverage](./references/upstream-coverage.md) for the compact inventory captured during this import wave.
+Upstream scripts, plugins, hooks, tests, package metadata, webserver tooling, and the staged `AGENTS.md -> CLAUDE.md` symlink are not active Localsetup runtime surfaces.
+Only inert markdown/license provenance was imported under `references/upstream/`.
 
 ## Provenance
 
 - Source: `https://github.com/obra/superpowers`
-- Ref: `main` at `d884ae04edebef577e82ff7c4e143debd0bbec99`
-- Source path: `<repository inventory>`
-- License classification: `MIT`
-- Source SHA-256: `14160b0f47047b1d8df87e05f166991f1e8a3ecb4a12a45be30ccb133dae9315`
+- Release/ref: `v6.1.1`
+- Commit: `d884ae04edebef577e82ff7c4e143debd0bbec99`
+- License: `MIT`
+- Inventory hash: `14160b0f47047b1d8df87e05f166991f1e8a3ecb4a12a45be30ccb133dae9315`
+- Manifest: [references/upstream/manifest.yaml](./references/upstream/manifest.yaml)

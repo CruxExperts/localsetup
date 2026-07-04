@@ -1,59 +1,22 @@
 {
   "critical_count": 0,
-  "finding_count": 2,
-  "findings": [
-    {
-      "actual": {
-        "skills": 60,
-        "workflows": 23
-      },
-      "category": "stale_count",
-      "expected": {
-        "skills": 105,
-        "workflows": 23
-      },
-      "fix_scope": "public",
-      "id": "count.README.md:28",
-      "line": 28,
-      "message": "hard-coded shipped skill/workflow count is stale",
-      "path": "README.md",
-      "severity": "major",
-      "source": "live skill/workflow manifests"
-    },
-    {
-      "actual": {
-        "skills": 60,
-        "workflows": 23
-      },
-      "category": "stale_count",
-      "expected": {
-        "skills": 105,
-        "workflows": 23
-      },
-      "fix_scope": "public",
-      "id": "count._localsetup/docs/FEATURES.md:38",
-      "line": 38,
-      "message": "hard-coded shipped skill/workflow count is stale",
-      "path": "_localsetup/docs/FEATURES.md",
-      "severity": "major",
-      "source": "live skill/workflow manifests"
-    }
-  ],
-  "major_count": 2,
+  "finding_count": 0,
+  "findings": [],
+  "major_count": 0,
   "minor_count": 0,
-  "ok": false,
+  "ok": true,
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-audit-result.json",
-    "artifact_sha256": "9066059583986d36bd21f87411b27d273478826f157456538df2fa211fac5468",
+    "artifact_sha256": "e82619e42f31266261fa11fa954df7778b2d19b7f12d224a71a85ec1a8cf31a8",
     "emitter": "docs-align",
     "framework_version": "4.2.9",
     "schema_version": 1,
-    "source_commit": "befb112f2d7c8ffe215dead3525e324719bbfc9d",
+    "source_commit": "930eaad0513e5d316646d3aa11c2db01c18a5b95",
     "source_dirty": true,
-    "source_provenance_hash": "1ce59af85c850b2c775fc39d27b200229d9d809b51934a3373445f1718bc30dc",
-    "source_root_id": "d4fd843d267b7b590ad0c486b7f604e13aff05b71dbe8c170ca777c5213caee0",
+    "source_provenance_hash": "48f1c0616269dab33b425998bb7ce94c2318c8c7d6105ca8b1bd0b8c12c2cca6",
+    "source_root_id": "44d665aae5bf27deb736c4b759bfdd8f91366533f2d5ace559385d023aa6543e",
     "source_tag": null,
-    "source_tree_sha": "276ad545355d02a5480e2a62c425f1c8626e69c2"
+    "source_tree_sha": "6fb98d28ae0679755132a334e11c2f3fe486be93"
   },
   "schema_version": "1.0"
 }

@@ -4,11 +4,11 @@ version: 4.2
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 1ce59af85c850b2c775fc39d27b200229d9d809b51934a3373445f1718bc30dc
+  source_provenance_hash: 48f1c0616269dab33b425998bb7ce94c2318c8c7d6105ca8b1bd0b8c12c2cca6
   emitter: generate-docs
 framework_version: 4.2.9
-source_commit: befb112f2d7c8ffe215dead3525e324719bbfc9d
-artifact_sha256: 37d00c7d764e3cbb6d37e9e26280f1641f134a9eb4692eaae4105df2e048d636
+source_commit: 930eaad0513e5d316646d3aa11c2db01c18a5b95
+artifact_sha256: bb888aa7560e70d25cad04f1010e67a244d6b496500043dfd0ccc0f37bd42cb9
 ---
 # Skill Alias Map
 
@@ -82,6 +82,7 @@ artifact_sha256: 37d00c7d764e3cbb6d37e9e26280f1641f134a9eb4692eaae4105df2e048d63
 | `localsetup-receiving-code-review` | `ls-receiving-code-review` |
 | `localsetup-redis-cache-patterns` | `ls-redis-cache-patterns` |
 | `localsetup-remotion-best-practices` | `ls-remotion-best-practices` |
+| `localsetup-requesting-code-review` | `ls-requesting-code-review` |
 | `localsetup-resend` | `ls-resend` |
 | `localsetup-safety-and-backup` | `ls-safety-and-backup` |
 | `localsetup-scrapling` | `ls-scrapling` |
