@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 48f1c0616269dab33b425998bb7ce94c2318c8c7d6105ca8b1bd0b8c12c2cca6
+  source_provenance_hash: 5fe7b3ac2a4ac63f01db7b97c5db8399c0ac8cefd72472bc3196916c7109f2d2
   emitter: generate-docs
-framework_version: 4.2.9
-source_commit: 930eaad0513e5d316646d3aa11c2db01c18a5b95
-artifact_sha256: 49012a3ed6128f8b5c7235b94f8b1df4c7d6ded24ec400453b13a3fc4e58318d
+framework_version: 4.2.10
+source_commit: 60263370eae8c4151cc5a456a70e4057724bea50
+artifact_sha256: 2baee813be0ac147ec31b11e0b0503e2c98c360d035edf99f1f543fcceb2f091
 ---
 # Implementation File Map
 
@@ -675,6 +675,8 @@ artifact_sha256: 49012a3ed6128f8b5c7235b94f8b1df4c7d6ded24ec400453b13a3fc4e58318
 | `keep` | `_localsetup/skills/ls-receiving-code-review/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-redis-cache-patterns/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-remotion-best-practices/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-requesting-code-review/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-requesting-code-review/references/code-reviewer.md` |
 | `keep` | `_localsetup/skills/ls-resend/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-safety-and-backup/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-scrapling/SKILL.md` |
@@ -740,6 +742,22 @@ artifact_sha256: 49012a3ed6128f8b5c7235b94f8b1df4c7d6ded24ec400453b13a3fc4e58318
 | `keep` | `_localsetup/skills/ls-supabase/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-superpowers/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-superpowers/references/upstream-coverage.md` |
+| `keep` | `_localsetup/skills/ls-superpowers/references/upstream/LICENSE` |
+| `keep` | `_localsetup/skills/ls-superpowers/references/upstream/brainstorming/UPSTREAM_SKILL.source.md` |
+| `keep` | `_localsetup/skills/ls-superpowers/references/upstream/dispatching-parallel-agents/UPSTREAM_SKILL.source.md` |
+| `keep` | `_localsetup/skills/ls-superpowers/references/upstream/executing-plans/UPSTREAM_SKILL.source.md` |
+| `keep` | `_localsetup/skills/ls-superpowers/references/upstream/finishing-a-development-branch/UPSTREAM_SKILL.source.md` |
+| `keep` | `_localsetup/skills/ls-superpowers/references/upstream/manifest.yaml` |
+| `keep` | `_localsetup/skills/ls-superpowers/references/upstream/receiving-code-review/UPSTREAM_SKILL.source.md` |
+| `keep` | `_localsetup/skills/ls-superpowers/references/upstream/requesting-code-review/UPSTREAM_SKILL.source.md` |
+| `keep` | `_localsetup/skills/ls-superpowers/references/upstream/subagent-driven-development/UPSTREAM_SKILL.source.md` |
+| `keep` | `_localsetup/skills/ls-superpowers/references/upstream/systematic-debugging/UPSTREAM_SKILL.source.md` |
+| `keep` | `_localsetup/skills/ls-superpowers/references/upstream/test-driven-development/UPSTREAM_SKILL.source.md` |
+| `keep` | `_localsetup/skills/ls-superpowers/references/upstream/using-git-worktrees/UPSTREAM_SKILL.source.md` |
+| `keep` | `_localsetup/skills/ls-superpowers/references/upstream/using-superpowers/UPSTREAM_SKILL.source.md` |
+| `keep` | `_localsetup/skills/ls-superpowers/references/upstream/verification-before-completion/UPSTREAM_SKILL.source.md` |
+| `keep` | `_localsetup/skills/ls-superpowers/references/upstream/writing-plans/UPSTREAM_SKILL.source.md` |
+| `keep` | `_localsetup/skills/ls-superpowers/references/upstream/writing-skills/UPSTREAM_SKILL.source.md` |
 | `keep` | `_localsetup/skills/ls-system-architecture-diagrams/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-system-design/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-system-info/SKILL.md` |
