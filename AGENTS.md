@@ -132,6 +132,8 @@ Only the controller may mark subtasks `verified` or `completed`. A subagent repo
 
 Before spawning a subagent, write the task in the ledger with exact scope, what to inspect or change, what not to do, expected output, and validation commands. After a subagent returns, summarize the report in the ledger, verify the evidence directly, then update task status. A report alone is not a checkpoint.
 
+For bounded autonomous maintenance loops, create or resume the private ledger first and preserve the existing dirty baseline. Select exactly one small slice at a time from, in order, an assigned queue or PRD, a failing validation or drift signal, a repo-contract gap, or narrow docs/tests/tooling upkeep. Do not mine broad TODOs or opportunistically expand scope. Use subagents when they reduce context load or enable safe parallel read-only work, but keep implementation to one bounded worker at a time. Validate proportionally, require review evidence before final acceptance, and do not push, deploy, schedule cron, run destructive commands, reshape adapters, run migrations, authenticate, install dependencies, or mutate external systems without explicit approval.
+
 Before final response on non-trivial work, inspect `git status --short`, inspect the scoped diff, run or delegate required validation, resolve or document reviewer findings, and update the ledger with final evidence. Do not claim completion from memory.
 
 ## Skill And Context Preservation
