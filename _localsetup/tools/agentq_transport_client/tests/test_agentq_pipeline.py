@@ -7,6 +7,7 @@ from __future__ import annotations
 import os
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -164,6 +165,27 @@ def test_pre_ship_checks_reject_python_command_mode():
     result = run_pre_ship_checks({"pre_ship_checks": [["python3", "-c", "print(1)"]]})
     assert result["ok"] is False
     assert result["code"] == "PRE_SHIP_CHECK_REJECTED"
+
+
+def test_cmd_queue_pending_bulk_returns_error_on_row_failure(monkeypatch, tmp_path):
+    from agentq_transport_client import queue_ops
+    from agentq_transport_client.cli_commands import cmd_queue_pending
+
+    def fake_move_ack_required_to_pending(queue_root):
+        assert queue_root == tmp_path
+        return [
+            {"status": "ok", "transport_id": "ok-1"},
+            {"status": "error", "transport_id": "bad-1", "error": "failed"},
+        ]
+
+    monkeypatch.setattr(
+        queue_ops,
+        "move_ack_required_to_pending",
+        fake_move_ack_required_to_pending,
+    )
+
+    args = SimpleNamespace(queue=str(tmp_path), list_only=False, transport_id=None)
+    assert cmd_queue_pending(args) == 1
 
 
 def _gpg_batch_gen(home: Path, name: str, email: str) -> None:

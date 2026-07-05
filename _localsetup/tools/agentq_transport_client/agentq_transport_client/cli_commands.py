@@ -177,7 +177,7 @@ def cmd_queue_pending(args: argparse.Namespace) -> int:
         return 0 if r.get("status") == "ok" else 1
     r = move_ack_required_to_pending(Path(args.queue))
     print(r)
-    return 0
+    return 0 if all(x.get("status") == "ok" for x in r) else 1
 
 
 def cmd_ship_mail(args: argparse.Namespace) -> int:
