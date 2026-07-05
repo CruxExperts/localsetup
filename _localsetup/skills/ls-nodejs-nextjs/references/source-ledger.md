@@ -1,6 +1,6 @@
 # Source Ledger
 
-Verified on 2026-06-23 UTC unless a source entry states otherwise.
+Verified on 2026-07-05 UTC unless a source entry states otherwise.
 
 ## Package Metadata
 
@@ -8,11 +8,15 @@ Verified on 2026-06-23 UTC unless a source entry states otherwise.
 - npm registry metadata for `react`: `https://registry.npmjs.org/react`
 - npm registry metadata for `react-dom`: `https://registry.npmjs.org/react-dom`
 - npm package manifest fields: `https://docs.npmjs.com/cli/v11/configuring-npm/package-json`
+- React DOM package manifest:
+  `https://raw.githubusercontent.com/facebook/react/v19.2.7/packages/react-dom/package.json`
 
 ## Node.js Runtime
 
 - Node release schedule: `https://raw.githubusercontent.com/nodejs/Release/main/schedule.json`
 - Node dist index: `https://nodejs.org/dist/index.json`
+- Node previous releases: `https://nodejs.org/en/about/previous-releases`
+- Node downloads: `https://nodejs.org/en/download`
 - Node Corepack docs: `https://nodejs.org/api/corepack.html`
 
 ## Framework And Deployment

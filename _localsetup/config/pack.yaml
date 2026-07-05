@@ -215,6 +215,7 @@ workflow_packs:
   dev:
   - ls-workflow-audit-framework
   - ls-workflow-audit-markdown-references
+  - ls-workflow-codex-github-issue-goal-loop
   - ls-workflow-context-index-query
   - ls-workflow-context-index-refresh
   - ls-workflow-documentation-alignment
@@ -238,6 +239,7 @@ workflow_packs:
   - ls-workflow-transport-handoff
   omniroute: []
   publishing:
+  - ls-workflow-codex-github-issue-goal-loop
   - ls-workflow-documentation-alignment
   - ls-workflow-pipeline-pre-publish
   harness:

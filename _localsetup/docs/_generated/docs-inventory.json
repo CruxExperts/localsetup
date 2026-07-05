@@ -74,14 +74,14 @@
   ],
   "cli_commands": [],
   "counts": {
-    "docs": 442,
-    "framework_docs": 64,
+    "docs": 444,
+    "framework_docs": 65,
     "generated_docs": 5,
     "platforms": 6,
     "public_docs": 6,
     "skills": 106,
-    "workflow_packs": 32,
-    "workflows": 23
+    "workflow_packs": 34,
+    "workflows": 24
   },
   "docs": [
     {
@@ -323,6 +323,16 @@
       "owner_package": "",
       "owner_skill": "ls-framework-compliance",
       "path": "_localsetup/docs/CLI_SKILLS_ENV.md",
+      "status": "ACTIVE",
+      "version": "4.2"
+    },
+    {
+      "class": "framework",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "ls-workflow-codex-github-issue-goal-loop",
+      "owner_skill": "",
+      "path": "_localsetup/docs/CODEX_GITHUB_ISSUE_GOAL_LOOP.md",
       "status": "ACTIVE",
       "version": "4.2"
     },
@@ -4296,6 +4306,16 @@
       "managed_blocks": [],
       "owner_package": "",
       "owner_skill": "",
+      "path": "_localsetup/workflows/ls-workflow-codex-github-issue-goal-loop/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
       "path": "_localsetup/workflows/ls-workflow-codex-heartbeat/SKILL.md",
       "status": "",
       "version": ""
@@ -4551,16 +4571,16 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "ca0136fdadcea967880b3bd1fe251be2514f288c28552139e89bc1cd94632dc6",
+    "artifact_sha256": "3d2e9f26ea0aba60a482cc0f0df0cb261c14b00472fd93a1c3b62fc0a722e130",
     "emitter": "docs-align",
     "framework_version": "4.2.13",
     "schema_version": 1,
-    "source_commit": "89593cbe5bb93f9c158276a327b12e37324f739f",
-    "source_dirty": false,
-    "source_provenance_hash": "86e8d7aae9a170d4007ee0c3101533d780a152f39acb82b5b52066317e163c7c",
-    "source_root_id": "3b34717dbd90101841a162506f57c94d25798106c3446eee0e3f2ba5a823f02d",
+    "source_commit": "fe9d4c1c5073793ff5bf48ca819e5ce4110e25fb",
+    "source_dirty": true,
+    "source_provenance_hash": "6592f0313a889a20ff63bb461d72e97205b5f83a604212b256e4e392fcc101d6",
+    "source_root_id": "3284bc5a961486ea9e8448598a7dc998e2e64e6c9f00b4e4149085f164e87cc4",
     "source_tag": null,
-    "source_tree_sha": "14b80c9e10ad4237b54ab50a397ee5dc3e7ca538"
+    "source_tree_sha": "e227822b0647b1a552a164ca8e7bae0bf0b60604"
   },
   "repo": ".",
   "schema_version": "1.0",
@@ -6122,6 +6142,15 @@
       ],
       "path": "_localsetup/workflows/ls-workflow-audit-markdown-references",
       "workflow_id": "audit-markdown-references"
+    },
+    {
+      "package": "ls-workflow-codex-github-issue-goal-loop",
+      "packs": [
+        "dev",
+        "publishing"
+      ],
+      "path": "_localsetup/workflows/ls-workflow-codex-github-issue-goal-loop",
+      "workflow_id": "codex-github-issue-goal-loop"
     },
     {
       "package": "ls-workflow-codex-heartbeat",

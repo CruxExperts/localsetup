@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the ls-shadcn-ui skill and optionally refresh upstream source facts."""
+"""Validate ls-shadcn-ui structure and optionally check upstream source reachability."""
 
 from __future__ import annotations
 
@@ -72,6 +72,7 @@ NPM_URL = "https://registry.npmjs.org/shadcn"
 OFFICIAL_URLS = [
     "https://ui.shadcn.com/docs",
     "https://ui.shadcn.com/docs/cli",
+    "https://ui.shadcn.com/docs/changelog",
     "https://ui.shadcn.com/docs/components",
     "https://ui.shadcn.com/docs/components-json",
     "https://ui.shadcn.com/docs/package-imports",
@@ -79,6 +80,7 @@ OFFICIAL_URLS = [
     "https://ui.shadcn.com/docs/forms",
     "https://ui.shadcn.com/docs/registry",
     "https://ui.shadcn.com/docs/mcp",
+    "https://ui.shadcn.com/schema.json",
     "https://ui.shadcn.com/schema/registry.json",
     "https://ui.shadcn.com/schema/registry-item.json",
     "https://registry.npmjs.org/shadcn",
@@ -128,7 +130,7 @@ def validate_static(skill_root: Path) -> list[str]:
     source_ledger = skill_root / "references/source-ledger.md"
     if source_ledger.is_file():
         ledger = source_ledger.read_text(encoding="utf-8")
-        for expected in ["https://ui.shadcn.com/docs", "https://registry.npmjs.org/shadcn", "shadcn@4.7.0"]:
+        for expected in ["https://ui.shadcn.com/docs", "https://registry.npmjs.org/shadcn", "shadcn@4.13.0"]:
             if expected not in ledger:
                 errors.append(f"source ledger missing {expected}")
 
@@ -136,9 +138,15 @@ def validate_static(skill_root: Path) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Validate ls-shadcn-ui skill structure and optional source freshness.")
+    parser = argparse.ArgumentParser(
+        description="Validate ls-shadcn-ui skill structure and optional source reachability/npm metadata."
+    )
     parser.add_argument("--skill-root", type=Path, default=Path(__file__).resolve().parents[1])
-    parser.add_argument("--refresh", action="store_true", help="Check official URLs and npm metadata over the network.")
+    parser.add_argument(
+        "--refresh",
+        action="store_true",
+        help="Check official URL reachability and npm latest metadata over the network; does not parse every docs claim.",
+    )
     parser.add_argument("--timeout", type=int, default=15, help="Network timeout in seconds for --refresh.")
     parser.add_argument("--json", action="store_true", help="Print JSON output.")
     args = parser.parse_args(argv)

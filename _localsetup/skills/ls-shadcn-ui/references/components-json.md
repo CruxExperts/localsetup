@@ -19,7 +19,10 @@ files and how it writes imports.
 
 The current public schema does not expose a top-level `base` field. Base choice
 is selected during setup with CLI controls such as `--base radix|base`, style
-values such as `radix-nova` or `base-nova`, and the CLI `info` output.
+values such as `radix-nova` or `base-nova`, and the CLI `info` output. Base UI
+is the default for new projects as of July 2026; choose Radix with
+`-b radix`, `--base radix`, or the equivalent flag confirmed by current help
+when maintaining Radix compatibility.
 
 ## Package Imports
 

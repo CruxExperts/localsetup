@@ -4,11 +4,11 @@ version: 4.2
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 86e8d7aae9a170d4007ee0c3101533d780a152f39acb82b5b52066317e163c7c
+  source_provenance_hash: 6592f0313a889a20ff63bb461d72e97205b5f83a604212b256e4e392fcc101d6
   emitter: generate-docs
 framework_version: 4.2.13
-source_commit: 89593cbe5bb93f9c158276a327b12e37324f739f
-artifact_sha256: d7c142d98ddee7a1bdec01b7c36b81b07da506b6ae640dca971008876164bc58
+source_commit: fe9d4c1c5073793ff5bf48ca819e5ce4110e25fb
+artifact_sha256: 5c0ffa8bbda83deb5e6ac5ccd204aabf2a259ac86755815800b91d6eae2abeb3
 ---
 # Workflow and module registry (Localsetup)
 
@@ -29,6 +29,7 @@ For the framework rules, see [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md).
 |-------------|---------|------|-------------|---------|-----------------|--------------------|
 | `audit-framework` | `ls-workflow-audit-framework` | Audit Framework | Use when running a Localsetup framework audit with an explicit report path and summarized findings. | run audit; framework audit | `ls-framework-audit` | [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md); [DOCUMENT_LIFECYCLE_MANAGEMENT.md](DOCUMENT_LIFECYCLE_MANAGEMENT.md); `_localsetup/skills/ls-framework-audit/scripts/run_framework_audit.py` |
 | `audit-markdown-references` | `ls-workflow-audit-markdown-references` | Audit Markdown References | Use when validating markdown references and anchors across configured documentation targets. | reference audit; link integrity audit | `ls-markdown-reference-validator` | [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md); [SKILL_VALIDATION_PATTERNS.md](SKILL_VALIDATION_PATTERNS.md); `_localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py` |
+| `codex-github-issue-goal-loop` | `ls-workflow-codex-github-issue-goal-loop` | Codex GitHub Issue Goal Loop | Use when running a bounded Codex goal loop over GitHub issues, PRs, and maintenance alerts with explicit approval gates. | codex github issue goal loop; github issue goal loop; slash goal issue sweep; github maintenance goal | `ls-framework-compliance`; `ls-git-workflows`; `ls-safety-and-backup`; `ls-test-runner`; `ls-tdd-guide`; `ls-receiving-code-review`; `ls-pr-reviewer`; `ls-github-publishing-workflow`; `ls-automatic-versioning`; `ls-framework-audit` | [CODEX_GITHUB_ISSUE_GOAL_LOOP.md](CODEX_GITHUB_ISSUE_GOAL_LOOP.md); [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md); `git`; `gh` |
 | `codex-heartbeat` | `ls-workflow-codex-heartbeat` | Codex Heartbeat | Use when initializing, activating, running, inspecting, or disabling the opt-in Codex heartbeat harness with transaction evidence and cron manifest validation. | codex heartbeat; heartbeat harness; harness heartbeat | `ls-codex-heartbeat`; `ls-cron-orchestrator`; `ls-framework-compliance` | [HARNESS_AUTOMATION.md](HARNESS_AUTOMATION.md); [SKILL.md](../../_localsetup/skills/ls-codex-heartbeat/SKILL.md); [transactions.md](../../_localsetup/skills/ls-codex-heartbeat/references/transactions.md); `_localsetup/skills/ls-codex-heartbeat/scripts/codex_heartbeat.py`; `_localsetup/skills/ls-cron-orchestrator/scripts/cron_ctl.py` |
 | `context-index-query` | `ls-workflow-context-index-query` | Context Index Query | Use when querying the Localsetup context index with vector-first retrieval and deterministic preflight/logging controls. | query context index; context search | `ls-context-index` | [agent-usage.md](../../_localsetup/skills/ls-context-index/docs/agent-usage.md); [security-and-privacy.md](../../_localsetup/skills/ls-context-index/docs/security-and-privacy.md) |
 | `context-index-refresh` | `ls-workflow-context-index-refresh` | Context Index Refresh | Use when refreshing the Localsetup context index with deterministic lifecycle checks and reset/rebuild/vector-rebuild decisions. | context refresh; refresh context index | `ls-context-index` | [README.md](../../_localsetup/skills/ls-context-index/README.md); [architecture.md](../../_localsetup/skills/ls-context-index/docs/architecture.md) |

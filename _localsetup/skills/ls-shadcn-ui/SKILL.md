@@ -5,7 +5,7 @@ metadata:
   version: "1.0"
 compatibility:
   notes:
-    - "Includes a read-only verifier for source freshness and skill structure."
+    - "Includes a read-only verifier for source reachability and skill structure."
 ---
 
 # shadcn/ui
@@ -25,12 +25,13 @@ Before recommending commands or editing UI code:
 - Run the current project probe from the relevant root:
 
 ```bash
-<runner> shadcn@latest info --json
+<runner> shadcn@latest info
 ```
 
-Interpret `project`, `config`, `preset`, `components`, and `links`. If
-`config` is `null`, treat the repo as not initialized and inspect framework
-setup before running `init`.
+Interpret the project, config, preset, components, and links from the output. If
+current `shadcn info --help` confirms `--json`, you may rerun with `--json` for
+structured parsing. If `config` is absent or reported as `null`, treat the repo
+as not initialized and inspect framework setup before running `init`.
 
 Use `config.aliases`, `components`, `resolvedPaths`, `project.rsc`,
 `project.typescript`, `project.tailwindVersion`, `config.iconLibrary`,
@@ -62,8 +63,10 @@ when planning code changes. Never assume `@/components/ui`.
 - Use the configured icon library; do not assume `lucide-react`.
 - Respect RSC/client boundaries. Interactive components usually need a client
   boundary in Next.js App Router projects.
-- Radix composition uses `asChild`; Base UI composition uses `render` and may
-  require `nativeButton={false}`.
+- Radix composition uses `asChild`; Base UI composition uses `render`. Use
+  `nativeButton={false}` only when a Base UI part that defaults to native button
+  behavior is rendered as a non-button element; parts with inverse/default-false
+  behavior may need `nativeButton={true}` when rendered as a native button.
 
 ## Reference Map
 
@@ -119,4 +122,5 @@ python3 scripts/verify_shadcn_sources.py --refresh --json
 ```
 
 The default verifier path is offline and checks skill structure. `--refresh`
-performs network checks against official shadcn/ui sources and npm metadata.
+checks official source reachability and npm latest metadata; it does not replace
+manual review of syntax-sensitive current docs.

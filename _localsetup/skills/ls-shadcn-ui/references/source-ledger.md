@@ -1,9 +1,12 @@
 # Source Ledger
 
-Volatile facts were last verified on 2026-05-20 UTC from the official shadcn/ui
-site, npm registry metadata, GitHub releases, and live CLI help. Re-run
-`python3 scripts/verify_shadcn_sources.py --refresh --json` before release work
-or before relying on current-version facts.
+Volatile facts were last verified on 2026-07-05 UTC from the official shadcn/ui
+site, changelog, npm registry metadata, and published schemas. The verifier
+checks package structure, source reachability, and npm latest metadata; it does
+not parse every current documentation claim below. Re-run
+`python3 scripts/verify_shadcn_sources.py --refresh --json` and manually review
+the cited official sources before release work or before relying on
+syntax-sensitive current facts.
 
 ## Primary Sources
 
@@ -32,14 +35,22 @@ or before relying on current-version facts.
 
 ## Verified Snapshot
 
-- Latest package and GitHub release observed: `shadcn@4.7.0`.
-- Release timestamp observed in npm metadata: `2026-05-05T12:57:26.141Z`.
-- Release notes/changelog around this version mention package imports, registry
+- Latest npm package observed: `shadcn@4.13.0`. Official docs use
+  `shadcn@latest`; the current package is `shadcn`, not the older `shadcn-ui`
+  package name.
+- Official docs/changelog around this version mention package imports, registry
   target alias placeholders, previous-version error suggestions, presets,
   pointer cursor setup, partial preset apply, RTL, Radix migration, and Sera.
-- Live CLI commands observed: `init`/`create`, `apply`, `add`, deprecated
-  `diff`, `docs`, `view`, `search`/`list`, `migrate`, `info`, `build`,
-  `mcp init`, `preset decode|resolve|info|url|open`, and `registry add`.
+- Official docs/changelog list commands including `init`/`create`, `apply`,
+  `add`, deprecated `diff`, `docs`, `view`, `search`/`list`, `migrate`,
+  `info`, `build`, `mcp init`, `preset decode|resolve|info|url|open`, and
+  `registry add`.
+- Official docs/changelog confirm top-level `shadcn info`, but not top-level
+  `info --json`. JSON is documented for preset commands such as
+  `preset resolve` and `preset info`; use top-level `info --json` only if
+  current `shadcn info --help` confirms it.
+- `docs`, `view`, `add --dry-run`, `add --diff`, and `add --view` remain
+  current.
 - Template targets observed for `init -t`: Next.js, TanStack Start, Vite,
   React Router, Laravel, and Astro.
 
@@ -50,6 +61,11 @@ or before relying on current-version facts.
 - The current `components.json` schema does not expose a top-level `base` field.
   Base is selected through CLI setup flags, style values such as `radix-nova`
   or `base-nova`, and `info` output.
+- The current `components.json` schema supports `iconLibrary`, `rtl`, and
+  `registries`.
+- Base UI is the default for new projects as of July 2026, while Radix remains
+  supported with `-b radix`, `--base radix`, or the equivalent flag confirmed by
+  current help.
 - Live CLI help should win over stale rendered docs when syntax differs.
 
 ## Official Component Pages Checked

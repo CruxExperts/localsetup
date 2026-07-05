@@ -1,17 +1,20 @@
 {
-  "verifiedAt": "2026-06-23T15:16:03Z",
+  "verifiedAt": "2026-07-05T04:15:11.177Z",
   "sources": {
     "nextRegistry": "https://registry.npmjs.org/next",
     "reactRegistry": "https://registry.npmjs.org/react",
     "reactDomRegistry": "https://registry.npmjs.org/react-dom",
     "nodeSchedule": "https://raw.githubusercontent.com/nodejs/Release/main/schedule.json",
     "nodeDistIndex": "https://nodejs.org/dist/index.json",
+    "nodePreviousReleases": "https://nodejs.org/en/about/previous-releases",
+    "nodeDownload": "https://nodejs.org/en/download",
     "npmPackageJsonDocs": "https://docs.npmjs.com/cli/v11/configuring-npm/package-json",
     "nodeCorepackDocs": "https://nodejs.org/api/corepack.html",
     "nextDocs": "https://nextjs.org/docs",
     "nextReleases": "https://github.com/vercel/next.js/releases",
     "nextSelfHosting": "https://nextjs.org/docs/app/guides/self-hosting",
     "nextEdgeRuntime": "https://nextjs.org/docs/pages/api-reference/edge",
+    "reactDomGithubPackageManifest": "https://raw.githubusercontent.com/facebook/react/v19.2.7/packages/react-dom/package.json",
     "reactVersions": "https://react.dev/versions",
     "reactBlog": "https://react.dev/blog",
     "vercelSecurityChangelog": "https://vercel.com/changelog?category=security",
@@ -19,14 +22,14 @@
   },
   "packages": {
     "next": {
-      "latest": "16.2.9",
+      "latest": "16.2.10",
       "distTags": {
-        "latest": "16.2.9",
-        "canary": "16.3.0-canary.61",
+        "latest": "16.2.10",
+        "canary": "16.3.0-canary.78",
         "beta": "16.0.0-beta.0",
         "rc": "15.0.0-rc.1",
-        "backport": "16.2.8",
-        "preview": "16.3.0-preview.3"
+        "backport": "15.5.20",
+        "preview": "16.3.0-preview.5"
       },
       "engines": {
         "node": ">=20.9.0"
@@ -50,8 +53,8 @@
       "latest": "19.2.7",
       "distTags": {
         "latest": "19.2.7",
-        "canary": "19.3.0-canary-247fbb45-20260622",
-        "experimental": "0.0.0-experimental-247fbb45-20260622",
+        "canary": "19.3.0-canary-e71a6393-20260702",
+        "experimental": "0.0.0-experimental-e71a6393-20260702",
         "next": "19.3.0-canary-d5736f09-20260507",
         "backport": "19.1.8",
         "beta": "19.0.0-beta-26f2496093-20240514",
@@ -73,8 +76,8 @@
       "latest": "19.2.7",
       "distTags": {
         "latest": "19.2.7",
-        "canary": "19.3.0-canary-247fbb45-20260622",
-        "experimental": "0.0.0-experimental-247fbb45-20260622",
+        "canary": "19.3.0-canary-e71a6393-20260702",
+        "experimental": "0.0.0-experimental-e71a6393-20260702",
         "next": "19.3.0-canary-d5736f09-20260507",
         "backport": "19.1.8",
         "beta": "19.0.0-beta-26f2496093-20240514",
@@ -117,10 +120,10 @@
         "lts": "2024-10-29",
         "maintenance": "2025-10-21",
         "end": "2027-04-30",
-        "latestDist": "v22.23.0",
-        "latestDistDate": "2026-06-17",
+        "latestDist": "v22.23.1",
+        "latestDistDate": "2026-06-22",
         "latestDistLts": "Jod",
-        "latestDistSecurity": true,
+        "latestDistSecurity": false,
         "channelNotes": "Supported maintenance LTS line."
       },
       "24": {
@@ -131,10 +134,10 @@
         "lts": "2025-10-28",
         "maintenance": "2026-10-20",
         "end": "2028-04-30",
-        "latestDist": "v24.17.0",
-        "latestDistDate": "2026-06-17",
+        "latestDist": "v24.18.0",
+        "latestDistDate": "2026-06-23",
         "latestDistLts": "Krypton",
-        "latestDistSecurity": true,
+        "latestDistSecurity": false,
         "channelNotes": "Preferred production baseline when project and host support it."
       },
       "25": {
@@ -158,10 +161,10 @@
         "lts": "2026-10-28",
         "maintenance": "2027-10-20",
         "end": "2029-04-30",
-        "latestDist": "v26.3.1",
-        "latestDistDate": "2026-06-17",
+        "latestDist": "v26.4.0",
+        "latestDistDate": "2026-06-24",
         "latestDistLts": false,
-        "latestDistSecurity": true,
+        "latestDistSecurity": false,
         "channelNotes": "Current release line; not a default production baseline before LTS."
       }
     }

@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 86e8d7aae9a170d4007ee0c3101533d780a152f39acb82b5b52066317e163c7c
+  source_provenance_hash: 6592f0313a889a20ff63bb461d72e97205b5f83a604212b256e4e392fcc101d6
   emitter: generate-docs
 framework_version: 4.2.13
-source_commit: 89593cbe5bb93f9c158276a327b12e37324f739f
-artifact_sha256: cab266e42a0c81ee10e173258517ae8f51ff6af3bbf31c51a36acdb809442f36
+source_commit: fe9d4c1c5073793ff5bf48ca819e5ce4110e25fb
+artifact_sha256: 477ca50abe5787230171015e414cd383f90be974ad6094e214ef2280b13a5c1d
 ---
 # Plugin Packs
 
@@ -15,12 +15,12 @@ Portable plugin pack metadata is generated from `_localsetup/config/plugin-packs
 |---|---|---|---|---:|---:|---|
 | `localsetup-bootstrap` | `bootstrap` | `bootstrap` | `codex` | 12 | 4 | `ls-plugin-bootstrap-context` |
 | `localsetup-core` | `core` | `core` | `codex` | 9 | 2 | `ls-plugin-core-context` |
-| `localsetup-dev` | `dev` | `development` | `codex` | 45 | 15 | `ls-plugin-dev-context` |
+| `localsetup-dev` | `dev` | `development` | `codex` | 46 | 16 | `ls-plugin-dev-context` |
 | `localsetup-frontend` | `frontend` | `frontend` | `codex` | 11 | 0 | `ls-plugin-frontend-context` |
 | `localsetup-architecture` | `architecture` | `architecture` | `codex` | 6 | 0 | `ls-plugin-architecture-context` |
 | `localsetup-ops` | `ops` | `operations` | `codex` | 9 | 3 | `ls-plugin-ops-context` |
 | `localsetup-integrations` | `integrations` | `integrations` | `codex` | 32 | 1 | `ls-plugin-integrations-context` |
-| `localsetup-publishing` | `publishing` | `publishing` | `codex` | 12 | 2 | `ls-plugin-publishing-context` |
+| `localsetup-publishing` | `publishing` | `publishing` | `codex` | 17 | 3 | `ls-plugin-publishing-context` |
 | `localsetup-harness` | `harness` | `harness` | `codex` | 5 | 3 | `ls-plugin-harness-context` |
 | `localsetup-skill-lifecycle` | `skill-lifecycle` | `skill-lifecycle` | `codex` | 13 | 1 | `ls-plugin-skill-lifecycle-context` |
 | `localsetup-growth-content` | `growth-content` | `growth-content` | `codex` | 7 | 0 | `ls-plugin-growth-content-context` |

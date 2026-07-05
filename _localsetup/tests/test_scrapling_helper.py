@@ -6,9 +6,54 @@ Last Updated: 2026-03-16
 
 from __future__ import annotations
 
+import json
+import subprocess
+import sys
 from pathlib import Path
 
+import yaml
+
 from _localsetup.tools.scrapling_helper import main as scrapling_main
+
+
+ROOT = Path(__file__).resolve().parents[2]
+SKILL = ROOT / "_localsetup" / "skills" / "ls-scrapling"
+
+
+def test_scrapling_skill_smoke_command_validates_capability_index() -> None:
+    smoke = yaml.safe_load((ROOT / "_localsetup" / "tests" / "skill_smoke_commands.yaml").read_text(encoding="utf-8"))
+    assert smoke["ls-scrapling"] == {
+        "cwd": "repo-root",
+        "command": "python3 _localsetup/skills/ls-scrapling/scripts/verify_scrapling_capabilities.py --json",
+    }
+
+    result = subprocess.run(
+        [sys.executable, "_localsetup/skills/ls-scrapling/scripts/verify_scrapling_capabilities.py", "--json"],
+        cwd=ROOT,
+        check=False,
+        text=True,
+        capture_output=True,
+        timeout=10,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    assert "scrapling_status" in payload["checked"]
+
+
+def test_scrapling_capability_verifier_checks_packaged_index() -> None:
+    result = subprocess.run(
+        [sys.executable, "scripts/verify_scrapling_capabilities.py", "--json"],
+        cwd=SKILL,
+        check=False,
+        text=True,
+        capture_output=True,
+        timeout=10,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    assert "scrapling_status" in payload["checked"]
 
 
 def test_show_status_runs_without_error() -> None:

@@ -1,6 +1,6 @@
 # Node.js Runtime And Package Management
 
-Verified runtime facts were checked on 2026-06-23 UTC against the Node release
+Verified runtime facts were checked on 2026-07-05 UTC against the Node release
 schedule and dist index.
 
 ## Runtime Selection

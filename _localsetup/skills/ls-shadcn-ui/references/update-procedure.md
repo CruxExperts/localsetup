@@ -6,7 +6,8 @@ generated changes into local owned files.
 ## Safe Component Update
 
 1. Capture current project state: `git status --short`.
-2. Run `info --json` and confirm aliases, base, icon library, TSX, and RSC.
+2. Run `info` and confirm aliases, base, icon library, TSX, and RSC. Use
+   `info --json` only when current `shadcn info --help` confirms it.
 3. Preview:
 
 ```bash

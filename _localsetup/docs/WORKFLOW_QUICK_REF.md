@@ -4,11 +4,11 @@ version: 4.2
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 86e8d7aae9a170d4007ee0c3101533d780a152f39acb82b5b52066317e163c7c
+  source_provenance_hash: 6592f0313a889a20ff63bb461d72e97205b5f83a604212b256e4e392fcc101d6
   emitter: generate-docs
 framework_version: 4.2.13
-source_commit: 89593cbe5bb93f9c158276a327b12e37324f739f
-artifact_sha256: cecbbfdae88dc94a499ee4341dfda6232b7000f1a3096b870960cf5fe4c874c8
+source_commit: fe9d4c1c5073793ff5bf48ca819e5ce4110e25fb
+artifact_sha256: 62dfd7cd8a96f586afd469ea97b3a207808874e92ecb3e5587d6b18b91b1058b
 ---
 # Workflow quick reference
 
@@ -20,6 +20,7 @@ This page is generated from `_localsetup/workflows/*/workflow.yaml`.
 |------------|------|---------|---------|-----------------|
 | `audit-framework` | Audit Framework | run audit; framework audit | `ls-workflow-audit-framework` | `ls-framework-audit` |
 | `audit-markdown-references` | Audit Markdown References | reference audit; link integrity audit | `ls-workflow-audit-markdown-references` | `ls-markdown-reference-validator` |
+| `codex-github-issue-goal-loop` | Codex GitHub Issue Goal Loop | codex github issue goal loop; github issue goal loop; slash goal issue sweep; github maintenance goal | `ls-workflow-codex-github-issue-goal-loop` | `ls-framework-compliance`; `ls-git-workflows`; `ls-safety-and-backup`; `ls-test-runner`; `ls-tdd-guide`; `ls-receiving-code-review`; `ls-pr-reviewer`; `ls-github-publishing-workflow`; `ls-automatic-versioning`; `ls-framework-audit` |
 | `codex-heartbeat` | Codex Heartbeat | codex heartbeat; heartbeat harness; harness heartbeat | `ls-workflow-codex-heartbeat` | `ls-codex-heartbeat`; `ls-cron-orchestrator`; `ls-framework-compliance` |
 | `context-index-query` | Context Index Query | query context index; context search | `ls-workflow-context-index-query` | `ls-context-index` |
 | `context-index-refresh` | Context Index Refresh | context refresh; refresh context index | `ls-workflow-context-index-refresh` | `ls-context-index` |
@@ -48,6 +49,10 @@ This page is generated from `_localsetup/workflows/*/workflow.yaml`.
 - "framework audit" -> `audit-framework`
 - "reference audit" -> `audit-markdown-references`
 - "link integrity audit" -> `audit-markdown-references`
+- "codex github issue goal loop" -> `codex-github-issue-goal-loop`
+- "github issue goal loop" -> `codex-github-issue-goal-loop`
+- "slash goal issue sweep" -> `codex-github-issue-goal-loop`
+- "github maintenance goal" -> `codex-github-issue-goal-loop`
 - "codex heartbeat" -> `codex-heartbeat`
 - "heartbeat harness" -> `codex-heartbeat`
 - "harness heartbeat" -> `codex-heartbeat`

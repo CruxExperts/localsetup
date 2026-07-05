@@ -7,6 +7,8 @@ Use the runner selected from `packageManager` and lockfiles:
 - Yarn: `yarn dlx shadcn@latest ...`
 - Bun: `bunx shadcn@latest ...`
 
+The current package is `shadcn`; do not use the older `shadcn-ui` package name.
+
 Prefer live help for exact syntax:
 
 ```bash
@@ -31,7 +33,9 @@ Prefer live help for exact syntax:
 - `search` / `list`: search official and configured registries.
 - `migrate`: current migration helpers include list, icons, Radix, and RTL
   flows; confirm flags with `migrate --help`.
-- `info --json`: inspect project, config, preset, components, and links.
+- `info`: inspect project, config, preset, components, and links. Use top-level
+  `info --json` only if current `shadcn info --help` confirms it. JSON output is
+  documented for preset commands such as `preset resolve` and `preset info`.
 - `build`: build registry output from registry config.
 - `registry add`: add registry configuration.
 - `mcp init --client claude|cursor|vscode|codex|opencode`: initialize MCP

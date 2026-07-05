@@ -42,16 +42,16 @@
     ],
     "provenance": {
       "artifact_path": "_localsetup/docs/_generated/facts.json",
-      "artifact_sha256": "d143c287032d7b12dc341aa16e847b9284581b5b4955ab8be268fed1fdddac3a",
+      "artifact_sha256": "0a7da1081bd2688279086196c4042bbb4b54539a72632581f3edef58b7b3a591",
       "emitter": "generate-docs",
       "framework_version": "4.2.13",
       "schema_version": 1,
-      "source_commit": "89593cbe5bb93f9c158276a327b12e37324f739f",
-      "source_dirty": false,
-      "source_provenance_hash": "86e8d7aae9a170d4007ee0c3101533d780a152f39acb82b5b52066317e163c7c",
-      "source_root_id": "3b34717dbd90101841a162506f57c94d25798106c3446eee0e3f2ba5a823f02d",
+      "source_commit": "fe9d4c1c5073793ff5bf48ca819e5ce4110e25fb",
+      "source_dirty": true,
+      "source_provenance_hash": "6592f0313a889a20ff63bb461d72e97205b5f83a604212b256e4e392fcc101d6",
+      "source_root_id": "3284bc5a961486ea9e8448598a7dc998e2e64e6c9f00b4e4149085f164e87cc4",
       "source_tag": null,
-      "source_tree_sha": "14b80c9e10ad4237b54ab50a397ee5dc3e7ca538"
+      "source_tree_sha": "e227822b0647b1a552a164ca8e7bae0bf0b60604"
     },
     "skill_count": 106,
     "skills": [
@@ -1808,7 +1808,7 @@
       }
     ],
     "version": "4.2.13",
-    "workflow_count": 23,
+    "workflow_count": 24,
     "workflows": [
       {
         "id": "audit-framework",
@@ -1821,6 +1821,12 @@
         "name": "Audit Markdown References",
         "package": "ls-workflow-audit-markdown-references",
         "path": "_localsetup/workflows/ls-workflow-audit-markdown-references/SKILL.md"
+      },
+      {
+        "id": "codex-github-issue-goal-loop",
+        "name": "Codex GitHub Issue Goal Loop",
+        "package": "ls-workflow-codex-github-issue-goal-loop",
+        "path": "_localsetup/workflows/ls-workflow-codex-github-issue-goal-loop/SKILL.md"
       },
       {
         "id": "codex-heartbeat",
@@ -1967,12 +1973,12 @@
       "emitter": "generate-docs",
       "framework_version": "4.2.13",
       "schema_version": 1,
-      "source_commit": "89593cbe5bb93f9c158276a327b12e37324f739f",
-      "source_dirty": false,
-      "source_provenance_hash": "86e8d7aae9a170d4007ee0c3101533d780a152f39acb82b5b52066317e163c7c",
-      "source_root_id": "3b34717dbd90101841a162506f57c94d25798106c3446eee0e3f2ba5a823f02d",
+      "source_commit": "fe9d4c1c5073793ff5bf48ca819e5ce4110e25fb",
+      "source_dirty": true,
+      "source_provenance_hash": "6592f0313a889a20ff63bb461d72e97205b5f83a604212b256e4e392fcc101d6",
+      "source_root_id": "3284bc5a961486ea9e8448598a7dc998e2e64e6c9f00b4e4149085f164e87cc4",
       "source_tag": null,
-      "source_tree_sha": "14b80c9e10ad4237b54ab50a397ee5dc3e7ca538"
+      "source_tree_sha": "e227822b0647b1a552a164ca8e7bae0bf0b60604"
     },
     "schema_version": 1,
     "skills": [
@@ -3519,16 +3525,16 @@
   },
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "f94c8b65c5965e0284fd420aad47416816e4c5e7bec909336c688ecce67166f3",
+    "artifact_sha256": "c4a21d6f159aa641a072de1612579689c851998b1f764c21ea4520f9534ab5d0",
     "emitter": "docs-align",
     "framework_version": "4.2.13",
     "schema_version": 1,
-    "source_commit": "89593cbe5bb93f9c158276a327b12e37324f739f",
-    "source_dirty": false,
-    "source_provenance_hash": "86e8d7aae9a170d4007ee0c3101533d780a152f39acb82b5b52066317e163c7c",
-    "source_root_id": "3b34717dbd90101841a162506f57c94d25798106c3446eee0e3f2ba5a823f02d",
+    "source_commit": "fe9d4c1c5073793ff5bf48ca819e5ce4110e25fb",
+    "source_dirty": true,
+    "source_provenance_hash": "6592f0313a889a20ff63bb461d72e97205b5f83a604212b256e4e392fcc101d6",
+    "source_root_id": "3284bc5a961486ea9e8448598a7dc998e2e64e6c9f00b4e4149085f164e87cc4",
     "source_tag": null,
-    "source_tree_sha": "14b80c9e10ad4237b54ab50a397ee5dc3e7ca538"
+    "source_tree_sha": "e227822b0647b1a552a164ca8e7bae0bf0b60604"
   },
   "schema_version": "1.0",
   "truths": {
@@ -3581,6 +3587,11 @@
           "owner_package": "",
           "owner_skill": "ls-framework-compliance",
           "path": "_localsetup/docs/CLI_SKILLS_ENV.md"
+        },
+        {
+          "owner_package": "ls-workflow-codex-github-issue-goal-loop",
+          "owner_skill": "",
+          "path": "_localsetup/docs/CODEX_GITHUB_ISSUE_GOAL_LOOP.md"
         },
         {
           "owner_package": "",
@@ -5443,7 +5454,7 @@
         "_localsetup/workflows/*/workflow.yaml"
       ],
       "value": {
-        "count": 23,
+        "count": 24,
         "workflows": [
           {
             "aliases": [
@@ -5493,6 +5504,43 @@
               "_localsetup/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py"
             ],
             "workflow_id": "audit-markdown-references"
+          },
+          {
+            "aliases": [
+              "codex github issue goal loop",
+              "github issue goal loop",
+              "slash goal issue sweep",
+              "github maintenance goal"
+            ],
+            "description": "Use when running a bounded Codex goal loop over GitHub issues, PRs, and maintenance alerts with explicit approval gates.",
+            "display_name": "Codex GitHub Issue Goal Loop",
+            "package": "ls-workflow-codex-github-issue-goal-loop",
+            "packs": [
+              "dev",
+              "publishing"
+            ],
+            "path": "_localsetup/workflows/ls-workflow-codex-github-issue-goal-loop",
+            "required_docs": [
+              "_localsetup/docs/CODEX_GITHUB_ISSUE_GOAL_LOOP.md",
+              "_localsetup/docs/WORKFLOW_STANDARD.md"
+            ],
+            "required_skills": [
+              "ls-framework-compliance",
+              "ls-git-workflows",
+              "ls-safety-and-backup",
+              "ls-test-runner",
+              "ls-tdd-guide",
+              "ls-receiving-code-review",
+              "ls-pr-reviewer",
+              "ls-github-publishing-workflow",
+              "ls-automatic-versioning",
+              "ls-framework-audit"
+            ],
+            "required_tools": [
+              "git",
+              "gh"
+            ],
+            "workflow_id": "codex-github-issue-goal-loop"
           },
           {
             "aliases": [
@@ -6007,7 +6055,7 @@
       "sources": [
         "_localsetup/workflows/ls-workflow-*/workflow.yaml"
       ],
-      "value": 23
+      "value": 24
     }
   }
 }

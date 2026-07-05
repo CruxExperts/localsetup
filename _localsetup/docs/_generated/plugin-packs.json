@@ -72,6 +72,7 @@
         "ls-safety-and-backup",
         "ls-script-and-docs-quality",
         "ls-test-runner",
+        "ls-automatic-versioning",
         "ls-docs-organization",
         "ls-documentation-alignment",
         "ls-framework-audit",
@@ -118,6 +119,7 @@
       "workflows": [
         "ls-workflow-audit-framework",
         "ls-workflow-audit-markdown-references",
+        "ls-workflow-codex-github-issue-goal-loop",
         "ls-workflow-context-index-query",
         "ls-workflow-context-index-refresh",
         "ls-workflow-documentation-alignment",
@@ -263,21 +265,27 @@
         "codex"
       ],
       "skills": [
+        "ls-safety-and-backup",
         "ls-script-and-docs-quality",
         "ls-test-runner",
         "ls-automatic-versioning",
         "ls-docs-organization",
         "ls-documentation-alignment",
         "ls-framework-audit",
+        "ls-framework-compliance",
+        "ls-git-workflows",
         "ls-github-publishing-workflow",
         "ls-markdown-reference-validator",
         "ls-public-repo-identity",
+        "ls-receiving-code-review",
         "ls-pr-reviewer",
+        "ls-tdd-guide",
         "ls-deploy-checklist",
         "ls-github-actions-builder"
       ],
       "source_pack": "publishing",
       "workflows": [
+        "ls-workflow-codex-github-issue-goal-loop",
         "ls-workflow-documentation-alignment",
         "ls-workflow-pipeline-pre-publish"
       ]
@@ -378,16 +386,16 @@
   ],
   "provenance": {
     "artifact_path": "_localsetup/docs/_generated/plugin-packs.json",
-    "artifact_sha256": "28fd1575b60167ad0f20be84068fac7566cbec4df4cdf0259349d2925b536f64",
+    "artifact_sha256": "b8eac6ad0269075f1d6a2f765ca342a99033c496ce4b73379fe7f1c8362eb473",
     "emitter": "generate-docs",
     "framework_version": "4.2.13",
     "schema_version": 1,
-    "source_commit": "89593cbe5bb93f9c158276a327b12e37324f739f",
-    "source_dirty": false,
-    "source_provenance_hash": "86e8d7aae9a170d4007ee0c3101533d780a152f39acb82b5b52066317e163c7c",
-    "source_root_id": "3b34717dbd90101841a162506f57c94d25798106c3446eee0e3f2ba5a823f02d",
+    "source_commit": "fe9d4c1c5073793ff5bf48ca819e5ce4110e25fb",
+    "source_dirty": true,
+    "source_provenance_hash": "6592f0313a889a20ff63bb461d72e97205b5f83a604212b256e4e392fcc101d6",
+    "source_root_id": "3284bc5a961486ea9e8448598a7dc998e2e64e6c9f00b4e4149085f164e87cc4",
     "source_tag": null,
-    "source_tree_sha": "14b80c9e10ad4237b54ab50a397ee5dc3e7ca538"
+    "source_tree_sha": "e227822b0647b1a552a164ca8e7bae0bf0b60604"
   },
   "schema_version": 1
 }

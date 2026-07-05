@@ -58,20 +58,20 @@ Node, Next.js, React, or package-manager versions.
 
 ## Current Stable Snapshot
 
-Volatile facts below were verified on 2026-06-23 UTC from npm registry metadata
+Volatile facts below were verified on 2026-07-05 UTC from npm registry metadata
 and Node release metadata. Re-run
 [`scripts/verify-current-versions.mjs`](./scripts/verify-current-versions.mjs)
 before relying on them for new work.
 
-- `next` latest is `16.2.9`; `canary` is `16.3.0-canary.61`; `beta` is
+- `next` latest is `16.2.10`; `canary` is `16.3.0-canary.78`; `beta` is
   `16.0.0-beta.0`; `rc` is `15.0.0-rc.1`.
-- `next@16.2.9` declares Node `>=20.9.0` and React peers
+- `next@16.2.10` declares Node `>=20.9.0` and React peers
   `^18.2.0 || 19.0.0-rc-de68d2f4-20241204 || ^19.0.0`.
 - `react` and `react-dom` latest are `19.2.7`; `react-dom@19.2.7` peers on
   `react ^19.2.7`.
-- Node `26.x` is Current; latest dist entry checked was `v26.3.1`.
-- Node `24.x` Krypton is Active LTS; latest dist entry checked was `v24.17.0`.
-- Node `22.x` Jod is Maintenance LTS; latest dist entry checked was `v22.23.0`.
+- Node `26.x` is Current; latest dist entry checked was `v26.4.0`.
+- Node `24.x` Krypton is Active LTS; latest dist entry checked was `v24.18.0`.
+- Node `22.x` Jod is Maintenance LTS; latest dist entry checked was `v22.23.1`.
 - Node `20.x` Iron reached end of life on 2026-04-30. It may satisfy some
   framework engine ranges, but it should not be selected for new production
   baselines.
