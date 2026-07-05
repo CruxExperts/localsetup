@@ -59,7 +59,7 @@ remaining_build: "Part 19"
 3. **Inner manifest** - `manifest_version` + **manifest.schema.json** with bounds (max attachments, path length, total bytes).
 4. **Key tooling** - Module + CLI: generate, export-pub, import-pub, fingerprint, doctor; support **multiple keys per agent** for rotation (19.3).
 5. **Mail adapter** - IMAP fetch / SMTP push via **policy_engine** facade only; mandatory post-ingest move to **LocalsetupAgentQ/Processed** (config override per account).
-6. **file_drop adapter** - Scan **allowed_inbound_roots** only; **sealed_extension** default `.agentq.asc`; **ready marker** sibling `stem.ready`; **writer order** payload complete then ready last; **ignore_globs** `*conflicted copy*`, `*.tmp`, `~*`; after success move to **processed/<iso8601_utc>_<shortid>/** + prune CLI; **processing/** exclusive lock before verify.
+6. **file_drop adapter** - Scan **allowed_inbound_roots** only; **sealed_extension** default `.agentq.asc`; **ready marker** sibling `stem.ready`; **writer order** payload complete then ready last; **ignore_globs** `*conflicted copy*`, `*.tmp`, `~*`, `*.part`; after success move to **processed/<iso8601_utc>_<shortid>/** + prune CLI; **processing/** exclusive lock before verify.
 7. **Client orchestration** - pull_new / push on adapter interface; staging `.staging/<uuid>/` then atomic promote; **ledger after promote and processed move** when possible; **idempotency** by UID or blob id.
 8. **Quarantine + force ingest** - `.quarantine/<id>/` + force CLI with ledger audit line.
 9. **Sidecar archive** - Ship bundle checksum manifest + outer sign-then-encrypt; recipient verify then decrypt then checksum files.

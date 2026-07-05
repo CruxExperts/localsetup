@@ -33,7 +33,7 @@
 
 ## Conflict filenames
 
-- **ignore_globs** in queue config: `*conflicted copy*`, `*.tmp`, `~*`. Writers must not ingest until sync settles.
+- **ignore_globs** in queue config: `*conflicted copy*`, `*.tmp`, `~*`, `*.part`. Writers must not ingest until sync settles.
 - Ready marker optional **sha256** first line catches truncated uploads.
 
 ## Insecure drop rationale

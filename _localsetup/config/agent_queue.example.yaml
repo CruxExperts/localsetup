@@ -21,6 +21,7 @@ ignore_globs:
   - "*conflicted copy*"
   - "*.tmp"
   - "~*"
+  - "*.part"
 
 archive_retention_days: 90
 archive_max_total_gb: 10

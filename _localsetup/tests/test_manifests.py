@@ -251,6 +251,12 @@ def test_skill_catalog_uses_taxonomy_sort_order_and_payload_fields() -> None:
 
 def test_agent_queue_example_yaml_has_expected_runtime_shape() -> None:
     root = Path(__file__).resolve().parents[2]
+    module_path = root / "_localsetup" / "tools" / "agentq_transport_client" / "agentq_transport_client" / "file_drop.py"
+    spec = importlib.util.spec_from_file_location("agentq_file_drop_under_test", module_path)
+    assert spec is not None and spec.loader is not None
+    file_drop = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(file_drop)
+
     payload = yaml.safe_load((root / "_localsetup" / "config" / "agent_queue.example.yaml").read_text(encoding="utf-8"))
 
     assert payload["layout"] in {"flat", "structured"}
@@ -260,7 +266,7 @@ def test_agent_queue_example_yaml_has_expected_runtime_shape() -> None:
     assert payload["version_mismatch_policy"] in {"warn", "block", "allow_log"}
     assert payload["post_ingest_mailbox"]
     assert payload["sealed_extension"].startswith(".")
-    assert all(isinstance(pattern, str) and pattern for pattern in payload["ignore_globs"])
+    assert payload["ignore_globs"] == file_drop.default_ignore_globs()
     assert payload["archive_retention_days"] > 0
     assert payload["archive_max_total_gb"] > 0
 
