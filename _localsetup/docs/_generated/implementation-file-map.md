@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 86e8d7aae9a170d4007ee0c3101533d780a152f39acb82b5b52066317e163c7c
+  source_provenance_hash: ff1a1dcfb75019d9a213a6e7b9ead19509f451070a014fe54b0059cfa1c9adc2
   emitter: generate-docs
-framework_version: 4.2.13
-source_commit: 89593cbe5bb93f9c158276a327b12e37324f739f
-artifact_sha256: e0cff0fe31e02da8ecec8bfb3eb7ee370e28a88b091ff8ab09f13c2672038702
+framework_version: 4.2.14
+source_commit: aa89c3cb46d6e96183cf342c83e5f82fb9751d7d
+artifact_sha256: cd495b9d48b67ddff8e6eadbecb2bf1469ed9d25567e4c86db71ca617ba884c9
 ---
 # Implementation File Map
 
@@ -234,6 +234,7 @@ artifact_sha256: e0cff0fe31e02da8ecec8bfb3eb7ee370e28a88b091ff8ab09f13c267203870
 | `keep` | `_localsetup/docs/AGENTIC_UMBRELLA_WORKFLOWS.md` |
 | `keep` | `_localsetup/docs/AGENT_SKILLS_COMPLIANCE.md` |
 | `keep` | `_localsetup/docs/CLI_SKILLS_ENV.md` |
+| `keep` | `_localsetup/docs/CODEX_GITHUB_ISSUE_GOAL_LOOP.md` |
 | `keep` | `_localsetup/docs/COMMAND_REFERENCE.md` |
 | `keep` | `_localsetup/docs/DECISION_TREE_WORKFLOW.md` |
 | `keep` | `_localsetup/docs/DOCUMENT_LIFECYCLE_MANAGEMENT.md` |
@@ -681,6 +682,7 @@ artifact_sha256: e0cff0fe31e02da8ecec8bfb3eb7ee370e28a88b091ff8ab09f13c267203870
 | `keep` | `_localsetup/skills/ls-resend/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-safety-and-backup/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-scrapling/SKILL.md` |
+| `keep` | `_localsetup/skills/ls-scrapling/scripts/verify_scrapling_capabilities.py` |
 | `keep` | `_localsetup/skills/ls-script-and-docs-quality/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-sentry-error-handling/SKILL.md` |
 | `keep` | `_localsetup/skills/ls-seo-geo-claude-skills/SKILL.md` |
@@ -967,6 +969,8 @@ artifact_sha256: e0cff0fe31e02da8ecec8bfb3eb7ee370e28a88b091ff8ab09f13c267203870
 | `keep` | `_localsetup/workflows/ls-workflow-audit-framework/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-audit-markdown-references/SKILL.md` |
 | `keep` | `_localsetup/workflows/ls-workflow-audit-markdown-references/workflow.yaml` |
+| `keep` | `_localsetup/workflows/ls-workflow-codex-github-issue-goal-loop/SKILL.md` |
+| `keep` | `_localsetup/workflows/ls-workflow-codex-github-issue-goal-loop/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-codex-heartbeat/SKILL.md` |
 | `keep` | `_localsetup/workflows/ls-workflow-codex-heartbeat/workflow.yaml` |
 | `keep` | `_localsetup/workflows/ls-workflow-context-index-query/SKILL.md` |
