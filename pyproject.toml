@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=82.0.1"]
+requires = ["setuptools>=83.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "localsetup"
-version = "4.2.15"
+version = "4.2.16"
 description = "Global-first Localsetup skill pack manager"
 requires-python = ">=3.12"
 dependencies = [
