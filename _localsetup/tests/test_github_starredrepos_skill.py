@@ -18,6 +18,30 @@ def load_json(path: Path) -> object:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def node_child_pipe_capture_supported() -> bool:
+    if not shutil.which("node"):
+        return False
+    probe = (
+        "import { spawn } from 'node:child_process';"
+        "const child = spawn(process.execPath, ['-e', "
+        "'process.stdin.resume(); process.stdin.on(\\\"end\\\", () => process.stdout.write(\\\"ok\\\"))'], "
+        "{ stdio: ['pipe', 'pipe', 'pipe'] });"
+        "let stdout = '';"
+        "child.stdout.on('data', chunk => { stdout += chunk; });"
+        "child.on('error', () => process.exit(2));"
+        "child.on('close', code => process.exit(code === 0 && stdout === 'ok' ? 0 : 1));"
+        "child.stdin.end();"
+    )
+    result = subprocess.run(
+        ["node", "--input-type=module", "-e", probe],
+        check=False,
+        text=True,
+        capture_output=True,
+        timeout=10,
+    )
+    return result.returncode == 0
+
+
 def test_github_starredrepos_skill_is_registered() -> None:
     skill_md = SKILL / "SKILL.md"
     text = skill_md.read_text(encoding="utf-8")
@@ -186,12 +210,15 @@ def test_github_starredrepos_rejects_malicious_full_name(tmp_path: Path) -> None
 def test_github_starredrepos_rejects_malicious_scout_full_name(tmp_path: Path) -> None:
     if not shutil.which("node"):
         pytest.skip("node is not installed")
+    if not node_child_pipe_capture_supported():
+        pytest.skip("node cannot capture a piped child process after stdin closes, required by command scout execution")
     report = load_json(SKILL / "data/examples/scout-report.example.json")
     report["fullName"] = "../escape"
     command = tmp_path / "scout-command.mjs"
     command.write_text(
         "#!/usr/bin/env node\n"
-        f"process.stdout.write({json.dumps(json.dumps(report))});\n",
+        "process.stdin.resume();\n"
+        f"process.stdin.on('end', () => process.stdout.write({json.dumps(json.dumps(report))}));\n",
         encoding="utf-8",
     )
     command.chmod(0o700)
@@ -251,7 +278,7 @@ def test_github_starredrepos_rejects_unsupported_storage_modes() -> None:
 
     for mode in ("submodule", "vendor", "checkout-cache", "bare-mirror-cache"):
         result = subprocess.run(
-            ["node", "scripts/sync-starredrepos.mjs", "--help"],
+            ["node", "scripts/sync-starredrepos.mjs", "--dry-run"],
             cwd=SKILL,
             check=False,
             text=True,
@@ -259,28 +286,9 @@ def test_github_starredrepos_rejects_unsupported_storage_modes() -> None:
             timeout=10,
             env={**__import__("os").environ, "STARREDREPOS_STORAGE_MODE": mode},
         )
-        assert result.returncode == 0, result.stderr
-
-        script = (
-            "import { spawn } from 'node:child_process';"
-            "const child = spawn('node', ['scripts/sync-starredrepos.mjs', '--dry-run'], {"
-            "cwd: process.cwd(), env: {...process.env, STARREDREPOS_STORAGE_MODE: process.argv[1]}, stdio: ['ignore', 'pipe', 'pipe']"
-            "});"
-            "let err=''; child.stderr.on('data', c => err += c);"
-            "child.on('close', code => { console.log(JSON.stringify({code, err})); });"
-        )
-        failure = subprocess.run(
-            ["node", "--input-type=module", "-e", script, mode],
-            cwd=SKILL,
-            check=False,
-            text=True,
-            capture_output=True,
-            timeout=10,
-        )
-        assert failure.returncode == 0, failure.stderr
-        payload = json.loads(failure.stdout)
-        assert payload["code"] != 0
-        assert f"Unsupported storage mode: {mode}" in payload["err"]
+        assert result.returncode != 0
+        assert result.stdout == ""
+        assert f"Unsupported storage mode: {mode}" in result.stderr
 
 
 def test_github_starredrepos_redaction_helper_covers_github_tokens() -> None:
