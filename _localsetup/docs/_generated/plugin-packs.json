@@ -388,14 +388,14 @@
     "artifact_path": "_localsetup/docs/_generated/plugin-packs.json",
     "artifact_sha256": "b8eac6ad0269075f1d6a2f765ca342a99033c496ce4b73379fe7f1c8362eb473",
     "emitter": "generate-docs",
-    "framework_version": "4.2.16",
+    "framework_version": "4.2.17",
     "schema_version": 1,
-    "source_commit": "451437f1a1582e5567bd8f70c90f6e4a6edb5f8a",
-    "source_dirty": true,
-    "source_provenance_hash": "7e8c0db6f9f11b63599415a6a3b93b27be47b3cd1bc0b19c23dbb6c01c737261",
-    "source_root_id": "998d772751908459f575d8590056efad0b2424cb723df25b46ba650381e3bc4f",
+    "source_commit": "15db4f521925a0add2cf1e654be65aa9ca31fd78",
+    "source_dirty": false,
+    "source_provenance_hash": "130b02cf1c3e65276aae9115af2cb0238c6deb333c637bc8fae78c448f3d215b",
+    "source_root_id": "96afdf6aa4d4e6d680f483b248670e4632e96b826218fc0d2468fc42e9d45f83",
     "source_tag": null,
-    "source_tree_sha": "3fa9ead30978856ad99f62b2672237266aa9b450"
+    "source_tree_sha": "28aa1050b930280cfca12e9ffe6dffa76e80fa05"
   },
   "schema_version": 1
 }
