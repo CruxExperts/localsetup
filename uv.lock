@@ -265,7 +265,7 @@ wheels = [
 
 [[package]]
 name = "localsetup"
-version = "4.2.16"
+version = "4.2.17"
 source = { editable = "." }
 dependencies = [
     { name = "cryptography" },
