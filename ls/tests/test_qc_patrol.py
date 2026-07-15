@@ -282,9 +282,31 @@ def test_new_qc_workflow_static_contracts() -> None:
             assert "github.event.pull_request.head.repo.full_name == github.repository" in text
             assert "repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}" in text
             assert "QC_BASE_REMOTE: https://github.com/${{ github.repository }}.git" in text
-            assert "qc_llm_mode=\"off\"" in text
+            job = data["jobs"]["pr-review"]
+            assert "env" not in job
+            checkouts = [step for step in job["steps"] if str(step.get("uses", "")).startswith("actions/checkout@")]
+            assert len(checkouts) == 2
+            assert all(step["with"]["persist-credentials"] is False for step in checkouts)
+            route = next(step for step in job["steps"] if step.get("id") == "qc_route")
+            assert "env" not in route
+            assert 'accepted_relative = "ls/config/pack.yaml"' in route["run"]
+            assert "except FileNotFoundError:" in route["run"]
+            assert "declares_capability(subject_source)" in route["run"]
+            trusted = next(step for step in job["steps"] if step.get("name") == "Run trusted-base PR QC review")
+            assert trusted["if"] == "steps.qc_route.outputs.route == 'trusted-base'"
+            assert "secrets.QC_LLM_API_KEY" in trusted["env"]["QC_LLM_API_KEY"]
+            assert "python tools/qc_patrol/cli.py pr-review" in trusted["run"]
+            assert "qc-subject/tools/qc_patrol/cli.py" not in trusted["run"]
+            subject = next(step for step in job["steps"] if step.get("name") == "Run no-secret subject PR QC review")
+            assert subject["if"] == "steps.qc_route.outputs.route == 'subject-no-secret'"
+            assert set(subject["env"]) == {"QC_PR_BASE_SHA", "QC_PR_HEAD_SHA", "QC_BASE_REMOTE"}
+            assert "secrets." not in route["run"]
+            assert "secrets." not in subject["run"]
+            assert "-u QC_LLM_API_KEY" in subject["run"]
+            assert "-u GITHUB_TOKEN" in subject["run"]
+            assert "--llm-mode off" in subject["run"]
             assert "github.event.pull_request.base.sha" not in "\n".join(
-                str(step.get("run", "")) for step in data["jobs"]["pr-review"]["steps"] if isinstance(step, dict)
+                str(step.get("run", "")) for step in job["steps"] if isinstance(step, dict)
             )
             assert "pull_request_target" not in text
         if workflow.name == "qc-autofix.yml":
