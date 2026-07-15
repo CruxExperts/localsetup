@@ -12,6 +12,7 @@ from .registry import load_registry
 from .repair_safety import _protected_target_reasons
 from .terminal_mode_health import terminal_mode_health
 from .workflows import validate_workflow_catalog
+from .client_registry.historical import HISTORICAL_ADAPTERS
 
 
 SUPPORTED_LEVELS = {"filesystem"}
@@ -210,26 +211,41 @@ def verify_install(
     if workflow_issues:
         issues.extend(f"workflow manifest validation failed: {issue}" for issue in workflow_issues)
 
-    legacy_codex_path = attachment_root / ".codex" / "skills"
-    legacy_codex_state = adapter_path_state(
-        legacy_codex_path,
-        global_root,
-        known_global_roots=legacy_global_roots(home),
-        target_root=attachment_root,
-    )
-    legacy_codex_managed_exposure = bool(
-        legacy_codex_state["points_to_global"]
-        or legacy_codex_state["points_to_legacy_global"]
-        or legacy_codex_state.get("managed_visible_packages")
-    )
-    if "codex" in lock.get("platforms", []) and legacy_codex_managed_exposure:
-        issues.append(f"legacy Codex adapter still exposes LocalSetup-managed entries: {legacy_codex_path}")
-    legacy_codex_transition = {
-        "path": str(legacy_codex_path),
-        "managed_exposure": legacy_codex_managed_exposure,
-        "custom_entries": legacy_codex_state.get("custom_entries", []),
-        "recorded": lock.get("adapter_transitions", []),
-    }
+    historical_transitions: dict[str, list[dict]] = {}
+    requested_platforms = set(platform_ids) if platform_ids is not None else None
+    installed_platforms = set(lock.get("platforms", []))
+    for platform_id, transitions in HISTORICAL_ADAPTERS.items():
+        rows: list[dict] = []
+        for transition in transitions:
+            historical_path = attachment_root / transition["path"]
+            state = adapter_path_state(
+                historical_path,
+                global_root,
+                known_global_roots=legacy_global_roots(home),
+                target_root=attachment_root,
+            )
+            managed_exposure = bool(
+                state["points_to_global"]
+                or state["points_to_legacy_global"]
+                or state.get("managed_visible_packages")
+            )
+            in_scope = requested_platforms is None or platform_id in requested_platforms
+            if platform_id in installed_platforms and in_scope and managed_exposure:
+                display = "Codex" if platform_id == "codex" else "OpenClaw" if platform_id == "openclaw" else platform_id
+                issues.append(
+                    f"legacy {display} adapter still exposes LocalSetup-managed entries: {historical_path}"
+                )
+            rows.append(
+                {
+                    "id": transition["id"],
+                    "path": str(historical_path),
+                    "managed_exposure": managed_exposure,
+                    "custom_entries": state.get("custom_entries", []),
+                    "recorded": lock.get("adapter_transitions", []),
+                }
+            )
+        historical_transitions[platform_id] = rows
+    legacy_codex_transition = historical_transitions["codex"][0]
 
     registry_path = Path(str(lock.get("registry_path"))) if isinstance(lock, dict) and lock.get("registry_path") else expand_user_path(pack.global_registry, home)
     if not registry_path.exists():
@@ -259,4 +275,5 @@ def verify_install(
         "level": level,
         "rules": rule_results,
         "legacy_codex_transition": legacy_codex_transition,
+        "historical_adapter_transitions": historical_transitions,
     }

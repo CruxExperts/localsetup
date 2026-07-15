@@ -13,6 +13,17 @@ from .provenance import build_package_marker, is_managed_package, managed_marker
 from .reference_materializer import materialize_package_artifact
 
 
+def _copy_backup(path: Path, backup: Path) -> None:
+    if path.is_symlink():
+        backup.symlink_to(path.readlink())
+    elif path.is_dir():
+        shutil.copytree(path, backup, symlinks=True)
+    else:
+        shutil.copy2(path, backup)
+    if not (backup.exists() or backup.is_symlink()):
+        raise RuntimeError(f"package backup was not created: {backup}")
+
+
 def install_shared_runtime_lib(
     repo_root: Path,
     global_root: Path,
@@ -112,6 +123,8 @@ def install_managed_packages(
             )
             backup = dest.with_name(f".{dest.name}.localsetup-backup-{uuid.uuid4().hex}")
             existed = dest.exists() or dest.is_symlink()
+            if existed:
+                _copy_backup(dest, backup)
             if journal is not None:
                 journal.setdefault("touched", []).append(
                     {
@@ -125,7 +138,7 @@ def install_managed_packages(
                 if journal_path:
                     write_journal(journal_path, journal)
             if existed:
-                replace_func(dest, backup)
+                remove_path(dest)
             replace_func(staged, dest)
         else:
             if dest.exists() or dest.is_symlink():

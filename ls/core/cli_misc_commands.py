@@ -239,21 +239,8 @@ def handle(cli, args, root, home) -> int | None:
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
         target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else root
-        from .adapters import adapter_targets, legacy_global_roots, remove_managed_adapter_entries
-        removed = []
-        pack = load_pack_config(root)
-        global_root = expand_user_path(pack.global_root, home)
-        for target in adapter_targets(root, home, platform_ids=config.platforms, target_root=target_root):
-            path = target["repo_path"]
-            removed.extend(
-                remove_managed_adapter_entries(
-                    path,
-                    global_root,
-                    known_global_roots=legacy_global_roots(home),
-                    recorded_packages=target.get("packages"),
-                )
-            )
-        _print_payload({"removed": removed, "packages_preserved": True})
+        from .detach import detach_platforms
+        _print_payload(detach_platforms(root, home, target_root, list(config.platforms or [])))
         return 0
 
     if args.cmd == "sbom":

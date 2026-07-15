@@ -2,6 +2,32 @@ from __future__ import annotations
 
 from ls.tests.test_install_flow import *
 
+from ls.core.repair_inference import _infer_platforms
+
+
+def test_unknown_only_lock_platform_continues_filesystem_inference(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    target = tmp_path / "target"
+    (target / ".claude" / "skills").mkdir(parents=True)
+
+    inferred, reasons = _infer_platforms(root, target, {"platforms": ["retired-client"]}, {}, None)
+
+    assert inferred == ["claude-code"]
+    assert "existing adapter path .claude/skills" in reasons
+
+
+def test_mixed_known_and_unknown_lock_platforms_remain_authoritative(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    target = tmp_path / "target"
+    (target / ".claude" / "skills").mkdir(parents=True)
+
+    inferred, reasons = _infer_platforms(
+        root, target, {"platforms": ["codex", "retired-client"]}, {}, None
+    )
+
+    assert inferred == ["codex"]
+    assert "existing adapter path .claude/skills" not in reasons
+
 def test_migration_scanner_and_hook_gate(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     (root / "README.md").write_text(

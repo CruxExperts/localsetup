@@ -8,7 +8,9 @@ import time
 import uuid
 
 from .apply_journal import (
-    archive_legacy_lockfile,
+    RollbackError,
+    prepare_legacy_lockfile_backup,
+    remove_legacy_lockfile,
     cleanup_backups,
     cleanup_staging,
     journal_path,
@@ -46,7 +48,8 @@ from .provenance import is_managed_package
 from .source import source_commit
 
 
-_archive_legacy_lockfile = archive_legacy_lockfile
+_prepare_legacy_lockfile_backup = prepare_legacy_lockfile_backup
+_remove_legacy_lockfile = remove_legacy_lockfile
 _cleanup_backups = cleanup_backups
 _cleanup_staging = cleanup_staging
 _codex_agent_source = codex_agent_source
@@ -69,17 +72,54 @@ def _restore_failed_mutations(journal: dict) -> None:
     restore_failed_mutations(journal, _same_filesystem_replace)
 
 
-def _legacy_codex_recorded_packages(attachment_root: Path, legacy_path: Path) -> tuple[bool, list[str]]:
+def _record_rollback_errors(journal: dict, exc: Exception) -> None:
+    try:
+        _restore_failed_mutations(journal)
+    except RollbackError as rollback_exc:
+        journal["rollback_errors"] = rollback_exc.errors
+        exc.add_note(str(rollback_exc))
+    except Exception as rollback_exc:
+        journal["rollback_errors"] = [str(rollback_exc)]
+        exc.add_note(f"rollback failed unexpectedly: {rollback_exc}")
+
+
+def _persist_failed_journal(journal: dict, journal_path: Path, exc: Exception) -> None:
+    try:
+        _write_journal(journal_path, journal)
+    except Exception as persistence_exc:
+        message = f"failed to persist failed transaction journal: {persistence_exc}"
+        journal.setdefault("journal_persistence_errors", []).append(message)
+        exc.add_note(message)
+        try:
+            _write_journal(journal_path, journal)
+        except Exception as retry_exc:
+            exc.add_note(f"failed transaction journal retry also failed: {retry_exc}")
+
+
+def _copy_backup(path: Path, backup: Path) -> None:
+    if path.is_symlink():
+        backup.symlink_to(path.readlink())
+    elif path.is_dir():
+        shutil.copytree(path, backup, symlinks=True)
+    elif path.is_file():
+        shutil.copy2(path, backup)
+    else:
+        raise RuntimeError(f"cannot back up unsupported filesystem node: {path}")
+    if not (backup.exists() or backup.is_symlink()):
+        raise RuntimeError(f"backup was not created: {backup}")
+
+
+def _historical_recorded_packages(attachment_root: Path, historical_path: Path) -> tuple[bool, list[str]]:
     recorded = False
     packages: set[str] = set()
     for lock_path in (target_lockfile_path(attachment_root), legacy_target_lockfile_path(attachment_root)):
         payload = load_json(lock_path)
         if not isinstance(payload, dict):
             continue
-        if str(legacy_path) in {str(item) for item in payload.get("adapter_state", [])}:
+        if str(historical_path) in {str(item) for item in payload.get("adapter_state", [])}:
             recorded = True
         for item in payload.get("adapter_targets", []):
-            if isinstance(item, dict) and str(item.get("path")) == str(legacy_path):
+            if isinstance(item, dict) and str(item.get("path")) == str(historical_path):
                 recorded = True
                 packages.update(str(name) for name in item.get("packages", []) if name)
         packages.update(str(name) for name in payload.get("repo_packages", []) if name)
@@ -87,7 +127,7 @@ def _legacy_codex_recorded_packages(attachment_root: Path, legacy_path: Path) ->
     return recorded, sorted(packages)
 
 
-def _retire_legacy_codex_adapter(
+def _retire_historical_adapter(
     action,
     *,
     attachment_root: Path,
@@ -102,10 +142,11 @@ def _retire_legacy_codex_adapter(
     known_roots = legacy_global_roots(home)
     state = adapter_path_state(path, global_root, known_global_roots=known_roots, target_root=attachment_root)
     marker = adapter_marker_state(path) if path.is_dir() and not path.is_symlink() else {"exists": False}
-    recorded, recorded_packages = _legacy_codex_recorded_packages(attachment_root, path)
+    recorded, recorded_packages = _historical_recorded_packages(attachment_root, path)
     proven = bool(
         state["points_to_global"]
         or state["points_to_legacy_global"]
+        or state.get("managed_visible_packages")
         or (marker.get("exists") and not marker.get("error") and marker.get("mode") in {"symlink", "portable"})
         or (recorded and not path.is_symlink())
     )
@@ -113,14 +154,14 @@ def _retire_legacy_codex_adapter(
         action.details["disposition"] = "preserved-unproven"
         return []
 
+    if not path.is_symlink() and not path.is_dir():
+        raise RuntimeError(f"historical adapter is not a supported symlink or directory: {path}")
     backup = path.with_name(f".{path.name}.localsetup-backup-{uuid.uuid4().hex}")
     existed = path.exists() or path.is_symlink()
-    if path.is_symlink():
-        backup.symlink_to(path.readlink())
-    elif path.is_dir():
-        shutil.copytree(path, backup, symlinks=True)
+    _copy_backup(path, backup)
+    transition_id = str(action.details["id"])
     journal["touched"].append(
-        {"kind": "adapter", "path": str(path), "backup": str(backup), "existed": existed, "transition": "codex-skills-v1"}
+        {"kind": "adapter", "path": str(path), "backup": str(backup), "existed": existed, "transition": transition_id}
     )
     _write_journal(journal_path, journal)
     removed = remove_managed_adapter_entries(
@@ -198,11 +239,12 @@ def _prune_unreferenced_managed_packages(
         if not is_managed_package(path):
             continue
         backup = path.with_name(f".{path.name}.localsetup-backup-{uuid.uuid4().hex}")
+        _copy_backup(path, backup)
         journal.setdefault("touched", []).append(
             {"kind": "managed_package", "path": str(path), "backup": str(backup), "existed": True}
         )
         _write_journal(journal_path, journal)
-        _same_filesystem_replace(path, backup)
+        _remove_path(path)
         removed.append(str(path))
     return removed
 
@@ -369,16 +411,16 @@ def _apply_plan_unlocked(
                         _record_file_state(journal, journal_path, action.path / f"{name}.toml")
                     installed_codex_agents = _install_codex_agents(repo_root, action.path, action.details["agents"])
                 executed.append(f"install_codex_agents:{action.path}")
-            elif action.kind == "retire_legacy_codex_adapter":
+            elif action.kind == "retire_historical_adapter":
                 if not dry_run:
-                    _retire_legacy_codex_adapter(
+                    _retire_historical_adapter(
                         action,
                         attachment_root=attachment_root,
                         home=home,
                         journal=journal,
                         journal_path=journal_path,
                     )
-                executed.append(f"retire_legacy_codex_adapter:{action.path}")
+                executed.append(f"retire_historical_adapter:{action.path}")
             elif action.kind == "attach_repo_path":
                 if not dry_run:
                     ensure_dir(action.path.parent)
@@ -400,6 +442,10 @@ def _apply_plan_unlocked(
                         "mixed_managed_custom_adapter",
                         "shared_adapter_directory",
                     }
+                    if existed:
+                        if not in_place and state["collision_reason"]:
+                            raise RuntimeError(f"refusing to replace {state['collision_reason']} at adapter path: {action.path}")
+                        _copy_backup(action.path, backup)
                     journal["touched"].append(
                         {
                             "kind": "adapter",
@@ -409,13 +455,8 @@ def _apply_plan_unlocked(
                         }
                     )
                     _write_journal(journal_path, journal)
-                    if action.path.exists() or action.path.is_symlink():
-                        if in_place:
-                            shutil.copytree(action.path, backup, symlinks=True)
-                        elif state["collision_reason"]:
-                            raise RuntimeError(f"refusing to replace {state['collision_reason']} at adapter path: {action.path}")
-                        else:
-                            _same_filesystem_replace(action.path, backup)
+                    if existed and not in_place:
+                        _remove_path(action.path)
                     _write_scoped_adapter(action.path, global_root, package_names, mode=mode)
                 executed.append(f"attach_repo_path:{action.path}")
     except Exception as exc:
@@ -424,8 +465,8 @@ def _apply_plan_unlocked(
             journal["failed_at_unix"] = int(time.time())
             journal["error"] = str(exc)
             _cleanup_staging(journal)
-            _restore_failed_mutations(journal)
-            _write_journal(journal_path, journal)
+            _record_rollback_errors(journal, exc)
+            _persist_failed_journal(journal, journal_path, exc)
         raise
 
     pack = load_pack_config(repo_root)
@@ -454,6 +495,7 @@ def _apply_plan_unlocked(
         lock_payload["migration_origin"] = {"legacy_lockfile": str(legacy_lockfile)}
     if not dry_run:
         try:
+            _record_file_state(journal, journal_path, paths_manifest_path(home))
             paths_manifest = write_paths_manifest(repo_root, home)
             journal["touched"].append({"kind": "paths_manifest", "path": str(paths_manifest["manifest"])})
             _write_journal(journal_path, journal)
@@ -492,7 +534,7 @@ def _apply_plan_unlocked(
             _record_file_state(journal, journal_path, lockfile_path)
             legacy_backup = None
             if legacy_lockfile.exists() and legacy_lockfile != lockfile_path:
-                legacy_backup = _archive_legacy_lockfile(legacy_lockfile, attachment_root, txid)
+                legacy_backup = _prepare_legacy_lockfile_backup(legacy_lockfile, attachment_root, txid)
                 journal["touched"].append(
                     {
                         "kind": "legacy_lockfile",
@@ -501,6 +543,8 @@ def _apply_plan_unlocked(
                         "existed": True,
                     }
                 )
+                _write_journal(journal_path, journal)
+                _remove_legacy_lockfile(legacy_lockfile)
                 lock_payload["migration_origin"]["backup"] = legacy_backup
             journal["touched"].append({"kind": "lockfile", "path": str(lockfile_path)})
             _write_journal(journal_path, journal)
@@ -515,8 +559,8 @@ def _apply_plan_unlocked(
             journal["failed_at_unix"] = int(time.time())
             journal["error"] = str(exc)
             _cleanup_staging(journal)
-            _restore_failed_mutations(journal)
-            _write_journal(journal_path, journal)
+            _record_rollback_errors(journal, exc)
+            _persist_failed_journal(journal, journal_path, exc)
             raise
     return {
         "executed": executed,

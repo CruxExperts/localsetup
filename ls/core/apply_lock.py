@@ -19,7 +19,7 @@ def build_lock_payload(
     dependency_info: dict | None,
 ) -> dict:
     adapter_actions = [action for action in plan.actions if action.kind == "attach_repo_path"]
-    transition_actions = [action for action in plan.actions if action.kind == "retire_legacy_codex_adapter"]
+    transition_actions = [action for action in plan.actions if action.kind == "retire_historical_adapter"]
     return {
         "version": 2,
         "pack": pack.pack_id,
@@ -57,7 +57,7 @@ def build_lock_payload(
         ],
         "adapter_transitions": [
             {
-                "id": "codex-skills-v1",
+                "id": action.details.get("id"),
                 "platform": action.details.get("platform"),
                 "from": str(action.path),
                 "to": action.details.get("replacement"),

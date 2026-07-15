@@ -51,6 +51,93 @@ def test_legacy_codex_transition_preserves_mixed_custom_content(tmp_path: Path) 
     assert not (root / ".agents" / "skills" / "ls-context").exists()
 
 
+def test_exact_managed_legacy_codex_child_is_transition_proof_without_marker(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    global_root = home / ".local" / "share" / "localsetup" / "packages"
+    managed = global_root / "ls-context"
+    historical = root / ".codex" / "skills"
+    historical.mkdir(parents=True)
+    (historical / "ls-context").symlink_to(managed, target_is_directory=True)
+    custom = historical / "custom-skill"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+
+    apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"]), home=home)
+
+    assert not (historical / "ls-context").exists()
+    assert (custom / "SKILL.md").is_file()
+    assert verify_install(root, home, platform_ids=["codex"])["ok"] is True
+
+
+def test_unrelated_legacy_codex_child_symlink_is_not_transition_proof(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    unrelated = tmp_path / "unrelated-child"
+    unrelated.mkdir()
+    historical = root / ".codex" / "skills"
+    historical.mkdir(parents=True)
+    child = historical / "custom-link"
+    child.symlink_to(unrelated, target_is_directory=True)
+
+    apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"]), home=home)
+
+    assert child.is_symlink()
+    assert child.resolve(strict=False) == unrelated.resolve(strict=False)
+
+
+def test_openclaw_historical_adapter_transition_preserves_custom_content(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    global_root = home / ".local" / "share" / "localsetup" / "packages"
+    historical = root / ".openclaw" / "skills"
+    historical.mkdir(parents=True)
+    (historical / "ls-context").symlink_to(global_root / "ls-context", target_is_directory=True)
+    custom = historical / "custom-skill"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+
+    apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["openclaw"]), home=home)
+
+    assert not (historical / "ls-context").exists()
+    assert (custom / "SKILL.md").is_file()
+    verified = verify_install(root, home, platform_ids=["openclaw"])
+    assert verified["ok"] is True
+    assert verified["historical_adapter_transitions"]["openclaw"][0]["managed_exposure"] is False
+
+
+def test_unproven_openclaw_historical_symlink_blocks_before_mutation(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    unrelated = tmp_path / "unrelated-openclaw-skills"
+    unrelated.mkdir()
+    historical = root / ".openclaw" / "skills"
+    historical.parent.mkdir(parents=True)
+    historical.symlink_to(unrelated, target_is_directory=True)
+
+    with pytest.raises(RuntimeError, match="unproven_historical_openclaw_symlink"):
+        apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["openclaw"]), home=home)
+
+    assert historical.is_symlink()
+    assert historical.resolve(strict=False) == unrelated.resolve(strict=False)
+    assert not (root / ".agents" / "skills").exists()
+    assert not (root / ".localsetup" / "install-journal").exists()
+
+
+def test_openclaw_verify_reports_residual_historical_managed_exposure(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["openclaw"]), home=home)
+    historical = root / ".openclaw" / "skills"
+    historical.parent.mkdir(parents=True, exist_ok=True)
+    historical.symlink_to(home / ".local" / "share" / "localsetup" / "packages", target_is_directory=True)
+
+    verified = verify_install(root, home, platform_ids=["openclaw"])
+
+    assert verified["ok"] is False
+    assert any("legacy OpenClaw adapter" in issue for issue in verified["issues"])
+
+
 def test_unproven_legacy_codex_symlink_blocks_before_any_mutation(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"

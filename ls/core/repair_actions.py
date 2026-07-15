@@ -255,6 +255,20 @@ def _plan_actions(
                     }
                 )
                 continue
+            if state.get("managed_visible_packages") and not (
+                state["points_to_global"] or state["points_to_legacy_global"]
+            ):
+                actions.append(
+                    _action(
+                        "remove_managed_adapter_entries",
+                        path,
+                        safety="safe",
+                        reason=f"retire proven Localsetup-managed entries from historical {platform_id} adapter",
+                        details={"packages": state.get("managed_visible_packages", [])},
+                    )
+                )
+                pre_action_count += 1
+                continue
             if state["status_code"] in {"custom_repo_skills", "shared_adapter_directory", "mixed_managed_custom_adapter"} and (
                 state.get("custom_entries") or state.get("unknown_entries")
             ):
@@ -274,8 +288,8 @@ def _plan_actions(
                     {
                         "kind": "adapter_collision",
                         "path": str(path),
-                        "reason": state["collision_reason"] or "historical Codex adapter symlink is not proven LocalSetup-managed",
-                        "required": "review this symlink before LocalSetup can transition the Codex adapter",
+                        "reason": state["collision_reason"] or f"historical {platform_id} adapter symlink is not proven LocalSetup-managed",
+                        "required": f"review this symlink before LocalSetup can transition the {platform_id} adapter",
                     }
                 )
 
