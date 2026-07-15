@@ -112,7 +112,7 @@ def build_drift_packets(current: dict[str, Any], baseline: dict[str, Any] | None
                     question="Do these removals orphan generated docs, workflow references, or package boundaries?",
                 )
             )
-        changed_manifests = [path for path in changed if path in {"pyproject.toml", "uv.lock", "VERSION", "_localsetup/config/pack.yaml"}]
+        changed_manifests = [path for path in changed if path in {"pyproject.toml", "uv.lock", "VERSION", "ls/config/pack.yaml"}]
         if changed_manifests:
             packets.append(
                 make_packet(

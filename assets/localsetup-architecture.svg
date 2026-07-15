@@ -49,7 +49,7 @@
   <g filter="url(#shadow)">
     <rect x="58" y="144" width="280" height="246" rx="22" class="box"/>
     <text x="86" y="184" class="label">Source checkout</text>
-    <text x="86" y="218" class="mono">_localsetup/</text>
+    <text x="86" y="218" class="mono">ls/</text>
     <text x="86" y="250" class="tiny">config/platforms.yaml</text>
     <text x="86" y="278" class="tiny">skills/ls-*</text>
     <text x="86" y="306" class="tiny">docs/</text>

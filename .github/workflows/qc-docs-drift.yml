@@ -33,7 +33,7 @@ jobs:
         run: uv sync --frozen --all-groups --python python3
 
       - name: Run docs alignment check
-        run: uv run --frozen python _localsetup/tools/docs_alignment.py --repo-root . check --ci
+        run: uv run --frozen python ls/tools/docs_alignment.py --repo-root . check --ci
 
       - name: Ensure QC labels exist
         if: always()

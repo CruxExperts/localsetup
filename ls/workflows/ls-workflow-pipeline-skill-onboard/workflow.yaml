@@ -1,0 +1,33 @@
+workflow_id: pipeline-skill-onboard
+display_name: Pipeline Skill Onboard
+aliases: [skill onboarding pipeline]
+invocation: Use for importing and normalizing new skills.
+required_skills:
+  - ls-skill-vetter
+  - ls-skill-importer
+  - ls-skill-normalizer
+  - ls-skill-sandbox-tester
+required_tools: []
+required_docs:
+  - ls/docs/WORKFLOW_QUICK_REF.md
+  - ls/docs/SKILL_IMPORTING.md
+gates:
+  - id: trust_gate
+    rule: Vet untrusted sources before install.
+phases:
+  - id: vet
+    summary: Security-screen candidate skills.
+  - id: import_normalize
+    summary: Import and normalize skill packages.
+  - id: sandbox_test
+    summary: Run isolated smoke checks.
+validation:
+  - check: Imported skills pass normalization and sandbox checks.
+outputs:
+  - Skill onboarding report
+smoke:
+  - id: skill_importing_doc_present
+    check: ls/docs/SKILL_IMPORTING.md exists
+migration:
+  source: ls/docs/WORKFLOW_QUICK_REF.md
+  note: Pipeline metadata mirrors quick-ref sequence.

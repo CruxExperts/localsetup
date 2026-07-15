@@ -21,18 +21,18 @@ Thanks for helping improve Localsetup. This project is built for people who want
 
 ## Release and maintenance checks
 
-Use the versioning policy in [_localsetup/docs/VERSIONING.md](_localsetup/docs/VERSIONING.md). For automation, branch rules, required checks, labels, and triage behavior, use [_localsetup/docs/REPO_MAINTENANCE.md](_localsetup/docs/REPO_MAINTENANCE.md).
+Use the versioning policy in [ls/docs/VERSIONING.md](ls/docs/VERSIONING.md). For automation, branch rules, required checks, labels, and triage behavior, use [ls/docs/REPO_MAINTENANCE.md](ls/docs/REPO_MAINTENANCE.md).
 
 Before opening a release-impacting PR, run the relevant subset of:
 
 ```bash
-uv run --locked python _localsetup/tools/localsetup.py --source-root . version-plan
-uv run --locked python _localsetup/tools/localsetup.py --source-root . version-sync --check --target "$(cat VERSION)"
-uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog
-uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-package-surface
-uv run --locked python _localsetup/tools/localsetup.py --source-root . docs-align check --ci
-workers="$(uv run --locked python _localsetup/tools/localsetup.py --source-root . test-workers)"
-uv run --locked pytest -n "$workers" _localsetup/tests -q
+uv run --locked python ls/tools/localsetup.py --source-root . version-plan
+uv run --locked python ls/tools/localsetup.py --source-root . version-sync --check --target "$(cat VERSION)"
+uv run --locked python ls/tools/localsetup.py --source-root . validate-catalog
+uv run --locked python ls/tools/localsetup.py --source-root . validate-package-surface
+uv run --locked python ls/tools/localsetup.py --source-root . docs-align check --ci
+workers="$(uv run --locked python ls/tools/localsetup.py --source-root . test-workers)"
+uv run --locked pytest -n "$workers" ls/tests -q
 git diff --check
 ```
 
@@ -41,9 +41,9 @@ Run focused tests and Localsetup validators for the code you changed before the 
 ## Repository layout
 
 - Root files contain the public README, install entrypoints, license, contribution guide, and security policy.
-- `_localsetup/` contains the framework engine: tools, configuration, templates, docs, tests, and shipped skills.
-- `_localsetup/skills/ls-*` is the source of truth for shipped skills.
-- `_localsetup/docs/` is the public framework documentation set.
+- `ls/` contains the framework engine: tools, configuration, templates, docs, tests, and shipped skills.
+- `ls/skills/ls-*` is the source of truth for shipped skills.
+- `ls/docs/` is the public framework documentation set.
 - `assets/` contains public README and docs visuals.
 
 ## Standards
@@ -61,11 +61,11 @@ Only humans are listed as contributors. Do not add AI assistants, IDEs, or tools
 ## Useful references
 
 - [Root README](README.md)
-- [Framework README](_localsetup/README.md)
-- [Quickstart](_localsetup/docs/QUICKSTART.md)
-- [Command reference](_localsetup/docs/COMMAND_REFERENCE.md)
-- [Skill importing](_localsetup/docs/SKILL_IMPORTING.md)
-- [Versioning](_localsetup/docs/VERSIONING.md)
-- [Repository maintenance](_localsetup/docs/REPO_MAINTENANCE.md)
+- [Framework README](ls/README.md)
+- [Quickstart](ls/docs/QUICKSTART.md)
+- [Command reference](ls/docs/COMMAND_REFERENCE.md)
+- [Skill importing](ls/docs/SKILL_IMPORTING.md)
+- [Versioning](ls/docs/VERSIONING.md)
+- [Repository maintenance](ls/docs/REPO_MAINTENANCE.md)
 - [Support](SUPPORT.md)
 - [Security](SECURITY.md)

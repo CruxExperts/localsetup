@@ -7,7 +7,7 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
   <a href="https://agentskills.io/specification"><img src="https://img.shields.io/badge/Agent%20Skills-compatible-2ea44f" alt="Agent Skills compatible"></a>
-  <a href="_localsetup/docs/PLATFORM_REGISTRY.md"><img src="https://img.shields.io/badge/platforms-cursor%20%7C%20claude--code%20%7C%20codex%20%7C%20openclaw%20%7C%20kilo%20%7C%20opencode-1f6feb" alt="Supported platforms"></a>
+  <a href="ls/docs/PLATFORM_REGISTRY.md"><img src="https://img.shields.io/badge/platforms-cursor%20%7C%20claude--code%20%7C%20codex%20%7C%20openclaw%20%7C%20kilo%20%7C%20opencode-1f6feb" alt="Supported platforms"></a>
 </p>
 
 **Version:** 4.2.19<br>
@@ -24,11 +24,11 @@ Use it when you want agents to stop improvising from hidden local setup and star
 
 Localsetup packages:
 
-- Global framework source under `~/.local/share/localsetup/source` for installed users; source checkouts keep `_localsetup/` for contributors
+- Global framework source under `~/.local/share/localsetup/source` for installed users; source checkouts keep `ls/` for contributors
 - 106 shipped capability skills plus 24 first-class workflow packages for debugging, testing, PR review, infrastructure, docs, git recovery, skill import, security vetting, context indexing, TypeScript code quality, opt-in harness automation, OmniRoute integration, and agent workflow control
 - Cross-platform adapters for Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode
 - Agent Skills-compatible `SKILL.md` packages that can be imported, normalized, vetted, installed, and reused
-- Workflow packages under `_localsetup/workflows/` that stay executable as skills while carrying Localsetup `workflow.yaml` metadata for aliases, gates, dependencies, and generated registries
+- Workflow packages under `ls/workflows/` that stay executable as skills while carrying Localsetup `workflow.yaml` metadata for aliases, gates, dependencies, and generated registries
 - Documentation alignment tooling that inventories source-owned docs, maps code truth, audits generated facts, and refreshes supported public/generated surfaces
 - Context-index tooling for vector-first SQLite retrieval, freshness checks, agent preflight, MCP configuration support, and machine-readable worklists
 - A Python-first installer with preflight, planning, verification, rollback metadata, and generated docs sync
@@ -42,7 +42,7 @@ That means your agent setup travels with the repo, survives context resets, and 
   <img src="assets/localsetup-architecture.svg" alt="Localsetup architecture: repo source, config resolver, managed home library, adapters, and rollback metadata" width="960">
 </p>
 
-The registered Localsetup source checkout is the canonical framework source. The installer resolves configuration, creates the managed package library for skills and workflow packages, attaches only explicitly selected target adapter paths, writes target lock/report metadata under `.localsetup/`, and records an install journal under `.localsetup/install-journal/`. Consuming repos do not receive a copied `_localsetup/` by default.
+The registered Localsetup source checkout is the canonical framework source. The installer resolves configuration, creates the managed package library for skills and workflow packages, attaches only explicitly selected target adapter paths, writes target lock/report metadata under `.localsetup/`, and records an install journal under `.localsetup/install-journal/`. Consuming repos do not receive a copied `ls/` by default.
 
 ## Skills and workflow packages
 
@@ -50,12 +50,12 @@ Localsetup makes one important distinction explicit:
 
 | Package type | Source root | Runtime shape | Use it for |
 |---|---|---|---|
-| Capability skill | `_localsetup/skills/ls-*` | Agent Skills `SKILL.md` package | A reusable capability such as debugging, testing, skill import, PR review, service triage, or versioning. |
-| Workflow package | `_localsetup/workflows/ls-workflow-*` | Agent Skills `SKILL.md` package plus `workflow.yaml` | A named orchestration flow with aliases, required skills, gates, phases, validation, and expected outputs. |
+| Capability skill | `ls/skills/ls-*` | Agent Skills `SKILL.md` package | A reusable capability such as debugging, testing, skill import, PR review, service triage, or versioning. |
+| Workflow package | `ls/workflows/ls-workflow-*` | Agent Skills `SKILL.md` package plus `workflow.yaml` | A named orchestration flow with aliases, required skills, gates, phases, validation, and expected outputs. |
 
 Both package types install into `~/.local/share/localsetup/packages`, so agent hosts can invoke them through explicitly attached adapter paths. The split keeps portable skills clean while making workflow orchestration auditable and generated from source manifests.
 
-Start with the [workflow packages guide](_localsetup/docs/WORKFLOW_PACKAGES.md) for usage and the [workflow standard](_localsetup/docs/WORKFLOW_STANDARD.md) for authoring rules.
+Start with the [workflow packages guide](ls/docs/WORKFLOW_PACKAGES.md) for usage and the [workflow standard](ls/docs/WORKFLOW_STANDARD.md) for authoring rules.
 
 ## Current snapshot
 
@@ -66,7 +66,7 @@ Start with the [workflow packages guide](_localsetup/docs/WORKFLOW_PACKAGES.md) 
 | Supported platforms | `cursor, claude-code, codex, openclaw, kilo, opencode` |
 | Shipped skills | `106` |
 | Workflow packages | `24` |
-| Source | `_localsetup/docs/_generated/facts.json` |
+| Source | `ls/docs/_generated/facts.json` |
 <!-- facts-block:end -->
 
 ## 60-second quickstart
@@ -94,7 +94,7 @@ The public command is release-backed even though the small wrapper is downloaded
 For release verification, download the GitHub release tarball with its `.sha256` sidecar and run:
 
 ```bash
-uv run --locked python _localsetup/tools/localsetup.py --source-root . verify-release dist/localsetup-v$(cat VERSION).tar.gz
+uv run --locked python ls/tools/localsetup.py --source-root . verify-release dist/localsetup-v$(cat VERSION).tar.gz
 ```
 
 Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.codex/skills` to the chosen target. For repo-targeted CLI automation with no platform or package selectors, Localsetup uses auto mode: existing Localsetup state is inferred and refreshed, safe legacy repairs are applied only when unambiguous, and a brand-new repo gets the `normal` global package baseline with no repo adapter paths. Interactive installs first choose the global package-library baseline, defaulting to `normal` or the prior registry setting. Repo setup is a separate choice; when selected, repo-visible packs default from the target lockfile or repo-detected suggestions.
@@ -147,7 +147,7 @@ Install every shipped skill and workflow package for Codex, Kilo, and OpenCode, 
 ./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,frontend,architecture,ops,integrations,publishing,harness,skill-lifecycle,growth-content,specialized --sync-env
 ```
 
-In symlink mode, Localsetup writes a scoped marker and managed per-package links inside each selected repo adapter path. The adapter directory itself remains a shared agent surface: custom skills, ordinary files, and repo-local symlinks may live beside Localsetup-managed entries and must be preserved. Same-name selected package collisions and unsafe symlinks still block before mutation. That means a repo sees only the repo-visible Localsetup skills and workflow packages even when the global library contains a larger baseline. Portable mode uses the same scoped marker and package list, but copies selected managed packages instead of linking them. See [_localsetup/docs/ADAPTER_OWNERSHIP.md](_localsetup/docs/ADAPTER_OWNERSHIP.md) for the ownership boundary.
+In symlink mode, Localsetup writes a scoped marker and managed per-package links inside each selected repo adapter path. The adapter directory itself remains a shared agent surface: custom skills, ordinary files, and repo-local symlinks may live beside Localsetup-managed entries and must be preserved. Same-name selected package collisions and unsafe symlinks still block before mutation. That means a repo sees only the repo-visible Localsetup skills and workflow packages even when the global library contains a larger baseline. Portable mode uses the same scoped marker and package list, but copies selected managed packages instead of linking them. See [ls/docs/ADAPTER_OWNERSHIP.md](ls/docs/ADAPTER_OWNERSHIP.md) for the ownership boundary.
 
 Attach a selected adapter to another repo while using this checkout as the source:
 
@@ -162,14 +162,14 @@ localsetup convert --tools codex --packs core
 localsetup convert --tools codex --packs core --yes
 ```
 
-Conversion writes a timestamped backup and machine-readable report under `.localsetup/backups/conversion-*`, archives known managed or legacy Localsetup artifacts, backs up and removes stale target `_localsetup/` folders, blocks ambiguous unmanaged content, installs selected adapters, and verifies the result.
+Conversion writes a timestamped backup and machine-readable report under `.localsetup/backups/conversion-*`, archives known managed or legacy Localsetup artifacts, backs up and removes stale target `ls/` folders, blocks ambiguous unmanaged content, installs selected adapters, and verifies the result.
 
 Windows support is WSL2-only in the current framework. Open WSL2, change to the repo path, and run the Bash installer.
 
-Full install docs: [_localsetup/docs/QUICKSTART.md](_localsetup/docs/QUICKSTART.md) and [_localsetup/docs/MULTI_PLATFORM_INSTALL.md](_localsetup/docs/MULTI_PLATFORM_INSTALL.md).
-Copy-paste command reference: [_localsetup/docs/COMMAND_REFERENCE.md](_localsetup/docs/COMMAND_REFERENCE.md).
+Full install docs: [ls/docs/QUICKSTART.md](ls/docs/QUICKSTART.md) and [ls/docs/MULTI_PLATFORM_INSTALL.md](ls/docs/MULTI_PLATFORM_INSTALL.md).
+Copy-paste command reference: [ls/docs/COMMAND_REFERENCE.md](ls/docs/COMMAND_REFERENCE.md).
 
-Opt-in harness automation is documented separately because normal installs never schedule autonomous work. See [_localsetup/docs/HARNESS_AUTOMATION.md](_localsetup/docs/HARNESS_AUTOMATION.md) for `localsetup harness codex-heartbeat plan/init/enable/status/budget/run/disable`.
+Opt-in harness automation is documented separately because normal installs never schedule autonomous work. See [ls/docs/HARNESS_AUTOMATION.md](ls/docs/HARNESS_AUTOMATION.md) for `localsetup harness codex-heartbeat plan/init/enable/status/budget/run/disable`.
 
 ## 10 reasons to use Localsetup
 
@@ -206,7 +206,7 @@ These are not toy prompts. They are practical skills and workflows from the ship
 | `ls-workflow-ops-tmux-session` | Keeps human-controlled server operations visible, resumable, and sudo-aware. |
 | `ls-workflow-tmux-terminal-mode` | Manages tmux-default terminal mode setup and read-only health checks. |
 
-See the generated catalogs for all shipped skills and workflows: [_localsetup/docs/SKILLS.md](_localsetup/docs/SKILLS.md) and [_localsetup/docs/WORKFLOW_QUICK_REF.md](_localsetup/docs/WORKFLOW_QUICK_REF.md).
+See the generated catalogs for all shipped skills and workflows: [ls/docs/SKILLS.md](ls/docs/SKILLS.md) and [ls/docs/WORKFLOW_QUICK_REF.md](ls/docs/WORKFLOW_QUICK_REF.md).
 
 ## Install lifecycle
 
@@ -232,17 +232,17 @@ localsetup why --packs core
 localsetup graph
 localsetup adopt --target-directory .
 localsetup sbom --out /tmp/localsetup-source.cdx.json
-uv run --locked python _localsetup/tools/localsetup.py --source-root . context --markdown
-uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog
-uv run --locked python _localsetup/tools/localsetup.py --source-root . audit-global-first
-uv run --locked python _localsetup/tools/localsetup.py --source-root . rollback
+uv run --locked python ls/tools/localsetup.py --source-root . context --markdown
+uv run --locked python ls/tools/localsetup.py --source-root . validate-catalog
+uv run --locked python ls/tools/localsetup.py --source-root . audit-global-first
+uv run --locked python ls/tools/localsetup.py --source-root . rollback
 ```
 
 Use `--trace-json /path/to/events.jsonl` with `install`, `verify`, or `doctor` to append local JSONL trace events for automation review.
 
-For a complete option table, see the [command reference](_localsetup/docs/COMMAND_REFERENCE.md).
+For a complete option table, see the [command reference](ls/docs/COMMAND_REFERENCE.md).
 
-`doctor` reports the uv-managed source checkout environment. `doctor repair` emits a dry-run JSON repair report for legacy or partial target repos, and applies only low-ambiguity Localsetup-owned repairs when rerun with `--yes`. Repair now treats workflow packages as first-class inferred packages, preserves benign adapter content by default, and can emit compact handoff prompts with `--agent-prompt` or `--emit-agent-prompt`. Adapter-shaped directories such as `.codex/skills` and `.agents/skills` are shared surfaces, not Localsetup-exclusive directories; repair must preserve custom skills, ordinary files, and repo-local symlinks in place while mutating only proven Localsetup-managed entries. Clean legacy `_localsetup` framework trees are removed only after backup and, when tracked, `git rm --cached`; protected source checkouts still allow safe adapter and lock refreshes, while custom, dirty, symlinked, unsafe, or content-divergent `_localsetup` trees are preserved for migration planning. If `doctor` sees an old `~/.local/share/localsetup/venv` from earlier releases, it reports that legacy venv as ignored and gives a repair hint instead of trying to execute it.
+`doctor` reports the uv-managed source checkout environment. `doctor repair` emits a dry-run JSON repair report for legacy or partial target repos, and applies only low-ambiguity Localsetup-owned repairs when rerun with `--yes`. Repair now treats workflow packages as first-class inferred packages, preserves benign adapter content by default, and can emit compact handoff prompts with `--agent-prompt` or `--emit-agent-prompt`. Adapter-shaped directories such as `.codex/skills` and `.agents/skills` are shared surfaces, not Localsetup-exclusive directories; repair must preserve custom skills, ordinary files, and repo-local symlinks in place while mutating only proven Localsetup-managed entries. Clean legacy `ls` framework trees are removed only after backup and, when tracked, `git rm --cached`; protected source checkouts still allow safe adapter and lock refreshes, while custom, dirty, symlinked, unsafe, or content-divergent `ls` trees are preserved for migration planning. If `doctor` sees an old `~/.local/share/localsetup/venv` from earlier releases, it reports that legacy venv as ignored and gives a repair hint instead of trying to execute it.
 
 Release note for this repair behavior: `.localsetup/lock.json` is managed repo state and should stay visible to Git. Runtime summaries, journals, backups, health state, and context-index runtime data are local runtime state and are added to `.git/info/exclude`.
 
@@ -278,16 +278,16 @@ The default dependency mode is report-only. It can warn about corrupt legacy Loc
 
 ## Read more
 
-- [Framework docs index](_localsetup/docs/README.md)
-- [Framework README](_localsetup/README.md)
-- [Feature catalog](_localsetup/docs/FEATURES.md)
-- [Platform registry](_localsetup/docs/PLATFORM_REGISTRY.md)
-- [Harness automation](_localsetup/docs/HARNESS_AUTOMATION.md)
-- [Workflow packages](_localsetup/docs/WORKFLOW_PACKAGES.md)
-- [Workflow standard](_localsetup/docs/WORKFLOW_STANDARD.md)
-- [Workflow registry](_localsetup/docs/WORKFLOW_REGISTRY.md)
-- [Skill importing](_localsetup/docs/SKILL_IMPORTING.md)
-- [Skill discovery](_localsetup/docs/SKILL_DISCOVERY.md)
+- [Framework docs index](ls/docs/README.md)
+- [Framework README](ls/README.md)
+- [Feature catalog](ls/docs/FEATURES.md)
+- [Platform registry](ls/docs/PLATFORM_REGISTRY.md)
+- [Harness automation](ls/docs/HARNESS_AUTOMATION.md)
+- [Workflow packages](ls/docs/WORKFLOW_PACKAGES.md)
+- [Workflow standard](ls/docs/WORKFLOW_STANDARD.md)
+- [Workflow registry](ls/docs/WORKFLOW_REGISTRY.md)
+- [Skill importing](ls/docs/SKILL_IMPORTING.md)
+- [Skill discovery](ls/docs/SKILL_DISCOVERY.md)
 - [Contributing](CONTRIBUTING.md)
 - [Support](SUPPORT.md)
 - [Code of conduct](CODE_OF_CONDUCT.md)

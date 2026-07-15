@@ -8,27 +8,27 @@ When the user corrects agent behavior in a way that should survive future sessio
 
 Do not impose an arbitrary length cap on this file. In particular, do not trim it to fit a 300-line preference or a generic prompt-aesthetics target. If repo rules need more context, add the context here with clear headings and keep it operational.
 
-Keep this file aligned with the repo's actual workflow. If a rule also belongs in installed Codex context for future converted repos, mirror the portable part into `_localsetup/templates/codex/AGENTS.md`. If the rule is only for this checkout, keep it here.
+Keep this file aligned with the repo's actual workflow. If a rule also belongs in installed Codex context for future converted repos, mirror the portable part into `ls/templates/codex/AGENTS.md`. If the rule is only for this checkout, keep it here.
 
 ## Project Structure & Module Organization
 
-This repository packages Localsetup, a repo-local framework for agent context, skills, and install workflows. Root files include the Bash installer (`install`), top-level docs, `VERSION`, and support files. The main engine lives in `_localsetup/`: reusable code is under `_localsetup/lib/`, OS discovery helpers under `_localsetup/discovery/`, shipped skills under `_localsetup/skills/`, platform templates under `_localsetup/templates/`, and framework docs under `_localsetup/docs/`. Tests live in `_localsetup/tests/`; static assets live in `assets/`.
+This repository packages Localsetup, a repo-local framework for agent context, skills, and install workflows. Root files include the Bash installer (`install`), top-level docs, `VERSION`, and support files. The main engine lives in `ls/`: reusable code is under `ls/lib/`, OS discovery helpers under `ls/discovery/`, shipped skills under `ls/skills/`, platform templates under `ls/templates/`, and framework docs under `ls/docs/`. Tests live in `ls/tests/`; static assets live in `assets/`.
 
 ## Build, Test, and Development Commands
 
 - `uv sync --locked --all-groups`: sync the repo-local uv project environment from `pyproject.toml` and `uv.lock`.
-- `uv run --locked ./_localsetup/tests/automated_test.sh`: run the core Linux/macOS smoke test suite.
-- `workers="$(uv run --locked python _localsetup/tools/localsetup.py --source-root . test-workers)" && uv run --locked pytest -n "$workers" _localsetup/tests -q`: run the full Python pytest suite using Localsetup's hardened worker default. Use this as final consolidation verification for broad/shared changes, release or publish readiness, dependency changes, or explicit user requests, not as the first validation step for routine edits.
+- `uv run --locked ./ls/tests/automated_test.sh`: run the core Linux/macOS smoke test suite.
+- `workers="$(uv run --locked python ls/tools/localsetup.py --source-root . test-workers)" && uv run --locked pytest -n "$workers" ls/tests -q`: run the full Python pytest suite using Localsetup's hardened worker default. Use this as final consolidation verification for broad/shared changes, release or publish readiness, dependency changes, or explicit user requests, not as the first validation step for routine edits.
 - `./install --directory . --tools codex --sync-env --non-interactive --yes`: test a local non-interactive install path for one platform and sync the uv environment.
-- `uv run --locked python _localsetup/tools/generate_docs_artifacts.py --repo-root .` and `uv run --locked python _localsetup/tools/localsetup.py --source-root . generate-docs`: refresh generated docs artifacts when documentation inputs change.
-- `uv run --locked python _localsetup/tools/localsetup.py --source-root . publish-preflight --base <base-ref> --head HEAD`: check the publish-time version and generated-document state before pushing; add `--fix` only after feature/docs changes are committed and you want the tool to create the needed sync commits.
-- `uv run --locked python _localsetup/tools/localsetup.py --source-root . release-push`: compute the outgoing Conventional Commit version bump, sync versioned docs, create the release sync commit, and push.
+- `uv run --locked python ls/tools/generate_docs_artifacts.py --repo-root .` and `uv run --locked python ls/tools/localsetup.py --source-root . generate-docs`: refresh generated docs artifacts when documentation inputs change.
+- `uv run --locked python ls/tools/localsetup.py --source-root . publish-preflight --base <base-ref> --head HEAD`: check the publish-time version and generated-document state before pushing; add `--fix` only after feature/docs changes are committed and you want the tool to create the needed sync commits.
+- `uv run --locked python ls/tools/localsetup.py --source-root . release-push`: compute the outgoing Conventional Commit version bump, sync versioned docs, create the release sync commit, and push.
 
 ## Command Choice Clarification
 
 Python-first framework tooling does not mean using Python for every shell task. Use standard shell tools for normal inspection and file discovery, such as `rg`, `sed`, `find`, `wc`, and `git`. Use Python when running repo-native Python tools, testing Python code, or parsing structured data where a normal CLI tool is unavailable or less reliable.
 
-Python architecture: new and substantially refactored Python tooling follows _localsetup/docs/PYTHON_ARCHITECTURE_STANDARD.md; keep entrypoints thin, package responsibilities explicit, and existing debt baseline-managed.
+Python architecture: new and substantially refactored Python tooling follows ls/docs/PYTHON_ARCHITECTURE_STANDARD.md; keep entrypoints thin, package responsibilities explicit, and existing debt baseline-managed.
 
 ## Sandboxed `uv` Cache
 
@@ -37,7 +37,7 @@ When running `uv` commands from an agent sandbox, first check whether the sandbo
 If the sandbox cannot be changed from the current agent session, do not let `uv` default to a read-only user-level cache. That causes avoidable `Could not acquire lock` or read-only filesystem failures before pytest starts. Use a repo-local ignored cache:
 
 ```bash
-UV_CACHE_DIR="$PWD/.localsetup-maint/state/uv-cache" uv run --locked pytest _localsetup/tests -q
+UV_CACHE_DIR="$PWD/.localsetup-maint/state/uv-cache" uv run --locked pytest ls/tests -q
 ```
 
 Use the same `UV_CACHE_DIR="$PWD/.localsetup-maint/state/uv-cache"` prefix for `uv run`, `uv sync`, and related validation commands unless the command intentionally needs the user cache. If the repo-local state path is unavailable, use a writable `/tmp` cache such as `UV_CACHE_DIR=/tmp/localsetup-uv-cache`. Escalate for `uv` cache access only when using the real user cache is required or after trying a writable cache location and confirming the command still fails for a reason that requires approval.
@@ -52,11 +52,11 @@ If a separate checkout or worktree is genuinely necessary, stop and explain why 
 
 ## Coding Style & Naming Conventions
 
-Keep scripts portable and explicit: Bash files should use `set -euo pipefail`; PowerShell should prefer clear parameter names and non-interactive modes for automation. Python code uses 4-space indentation, standard-library path handling via `pathlib` where practical, and small helper functions in `_localsetup/lib/`. Skill directories use `ls-<topic>` naming and each skill must include a spec-compatible `SKILL.md` with `name` and `description` frontmatter. Markdown should use clear headings, relative links, and concise task-oriented language.
+Keep scripts portable and explicit: Bash files should use `set -euo pipefail`; PowerShell should prefer clear parameter names and non-interactive modes for automation. Python code uses 4-space indentation, standard-library path handling via `pathlib` where practical, and small helper functions in `ls/lib/`. Skill directories use `ls-<topic>` naming and each skill must include a spec-compatible `SKILL.md` with `name` and `description` frontmatter. Markdown should use clear headings, relative links, and concise task-oriented language.
 
 ## Testing Guidelines
 
-Add or update tests under `_localsetup/tests/` for changes to path resolution, discovery, parsing, deploy behavior, or skill tooling. Name Python tests `test_<feature>.py` and keep shell wrappers thin. Before the full suite, run compliance and validation checks that match the code you changed, such as focused pytest files or test functions, `validate-catalog`, `validate-package-surface`, `doctor`, generated-doc drift checks, schema checks, and `git diff --check`.
+Add or update tests under `ls/tests/` for changes to path resolution, discovery, parsing, deploy behavior, or skill tooling. Name Python tests `test_<feature>.py` and keep shell wrappers thin. Before the full suite, run compliance and validation checks that match the code you changed, such as focused pytest files or test functions, `validate-catalog`, `validate-package-surface`, `doctor`, generated-doc drift checks, schema checks, and `git diff --check`.
 
 Use the full Python suite as final consolidation verification for broad framework changes, shared runtime behavior, release/publish work, dependency changes, or explicit user requests. Compute the default worker count with `localsetup test-workers`, which uses `ceil(available CPU cores / 2)` clamped to `1..255`; override with `LOCALSETUP_TEST_WORKERS` or `localsetup test-workers --workers <n>` when needed. Do not run the full suite as the default first-pass validation for routine daily work; the codebase is large and full-suite runs have noticeable CPU cost. Windows support is WSL2-only in the current framework.
 
@@ -88,7 +88,7 @@ When a Localsetup tool reports `adapter_content`, `adapter_collision`, or same-d
 
 ## Public And Private Context Boundary
 
-`_localsetup/docs/`, root documentation, platform templates, generated docs, and package/catalog surfaces are publishable framework context. Do not place repo-maintenance plans, private audits, unapproved inventories, internal ledgers, or transient planning artifacts in those locations unless the user explicitly authorizes public documentation.
+`ls/docs/`, root documentation, platform templates, generated docs, and package/catalog surfaces are publishable framework context. Do not place repo-maintenance plans, private audits, unapproved inventories, internal ledgers, or transient planning artifacts in those locations unless the user explicitly authorizes public documentation.
 
 There are three separate destinations. Do not blur them:
 

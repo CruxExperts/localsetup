@@ -1,0 +1,77 @@
+{
+  "assets": [
+    {
+      "alt_text_required": true,
+      "dimensions": {
+        "height": 560,
+        "width": 1200
+      },
+      "license": "Repository license unless otherwise documented",
+      "path": "assets/localsetup-architecture.svg",
+      "provenance": "repository-maintained asset",
+      "references": [
+        "README.md",
+        "ls/README.md",
+        "ls/docs/README.md"
+      ],
+      "type": "svg"
+    },
+    {
+      "alt_text_required": true,
+      "dimensions": {
+        "height": 430,
+        "width": 1200
+      },
+      "license": "Repository license unless otherwise documented",
+      "path": "assets/localsetup-install-lifecycle.svg",
+      "provenance": "repository-maintained asset",
+      "references": [
+        "README.md",
+        "ls/README.md",
+        "ls/docs/MULTI_PLATFORM_INSTALL.md"
+      ],
+      "type": "svg"
+    },
+    {
+      "alt_text_required": true,
+      "dimensions": {
+        "height": 1024,
+        "width": 1024
+      },
+      "license": "Repository license unless otherwise documented",
+      "path": "assets/localsetup-logo.png",
+      "provenance": "repository-maintained asset",
+      "references": [],
+      "type": "png"
+    },
+    {
+      "alt_text_required": true,
+      "dimensions": {
+        "height": 630,
+        "width": 1200
+      },
+      "license": "Repository license unless otherwise documented",
+      "path": "assets/localsetup-readme-hero.svg",
+      "provenance": "repository-maintained asset",
+      "references": [
+        "README.md"
+      ],
+      "type": "svg"
+    }
+  ],
+  "count": 4,
+  "provenance": {
+    "artifact_path": "ls/docs/_generated/docs-asset-manifest.json",
+    "artifact_sha256": "359f82ca43d831f78db8ebecc833a7b70922cd79d55dbf279cf2ba2a025ebcf4",
+    "emitter": "docs-align",
+    "framework_version": "4.2.19",
+    "schema_version": 1,
+    "source_commit": "bab7976b03f1a79e393dc1ceeb1f5c4a6de59df6",
+    "source_dirty": true,
+    "source_provenance_hash": "809d377176ca1ccd9d64c461e22d817bda446b8a68f2adf0a5e0f4f20f6880db",
+    "source_root_id": "c7a25b46f9fcf0291c6861d9086ea7e1ee0b65f2dd3faaae1f1d26f8aa8ef8e1",
+    "source_tag": null,
+    "source_tree_sha": "6aefba4e5381b1a4202d05b81f9e69dbca5d8167"
+  },
+  "schema_version": "1.0"
+}

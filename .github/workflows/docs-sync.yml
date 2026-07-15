@@ -39,14 +39,14 @@ jobs:
 
       - name: Regenerate docs artifacts
         run: |
-          uv run --frozen python _localsetup/tools/generate_docs_artifacts.py --repo-root .
-          uv run --frozen python _localsetup/tools/localsetup.py --source-root . generate-docs
-          uv run --frozen python _localsetup/tools/localsetup.py --source-root . version-sync --check --target "$(cat VERSION)"
+          uv run --frozen python ls/tools/generate_docs_artifacts.py --repo-root .
+          uv run --frozen python ls/tools/localsetup.py --source-root . generate-docs
+          uv run --frozen python ls/tools/localsetup.py --source-root . version-sync --check --target "$(cat VERSION)"
 
       - name: Check documentation alignment
         run: |
           set +e
-          uv run --frozen python _localsetup/tools/docs_alignment.py --repo-root . check --ci --summary-output /tmp/docs-alignment-summary.md
+          uv run --frozen python ls/tools/docs_alignment.py --repo-root . check --ci --summary-output /tmp/docs-alignment-summary.md
           status=$?
           set -e
           cat /tmp/docs-alignment-summary.md >> "$GITHUB_STEP_SUMMARY"

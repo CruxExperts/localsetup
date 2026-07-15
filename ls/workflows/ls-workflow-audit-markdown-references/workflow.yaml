@@ -1,0 +1,27 @@
+workflow_id: audit-markdown-references
+display_name: Audit Markdown References
+aliases: [reference audit, link integrity audit]
+invocation: Use for link and anchor validation in docs.
+required_skills: [ls-markdown-reference-validator]
+required_tools: [ls/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py]
+required_docs:
+  - ls/docs/WORKFLOW_REGISTRY.md
+  - ls/docs/SKILL_VALIDATION_PATTERNS.md
+gates:
+  - id: config_gate
+    rule: Confirm target config before scheduled or bulk audit.
+phases:
+  - id: run_reference_scan
+    summary: Execute markdown reference scanner.
+  - id: report
+    summary: Summarize broken links and anchors.
+validation:
+  - check: Audit output contains pass or failure counts.
+outputs:
+  - Markdown reference audit summary
+smoke:
+  - id: markdown_audit_script_exists
+    check: ls/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py exists
+migration:
+  source: ls/docs/WORKFLOW_REGISTRY.md
+  note: Detailed options remain in skill docs and templates.

@@ -8,7 +8,7 @@ from pathlib import Path
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "_localsetup" / "lib"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "ls" / "lib"))
 from deps import require_deps
 
 require_deps(["jsonschema", "requests", "yaml"])

@@ -2,7 +2,7 @@
 # The docs-organization skill must work without this file.
 # When present, these settings take precedence over heuristics and the category manifest.
 
-root: "_localsetup/docs/"
+root: "ls/docs/"
 exclude_globs:
   - "_generated/**"
   - "local-context/**"
@@ -29,7 +29,7 @@ required_front_matter_fields:
 # docs/.docs-classifications.yaml to choose categories and paths.
 #
 # Fields:
-# - root: docs root path. Default is "docs/" when unset; this repo overrides it to "_localsetup/docs/".
+# - root: docs root path. Default is "docs/" when unset; this repo overrides it to "ls/docs/".
 # - exclude_globs: paths under root that are generated or private and should not be routed.
 # - categories: map from category_label to slug and description.
 # - aliases: map from alternate labels to canonical labels.

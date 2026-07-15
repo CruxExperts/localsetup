@@ -1,0 +1,62 @@
+---
+status: ACTIVE
+version: 4.2
+owner_skill: ls-framework-compliance
+---
+
+# Platform registry (Localsetup)
+
+**Purpose:** Canonical human-readable registry for which AI agent platforms the framework supports. When you need to list supported platforms, reference this file instead of scattering names across docs. When adding a new platform, add it here first; when registering a new skill or workflow package, use the registration lists below so no platform is missed.
+
+**Manifest source:** Installer behavior is controlled by `ls/config/platforms.yaml`. This page is a human-readable summary. The root `--tools` flag remains a compatibility alias for current `--platforms`.
+
+## Supported platforms
+
+| ID | Display name | Repo adapter path | Managed package library |
+|----|--------------|-------------------|-----------------------|
+| cursor | Cursor | .cursor/skills | ~/.local/share/localsetup/packages |
+| claude-code | Claude Code | .claude/skills | ~/.local/share/localsetup/packages |
+| codex | OpenAI Codex CLI | .codex/skills | ~/.local/share/localsetup/packages |
+| openclaw | OpenClaw | .openclaw/skills | ~/.local/share/localsetup/packages |
+| kilo | Kilo CLI | .kilo/skills | ~/.local/share/localsetup/packages |
+| opencode | OpenCode CLI | .opencode/skills | ~/.local/share/localsetup/packages |
+
+*More platforms may be added later. Update this table and the "Skill registration (new skills)" section when adding one.*
+
+## Shared home library
+
+Localsetup installs selected skills and workflow packages to `~/.local/share/localsetup/packages`. Repo adapter paths attach to that library only when selected with `--tools` or `--platforms`; omitted selectors are global-only and create no adapters. Adapter directories are shared surfaces: Localsetup owns the marker and managed package entries it records, not the whole directory by path shape. `--mode portable` creates managed copies instead of symlinks. Rollback uses `.localsetup/lock.json` and removes only managed paths recorded by that install. See [Adapter ownership](ADAPTER_OWNERSHIP.md).
+
+## Skill registration (new skills)
+
+When adding a new framework skill, register it in **every** file below so the skill appears in each platform's context and in the framework README. Paths are relative to the **framework source root** (the directory that contains `templates/`, `skills/`, `workflows/`, and `docs/`).
+
+Add one row or bullet per new skill with a short "When to use" description. Use the same phrasing everywhere.
+
+| Platform / scope | File to update |
+|-----------------|----------------|
+| Cursor (templates) | ls/templates/cursor/ls-context-index.md |
+| Cursor (templates) | ls/templates/cursor/ls-context.mdc |
+| Claude Code | ls/templates/claude-code/CLAUDE.md |
+| Codex | ls/templates/codex/AGENTS.md |
+| OpenClaw | ls/templates/openclaw/OPENCLAW_CONTEXT.md |
+| OpenCode | ls/templates/opencode/AGENTS.md |
+| Kilo (templates) | ls/templates/kilo/instructions.md |
+| Framework docs index | ls/docs/README.md |
+| Context skill (source) | ls/skills/ls-context/SKILL.md |
+
+**If you add a new platform:** extend the Supported platforms table above, add the platform's context/skills paths, and add the corresponding registration file(s) to this table so the skill-creator and maintainers keep all platforms in sync.
+
+## Workflow registration (new workflow packages)
+
+When adding a new workflow package, create `ls/workflows/ls-workflow-<id>/SKILL.md` and `workflow.yaml`, then update the same platform context templates when the workflow should be visible as a common trigger. Generated workflow catalogs are refreshed from `workflow.yaml`.
+
+Use [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) for the model and [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md) for the manifest contract.
+
+## Reference
+
+- Localsetup CLI: target users run `localsetup plan|install|verify|rollback`; source contributors may run `ls/tools/localsetup.py --source-root . ...` from this checkout.
+- Root wrapper: `./install --directory .` opens the interactive guided-choice wizard for global-only; use `--tools cursor,codex` or `--platforms cursor codex` to select adapters. The wizard shows `Enter number(s) | d details | b back | q quit | ? help` on prompts and explains each platform's adapter path, such as `.codex/skills`. Visual rendering is controlled with `--color auto|always|never`, `--no-color`, and `--glyphs auto|ascii|unicode`; plain text labels remain present for status meaning. Use `--target-directory /path/to/project` to attach selected adapters outside the source checkout. Automation must use `--non-interactive --yes`.
+- Windows: WSL2-only. Native PowerShell installation surfaces are removed.
+- Skills and rules (paths and model): [SKILLS_AND_RULES.md](SKILLS_AND_RULES.md).
+- Release and publish are handled by this repo's automatic versioning hooks and GitHub workflow.

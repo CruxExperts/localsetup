@@ -18,12 +18,12 @@ Link the issue, discussion, or maintenance note this PR addresses.
 List the commands you ran and their results.
 
 ```bash
-uv run --locked python _localsetup/tools/localsetup.py --source-root . version-plan
-uv run --locked python _localsetup/tools/localsetup.py --source-root . version-sync --check --target "$(cat VERSION)"
-uv run --locked python _localsetup/tools/localsetup.py --source-root . validate-catalog
-uv run --locked python _localsetup/tools/localsetup.py --source-root . docs-align check --ci
-workers="$(uv run --locked python _localsetup/tools/localsetup.py --source-root . test-workers)"
-uv run --locked pytest -n "$workers" _localsetup/tests -q
+uv run --locked python ls/tools/localsetup.py --source-root . version-plan
+uv run --locked python ls/tools/localsetup.py --source-root . version-sync --check --target "$(cat VERSION)"
+uv run --locked python ls/tools/localsetup.py --source-root . validate-catalog
+uv run --locked python ls/tools/localsetup.py --source-root . docs-align check --ci
+workers="$(uv run --locked python ls/tools/localsetup.py --source-root . test-workers)"
+uv run --locked pytest -n "$workers" ls/tests -q
 git diff --check
 ```
 

@@ -14,7 +14,7 @@ managed_output_globs:
   - .opencode/skills/**
   - .openclaw/skills/**
 generated_artifact_globs:
-  - _localsetup/docs/_generated/**
+  - ls/docs/_generated/**
 runtime_ignored_globs:
   - state/repo-finalizer
   - state/repo-finalizer/
@@ -35,4 +35,4 @@ stage_allowlist_globs:
   - .kilo/skills/**
   - .opencode/skills/**
   - .openclaw/skills/**
-  - _localsetup/docs/_generated/**
+  - ls/docs/_generated/**

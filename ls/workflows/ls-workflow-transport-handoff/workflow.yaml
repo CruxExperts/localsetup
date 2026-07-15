@@ -1,0 +1,30 @@
+workflow_id: transport-handoff
+display_name: Transport Handoff
+aliases: [Agent Q bidirectional]
+invocation: Use for inbound or outbound sealed payload handoff.
+required_skills: [ls-agentq-transport, ls-mail-protocol-control]
+required_tools: [ls/tools/agentq_transport_client/agentq_cli.py]
+required_docs:
+  - ls/docs/AGENTIC_AGENT_TO_AGENT_PROTOCOL.md
+  - ls/docs/AGENTIC_AGENT_Q_SCENARIOS.md
+  - ls/docs/AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md
+gates:
+  - id: preship
+    rule: Validate envelope, manifest, and target before ship.
+phases:
+  - id: ingest
+    summary: Pull and verify inbound payload.
+  - id: execute
+    summary: Process payload outcome flow.
+  - id: ship_ack
+    summary: Send acknowledgement or artifact.
+validation:
+  - check: Manifest and destination checks recorded.
+outputs:
+  - Handoff result summary
+smoke:
+  - id: agentq_cli_exists
+    check: ls/tools/agentq_transport_client/agentq_cli.py exists
+migration:
+  source: ls/docs/AGENTIC_AGENT_TO_AGENT_PROTOCOL.md
+  note: Keep transport details in protocol docs and tool help.
