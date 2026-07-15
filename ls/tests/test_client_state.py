@@ -264,6 +264,71 @@ def test_artifact_allocation_is_exclusive_deterministic_and_private(tmp_path: Pa
     assert str(repo) not in encoded and str(tmp_path) not in encoded
     assert first["record"]["repository"]["root"] == "."
     assert first["record"]["content"]["sha256"]
+    assert first["record"]["consumers"] == ["codex"]
+
+
+@pytest.mark.parametrize("field", ["predecessor", "checkpoint"])
+def test_relative_metadata_length_boundary_is_prevalidated(
+    tmp_path: Path, field: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    accepted = prepare_artifact_request(
+        location, content=b"boundary\n", purpose="boundary", extension="md",
+        kind="restart-artifact", schema="restart-v1", producer="controller",
+        **{field: "a" * 512},
+    )
+    allocated = allocate_artifact(location, prepared=accepted)
+    assert verify_artifact(location, allocated["artifact"], schema_path=SCHEMA)["ok"]
+
+    current = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    with pytest.raises(ClientStateError) as failure:
+        prepare_artifact_request(
+            current, content=b"", purpose="boundary", extension="md",
+            kind="restart-artifact", schema="restart-v1", producer="controller",
+            **{field: "a" * 513},
+        )
+    assert failure.value.code == f"invalid_{field}"
+
+
+def test_oversized_metadata_is_rejected_before_direct_api_mutation(tmp_path: Path) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    consumers = [f"c{index:05d}-" + ("a" * 55) for index in range(18000)]
+    with pytest.raises(ClientStateError) as failure:
+        allocate_artifact(
+            location, content=b"x\n", purpose="consumers", extension="md",
+            kind="restart-artifact", schema="restart-v1", producer="controller",
+            consumers=reversed(consumers),
+        )
+    assert failure.value.code == "invalid_metadata"
+    assert not (repo / ".codex" / "state").exists()
+
+
+def test_explicit_global_scope_path_allocate_verify_from_deleted_cwd(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    dead = tmp_path / "deleted-cwd"
+    dead.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
+    monkeypatch.delenv("CODEX_HOME", raising=False)
+    prior_fd = os.open(".", os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    try:
+        os.chdir(dead)
+        os.rmdir(dead)
+        location = resolve_state_location(
+            ROOT, "codex/codex-cli", cwd=Path("."), home=home, scope="global"
+        )
+        assert location.scope == "global" and location.cwd == ROOT
+        allocated = allocate_artifact(
+            location, content=b"global\n", purpose="deleted-cwd", extension="md",
+            kind="restart-artifact", schema="restart-v1", producer="controller",
+        )
+        assert verify_artifact(location, allocated["artifact"], schema_path=SCHEMA)["ok"]
+    finally:
+        os.fchdir(prior_fd)
+        os.close(prior_fd)
 
 
 def test_artifact_validation_and_stale_bindings(tmp_path: Path) -> None:

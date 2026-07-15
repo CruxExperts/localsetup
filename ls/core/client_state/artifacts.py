@@ -23,6 +23,7 @@ _DIRECTORY_FLAGS = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_
 _MAX_ARTIFACT_BYTES = 16 * 1024 * 1024
 _MAX_METADATA_BYTES = 1024 * 1024
 _MAX_PENDING_RECEIPTS = 100
+_MAX_RELATIVE_PATH_LENGTH = 512
 _PENDING_PREFIX = ".localsetup-pending-"
 _PENDING_SUFFIX = ".json"
 _ALLOCATION_LOCK = ".localsetup-artifacts.lock"
@@ -76,6 +77,7 @@ def _relative(value: str | None, label: str) -> str | None:
         return None
     if (
         not value
+        or len(value) > _MAX_RELATIVE_PATH_LENGTH
         or "\\" in value
         or ":" in value
         or value.startswith("/")
@@ -87,6 +89,56 @@ def _relative(value: str | None, label: str) -> str | None:
     if any(part in {"", ".", ".."} for part in path.parts) or path.as_posix() != value:
         raise ClientStateError(f"{label} must be a normalized POSIX-relative path", code=f"invalid_{label}")
     return value
+
+
+def _metadata_payload(
+    location: StateLocation, request: ArtifactRequest, artifact_name: str
+) -> tuple[dict, bytes]:
+    metadata = {
+        "schema_version": 1,
+        "artifact": artifact_name,
+        "checkpoint": request.checkpoint,
+        "client": {
+            "key": location.client,
+            "scope": location.scope,
+            "registry_schema_version": location.registry_schema_version,
+            "variant_digest": location.variant_digest,
+        },
+        "consumers": list(request.consumers),
+        "content": {
+            "sha256": hashlib.sha256(request.content).hexdigest(),
+            "size": len(request.content),
+        },
+        "created_at": request.created_at,
+        "format": request.extension,
+        "kind": request.kind,
+        "predecessor": request.predecessor,
+        "producer": request.producer,
+        "schema": request.schema,
+    }
+    if location.git:
+        metadata["repository"] = {
+            "head": location.git.head,
+            "ref": location.git.ref,
+            "root": ".",
+        }
+    if _schema_issues(metadata, request.metadata_schema):
+        raise ClientStateError("artifact metadata failed schema validation", code="invalid_metadata")
+    encoded = (json.dumps(metadata, indent=2, sort_keys=True) + "\n").encode("utf-8")
+    if len(encoded) > _MAX_METADATA_BYTES:
+        raise ClientStateError(
+            "artifact metadata exceeds the supported size limit", code="invalid_metadata"
+        )
+    return metadata, encoded
+
+
+def preflight_artifact_request(location: StateLocation, request: ArtifactRequest) -> None:
+    current = refresh_state_location(location)
+    collision_safe_name = (
+        f"{request.agent}-{request.created_at}-{request.purpose}-99.{request.extension}"
+    )
+    parse_artifact_name(collision_safe_name)
+    _metadata_payload(current, request, collision_safe_name)
 
 
 def _timestamp(now: datetime) -> str:
@@ -472,6 +524,7 @@ def _bound_location(location: StateLocation, directory_fd: int) -> StateLocation
 
 def allocate_artifact(location: StateLocation, *, prepared: ArtifactRequest | None = None, **kwargs) -> dict:
     request = prepared or prepare_artifact_request(location, **kwargs)
+    preflight_artifact_request(location, request)
     refresh_state_location(location)
     try:
         directory_fd = _open_absolute_directory(location.root, create=True)
@@ -493,31 +546,7 @@ def allocate_artifact(location: StateLocation, *, prepared: ArtifactRequest | No
             name = f"{base}{suffix}.{request.extension}"
             parse_artifact_name(name)
             metadata_name = f"{name}.meta.json"
-            metadata = {
-                "schema_version": 1,
-                "artifact": name,
-                "checkpoint": request.checkpoint,
-                "client": {
-                    "key": current.client,
-                    "scope": current.scope,
-                    "registry_schema_version": current.registry_schema_version,
-                    "variant_digest": current.variant_digest,
-                },
-                "consumers": list(request.consumers),
-                "content": {"sha256": hashlib.sha256(request.content).hexdigest(), "size": len(request.content)},
-                "created_at": request.created_at,
-                "format": request.extension,
-                "kind": request.kind,
-                "predecessor": request.predecessor,
-                "producer": request.producer,
-                "schema": request.schema,
-            }
-            if current.git:
-                metadata["repository"] = {"head": current.git.head, "ref": current.git.ref, "root": "."}
-            issues = _schema_issues(metadata, request.metadata_schema)
-            if issues:
-                raise ClientStateError("artifact metadata failed schema validation", code="invalid_metadata")
-            encoded = (json.dumps(metadata, indent=2, sort_keys=True) + "\n").encode("utf-8")
+            metadata, encoded = _metadata_payload(current, request, name)
             pending_name = _pending_name(name)
             pending = _pending_payload(name, metadata_name, request.content, encoded)
             try:

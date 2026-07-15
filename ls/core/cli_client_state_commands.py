@@ -14,6 +14,7 @@ from .client_state import (
     resolve_state_location,
     verify_artifact,
 )
+from .client_state.artifacts import preflight_artifact_request
 
 
 MAX_CONTENT_BYTES = 16 * 1024 * 1024
@@ -47,7 +48,10 @@ def _content(path_value: str | None) -> bytes:
         return b""
     path = Path(path_value).expanduser()
     try:
-        fd = os.open(path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
+        fd = os.open(
+            path,
+            os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0),
+        )
     except OSError as exc:
         raise ClientStateError("content-file is unreadable", code="invalid_content") from exc
     try:
@@ -96,6 +100,7 @@ def handle(args, root: Path, home: Path) -> int | None:
                 consumers=args.consumer,
                 metadata_schema=root / "ls" / "config" / "client-state-artifact.schema.json",
             )
+            preflight_artifact_request(location, prepared)
             exclude = apply_git_exclude(plan_git_exclude(location))
             payload = allocate_artifact(location, prepared=prepared)
             payload["exclude"] = exclude.payload()

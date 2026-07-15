@@ -178,7 +178,7 @@ def resolve_state_location(
     if scope not in {"auto", "repo", "global"}:
         raise ClientStateError(f"unsupported state scope: {scope}")
     repo_root = repo_root.resolve(strict=True)
-    cwd = _resolve_directory(cwd)
+    cwd = repo_root if scope == "global" else _resolve_directory(cwd)
     home = home.expanduser().resolve()
     registry, variant, variant_digest = _variant(repo_root, client)
     git = None if scope == "global" else probe_git_context(cwd)

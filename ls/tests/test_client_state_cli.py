@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -148,6 +149,79 @@ def test_empty_codex_home_cli_fails_without_mutation(
         "ok": False,
     }
     assert not (plain / "state").exists()
+
+
+def test_fifo_content_is_rejected_promptly_without_mutation(tmp_path: Path) -> None:
+    repo = repository(tmp_path / "repo")
+    fifo = tmp_path / "content.fifo"
+    fifo.parent.mkdir(exist_ok=True)
+    fifo.unlink(missing_ok=True)
+    os.mkfifo(fifo)
+    command = [
+        sys.executable, str(ROOT / "ls" / "tools" / "localsetup.py"),
+        "--source-root", str(ROOT), "state", "allocate", "--client", "codex/codex-cli",
+        "--directory", str(repo), *allocation_args(), "--content-file", str(fifo),
+    ]
+    completed = subprocess.run(command, text=True, capture_output=True, timeout=3, check=False)
+    payload = json.loads(completed.stdout)
+    assert completed.returncode == 2 and payload["error"]["code"] == "invalid_content"
+    assert not (repo / ".codex" / "state").exists()
+    assert "/.codex/state/" not in (repo / ".git" / "info" / "exclude").read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("field", ["predecessor", "checkpoint"])
+def test_oversized_relative_metadata_cli_rejects_without_mutation(
+    tmp_path: Path, capsys, field: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    code, payload = invoke(
+        capsys, "state", "allocate", "--client", "codex/codex-cli",
+        "--directory", str(repo), *allocation_args(), f"--{field}", "a" * 513,
+    )
+    assert code == 2 and payload["error"]["code"] == f"invalid_{field}"
+    assert not (repo / ".codex" / "state").exists()
+    assert "/.codex/state/" not in (repo / ".git" / "info" / "exclude").read_text(encoding="utf-8")
+
+
+def test_oversized_metadata_cli_rejects_without_mutation(
+    tmp_path: Path, capsys
+) -> None:
+    repo = repository(tmp_path / "repo")
+    args = [
+        "state", "allocate", "--client", "codex/codex-cli", "--directory", str(repo),
+        *allocation_args(),
+    ]
+    for index in reversed(range(18000)):
+        args.extend(["--consumer", f"c{index:05d}-" + ("a" * 55)])
+    code, payload = invoke(capsys, *args)
+    assert code == 2 and payload["error"]["code"] == "invalid_metadata"
+    assert not (repo / ".codex" / "state").exists()
+    assert "/.codex/state/" not in (repo / ".git" / "info" / "exclude").read_text(encoding="utf-8")
+
+
+def test_explicit_global_scope_ignores_missing_directory_for_path_allocate_verify(
+    tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    missing = tmp_path / "missing"
+    home = tmp_path / "home"
+    home.mkdir()
+    monkeypatch.delenv("CODEX_HOME", raising=False)
+    prefix = (
+        "--home", str(home), "state", "path", "--client", "codex/codex-cli",
+        "--scope", "global", "--directory", str(missing),
+    )
+    code, payload = invoke(capsys, *prefix)
+    assert code == 0 and payload["scope"] == "global"
+    code, allocated = invoke(
+        capsys, "--home", str(home), "state", "allocate", "--client", "codex/codex-cli", "--scope", "global",
+        "--directory", str(missing), *allocation_args(),
+    )
+    assert code == 0 and allocated["ok"]
+    code, verified = invoke(
+        capsys, "--home", str(home), "state", "verify", "--client", "codex/codex-cli", "--scope", "global",
+        "--directory", str(missing), "--artifact", allocated["artifact"],
+    )
+    assert code == 0 and verified["ok"]
 
 
 @pytest.mark.parametrize("action", ["path", "allocate", "verify"])

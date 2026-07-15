@@ -121,7 +121,7 @@ localsetup state allocate --client codex/codex-cli \
 localsetup state verify --client codex/codex-cli --artifact <artifact-filename>
 ```
 
-Use `--scope repo|global` only to require a specific supported scope; the default `auto` uses the containing Git worktree or the verified global root. Outputs contain relative state/artifact identifiers rather than absolute machine paths. Verification mismatches exit `1`; invalid requests and operational failures exit `2` with a sorted, sanitized JSON error envelope. See [Deterministic client state](CLIENT_STATE.md) for metadata, collision, stale-binding, and unsupported-state behavior.
+Use `--scope repo|global` only to require a specific supported scope; explicit global scope does not inspect the caller's working directory, while the default `auto` uses the containing Git worktree or the verified global root. Outputs contain relative state/artifact identifiers rather than absolute machine paths. Verification mismatches exit `1`; invalid requests and operational failures exit `2` with a sorted, sanitized JSON error envelope. See [Deterministic client state](CLIENT_STATE.md) for metadata, collision, stale-binding, and unsupported-state behavior.
 
 ## CLI Commands
 
