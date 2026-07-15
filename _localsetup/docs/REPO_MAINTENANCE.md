@@ -97,7 +97,7 @@ Configure the active `main` ruleset to:
 
 ## Merge Policy
 
-Prefer squash merges so each merged PR has one Conventional Commit subject that the release tooling can classify. Keep merge commits disabled unless maintainers explicitly need branch history preserved for a specific change. Delete branches on merge when safe.
+Prefer squash merges for ordinary PRs so each merged change has one Conventional Commit subject that the release tooling can classify. Use a merge commit for release PRs that contain a version-sync/generated-doc commit; provenance regeneration follows the merged PR's second parent to preserve the source commit recorded in generated artifacts. Never squash or rebase those release PRs. Delete branches on merge when safe.
 
 ## Security Settings
 
