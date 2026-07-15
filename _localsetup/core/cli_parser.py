@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import argparse
 
+from .framework_version import framework_version
 from .repo_profiles import REPO_PROFILES
 
 
 def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_harness_target_flags) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="localsetup")
+    parser.add_argument("-V", "--version", action="version", version=f"%(prog)s {framework_version()}")
     parser.add_argument("--home")
     parser.add_argument("--source-root")
     parser.add_argument("--repo", default=None, help=argparse.SUPPRESS)
