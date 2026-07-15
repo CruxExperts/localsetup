@@ -63,7 +63,7 @@ Start with the [workflow packages guide](ls/docs/WORKFLOW_PACKAGES.md) for usage
 | Fact | Value |
 |---|---|
 | Current version | `4.2.19` |
-| Supported platforms | `cursor, claude-code, codex, openclaw, kilo, opencode` |
+| Supported platforms | `codex, claude-code, cursor, kilo, opencode, openclaw` |
 | Shipped skills | `106` |
 | Workflow packages | `24` |
 | Source | `ls/docs/_generated/facts.json` |
@@ -97,7 +97,7 @@ For release verification, download the GitHub release tarball with its `.sha256`
 uv run --locked python ls/tools/localsetup.py --source-root . verify-release dist/localsetup-v$(cat VERSION).tar.gz
 ```
 
-Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.codex/skills` to the chosen target. For repo-targeted CLI automation with no platform or package selectors, Localsetup uses auto mode: existing Localsetup state is inferred and refreshed, safe legacy repairs are applied only when unambiguous, and a brand-new repo gets the `normal` global package baseline with no repo adapter paths. Interactive installs first choose the global package-library baseline, defaulting to `normal` or the prior registry setting. Repo setup is a separate choice; when selected, repo-visible packs default from the target lockfile or repo-detected suggestions.
+Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.agents/skills` to the chosen target. For repo-targeted CLI automation with no platform or package selectors, Localsetup uses auto mode: existing Localsetup state is inferred and refreshed, safe legacy repairs are applied only when unambiguous, and a brand-new repo gets the `normal` global package baseline with no repo adapter paths. Interactive installs first choose the global package-library baseline, defaulting to `normal` or the prior registry setting. Repo setup is a separate choice; when selected, repo-visible packs default from the target lockfile or repo-detected suggestions.
 
 For automation, opt in explicitly:
 
