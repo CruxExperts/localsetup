@@ -97,12 +97,38 @@ uv run --locked python ls/tools/localsetup.py --source-root . generate-docs
 uv run --locked python ls/tools/localsetup.py --source-root . docs-align check --ci
 ```
 
+### Client state
+
+Resolve the registry-owned repo/global state root without writing:
+
+```bash
+localsetup state path --client codex/codex-cli
+```
+
+Add only that exact repo state child to Git's resolved local exclude:
+
+```bash
+localsetup state path --client codex/codex-cli --apply-exclude
+```
+
+Allocate and then verify a no-overwrite restart artifact:
+
+```bash
+localsetup state allocate --client codex/codex-cli \
+  --agent controller --purpose release-checkpoint --extension md \
+  --kind restart-artifact --schema restart-v1 --producer controller \
+  --content-file checkpoint.md
+localsetup state verify --client codex/codex-cli --artifact <artifact-filename>
+```
+
+Use `--scope repo|global` only to require a specific supported scope; the default `auto` uses the containing Git worktree or the verified global root. Outputs contain relative state/artifact identifiers rather than absolute machine paths. Verification mismatches exit `1`; invalid requests and operational failures exit `2` with a sorted, sanitized JSON error envelope. See [Deterministic client state](CLIENT_STATE.md) for metadata, collision, stale-binding, and unsupported-state behavior.
+
 ## CLI Commands
 
 The top-level CLI currently exposes these commands:
 
 ```text
-plan, install, verify, rollback, update, adapters, configure, doctor,
+plan, install, verify, rollback, update, adapters, configure, doctor, state,
 migrate, context, convert, catalog, diff, skill, workflow, why, graph,
 candidate-skill, adopt, detach, sbom, scan-migration, audit-global-first,
 validate-catalog, generate-docs, provenance, harness, docs-align, context-index, hook-gate,

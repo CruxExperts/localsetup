@@ -29,6 +29,7 @@ This is the public documentation map for Localsetup. Start here when you want th
 | [Project README](../../README.md) | Why Localsetup exists and why people should use it. |
 | [Quickstart](QUICKSTART.md) | How to install, select platforms, verify, and update. |
 | [Command reference](COMMAND_REFERENCE.md) | Copy-paste installer, managed CLI, validation, and maintainer commands. |
+| [Deterministic client state](CLIENT_STATE.md) | Resolve client state, allocate private artifacts, and verify restart bindings. |
 | [Features](FEATURES.md) | Full capability catalog grouped by practical use. |
 | [Shipped skills catalog](SKILLS.md) | All shipped skills with IDs, versions, and descriptions. |
 | [Bootstrap packs](bootstrap-packs/INDEX.md) | Reusable Codex-first bootstrap prompts, pack metadata, audit boundaries, and future adapter entry points. |

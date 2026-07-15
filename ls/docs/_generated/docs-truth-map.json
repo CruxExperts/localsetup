@@ -3525,7 +3525,7 @@
   },
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "b49175d0f55bfd4d4c79413afcdbf28b9f0040242dd8298b70fe3208ede4fbfa",
+    "artifact_sha256": "e596a86c2177ca75619a9800adb71ca393ae2addc6c164af28457500ef8ebe0d",
     "emitter": "docs-align",
     "framework_version": "4.2.19",
     "schema_version": 1,
@@ -3582,6 +3582,11 @@
           "owner_package": "",
           "owner_skill": "ls-skill-creator",
           "path": "ls/docs/AGENT_SKILLS_COMPLIANCE.md"
+        },
+        {
+          "owner_package": "",
+          "owner_skill": "ls-framework-compliance",
+          "path": "ls/docs/CLIENT_STATE.md"
         },
         {
           "owner_package": "",

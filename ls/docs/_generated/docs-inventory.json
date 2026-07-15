@@ -74,8 +74,8 @@
   ],
   "cli_commands": [],
   "counts": {
-    "docs": 444,
-    "framework_docs": 65,
+    "docs": 445,
+    "framework_docs": 66,
     "generated_docs": 5,
     "platforms": 6,
     "public_docs": 6,
@@ -325,6 +325,16 @@
       "path": "ls/docs/AGENT_SKILLS_COMPLIANCE.md",
       "status": "ACTIVE",
       "version": "4.2"
+    },
+    {
+      "class": "framework",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "ls-framework-compliance",
+      "path": "ls/docs/CLIENT_STATE.md",
+      "status": "ACTIVE",
+      "version": "4.3"
     },
     {
       "class": "framework",
@@ -4572,7 +4582,7 @@
   ],
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "f4d817f7bff8735c5386b7406858ed7d426e7e7c5429de1f16828994b271532f",
+    "artifact_sha256": "18bd1f93077782b7f99097edd9a58e863043063d07873236aa7094b99ef09d1a",
     "emitter": "docs-align",
     "framework_version": "4.2.19",
     "schema_version": 1,
