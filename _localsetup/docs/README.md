@@ -15,7 +15,7 @@ This is the public documentation map for Localsetup. Start here when you want th
 ## Generated Facts
 
 <!-- facts-block:start -->
-- Current version: `4.2.17`
+- Current version: `4.2.18`
 - Supported platforms: `cursor, claude-code, codex, openclaw, kilo, opencode`
 - Shipped skills: `106`
 - Workflow packages: `24`
