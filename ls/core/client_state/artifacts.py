@@ -86,7 +86,7 @@ def _relative(value: str | None, label: str) -> str | None:
     ):
         raise ClientStateError(f"{label} must be a normalized POSIX-relative path", code=f"invalid_{label}")
     path = PurePosixPath(value)
-    if any(part in {"", ".", ".."} for part in path.parts) or path.as_posix() != value:
+    if not path.parts or any(part in {"", ".", ".."} for part in path.parts) or path.as_posix() != value:
         raise ClientStateError(f"{label} must be a normalized POSIX-relative path", code=f"invalid_{label}")
     return value
 

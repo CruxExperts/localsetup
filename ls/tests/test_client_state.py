@@ -27,6 +27,26 @@ from ls.core.client_state import artifacts, git_exclude
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA = ROOT / "ls" / "config" / "client-state-artifact.schema.json"
+ACCEPTED_RELATIVE_PATHS = (
+    "foo",
+    "foo/bar",
+    "deeply/nested/artifact/path",
+    "café/文件",
+    "folder name/file name.md",
+    "a" * 512,
+)
+REJECTED_RELATIVE_PATHS = (
+    ".",
+    "../private",
+    "folder\\secret",
+    "C:/private",
+    "//server/share",
+    "folder//file",
+    "folder/./file",
+    "line\nsecret",
+    "foo/",
+    "a" * 513,
+)
 
 
 def git(cwd: Path, *args: str) -> str:
@@ -291,6 +311,49 @@ def test_relative_metadata_length_boundary_is_prevalidated(
     assert failure.value.code == f"invalid_{field}"
 
 
+def test_relative_metadata_schema_matches_runtime_normalization(tmp_path: Path) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    allocated = allocate_artifact(
+        location, content=b"schema\n", purpose="schema-path", extension="md",
+        kind="restart-artifact", schema="restart-v1", producer="controller",
+    )
+    metadata_schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+
+    for field in ("predecessor", "checkpoint"):
+        for accepted in ACCEPTED_RELATIVE_PATHS:
+            assert not artifacts._schema_issues(
+                {**allocated["record"], field: accepted}, metadata_schema
+            ), (field, accepted)
+        for rejected in REJECTED_RELATIVE_PATHS:
+            assert artifacts._schema_issues(
+                {**allocated["record"], field: rejected}, metadata_schema
+            ), (field, rejected)
+
+
+@pytest.mark.parametrize("field", ["predecessor", "checkpoint"])
+@pytest.mark.parametrize("value", ["foo/", "."])
+def test_verify_rejects_non_normalized_path_in_tampered_metadata(
+    tmp_path: Path, field: str, value: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    allocated = allocate_artifact(
+        location, content=b"tamper\n", purpose="tampered-path", extension="md",
+        kind="restart-artifact", schema="restart-v1", producer="controller",
+    )
+    metadata_path = location.root / allocated["metadata"]
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    metadata[field] = value
+    metadata_path.write_text(
+        json.dumps(metadata, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+    with pytest.raises(ClientStateError) as failure:
+        verify_artifact(location, allocated["artifact"], schema_path=SCHEMA)
+    assert failure.value.code == "invalid_metadata"
+
+
 def test_oversized_metadata_is_rejected_before_direct_api_mutation(tmp_path: Path) -> None:
     repo = repository(tmp_path / "repo")
     location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
@@ -439,19 +502,35 @@ def test_filename_parser_rejects_malformed_and_impossible_values(value: str) -> 
         parse_artifact_name(value)
 
 
-@pytest.mark.parametrize(
-    "value",
-    ["../private", "folder\\secret", "C:/private", "//server/share", "folder//file", "folder/./file", "line\nsecret"],
-)
-def test_metadata_paths_use_platform_neutral_posix_grammar(tmp_path: Path, value: str) -> None:
+@pytest.mark.parametrize("field", ["predecessor", "checkpoint"])
+@pytest.mark.parametrize("value", ACCEPTED_RELATIVE_PATHS)
+def test_metadata_paths_accept_normalized_posix_grammar(
+    tmp_path: Path, field: str, value: str
+) -> None:
     repo = repository(tmp_path / "repo")
     location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
-    with pytest.raises(ClientStateError, match="POSIX-relative"):
+    prepared = prepare_artifact_request(
+        location, content=b"", purpose="handoff", extension="md",
+        kind="restart-artifact", schema="restart-v1", producer="controller",
+        **{field: value},
+    )
+    assert getattr(prepared, field) == value
+
+
+@pytest.mark.parametrize("field", ["predecessor", "checkpoint"])
+@pytest.mark.parametrize("value", REJECTED_RELATIVE_PATHS)
+def test_metadata_paths_reject_non_normalized_posix_grammar(
+    tmp_path: Path, field: str, value: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    with pytest.raises(ClientStateError, match="POSIX-relative") as failure:
         prepare_artifact_request(
             location, content=b"", purpose="handoff", extension="md",
             kind="restart-artifact", schema="restart-v1", producer="controller",
-            predecessor=value,
+            **{field: value},
         )
+    assert failure.value.code == f"invalid_{field}"
 
 
 @pytest.mark.parametrize("schema_kind", ["missing", "directory", "symlink", "unreadable"])
