@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://localsetup.dev/schemas/clients.schema.json",
+  "title": "LocalSetup client family and variant registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "families"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "families": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/family"}
+    }
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "status": {"enum": ["supported", "settings-only", "unsupported", "unverified"]},
+    "family": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "display_name", "variants"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "display_name": {"type": "string", "minLength": 1},
+        "variants": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/variant"}}
+      }
+    },
+    "variant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "display_name", "kind", "support_status", "research", "executables",
+        "policy", "config", "skills", "goal", "permissions", "state", "insertion",
+        "verification", "rollback"
+      ],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "display_name": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["cli", "ide"]},
+        "support_status": {"enum": ["supported", "experimental", "unsupported"]},
+        "research": {"$ref": "#/$defs/research"},
+        "executables": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        },
+        "policy": {"$ref": "#/$defs/scopedSurface"},
+        "config": {"$ref": "#/$defs/scopedSurface"},
+        "skills": {"$ref": "#/$defs/scopedSurface"},
+        "goal": {"$ref": "#/$defs/goal"},
+        "permissions": {"$ref": "#/$defs/permissions"},
+        "state": {"$ref": "#/$defs/state"},
+        "insertion": {"$ref": "#/$defs/scopedInsertion"},
+        "verification": {"$ref": "#/$defs/verification"},
+        "rollback": {"$ref": "#/$defs/rollback"},
+        "compatibility": {"$ref": "#/$defs/compatibility"}
+      }
+    },
+    "research": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "checked_on", "sources"],
+      "properties": {
+        "status": {"enum": ["verified", "partial", "unverified"]},
+        "checked_on": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "url"],
+            "properties": {
+              "kind": {"enum": ["official_docs", "official_release", "official_source"]},
+              "url": {"type": "string", "pattern": "^https://"},
+              "version": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      }
+    },
+    "scopedSurface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repo", "global"],
+      "properties": {
+        "repo": {"$ref": "#/$defs/surface"},
+        "global": {"$ref": "#/$defs/surface"}
+      }
+    },
+    "surface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "resolution", "paths", "precedence_status", "ownership", "collision"],
+      "properties": {
+        "status": {"$ref": "#/$defs/status"},
+        "resolution": {"enum": ["single", "first-existing", "hierarchy", "configured-workspaces", "settings", "unsupported", "unverified"]},
+        "paths": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "precedence_status": {"enum": ["verified", "unverified", "unsupported"]},
+        "ownership": {"enum": ["client-native", "localsetup-managed", "shared"]},
+        "collision": {"enum": ["preserve-unmanaged", "owned-entry-only", "owned-block-only", "fail", "manual", "unsupported"]},
+        "setting_label": {"type": "string", "minLength": 1}
+      }
+    },
+    "goal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "kind", "commands", "limits"],
+      "properties": {
+        "status": {"enum": ["supported", "unsupported", "unverified"]},
+        "kind": {"enum": ["slash-command", "cli-command", "unsupported", "unverified"]},
+        "commands": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "limits": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status"],
+          "properties": {
+            "status": {"enum": ["verified", "unverified", "unsupported"]},
+            "max_payload_bytes": {"type": "integer", "minimum": 1},
+            "max_iterations": {"type": "integer", "minimum": 1}
+          }
+        }
+      }
+    },
+    "permissions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "controls"],
+      "properties": {
+        "status": {"enum": ["supported", "unsupported", "unverified"]},
+        "controls": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+      }
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repo", "global"],
+      "properties": {
+        "repo": {"$ref": "#/$defs/stateSurface"},
+        "global": {"$ref": "#/$defs/stateSurface"}
+      }
+    },
+    "stateSurface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "path", "ownership", "collision"],
+      "properties": {
+        "status": {"enum": ["supported", "unsupported", "unverified"]},
+        "path": {"type": ["string", "null"]},
+        "ownership": {"const": "localsetup-managed"},
+        "collision": {"const": "fail"}
+      }
+    },
+    "insertion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "collision", "rollback"],
+      "properties": {
+        "status": {"enum": ["supported", "settings-only", "unsupported", "unverified"]},
+        "encoding": {"const": "utf-8"},
+        "bom": {"enum": ["preserve", "forbid"]},
+        "frontmatter": {"enum": ["preserve-before-block", "reject"]},
+        "shebang": {"enum": ["preserve-before-block", "reject"]},
+        "native_header": {"enum": ["none", "preserve-before-block", "reject"]},
+        "legal_offset": {"enum": ["start", "after-preamble"]},
+        "preserve_mode": {"type": "boolean"},
+        "preserve_owner": {"type": "boolean"},
+        "collision": {"enum": ["owned-block-only", "manual", "unsupported"]},
+        "rollback": {"enum": ["owned-block-removal", "manual-settings", "unsupported"]}
+      }
+    },
+    "scopedInsertion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repo", "global"],
+      "properties": {
+        "repo": {"$ref": "#/$defs/insertion"},
+        "global": {"$ref": "#/$defs/insertion"}
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["classification"],
+      "properties": {"classification": {"enum": ["filesystem", "host", "smoke", "unsupported"]}}
+    },
+    "rollback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["classification"],
+      "properties": {"classification": {"enum": ["managed-entry-removal", "owned-block-removal", "manual-settings", "unsupported"]}}
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["platform_id", "order", "native_config", "smoke_test_level", "verify_rules", "rollback_class"],
+      "properties": {
+        "platform_id": {"$ref": "#/$defs/id"},
+        "order": {"type": "integer", "minimum": 0},
+        "native_config": {"enum": ["symlink_or_reference"]},
+        "smoke_test_level": {"enum": ["filesystem", "host", "smoke"]},
+        "verify_rules": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"enum": ["skills_visible", "namespace_ls"]},
+          "uniqueItems": true
+        },
+        "rollback_class": {"const": "managed-entry-removal"}
+      }
+    }
+  }
+}

@@ -40,7 +40,7 @@ def test_wizard_full_flow_renders_guided_context_for_current_repo(tmp_path: Path
     rendered_words = " ".join(rendered.split())
     assert "Decides: Confirms the installer source and release channel before package choices." in rendered_words
     assert "Suggested: No repo setup" in rendered
-    assert "Writes adapter path .codex/skills." in rendered
+    assert "Writes adapter path .agents/skills." in rendered
     assert "Code, docs, git, testing, markdown validation, and repo repair workflows." in rendered
     assert "Global packs" in rendered
     assert "Repo-visible packages" in rendered
@@ -50,7 +50,7 @@ def test_wizard_full_flow_renders_guided_context_for_current_repo(tmp_path: Path
     )
     assert "Does: Verification checked the managed library and selected adapter paths after applying the plan." in rendered_words
     assert "Enter number(s) | d details | b back | q quit | ? help" in rendered
-    assert (caller / ".codex" / "skills").exists()
+    assert (caller / ".agents" / "skills").exists()
 
 
 def test_wizard_tty_output_clears_screen_before_banner(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -175,9 +175,9 @@ def test_wizard_no_repo_rerun_detaches_managed_adapters_and_preserves_global_pac
         build_install_plan(root, home=home, global_packs=["dev"], repo_packs=["core"], platform_ids=["codex"]),
         home=home,
     )
-    assert (root / ".codex" / "skills").is_dir()
+    assert (root / ".agents" / "skills").is_dir()
     assert (home / ".local/share/localsetup/packages/ls-nodejs-nextjs").is_dir()
-    custom = root / ".codex" / "skills" / "custom-skill"
+    custom = root / ".agents" / "skills" / "custom-skill"
     custom.mkdir()
     (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
 
@@ -196,7 +196,7 @@ def test_wizard_no_repo_rerun_detaches_managed_adapters_and_preserves_global_pac
     assert "Repo Adapters" not in rendered
     assert "Detached adapters" in rendered
     assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom\n"
-    assert not (root / ".codex" / "skills" / "ls-context").exists()
+    assert not (root / ".agents" / "skills" / "ls-context").exists()
     assert (home / ".local/share/localsetup/packages/ls-nodejs-nextjs").is_dir()
     assert lock["global_only"] is True
     assert lock["adapter_targets"] == []

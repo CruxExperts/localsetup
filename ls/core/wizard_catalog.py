@@ -175,7 +175,7 @@ def _attach_choices() -> list[Choice]:
             "symlink",
             "Symlink adapters",
             "Repo adapter paths point at the managed Localsetup library.",
-            "Creates links such as `.codex/skills` so updates to the managed library are picked up immediately.",
+            "Creates links such as `.agents/skills` so updates to the managed library are picked up immediately.",
             "You want the easiest update path and are comfortable with repo-local symlinks.",
             "The repo depends on the managed library path existing on this machine.",
         ),

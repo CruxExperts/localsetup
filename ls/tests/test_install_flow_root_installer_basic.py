@@ -28,7 +28,7 @@ def test_root_installer_forwards_custom_home(tmp_path: Path) -> None:
 
     assert completed.returncode == 0, completed.stderr
     assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
-    assert_scoped_adapter(root / ".codex" / "skills", "ls-context")
+    assert_scoped_adapter(root / ".agents" / "skills", "ls-context")
     assert (home / ".local" / "bin" / "localsetup").is_file()
 
 
@@ -98,7 +98,7 @@ def test_root_installer_target_directory_without_platforms_uses_auto_mode(tmp_pa
     assert completed.returncode == 0, completed.stderr
     assert payload["auto_mode"] == "default_new_repo"
     assert (target / ".localsetup/lock.json").is_file()
-    assert not (target / ".codex" / "skills").exists()
+    assert not (target / ".agents" / "skills").exists()
     assert "without --tools/--platforms" not in completed.stderr
 
 

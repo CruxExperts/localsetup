@@ -6,6 +6,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from ls.core.client_registry import load_client_registry, projection_matches
+
 from .collectors import collect_platforms, collect_skills, collect_workflows
 from .writers import (
     generate_alias_output_paths,
@@ -78,7 +80,12 @@ def run(repo_root: Path, internal_output: str, alignment_generator: AlignmentGen
 
     skills = collect_skills(repo_root)
     workflows = collect_workflows(repo_root)
-    platforms = collect_platforms(docs_dir / "PLATFORM_REGISTRY.md")
+    registry = load_client_registry(repo_root)
+    if not projection_matches(repo_root, registry):
+        raise RuntimeError(
+            "ls/config/platforms.yaml is stale; run `localsetup client-registry generate` before generating docs"
+        )
+    platforms = collect_platforms(repo_root)
     facts = _facts(repo_root, major_minor, skills, workflows, platforms)
 
     direct_outputs = [

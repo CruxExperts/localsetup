@@ -28,7 +28,7 @@ def test_custom_home_shim_invocation_uses_registered_home(tmp_path: Path) -> Non
 
     assert completed.returncode == 0, completed.stderr
     assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
-    assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
+    assert_scoped_adapter(target / ".agents" / "skills", "ls-context")
 
 
 def test_cli_tools_and_yes_aliases_install(tmp_path: Path) -> None:
@@ -59,7 +59,7 @@ def test_cli_tools_and_yes_aliases_install(tmp_path: Path) -> None:
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload["attachment"]["platforms"] == ["codex"]
-    assert_scoped_adapter(root / ".codex" / "skills", "ls-context")
+    assert_scoped_adapter(root / ".agents" / "skills", "ls-context")
 
 
 def test_global_shim_invocation_installs_at_detected_git_root(tmp_path: Path) -> None:
@@ -97,9 +97,9 @@ def test_global_shim_invocation_installs_at_detected_git_root(tmp_path: Path) ->
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload["attachment"]["target_root"] == str(target.resolve())
-    assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
+    assert_scoped_adapter(target / ".agents" / "skills", "ls-context")
     assert (target / ".localsetup/lock.json").is_file()
-    assert not (root / ".codex" / "skills").exists()
+    assert not (root / ".agents" / "skills").exists()
 
 
 def test_apply_rejects_target_root_that_differs_from_plan(tmp_path: Path) -> None:
@@ -262,7 +262,7 @@ def test_rerun_with_correct_managed_symlink_is_idempotent(tmp_path: Path) -> Non
     assert first["dry_run"] is False
     assert second["dry_run"] is False
     assert verify["ok"] is True
-    assert_scoped_adapter(root / ".codex" / "skills", "ls-context")
+    assert_scoped_adapter(root / ".agents" / "skills", "ls-context")
 
 
 def test_doctor_reports_selected_adapter_collisions_only(tmp_path: Path) -> None:

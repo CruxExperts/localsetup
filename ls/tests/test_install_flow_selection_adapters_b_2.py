@@ -18,7 +18,7 @@ def test_detach_preserves_custom_adapter_entries(tmp_path: Path) -> None:
         ),
         home=home,
     )
-    custom = root / ".codex" / "skills" / "custom-skill"
+    custom = root / ".agents" / "skills" / "custom-skill"
     custom.mkdir()
     (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
 
@@ -31,12 +31,12 @@ def test_detach_preserves_custom_adapter_entries(tmp_path: Path) -> None:
 
     assert completed.returncode == 0, completed.stderr + completed.stdout
     assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom\n"
-    assert not (root / ".codex" / "skills" / "ls-context").exists()
-    assert not (root / ".codex" / "skills" / ".localsetup-adapter.json").exists()
+    assert not (root / ".agents" / "skills" / "ls-context").exists()
+    assert not (root / ".agents" / "skills" / ".localsetup-adapter.json").exists()
     assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
 
 
-def test_detach_legacy_portable_adapter_removes_managed_entries_only(tmp_path: Path) -> None:
+def test_detach_preserves_historical_portable_adapter_content(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     tool = root / "ls" / "tools" / "localsetup.py"
@@ -60,6 +60,6 @@ def test_detach_legacy_portable_adapter_removes_managed_entries_only(tmp_path: P
     )
 
     assert completed.returncode == 0, completed.stderr + completed.stdout
-    assert not (adapter / "ls-context").exists()
-    assert not (adapter / ".localsetup-portable").exists()
+    assert (adapter / "ls-context").is_dir()
+    assert (adapter / ".localsetup-portable").is_file()
     assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom\n"

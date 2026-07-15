@@ -113,4 +113,25 @@ def preflight_install_plan(repo_root: Path, plan, home: Path, *, target_root: Pa
                         "entries": unsafe_entries,
                     }
                 )
+        elif action.kind == "retire_legacy_codex_adapter":
+            if not action.path.is_symlink():
+                continue
+            global_root = Path(action.details["global_root"])
+            state = adapter_path_state(
+                action.path,
+                global_root,
+                known_global_roots=legacy_global_roots(home),
+                target_root=target_root,
+            )
+            if not (state["points_to_global"] or state["points_to_legacy_global"]):
+                blockers.append(
+                    {
+                        "path": str(action.path),
+                        "status_code": "unproven_legacy_codex_symlink",
+                        "reason": (
+                            "historical .codex/skills symlink is not proven LocalSetup-managed; "
+                            "preserve it and review or remove it before installing the Codex adapter"
+                        ),
+                    }
+                )
     return {"ok": not blockers, "blockers": blockers}

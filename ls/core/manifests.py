@@ -5,6 +5,7 @@ from typing import Any
 
 import yaml
 
+from .client_registry import load_client_registry, projection_matches
 from .models import PackConfig, PlatformConfig
 from .paths import validate_home_scoped_path, validate_repo_relative_path
 from .schema import validate_json_schema
@@ -124,6 +125,12 @@ def validate_manifest_schemas(repo_root: Path, *, require_jsonschema: bool = Tru
         issues.extend(validate_json_schema(pack_data, config_root / "pack.schema.json", label="pack.yaml", required=require_jsonschema))
     except Exception as exc:
         issues.append(f"pack.yaml schema validation failed: {exc}")
+    try:
+        registry = load_client_registry(repo_root, require_jsonschema=require_jsonschema)
+        if not projection_matches(repo_root, registry):
+            issues.append("platforms.yaml is out of sync with clients.yaml; regenerate the compatibility projection")
+    except Exception as exc:
+        issues.append(f"clients.yaml validation failed: {exc}")
     try:
         platforms_data = _load_yaml(config_root / "platforms.yaml")
         issues.extend(validate_json_schema(platforms_data, config_root / "platforms.schema.json", label="platforms.yaml", required=require_jsonschema))

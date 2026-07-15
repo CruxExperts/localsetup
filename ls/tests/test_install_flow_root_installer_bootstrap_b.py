@@ -169,7 +169,7 @@ def test_root_installer_piped_bootstrap_selected_platform_attaches_caller_target
 
     assert completed.returncode == 0, completed.stderr.decode()
     assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
-    assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
+    assert_scoped_adapter(target / ".agents" / "skills", "ls-context")
     assert (target / ".localsetup/lock.json").is_file()
     assert not (managed_source / ".codex").exists()
 

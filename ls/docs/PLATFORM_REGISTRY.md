@@ -6,22 +6,22 @@ owner_skill: ls-framework-compliance
 
 # Platform registry (Localsetup)
 
-**Purpose:** Canonical human-readable registry for which AI agent platforms the framework supports. When you need to list supported platforms, reference this file instead of scattering names across docs. When adding a new platform, add it here first; when registering a new skill or workflow package, use the registration lists below so no platform is missed.
+**Purpose:** Human-readable summary of the AI client variants Localsetup supports. When registering a new skill or workflow package, use the registration lists below so no platform is missed.
 
-**Manifest source:** Installer behavior is controlled by `ls/config/platforms.yaml`. This page is a human-readable summary. The root `--tools` flag remains a compatibility alias for current `--platforms`.
+**Manifest source:** `ls/config/clients.yaml` is canonical. It records client families and distinct CLI/IDE variants, their researched native surfaces, Localsetup state contracts, and compatibility projection eligibility. `ls/config/platforms.yaml` is generated from the six compatible variants for existing installer consumers; do not edit it directly. The root `--tools` flag remains a compatibility alias for current `--platforms`.
 
 ## Supported platforms
 
 | ID | Display name | Repo adapter path | Managed package library |
 |----|--------------|-------------------|-----------------------|
-| cursor | Cursor | .cursor/skills | ~/.local/share/localsetup/packages |
-| claude-code | Claude Code | .claude/skills | ~/.local/share/localsetup/packages |
-| codex | OpenAI Codex CLI | .codex/skills | ~/.local/share/localsetup/packages |
-| openclaw | OpenClaw | .openclaw/skills | ~/.local/share/localsetup/packages |
+| codex | OpenAI Codex CLI | .agents/skills | ~/.local/share/localsetup/packages |
+| claude-code | Claude Code CLI | .claude/skills | ~/.local/share/localsetup/packages |
+| cursor | Cursor IDE | .agents/skills, .cursor/skills | ~/.local/share/localsetup/packages |
 | kilo | Kilo CLI | .kilo/skills | ~/.local/share/localsetup/packages |
 | opencode | OpenCode CLI | .opencode/skills | ~/.local/share/localsetup/packages |
+| openclaw | OpenClaw CLI | .agents/skills | ~/.local/share/localsetup/packages |
 
-*More platforms may be added later. Update this table and the "Skill registration (new skills)" section when adding one.*
+The canonical registry also tracks researched variants that are not projected into the compatibility manifest. Update `clients.yaml`, its research evidence, and the "Skill registration (new skills)" section when adding one.
 
 ## Shared home library
 
@@ -56,7 +56,7 @@ Use [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) for the model and [WORKFLOW_STA
 ## Reference
 
 - Localsetup CLI: target users run `localsetup plan|install|verify|rollback`; source contributors may run `ls/tools/localsetup.py --source-root . ...` from this checkout.
-- Root wrapper: `./install --directory .` opens the interactive guided-choice wizard for global-only; use `--tools cursor,codex` or `--platforms cursor codex` to select adapters. The wizard shows `Enter number(s) | d details | b back | q quit | ? help` on prompts and explains each platform's adapter path, such as `.codex/skills`. Visual rendering is controlled with `--color auto|always|never`, `--no-color`, and `--glyphs auto|ascii|unicode`; plain text labels remain present for status meaning. Use `--target-directory /path/to/project` to attach selected adapters outside the source checkout. Automation must use `--non-interactive --yes`.
+- Root wrapper: `./install --directory .` opens the interactive guided-choice wizard for global-only; use `--tools cursor,codex` or `--platforms cursor codex` to select adapters. The wizard shows `Enter number(s) | d details | b back | q quit | ? help` on prompts and explains each platform's adapter path, such as `.agents/skills` for Codex. Visual rendering is controlled with `--color auto|always|never`, `--no-color`, and `--glyphs auto|ascii|unicode`; plain text labels remain present for status meaning. Use `--target-directory /path/to/project` to attach selected adapters outside the source checkout. Automation must use `--non-interactive --yes`.
 - Windows: WSL2-only. Native PowerShell installation surfaces are removed.
 - Skills and rules (paths and model): [SKILLS_AND_RULES.md](SKILLS_AND_RULES.md).
 - Release and publish are handled by this repo's automatic versioning hooks and GitHub workflow.

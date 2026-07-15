@@ -16,7 +16,7 @@ The global command uses the registered Localsetup source checkout and treats the
 localsetup convert --tools codex --packs core
 ```
 
-Without `--yes`, conversion only reports the source root, target root, backup path, artifacts, and blockers. Treat blockers as stop signs. Unmanaged adapter directories, unmanaged legacy global skills, and other ambiguous project-owned content need human review before apply. Adapter-shaped paths such as `.codex/skills`, `.cursor/skills`, and historical `.agents/skills` are shared agent surfaces; custom content in them is repo-owned by default and must be preserved unless the repo owner explicitly chooses a migration. Repo-local adapter symlinks such as `.codex/skills -> ../.agents/skills` are also preserved when their resolved target stays inside the target repo and contains valid custom skill packages.
+Without `--yes`, conversion only reports the source root, target root, backup path, artifacts, and blockers. Treat blockers as stop signs. Unmanaged adapter directories, unmanaged legacy global skills, and other ambiguous project-owned content need human review before apply. Adapter-shaped paths such as current `.agents/skills`, `.cursor/skills`, and historical `.codex/skills` are shared agent surfaces; custom content in them is repo-owned by default. The Codex transition removes only entries proven Localsetup-managed by managed-root targeting, adapter markers, or recorded lock ownership. Unproven symlinks require review and are never adopted as a fallback alias.
 
 ## Apply
 

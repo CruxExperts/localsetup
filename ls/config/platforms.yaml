@@ -1,11 +1,12 @@
+# Generated from ls/config/clients.yaml; do not edit.
 platforms:
   - id: codex
-    repo_paths: [".codex/skills"]
-    global_paths: ["~/.codex/skills"]
+    repo_paths: [".agents/skills"]
+    global_paths: ["~/.agents/skills"]
     native_config: symlink_or_reference
     smoke_test_level: filesystem
     verify_rules: ["skills_visible", "namespace_ls"]
-    rollback_targets: [".codex/skills"]
+    rollback_targets: [".agents/skills"]
 
   - id: claude-code
     repo_paths: [".claude/skills"]
@@ -16,12 +17,12 @@ platforms:
     rollback_targets: [".claude/skills"]
 
   - id: cursor
-    repo_paths: [".cursor/skills"]
-    global_paths: ["~/.cursor/skills"]
+    repo_paths: [".agents/skills", ".cursor/skills"]
+    global_paths: ["~/.agents/skills", "~/.cursor/skills"]
     native_config: symlink_or_reference
     smoke_test_level: filesystem
     verify_rules: ["skills_visible", "namespace_ls"]
-    rollback_targets: [".cursor/skills"]
+    rollback_targets: [".agents/skills", ".cursor/skills"]
 
   - id: kilo
     repo_paths: [".kilo/skills"]
@@ -33,16 +34,16 @@ platforms:
 
   - id: opencode
     repo_paths: [".opencode/skills"]
-    global_paths: ["~/.opencode/skills"]
+    global_paths: ["~/.config/opencode/skills"]
     native_config: symlink_or_reference
     smoke_test_level: filesystem
     verify_rules: ["skills_visible", "namespace_ls"]
     rollback_targets: [".opencode/skills"]
 
   - id: openclaw
-    repo_paths: [".openclaw/skills"]
-    global_paths: ["~/.openclaw/skills"]
+    repo_paths: [".agents/skills"]
+    global_paths: ["~/.agents/skills", "~/.openclaw/skills"]
     native_config: symlink_or_reference
     smoke_test_level: filesystem
     verify_rules: ["skills_visible", "namespace_ls"]
-    rollback_targets: [".openclaw/skills"]
+    rollback_targets: [".agents/skills"]

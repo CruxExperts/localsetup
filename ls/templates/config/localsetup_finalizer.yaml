@@ -7,6 +7,7 @@ managed_output_globs:
   - config/codex_heartbeat.yaml
   - cron/manifest.yaml
   - cron/codex-heartbeat.crontab
+  - .agents/skills/**
   - .codex/skills/**
   - .claude/skills/**
   - .cursor/skills/**
@@ -31,6 +32,7 @@ stage_allowlist_globs:
   - config/codex_heartbeat.yaml
   - cron/manifest.yaml
   - cron/codex-heartbeat.crontab
+  - .agents/skills/**
   - .codex/skills/**
   - .claude/skills/**
   - .cursor/skills/**

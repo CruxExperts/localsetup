@@ -518,10 +518,14 @@ def test_cli_helper_and_policy_branches(tmp_path: Path, monkeypatch: pytest.Monk
 
     global_root = home / ".local" / "share" / "localsetup" / "packages"
     global_root.mkdir(parents=True)
-    adapter = root / ".codex" / "skills"
+    adapter = root / ".agents" / "skills"
     adapter.parent.mkdir(parents=True)
     adapter.symlink_to(global_root, target_is_directory=True)
-    assert cli_mod._existing_target_platforms(root, root, home) == [{"platform": "codex", "mode": "symlink"}]
+    assert cli_mod._existing_target_platforms(root, root, home) == [
+        {"platform": "codex", "mode": "symlink"},
+        {"platform": "cursor", "mode": "symlink"},
+        {"platform": "openclaw", "mode": "symlink"},
+    ]
 
     fake_plan = SimpleNamespace(actions=[], rollback_metadata={"skills": [], "workflows": [], "platforms": [], "global_only": True})
     monkeypatch.setattr(cli_mod, "build_install_plan", lambda *args, **kwargs: fake_plan)

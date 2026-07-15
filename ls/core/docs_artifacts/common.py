@@ -26,6 +26,8 @@ ARTIFACT_SOURCE_INPUTS = [
     "ls/config/pack.yaml",
     "ls/config/plugin-packs.yaml",
     "ls/workflows",
+    "ls/config/clients.yaml",
+    "ls/config/clients.schema.json",
     "ls/config/platforms.yaml",
     "ls/docs/PLATFORM_REGISTRY.md",
 ]

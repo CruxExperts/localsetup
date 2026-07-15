@@ -26,13 +26,20 @@ from .apply_preflight import (
     preflight_install_plan,
     unsafe_same_name_adapter_entries,
 )
-from .lockfile import save_json
+from .lockfile import load_json, save_json
 from .locking import package_root_lock
 from .manifests import load_pack_config
 from .models import DeployPlan
 from .paths import ensure_dir, legacy_target_lockfile_path, repo_path, target_lockfile_path
 from .path_contract import paths_manifest_path, write_paths_manifest
-from .adapters import ADAPTER_MARKER_JSON, adapter_path_state, legacy_global_roots, _is_safe_adapter_package_name
+from .adapters import (
+    ADAPTER_MARKER_JSON,
+    adapter_marker_state,
+    adapter_path_state,
+    legacy_global_roots,
+    remove_managed_adapter_entries,
+    _is_safe_adapter_package_name,
+)
 from .package_cleanup import is_package_backup_artifact
 from .registry import upsert_target
 from .provenance import is_managed_package
@@ -60,6 +67,71 @@ def _record_file_state(journal: dict, journal_path: Path, path: Path) -> None:
 
 def _restore_failed_mutations(journal: dict) -> None:
     restore_failed_mutations(journal, _same_filesystem_replace)
+
+
+def _legacy_codex_recorded_packages(attachment_root: Path, legacy_path: Path) -> tuple[bool, list[str]]:
+    recorded = False
+    packages: set[str] = set()
+    for lock_path in (target_lockfile_path(attachment_root), legacy_target_lockfile_path(attachment_root)):
+        payload = load_json(lock_path)
+        if not isinstance(payload, dict):
+            continue
+        if str(legacy_path) in {str(item) for item in payload.get("adapter_state", [])}:
+            recorded = True
+        for item in payload.get("adapter_targets", []):
+            if isinstance(item, dict) and str(item.get("path")) == str(legacy_path):
+                recorded = True
+                packages.update(str(name) for name in item.get("packages", []) if name)
+        packages.update(str(name) for name in payload.get("repo_packages", []) if name)
+        packages.update(str(name) for name in payload.get("adapter_packages", []) if name)
+    return recorded, sorted(packages)
+
+
+def _retire_legacy_codex_adapter(
+    action,
+    *,
+    attachment_root: Path,
+    home: Path,
+    journal: dict,
+    journal_path: Path,
+) -> list[str]:
+    path = action.path
+    if not (path.exists() or path.is_symlink()):
+        return []
+    global_root = Path(action.details["global_root"])
+    known_roots = legacy_global_roots(home)
+    state = adapter_path_state(path, global_root, known_global_roots=known_roots, target_root=attachment_root)
+    marker = adapter_marker_state(path) if path.is_dir() and not path.is_symlink() else {"exists": False}
+    recorded, recorded_packages = _legacy_codex_recorded_packages(attachment_root, path)
+    proven = bool(
+        state["points_to_global"]
+        or state["points_to_legacy_global"]
+        or (marker.get("exists") and not marker.get("error") and marker.get("mode") in {"symlink", "portable"})
+        or (recorded and not path.is_symlink())
+    )
+    if not proven:
+        action.details["disposition"] = "preserved-unproven"
+        return []
+
+    backup = path.with_name(f".{path.name}.localsetup-backup-{uuid.uuid4().hex}")
+    existed = path.exists() or path.is_symlink()
+    if path.is_symlink():
+        backup.symlink_to(path.readlink())
+    elif path.is_dir():
+        shutil.copytree(path, backup, symlinks=True)
+    journal["touched"].append(
+        {"kind": "adapter", "path": str(path), "backup": str(backup), "existed": existed, "transition": "codex-skills-v1"}
+    )
+    _write_journal(journal_path, journal)
+    removed = remove_managed_adapter_entries(
+        path,
+        global_root,
+        known_global_roots=known_roots,
+        recorded_packages=recorded_packages,
+    )
+    action.details["disposition"] = "retired-managed-entries" if removed else "preserved-no-managed-entries"
+    action.details["removed"] = removed
+    return removed
 
 
 def _install_managed_packages(
@@ -297,6 +369,16 @@ def _apply_plan_unlocked(
                         _record_file_state(journal, journal_path, action.path / f"{name}.toml")
                     installed_codex_agents = _install_codex_agents(repo_root, action.path, action.details["agents"])
                 executed.append(f"install_codex_agents:{action.path}")
+            elif action.kind == "retire_legacy_codex_adapter":
+                if not dry_run:
+                    _retire_legacy_codex_adapter(
+                        action,
+                        attachment_root=attachment_root,
+                        home=home,
+                        journal=journal,
+                        journal_path=journal_path,
+                    )
+                executed.append(f"retire_legacy_codex_adapter:{action.path}")
             elif action.kind == "attach_repo_path":
                 if not dry_run:
                     ensure_dir(action.path.parent)

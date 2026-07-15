@@ -49,7 +49,7 @@ The command installs every configured pack from this checkout into the managed L
 
 ## Maintainer Codex Adapter Reconciliation
 
-This source checkout is allowed to expose every public Localsetup skill and workflow package through its repo-local `.codex/skills` adapter while keeping the global/default skill stance curated. Use this only for the Localsetup maintainer repo, not as a normal consumer-repo default.
+This source checkout may expose every public Localsetup skill and workflow package through its repo-local `.agents/skills` adapter while keeping the global/default skill stance curated. Use this only for the Localsetup maintainer repo, not as a normal consumer-repo default.
 
 Dry-run first:
 

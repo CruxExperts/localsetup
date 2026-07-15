@@ -80,7 +80,7 @@ Full local setup for the Codex, Kilo, and OpenCode adapters:
 ./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,frontend,architecture,ops,integrations,publishing,harness,skill-lifecycle,growth-content,specialized --sync-env
 ```
 
-That command installs every declared skill and workflow pack, attaches only `.codex/skills`, `.kilo/skills`, and `.opencode/skills`, and syncs the uv-managed source checkout `.venv` dependency environment.
+That command installs every declared skill and workflow pack, attaches only `.agents/skills`, `.kilo/skills`, and `.opencode/skills`, and syncs the uv-managed source checkout `.venv` dependency environment.
 
 The `harness` pack only installs autonomous-harness capability. It does not create `HEARTBEAT.md`, `config/codex_heartbeat.yaml`, `cron/manifest.yaml`, or `.localsetup/state/codex-heartbeat/`. Activate a target repo later with `localsetup harness codex-heartbeat init` and `localsetup harness codex-heartbeat enable`; see [HARNESS_AUTOMATION.md](HARNESS_AUTOMATION.md).
 
@@ -149,11 +149,11 @@ The wizard keeps the install portable and dependency-free; it uses plain termina
 - **Source and release:** shows the source checkout, current source ref, and latest upstream release result when the raw managed bootstrap path performed a release check.
 - **Global package library:** `normal` is the suggested fresh baseline for normal use. It combines bootstrap, core, dev, frontend, architecture, ops, and publishing packs. `bootstrap` adds agent-team startup and audit workflows. `dev` adds code, docs, git, test, repo repair, and engineering workflow guidance. `frontend` adds UI, design, accessibility, React, Next.js, Tailwind, and browser-debugging coverage. `architecture` adds system design, diagrams, deployment readiness, incident response, and tech-debt planning. `ops` adds server and maintenance workflows. `integrations` adds external system connectors and provider/API guidance. `publishing` adds release and public-repo support. `harness` adds opt-in autonomous harness capability without activating it. `skill-lifecycle` adds skill authoring, import, vetting, and bundle inventory workflows. `growth-content` adds marketing, CRO, SEO/GEO, lifecycle email, and writing/editing support. `specialized` adds narrow human-review, Kilo, and umbrella workflow support. `experimental` is reserved for future incubation and is currently empty.
 - **Repo setup:** `No repo setup` refreshes the managed package library without repo adapter paths. `Current directory` prepares the directory you launched from. `Another target directory` prepares a different repo while using this checkout as the source.
-- **Repo adapters:** each selected platform shows the adapter path it writes, such as `.codex/skills` for Codex or `.cursor/skills` for Cursor. Repo-visible packs are selected separately from the global baseline.
+- **Repo adapters:** each selected platform shows the adapter path it writes, such as `.agents/skills` for Codex or `.cursor/skills` for Cursor. Repo-visible packs are selected separately from the global baseline.
 
 ## Shared home library
 
-Localsetup installs managed skills and workflow packages to `~/.local/share/localsetup/packages` and writes a registry beside them. The managed package root contains the union of the global baseline and any repo-visible packages. Explicitly selected repo adapter paths such as `.codex/skills` and `.kilo/skills` are shared agent surfaces where Localsetup writes scoped managed entries. In symlink mode, each selected repo-visible Localsetup package inside the adapter links to the managed home library. In portable mode, the selected repo-visible packages are copied. Both modes write `.localsetup-adapter.json` so Localsetup can recognize, verify, detach, and replace its own managed entries later.
+Localsetup installs managed skills and workflow packages to `~/.local/share/localsetup/packages` and writes a registry beside them. The managed package root contains the union of the global baseline and any repo-visible packages. Explicitly selected repo adapter paths such as `.agents/skills` and `.kilo/skills` are shared agent surfaces where Localsetup writes scoped managed entries. In symlink mode, each selected repo-visible Localsetup package inside the adapter links to the managed home library. In portable mode, the selected repo-visible packages are copied. Both modes write `.localsetup-adapter.json` so Localsetup can recognize, verify, detach, and replace its own managed entries later. A prior `.codex/skills` surface is retired only when Localsetup ownership is proven; custom content remains in place.
 
 Localsetup does not own an entire adapter directory merely because the path matches a supported platform. Custom skills, ordinary files, repo-local symlinks, and other agent-owned entries may live beside Localsetup-managed entries and must be preserved in place. See [Adapter ownership](ADAPTER_OWNERSHIP.md).
 
@@ -225,7 +225,7 @@ Adapter paths are conservative. The installer creates only the selected adapter 
 
 - **Shared library:** Managed skills under `~/.local/share/localsetup/packages`.
 - **Workflow packages:** Managed copies of selected `ls/workflows/ls-workflow-*` packages in the same library.
-- **Per-platform adapters:** Explicitly selected repo paths from `ls/config/platforms.yaml`, such as `.codex/skills` and `.kilo/skills`.
+- **Per-platform adapters:** Explicitly selected repo paths from `ls/config/platforms.yaml`, such as `.agents/skills` and `.kilo/skills`.
 - **Lock and registry:** `.localsetup/lock.json` in the repo and `~/.local/share/localsetup/registry.json` in the Localsetup home.
 - **Runtime state:** `.localsetup/health.json`, `.localsetup/AGENT_STATUS.md`, `.localsetup/install-journal/`, `.localsetup/backups/`, `.localsetup/state/`, and `.localsetup/context-index/` are local runtime paths added to `.git/info/exclude`; `.localsetup/lock.json` remains managed repo state.
 

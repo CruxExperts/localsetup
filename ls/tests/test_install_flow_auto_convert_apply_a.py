@@ -33,7 +33,7 @@ def test_no_selector_plan_install_and_update_infer_existing_modern_repo(tmp_path
     assert installed.returncode == 0, installed.stderr
     install_payload = json.loads(installed.stdout)
     assert install_payload["auto_mode"] == "inferred_existing"
-    assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
+    assert_scoped_adapter(target / ".agents" / "skills", "ls-context")
 
     updated = run_localsetup_cli(root, home, "update", "--target-directory", str(target))
     assert updated.returncode == 0, updated.stderr
@@ -67,7 +67,7 @@ def test_no_selector_install_repairs_legacy_lockfile(tmp_path: Path) -> None:
     assert payload["applied"] is True
     assert not (target / "localsetup.lock.json").exists()
     assert (target / ".localsetup" / "lock.json").is_file()
-    assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
+    assert_scoped_adapter(target / ".agents" / "skills", "ls-context")
 
 
 def test_no_selector_update_requires_decision_for_unknown_broken_adapter(tmp_path: Path) -> None:
@@ -104,7 +104,8 @@ def test_no_selector_install_preserves_benign_adapter_file(tmp_path: Path) -> No
     assert payload["auto_mode"] == "repair_required"
     assert payload["decisions"] == []
     assert (collision / "custom.txt").is_file()
-    assert_scoped_adapter(collision, "ls-context")
+    assert not (collision / "ls-context").exists()
+    assert_scoped_adapter(target / ".agents" / "skills", "ls-context")
     assert (target / ".localsetup" / "lock.json").exists()
 
 
@@ -161,7 +162,7 @@ def test_explicit_selectors_bypass_no_selector_auto_mode(tmp_path: Path) -> None
     assert completed.returncode == 0, completed.stderr
     assert payload["auto_mode"] == "explicit"
     assert payload["attachment"]["platforms"] == ["codex"]
-    assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
+    assert_scoped_adapter(target / ".agents" / "skills", "ls-context")
 
 
 def test_no_selector_install_protected_source_checkout_allows_safe_refresh(tmp_path: Path) -> None:
@@ -181,7 +182,8 @@ def test_no_selector_install_protected_source_checkout_allows_safe_refresh(tmp_p
     assert payload["decisions"] == []
     assert (target / "ls" / "config" / "pack.yaml").is_file()
     assert (adapter / "README.md").is_file()
-    assert_scoped_adapter(adapter, "ls-context")
+    assert not (adapter / "ls-context").exists()
+    assert_scoped_adapter(target / ".agents" / "skills", "ls-context")
     assert (target / ".localsetup" / "lock.json").exists()
 
 
@@ -427,7 +429,7 @@ def test_failed_adapter_replace_restores_existing_adapter(tmp_path: Path, monkey
     home = tmp_path / "home"
     plan = build_install_plan(root, home=home, packs=["core"], attach_mode="portable", platform_ids=["codex"])
     apply_plan(root, plan, home=home, dry_run=False)
-    adapter = root / ".codex" / "skills"
+    adapter = root / ".agents" / "skills"
     existing_note = adapter / "existing.txt"
     existing_note.write_text("keep me\n", encoding="utf-8")
     original_copytree = apply_mod.shutil.copytree
@@ -446,3 +448,32 @@ def test_failed_adapter_replace_restores_existing_adapter(tmp_path: Path, monkey
     assert existing_note.read_text(encoding="utf-8") == "keep me\n"
     journals = sorted((root / ".localsetup" / "install-journal").glob("*.json"))
     assert load_json(journals[-1])["status"] == "failed"
+
+
+def test_failed_codex_transition_restores_legacy_managed_adapter(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    legacy_root = home / ".local" / "share" / "agents" / "skills" / "localsetup"
+    legacy_root.mkdir(parents=True)
+    legacy = root / ".codex" / "skills"
+    legacy.parent.mkdir(parents=True)
+    legacy.symlink_to(legacy_root, target_is_directory=True)
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"])
+
+    def fail_new_adapter(*args: object, **kwargs: object) -> None:
+        raise OSError("simulated post-transition adapter failure")
+
+    monkeypatch.setattr(apply_mod, "_write_scoped_adapter", fail_new_adapter)
+
+    with pytest.raises(OSError, match="post-transition"):
+        apply_plan(root, plan, home=home, dry_run=False)
+
+    assert legacy.is_symlink()
+    assert legacy.resolve(strict=False) == legacy_root.resolve(strict=False)
+    assert not (root / ".agents" / "skills").exists()
+    journals = sorted((root / ".localsetup" / "install-journal").glob("*.json"))
+    journal = load_json(journals[-1])
+    assert journal["status"] == "failed"
+    assert any(item.get("transition") == "codex-skills-v1" for item in journal["touched"])

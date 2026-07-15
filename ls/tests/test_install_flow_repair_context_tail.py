@@ -129,7 +129,7 @@ def test_repair_infers_visible_workflows_and_preserves_custom_repo_skills(tmp_pa
     apply_plan(source, plan, home=home, dry_run=False, target_root=target)
     (target / ".localsetup" / "lock.json").unlink()
 
-    custom = target / ".codex" / "skills" / "media-batch-ops"
+    custom = target / ".agents" / "skills" / "media-batch-ops"
     custom.mkdir()
     (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
 

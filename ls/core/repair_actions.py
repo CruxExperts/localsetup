@@ -269,6 +269,15 @@ def _plan_actions(
                     )
                 )
                 pre_action_count += 1
+            elif path.is_symlink():
+                decisions.append(
+                    {
+                        "kind": "adapter_collision",
+                        "path": str(path),
+                        "reason": state["collision_reason"] or "historical Codex adapter symlink is not proven LocalSetup-managed",
+                        "required": "review this symlink before LocalSetup can transition the Codex adapter",
+                    }
+                )
 
     lock_exists = (target_root / ".localsetup" / "lock.json").is_file()
     adapters_modern = True

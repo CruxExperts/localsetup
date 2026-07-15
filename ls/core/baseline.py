@@ -42,6 +42,8 @@ def classify_path(path: str) -> str:
         return "keep"
     if path.startswith("ls/core/") or path in {
         "ls/config/pack.yaml",
+        "ls/config/clients.yaml",
+        "ls/config/clients.schema.json",
         "ls/config/platforms.yaml",
         "ls/tools/localsetup.py",
     }:

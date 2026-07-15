@@ -14,7 +14,8 @@ Adapter-shaped directories are shared agent workflow surfaces, not exclusive Loc
 
 This includes repo-local and global paths such as:
 
-- `.codex/skills`
+- `.agents/skills` (current Codex/shared adapter)
+- `.codex/skills` (historical Codex transition surface only)
 - `.claude/skills`
 - `.cursor/skills`
 - `.kilo/skills`
@@ -25,7 +26,7 @@ This includes repo-local and global paths such as:
 
 A repo, user profile, or other agent tool may intentionally keep custom skills, files, symlinks, generated outputs, or mixed managed and repo-owned content in those directories.
 
-An adapter path may also be a repo-local symlink to another adapter-shaped directory in the same target repo, such as `.codex/skills -> ../.agents/skills`. When the symlink target resolves inside the target repo and contains valid custom skill packages, Localsetup must treat that as a shared repo adapter surface and write only selected Localsetup-managed entries into the target directory.
+An adapter path may also be a repo-local symlink to another adapter-shaped directory in the same target repo. Historical `.codex/skills` links are never adopted as a compatibility alias: Localsetup transitions only proven managed entries to `.agents/skills`, preserves custom content, and requires review for unproven links.
 
 ## Localsetup-Owned Content
 
@@ -62,4 +63,4 @@ When ownership is unclear or unsafe, the safe repair output is a migration or pr
 
 ## Documentation Rule
 
-Framework docs should say "managed adapter entries", "selected adapter links", or "Localsetup-managed entries inside the adapter" when describing Localsetup-owned content. Avoid wording that implies `.codex/skills`, `.cursor/skills`, or any other adapter directory is exclusive to Localsetup.
+Framework docs should say "managed adapter entries", "selected adapter links", or "Localsetup-managed entries inside the adapter" when describing Localsetup-owned content. Avoid wording that implies `.agents/skills`, historical `.codex/skills`, `.cursor/skills`, or any other adapter directory is exclusive to Localsetup.

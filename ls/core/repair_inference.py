@@ -11,7 +11,7 @@ from .repair_common import _known_package_names, _normalize_package_names
 from .selection import resolve_package_selection
 
 HISTORICAL_ADAPTERS = {
-    "codex": [".agents/skills"],
+    "codex": [".codex/skills"],
 }
 
 def _extract_list(payload: dict[str, Any], *keys: str) -> list[str]:
@@ -83,6 +83,8 @@ def _infer_platforms(
     if selected:
         reasons.append("legacy lock selectors")
     known_platforms = {platform.platform_id: platform for platform in load_platforms(source_root)}
+    if selected:
+        return sorted(selected & set(known_platforms)), sorted(set(reasons))
     for platform in known_platforms.values():
         for rel in platform.repo_paths:
             if (target_root / rel).exists() or (target_root / rel).is_symlink():

@@ -144,6 +144,19 @@ def build_install_plan(
     else:
         codex_agents = []
 
+    if "codex" in selected_ids:
+        actions.append(
+            PlanAction(
+                "retire_legacy_codex_adapter",
+                attachment_root / ".codex" / "skills",
+                {
+                    "platform": "codex",
+                    "replacement": str(attachment_root / ".agents" / "skills"),
+                    "global_root": str(global_root),
+                },
+            )
+        )
+
     for target in adapter_targets(repo_root, home, platform_ids=platform_ids, target_root=attachment_root):
         actions.append(
             PlanAction(
@@ -151,9 +164,11 @@ def build_install_plan(
                 target["repo_path"],
                 {
                     "platform": target["platform"],
+                    "platforms": target["platforms"],
                     "mode": attach_mode,
                     "global_root": str(global_root),
                     "packages": repo_selection.packages,
+                    "verify_rules": target["verify_rules"],
                 },
             )
         )

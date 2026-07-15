@@ -53,14 +53,14 @@ This keeps a single source of truth for debugging (debug-pro) and a clear separa
 
 ## Supported platforms
 
-Skill paths and context loaders are defined in [ls/docs/PLATFORM_REGISTRY.md](../../docs/PLATFORM_REGISTRY.md) and `ls/config/platforms.yaml`. The sandbox tester follows the current adapter model:
+Skill paths and context loaders are defined in [ls/docs/PLATFORM_REGISTRY.md](../../docs/PLATFORM_REGISTRY.md). The canonical client contract is `ls/config/clients.yaml`; LocalSetup generates `ls/config/platforms.yaml` as the runtime projection. The sandbox tester follows that current adapter model:
 
 | Platform/runtime | Skills root model |
 |----------|-------------------------------------|
 | Framework source | `ls/skills/ls-*/` (canonical source) |
-| Adapter-managed platforms | Use the adapter skills root declared in PLATFORM_REGISTRY/platforms.yaml (for example `.codex/skills/`, `.claude/skills/`, `.cursor/skills/`, `.kilo/skills/`, `.opencode/skills/`, `.openclaw/skills/`) |
+| Adapter-managed platforms | Use the repository skills root declared by the client registry (currently shared `.agents/skills/` for Codex and OpenClaw, `.agents/skills/` then `.cursor/skills/` for Cursor, plus `.claude/skills/`, `.kilo/skills/`, and `.opencode/skills/` for their owning clients) |
 
-Resolve the skill directory from current context and registry mapping: if working in the framework repo, use `ls/skills/<name>/`; if the user refers to a deployed path, use the adapter path from PLATFORM_REGISTRY/platforms.yaml. Do not assume a bare repo-root `skills/` directory as a default root. Test using the same platform the user is on so behavior matches production.
+Resolve the skill directory from current context and registry mapping: if working in the framework repo, use `ls/skills/<name>/`; if the user refers to a deployed path, use the adapter path from the generated platform projection. The helper reads that projection when a framework checkout is discoverable and uses a deterministic copy of the same current repository roots when the skill has been copied standalone. Historical `.codex/skills/` is a migration/repair surface, not a current Codex discovery root. Adapter directories are shared or client-owned as declared by the registry; preserve unmanaged entries. Do not assume a bare repo-root `skills/` directory as a default root. Test using the same platform the user is on so behavior matches production.
 
 ## Tooling
 

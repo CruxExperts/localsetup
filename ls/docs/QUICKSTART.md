@@ -55,7 +55,7 @@ uv run --locked python ls/tools/localsetup.py --source-root . verify-release \
   --sbom dist/localsetup-v$(cat VERSION).tar.gz.cdx.json
 ```
 
-Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.codex/skills` to the selected target. If no tools are selected, the install is global-library-only. Interactive installs first choose the global package-library baseline, defaulting to `normal` or the prior registry setting. Repo setup is a separate choice; when selected, repo-visible packs default from the target lockfile or repo-detected suggestions.
+Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.agents/skills` to the selected target. If no tools are selected, the install is global-library-only. Interactive installs first choose the global package-library baseline, defaulting to `normal` or the prior registry setting. Repo setup is a separate choice; when selected, repo-visible packs default from the target lockfile or repo-detected suggestions.
 
 For scripts and CI, use explicit automation mode:
 
@@ -117,10 +117,10 @@ The default `prompt-only` dependency mode is non-mutating: it reports missing uv
 
 | ID | Agent host | Adapter path | Managed package library |
 |---|---|---|---|
-| `cursor` | Cursor | `.cursor/skills` | `~/.local/share/localsetup/packages` |
+| `cursor` | Cursor | `.agents/skills`, `.cursor/skills` | `~/.local/share/localsetup/packages` |
 | `claude-code` | Claude Code | `.claude/skills` | `~/.local/share/localsetup/packages` |
-| `codex` | OpenAI Codex CLI | `.codex/skills` | `~/.local/share/localsetup/packages` |
-| `openclaw` | OpenClaw | `.openclaw/skills` | `~/.local/share/localsetup/packages` |
+| `codex` | OpenAI Codex CLI | `.agents/skills` | `~/.local/share/localsetup/packages` |
+| `openclaw` | OpenClaw | `.agents/skills` | `~/.local/share/localsetup/packages` |
 | `kilo` | Kilo CLI | `.kilo/skills` | `~/.local/share/localsetup/packages` |
 | `opencode` | OpenCode CLI | `.opencode/skills` | `~/.local/share/localsetup/packages` |
 
@@ -160,7 +160,7 @@ The first command is a dry report. Apply mode writes a timestamped backup and `c
 - A registered framework source checkout under `~/.local/share/localsetup/source` or the checkout passed with `--directory`
 - Managed skills under `~/.local/share/localsetup/packages`
 - Managed workflow packages under the same library; their source remains `ls/workflows/ls-workflow-*`
-- Explicitly selected Localsetup-managed entries inside platform adapter paths such as `.codex/skills` or `.kilo/skills`
+- Explicitly selected Localsetup-managed entries inside platform adapter paths such as `.agents/skills` or `.kilo/skills`
 - `.localsetup/lock.json` and reports that support verification and rollback
 - Transaction journals under `.localsetup/install-journal/` for applied installs
 

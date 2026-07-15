@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from ls.core.client_registry import load_client_registry, platform_rows
 from ls.core.skills import load_skill_catalog
 from ls.core.workflows import load_workflow_catalog
 
@@ -51,32 +52,23 @@ def collect_workflows(repo_root: Path) -> list[dict[str, Any]]:
     return workflows
 
 
-def collect_platforms(platform_registry: Path) -> list[dict[str, str]]:
+def collect_platforms(repo_root: Path) -> list[dict[str, str]]:
+    registry = load_client_registry(repo_root)
+    variants_by_platform = {
+        str(variant.data["compatibility"]["platform_id"]): variant
+        for variant in registry.variants()
+        if variant.data.get("compatibility")
+    }
     rows = []
-    in_supported_platforms = False
-    for line in platform_registry.read_text(encoding="utf-8").splitlines():
-        stripped = line.strip()
-        if stripped.startswith("##"):
-            in_supported_platforms = stripped.startswith("## Supported platforms")
-            continue
-        if not in_supported_platforms:
-            continue
-        if not line.startswith("|"):
-            continue
-        if stripped.startswith("| ID ") or stripped.startswith("|----"):
-            continue
-        parts = [p.strip() for p in line.strip("|").split("|")]
-        if len(parts) != 4:
-            continue
-        platform_id, display, context_loader, skills_path = parts
-        if not platform_id:
-            continue
+    for projected in platform_rows(registry):
+        platform_id = str(projected["id"])
+        variant = variants_by_platform[platform_id]
         rows.append(
             {
                 "id": platform_id,
-                "display_name": display,
-                "context_loader": context_loader,
-                "skills_path": skills_path,
+                "display_name": str(variant.data["display_name"]),
+                "context_loader": ", ".join(variant.data["policy"]["repo"].get("paths", [])),
+                "skills_path": ", ".join(projected["repo_paths"]),
             }
         )
     return rows

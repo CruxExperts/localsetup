@@ -153,7 +153,7 @@ def test_convert_archives_old_framework_and_installs_at_target(tmp_path: Path) -
     assert report["applied"] is True
     assert (tmp_path / "backup" / "repo" / "ls" / "OLD.txt").is_file()
     assert not (target / "ls").exists()
-    assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
+    assert_scoped_adapter(target / ".agents" / "skills", "ls-context")
     assert (target / ".localsetup/lock.json").is_file()
     assert report["verify"]["ok"] is True
 
@@ -253,7 +253,8 @@ def test_doctor_repair_protected_maintainer_source_checkout_allows_safe_adapter_
     assert report["detected_shape"]["protected_source_root"] is True
     assert (target / "ls" / "config" / "pack.yaml").is_file()
     assert (adapter / "README.md").is_file()
-    assert_scoped_adapter(adapter, "ls-context")
+    assert not (adapter / "ls-context").exists()
+    assert_scoped_adapter(target / ".agents" / "skills", "ls-context")
     assert (target / ".localsetup" / "lock.json").exists()
 
 
@@ -308,25 +309,26 @@ def test_doctor_repair_keeps_source_tree_when_protected_checkout_has_legacy_lock
     assert (target / "ls" / "config" / "pack.yaml").is_file()
 
 
-def test_doctor_repair_retires_old_agents_codex_adapter(tmp_path: Path) -> None:
+def test_doctor_repair_retires_proven_legacy_codex_adapter(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "target"
-    old_adapter = target / ".agents" / "skills"
-    old_adapter.mkdir(parents=True)
-    (old_adapter / "localsetup-context").mkdir()
-    (old_adapter / "localsetup-context" / "SKILL.md").write_text("---\nname: localsetup-context\n---\n", encoding="utf-8")
+    legacy_root = home / ".local" / "share" / "agents" / "skills" / "localsetup"
+    legacy_root.mkdir(parents=True)
+    old_adapter = target / ".codex" / "skills"
+    old_adapter.parent.mkdir(parents=True)
+    old_adapter.symlink_to(legacy_root, target_is_directory=True)
 
     dry = run_repair(root, home=home, target_root=target)
     report = run_repair(root, home=home, target_root=target, apply=True)
 
     assert dry["inferred"]["platforms"] == ["codex"]
-    assert not any(action["kind"] == "backup_remove_historical_adapter" for action in dry["actions"])
+    assert any(action["kind"] == "backup_remove_historical_adapter" for action in dry["actions"])
     assert dry["decisions"] == []
     assert report["ok"] is True
     assert report["applied"] is True
-    assert old_adapter.exists()
-    assert_scoped_adapter(target / ".codex" / "skills", "ls-context")
+    assert not old_adapter.exists()
+    assert_scoped_adapter(target / ".agents" / "skills", "ls-context")
 
 
 def test_doctor_repair_benign_adapter_file_preserves_content(tmp_path: Path) -> None:
@@ -343,7 +345,8 @@ def test_doctor_repair_benign_adapter_file_preserves_content(tmp_path: Path) -> 
     assert report["applied"] is True
     assert report["decisions"] == []
     assert (collision / "custom.txt").is_file()
-    assert (collision / "ls-context").is_symlink()
+    assert not (collision / "ls-context").exists()
+    assert_scoped_adapter(target / ".agents" / "skills", "ls-context")
     assert (target / ".localsetup" / "lock.json").exists()
 
 
@@ -351,7 +354,7 @@ def test_doctor_repair_selected_same_name_adapter_file_requires_decision(tmp_pat
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "target"
-    collision = target / ".codex" / "skills"
+    collision = target / ".agents" / "skills"
     collision.mkdir(parents=True)
     (collision / "ls-context").write_text("user content\n", encoding="utf-8")
 
@@ -379,10 +382,11 @@ def test_doctor_repair_custom_skill_directory_preserves_content(tmp_path: Path) 
     assert report["applied"] is True
     assert report["decisions"] == []
     assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom repo skill\n"
-    assert (adapter / "ls-context").is_symlink()
+    assert not (adapter / "ls-context").exists()
+    assert_scoped_adapter(target / ".agents" / "skills", "ls-context")
 
 
-def test_doctor_repair_repo_local_symlink_adapter_preserves_target(tmp_path: Path) -> None:
+def test_doctor_repair_blocks_unproven_legacy_codex_symlink_and_preserves_target(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = tmp_path / "target"
@@ -394,18 +398,13 @@ def test_doctor_repair_repo_local_symlink_adapter_preserves_target(tmp_path: Pat
     adapter.parent.mkdir(parents=True)
     adapter.symlink_to(Path("..") / ".agents" / "skills", target_is_directory=True)
 
-    report = run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
+    with pytest.raises(RuntimeError, match="unproven_legacy_codex_symlink"):
+        run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
 
-    assert report["ok"] is True
-    assert report["applied"] is True
-    assert report["decisions"] == []
     assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Fleet custom skill\n"
     assert adapter.is_symlink()
-    assert (historical / "ls-context").is_symlink()
-
-    refreshed = run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
-    assert refreshed["ok"] is True
-    assert refreshed["decisions"] == []
+    assert not (historical / "ls-context").exists()
+    assert not (target / ".localsetup" / "lock.json").exists()
 
 
 def test_doctor_repair_preserves_repo_local_custom_symlink_not_selected(tmp_path: Path) -> None:
@@ -425,7 +424,7 @@ def test_doctor_repair_preserves_repo_local_custom_symlink_not_selected(tmp_path
     repo_local_skill = target / "custom-skills" / "ls-omniroute-update"
     repo_local_skill.mkdir(parents=True)
     (repo_local_skill / "SKILL.md").write_text("# OmniRoute custom skill\n", encoding="utf-8")
-    custom = target / ".codex" / "skills" / "ls-omniroute-update"
+    custom = target / ".agents" / "skills" / "ls-omniroute-update"
     custom.symlink_to(Path("..") / ".." / "custom-skills" / "ls-omniroute-update", target_is_directory=True)
 
     report = run_repair(root, home=home, target_root=target, platform_ids=["codex"], apply=True)
@@ -486,7 +485,7 @@ def test_doctor_repair_recreates_dangling_managed_root_adapter_symlink(tmp_path:
 
     assert report["ok"] is True
     assert not adapter.is_symlink()
-    assert_scoped_adapter(adapter, "ls-context")
+    assert_scoped_adapter(target / ".agents" / "skills", "ls-context")
     assert report["verify"]["ok"] is True
 
 
@@ -538,4 +537,4 @@ def test_doctor_repair_cli_subcommand_applies(tmp_path: Path) -> None:
     assert payload["ok"] is True
     assert payload["applied"] is True
     assert (target / ".localsetup" / "lock.json").is_file()
-    assert (target / ".codex" / "skills" / ".localsetup-adapter.json").is_file()
+    assert (target / ".agents" / "skills" / ".localsetup-adapter.json").is_file()
