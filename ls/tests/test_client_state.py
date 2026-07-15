@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import datetime, timezone
 import json
 import os
@@ -73,6 +74,21 @@ def registry_root(path: Path) -> Path:
     return path
 
 
+def artifact_options(content: object = b"checkpoint\n") -> dict:
+    return {
+        "content": content,
+        "purpose": "w14-boundary",
+        "extension": "md",
+        "kind": "restart-artifact",
+        "schema": "restart-v1",
+        "producer": "controller",
+    }
+
+
+def exclude_bytes(repo: Path) -> bytes:
+    return (repo / ".git" / "info" / "exclude").read_bytes()
+
+
 def test_locator_selects_nested_repo_and_registry_root(tmp_path: Path) -> None:
     repo = repository(tmp_path / "repo")
     nested = repo / "one" / "two"
@@ -110,6 +126,99 @@ def test_locator_honors_submodule_root(tmp_path: Path) -> None:
     )
     assert location.git and location.git.root == parent / "module"
     assert location.root == parent / "module" / ".codex" / "state"
+
+
+@pytest.mark.parametrize("suffix", [" ", "\t"])
+@pytest.mark.parametrize("with_stripped_sibling", [False, True])
+def test_git_root_trailing_whitespace_is_preserved_end_to_end(
+    tmp_path: Path, suffix: str, with_stripped_sibling: bool
+) -> None:
+    actual = repository(tmp_path / f"repo{suffix}")
+    sibling = repository(tmp_path / "repo") if with_stripped_sibling else tmp_path / "repo"
+    location = resolve_state_location(
+        ROOT, "codex/codex-cli", cwd=actual, home=tmp_path / "home"
+    )
+    assert location.git and location.git.root == actual
+    allocated = allocate_artifact(location, **artifact_options())
+    current = resolve_state_location(
+        ROOT, "codex/codex-cli", cwd=actual, home=tmp_path / "home"
+    )
+    assert verify_artifact(current, allocated["artifact"], schema_path=SCHEMA)["ok"]
+    assert (actual / ".codex" / "state" / allocated["artifact"]).is_file()
+    assert not (sibling / ".codex" / "state").exists()
+    if with_stripped_sibling:
+        assert b"/.codex/state/" not in exclude_bytes(sibling)
+
+
+def test_git_root_terminal_carriage_return_is_typed_and_never_redirected(
+    tmp_path: Path
+) -> None:
+    actual = repository(tmp_path / "repo\r")
+    sibling = repository(tmp_path / "repo")
+    with pytest.raises(ClientStateError) as failure:
+        resolve_state_location(ROOT, "codex/codex-cli", cwd=actual, home=tmp_path / "home")
+    assert failure.value.code == "git_probe_failed"
+    assert not (actual / ".codex" / "state").exists()
+    assert not (sibling / ".codex" / "state").exists()
+    assert b"/.codex/state/" not in exclude_bytes(sibling)
+
+
+def test_git_root_undecodable_byte_is_preserved_without_replacement_sibling_redirect(
+    tmp_path: Path
+) -> None:
+    actual = repository(tmp_path / os.fsdecode(b"repo-\xff"))
+    sibling = repository(tmp_path / "repo-\ufffd")
+    location = resolve_state_location(
+        ROOT, "codex/codex-cli", cwd=actual, home=tmp_path / "home"
+    )
+    assert location.git and os.fsencode(location.git.root) == os.fsencode(actual)
+    allocated = allocate_artifact(location, **artifact_options())
+    assert (actual / ".codex" / "state" / allocated["artifact"]).is_file()
+    assert not (sibling / ".codex" / "state").exists()
+    assert b"/.codex/state/" not in exclude_bytes(sibling)
+
+
+@pytest.mark.parametrize(
+    "record",
+    [
+        b"/tmp/repo",
+        b"\n",
+        b"relative/repo\n",
+        b"/tmp/repo\x00evil\n",
+        b"/tmp/one\n/tmp/two\n",
+        b"/tmp/repo\r\n",
+    ],
+)
+def test_path_valued_git_records_require_one_clean_lf_delimited_record(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, record: bytes
+) -> None:
+    result = subprocess.CompletedProcess(["git"], 0, record, b"")
+    monkeypatch.setattr(locator, "_git_bytes", lambda *_args: result)
+    with pytest.raises(ClientStateError) as failure:
+        locator._required_git_path(tmp_path, "rev-parse", "--show-toplevel")
+    assert failure.value.code == "git_probe_failed"
+
+
+def test_relative_git_path_record_maps_per_consumer_without_wrong_target_mutation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = repository(tmp_path / "repo")
+    (tmp_path / "relative").mkdir()
+    wrong = repository(tmp_path / "relative" / "repo")
+    repo_before = exclude_bytes(repo)
+    wrong_before = exclude_bytes(wrong)
+    relative = subprocess.CompletedProcess(["git"], 0, b"relative/repo\n", b"")
+    monkeypatch.setattr(locator, "_git_bytes", lambda *_args: relative)
+
+    with pytest.raises(ClientStateError) as locator_failure:
+        probe_git_context(repo)
+    assert locator_failure.value.code == "git_probe_failed"
+    with pytest.raises(ClientStateError) as exclude_failure:
+        git_exclude._resolved_exclude(repo)
+    assert exclude_failure.value.code == "git_ignore_probe_failed"
+    assert exclude_bytes(repo) == repo_before and exclude_bytes(wrong) == wrong_before
+    assert not (repo / ".codex" / "state").exists()
+    assert not (wrong / ".codex" / "state").exists()
 
 
 def test_non_repo_falls_back_to_supported_global_root(tmp_path: Path) -> None:
@@ -152,6 +261,41 @@ def test_codex_home_unset_uses_home_default(tmp_path: Path, monkeypatch: pytest.
     assert not location.root.exists()
 
 
+@pytest.mark.parametrize("surface", ["kwargs", "prepared"])
+def test_artifact_content_exact_limit_allocates_and_verifies(
+    tmp_path: Path, surface: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    options = artifact_options(b"x" * (16 * 1024 * 1024))
+    if surface == "prepared":
+        allocated = allocate_artifact(location, prepared=prepare_artifact_request(location, **options))
+    else:
+        allocated = allocate_artifact(location, **options)
+    current = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert verify_artifact(current, allocated["artifact"], schema_path=SCHEMA)["ok"]
+
+
+@pytest.mark.parametrize("surface", ["kwargs", "prepared"])
+@pytest.mark.parametrize("invalid", ["oversized", "nonbytes"])
+def test_artifact_content_preflight_rejects_without_mutation(
+    tmp_path: Path, surface: str, invalid: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    before = exclude_bytes(repo)
+    content: object = b"x" * (16 * 1024 * 1024 + 1) if invalid == "oversized" else bytearray(b"x")
+    with pytest.raises(ClientStateError) as failure:
+        if surface == "prepared":
+            prepared = prepare_artifact_request(location, **artifact_options())
+            allocate_artifact(location, prepared=replace(prepared, content=content))
+        else:
+            allocate_artifact(location, **artifact_options(content))
+    assert failure.value.code == "invalid_content"
+    assert exclude_bytes(repo) == before
+    assert not (repo / ".codex" / "state").exists()
+
+
 @pytest.mark.parametrize("value", ["", "   ", "relative-client-home"])
 def test_codex_home_invalid_values_fail_without_cwd_state(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, value: str
@@ -166,6 +310,135 @@ def test_codex_home_invalid_values_fail_without_cwd_state(
         )
     assert failure.value.code == "invalid_environment"
     assert not (cwd / "state").exists()
+
+
+@pytest.mark.parametrize("scope", ["repo", "global"])
+@pytest.mark.parametrize("position", ["owner", "root"])
+@pytest.mark.parametrize("node_kind", ["file", "symlink"])
+def test_state_path_component_collisions_fail_closed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    scope: str,
+    position: str,
+    node_kind: str,
+) -> None:
+    home = tmp_path / "home"
+    home.mkdir()
+    if scope == "repo":
+        cwd = repository(tmp_path / "repo")
+        target = cwd / ".codex" if position == "owner" else cwd / ".codex" / "state"
+        if position == "root":
+            target.parent.mkdir()
+        before = exclude_bytes(cwd)
+    else:
+        cwd = tmp_path / "plain"
+        cwd.mkdir()
+        owner = tmp_path / "codex-home"
+        monkeypatch.setenv("CODEX_HOME", str(owner))
+        target = owner if position == "owner" else owner / "state"
+        if position == "root":
+            owner.mkdir()
+        before = None
+    if node_kind == "file":
+        target.write_bytes(b"foreign\n")
+    else:
+        outside = tmp_path / f"outside-{scope}-{position}"
+        outside.mkdir()
+        target.symlink_to(outside, target_is_directory=True)
+    with pytest.raises(ClientStateError) as failure:
+        resolve_state_location(
+            ROOT, "codex/codex-cli", cwd=cwd, home=home, scope=scope
+        )
+    assert failure.value.code == "unsafe_state_path"
+    if before is not None:
+        assert exclude_bytes(cwd) == before
+    assert target.is_symlink() if node_kind == "symlink" else target.read_bytes() == b"foreign\n"
+
+
+def test_codex_home_ancestor_symlink_is_rejected_but_normal_external_home_is_valid(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    cwd = tmp_path / "plain"
+    cwd.mkdir()
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    linked = tmp_path / "linked"
+    linked.symlink_to(outside, target_is_directory=True)
+    monkeypatch.setenv("CODEX_HOME", str(linked / "codex"))
+    with pytest.raises(ClientStateError) as failure:
+        resolve_state_location(
+            ROOT, "codex/codex-cli", cwd=cwd, home=tmp_path / "home", scope="global"
+        )
+    assert failure.value.code == "unsafe_state_path"
+    assert not (outside / "codex").exists()
+
+    external = tmp_path / "external" / "codex"
+    monkeypatch.setenv("CODEX_HOME", str(external))
+    location = resolve_state_location(
+        ROOT, "codex/codex-cli", cwd=cwd, home=tmp_path / "home", scope="global"
+    )
+    assert location.owner_root == external and location.root == external / "state"
+
+
+@pytest.mark.parametrize("node_kind", ["file", "symlink", "directory"])
+def test_multicomponent_global_intermediate_uses_registered_opencode_shape(
+    tmp_path: Path, node_kind: str
+) -> None:
+    cwd = tmp_path / "plain"
+    cwd.mkdir()
+    home = tmp_path / "home"
+    intermediate = home / ".config" / "opencode"
+    intermediate.parent.mkdir(parents=True)
+    outside = tmp_path / "outside"
+    if node_kind == "file":
+        intermediate.write_bytes(b"foreign\n")
+    elif node_kind == "symlink":
+        outside.mkdir()
+        intermediate.symlink_to(outside, target_is_directory=True)
+    else:
+        intermediate.mkdir()
+
+    if node_kind == "directory":
+        location = resolve_state_location(
+            ROOT, "opencode/opencode-cli", cwd=cwd, home=home, scope="global"
+        )
+        assert location.root == intermediate / "state" and not location.root.exists()
+    else:
+        with pytest.raises(ClientStateError) as failure:
+            resolve_state_location(
+                ROOT, "opencode/opencode-cli", cwd=cwd, home=home, scope="global"
+            )
+        assert failure.value.code == "unsafe_state_path"
+        assert not (outside / "state").exists()
+        assert intermediate.is_symlink() if node_kind == "symlink" else intermediate.read_bytes() == b"foreign\n"
+
+
+@pytest.mark.parametrize("operation", ["allocate", "verify"])
+def test_state_parent_symlink_introduced_after_resolution_fails_refresh_without_foreign_write(
+    tmp_path: Path, operation: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    artifact = None
+    if operation == "verify":
+        artifact = allocate_artifact(location, **artifact_options())["artifact"]
+        location = resolve_state_location(
+            ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home"
+        )
+    owner = repo / ".codex"
+    if owner.exists():
+        owner.rename(repo / ".codex-prior")
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    owner.symlink_to(outside, target_is_directory=True)
+    with pytest.raises(ClientStateError) as failure:
+        if operation == "allocate":
+            allocate_artifact(location, **artifact_options())
+        else:
+            assert artifact is not None
+            verify_artifact(location, artifact, schema_path=SCHEMA)
+    assert failure.value.code == "unsafe_state_path"
+    assert list(outside.iterdir()) == []
 
 
 @pytest.mark.parametrize("kind", ["missing", "file", "permission"])

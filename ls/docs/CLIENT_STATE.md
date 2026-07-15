@@ -10,7 +10,7 @@ LocalSetup gives each registered client variant one private runtime-state root. 
 
 ## Scope selection
 
-`localsetup state path --client <family>/<variant>` probes the current directory with Git. Inside a normal worktree—including a linked worktree or submodule—it selects the variant's repo state root. Outside a repository it selects the verified global root. Bare repositories, ambiguous Git failures, unknown clients, unsupported roots, path escape, and symlink traversal fail explicitly.
+`localsetup state path --client <family>/<variant>` probes the current directory with Git. Inside a normal worktree—including a linked worktree or submodule—it selects the variant's repo state root. Outside a repository it selects the verified global root. Bare repositories, ambiguous Git failures, unknown clients, and unsupported roots fail explicitly. Path escape and existing symlink or non-directory path components fail with `unsafe_state_path`. This check includes ancestors above an explicit `CODEX_HOME` and runs before the CLI reports a state path or mutates state.
 
 Explicit `--scope global` does not inspect or require the caller's working directory. Automatic and repo scope continue to require a valid directory for Git detection.
 
@@ -27,7 +27,7 @@ localsetup state allocate --client codex/codex-cli \
   --content-file checkpoint.md
 ```
 
-The filename is `<agent>-<UTC-YYYYMMDDTHHMMSSmmmZ>-<purpose>.<ext>`. The timestamp must be a real UTC millisecond. A same-millisecond collision adds fixed `-01` through `-99`; existing files are never overwritten. Agent, purpose, producer, consumer, kind, schema, extension, predecessor, checkpoint, content file, and metadata schema are validated before exclude or state mutation. Predecessor and checkpoint identifiers use normalized POSIX-relative paths of at most 512 characters; Windows drives, UNC paths, backslashes, traversal, and controls are rejected. Canonical encoded sidecar metadata must fit the verifier's 1 MiB limit before allocation begins.
+The filename is `<agent>-<UTC-YYYYMMDDTHHMMSSmmmZ>-<purpose>.<ext>`. The timestamp must be a real UTC millisecond. A same-millisecond collision adds fixed `-01` through `-99`; existing files are never overwritten. Agent, purpose, producer, consumer, kind, schema, extension, predecessor, checkpoint, content file, and metadata schema are validated before exclude or state mutation. Artifact content must be bytes and at most 16 MiB through the CLI, direct keyword API, or a prepared request; the exact limit is accepted and an invalid prepared request fails before mutation. Predecessor and checkpoint identifiers use normalized POSIX-relative paths of at most 512 characters; Windows drives, UNC paths, backslashes, traversal, and controls are rejected. Canonical encoded sidecar metadata must fit the verifier's 1 MiB limit before allocation begins.
 
 The state root is owner-only `0700`; artifacts, sidecars, pending receipts, and internal lock files are `0600`. Allocation is serialized by a crash-releasing file lock. A bounded pending receipt lets the next allocation recover an interrupted owned pair without deleting a foreign collision. A durability failure after filesystem commit returns an explicit ambiguous result instead of claiming success or silently duplicating work.
 

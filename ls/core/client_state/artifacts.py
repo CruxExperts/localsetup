@@ -72,6 +72,14 @@ def _slug(value: str, label: str, maximum: int) -> str:
     return value
 
 
+def _validate_content(content: bytes) -> bytes:
+    if not isinstance(content, bytes):
+        raise ClientStateError("artifact content must be bytes", code="invalid_content")
+    if len(content) > _MAX_ARTIFACT_BYTES:
+        raise ClientStateError("artifact content exceeds the supported size limit", code="invalid_content")
+    return content
+
+
 def _relative(value: str | None, label: str) -> str | None:
     if value is None:
         return None
@@ -133,6 +141,7 @@ def _metadata_payload(
 
 
 def preflight_artifact_request(location: StateLocation, request: ArtifactRequest) -> None:
+    _validate_content(request.content)
     current = refresh_state_location(location)
     collision_safe_name = (
         f"{request.agent}-{request.created_at}-{request.purpose}-99.{request.extension}"
@@ -236,10 +245,7 @@ def prepare_artifact_request(
     now: datetime | None = None,
     metadata_schema: Path | None = None,
 ) -> ArtifactRequest:
-    if not isinstance(content, bytes):
-        raise ClientStateError("artifact content must be bytes", code="invalid_content")
-    if len(content) > _MAX_ARTIFACT_BYTES:
-        raise ClientStateError("artifact content exceeds the supported size limit", code="invalid_content")
+    content = _validate_content(content)
     resolved_agent = _slug(agent or location.client.split("/", 1)[1], "agent", 48)
     purpose = _slug(purpose, "purpose", 64)
     if re.search(r"-[0-9]{2}$", purpose):

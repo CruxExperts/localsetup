@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 import re
+import stat
 import subprocess
 import hashlib
 import json
@@ -34,6 +35,15 @@ def _git(cwd: Path, *args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
+def _git_bytes(cwd: Path, *args: str) -> subprocess.CompletedProcess[bytes]:
+    return subprocess.run(
+        ["git", "-C", str(cwd), *args],
+        check=False,
+        capture_output=True,
+        env=git_environment(),
+    )
+
+
 def _required_git(cwd: Path, *args: str) -> str:
     result = _git(cwd, *args)
     if result.returncode != 0:
@@ -42,6 +52,34 @@ def _required_git(cwd: Path, *args: str) -> str:
     if not value:
         raise ClientStateError("Git state probe returned no value", code="git_probe_failed")
     return value
+
+
+def _required_git_path(cwd: Path, *args: str) -> str:
+    result = _git_bytes(cwd, *args)
+    if result.returncode != 0:
+        raise ClientStateError("Git state probe failed", code="git_probe_failed")
+    value = result.stdout
+    if not value.endswith(b"\n"):
+        raise ClientStateError("Git state probe returned an invalid path", code="git_probe_failed")
+    value = value[:-1]
+    if not value or b"\x00" in value or b"\n" in value or b"\r" in value:
+        raise ClientStateError("Git state probe returned an invalid path", code="git_probe_failed")
+    decoded = os.fsdecode(value)
+    if not Path(decoded).is_absolute():
+        raise ClientStateError("Git state probe returned an invalid path", code="git_probe_failed")
+    return decoded
+
+
+def _resolved_git_root(cwd: Path) -> Path:
+    try:
+        root = Path(_required_git_path(cwd, "rev-parse", "--show-toplevel")).resolve(strict=True)
+        if not root.is_dir():
+            raise NotADirectoryError
+    except ClientStateError:
+        raise
+    except (OSError, RuntimeError) as exc:
+        raise ClientStateError("Git state probe returned an invalid path", code="git_probe_failed") from exc
+    return root
 
 
 def _resolve_directory(path: Path) -> Path:
@@ -70,9 +108,9 @@ def probe_git_context(cwd: Path) -> GitContext | None:
             raise ClientStateError("bare repositories do not have repo-scoped client state")
         raise ClientStateError("Git reports a repository but not a supported worktree")
 
-    root = Path(_required_git(cwd, "rev-parse", "--show-toplevel")).resolve(strict=True)
+    root = _resolved_git_root(cwd)
     exclude = Path(
-        _required_git(cwd, "rev-parse", "--path-format=absolute", "--git-path", "info/exclude")
+        _required_git_path(cwd, "rev-parse", "--path-format=absolute", "--git-path", "info/exclude")
     )
     head_result = _git(cwd, "rev-parse", "--verify", "HEAD")
     head = head_result.stdout.strip() if head_result.returncode == 0 else None
@@ -81,18 +119,30 @@ def probe_git_context(cwd: Path) -> GitContext | None:
     return GitContext(root=root, exclude_path=exclude, head=head, ref=ref)
 
 
-def _assert_no_symlink(anchor: Path, target: Path) -> None:
+def _assert_safe_state_path(anchor: Path, target: Path) -> None:
+    if not anchor.is_absolute() or not target.is_absolute():
+        raise ClientStateError("client state path must be absolute", code="unsafe_state_path")
     try:
-        relative = target.relative_to(anchor)
+        target.relative_to(anchor)
     except ValueError as exc:
-        raise ClientStateError("client state escapes its owning root") from exc
-    current = anchor
-    if current.is_symlink():
-        raise ClientStateError("client state owner must not be a symlink", code="unsafe_state_path")
-    for part in relative.parts:
-        current = current / part
-        if current.is_symlink():
+        raise ClientStateError("client state escapes its owning root", code="unsafe_state_path") from exc
+    current = Path(target.anchor)
+    for part in target.parts[1:]:
+        current /= part
+        try:
+            details = current.stat(follow_symlinks=False)
+        except FileNotFoundError:
+            continue
+        except OSError as exc:
+            raise ClientStateError(
+                "client state path is unsafe or unavailable", code="unsafe_state_path"
+            ) from exc
+        if stat.S_ISLNK(details.st_mode):
             raise ClientStateError("client state path must not traverse a symlink", code="unsafe_state_path")
+        if not stat.S_ISDIR(details.st_mode):
+            raise ClientStateError(
+                "client state path components must be directories", code="unsafe_state_path"
+            )
 
 
 def _identity(path: Path) -> tuple[int, int] | None:
@@ -100,6 +150,10 @@ def _identity(path: Path) -> tuple[int, int] | None:
         result = path.stat(follow_symlinks=False)
     except FileNotFoundError:
         return None
+    except OSError as exc:
+        raise ClientStateError(
+            "client state path is unsafe or unavailable", code="unsafe_state_path"
+        ) from exc
     return (result.st_dev, result.st_ino)
 
 
@@ -135,7 +189,7 @@ def _global_path(raw: str, *, home: Path) -> tuple[Path, str, Path]:
     else:
         raise ClientStateError("global client state must be home- or CODEX_HOME-scoped")
     target = Path(os.path.abspath(target))
-    _assert_no_symlink(owner, target)
+    _assert_safe_state_path(owner, target)
     return target, raw, owner
 
 
@@ -195,7 +249,7 @@ def resolve_state_location(
     if selected == "repo":
         assert git is not None
         root = Path(os.path.abspath(git.root / raw))
-        _assert_no_symlink(git.root, root)
+        _assert_safe_state_path(git.root, root)
         display = root.relative_to(git.root).as_posix()
         owner_root = git.root
     else:

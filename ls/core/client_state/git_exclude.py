@@ -8,7 +8,7 @@ from pathlib import Path
 import stat
 import subprocess
 
-from .locator import git_environment, refresh_state_location
+from .locator import _required_git_path, git_environment, refresh_state_location
 from .models import ClientStateError, StateLocation
 
 
@@ -54,18 +54,13 @@ def _effective_ignore(git_root: Path, entry: str) -> bool:
 
 
 def _resolved_exclude(git_root: Path) -> Path:
-    result = subprocess.run(
-        ["git", "-C", str(git_root), "rev-parse", "--path-format=absolute", "--git-path", "info/exclude"],
-        check=False,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        env=git_environment(),
-    )
-    if result.returncode != 0 or not result.stdout.strip():
-        raise ClientStateError("Git exclude resolution failed", code="git_ignore_probe_failed")
-    return Path(result.stdout.strip())
+    try:
+        value = _required_git_path(
+            git_root, "rev-parse", "--path-format=absolute", "--git-path", "info/exclude"
+        )
+    except ClientStateError as exc:
+        raise ClientStateError("Git exclude resolution failed", code="git_ignore_probe_failed") from exc
+    return Path(value)
 
 
 def _open_directory(path: Path, *, create: bool) -> int:
