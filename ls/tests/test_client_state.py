@@ -116,6 +116,58 @@ def test_codex_home_override_can_be_outside_home(tmp_path: Path, monkeypatch: py
     )
     assert location.root == codex_home / "state"
     assert location.owner_root == codex_home
+    assert not location.root.exists()
+
+
+def test_codex_home_unset_uses_home_default(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    cwd = tmp_path / "plain"
+    cwd.mkdir()
+    home = tmp_path / "home"
+    monkeypatch.delenv("CODEX_HOME", raising=False)
+    location = resolve_state_location(
+        ROOT, "codex/codex-cli", cwd=cwd, home=home, scope="global"
+    )
+    assert location.root == home / ".codex" / "state"
+    assert location.owner_root == home / ".codex"
+    assert not location.root.exists()
+
+
+@pytest.mark.parametrize("value", ["", "   ", "relative-client-home"])
+def test_codex_home_invalid_values_fail_without_cwd_state(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, value: str
+) -> None:
+    cwd = tmp_path / "plain"
+    cwd.mkdir()
+    monkeypatch.chdir(cwd)
+    monkeypatch.setenv("CODEX_HOME", value)
+    with pytest.raises(ClientStateError) as failure:
+        resolve_state_location(
+            ROOT, "codex/codex-cli", cwd=cwd, home=tmp_path / "home", scope="global"
+        )
+    assert failure.value.code == "invalid_environment"
+    assert not (cwd / "state").exists()
+
+
+@pytest.mark.parametrize("kind", ["missing", "file", "permission"])
+def test_probe_directory_failures_are_typed_and_sanitized(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, kind: str
+) -> None:
+    target = tmp_path / "private-target"
+    if kind == "file":
+        target.write_text("not a directory\n", encoding="utf-8")
+    elif kind == "permission":
+        original_resolve = Path.resolve
+
+        def deny_resolve(path: Path, *args, **kwargs):
+            if path == target:
+                raise PermissionError("private permission detail")
+            return original_resolve(path, *args, **kwargs)
+
+        monkeypatch.setattr(Path, "resolve", deny_resolve)
+    with pytest.raises(ClientStateError) as failure:
+        probe_git_context(target)
+    assert failure.value.code == "invalid_directory"
+    assert str(target) not in str(failure.value)
 
 
 def test_bare_repository_and_ambiguous_probe_are_rejected(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -889,6 +941,53 @@ def test_verify_rejects_same_byte_entry_replacement(
         return result
 
     monkeypatch.setattr(artifacts, "_read_regular_with_identity", replace_after_read)
+    with pytest.raises(ClientStateError) as failure:
+        verify_artifact(current, allocated["artifact"], schema_path=SCHEMA)
+    assert failure.value.code == "artifact_commit_ambiguous"
+
+
+@pytest.mark.parametrize("replacement", ["artifact", "metadata"])
+def test_verify_rejects_same_inode_identical_byte_rewrite(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, replacement: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    allocated = allocate_artifact(
+        location, content=b"stable\n", purpose="verify-rewrite", extension="md",
+        kind="restart-artifact", schema="restart-v1", producer="controller",
+    )
+    current = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    target_name = allocated["artifact"] if replacement == "artifact" else allocated["metadata"]
+    original = artifacts._read_regular_with_identity
+    rewritten = False
+
+    def rewrite_after_read(directory_fd: int, name: str, *, maximum: int):
+        nonlocal rewritten
+        result = original(directory_fd, name, maximum=maximum)
+        if name == target_name and not rewritten:
+            rewritten = True
+            data, before = result
+            after = before
+            for _attempt in range(100):
+                fd = os.open(
+                    name, os.O_WRONLY | os.O_TRUNC | getattr(os, "O_NOFOLLOW", 0),
+                    dir_fd=directory_fd,
+                )
+                try:
+                    offset = 0
+                    while offset < len(data):
+                        offset += os.write(fd, data[offset:])
+                    os.fsync(fd)
+                finally:
+                    os.close(fd)
+                after = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+                if after.st_ctime_ns != before.st_ctime_ns:
+                    break
+            assert (after.st_dev, after.st_ino) == (before.st_dev, before.st_ino)
+            assert after.st_ctime_ns != before.st_ctime_ns
+        return result
+
+    monkeypatch.setattr(artifacts, "_read_regular_with_identity", rewrite_after_read)
     with pytest.raises(ClientStateError) as failure:
         verify_artifact(current, allocated["artifact"], schema_path=SCHEMA)
     assert failure.value.code == "artifact_commit_ambiguous"

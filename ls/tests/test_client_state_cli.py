@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 
 import pytest
 
@@ -29,6 +30,13 @@ def invoke(capsys, *args: str) -> tuple[int, dict]:
     result = main(["--source-root", str(ROOT), *args])
     output = capsys.readouterr()
     return result, json.loads(output.out) if output.out else {"stderr": output.err}
+
+
+def allocation_args() -> list[str]:
+    return [
+        "--purpose", "handoff", "--extension", "md", "--kind", "restart-artifact",
+        "--schema", "restart-v1", "--producer", "controller",
+    ]
 
 
 def test_state_path_is_read_only_until_apply(tmp_path: Path, capsys) -> None:
@@ -77,6 +85,134 @@ def test_state_allocate_and_verify_cli(tmp_path: Path, capsys) -> None:
         "--artifact", allocated["artifact"],
     )
     assert code == 1 and not verified["ok"]
+
+
+def test_top_level_target_drives_path_allocate_and_verify_without_wrong_target_mutation(
+    tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    target = repository(tmp_path / "target")
+    wrong = repository(tmp_path / "wrong")
+    monkeypatch.chdir(wrong)
+    prefix = ("--target-directory", str(target), "state")
+
+    code, path_payload = invoke(capsys, *prefix, "path", "--client", "codex/codex-cli")
+    assert code == 0 and path_payload["scope"] == "repo"
+
+    code, allocated = invoke(
+        capsys, *prefix, "allocate", "--client", "codex/codex-cli", *allocation_args()
+    )
+    assert code == 0 and allocated["ok"]
+    assert (target / ".codex" / "state" / allocated["artifact"]).is_file()
+    assert not (wrong / ".codex" / "state").exists()
+
+    code, verified = invoke(
+        capsys, *prefix, "verify", "--client", "codex/codex-cli",
+        "--artifact", allocated["artifact"],
+    )
+    assert code == 0 and verified["ok"]
+
+
+def test_explicit_state_directory_precedes_top_level_target_including_dot(
+    tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    explicit = repository(tmp_path / "explicit")
+    target = repository(tmp_path / "target")
+    monkeypatch.chdir(explicit)
+    code, payload = invoke(
+        capsys, "--target-directory", str(target), "state", "path",
+        "--client", "codex/codex-cli", "--directory", ".", "--apply-exclude",
+    )
+    assert code == 0 and payload["scope"] == "repo"
+    assert payload["exclude"]["action"] == "applied"
+    explicit_exclude = explicit / ".git" / "info" / "exclude"
+    target_exclude = target / ".git" / "info" / "exclude"
+    assert "/.codex/state/" in explicit_exclude.read_text(encoding="utf-8")
+    assert "/.codex/state/" not in target_exclude.read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("value", ["", "   "])
+def test_empty_codex_home_cli_fails_without_mutation(
+    tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch, value: str
+) -> None:
+    plain = tmp_path / "plain"
+    plain.mkdir()
+    monkeypatch.chdir(plain)
+    monkeypatch.setenv("CODEX_HOME", value)
+    code, payload = invoke(
+        capsys, "state", "allocate", "--client", "codex/codex-cli",
+        "--scope", "global", "--directory", str(plain), *allocation_args(),
+    )
+    assert code == 2
+    assert payload == {
+        "error": {"code": "invalid_environment", "message": "CODEX_HOME must be a non-empty absolute path"},
+        "ok": False,
+    }
+    assert not (plain / "state").exists()
+
+
+@pytest.mark.parametrize("action", ["path", "allocate", "verify"])
+@pytest.mark.parametrize("target_kind", ["missing", "file", "permission"])
+def test_invalid_target_has_stable_sanitized_json_and_no_mutation(
+    tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch, action: str, target_kind: str
+) -> None:
+    target = tmp_path / "private-invalid-target"
+    if target_kind == "file":
+        target.write_text("not a directory\n", encoding="utf-8")
+    elif target_kind == "permission":
+        original_resolve = Path.resolve
+
+        def deny_resolve(path: Path, *args, **kwargs):
+            if path == target:
+                raise PermissionError("private permission detail")
+            return original_resolve(path, *args, **kwargs)
+
+        monkeypatch.setattr(Path, "resolve", deny_resolve)
+    args = ["state", action, "--client", "codex/codex-cli", "--directory", str(target)]
+    if action == "allocate":
+        args.extend(allocation_args())
+    elif action == "verify":
+        args.extend(["--artifact", "codex-20260715T000000000Z-handoff.md"])
+    code, payload = invoke(capsys, *args)
+    assert code == 2
+    assert payload == {
+        "error": {"code": "invalid_directory", "message": "state probe directory is unavailable"},
+        "ok": False,
+    }
+    assert str(target) not in json.dumps(payload)
+    assert not (tmp_path / ".codex" / "state").exists()
+
+
+def test_deleted_default_cwd_has_stable_sanitized_json_and_no_mutation(tmp_path: Path) -> None:
+    deleted = tmp_path / "private-deleted-cwd"
+    deleted.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
+    script = (
+        "import os,sys; "
+        "dead,tool,root,home=sys.argv[1:]; "
+        "os.chdir(dead); os.rmdir(dead); "
+        "os.execv(sys.executable,[sys.executable,tool,'--source-root',root,'--home',home,"
+        "'state','path','--client','codex/codex-cli'])"
+    )
+    completed = subprocess.run(
+        [
+            sys.executable, "-c", script, str(deleted),
+            str(ROOT / "ls" / "tools" / "localsetup.py"), str(ROOT), str(home),
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    payload = json.loads(completed.stdout)
+    assert completed.returncode == 2
+    assert payload == {
+        "error": {"code": "invalid_directory", "message": "state probe directory is unavailable"},
+        "ok": False,
+    }
+    combined = completed.stdout + completed.stderr
+    assert str(deleted) not in combined and "Traceback" not in combined
+    assert not (home / ".codex" / "state").exists()
 
 
 def test_state_cli_rejects_unknown_client_without_traceback(tmp_path: Path, capsys) -> None:

@@ -158,7 +158,7 @@ def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_har
         state_action_p = state_sub.add_parser(state_action)
         state_action_p.add_argument("--client", required=True, help="Canonical family/variant key")
         state_action_p.add_argument("--scope", choices=["auto", "repo", "global"], default="auto")
-        state_action_p.add_argument("--directory", default=".", help="Directory used for Git worktree detection")
+        state_action_p.add_argument("--directory", default=None, help="Directory used for Git worktree detection")
     state_path_p = state_sub.choices["path"]
     state_path_p.add_argument("--apply-exclude", action="store_true")
     state_allocate_p = state_sub.choices["allocate"]
@@ -175,7 +175,7 @@ def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_har
     state_verify_p = state_sub.add_parser("verify")
     state_verify_p.add_argument("--client", required=True, help="Canonical family/variant key")
     state_verify_p.add_argument("--scope", choices=["auto", "repo", "global"], default="auto")
-    state_verify_p.add_argument("--directory", default=".", help="Directory used for Git worktree detection")
+    state_verify_p.add_argument("--directory", default=None, help="Directory used for Git worktree detection")
     state_verify_p.add_argument("--artifact", required=True, help="Direct-child artifact filename")
     provenance_p = sub.add_parser("provenance")
     provenance_sub = provenance_p.add_subparsers(dest="provenance_action", required=True)

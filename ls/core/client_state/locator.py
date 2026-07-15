@@ -44,10 +44,20 @@ def _required_git(cwd: Path, *args: str) -> str:
     return value
 
 
+def _resolve_directory(path: Path) -> Path:
+    try:
+        resolved = path.expanduser().resolve(strict=True)
+        if not resolved.is_dir():
+            raise NotADirectoryError
+    except (OSError, RuntimeError) as exc:
+        raise ClientStateError(
+            "state probe directory is unavailable", code="invalid_directory"
+        ) from exc
+    return resolved
+
+
 def probe_git_context(cwd: Path) -> GitContext | None:
-    cwd = cwd.expanduser().resolve(strict=True)
-    if not cwd.is_dir():
-        raise ClientStateError("state probe directory is not a directory", code="invalid_directory")
+    cwd = _resolve_directory(cwd)
     inside = _git(cwd, "rev-parse", "--is-inside-work-tree")
     if inside.returncode != 0:
         detail = (inside.stderr or inside.stdout).lower()
@@ -95,7 +105,28 @@ def _identity(path: Path) -> tuple[int, int] | None:
 
 def _global_path(raw: str, *, home: Path) -> tuple[Path, str, Path]:
     if raw == "$CODEX_HOME" or raw.startswith("$CODEX_HOME/"):
-        owner = Path(os.path.abspath(Path(os.environ.get("CODEX_HOME", str(home / ".codex"))).expanduser()))
+        configured = os.environ.get("CODEX_HOME")
+        if configured is None:
+            candidate = home / ".codex"
+        else:
+            if not configured.strip():
+                raise ClientStateError(
+                    "CODEX_HOME must be a non-empty absolute path",
+                    code="invalid_environment",
+                )
+            try:
+                candidate = Path(configured).expanduser()
+            except RuntimeError as exc:
+                raise ClientStateError(
+                    "CODEX_HOME must be a non-empty absolute path",
+                    code="invalid_environment",
+                ) from exc
+            if not candidate.is_absolute():
+                raise ClientStateError(
+                    "CODEX_HOME must be a non-empty absolute path",
+                    code="invalid_environment",
+                )
+        owner = Path(os.path.abspath(candidate))
         suffix = raw.removeprefix("$CODEX_HOME").lstrip("/")
         target = owner / suffix
     elif raw == "~" or raw.startswith("~/"):
@@ -147,7 +178,7 @@ def resolve_state_location(
     if scope not in {"auto", "repo", "global"}:
         raise ClientStateError(f"unsupported state scope: {scope}")
     repo_root = repo_root.resolve(strict=True)
-    cwd = cwd.expanduser().resolve(strict=True)
+    cwd = _resolve_directory(cwd)
     home = home.expanduser().resolve()
     registry, variant, variant_digest = _variant(repo_root, client)
     git = None if scope == "global" else probe_git_context(cwd)

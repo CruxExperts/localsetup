@@ -58,6 +58,7 @@ class OwnedEntry:
     name: str
     device: int
     inode: int
+    changed_ns: int
     sha256: str
 
 
@@ -254,12 +255,19 @@ def _exclusive_write(directory_fd: int, name: str, data: bytes) -> OwnedEntry:
                 raise ClientStateError("artifact write was incomplete", code="artifact_write_failed")
             offset += written
         os.fsync(fd)
-        return OwnedEntry(name, details.st_dev, details.st_ino, hashlib.sha256(data).hexdigest())
+        details = os.fstat(fd)
+        return OwnedEntry(
+            name, details.st_dev, details.st_ino, details.st_ctime_ns,
+            hashlib.sha256(data).hexdigest(),
+        )
     except BaseException:
         details = os.fstat(fd)
         os.close(fd)
         closed = True
-        partial = OwnedEntry(name, details.st_dev, details.st_ino, hashlib.sha256(data[:offset]).hexdigest())
+        partial = OwnedEntry(
+            name, details.st_dev, details.st_ino, details.st_ctime_ns,
+            hashlib.sha256(data[:offset]).hexdigest(),
+        )
         try:
             _unlink_owned(directory_fd, partial)
         except ClientStateError as exc:
@@ -272,7 +280,10 @@ def _exclusive_write(directory_fd: int, name: str, data: bytes) -> OwnedEntry:
 
 def _owned_entry(directory_fd: int, name: str, *, maximum: int) -> OwnedEntry:
     data, details = _read_regular_with_identity(directory_fd, name, maximum=maximum)
-    return OwnedEntry(name, details.st_dev, details.st_ino, hashlib.sha256(data).hexdigest())
+    return OwnedEntry(
+        name, details.st_dev, details.st_ino, details.st_ctime_ns,
+        hashlib.sha256(data).hexdigest(),
+    )
 
 
 def _assert_owned(directory_fd: int, entry: OwnedEntry, *, maximum: int = _MAX_ARTIFACT_BYTES) -> None:
@@ -349,6 +360,7 @@ def _recover_pending(directory_fd: int) -> None:
             receipt_name,
             receipt_details.st_dev,
             receipt_details.st_ino,
+            receipt_details.st_ctime_ns,
             hashlib.sha256(encoded).hexdigest(),
         )
         try:
@@ -606,12 +618,14 @@ def verify_artifact(location: StateLocation, artifact_name: str, *, schema_path:
                 directory_fd, metadata_name, maximum=_MAX_METADATA_BYTES
             )
             artifact_entry = OwnedEntry(
-                artifact_name, artifact_details.st_dev, artifact_details.st_ino, hashlib.sha256(content).hexdigest()
+                artifact_name, artifact_details.st_dev, artifact_details.st_ino,
+                artifact_details.st_ctime_ns, hashlib.sha256(content).hexdigest(),
             )
             metadata_entry = OwnedEntry(
                 metadata_name,
                 metadata_details.st_dev,
                 metadata_details.st_ino,
+                metadata_details.st_ctime_ns,
                 hashlib.sha256(metadata_bytes).hexdigest(),
             )
             metadata = json.loads(metadata_bytes.decode("utf-8"))

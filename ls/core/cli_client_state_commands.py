@@ -19,11 +19,24 @@ from .client_state import (
 MAX_CONTENT_BYTES = 16 * 1024 * 1024
 
 
+def _effective_directory(args) -> Path:
+    selected = getattr(args, "directory", None)
+    if selected is None:
+        selected = getattr(args, "target_directory", None)
+    if selected is None:
+        return Path(".")
+    if isinstance(selected, str) and not selected.strip():
+        raise ClientStateError(
+            "state probe directory is unavailable", code="invalid_directory"
+        )
+    return Path(selected)
+
+
 def _location(args, root: Path, home: Path):
     return resolve_state_location(
         root,
         args.client,
-        cwd=Path(args.directory),
+        cwd=_effective_directory(args),
         home=home,
         scope=args.scope,
     )
