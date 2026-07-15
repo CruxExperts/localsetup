@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.3
+version: 4.2
 owner_skill: ls-framework-compliance
 ---
 
