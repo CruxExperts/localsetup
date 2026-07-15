@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 2805de7bb81d919127417aa52cd18b12695b625cb60a6d0979cef569a9ec62dc
+  source_provenance_hash: b205286774f48ceccfc2946653a8112b0a9c3b80f56fe43459f1a85338e80e8a
   emitter: generate-docs
 framework_version: 4.2.19
-source_commit: 952e20b41b7d299a1817fb7356f61a979978c81d
-artifact_sha256: a1537181546c2e22e5ce27f4502a0f31b58f6443313ba29bf0d86b0bd5f5b0b5
+source_commit: 494b61b09acba2d1f2c36ec3e813a1eed59e6efb
+artifact_sha256: 0ff5f798aaa1c9a88088a40a3a2149489e92c9be9d9eeb8bcb6fddd4a2f19528
 ---
 # Implementation File Map
 
@@ -111,6 +111,7 @@ artifact_sha256: a1537181546c2e22e5ce27f4502a0f31b58f6443313ba29bf0d86b0bd5f5b0b
 | `refactor` | `ls/core/cli_parser.py` |
 | `refactor` | `ls/core/cli_state_commands.py` |
 | `refactor` | `ls/core/client_registry/__init__.py` |
+| `refactor` | `ls/core/client_registry/historical.py` |
 | `refactor` | `ls/core/client_registry/loader.py` |
 | `refactor` | `ls/core/client_registry/models.py` |
 | `refactor` | `ls/core/client_registry/projection.py` |
@@ -135,6 +136,7 @@ artifact_sha256: a1537181546c2e22e5ce27f4502a0f31b58f6443313ba29bf0d86b0bd5f5b0b
 | `refactor` | `ls/core/conversion.py` |
 | `refactor` | `ls/core/dependencies.py` |
 | `refactor` | `ls/core/dependency_environments.py` |
+| `refactor` | `ls/core/detach.py` |
 | `refactor` | `ls/core/diffing.py` |
 | `refactor` | `ls/core/docs.py` |
 | `refactor` | `ls/core/docs_alignment/__init__.py` |
