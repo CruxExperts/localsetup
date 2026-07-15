@@ -6,6 +6,7 @@ import subprocess
 import sys
 
 from ls.tests.test_install_flow import *
+from ls.core.adapters import adapter_targets
 from ls.core.apply_journal import restore_failed_mutations, write_journal
 from ls.core.apply_packages import install_managed_packages, install_shared_runtime_lib
 from ls.core.selection import resolve_package_selection
@@ -55,12 +56,65 @@ def test_plan_apply_verify_rollback(tmp_path: Path) -> None:
     assert lock["platforms"] == []
     assert lock["adapter_state"] == []
     assert lock["package_provenance"]["ls-context"]["package_digest"] == marker["package_digest"]
-    for rel in (".codex/skills", ".claude/skills", ".cursor/skills", ".kilo/skills", ".opencode/skills", ".openclaw/skills"):
+    for rel in (".agents/skills", ".claude/skills", ".cursor/skills", ".kilo/skills", ".opencode/skills"):
         assert not (root / rel).exists()
 
     rolled = rollback(root, home)
     assert rolled["removed"]
     assert verify_install(root, home)["ok"] is False
+
+
+def test_shared_agents_adapter_is_coalesced_across_platforms(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    home.mkdir(parents=True, exist_ok=True)
+    selected = ["codex", "cursor", "openclaw"]
+
+    targets = adapter_targets(root, home, platform_ids=selected)
+    shared = next(target for target in targets if target["repo_path"] == root / ".agents" / "skills")
+    assert shared["platforms"] == selected
+    assert len([target for target in targets if target["repo_path"] == shared["repo_path"]]) == 1
+
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=selected)
+    attach_actions = [action for action in plan.actions if action.kind == "attach_repo_path"]
+    shared_actions = [action for action in attach_actions if action.path == shared["repo_path"]]
+    assert len(shared_actions) == 1
+    assert shared_actions[0].details["platforms"] == selected
+
+    result = apply_plan(root, plan, home=home, dry_run=False)
+    lock = load_json(root / ".localsetup" / "lock.json")
+    shared_locks = [item for item in lock["adapter_targets"] if item["path"] == str(shared["repo_path"])]
+    assert len(shared_locks) == 1
+    assert shared_locks[0]["platforms"] == selected
+    assert lock["adapter_state"].count(str(shared["repo_path"])) == 1
+
+    verified = verify_install(root, home, platform_ids=selected)
+    assert verified["ok"] is True
+    assert len([item for item in verified["adapters"] if item["repo_path"] == str(shared["repo_path"])]) == 1
+    shared_rules = [
+        rule
+        for rule in verified["rules"]
+        if rule.get("path") == str(shared["repo_path"]) or rule.get("platforms") == selected
+    ]
+    assert {rule["rule"] for rule in shared_rules} >= {
+        "adapter_path_exists",
+        "adapter_points_to_managed_root",
+        "adapter_visible_packages_match_selection",
+        "adapter_package_targets_match_managed_root",
+        "namespace_ls",
+        "skills_visible_filesystem",
+    }
+    assert all(rule["platform"] == "codex" for rule in shared_rules)
+    assert all(rule["platforms"] == selected for rule in shared_rules)
+
+    rolled = rollback(root, home)
+    assert rolled["removed"].count(str(shared["repo_path"])) <= 1
+    assert not shared["repo_path"].exists()
+    journal = load_json(Path(result["journal"]))
+    assert journal["status"] == "committed"
+    assert len(
+        [item for item in journal["touched"] if item["kind"] == "adapter" and item["path"] == str(shared["repo_path"])]
+    ) == 1
 
 
 def test_selected_workflows_install_as_skill_packages(tmp_path: Path) -> None:
@@ -400,7 +454,7 @@ def test_scoped_adapter_exposes_only_selected_packages_even_when_global_has_more
     )
 
     global_root = home / ".local/share/localsetup/packages"
-    adapter = root / ".codex" / "skills"
+    adapter = root / ".agents" / "skills"
     assert (global_root / "ls-nodejs-nextjs").is_dir()
     assert_scoped_adapter(adapter, "ls-context")
     assert not (adapter / "ls-nodejs-nextjs").exists()
@@ -426,7 +480,7 @@ def test_split_global_and_repo_packs_install_union_but_expose_repo_subset(tmp_pa
     apply_plan(root, plan, home=home)
 
     global_root = home / ".local/share/localsetup/packages"
-    adapter = root / ".codex" / "skills"
+    adapter = root / ".agents" / "skills"
     lock = load_json(root / ".localsetup/lock.json")
     registry = load_json(home / ".local/share/localsetup/registry.json")
 
@@ -452,7 +506,7 @@ def test_legacy_selector_flags_apply_to_global_and_repo_selection(tmp_path: Path
     lock = load_json(root / ".localsetup/lock.json")
     assert "ls-nodejs-nextjs" in lock["global_baseline_packages"]
     assert "ls-nodejs-nextjs" in lock["repo_packages"]
-    assert (root / ".codex" / "skills" / "ls-nodejs-nextjs").exists()
+    assert (root / ".agents" / "skills" / "ls-nodejs-nextjs").exists()
 
 
 def test_global_selector_aliases_do_not_imply_repo_visibility(tmp_path: Path) -> None:
@@ -462,7 +516,7 @@ def test_global_selector_aliases_do_not_imply_repo_visibility(tmp_path: Path) ->
     apply_plan(root, build_install_plan(root, home=home, global_packs=["dev"], platform_ids=["codex"]), home=home)
 
     lock = load_json(root / ".localsetup/lock.json")
-    adapter = root / ".codex" / "skills"
+    adapter = root / ".agents" / "skills"
 
     assert "ls-nodejs-nextjs" in lock["global_baseline_packages"]
     assert "ls-nodejs-nextjs" not in lock["repo_packages"]
@@ -477,7 +531,7 @@ def test_scoped_adapter_detects_tampered_child_symlink(tmp_path: Path) -> None:
 
     apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"]), home=home)
 
-    adapter = root / ".codex" / "skills"
+    adapter = root / ".agents" / "skills"
     bad_target = tmp_path / "elsewhere" / "ls-context"
     bad_target.mkdir(parents=True)
     (bad_target / "SKILL.md").write_text("---\nname: ls-context\n---\n", encoding="utf-8")
@@ -519,7 +573,7 @@ def test_adapter_invalid_marker_fails_integrity(
         build_install_plan(root, home=home, packs=["core"], attach_mode=attach_mode, platform_ids=["codex"]),
         home=home,
     )
-    adapter = root / ".codex" / "skills"
+    adapter = root / ".agents" / "skills"
     (adapter / ".localsetup-adapter.json").write_text(marker_text, encoding="utf-8")
 
     verify = verify_install(root, home, platform_ids=["codex"])

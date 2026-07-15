@@ -137,7 +137,7 @@ def test_cli_context_target_warning_requires_explicit_target(tmp_path: Path) -> 
     assert any("target directory was provided" in warning for warning in explicit_payload["warnings"])
 
 
-def test_self_refresh_defaults_to_all_packs_and_existing_repo_adapters(tmp_path: Path) -> None:
+def test_self_refresh_infers_shared_current_adapter_without_flags(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     home.mkdir(parents=True, exist_ok=True)
@@ -145,12 +145,12 @@ def test_self_refresh_defaults_to_all_packs_and_existing_repo_adapters(tmp_path:
 
     existing_global = home / ".local" / "share" / "localsetup" / "packages"
     existing_global.mkdir(parents=True, exist_ok=True)
-    (root / ".codex").mkdir(parents=True, exist_ok=True)
-    (root / ".codex" / "skills").symlink_to(existing_global, target_is_directory=True)
-    external_global = home / ".external" / "skills"
-    external_global.mkdir(parents=True, exist_ok=True)
-    (root / ".cursor").mkdir(parents=True, exist_ok=True)
-    (root / ".cursor" / "skills").symlink_to(external_global, target_is_directory=True)
+    custom = existing_global / "custom-skill"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom global skill\n", encoding="utf-8")
+    current_adapter = root / ".agents" / "skills"
+    current_adapter.parent.mkdir(parents=True)
+    current_adapter.symlink_to(existing_global, target_is_directory=True)
 
     completed = subprocess.run(
         [
@@ -172,23 +172,27 @@ def test_self_refresh_defaults_to_all_packs_and_existing_repo_adapters(tmp_path:
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload["ok"] is True
-    assert payload["selected"]["platforms"] == ["codex"]
+    assert payload["selected"]["platforms"] == ["codex", "cursor", "openclaw"]
+    assert payload["selected"]["attach_mode"] == "symlink"
     assert "integrations" in payload["selected"]["packs"]
     assert (home / ".local/share/localsetup/packages/ls-cloudflare-dns").is_dir()
-    assert_scoped_adapter(root / ".codex" / "skills", "ls-context")
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom global skill\n"
+    assert_scoped_adapter(current_adapter, "ls-context")
     assert payload["verify"]["adapters"][0]["is_scoped_symlink_adapter"] is True
-    assert (root / ".cursor" / "skills").resolve() == external_global
 
 
-def test_self_refresh_preserves_existing_portable_adapter_mode(tmp_path: Path) -> None:
+def test_self_refresh_infers_shared_current_portable_mode_without_flags(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     home.mkdir(parents=True, exist_ok=True)
     tool = root / "ls" / "tools" / "localsetup.py"
 
-    portable_adapter = root / ".codex" / "skills"
+    portable_adapter = root / ".agents" / "skills"
     portable_adapter.mkdir(parents=True, exist_ok=True)
     (portable_adapter / ".localsetup-portable").write_text("managed_by=localsetup\n", encoding="utf-8")
+    custom = portable_adapter / "custom-skill"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom portable skill\n", encoding="utf-8")
 
     completed = subprocess.run(
         [
@@ -210,11 +214,65 @@ def test_self_refresh_preserves_existing_portable_adapter_mode(tmp_path: Path) -
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload["ok"] is True
-    assert payload["selected"]["platforms"] == ["codex"]
+    assert payload["selected"]["platforms"] == ["codex", "cursor", "openclaw"]
     assert payload["selected"]["attach_mode"] == "portable"
     assert portable_adapter.is_dir()
     assert not portable_adapter.is_symlink()
     assert (portable_adapter / ".localsetup-portable").is_file()
+    assert (portable_adapter / "ls-context").is_dir()
+    assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom portable skill\n"
+
+
+def test_self_refresh_explicitly_transitions_proven_historical_codex_adapter(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    home.mkdir(parents=True, exist_ok=True)
+    tool = root / "ls" / "tools" / "localsetup.py"
+    existing_global = home / ".local" / "share" / "localsetup" / "packages"
+    existing_global.mkdir(parents=True, exist_ok=True)
+    historical = root / ".codex" / "skills"
+    historical.parent.mkdir(parents=True)
+    historical.symlink_to(existing_global, target_is_directory=True)
+    lock_path = root / ".localsetup" / "lock.json"
+    lock_path.parent.mkdir(parents=True)
+    lock_path.write_text(
+        json.dumps(
+            {
+                "platforms": ["codex"],
+                "adapter_state": [str(historical)],
+                "adapter_targets": [
+                    {"platform": "codex", "path": str(historical), "packages": ["ls-context"]}
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(tool),
+            "--repo",
+            str(root),
+            "--home",
+            str(home),
+            "self-refresh",
+            "--dependency-mode",
+            "prompt-only",
+            "--platforms",
+            "codex",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(completed.stdout)
+    assert payload["selected"]["platforms"] == ["codex"]
+    assert not historical.exists()
+    assert_scoped_adapter(root / ".agents" / "skills", "ls-context")
 
 
 def test_docs_do_not_show_selector_free_portable_install() -> None:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from .client_registry import load_client_registry, platform_rows, projection_matches, write_platforms_projection
 from .cli_handler_sync import sync
 
 
@@ -100,6 +101,24 @@ def _adapter_check_payload(root, home, *, target_root, platform_ids, include_pro
 
 def handle(cli, args, root, home) -> int | None:
     sync(globals(), cli)
+
+    if args.cmd == "client-registry":
+        registry = load_client_registry(root)
+        matches = projection_matches(root, registry)
+        if args.client_registry_action == "generate":
+            write_platforms_projection(root, registry)
+            matches = True
+        payload = {
+            "ok": matches,
+            "action": args.client_registry_action,
+            "families": len(registry.families),
+            "variants": len(registry.variants()),
+            "platforms": [row["id"] for row in platform_rows(registry)],
+            "projection": "ls/config/platforms.yaml",
+            "projection_matches": matches,
+        }
+        print(json.dumps(payload, indent=2, sort_keys=True))
+        return 0 if matches else 1
 
     if args.cmd == "verify":
         started_at = time.time()

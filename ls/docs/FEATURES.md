@@ -12,7 +12,7 @@ This is the full public capability catalog for Localsetup. The [root README](../
 
 <!-- facts-block:start -->
 - Current version: `4.2.19`
-- Supported platforms: `cursor, claude-code, codex, openclaw, kilo, opencode`
+- Supported platforms: `codex, claude-code, cursor, kilo, opencode, openclaw`
 - Shipped skills: `106`
 - Workflow packages: `24`
 - Source: `ls/docs/_generated/facts.json`
@@ -28,7 +28,7 @@ This is the full public capability catalog for Localsetup. The [root README](../
 | Managed home library | Skills and workflow packages install to `~/.local/share/localsetup/packages`; explicitly selected adapters point there by symlink or use portable copies. |
 | Lock and rollback metadata | `.localsetup/lock.json` and managed-path reports make installs inspectable and reversible. |
 | Repair handoff and runtime split | `doctor repair` separates managed lock state from local runtime state, preserves custom content, emits compact handoff prompts, and records repair queue metadata. |
-| Platform manifest | `ls/config/platforms.yaml` is the source of truth for platform IDs, adapter paths, and verification rules. |
+| Client registry and platform projection | `ls/config/clients.yaml` is the canonical source for client capabilities and adapter mappings; generated `ls/config/platforms.yaml` is the compatibility/runtime projection consumed by existing platform tooling. |
 
 ## Skills And Interoperability
 

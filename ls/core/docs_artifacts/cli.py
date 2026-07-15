@@ -6,6 +6,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from ls.core.docs import require_current_platform_projection
+
 from .collectors import collect_platforms, collect_skills, collect_workflows
 from .writers import (
     generate_alias_output_paths,
@@ -72,13 +74,14 @@ def _facts(repo_root: Path, major_minor: str, skills: list[dict[str, Any]], work
 
 
 def run(repo_root: Path, internal_output: str, alignment_generator: AlignmentGenerator) -> None:
+    require_current_platform_projection(repo_root)
     version = (repo_root / "VERSION").read_text(encoding="utf-8").strip()
     major_minor = ".".join(version.split(".")[:2]) if "." in version else version
     docs_dir = repo_root / "ls" / "docs"
 
     skills = collect_skills(repo_root)
     workflows = collect_workflows(repo_root)
-    platforms = collect_platforms(docs_dir / "PLATFORM_REGISTRY.md")
+    platforms = collect_platforms(repo_root)
     facts = _facts(repo_root, major_minor, skills, workflows, platforms)
 
     direct_outputs = [

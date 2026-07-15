@@ -237,7 +237,7 @@ def test_full_plan_preflight_blocks_before_adapter_mutation(tmp_path: Path) -> N
     with pytest.raises(RuntimeError, match="install preflight failed"):
         apply_plan(root, plan, home=home, dry_run=False)
 
-    assert not (root / ".codex" / "skills").exists()
+    assert not (root / ".agents" / "skills").exists()
 
 
 def test_mixed_managed_adapter_preserves_custom_skill(tmp_path: Path) -> None:
@@ -246,19 +246,19 @@ def test_mixed_managed_adapter_preserves_custom_skill(tmp_path: Path) -> None:
     plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"])
     apply_plan(root, plan, home=home, dry_run=False)
 
-    custom = root / ".codex" / "skills" / "media-batch-ops"
+    custom = root / ".agents" / "skills" / "media-batch-ops"
     custom.mkdir()
     (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
 
     apply_plan(root, plan, home=home, dry_run=False)
     assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Custom\n"
-    assert (root / ".codex" / "skills" / "ls-context").exists()
+    assert (root / ".agents" / "skills" / "ls-context").exists()
 
 
 def test_initial_install_into_custom_skill_directory_preserves_custom_skill(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
-    adapter = root / ".codex" / "skills"
+    adapter = root / ".agents" / "skills"
     custom = adapter / "media-batch-ops"
     custom.mkdir(parents=True)
     (custom / "SKILL.md").write_text("# Custom before install\n", encoding="utf-8")
@@ -272,7 +272,7 @@ def test_initial_install_into_custom_skill_directory_preserves_custom_skill(tmp_
     assert (adapter / "ls-context").is_symlink()
 
 
-def test_repo_local_symlink_adapter_preserves_custom_skill_target(tmp_path: Path) -> None:
+def test_unproven_legacy_codex_symlink_blocks_install_and_preserves_target(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
     target = root / ".agents" / "skills"
@@ -284,14 +284,13 @@ def test_repo_local_symlink_adapter_preserves_custom_skill_target(tmp_path: Path
     codex.symlink_to(Path("..") / ".agents" / "skills", target_is_directory=True)
 
     plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"])
-    apply_plan(root, plan, home=home, dry_run=False)
-    verify = verify_install(root, home=home)
+    with pytest.raises(RuntimeError, match="unproven_legacy_codex_symlink"):
+        apply_plan(root, plan, home=home, dry_run=False)
 
-    adapter = verify["adapters"][0]
-    assert verify["ok"] is True
-    assert adapter["is_repo_local_symlink_adapter"] is True
     assert (custom / "SKILL.md").read_text(encoding="utf-8") == "# Fleet custom\n"
-    assert (target / "ls-context").is_symlink()
+    assert codex.is_symlink()
+    assert not (target / "ls-context").exists()
+    assert not (root / ".localsetup" / "lock.json").exists()
 
 
 def test_mixed_managed_adapter_custom_sidecar_does_not_fail_verify_or_doctor(tmp_path: Path) -> None:
@@ -306,7 +305,7 @@ def test_mixed_managed_adapter_custom_sidecar_does_not_fail_verify_or_doctor(tmp
         platform_ids=["codex"],
     )
     apply_plan(root, plan, home=home, dry_run=False)
-    custom = root / ".codex" / "skills" / "custom-skill"
+    custom = root / ".agents" / "skills" / "custom-skill"
     custom.mkdir()
     (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
 
@@ -329,7 +328,7 @@ def test_in_place_adapter_update_removes_deselected_managed_packages(tmp_path: P
     home = tmp_path / "home"
     broad_plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"])
     apply_plan(root, broad_plan, home=home, dry_run=False)
-    adapter = root / ".codex" / "skills"
+    adapter = root / ".agents" / "skills"
     stale_managed = adapter / "ls-test-runner"
     assert stale_managed.exists() or stale_managed.is_symlink()
 
@@ -358,7 +357,7 @@ def test_deselected_same_name_custom_adapter_entry_is_preserved(tmp_path: Path) 
     home = tmp_path / "home"
     broad_plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"])
     apply_plan(root, broad_plan, home=home, dry_run=False)
-    adapter = root / ".codex" / "skills"
+    adapter = root / ".agents" / "skills"
     custom = adapter / "ls-test-runner"
     custom.unlink()
     custom.mkdir()
@@ -382,7 +381,7 @@ def test_deselected_same_name_custom_portable_adapter_entry_is_preserved(tmp_pat
     home = tmp_path / "home"
     broad_plan = build_install_plan(root, home=home, packs=["core"], attach_mode="portable", platform_ids=["codex"])
     apply_plan(root, broad_plan, home=home, dry_run=False)
-    adapter = root / ".codex" / "skills"
+    adapter = root / ".agents" / "skills"
     custom = adapter / "ls-test-runner"
     shutil.rmtree(custom)
     custom.mkdir()
@@ -408,7 +407,7 @@ def test_same_name_custom_adapter_entry_blocks_install_preflight(tmp_path: Path)
     plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"])
     apply_plan(root, plan, home=home, dry_run=False)
 
-    adapter = root / ".codex" / "skills"
+    adapter = root / ".agents" / "skills"
     (adapter / "ls-context").unlink()
     custom = adapter / "ls-context"
     custom.mkdir()
@@ -425,7 +424,7 @@ def test_same_name_custom_portable_adapter_entry_blocks_install_preflight(tmp_pa
     plan = build_install_plan(root, home=home, packs=["core"], attach_mode="portable", platform_ids=["codex"])
     apply_plan(root, plan, home=home, dry_run=False)
 
-    custom = root / ".codex" / "skills" / "ls-context"
+    custom = root / ".agents" / "skills" / "ls-context"
     shutil.rmtree(custom)
     custom.mkdir()
     (custom / "SKILL.md").write_text("# Custom portable override\n", encoding="utf-8")
@@ -442,7 +441,7 @@ def test_doctor_repair_blocks_same_name_custom_adapter_entry(tmp_path: Path) -> 
     plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"], target_root=target)
     apply_plan(root, plan, home=home, dry_run=False, target_root=target)
 
-    adapter = target / ".codex" / "skills"
+    adapter = target / ".agents" / "skills"
     (adapter / "ls-context").unlink()
     custom = adapter / "ls-context"
     custom.mkdir()

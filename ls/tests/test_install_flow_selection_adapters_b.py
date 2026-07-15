@@ -7,15 +7,186 @@ def test_legacy_managed_global_symlink_is_migrated_to_scoped_adapter(tmp_path: P
     home = tmp_path / "home"
     legacy_root = home / ".local/share/agents/skills/localsetup"
     legacy_root.mkdir(parents=True)
-    adapter = root / ".codex" / "skills"
-    adapter.parent.mkdir(parents=True)
-    adapter.symlink_to(legacy_root, target_is_directory=True)
+    legacy_adapter = root / ".codex" / "skills"
+    legacy_adapter.parent.mkdir(parents=True)
+    legacy_adapter.symlink_to(legacy_root, target_is_directory=True)
 
     apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"]), home=home)
 
+    adapter = root / ".agents" / "skills"
     assert_scoped_adapter(adapter, "ls-context")
-    assert not adapter.is_symlink()
+    assert not legacy_adapter.exists()
+    verified = verify_install(root, home, platform_ids=["codex"])
+    assert verified["ok"] is True
+    assert verified["legacy_codex_transition"]["managed_exposure"] is False
+
+
+def test_legacy_codex_transition_preserves_mixed_custom_content(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    global_root = home / ".local" / "share" / "localsetup" / "packages"
+    managed = global_root / "ls-context"
+    legacy = root / ".codex" / "skills"
+    legacy.mkdir(parents=True)
+    (legacy / "ls-context").symlink_to(managed, target_is_directory=True)
+    custom = legacy / "custom-skill"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("---\nname: custom-skill\n---\n", encoding="utf-8")
+    (legacy / ".localsetup-adapter.json").write_text(
+        json.dumps({"version": 1, "mode": "symlink", "packages": ["ls-context"]}) + "\n",
+        encoding="utf-8",
+    )
+
+    apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"]), home=home)
+
+    assert (legacy / "custom-skill" / "SKILL.md").is_file()
+    assert not (legacy / "ls-context").exists()
+    assert not (legacy / ".localsetup-adapter.json").exists()
+    assert_scoped_adapter(root / ".agents" / "skills", "ls-context")
+    lock = load_json(root / ".localsetup" / "lock.json")
+    assert lock["adapter_transitions"][0]["disposition"] == "retired-managed-entries"
+
+    rollback(root, home)
+    assert (legacy / "custom-skill" / "SKILL.md").is_file()
+    assert not (root / ".agents" / "skills" / "ls-context").exists()
+
+
+def test_exact_managed_legacy_codex_child_is_transition_proof_without_marker(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    global_root = home / ".local" / "share" / "localsetup" / "packages"
+    managed = global_root / "ls-context"
+    historical = root / ".codex" / "skills"
+    historical.mkdir(parents=True)
+    (historical / "ls-context").symlink_to(managed, target_is_directory=True)
+    custom = historical / "custom-skill"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+
+    apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"]), home=home)
+
+    assert not (historical / "ls-context").exists()
+    assert (custom / "SKILL.md").is_file()
     assert verify_install(root, home, platform_ids=["codex"])["ok"] is True
+
+
+def test_unrelated_legacy_codex_child_symlink_is_not_transition_proof(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    unrelated = tmp_path / "unrelated-child"
+    unrelated.mkdir()
+    historical = root / ".codex" / "skills"
+    historical.mkdir(parents=True)
+    child = historical / "custom-link"
+    child.symlink_to(unrelated, target_is_directory=True)
+
+    apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"]), home=home)
+
+    assert child.is_symlink()
+    assert child.resolve(strict=False) == unrelated.resolve(strict=False)
+
+
+def test_openclaw_historical_adapter_transition_preserves_custom_content(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    global_root = home / ".local" / "share" / "localsetup" / "packages"
+    historical = root / ".openclaw" / "skills"
+    historical.mkdir(parents=True)
+    (historical / "ls-context").symlink_to(global_root / "ls-context", target_is_directory=True)
+    custom = historical / "custom-skill"
+    custom.mkdir()
+    (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
+
+    apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["openclaw"]), home=home)
+
+    assert not (historical / "ls-context").exists()
+    assert (custom / "SKILL.md").is_file()
+    verified = verify_install(root, home, platform_ids=["openclaw"])
+    assert verified["ok"] is True
+    assert verified["historical_adapter_transitions"]["openclaw"][0]["managed_exposure"] is False
+
+
+def test_unproven_openclaw_historical_symlink_blocks_before_mutation(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    unrelated = tmp_path / "unrelated-openclaw-skills"
+    unrelated.mkdir()
+    historical = root / ".openclaw" / "skills"
+    historical.parent.mkdir(parents=True)
+    historical.symlink_to(unrelated, target_is_directory=True)
+
+    with pytest.raises(RuntimeError, match="unproven_historical_openclaw_symlink"):
+        apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["openclaw"]), home=home)
+
+    assert historical.is_symlink()
+    assert historical.resolve(strict=False) == unrelated.resolve(strict=False)
+    assert not (root / ".agents" / "skills").exists()
+    assert not (root / ".localsetup" / "install-journal").exists()
+
+
+def test_openclaw_verify_reports_residual_historical_managed_exposure(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    apply_plan(root, build_install_plan(root, home=home, packs=["core"], platform_ids=["openclaw"]), home=home)
+    historical = root / ".openclaw" / "skills"
+    historical.parent.mkdir(parents=True, exist_ok=True)
+    historical.symlink_to(home / ".local" / "share" / "localsetup" / "packages", target_is_directory=True)
+
+    verified = verify_install(root, home, platform_ids=["openclaw"])
+
+    assert verified["ok"] is False
+    assert any("legacy OpenClaw adapter" in issue for issue in verified["issues"])
+
+
+def test_unproven_legacy_codex_symlink_blocks_before_any_mutation(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    unrelated = tmp_path / "unrelated-skills"
+    unrelated.mkdir()
+    legacy = root / ".codex" / "skills"
+    legacy.parent.mkdir(parents=True)
+    legacy.symlink_to(unrelated, target_is_directory=True)
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"])
+
+    with pytest.raises(RuntimeError, match="unproven_legacy_codex_symlink"):
+        apply_plan(root, plan, home=home, dry_run=False)
+
+    assert legacy.is_symlink()
+    assert legacy.resolve(strict=False) == unrelated.resolve(strict=False)
+    assert not (root / ".agents" / "skills").exists()
+    assert not (root / ".localsetup" / "lock.json").exists()
+    assert not (root / ".localsetup" / "install-journal").exists()
+
+
+def test_recorded_legacy_path_does_not_authorize_replaced_unrelated_symlink(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    legacy = root / ".codex" / "skills"
+    legacy.parent.mkdir(parents=True)
+    lock = root / ".localsetup" / "lock.json"
+    lock.parent.mkdir(parents=True)
+    original_lock = json.dumps(
+        {
+            "platforms": ["codex"],
+            "adapter_state": [str(legacy)],
+            "adapter_targets": [{"platform": "codex", "path": str(legacy), "packages": ["ls-context"]}],
+        },
+        sort_keys=True,
+    ) + "\n"
+    lock.write_text(original_lock, encoding="utf-8")
+    unrelated = tmp_path / "replacement-skills"
+    unrelated.mkdir()
+    legacy.symlink_to(unrelated, target_is_directory=True)
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"])
+
+    with pytest.raises(RuntimeError, match="unproven_legacy_codex_symlink"):
+        apply_plan(root, plan, home=home, dry_run=False)
+
+    assert legacy.is_symlink()
+    assert legacy.resolve(strict=False) == unrelated.resolve(strict=False)
+    assert lock.read_text(encoding="utf-8") == original_lock
+    assert not (root / ".agents" / "skills").exists()
+    assert not (root / ".localsetup" / "install-journal").exists()
 
 
 def test_portable_mode_uses_managed_copies(tmp_path: Path) -> None:
@@ -46,7 +217,7 @@ def test_portable_adapter_digest_drift_is_reported(tmp_path: Path) -> None:
         build_install_plan(root, home=home, packs=["core"], attach_mode="portable", platform_ids=["codex"]),
         home=home,
     )
-    adapter = root / ".codex" / "skills"
+    adapter = root / ".agents" / "skills"
     with (adapter / "ls-context" / "SKILL.md").open("a", encoding="utf-8") as handle:
         handle.write("\n# local portable drift\n")
 
@@ -66,7 +237,7 @@ def test_platform_selector_limits_adapters(tmp_path: Path) -> None:
     result = apply_plan(root, plan, home=home, dry_run=False)
 
     assert result["dry_run"] is False
-    assert_scoped_adapter(root / ".codex" / "skills", "ls-context")
+    assert_scoped_adapter(root / ".agents" / "skills", "ls-context")
     assert not (root / ".kilo" / "skills").exists()
     assert not (root / ".cursor" / "skills").exists()
     verify = verify_install(root, home, platform_ids=["codex"])
@@ -155,7 +326,7 @@ def test_adapters_check_reports_tampered_adapter_without_mutating_custom_content
         build_install_plan(root, home=home, packs=["core"], platform_ids=["codex"]),
         home=home,
     )
-    adapter = root / ".codex" / "skills"
+    adapter = root / ".agents" / "skills"
     custom = adapter / "custom-skill"
     custom.mkdir()
     (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
@@ -194,9 +365,9 @@ def test_multi_platform_selector_attaches_only_requested_adapters(tmp_path: Path
     verify = verify_install(root, home)
 
     assert result["dry_run"] is False
-    assert {Path(adapter["repo_path"]).parent.name for adapter in verify["adapters"]} == {".codex", ".kilo"}
+    assert {Path(adapter["repo_path"]).parent.name for adapter in verify["adapters"]} == {".agents", ".kilo"}
     assert {adapter["platform"] for adapter in verify["adapters"]} == {"codex", "kilo"}
-    assert_scoped_adapter(root / ".codex" / "skills", "ls-context")
+    assert_scoped_adapter(root / ".agents" / "skills", "ls-context")
     assert_scoped_adapter(root / ".kilo" / "skills", "ls-context")
     assert not (root / ".cursor" / "skills").exists()
 
@@ -512,7 +683,7 @@ def test_provenance_report_global_shim_uses_caller_target(tmp_path: Path) -> Non
     assert completed.returncode == 0, completed.stderr + completed.stdout
     payload = json.loads(completed.stdout)
     assert payload["packages"]["ls-context"]["lock_digest"]
-    assert payload["adapters"][0]["repo_path"] == str(target / ".codex" / "skills")
+    assert payload["adapters"][0]["repo_path"] == str(target / ".agents" / "skills")
 
 
 def test_detach_removes_adapters_and_preserves_packages(tmp_path: Path) -> None:
@@ -531,5 +702,5 @@ def test_detach_removes_adapters_and_preserves_packages(tmp_path: Path) -> None:
     assert completed.returncode == 0, completed.stderr + completed.stdout
     payload = json.loads(completed.stdout)
     assert payload["packages_preserved"] is True
-    assert not (root / ".codex" / "skills").exists()
+    assert not (root / ".agents" / "skills").exists()
     assert (home / ".local/share/localsetup/packages/ls-context").is_dir()

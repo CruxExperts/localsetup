@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 65cf121a68007b60b7a890dc32f43c3755c6f97eb43ae4b8a7c8cf7695b4d587
+  source_provenance_hash: b205286774f48ceccfc2946653a8112b0a9c3b80f56fe43459f1a85338e80e8a
   emitter: generate-docs
 framework_version: 4.2.19
-source_commit: 26905e6e0b34ca7f85bca08323dccc3053fcea4f
-artifact_sha256: b7cf6b9a7cc512034848d3111d5bd8cbd4f440279ed86cf558e05af18f01b18d
+source_commit: 494b61b09acba2d1f2c36ec3e813a1eed59e6efb
+artifact_sha256: 0ff5f798aaa1c9a88088a40a3a2149489e92c9be9d9eeb8bcb6fddd4a2f19528
 ---
 # Implementation File Map
 
@@ -76,6 +76,8 @@ artifact_sha256: b7cf6b9a7cc512034848d3111d5bd8cbd4f440279ed86cf558e05af18f01b18
 | `keep` | `ls/adapters/codex/agents/guardian_subagent.toml` |
 | `keep` | `ls/config/agent_queue.example.yaml` |
 | `keep` | `ls/config/agent_trust_registry.example.yaml` |
+| `refactor` | `ls/config/clients.schema.json` |
+| `refactor` | `ls/config/clients.yaml` |
 | `keep` | `ls/config/defaults/system_config.yaml` |
 | `keep` | `ls/config/install.schema.json` |
 | `keep` | `ls/config/mail_protocol_policy.yaml` |
@@ -108,6 +110,11 @@ artifact_sha256: b7cf6b9a7cc512034848d3111d5bd8cbd4f440279ed86cf558e05af18f01b18
 | `refactor` | `ls/core/cli_misc_commands.py` |
 | `refactor` | `ls/core/cli_parser.py` |
 | `refactor` | `ls/core/cli_state_commands.py` |
+| `refactor` | `ls/core/client_registry/__init__.py` |
+| `refactor` | `ls/core/client_registry/historical.py` |
+| `refactor` | `ls/core/client_registry/loader.py` |
+| `refactor` | `ls/core/client_registry/models.py` |
+| `refactor` | `ls/core/client_registry/projection.py` |
 | `refactor` | `ls/core/config.py` |
 | `refactor` | `ls/core/context.py` |
 | `refactor` | `ls/core/context_index/__init__.py` |
@@ -129,6 +136,7 @@ artifact_sha256: b7cf6b9a7cc512034848d3111d5bd8cbd4f440279ed86cf558e05af18f01b18
 | `refactor` | `ls/core/conversion.py` |
 | `refactor` | `ls/core/dependencies.py` |
 | `refactor` | `ls/core/dependency_environments.py` |
+| `refactor` | `ls/core/detach.py` |
 | `refactor` | `ls/core/diffing.py` |
 | `refactor` | `ls/core/docs.py` |
 | `refactor` | `ls/core/docs_alignment/__init__.py` |
@@ -849,6 +857,7 @@ artifact_sha256: b7cf6b9a7cc512034848d3111d5bd8cbd4f440279ed86cf558e05af18f01b18
 | `keep` | `ls/tests/test_adapter_parser.py` |
 | `keep` | `ls/tests/test_candidate_skill_cli.py` |
 | `keep` | `ls/tests/test_cli_version.py` |
+| `keep` | `ls/tests/test_client_registry.py` |
 | `keep` | `ls/tests/test_codex_heartbeat.py` |
 | `keep` | `ls/tests/test_codex_heartbeat_harness.py` |
 | `keep` | `ls/tests/test_context_index.py` |

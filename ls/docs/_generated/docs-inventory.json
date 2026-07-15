@@ -4535,7 +4535,7 @@
     {
       "id": "codex",
       "repo_paths": [
-        ".codex/skills"
+        ".agents/skills"
       ]
     },
     {
@@ -4547,6 +4547,7 @@
     {
       "id": "cursor",
       "repo_paths": [
+        ".agents/skills",
         ".cursor/skills"
       ]
     },
@@ -4565,22 +4566,22 @@
     {
       "id": "openclaw",
       "repo_paths": [
-        ".openclaw/skills"
+        ".agents/skills"
       ]
     }
   ],
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "6e064e31e27a81b97bba5b3832ff79b8f38a3d2f07da52d15800037a14fa1505",
+    "artifact_sha256": "f4d817f7bff8735c5386b7406858ed7d426e7e7c5429de1f16828994b271532f",
     "emitter": "docs-align",
     "framework_version": "4.2.19",
     "schema_version": 1,
-    "source_commit": "26905e6e0b34ca7f85bca08323dccc3053fcea4f",
+    "source_commit": "494b61b09acba2d1f2c36ec3e813a1eed59e6efb",
     "source_dirty": false,
-    "source_provenance_hash": "65cf121a68007b60b7a890dc32f43c3755c6f97eb43ae4b8a7c8cf7695b4d587",
-    "source_root_id": "2e24f55c9309c024d5cde048d6f71194e5dd2575bd2ba8453f8c6d233a294441",
+    "source_provenance_hash": "b205286774f48ceccfc2946653a8112b0a9c3b80f56fe43459f1a85338e80e8a",
+    "source_root_id": "b851b3a0f6cf7061290cf19ebdb1f2ca058670e542fbd9951795d8d3f3b04696",
     "source_tag": null,
-    "source_tree_sha": "6006bd5180a2c509e3e41c9b7af896d48d9b1780"
+    "source_tree_sha": "a5973a3ca8833d16905278ee754c599ac0da3edd"
   },
   "repo": ".",
   "schema_version": "1.0",

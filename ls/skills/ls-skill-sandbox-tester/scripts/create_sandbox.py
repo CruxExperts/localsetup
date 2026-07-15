@@ -15,6 +15,7 @@ Prints the skill copy path to stdout on success (one line). Use this path as --s
 """
 
 import argparse
+import json
 import os
 import re
 import shutil
@@ -26,15 +27,66 @@ SKILL_NAME_MAX = 64
 SKILL_NAME_PATTERN = re.compile(r"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$")
 PATH_MAX = 4096
 BASE_DIR_MAX = 1024
-SKILL_ROOT_SUBPATHS = (
+PLATFORM_PROJECTION_MAX = 256 * 1024
+FALLBACK_SKILL_ROOT_SUBPATHS = (
     "ls/skills",
-    ".codex/skills",
-    ".cursor/skills",
+    ".agents/skills",
     ".claude/skills",
+    ".cursor/skills",
     ".kilo/skills",
     ".opencode/skills",
-    ".openclaw/skills",
 )
+
+
+def _projection_candidates() -> list[Path]:
+    candidates: list[Path] = []
+    framework_dir = os.environ.get("LOCALSETUP_FRAMEWORK_DIR", "").strip()
+    if framework_dir:
+        root = Path(framework_dir).resolve()
+        candidates.extend((root / "config" / "platforms.yaml", root / "ls" / "config" / "platforms.yaml"))
+    script = Path(__file__).resolve()
+    for parent in script.parents:
+        candidates.extend((parent / "ls" / "config" / "platforms.yaml", parent / "config" / "platforms.yaml"))
+    return list(dict.fromkeys(candidates))
+
+
+def _projection_skill_roots(path: Path) -> tuple[str, ...]:
+    if path.is_symlink() or not path.is_file() or path.stat().st_size > PLATFORM_PROJECTION_MAX:
+        raise ValueError("platform projection is missing, symlinked, or oversized")
+    roots: list[str] = ["ls/skills"]
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        stripped = raw_line.strip()
+        if not stripped.startswith("repo_paths:"):
+            continue
+        value = json.loads(stripped.split(":", 1)[1].strip())
+        if not isinstance(value, list):
+            raise ValueError("platform repo_paths must be a list")
+        for item in value:
+            if (
+                not isinstance(item, str)
+                or not item.endswith("/skills")
+                or item.startswith(("/", "~"))
+                or ".." in Path(item).parts
+                or len(item) > BASE_DIR_MAX
+            ):
+                raise ValueError("platform repo_paths contains an unsafe skill root")
+            if item not in roots:
+                roots.append(item)
+    if len(roots) == 1:
+        raise ValueError("platform projection contains no repository skill roots")
+    return tuple(roots)
+
+
+def _skill_root_subpaths() -> tuple[str, ...]:
+    for candidate in _projection_candidates():
+        try:
+            return _projection_skill_roots(candidate)
+        except (OSError, UnicodeDecodeError, ValueError, json.JSONDecodeError):
+            continue
+    return FALLBACK_SKILL_ROOT_SUBPATHS
+
+
+SKILL_ROOT_SUBPATHS = _skill_root_subpaths()
 
 
 def _sanitize_skill_name(name: str) -> str:

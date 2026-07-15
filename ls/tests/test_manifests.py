@@ -148,6 +148,10 @@ def test_platform_manifest_has_six_platforms() -> None:
     platforms = load_platforms(root)
     ids = {p.platform_id for p in platforms}
     assert ids == {"codex", "claude-code", "cursor", "kilo", "opencode", "openclaw"}
+    by_id = {platform.platform_id: platform for platform in platforms}
+    assert by_id["codex"].repo_paths == [".agents/skills"]
+    assert by_id["codex"].global_paths == ["~/.agents/skills"]
+    assert by_id["opencode"].global_paths == ["~/.config/opencode/skills"]
 
 
 def test_manifest_schemas_reject_unknown_pack_and_platform_fields(tmp_path: Path) -> None:
@@ -316,18 +320,18 @@ def test_old_workflow_skill_references_are_cut_over() -> None:
     assert offenders == []
 
 
-def test_active_templates_do_not_reference_old_agents_skill_root() -> None:
+def test_codex_templates_distinguish_current_and_historical_skill_roots() -> None:
     root = Path(__file__).resolve().parents[2]
-    scanned_suffixes = {".md", ".mdc", ".yaml", ".json", ".py", ".sh", ".ps1"}
-    offenders: list[str] = []
-    for base in (root / "ls" / "templates", root / "ls" / "skills"):
-        for path in base.rglob("*"):
-            if not path.is_file() or path.suffix not in scanned_suffixes:
-                continue
-            text = path.read_text(encoding="utf-8", errors="ignore")
-            if ".agents/skills" in text:
-                offenders.append(str(path.relative_to(root)))
-    assert offenders == []
+    codex_context = (root / "ls" / "templates" / "codex" / "AGENTS.md").read_text(encoding="utf-8")
+    finalizer = yaml.safe_load(
+        (root / "ls" / "templates" / "config" / "localsetup_finalizer.yaml").read_text(encoding="utf-8")
+    )
+
+    assert "`.agents/skills` is the current shared repository skills root" in codex_context
+    assert "`.codex/skills` is the historical Codex preservation and transition surface" in codex_context
+    for key in ("managed_output_globs", "stage_allowlist_globs"):
+        assert ".agents/skills/**" in finalizer[key]
+        assert ".codex/skills/**" in finalizer[key]
 
 
 def test_baseline_file_classification() -> None:

@@ -4,54 +4,54 @@
     "platform_count": 6,
     "platforms": [
       {
-        "context_loader": ".cursor/skills",
-        "display_name": "Cursor",
-        "id": "cursor",
-        "skills_path": "~/.local/share/localsetup/packages"
-      },
-      {
-        "context_loader": ".claude/skills",
-        "display_name": "Claude Code",
-        "id": "claude-code",
-        "skills_path": "~/.local/share/localsetup/packages"
-      },
-      {
-        "context_loader": ".codex/skills",
+        "context_loader": "AGENTS.override.md, AGENTS.md",
         "display_name": "OpenAI Codex CLI",
         "id": "codex",
-        "skills_path": "~/.local/share/localsetup/packages"
+        "skills_path": ".agents/skills"
       },
       {
-        "context_loader": ".openclaw/skills",
-        "display_name": "OpenClaw",
-        "id": "openclaw",
-        "skills_path": "~/.local/share/localsetup/packages"
+        "context_loader": "CLAUDE.md, .claude/CLAUDE.md",
+        "display_name": "Claude Code CLI",
+        "id": "claude-code",
+        "skills_path": ".claude/skills"
       },
       {
-        "context_loader": ".kilo/skills",
-        "display_name": "Kilo CLI",
+        "context_loader": ".cursor/rules, AGENTS.md",
+        "display_name": "Cursor IDE",
+        "id": "cursor",
+        "skills_path": ".agents/skills, .cursor/skills"
+      },
+      {
+        "context_loader": "AGENTS.md",
+        "display_name": "Kilo Code CLI",
         "id": "kilo",
-        "skills_path": "~/.local/share/localsetup/packages"
+        "skills_path": ".kilo/skills"
       },
       {
-        "context_loader": ".opencode/skills",
+        "context_loader": "AGENTS.md",
         "display_name": "OpenCode CLI",
         "id": "opencode",
-        "skills_path": "~/.local/share/localsetup/packages"
+        "skills_path": ".opencode/skills"
+      },
+      {
+        "context_loader": "AGENTS.md",
+        "display_name": "OpenClaw CLI",
+        "id": "openclaw",
+        "skills_path": ".agents/skills"
       }
     ],
     "provenance": {
       "artifact_path": "ls/docs/_generated/facts.json",
-      "artifact_sha256": "183e4a8c797688e5baa1e6b003ee033129475ecdf809683859ad8f0b4ab8b3c4",
+      "artifact_sha256": "5d27785985457a96df34a7fc4192bd7eb28af6c23bf63d6d4c97938e5e21a1e1",
       "emitter": "generate-docs",
       "framework_version": "4.2.19",
       "schema_version": 1,
-      "source_commit": "26905e6e0b34ca7f85bca08323dccc3053fcea4f",
+      "source_commit": "494b61b09acba2d1f2c36ec3e813a1eed59e6efb",
       "source_dirty": false,
-      "source_provenance_hash": "65cf121a68007b60b7a890dc32f43c3755c6f97eb43ae4b8a7c8cf7695b4d587",
-      "source_root_id": "2e24f55c9309c024d5cde048d6f71194e5dd2575bd2ba8453f8c6d233a294441",
+      "source_provenance_hash": "b205286774f48ceccfc2946653a8112b0a9c3b80f56fe43459f1a85338e80e8a",
+      "source_root_id": "b851b3a0f6cf7061290cf19ebdb1f2ca058670e542fbd9951795d8d3f3b04696",
       "source_tag": null,
-      "source_tree_sha": "6006bd5180a2c509e3e41c9b7af896d48d9b1780"
+      "source_tree_sha": "a5973a3ca8833d16905278ee754c599ac0da3edd"
     },
     "skill_count": 106,
     "skills": [
@@ -1973,12 +1973,12 @@
       "emitter": "generate-docs",
       "framework_version": "4.2.19",
       "schema_version": 1,
-      "source_commit": "26905e6e0b34ca7f85bca08323dccc3053fcea4f",
+      "source_commit": "494b61b09acba2d1f2c36ec3e813a1eed59e6efb",
       "source_dirty": false,
-      "source_provenance_hash": "65cf121a68007b60b7a890dc32f43c3755c6f97eb43ae4b8a7c8cf7695b4d587",
-      "source_root_id": "2e24f55c9309c024d5cde048d6f71194e5dd2575bd2ba8453f8c6d233a294441",
+      "source_provenance_hash": "b205286774f48ceccfc2946653a8112b0a9c3b80f56fe43459f1a85338e80e8a",
+      "source_root_id": "b851b3a0f6cf7061290cf19ebdb1f2ca058670e542fbd9951795d8d3f3b04696",
       "source_tag": null,
-      "source_tree_sha": "6006bd5180a2c509e3e41c9b7af896d48d9b1780"
+      "source_tree_sha": "a5973a3ca8833d16905278ee754c599ac0da3edd"
     },
     "schema_version": 1,
     "skills": [
@@ -3525,16 +3525,16 @@
   },
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "8b9ea2b109eb4951c36401d2909511ec2d2193c3dc0a6e259d2795ac8324d8e0",
+    "artifact_sha256": "b49175d0f55bfd4d4c79413afcdbf28b9f0040242dd8298b70fe3208ede4fbfa",
     "emitter": "docs-align",
     "framework_version": "4.2.19",
     "schema_version": 1,
-    "source_commit": "26905e6e0b34ca7f85bca08323dccc3053fcea4f",
+    "source_commit": "494b61b09acba2d1f2c36ec3e813a1eed59e6efb",
     "source_dirty": false,
-    "source_provenance_hash": "65cf121a68007b60b7a890dc32f43c3755c6f97eb43ae4b8a7c8cf7695b4d587",
-    "source_root_id": "2e24f55c9309c024d5cde048d6f71194e5dd2575bd2ba8453f8c6d233a294441",
+    "source_provenance_hash": "b205286774f48ceccfc2946653a8112b0a9c3b80f56fe43459f1a85338e80e8a",
+    "source_root_id": "b851b3a0f6cf7061290cf19ebdb1f2ca058670e542fbd9951795d8d3f3b04696",
     "source_tag": null,
-    "source_tree_sha": "6006bd5180a2c509e3e41c9b7af896d48d9b1780"
+    "source_tree_sha": "a5973a3ca8833d16905278ee754c599ac0da3edd"
   },
   "schema_version": "1.0",
   "truths": {

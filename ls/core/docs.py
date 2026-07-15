@@ -5,6 +5,7 @@ from pathlib import Path
 
 from .aliases import collect_skill_aliases
 from .baseline import implementation_file_map
+from .client_registry import load_client_registry, projection_matches
 from .manifests import load_platforms
 from .plugin_packs import plugin_pack_catalog_payload
 from .provenance import artifact_registry_entry, base_provenance, json_with_provenance, markdown_with_provenance
@@ -18,9 +19,19 @@ ARTIFACT_SOURCE_INPUTS = [
     "ls/config/pack.yaml",
     "ls/config/plugin-packs.yaml",
     "ls/workflows",
+    "ls/config/clients.yaml",
+    "ls/config/clients.schema.json",
     "ls/config/platforms.yaml",
     "ls/docs/PLATFORM_REGISTRY.md",
 ]
+
+
+def require_current_platform_projection(repo_root: Path) -> None:
+    registry = load_client_registry(repo_root)
+    if not projection_matches(repo_root, registry):
+        raise RuntimeError(
+            "ls/config/platforms.yaml is stale; run `localsetup client-registry generate` before generating docs"
+        )
 
 
 def _write_markdown(path: Path, text: str, repo_root: Path) -> None:
@@ -83,6 +94,7 @@ def _write_artifact_registry(repo_root: Path, paths: list[Path]) -> None:
 
 
 def generate_alias_outputs(repo_root: Path) -> dict:
+    require_current_platform_projection(repo_root)
     aliases = collect_skill_aliases(repo_root / "ls" / "skills")
     aliases_path = repo_root / "ls" / "docs" / "_generated" / "skill_aliases.json"
     _write_json(aliases_path, aliases, repo_root)

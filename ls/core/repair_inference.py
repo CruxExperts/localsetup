@@ -6,13 +6,12 @@ from pathlib import Path
 from typing import Any
 
 from .adapters import adapter_targets
+from .client_registry.historical import historical_adapter_paths
 from .manifests import load_pack_config, load_platforms
 from .repair_common import _known_package_names, _normalize_package_names
 from .selection import resolve_package_selection
 
-HISTORICAL_ADAPTERS = {
-    "codex": [".agents/skills"],
-}
+HISTORICAL_ADAPTERS = historical_adapter_paths()
 
 def _extract_list(payload: dict[str, Any], *keys: str) -> list[str]:
     values: list[str] = []
@@ -83,6 +82,9 @@ def _infer_platforms(
     if selected:
         reasons.append("legacy lock selectors")
     known_platforms = {platform.platform_id: platform for platform in load_platforms(source_root)}
+    known_ids = set(known_platforms)
+    if selected & known_ids:
+        return sorted(selected & known_ids), sorted(set(reasons))
     for platform in known_platforms.values():
         for rel in platform.repo_paths:
             if (target_root / rel).exists() or (target_root / rel).is_symlink():
@@ -93,7 +95,6 @@ def _infer_platforms(
             if (target_root / rel).exists() or (target_root / rel).is_symlink():
                 selected.add(platform_id)
                 reasons.append(f"historical adapter path {rel}")
-    known_ids = set(known_platforms)
     return sorted(selected & known_ids), sorted(set(reasons))
 
 def _infer_attach_mode(modern_lock: dict[str, Any]) -> tuple[str, str]:

@@ -81,7 +81,7 @@ def _mode_step(term: TerminalWizard, state: WizardState) -> str:
             "Updates the managed Localsetup package library without repo adapter paths.",
             "On reruns, removes only prior managed adapter paths while leaving the shared library intact.",
             "You only want the shared package library refreshed right now.",
-            "No `.codex/skills` or other repo adapter paths are created.",
+            "No `.agents/skills` or other repo adapter paths are created.",
         ),
         Choice(
             "current",

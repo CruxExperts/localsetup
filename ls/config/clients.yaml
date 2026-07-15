@@ -1,0 +1,349 @@
+schema_version: 1
+families:
+  - id: antigravity
+    display_name: Google Antigravity
+    variants:
+      - id: antigravity-ide
+        display_name: Google Antigravity IDE
+        kind: ide
+        support_status: experimental
+        research:
+          status: partial
+          checked_on: '2026-07-15'
+          sources:
+            - {kind: official_docs, url: 'https://codelabs.developers.google.com/getting-started-with-antigravity-skills'}
+        executables: []
+        policy:
+          repo: {status: supported, resolution: hierarchy, paths: ['.agents/rules', '.agent/rules'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: single, paths: ['~/.gemini/antigravity/GEMINI.md'], precedence_status: unverified, ownership: client-native, collision: owned-block-only}
+        config:
+          repo: {status: unverified, resolution: unverified, paths: [], precedence_status: unverified, ownership: client-native, collision: manual}
+          global: {status: unverified, resolution: unverified, paths: [], precedence_status: unverified, ownership: client-native, collision: manual}
+        skills:
+          repo: {status: supported, resolution: single, paths: ['.agents/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: single, paths: ['~/.gemini/config/skills'], precedence_status: verified, ownership: client-native, collision: owned-entry-only}
+        goal: {status: unverified, kind: unverified, commands: [], limits: {status: unverified}}
+        permissions: {status: unverified, controls: []}
+        state:
+          repo: {status: unverified, path: null, ownership: localsetup-managed, collision: fail}
+          global: {status: supported, path: '~/.gemini/antigravity/state', ownership: localsetup-managed, collision: fail}
+        insertion:
+          repo: {status: unverified, collision: unsupported, rollback: unsupported}
+          global: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
+        verification: {classification: host}
+        rollback: {classification: manual-settings}
+
+  - id: claude-code
+    display_name: Claude Code
+    variants:
+      - id: claude-code-cli
+        display_name: Claude Code CLI
+        kind: cli
+        support_status: supported
+        research:
+          status: verified
+          checked_on: '2026-07-15'
+          sources:
+            - {kind: official_release, url: 'https://github.com/anthropics/claude-code/releases/tag/v2.1.210', version: '2.1.210'}
+            - {kind: official_docs, url: 'https://code.claude.com/docs/en/skills.md'}
+            - {kind: official_docs, url: 'https://code.claude.com/docs/en/memory.md'}
+        executables: [claude]
+        policy:
+          repo: {status: supported, resolution: hierarchy, paths: ['CLAUDE.md', '.claude/CLAUDE.md'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: single, paths: ['~/.claude/CLAUDE.md'], precedence_status: verified, ownership: client-native, collision: owned-block-only}
+        config:
+          repo: {status: supported, resolution: hierarchy, paths: ['.claude/settings.json', '.claude/settings.local.json'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: single, paths: ['~/.claude/settings.json'], precedence_status: verified, ownership: client-native, collision: manual}
+        skills:
+          repo: {status: supported, resolution: single, paths: ['.claude/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: single, paths: ['~/.claude/skills'], precedence_status: verified, ownership: client-native, collision: owned-entry-only}
+        goal: {status: unverified, kind: unverified, commands: [], limits: {status: unverified}}
+        permissions: {status: supported, controls: ['managed settings', 'permission rules']}
+        state:
+          repo: {status: supported, path: '.claude/state', ownership: localsetup-managed, collision: fail}
+          global: {status: supported, path: '~/.claude/state', ownership: localsetup-managed, collision: fail}
+        insertion:
+          repo: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
+          global: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
+        verification: {classification: filesystem}
+        rollback: {classification: managed-entry-removal}
+        compatibility: {platform_id: claude-code, order: 20, native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
+
+  - id: codex
+    display_name: OpenAI Codex
+    variants:
+      - id: codex-cli
+        display_name: OpenAI Codex CLI
+        kind: cli
+        support_status: supported
+        research:
+          status: verified
+          checked_on: '2026-07-15'
+          sources:
+            - {kind: official_release, url: 'https://github.com/openai/codex/releases/tag/rust-v0.144.4', version: '0.144.4'}
+            - {kind: official_docs, url: 'https://learn.chatgpt.com/docs/build-skills'}
+            - {kind: official_docs, url: 'https://developers.openai.com/codex/use-cases/follow-goals'}
+        executables: [codex]
+        policy:
+          repo: {status: supported, resolution: hierarchy, paths: ['AGENTS.override.md', 'AGENTS.md'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: first-existing, paths: ['$CODEX_HOME/AGENTS.override.md', '$CODEX_HOME/AGENTS.md'], precedence_status: verified, ownership: client-native, collision: owned-block-only}
+        config:
+          repo: {status: supported, resolution: single, paths: ['.codex/config.toml'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: single, paths: ['$CODEX_HOME/config.toml'], precedence_status: verified, ownership: client-native, collision: manual}
+        skills:
+          repo: {status: supported, resolution: single, paths: ['.agents/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: single, paths: ['~/.agents/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+        goal: {status: supported, kind: slash-command, commands: ['/goal'], limits: {status: unverified}}
+        permissions: {status: supported, controls: ['approval policy', 'sandbox policy']}
+        state:
+          repo: {status: supported, path: '.codex/state', ownership: localsetup-managed, collision: fail}
+          global: {status: supported, path: '$CODEX_HOME/state', ownership: localsetup-managed, collision: fail}
+        insertion:
+          repo: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
+          global: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
+        verification: {classification: filesystem}
+        rollback: {classification: managed-entry-removal}
+        compatibility: {platform_id: codex, order: 10, native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
+
+  - id: cursor
+    display_name: Cursor
+    variants:
+      - id: cursor-agent-cli
+        display_name: Cursor Agent CLI
+        kind: cli
+        support_status: supported
+        research:
+          status: partial
+          checked_on: '2026-07-15'
+          sources:
+            - {kind: official_docs, url: 'https://cursor.com/docs/cli/using.md'}
+            - {kind: official_docs, url: 'https://cursor.com/docs/cli/reference/configuration.md'}
+        executables: [cursor-agent]
+        policy:
+          repo: {status: supported, resolution: hierarchy, paths: ['AGENTS.md', 'CLAUDE.md', '.cursor/rules'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: unsupported, resolution: unsupported, paths: [], precedence_status: unsupported, ownership: client-native, collision: unsupported}
+        config:
+          repo: {status: supported, resolution: single, paths: ['.cursor/cli.json'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: single, paths: ['~/.cursor/cli-config.json'], precedence_status: verified, ownership: client-native, collision: manual}
+        skills:
+          repo: {status: supported, resolution: first-existing, paths: ['.agents/skills', '.cursor/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: first-existing, paths: ['~/.agents/skills', '~/.cursor/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+        goal: {status: unverified, kind: unverified, commands: [], limits: {status: unverified}}
+        permissions: {status: supported, controls: ['CLI configuration permissions']}
+        state:
+          repo: {status: supported, path: '.cursor/state', ownership: localsetup-managed, collision: fail}
+          global: {status: supported, path: '~/.cursor/state', ownership: localsetup-managed, collision: fail}
+        insertion:
+          repo: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
+          global: {status: unsupported, collision: unsupported, rollback: unsupported}
+        verification: {classification: host}
+        rollback: {classification: owned-block-removal}
+      - id: cursor-ide
+        display_name: Cursor IDE
+        kind: ide
+        support_status: supported
+        research:
+          status: partial
+          checked_on: '2026-07-15'
+          sources:
+            - {kind: official_docs, url: 'https://cursor.com/docs/skills.md'}
+            - {kind: official_docs, url: 'https://cursor.com/docs/rules.md'}
+        executables: [cursor]
+        policy:
+          repo: {status: supported, resolution: hierarchy, paths: ['.cursor/rules', 'AGENTS.md'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: settings-only, resolution: settings, paths: [], precedence_status: verified, ownership: client-native, collision: manual, setting_label: 'Cursor User Rules'}
+        config:
+          repo: {status: unverified, resolution: unverified, paths: [], precedence_status: unverified, ownership: client-native, collision: manual}
+          global: {status: settings-only, resolution: settings, paths: [], precedence_status: unverified, ownership: client-native, collision: manual, setting_label: 'Cursor Settings'}
+        skills:
+          repo: {status: supported, resolution: first-existing, paths: ['.agents/skills', '.cursor/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: first-existing, paths: ['~/.agents/skills', '~/.cursor/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+        goal: {status: unverified, kind: unverified, commands: [], limits: {status: unverified}}
+        permissions: {status: unverified, controls: []}
+        state:
+          repo: {status: supported, path: '.cursor/state', ownership: localsetup-managed, collision: fail}
+          global: {status: supported, path: '~/.cursor/state', ownership: localsetup-managed, collision: fail}
+        insertion:
+          repo: {status: unverified, collision: unsupported, rollback: unsupported}
+          global: {status: settings-only, collision: manual, rollback: manual-settings}
+        verification: {classification: filesystem}
+        rollback: {classification: managed-entry-removal}
+        compatibility: {platform_id: cursor, order: 30, native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
+
+  - id: gemini
+    display_name: Gemini CLI
+    variants:
+      - id: gemini-cli
+        display_name: Gemini CLI
+        kind: cli
+        support_status: supported
+        research:
+          status: verified
+          checked_on: '2026-07-15'
+          sources:
+            - {kind: official_release, url: 'https://github.com/google-gemini/gemini-cli/releases/tag/v0.50.0', version: '0.50.0'}
+            - {kind: official_docs, url: 'https://geminicli.com/docs/cli/skills/'}
+            - {kind: official_docs, url: 'https://geminicli.com/docs/cli/gemini-md/'}
+        executables: [gemini]
+        policy:
+          repo: {status: supported, resolution: hierarchy, paths: ['GEMINI.md'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: single, paths: ['~/.gemini/GEMINI.md'], precedence_status: verified, ownership: client-native, collision: owned-block-only}
+        config:
+          repo: {status: supported, resolution: single, paths: ['.gemini/settings.json'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: single, paths: ['~/.gemini/settings.json'], precedence_status: verified, ownership: client-native, collision: manual}
+        skills:
+          repo: {status: supported, resolution: first-existing, paths: ['.agents/skills', '.gemini/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: first-existing, paths: ['~/.agents/skills', '~/.gemini/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+        goal: {status: unverified, kind: unverified, commands: [], limits: {status: unverified}}
+        permissions: {status: supported, controls: ['settings permissions']}
+        state:
+          repo: {status: supported, path: '.gemini/state', ownership: localsetup-managed, collision: fail}
+          global: {status: supported, path: '~/.gemini/state', ownership: localsetup-managed, collision: fail}
+        insertion:
+          repo: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
+          global: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
+        verification: {classification: host}
+        rollback: {classification: owned-block-removal}
+
+  - id: kilo
+    display_name: Kilo Code
+    variants:
+      - id: kilo-cli
+        display_name: Kilo Code CLI
+        kind: cli
+        support_status: supported
+        research:
+          status: verified
+          checked_on: '2026-07-15'
+          sources:
+            - {kind: official_release, url: 'https://github.com/Kilo-Org/kilocode/releases/tag/v7.4.7', version: '7.4.7'}
+            - {kind: official_docs, url: 'https://kilo.ai/docs/customize/skills'}
+            - {kind: official_docs, url: 'https://kilo.ai/docs/customize/custom-instructions'}
+        executables: [kilo]
+        policy:
+          repo: {status: supported, resolution: hierarchy, paths: ['AGENTS.md'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: single, paths: ['~/.config/kilo/AGENTS.md'], precedence_status: unverified, ownership: client-native, collision: owned-block-only}
+        config:
+          repo: {status: supported, resolution: first-existing, paths: ['kilo.json', 'kilo.jsonc', '.kilo/kilo.json', '.kilo/kilo.jsonc'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: first-existing, paths: ['~/.config/kilo/kilo.json', '~/.config/kilo/kilo.jsonc'], precedence_status: verified, ownership: client-native, collision: manual}
+        skills:
+          repo: {status: supported, resolution: single, paths: ['.kilo/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: single, paths: ['~/.kilo/skills'], precedence_status: verified, ownership: client-native, collision: owned-entry-only}
+        goal: {status: unverified, kind: unverified, commands: [], limits: {status: unverified}}
+        permissions: {status: supported, controls: ['agent permissions']}
+        state:
+          repo: {status: supported, path: '.kilo/state', ownership: localsetup-managed, collision: fail}
+          global: {status: supported, path: '~/.kilo/state', ownership: localsetup-managed, collision: fail}
+        insertion:
+          repo: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
+          global: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
+        verification: {classification: filesystem}
+        rollback: {classification: managed-entry-removal}
+        compatibility: {platform_id: kilo, order: 40, native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
+
+  - id: omp
+    display_name: Oh My Pi
+    variants:
+      - id: omp-cli
+        display_name: Oh My Pi CLI
+        kind: cli
+        support_status: supported
+        research:
+          status: verified
+          checked_on: '2026-07-15'
+          sources:
+            - {kind: official_release, url: 'https://github.com/can1357/oh-my-pi/releases/tag/v16.5.2', version: '16.5.2'}
+            - {kind: official_source, url: 'https://github.com/can1357/oh-my-pi/blob/v16.5.2/docs/skills.md', version: '16.5.2'}
+            - {kind: official_source, url: 'https://github.com/can1357/oh-my-pi/blob/v16.5.2/docs/context-files.md', version: '16.5.2'}
+        executables: [omp]
+        policy:
+          repo: {status: supported, resolution: first-existing, paths: ['.omp/RULES.md', '.omp/AGENTS.md'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: first-existing, paths: ['~/.omp/agent/RULES.md', '~/.omp/agent/AGENTS.md'], precedence_status: verified, ownership: client-native, collision: owned-block-only}
+        config:
+          repo: {status: supported, resolution: single, paths: ['.omp/config.yml'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: single, paths: ['~/.omp/agent/config.yml'], precedence_status: verified, ownership: client-native, collision: manual}
+        skills:
+          repo: {status: supported, resolution: single, paths: ['.omp/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: single, paths: ['~/.omp/agent/skills'], precedence_status: verified, ownership: client-native, collision: owned-entry-only}
+        goal: {status: supported, kind: slash-command, commands: ['/goal', '/guided-goal', '/loop'], limits: {status: unverified}}
+        permissions: {status: supported, controls: ['approvalMode always-ask|write|yolo', 'per-tool allow|deny|prompt']}
+        state:
+          repo: {status: supported, path: '.omp/state', ownership: localsetup-managed, collision: fail}
+          global: {status: supported, path: '~/.omp/agent/state', ownership: localsetup-managed, collision: fail}
+        insertion:
+          repo: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
+          global: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
+        verification: {classification: host}
+        rollback: {classification: owned-block-removal}
+
+  - id: openclaw
+    display_name: OpenClaw
+    variants:
+      - id: openclaw-cli
+        display_name: OpenClaw CLI
+        kind: cli
+        support_status: supported
+        research:
+          status: verified
+          checked_on: '2026-07-15'
+          sources:
+            - {kind: official_release, url: 'https://github.com/openclaw/openclaw/releases/tag/v2026.7.1', version: '2026.7.1'}
+            - {kind: official_docs, url: 'https://docs.openclaw.ai/tools/skills.md'}
+            - {kind: official_docs, url: 'https://docs.openclaw.ai/tools/goal.md'}
+        executables: [openclaw]
+        policy:
+          repo: {status: supported, resolution: configured-workspaces, paths: ['AGENTS.md'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: unsupported, resolution: unsupported, paths: [], precedence_status: unsupported, ownership: client-native, collision: unsupported}
+        config:
+          repo: {status: unverified, resolution: unverified, paths: [], precedence_status: unverified, ownership: client-native, collision: manual}
+          global: {status: supported, resolution: single, paths: ['~/.openclaw/openclaw.json'], precedence_status: verified, ownership: client-native, collision: manual}
+        skills:
+          repo: {status: supported, resolution: configured-workspaces, paths: ['.agents/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: first-existing, paths: ['~/.agents/skills', '~/.openclaw/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+        goal: {status: supported, kind: slash-command, commands: ['/goal'], limits: {status: unverified}}
+        permissions: {status: supported, controls: ['tool policy', 'sandbox policy']}
+        state:
+          repo: {status: supported, path: '.openclaw/state', ownership: localsetup-managed, collision: fail}
+          global: {status: supported, path: '~/.openclaw/state', ownership: localsetup-managed, collision: fail}
+        insertion:
+          repo: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
+          global: {status: unsupported, collision: unsupported, rollback: unsupported}
+        verification: {classification: filesystem}
+        rollback: {classification: managed-entry-removal}
+        compatibility: {platform_id: openclaw, order: 60, native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
+
+  - id: opencode
+    display_name: OpenCode
+    variants:
+      - id: opencode-cli
+        display_name: OpenCode CLI
+        kind: cli
+        support_status: supported
+        research:
+          status: verified
+          checked_on: '2026-07-15'
+          sources:
+            - {kind: official_release, url: 'https://github.com/anomalyco/opencode/releases/tag/v1.18.1', version: '1.18.1'}
+            - {kind: official_docs, url: 'https://opencode.ai/docs/skills.md'}
+            - {kind: official_docs, url: 'https://opencode.ai/docs/rules.md'}
+        executables: [opencode]
+        policy:
+          repo: {status: supported, resolution: hierarchy, paths: ['AGENTS.md'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: single, paths: ['~/.config/opencode/AGENTS.md'], precedence_status: verified, ownership: client-native, collision: owned-block-only}
+        config:
+          repo: {status: supported, resolution: first-existing, paths: ['opencode.json', '.opencode/opencode.json'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: single, paths: ['~/.config/opencode/opencode.json'], precedence_status: verified, ownership: client-native, collision: manual}
+        skills:
+          repo: {status: supported, resolution: single, paths: ['.opencode/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: single, paths: ['~/.config/opencode/skills'], precedence_status: verified, ownership: client-native, collision: owned-entry-only}
+        goal: {status: unverified, kind: unverified, commands: [], limits: {status: unverified}}
+        permissions: {status: supported, controls: ['permission rules']}
+        state:
+          repo: {status: supported, path: '.opencode/state', ownership: localsetup-managed, collision: fail}
+          global: {status: supported, path: '~/.config/opencode/state', ownership: localsetup-managed, collision: fail}
+        insertion:
+          repo: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
+          global: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
+        verification: {classification: filesystem}
+        rollback: {classification: managed-entry-removal}
+        compatibility: {platform_id: opencode, order: 50, native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}

@@ -74,7 +74,7 @@ def test_rollback_preserves_custom_adapter_entries(tmp_path: Path) -> None:
         home=home,
         dry_run=False,
     )
-    adapter = root / ".codex" / "skills"
+    adapter = root / ".agents" / "skills"
     custom = adapter / "custom-skill"
     custom.mkdir()
     (custom / "SKILL.md").write_text("# Custom\n", encoding="utf-8")
@@ -202,7 +202,8 @@ def test_adapter_update_ignores_unsafe_old_marker_package_names(tmp_path: Path) 
 
     assert outside_link.is_symlink()
     assert absolute_link.is_symlink()
-    assert (adapter / "ls-context").is_symlink()
+    assert not (adapter / "ls-context").exists()
+    assert (root / ".agents" / "skills" / "ls-context").is_symlink()
 
 
 def test_repo_path_rejects_symlink_parent_escape(tmp_path: Path) -> None:

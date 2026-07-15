@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .adapters import adapter_status, recorded_adapter_status
+from .adapters import adapter_path_state, adapter_status, legacy_global_roots, recorded_adapter_status
 from .lockfile import load_json
 from .manifests import load_pack_config, load_platforms
 from .paths import expand_user_path, legacy_target_lockfile_path, repo_path, target_lockfile_path
@@ -12,6 +12,7 @@ from .registry import load_registry
 from .repair_safety import _protected_target_reasons
 from .terminal_mode_health import terminal_mode_health
 from .workflows import validate_workflow_catalog
+from .client_registry.historical import HISTORICAL_ADAPTERS
 
 
 SUPPORTED_LEVELS = {"filesystem"}
@@ -93,10 +94,20 @@ def verify_install(
     rule_results: list[dict] = []
     for adapter in adapters:
         expected_mode = adapter.get("expected_mode", attach_mode)
-        rules = platform_rules.get(str(adapter.get("platform")), adapter.get("verify_rules", []))
+        platform_evidence = {
+            "platform": adapter.get("platform"),
+            "platforms": list(adapter.get("platforms", [adapter.get("platform")] if adapter.get("platform") else [])),
+        }
+        rules = list(adapter.get("verify_rules", []))
+        for platform_id in adapter.get("platforms", []):
+            for rule in platform_rules.get(str(platform_id), []):
+                if rule not in rules:
+                    rules.append(rule)
+        if not rules:
+            rules = platform_rules.get(str(adapter.get("platform")), [])
         if "adapter_path_exists" in rules or rules:
             ok = bool(adapter["exists"])
-            rule_results.append({"rule": "adapter_path_exists", "platform": adapter.get("platform"), "ok": ok, "path": adapter["repo_path"]})
+            rule_results.append({"rule": "adapter_path_exists", **platform_evidence, "ok": ok, "path": adapter["repo_path"]})
             if not ok:
                 issues.append(f"verify rule adapter_path_exists failed: {adapter['repo_path']}")
         if "adapter_points_to_managed_root" in rules or expected_mode != "portable":
@@ -109,12 +120,12 @@ def verify_install(
                 if expected_mode != "portable"
                 else True
             )
-            rule_results.append({"rule": "adapter_points_to_managed_root", "platform": adapter.get("platform"), "ok": ok, "path": adapter["repo_path"]})
+            rule_results.append({"rule": "adapter_points_to_managed_root", **platform_evidence, "ok": ok, "path": adapter["repo_path"]})
             if not ok:
                 issues.append(f"verify rule adapter_points_to_managed_root failed: {adapter['repo_path']}")
         if "portable_marker_valid" in rules or expected_mode == "portable":
             ok = bool(adapter["is_portable_copy"]) if expected_mode == "portable" else True
-            rule_results.append({"rule": "portable_marker_valid", "platform": adapter.get("platform"), "ok": ok, "path": adapter["repo_path"]})
+            rule_results.append({"rule": "portable_marker_valid", **platform_evidence, "ok": ok, "path": adapter["repo_path"]})
             if not ok:
                 issues.append(f"verify rule portable_marker_valid failed: {adapter['repo_path']}")
         if not adapter["exists"]:
@@ -132,7 +143,7 @@ def verify_install(
             rule_results.append(
                 {
                     "rule": "adapter_visible_packages_match_selection",
-                    "platform": adapter.get("platform"),
+                    **platform_evidence,
                     "ok": ok,
                     "visible_count": len(visible_packages),
                     "expected_count": len(expected_packages),
@@ -145,7 +156,7 @@ def verify_install(
             rule_results.append(
                 {
                     "rule": "adapter_package_targets_match_managed_root",
-                    "platform": adapter.get("platform"),
+                    **platform_evidence,
                     "ok": False,
                     "failure_count": len(integrity_failures),
                     "path": adapter["repo_path"],
@@ -156,7 +167,7 @@ def verify_install(
             rule_results.append(
                 {
                     "rule": "adapter_package_targets_match_managed_root",
-                    "platform": adapter.get("platform"),
+                    **platform_evidence,
                     "ok": True,
                     "path": adapter["repo_path"],
                 }
@@ -173,7 +184,7 @@ def verify_install(
             rule_results.append(
                 {
                     "rule": "portable_package_digests_match_global",
-                    "platform": adapter.get("platform"),
+                    **platform_evidence,
                     "ok": not digest_mismatches,
                     "mismatches": digest_mismatches,
                     "path": adapter["repo_path"],
@@ -185,13 +196,13 @@ def verify_install(
                 )
         if "namespace_ls" in rules:
             ok = all(Path(path).name.startswith("ls-") for path in [*lock.get("installed_skills", []), *lock.get("installed_workflows", [])])
-            rule_results.append({"rule": "namespace_ls", "platform": adapter.get("platform"), "ok": ok})
+            rule_results.append({"rule": "namespace_ls", **platform_evidence, "ok": ok})
             if not ok:
                 issues.append(f"verify rule namespace_ls failed: {adapter.get('platform')}")
         if "skills_visible" in rules or "skills_visible_filesystem" in rules:
             visible = [path for path in lock.get("installed_skills", []) if (Path(path) / "SKILL.md").is_file()]
             ok = len(visible) == len(lock.get("installed_skills", []))
-            rule_results.append({"rule": "skills_visible_filesystem", "platform": adapter.get("platform"), "ok": ok, "visible_count": len(visible)})
+            rule_results.append({"rule": "skills_visible_filesystem", **platform_evidence, "ok": ok, "visible_count": len(visible)})
             if not ok:
                 issues.append(f"verify rule skills_visible_filesystem failed: {adapter.get('platform')}")
 
@@ -199,6 +210,42 @@ def verify_install(
     rule_results.append({"rule": "workflow_manifest_valid", "ok": not workflow_issues, "issue_count": len(workflow_issues)})
     if workflow_issues:
         issues.extend(f"workflow manifest validation failed: {issue}" for issue in workflow_issues)
+
+    historical_transitions: dict[str, list[dict]] = {}
+    requested_platforms = set(platform_ids) if platform_ids is not None else None
+    installed_platforms = set(lock.get("platforms", []))
+    for platform_id, transitions in HISTORICAL_ADAPTERS.items():
+        rows: list[dict] = []
+        for transition in transitions:
+            historical_path = attachment_root / transition["path"]
+            state = adapter_path_state(
+                historical_path,
+                global_root,
+                known_global_roots=legacy_global_roots(home),
+                target_root=attachment_root,
+            )
+            managed_exposure = bool(
+                state["points_to_global"]
+                or state["points_to_legacy_global"]
+                or state.get("managed_visible_packages")
+            )
+            in_scope = requested_platforms is None or platform_id in requested_platforms
+            if platform_id in installed_platforms and in_scope and managed_exposure:
+                display = "Codex" if platform_id == "codex" else "OpenClaw" if platform_id == "openclaw" else platform_id
+                issues.append(
+                    f"legacy {display} adapter still exposes LocalSetup-managed entries: {historical_path}"
+                )
+            rows.append(
+                {
+                    "id": transition["id"],
+                    "path": str(historical_path),
+                    "managed_exposure": managed_exposure,
+                    "custom_entries": state.get("custom_entries", []),
+                    "recorded": lock.get("adapter_transitions", []),
+                }
+            )
+        historical_transitions[platform_id] = rows
+    legacy_codex_transition = historical_transitions["codex"][0]
 
     registry_path = Path(str(lock.get("registry_path"))) if isinstance(lock, dict) and lock.get("registry_path") else expand_user_path(pack.global_registry, home)
     if not registry_path.exists():
@@ -227,4 +274,6 @@ def verify_install(
         "adapters": adapters,
         "level": level,
         "rules": rule_results,
+        "legacy_codex_transition": legacy_codex_transition,
+        "historical_adapter_transitions": historical_transitions,
     }

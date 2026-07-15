@@ -6,6 +6,7 @@ from .aliases import collect_skill_aliases, legacy_skill_name
 from .adapters import adapter_targets, validate_platform_selectors
 from .manifests import load_pack_config, load_platforms
 from .models import DeployPlan, PlanAction
+from .client_registry.historical import HISTORICAL_ADAPTERS
 from .paths import expand_user_path
 from .selection import resolve_package_selection
 from .skills import load_skill_catalog
@@ -144,6 +145,21 @@ def build_install_plan(
     else:
         codex_agents = []
 
+    for platform_id in sorted(selected_ids):
+        for transition in HISTORICAL_ADAPTERS.get(platform_id, ()):
+            actions.append(
+                PlanAction(
+                    "retire_historical_adapter",
+                    attachment_root / transition["path"],
+                    {
+                        "id": transition["id"],
+                        "platform": platform_id,
+                        "replacement": str(attachment_root / transition["replacement"]),
+                        "global_root": str(global_root),
+                    },
+                )
+            )
+
     for target in adapter_targets(repo_root, home, platform_ids=platform_ids, target_root=attachment_root):
         actions.append(
             PlanAction(
@@ -151,9 +167,11 @@ def build_install_plan(
                 target["repo_path"],
                 {
                     "platform": target["platform"],
+                    "platforms": target["platforms"],
                     "mode": attach_mode,
                     "global_root": str(global_root),
                     "packages": repo_selection.packages,
+                    "verify_rules": target["verify_rules"],
                 },
             )
         )

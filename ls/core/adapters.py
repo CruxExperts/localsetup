@@ -38,24 +38,37 @@ def adapter_targets(
     if not selected:
         return []
     attachment_root = target_root or repo_root
-    targets: list[dict] = []
+    targets_by_path: dict[Path, dict] = {}
     for platform in load_platforms(repo_root):
         if platform.platform_id not in selected:
             continue
         for rel in platform.repo_paths:
-            targets.append(
+            physical_path = repo_path(attachment_root, rel, f"{platform.platform_id}.repo_paths")
+            target = targets_by_path.setdefault(
+                physical_path,
                 {
                     "platform": platform.platform_id,
-                    "repo_path": repo_path(attachment_root, rel, f"{platform.platform_id}.repo_paths"),
-                    "global_paths": [expand_user_path(path, home) for path in platform.global_paths],
-                    "verify_rules": platform.verify_rules,
-                    "rollback_targets": [
-                        repo_path(attachment_root, path, f"{platform.platform_id}.rollback_targets")
-                        for path in platform.rollback_targets
-                    ],
-                }
+                    "platforms": [],
+                    "repo_path": physical_path,
+                    "global_paths": [],
+                    "verify_rules": [],
+                    "rollback_targets": [],
+                },
             )
-    return targets
+            target["platforms"].append(platform.platform_id)
+            for global_path in [expand_user_path(path, home) for path in platform.global_paths]:
+                if global_path not in target["global_paths"]:
+                    target["global_paths"].append(global_path)
+            for rule in platform.verify_rules:
+                if rule not in target["verify_rules"]:
+                    target["verify_rules"].append(rule)
+            for rollback_target in [
+                repo_path(attachment_root, path, f"{platform.platform_id}.rollback_targets")
+                for path in platform.rollback_targets
+            ]:
+                if rollback_target not in target["rollback_targets"]:
+                    target["rollback_targets"].append(rollback_target)
+    return list(targets_by_path.values())
 
 
 def legacy_global_roots(home: Path) -> list[Path]:
@@ -521,6 +534,7 @@ def adapter_status(
         status.append(
             {
                 "platform": target["platform"],
+                "platforms": target["platforms"],
                 "repo_path": str(repo_path),
                 **path_state,
                 "verify_rules": target["verify_rules"],
@@ -545,11 +559,12 @@ def recorded_adapter_status(lock: dict, global_root: Path) -> list[dict]:
         statuses.append(
             {
                 "platform": item.get("platform"),
+                "platforms": item.get("platforms", [item.get("platform")] if item.get("platform") else []),
                 "repo_path": str(path),
                 "expected_mode": item.get("mode", lock.get("attach_mode", "symlink")),
                 "expected_packages": item.get("packages", lock.get("repo_packages", lock.get("adapter_packages", []))),
                 **adapter_path_state(path, expected_global, target_root=Path(str(lock.get("target_root"))).resolve(strict=False) if lock.get("target_root") else None),
-                "verify_rules": [],
+                "verify_rules": item.get("verify_rules", []),
             }
         )
     return statuses

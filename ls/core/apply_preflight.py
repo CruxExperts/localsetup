@@ -113,4 +113,40 @@ def preflight_install_plan(repo_root: Path, plan, home: Path, *, target_root: Pa
                         "entries": unsafe_entries,
                     }
                 )
+        elif action.kind == "retire_historical_adapter":
+            global_root = Path(action.details["global_root"])
+            state = adapter_path_state(
+                action.path,
+                global_root,
+                known_global_roots=legacy_global_roots(home),
+                target_root=target_root,
+            )
+            platform = str(action.details.get("platform", "unknown"))
+            if action.path.exists() and not action.path.is_symlink() and not action.path.is_dir():
+                blockers.append(
+                    {
+                        "path": str(action.path),
+                        "status_code": "unsupported_historical_adapter_node",
+                        "reason": f"historical {platform} adapter is not a supported symlink or directory",
+                    }
+                )
+            elif action.path.is_symlink() and not (
+                state["points_to_global"]
+                or state["points_to_legacy_global"]
+                or state.get("managed_visible_packages")
+            ):
+                blockers.append(
+                    {
+                        "path": str(action.path),
+                        "status_code": (
+                            "unproven_legacy_codex_symlink"
+                            if platform == "codex"
+                            else f"unproven_historical_{platform}_symlink"
+                        ),
+                        "reason": (
+                            f"historical {action.path} symlink is not proven LocalSetup-managed; "
+                            f"preserve it and review or remove it before installing the {platform} adapter"
+                        ),
+                    }
+                )
     return {"ok": not blockers, "blockers": blockers}

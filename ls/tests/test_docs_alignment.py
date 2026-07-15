@@ -5,6 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 from ls.core.provenance import provenance_report
 
 
@@ -345,6 +347,30 @@ def test_generated_artifact_registry_is_stable_across_generator_order(tmp_path: 
     second = (repo / "ls/docs/_generated/artifact-registry.json").read_text(encoding="utf-8")
 
     assert second == first
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        [sys.executable, "ls/tools/localsetup.py", "--source-root", ".", "generate-docs"],
+        [sys.executable, "ls/tools/generate_docs_artifacts.py", "--repo-root", "."],
+    ],
+)
+def test_generate_docs_stale_projection_fails_before_any_output_write(tmp_path: Path, command: list[str]) -> None:
+    repo = copy_docs_alignment_repo(tmp_path)
+    watched = [
+        repo / "ls/docs/_generated/skill_aliases.json",
+        repo / "ls/docs/SKILLS.md",
+        repo / "ls/docs/_generated/artifact-registry.json",
+    ]
+    before = {path: path.read_bytes() if path.exists() else None for path in watched}
+    (repo / "ls/config/platforms.yaml").write_text("platforms: []\n", encoding="utf-8")
+
+    completed = subprocess.run(command, cwd=repo, text=True, capture_output=True, check=False)
+
+    assert completed.returncode != 0
+    assert "client-registry generate" in completed.stderr
+    assert {path: path.read_bytes() if path.exists() else None for path in watched} == before
 
 
 def test_broad_generator_refreshes_alias_owned_docs_before_alignment(tmp_path: Path) -> None:
