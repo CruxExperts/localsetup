@@ -4,10 +4,10 @@ version: 4.2
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 130b02cf1c3e65276aae9115af2cb0238c6deb333c637bc8fae78c448f3d215b
+  source_provenance_hash: e76e8e25355753fff73e52e604f2d7e289dbd6410cdad01f4c2d5c9ca0bdbb4d
   emitter: generate-docs
-framework_version: 4.2.17
-source_commit: 15db4f521925a0add2cf1e654be65aa9ca31fd78
+framework_version: 4.2.18
+source_commit: c7fd27ace7240dddb590b32d8c7678f5831cdea7
 artifact_sha256: bb888aa7560e70d25cad04f1010e67a244d6b496500043dfd0ccc0f37bd42cb9
 ---
 # Skill Alias Map
