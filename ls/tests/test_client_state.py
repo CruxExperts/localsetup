@@ -3,11 +3,14 @@ from __future__ import annotations
 from dataclasses import replace
 from datetime import datetime, timezone
 import json
+import multiprocessing
 import os
 from pathlib import Path
 import shutil
+import socket
 import stat
 import subprocess
+import time
 
 import pytest
 
@@ -87,6 +90,51 @@ def artifact_options(content: object = b"checkpoint\n") -> dict:
 
 def exclude_bytes(repo: Path) -> bytes:
     return (repo / ".git" / "info" / "exclude").read_bytes()
+
+
+def stat_with_uid(result: os.stat_result, uid: int) -> os.stat_result:
+    fields = list(result)
+    fields[4] = uid
+    return os.stat_result(fields)
+
+
+def concurrent_allocate_worker(
+    cwd: str,
+    home: str,
+    scope: str,
+    codex_home: str | None,
+    barrier,
+    results,
+) -> None:
+    if codex_home is None:
+        os.environ.pop("CODEX_HOME", None)
+    else:
+        os.environ["CODEX_HOME"] = codex_home
+    location = resolve_state_location(
+        ROOT, "codex/codex-cli", cwd=Path(cwd), home=Path(home), scope=scope
+    )
+    recover = artifacts._recover_pending
+
+    def hold_lock(directory_fd: int) -> None:
+        time.sleep(0.1)
+        recover(directory_fd)
+
+    artifacts._recover_pending = hold_lock
+    barrier.wait()
+    try:
+        allocated = allocate_artifact(
+            location,
+            content=b"concurrent\n",
+            purpose="same-time",
+            extension="md",
+            kind="restart-artifact",
+            schema="restart-v1",
+            producer="controller",
+            now=datetime(2026, 7, 15, 12, 0, tzinfo=timezone.utc),
+        )
+        results.put(("ok", allocated["artifact"]))
+    except BaseException as exc:
+        results.put(("error", type(exc).__name__, getattr(exc, "code", None), str(exc)))
 
 
 def test_locator_selects_nested_repo_and_registry_root(tmp_path: Path) -> None:
@@ -296,6 +344,100 @@ def test_artifact_content_preflight_rejects_without_mutation(
     assert not (repo / ".codex" / "state").exists()
 
 
+@pytest.mark.parametrize(
+    ("field", "value", "code"),
+    [
+        ("agent", 1, "invalid_agent"),
+        ("purpose", "reserved-01", "invalid_purpose"),
+        ("extension", "md.exe", "invalid_extension"),
+        ("kind", "a" * 33, "invalid_kind"),
+        ("schema", "Bad", "invalid_schema"),
+        ("producer", "a" * 65, "invalid_producer"),
+        ("predecessor", 1, "invalid_predecessor"),
+        ("checkpoint", "../escape", "invalid_checkpoint"),
+        ("consumers", ("beta", "alpha"), "invalid_consumer"),
+        ("consumers", ("alpha", "alpha"), "invalid_consumer"),
+        ("consumers", ["alpha"], "invalid_consumer"),
+        ("created_at", "20260715T12000000Z", "invalid_artifact_name"),
+        ("metadata_schema", [], "invalid_metadata_schema"),
+    ],
+)
+def test_forged_prepared_request_is_revalidated_before_mutation(
+    tmp_path: Path, field: str, value: object, code: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    prepared = prepare_artifact_request(location, **artifact_options())
+    before = exclude_bytes(repo)
+    with pytest.raises(ClientStateError) as failure:
+        allocate_artifact(location, prepared=replace(prepared, **{field: value}))
+    assert failure.value.code == code
+    assert exclude_bytes(repo) == before
+    assert not (repo / ".codex" / "state").exists()
+
+
+def test_custom_metadata_schema_can_tighten_but_not_weaken_official_baseline(
+    tmp_path: Path
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    weak = tmp_path / "weak.json"
+    weak.write_text("{}\n", encoding="utf-8")
+    allocated = allocate_artifact(
+        location, metadata_schema=weak, **artifact_options()
+    )
+    metadata_path = location.root / allocated["metadata"]
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    metadata["unexpected"] = True
+    metadata_path.write_text(json.dumps(metadata, sort_keys=True) + "\n", encoding="utf-8")
+    current = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    with pytest.raises(ClientStateError) as weak_failure:
+        verify_artifact(current, allocated["artifact"], schema_path=weak)
+    assert weak_failure.value.code == "invalid_metadata"
+
+    tighter = tmp_path / "tighter.json"
+    tighter.write_text(
+        json.dumps({"type": "object", "properties": {"producer": {"const": "required"}}}),
+        encoding="utf-8",
+    )
+    clean = repository(tmp_path / "clean")
+    clean_location = resolve_state_location(
+        ROOT, "codex/codex-cli", cwd=clean, home=tmp_path / "home"
+    )
+    with pytest.raises(ClientStateError) as tight_failure:
+        prepare_artifact_request(clean_location, metadata_schema=tighter, **artifact_options())
+    assert tight_failure.value.code == "invalid_metadata"
+    assert not (clean / ".codex" / "state").exists()
+
+
+def test_prepare_rejects_string_consumers_before_mutation(tmp_path: Path) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    before = exclude_bytes(repo)
+    with pytest.raises(ClientStateError) as failure:
+        prepare_artifact_request(location, consumers="codex", **artifact_options())
+    assert failure.value.code == "invalid_consumer"
+    assert exclude_bytes(repo) == before
+    assert not (repo / ".codex" / "state").exists()
+
+
+def test_verify_rejects_noncanonical_consumer_order(tmp_path: Path) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    allocated = allocate_artifact(
+        location, consumers=["beta", "alpha"], **artifact_options()
+    )
+    metadata_path = location.root / allocated["metadata"]
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    assert metadata["consumers"] == ["alpha", "beta"]
+    metadata["consumers"] = ["beta", "alpha"]
+    metadata_path.write_text(json.dumps(metadata, sort_keys=True) + "\n", encoding="utf-8")
+    current = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    with pytest.raises(ClientStateError) as failure:
+        verify_artifact(current, allocated["artifact"], schema_path=SCHEMA)
+    assert failure.value.code == "invalid_metadata"
+
+
 @pytest.mark.parametrize("value", ["", "   ", "relative-client-home"])
 def test_codex_home_invalid_values_fail_without_cwd_state(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, value: str
@@ -411,6 +553,195 @@ def test_multicomponent_global_intermediate_uses_registered_opencode_shape(
         assert failure.value.code == "unsafe_state_path"
         assert not (outside / "state").exists()
         assert intermediate.is_symlink() if node_kind == "symlink" else intermediate.read_bytes() == b"foreign\n"
+
+
+@pytest.mark.parametrize("position", ["owner", "intermediate", "root", "pre-owner"])
+def test_global_locator_rejects_foreign_owned_managed_chain_without_mutation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, position: str
+) -> None:
+    cwd = tmp_path / "plain"
+    cwd.mkdir()
+    home = tmp_path / "home"
+    if position in {"owner", "pre-owner"}:
+        container = tmp_path / "container"
+        container.mkdir()
+        owner = container / "codex"
+        monkeypatch.setenv("CODEX_HOME", str(owner))
+        client = "codex/codex-cli"
+        if position == "owner":
+            owner.mkdir()
+            target = owner
+        else:
+            target = container
+    else:
+        state = home / ".config" / "opencode" / "state"
+        state.mkdir(parents=True)
+        owner = home
+        client = "opencode/opencode-cli"
+        target = state.parent if position == "intermediate" else state
+    original = Path.stat
+    foreign_uid = os.geteuid() + 1
+
+    def foreign(path: Path, *args, **kwargs):
+        result = original(path, *args, **kwargs)
+        return stat_with_uid(result, foreign_uid) if path == target else result
+
+    monkeypatch.setattr(Path, "stat", foreign)
+    with pytest.raises(ClientStateError) as failure:
+        resolve_state_location(ROOT, client, cwd=cwd, home=home, scope="global")
+    assert failure.value.code == "unsafe_state_path"
+    if position in {"owner", "pre-owner"}:
+        assert not (owner / "state").exists()
+    else:
+        assert list(state.iterdir()) == []
+
+
+@pytest.mark.parametrize("control", ["root-pre-owner", "system-ancestor", "repo-root"])
+def test_ownership_controls_do_not_expand_global_or_repo_policy(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, control: str
+) -> None:
+    original = Path.stat
+    if control == "repo-root":
+        repo = repository(tmp_path / "repo")
+        target = repo
+        client = "codex/codex-cli"
+        kwargs = {"cwd": repo, "home": tmp_path / "home", "scope": "repo"}
+        replacement_uid = os.geteuid() + 1
+    else:
+        cwd = tmp_path / "plain"
+        cwd.mkdir()
+        container = tmp_path / "container"
+        container.mkdir()
+        owner = container / "codex"
+        monkeypatch.setenv("CODEX_HOME", str(owner))
+        client = "codex/codex-cli"
+        kwargs = {"cwd": cwd, "home": tmp_path / "home", "scope": "global"}
+        if control == "root-pre-owner":
+            target = container
+            replacement_uid = 0
+        else:
+            target = tmp_path.parent
+            replacement_uid = os.geteuid() + 1
+
+    def controlled(path: Path, *args, **kwargs):
+        result = original(path, *args, **kwargs)
+        return stat_with_uid(result, replacement_uid) if path == target else result
+
+    monkeypatch.setattr(Path, "stat", controlled)
+    location = resolve_state_location(ROOT, client, **kwargs)
+    assert location.scope == ("repo" if control == "repo-root" else "global")
+
+
+@pytest.mark.parametrize("position", ["owner", "intermediate", "root"])
+def test_global_allocator_rechecks_live_descriptor_ownership(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, position: str
+) -> None:
+    cwd = tmp_path / "plain"
+    cwd.mkdir()
+    home = tmp_path / "home"
+    state = home / ".config" / "opencode" / "state"
+    state.mkdir(parents=True)
+    location = resolve_state_location(
+        ROOT, "opencode/opencode-cli", cwd=cwd, home=home, scope="global"
+    )
+    targets = {"owner": home, "intermediate": state.parent, "root": state}
+    target_identity = (targets[position].stat().st_dev, targets[position].stat().st_ino)
+    real_fstat = os.fstat
+
+    def foreign_descriptor(fd: int):
+        result = real_fstat(fd)
+        if (result.st_dev, result.st_ino) == target_identity:
+            return stat_with_uid(result, os.geteuid() + 1)
+        return result
+
+    monkeypatch.setattr(artifacts.os, "fstat", foreign_descriptor)
+    with pytest.raises(ClientStateError) as failure:
+        allocate_artifact(location, **artifact_options())
+    assert failure.value.code == "unsafe_state_path"
+    assert list(state.iterdir()) == []
+
+
+@pytest.mark.parametrize("operation", ["allocate", "verify"])
+def test_global_pre_owner_descriptor_uid_change_after_resolution_fails_without_mutation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, operation: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    before = exclude_bytes(repo)
+    container = tmp_path / "private-container"
+    container.mkdir()
+    owner = container / "codex-home"
+    monkeypatch.setenv("CODEX_HOME", str(owner))
+    location = resolve_state_location(
+        ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home", scope="global"
+    )
+    target_details = container.stat()
+    target_identity = (target_details.st_dev, target_details.st_ino)
+    real_fstat = os.fstat
+
+    def foreign_descriptor(fd: int):
+        result = real_fstat(fd)
+        if (result.st_dev, result.st_ino) == target_identity:
+            return stat_with_uid(result, os.geteuid() + 1)
+        return result
+
+    monkeypatch.setattr(artifacts.os, "fstat", foreign_descriptor)
+    with pytest.raises(ClientStateError) as failure:
+        if operation == "allocate":
+            allocate_artifact(location, **artifact_options())
+        else:
+            verify_artifact(
+                location,
+                "codex-cli-20260715T120000000Z-w18-probe.md",
+                schema_path=SCHEMA,
+            )
+    assert failure.value.code == "unsafe_state_path"
+    assert exclude_bytes(repo) == before
+    assert not owner.exists()
+    assert list(container.iterdir()) == []
+
+
+@pytest.mark.parametrize(
+    "control", ["boundary-root", "boundary-euid", "foreign-unrelated", "repo-root"]
+)
+def test_live_pre_owner_descriptor_check_preserves_ownership_boundaries(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, control: str
+) -> None:
+    home = tmp_path / "home"
+    if control == "repo-root":
+        cwd = repository(tmp_path / "repo")
+        location = resolve_state_location(ROOT, "codex/codex-cli", cwd=cwd, home=home)
+        target = cwd
+        replacement_uid = os.geteuid() + 1
+    else:
+        cwd = tmp_path / "plain"
+        cwd.mkdir()
+        container = tmp_path / "container"
+        container.mkdir()
+        owner = container / "codex"
+        monkeypatch.setenv("CODEX_HOME", str(owner))
+        if control == "foreign-unrelated":
+            owner.mkdir()
+            target = tmp_path.parent
+            replacement_uid = os.geteuid() + 1
+        else:
+            target = container
+            replacement_uid = 0 if control == "boundary-root" else os.geteuid()
+        location = resolve_state_location(
+            ROOT, "codex/codex-cli", cwd=cwd, home=home, scope="global"
+        )
+    target_details = target.stat()
+    target_identity = (target_details.st_dev, target_details.st_ino)
+    real_fstat = os.fstat
+
+    def controlled_descriptor(fd: int):
+        result = real_fstat(fd)
+        if (result.st_dev, result.st_ino) == target_identity:
+            return stat_with_uid(result, replacement_uid)
+        return result
+
+    monkeypatch.setattr(artifacts.os, "fstat", controlled_descriptor)
+    allocated = allocate_artifact(location, **artifact_options())
+    assert (location.root / allocated["artifact"]).is_file()
 
 
 @pytest.mark.parametrize("operation", ["allocate", "verify"])
@@ -558,6 +889,69 @@ def test_artifact_allocation_is_exclusive_deterministic_and_private(tmp_path: Pa
     assert first["record"]["repository"]["root"] == "."
     assert first["record"]["content"]["sha256"]
     assert first["record"]["consumers"] == ["codex"]
+
+
+@pytest.mark.parametrize("scope", ["repo", "global"])
+def test_two_process_fresh_root_allocation_waits_and_uses_deterministic_suffix(
+    tmp_path: Path, scope: str
+) -> None:
+    context = multiprocessing.get_context("fork")
+    if scope == "repo":
+        cwd = repository(tmp_path / "repo")
+        home = tmp_path / "home"
+        codex_home = None
+        state = cwd / ".codex" / "state"
+    else:
+        cwd = tmp_path / "plain"
+        cwd.mkdir()
+        home = tmp_path / "home"
+        codex_owner = tmp_path / "codex-home"
+        codex_owner.mkdir()
+        codex_home = str(codex_owner)
+        state = codex_owner / "state"
+    barrier = context.Barrier(2)
+    results = context.Queue()
+    processes = [
+        context.Process(
+            target=concurrent_allocate_worker,
+            args=(str(cwd), str(home), scope, codex_home, barrier, results),
+        )
+        for _index in range(2)
+    ]
+    for process in processes:
+        process.start()
+    for process in processes:
+        process.join(timeout=5)
+        assert process.exitcode == 0
+    outcomes = [results.get(timeout=1) for _index in range(2)]
+    assert all(outcome[0] == "ok" for outcome in outcomes), outcomes
+    assert sorted(outcome[1] for outcome in outcomes) == [
+        "codex-cli-20260715T120000000Z-same-time-01.md",
+        "codex-cli-20260715T120000000Z-same-time.md",
+    ]
+    assert len(list(state.glob("*.meta.json"))) == 2
+    assert not list(state.glob(".localsetup-pending-*"))
+
+
+def test_allocation_lock_retry_timeout_is_bounded_and_typed(
+    monkeypatch: pytest.MonkeyPatch
+) -> None:
+    attempts = 0
+    sleeps: list[float] = []
+    clock = iter([0.0, 0.01, 0.02, 0.03])
+
+    def busy(*_args) -> None:
+        nonlocal attempts
+        attempts += 1
+        raise BlockingIOError
+
+    monkeypatch.setattr(artifacts.fcntl, "flock", busy)
+    monkeypatch.setattr(artifacts.time, "monotonic", lambda: next(clock))
+    monkeypatch.setattr(artifacts.time, "sleep", sleeps.append)
+    with pytest.raises(ClientStateError) as failure:
+        artifacts._acquire_allocation_lock(1, timeout=0.02, poll=0.01)
+    assert failure.value.code == "artifact_locked"
+    assert attempts == 2 and sleeps == [0.01]
 
 
 @pytest.mark.parametrize("field", ["predecessor", "checkpoint"])
@@ -806,7 +1200,9 @@ def test_metadata_paths_reject_non_normalized_posix_grammar(
     assert failure.value.code == f"invalid_{field}"
 
 
-@pytest.mark.parametrize("schema_kind", ["missing", "directory", "symlink", "unreadable"])
+@pytest.mark.parametrize(
+    "schema_kind", ["missing", "directory", "symlink", "unreadable", "fifo", "socket", "device"]
+)
 def test_metadata_schema_fails_closed(tmp_path: Path, schema_kind: str) -> None:
     repo = repository(tmp_path / "repo")
     location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
@@ -818,12 +1214,51 @@ def test_metadata_schema_fails_closed(tmp_path: Path, schema_kind: str) -> None:
     elif schema_kind == "unreadable":
         schema.write_text("{}\n", encoding="utf-8")
         schema.chmod(0)
+    elif schema_kind == "fifo":
+        os.mkfifo(schema)
+    elif schema_kind == "socket":
+        handle = socket.socket(socket.AF_UNIX)
+        handle.bind(str(schema))
+        handle.close()
+    elif schema_kind == "device":
+        schema = Path("/dev/null")
+    started = time.monotonic()
     with pytest.raises(ClientStateError, match="schema"):
         prepare_artifact_request(
             location, content=b"", purpose="handoff", extension="md",
             kind="restart-artifact", schema="restart-v1", producer="controller",
             metadata_schema=schema,
         )
+    assert time.monotonic() - started < 1
+
+
+@pytest.mark.parametrize("schema_kind", ["directory", "symlink", "fifo", "socket", "device"])
+def test_verify_schema_type_fails_promptly_without_state_residue(
+    tmp_path: Path, schema_kind: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    allocated = allocate_artifact(location, **artifact_options())
+    schema = tmp_path / "verify-schema"
+    if schema_kind == "directory":
+        schema.mkdir()
+    elif schema_kind == "symlink":
+        schema.symlink_to(SCHEMA)
+    elif schema_kind == "fifo":
+        os.mkfifo(schema)
+    elif schema_kind == "socket":
+        handle = socket.socket(socket.AF_UNIX)
+        handle.bind(str(schema))
+        handle.close()
+    else:
+        schema = Path("/dev/null")
+    before = sorted(path.name for path in location.root.iterdir())
+    started = time.monotonic()
+    with pytest.raises(ClientStateError) as failure:
+        verify_artifact(location, allocated["artifact"], schema_path=schema)
+    assert failure.value.code == "invalid_metadata_schema"
+    assert time.monotonic() - started < 1
+    assert sorted(path.name for path in location.root.iterdir()) == before
 
 
 def test_same_key_registry_drift_invalidates_location(tmp_path: Path) -> None:
@@ -1127,6 +1562,7 @@ def test_directory_fsync_failure_is_ambiguous_and_next_run_recovers(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     repo = repository(tmp_path / "repo")
+    (repo / ".codex" / "state").mkdir(parents=True)
     location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
     original = os.fsync
     directory_calls = 0
@@ -1159,6 +1595,60 @@ def test_directory_fsync_failure_is_ambiguous_and_next_run_recovers(
     assert recovered["artifact"].endswith("-01.md")
     assert list(state.glob(".localsetup-pending-*")) == []
     assert (state / "codex-cli-20260715T120000000Z-recovery.md").exists()
+
+
+def test_created_directory_fsyncs_child_then_open_parent_at_each_level(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    base = tmp_path / "base"
+    base.mkdir()
+    target = base / "one" / "two"
+    real_fsync = os.fsync
+    events: list[tuple[int, int]] = []
+
+    def record(fd: int) -> None:
+        details = os.fstat(fd)
+        events.append((details.st_dev, details.st_ino))
+        real_fsync(fd)
+
+    monkeypatch.setattr(artifacts.os, "fsync", record)
+    fd = artifacts._open_absolute_directory(target, create=True)
+    os.close(fd)
+    assert events == [
+        (target.parent.stat().st_dev, target.parent.stat().st_ino),
+        (base.stat().st_dev, base.stat().st_ino),
+        (target.stat().st_dev, target.stat().st_ino),
+        (target.parent.stat().st_dev, target.parent.stat().st_ino),
+    ]
+
+
+@pytest.mark.parametrize("failure_call", [1, 2, 3, 4])
+def test_created_directory_fsync_failure_is_ambiguous_and_next_run_safe(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure_call: int
+) -> None:
+    base = tmp_path / "base"
+    base.mkdir()
+    target = base / "one" / "two"
+    real_fsync = os.fsync
+    calls = 0
+
+    def fail_selected(fd: int) -> None:
+        nonlocal calls
+        calls += 1
+        if calls == failure_call:
+            raise OSError("injected directory durability failure")
+        real_fsync(fd)
+
+    monkeypatch.setattr(artifacts.os, "fsync", fail_selected)
+    with pytest.raises(ClientStateError) as failure:
+        artifacts._open_absolute_directory(target, create=True)
+    assert failure.value.code == "artifact_commit_ambiguous"
+    monkeypatch.setattr(artifacts.os, "fsync", real_fsync)
+    fd = artifacts._open_absolute_directory(target, create=True)
+    try:
+        assert os.fstat(fd).st_uid == os.geteuid()
+    finally:
+        os.close(fd)
 
 
 def test_verify_rejects_root_swap_after_descriptor_reads(

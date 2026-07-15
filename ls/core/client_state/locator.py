@@ -145,6 +145,53 @@ def _assert_safe_state_path(anchor: Path, target: Path) -> None:
             )
 
 
+def _assert_global_ownership(owner: Path, target: Path) -> None:
+    expected_uid = os.geteuid()
+    try:
+        relative = target.relative_to(owner)
+    except ValueError as exc:
+        raise ClientStateError("client state escapes its owning root", code="unsafe_state_path") from exc
+    managed = (owner, *(owner / Path(*relative.parts[:index]) for index in range(1, len(relative.parts) + 1)))
+    owner_exists = False
+    for index, current in enumerate(managed):
+        try:
+            details = current.stat(follow_symlinks=False)
+        except FileNotFoundError:
+            continue
+        except OSError as exc:
+            raise ClientStateError(
+                "global client state ownership is unavailable", code="unsafe_state_path"
+            ) from exc
+        if index == 0:
+            owner_exists = True
+        if details.st_uid != expected_uid:
+            raise ClientStateError(
+                "global client state path has an unexpected owner", code="unsafe_state_path"
+            )
+    if owner_exists:
+        return
+    ancestor = owner.parent
+    while True:
+        try:
+            details = ancestor.stat(follow_symlinks=False)
+            break
+        except FileNotFoundError:
+            parent = ancestor.parent
+            if parent == ancestor:
+                raise ClientStateError(
+                    "global client state ownership is unavailable", code="unsafe_state_path"
+                )
+            ancestor = parent
+        except OSError as exc:
+            raise ClientStateError(
+                "global client state ownership is unavailable", code="unsafe_state_path"
+            ) from exc
+    if details.st_uid not in {0, expected_uid}:
+        raise ClientStateError(
+            "global client state ancestor has an unexpected owner", code="unsafe_state_path"
+        )
+
+
 def _identity(path: Path) -> tuple[int, int] | None:
     try:
         result = path.stat(follow_symlinks=False)
@@ -190,6 +237,7 @@ def _global_path(raw: str, *, home: Path) -> tuple[Path, str, Path]:
         raise ClientStateError("global client state must be home- or CODEX_HOME-scoped")
     target = Path(os.path.abspath(target))
     _assert_safe_state_path(owner, target)
+    _assert_global_ownership(owner, target)
     return target, raw, owner
 
 
@@ -291,8 +339,14 @@ def refresh_state_location(location: StateLocation, *, allow_created_roots: bool
     )
     if allow_created_roots:
         identities_match = (
-            location.owner_identity in {None, current.owner_identity}
-            and location.root_identity in {None, current.root_identity}
+            (
+                current.owner_identity == location.owner_identity
+                or (location.owner_identity is None and current.owner_identity is not None)
+            )
+            and (
+                current.root_identity == location.root_identity
+                or (location.root_identity is None and current.root_identity is not None)
+            )
         )
     if (
         any(getattr(current, field) != getattr(location, field) for field in stable)

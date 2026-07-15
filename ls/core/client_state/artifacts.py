@@ -9,6 +9,7 @@ import os
 from pathlib import Path, PurePosixPath
 import re
 import stat
+import time
 from typing import Iterable
 
 from .locator import refresh_state_location
@@ -27,6 +28,8 @@ _MAX_RELATIVE_PATH_LENGTH = 512
 _PENDING_PREFIX = ".localsetup-pending-"
 _PENDING_SUFFIX = ".json"
 _ALLOCATION_LOCK = ".localsetup-artifacts.lock"
+_ALLOCATION_LOCK_TIMEOUT_SECONDS = 0.5
+_ALLOCATION_LOCK_POLL_SECONDS = 0.01
 
 
 @dataclass(frozen=True)
@@ -64,7 +67,7 @@ class OwnedEntry:
 
 
 def _slug(value: str, label: str, maximum: int) -> str:
-    if not (1 <= len(value) <= maximum) or not _SLUG.fullmatch(value):
+    if not isinstance(value, str) or not (1 <= len(value) <= maximum) or not _SLUG.fullmatch(value):
         raise ClientStateError(
             f"{label} must be lowercase kebab-case and at most {maximum} characters",
             code=f"invalid_{label}",
@@ -83,6 +86,10 @@ def _validate_content(content: bytes) -> bytes:
 def _relative(value: str | None, label: str) -> str | None:
     if value is None:
         return None
+    if not isinstance(value, str):
+        raise ClientStateError(
+            f"{label} must be a normalized POSIX-relative path", code=f"invalid_{label}"
+        )
     if (
         not value
         or len(value) > _MAX_RELATIVE_PATH_LENGTH
@@ -130,8 +137,9 @@ def _metadata_payload(
             "ref": location.git.ref,
             "root": ".",
         }
-    if _schema_issues(metadata, request.metadata_schema):
-        raise ClientStateError("artifact metadata failed schema validation", code="invalid_metadata")
+    for metadata_schema in _request_schemas(request):
+        if _schema_issues(metadata, metadata_schema):
+            raise ClientStateError("artifact metadata failed schema validation", code="invalid_metadata")
     encoded = (json.dumps(metadata, indent=2, sort_keys=True) + "\n").encode("utf-8")
     if len(encoded) > _MAX_METADATA_BYTES:
         raise ClientStateError(
@@ -141,8 +149,8 @@ def _metadata_payload(
 
 
 def preflight_artifact_request(location: StateLocation, request: ArtifactRequest) -> None:
-    _validate_content(request.content)
-    current = refresh_state_location(location)
+    _validate_artifact_request(request)
+    current = refresh_state_location(location, allow_created_roots=True)
     collision_safe_name = (
         f"{request.agent}-{request.created_at}-{request.purpose}-99.{request.extension}"
     )
@@ -158,7 +166,7 @@ def _timestamp(now: datetime) -> str:
 
 
 def _validate_timestamp(value: str) -> None:
-    if not _STAMP.fullmatch(value):
+    if not isinstance(value, str) or not _STAMP.fullmatch(value):
         raise ClientStateError("artifact timestamp is malformed", code="invalid_artifact_name")
     try:
         datetime.strptime(value[:15] + value[15:18] + "000Z", "%Y%m%dT%H%M%S%fZ")
@@ -200,7 +208,10 @@ def parse_artifact_name(value: str) -> ParsedArtifactName:
 
 def _load_schema_file(path: Path) -> dict:
     try:
-        fd = os.open(path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
+        fd = os.open(
+            path,
+            os.O_RDONLY | getattr(os, "O_NONBLOCK", 0) | getattr(os, "O_NOFOLLOW", 0),
+        )
     except OSError as exc:
         raise ClientStateError("artifact metadata schema is unavailable", code="invalid_metadata_schema") from exc
     try:
@@ -223,10 +234,54 @@ def _load_schema_file(path: Path) -> dict:
 
 def _schema_issues(payload: dict, schema: dict) -> list[str]:
     try:
-        from jsonschema import Draft202012Validator
+        from jsonschema import Draft202012Validator, exceptions
     except ImportError as exc:
         raise ClientStateError("JSON schema validation is unavailable", code="invalid_metadata_schema") from exc
+    try:
+        Draft202012Validator.check_schema(schema)
+    except exceptions.SchemaError as exc:
+        raise ClientStateError("artifact metadata schema is invalid", code="invalid_metadata_schema") from exc
     return [error.message for error in sorted(Draft202012Validator(schema).iter_errors(payload), key=lambda item: list(item.path))]
+
+
+def _official_schema_path() -> Path:
+    return Path(__file__).resolve().parents[2] / "config" / "client-state-artifact.schema.json"
+
+
+def _request_schemas(request: ArtifactRequest) -> tuple[dict, ...]:
+    if not isinstance(request.metadata_schema, dict):
+        raise ClientStateError("artifact metadata schema must be a JSON object", code="invalid_metadata_schema")
+    official = _load_schema_file(_official_schema_path())
+    _schema_issues({}, official)
+    _schema_issues({}, request.metadata_schema)
+    return (official,) if request.metadata_schema == official else (official, request.metadata_schema)
+
+
+def _validate_artifact_request(request: ArtifactRequest) -> ArtifactRequest:
+    if not isinstance(request, ArtifactRequest):
+        raise ClientStateError("prepared artifact request is invalid", code="invalid_metadata")
+    _validate_content(request.content)
+    _slug(request.agent, "agent", 48)
+    _slug(request.purpose, "purpose", 64)
+    if re.search(r"-[0-9]{2}$", request.purpose):
+        raise ClientStateError("purpose must not end in a collision suffix", code="invalid_purpose")
+    if not isinstance(request.extension, str) or not _EXTENSION.fullmatch(request.extension):
+        raise ClientStateError(
+            "extension must be 1-10 lowercase alphanumeric characters", code="invalid_extension"
+        )
+    _slug(request.kind, "kind", 32)
+    _slug(request.schema, "schema", 64)
+    _slug(request.producer, "producer", 64)
+    _relative(request.predecessor, "predecessor")
+    _relative(request.checkpoint, "checkpoint")
+    if not isinstance(request.consumers, tuple):
+        raise ClientStateError("consumers must be a canonical sorted tuple", code="invalid_consumer")
+    canonical_consumers = tuple(sorted({_slug(item, "consumer", 64) for item in request.consumers}))
+    if request.consumers != canonical_consumers:
+        raise ClientStateError("consumers must be sorted and unique", code="invalid_consumer")
+    _validate_timestamp(request.created_at)
+    _request_schemas(request)
+    return request
 
 
 def prepare_artifact_request(
@@ -246,15 +301,17 @@ def prepare_artifact_request(
     metadata_schema: Path | None = None,
 ) -> ArtifactRequest:
     content = _validate_content(content)
+    if isinstance(consumers, (str, bytes)):
+        raise ClientStateError("consumers must be an iterable of slugs", code="invalid_consumer")
     resolved_agent = _slug(agent or location.client.split("/", 1)[1], "agent", 48)
     purpose = _slug(purpose, "purpose", 64)
     if re.search(r"-[0-9]{2}$", purpose):
         raise ClientStateError("purpose must not end in a collision suffix", code="invalid_purpose")
     if not _EXTENSION.fullmatch(extension):
         raise ClientStateError("extension must be 1-10 lowercase alphanumeric characters", code="invalid_extension")
-    schema_path = metadata_schema or Path(__file__).resolve().parents[2] / "config" / "client-state-artifact.schema.json"
+    schema_path = metadata_schema or _official_schema_path()
     schema_payload = _load_schema_file(schema_path)
-    return ArtifactRequest(
+    request = ArtifactRequest(
         content=content,
         purpose=purpose,
         extension=extension,
@@ -268,23 +325,123 @@ def prepare_artifact_request(
         created_at=_timestamp(now or datetime.now(timezone.utc)),
         metadata_schema=schema_payload,
     )
+    _validate_artifact_request(request)
+    collision_safe_name = f"{request.agent}-{request.created_at}-{request.purpose}-99.{request.extension}"
+    parse_artifact_name(collision_safe_name)
+    _metadata_payload(location, request, collision_safe_name)
+    return request
 
 
-def _open_absolute_directory(path: Path, *, create: bool) -> int:
+def _is_managed_global_component(path: Path, owner_root: Path | None) -> bool:
+    if owner_root is None:
+        return False
+    try:
+        path.relative_to(owner_root)
+    except ValueError:
+        return False
+    return True
+
+
+def _nearest_existing_pre_owner(owner_root: Path) -> Path | None:
+    current = owner_root
+    while True:
+        try:
+            current.stat(follow_symlinks=False)
+        except FileNotFoundError:
+            parent = current.parent
+            if parent == current:
+                raise ClientStateError(
+                    "global client state ownership boundary is unavailable",
+                    code="unsafe_state_path",
+                )
+            current = parent
+            continue
+        except OSError as exc:
+            raise ClientStateError(
+                "global client state ownership boundary is unavailable",
+                code="unsafe_state_path",
+            ) from exc
+        return None if current == owner_root else current
+
+
+def _created_directory(parent_fd: int, name: str) -> int:
+    os.mkdir(name, 0o700, dir_fd=parent_fd)
+    child_fd: int | None = None
+    try:
+        os.chmod(name, 0o700, dir_fd=parent_fd, follow_symlinks=False)
+        child_fd = os.open(name, _DIRECTORY_FLAGS, dir_fd=parent_fd)
+        os.fchmod(child_fd, 0o700)
+        details = os.fstat(child_fd)
+        if not stat.S_ISDIR(details.st_mode) or details.st_uid != os.geteuid():
+            raise ClientStateError("new client state directory is unsafe", code="unsafe_state_path")
+        os.fsync(child_fd)
+        os.fsync(parent_fd)
+        return child_fd
+    except Exception as exc:
+        if child_fd is not None:
+            os.close(child_fd)
+        raise ClientStateError(
+            "client state directory creation durability is ambiguous",
+            code="artifact_commit_ambiguous",
+        ) from exc
+    except BaseException:
+        if child_fd is not None:
+            os.close(child_fd)
+        raise
+
+
+def _open_absolute_directory(
+    path: Path,
+    *,
+    create: bool,
+    owner_root: Path | None = None,
+    pre_owner_root: Path | None = None,
+) -> int:
     if not path.is_absolute():
         raise ClientStateError("client state path is not absolute", code="unsafe_state_path")
+    if pre_owner_root is not None:
+        if owner_root is None or not pre_owner_root.is_absolute():
+            raise ClientStateError("global ownership boundary is invalid", code="unsafe_state_path")
+        try:
+            owner_root.relative_to(pre_owner_root)
+        except ValueError as exc:
+            raise ClientStateError("global ownership boundary is invalid", code="unsafe_state_path") from exc
     fd = os.open("/", _DIRECTORY_FLAGS)
+    current = Path(path.anchor)
     try:
+        if current == pre_owner_root and os.fstat(fd).st_uid not in {0, os.geteuid()}:
+            raise ClientStateError(
+                "global client state ancestor has an unexpected owner",
+                code="unsafe_state_path",
+            )
         for part in path.parts[1:]:
+            current /= part
             try:
                 next_fd = os.open(part, _DIRECTORY_FLAGS, dir_fd=fd)
             except FileNotFoundError:
                 if not create:
                     raise
-                os.mkdir(part, 0o700, dir_fd=fd)
-                os.chmod(part, 0o700, dir_fd=fd, follow_symlinks=False)
-                next_fd = os.open(part, _DIRECTORY_FLAGS, dir_fd=fd)
-                os.fchmod(next_fd, 0o700)
+                if current == pre_owner_root:
+                    raise ClientStateError(
+                        "global ownership boundary changed during traversal",
+                        code="unsafe_state_path",
+                    )
+                try:
+                    next_fd = _created_directory(fd, part)
+                except FileExistsError:
+                    next_fd = os.open(part, _DIRECTORY_FLAGS, dir_fd=fd)
+            details = os.fstat(next_fd)
+            if current == pre_owner_root and details.st_uid not in {0, os.geteuid()}:
+                os.close(next_fd)
+                raise ClientStateError(
+                    "global client state ancestor has an unexpected owner",
+                    code="unsafe_state_path",
+                )
+            if _is_managed_global_component(current, owner_root) and details.st_uid != os.geteuid():
+                os.close(next_fd)
+                raise ClientStateError(
+                    "global client state path has an unexpected owner", code="unsafe_state_path"
+                )
             os.close(fd)
             fd = next_fd
         details = os.fstat(fd)
@@ -520,6 +677,30 @@ def _open_owned_lock(directory_fd: int, name: str) -> int:
     return fd
 
 
+def _acquire_allocation_lock(
+    lock_fd: int,
+    *,
+    timeout: float = _ALLOCATION_LOCK_TIMEOUT_SECONDS,
+    poll: float = _ALLOCATION_LOCK_POLL_SECONDS,
+) -> None:
+    deadline = time.monotonic() + timeout
+    while True:
+        try:
+            fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            return
+        except BlockingIOError as exc:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise ClientStateError(
+                    "artifact allocation lock wait timed out", code="artifact_locked"
+                ) from exc
+            time.sleep(min(poll, remaining))
+        except OSError as exc:
+            raise ClientStateError(
+                "artifact allocation lock is unavailable", code="artifact_locked"
+            ) from exc
+
+
 def _bound_location(location: StateLocation, directory_fd: int) -> StateLocation:
     current = refresh_state_location(location, allow_created_roots=True)
     identity = os.fstat(directory_fd)
@@ -528,12 +709,26 @@ def _bound_location(location: StateLocation, directory_fd: int) -> StateLocation
     return current
 
 
+def _open_location_directory(location: StateLocation, *, create: bool) -> int:
+    if location.scope == "global":
+        if location.owner_root is None:
+            raise ClientStateError("global client state owner is unavailable", code="unsafe_state_path")
+        pre_owner_root = _nearest_existing_pre_owner(location.owner_root)
+        return _open_absolute_directory(
+            location.root,
+            create=create,
+            owner_root=location.owner_root,
+            pre_owner_root=pre_owner_root,
+        )
+    return _open_absolute_directory(location.root, create=create)
+
+
 def allocate_artifact(location: StateLocation, *, prepared: ArtifactRequest | None = None, **kwargs) -> dict:
     request = prepared or prepare_artifact_request(location, **kwargs)
     preflight_artifact_request(location, request)
-    refresh_state_location(location)
+    refresh_state_location(location, allow_created_roots=True)
     try:
-        directory_fd = _open_absolute_directory(location.root, create=True)
+        directory_fd = _open_location_directory(location, create=True)
     except OSError as exc:
         raise ClientStateError("client state root is unsafe or unavailable", code="unsafe_state_path") from exc
     lock_fd: int | None = None
@@ -541,7 +736,7 @@ def allocate_artifact(location: StateLocation, *, prepared: ArtifactRequest | No
         current = _bound_location(location, directory_fd)
         try:
             lock_fd = _open_owned_lock(directory_fd, _ALLOCATION_LOCK)
-            fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            _acquire_allocation_lock(lock_fd)
         except OSError as exc:
             raise ClientStateError("artifact allocation lock is unavailable", code="artifact_locked") from exc
         current = _bound_location(location, directory_fd)
@@ -636,10 +831,14 @@ def allocate_artifact(location: StateLocation, *, prepared: ArtifactRequest | No
 
 def verify_artifact(location: StateLocation, artifact_name: str, *, schema_path: Path) -> dict:
     parsed = parse_artifact_name(artifact_name)
+    official_schema = _load_schema_file(_official_schema_path())
     metadata_schema = _load_schema_file(schema_path)
+    metadata_schemas = (
+        (official_schema,) if metadata_schema == official_schema else (official_schema, metadata_schema)
+    )
     refresh_state_location(location, allow_created_roots=True)
     try:
-        directory_fd = _open_absolute_directory(location.root, create=False)
+        directory_fd = _open_location_directory(location, create=False)
     except OSError as exc:
         raise ClientStateError("client state root is unsafe or unavailable", code="unsafe_state_path") from exc
     try:
@@ -671,9 +870,16 @@ def verify_artifact(location: StateLocation, artifact_name: str, *, schema_path:
         os.close(directory_fd)
     if not isinstance(metadata, dict):
         raise ClientStateError("artifact metadata must be an object", code="invalid_metadata")
-    issues = _schema_issues(metadata, metadata_schema)
-    if issues:
-        raise ClientStateError("artifact metadata failed schema validation", code="invalid_metadata")
+    for active_schema in metadata_schemas:
+        if _schema_issues(metadata, active_schema):
+            raise ClientStateError("artifact metadata failed schema validation", code="invalid_metadata")
+    consumers = metadata.get("consumers")
+    if (
+        not isinstance(consumers, list)
+        or any(not isinstance(item, str) for item in consumers)
+        or consumers != sorted(set(consumers))
+    ):
+        raise ClientStateError("artifact consumers are not canonical", code="invalid_metadata")
     failures: list[str] = []
     if metadata.get("artifact") != artifact_name:
         failures.append("artifact path mismatch")
@@ -703,7 +909,7 @@ def verify_artifact(location: StateLocation, artifact_name: str, *, schema_path:
         failures.append("global artifact contains a repository snapshot")
     refresh_state_location(location, allow_created_roots=True)
     try:
-        final_fd = _open_absolute_directory(location.root, create=False)
+        final_fd = _open_location_directory(location, create=False)
     except OSError as exc:
         raise ClientStateError("client state root is unsafe or unavailable", code="unsafe_state_path") from exc
     try:

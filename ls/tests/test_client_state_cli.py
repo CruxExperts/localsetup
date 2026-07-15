@@ -6,11 +6,12 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import time
 
 import pytest
 
 from ls.core.cli import main
-from ls.core.client_state import locator
+from ls.core.client_state import artifacts, locator
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -47,6 +48,12 @@ STATE_COMPONENT_CASES = (
     ("global-intermediate", "global", "opencode/opencode-cli"),
     ("global-final", "global", "opencode/opencode-cli"),
 )
+
+
+def stat_with_uid(result: os.stat_result, uid: int) -> os.stat_result:
+    fields = list(result)
+    fields[4] = uid
+    return os.stat_result(fields)
 
 
 def test_state_path_is_read_only_until_apply(tmp_path: Path, capsys) -> None:
@@ -229,6 +236,170 @@ def test_state_cli_registered_component_matrix_is_safe_and_deterministic(
         assert list(state_root.iterdir()) == []
         if repo_exclude is not None:
             assert repo_exclude.read_bytes() == exclude_before
+
+
+@pytest.mark.parametrize("action", ["path", "allocate", "verify"])
+@pytest.mark.parametrize("position", ["owner", "intermediate", "root"])
+def test_global_cli_foreign_locator_ownership_is_typed_private_and_non_mutating(
+    tmp_path: Path,
+    capsys,
+    monkeypatch: pytest.MonkeyPatch,
+    action: str,
+    position: str,
+) -> None:
+    plain = tmp_path / "plain"
+    plain.mkdir()
+    home = tmp_path / "private-home"
+    if position == "owner":
+        owner = tmp_path / "private-codex-home"
+        owner.mkdir()
+        monkeypatch.setenv("CODEX_HOME", str(owner))
+        client = "codex/codex-cli"
+        state = owner / "state"
+        target = owner
+    else:
+        state = home / ".config" / "opencode" / "state"
+        state.mkdir(parents=True)
+        client = "opencode/opencode-cli"
+        target = state.parent if position == "intermediate" else state
+    original = Path.stat
+
+    def foreign(path: Path, *args, **kwargs):
+        result = original(path, *args, **kwargs)
+        return stat_with_uid(result, os.geteuid() + 1) if path == target else result
+
+    monkeypatch.setattr(Path, "stat", foreign)
+    args = [
+        "--home", str(home), "state", action, "--client", client,
+        "--scope", "global", "--directory", str(plain),
+    ]
+    if action == "allocate":
+        args.extend(allocation_args())
+    elif action == "verify":
+        args.extend(["--artifact", "controller-20260715T000000000Z-handoff.md"])
+    code, payload = invoke(capsys, *args)
+    encoded = json.dumps(payload, sort_keys=True)
+    assert code == 2 and payload["error"]["code"] == "unsafe_state_path"
+    assert str(target) not in encoded and "Traceback" not in encoded
+    assert not state.exists() if position == "owner" else list(state.iterdir()) == []
+
+
+@pytest.mark.parametrize("position", ["owner", "intermediate", "root"])
+def test_global_cli_allocator_rechecks_descriptor_ownership(
+    tmp_path: Path,
+    capsys,
+    monkeypatch: pytest.MonkeyPatch,
+    position: str,
+) -> None:
+    plain = tmp_path / "plain"
+    plain.mkdir()
+    home = tmp_path / "home"
+    state = home / ".config" / "opencode" / "state"
+    state.mkdir(parents=True)
+    targets = {"owner": home, "intermediate": state.parent, "root": state}
+    target_details = targets[position].stat()
+    target_identity = (target_details.st_dev, target_details.st_ino)
+    real_fstat = os.fstat
+
+    def foreign_descriptor(fd: int):
+        result = real_fstat(fd)
+        if (result.st_dev, result.st_ino) == target_identity:
+            return stat_with_uid(result, os.geteuid() + 1)
+        return result
+
+    monkeypatch.setattr(artifacts.os, "fstat", foreign_descriptor)
+    code, payload = invoke(
+        capsys,
+        "--home", str(home), "state", "allocate", "--client", "opencode/opencode-cli",
+        "--scope", "global", "--directory", str(plain), *allocation_args(),
+    )
+    assert code == 2 and payload["error"]["code"] == "unsafe_state_path"
+    assert list(state.iterdir()) == []
+
+
+@pytest.mark.parametrize("action", ["allocate", "verify"])
+def test_global_cli_pre_owner_descriptor_uid_change_is_private_and_non_mutating(
+    tmp_path: Path,
+    capsys,
+    monkeypatch: pytest.MonkeyPatch,
+    action: str,
+) -> None:
+    repo = repository(tmp_path / "private-repo")
+    exclude = repo / ".git" / "info" / "exclude"
+    before = exclude.read_bytes()
+    container = tmp_path / "private-container"
+    container.mkdir()
+    owner = container / "codex-home"
+    monkeypatch.setenv("CODEX_HOME", str(owner))
+    target_details = container.stat()
+    target_identity = (target_details.st_dev, target_details.st_ino)
+    real_fstat = os.fstat
+
+    def foreign_descriptor(fd: int):
+        result = real_fstat(fd)
+        if (result.st_dev, result.st_ino) == target_identity:
+            return stat_with_uid(result, os.geteuid() + 1)
+        return result
+
+    monkeypatch.setattr(artifacts.os, "fstat", foreign_descriptor)
+    args = [
+        "--home", str(tmp_path / "home"), "state", action,
+        "--client", "codex/codex-cli", "--scope", "global",
+        "--directory", str(repo),
+    ]
+    if action == "allocate":
+        args.extend(allocation_args())
+    else:
+        args.extend(["--artifact", "codex-cli-20260715T120000000Z-w18-probe.md"])
+    code, payload = invoke(capsys, *args)
+    encoded = json.dumps(payload, sort_keys=True)
+    assert code == 2 and payload["error"]["code"] == "unsafe_state_path"
+    assert "Traceback" not in encoded and str(container) not in encoded
+    assert exclude.read_bytes() == before
+    assert not owner.exists()
+    assert list(container.iterdir()) == []
+
+
+@pytest.mark.parametrize("control", ["root-pre-owner", "system-ancestor", "repo-root"])
+def test_cli_ownership_controls_preserve_system_and_repo_behavior(
+    tmp_path: Path,
+    capsys,
+    monkeypatch: pytest.MonkeyPatch,
+    control: str,
+) -> None:
+    original = Path.stat
+    home = tmp_path / "home"
+    if control == "repo-root":
+        directory = repository(tmp_path / "repo")
+        target = directory
+        replacement_uid = os.geteuid() + 1
+        args = ["state", "path", "--client", "codex/codex-cli", "--directory", str(directory)]
+    else:
+        directory = tmp_path / "plain"
+        directory.mkdir()
+        container = tmp_path / "container"
+        container.mkdir()
+        owner = container / "codex"
+        monkeypatch.setenv("CODEX_HOME", str(owner))
+        if control == "root-pre-owner":
+            target = container
+            replacement_uid = 0
+        else:
+            owner.mkdir()
+            target = tmp_path.parent
+            replacement_uid = os.geteuid() + 1
+        args = [
+            "--home", str(home), "state", "path", "--client", "codex/codex-cli",
+            "--scope", "global", "--directory", str(directory),
+        ]
+
+    def controlled(path: Path, *args, **kwargs):
+        result = original(path, *args, **kwargs)
+        return stat_with_uid(result, replacement_uid) if path == target else result
+
+    monkeypatch.setattr(Path, "stat", controlled)
+    code, payload = invoke(capsys, *args)
+    assert code == 0 and payload["ok"]
 
 
 @pytest.mark.parametrize("suffix", [" ", "\t"])
@@ -560,6 +731,31 @@ def test_missing_metadata_schema_fails_before_exclude_mutation(tmp_path: Path, c
     ])
     payload = json.loads(capsys.readouterr().out)
     assert code == 2 and payload["error"]["code"] == "invalid_metadata_schema"
+    assert exclude.read_bytes() == before
+    assert not (repo / ".codex" / "state").exists()
+
+
+def test_fifo_metadata_schema_cli_fails_promptly_without_residue(
+    tmp_path: Path, capsys
+) -> None:
+    source = tmp_path / "source"
+    config = source / "ls" / "config"
+    config.mkdir(parents=True)
+    shutil.copy2(ROOT / "ls" / "config" / "clients.yaml", config / "clients.yaml")
+    shutil.copy2(ROOT / "ls" / "config" / "clients.schema.json", config / "clients.schema.json")
+    os.mkfifo(config / "client-state-artifact.schema.json")
+    repo = repository(tmp_path / "repo")
+    exclude = repo / ".git" / "info" / "exclude"
+    before = exclude.read_bytes()
+    started = time.monotonic()
+    code = main([
+        "--source-root", str(source), "state", "allocate", "--client", "codex/codex-cli",
+        "--directory", str(repo), *allocation_args(),
+    ])
+    elapsed = time.monotonic() - started
+    payload = json.loads(capsys.readouterr().out)
+    assert code == 2 and payload["error"]["code"] == "invalid_metadata_schema"
+    assert elapsed < 1
     assert exclude.read_bytes() == before
     assert not (repo / ".codex" / "state").exists()
 
