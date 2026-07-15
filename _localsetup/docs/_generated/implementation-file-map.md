@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: e76e8e25355753fff73e52e604f2d7e289dbd6410cdad01f4c2d5c9ca0bdbb4d
+  source_provenance_hash: 809d377176ca1ccd9d64c461e22d817bda446b8a68f2adf0a5e0f4f20f6880db
   emitter: generate-docs
-framework_version: 4.2.18
-source_commit: c7fd27ace7240dddb590b32d8c7678f5831cdea7
-artifact_sha256: cd495b9d48b67ddff8e6eadbecb2bf1469ed9d25567e4c86db71ca617ba884c9
+framework_version: 4.2.19
+source_commit: bab7976b03f1a79e393dc1ceeb1f5c4a6de59df6
+artifact_sha256: ceb930367faf006a23c29962fd446eb9a8cfce51af5e776ea9f7efb9a7c9812c
 ---
 # Implementation File Map
 
@@ -136,6 +136,7 @@ artifact_sha256: cd495b9d48b67ddff8e6eadbecb2bf1469ed9d25567e4c86db71ca617ba884c
 | `refactor` | `_localsetup/core/docs_artifacts/common.py` |
 | `refactor` | `_localsetup/core/docs_artifacts/writers.py` |
 | `refactor` | `_localsetup/core/doctor.py` |
+| `refactor` | `_localsetup/core/framework_version.py` |
 | `refactor` | `_localsetup/core/git_state.py` |
 | `refactor` | `_localsetup/core/git_subprocess.py` |
 | `refactor` | `_localsetup/core/global_first_audit.py` |
@@ -837,6 +838,7 @@ artifact_sha256: cd495b9d48b67ddff8e6eadbecb2bf1469ed9d25567e4c86db71ca617ba884c
 | `keep` | `_localsetup/tests/skill_smoke_commands.yaml` |
 | `keep` | `_localsetup/tests/test_adapter_parser.py` |
 | `keep` | `_localsetup/tests/test_candidate_skill_cli.py` |
+| `keep` | `_localsetup/tests/test_cli_version.py` |
 | `keep` | `_localsetup/tests/test_codex_heartbeat.py` |
 | `keep` | `_localsetup/tests/test_codex_heartbeat_harness.py` |
 | `keep` | `_localsetup/tests/test_context_index.py` |
