@@ -15,7 +15,7 @@ IGNORED_PATH_PARTS = (
     "archive",
     "ARCHIVE",
     "/audits/",
-    "_localsetup/skills/",
+    "ls/skills/",
     "_generated",
 )
 IGNORED_LINE_WORDS = ("example", "sample", "provenance", "historical", "migrate", "migration", "changelog", "released")

@@ -23,10 +23,10 @@ graphify-out/** export-ignore
 localsetup.lock.json export-ignore
 _internal_docs/ export-ignore
 _internal_docs/** export-ignore
-_localsetup/.cache/ export-ignore
-_localsetup/.cache/** export-ignore
-_localsetup/docs/local-context/ export-ignore
-_localsetup/docs/local-context/** export-ignore
-_localsetup/logs/ export-ignore
-_localsetup/logs/** export-ignore
-_localsetup/skills/ls-superpowers/references/upstream/**/UPSTREAM_SKILL.source.md whitespace=-blank-at-eol,-blank-at-eof
+ls/.cache/ export-ignore
+ls/.cache/** export-ignore
+ls/docs/local-context/ export-ignore
+ls/docs/local-context/** export-ignore
+ls/logs/ export-ignore
+ls/logs/** export-ignore
+ls/skills/ls-superpowers/references/upstream/**/UPSTREAM_SKILL.source.md whitespace=-blank-at-eol,-blank-at-eof

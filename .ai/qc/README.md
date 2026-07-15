@@ -68,6 +68,6 @@ The endpoint URL and secret headers must not be written to issues. Issues may re
 
 ## Release Boundary
 
-The QC workflows live in `.github`, which is otherwise part of the public Localsetup artifact. Because the QC tooling lives at root `tools/qc_patrol/` and is not shipped with the framework package, the exact `qc-*.yml` workflow paths are listed in `_localsetup/config/pack.yaml` under `public_private.private_paths`.
+The QC workflows live in `.github`, which is otherwise part of the public Localsetup artifact. Because the QC tooling lives at root `tools/qc_patrol/` and is not shipped with the framework package, the exact `qc-*.yml` workflow paths are listed in `ls/config/pack.yaml` under `public_private.private_paths`.
 
 Runtime output belongs in `qc-out/` workflow artifacts. Do not commit local patrol ledgers, raw LLM responses, or generated runtime state.

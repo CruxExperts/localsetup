@@ -1,0 +1,29 @@
+workflow_id: queue-batch-implement
+display_name: Queue Batch Implement
+aliases: [Agent Q queue, process PRDs]
+invocation: Use when asked to process PRDs from queue folders.
+required_skills: []
+required_tools: []
+required_docs:
+  - ls/docs/AGENTIC_AGENT_Q_PATTERN.md
+  - ls/docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md
+gates:
+  - id: destructive_gate
+    rule: Require confirmation for destructive operations.
+phases:
+  - id: discover_queue
+    summary: Locate queued input specs.
+  - id: execute_batch
+    summary: Run bounded implementations per spec.
+  - id: report_outcomes
+    summary: Write status and outcome artifacts.
+validation:
+  - check: Queue item statuses updated for processed specs.
+outputs:
+  - Batch outcome summary
+smoke:
+  - id: queue_doc_present
+    check: ls/docs/AGENTIC_AGENT_Q_PATTERN.md exists
+migration:
+  source: ls/docs/AGENTIC_AGENT_Q_PATTERN.md
+  note: Package keeps workflow metadata only.

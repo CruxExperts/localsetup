@@ -1,0 +1,107 @@
+schema_version: 1
+audit_id: codex-bootstrap-pack
+date: "2026-05-10"
+tasks:
+  - id: REM-001
+    title: Harden global Codex instruction override rules
+    phase: global_codex_hardening
+    status: pending_approval
+    approval_required: true
+    scope:
+      - <codex-home>/AGENTS.md
+    blockers:
+      - global_config_write
+    validation:
+      - codex debug prompt-input from non-repo directory
+      - codex debug prompt-input from localsetup repo
+    linked_findings:
+      - CBA-001
+  - id: REM-002
+    title: Decide and document Codex subagent concurrency policy
+    phase: global_codex_hardening
+    status: pending_approval
+    approval_required: true
+    scope:
+      - <codex-home>/config.toml
+      - <codex-home>/AGENT_TEAM_RUNBOOK.md
+    blockers:
+      - global_config_write
+    validation:
+      - parse TOML with tomllib
+      - prompt-load check
+    linked_findings:
+      - CBA-003
+  - id: REM-003
+    title: Align global runbook reasoning wording
+    phase: global_codex_hardening
+    status: pending_approval
+    approval_required: true
+    scope:
+      - <codex-home>/AGENT_TEAM_RUNBOOK.md
+    blockers:
+      - global_config_write
+    validation:
+      - prompt-load check if AGENTS or runbook is referenced by prompt
+    linked_findings:
+      - CBA-004
+  - id: REM-004
+    title: Tighten global Codex instruction/config file permissions
+    phase: global_codex_hardening
+    status: pending_approval
+    approval_required: true
+    scope:
+      - <codex-home>
+      - <codex-home>/agents
+    blockers:
+      - external_permission_change
+    validation:
+      - stat target modes before and after
+      - codex debug prompt-input
+    linked_findings:
+      - CBA-002
+  - id: REM-005
+    title: Create canonical skill and prompt manifest for legacy replacement dry-run
+    phase: legacy_inventory
+    status: planned
+    approval_required: false
+    scope:
+      - ls/skills
+      - ls/templates
+      - ls/config
+    validation:
+      - manifest parses as JSON or YAML
+      - hash count matches source inventory
+    linked_findings:
+      - LEG-001
+  - id: REM-006
+    title: Generate non-destructive legacy drift report
+    phase: legacy_inventory
+    status: planned
+    approval_required: false
+    scope:
+      - <legacy-localsetup-repo>/.agents/skills
+      - <codex-home>/skills
+      - <localsetup-managed-skill-library>
+    blockers:
+      - read_only_external_inventory_only
+    validation:
+      - report classifies every inspected tree
+      - no external writes in git diff
+    linked_findings:
+      - LEG-001
+      - LEG-002
+  - id: REM-007
+    title: Re-check custom-agent TOML schema before changing role files
+    phase: codex_cli_research
+    status: planned
+    approval_required: false
+    scope:
+      - official OpenAI Codex docs
+      - local codex-cli help and debug output
+    validation:
+      - source URLs recorded with access date
+      - local CLI version recorded
+    linked_findings:
+      - CBR-001
+      - CBR-002
+      - CBR-003

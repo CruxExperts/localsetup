@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Localsetup front-end installer.
 # Purpose: keep the stable shell entrypoint while delegating framework work to
-# _localsetup/tools/localsetup.py.
+# ls/tools/localsetup.py.
 
 set -euo pipefail
 
@@ -67,7 +67,7 @@ Usage:
   ./install --directory . --platforms codex kilo --non-interactive --yes
 
 Options:
-  --directory PATH      Localsetup source checkout containing _localsetup/ (default: . when run
+  --directory PATH      Localsetup source checkout containing ls/ (default: . when run
                        from a checkout; otherwise creates or refreshes a managed source checkout).
   --target-directory PATH
                        Directory where adapter links and .localsetup/lock.json are written.
@@ -360,7 +360,7 @@ inspect_managed_bootstrap_source() {
   if ! git -C "$SOURCE_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     die "managed bootstrap source exists but is not a Git checkout: $SOURCE_DIR. Move or remove it, or pass --directory PATH to use an explicit Localsetup checkout."
   fi
-  if [[ ! -d "$SOURCE_DIR/_localsetup" ]]; then
+  if [[ ! -d "$SOURCE_DIR/ls" ]]; then
     die "managed bootstrap source exists but is not a Localsetup checkout: $SOURCE_DIR. Move or remove it, or pass --directory PATH to use an explicit Localsetup checkout."
   fi
   local status
@@ -474,12 +474,12 @@ resolve_bootstrap_ref() {
 }
 
 ensure_bootstrap_source() {
-  if [[ -f "$SOURCE_DIR/_localsetup/tools/localsetup.py" ]]; then
+  if [[ -f "$SOURCE_DIR/ls/tools/localsetup.py" ]]; then
     return
   fi
   if "$EXPLICIT_SOURCE_DIR"; then
     [[ -d "$SOURCE_DIR" ]] || die "directory does not exist: $SOURCE_DIR"
-    die "missing Localsetup tool at $SOURCE_DIR/_localsetup/tools/localsetup.py"
+    die "missing Localsetup tool at $SOURCE_DIR/ls/tools/localsetup.py"
   fi
 
   SOURCE_DIR="$BOOTSTRAP_SOURCE_DIR"
@@ -496,7 +496,7 @@ ensure_bootstrap_source() {
     else
       inspect_managed_bootstrap_source
     fi
-    [[ -f "$SOURCE_DIR/_localsetup/tools/localsetup.py" ]] || die "refreshed bootstrap source is missing _localsetup/tools/localsetup.py: $SOURCE_DIR"
+    [[ -f "$SOURCE_DIR/ls/tools/localsetup.py" ]] || die "refreshed bootstrap source is missing ls/tools/localsetup.py: $SOURCE_DIR"
     BOOTSTRAPPED_SOURCE=true
     return
   fi
@@ -507,7 +507,7 @@ ensure_bootstrap_source() {
     rm -rf "$SOURCE_DIR"
     die "failed to clone Localsetup bootstrap source from $BOOTSTRAP_REPO at ref $BOOTSTRAP_REF"
   }
-  [[ -f "$SOURCE_DIR/_localsetup/tools/localsetup.py" ]] || die "bootstrap clone is missing _localsetup/tools/localsetup.py: $SOURCE_DIR"
+  [[ -f "$SOURCE_DIR/ls/tools/localsetup.py" ]] || die "bootstrap clone is missing ls/tools/localsetup.py: $SOURCE_DIR"
   BOOTSTRAPPED_SOURCE=true
 }
 
@@ -720,7 +720,7 @@ export LOCALSETUP_BOOTSTRAP_LATEST_REF="$BOOTSTRAP_LATEST_REF"
 export LOCALSETUP_BOOTSTRAP_RELEASE_STATUS="$BOOTSTRAP_RELEASE_STATUS"
 [[ -d "$SOURCE_DIR" ]] || die "directory does not exist: $SOURCE_DIR"
 SOURCE_DIR="$(cd "$SOURCE_DIR" && pwd)"
-[[ -f "$SOURCE_DIR/_localsetup/tools/localsetup.py" ]] || die "missing Localsetup tool at $SOURCE_DIR/_localsetup/tools/localsetup.py"
+[[ -f "$SOURCE_DIR/ls/tools/localsetup.py" ]] || die "missing Localsetup tool at $SOURCE_DIR/ls/tools/localsetup.py"
 check_python
 
 case "$MODE" in
@@ -740,10 +740,10 @@ if "$UV_OFFLINE"; then
   export LOCALSETUP_UV_OFFLINE=1
 fi
 
-cli_base=(python3 "$SOURCE_DIR/_localsetup/tools/localsetup.py")
+cli_base=(python3 "$SOURCE_DIR/ls/tools/localsetup.py")
 if "$SYNC_ENV"; then
   mapfile -d '' -t uv_base < <(uv_project_base)
-  cli_base=("${uv_base[@]}" run --locked --no-sync --no-dev python "$SOURCE_DIR/_localsetup/tools/localsetup.py")
+  cli_base=("${uv_base[@]}" run --locked --no-sync --no-dev python "$SOURCE_DIR/ls/tools/localsetup.py")
 fi
 
 pack_args=()

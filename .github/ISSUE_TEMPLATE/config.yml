@@ -10,5 +10,5 @@ contact_links:
     url: https://github.com/CruxExperts/localsetup/discussions
     about: Use discussions for usage questions, ideas that are not yet actionable, and design conversation.
   - name: Release and maintenance guidance
-    url: https://github.com/CruxExperts/localsetup/blob/main/_localsetup/docs/REPO_MAINTENANCE.md
+    url: https://github.com/CruxExperts/localsetup/blob/main/ls/docs/REPO_MAINTENANCE.md
     about: Read the maintainer checklist for branch rules, required checks, labels, release policy, and security settings.

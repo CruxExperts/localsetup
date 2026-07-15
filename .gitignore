@@ -15,19 +15,19 @@
 
 # Local-only generated maintenance docs
 _internal_docs/
-_localsetup/.localsetup-meta/
+ls/.localsetup-meta/
 
 # Repo-local data (PR review state, audit output, etc.; never publish)
 data/
-!_localsetup/skills/ls-nodejs-nextjs/data/
-!_localsetup/skills/ls-nodejs-nextjs/data/verified-versions.json
-!_localsetup/skills/ls-github-starredrepos/data/
-!_localsetup/skills/ls-github-starredrepos/data/**
+!ls/skills/ls-nodejs-nextjs/data/
+!ls/skills/ls-nodejs-nextjs/data/verified-versions.json
+!ls/skills/ls-github-starredrepos/data/
+!ls/skills/ls-github-starredrepos/data/**
 
 # Mail accounts (credentials; use example template only in repo)
-_localsetup/config/mail_accounts.json
-_localsetup/.cache/
-_localsetup/logs/
+ls/config/mail_accounts.json
+ls/.cache/
+ls/logs/
 
 # Agent work queue (local-only PRDs and task files; never publish)
 .agent/
@@ -38,12 +38,12 @@ _localsetup/logs/
 # Repo maintenance scripts (local-only, not shipped)
 /scripts/
 
-# Internal/maintainer docs (not shipped; public docs live in _localsetup/docs/)
+# Internal/maintainer docs (not shipped; public docs live in ls/docs/)
 docs/
-!_localsetup/docs/
-!_localsetup/docs/**
-!_localsetup/skills/*/docs/
-!_localsetup/skills/*/docs/**
+!ls/docs/
+!ls/docs/**
+!ls/skills/*/docs/
+!ls/skills/*/docs/**
 
 # Contribution artifacts (local-only, not shipped)
 contributions/
@@ -80,7 +80,7 @@ graphify-out/
 # Kilo Code local state.
 .kilocode/
 .kilo/*
-_localsetup/.kilo/
+ls/.kilo/
 
 # Codex CLI context: track the repo guide; generated skills adapter is install output.
 !AGENTS.md

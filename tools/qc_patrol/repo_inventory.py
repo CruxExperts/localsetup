@@ -10,8 +10,8 @@ from typing import Any
 
 import yaml
 
-from _localsetup.tools.docs_alignment import collect_inventory as collect_docs_inventory
-from _localsetup.tools.docs_alignment import collect_truth_map
+from ls.tools.docs_alignment import collect_inventory as collect_docs_inventory
+from ls.tools.docs_alignment import collect_truth_map
 
 from .schemas import INVENTORY_SCHEMA, validate_payload
 
@@ -110,7 +110,7 @@ def _package_version(repo: Path, path: str, kind: str) -> str:
 
 
 def _private_paths(repo: Path, files: set[str]) -> list[dict[str, Any]]:
-    path = repo / "_localsetup/config/pack.yaml"
+    path = repo / "ls/config/pack.yaml"
     if not path.exists():
         return []
     data = yaml.safe_load(_read_text(path)) or {}
@@ -125,7 +125,7 @@ def _private_paths(repo: Path, files: set[str]) -> list[dict[str, Any]]:
 def _generated_artifacts(repo: Path, files: set[str]) -> list[dict[str, Any]]:
     artifacts = []
     for path in sorted(files):
-        if not path.startswith("_localsetup/docs/_generated/"):
+        if not path.startswith("ls/docs/_generated/"):
             continue
         artifacts.append(
             {
@@ -215,9 +215,9 @@ def build_inventory(repo: Path) -> dict[str, Any]:
             "workflow_packages": workflow_packages,
             "private_paths": _private_paths(repo, file_set),
             "registry_catalog_metadata": {
-                "pack_config": "_localsetup/config/pack.yaml" in file_set,
-                "generated_facts": "_localsetup/docs/_generated/facts.json" in file_set,
-                "generated_skill_taxonomy": "_localsetup/docs/_generated/skill-taxonomy.json" in file_set,
+                "pack_config": "ls/config/pack.yaml" in file_set,
+                "generated_facts": "ls/docs/_generated/facts.json" in file_set,
+                "generated_skill_taxonomy": "ls/docs/_generated/skill-taxonomy.json" in file_set,
                 "ci_workflows": docs_inventory.get("ci_workflows", []),
             },
             "version_references": _version_references(repo, docs, truth_version),

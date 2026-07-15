@@ -20,24 +20,12 @@ jobs:
   pr-review:
     name: pr qc review
     runs-on: ubuntu-latest
-    env:
-      LLM_MODE: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && 'auto' || 'off' }}
-      QC_LLM_BASE_URL: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && secrets.QC_LLM_BASE_URL || '' }}
-      QC_LLM_API_KEY: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && secrets.QC_LLM_API_KEY || '' }}
-      QC_LLM_ORGANIZATION: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && secrets.QC_LLM_ORGANIZATION || '' }}
-      QC_LLM_PROJECT: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && secrets.QC_LLM_PROJECT || '' }}
-      QC_LLM_MODEL: ${{ vars.QC_LLM_MODEL }}
-      QC_LLM_TEMPERATURE: ${{ vars.QC_LLM_TEMPERATURE }}
-      QC_LLM_MAX_TOKENS: ${{ vars.QC_LLM_MAX_TOKENS }}
-      QC_LLM_TIMEOUT_SECONDS: ${{ vars.QC_LLM_TIMEOUT_SECONDS }}
-      QC_LLM_RETRY_COUNT: ${{ vars.QC_LLM_RETRY_COUNT }}
-      QC_LLM_API_STYLE: ${{ vars.QC_LLM_API_STYLE }}
-      QC_LLM_ENDPOINT_ALIAS: ${{ vars.QC_LLM_ENDPOINT_ALIAS }}
     steps:
       - name: Checkout trusted tooling
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           ref: ${{ github.event.pull_request.base.sha || github.sha }}
+          persist-credentials: false
 
       - name: Checkout subject
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -46,6 +34,7 @@ jobs:
           path: qc-subject
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
 
       - name: Setup Python
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
@@ -58,39 +47,152 @@ jobs:
       - name: Sync dependencies
         run: uv sync --frozen --all-groups --python python3
 
-      - name: Run PR QC review
+      - name: Resolve QC tooling route
+        id: qc_route
+        run: |
+          set -euo pipefail
+          qc_route="trusted-base"
+          qc_reason="trusted-base-compatible"
+
+          if [[ ! -f tools/qc_patrol/cli.py ]]; then
+            qc_route="subject-no-secret"
+            qc_reason="trusted-base-tool-unavailable"
+          else
+            probe_status=0
+            uv run --frozen python - <<'PY' || probe_status=$?
+          import ast
+          from pathlib import Path
+
+          from tools.qc_patrol.deterministic_checks import check_release_exclusions
+
+          subject = Path("qc-subject").resolve()
+          accepted_relative = "ls/config/pack.yaml"
+          accepted_pack = subject / accepted_relative
+          trusted_source = Path("tools/qc_patrol/deterministic_checks.py")
+          subject_source = subject / trusted_source
+
+          def declares_capability(path: Path) -> bool:
+              tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+              return any(
+                  isinstance(node, ast.Constant)
+                  and isinstance(node.value, str)
+                  and node.value == accepted_relative
+                  for node in ast.walk(tree)
+              )
+
+          try:
+              check_release_exclusions(subject)
+          except FileNotFoundError:
+              accepted_capability = bool(
+                  accepted_pack.is_file()
+                  and subject_source.is_file()
+                  and declares_capability(subject_source)
+              )
+              trusted_capability = declares_capability(trusted_source)
+              if accepted_capability and not trusted_capability:
+                  raise SystemExit(42)
+              raise
+          PY
+            if [[ "$probe_status" -eq 42 ]]; then
+              qc_route="subject-no-secret"
+              qc_reason="trusted-base-layout-incompatible"
+            elif [[ "$probe_status" -ne 0 ]]; then
+              exit "$probe_status"
+            fi
+          fi
+
+          if [[ "$qc_route" == "subject-no-secret" && ! -f qc-subject/tools/qc_patrol/cli.py ]]; then
+            echo "Subject QC tooling is unavailable." >&2
+            exit 1
+          fi
+
+          {
+            echo "route=$qc_route"
+            echo "reason=$qc_reason"
+          } >>"$GITHUB_OUTPUT"
+
+      - name: Run trusted-base PR QC review
+        if: steps.qc_route.outputs.route == 'trusted-base'
+        env:
+          LLM_MODE: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && 'auto' || 'off' }}
+          QC_LLM_BASE_URL: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && secrets.QC_LLM_BASE_URL || '' }}
+          QC_LLM_API_KEY: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && secrets.QC_LLM_API_KEY || '' }}
+          QC_LLM_ORGANIZATION: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && secrets.QC_LLM_ORGANIZATION || '' }}
+          QC_LLM_PROJECT: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && secrets.QC_LLM_PROJECT || '' }}
+          QC_LLM_MODEL: ${{ vars.QC_LLM_MODEL }}
+          QC_LLM_TEMPERATURE: ${{ vars.QC_LLM_TEMPERATURE }}
+          QC_LLM_MAX_TOKENS: ${{ vars.QC_LLM_MAX_TOKENS }}
+          QC_LLM_TIMEOUT_SECONDS: ${{ vars.QC_LLM_TIMEOUT_SECONDS }}
+          QC_LLM_RETRY_COUNT: ${{ vars.QC_LLM_RETRY_COUNT }}
+          QC_LLM_API_STYLE: ${{ vars.QC_LLM_API_STYLE }}
+          QC_LLM_ENDPOINT_ALIAS: ${{ vars.QC_LLM_ENDPOINT_ALIAS }}
+          QC_PR_BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+          QC_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          QC_BASE_REMOTE: https://github.com/${{ github.repository }}.git
+        run: |
+          set -euo pipefail
+          uv run --frozen python tools/qc_patrol/cli.py pr-review \
+            --subject-repo qc-subject \
+            --base "$QC_PR_BASE_SHA" \
+            --head "$QC_PR_HEAD_SHA" \
+            --base-remote "$QC_BASE_REMOTE" \
+            --out qc-out \
+            --llm-mode "$LLM_MODE"
+
+      - name: Run no-secret subject PR QC review
+        if: steps.qc_route.outputs.route == 'subject-no-secret'
         env:
           QC_PR_BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
           QC_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           QC_BASE_REMOTE: https://github.com/${{ github.repository }}.git
         run: |
           set -euo pipefail
-          qc_tool_root="."
-          qc_llm_mode="$LLM_MODE"
-          if [[ ! -f tools/qc_patrol/cli.py ]]; then
-            qc_tool_root="qc-subject"
-            qc_llm_mode="off"
-          fi
-
-          uv run --frozen python "${qc_tool_root}/tools/qc_patrol/cli.py" pr-review \
-            --subject-repo qc-subject \
-            --base "$QC_PR_BASE_SHA" \
-            --head "$QC_PR_HEAD_SHA" \
-            --base-remote "$QC_BASE_REMOTE" \
-            --out qc-out \
-            --llm-mode "$qc_llm_mode"
+          env \
+            -u LLM_MODE \
+            -u QC_LLM_BASE_URL \
+            -u QC_LLM_API_KEY \
+            -u QC_LLM_ORGANIZATION \
+            -u QC_LLM_PROJECT \
+            -u QC_LLM_MODEL \
+            -u QC_LLM_TEMPERATURE \
+            -u QC_LLM_MAX_TOKENS \
+            -u QC_LLM_TIMEOUT_SECONDS \
+            -u QC_LLM_RETRY_COUNT \
+            -u QC_LLM_API_STYLE \
+            -u QC_LLM_ENDPOINT_ALIAS \
+            -u GITHUB_TOKEN \
+            -u GH_TOKEN \
+            uv run --frozen python qc-subject/tools/qc_patrol/cli.py pr-review \
+              --subject-repo qc-subject \
+              --base "$QC_PR_BASE_SHA" \
+              --head "$QC_PR_HEAD_SHA" \
+              --base-remote "$QC_BASE_REMOTE" \
+              --out qc-out \
+              --llm-mode off
 
       - name: Summarize PR QC
+        env:
+          QC_ROUTE: ${{ steps.qc_route.outputs.route }}
+          QC_ROUTE_REASON: ${{ steps.qc_route.outputs.reason }}
         run: |
           set -euo pipefail
           {
             echo "## QC PR Review"
             echo
-            echo "LLM mode: ${LLM_MODE}"
-            echo
-            if [[ ! -f tools/qc_patrol/cli.py ]]; then
-              echo "Trusted base tooling unavailable on the target branch; ran no-secret bootstrap review from the subject checkout."
+            if [[ "$QC_ROUTE" == "subject-no-secret" ]]; then
+              echo "Tooling: subject checkout (no-secret fallback)"
+              echo "LLM mode: off"
+              echo "Fallback reason: ${QC_ROUTE_REASON}"
               echo
+              if [[ "$QC_ROUTE_REASON" == "trusted-base-tool-unavailable" ]]; then
+                echo "Trusted base tooling was unavailable; ran a no-secret bootstrap review from the subject checkout."
+              else
+                echo "Trusted base tooling could not consume the accepted subject layout; ran a no-secret bootstrap review from the subject checkout."
+              fi
+            else
+              echo "Tooling: trusted base checkout"
+              echo "LLM mode: repository policy"
+              echo "Route reason: ${QC_ROUTE_REASON}"
             fi
             echo
             echo '```json'

@@ -67,13 +67,13 @@ def scan_workflow_permissions(repo: Path) -> list[dict[str, Any]]:
 
 
 def check_release_exclusions(repo: Path, artifact: Path | None = None) -> list[dict[str, Any]]:
-    pack = repo / "_localsetup/config/pack.yaml"
+    pack = repo / "ls/config/pack.yaml"
     data = yaml.safe_load(pack.read_text(encoding="utf-8")) or {}
     private = set((data.get("public_private") or {}).get("private_paths") or [])
     findings: list[dict[str, Any]] = []
     missing = sorted(QC_WORKFLOWS - private)
     for path in missing:
-        findings.append(finding("release", "high", f"{path} is not excluded from release artifact", "QC workflows rely on root tools/qc_patrol, which is not part of the Localsetup framework package.", "_localsetup/config/pack.yaml", region=path))
+        findings.append(finding("release", "high", f"{path} is not excluded from release artifact", "QC workflows rely on root tools/qc_patrol, which is not part of the Localsetup framework package.", "ls/config/pack.yaml", region=path))
     if artifact and artifact.exists():
         with tarfile.open(artifact, "r:*") as tar:
             names = set(tar.getnames())

@@ -15,8 +15,8 @@ Include the affected file or command, Localsetup version, platform ID if relevan
 This policy covers:
 
 - Root install scripts and install tooling
-- `_localsetup/tools/`, `_localsetup/lib/`, and `_localsetup/config/`
-- Shipped skills under `_localsetup/skills/`
+- `ls/tools/`, `ls/lib/`, and `ls/config/`
+- Shipped skills under `ls/skills/`
 - Public templates, docs, package metadata, and generated release artifacts
 
 Out of scope:
@@ -28,7 +28,7 @@ Out of scope:
 ## Security model
 
 - Framework source is repo-local and reviewable.
-- Managed skill installs are recreated from `_localsetup/skills/`.
+- Managed skill installs are recreated from `ls/skills/`.
 - Generated adapter paths are install output, not source of truth.
 - Third-party skills must be treated as untrusted until vetted and normalized.
 - Privileged server workflows should use the human-in-the-loop tmux flow and explicit sudo readiness checks.
@@ -40,4 +40,4 @@ Please allow reasonable time for triage and a fix before publishing technical de
 
 ## Repository security settings
 
-Maintainers should keep Dependabot security updates, secret scanning, push protection, CodeQL default setup, and private vulnerability reporting enabled when GitHub makes those settings available for this repository. The maintainer checklist lives in [_localsetup/docs/REPO_MAINTENANCE.md](_localsetup/docs/REPO_MAINTENANCE.md).
+Maintainers should keep Dependabot security updates, secret scanning, push protection, CodeQL default setup, and private vulnerability reporting enabled when GitHub makes those settings available for this repository. The maintainer checklist lives in [ls/docs/REPO_MAINTENANCE.md](ls/docs/REPO_MAINTENANCE.md).

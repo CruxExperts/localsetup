@@ -11,7 +11,7 @@ if [[ "${LOCALSETUP_ALLOW_PRIVATE_STAGE:-0}" != "1" ]]; then
       .codex/runs/*|.codex/sessions/*|.codex/logs/*|.codex/tmp/*|.codex/*.backup|\
       .agent/*|.git-state-snapshots/*|.localsetup/*|localsetup.lock.json|\
       .localsetup-maint/config/*|.localsetup-maint/docs/*|.localsetup-maint/prompts/*|.localsetup-maint/reports/*|.localsetup-maint/state/*|\
-      data/*|docs/*|graphify-out/*|_internal_docs/*|_localsetup/.cache/*|_localsetup/logs/*)
+      data/*|docs/*|graphify-out/*|_internal_docs/*|ls/.cache/*|ls/logs/*)
         private_staged+=("$path")
         ;;
     esac
@@ -25,7 +25,7 @@ if [[ "${LOCALSETUP_ALLOW_PRIVATE_STAGE:-0}" != "1" ]]; then
   fi
 fi
 
-python3 _localsetup/tools/localsetup.py hook-gate --out /tmp/localsetup-public.tar.gz >/tmp/localsetup-hook.json
+python3 ls/tools/localsetup.py hook-gate --out /tmp/localsetup-public.tar.gz >/tmp/localsetup-hook.json
 
 if python3 - <<'PY'
 import json
@@ -42,20 +42,20 @@ else
 fi
 
 generated_paths=(
-  _localsetup/docs/_generated/artifact-registry.json
-  _localsetup/docs/_generated/workflow-catalog.json
-  _localsetup/docs/SKILLS.md
-  _localsetup/docs/_generated/facts.json
-  _localsetup/docs/_generated/docs-inventory.json
-  _localsetup/docs/_generated/docs-truth-map.json
-  _localsetup/docs/_generated/docs-audit-result.json
-  _localsetup/docs/_generated/docs-asset-manifest.json
-  _localsetup/docs/_generated/docs-alignment-summary.md
-  _localsetup/docs/_generated/implementation-file-map.md
-  _localsetup/docs/_generated/platform-adapters.md
-  _localsetup/docs/_generated/skill-packs.md
-  _localsetup/docs/_generated/skill_aliases.json
-  _localsetup/docs/migration/skill-alias-map.md
+  ls/docs/_generated/artifact-registry.json
+  ls/docs/_generated/workflow-catalog.json
+  ls/docs/SKILLS.md
+  ls/docs/_generated/facts.json
+  ls/docs/_generated/docs-inventory.json
+  ls/docs/_generated/docs-truth-map.json
+  ls/docs/_generated/docs-audit-result.json
+  ls/docs/_generated/docs-asset-manifest.json
+  ls/docs/_generated/docs-alignment-summary.md
+  ls/docs/_generated/implementation-file-map.md
+  ls/docs/_generated/platform-adapters.md
+  ls/docs/_generated/skill-packs.md
+  ls/docs/_generated/skill_aliases.json
+  ls/docs/migration/skill-alias-map.md
 )
 
 if ! git diff --quiet -- "${generated_paths[@]}"; then

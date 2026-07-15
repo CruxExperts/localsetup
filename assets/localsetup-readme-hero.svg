@@ -74,7 +74,7 @@
   <g filter="url(#shadow)">
     <rect x="520" y="96" width="332" height="178" rx="24" class="node"/>
     <text x="554" y="142" class="label">Repository source</text>
-    <text x="554" y="178" class="mono">_localsetup/</text>
+    <text x="554" y="178" class="mono">ls/</text>
     <text x="554" y="210" class="small">skills, workflows, templates,</text>
     <text x="554" y="238" class="small">docs, tests, and release tools</text>
   </g>

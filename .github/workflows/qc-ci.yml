@@ -41,7 +41,7 @@ jobs:
         run: uv run --frozen python tools/qc_patrol/cli.py deterministic --repo . --profile ci --out qc-out/ledger.json
 
       - name: Run QC tests
-        run: uv run --frozen pytest -q _localsetup/tests/test_qc_patrol.py
+        run: uv run --frozen pytest -q ls/tests/test_qc_patrol.py
 
       - name: Summarize QC
         run: |

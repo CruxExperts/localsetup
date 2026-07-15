@@ -23,16 +23,16 @@ dev = [
 ]
 
 [project.scripts]
-localsetup = "_localsetup.core.cli:main"
+localsetup = "ls.core.cli:main"
 
 [tool.setuptools]
 include-package-data = false
 
 [tool.setuptools.packages.find]
-include = ["_localsetup*"]
+include = ["ls*"]
 
 [tool.setuptools.package-data]
-"_localsetup" = [
+"ls" = [
   "config/*.json",
   "config/*.yaml",
   "docs/*.md",
@@ -54,8 +54,8 @@ include = ["_localsetup*"]
 "*" = [
   "docs/local-context/*",
   "docs/local-context/**/*",
-  "_localsetup/docs/local-context/*",
-  "_localsetup/docs/local-context/**/*",
+  "ls/docs/local-context/*",
+  "ls/docs/local-context/**/*",
   ".cache/**",
   "**/.cache/**",
   "skills/*/scripts/data/*",

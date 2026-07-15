@@ -1,6 +1,6 @@
 recursive-include assets *
-prune _localsetup/docs/local-context
-prune _localsetup/.cache
+prune ls/docs/local-context
+prune ls/.cache
 prune .localsetup-maint
 global-exclude __pycache__/*
 global-exclude *.pyc

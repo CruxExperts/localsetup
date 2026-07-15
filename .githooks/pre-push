@@ -9,7 +9,7 @@ plan_json="$(mktemp)"
 trap 'rm -f "$payload" "$plan_json"' EXIT
 cat >"$payload"
 
-if python3 _localsetup/tools/localsetup.py --source-root . version-plan --push-stdin <"$payload" >"$plan_json"; then
+if python3 ls/tools/localsetup.py --source-root . version-plan --push-stdin <"$payload" >"$plan_json"; then
   exit 0
 fi
 
@@ -17,7 +17,7 @@ python3 - "$payload" <<'PY'
 import sys
 from pathlib import Path
 
-from _localsetup.core.versioning import (
+from ls.core.versioning import (
     commit_version_sync,
     push_lines_to_plans,
     sync_version_files,
@@ -56,6 +56,6 @@ PY
 cat >&2 <<'EOF'
 [localsetup] push stopped after preparing the version-sync commit.
 [localsetup] Run the push again, or use:
-[localsetup]   python3 _localsetup/tools/localsetup.py release-push
+[localsetup]   python3 ls/tools/localsetup.py release-push
 EOF
 exit 1
