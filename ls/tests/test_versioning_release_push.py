@@ -43,6 +43,7 @@ def test_publish_preflight_fix_keeps_no_bump_generated_docs_refresh_none(tmp_pat
     remote = tmp_path / "remote.git"
     run(tmp_path, "git", "init", "--bare", str(remote))
     init_git_repo(repo, remote)
+    expected_version = str(repo_version(repo))
 
     facts = repo / "ls" / "docs" / "_generated" / "facts.json"
     facts.write_text(f"{facts.read_text(encoding='utf-8')}\n", encoding="utf-8")
@@ -69,8 +70,8 @@ def test_publish_preflight_fix_keeps_no_bump_generated_docs_refresh_none(tmp_pat
         == "docs: refresh release version artifacts\n\nRelease-Type: none"
     )
     assert result["plan"]["bump"] == "none"
-    assert result["plan"]["current_version"] == "4.2.19"
-    assert result["plan"]["target_version"] == "4.2.19"
+    assert result["plan"]["current_version"] == expected_version
+    assert result["plan"]["target_version"] == expected_version
     assert run(repo, "git", "status", "--short").stdout.strip() == ""
 
 
