@@ -306,6 +306,46 @@ def test_generated_artifact_provenance_uses_release_sync_source_for_pr_merge_com
     assert generated_mode["source_dirty"] is True
 
 
+def test_generated_artifact_provenance_uses_generated_docs_source_for_main_into_goal_merge(tmp_path: Path) -> None:
+    repo = make_git_repo(tmp_path)
+    base = run(repo, "rev-parse", "HEAD")
+
+    (repo / "ls" / "skills" / "ls-demo" / "SKILL.md").write_text(
+        "---\nname: ls-demo\ndescription: Updated\n---\n",
+        encoding="utf-8",
+    )
+    run(repo, "add", "ls/skills/ls-demo/SKILL.md")
+    run(repo, "commit", "-q", "-m", "feat: update source")
+    source = run(repo, "rev-parse", "HEAD")
+    source_tree = run(repo, "rev-parse", "HEAD^{tree}")
+
+    generated = repo / "ls" / "docs" / "_generated" / "facts.json"
+    generated.parent.mkdir(parents=True, exist_ok=True)
+    generated.write_text("{}\n", encoding="utf-8")
+    run(repo, "add", str(generated.relative_to(repo)))
+    run(repo, "commit", "-q", "-m", "docs: refresh generated artifacts")
+    generated_refresh = run(repo, "rev-parse", "HEAD")
+
+    run(repo, "branch", "main", base)
+    run(repo, "checkout", "-q", "main")
+    (repo / "main.txt").write_text("main advance\n", encoding="utf-8")
+    run(repo, "add", "main.txt")
+    run(repo, "commit", "-q", "-m", "fix: advance main")
+    main_advance = run(repo, "rev-parse", "HEAD")
+
+    run(repo, "checkout", "-q", "-b", "goal", generated_refresh)
+    run(repo, "merge", "--no-ff", "--no-edit", "main")
+
+    assert run(repo, "rev-parse", "HEAD^1") == generated_refresh
+    assert run(repo, "rev-parse", "HEAD^2") == main_advance
+
+    generated_mode = base_provenance(repo, emitter="test", generated_commit_parent=True)
+
+    assert generated_mode["source_commit"] == source
+    assert generated_mode["source_tree_sha"] == source_tree
+    assert generated_mode["source_dirty"] is False
+
+
 def test_package_marker_loads_json_and_legacy_text(tmp_path: Path) -> None:
     package = tmp_path / "ls-demo"
     package.mkdir()
