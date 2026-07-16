@@ -46,12 +46,12 @@
       "emitter": "generate-docs",
       "framework_version": "4.2.19",
       "schema_version": 1,
-      "source_commit": "501a91fd2d3139a502acc101e8c10cb1bbc0790c",
+      "source_commit": "f59aa3dbae08e4d1dcc86008b12ab105fe117913",
       "source_dirty": false,
-      "source_provenance_hash": "fd8f346ffb7462aa20abf5bc62b838f4da180ac0ab158a09a0c9638dbb298614",
-      "source_root_id": "860eaa9ec2158d1ba21d19711df751e6610987ff27da24d7d4dfd94543ef9b78",
+      "source_provenance_hash": "9d5705e106a58f3f491ef465c30d07f24522ad40d048edb9194fdff7e5e11443",
+      "source_root_id": "46dc590f309efff88b21c5680e34459d49e7eb51d700173244d1e767b488746d",
       "source_tag": null,
-      "source_tree_sha": "2272097ca155a41ec48c1818cbed4ddc14d5e9d1"
+      "source_tree_sha": "38c2e4a06af54ec7eed2ebaad0be86e1d27cc61b"
     },
     "skill_count": 106,
     "skills": [
@@ -1973,12 +1973,12 @@
       "emitter": "generate-docs",
       "framework_version": "4.2.19",
       "schema_version": 1,
-      "source_commit": "501a91fd2d3139a502acc101e8c10cb1bbc0790c",
+      "source_commit": "f59aa3dbae08e4d1dcc86008b12ab105fe117913",
       "source_dirty": false,
-      "source_provenance_hash": "fd8f346ffb7462aa20abf5bc62b838f4da180ac0ab158a09a0c9638dbb298614",
-      "source_root_id": "860eaa9ec2158d1ba21d19711df751e6610987ff27da24d7d4dfd94543ef9b78",
+      "source_provenance_hash": "9d5705e106a58f3f491ef465c30d07f24522ad40d048edb9194fdff7e5e11443",
+      "source_root_id": "46dc590f309efff88b21c5680e34459d49e7eb51d700173244d1e767b488746d",
       "source_tag": null,
-      "source_tree_sha": "2272097ca155a41ec48c1818cbed4ddc14d5e9d1"
+      "source_tree_sha": "38c2e4a06af54ec7eed2ebaad0be86e1d27cc61b"
     },
     "schema_version": 1,
     "skills": [
@@ -3525,16 +3525,16 @@
   },
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "59b6e40b930778ffca195c21c6957c0a523034ea2bde1ef050e35463f9718e1d",
+    "artifact_sha256": "1ded4965ad4b94b23a59bbe4463366e7d8f4b5991f158332d8c5f5d52120d91e",
     "emitter": "docs-align",
     "framework_version": "4.2.19",
     "schema_version": 1,
-    "source_commit": "501a91fd2d3139a502acc101e8c10cb1bbc0790c",
+    "source_commit": "f59aa3dbae08e4d1dcc86008b12ab105fe117913",
     "source_dirty": false,
-    "source_provenance_hash": "fd8f346ffb7462aa20abf5bc62b838f4da180ac0ab158a09a0c9638dbb298614",
-    "source_root_id": "860eaa9ec2158d1ba21d19711df751e6610987ff27da24d7d4dfd94543ef9b78",
+    "source_provenance_hash": "9d5705e106a58f3f491ef465c30d07f24522ad40d048edb9194fdff7e5e11443",
+    "source_root_id": "46dc590f309efff88b21c5680e34459d49e7eb51d700173244d1e767b488746d",
     "source_tag": null,
-    "source_tree_sha": "2272097ca155a41ec48c1818cbed4ddc14d5e9d1"
+    "source_tree_sha": "38c2e4a06af54ec7eed2ebaad0be86e1d27cc61b"
   },
   "schema_version": "1.0",
   "truths": {
