@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: b205286774f48ceccfc2946653a8112b0a9c3b80f56fe43459f1a85338e80e8a
+  source_provenance_hash: 6e2d6805106829ec664d22d4d678aeded5d0f27b4bcfaff1e640ee07ce63c39e
   emitter: generate-docs
 framework_version: 4.2.19
-source_commit: 494b61b09acba2d1f2c36ec3e813a1eed59e6efb
-artifact_sha256: 0ff5f798aaa1c9a88088a40a3a2149489e92c9be9d9eeb8bcb6fddd4a2f19528
+source_commit: e3da68416ffad95990e6f3525dd7ca524ff31afa
+artifact_sha256: fa5941996504ccdd4c18bacc3e1f8c6732f76291634ed8be80e905ac4d9f9f66
 ---
 # Implementation File Map
 
@@ -76,6 +76,7 @@ artifact_sha256: 0ff5f798aaa1c9a88088a40a3a2149489e92c9be9d9eeb8bcb6fddd4a2f1952
 | `keep` | `ls/adapters/codex/agents/guardian_subagent.toml` |
 | `keep` | `ls/config/agent_queue.example.yaml` |
 | `keep` | `ls/config/agent_trust_registry.example.yaml` |
+| `keep` | `ls/config/client-state-artifact.schema.json` |
 | `refactor` | `ls/config/clients.schema.json` |
 | `refactor` | `ls/config/clients.yaml` |
 | `keep` | `ls/config/defaults/system_config.yaml` |
@@ -104,6 +105,7 @@ artifact_sha256: 0ff5f798aaa1c9a88088a40a3a2149489e92c9be9d9eeb8bcb6fddd4a2f1952
 | `refactor` | `ls/core/baseline.py` |
 | `refactor` | `ls/core/boundary.py` |
 | `refactor` | `ls/core/cli.py` |
+| `refactor` | `ls/core/cli_client_state_commands.py` |
 | `refactor` | `ls/core/cli_handler_sync.py` |
 | `refactor` | `ls/core/cli_install_commands.py` |
 | `refactor` | `ls/core/cli_install_support.py` |
@@ -115,6 +117,11 @@ artifact_sha256: 0ff5f798aaa1c9a88088a40a3a2149489e92c9be9d9eeb8bcb6fddd4a2f1952
 | `refactor` | `ls/core/client_registry/loader.py` |
 | `refactor` | `ls/core/client_registry/models.py` |
 | `refactor` | `ls/core/client_registry/projection.py` |
+| `refactor` | `ls/core/client_state/__init__.py` |
+| `refactor` | `ls/core/client_state/artifacts.py` |
+| `refactor` | `ls/core/client_state/git_exclude.py` |
+| `refactor` | `ls/core/client_state/locator.py` |
+| `refactor` | `ls/core/client_state/models.py` |
 | `refactor` | `ls/core/config.py` |
 | `refactor` | `ls/core/context.py` |
 | `refactor` | `ls/core/context_index/__init__.py` |
@@ -252,6 +259,7 @@ artifact_sha256: 0ff5f798aaa1c9a88088a40a3a2149489e92c9be9d9eeb8bcb6fddd4a2f1952
 | `keep` | `ls/docs/AGENTIC_DESIGN_INDEX.md` |
 | `keep` | `ls/docs/AGENTIC_UMBRELLA_WORKFLOWS.md` |
 | `keep` | `ls/docs/AGENT_SKILLS_COMPLIANCE.md` |
+| `keep` | `ls/docs/CLIENT_STATE.md` |
 | `keep` | `ls/docs/CLI_SKILLS_ENV.md` |
 | `keep` | `ls/docs/CODEX_GITHUB_ISSUE_GOAL_LOOP.md` |
 | `keep` | `ls/docs/COMMAND_REFERENCE.md` |
@@ -858,6 +866,8 @@ artifact_sha256: 0ff5f798aaa1c9a88088a40a3a2149489e92c9be9d9eeb8bcb6fddd4a2f1952
 | `keep` | `ls/tests/test_candidate_skill_cli.py` |
 | `keep` | `ls/tests/test_cli_version.py` |
 | `keep` | `ls/tests/test_client_registry.py` |
+| `keep` | `ls/tests/test_client_state.py` |
+| `keep` | `ls/tests/test_client_state_cli.py` |
 | `keep` | `ls/tests/test_codex_heartbeat.py` |
 | `keep` | `ls/tests/test_codex_heartbeat_harness.py` |
 | `keep` | `ls/tests/test_context_index.py` |

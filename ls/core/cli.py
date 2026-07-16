@@ -83,7 +83,7 @@ from .versioning import (
     sync_version_files,
 )
 from .cli_parser import build_parser
-from . import cli_install_commands, cli_misc_commands, cli_state_commands
+from . import cli_client_state_commands, cli_install_commands, cli_misc_commands, cli_state_commands
 from . import cli_install_support
 
 
@@ -412,6 +412,9 @@ def _main(argv: list[str] | None = None) -> int:
     _inject_global_target(args)
     root = Path(args.source_root or args.repo or str(_repo_root())).resolve()
     home = Path(args.home or Path.home()).expanduser().resolve()
+    client_state_result = cli_client_state_commands.handle(args, root, home)
+    if client_state_result is not None:
+        return client_state_result
     facade = sys.modules[__name__]
     for handler in (cli_install_commands, cli_state_commands, cli_misc_commands):
         result = handler.handle(facade, args, root, home)
