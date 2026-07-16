@@ -303,7 +303,9 @@ def prepare_artifact_request(
     content = _validate_content(content)
     if isinstance(consumers, (str, bytes)):
         raise ClientStateError("consumers must be an iterable of slugs", code="invalid_consumer")
-    resolved_agent = _slug(agent or location.client.split("/", 1)[1], "agent", 48)
+    resolved_agent = _slug(
+        location.client.split("/", 1)[1] if agent is None else agent, "agent", 48
+    )
     purpose = _slug(purpose, "purpose", 64)
     if re.search(r"-[0-9]{2}$", purpose):
         raise ClientStateError("purpose must not end in a collision suffix", code="invalid_purpose")

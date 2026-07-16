@@ -104,6 +104,55 @@ def test_state_allocate_and_verify_cli(tmp_path: Path, capsys) -> None:
     assert code == 1 and not verified["ok"]
 
 
+@pytest.mark.parametrize(
+    ("agent_args", "expected_agent"),
+    [([], "codex-cli"), (["--agent", "worker"], "worker")],
+    ids=["omitted", "explicit"],
+)
+def test_state_allocate_cli_defaults_only_an_omitted_agent(
+    tmp_path: Path, capsys, agent_args: list[str], expected_agent: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    code, allocated = invoke(
+        capsys,
+        "state", "allocate", "--client", "codex/codex-cli", "--directory", str(repo),
+        *allocation_args(), *agent_args,
+    )
+    assert code == 0 and allocated["ok"]
+    assert allocated["artifact"].startswith(f"{expected_agent}-")
+    code, verified = invoke(
+        capsys,
+        "state", "verify", "--client", "codex/codex-cli", "--directory", str(repo),
+        "--artifact", allocated["artifact"],
+    )
+    assert code == 0 and verified["ok"]
+
+
+def test_state_allocate_cli_rejects_explicit_empty_agent_without_mutation(
+    tmp_path: Path, capsys
+) -> None:
+    repo = repository(tmp_path / "private-repo")
+    exclude = repo / ".git" / "info" / "exclude"
+    before = exclude.read_bytes()
+    code, payload = invoke(
+        capsys,
+        "state", "allocate", "--client", "codex/codex-cli", "--directory", str(repo),
+        *allocation_args(), "--agent", "",
+    )
+    assert code == 2
+    assert payload == {
+        "error": {
+            "code": "invalid_agent",
+            "message": "agent must be lowercase kebab-case and at most 48 characters",
+        },
+        "ok": False,
+    }
+    encoded = json.dumps(payload, sort_keys=True)
+    assert "Traceback" not in encoded and str(repo) not in encoded
+    assert exclude.read_bytes() == before
+    assert not (repo / ".codex" / "state").exists()
+
+
 @pytest.mark.parametrize("action", ["path", "allocate", "verify"])
 def test_state_cli_component_collision_is_typed_private_and_non_mutating(
     tmp_path: Path, capsys, action: str

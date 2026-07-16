@@ -891,6 +891,38 @@ def test_artifact_allocation_is_exclusive_deterministic_and_private(tmp_path: Pa
     assert first["record"]["consumers"] == ["codex"]
 
 
+@pytest.mark.parametrize(
+    ("agent_mode", "expected_agent"),
+    [("omitted", "codex-cli"), ("none", "codex-cli"), ("explicit", "worker")],
+)
+def test_artifact_agent_defaults_only_when_omitted_or_none(
+    tmp_path: Path, agent_mode: str, expected_agent: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    options = artifact_options()
+    options["now"] = datetime(2026, 7, 15, 18, 0, tzinfo=timezone.utc)
+    if agent_mode == "none":
+        options["agent"] = None
+    elif agent_mode == "explicit":
+        options["agent"] = expected_agent
+    allocated = allocate_artifact(location, **options)
+    assert parse_artifact_name(allocated["artifact"]).agent == expected_agent
+    current = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert verify_artifact(current, allocated["artifact"], schema_path=SCHEMA)["ok"]
+
+
+def test_explicit_empty_agent_fails_before_exclude_or_state_mutation(tmp_path: Path) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    before = exclude_bytes(repo)
+    with pytest.raises(ClientStateError) as failure:
+        allocate_artifact(location, agent="", **artifact_options())
+    assert failure.value.code == "invalid_agent"
+    assert exclude_bytes(repo) == before
+    assert not (repo / ".codex" / "state").exists()
+
+
 @pytest.mark.parametrize("scope", ["repo", "global"])
 def test_two_process_fresh_root_allocation_waits_and_uses_deterministic_suffix(
     tmp_path: Path, scope: str
