@@ -12,7 +12,11 @@ import stat
 import time
 from typing import Iterable
 
-from .locator import refresh_state_location
+from .locator import (
+    _valid_global_managed_directory,
+    _valid_global_pre_owner_directory,
+    refresh_state_location,
+)
 from .models import ClientStateError, StateLocation
 
 
@@ -374,7 +378,7 @@ def _created_directory(parent_fd: int, name: str) -> int:
         child_fd = os.open(name, _DIRECTORY_FLAGS, dir_fd=parent_fd)
         os.fchmod(child_fd, 0o700)
         details = os.fstat(child_fd)
-        if not stat.S_ISDIR(details.st_mode) or details.st_uid != os.geteuid():
+        if not _valid_global_managed_directory(details):
             raise ClientStateError("new client state directory is unsafe", code="unsafe_state_path")
         os.fsync(child_fd)
         os.fsync(parent_fd)
@@ -411,9 +415,9 @@ def _open_absolute_directory(
     fd = os.open("/", _DIRECTORY_FLAGS)
     current = Path(path.anchor)
     try:
-        if current == pre_owner_root and os.fstat(fd).st_uid not in {0, os.geteuid()}:
+        if current == pre_owner_root and not _valid_global_pre_owner_directory(os.fstat(fd)):
             raise ClientStateError(
-                "global client state ancestor has an unexpected owner",
+                "global client state ancestor has unsafe ownership or permissions",
                 code="unsafe_state_path",
             )
         for part in path.parts[1:]:
@@ -433,21 +437,25 @@ def _open_absolute_directory(
                 except FileExistsError:
                     next_fd = os.open(part, _DIRECTORY_FLAGS, dir_fd=fd)
             details = os.fstat(next_fd)
-            if current == pre_owner_root and details.st_uid not in {0, os.geteuid()}:
+            if current == pre_owner_root and not _valid_global_pre_owner_directory(details):
                 os.close(next_fd)
                 raise ClientStateError(
-                    "global client state ancestor has an unexpected owner",
+                    "global client state ancestor has unsafe ownership or permissions",
                     code="unsafe_state_path",
                 )
-            if _is_managed_global_component(current, owner_root) and details.st_uid != os.geteuid():
+            if _is_managed_global_component(current, owner_root) and not _valid_global_managed_directory(details):
                 os.close(next_fd)
                 raise ClientStateError(
-                    "global client state path has an unexpected owner", code="unsafe_state_path"
+                    "global client state path has unsafe ownership or permissions",
+                    code="unsafe_state_path",
                 )
             os.close(fd)
             fd = next_fd
         details = os.fstat(fd)
-        if details.st_uid != os.geteuid():
+        if owner_root is not None:
+            if not _valid_global_managed_directory(details):
+                raise ClientStateError("client state root is unsafe", code="unsafe_state_path")
+        elif details.st_uid != os.geteuid():
             raise ClientStateError("client state root has an unexpected owner", code="unsafe_state_path")
         os.fchmod(fd, 0o700)
         return fd

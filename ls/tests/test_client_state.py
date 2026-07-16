@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import replace
 from datetime import datetime, timezone
+import fcntl
+import hashlib
 import json
 import multiprocessing
 import os
@@ -31,6 +33,7 @@ from ls.core.client_state import artifacts, git_exclude
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA = ROOT / "ls" / "config" / "client-state-artifact.schema.json"
+FD_ROOT = Path("/proc/self/fd") if Path("/proc/self/fd").is_dir() else Path("/dev/fd")
 ACCEPTED_RELATIVE_PATHS = (
     "foo",
     "foo/bar",
@@ -51,6 +54,15 @@ REJECTED_RELATIVE_PATHS = (
     "foo/",
     "a" * 513,
 )
+
+
+@pytest.fixture(autouse=True)
+def deterministic_safe_creation_umask():
+    previous = os.umask(0o022)
+    try:
+        yield
+    finally:
+        os.umask(previous)
 
 
 def git(cwd: Path, *args: str) -> str:
@@ -92,9 +104,23 @@ def exclude_bytes(repo: Path) -> bytes:
     return (repo / ".git" / "info" / "exclude").read_bytes()
 
 
+def descriptor_count() -> int:
+    return len(list(FD_ROOT.iterdir()))
+
+
+def descriptor_target(fd: int) -> str:
+    return os.readlink(FD_ROOT / str(fd))
+
+
 def stat_with_uid(result: os.stat_result, uid: int) -> os.stat_result:
     fields = list(result)
     fields[4] = uid
+    return os.stat_result(fields)
+
+
+def stat_with_mode(result: os.stat_result, mode: int) -> os.stat_result:
+    fields = list(result)
+    fields[0] = stat.S_IFMT(result.st_mode) | mode
     return os.stat_result(fields)
 
 
@@ -632,6 +658,34 @@ def test_ownership_controls_do_not_expand_global_or_repo_policy(
     assert location.scope == ("repo" if control == "repo-root" else "global")
 
 
+@pytest.mark.parametrize("control", ["repo-root", "unrelated-global-ancestor"])
+def test_global_mode_policy_does_not_expand_to_repo_or_unrelated_ancestors(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, control: str
+) -> None:
+    home = tmp_path / "home"
+    if control == "repo-root":
+        cwd = repository(tmp_path / "repo")
+        cwd.chmod(0o777)
+        location = resolve_state_location(
+            ROOT, "codex/codex-cli", cwd=cwd, home=home, scope="repo"
+        )
+    else:
+        cwd = tmp_path / "plain"
+        cwd.mkdir()
+        unrelated = tmp_path / "unrelated"
+        unrelated.mkdir()
+        unrelated.chmod(0o777)
+        owner = unrelated / "codex-home"
+        owner.mkdir()
+        monkeypatch.setenv("CODEX_HOME", str(owner))
+        location = resolve_state_location(
+            ROOT, "codex/codex-cli", cwd=cwd, home=home, scope="global"
+        )
+
+    allocated = allocate_artifact(location, **artifact_options())
+    assert (location.root / allocated["artifact"]).is_file()
+
+
 @pytest.mark.parametrize("position", ["owner", "intermediate", "root"])
 def test_global_allocator_rechecks_live_descriptor_ownership(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, position: str
@@ -659,6 +713,105 @@ def test_global_allocator_rechecks_live_descriptor_ownership(
         allocate_artifact(location, **artifact_options())
     assert failure.value.code == "unsafe_state_path"
     assert list(state.iterdir()) == []
+
+
+@pytest.mark.parametrize("operation", ["allocate", "verify"])
+@pytest.mark.parametrize("position", ["owner", "intermediate", "root"])
+def test_global_operation_rechecks_live_descriptor_permissions_after_resolution(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, operation: str, position: str
+) -> None:
+    cwd = tmp_path / "plain"
+    cwd.mkdir()
+    home = tmp_path / "home"
+    state = home / ".config" / "opencode" / "state"
+    state.mkdir(parents=True)
+    location = resolve_state_location(
+        ROOT, "opencode/opencode-cli", cwd=cwd, home=home, scope="global"
+    )
+    artifact = None
+    if operation == "verify":
+        artifact = allocate_artifact(location, **artifact_options())["artifact"]
+        location = resolve_state_location(
+            ROOT, "opencode/opencode-cli", cwd=cwd, home=home, scope="global"
+        )
+    before = {path.name: path.read_bytes() for path in state.iterdir() if path.is_file()}
+    targets = {"owner": home, "intermediate": state.parent, "root": state}
+    target_details = targets[position].stat()
+    target_identity = (target_details.st_dev, target_details.st_ino)
+    real_fstat = os.fstat
+
+    def unsafe_permissions(fd: int):
+        result = real_fstat(fd)
+        if (result.st_dev, result.st_ino) == target_identity:
+            return stat_with_mode(result, 0o770)
+        return result
+
+    monkeypatch.setattr(artifacts.os, "fstat", unsafe_permissions)
+    with pytest.raises(ClientStateError) as failure:
+        if operation == "allocate":
+            allocate_artifact(location, **artifact_options())
+        else:
+            assert artifact is not None
+            verify_artifact(location, artifact, schema_path=SCHEMA)
+    assert failure.value.code == "unsafe_state_path"
+    assert {path.name: path.read_bytes() for path in state.iterdir() if path.is_file()} == before
+
+
+@pytest.mark.parametrize("position", ["owner", "intermediate", "root"])
+@pytest.mark.parametrize(
+    ("mode", "safe"),
+    [
+        (0o700, True), (0o755, True), (0o2755, True),
+        (0o770, False), (0o777, False), (0o1777, False), (0o2770, False),
+    ],
+)
+def test_global_managed_directory_mode_policy(
+    tmp_path: Path, position: str, mode: int, safe: bool
+) -> None:
+    cwd = tmp_path / "plain"
+    cwd.mkdir()
+    home = tmp_path / "home"
+    state = home / ".config" / "opencode" / "state"
+    state.mkdir(parents=True)
+    targets = {"owner": home, "intermediate": state.parent, "root": state}
+    targets[position].chmod(mode)
+    if safe:
+        location = resolve_state_location(
+            ROOT, "opencode/opencode-cli", cwd=cwd, home=home, scope="global"
+        )
+        assert location.root == state
+    else:
+        with pytest.raises(ClientStateError) as failure:
+            resolve_state_location(
+                ROOT, "opencode/opencode-cli", cwd=cwd, home=home, scope="global"
+            )
+        assert failure.value.code == "unsafe_state_path"
+        assert list(state.iterdir()) == []
+
+
+@pytest.mark.parametrize(("mode", "safe"), [(0o755, True), (0o1777, True), (0o777, False)])
+def test_global_missing_owner_predecessor_mode_policy(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, mode: int, safe: bool
+) -> None:
+    cwd = tmp_path / "plain"
+    cwd.mkdir()
+    boundary = tmp_path / "boundary"
+    boundary.mkdir()
+    boundary.chmod(mode)
+    owner = boundary / "missing" / "codex"
+    monkeypatch.setenv("CODEX_HOME", str(owner))
+    if safe:
+        location = resolve_state_location(
+            ROOT, "codex/codex-cli", cwd=cwd, home=tmp_path / "home", scope="global"
+        )
+        assert location.owner_root == owner and not owner.exists()
+    else:
+        with pytest.raises(ClientStateError) as failure:
+            resolve_state_location(
+                ROOT, "codex/codex-cli", cwd=cwd, home=tmp_path / "home", scope="global"
+            )
+        assert failure.value.code == "unsafe_state_path"
+        assert list(boundary.iterdir()) == []
 
 
 @pytest.mark.parametrize("operation", ["allocate", "verify"])
@@ -698,6 +851,38 @@ def test_global_pre_owner_descriptor_uid_change_after_resolution_fails_without_m
     assert exclude_bytes(repo) == before
     assert not owner.exists()
     assert list(container.iterdir()) == []
+
+
+@pytest.mark.parametrize(("mode", "safe"), [(0o755, True), (0o1777, True), (0o777, False)])
+def test_global_pre_owner_live_descriptor_permission_policy(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, mode: int, safe: bool
+) -> None:
+    cwd = tmp_path / "plain"
+    cwd.mkdir()
+    boundary = tmp_path / "boundary"
+    boundary.mkdir()
+    owner = boundary / "missing" / "codex"
+    monkeypatch.setenv("CODEX_HOME", str(owner))
+    location = resolve_state_location(
+        ROOT, "codex/codex-cli", cwd=cwd, home=tmp_path / "home", scope="global"
+    )
+    boundary_details = boundary.stat()
+    identity = (boundary_details.st_dev, boundary_details.st_ino)
+    real_fstat = os.fstat
+
+    def selected_mode(fd: int):
+        result = real_fstat(fd)
+        return stat_with_mode(result, mode) if (result.st_dev, result.st_ino) == identity else result
+
+    monkeypatch.setattr(artifacts.os, "fstat", selected_mode)
+    if safe:
+        allocated = allocate_artifact(location, **artifact_options())
+        assert (location.root / allocated["artifact"]).is_file()
+    else:
+        with pytest.raises(ClientStateError) as failure:
+            allocate_artifact(location, **artifact_options())
+        assert failure.value.code == "unsafe_state_path"
+        assert list(boundary.iterdir()) == []
 
 
 @pytest.mark.parametrize(
@@ -843,6 +1028,835 @@ def test_exact_git_exclude_plan_apply_and_concurrent_change(tmp_path: Path) -> N
     apply_git_exclude(stale)
     merged = location.git.exclude_path.read_text(encoding="utf-8")
     assert "/other/\n" in merged and "/.claude/state/\n" in merged
+
+
+@pytest.mark.parametrize(
+    "missing",
+    [
+        "repo_root_device", "repo_root_inode", "exclude_parent_device",
+        "exclude_parent_inode", "exclude_present", "exclude_device", "exclude_inode",
+    ],
+)
+def test_git_exclude_plan_carries_private_identity_tokens_and_rejects_missing_token(
+    tmp_path: Path, missing: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    plan = plan_git_exclude(location)
+    assert plan.payload() == {"action": "append", "entry": "/.codex/state/"}
+    assert "repo_root_device" not in repr(plan)
+    assert all(
+        getattr(plan, field) is not None
+        for field in (
+            "repo_root_device", "repo_root_inode", "exclude_parent_device",
+            "exclude_parent_inode", "exclude_present", "exclude_device", "exclude_inode",
+        )
+    )
+    before = exclude_bytes(repo)
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(replace(plan, **{missing: None}))
+    assert failure.value.code == "stale_state_binding"
+    assert exclude_bytes(repo) == before
+    assert not location.git.exclude_path.with_name("exclude.localsetup.lock").exists()
+
+
+@pytest.mark.parametrize(("target", "mode"), [("exclude", 0o660), ("exclude", 0o666), ("lock", 0o660), ("lock", 0o666)])
+def test_git_exclude_rejects_group_or_other_writable_mutable_files(
+    tmp_path: Path, target: str, mode: int
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert location.git
+    if target == "exclude":
+        candidate = location.git.exclude_path
+        candidate.chmod(mode)
+        operation = lambda: plan_git_exclude(location)
+    else:
+        plan = plan_git_exclude(location)
+        candidate = location.git.exclude_path.with_name("exclude.localsetup.lock")
+        candidate.write_bytes(b"")
+        candidate.chmod(mode)
+        operation = lambda: apply_git_exclude(plan)
+    before = candidate.read_bytes()
+    with pytest.raises(ClientStateError) as failure:
+        operation()
+    assert failure.value.code == "unsafe_exclude"
+    assert candidate.read_bytes() == before
+
+
+@pytest.mark.parametrize("mode", [0o600, 0o644])
+@pytest.mark.parametrize("target", ["exclude", "lock"])
+def test_git_exclude_accepts_safe_mutable_file_modes(
+    tmp_path: Path, target: str, mode: int
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert location.git
+    if target == "exclude":
+        candidate = location.git.exclude_path
+        candidate.chmod(mode)
+        plan = plan_git_exclude(location)
+    else:
+        plan = plan_git_exclude(location)
+        candidate = location.git.exclude_path.with_name("exclude.localsetup.lock")
+        candidate.write_bytes(b"")
+        candidate.chmod(mode)
+    applied = apply_git_exclude(plan)
+    assert applied.action == "applied"
+    assert applied.repo_root_device == plan.repo_root_device
+    assert applied.exclude_parent_inode == plan.exclude_parent_inode
+
+
+@pytest.mark.parametrize("replacement", ["repo", "git", "info", "exclude"])
+def test_git_exclude_rejects_same_path_identity_replacement_before_lock_or_mutation(
+    tmp_path: Path, replacement: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    plan = plan_git_exclude(location)
+    assert location.git
+    exclude = location.git.exclude_path
+    before = exclude.read_bytes()
+    if replacement == "repo":
+        repo.rename(tmp_path / "repo-prior")
+        replacement_repo = repository(repo)
+        active_exclude = replacement_repo / ".git" / "info" / "exclude"
+    elif replacement == "git":
+        (repo / ".git").rename(repo / ".git-prior")
+        subprocess.run(["git", "-C", str(repo), "init", "-q"], check=True)
+        active_exclude = repo / ".git" / "info" / "exclude"
+    elif replacement == "info":
+        info = exclude.parent
+        info.rename(info.with_name("info-prior"))
+        info.mkdir()
+        active_exclude = info / "exclude"
+        active_exclude.write_bytes(before)
+    else:
+        replacement_file = tmp_path / "replacement-exclude"
+        replacement_file.write_bytes(before)
+        os.replace(replacement_file, exclude)
+        active_exclude = exclude
+    active_before = active_exclude.read_bytes()
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(plan)
+    assert failure.value.code == "stale_state_binding"
+    assert active_exclude.read_bytes() == active_before
+    assert not active_exclude.with_name("exclude.localsetup.lock").exists()
+    assert not (repo / ".codex" / "state").exists()
+
+
+def test_git_exclude_expected_absent_uses_exclusive_creation_and_never_falls_back(
+    tmp_path: Path
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    exclude.unlink()
+    plan = plan_git_exclude(location)
+    assert plan.exclude_present is False
+    exclude.write_bytes(b"foreign\n")
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(plan)
+    assert failure.value.code == "stale_state_binding"
+    assert exclude.read_bytes() == b"foreign\n"
+    assert not exclude.with_name("exclude.localsetup.lock").exists()
+
+    clean = repository(tmp_path / "clean")
+    clean_location = resolve_state_location(
+        ROOT, "codex/codex-cli", cwd=clean, home=tmp_path / "home"
+    )
+    assert clean_location.git
+    clean_exclude = clean_location.git.exclude_path
+    clean_exclude.unlink()
+    clean_plan = plan_git_exclude(clean_location)
+    applied = apply_git_exclude(clean_plan)
+    assert clean_plan.exclude_present is False and applied.action == "applied"
+    assert clean_exclude.read_bytes() == b"/.codex/state/\n"
+
+
+def test_git_exclude_created_absent_is_restored_on_prewrite_probe_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    exclude.unlink()
+    plan = plan_git_exclude(location)
+    baseline = descriptor_count()
+
+    def fail_probe(_root: Path, _entry: str) -> bool:
+        raise ClientStateError("injected ignore probe failure", code="git_ignore_probe_failed")
+
+    monkeypatch.setattr(git_exclude, "_effective_ignore", fail_probe)
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(plan)
+    assert failure.value.code == "git_ignore_probe_failed"
+    assert not exclude.exists()
+    assert descriptor_count() == baseline
+
+
+def test_git_exclude_created_absent_is_restored_when_concurrently_ignored(
+    tmp_path: Path
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    exclude.unlink()
+    plan = plan_git_exclude(location)
+    (repo / ".gitignore").write_text("/.codex/state/\n", encoding="utf-8")
+    applied = apply_git_exclude(plan)
+    assert applied.action == "already-ignored"
+    assert applied.exclude_present is False and applied.exclude_device is None
+    assert applied.payload() == {"action": "already-ignored", "entry": "/.codex/state/"}
+    assert not exclude.exists()
+
+
+def test_git_exclude_created_ineffective_postwrite_preserves_current_bytes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    exclude.unlink()
+    plan = plan_git_exclude(location)
+    monkeypatch.setattr(git_exclude, "_effective_ignore", lambda *_args: False)
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(plan)
+    assert failure.value.code == "exclude_commit_ambiguous"
+    assert exclude.read_bytes() == b"/.codex/state/\n"
+
+
+def test_git_exclude_created_cleanup_preserves_replacement_and_reports_ambiguous(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    exclude.unlink()
+    plan = plan_git_exclude(location)
+    probes = 0
+
+    def replace_then_fail(_root: Path, _entry: str) -> bool:
+        nonlocal probes
+        probes += 1
+        if probes == 1:
+            return False
+        replacement = tmp_path / "replacement"
+        replacement.write_bytes(b"replacement\n")
+        os.replace(replacement, exclude)
+        raise ClientStateError("injected ignore probe failure", code="git_ignore_probe_failed")
+
+    monkeypatch.setattr(git_exclude, "_effective_ignore", replace_then_fail)
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(plan)
+    assert failure.value.code == "exclude_commit_ambiguous"
+    assert exclude.read_bytes() == b"replacement\n"
+
+
+def test_git_exclude_created_parent_fsync_failure_preserves_current_bytes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    exclude.unlink()
+    plan = plan_git_exclude(location)
+    parent_identity = (exclude.parent.stat().st_dev, exclude.parent.stat().st_ino)
+    real_fsync = os.fsync
+
+    def fail_parent_fsync(fd: int) -> None:
+        if (os.fstat(fd).st_dev, os.fstat(fd).st_ino) == parent_identity:
+            raise OSError("injected parent fsync failure")
+        real_fsync(fd)
+
+    monkeypatch.setattr(git_exclude.os, "fsync", fail_parent_fsync)
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(plan)
+    assert failure.value.code == "exclude_commit_ambiguous"
+    assert exclude.read_bytes() == b"/.codex/state/\n"
+
+
+def test_git_exclude_new_creation_fsyncs_file_before_parent_success(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    exclude.unlink()
+    plan = plan_git_exclude(location)
+    parent_identity = (exclude.parent.stat().st_dev, exclude.parent.stat().st_ino)
+    real_fsync = os.fsync
+    order: list[str] = []
+
+    def record_fsync(fd: int) -> None:
+        details = os.fstat(fd)
+        order.append("parent" if (details.st_dev, details.st_ino) == parent_identity else "file")
+        real_fsync(fd)
+
+    monkeypatch.setattr(git_exclude.os, "fsync", record_fsync)
+    assert apply_git_exclude(plan).action == "applied"
+    assert order[-2:] == ["file", "parent"]
+
+
+@pytest.mark.parametrize("replacement", ["symlink", "directory"])
+def test_git_exclude_planned_present_unsafe_swap_is_typed_and_closes_descriptors(
+    tmp_path: Path, replacement: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    plan = plan_git_exclude(location)
+    assert location.git
+    exclude = location.git.exclude_path
+    exclude.unlink()
+    if replacement == "symlink":
+        exclude.symlink_to(tmp_path / "foreign")
+    else:
+        exclude.mkdir()
+    baseline = descriptor_count()
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(plan)
+    assert failure.value.code == "unsafe_exclude"
+    assert descriptor_count() == baseline
+
+
+@pytest.mark.parametrize("target", ["lock", "exclude"])
+def test_git_exclude_post_open_fstat_failure_is_typed_and_descriptor_stable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, target: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    plan = plan_git_exclude(location)
+    real_fstat = os.fstat
+    injected = False
+
+    def fail_target(fd: int):
+        nonlocal injected
+        link = descriptor_target(fd)
+        selected = link.endswith("exclude.localsetup.lock") if target == "lock" else link.endswith("/exclude")
+        if selected and not injected:
+            injected = True
+            raise OSError("injected fstat failure")
+        return real_fstat(fd)
+
+    baseline = descriptor_count()
+    monkeypatch.setattr(git_exclude.os, "fstat", fail_target)
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(plan)
+    assert failure.value.code == "unsafe_exclude"
+    assert injected and descriptor_count() == baseline
+
+
+@pytest.mark.parametrize("failure_point", ["stat", "open", "read"])
+def test_git_exclude_present_io_errors_are_typed_and_descriptor_stable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure_point: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    plan = plan_git_exclude(location)
+    before = exclude.read_bytes()
+    injected = False
+    if failure_point == "stat":
+        real_stat = os.stat
+
+        def fail_exclude_stat(path, *args, **kwargs):
+            nonlocal injected
+            if path == exclude.name and kwargs.get("dir_fd") is not None and not injected:
+                injected = True
+                raise PermissionError("injected exclude stat failure")
+            return real_stat(path, *args, **kwargs)
+
+        monkeypatch.setattr(git_exclude.os, "stat", fail_exclude_stat)
+    elif failure_point == "open":
+        real_open = os.open
+
+        def fail_exclude_open(path, flags, *args, **kwargs):
+            nonlocal injected
+            if path == exclude.name and not flags & os.O_EXCL and not injected:
+                injected = True
+                raise OSError("injected exclude open failure")
+            return real_open(path, flags, *args, **kwargs)
+
+        monkeypatch.setattr(git_exclude.os, "open", fail_exclude_open)
+    else:
+        real_read = git_exclude._read_fd
+
+        def fail_exclude_read(fd: int) -> bytes:
+            nonlocal injected
+            if descriptor_target(fd).endswith("/exclude") and not injected:
+                injected = True
+                raise OSError("injected exclude read failure")
+            return real_read(fd)
+
+        monkeypatch.setattr(git_exclude, "_read_fd", fail_exclude_read)
+    baseline = descriptor_count()
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(plan)
+    assert failure.value.code == "unsafe_exclude"
+    assert injected and descriptor_count() == baseline
+    assert exclude.read_bytes() == before
+
+
+def test_git_exclude_created_read_failure_preserves_empty_file_and_closes_descriptors(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    exclude.unlink()
+    plan = plan_git_exclude(location)
+    real_read = git_exclude._read_fd
+    injected = False
+
+    def fail_first_exclude_read(fd: int) -> bytes:
+        nonlocal injected
+        if descriptor_target(fd).endswith("/exclude") and not injected:
+            injected = True
+            raise OSError("injected exclude read failure")
+        return real_read(fd)
+
+    baseline = descriptor_count()
+    monkeypatch.setattr(git_exclude, "_read_fd", fail_first_exclude_read)
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(plan)
+    assert failure.value.code == "exclude_commit_ambiguous"
+    assert injected and descriptor_count() == baseline
+    assert exclude.read_bytes() == b""
+
+
+@pytest.mark.parametrize("phase", ["postcreate-prewrite", "postwrite"])
+def test_git_exclude_created_foreign_bytes_are_preserved_and_always_ambiguous(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, phase: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    exclude.unlink()
+    plan = plan_git_exclude(location)
+    foreign = b"/foreign-before-local/\n"
+    if phase == "postcreate-prewrite":
+        real_read = git_exclude._read_fd
+        injected = False
+
+        def inject_foreign_then_fail_read(fd: int) -> bytes:
+            nonlocal injected
+            if descriptor_target(fd).endswith("/exclude") and not injected:
+                injected = True
+                with exclude.open("ab") as handle:
+                    handle.write(foreign)
+                raise OSError("injected post-creation read failure")
+            return real_read(fd)
+
+        monkeypatch.setattr(git_exclude, "_read_fd", inject_foreign_then_fail_read)
+        monkeypatch.setattr(git_exclude, "_effective_ignore", lambda *_args: False)
+    else:
+        probes = 0
+
+        def inject_foreign_then_fail_probe(_root: Path, _entry: str) -> bool:
+            nonlocal probes
+            probes += 1
+            if probes == 2:
+                with exclude.open("ab") as handle:
+                    handle.write(foreign)
+            return False
+
+        monkeypatch.setattr(git_exclude, "_effective_ignore", inject_foreign_then_fail_probe)
+    baseline = descriptor_count()
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(plan)
+    assert failure.value.code == "exclude_commit_ambiguous"
+    expected = foreign if phase == "postcreate-prewrite" else b"/.codex/state/\n" + foreign
+    assert exclude.read_bytes() == expected
+    assert descriptor_count() == baseline
+
+
+def test_git_exclude_existing_already_ignored_digest_uses_final_bound_read(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    plan = plan_git_exclude(location)
+    real_effective_ignore = git_exclude._effective_ignore
+    foreign_rule = b"/.codex/state/\n"
+
+    def append_rule_during_probe(root: Path, entry: str) -> bool:
+        with exclude.open("ab") as handle:
+            handle.write(foreign_rule)
+        return real_effective_ignore(root, entry)
+
+    monkeypatch.setattr(git_exclude, "_effective_ignore", append_rule_during_probe)
+    applied = apply_git_exclude(plan)
+    final = exclude.read_bytes()
+    assert applied.action == "already-ignored"
+    assert final.endswith(foreign_rule)
+    assert applied.expected_digest == hashlib.sha256(final).hexdigest()
+
+
+def test_git_exclude_plan_final_real_probe_read_rejects_foreign_invalid_utf8(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    before = exclude.read_bytes()
+    real_effective_ignore = git_exclude._effective_ignore
+
+    def real_probe_then_invalidate(root: Path, entry: str) -> bool:
+        result = real_effective_ignore(root, entry)
+        with exclude.open("ab") as handle:
+            handle.write(b"\xff")
+        return result
+
+    baseline = descriptor_count()
+    monkeypatch.setattr(git_exclude, "_effective_ignore", real_probe_then_invalidate)
+    with pytest.raises(ClientStateError) as failure:
+        plan_git_exclude(location)
+    assert failure.value.code == "unsafe_exclude"
+    assert exclude.read_bytes() == before + b"\xff"
+    assert descriptor_count() == baseline
+
+
+def test_git_exclude_existing_already_ignored_final_read_rejects_invalid_utf8(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    before = exclude.read_bytes()
+    plan = plan_git_exclude(location)
+    real_effective_ignore = git_exclude._effective_ignore
+    foreign = b"/.codex/state/\n\xff"
+
+    def establish_ignore_then_invalidate(root: Path, entry: str) -> bool:
+        with exclude.open("ab") as handle:
+            handle.write(b"/.codex/state/\n")
+        result = real_effective_ignore(root, entry)
+        with exclude.open("ab") as handle:
+            handle.write(b"\xff")
+        return result
+
+    monkeypatch.setattr(git_exclude, "_effective_ignore", establish_ignore_then_invalidate)
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(plan)
+    assert failure.value.code == "unsafe_exclude"
+    assert exclude.read_bytes() == before + foreign
+
+
+def test_git_exclude_existing_applied_invalid_utf8_preserves_current_bytes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    before = exclude.read_bytes()
+    plan = plan_git_exclude(location)
+    real_effective_ignore = git_exclude._effective_ignore
+    probes = 0
+
+    def invalidate_before_local_append(root: Path, entry: str) -> bool:
+        nonlocal probes
+        probes += 1
+        result = real_effective_ignore(root, entry)
+        if probes == 1:
+            with exclude.open("ab") as handle:
+                handle.write(b"\xff\n")
+        return result
+
+    monkeypatch.setattr(git_exclude, "_effective_ignore", invalidate_before_local_append)
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(plan)
+    assert failure.value.code == "exclude_commit_ambiguous"
+    assert exclude.read_bytes() == before + b"\xff\n/.codex/state/\n"
+
+
+def test_git_exclude_created_invalid_utf8_preserves_current_bytes_and_is_ambiguous(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    exclude.unlink()
+    plan = plan_git_exclude(location)
+    real_effective_ignore = git_exclude._effective_ignore
+    probes = 0
+
+    def inject_invalid(root: Path, entry: str) -> bool:
+        nonlocal probes
+        probes += 1
+        result = real_effective_ignore(root, entry)
+        if probes == 2:
+            with exclude.open("ab") as handle:
+                handle.write(b"\xff\n")
+        return result
+
+    monkeypatch.setattr(git_exclude, "_effective_ignore", inject_invalid)
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(plan)
+    assert failure.value.code == "exclude_commit_ambiguous"
+    assert exclude.read_bytes() == b"/.codex/state/\n\xff\n"
+
+
+@pytest.mark.parametrize("planned_present", [False, True])
+def test_git_exclude_lost_lock_postwrite_preserves_owned_and_contender_bytes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, planned_present: bool
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    if not planned_present:
+        exclude.unlink()
+    before = exclude.read_bytes() if planned_present else b""
+    plan = plan_git_exclude(location)
+    lock = exclude.with_name("exclude.localsetup.lock")
+    owned = b"/.codex/state/\n"
+    contender = b"/contender/\n"
+    probes = 0
+    injected = False
+
+    def replace_lock_and_append_during_postwrite_probe(_root: Path, _entry: str) -> bool:
+        nonlocal probes
+        nonlocal injected
+        probes += 1
+        if probes == 2 and not injected:
+            injected = True
+            replacement = tmp_path / "replacement-lock"
+            replacement.write_bytes(b"replacement\n")
+            os.replace(replacement, lock)
+            with exclude.open("ab") as handle:
+                handle.write(contender)
+        return False
+
+    baseline = descriptor_count()
+    monkeypatch.setattr(
+        git_exclude, "_effective_ignore", replace_lock_and_append_during_postwrite_probe
+    )
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(plan)
+    assert failure.value.code == "exclude_commit_ambiguous"
+    assert injected and exclude.read_bytes() == before + owned + contender
+    assert lock.read_bytes() == b"replacement\n"
+    assert descriptor_count() == baseline
+
+
+@pytest.mark.parametrize("probe_result", ["error", "already-ignored"])
+def test_git_exclude_planned_absent_probe_finishes_before_exclusive_creation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, probe_result: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    exclude.unlink()
+    plan = plan_git_exclude(location)
+
+    def controlled_probe(_root: Path, _entry: str) -> bool:
+        if probe_result == "error":
+            raise ClientStateError("ignore probe failed", code="git_ignore_probe_failed")
+        return True
+
+    def creation_must_not_run(*_args, **_kwargs):
+        raise AssertionError("planned-absent probe must precede creation")
+
+    monkeypatch.setattr(git_exclude, "_effective_ignore", controlled_probe)
+    monkeypatch.setattr(git_exclude, "_create_mutable_regular_exclusive", creation_must_not_run)
+    if probe_result == "error":
+        with pytest.raises(ClientStateError) as failure:
+            apply_git_exclude(plan)
+        assert failure.value.code == "git_ignore_probe_failed"
+    else:
+        applied = apply_git_exclude(plan)
+        assert applied.action == "already-ignored"
+        assert applied.exclude_present is False
+        assert applied.expected_digest == hashlib.sha256(b"").hexdigest()
+    assert not exclude.exists()
+
+
+@pytest.mark.parametrize("planned_present", [False, True])
+def test_git_exclude_postwrite_failure_never_truncates_or_unlinks(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, planned_present: bool
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    if not planned_present:
+        exclude.unlink()
+    before = exclude.read_bytes() if planned_present else b""
+    plan = plan_git_exclude(location)
+
+    def destructive_recovery_forbidden(*_args, **_kwargs):
+        raise AssertionError("destructive Git exclude recovery is forbidden")
+
+    monkeypatch.setattr(git_exclude.os, "ftruncate", destructive_recovery_forbidden)
+    monkeypatch.setattr(git_exclude.os, "unlink", destructive_recovery_forbidden)
+    monkeypatch.setattr(git_exclude, "_effective_ignore", lambda *_args: False)
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(plan)
+    assert failure.value.code == "exclude_commit_ambiguous"
+    assert exclude.read_bytes() == before + b"/.codex/state/\n"
+
+
+@pytest.mark.parametrize("partial", [1, 8])
+def test_git_exclude_partial_write_preserves_partial_and_noncooperating_append(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, partial: int
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    before = exclude.read_bytes()
+    plan = plan_git_exclude(location)
+    real_write = os.write
+    contender = b"/contender/\n"
+
+    def partial_then_contender(fd: int, data: bytes) -> int:
+        if b"/.codex/state/" not in data:
+            return real_write(fd, data)
+        written = real_write(fd, data[:partial])
+        with exclude.open("ab") as handle:
+            handle.write(contender)
+        return written
+
+    monkeypatch.setattr(git_exclude.os, "write", partial_then_contender)
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(plan)
+    assert failure.value.code == "exclude_commit_ambiguous"
+    assert exclude.read_bytes() == before + b"/.codex/state/\n"[:partial] + contender
+
+
+@pytest.mark.parametrize("action", ["append", "already-ignored"])
+def test_git_exclude_plan_digest_tracks_final_valid_concurrent_bytes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, action: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    real_effective_ignore = git_exclude._effective_ignore
+    foreign = b"/foreign-during-plan/\n"
+
+    def real_probe_then_append(root: Path, entry: str) -> bool:
+        if action == "already-ignored":
+            (repo / ".gitignore").write_text("/.codex/state/\n", encoding="utf-8")
+        result = real_effective_ignore(root, entry)
+        with exclude.open("ab") as handle:
+            handle.write(foreign)
+        return result
+
+    monkeypatch.setattr(git_exclude, "_effective_ignore", real_probe_then_append)
+    plan = plan_git_exclude(location)
+    final = exclude.read_bytes()
+    assert plan.action == action
+    assert plan.expected_digest == hashlib.sha256(final).hexdigest()
+
+
+@pytest.mark.parametrize("failure_point", ["fchmod", "flock", "contention", "absent-open"])
+def test_git_exclude_precommit_os_errors_are_typed_without_descriptor_or_exclude_mutation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure_point: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    if failure_point == "absent-open":
+        exclude.unlink()
+    plan = plan_git_exclude(location)
+    before = exclude.read_bytes() if exclude.exists() else None
+    if failure_point == "fchmod":
+        real_fchmod = os.fchmod
+
+        def fail_lock_fchmod(fd: int, mode: int) -> None:
+            if descriptor_target(fd).endswith("exclude.localsetup.lock"):
+                raise OSError("injected lock fchmod failure")
+            real_fchmod(fd, mode)
+
+        monkeypatch.setattr(git_exclude.os, "fchmod", fail_lock_fchmod)
+    elif failure_point in {"flock", "contention"}:
+        error = BlockingIOError("injected lock contention") if failure_point == "contention" else OSError("injected flock failure")
+        monkeypatch.setattr(
+            git_exclude.fcntl, "flock", lambda *_args: (_ for _ in ()).throw(error)
+        )
+    else:
+        real_open = os.open
+
+        def fail_exclusive_open(path, flags, *args, **kwargs):
+            if path == exclude.name and flags & os.O_EXCL:
+                raise PermissionError("injected exclusive open failure")
+            return real_open(path, flags, *args, **kwargs)
+
+        monkeypatch.setattr(git_exclude.os, "open", fail_exclusive_open)
+    baseline = descriptor_count()
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(plan)
+    expected = "exclude_locked" if failure_point == "contention" else "unsafe_exclude"
+    assert failure.value.code == expected
+    assert descriptor_count() == baseline
+    assert (exclude.read_bytes() if exclude.exists() else None) == before
+
+
+@pytest.mark.parametrize("phase", ["prewrite", "postwrite"])
+@pytest.mark.parametrize("target", ["lock", "exclude"])
+def test_git_exclude_entry_replacement_is_detected_without_postwrite_recovery(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, phase: str, target: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
+    plan = plan_git_exclude(location)
+    assert location.git
+    exclude = location.git.exclude_path
+    before = exclude.read_bytes()
+    lock = exclude.with_name("exclude.localsetup.lock")
+    lock.write_bytes(b"owned\n")
+    candidate = lock if target == "lock" else exclude
+
+    def replace_candidate() -> None:
+        replacement = tmp_path / f"replacement-{target}"
+        replacement.write_bytes(b"replacement\n")
+        os.replace(replacement, candidate)
+
+    if phase == "prewrite":
+        real_flock = fcntl.flock
+
+        def replace_after_flock(fd: int, operation: int) -> None:
+            real_flock(fd, operation)
+            replace_candidate()
+
+        monkeypatch.setattr(git_exclude.fcntl, "flock", replace_after_flock)
+    else:
+        real_write = os.write
+
+        def replace_after_write(fd: int, data: bytes) -> int:
+            written = real_write(fd, data)
+            if b"/.codex/state/" in data:
+                replace_candidate()
+            return written
+
+        monkeypatch.setattr(git_exclude.os, "write", replace_after_write)
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(plan)
+    expected_code = "exclude_commit_ambiguous" if phase == "postwrite" else "stale_state_binding"
+    assert failure.value.code == expected_code
+    assert candidate.read_bytes() == b"replacement\n"
+    if target == "lock":
+        expected_exclude = before + b"/.codex/state/\n" if phase == "postwrite" else before
+        assert exclude.read_bytes() == expected_exclude
 
 
 def test_existing_repo_ignore_needs_no_local_exclude_write(tmp_path: Path) -> None:
@@ -1432,7 +2446,7 @@ def test_git_exclude_parent_swap_is_descriptor_rejected(
     assert not (outside / "exclude").exists()
 
 
-def test_git_exclude_failed_postcheck_rolls_back_owned_tail(
+def test_git_exclude_failed_postcheck_preserves_owned_tail_as_ambiguous(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     repo = repository(tmp_path / "repo")
@@ -1441,9 +2455,10 @@ def test_git_exclude_failed_postcheck_rolls_back_owned_tail(
     assert location.git
     before = location.git.exclude_path.read_bytes()
     monkeypatch.setattr(git_exclude, "_effective_ignore", lambda *_args: False)
-    with pytest.raises(ClientStateError, match="ineffective"):
+    with pytest.raises(ClientStateError) as failure:
         apply_git_exclude(plan)
-    assert location.git.exclude_path.read_bytes() == before
+    assert failure.value.code == "exclude_commit_ambiguous"
+    assert location.git.exclude_path.read_bytes() == before + b"/.codex/state/\n"
 
 
 def test_git_exclude_stale_lock_file_is_reusable(tmp_path: Path) -> None:
@@ -1456,7 +2471,7 @@ def test_git_exclude_stale_lock_file_is_reusable(tmp_path: Path) -> None:
     assert apply_git_exclude(plan).action == "applied"
 
 
-def test_git_exclude_short_write_rolls_back(
+def test_git_exclude_short_write_preserves_partial_bytes_as_ambiguous(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     repo = repository(tmp_path / "repo")
@@ -1475,9 +2490,10 @@ def test_git_exclude_short_write_rolls_back(
         return original(fd, data)
 
     monkeypatch.setattr(git_exclude.os, "write", short_write)
-    with pytest.raises(ClientStateError, match="incomplete"):
+    with pytest.raises(ClientStateError) as failure:
         apply_git_exclude(plan)
-    assert location.git.exclude_path.read_bytes() == before
+    assert failure.value.code == "exclude_commit_ambiguous"
+    assert location.git.exclude_path.read_bytes() == before + b"/.codex/state/"
 
 
 def test_git_exclude_foreign_append_is_preserved_and_digest_is_exact(
@@ -1711,7 +2727,7 @@ def test_verify_rejects_root_swap_after_descriptor_reads(
         verify_artifact(current, allocated["artifact"], schema_path=SCHEMA)
 
 
-def test_git_exclude_foreign_tail_makes_failed_rollback_explicitly_ambiguous(
+def test_git_exclude_foreign_tail_on_failed_verification_is_preserved_as_ambiguous(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     repo = repository(tmp_path / "repo")
@@ -1844,8 +2860,10 @@ def test_late_git_info_redirect_is_rejected_after_ignore_probe(
         return calls == probe_number
 
     monkeypatch.setattr(git_exclude, "_effective_ignore", redirect)
-    with pytest.raises(ClientStateError, match="binding"):
+    with pytest.raises(ClientStateError) as failure:
         apply_git_exclude(plan)
+    expected = "stale_state_binding" if probe_number == 1 else "exclude_commit_ambiguous"
+    assert failure.value.code == expected
     assert (outside / "exclude").read_bytes() == b"/.codex/state/\n"
 
 

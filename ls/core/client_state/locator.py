@@ -145,8 +145,23 @@ def _assert_safe_state_path(anchor: Path, target: Path) -> None:
             )
 
 
+def _valid_global_managed_directory(details: os.stat_result) -> bool:
+    return (
+        stat.S_ISDIR(details.st_mode)
+        and details.st_uid == os.geteuid()
+        and details.st_mode & 0o022 == 0
+    )
+
+
+def _valid_global_pre_owner_directory(details: os.stat_result) -> bool:
+    return (
+        stat.S_ISDIR(details.st_mode)
+        and details.st_uid in {0, os.geteuid()}
+        and (details.st_mode & 0o022 == 0 or details.st_mode & stat.S_ISVTX != 0)
+    )
+
+
 def _assert_global_ownership(owner: Path, target: Path) -> None:
-    expected_uid = os.geteuid()
     try:
         relative = target.relative_to(owner)
     except ValueError as exc:
@@ -164,9 +179,10 @@ def _assert_global_ownership(owner: Path, target: Path) -> None:
             ) from exc
         if index == 0:
             owner_exists = True
-        if details.st_uid != expected_uid:
+        if not _valid_global_managed_directory(details):
             raise ClientStateError(
-                "global client state path has an unexpected owner", code="unsafe_state_path"
+                "global client state path has unsafe ownership or permissions",
+                code="unsafe_state_path",
             )
     if owner_exists:
         return
@@ -186,9 +202,10 @@ def _assert_global_ownership(owner: Path, target: Path) -> None:
             raise ClientStateError(
                 "global client state ownership is unavailable", code="unsafe_state_path"
             ) from exc
-    if details.st_uid not in {0, expected_uid}:
+    if not _valid_global_pre_owner_directory(details):
         raise ClientStateError(
-            "global client state ancestor has an unexpected owner", code="unsafe_state_path"
+            "global client state ancestor has unsafe ownership or permissions",
+            code="unsafe_state_path",
         )
 
 
