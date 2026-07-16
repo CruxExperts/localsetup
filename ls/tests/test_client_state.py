@@ -1179,13 +1179,17 @@ def test_exact_git_exclude_plan_apply_and_concurrent_change(tmp_path: Path) -> N
         "exclude_parent_inode", "exclude_present", "exclude_device", "exclude_inode",
     ],
 )
+@pytest.mark.parametrize("initially_ignored", [False, True])
 def test_git_exclude_plan_carries_private_identity_tokens_and_rejects_missing_token(
-    tmp_path: Path, missing: str
+    tmp_path: Path, missing: str, initially_ignored: bool
 ) -> None:
     repo = repository(tmp_path / "repo")
+    if initially_ignored:
+        (repo / ".gitignore").write_text("/.codex/state/\n", encoding="utf-8")
     location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
     plan = plan_git_exclude(location)
-    assert plan.payload() == {"action": "append", "entry": "/.codex/state/"}
+    expected_action = "already-ignored" if initially_ignored else "append"
+    assert plan.payload() == {"action": expected_action, "entry": "/.codex/state/"}
     assert "repo_root_device" not in repr(plan)
     assert all(
         getattr(plan, field) is not None
@@ -1456,15 +1460,21 @@ def test_git_exclude_planned_present_unsafe_swap_is_typed_and_closes_descriptors
     plan = plan_git_exclude(location)
     assert location.git
     exclude = location.git.exclude_path
-    exclude.unlink()
     if replacement == "symlink":
-        exclude.symlink_to(tmp_path / "foreign")
+        candidate = tmp_path / "replacement-symlink"
+        candidate.symlink_to(tmp_path / "foreign")
     else:
-        exclude.mkdir()
+        candidate = tmp_path / "replacement-directory"
+        candidate.mkdir()
+    exclude.unlink()
+    os.replace(candidate, exclude)
+    assert (exclude.lstat().st_dev, exclude.lstat().st_ino) != (
+        plan.exclude_device, plan.exclude_inode
+    )
     baseline = descriptor_count()
     with pytest.raises(ClientStateError) as failure:
         apply_git_exclude(plan)
-    assert failure.value.code == "unsafe_exclude"
+    assert failure.value.code == "stale_state_binding"
     assert descriptor_count() == baseline
 
 
@@ -2008,6 +2018,141 @@ def test_existing_repo_ignore_needs_no_local_exclude_write(tmp_path: Path) -> No
     plan = plan_git_exclude(location)
     assert plan.action == "already-ignored"
     assert apply_git_exclude(plan) == plan
+
+
+@pytest.mark.parametrize("coverage", ["external-exact", "external-broader", "local-exact"])
+@pytest.mark.parametrize("outcome", ["stable", "lost"])
+def test_already_ignored_plan_rechecks_live_coverage_and_preserves_current_bytes(
+    tmp_path: Path, coverage: str, outcome: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(
+        ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home"
+    )
+    assert location.git
+    exclude = location.git.exclude_path
+    external = repo / ".gitignore"
+    if coverage == "external-exact":
+        external.write_bytes(b"/.codex/state/\n")
+    elif coverage == "external-broader":
+        external.write_bytes(b"/.codex/\n")
+    else:
+        exclude.write_bytes(exclude.read_bytes() + b"/.codex/state/\n")
+    plan = plan_git_exclude(location)
+    assert plan.action == "already-ignored"
+
+    if coverage.startswith("external"):
+        selected = external
+        replacement = b"/foreign-external/\n"
+    else:
+        selected = exclude
+        replacement = b"/foreign-local/\n"
+    identity = (selected.stat().st_dev, selected.stat().st_ino)
+    if outcome == "lost":
+        selected.write_bytes(replacement)
+        assert (selected.stat().st_dev, selected.stat().st_ino) == identity
+    before = exclude.read_bytes()
+    applied = apply_git_exclude(plan)
+    final = exclude.read_bytes()
+
+    if outcome == "stable":
+        assert applied.action == "already-ignored"
+        assert final == before
+    else:
+        assert applied.action == "applied"
+        assert final == before + b"/.codex/state/\n"
+    assert applied.expected_digest == hashlib.sha256(final).hexdigest()
+
+
+def test_already_ignored_planned_absent_creates_exact_rule_when_external_coverage_is_lost(
+    tmp_path: Path
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(
+        ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home"
+    )
+    assert location.git
+    exclude = location.git.exclude_path
+    exclude.unlink()
+    external = repo / ".gitignore"
+    external.write_bytes(b"/.codex/state/\n")
+    plan = plan_git_exclude(location)
+    assert plan.action == "already-ignored" and plan.exclude_present is False
+    identity = (external.stat().st_dev, external.stat().st_ino)
+    external.write_bytes(b"/foreign-external/\n")
+    assert (external.stat().st_dev, external.stat().st_ino) == identity
+
+    applied = apply_git_exclude(plan)
+
+    assert applied.action == "applied"
+    assert exclude.read_bytes() == b"/.codex/state/\n"
+    assert applied.expected_digest == hashlib.sha256(exclude.read_bytes()).hexdigest()
+
+
+@pytest.mark.parametrize("replacement", ["regular", "symlink", "directory", "missing"])
+def test_already_ignored_planned_present_replacement_is_stale_before_lock(
+    tmp_path: Path, replacement: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    (repo / ".gitignore").write_text("/.codex/state/\n", encoding="utf-8")
+    location = resolve_state_location(
+        ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home"
+    )
+    assert location.git
+    exclude = location.git.exclude_path
+    plan = plan_git_exclude(location)
+    assert plan.action == "already-ignored" and plan.exclude_present is True
+    if replacement == "regular":
+        candidate = tmp_path / "replacement-regular"
+        candidate.write_bytes(b"replacement\n")
+    elif replacement == "symlink":
+        candidate = tmp_path / "replacement-symlink"
+        candidate.symlink_to(tmp_path / "foreign")
+    elif replacement == "directory":
+        candidate = tmp_path / "replacement-directory"
+        candidate.mkdir()
+    exclude.unlink()
+    if replacement != "missing":
+        os.replace(candidate, exclude)
+        assert (exclude.lstat().st_dev, exclude.lstat().st_ino) != (
+            plan.exclude_device, plan.exclude_inode
+        )
+
+    baseline = descriptor_count()
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(plan)
+
+    assert failure.value.code == "stale_state_binding"
+    assert descriptor_count() == baseline
+    assert not exclude.with_name("exclude.localsetup.lock").exists()
+
+
+@pytest.mark.parametrize("failure", ["mode", "utf8"])
+def test_already_ignored_live_file_validation_fails_without_exclude_write(
+    tmp_path: Path, failure: str
+) -> None:
+    repo = repository(tmp_path / "repo")
+    (repo / ".gitignore").write_text("/.codex/state/\n", encoding="utf-8")
+    location = resolve_state_location(
+        ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home"
+    )
+    assert location.git
+    exclude = location.git.exclude_path
+    plan = plan_git_exclude(location)
+    assert plan.action == "already-ignored"
+    if failure == "mode":
+        exclude.chmod(0o666)
+    else:
+        exclude.write_bytes(exclude.read_bytes() + b"\xff")
+    before = exclude.read_bytes()
+    baseline = descriptor_count()
+
+    with pytest.raises(ClientStateError) as error:
+        apply_git_exclude(plan)
+
+    assert error.value.code == "unsafe_exclude"
+    assert exclude.read_bytes() == before
+    assert descriptor_count() == baseline
 
 
 def test_artifact_allocation_is_exclusive_deterministic_and_private(tmp_path: Path) -> None:

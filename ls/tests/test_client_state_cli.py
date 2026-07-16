@@ -867,6 +867,58 @@ def test_cli_planned_absent_failures_and_concurrent_ignore_restore_absence_priva
 
 
 @pytest.mark.parametrize("action", ["path", "allocate"])
+@pytest.mark.parametrize("outcome", ["stable", "lost", "error"])
+def test_cli_already_ignored_plan_runs_final_live_check_before_state(
+    tmp_path: Path,
+    capsys,
+    monkeypatch: pytest.MonkeyPatch,
+    action: str,
+    outcome: str,
+) -> None:
+    repo = repository(tmp_path / "private-repo")
+    external = repo / ".gitignore"
+    external.write_bytes(b"/.codex/state/\n")
+    exclude = repo / ".git" / "info" / "exclude"
+    before = exclude.read_bytes()
+    real_effective_ignore = git_exclude._effective_ignore
+    probes = 0
+
+    def controlled_probe(root: Path, entry: str) -> bool:
+        nonlocal probes
+        probes += 1
+        if probes == 2 and outcome == "error":
+            raise ClientStateError("private final probe detail", code="git_ignore_probe_failed")
+        result = real_effective_ignore(root, entry)
+        if probes == 1 and outcome in {"lost", "error"}:
+            external.write_bytes(b"/foreign-external/\n")
+        return result
+
+    monkeypatch.setattr(git_exclude, "_effective_ignore", controlled_probe)
+    args = ["state", action, "--client", "codex/codex-cli", "--directory", str(repo)]
+    if action == "path":
+        args.append("--apply-exclude")
+    else:
+        args.extend(allocation_args())
+    baseline = descriptor_count()
+    code, payload = invoke(capsys, *args)
+    encoded = json.dumps(payload, sort_keys=True)
+
+    if outcome == "error":
+        assert code == 2 and payload["error"]["code"] == "git_ignore_probe_failed"
+        assert exclude.read_bytes() == before
+        assert not (repo / ".codex" / "state").exists()
+    else:
+        expected_action = "already-ignored" if outcome == "stable" else "applied"
+        assert code == 0 and payload["exclude"]["action"] == expected_action
+        expected = before if outcome == "stable" else before + b"/.codex/state/\n"
+        assert exclude.read_bytes() == expected
+        assert (repo / ".codex" / "state").exists() == (action == "allocate")
+    assert probes >= (2 if outcome != "lost" else 3)
+    assert "Traceback" not in encoded and str(repo) not in encoded
+    assert descriptor_count() == baseline
+
+
+@pytest.mark.parametrize("action", ["path", "allocate"])
 @pytest.mark.parametrize("phase", ["postcreate-prewrite", "postwrite"])
 def test_cli_created_foreign_exclude_bytes_are_preserved_with_private_ambiguity(
     tmp_path: Path,

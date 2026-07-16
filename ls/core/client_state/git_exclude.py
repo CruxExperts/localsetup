@@ -253,17 +253,13 @@ def _require_base_bindings(
         raise ClientStateError("Git exclude binding changed", code="stale_state_binding")
     if _resolved_exclude(plan.git_root) != path:
         try:
-            current = path.stat(follow_symlinks=False)
+            path.stat(follow_symlinks=False)
         except FileNotFoundError:
-            current = None
+            pass
         except OSError as exc:
             raise ClientStateError(
                 "Git info/exclude is unsafe or unavailable", code="unsafe_exclude"
             ) from exc
-        if current is not None and not stat.S_ISREG(current.st_mode):
-            raise ClientStateError(
-                "Git info/exclude must be a regular file", code="unsafe_exclude"
-            )
         raise ClientStateError("Git exclude binding changed", code="stale_state_binding")
 
 
@@ -402,8 +398,10 @@ def plan_git_exclude(location: StateLocation) -> ExcludePlan:
 
 
 def apply_git_exclude(plan: ExcludePlan) -> ExcludePlan:
-    if plan.action != "append":
+    if plan.action == "not-applicable":
         return plan
+    if plan.action not in {"append", "already-ignored"}:
+        raise ClientStateError("Git exclude plan action is invalid", code="stale_state_binding")
     if plan.exclude_path is None or plan.entry is None or plan.git_root is None:
         raise ClientStateError("Git exclude plan is incomplete", code="stale_state_binding")
     _require_append_tokens(plan)
@@ -430,9 +428,12 @@ def apply_git_exclude(plan: ExcludePlan) -> ExcludePlan:
                 raise ClientStateError(
                     "Git info/exclude is unsafe or unavailable", code="unsafe_exclude"
                 ) from exc
-            _validate_mutable(before, label="Git info/exclude")
-            if _identity(before) != (plan.exclude_device, plan.exclude_inode):
+            if (
+                _identity(before) != (plan.exclude_device, plan.exclude_inode)
+                or not stat.S_ISREG(before.st_mode)
+            ):
                 raise ClientStateError("Git info/exclude binding changed", code="stale_state_binding")
+            _validate_mutable(before, label="Git info/exclude")
             try:
                 exclude_fd = os.open(
                     path.name,
