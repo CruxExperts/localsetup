@@ -182,6 +182,35 @@ how to integrate accepted work, and performs the normal guarded publication
 flow. Treat research handoffs as durable review material for that loop, not as
 direct execution authority over an absent agent.
 
+### Durable State, Maintainer Role, And Deferred Work
+
+Before an agent calls itself the publishing agent, maintainer, or integrator,
+inspect the current Git branch/HEAD, upstream and base refs, status, staged
+paths, scoped diffs, and local commit history. Then read the applicable durable
+ledgers in their expected private locations—normally `.codex/runs/` and
+`.localsetup-maint/`—and verify any associated GitHub issue/PR/release state
+through the repository's authenticated `gh` surface when that external state
+matters. Git state, durable artifacts, and verified GitHub state are the source
+of truth for ongoing development, ownership, and release status; chat history,
+process listings, stale summaries, and an agent's self-description are not.
+
+An agent working outside its declared home repository is presumed not to be the
+maintainer or publishing agent for that repository. It may perform only the
+bounded research or branch-slice work its packet permits until the user
+explicitly assigns it the maintainer/publishing role for that exact repository.
+Even inside the home repository, no agent may infer publishing authority from a
+dirty worktree, a branch name, or a handoff artifact alone.
+
+Do not leave a reusable defect, follow-up, or deferred task only in chat or an
+untracked note. Verify whether the relevant upstream GitHub tracker exists and
+search for a duplicate; where the active task authorizes the external tracking
+write, create or update one sanitized upstream issue with the evidence,
+ownership, and acceptance criterion. Otherwise record the item in the
+repository's tracked backlog/TODO file when it exists; if neither tracking
+surface is available, keep a durable private ledger record and ask the user to
+choose the tracking destination. This routing rule does not waive the active
+task's external-mutation, security, privacy, or redaction gates.
+
 ## Skill And Context Preservation
 
 When editing `SKILL.md`, `AGENTS.md`, workflow docs, examples, references, schemas, templates, or operational runbooks, preserve task capability over brevity.
