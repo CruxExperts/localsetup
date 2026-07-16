@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 8f115e024b88c7061463c6b9cb8945ebbde601995781455b3807b06ff92669ba
+  source_provenance_hash: 00866f38bd1f5abe61b53621fa28b3a60223f0865588f497e5fa9095fec44bf2
   emitter: generate-docs
 framework_version: 4.2.19
-source_commit: 6950c941cbfafb352e8ed1a3c563c9aeb120b779
-artifact_sha256: cf369e6e7d1db9d1b66975194c435c6e222599f0be0f8212c3dc2e0998fdd406
+source_commit: 5d2116b3bb45d24d92a4c4c3a68a8d68f51d5eff
+artifact_sha256: bea7321f0472023d8adfdf1e1f7bba780b282d0a4c5c29b7979fbab564a880a1
 ---
 # Implementation File Map
 
@@ -80,6 +80,8 @@ artifact_sha256: cf369e6e7d1db9d1b66975194c435c6e222599f0be0f8212c3dc2e0998fdd40
 | `refactor` | `ls/config/clients.schema.json` |
 | `refactor` | `ls/config/clients.yaml` |
 | `keep` | `ls/config/defaults/system_config.yaml` |
+| `keep` | `ls/config/dependency-ledger.schema.json` |
+| `keep` | `ls/config/dependency-ledger.yaml` |
 | `keep` | `ls/config/install.schema.json` |
 | `keep` | `ls/config/mail_protocol_policy.yaml` |
 | `keep` | `ls/config/manifest.schema.json` |
@@ -143,6 +145,7 @@ artifact_sha256: cf369e6e7d1db9d1b66975194c435c6e222599f0be0f8212c3dc2e0998fdd40
 | `refactor` | `ls/core/conversion.py` |
 | `refactor` | `ls/core/dependencies.py` |
 | `refactor` | `ls/core/dependency_environments.py` |
+| `refactor` | `ls/core/dependency_ledger.py` |
 | `refactor` | `ls/core/detach.py` |
 | `refactor` | `ls/core/diffing.py` |
 | `refactor` | `ls/core/docs.py` |
@@ -675,11 +678,20 @@ artifact_sha256: cf369e6e7d1db9d1b66975194c435c6e222599f0be0f8212c3dc2e0998fdd40
 | `keep` | `ls/skills/ls-omniroute-admin-automation/scripts/omniroute_admin.py` |
 | `keep` | `ls/skills/ls-omniroute-admin-automation/scripts/tests/test_omniroute_admin.py` |
 | `keep` | `ls/skills/ls-omniroute-proxy/SKILL.md` |
+| `keep` | `ls/skills/ls-omniroute-proxy/references/model-observation.schema.json` |
 | `keep` | `ls/skills/ls-omniroute-proxy/references/omniroute-endpoints.md` |
+| `keep` | `ls/skills/ls-omniroute-proxy/scripts/lib/omniroute_proxy/__init__.py` |
+| `keep` | `ls/skills/ls-omniroute-proxy/scripts/lib/omniroute_proxy/cli.py` |
+| `keep` | `ls/skills/ls-omniroute-proxy/scripts/lib/omniroute_proxy/common.py` |
+| `keep` | `ls/skills/ls-omniroute-proxy/scripts/lib/omniroute_proxy/observation.py` |
+| `keep` | `ls/skills/ls-omniroute-proxy/scripts/lib/omniroute_proxy/observation_contract.py` |
+| `keep` | `ls/skills/ls-omniroute-proxy/scripts/lib/omniroute_proxy/observation_rows.py` |
+| `keep` | `ls/skills/ls-omniroute-proxy/scripts/lib/omniroute_proxy/probe.py` |
 | `keep` | `ls/skills/ls-omniroute-proxy/scripts/omniroute_discover.py` |
 | `keep` | `ls/skills/ls-omniroute-update/SKILL.md` |
 | `keep` | `ls/skills/ls-omniroute-update/references/source-ledger.md` |
 | `keep` | `ls/skills/ls-omniroute-update/references/update-workflow.md` |
+| `keep` | `ls/skills/ls-omniroute-update/scripts/omniroute_inventory.py` |
 | `keep` | `ls/skills/ls-omniroute-update/scripts/omniroute_update.py` |
 | `keep` | `ls/skills/ls-omniroute/SKILL.md` |
 | `keep` | `ls/skills/ls-omniroute/references/upstream-skill-coverage.md` |
@@ -855,6 +867,11 @@ artifact_sha256: cf369e6e7d1db9d1b66975194c435c6e222599f0be0f8212c3dc2e0998fdd40
 | `keep` | `ls/tests/automated_test.sh` |
 | `keep` | `ls/tests/codex_heartbeat_test_helpers.py` |
 | `keep` | `ls/tests/conftest.py` |
+| `keep` | `ls/tests/fixtures/omniroute/expected-model-observation.json` |
+| `keep` | `ls/tests/fixtures/omniroute/immutable-inventory-7ee5bbc.json` |
+| `keep` | `ls/tests/fixtures/omniroute/model-catalog.json` |
+| `keep` | `ls/tests/fixtures/omniroute/openai-models.json` |
+| `keep` | `ls/tests/fixtures/omniroute/task-owner-cases.json` |
 | `keep` | `ls/tests/manifest_test_helpers.py` |
 | `keep` | `ls/tests/skill_smoke_commands.yaml` |
 | `keep` | `ls/tests/test_adapter_parser.py` |
@@ -866,6 +883,7 @@ artifact_sha256: cf369e6e7d1db9d1b66975194c435c6e222599f0be0f8212c3dc2e0998fdd40
 | `keep` | `ls/tests/test_codex_heartbeat.py` |
 | `keep` | `ls/tests/test_codex_heartbeat_harness.py` |
 | `keep` | `ls/tests/test_context_index.py` |
+| `keep` | `ls/tests/test_dependency_ledger.py` |
 | `keep` | `ls/tests/test_docs_alignment.py` |
 | `keep` | `ls/tests/test_github_starredrepos_skill.py` |
 | `keep` | `ls/tests/test_install_flow.py` |
@@ -905,7 +923,12 @@ artifact_sha256: cf369e6e7d1db9d1b66975194c435c6e222599f0be0f8212c3dc2e0998fdd40
 | `keep` | `ls/tests/test_ls_linux_patcher_patch_cli.py` |
 | `keep` | `ls/tests/test_manifests.py` |
 | `keep` | `ls/tests/test_omniroute_api_cli.py` |
+| `keep` | `ls/tests/test_omniroute_consolidation_migration.py` |
+| `keep` | `ls/tests/test_omniroute_immutable_inventory.py` |
+| `keep` | `ls/tests/test_omniroute_model_observation.py` |
+| `keep` | `ls/tests/test_omniroute_proxy_package_install.py` |
 | `keep` | `ls/tests/test_omniroute_proxy_preflight.py` |
+| `keep` | `ls/tests/test_omniroute_task_ownership.py` |
 | `keep` | `ls/tests/test_omniroute_update.py` |
 | `keep` | `ls/tests/test_path_contract.py` |
 | `keep` | `ls/tests/test_plugin_packs.py` |
