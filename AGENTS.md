@@ -156,6 +156,10 @@ For bounded autonomous maintenance loops, create or resume the private ledger fi
 
 Before final response on non-trivial work, inspect `git status --short`, inspect the scoped diff, run or delegate required validation, resolve or document reviewer findings, and update the ledger with final evidence. Do not claim completion from memory.
 
+### User-Mediated Handoffs
+
+When the user will manually relay a handoff, address the user with an informative request to review or evaluate the material before relaying it; do not frame it as a declarative instruction to, or a message already sent to, an absent agent. This presentation rule does not replace durable artifact-backed executable or restart-sensitive handoffs. Direct agent messages are available only through a native capability to a currently visible target agent.
+
 ## Skill And Context Preservation
 
 When editing `SKILL.md`, `AGENTS.md`, workflow docs, examples, references, schemas, templates, or operational runbooks, preserve task capability over brevity.
