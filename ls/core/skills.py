@@ -259,7 +259,9 @@ def selected_skill_names(repo_root: Path, requested_packs: list[str] | None) -> 
     from .workflows import required_skills_for_workflows, selected_workflow_names
 
     selected.extend(required_skills_for_workflows(repo_root, selected_workflow_names(repo_root, requested_packs)))
-    return sorted(set(selected))
+    from .dependency_ledger import required_skill_closure
+
+    return required_skill_closure(repo_root, selected)
 
 
 def _taxonomy_row(pack_taxonomy: dict[str, dict[str, Any]], skill_name: str) -> dict[str, Any]:

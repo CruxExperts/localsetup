@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 6e2d6805106829ec664d22d4d678aeded5d0f27b4bcfaff1e640ee07ce63c39e
+  source_provenance_hash: 8f115e024b88c7061463c6b9cb8945ebbde601995781455b3807b06ff92669ba
   emitter: generate-docs
 framework_version: 4.2.19
-source_commit: e3da68416ffad95990e6f3525dd7ca524ff31afa
-artifact_sha256: fa5941996504ccdd4c18bacc3e1f8c6732f76291634ed8be80e905ac4d9f9f66
+source_commit: 6950c941cbfafb352e8ed1a3c563c9aeb120b779
+artifact_sha256: cf369e6e7d1db9d1b66975194c435c6e222599f0be0f8212c3dc2e0998fdd406
 ---
 # Implementation File Map
 
@@ -674,12 +674,7 @@ artifact_sha256: fa5941996504ccdd4c18bacc3e1f8c6732f76291634ed8be80e905ac4d9f9f6
 | `keep` | `ls/skills/ls-omniroute-admin-automation/scripts/lib/omniroute_admin/validate.py` |
 | `keep` | `ls/skills/ls-omniroute-admin-automation/scripts/omniroute_admin.py` |
 | `keep` | `ls/skills/ls-omniroute-admin-automation/scripts/tests/test_omniroute_admin.py` |
-| `keep` | `ls/skills/ls-omniroute-codex/SKILL.md` |
-| `keep` | `ls/skills/ls-omniroute-context/SKILL.md` |
-| `keep` | `ls/skills/ls-omniroute-integrations/SKILL.md` |
-| `keep` | `ls/skills/ls-omniroute-observability/SKILL.md` |
 | `keep` | `ls/skills/ls-omniroute-proxy/SKILL.md` |
-| `keep` | `ls/skills/ls-omniroute-proxy/references/model-equivalence.yaml` |
 | `keep` | `ls/skills/ls-omniroute-proxy/references/omniroute-endpoints.md` |
 | `keep` | `ls/skills/ls-omniroute-proxy/scripts/omniroute_discover.py` |
 | `keep` | `ls/skills/ls-omniroute-update/SKILL.md` |

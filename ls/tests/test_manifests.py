@@ -334,6 +334,76 @@ def test_codex_templates_distinguish_current_and_historical_skill_roots() -> Non
         assert ".codex/skills/**" in finalizer[key]
 
 
+def test_static_skill_indexes_use_four_omniroute_owners() -> None:
+    root = Path(__file__).resolve().parents[2]
+    paths = [
+        root / "ls/templates/claude-code/CLAUDE.md",
+        root / "ls/templates/codex/AGENTS.md",
+        root / "ls/templates/cursor/ls-context-index.md",
+        root / "ls/templates/cursor/ls-context.mdc",
+        root / "ls/templates/kilo/AGENTS.md",
+        root / "ls/templates/kilo/instructions.md",
+        root / "ls/templates/openclaw/OPENCLAW_CONTEXT.md",
+        root / "ls/templates/opencode/AGENTS.md",
+    ]
+    retained = {
+        "ls-omniroute",
+        "ls-omniroute-admin-automation",
+        "ls-omniroute-proxy",
+        "ls-omniroute-update",
+    }
+    removed = {
+        "ls-omniroute-codex",
+        "ls-omniroute-context",
+        "ls-omniroute-integrations",
+        "ls-omniroute-observability",
+    }
+
+    for path in paths:
+        text = path.read_text(encoding="utf-8")
+        assert all(name in text for name in retained), path
+        assert all(name not in text for name in removed), path
+
+
+def test_authored_current_omniroute_surfaces_have_no_removed_local_slugs() -> None:
+    root = Path(__file__).resolve().parents[2]
+    removed = {
+        "ls-omniroute-codex",
+        "ls-omniroute-context",
+        "ls-omniroute-integrations",
+        "ls-omniroute-observability",
+    }
+    paths = [
+        root / "ls/config/pack.yaml",
+        root / "ls/tests/skill_smoke_commands.yaml",
+        *sorted((root / "ls/templates").rglob("*.md")),
+    ]
+    for owner in (
+        "ls-omniroute",
+        "ls-omniroute-proxy",
+        "ls-omniroute-admin-automation",
+        "ls-omniroute-update",
+    ):
+        paths.extend(sorted((root / "ls/skills" / owner).rglob("*.md")))
+        paths.extend(sorted((root / "ls/skills" / owner).rglob("*.yaml")))
+
+    for path in paths:
+        text = path.read_text(encoding="utf-8")
+        assert all(name not in text for name in removed), path
+
+
+def test_generated_artifact_provenance_includes_dependency_ledger_owners() -> None:
+    from ls.core import docs
+    from ls.core.docs_artifacts import common
+
+    expected = {
+        "ls/config/dependency-ledger.yaml",
+        "ls/config/dependency-ledger.schema.json",
+    }
+    assert expected <= set(docs.ARTIFACT_SOURCE_INPUTS)
+    assert expected <= set(common.ARTIFACT_SOURCE_INPUTS)
+
+
 def test_baseline_file_classification() -> None:
     assert classify_path("ls/skills/ls-context/SKILL.md") == "keep"
     assert classify_path("ls/workflows/ls-workflow-ops-tmux-session/SKILL.md") == "keep"

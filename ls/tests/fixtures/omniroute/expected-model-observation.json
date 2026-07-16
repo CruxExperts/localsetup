@@ -1,0 +1,233 @@
+{
+  "adapter_source": {
+    "commit": "7ee5bbc64dbb03e967521227f2afffeb7c9dad1e",
+    "endpoints": [
+      "/api/models/catalog",
+      "/v1/models"
+    ],
+    "name": "omniroute",
+    "version": "3.8.48"
+  },
+  "conflicts": [],
+  "endpoint_observations": [],
+  "models": [
+    {
+      "capabilities": {
+        "attachment": "unknown",
+        "embeddings": "unknown",
+        "image_generation": "unknown",
+        "moderation": "unknown",
+        "reasoning": "unknown",
+        "rerank": "unknown",
+        "structured_output": "unknown",
+        "temperature": "unknown",
+        "thinking": "unknown",
+        "tools": "unknown",
+        "vision": "unknown"
+      },
+      "cost_evidence": {
+        "currency": "unknown",
+        "input_per_million": "unknown",
+        "output_per_million": "unknown",
+        "provenance_class": "unavailable",
+        "source_endpoint": "unknown"
+      },
+      "endpoints": "unknown",
+      "identity": "0778435c953e0549b08daef0",
+      "limits": {
+        "context_tokens": "unknown",
+        "output_tokens": "unknown"
+      },
+      "modalities": {
+        "input": "unknown",
+        "output": "unknown"
+      },
+      "model_id": "opaque-model:0778435c953e0549b08d",
+      "provider_id": "opaque-provider:097e49fd8b2547acba8b",
+      "provider_model_id": "opaque-provider-model:0778435c953e0549b08d",
+      "reasoning_effort_options": "unknown",
+      "source_endpoints": [
+        "/api/models/catalog",
+        "/v1/models"
+      ]
+    },
+    {
+      "capabilities": {
+        "attachment": "unknown",
+        "embeddings": "unknown",
+        "image_generation": "unknown",
+        "moderation": "unknown",
+        "reasoning": "unknown",
+        "rerank": "unknown",
+        "structured_output": "unknown",
+        "temperature": "unknown",
+        "thinking": "unknown",
+        "tools": "unknown",
+        "vision": "unknown"
+      },
+      "cost_evidence": {
+        "currency": "unknown",
+        "input_per_million": "unknown",
+        "output_per_million": "unknown",
+        "provenance_class": "unavailable",
+        "source_endpoint": "unknown"
+      },
+      "endpoints": "unknown",
+      "identity": "f4058632db7979bae672531a",
+      "limits": {
+        "context_tokens": "unknown",
+        "output_tokens": "unknown"
+      },
+      "modalities": {
+        "input": "unknown",
+        "output": "unknown"
+      },
+      "model_id": "opaque-model:f4058632db7979bae672",
+      "provider_id": "opaque-provider:097e49fd8b2547acba8b",
+      "provider_model_id": "opaque-provider-model:f4058632db7979bae672",
+      "reasoning_effort_options": "unknown",
+      "source_endpoints": [
+        "/api/models/catalog",
+        "/v1/models"
+      ]
+    },
+    {
+      "capabilities": {
+        "attachment": "unknown",
+        "embeddings": "unknown",
+        "image_generation": "unknown",
+        "moderation": "unknown",
+        "reasoning": "unknown",
+        "rerank": "unknown",
+        "structured_output": "unknown",
+        "temperature": "unknown",
+        "thinking": "unknown",
+        "tools": "unknown",
+        "vision": "unknown"
+      },
+      "cost_evidence": {
+        "currency": "unknown",
+        "input_per_million": "unknown",
+        "output_per_million": "unknown",
+        "provenance_class": "unavailable",
+        "source_endpoint": "unknown"
+      },
+      "endpoints": [
+        "embeddings"
+      ],
+      "identity": "1c3d69fadfc401778713cf8c",
+      "limits": {
+        "context_tokens": "unknown",
+        "output_tokens": "unknown"
+      },
+      "modalities": {
+        "input": [
+          "text"
+        ],
+        "output": [
+          "embedding"
+        ]
+      },
+      "model_id": "opaque-model:1c3d69fadfc401778713",
+      "provider_id": "opaque-provider:2ae1e2139975472f07b9",
+      "provider_model_id": "opaque-provider-model:1c3d69fadfc401778713",
+      "reasoning_effort_options": "unknown",
+      "source_endpoints": [
+        "/api/models/catalog",
+        "/v1/models"
+      ]
+    },
+    {
+      "capabilities": {
+        "attachment": "unknown",
+        "embeddings": "unknown",
+        "image_generation": "unknown",
+        "moderation": "unknown",
+        "reasoning": false,
+        "rerank": "unknown",
+        "structured_output": true,
+        "temperature": "unknown",
+        "thinking": "unknown",
+        "tools": true,
+        "vision": true
+      },
+      "cost_evidence": {
+        "currency": "unknown",
+        "input_per_million": "unknown",
+        "output_per_million": "unknown",
+        "provenance_class": "unavailable",
+        "source_endpoint": "unknown"
+      },
+      "endpoints": [
+        "chat",
+        "responses"
+      ],
+      "identity": "74a6aceb033fb8633231c097",
+      "limits": {
+        "context_tokens": 131072,
+        "output_tokens": 8192
+      },
+      "modalities": {
+        "input": [
+          "image",
+          "text"
+        ],
+        "output": [
+          "text"
+        ]
+      },
+      "model_id": "opaque-model:74a6aceb033fb8633231",
+      "provider_id": "opaque-provider:3c54d6d63aa66652c228",
+      "provider_model_id": "opaque-provider-model:74a6aceb033fb8633231",
+      "reasoning_effort_options": "unknown",
+      "source_endpoints": [
+        "/api/models/catalog",
+        "/v1/models"
+      ]
+    }
+  ],
+  "notes": [
+    "Runtime version, commit, and catalog revision are intentionally withheld and emitted as unknown, even when an approved endpoint reports them.",
+    "Unknown model fields may be unreported, unsupported, or rejected by validation.",
+    "Runtime provider, root, and alias strings emit only keyed opaque identifiers; raw values and keys are never emitted.",
+    "With the same inputs and receipt key, model ordering and reviewed adapter/source provenance are deterministic.",
+    "Opaque identifiers are deterministic only with the same non-exported key; unauthenticated observations use a fresh key.",
+    "Only reviewed modality and logical endpoint enums emit verbatim.",
+    "Pricing remains unknown because these endpoints have no approved public-price provenance class.",
+    "This observation contains no equivalence or task-routing decisions."
+  ],
+  "observed_at": "2026-07-16T12:00:00Z",
+  "runtime": {
+    "catalog_revision": "unknown",
+    "commit": "unknown",
+    "source_endpoints": [
+      "/api/models/catalog",
+      "/v1/models"
+    ],
+    "version": "unknown"
+  },
+  "schema_version": 1,
+  "truncation": {
+    "conflicts": {
+      "available": 0,
+      "dropped": 0,
+      "retained": 0,
+      "truncated": false
+    },
+    "endpoint_observations": {
+      "available": 0,
+      "dropped": 0,
+      "retained": 0,
+      "truncated": false
+    },
+    "models": {
+      "dropped": 0,
+      "duplicate_rows": 10,
+      "input_rows": 14,
+      "invalid_rows": 0,
+      "retained": 4,
+      "truncated": false,
+      "unique_models": 4
+    }
+  }
+}

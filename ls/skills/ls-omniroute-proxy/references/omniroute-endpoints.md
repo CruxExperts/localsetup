@@ -73,9 +73,6 @@ These endpoints may expose or mutate operational configuration. Use read-only ac
 |---|---|---|
 | `/api/combos` | HTTP GET | List configured routing combos |
 | `/api/combos/metrics` | HTTP GET | Combo metrics, if available |
-| `omniroute_simulate_route` | MCP | Simulate a route |
-| `omniroute_best_combo_for_task` | MCP | Recommend a combo for a task |
-| `omniroute_explain_route` | MCP | Explain routing decisions |
 
 ## Agent protocols
 

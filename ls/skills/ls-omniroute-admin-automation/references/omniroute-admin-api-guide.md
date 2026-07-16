@@ -1,16 +1,15 @@
 # OmniRoute Administration API Guide
 
 ---
-title: "OmniRoute v3.8.43 Administration API Guide"
+title: "OmniRoute v3.8.48 Administration API Guide"
 category: reference
 status: ACTIVE
-last_updated: "2026-07-04"
 tags: [omniroute, api, administration, proxy, routing, budget, resilience, automation]
 ---
 
 ## 1. Overview
 
-OmniRoute is an open-source AI gateway written in TypeScript/Next.js that presents OpenAI-compatible `/v1/*` endpoints and routes traffic across many providers. Version `3.8.43` includes routing combos, fallback chains, quota tracking, resilience controls, cloud sync, compression settings, optional memory/Qdrant support, and rich management APIs.
+OmniRoute is an open-source AI gateway written in TypeScript/Next.js that presents OpenAI-compatible `/v1/*` endpoints and routes traffic across many providers. Version `3.8.48` includes routing combos, fallback chains, quota tracking, resilience controls, cloud sync, compression settings, optional memory/Qdrant support, and rich management APIs.
 
 This guide focuses on full administration through `/api/*` endpoints.
 
@@ -39,7 +38,7 @@ Important behavior:
 
 - `GET /api/monitoring/health`
 - `GET /api/telemetry/summary`
-- `GET /api/system-info`
+- `GET /api/system/version`
 - `POST /api/restart`
 - `POST /api/shutdown`
 
@@ -48,26 +47,29 @@ Important behavior:
 - `GET/POST /api/providers`
 - `GET/PUT/DELETE /api/providers/{id}`
 - `POST /api/providers/{id}/test`
-- `GET/POST/PATCH/DELETE /api/provider-nodes`
-- `GET/POST/PATCH/DELETE /api/provider-models`
+- `GET/POST /api/provider-nodes`
+- `PUT/PATCH/DELETE /api/provider-nodes/{id}`
+- `GET/POST/PUT/PATCH/DELETE /api/provider-models`
 
 ### Catalog, models, aliases
 
 - `GET /api/models/catalog`
-- `GET/POST/PATCH/DELETE /api/models/alias`
+- `GET/POST/PUT/DELETE /api/models/alias`
 - `GET /v1/models`
 - `GET /v1beta/models`
 - `GET /api/tags`
 
 ### Routing and fallback
 
-- `GET/POST/PATCH/DELETE /api/combos`
+- `GET/POST /api/combos`
+- `GET/PUT/PATCH/DELETE /api/combos/{id}`
 - `GET /api/combos/metrics`
-- `GET/POST/PATCH/DELETE /api/fallback/chains`
+- `GET/POST/DELETE /api/fallback/chains`
 
 ### Keys, limits, budget, resilience
 
-- `GET/POST/DELETE /api/keys`
+- `GET/POST /api/keys`
+- `GET/PATCH/DELETE /api/keys/{id}`
 - `GET/POST /api/rate-limit`
 - `GET /api/rate-limits`
 - `GET/PATCH /api/resilience`
@@ -82,7 +84,8 @@ Important behavior:
 - `GET /api/db-backups/exportAll`
 - `POST /api/sync/initialize`
 - `POST /api/sync/cloud`
-- `GET/POST/DELETE /api/sync/tokens`
+- `GET/POST /api/sync/tokens`
+- `DELETE /api/sync/tokens/{id}`
 - `GET /api/sync/bundle`
 
 ### Policies, evals, compliance

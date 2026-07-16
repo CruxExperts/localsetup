@@ -78,7 +78,20 @@ def test_upstream_to_local_name_mapping() -> None:
 def test_default_ref_is_pinned_to_validated_source_commit() -> None:
     converter = load_converter()
 
-    assert converter.DEFAULT_REF == "0c7f756f922fe3c0408e41852577027b496489bf"
+    assert converter.DEFAULT_REF == "7ee5bbc64dbb03e967521227f2afffeb7c9dad1e"
+
+
+def test_boundary_coverage_owners_match_operator_workflow() -> None:
+    converter = load_converter()
+
+    assert converter.NATIVE_COVERAGE["config-codex-cli"] == [
+        "ls-omniroute",
+        "ls-omniroute-admin-automation",
+    ]
+    assert converter.NATIVE_COVERAGE["omni-version-manager"] == [
+        "ls-omniroute-admin-automation",
+        "ls-omniroute",
+    ]
 
 
 def test_reads_upstream_skill_manifests_from_local_fixture(tmp_path: Path) -> None:
@@ -171,6 +184,7 @@ def test_classifies_consolidated_native_coverage() -> None:
     upstream = [
         converter.UpstreamSkill("cli-chat", "skills/cli-chat/SKILL.md", current_hash, "commit1", "2026-07-04T00:00:00Z"),
         converter.UpstreamSkill("omni-cache", "skills/omni-cache/SKILL.md", current_hash, "commit1", "2026-07-04T00:00:00Z"),
+        converter.UpstreamSkill("omni-github-skills", "skills/omni-github-skills/SKILL.md", current_hash, "commit1", "2026-07-04T00:00:00Z"),
     ]
     local = [
         converter.LocalSkill(
@@ -181,10 +195,10 @@ def test_classifies_consolidated_native_coverage() -> None:
             ["omniroute"],
         ),
         converter.LocalSkill(
-            "ls-omniroute-context",
-            "ls/skills/ls-omniroute-context/SKILL.md",
+            "ls-omniroute-admin-automation",
+            "ls/skills/ls-omniroute-admin-automation/SKILL.md",
             {},
-            {"source_kind": "localsetup-native", "local_role": "context-compression"},
+            {"source_kind": "localsetup-native", "local_role": "admin-automation"},
             ["omniroute"],
         ),
     ]
@@ -193,7 +207,8 @@ def test_classifies_consolidated_native_coverage() -> None:
     statuses = {(row.status, row.upstream_skill, row.local_skill) for row in rows}
 
     assert ("covered-native", "cli-chat", "ls-omniroute-proxy") in statuses
-    assert ("covered-native", "omni-cache", "ls-omniroute-context") in statuses
+    assert ("covered-native", "omni-cache", "ls-omniroute-proxy, ls-omniroute-admin-automation") in statuses
+    assert ("covered-native", "omni-github-skills", "ls-omniroute-proxy, ls-omniroute-admin-automation") in statuses
 
 
 def test_classifies_localsetup_native_omniroute_skills() -> None:
@@ -247,7 +262,7 @@ def test_freshness_summary_defaults_to_converted_skill_blockers_only() -> None:
     rows = [
         converter.ReportRow("missing-local", "cli-a2a", None, "ls-cli-a2a", "skills/cli-a2a/SKILL.md", "missing"),
         converter.ReportRow("untracked-local", None, "ls-omniroute-proxy", None, None, "untracked"),
-        converter.ReportRow("covered-native", "omni-cache", "ls-omniroute-context", "ls-omniroute-context", "skills/omni-cache/SKILL.md", "covered"),
+        converter.ReportRow("covered-native", "omni-cache", "ls-omniroute-proxy", "ls-omniroute-proxy", "skills/omni-cache/SKILL.md", "covered"),
         converter.ReportRow("current", "cli-chat", "ls-cli-chat", "ls-cli-chat", "skills/cli-chat/SKILL.md", "ok"),
     ]
 

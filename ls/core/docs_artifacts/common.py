@@ -23,6 +23,8 @@ ASCII_REPLACEMENTS = {
 ARTIFACT_SOURCE_INPUTS = [
     "VERSION",
     "ls/skills",
+    "ls/config/dependency-ledger.yaml",
+    "ls/config/dependency-ledger.schema.json",
     "ls/config/pack.yaml",
     "ls/config/plugin-packs.yaml",
     "ls/workflows",

@@ -1,0 +1,865 @@
+{
+  "counts": {
+    "compatibility_rewrites": 75,
+    "openapi_operations": 306,
+    "registered_tools": 55,
+    "retained_claims_resolved": 97,
+    "retained_claims_unresolved": 0,
+    "route_handlers": 952,
+    "skills": 44
+  },
+  "digests": {
+    "compatibility_rewrites": "00cbc94166fd8ab7b707ff1c5f331279edab3f11b55eb0413d509b37d3bb556d",
+    "openapi_operations": "b87013343fd47624eef4b9f9d4e58760878454600386447966d7f8ac56af57a6",
+    "registered_tools": "2ab32b99fb5938568cdba3c6ab0153bae1bf6fa04d892c1ec6fa3e9cba67f9fc",
+    "retained_claims": "c9282ad55ef5b765e98e398ed75e1e69782e1c1c2660e744c4346051eec9db0d",
+    "route_handlers": "365e4e7d5af5d263badddd03ffac8737287d8fc6ab816dfcf805e6486442e724",
+    "skills": "c4fd922b4926b98b776e0659e0ce67ececbeb07cca469deb1017d0222881e77d"
+  },
+  "registered_tool_names": [
+    "omniroute_agent_skills_coverage",
+    "omniroute_agent_skills_get",
+    "omniroute_agent_skills_list",
+    "omniroute_best_combo_for_task",
+    "omniroute_browser_pool_status",
+    "omniroute_cache_flush",
+    "omniroute_cache_stats",
+    "omniroute_ccr_retrieve",
+    "omniroute_check_quota",
+    "omniroute_compression_combo_stats",
+    "omniroute_compression_configure",
+    "omniroute_compression_status",
+    "omniroute_cost_report",
+    "omniroute_db_health_check",
+    "omniroute_explain_route",
+    "omniroute_get_combo_metrics",
+    "omniroute_get_health",
+    "omniroute_get_provider_metrics",
+    "omniroute_get_session_snapshot",
+    "omniroute_github_skills_install",
+    "omniroute_github_skills_scan",
+    "omniroute_github_skills_search",
+    "omniroute_list_combos",
+    "omniroute_list_compression_combos",
+    "omniroute_list_models_catalog",
+    "omniroute_memory_add",
+    "omniroute_memory_clear",
+    "omniroute_memory_search",
+    "omniroute_oneproxy_fetch",
+    "omniroute_oneproxy_rotate",
+    "omniroute_oneproxy_stats",
+    "omniroute_pick_fastest_model",
+    "omniroute_pool_health",
+    "omniroute_pool_reset",
+    "omniroute_pool_sessions",
+    "omniroute_pool_status",
+    "omniroute_pool_warm",
+    "omniroute_route_request",
+    "omniroute_rtk_discover",
+    "omniroute_rtk_learn",
+    "omniroute_set_budget_guard",
+    "omniroute_set_compression_engine",
+    "omniroute_set_resilience_profile",
+    "omniroute_set_routing_strategy",
+    "omniroute_simulate_route",
+    "omniroute_skills_enable",
+    "omniroute_skills_execute",
+    "omniroute_skills_executions",
+    "omniroute_skills_list",
+    "omniroute_switch_combo",
+    "omniroute_sync_pricing",
+    "omniroute_test_combo",
+    "omniroute_tool_search",
+    "omniroute_web_fetch",
+    "omniroute_web_search"
+  ],
+  "retained_claims": {
+    "resolved": [
+      {
+        "claim": "DELETE /api/combos/{id}",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "DELETE /api/combos/{id}"
+      },
+      {
+        "claim": "DELETE /api/fallback/chains",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "DELETE /api/fallback/chains"
+      },
+      {
+        "claim": "DELETE /api/keys/{id}",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "DELETE /api/keys/{id}"
+      },
+      {
+        "claim": "DELETE /api/models/alias",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "DELETE /api/models/alias"
+      },
+      {
+        "claim": "DELETE /api/policies",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "DELETE /api/policies"
+      },
+      {
+        "claim": "DELETE /api/provider-models",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "DELETE /api/provider-models"
+      },
+      {
+        "claim": "DELETE /api/provider-nodes/{id}",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "DELETE /api/provider-nodes/{id}"
+      },
+      {
+        "claim": "DELETE /api/providers/{id}",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "DELETE /api/providers/{id}"
+      },
+      {
+        "claim": "DELETE /api/sync/tokens/{id}",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "DELETE /api/sync/tokens/{id}"
+      },
+      {
+        "claim": "GET /.well-known/agent.json",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /.well-known/agent.json"
+      },
+      {
+        "claim": "GET /api/combos",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/combos"
+      },
+      {
+        "claim": "GET /api/combos/metrics",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/combos/metrics"
+      },
+      {
+        "claim": "GET /api/combos/{id}",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/combos/{id}"
+      },
+      {
+        "claim": "GET /api/compliance/audit-log",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/compliance/audit-log"
+      },
+      {
+        "claim": "GET /api/db-backups",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/db-backups"
+      },
+      {
+        "claim": "GET /api/db-backups/export",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/db-backups/export"
+      },
+      {
+        "claim": "GET /api/db-backups/exportAll",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/db-backups/exportAll"
+      },
+      {
+        "claim": "GET /api/evals",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/evals"
+      },
+      {
+        "claim": "GET /api/evals/{suiteId}",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/evals/{suiteId}"
+      },
+      {
+        "claim": "GET /api/fallback/chains",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/fallback/chains"
+      },
+      {
+        "claim": "GET /api/keys",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/keys"
+      },
+      {
+        "claim": "GET /api/keys/{id}",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/keys/{id}"
+      },
+      {
+        "claim": "GET /api/models/alias",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/models/alias"
+      },
+      {
+        "claim": "GET /api/models/catalog",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/models/catalog"
+      },
+      {
+        "claim": "GET /api/monitoring/health",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/monitoring/health"
+      },
+      {
+        "claim": "GET /api/policies",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/policies"
+      },
+      {
+        "claim": "GET /api/provider-models",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/provider-models"
+      },
+      {
+        "claim": "GET /api/provider-nodes",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/provider-nodes"
+      },
+      {
+        "claim": "GET /api/providers",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/providers"
+      },
+      {
+        "claim": "GET /api/providers/{id}",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/providers/{id}"
+      },
+      {
+        "claim": "GET /api/rate-limit",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/rate-limit"
+      },
+      {
+        "claim": "GET /api/rate-limits",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/rate-limits"
+      },
+      {
+        "claim": "GET /api/resilience",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/resilience"
+      },
+      {
+        "claim": "GET /api/sync/bundle",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/sync/bundle"
+      },
+      {
+        "claim": "GET /api/sync/tokens",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/sync/tokens"
+      },
+      {
+        "claim": "GET /api/system/version",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/system/version"
+      },
+      {
+        "claim": "GET /api/tags",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/tags"
+      },
+      {
+        "claim": "GET /api/telemetry/summary",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/telemetry/summary"
+      },
+      {
+        "claim": "GET /api/usage/budget",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "GET /api/usage/budget"
+      },
+      {
+        "claim": "GET /v1/models",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "compatible-rewrite",
+        "target": "GET /api/v1/models"
+      },
+      {
+        "claim": "GET /v1beta/models",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "compatible-rewrite",
+        "target": "GET /api/v1beta/models"
+      },
+      {
+        "claim": "PATCH /api/combos/{id}",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "PATCH /api/combos/{id}"
+      },
+      {
+        "claim": "PATCH /api/keys/{id}",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "PATCH /api/keys/{id}"
+      },
+      {
+        "claim": "PATCH /api/provider-models",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "PATCH /api/provider-models"
+      },
+      {
+        "claim": "PATCH /api/provider-nodes/{id}",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "PATCH /api/provider-nodes/{id}"
+      },
+      {
+        "claim": "PATCH /api/resilience",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "PATCH /api/resilience"
+      },
+      {
+        "claim": "POST /a2a",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /a2a"
+      },
+      {
+        "claim": "POST /api/combos",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /api/combos"
+      },
+      {
+        "claim": "POST /api/db-backups",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /api/db-backups"
+      },
+      {
+        "claim": "POST /api/db-backups/import",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /api/db-backups/import"
+      },
+      {
+        "claim": "POST /api/evals",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /api/evals"
+      },
+      {
+        "claim": "POST /api/fallback/chains",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /api/fallback/chains"
+      },
+      {
+        "claim": "POST /api/keys",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /api/keys"
+      },
+      {
+        "claim": "POST /api/models/alias",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /api/models/alias"
+      },
+      {
+        "claim": "POST /api/policies",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /api/policies"
+      },
+      {
+        "claim": "POST /api/provider-models",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /api/provider-models"
+      },
+      {
+        "claim": "POST /api/provider-nodes",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /api/provider-nodes"
+      },
+      {
+        "claim": "POST /api/providers",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /api/providers"
+      },
+      {
+        "claim": "POST /api/providers/{id}/test",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /api/providers/{id}/test"
+      },
+      {
+        "claim": "POST /api/rate-limit",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /api/rate-limit"
+      },
+      {
+        "claim": "POST /api/resilience/reset",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /api/resilience/reset"
+      },
+      {
+        "claim": "POST /api/restart",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /api/restart"
+      },
+      {
+        "claim": "POST /api/shutdown",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /api/shutdown"
+      },
+      {
+        "claim": "POST /api/sync/cloud",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /api/sync/cloud"
+      },
+      {
+        "claim": "POST /api/sync/initialize",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /api/sync/initialize"
+      },
+      {
+        "claim": "POST /api/sync/tokens",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /api/sync/tokens"
+      },
+      {
+        "claim": "POST /api/translator/detect",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /api/translator/detect"
+      },
+      {
+        "claim": "POST /api/translator/send",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /api/translator/send"
+      },
+      {
+        "claim": "POST /api/translator/translate",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /api/translator/translate"
+      },
+      {
+        "claim": "POST /api/usage/budget",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "POST /api/usage/budget"
+      },
+      {
+        "claim": "PUT /api/combos/{id}",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "PUT /api/combos/{id}"
+      },
+      {
+        "claim": "PUT /api/db-backups",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "PUT /api/db-backups"
+      },
+      {
+        "claim": "PUT /api/models/alias",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "PUT /api/models/alias"
+      },
+      {
+        "claim": "PUT /api/provider-models",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "PUT /api/provider-models"
+      },
+      {
+        "claim": "PUT /api/provider-nodes/{id}",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "PUT /api/provider-nodes/{id}"
+      },
+      {
+        "claim": "PUT /api/providers/{id}",
+        "kind": "endpoint",
+        "package": "ls-omniroute-admin-automation",
+        "source_path": "ls/skills/ls-omniroute-admin-automation/references/omniroute-admin-api-guide.md",
+        "status": "registered",
+        "target": "PUT /api/providers/{id}"
+      },
+      {
+        "claim": "GET /.well-known/agent.json",
+        "kind": "endpoint",
+        "package": "ls-omniroute-proxy",
+        "source_path": "ls/skills/ls-omniroute-proxy/SKILL.md",
+        "status": "registered",
+        "target": "GET /.well-known/agent.json"
+      },
+      {
+        "claim": "GET /api/cli-tools/runtime/{toolId}",
+        "kind": "endpoint",
+        "package": "ls-omniroute-proxy",
+        "source_path": "ls/skills/ls-omniroute-proxy/SKILL.md",
+        "status": "registered",
+        "target": "GET /api/cli-tools/runtime/{toolId}"
+      },
+      {
+        "claim": "GET /api/combos",
+        "kind": "endpoint",
+        "package": "ls-omniroute-proxy",
+        "source_path": "ls/skills/ls-omniroute-proxy/SKILL.md",
+        "status": "registered",
+        "target": "GET /api/combos"
+      },
+      {
+        "claim": "GET /api/combos/metrics",
+        "kind": "endpoint",
+        "package": "ls-omniroute-proxy",
+        "source_path": "ls/skills/ls-omniroute-proxy/SKILL.md",
+        "status": "registered",
+        "target": "GET /api/combos/metrics"
+      },
+      {
+        "claim": "GET /api/models/catalog",
+        "kind": "endpoint",
+        "package": "ls-omniroute-proxy",
+        "source_path": "ls/skills/ls-omniroute-proxy/SKILL.md",
+        "status": "registered",
+        "target": "GET /api/models/catalog"
+      },
+      {
+        "claim": "GET /api/monitoring/health",
+        "kind": "endpoint",
+        "package": "ls-omniroute-proxy",
+        "source_path": "ls/skills/ls-omniroute-proxy/SKILL.md",
+        "status": "registered",
+        "target": "GET /api/monitoring/health"
+      },
+      {
+        "claim": "GET /api/rate-limits",
+        "kind": "endpoint",
+        "package": "ls-omniroute-proxy",
+        "source_path": "ls/skills/ls-omniroute-proxy/SKILL.md",
+        "status": "registered",
+        "target": "GET /api/rate-limits"
+      },
+      {
+        "claim": "GET /api/resilience",
+        "kind": "endpoint",
+        "package": "ls-omniroute-proxy",
+        "source_path": "ls/skills/ls-omniroute-proxy/SKILL.md",
+        "status": "registered",
+        "target": "GET /api/resilience"
+      },
+      {
+        "claim": "GET /api/tags",
+        "kind": "endpoint",
+        "package": "ls-omniroute-proxy",
+        "source_path": "ls/skills/ls-omniroute-proxy/SKILL.md",
+        "status": "registered",
+        "target": "GET /api/tags"
+      },
+      {
+        "claim": "GET /api/telemetry/summary",
+        "kind": "endpoint",
+        "package": "ls-omniroute-proxy",
+        "source_path": "ls/skills/ls-omniroute-proxy/SKILL.md",
+        "status": "registered",
+        "target": "GET /api/telemetry/summary"
+      },
+      {
+        "claim": "GET /api/token-health",
+        "kind": "endpoint",
+        "package": "ls-omniroute-proxy",
+        "source_path": "ls/skills/ls-omniroute-proxy/SKILL.md",
+        "status": "registered",
+        "target": "GET /api/token-health"
+      },
+      {
+        "claim": "GET /api/usage/budget",
+        "kind": "endpoint",
+        "package": "ls-omniroute-proxy",
+        "source_path": "ls/skills/ls-omniroute-proxy/SKILL.md",
+        "status": "registered",
+        "target": "GET /api/usage/budget"
+      },
+      {
+        "claim": "GET /v1/models",
+        "kind": "endpoint",
+        "package": "ls-omniroute-proxy",
+        "source_path": "ls/skills/ls-omniroute-proxy/SKILL.md",
+        "status": "compatible-rewrite",
+        "target": "GET /api/v1/models"
+      },
+      {
+        "claim": "GET /v1/models",
+        "kind": "endpoint",
+        "package": "ls-omniroute-proxy",
+        "source_path": "ls/skills/ls-omniroute-proxy/references/omniroute-endpoints.md",
+        "status": "compatible-rewrite",
+        "target": "GET /api/v1/models"
+      },
+      {
+        "claim": "GET /v1beta/models",
+        "kind": "endpoint",
+        "package": "ls-omniroute-proxy",
+        "source_path": "ls/skills/ls-omniroute-proxy/SKILL.md",
+        "status": "compatible-rewrite",
+        "target": "GET /api/v1beta/models"
+      },
+      {
+        "claim": "POST /a2a",
+        "kind": "endpoint",
+        "package": "ls-omniroute-proxy",
+        "source_path": "ls/skills/ls-omniroute-proxy/SKILL.md",
+        "status": "registered",
+        "target": "POST /a2a"
+      },
+      {
+        "claim": "omniroute_check_quota",
+        "kind": "tool",
+        "package": "ls-omniroute-proxy",
+        "source_path": "ls/skills/ls-omniroute-proxy/SKILL.md",
+        "status": "registered",
+        "target": "omniroute_check_quota"
+      },
+      {
+        "claim": "omniroute_check_quota",
+        "kind": "tool",
+        "package": "ls-omniroute-proxy",
+        "source_path": "ls/skills/ls-omniroute-proxy/references/omniroute-endpoints.md",
+        "status": "registered",
+        "target": "omniroute_check_quota"
+      },
+      {
+        "claim": "omniroute_cost_report",
+        "kind": "tool",
+        "package": "ls-omniroute-proxy",
+        "source_path": "ls/skills/ls-omniroute-proxy/SKILL.md",
+        "status": "registered",
+        "target": "omniroute_cost_report"
+      },
+      {
+        "claim": "omniroute_cost_report",
+        "kind": "tool",
+        "package": "ls-omniroute-proxy",
+        "source_path": "ls/skills/ls-omniroute-proxy/references/omniroute-endpoints.md",
+        "status": "registered",
+        "target": "omniroute_cost_report"
+      },
+      {
+        "claim": "omniroute_list_models_catalog",
+        "kind": "tool",
+        "package": "ls-omniroute-proxy",
+        "source_path": "ls/skills/ls-omniroute-proxy/references/omniroute-endpoints.md",
+        "status": "registered",
+        "target": "omniroute_list_models_catalog"
+      }
+    ],
+    "unresolved": []
+  },
+  "schema_version": 3,
+  "source": {
+    "tag": "v3.8.48",
+    "tag_object": "4f00f84b5a12f90fca2f1d72a60404cf6f5bf059",
+    "commit": "7ee5bbc64dbb03e967521227f2afffeb7c9dad1e",
+    "skills_tree": "e7b1871e0904fbdb0ff01bdc3fc1d7ea599707ff",
+    "tree": "4048504f76c6fb3dedd00ff2aa7250109308de99"
+  }
+}

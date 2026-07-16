@@ -162,10 +162,6 @@ packs:
   - ls-omniroute
   - ls-omniroute-proxy
   - ls-omniroute-admin-automation
-  - ls-omniroute-observability
-  - ls-omniroute-context
-  - ls-omniroute-integrations
-  - ls-omniroute-codex
   - ls-omniroute-update
   publishing:
   - ls-automatic-versioning
@@ -658,38 +654,6 @@ extensions:
       - omniroute
       - main
       - router
-      owner_scope: skill
-    ls-omniroute-observability:
-      class: integrations
-      sort_priority: 50
-      tags:
-      - omniroute
-      - observability
-      owner_scope: skill
-    ls-omniroute-context:
-      class: integrations
-      sort_priority: 50
-      tags:
-      - omniroute
-      - context
-      - compression
-      owner_scope: skill
-    ls-omniroute-integrations:
-      class: integrations
-      sort_priority: 50
-      tags:
-      - omniroute
-      - mcp
-      - a2a
-      - integrations
-      owner_scope: skill
-    ls-omniroute-codex:
-      class: integrations
-      sort_priority: 50
-      tags:
-      - omniroute
-      - codex
-      - onboarding
       owner_scope: skill
     ls-frontend-design:
       class: development

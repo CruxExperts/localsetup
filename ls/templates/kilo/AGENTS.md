@@ -86,13 +86,9 @@ Kilo CLI uses `AGENTS.md` as the project initialization file at repo root.
 | ls-keepass-secrets | KeePass-backed secrets via logical IDs; get/ensure credentials; bulk create or rotate |
 | ls-docs-organization | Docs organization router; classify docs, choose folder slugs, keep docs indexes in sync |
 | ls-scrapling | Host-first Scrapling integration; install/upgrade via pipx, run adaptive single-URL extractions. Default web scraping skill. |
-| ls-omniroute | Main OmniRoute router for issue triage, env/API-key preflight, access compatibility checks, and choosing the focused OmniRoute skill |
-| ls-omniroute-proxy | OmniRoute runtime discovery, model catalogs, provider metadata, limits, quotas, routing combos, MCP/A2A discovery, and agent client configuration |
-| ls-omniroute-admin-automation | OmniRoute administration automation for providers, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, and drift reconciliation |
-| ls-omniroute-observability | OmniRoute health, usage, quota, cost, policy, audit, resilience, and evaluation diagnostics |
-| ls-omniroute-context | OmniRoute context engineering, compression, memory, cache, RTK, and Qdrant configuration workflows |
-| ls-omniroute-integrations | OmniRoute MCP, A2A, CLI tools, plugins, skills, tunnels, webhooks, and external integration diagnostics |
-| ls-omniroute-codex | OmniRoute Codex CLI onboarding, setup/launch guidance, profile files, and `wire_api = "responses"` configuration |
+| ls-omniroute | Ambiguous-task/preflight router only for unclassified triage, env/API-key/access preflight, and non-mutating onboarding; route classified read-only discovery to ls-omniroute-proxy, mutation to ls-omniroute-admin-automation, and source/coverage maintenance to ls-omniroute-update |
+| ls-omniroute-proxy | All read-only OmniRoute model/provider, context, observability, integration, client and endpoint discovery, plus sanitized model observations |
+| ls-omniroute-admin-automation | All OmniRoute writes, imports, purges, services, settings, providers, keys, integrations, backup/restore, and rollback-safe reconciliation |
 | ls-omniroute-update | OmniRoute update reporting for upstream skill discovery, Localsetup coverage comparison, provenance metadata, and report-first maintenance planning |
 | ls-kilo-boss-orchestrator | Kilo headless boss-worker orchestration with repo-local state, watchdog leases, consensus validation, and safety gates |
 | ls-kilo-visual-output | Kilo CLI visual output organization guide with structured response patterns |

@@ -5,6 +5,7 @@
 1. Run `scripts/omniroute_update.py check`.
 2. Save Markdown or JSON output to the run ledger or a private maintenance path if the report is long.
 3. Verify the source commit and source hash before using the report for import or update decisions.
+4. For the approved v3.8.48 source, run `scripts/omniroute_inventory.py --git-dir <bare-mirror>` and compare its source object IDs and canonical inventory digests with the tracked immutable fixture before accepting coverage.
 
 ## Freshness Check
 
@@ -15,7 +16,7 @@ Run `scripts/omniroute_update.py freshness` before validating any converted or c
 - Add `--require-all-upstream` when the task requires every upstream OmniRoute skill to have converted or native Localsetup coverage.
 - A non-zero exit means the skill set is not fresh enough for the chosen validation policy.
 
-For consolidated native waves, use both `--require-all-upstream` and `--strict-untracked`. The expected healthy state for OmniRoute `v3.8.43` is 43 upstream skills reported as `covered-native` or `current`, the Localsetup-native OmniRoute skills reported as `local-native`, and zero `missing-local`, `stale-local`, `local-only`, or `untracked-local` rows.
+For consolidated native waves, use both `--require-all-upstream` and `--strict-untracked`. The expected healthy state for OmniRoute `v3.8.48` is 44 upstream skills reported as `covered-native` or `current`, the four Localsetup-native OmniRoute skills reported as `local-native`, and zero `missing-local`, `stale-local`, `local-only`, or `untracked-local` rows.
 
 ## Import
 
@@ -49,7 +50,7 @@ Use consolidated native coverage when the maintainer wants a smaller, better-rou
 1. Verify the upstream commit, tag, package version, and actual `skills/*/SKILL.md` count from primary sources.
 2. Group upstream skills by Localsetup operator workflow, not by upstream folder prefix alone.
 3. Keep each native skill narrow enough to route accurately but broad enough to cover the related API/CLI surface.
-4. Update the human coverage map in `../ls-omniroute/references/upstream-skill-coverage.md`.
+4. Update the human coverage map in `../../ls-omniroute/references/upstream-skill-coverage.md`.
 5. Update the machine coverage map in `scripts/omniroute_update.py`.
 6. Remove converted package registrations and taxonomy rows after preserving source provenance in the ledger.
 7. Validate with `freshness --require-all-upstream --strict-untracked`, catalog checks, focused updater/manifest/API helper tests, generated-doc drift checks, and final suite checks proportionate to the surface changed.

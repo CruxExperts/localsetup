@@ -1,18 +1,18 @@
 ---
 name: ls-omniroute-proxy
-description: Guide agents through read-only OmniRoute proxy discovery, model catalogs, provider metadata, context windows, rate limits, quotas, routing combos, MCP/A2A integration, and agent client configuration. Use when working with OmniRoute, OmniRoute proxy, AI gateway discovery, model catalogs, provider limits, context windows, routing combos, MCP/A2A integration, or configuring agents to use OmniRoute.
+description: Guide read-only OmniRoute discovery across models/providers, context/compression, health/usage/resilience, integrations, and agent clients, and emit sanitized model observations. Use for OmniRoute catalogs, runtime metadata, diagnostics, MCP/A2A, CLI tools, plugins, tunnels, webhooks, or client compatibility.
 metadata:
-  version: "1.0"
-compatibility: "Requires Python 3.12+, repo-installed requests, and network reachability to an OmniRoute HTTP(S) proxy. API keys must be supplied through environment variables. HTTP_PROXY, HTTPS_PROXY, and NO_PROXY behavior follows requests."
+  version: "1.1"
+compatibility: "Requires Python 3.12+, repo-installed requests and jsonschema, and network reachability to an OmniRoute HTTP(S) proxy. API keys must be supplied through environment variables. HTTP_PROXY, HTTPS_PROXY, and NO_PROXY behavior follows requests."
 extensions:
   omniroute:
     source_kind: localsetup-native
     local_role: proxy-discovery
     source_repo: https://github.com/diegosouzapw/OmniRoute
-    source_ref: main
-    source_commit: 0c7f756f922fe3c0408e41852577027b496489bf
-    package_version: 3.8.43
-    release_package_commit: b729a8f27364f072c87082e03bb8e122f3d76251
+    source_ref: v3.8.48
+    source_commit: 7ee5bbc64dbb03e967521227f2afffeb7c9dad1e
+    package_version: 3.8.48
+    release_package_commit: 7ee5bbc64dbb03e967521227f2afffeb7c9dad1e
 ---
 
 # OmniRoute proxy
@@ -21,7 +21,7 @@ Purpose: Help agents safely discover and use an OmniRoute proxy as an AI gateway
 
 ## When to use
 
-Use this skill when the task involves OmniRoute, an OmniRoute proxy, AI gateway discovery, model catalogs, provider limits, context windows, routing combos, MCP/A2A integration, or configuring agents to use OmniRoute.
+Use this skill for every read-only OmniRoute surface: model/provider catalogs; context, compression, memory, cache and RTK state; health, usage, cost, quota, policy, audit, resilience and evaluation diagnostics; MCP/A2A, CLI-tool, plugin/skill, tunnel and webhook discovery; or agent-client compatibility.
 
 ## Safety and auth
 
@@ -34,15 +34,15 @@ Use this skill when the task involves OmniRoute, an OmniRoute proxy, AI gateway 
 
 ## Runtime assumptions
 
-- The bundled probe requires Python 3.12+ and `requests` from the Localsetup uv project environment.
+- The bundled probe requires Python 3.12+, `requests`, and `jsonschema` from the Localsetup uv project environment.
 - The host running the probe must have network reachability to the OmniRoute proxy base URL.
 - If the environment sets `HTTP_PROXY`, `HTTPS_PROXY`, or `NO_PROXY`, `requests` applies those proxy settings to the probe.
 - The probe accepts only `http` or `https` base URLs and rejects URLs with embedded credentials.
 
-## Current v3.8.43 notes
+## Current v3.8.48 notes
 
-- The verified source for this wave is OmniRoute `v3.8.43` at commit `0c7f756f922fe3c0408e41852577027b496489bf`.
-- The upstream skill inventory contains 43 `skills/*/SKILL.md` files. Some upstream docs still say 42; treat the actual inventory as authoritative.
+- The verified source is OmniRoute `v3.8.48` at immutable commit `7ee5bbc64dbb03e967521227f2afffeb7c9dad1e`.
+- The upstream skill inventory contains 44 `skills/*/SKILL.md` files, including `omni-github-skills`.
 - CLI setup distinguishes persistent profile writers such as `omniroute setup-codex` from launchers such as `omniroute launch-codex`, which inject runtime config without permanently editing profiles.
 - For Codex configuration through OmniRoute, prefer `wire_api = "responses"` and do not rely on `model_max_output_tokens` as an effective Codex setting when active upstream guidance says Codex ignores it.
 - `/v1/models` may include richer model catalog metadata and can be affected by permissions, provider visibility, and server configuration.
@@ -122,6 +122,17 @@ For each candidate model, extract what OmniRoute actually reports:
 
 If a field is missing, write `unknown` or `not reported`. Avoid statements such as "all OpenRouter models support X" unless the catalog or provider source confirms it for that model.
 
+## Model observation
+
+Emit the schema-versioned observation for later capability ingestion with:
+
+```bash
+python3 "$(python3 ls/tools/localsetup.py --source-root . path package ls-omniroute-proxy scripts/omniroute_discover.py)" \
+  --model-observation --json
+```
+
+The observation consumes only `/api/models/catalog` and `/v1/models`. `adapter_source` identifies the reviewed v3.8.48 adapter pin. Runtime version, commit, and catalog revision are deliberately withheld and emitted as `unknown`, even when an approved endpoint reports them. With the same inputs and receipt key, model ordering and reviewed adapter/source provenance are deterministic. Canonical JSON receipt inputs are protected with a per-observation keyed digest, and neither raw receipt values nor key material are emitted. Opaque receipts are deterministic only with the same non-exported key (an API-key-derived runtime key or injected test key); without an API key, a fresh in-memory key intentionally rotates opaque values between observations. The `notes` field is a closed schema-v1 safe list, never a channel for payload prose. Conflicting authoritative fields produce bounded fingerprint-only conflict receipts. Models, endpoint observations, and conflicts are globally sorted before bounded retention, with explicit truncation counts. Pricing stays `unknown` with provenance class `unavailable` because these endpoints are not an approved generic price source. Raw payloads, credentials, private aliases, quotas, budgets, usage, logs, and health are excluded. WebSocket, OCR, audio, and plugin routes are excluded from this two-endpoint observation and never become inferred per-model capabilities. The observation makes no model-equivalence or task-routing decision and is validated against `references/model-observation.schema.json` before output.
+
 ## Limits and quota workflow
 
 Use read-only endpoints first:
@@ -135,10 +146,10 @@ Use read-only endpoints first:
 
 If MCP is available, prefer purpose-built tools for quota and cost summaries, such as `omniroute_check_quota` and `omniroute_cost_report`. Treat endpoint and MCP schemas as version-dependent.
 
-## Routing workflow
+## Routing discovery workflow
 
-- Inspect `GET /api/combos` and `GET /api/combos/metrics` before recommending routes.
-- Use MCP tools such as `omniroute_simulate_route`, `omniroute_best_combo_for_task`, and `omniroute_explain_route` when available.
+- Inspect `GET /api/combos` and `GET /api/combos/metrics` to report current configured routes and metrics.
+- Upstream routing recommendation, explanation, and simulation outputs may only report current OmniRoute behavior and must never become a LocalSetup task-routing, model-equivalence, or recommendation decision.
 - Separate route diagnosis from route mutation. Creating or changing combos, fallback chains, aliases, or provider priorities requires explicit user intent.
 - Explain uncertainty when provider availability, rate-limit state, or cost fields are incomplete.
 
@@ -165,5 +176,5 @@ If MCP is available, prefer purpose-built tools for quota and cost summaries, su
 ## Bundled helpers
 
 - Endpoint cheat sheet: `references/omniroute-endpoints.md`.
-- Opaque-route model-equivalence advisory (closest-reference guidance only, not exact model parity): `references/model-equivalence.yaml`.
-- Read-only local probe: `scripts/omniroute_discover.py`. It reads credentials from an environment variable, performs env/access preflight, probes safe endpoints with `requests`, and emits JSON or Markdown with per-endpoint status, failure reason, and repair hints.
+- Read-only local probe: `scripts/omniroute_discover.py`. It reads credentials from an environment variable, performs env/access preflight, probes safe endpoints with `requests`, and emits JSON or Markdown with per-endpoint status, failure reason, and repair hints. Model observations are schema-validated with `jsonschema`.
+- Model-observation contract: `references/model-observation.schema.json`.

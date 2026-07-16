@@ -4,11 +4,11 @@ version: 4.2
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 6e2d6805106829ec664d22d4d678aeded5d0f27b4bcfaff1e640ee07ce63c39e
+  source_provenance_hash: 8f115e024b88c7061463c6b9cb8945ebbde601995781455b3807b06ff92669ba
   emitter: generate-docs
 framework_version: 4.2.19
-source_commit: e3da68416ffad95990e6f3525dd7ca524ff31afa
-artifact_sha256: bb888aa7560e70d25cad04f1010e67a244d6b496500043dfd0ccc0f37bd42cb9
+source_commit: 6950c941cbfafb352e8ed1a3c563c9aeb120b779
+artifact_sha256: fb7371ef5ce3fe48f8c1c1431169b77692adbe77d8ecc3001a9e11e04a19f6f4
 ---
 # Skill Alias Map
 
@@ -67,10 +67,6 @@ artifact_sha256: bb888aa7560e70d25cad04f1010e67a244d6b496500043dfd0ccc0f37bd42cb
 | `localsetup-npm-management` | `ls-npm-management` |
 | `localsetup-omniroute` | `ls-omniroute` |
 | `localsetup-omniroute-admin-automation` | `ls-omniroute-admin-automation` |
-| `localsetup-omniroute-codex` | `ls-omniroute-codex` |
-| `localsetup-omniroute-context` | `ls-omniroute-context` |
-| `localsetup-omniroute-integrations` | `ls-omniroute-integrations` |
-| `localsetup-omniroute-observability` | `ls-omniroute-observability` |
 | `localsetup-omniroute-proxy` | `ls-omniroute-proxy` |
 | `localsetup-omniroute-update` | `ls-omniroute-update` |
 | `localsetup-openclaudia-skills` | `ls-openclaudia-skills` |

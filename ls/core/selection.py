@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .aliases import skill_alias
+from .dependency_ledger import required_skill_closure
 from .manifests import load_pack_config
 from .skills import load_skill_catalog
 from .workflows import load_workflow_catalog, required_skills_for_workflows, selected_workflow_names
@@ -172,6 +173,7 @@ def resolve_package_selection(
     selected.update(_skills_for_tags(repo_root, skill_tags))
     selected.difference_update(_normalize_skill_selectors(repo_root, exclude_skills, "excluded skill"))
     selected.update(required_skills_for_workflows(repo_root, selected_workflows))
+    selected = set(required_skill_closure(repo_root, selected))
 
     sort_order = {skill.name: (skill.sort_priority, skill.name) for skill in load_skill_catalog(repo_root)}
     ordered_skills = sorted(selected, key=lambda name: sort_order.get(name, (1_000_000, name)))

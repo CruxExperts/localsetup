@@ -443,6 +443,30 @@ def test_selection_keeps_workflow_required_skills_after_exclusion(tmp_path: Path
     assert plan.rollback_metadata["selectors"]["exclude_skills"] == ["ls-framework-audit"]
 
 
+def test_omniroute_hard_dependencies_are_installed_even_when_excluded(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+
+    plan = build_install_plan(
+        root,
+        home=home,
+        preset="custom",
+        skills=["ls-omniroute"],
+        exclude_skills=["ls-omniroute-proxy"],
+    )
+    expected = {
+        "ls-omniroute",
+        "ls-omniroute-admin-automation",
+        "ls-omniroute-proxy",
+        "ls-omniroute-update",
+    }
+    assert set(plan.rollback_metadata["skills"]) == expected
+
+    apply_plan(root, plan, home=home)
+    package_root = home / ".local/share/localsetup/packages"
+    assert {path.name for path in package_root.iterdir() if path.name.startswith("ls-omniroute")} == expected
+
+
 def test_scoped_adapter_exposes_only_selected_packages_even_when_global_has_more(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"

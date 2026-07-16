@@ -1,0 +1,63 @@
+{
+  "data": [
+    {
+      "id": "alias-a/model-x",
+      "object": "model",
+      "owned_by": "provider-a",
+      "parent": null,
+      "permission": [],
+      "root": "model-x"
+    },
+    {
+      "id": "provider-a/model-x",
+      "object": "model",
+      "owned_by": "provider-a",
+      "parent": "alias-a/model-x",
+      "permission": [],
+      "root": "model-x"
+    },
+    {
+      "id": "model-x",
+      "object": "model",
+      "owned_by": "provider-a",
+      "parent": null,
+      "permission": [],
+      "root": "model-x"
+    },
+    {
+      "id": "auto/smart",
+      "object": "model",
+      "owned_by": "combo",
+      "parent": null,
+      "permission": [],
+      "root": "auto/smart"
+    },
+    {
+      "id": "team-private",
+      "object": "model",
+      "owned_by": "combo",
+      "parent": null,
+      "permission": [],
+      "root": "team-private"
+    },
+    {
+      "custom": true,
+      "id": "alias-custom/custom-model",
+      "object": "model",
+      "owned_by": "provider-custom",
+      "parent": null,
+      "permission": [],
+      "root": "custom-model"
+    },
+    {
+      "custom": true,
+      "id": "provider-custom/custom-model",
+      "object": "model",
+      "owned_by": "provider-custom",
+      "parent": "alias-custom/custom-model",
+      "permission": [],
+      "root": "custom-model"
+    }
+  ],
+  "object": "list"
+}
