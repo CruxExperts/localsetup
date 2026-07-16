@@ -118,6 +118,12 @@ def stat_with_uid(result: os.stat_result, uid: int) -> os.stat_result:
     return os.stat_result(fields)
 
 
+def stat_with_dev(result: os.stat_result, device: int) -> os.stat_result:
+    fields = list(result)
+    fields[2] = device
+    return os.stat_result(fields)
+
+
 def stat_with_mode(result: os.stat_result, mode: int) -> os.stat_result:
     fields = list(result)
     fields[0] = stat.S_IFMT(result.st_mode) | mode
@@ -307,6 +313,82 @@ def test_non_repo_falls_back_to_supported_global_root(tmp_path: Path) -> None:
     assert location.root == home / ".claude" / "state"
     assert location.state_path == "~/.claude/state"
     assert location.git is None
+
+
+@pytest.mark.parametrize("marker_kind", ["directory", "missing-gitdir"])
+def test_broken_git_marker_never_falls_back_to_global_state(
+    tmp_path: Path, marker_kind: str
+) -> None:
+    cwd = tmp_path / "private-broken-repo"
+    cwd.mkdir()
+    marker = cwd / ".git"
+    if marker_kind == "directory":
+        marker.mkdir()
+    else:
+        marker.write_text("gitdir: ../private-missing-gitdir\n", encoding="utf-8")
+    home = tmp_path / "private-home"
+
+    with pytest.raises(ClientStateError) as failure:
+        resolve_state_location(
+            ROOT, "codex/codex-cli", cwd=cwd, home=home, scope="auto"
+        )
+
+    assert failure.value.code == "git_probe_failed"
+    assert not (home / ".codex" / "state").exists()
+
+
+def test_git_marker_discovery_stops_before_cross_filesystem_parent(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    foreign_parent = tmp_path / "foreign-filesystem"
+    foreign_parent.mkdir()
+    (foreign_parent / ".git").write_text(
+        "gitdir: ../private-missing-gitdir\n", encoding="utf-8"
+    )
+    mount_root = foreign_parent / "mount-root"
+    cwd = mount_root / "nested"
+    cwd.mkdir(parents=True)
+    home = tmp_path / "home"
+    home.mkdir()
+    original = Path.stat
+    foreign_device = foreign_parent.stat().st_dev + 1
+
+    def mounted(path: Path, *args, **kwargs):
+        result = original(path, *args, **kwargs)
+        return stat_with_dev(result, foreign_device) if path == foreign_parent else result
+
+    monkeypatch.setattr(Path, "stat", mounted)
+    location = resolve_state_location(
+        ROOT, "codex/codex-cli", cwd=cwd, home=home, scope="auto"
+    )
+
+    assert location.scope == "global"
+    assert location.git is None
+    assert not location.root.exists()
+
+
+def test_git_marker_discovery_stat_uncertainty_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    uncertain_parent = tmp_path / "private-uncertain-parent"
+    cwd = uncertain_parent / "nested"
+    cwd.mkdir(parents=True)
+    home = tmp_path / "home"
+    original = Path.stat
+
+    def uncertain(path: Path, *args, **kwargs):
+        if path == uncertain_parent:
+            raise PermissionError("private mount-boundary detail")
+        return original(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "stat", uncertain)
+    with pytest.raises(ClientStateError) as failure:
+        resolve_state_location(
+            ROOT, "codex/codex-cli", cwd=cwd, home=home, scope="auto"
+        )
+
+    assert failure.value.code == "git_probe_failed"
+    assert not (home / ".codex" / "state").exists()
 
 
 def test_codex_home_override_can_be_outside_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -675,7 +757,9 @@ def test_global_mode_policy_does_not_expand_to_repo_or_unrelated_ancestors(
         unrelated = tmp_path / "unrelated"
         unrelated.mkdir()
         unrelated.chmod(0o777)
-        owner = unrelated / "codex-home"
+        immediate_parent = unrelated / "safe-parent"
+        immediate_parent.mkdir()
+        owner = immediate_parent / "codex-home"
         owner.mkdir()
         monkeypatch.setenv("CODEX_HOME", str(owner))
         location = resolve_state_location(
@@ -684,6 +768,34 @@ def test_global_mode_policy_does_not_expand_to_repo_or_unrelated_ancestors(
 
     allocated = allocate_artifact(location, **artifact_options())
     assert (location.root / allocated["artifact"]).is_file()
+
+
+@pytest.mark.parametrize(("mode", "safe"), [(0o1777, True), (0o777, False)])
+def test_existing_global_owner_immediate_parent_mode_policy(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, mode: int, safe: bool
+) -> None:
+    cwd = tmp_path / "plain"
+    cwd.mkdir()
+    immediate_parent = tmp_path / "unsafe-parent"
+    immediate_parent.mkdir()
+    immediate_parent.chmod(mode)
+    owner = immediate_parent / "codex-home"
+    owner.mkdir()
+    monkeypatch.setenv("CODEX_HOME", str(owner))
+
+    if safe:
+        location = resolve_state_location(
+            ROOT, "codex/codex-cli", cwd=cwd, home=tmp_path / "home", scope="global"
+        )
+        allocated = allocate_artifact(location, **artifact_options())
+        assert (owner / "state" / allocated["artifact"]).is_file()
+    else:
+        with pytest.raises(ClientStateError) as failure:
+            resolve_state_location(
+                ROOT, "codex/codex-cli", cwd=cwd, home=tmp_path / "home", scope="global"
+            )
+        assert failure.value.code == "unsafe_state_path"
+        assert not (owner / "state").exists()
 
 
 @pytest.mark.parametrize("position", ["owner", "intermediate", "root"])
@@ -883,6 +995,36 @@ def test_global_pre_owner_live_descriptor_permission_policy(
             allocate_artifact(location, **artifact_options())
         assert failure.value.code == "unsafe_state_path"
         assert list(boundary.iterdir()) == []
+
+
+def test_global_live_traversal_rejects_new_unsafe_pre_owner_intermediate(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    cwd = tmp_path / "plain"
+    cwd.mkdir()
+    boundary = tmp_path / "boundary"
+    boundary.mkdir()
+    owner = boundary / "appears-later" / "codex-home"
+    monkeypatch.setenv("CODEX_HOME", str(owner))
+    location = resolve_state_location(
+        ROOT, "codex/codex-cli", cwd=cwd, home=tmp_path / "home", scope="global"
+    )
+    original = artifacts._open_absolute_directory
+
+    def create_intermediate_then_open(path: Path, **kwargs):
+        intermediate = boundary / "appears-later"
+        intermediate.mkdir()
+        intermediate.chmod(0o777)
+        return original(path, **kwargs)
+
+    monkeypatch.setattr(artifacts, "_open_absolute_directory", create_intermediate_then_open)
+    before_fds = descriptor_count()
+    with pytest.raises(ClientStateError) as failure:
+        allocate_artifact(location, **artifact_options())
+    assert failure.value.code == "unsafe_state_path"
+    assert descriptor_count() == before_fds
+    assert not owner.exists()
+    assert list((boundary / "appears-later").iterdir()) == []
 
 
 @pytest.mark.parametrize(
@@ -2044,6 +2186,51 @@ def test_relative_metadata_schema_matches_runtime_normalization(tmp_path: Path) 
             ), (field, rejected)
 
 
+def test_artifact_filename_schema_matches_runtime_collision_suffixes(tmp_path: Path) -> None:
+    repo = repository(tmp_path / "repo")
+    location = resolve_state_location(
+        ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home"
+    )
+    allocated = allocate_artifact(location, **artifact_options())
+    metadata_schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+    bare = allocated["record"]
+    zero = {**bare, "artifact": bare["artifact"].replace(".md", "-00.md")}
+    first = {**bare, "artifact": bare["artifact"].replace(".md", "-01.md")}
+    last = {**bare, "artifact": bare["artifact"].replace(".md", "-99.md")}
+
+    assert not artifacts._schema_issues(bare, metadata_schema)
+    assert artifacts._schema_issues(zero, metadata_schema)
+    assert not artifacts._schema_issues(first, metadata_schema)
+    assert not artifacts._schema_issues(last, metadata_schema)
+
+
+def test_preflight_opens_existing_state_root_read_only_and_closes_descriptor(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = repository(tmp_path / "repo")
+    state = repo / ".codex" / "state"
+    state.mkdir(parents=True)
+    location = resolve_state_location(
+        ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home"
+    )
+    request = prepare_artifact_request(location, **artifact_options())
+    original = artifacts._open_location_directory
+    calls: list[bool] = []
+
+    def record_open(bound, *, create: bool, **kwargs):
+        calls.append(create)
+        return original(bound, create=create, **kwargs)
+
+    monkeypatch.setattr(artifacts, "_open_location_directory", record_open)
+    before_fds = descriptor_count()
+    before_mode = stat.S_IMODE(state.stat().st_mode)
+    artifacts.preflight_artifact_request(location, request)
+
+    assert calls == [False]
+    assert descriptor_count() == before_fds
+    assert stat.S_IMODE(state.stat().st_mode) == before_mode
+
+
 @pytest.mark.parametrize("field", ["predecessor", "checkpoint"])
 @pytest.mark.parametrize("value", ["foo/", "."])
 def test_verify_rejects_non_normalized_path_in_tampered_metadata(
@@ -2330,10 +2517,10 @@ def test_state_root_swap_between_refresh_and_open_is_rejected(
     location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")
     original = artifacts._open_absolute_directory
 
-    def swap_then_open(path: Path, *, create: bool) -> int:
+    def swap_then_open(path: Path, *, create: bool, **kwargs) -> int:
         state.rename(repo / ".codex" / "prior-state")
         state.mkdir()
-        return original(path, create=create)
+        return original(path, create=create, **kwargs)
 
     monkeypatch.setattr(artifacts, "_open_absolute_directory", swap_then_open)
     with pytest.raises(ClientStateError, match="stale"):

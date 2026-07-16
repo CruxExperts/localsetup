@@ -71,6 +71,12 @@ def stat_with_uid(result: os.stat_result, uid: int) -> os.stat_result:
     return os.stat_result(fields)
 
 
+def stat_with_dev(result: os.stat_result, device: int) -> os.stat_result:
+    fields = list(result)
+    fields[2] = device
+    return os.stat_result(fields)
+
+
 def test_state_path_is_read_only_until_apply(tmp_path: Path, capsys) -> None:
     repo = repository(tmp_path / "repo")
     code, payload = invoke(
@@ -117,6 +123,170 @@ def test_state_allocate_and_verify_cli(tmp_path: Path, capsys) -> None:
         "--artifact", allocated["artifact"],
     )
     assert code == 1 and not verified["ok"]
+
+
+def test_state_cli_broken_gitdir_is_private_and_never_allocates_global_state(
+    tmp_path: Path, capsys
+) -> None:
+    cwd = tmp_path / "private-broken-repo"
+    cwd.mkdir()
+    (cwd / ".git").write_text("gitdir: ../private-missing-gitdir\n", encoding="utf-8")
+    home = tmp_path / "private-home"
+    code, payload = invoke(
+        capsys,
+        "--home", str(home), "state", "allocate", "--client", "codex/codex-cli",
+        "--directory", str(cwd), *allocation_args(),
+    )
+
+    encoded = json.dumps(payload, sort_keys=True)
+    assert code == 2 and payload["error"]["code"] == "git_probe_failed"
+    assert "Traceback" not in encoded and str(cwd) not in encoded and str(home) not in encoded
+    assert not (home / ".codex" / "state").exists()
+
+
+def test_state_cli_git_marker_discovery_stops_at_mount_boundary(
+    tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    foreign_parent = tmp_path / "private-foreign-filesystem"
+    foreign_parent.mkdir()
+    (foreign_parent / ".git").write_text(
+        "gitdir: ../private-missing-gitdir\n", encoding="utf-8"
+    )
+    cwd = foreign_parent / "mount-root" / "nested"
+    cwd.mkdir(parents=True)
+    home = tmp_path / "home"
+    home.mkdir()
+    original = Path.stat
+    foreign_device = foreign_parent.stat().st_dev + 1
+
+    def mounted(path: Path, *args, **kwargs):
+        result = original(path, *args, **kwargs)
+        return stat_with_dev(result, foreign_device) if path == foreign_parent else result
+
+    monkeypatch.setattr(Path, "stat", mounted)
+    code, payload = invoke(
+        capsys,
+        "--home", str(home), "state", "path", "--client", "codex/codex-cli",
+        "--directory", str(cwd),
+    )
+
+    assert code == 0 and payload["scope"] == "global"
+    assert not (home / ".codex" / "state").exists()
+
+
+def test_state_cli_git_marker_mount_stat_uncertainty_is_private_and_non_mutating(
+    tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    uncertain_parent = tmp_path / "private-uncertain-parent"
+    cwd = uncertain_parent / "nested"
+    cwd.mkdir(parents=True)
+    home = tmp_path / "private-home"
+    original = Path.stat
+
+    def uncertain(path: Path, *args, **kwargs):
+        if path == uncertain_parent:
+            raise PermissionError("private mount-boundary detail")
+        return original(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "stat", uncertain)
+    code, payload = invoke(
+        capsys,
+        "--home", str(home), "state", "allocate", "--client", "codex/codex-cli",
+        "--directory", str(cwd), *allocation_args(),
+    )
+
+    encoded = json.dumps(payload, sort_keys=True)
+    assert code == 2 and payload["error"]["code"] == "git_probe_failed"
+    assert "Traceback" not in encoded
+    assert all(str(path) not in encoded for path in (uncertain_parent, cwd, home))
+    assert not (home / ".codex" / "state").exists()
+
+
+def test_state_cli_existing_root_preflight_precedes_exclude_and_closes_descriptors(
+    tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = repository(tmp_path / "private-repo")
+    state = repo / ".codex" / "state"
+    state.mkdir(parents=True)
+    exclude = repo / ".git" / "info" / "exclude"
+    before = exclude.read_bytes()
+    original = artifacts._open_location_directory
+
+    def deny_readiness(location, *, create: bool, **kwargs):
+        if not create:
+            raise PermissionError("private state-root detail")
+        return original(location, create=create, **kwargs)
+
+    monkeypatch.setattr(artifacts, "_open_location_directory", deny_readiness)
+    before_fds = descriptor_count()
+    code, payload = invoke(
+        capsys,
+        "state", "allocate", "--client", "codex/codex-cli", "--directory", str(repo),
+        *allocation_args(),
+    )
+
+    encoded = json.dumps(payload, sort_keys=True)
+    assert code == 2 and payload["error"]["code"] == "unsafe_state_path"
+    assert "Traceback" not in encoded and str(repo) not in encoded
+    assert exclude.read_bytes() == before
+    assert list(state.iterdir()) == []
+    assert descriptor_count() == before_fds
+
+
+def test_state_cli_rejects_new_unsafe_pre_owner_intermediate_privately(
+    tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plain = tmp_path / "plain"
+    plain.mkdir()
+    boundary = tmp_path / "private-boundary"
+    boundary.mkdir()
+    owner = boundary / "appears-later" / "codex-home"
+    monkeypatch.setenv("CODEX_HOME", str(owner))
+    original = artifacts._open_absolute_directory
+
+    def create_intermediate_then_open(path: Path, **kwargs):
+        intermediate = boundary / "appears-later"
+        intermediate.mkdir()
+        intermediate.chmod(0o777)
+        return original(path, **kwargs)
+
+    monkeypatch.setattr(artifacts, "_open_absolute_directory", create_intermediate_then_open)
+    code, payload = invoke(
+        capsys,
+        "--home", str(tmp_path / "home"), "state", "allocate",
+        "--client", "codex/codex-cli", "--scope", "global",
+        "--directory", str(plain), *allocation_args(),
+    )
+
+    encoded = json.dumps(payload, sort_keys=True)
+    assert code == 2 and payload["error"]["code"] == "unsafe_state_path"
+    assert "Traceback" not in encoded and str(boundary) not in encoded
+    assert not owner.exists()
+    assert list((boundary / "appears-later").iterdir()) == []
+
+
+def test_state_cli_existing_global_owner_rejects_unsafe_immediate_parent(
+    tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plain = tmp_path / "plain"
+    plain.mkdir()
+    immediate_parent = tmp_path / "private-unsafe-parent"
+    immediate_parent.mkdir()
+    immediate_parent.chmod(0o777)
+    owner = immediate_parent / "codex-home"
+    owner.mkdir()
+    monkeypatch.setenv("CODEX_HOME", str(owner))
+    code, payload = invoke(
+        capsys,
+        "--home", str(tmp_path / "home"), "state", "allocate",
+        "--client", "codex/codex-cli", "--scope", "global",
+        "--directory", str(plain), *allocation_args(),
+    )
+
+    encoded = json.dumps(payload, sort_keys=True)
+    assert code == 2 and payload["error"]["code"] == "unsafe_state_path"
+    assert "Traceback" not in encoded and str(immediate_parent) not in encoded
+    assert not (owner / "state").exists()
 
 
 @pytest.mark.parametrize(

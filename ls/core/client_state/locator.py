@@ -94,12 +94,55 @@ def _resolve_directory(path: Path) -> Path:
     return resolved
 
 
+def _git_discovery_device(path: Path) -> int:
+    try:
+        details = path.stat(follow_symlinks=False)
+    except OSError as exc:
+        raise ClientStateError(
+            "Git discovery boundary is unavailable", code="git_probe_failed"
+        ) from exc
+    if not stat.S_ISDIR(details.st_mode):
+        raise ClientStateError(
+            "Git discovery boundary is invalid", code="git_probe_failed"
+        )
+    return details.st_dev
+
+
+def _has_git_marker(cwd: Path) -> bool:
+    current = cwd
+    current_device = _git_discovery_device(current)
+    while True:
+        marker = current / ".git"
+        try:
+            marker.stat(follow_symlinks=False)
+        except FileNotFoundError:
+            pass
+        except OSError as exc:
+            raise ClientStateError(
+                "Git state marker is unavailable", code="git_probe_failed"
+            ) from exc
+        else:
+            return True
+        parent = current.parent
+        if parent == current:
+            return False
+        parent_device = _git_discovery_device(parent)
+        if parent_device != current_device:
+            return False
+        current = parent
+        current_device = parent_device
+
+
 def probe_git_context(cwd: Path) -> GitContext | None:
     cwd = _resolve_directory(cwd)
     inside = _git(cwd, "rev-parse", "--is-inside-work-tree")
     if inside.returncode != 0:
         detail = (inside.stderr or inside.stdout).lower()
         if any(marker in detail for marker in _NOT_REPOSITORY):
+            if _has_git_marker(cwd):
+                raise ClientStateError(
+                    "Git worktree marker is invalid", code="git_probe_failed"
+                )
             return None
         raise ClientStateError("ambiguous Git worktree probe failure", code="git_probe_failed")
     if inside.stdout.strip() != "true":
@@ -185,6 +228,18 @@ def _assert_global_ownership(owner: Path, target: Path) -> None:
                 code="unsafe_state_path",
             )
     if owner_exists:
+        ancestor = owner.parent
+        try:
+            details = ancestor.stat(follow_symlinks=False)
+        except OSError as exc:
+            raise ClientStateError(
+                "global client state ownership is unavailable", code="unsafe_state_path"
+            ) from exc
+        if not _valid_global_pre_owner_directory(details):
+            raise ClientStateError(
+                "global client state ancestor has unsafe ownership or permissions",
+                code="unsafe_state_path",
+            )
         return
     ancestor = owner.parent
     while True:

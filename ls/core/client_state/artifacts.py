@@ -160,6 +160,19 @@ def preflight_artifact_request(location: StateLocation, request: ArtifactRequest
     )
     parse_artifact_name(collision_safe_name)
     _metadata_payload(current, request, collision_safe_name)
+    if current.root_identity is not None:
+        try:
+            directory_fd = _open_location_directory(
+                current, create=False, normalize_root=False
+            )
+        except OSError as exc:
+            raise ClientStateError(
+                "client state root is unsafe or unavailable", code="unsafe_state_path"
+            ) from exc
+        try:
+            _bound_location(current, directory_fd)
+        finally:
+            os.close(directory_fd)
 
 
 def _timestamp(now: datetime) -> str:
@@ -367,7 +380,23 @@ def _nearest_existing_pre_owner(owner_root: Path) -> Path | None:
                 "global client state ownership boundary is unavailable",
                 code="unsafe_state_path",
             ) from exc
-        return None if current == owner_root else current
+        if current == owner_root:
+            parent = owner_root.parent
+            return None if parent == owner_root else parent
+        return current
+
+
+def _is_pre_owner_component(
+    path: Path, owner_root: Path | None, pre_owner_root: Path | None
+) -> bool:
+    if owner_root is None or pre_owner_root is None or path == owner_root:
+        return False
+    try:
+        path.relative_to(pre_owner_root)
+        owner_root.relative_to(path)
+    except ValueError:
+        return False
+    return True
 
 
 def _created_directory(parent_fd: int, name: str) -> int:
@@ -402,6 +431,7 @@ def _open_absolute_directory(
     create: bool,
     owner_root: Path | None = None,
     pre_owner_root: Path | None = None,
+    normalize_root: bool = True,
 ) -> int:
     if not path.is_absolute():
         raise ClientStateError("client state path is not absolute", code="unsafe_state_path")
@@ -415,7 +445,9 @@ def _open_absolute_directory(
     fd = os.open("/", _DIRECTORY_FLAGS)
     current = Path(path.anchor)
     try:
-        if current == pre_owner_root and not _valid_global_pre_owner_directory(os.fstat(fd)):
+        if _is_pre_owner_component(
+            current, owner_root, pre_owner_root
+        ) and not _valid_global_pre_owner_directory(os.fstat(fd)):
             raise ClientStateError(
                 "global client state ancestor has unsafe ownership or permissions",
                 code="unsafe_state_path",
@@ -437,7 +469,9 @@ def _open_absolute_directory(
                 except FileExistsError:
                     next_fd = os.open(part, _DIRECTORY_FLAGS, dir_fd=fd)
             details = os.fstat(next_fd)
-            if current == pre_owner_root and not _valid_global_pre_owner_directory(details):
+            if _is_pre_owner_component(
+                current, owner_root, pre_owner_root
+            ) and not _valid_global_pre_owner_directory(details):
                 os.close(next_fd)
                 raise ClientStateError(
                     "global client state ancestor has unsafe ownership or permissions",
@@ -457,7 +491,8 @@ def _open_absolute_directory(
                 raise ClientStateError("client state root is unsafe", code="unsafe_state_path")
         elif details.st_uid != os.geteuid():
             raise ClientStateError("client state root has an unexpected owner", code="unsafe_state_path")
-        os.fchmod(fd, 0o700)
+        if normalize_root:
+            os.fchmod(fd, 0o700)
         return fd
     except Exception:
         os.close(fd)
@@ -719,7 +754,9 @@ def _bound_location(location: StateLocation, directory_fd: int) -> StateLocation
     return current
 
 
-def _open_location_directory(location: StateLocation, *, create: bool) -> int:
+def _open_location_directory(
+    location: StateLocation, *, create: bool, normalize_root: bool = True
+) -> int:
     if location.scope == "global":
         if location.owner_root is None:
             raise ClientStateError("global client state owner is unavailable", code="unsafe_state_path")
@@ -729,8 +766,11 @@ def _open_location_directory(location: StateLocation, *, create: bool) -> int:
             create=create,
             owner_root=location.owner_root,
             pre_owner_root=pre_owner_root,
+            normalize_root=normalize_root,
         )
-    return _open_absolute_directory(location.root, create=create)
+    return _open_absolute_directory(
+        location.root, create=create, normalize_root=normalize_root
+    )
 
 
 def allocate_artifact(location: StateLocation, *, prepared: ArtifactRequest | None = None, **kwargs) -> dict:
