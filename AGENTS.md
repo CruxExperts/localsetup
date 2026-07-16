@@ -160,6 +160,28 @@ Before final response on non-trivial work, inspect `git status --short`, inspect
 
 When the user will manually relay a handoff, address the user with an informative request to review or evaluate the material before relaying it; do not frame it as a declarative instruction to, or a message already sent to, an absent agent. This presentation rule does not replace durable artifact-backed executable or restart-sensitive handoffs. Direct agent messages are available only through a native capability to a currently visible target agent.
 
+### Optional Packs, Parallel Slices, And Publishing Integration
+
+An optional Localsetup skill pack may carry durable operating guidance needed to
+manage that selected capability, but it does not automatically become effective
+policy for the default Localsetup installation or overwrite global Codex
+behavior, hooks, active goals, or user settings. A direct global-Codex change
+requires a separate explicit user request and an isolated owner-scoped change
+with its own validation.
+
+A parallel agent may research, draft a prompted handoff artifact, or implement
+an explicitly bounded branch slice when its controller packet names the exact
+write scope, branch boundary, validation, and stop conditions. That slice is a
+candidate contribution only: it must preserve concurrently owned paths and may
+not self-integrate, merge, publish, install, or expand into default policy.
+
+The publishing agent alone reconciles the full timeline of parallel branches,
+ledgers, PR/base state, review outcomes, ownership boundaries, version/release
+state, and final evidence. It evaluates each packet or PR, chooses whether and
+how to integrate accepted work, and performs the normal guarded publication
+flow. Treat research handoffs as durable review material for that loop, not as
+direct execution authority over an absent agent.
+
 ## Skill And Context Preservation
 
 When editing `SKILL.md`, `AGENTS.md`, workflow docs, examples, references, schemas, templates, or operational runbooks, preserve task capability over brevity.
