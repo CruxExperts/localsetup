@@ -10,6 +10,20 @@ Do not impose an arbitrary length cap on this file. In particular, do not trim i
 
 Keep this file aligned with the repo's actual workflow. If a rule also belongs in installed Codex context for future converted repos, mirror the portable part into `ls/templates/codex/AGENTS.md`. If the rule is only for this checkout, keep it here.
 
+## COIT Repository Mapping
+
+Apply the machine-wide Controlled Outcome Investigation and Termination (COIT)
+control to material Localsetup retries. Keep append-only per-problem records in
+`.codex/runs/`, binding each record to its invariant, minimal reproduction,
+affected gate, exact source/diff state, and `0/3` counter. A full cycle uses one
+serialized writer, deterministic validation, and independent
+adversarial/reproduction, contract/provenance, and release/regression critics
+before controller reconciliation. Renames, path moves, partial repairs, and
+changed reviewer wording do not reset the counter. Stop and document the
+problem as unresolvable after three failed full cycles, or immediately for a
+major blocker; do not begin dependent work or publish while an upstream gate is
+open.
+
 ## Project Structure & Module Organization
 
 This repository packages Localsetup, a repo-local framework for agent context, skills, and install workflows. Root files include the Bash installer (`install`), top-level docs, `VERSION`, and support files. The main engine lives in `ls/`: reusable code is under `ls/lib/`, OS discovery helpers under `ls/discovery/`, shipped skills under `ls/skills/`, platform templates under `ls/templates/`, and framework docs under `ls/docs/`. Tests live in `ls/tests/`; static assets live in `assets/`.
