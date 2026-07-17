@@ -63,9 +63,8 @@ class ReceiptEncoder:
 def receipt_encoder(
     *,
     test_key: str | bytes | None = None,
-    api_key: str | None = None,
 ) -> ReceiptEncoder:
-    """Create a per-observation encoder; test keys are explicit and never emitted."""
+    """Create a per-observation encoder with test-only deterministic injection."""
     if test_key is not None:
         if isinstance(test_key, str):
             key = test_key.encode("utf-8", errors="surrogatepass")
@@ -73,12 +72,6 @@ def receipt_encoder(
             key = test_key
         else:
             raise ValueError("receipt_key_invalid")
-    elif isinstance(api_key, str) and api_key.strip():
-        key = hmac.new(
-            api_key.encode("utf-8", errors="surrogatepass"),
-            b"localsetup/omniroute/model-observation/receipt-key/v1",
-            hashlib.sha256,
-        ).digest()
     else:
         key = secrets.token_bytes(32)
     return ReceiptEncoder(key)

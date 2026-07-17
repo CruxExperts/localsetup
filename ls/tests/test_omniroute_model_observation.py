@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import hmac
 import importlib.util
 import json
 import re
@@ -334,10 +336,14 @@ def test_unpaired_surrogate_provider_receipts_are_distinct_and_private() -> None
     assert all(provider not in rendered for provider in providers)
 
 
-def test_opaque_receipts_are_keyed_and_do_not_leak_raw_values_or_key_material() -> None:
+def test_opaque_receipts_are_keyed_and_do_not_leak_raw_values_or_key_material(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     probe = _load_probe()
+    rows = sys.modules["omniroute_proxy.observation_rows"]
     raw_provider = "tenant-secret-provider"
     raw_model = "tenant-secret-model"
+    candidate_api_key = "test-api-key"
     row = {
         "id": raw_model,
         "root": raw_model,
@@ -358,17 +364,39 @@ def test_opaque_receipts_are_keyed_and_do_not_leak_raw_values_or_key_material() 
         observed_at=OBSERVED_AT,
         receipt_key="a-different-test-key",
     )
+    issued_receipt_keys = (b"a" * 32, b"b" * 32, b"c" * 32, b"d" * 32)
+    receipt_key_iter = iter(issued_receipt_keys)
+    requested_lengths: list[int] = []
+
+    def token_bytes(length: int) -> bytes:
+        requested_lengths.append(length)
+        return next(receipt_key_iter)
+
+    monkeypatch.setattr(rows.secrets, "token_bytes", token_bytes)
+
     api_first = probe.build_model_observation(
         None,
         {"data": [row]},
         observed_at=OBSERVED_AT,
-        api_key="test-api-key",
+        api_key=candidate_api_key,
     )
     api_second = probe.build_model_observation(
         None,
         {"data": [row]},
         observed_at=OBSERVED_AT,
-        api_key="test-api-key",
+        api_key=candidate_api_key,
+    )
+    assert requested_lengths == [32, 32]
+    legacy_api_derived_receipt_key = hmac.new(
+        candidate_api_key.encode("utf-8"),
+        b"localsetup/omniroute/model-observation/receipt-key/v1",
+        hashlib.sha256,
+    ).digest()
+    reproduced_from_candidate = probe.build_model_observation(
+        None,
+        {"data": [row]},
+        observed_at=OBSERVED_AT,
+        receipt_key=legacy_api_derived_receipt_key,
     )
     unauthenticated_first = probe.build_model_observation(
         None,
@@ -381,14 +409,20 @@ def test_opaque_receipts_are_keyed_and_do_not_leak_raw_values_or_key_material() 
         observed_at=OBSERVED_AT,
     )
     rendered = json.dumps(first, sort_keys=True, allow_nan=False)
+    rendered_api = json.dumps(api_first, sort_keys=True, allow_nan=False)
 
     assert first == same_test_key
     assert first["models"][0]["model_id"] != second["models"][0]["model_id"]
-    assert api_first == api_second
+    assert api_first["models"][0]["model_id"] != api_second["models"][0]["model_id"]
+    assert (
+        api_first["models"][0]["model_id"]
+        != reproduced_from_candidate["models"][0]["model_id"]
+    )
     assert (
         unauthenticated_first["models"][0]["model_id"]
         != unauthenticated_second["models"][0]["model_id"]
     )
+    assert requested_lengths == [32, 32, 32, 32]
     assert len(first["models"][0]["endpoints"]) == 3
     assert all(
         value.startswith("opaque-endpoint:")
@@ -399,11 +433,16 @@ def test_opaque_receipts_are_keyed_and_do_not_leak_raw_values_or_key_material() 
         raw_model,
         "tenant-secret-endpoint",
         TEST_RECEIPT_KEY,
-        "test-api-key",
         "\ud800",
         "\ud801",
     ):
         assert forbidden not in rendered
+    for forbidden in (
+        candidate_api_key,
+        legacy_api_derived_receipt_key.hex(),
+        issued_receipt_keys[0].hex(),
+    ):
+        assert forbidden not in rendered_api
 
 
 def test_blank_or_whitespace_direct_api_key_uses_fresh_unauthenticated_receipts() -> None:

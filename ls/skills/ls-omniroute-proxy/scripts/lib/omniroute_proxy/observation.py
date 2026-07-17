@@ -235,6 +235,7 @@ def build_model_observation(
     receipt_key: str | bytes | None = None,
     api_key: str | None = None,
 ) -> dict[str, Any]:
+    """Build a sanitized observation; ``receipt_key`` is test-only injection."""
     try:
         parsed_time = datetime.strptime(observed_at, "%Y-%m-%dT%H:%M:%SZ").replace(
             tzinfo=UTC
@@ -243,7 +244,10 @@ def build_model_observation(
         raise ObservationError("observation_time_invalid") from None
     if parsed_time.strftime("%Y-%m-%dT%H:%M:%SZ") != observed_at:
         raise ObservationError("observation_time_invalid")
-    encoder = receipt_encoder(test_key=receipt_key, api_key=api_key)
+    # Authentication authorizes endpoint requests only; it must not determine
+    # public receipt material or persist in the resulting observation.
+    del api_key
+    encoder = receipt_encoder(test_key=receipt_key)
 
     parsed_candidates: list[dict[str, Any]] = []
     input_rows = 0
