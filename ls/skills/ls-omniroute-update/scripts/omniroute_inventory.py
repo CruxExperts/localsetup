@@ -12,8 +12,6 @@ import sys
 from pathlib import Path
 from typing import Any
 
-import yaml
-
 
 SOURCE_TAG = "v3.8.48"
 SOURCE_TAG_OBJECT = "4f00f84b5a12f90fca2f1d72a60404cf6f5bf059"
@@ -89,6 +87,10 @@ SUPPORTED_SUFFIX_WILDCARD_CLAIMS = {
     ("GET", "/api/usage/*"),
     ("POST", "/v1/audio/*"),
 }
+MISSING_PYYAML_MESSAGE = (
+    "Missing dependency: PyYAML. Run `uv sync --locked --no-dev` from the "
+    "Localsetup source checkout."
+)
 
 # Every exception is explicit, immutable-source-backed, and checked for a real
 # source object. W94 fills this table only for retained claims that are
@@ -98,6 +100,17 @@ CLAIM_EXCEPTIONS: dict[str, dict[str, str]] = {}
 
 class InventoryError(RuntimeError):
     """Stable, sanitized immutable-inventory failure."""
+
+
+def _load_yaml() -> Any:
+    """Load PyYAML only for the OpenAPI operation that requires it."""
+    try:
+        import yaml
+    except ModuleNotFoundError as exc:
+        if exc.name == "yaml":
+            raise InventoryError(MISSING_PYYAML_MESSAGE) from None
+        raise
+    return yaml
 
 
 def _git(
@@ -222,6 +235,7 @@ def _skill_inventory(git_dir: Path, paths: list[str]) -> list[dict[str, str]]:
 
 def _openapi_inventory(git_dir: Path) -> list[dict[str, str]]:
     receipt = _receipt(git_dir, OPENAPI_PATH)
+    yaml = _load_yaml()
     try:
         document = yaml.safe_load(_blob(git_dir, OPENAPI_PATH))
     except yaml.YAMLError:

@@ -4,6 +4,7 @@ import importlib.util
 import json
 import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -48,6 +49,58 @@ def _explicit_mirror() -> Path | None:
 def _create_retained_layout(root: Path, packages: tuple[str, ...]) -> None:
     for package in packages:
         (root / "ls" / "skills" / package).mkdir(parents=True)
+
+
+def test_immutable_inventory_help_does_not_require_pyyaml() -> None:
+    result = subprocess.run(
+        [sys.executable, "-S", str(SCRIPT), "--help"],
+        check=False,
+        capture_output=True,
+        cwd=ROOT,
+        text=True,
+    )
+
+    assert result.returncode == 0
+    assert "usage:" in result.stdout
+    assert result.stderr == ""
+
+
+def test_immutable_inventory_yaml_load_is_actionable_without_site_packages() -> None:
+    runner = "\n".join(
+        (
+            "import importlib.util",
+            "import pathlib",
+            "import sys",
+            f"script = pathlib.Path({str(SCRIPT)!r})",
+            'spec = importlib.util.spec_from_file_location("inventory_without_pyyaml", script)',
+            "assert spec is not None and spec.loader is not None",
+            "module = importlib.util.module_from_spec(spec)",
+            "sys.modules[spec.name] = module",
+            "spec.loader.exec_module(module)",
+            "module._receipt = lambda _git_dir, _path: {}",
+            "module._blob = lambda _git_dir, _path: b'paths: {}'",
+            "try:",
+            "    module._openapi_inventory(pathlib.Path('mirror.git'))",
+            "except module.InventoryError as exc:",
+            "    print(str(exc), file=sys.stderr)",
+            "    raise SystemExit(2)",
+            "raise AssertionError('expected missing PyYAML failure')",
+        )
+    )
+    result = subprocess.run(
+        [sys.executable, "-S", "-c", runner],
+        check=False,
+        capture_output=True,
+        cwd=ROOT,
+        text=True,
+    )
+
+    assert result.returncode == 2
+    assert result.stdout == ""
+    assert result.stderr == (
+        "Missing dependency: PyYAML. Run `uv sync --locked --no-dev` from the "
+        "Localsetup source checkout.\n"
+    )
 
 
 def test_immutable_inventory_matches_full_exact_mirror_contract() -> None:
