@@ -90,6 +90,32 @@ def _bounded_raw(value: Any, *, limit: int = 512) -> str | None:
     return value
 
 
+def _catalog_mapping(payload: dict[Any, Any]) -> dict[Any, Any] | None:
+    """Return the catalog only when every provider bucket has a model list."""
+    catalog = payload.get("catalog")
+    if not isinstance(catalog, dict):
+        return None
+    if any(
+        _bounded_raw(provider_key) is None
+        or not isinstance(bucket, dict)
+        or not isinstance(bucket.get("models"), list)
+        for provider_key, bucket in catalog.items()
+    ):
+        return None
+    return catalog
+
+
+def source_payload_accepted(payload: Any, source_endpoint: str) -> bool:
+    """Return whether an approved endpoint returned a recognized catalog/list shape."""
+    if isinstance(payload, list):
+        return True
+    if not isinstance(payload, dict):
+        return False
+    if source_endpoint == "/api/models/catalog" and "catalog" in payload:
+        return _catalog_mapping(payload) is not None
+    return any(isinstance(payload.get(key), list) for key in ("data", "models", "items"))
+
+
 def opaque_id(kind: str, value: Any, *, encoder: ReceiptEncoder) -> str:
     if value is None or value == "":
         return UNKNOWN
@@ -193,33 +219,34 @@ def source_rows(
 ) -> tuple[list[tuple[str | None, dict[str, Any]]], int]:
     rows: list[tuple[str | None, dict[str, Any]]] = []
     invalid = 0
-    if source_endpoint == "/api/models/catalog" and isinstance(payload, dict):
-        catalog = payload.get("catalog")
-        if isinstance(catalog, dict):
-            for provider_key, bucket in catalog.items():
-                models = bucket.get("models") if isinstance(bucket, dict) else None
-                if not isinstance(models, list):
+    if (
+        source_endpoint == "/api/models/catalog"
+        and isinstance(payload, dict)
+        and "catalog" in payload
+    ):
+        catalog = _catalog_mapping(payload)
+        if catalog is None:
+            return [], invalid + 1
+        for provider_key, bucket in catalog.items():
+            models = bucket["models"]
+            provider = _bounded_raw(provider_key)
+            if provider is None:
+                invalid += len(models)
+                continue
+            for row in models:
+                if isinstance(row, dict):
+                    rows.append((provider, row))
+                else:
                     invalid += 1
-                    continue
-                provider = _bounded_raw(provider_key)
-                if provider is None:
-                    invalid += len(models)
-                    continue
-                for row in models:
-                    if isinstance(row, dict):
-                        rows.append((provider, row))
-                    else:
-                        invalid += 1
-            return rows, invalid
+        return rows, invalid
     candidates: Any = payload
     if isinstance(payload, dict):
+        if not source_payload_accepted(payload, source_endpoint):
+            return [], invalid + 1
         candidates = next(
-            (
-                payload[key]
-                for key in ("data", "models", "items")
-                if isinstance(payload.get(key), list)
-            ),
-            [],
+            payload[key]
+            for key in ("data", "models", "items")
+            if isinstance(payload.get(key), list)
         )
     if not isinstance(candidates, list):
         return [], invalid + (1 if payload is not None else 0)

@@ -50,7 +50,8 @@ Do not use this skill for live OmniRoute proxy/model discovery; use `ls-omnirout
 - Authorized immutable source: OmniRoute `v3.8.48` at `7ee5bbc64dbb03e967521227f2afffeb7c9dad1e`
 - Source tree: `4048504f76c6fb3dedd00ff2aa7250109308de99`
 - Upstream skill inventory: `44` files under `skills/*/SKILL.md`
-- Immutable inventory helper: `scripts/omniroute_inventory.py` reads the exact pinned Git object and reports hashed skill, OpenAPI endpoint, and `omniroute_*` tool inventories without emitting the local mirror path.
+- Immutable inventory helper: `scripts/omniroute_inventory.py` derives skills, OpenAPI, routes, and `omniroute_*` tool receipts from the exact pinned Git object.
+- Retained Localsetup claim references are a separate local input and require explicit `--localsetup-root`; neither the mirror root nor local claim root path is emitted.
 
 Refresh these facts before a real import or update wave. Record the refreshed source in `references/source-ledger.md`. Treat the actual `skills/*/SKILL.md` inventory as authoritative when upstream prose has stale count text.
 

@@ -14,6 +14,7 @@ from ls.core.provenance import (
     source_tag,
 )
 from ls.core.lockfile import save_json
+from ls.core.provenance_source import generated_artifact_parent_source_commit
 
 
 def clean_git_env(**overrides: str) -> dict[str, str]:
@@ -306,7 +307,9 @@ def test_generated_artifact_provenance_uses_release_sync_source_for_pr_merge_com
     assert generated_mode["source_dirty"] is True
 
 
-def test_generated_artifact_provenance_uses_generated_docs_source_for_main_into_goal_merge(tmp_path: Path) -> None:
+def test_generated_artifact_provenance_does_not_use_generated_first_parent_for_main_into_goal_merge(
+    tmp_path: Path,
+) -> None:
     repo = make_git_repo(tmp_path)
     base = run(repo, "rev-parse", "HEAD")
 
@@ -316,9 +319,6 @@ def test_generated_artifact_provenance_uses_generated_docs_source_for_main_into_
     )
     run(repo, "add", "ls/skills/ls-demo/SKILL.md")
     run(repo, "commit", "-q", "-m", "feat: update source")
-    source = run(repo, "rev-parse", "HEAD")
-    source_tree = run(repo, "rev-parse", "HEAD^{tree}")
-
     generated = repo / "ls" / "docs" / "_generated" / "facts.json"
     generated.parent.mkdir(parents=True, exist_ok=True)
     generated.write_text("{}\n", encoding="utf-8")
@@ -338,11 +338,46 @@ def test_generated_artifact_provenance_uses_generated_docs_source_for_main_into_
 
     assert run(repo, "rev-parse", "HEAD^1") == generated_refresh
     assert run(repo, "rev-parse", "HEAD^2") == main_advance
+    assert generated_artifact_parent_source_commit(repo) is None
 
     generated_mode = base_provenance(repo, emitter="test", generated_commit_parent=True)
 
-    assert generated_mode["source_commit"] == source
-    assert generated_mode["source_tree_sha"] == source_tree
+    assert generated_mode["source_commit"] == run(repo, "rev-parse", "HEAD")
+    assert generated_mode["source_tree_sha"] == run(repo, "rev-parse", "HEAD^{tree}")
+    assert generated_mode["source_dirty"] is False
+
+
+def test_generated_artifact_provenance_does_not_use_generated_first_parent_for_ordinary_second_parent_merge(
+    tmp_path: Path,
+) -> None:
+    repo = make_git_repo(tmp_path)
+    base = run(repo, "rev-parse", "HEAD")
+
+    generated = repo / "ls" / "docs" / "_generated" / "facts.json"
+    generated.parent.mkdir(parents=True, exist_ok=True)
+    generated.write_text("{}\n", encoding="utf-8")
+    run(repo, "add", str(generated.relative_to(repo)))
+    run(repo, "commit", "-q", "-m", "docs: refresh generated artifacts")
+    generated_refresh = run(repo, "rev-parse", "HEAD")
+
+    run(repo, "branch", "feature", base)
+    run(repo, "checkout", "-q", "feature")
+    (repo / "feature.txt").write_text("ordinary source change\n", encoding="utf-8")
+    run(repo, "add", "feature.txt")
+    run(repo, "commit", "-q", "-m", "feat: ordinary source change")
+    ordinary_feature = run(repo, "rev-parse", "HEAD")
+
+    run(repo, "checkout", "-q", "-b", "goal", generated_refresh)
+    run(repo, "merge", "--no-ff", "--no-edit", "feature")
+
+    assert run(repo, "rev-parse", "HEAD^1") == generated_refresh
+    assert run(repo, "rev-parse", "HEAD^2") == ordinary_feature
+    assert generated_artifact_parent_source_commit(repo) is None
+
+    generated_mode = base_provenance(repo, emitter="test", generated_commit_parent=True)
+
+    assert generated_mode["source_commit"] == run(repo, "rev-parse", "HEAD")
+    assert generated_mode["source_tree_sha"] == run(repo, "rev-parse", "HEAD^{tree}")
     assert generated_mode["source_dirty"] is False
 
 

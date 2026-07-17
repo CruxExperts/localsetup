@@ -38,6 +38,15 @@ CLAIM_ENDPOINT_RE = re.compile(
     r"(?:/(?:DELETE|GET|HEAD|OPTIONS|PATCH|POST|PUT))*)\s+"
     r"(/[A-Za-z0-9._~!$&'()*+,;=:@%/{}<>\[\]*:-]+)"
 )
+CLAIM_ENDPOINT_FIRST_TABLE_RE = re.compile(
+    r"(?m)^[ \t]*\|[ \t]*`?"
+    r"(/[A-Za-z0-9._~!$&'()*+,;=:@%/{}<>\[\]*:-]+)"
+    r"`?[ \t]*\|[ \t]*"
+    r"(?:HTTP[ \t]+)?"
+    r"((?:DELETE|GET|HEAD|OPTIONS|PATCH|POST|PUT)"
+    r"(?:/(?:DELETE|GET|HEAD|OPTIONS|PATCH|POST|PUT))*)"
+    r"[ \t]*\|"
+)
 CLAIM_TOOL_RE = re.compile(r"\bomniroute_[a-z0-9_]+\b")
 RETAINED_PACKAGES = (
     "ls-omniroute",
@@ -60,6 +69,17 @@ TOOL_OWNER_PATHS = (
     "open-sse/mcp-server/tools/skillTools.ts",
 )
 CLAIM_SUFFIXES = {".json", ".md", ".py", ".yaml", ".yml"}
+SUPPORTED_SUFFIX_WILDCARD_CLAIMS = {
+    ("GET", "/api/combos*"),
+    ("POST", "/api/combos*"),
+    ("GET", "/api/pricing*"),
+    ("GET", "/api/provider-nodes*"),
+    ("POST", "/api/provider-nodes*"),
+    ("GET", "/api/providers*"),
+    ("POST", "/api/providers*"),
+    ("GET", "/api/usage/*"),
+    ("POST", "/v1/audio/*"),
+}
 
 # Every exception is explicit, immutable-source-backed, and checked for a real
 # source object. W94 fills this table only for retained claims that are
@@ -290,19 +310,35 @@ def _normalize_claim_path(path: str) -> str:
 
 def _retained_claims(localsetup_root: Path) -> list[dict[str, str]]:
     claims: set[tuple[str, str, str, str]] = set()
+    resolved_root = localsetup_root.resolve(strict=True)
+    localsetup_ls = localsetup_root / "ls"
+    if localsetup_ls.is_symlink():
+        raise InventoryError("inventory_retained_ls_symlink")
+    skills_root = localsetup_ls / "skills"
+    if skills_root.is_symlink():
+        raise InventoryError("inventory_retained_skills_symlink")
     for package in RETAINED_PACKAGES:
-        package_root = localsetup_root / "ls" / "skills" / package
+        package_root = skills_root / package
+        if package_root.is_symlink():
+            raise InventoryError("inventory_retained_package_symlink")
         if not package_root.is_dir():
             raise InventoryError("inventory_retained_package_missing")
         for path in sorted(package_root.rglob("*")):
             if not path.is_file() or path.is_symlink() or path.suffix not in CLAIM_SUFFIXES:
                 continue
             try:
+                path.resolve(strict=True).relative_to(resolved_root)
+            except (OSError, RuntimeError, ValueError):
+                raise InventoryError("inventory_retained_claim_outside_root") from None
+            try:
                 text = path.read_text(encoding="utf-8")
             except (OSError, UnicodeError):
                 raise InventoryError("inventory_retained_claim_unreadable") from None
             relative = path.relative_to(localsetup_root).as_posix()
             for methods, route in CLAIM_ENDPOINT_RE.findall(text):
+                for method in methods.split("/"):
+                    claims.add((package, "endpoint", f"{method} {_normalize_claim_path(route)}", relative))
+            for route, methods in CLAIM_ENDPOINT_FIRST_TABLE_RE.findall(text):
                 for method in methods.split("/"):
                     claims.add((package, "endpoint", f"{method} {_normalize_claim_path(route)}", relative))
             for name in CLAIM_TOOL_RE.findall(text):
@@ -327,6 +363,34 @@ def _rewrite_target(path: str, rewrites: list[dict[str, str]]) -> str | None:
     return None
 
 
+def _suffix_wildcard_targets(
+    method: str,
+    pattern: str,
+    route_endpoints: set[tuple[str, str]],
+) -> list[str]:
+    """Resolve one documented suffix wildcard to exact source route operations.
+
+    This records documentation provenance only; it never establishes endpoint
+    access, entitlement, or a permitted runtime invocation.
+    """
+    if not pattern.endswith("*"):
+        return []
+    prefix = pattern.removesuffix("*")
+    if not prefix:
+        return []
+
+    def matches(candidate: str) -> bool:
+        if prefix.endswith("/"):
+            return candidate.startswith(prefix)
+        return candidate == prefix or candidate.startswith(f"{prefix}/")
+
+    return [
+        f"{method} {candidate}"
+        for candidate_method, candidate in sorted(route_endpoints)
+        if candidate_method == method and matches(candidate)
+    ]
+
+
 def _resolve_claims(
     git_dir: Path,
     claims: list[dict[str, str]],
@@ -336,6 +400,7 @@ def _resolve_claims(
     tools: list[dict[str, Any]],
 ) -> dict[str, Any]:
     endpoints = {(row["method"], row["path"]) for row in [*routes, *openapi]}
+    route_endpoints = {(row["method"], row["path"]) for row in routes}
     registered_tools = {row["name"] for row in tools}
     resolved: list[dict[str, Any]] = []
     unresolved: list[dict[str, str]] = []
@@ -355,6 +420,20 @@ def _resolve_claims(
                         "status": "compatible-rewrite",
                         "target": f"{method} {target}",
                     }
+                elif (method, path) in SUPPORTED_SUFFIX_WILDCARD_CLAIMS:
+                    wildcard_pattern = target or path
+                    wildcard_targets = _suffix_wildcard_targets(
+                        method, wildcard_pattern, route_endpoints
+                    )
+                    if wildcard_targets:
+                        resolution = {
+                            "status": (
+                                "compatible-rewrite-wildcard"
+                                if target
+                                else "registered-wildcard"
+                            ),
+                            "targets": wildcard_targets,
+                        }
         if resolution is None and key in CLAIM_EXCEPTIONS:
             exception = CLAIM_EXCEPTIONS[key]
             evidence = exception["source_evidence"]
@@ -374,6 +453,14 @@ def build_inventory(git_dir: Path, localsetup_root: Path | None = None) -> dict[
     if not git_dir.is_dir() or git_dir.is_symlink():
         raise InventoryError("inventory_mirror_missing")
     source = _source_provenance(git_dir)
+    if localsetup_root is None:
+        raise InventoryError("inventory_localsetup_root_required")
+    if (
+        not localsetup_root.is_dir()
+        or localsetup_root.is_symlink()
+        or not (localsetup_root / "ls").is_dir()
+    ):
+        raise InventoryError("inventory_localsetup_root_invalid")
     paths = _tracked_paths(git_dir)
     path_set = set(paths)
     skills = _skill_inventory(git_dir, paths)
@@ -381,17 +468,13 @@ def build_inventory(git_dir: Path, localsetup_root: Path | None = None) -> dict[
     routes = _route_inventory(git_dir, paths)
     rewrites = _rewrite_inventory(git_dir)
     tools = _registered_tool_inventory(git_dir, path_set)
-    claims = (
-        _resolve_claims(
-            git_dir,
-            _retained_claims(localsetup_root),
-            routes,
-            openapi,
-            rewrites,
-            tools,
-        )
-        if localsetup_root is not None
-        else {"resolved": [], "unresolved": []}
+    claims = _resolve_claims(
+        git_dir,
+        _retained_claims(localsetup_root),
+        routes,
+        openapi,
+        rewrites,
+        tools,
     )
     report = {
         "schema_version": 3,
@@ -422,7 +505,7 @@ def _parser() -> argparse.ArgumentParser:
         description="Extract immutable OmniRoute skills, routes, OpenAPI, tools, and retained claims."
     )
     parser.add_argument("--git-dir", type=Path, required=True)
-    parser.add_argument("--localsetup-root", type=Path)
+    parser.add_argument("--localsetup-root", type=Path, required=True)
     return parser
 
 

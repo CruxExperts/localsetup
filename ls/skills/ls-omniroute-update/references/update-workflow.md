@@ -5,7 +5,13 @@
 1. Run `scripts/omniroute_update.py check`.
 2. Save Markdown or JSON output to the run ledger or a private maintenance path if the report is long.
 3. Verify the source commit and source hash before using the report for import or update decisions.
-4. For the approved v3.8.48 source, run `scripts/omniroute_inventory.py --git-dir <bare-mirror>` and compare its source object IDs and canonical inventory digests with the tracked immutable fixture before accepting coverage.
+4. For the approved v3.8.48 source, run this command from the repository root and compare its source object IDs and canonical inventory digests with the tracked immutable fixture before accepting coverage:
+
+   ```bash
+   python3 ls/skills/ls-omniroute-update/scripts/omniroute_inventory.py --git-dir <bare-mirror> --localsetup-root <repo-root>
+   ```
+
+   The local root is required to read retained Localsetup claim references; immutable skills and OpenAPI evidence still come from the pinned Git objects.
 
 ## Freshness Check
 

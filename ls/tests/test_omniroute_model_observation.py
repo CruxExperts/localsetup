@@ -171,6 +171,17 @@ def test_source_shaped_openai_row_without_root_is_retained_and_stable() -> None:
     assert first["truncation"]["models"]["invalid_rows"] == 0
 
 
+def test_top_level_model_list_is_recorded_as_runtime_source() -> None:
+    observation = _build(
+        _load_probe(),
+        None,
+        [{"id": "provider-a/list-model", "root": "list-model", "owned_by": "provider-a"}],
+    )
+
+    assert observation["runtime"]["source_endpoints"] == ["/v1/models"]
+    assert len(observation["models"]) == 1
+
+
 @pytest.mark.parametrize(
     ("catalog_runtime", "openai_runtime", "catalog_version", "forbidden_values"),
     [
@@ -658,6 +669,64 @@ def test_observation_failures_are_typed_and_sanitized(tmp_path: Path) -> None:
         probe.build_model_observation(None, None, observed_at="not-a-time")
 
 
+@pytest.mark.parametrize(
+    "catalog",
+    [
+        {"error": "tenant-secret-error"},
+        {"metadata": {"version": "tenant-secret-metadata"}},
+        {"provider": "tenant-secret-scalar"},
+        {"provider": ["tenant-secret-list"]},
+        {"provider": {}},
+    ],
+)
+def test_catalog_payload_grammar_rejects_structurally_invalid_provider_buckets(
+    catalog: object,
+) -> None:
+    probe = _load_probe()
+    rows = sys.modules["omniroute_proxy.observation_rows"]
+    payload = {"catalog": catalog}
+
+    assert rows.source_payload_accepted(payload, "/api/models/catalog") is False
+    assert rows.source_rows(payload, "/api/models/catalog") == ([], 1)
+    assert rows.source_payload_accepted({"data": []}, "/api/models/catalog") is True
+    assert rows.source_payload_accepted([], "/api/models/catalog") is True
+    assert "tenant-secret" not in json.dumps(
+        _build(probe, payload, None), sort_keys=True
+    )
+
+
+@pytest.mark.parametrize("provider_key", ["", "x" * 513])
+def test_catalog_payload_grammar_rejects_unbounded_provider_keys(
+    provider_key: str,
+) -> None:
+    _load_probe()
+    rows = sys.modules["omniroute_proxy.observation_rows"]
+    payload = {"catalog": {provider_key: {"models": []}}}
+
+    assert rows.source_payload_accepted(payload, "/api/models/catalog") is False
+    assert rows.source_rows(payload, "/api/models/catalog") == ([], 1)
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"catalog": {}},
+        {"catalog": {"provider": {"models": []}}},
+    ],
+)
+def test_zero_model_catalogs_are_valid_sources(payload: object) -> None:
+    probe = _load_probe()
+    rows = sys.modules["omniroute_proxy.observation_rows"]
+
+    assert rows.source_payload_accepted(payload, "/api/models/catalog") is True
+    assert rows.source_rows(payload, "/api/models/catalog") == ([], 0)
+    observation = _build(probe, payload, None)
+
+    assert observation["runtime"]["source_endpoints"] == ["/api/models/catalog"]
+    assert observation["models"] == []
+    assert observation["truncation"]["models"]["invalid_rows"] == 0
+
+
 def test_model_observation_rejects_total_source_failure_without_success_output(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
@@ -717,6 +786,89 @@ def test_model_observation_rejects_total_source_failure_without_success_output(
     )
     assert "tenant-secret" not in captured.err
     assert requested_paths == ["/api/models/catalog", "/v1/models"]
+
+
+def test_model_observation_rejects_unusable_2xx_payloads_and_keeps_partial_valid_source(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    probe = _load_probe()
+    observation = sys.modules["omniroute_proxy.observation"]
+    cli = sys.modules["omniroute_proxy.cli"]
+
+    class OfflineSession:
+        def __enter__(self) -> "OfflineSession":
+            return self
+
+        def __exit__(self, *_: object) -> bool:
+            return False
+
+    payloads: dict[str, object] = {
+        "/api/models/catalog": {
+            "catalog": {"x" * 513: {"models": []}}
+        },
+        "/v1/models": {"error": "tenant-secret-models-error"},
+    }
+
+    def successful_but_unusable_fetch(
+        session: object,
+        url: str,
+        api_key: str | None,
+        timeout: float,
+        *,
+        include_payload: bool,
+    ) -> dict[str, object]:
+        assert isinstance(session, OfflineSession)
+        assert api_key is None
+        assert timeout == 5
+        assert include_payload is True
+        path = url.rsplit(".invalid", 1)[1]
+        return {"ok": True, "status": 200, "_payload": payloads[path]}
+
+    monkeypatch.setattr(observation.requests, "Session", OfflineSession)
+    monkeypatch.setattr(observation, "fetch_json", successful_but_unusable_fetch)
+
+    with pytest.raises(
+        probe.ObservationError,
+        match="^observation_sources_unavailable$",
+    ):
+        probe.run_model_observation(
+            "https://proxy.invalid",
+            None,
+            5,
+            observed_at=OBSERVED_AT,
+        )
+    assert cli.main(["--model-observation", "--base-url", "https://proxy.invalid"]) == 2
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == (
+        "omniroute_discover.py: invalid input: observation_sources_unavailable\n"
+    )
+    assert "tenant-secret" not in captured.err
+
+    payloads["/v1/models"] = {
+        "data": [
+            {
+                "id": "provider-a/valid-model",
+                "root": "valid-model",
+                "owned_by": "provider-a",
+            }
+        ]
+    }
+    partial = probe.run_model_observation(
+        "https://proxy.invalid",
+        None,
+        5,
+        observed_at=OBSERVED_AT,
+    )
+
+    assert partial["runtime"]["source_endpoints"] == ["/v1/models"]
+    assert partial["truncation"]["models"]["invalid_rows"] == 1
+    assert partial["endpoint_status"] == [
+        {"path": "/api/models/catalog", "available": False, "status": 200},
+        {"path": "/v1/models", "available": True, "status": 200},
+    ]
+    assert "tenant-secret" not in json.dumps(partial, sort_keys=True)
 
 
 def test_catalog_type_supplies_only_approved_logical_endpoint_fallbacks() -> None:

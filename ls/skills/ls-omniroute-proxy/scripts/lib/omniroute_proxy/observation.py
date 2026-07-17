@@ -29,6 +29,7 @@ from .observation_rows import (
     opaque_id,
     receipt_encoder,
     source_rows,
+    source_payload_accepted,
 )
 from .probe import fetch_json
 
@@ -101,9 +102,8 @@ def _runtime_identity(catalog_payload: Any, openai_payload: Any) -> dict[str, An
     ]
     sources: list[str] = []
     for endpoint, payload in payloads:
-        if not isinstance(payload, dict):
-            continue
-        sources.append(endpoint)
+        if source_payload_accepted(payload, endpoint):
+            sources.append(endpoint)
     return {
         "version": UNKNOWN,
         "commit": UNKNOWN,
@@ -347,11 +347,13 @@ def run_model_observation(
                 timeout,
                 include_payload=True,
             )
-            payloads[path] = result.pop("_payload", None) if result.get("ok") else None
+            payload = result.pop("_payload", None) if result.get("ok") else None
+            payloads[path] = payload
+            available = bool(result.get("ok")) and source_payload_accepted(payload, path)
             endpoint_status.append(
                 {
                     "path": path,
-                    "available": bool(result.get("ok")),
+                    "available": available,
                     "status": (
                         result.get("status")
                         if isinstance(result.get("status"), int)

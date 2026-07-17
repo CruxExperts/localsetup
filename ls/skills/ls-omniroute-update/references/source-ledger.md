@@ -47,9 +47,10 @@ Authoritative coverage map:
 Immutable source inventory:
 
 - Extractor: `../scripts/omniroute_inventory.py`
-- Inputs: the exact pinned Git object, its `skills/*/SKILL.md` blobs, and `docs/openapi.yaml`
+- Immutable inputs: the exact pinned Git object, its `skills/*/SKILL.md` blobs, and `docs/openapi.yaml`
+- Required local input: retained Localsetup claim references rooted by the explicit `--localsetup-root`; these claims are compared with the immutable source inventory and are not upstream Git blobs
 - Outputs: full skill, OpenAPI endpoint, and `omniroute_*` tool inventories with canonical SHA-256 digests
-- The extractor reads Git objects only and does not emit the local mirror path.
+- The extractor does not emit the local mirror or retained-claim root path.
 
 Strict coverage acceptance for `v3.8.48` is:
 

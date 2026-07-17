@@ -21,7 +21,6 @@ Use authenticated `GET /v1/models` as the stable OpenAI-compatible runtime inven
 | `/v1/models` | GET | Stable OpenAI-compatible runtime model list |
 | `/api/monitoring/health` | GET | Runtime reachability and health summary when management routes are exposed |
 | `/api/models/catalog` | GET | Rich model catalog with capabilities when available |
-| `/api/models/availability` | GET | Model availability status |
 | `/api/provider-models` | GET | Provider-to-model mapping |
 | `/api/providers/{id}/models` | GET | Models for one provider |
 | `/api/models/openrouter-catalog` | GET | OpenRouter-backed catalog data when configured |
@@ -44,15 +43,15 @@ Use authenticated `GET /v1/models` as the stable OpenAI-compatible runtime inven
 
 ## Providers and configuration
 
-These endpoints may expose or mutate operational configuration. Use read-only access by default and require explicit user intent for writes.
+These pinned-source endpoint and method sets establish documentation provenance only; they do not establish access, entitlement, or a permitted runtime invocation. These endpoints may expose or mutate operational configuration. Use read-only access by default and require explicit user intent for writes.
 
 | Endpoint | Method | Use |
 |---|---|---|
-| `/api/providers*` | GET/POST/etc. | Provider inventory and management |
-| `/api/provider-nodes*` | GET/POST/etc. | Provider node inventory and management |
-| `/api/models/alias` | GET/POST/etc. | Model aliases |
-| `/api/combos*` | GET/POST/etc. | Routing combos |
-| `/api/fallback/chains` | GET/POST/etc. | Fallback chains |
+| `/api/providers*` | GET/POST | Provider inventory and management |
+| `/api/provider-nodes*` | GET/POST | Provider node inventory and management |
+| `/api/models/alias` | GET/PUT/DELETE | Model aliases |
+| `/api/combos*` | GET/POST | Routing combos |
+| `/api/fallback/chains` | GET/POST/DELETE | Fallback chains |
 
 ## Limits, resilience, usage, and cost
 

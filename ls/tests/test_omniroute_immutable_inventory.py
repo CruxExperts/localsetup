@@ -13,6 +13,11 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "ls/skills/ls-omniroute-update/scripts/omniroute_inventory.py"
 FIXTURE = ROOT / "ls/tests/fixtures/omniroute/immutable-inventory-7ee5bbc.json"
+ENDPOINT_REFERENCE = (
+    ROOT / "ls/skills/ls-omniroute-proxy/references/omniroute-endpoints.md"
+)
+UPDATE_WORKFLOW = ROOT / "ls/skills/ls-omniroute-update/references/update-workflow.md"
+UPDATE_SKILL = ROOT / "ls/skills/ls-omniroute-update/SKILL.md"
 DECISION_SHAPED_PROXY_TOOLS = {
     "omniroute_best_combo_for_task",
     "omniroute_explain_route",
@@ -34,6 +39,11 @@ def _load_inventory():
 def _explicit_mirror() -> Path | None:
     value = os.environ.get("LOCALSETUP_OMNIROUTE_MIRROR")
     return Path(value) if value else None
+
+
+def _create_retained_layout(root: Path, packages: tuple[str, ...]) -> None:
+    for package in packages:
+        (root / "ls" / "skills" / package).mkdir(parents=True)
 
 
 def test_immutable_inventory_matches_full_exact_mirror_contract() -> None:
@@ -70,7 +80,6 @@ def test_immutable_inventory_matches_full_exact_mirror_contract() -> None:
         "retained_claims",
     ):
         assert module._sha256_json(inventory[key]) == expected["digests"][key]
-    assert inventory["retained_claims"]["unresolved"] == []
     assert module.CLAIM_EXCEPTIONS == {}
 
     registered = {row["name"] for row in inventory["registered_tools"]}
@@ -117,6 +126,113 @@ def test_immutable_inventory_matches_full_exact_mirror_contract() -> None:
     assert models_claims
     assert all(row["status"] == "compatible-rewrite" for row in models_claims)
     assert all(row["target"] == "GET /api/v1/models" for row in models_claims)
+    wildcard_claims = {
+        row["claim"]: row
+        for row in inventory["retained_claims"]["resolved"]
+        if "targets" in row
+    }
+    assert {
+        claim: wildcard_claims[claim]
+        for claim in (
+            "GET /api/pricing*",
+            "GET /api/usage/*",
+            "POST /v1/audio/*",
+        )
+    } == {
+        "GET /api/pricing*": {
+            "package": "ls-omniroute-proxy",
+            "kind": "endpoint",
+            "claim": "GET /api/pricing*",
+            "source_path": "ls/skills/ls-omniroute-proxy/references/omniroute-endpoints.md",
+            "status": "registered-wildcard",
+            "targets": [
+                "GET /api/pricing",
+                "GET /api/pricing/defaults",
+                "GET /api/pricing/models",
+                "GET /api/pricing/sync",
+            ],
+        },
+        "GET /api/usage/*": {
+            "package": "ls-omniroute-proxy",
+            "kind": "endpoint",
+            "claim": "GET /api/usage/*",
+            "source_path": "ls/skills/ls-omniroute-proxy/references/omniroute-endpoints.md",
+            "status": "registered-wildcard",
+            "targets": [
+                "GET /api/usage/analytics",
+                "GET /api/usage/budget",
+                "GET /api/usage/budget/bulk",
+                "GET /api/usage/call-logs",
+                "GET /api/usage/call-logs/{id}",
+                "GET /api/usage/combo-forecast",
+                "GET /api/usage/combo-health",
+                "GET /api/usage/combo-health-autopilot",
+                "GET /api/usage/combo-health-dashboard",
+                "GET /api/usage/combo-scoring-inspector",
+                "GET /api/usage/history",
+                "GET /api/usage/logs",
+                "GET /api/usage/om-usage",
+                "GET /api/usage/provider-limits",
+                "GET /api/usage/provider-window-costs",
+                "GET /api/usage/proxy-logs",
+                "GET /api/usage/quota",
+                "GET /api/usage/request-logs",
+                "GET /api/usage/requests-by-provider-date",
+                "GET /api/usage/route-explain/{id}",
+                "GET /api/usage/token-limits",
+                "GET /api/usage/utilization",
+                "GET /api/usage/{connectionId}",
+            ],
+        },
+        "POST /v1/audio/*": {
+            "package": "ls-omniroute-proxy",
+            "kind": "endpoint",
+            "claim": "POST /v1/audio/*",
+            "source_path": "ls/skills/ls-omniroute-proxy/references/omniroute-endpoints.md",
+            "status": "compatible-rewrite-wildcard",
+            "targets": [
+                "POST /api/v1/audio/speech",
+                "POST /api/v1/audio/transcriptions",
+                "POST /api/v1/audio/translations",
+            ],
+        },
+    }
+    assert set(wildcard_claims) == {
+        "GET /api/combos*",
+        "POST /api/combos*",
+        "GET /api/pricing*",
+        "GET /api/provider-nodes*",
+        "POST /api/provider-nodes*",
+        "GET /api/providers*",
+        "POST /api/providers*",
+        "GET /api/usage/*",
+        "POST /v1/audio/*",
+    }
+    for claim in (
+        "GET /api/combos*",
+        "POST /api/combos*",
+        "GET /api/provider-nodes*",
+        "POST /api/provider-nodes*",
+        "GET /api/providers*",
+        "POST /api/providers*",
+    ):
+        assert wildcard_claims[claim]["status"] == "registered-wildcard"
+        assert wildcard_claims[claim]["targets"]
+        assert wildcard_claims[claim]["targets"] == sorted(
+            wildcard_claims[claim]["targets"]
+        )
+    alias_claims = {
+        row["claim"]
+        for row in inventory["retained_claims"]["resolved"]
+        if row["source_path"] == ENDPOINT_REFERENCE.relative_to(ROOT).as_posix()
+        and row["claim"].endswith(" /api/models/alias")
+    }
+    assert alias_claims == {
+        "DELETE /api/models/alias",
+        "GET /api/models/alias",
+        "PUT /api/models/alias",
+    }
+    assert inventory["retained_claims"]["unresolved"] == []
     assert str(mirror) not in json.dumps(inventory, sort_keys=True)
 
 
@@ -135,6 +251,354 @@ def test_registered_tool_patterns_reject_plain_text_false_positives() -> None:
     )
 
 
+def test_retained_claims_parse_backticked_endpoint_first_tables_and_method_first_prose(
+    tmp_path: Path,
+) -> None:
+    module = _load_inventory()
+    _create_retained_layout(tmp_path, module.RETAINED_PACKAGES)
+    reference = (
+        tmp_path
+        / "ls"
+        / "skills"
+        / "ls-omniroute-proxy"
+        / "references"
+        / "endpoint-table.md"
+    )
+    reference.parent.mkdir(exist_ok=True)
+    reference.write_text(
+        "| Endpoint | Method |\n"
+        "| --- | --- |\n"
+        "| `/api/models/catalog` | GET |\n"
+        "| `/v1/models` | GET/POST |\n"
+        "| `/api/http-get` | HTTP GET |\n"
+        "| `/api/http-post` | HTTP POST |\n"
+        "| `/api/http-multi` | HTTP GET/POST |\n"
+        "| `/api/unbounded` | GET/POST/etc. |\n"
+        "| `/api/arbitrary` | runtime GET |\n"
+        "| `/api/unknown` | HTTP INVOKE |\n"
+        "\nGET /v1/models\n",
+        encoding="utf-8",
+    )
+
+    claims = module._retained_claims(tmp_path)
+
+    assert {
+        row["claim"]
+        for row in claims
+        if row["package"] == "ls-omniroute-proxy" and row["kind"] == "endpoint"
+    } == {
+        "GET /api/http-get",
+        "GET /api/http-multi",
+        "GET /api/models/catalog",
+        "GET /v1/models",
+        "POST /api/http-multi",
+        "POST /api/http-post",
+        "POST /v1/models",
+    }
+
+
+@pytest.mark.parametrize(
+    ("kind", "error"),
+    [
+        ("ls", "inventory_retained_ls_symlink"),
+        ("skills", "inventory_retained_skills_symlink"),
+        ("package", "inventory_retained_package_symlink"),
+    ],
+)
+def test_retained_claims_rejects_symlinked_roots(
+    tmp_path: Path,
+    kind: str,
+    error: str,
+) -> None:
+    module = _load_inventory()
+    root = tmp_path / "root"
+    outside = tmp_path / "outside"
+    root.mkdir()
+    outside.mkdir()
+
+    if kind == "ls":
+        (root / "ls").symlink_to(outside, target_is_directory=True)
+    elif kind == "skills":
+        (root / "ls").mkdir()
+        (root / "ls" / "skills").symlink_to(outside, target_is_directory=True)
+    else:
+        (root / "ls" / "skills").mkdir(parents=True)
+        (root / "ls" / "skills" / module.RETAINED_PACKAGES[0]).symlink_to(
+            outside, target_is_directory=True
+        )
+
+    with pytest.raises(module.InventoryError, match=f"^{error}$"):
+        module._retained_claims(root)
+
+
+def test_retained_claims_accepts_real_in_root_package_layout(tmp_path: Path) -> None:
+    module = _load_inventory()
+    _create_retained_layout(tmp_path, module.RETAINED_PACKAGES)
+    reference = (
+        tmp_path
+        / "ls"
+        / "skills"
+        / module.RETAINED_PACKAGES[0]
+        / "references"
+        / "claims.md"
+    )
+    reference.parent.mkdir()
+    reference.write_text("GET /v1/models\n", encoding="utf-8")
+
+    assert module._retained_claims(tmp_path) == [
+        {
+            "package": module.RETAINED_PACKAGES[0],
+            "kind": "endpoint",
+            "claim": "GET /v1/models",
+            "source_path": reference.relative_to(tmp_path).as_posix(),
+        }
+    ]
+
+
+def test_immutable_inventory_documented_invocation_requires_retained_claim_root() -> None:
+    command = (
+        "python3 ls/skills/ls-omniroute-update/scripts/omniroute_inventory.py "
+        "--git-dir <bare-mirror> --localsetup-root <repo-root>"
+    )
+
+    assert command in UPDATE_WORKFLOW.read_text(encoding="utf-8")
+    skill_text = UPDATE_SKILL.read_text(encoding="utf-8")
+    assert "Retained Localsetup claim references are a separate local input" in skill_text
+    assert "neither the mirror root nor local claim root path is emitted" in skill_text
+
+
+def test_actual_endpoint_reference_emits_every_bounded_endpoint_first_table_claim() -> None:
+    module = _load_inventory()
+    method_cell = re.compile(
+        r"(?:HTTP[ \t]+)?"
+        r"((?:DELETE|GET|HEAD|OPTIONS|PATCH|POST|PUT)"
+        r"(?:/(?:DELETE|GET|HEAD|OPTIONS|PATCH|POST|PUT))*)"
+    )
+    expected: set[str] = set()
+    for line in ENDPOINT_REFERENCE.read_text(encoding="utf-8").splitlines():
+        cells = [cell.strip() for cell in line.split("|")[1:-1]]
+        if len(cells) < 2:
+            continue
+        endpoint = cells[0].strip("`")
+        match = method_cell.fullmatch(cells[1])
+        if endpoint.startswith("/") and match:
+            expected.update(
+                f"{method} {endpoint}" for method in match.group(1).split("/")
+            )
+
+    actual = {
+        row["claim"]
+        for row in module._retained_claims(ROOT)
+        if row["package"] == "ls-omniroute-proxy"
+        and row["kind"] == "endpoint"
+        and row["source_path"] == ENDPOINT_REFERENCE.relative_to(ROOT).as_posix()
+    }
+
+    assert expected <= actual
+    assert "POST /api/models/alias" not in actual
+
+
+def test_configuration_suffix_wildcards_are_allowlisted_route_only_and_deterministic() -> None:
+    module = _load_inventory()
+    claims = [
+        {
+            "package": "test-package",
+            "kind": "endpoint",
+            "claim": claim,
+            "source_path": "ls/skills/test-package/reference.md",
+        }
+        for claim in (
+            "GET /api/providers*",
+            "POST /api/providers*",
+            "GET /api/provider-nodes*",
+            "POST /api/provider-nodes*",
+            "GET /api/combos*",
+            "POST /api/combos*",
+            "GET /api/future*",
+        )
+    ]
+    routes = [
+        {"method": "GET", "path": "/api/providers"},
+        {"method": "GET", "path": "/api/providers/client"},
+        {"method": "POST", "path": "/api/providers"},
+        {"method": "POST", "path": "/api/providers/validate"},
+        {"method": "DELETE", "path": "/api/providers/{id}"},
+        {"method": "GET", "path": "/api/providers-private"},
+        {"method": "GET", "path": "/api/provider-nodes"},
+        {"method": "POST", "path": "/api/provider-nodes"},
+        {"method": "POST", "path": "/api/provider-nodes/validate"},
+        {"method": "GET", "path": "/api/combos"},
+        {"method": "GET", "path": "/api/combos/metrics"},
+        {"method": "POST", "path": "/api/combos"},
+        {"method": "POST", "path": "/api/combos/reorder"},
+        {"method": "DELETE", "path": "/api/combos/metrics"},
+    ]
+    openapi = [
+        {"method": "GET", "path": "/api/providers/openapi-only"},
+        {"method": "POST", "path": "/api/combos/openapi-only"},
+    ]
+
+    resolved = module._resolve_claims(
+        Path("portable.git"), claims, routes, openapi, [], []
+    )
+
+    assert resolved["resolved"] == [
+        {
+            **claims[0],
+            "status": "registered-wildcard",
+            "targets": ["GET /api/providers", "GET /api/providers/client"],
+        },
+        {
+            **claims[1],
+            "status": "registered-wildcard",
+            "targets": ["POST /api/providers", "POST /api/providers/validate"],
+        },
+        {
+            **claims[2],
+            "status": "registered-wildcard",
+            "targets": ["GET /api/provider-nodes"],
+        },
+        {
+            **claims[3],
+            "status": "registered-wildcard",
+            "targets": [
+                "POST /api/provider-nodes",
+                "POST /api/provider-nodes/validate",
+            ],
+        },
+        {
+            **claims[4],
+            "status": "registered-wildcard",
+            "targets": ["GET /api/combos", "GET /api/combos/metrics"],
+        },
+        {
+            **claims[5],
+            "status": "registered-wildcard",
+            "targets": ["POST /api/combos", "POST /api/combos/reorder"],
+        },
+    ]
+    assert resolved["unresolved"] == [claims[6]]
+
+
+def test_documented_suffix_wildcards_require_exact_source_routes_and_rewrite_first() -> None:
+    module = _load_inventory()
+    claims = [
+        {
+            "package": "test-package",
+            "kind": "endpoint",
+            "claim": "GET /api/pricing*",
+            "source_path": "ls/skills/test-package/reference.md",
+        },
+        {
+            "package": "test-package",
+            "kind": "endpoint",
+            "claim": "GET /api/usage/*",
+            "source_path": "ls/skills/test-package/reference.md",
+        },
+        {
+            "package": "test-package",
+            "kind": "endpoint",
+            "claim": "POST /v1/audio/*",
+            "source_path": "ls/skills/test-package/reference.md",
+        },
+        {
+            "package": "test-package",
+            "kind": "endpoint",
+            "claim": "POST /api/pricing*",
+            "source_path": "ls/skills/test-package/reference.md",
+        },
+    ]
+    routes = [
+        {"method": "GET", "path": "/api/pricing"},
+        {"method": "GET", "path": "/api/pricing/defaults"},
+        {"method": "GET", "path": "/api/pricing-private"},
+        {"method": "POST", "path": "/api/pricing/forbidden-method"},
+        {"method": "GET", "path": "/api/usage"},
+        {"method": "GET", "path": "/api/usage/analytics"},
+        {"method": "GET", "path": "/api/usage-private"},
+        {"method": "GET", "path": "/api/v1/audio/speech"},
+        {"method": "POST", "path": "/api/v1/audio/speech"},
+        {"method": "POST", "path": "/api/v1/audio/translations"},
+    ]
+    openapi = [{"method": "GET", "path": "/api/usage/openapi-only"}]
+    rewrites = [{"source": "/v1/:path*", "destination": "/api/v1/:path*"}]
+
+    resolved = module._resolve_claims(
+        Path("portable.git"), claims, routes, openapi, rewrites, []
+    )
+
+    assert resolved["resolved"] == [
+        {
+            **claims[0],
+            "status": "registered-wildcard",
+            "targets": ["GET /api/pricing", "GET /api/pricing/defaults"],
+        },
+        {
+            **claims[1],
+            "status": "registered-wildcard",
+            "targets": ["GET /api/usage/analytics"],
+        },
+        {
+            **claims[2],
+            "status": "compatible-rewrite-wildcard",
+            "targets": [
+                "POST /api/v1/audio/speech",
+                "POST /api/v1/audio/translations",
+            ],
+        },
+    ]
+    assert resolved["unresolved"] == [claims[3]]
+
+
+def test_inventory_requires_explicit_localsetup_root_for_api_and_cli(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    module = _load_inventory()
+    monkeypatch.setattr(module, "_source_provenance", lambda _git_dir: {})
+
+    with pytest.raises(
+        module.InventoryError, match="^inventory_localsetup_root_required$"
+    ):
+        module.build_inventory(tmp_path)
+
+    with pytest.raises(SystemExit) as excinfo:
+        module.main(["--git-dir", str(tmp_path)])
+    assert excinfo.value.code == 2
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "the following arguments are required: --localsetup-root" in captured.err
+
+
+def test_immutable_inventory_cli_accepts_explicit_localsetup_root(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    mirror = _explicit_mirror()
+    if mirror is None:
+        pytest.skip("requires explicitly supplied OmniRoute mirror")
+    module = _load_inventory()
+    expected = json.loads(FIXTURE.read_text(encoding="utf-8"))
+
+    assert module.main(
+        [
+            "--git-dir",
+            str(mirror),
+            "--localsetup-root",
+            str(ROOT),
+        ]
+    ) == 0
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    inventory = json.loads(captured.out)
+    assert inventory["source"] == expected["source"]
+    assert inventory["digests"] == expected["digests"]
+    assert inventory["retained_claims"] == expected["retained_claims"]
+    assert inventory["retained_claims"]["unresolved"] == []
+    assert str(mirror) not in captured.out
+    assert str(ROOT) not in captured.out
+
+
 def test_immutable_inventory_snapshot_is_well_formed() -> None:
     expected = json.loads(FIXTURE.read_text(encoding="utf-8"))
     module = _load_inventory()
@@ -148,7 +612,7 @@ def test_immutable_inventory_snapshot_is_well_formed() -> None:
         "7ee5bbc64dbb03e967521227f2afffeb7c9dad1e"
     )
     assert expected["counts"]["skills"] == 44
-    assert expected["counts"]["retained_claims_resolved"] == 97
+    assert expected["counts"]["retained_claims_resolved"] == 143
     assert expected["counts"]["retained_claims_unresolved"] == 0
     assert len(expected["registered_tool_names"]) == expected["counts"]["registered_tools"]
     assert expected["registered_tool_names"] == sorted(
@@ -157,8 +621,8 @@ def test_immutable_inventory_snapshot_is_well_formed() -> None:
     assert DECISION_SHAPED_PROXY_TOOLS <= set(expected["registered_tool_names"])
     retained_claims = expected["retained_claims"]
     assert set(retained_claims) == {"resolved", "unresolved"}
-    assert retained_claims["unresolved"] == []
     assert len(retained_claims["resolved"]) == expected["counts"]["retained_claims_resolved"]
+    assert len(retained_claims["unresolved"]) == expected["counts"]["retained_claims_unresolved"]
     assert retained_claims["resolved"] == sorted(
         retained_claims["resolved"],
         key=lambda row: (
@@ -168,16 +632,33 @@ def test_immutable_inventory_snapshot_is_well_formed() -> None:
             row["source_path"],
         ),
     )
-    assert all(
-        set(row) == {"package", "kind", "claim", "source_path", "status", "target"}
-        and row["package"] in module.RETAINED_PACKAGES
-        and row["kind"] in {"endpoint", "tool"}
-        and row["source_path"].startswith("ls/skills/")
-        and not Path(row["source_path"]).is_absolute()
-        for row in retained_claims["resolved"]
-    )
+    for row in retained_claims["resolved"]:
+        common = {"package", "kind", "claim", "source_path", "status"}
+        assert row["package"] in module.RETAINED_PACKAGES
+        assert row["kind"] in {"endpoint", "tool"}
+        assert row["source_path"].startswith("ls/skills/")
+        assert not Path(row["source_path"]).is_absolute()
+        if row["status"] in {"registered-wildcard", "compatible-rewrite-wildcard"}:
+            assert set(row) == common | {"targets"}
+            assert row["kind"] == "endpoint"
+            assert row["targets"] == sorted(set(row["targets"]))
+            assert all(
+                target.split(" ", 1)[0] in module.HTTP_METHODS
+                and target.split(" ", 1)[1].startswith("/")
+                for target in row["targets"]
+            )
+        else:
+            assert set(row) == common | {"target"}
     assert module._sha256_json(retained_claims) == expected["digests"]["retained_claims"]
     assert str(ROOT) not in json.dumps(retained_claims, sort_keys=True)
+    assert retained_claims["unresolved"] == []
+    assert all(
+        set(row) == {"package", "kind", "claim", "source_path"}
+        and row["package"] in module.RETAINED_PACKAGES
+        and row["kind"] == "endpoint"
+        and row["source_path"].startswith("ls/skills/")
+        for row in retained_claims["unresolved"]
+    )
     retained_proxy_claims = {
         row["claim"]
         for row in retained_claims["resolved"]
@@ -311,4 +792,4 @@ def test_build_inventory_cannot_bypass_source_tag_check(
     monkeypatch.setattr(module, "_source_provenance", source_provenance)
     monkeypatch.setattr(module, "_tracked_paths", tracked_paths)
     with pytest.raises(RuntimeError, match="^stop-after-provenance$"):
-        module.build_inventory(tmp_path)
+        module.build_inventory(tmp_path, ROOT)
