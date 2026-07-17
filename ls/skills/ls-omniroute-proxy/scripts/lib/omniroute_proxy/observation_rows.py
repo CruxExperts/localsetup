@@ -105,17 +105,6 @@ def _catalog_mapping(payload: dict[Any, Any]) -> dict[Any, Any] | None:
     return catalog
 
 
-def source_payload_accepted(payload: Any, source_endpoint: str) -> bool:
-    """Return whether an approved endpoint returned a recognized catalog/list shape."""
-    if isinstance(payload, list):
-        return True
-    if not isinstance(payload, dict):
-        return False
-    if source_endpoint == "/api/models/catalog" and "catalog" in payload:
-        return _catalog_mapping(payload) is not None
-    return any(isinstance(payload.get(key), list) for key in ("data", "models", "items"))
-
-
 def opaque_id(kind: str, value: Any, *, encoder: ReceiptEncoder) -> str:
     if value is None or value == "":
         return UNKNOWN
@@ -134,6 +123,71 @@ def _nested(row: dict[str, Any], *paths: tuple[str, ...]) -> Any:
         if value is not None:
             return value
     return None
+
+
+def _model_identity_provider_values(
+    row: dict[str, Any],
+    provider_hint: str | None,
+) -> tuple[str, str | None, str | None] | None:
+    alias_value = _nested(row, ("id",), ("model_id",), ("modelId",), ("name",))
+    root_value = _nested(row, ("root",))
+    alias_raw = _bounded_raw(alias_value)
+    root_raw = _bounded_raw(root_value)
+    if (isinstance(alias_value, str) and alias_raw is None) or (
+        isinstance(root_value, str) and root_raw is None
+    ):
+        return None
+    if alias_raw is None and root_raw is None:
+        return None
+    provider_value = (
+        provider_hint
+        if provider_hint is not None
+        else _nested(
+            row,
+            ("owned_by",),
+            ("provider_id",),
+            ("providerId",),
+            ("provider", "id"),
+            ("provider",),
+        )
+    )
+    provider_raw = _bounded_raw(provider_value)
+    if provider_raw is None:
+        return None
+    return provider_raw, alias_raw, root_raw
+
+
+def _generic_model_list(payload: Any) -> list[Any] | None:
+    if isinstance(payload, list):
+        return payload
+    if not isinstance(payload, dict):
+        return None
+    return next(
+        (
+            payload[key]
+            for key in ("data", "models", "items")
+            if isinstance(payload.get(key), list)
+        ),
+        None,
+    )
+
+
+def source_payload_accepted(payload: Any, source_endpoint: str) -> bool:
+    """Return whether an approved endpoint returned a usable catalog/list shape."""
+    if (
+        source_endpoint == "/api/models/catalog"
+        and isinstance(payload, dict)
+        and "catalog" in payload
+    ):
+        return _catalog_mapping(payload) is not None
+    candidates = _generic_model_list(payload)
+    if candidates is None:
+        return False
+    return not candidates or any(
+        isinstance(row, dict)
+        and _model_identity_provider_values(row, None) is not None
+        for row in candidates
+    )
 
 
 def _explicit_endpoint_value(row: dict[str, Any]) -> tuple[bool, Any]:
@@ -239,17 +293,11 @@ def source_rows(
                 else:
                     invalid += 1
         return rows, invalid
-    candidates: Any = payload
-    if isinstance(payload, dict):
-        if not source_payload_accepted(payload, source_endpoint):
-            return [], invalid + 1
-        candidates = next(
-            payload[key]
-            for key in ("data", "models", "items")
-            if isinstance(payload.get(key), list)
-        )
-    if not isinstance(candidates, list):
+    candidates = _generic_model_list(payload)
+    if candidates is None:
         return [], invalid + (1 if payload is not None else 0)
+    if not source_payload_accepted(payload, source_endpoint):
+        return [], invalid + len(candidates)
     for row in candidates:
         if isinstance(row, dict):
             rows.append((None, row))
@@ -265,31 +313,10 @@ def candidate(
     *,
     encoder: ReceiptEncoder,
 ) -> dict[str, Any] | None:
-    alias_value = _nested(row, ("id",), ("model_id",), ("modelId",), ("name",))
-    root_value = _nested(row, ("root",))
-    alias_raw = _bounded_raw(alias_value)
-    root_raw = _bounded_raw(root_value)
-    if (isinstance(alias_value, str) and alias_raw is None) or (
-        isinstance(root_value, str) and root_raw is None
-    ):
+    identity_values = _model_identity_provider_values(row, provider_hint)
+    if identity_values is None:
         return None
-    if alias_raw is None and root_raw is None:
-        return None
-    provider_value = (
-        provider_hint
-        if provider_hint is not None
-        else _nested(
-            row,
-            ("owned_by",),
-            ("provider_id",),
-            ("providerId",),
-            ("provider", "id"),
-            ("provider",),
-        )
-    )
-    provider_raw = _bounded_raw(provider_value)
-    if not isinstance(provider_value, str) or provider_raw is None:
-        return None
+    provider_raw, alias_raw, root_raw = identity_values
     provider, canonical_root, reconcile_tokens, has_canonical_root = _identity_parts(
         provider_raw,
         alias_raw,
