@@ -1112,6 +1112,89 @@ def test_model_observation_accepts_partial_valid_catalog_model_lists(
     assert "tenant-secret" not in json.dumps(result, sort_keys=True)
 
 
+def test_model_observation_retains_valid_catalog_provider_when_another_has_error_rows(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    probe = _load_probe()
+    observation = sys.modules["omniroute_proxy.observation"]
+    rows = sys.modules["omniroute_proxy.observation_rows"]
+
+    class OfflineSession:
+        def __enter__(self) -> "OfflineSession":
+            return self
+
+        def __exit__(self, *_: object) -> bool:
+            return False
+
+    payload = {
+        "catalog": {
+            "provider-good": {
+                "models": [
+                    {"id": "provider-good/model", "root": "model"},
+                ]
+            },
+            "provider-error": {
+                "models": [{"error": "tenant-secret-row-error"}]
+            },
+        }
+    }
+
+    assert rows.source_payload_accepted(payload, "/api/models/catalog") is True
+    source_rows, invalid_rows = rows.source_rows(payload, "/api/models/catalog")
+    assert source_rows == [
+        (
+            "provider-good",
+            {"id": "provider-good/model", "root": "model"},
+        ),
+        ("provider-error", {"error": "tenant-secret-row-error"}),
+    ]
+    assert invalid_rows == 0
+
+    def mixed_fetch(
+        session: object,
+        url: str,
+        api_key: str | None,
+        timeout: float,
+        *,
+        include_payload: bool,
+    ) -> dict[str, object]:
+        assert isinstance(session, OfflineSession)
+        assert api_key is None
+        assert timeout == 5
+        assert include_payload is True
+        path = url.rsplit(".invalid", 1)[1]
+        if path == "/api/models/catalog":
+            return {"ok": True, "status": 200, "_payload": payload}
+        return {"ok": False, "status": 503, "error": "tenant-secret-v1-error"}
+
+    monkeypatch.setattr(observation.requests, "Session", OfflineSession)
+    monkeypatch.setattr(observation, "fetch_json", mixed_fetch)
+
+    result = probe.run_model_observation(
+        "https://proxy.invalid",
+        None,
+        5,
+        observed_at=OBSERVED_AT,
+    )
+
+    assert result["runtime"]["source_endpoints"] == ["/api/models/catalog"]
+    assert len(result["models"]) == 1
+    assert result["truncation"]["models"] == {
+        "input_rows": 2,
+        "invalid_rows": 1,
+        "duplicate_rows": 0,
+        "unique_models": 1,
+        "retained": 1,
+        "dropped": 0,
+        "truncated": False,
+    }
+    assert result["endpoint_status"] == [
+        {"path": "/api/models/catalog", "available": True, "status": 200},
+        {"path": "/v1/models", "available": False, "status": 503},
+    ]
+    assert "tenant-secret" not in json.dumps(result, sort_keys=True)
+
+
 def test_model_observation_accepts_partial_valid_wrapped_model_lists(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

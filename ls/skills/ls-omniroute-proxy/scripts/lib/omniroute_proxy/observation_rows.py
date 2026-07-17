@@ -158,19 +158,21 @@ def _model_identity_provider_values(
 
 
 def _catalog_model_lists_accepted(catalog: dict[Any, Any]) -> bool:
-    """Return whether every non-empty provider list has usable model evidence."""
+    """Return whether empty catalogs or any provider has usable model evidence."""
+    has_nonempty_models = False
     for provider_key, bucket in catalog.items():
         provider = _bounded_raw(provider_key)
         models = bucket["models"]
         if not models:
             continue
-        if provider is None or not any(
+        has_nonempty_models = True
+        if provider is not None and any(
             isinstance(row, dict)
             and _model_identity_provider_values(row, provider) is not None
             for row in models
         ):
-            return False
-    return True
+            return True
+    return not has_nonempty_models
 
 
 def _generic_model_list(payload: Any) -> list[Any] | None:
