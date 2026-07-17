@@ -72,6 +72,19 @@ def test_source_shaped_observation_reconciles_variants_and_is_byte_stable() -> N
     assert first == second
     assert len(first["models"]) == 4
     assert first["truncation"]["models"]["duplicate_rows"] == 10
+    assert first["endpoint_observations"] == [
+        {
+            "route": "/api/models/catalog",
+            "source_endpoint": "/api/models/catalog",
+        },
+        {"route": "/v1/models", "source_endpoint": "/v1/models"},
+    ]
+    assert first["truncation"]["endpoint_observations"] == {
+        "available": 2,
+        "retained": 2,
+        "dropped": 0,
+        "truncated": False,
+    }
     assert first["runtime"] == {
         "version": "unknown",
         "commit": "unknown",
@@ -131,21 +144,34 @@ def test_public_observation_notes_and_endpoint_scope_are_exact() -> None:
 
 
 @pytest.mark.parametrize(
-    ("catalog", "openai", "expected_sources", "expected_count"),
+    (
+        "catalog",
+        "openai",
+        "expected_sources",
+        "expected_count",
+        "expected_endpoint_observations",
+    ),
     [
         (
             {"catalog": {"provider-a": {"models": [{"id": "provider-a/a"}]}}},
             None,
             ["/api/models/catalog"],
             1,
+            [
+                {
+                    "route": "/api/models/catalog",
+                    "source_endpoint": "/api/models/catalog",
+                }
+            ],
         ),
         (
             None,
             {"data": [{"id": "alias/a", "root": "a", "owned_by": "provider-a"}]},
             ["/v1/models"],
             1,
+            [{"route": "/v1/models", "source_endpoint": "/v1/models"}],
         ),
-        (None, None, [], 0),
+        (None, None, [], 0, []),
     ],
 )
 def test_each_endpoint_availability_mode(
@@ -153,11 +179,13 @@ def test_each_endpoint_availability_mode(
     openai: object,
     expected_sources: list[str],
     expected_count: int,
+    expected_endpoint_observations: list[dict[str, str]],
 ) -> None:
     observation = _build(_load_probe(), catalog, openai)
 
     assert observation["runtime"]["source_endpoints"] == expected_sources
     assert len(observation["models"]) == expected_count
+    assert observation["endpoint_observations"] == expected_endpoint_observations
 
 
 def test_source_shaped_openai_row_without_root_is_retained_and_stable() -> None:
@@ -1421,4 +1449,10 @@ def test_catalog_type_supplies_only_approved_logical_endpoint_fallbacks() -> Non
     assert endpoints.count(["embeddings"]) == 1
     assert ["embeddings", "responses"] not in endpoints
     assert endpoints.count("unknown") == 2
+    assert observation["endpoint_observations"] == [
+        {
+            "route": "/api/models/catalog",
+            "source_endpoint": "/api/models/catalog",
+        }
+    ]
     assert "tenant-private-type" not in rendered

@@ -9,7 +9,16 @@
     "version": "3.8.48"
   },
   "conflicts": [],
-  "endpoint_observations": [],
+  "endpoint_observations": [
+    {
+      "route": "/api/models/catalog",
+      "source_endpoint": "/api/models/catalog"
+    },
+    {
+      "route": "/v1/models",
+      "source_endpoint": "/v1/models"
+    }
+  ],
   "models": [
     {
       "capabilities": {
@@ -215,9 +224,9 @@
       "truncated": false
     },
     "endpoint_observations": {
-      "available": 0,
+      "available": 2,
       "dropped": 0,
-      "retained": 0,
+      "retained": 2,
       "truncated": false
     },
     "models": {

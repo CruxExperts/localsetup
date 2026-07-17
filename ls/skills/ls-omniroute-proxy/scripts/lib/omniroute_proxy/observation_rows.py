@@ -357,7 +357,7 @@ def candidate(
             opaque_kind="endpoint",
             encoder=encoder,
         ),
-        "endpoint_observations": [],
+        "endpoint_observations": [source_endpoint],
         "modalities.input": _enum_list(
             _nested(
                 row,
