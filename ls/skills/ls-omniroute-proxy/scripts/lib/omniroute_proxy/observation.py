@@ -277,6 +277,10 @@ def build_model_observation(
                 canonical(item),
             ),
         )
+        if any(item["source_endpoint"] == "/v1/models" for item in candidates):
+            for item in candidates:
+                if item["catalog_type_endpoint_fallback"]:
+                    item["endpoints"] = UNKNOWN
         duplicate_rows += max(0, len(candidates) - 1)
         for item in candidates:
             endpoint_evidence.update(
@@ -355,6 +359,8 @@ def run_model_observation(
                     ),
                 }
             )
+    if not any(status["available"] for status in endpoint_status):
+        raise ObservationError("observation_sources_unavailable")
     observation = build_model_observation(
         payloads["/api/models/catalog"],
         payloads["/v1/models"],

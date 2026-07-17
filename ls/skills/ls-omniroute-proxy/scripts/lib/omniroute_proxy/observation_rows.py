@@ -16,6 +16,10 @@ ALLOWED_LOGICAL_ENDPOINTS = frozenset(
 ALLOWED_REASONING_EFFORTS = frozenset(
     {"high", "low", "medium", "minimal", "none", "xhigh"}
 )
+CATALOG_TYPE_ENDPOINTS = {
+    "chat": ["chat"],
+    "embedding": ["embeddings"],
+}
 
 
 # Keep untrusted identity components structured until they are fingerprinted.
@@ -104,6 +108,16 @@ def _nested(row: dict[str, Any], *paths: tuple[str, ...]) -> Any:
         if value is not None:
             return value
     return None
+
+
+def _explicit_endpoint_value(row: dict[str, Any]) -> tuple[bool, Any]:
+    has_explicit_endpoints = False
+    for key in ("supported_endpoints", "supportedEndpoints", "endpoints"):
+        if key in row:
+            has_explicit_endpoints = True
+            if row[key] is not None:
+                return True, row[key]
+    return has_explicit_endpoints, None
 
 
 def _enum_list(
@@ -254,12 +268,13 @@ def candidate(
         alias_raw,
         root_raw,
     )
-    endpoints_value = _nested(
-        row,
-        ("supported_endpoints",),
-        ("supportedEndpoints",),
-        ("endpoints",),
-    )
+    has_explicit_endpoints, endpoints_value = _explicit_endpoint_value(row)
+    catalog_type_endpoint_fallback = False
+    if not has_explicit_endpoints and source_endpoint == "/api/models/catalog":
+        catalog_type = row.get("type")
+        if isinstance(catalog_type, str):
+            catalog_type_endpoint_fallback = catalog_type in CATALOG_TYPE_ENDPOINTS
+            endpoints_value = CATALOG_TYPE_ENDPOINTS.get(catalog_type)
     capabilities = row.get("capabilities") if isinstance(row.get("capabilities"), dict) else {}
     return {
         "identity_key": (provider, canonical_root),
@@ -267,6 +282,7 @@ def candidate(
         "identity_root": canonical_root,
         "reconcile_tokens": reconcile_tokens,
         "has_canonical_root": has_canonical_root,
+        "catalog_type_endpoint_fallback": catalog_type_endpoint_fallback,
         "endpoints": _enum_list(
             endpoints_value,
             allowed=ALLOWED_LOGICAL_ENDPOINTS,

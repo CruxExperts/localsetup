@@ -656,3 +656,98 @@ def test_observation_failures_are_typed_and_sanitized(tmp_path: Path) -> None:
         )
     with pytest.raises(probe.ObservationError, match="^observation_time_invalid$"):
         probe.build_model_observation(None, None, observed_at="not-a-time")
+
+
+def test_model_observation_rejects_total_source_failure_without_success_output(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    probe = _load_probe()
+    observation = sys.modules["omniroute_proxy.observation"]
+    cli = sys.modules["omniroute_proxy.cli"]
+    requested_paths: list[str] = []
+
+    class OfflineSession:
+        def __enter__(self) -> "OfflineSession":
+            return self
+
+        def __exit__(self, *_: object) -> bool:
+            return False
+
+    def unavailable_fetch(
+        session: object,
+        url: str,
+        api_key: str | None,
+        timeout: float,
+        *,
+        include_payload: bool,
+    ) -> dict[str, object]:
+        assert isinstance(session, OfflineSession)
+        assert api_key is None
+        assert timeout == 5
+        assert include_payload is True
+        requested_paths.append(url.rsplit(".invalid", 1)[1])
+        return {
+            "ok": False,
+            "status": 503,
+            "error": "tenant-secret-source-error",
+        }
+
+    monkeypatch.setattr(observation.requests, "Session", OfflineSession)
+    monkeypatch.setattr(observation, "fetch_json", unavailable_fetch)
+
+    with pytest.raises(
+        probe.ObservationError,
+        match="^observation_sources_unavailable$",
+    ):
+        probe.run_model_observation(
+            "https://proxy.invalid",
+            None,
+            5,
+            observed_at=OBSERVED_AT,
+        )
+    assert requested_paths == ["/api/models/catalog", "/v1/models"]
+
+    requested_paths.clear()
+    assert cli.main(["--model-observation", "--base-url", "https://proxy.invalid"]) == 2
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == (
+        "omniroute_discover.py: invalid input: observation_sources_unavailable\n"
+    )
+    assert "tenant-secret" not in captured.err
+    assert requested_paths == ["/api/models/catalog", "/v1/models"]
+
+
+def test_catalog_type_supplies_only_approved_logical_endpoint_fallbacks() -> None:
+    observation = _build(
+        _load_probe(),
+        {
+            "catalog": {
+                "provider": {
+                    "models": [
+                        {"id": "provider/chat", "type": "chat"},
+                        {"id": "provider/embedding", "type": "embedding"},
+                        {
+                            "id": "provider/explicit",
+                            "type": "embedding",
+                            "supported_endpoints": ["responses"],
+                        },
+                        {"id": "provider/unknown", "type": "tenant-private-type"},
+                        {"id": "provider/malformed", "type": ["chat"]},
+                    ]
+                }
+            }
+        },
+        None,
+    )
+    endpoints = [row["endpoints"] for row in observation["models"]]
+    rendered = json.dumps(observation, sort_keys=True, allow_nan=False)
+
+    assert ["chat"] in endpoints
+    assert ["embeddings"] in endpoints
+    assert ["responses"] in endpoints
+    assert endpoints.count(["embeddings"]) == 1
+    assert ["embeddings", "responses"] not in endpoints
+    assert endpoints.count("unknown") == 2
+    assert "tenant-private-type" not in rendered
