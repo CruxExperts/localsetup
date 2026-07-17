@@ -34,6 +34,7 @@ from ls.core.client_state import artifacts, git_exclude
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA = ROOT / "ls" / "config" / "client-state-artifact.schema.json"
 FD_ROOT = Path("/proc/self/fd") if Path("/proc/self/fd").is_dir() else Path("/dev/fd")
+REAL_ALLOCATION_LOCK_HOLD_SECONDS = 2.05
 ACCEPTED_RELATIVE_PATHS = (
     "foo",
     "foo/bar",
@@ -167,6 +168,82 @@ def concurrent_allocate_worker(
         results.put(("ok", allocated["artifact"]))
     except BaseException as exc:
         results.put(("error", type(exc).__name__, getattr(exc, "code", None), str(exc)))
+
+
+def held_allocation_lock_worker(
+    cwd: str,
+    home: str,
+    scope: str,
+    codex_home: str | None,
+    lock_acquired,
+    contender_attempted,
+    results,
+) -> None:
+    if codex_home is None:
+        os.environ.pop("CODEX_HOME", None)
+    else:
+        os.environ["CODEX_HOME"] = codex_home
+    directory_fd: int | None = None
+    lock_fd: int | None = None
+    try:
+        location = resolve_state_location(
+            ROOT, "codex/codex-cli", cwd=Path(cwd), home=Path(home), scope=scope
+        )
+        directory_fd = artifacts._open_location_directory(location, create=True)
+        lock_fd = artifacts._open_owned_lock(directory_fd, artifacts._ALLOCATION_LOCK)
+        artifacts._acquire_allocation_lock(lock_fd)
+        lock_acquired.set()
+        if not contender_attempted.wait(timeout=3):
+            raise RuntimeError("contender never attempted the held allocation lock")
+        time.sleep(REAL_ALLOCATION_LOCK_HOLD_SECONDS)
+        results.put(("ok",))
+    except BaseException as exc:
+        results.put(("error", type(exc).__name__, getattr(exc, "code", None), str(exc)))
+    finally:
+        if lock_fd is not None:
+            os.close(lock_fd)
+        if directory_fd is not None:
+            os.close(directory_fd)
+
+
+def allocation_contender_worker(
+    cwd: str,
+    home: str,
+    scope: str,
+    codex_home: str | None,
+    contender_attempted,
+    results,
+) -> None:
+    if codex_home is None:
+        os.environ.pop("CODEX_HOME", None)
+    else:
+        os.environ["CODEX_HOME"] = codex_home
+    original_flock = artifacts.fcntl.flock
+
+    def report_attempt(*args) -> None:
+        contender_attempted.set()
+        original_flock(*args)
+
+    artifacts.fcntl.flock = report_attempt
+    try:
+        location = resolve_state_location(
+            ROOT, "codex/codex-cli", cwd=Path(cwd), home=Path(home), scope=scope
+        )
+        allocated = allocate_artifact(
+            location,
+            content=b"concurrent\n",
+            purpose="same-time",
+            extension="md",
+            kind="restart-artifact",
+            schema="restart-v1",
+            producer="controller",
+            now=datetime(2026, 7, 15, 12, 0, tzinfo=timezone.utc),
+        )
+        results.put(("ok", allocated["artifact"]))
+    except BaseException as exc:
+        results.put(("error", type(exc).__name__, getattr(exc, "code", None), str(exc)))
+    finally:
+        artifacts.fcntl.flock = original_flock
 
 
 def test_locator_selects_nested_repo_and_registry_root(tmp_path: Path) -> None:
@@ -2266,7 +2343,72 @@ def test_two_process_fresh_root_allocation_waits_and_uses_deterministic_suffix(
     assert not list(state.glob(".localsetup-pending-*"))
 
 
-def test_allocation_lock_retry_timeout_is_bounded_and_typed(
+@pytest.mark.parametrize("scope", ["repo", "global"])
+def test_allocation_lock_default_waits_for_real_holder_release(
+    tmp_path: Path, scope: str
+) -> None:
+    context = multiprocessing.get_context("fork")
+    if scope == "repo":
+        cwd = repository(tmp_path / "repo")
+        home = tmp_path / "home"
+        codex_home = None
+        state = cwd / ".codex" / "state"
+    else:
+        cwd = tmp_path / "plain"
+        cwd.mkdir()
+        home = tmp_path / "home"
+        codex_owner = tmp_path / "codex-home"
+        codex_owner.mkdir()
+        codex_home = str(codex_owner)
+        state = codex_owner / "state"
+    lock_acquired = context.Event()
+    contender_attempted = context.Event()
+    holder_results = context.Queue()
+    contender_results = context.Queue()
+    holder = context.Process(
+        target=held_allocation_lock_worker,
+        args=(
+            str(cwd),
+            str(home),
+            scope,
+            codex_home,
+            lock_acquired,
+            contender_attempted,
+            holder_results,
+        ),
+    )
+    holder.start()
+    assert lock_acquired.wait(timeout=1)
+    contender = context.Process(
+        target=allocation_contender_worker,
+        args=(str(cwd), str(home), scope, codex_home, contender_attempted, contender_results),
+    )
+    contender.start()
+    holder.join(timeout=5)
+    contender.join(timeout=5)
+    assert holder.exitcode == 0
+    assert contender.exitcode == 0
+    assert holder_results.get(timeout=1) == ("ok",)
+    assert contender_results.get(timeout=1) == (
+        "ok",
+        "codex-cli-20260715T120000000Z-same-time.md",
+    )
+    assert len(list(state.glob("*.meta.json"))) == 1
+    assert not list(state.glob(".localsetup-pending-*"))
+
+
+def test_allocation_lock_default_uses_blocking_flock(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[tuple[int, int]] = []
+
+    def record(lock_fd: int, operation: int) -> None:
+        calls.append((lock_fd, operation))
+
+    monkeypatch.setattr(artifacts.fcntl, "flock", record)
+    artifacts._acquire_allocation_lock(1)
+    assert calls == [(1, fcntl.LOCK_EX)]
+
+
+def test_allocation_lock_explicit_timeout_is_bounded_and_typed(
     monkeypatch: pytest.MonkeyPatch
 ) -> None:
     attempts = 0

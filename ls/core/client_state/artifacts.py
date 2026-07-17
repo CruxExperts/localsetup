@@ -32,7 +32,6 @@ _MAX_RELATIVE_PATH_LENGTH = 512
 _PENDING_PREFIX = ".localsetup-pending-"
 _PENDING_SUFFIX = ".json"
 _ALLOCATION_LOCK = ".localsetup-artifacts.lock"
-_ALLOCATION_LOCK_TIMEOUT_SECONDS = 0.5
 _ALLOCATION_LOCK_POLL_SECONDS = 0.01
 
 
@@ -725,9 +724,20 @@ def _open_owned_lock(directory_fd: int, name: str) -> int:
 def _acquire_allocation_lock(
     lock_fd: int,
     *,
-    timeout: float = _ALLOCATION_LOCK_TIMEOUT_SECONDS,
+    timeout: float | None = None,
     poll: float = _ALLOCATION_LOCK_POLL_SECONDS,
 ) -> None:
+    if timeout is None:
+        while True:
+            try:
+                fcntl.flock(lock_fd, fcntl.LOCK_EX)
+                return
+            except InterruptedError:
+                continue
+            except OSError as exc:
+                raise ClientStateError(
+                    "artifact allocation lock is unavailable", code="artifact_locked"
+                ) from exc
     deadline = time.monotonic() + timeout
     while True:
         try:
