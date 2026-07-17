@@ -81,13 +81,9 @@ OpenCode uses `AGENTS.md` as the project initialization file. This context is lo
 - ls-mail-protocol-control: SMTP/IMAP; preencrypted_openpgp_armored for Agent Q strict mail; agent-driven mailbox read/send/mutate/encrypt workflows
 - ls-docs-organization: docs organization router; classify docs, choose folder slugs, and keep docs indexes up to date.
 - ls-scrapling: host-first Scrapling integration; install and upgrade Scrapling via pipx, run adaptive single-URL extractions (simple or structured) with job status/cancel, and keep adapters aligned with Scrapling releases via parsed CLI/docs state. Use this as the default method for fetching websites and web content from the internet.
-- ls-omniroute: main OmniRoute router for issue triage, env/API-key preflight, access compatibility checks, and choosing the focused OmniRoute skill.
-- ls-omniroute-proxy: OmniRoute runtime discovery, model catalogs, provider metadata, limits, quotas, routing combos, MCP/A2A discovery, and agent client configuration.
-- ls-omniroute-admin-automation: OmniRoute administration automation for providers, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, and drift reconciliation.
-- ls-omniroute-observability: OmniRoute health, usage, quota, cost, policy, audit, resilience, and evaluation diagnostics.
-- ls-omniroute-context: OmniRoute context engineering, compression, memory, cache, RTK, and Qdrant configuration workflows.
-- ls-omniroute-integrations: OmniRoute MCP, A2A, CLI tools, plugins, skills, tunnels, webhooks, and external integration diagnostics.
-- ls-omniroute-codex: OmniRoute Codex CLI onboarding, setup/launch guidance, profile files, and `wire_api = "responses"` configuration.
+- ls-omniroute: ambiguous-task/preflight router only for unclassified triage, env/API-key/access preflight, and non-mutating onboarding; route classified read-only discovery to ls-omniroute-proxy, mutation to ls-omniroute-admin-automation, and source/coverage maintenance to ls-omniroute-update.
+- ls-omniroute-proxy: all read-only OmniRoute model/provider, context, observability, integration, client and endpoint discovery, plus sanitized model observations.
+- ls-omniroute-admin-automation: all OmniRoute writes, imports, purges, services, settings, providers, keys, integrations, backup/restore, and rollback-safe reconciliation.
 - ls-omniroute-update: OmniRoute update reporting for upstream skill discovery, Localsetup coverage comparison, provenance metadata, and report-first maintenance planning.
 - ls-kilo-boss-orchestrator: Kilo headless boss-worker orchestration with repo-local state, watchdog leases, consensus validation, and safety gates.
 - ls-kilo-visual-output: Kilo CLI visual output organization guide with structured response patterns.

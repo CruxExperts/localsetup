@@ -6,6 +6,7 @@ from typing import Any
 import yaml
 
 from .client_registry import load_client_registry, projection_matches
+from .dependency_ledger import load_dependency_ledger
 from .models import PackConfig, PlatformConfig
 from .paths import validate_home_scoped_path, validate_repo_relative_path
 from .schema import validate_json_schema
@@ -148,4 +149,8 @@ def validate_manifest_schemas(repo_root: Path, *, require_jsonschema: bool = Tru
         )
     except Exception as exc:
         issues.append(f"plugin-packs.yaml schema validation failed: {exc}")
+    try:
+        load_dependency_ledger(repo_root, require_jsonschema=require_jsonschema)
+    except Exception as exc:
+        issues.append(f"dependency-ledger.yaml validation failed: {exc}")
     return issues

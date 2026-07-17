@@ -10,6 +10,20 @@ Do not impose an arbitrary length cap on this file. In particular, do not trim i
 
 Keep this file aligned with the repo's actual workflow. If a rule also belongs in installed Codex context for future converted repos, mirror the portable part into `ls/templates/codex/AGENTS.md`. If the rule is only for this checkout, keep it here.
 
+## COIT Repository Mapping
+
+Apply the machine-wide Controlled Outcome Investigation and Termination (COIT)
+control to material Localsetup retries. Keep append-only per-problem records in
+`.codex/runs/`, binding each record to its invariant, minimal reproduction,
+affected gate, exact source/diff state, and `0/3` counter. A full cycle uses one
+serialized writer, deterministic validation, and independent
+adversarial/reproduction, contract/provenance, and release/regression critics
+before controller reconciliation. Renames, path moves, partial repairs, and
+changed reviewer wording do not reset the counter. Stop and document the
+problem as unresolvable after three failed full cycles, or immediately for a
+major blocker; do not begin dependent work or publish while an upstream gate is
+open.
+
 ## Project Structure & Module Organization
 
 This repository packages Localsetup, a repo-local framework for agent context, skills, and install workflows. Root files include the Bash installer (`install`), top-level docs, `VERSION`, and support files. The main engine lives in `ls/`: reusable code is under `ls/lib/`, OS discovery helpers under `ls/discovery/`, shipped skills under `ls/skills/`, platform templates under `ls/templates/`, and framework docs under `ls/docs/`. Tests live in `ls/tests/`; static assets live in `assets/`.
@@ -141,6 +155,61 @@ Before spawning a subagent, write the task in the ledger with exact scope, what 
 For bounded autonomous maintenance loops, create or resume the private ledger first and preserve the existing dirty baseline. Select exactly one small slice at a time from, in order, an assigned queue or PRD, a failing validation or drift signal, a repo-contract gap, or narrow docs/tests/tooling upkeep. Do not mine broad TODOs or opportunistically expand scope. Use subagents when they reduce context load or enable safe parallel read-only work, but keep implementation to one bounded worker at a time. Validate proportionally, require review evidence before final acceptance, and do not push, deploy, schedule cron, run destructive commands, reshape adapters, run migrations, authenticate, install dependencies, or mutate external systems without explicit approval.
 
 Before final response on non-trivial work, inspect `git status --short`, inspect the scoped diff, run or delegate required validation, resolve or document reviewer findings, and update the ledger with final evidence. Do not claim completion from memory.
+
+### User-Mediated Handoffs
+
+When the user will manually relay a handoff, address the user with an informative request to review or evaluate the material before relaying it; do not frame it as a declarative instruction to, or a message already sent to, an absent agent. This presentation rule does not replace durable artifact-backed executable or restart-sensitive handoffs. Direct agent messages are available only through a native capability to a currently visible target agent.
+
+### Optional Packs, Parallel Slices, And Publishing Integration
+
+An optional Localsetup skill pack may carry durable operating guidance needed to
+manage that selected capability, but it does not automatically become effective
+policy for the default Localsetup installation or overwrite global Codex
+behavior, hooks, active goals, or user settings. A direct global-Codex change
+requires a separate explicit user request and an isolated owner-scoped change
+with its own validation.
+
+A parallel agent may research, draft a prompted handoff artifact, or implement
+an explicitly bounded branch slice when its controller packet names the exact
+write scope, branch boundary, validation, and stop conditions. That slice is a
+candidate contribution only: it must preserve concurrently owned paths and may
+not self-integrate, merge, publish, install, or expand into default policy.
+
+The publishing agent alone reconciles the full timeline of parallel branches,
+ledgers, PR/base state, review outcomes, ownership boundaries, version/release
+state, and final evidence. It evaluates each packet or PR, chooses whether and
+how to integrate accepted work, and performs the normal guarded publication
+flow. Treat research handoffs as durable review material for that loop, not as
+direct execution authority over an absent agent.
+
+### Durable State, Maintainer Role, And Deferred Work
+
+Before an agent calls itself the publishing agent, maintainer, or integrator,
+inspect the current Git branch/HEAD, upstream and base refs, status, staged
+paths, scoped diffs, and local commit history. Then read the applicable durable
+ledgers in their expected private locations—normally `.codex/runs/` and
+`.localsetup-maint/`—and verify any associated GitHub issue/PR/release state
+through the repository's authenticated `gh` surface when that external state
+matters. Git state, durable artifacts, and verified GitHub state are the source
+of truth for ongoing development, ownership, and release status; chat history,
+process listings, stale summaries, and an agent's self-description are not.
+
+An agent working outside its declared home repository is presumed not to be the
+maintainer or publishing agent for that repository. It may perform only the
+bounded research or branch-slice work its packet permits until the user
+explicitly assigns it the maintainer/publishing role for that exact repository.
+Even inside the home repository, no agent may infer publishing authority from a
+dirty worktree, a branch name, or a handoff artifact alone.
+
+Do not leave a reusable defect, follow-up, or deferred task only in chat or an
+untracked note. Verify whether the relevant upstream GitHub tracker exists and
+search for a duplicate; where the active task authorizes the external tracking
+write, create or update one sanitized upstream issue with the evidence,
+ownership, and acceptance criterion. Otherwise record the item in the
+repository's tracked backlog/TODO file when it exists; if neither tracking
+surface is available, keep a durable private ledger record and ask the user to
+choose the tracking destination. This routing rule does not waive the active
+task's external-mutation, security, privacy, or redaction gates.
 
 ## Skill And Context Preservation
 

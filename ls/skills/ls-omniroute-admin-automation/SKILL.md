@@ -1,22 +1,24 @@
 ---
 name: ls-omniroute-admin-automation
-description: Comprehensive OmniRoute administration and automation via Python tooling. Use when you need full API-driven control of providers, nodes, aliases, combos, fallbacks, keys, policies, budgets, backup/restore, sync, resilience, and configuration reconciliation with safety gates.
+description: Comprehensive OmniRoute administration and automation via Python tooling. Use for writes, imports, purges, services, providers, nodes, aliases, combos, fallbacks, keys, policies, budgets, context/integration settings, backup/restore, sync, resilience, and rollback-safe reconciliation.
 metadata:
-  version: "1.0"
+  version: "1.1"
 extensions:
   omniroute:
     source_kind: localsetup-native
     local_role: admin-automation
     source_repo: https://github.com/diegosouzapw/OmniRoute
-    source_ref: main
-    source_commit: 0c7f756f922fe3c0408e41852577027b496489bf
-    package_version: 3.8.43
-    release_package_commit: b729a8f27364f072c87082e03bb8e122f3d76251
+    source_ref: v3.8.48
+    source_commit: 7ee5bbc64dbb03e967521227f2afffeb7c9dad1e
+    package_version: 3.8.48
+    release_package_commit: 7ee5bbc64dbb03e967521227f2afffeb7c9dad1e
 ---
 
 # OmniRoute administration automation
 
 Purpose: provide full, automation-first OmniRoute administration workflows with plan/apply safety, drift detection, rollback support, and strict secret handling.
+
+This skill owns every OmniRoute mutation, including context/compression/cache/memory/Qdrant settings; MCP/A2A, CLI-tool, plugin/skill, tunnel and webhook changes; GitHub skill imports; service lifecycle; and purges. Use `ls-omniroute-proxy` for discovery first. Actual skill imports remain governed by Localsetup vetting, normalization, and sandbox-testing policy.
 
 ## When to use
 

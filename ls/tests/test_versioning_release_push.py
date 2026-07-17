@@ -38,6 +38,43 @@ def test_publish_preflight_fix_creates_release_and_generated_docs_commits(tmp_pa
     assert run(repo, "git", "status", "--short").stdout.strip() == ""
 
 
+def test_publish_preflight_fix_keeps_no_bump_generated_docs_refresh_none(tmp_path: Path) -> None:
+    repo = copy_full_repo(tmp_path)
+    remote = tmp_path / "remote.git"
+    run(tmp_path, "git", "init", "--bare", str(remote))
+    init_git_repo(repo, remote)
+    expected_version = str(repo_version(repo))
+
+    facts = repo / "ls" / "docs" / "_generated" / "facts.json"
+    facts.write_text(f"{facts.read_text(encoding='utf-8')}\n", encoding="utf-8")
+    run(repo, "git", "add", "ls/docs/_generated/facts.json")
+    run(
+        repo,
+        "git",
+        "commit",
+        "-m",
+        "docs: make generated facts stale",
+        "-m",
+        "Release-Type: none",
+        "--no-verify",
+    )
+
+    result = publish_preflight(repo, base="origin/main", head="HEAD", fix=True)
+
+    assert result["ok"] is True
+    assert result["fixed"] is True
+    assert [commit["type"] for commit in result["commits"]] == ["generated_docs"]
+    assert run(repo, "git", "log", "-1", "--pretty=%s").stdout.strip() == "docs: refresh release version artifacts"
+    assert (
+        run(repo, "git", "log", "-1", "--pretty=%B").stdout.strip()
+        == "docs: refresh release version artifacts\n\nRelease-Type: none"
+    )
+    assert result["plan"]["bump"] == "none"
+    assert result["plan"]["current_version"] == expected_version
+    assert result["plan"]["target_version"] == expected_version
+    assert run(repo, "git", "status", "--short").stdout.strip() == ""
+
+
 def test_publish_preflight_fix_requires_clean_worktree(tmp_path: Path) -> None:
     repo = copy_full_repo(tmp_path)
     remote = tmp_path / "remote.git"

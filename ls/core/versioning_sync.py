@@ -275,5 +275,5 @@ def commit_generated_docs_refresh(
     staged = git_text(repo_root, ["diff", "--cached", "--name-only"])
     if not staged:
         return None
-    run_git(repo_root, ["commit", "-m", message])
+    run_git(repo_root, ["commit", "-m", message, "-m", "Release-Type: none"])
     return resolve_head(repo_root)

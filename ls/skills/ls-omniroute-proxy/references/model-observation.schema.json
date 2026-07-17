@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://localsetup.dev/schemas/omniroute-model-observation.schema.json",
+  "title": "Sanitized OmniRoute model observation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "adapter_source",
+    "runtime",
+    "observed_at",
+    "models",
+    "endpoint_observations",
+    "conflicts",
+    "truncation",
+    "notes"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "adapter_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "commit", "endpoints"],
+      "properties": {
+        "name": {"const": "omniroute"},
+        "version": {"const": "3.8.48"},
+        "commit": {"const": "7ee5bbc64dbb03e967521227f2afffeb7c9dad1e"},
+        "endpoints": {"const": ["/api/models/catalog", "/v1/models"]}
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "commit", "catalog_revision", "source_endpoints"],
+      "properties": {
+        "version": {"const": "unknown"},
+        "commit": {"const": "unknown"},
+        "catalog_revision": {"const": "unknown"},
+        "source_endpoints": {"type": "array", "maxItems": 2, "uniqueItems": true, "items": {"enum": ["/api/models/catalog", "/v1/models"]}}
+      }
+    },
+    "observed_at": {"type": "string", "format": "date-time"},
+    "models": {"type": "array", "maxItems": 256, "items": {"$ref": "#/$defs/model"}},
+    "endpoint_observations": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["route", "source_endpoint"],
+        "properties": {
+          "route": {"enum": ["/api/models/catalog", "/v1/models"]},
+          "source_endpoint": {"enum": ["/api/models/catalog", "/v1/models"]}
+        }
+      }
+    },
+    "conflicts": {
+      "type": "array",
+      "maxItems": 128,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["identity", "field", "source_endpoints", "value_fingerprints", "value_fingerprint_truncation"],
+        "properties": {
+          "identity": {"type": "string", "pattern": "^[0-9a-f]{24}$"},
+          "field": {"type": "string", "pattern": "^[a-z_.]+$", "maxLength": 80},
+          "source_endpoints": {"type": "array", "minItems": 1, "maxItems": 2, "uniqueItems": true, "items": {"enum": ["/api/models/catalog", "/v1/models"]}},
+          "value_fingerprints": {"type": "array", "minItems": 2, "maxItems": 8, "uniqueItems": true, "items": {"type": "string", "pattern": "^[0-9a-f]{16}$"}},
+          "value_fingerprint_truncation": {"$ref": "#/$defs/receipt"}
+        }
+      }
+    },
+    "truncation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["models", "endpoint_observations", "conflicts"],
+      "properties": {
+        "models": {"$ref": "#/$defs/modelReceipt"},
+        "endpoint_observations": {"$ref": "#/$defs/receipt"},
+        "conflicts": {"$ref": "#/$defs/receipt"}
+      }
+    },
+    "endpoint_status": {
+      "type": "array",
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "available", "status"],
+        "properties": {
+          "path": {"enum": ["/api/models/catalog", "/v1/models"]},
+          "available": {"type": "boolean"},
+          "status": {"oneOf": [{"type": "integer", "minimum": 100, "maximum": 599}, {"const": "unknown"}]}
+        }
+      }
+    },
+    "notes": {
+      "const": [
+        "Runtime version, commit, and catalog revision are intentionally withheld and emitted as unknown, even when an approved endpoint reports them.",
+        "Unknown model fields may be unreported, unsupported, or rejected by validation.",
+        "Runtime provider, root, and alias strings emit only keyed opaque identifiers; raw values and keys are never emitted.",
+        "With the same inputs and receipt key, model ordering and reviewed adapter/source provenance are deterministic.",
+        "Opaque identifiers are deterministic only with the same non-exported key; unauthenticated observations use a fresh key.",
+        "Only reviewed modality and logical endpoint enums emit verbatim.",
+        "Pricing remains unknown because these endpoints have no approved public-price provenance class.",
+        "This observation contains no equivalence or task-routing decisions."
+      ]
+    }
+  },
+  "$defs": {
+    "unknownBoolean": {"oneOf": [{"type": "boolean"}, {"const": "unknown"}]},
+    "unknownInteger": {"oneOf": [{"type": "integer", "minimum": 1}, {"const": "unknown"}]},
+    "unknownList": {"oneOf": [{"const": "unknown"}, {"type": "array", "minItems": 1, "maxItems": 32, "uniqueItems": true, "items": {"type": "string", "maxLength": 200}}]},
+    "modalityList": {"oneOf": [{"const": "unknown"}, {"type": "array", "minItems": 1, "maxItems": 32, "uniqueItems": true, "items": {"oneOf": [{"enum": ["audio", "embedding", "image", "text", "video"]}, {"type": "string", "pattern": "^opaque-modality:[0-9a-f]{20}$"}]}}]},
+    "endpointList": {"oneOf": [{"const": "unknown"}, {"type": "array", "minItems": 1, "maxItems": 32, "uniqueItems": true, "items": {"oneOf": [{"enum": ["audio", "chat", "embeddings", "images", "rerank", "responses", "video", "videos"]}, {"type": "string", "pattern": "^opaque-endpoint:[0-9a-f]{20}$"}]}}]},
+    "effortList": {"oneOf": [{"const": "unknown"}, {"type": "array", "minItems": 1, "maxItems": 32, "uniqueItems": true, "items": {"oneOf": [{"enum": ["high", "low", "medium", "minimal", "none", "xhigh"]}, {"type": "string", "pattern": "^opaque-effort:[0-9a-f]{20}$"}]}}]},
+    "receipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["available", "retained", "dropped", "truncated"],
+      "properties": {
+        "available": {"type": "integer", "minimum": 0},
+        "retained": {"type": "integer", "minimum": 0},
+        "dropped": {"type": "integer", "minimum": 0},
+        "truncated": {"type": "boolean"}
+      }
+    },
+    "modelReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input_rows", "invalid_rows", "duplicate_rows", "unique_models", "retained", "dropped", "truncated"],
+      "properties": {
+        "input_rows": {"type": "integer", "minimum": 0},
+        "invalid_rows": {"type": "integer", "minimum": 0},
+        "duplicate_rows": {"type": "integer", "minimum": 0},
+        "unique_models": {"type": "integer", "minimum": 0},
+        "retained": {"type": "integer", "minimum": 0},
+        "dropped": {"type": "integer", "minimum": 0},
+        "truncated": {"type": "boolean"}
+      }
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identity", "model_id", "provider_id", "provider_model_id", "endpoints", "modalities", "limits", "capabilities", "reasoning_effort_options", "cost_evidence", "source_endpoints"],
+      "properties": {
+        "identity": {"type": "string", "pattern": "^[0-9a-f]{24}$"},
+        "model_id": {"type": "string", "pattern": "^opaque-model:[0-9a-f]{20}$"},
+        "provider_id": {"type": "string", "pattern": "^opaque-provider:[0-9a-f]{20}$"},
+        "provider_model_id": {"type": "string", "pattern": "^opaque-provider-model:[0-9a-f]{20}$"},
+        "endpoints": {"$ref": "#/$defs/endpointList"},
+        "modalities": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["input", "output"],
+          "properties": {"input": {"$ref": "#/$defs/modalityList"}, "output": {"$ref": "#/$defs/modalityList"}}
+        },
+        "limits": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["context_tokens", "output_tokens"],
+          "properties": {"context_tokens": {"$ref": "#/$defs/unknownInteger"}, "output_tokens": {"$ref": "#/$defs/unknownInteger"}}
+        },
+        "capabilities": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["tools", "vision", "reasoning", "embeddings", "image_generation", "moderation", "rerank", "attachment", "structured_output", "temperature", "thinking"],
+          "properties": {
+            "tools": {"$ref": "#/$defs/unknownBoolean"},
+            "vision": {"$ref": "#/$defs/unknownBoolean"},
+            "reasoning": {"$ref": "#/$defs/unknownBoolean"},
+            "embeddings": {"$ref": "#/$defs/unknownBoolean"},
+            "image_generation": {"$ref": "#/$defs/unknownBoolean"},
+            "moderation": {"$ref": "#/$defs/unknownBoolean"},
+            "rerank": {"$ref": "#/$defs/unknownBoolean"},
+            "attachment": {"$ref": "#/$defs/unknownBoolean"},
+            "structured_output": {"$ref": "#/$defs/unknownBoolean"},
+            "temperature": {"$ref": "#/$defs/unknownBoolean"},
+            "thinking": {"$ref": "#/$defs/unknownBoolean"}
+          }
+        },
+        "reasoning_effort_options": {"$ref": "#/$defs/effortList"},
+        "cost_evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["currency", "input_per_million", "output_per_million", "source_endpoint", "provenance_class"],
+          "properties": {
+            "currency": {"const": "unknown"},
+            "input_per_million": {"const": "unknown"},
+            "output_per_million": {"const": "unknown"},
+            "source_endpoint": {"const": "unknown"},
+            "provenance_class": {"const": "unavailable"}
+          }
+        },
+        "source_endpoints": {"type": "array", "minItems": 1, "maxItems": 2, "uniqueItems": true, "items": {"enum": ["/api/models/catalog", "/v1/models"]}}
+      }
+    }
+  }
+}

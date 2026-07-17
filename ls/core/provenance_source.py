@@ -147,10 +147,12 @@ def generated_artifact_parent_source_commit(repo_root: Path) -> str | None:
         return git_text(repo_root, ["rev-parse", "HEAD^"])
     if not subject.startswith(GENERATED_DOCS_SUBJECT_PREFIX):
         merge_head_subject = subject_for_ref(repo_root, "HEAD^2")
-        if merge_head_subject and merge_head_subject.startswith(VERSION_SYNC_SUBJECT_PREFIX):
+        if merge_head_subject is None:
+            return None
+        if merge_head_subject.startswith(VERSION_SYNC_SUBJECT_PREFIX):
             return git_text(repo_root, ["rev-parse", "HEAD^2^"])
-        if merge_head_subject and merge_head_subject.startswith(GENERATED_DOCS_SUBJECT_PREFIX):
-            return generated_docs_source_ref(repo_root, "HEAD^2")
+        if generated_source := generated_docs_source_ref(repo_root, "HEAD^2"):
+            return generated_source
         return None
     return generated_docs_source_ref(repo_root, "HEAD")
 

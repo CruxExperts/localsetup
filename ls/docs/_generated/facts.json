@@ -41,18 +41,18 @@
   ],
   "provenance": {
     "artifact_path": "ls/docs/_generated/facts.json",
-    "artifact_sha256": "5d27785985457a96df34a7fc4192bd7eb28af6c23bf63d6d4c97938e5e21a1e1",
+    "artifact_sha256": "18e45057071a47acbb25ecbd0399a95063c02e2dadb13eecb60069e51525b6a2",
     "emitter": "generate-docs",
-    "framework_version": "4.2.19",
+    "framework_version": "4.2.20",
     "schema_version": 1,
-    "source_commit": "e3da68416ffad95990e6f3525dd7ca524ff31afa",
+    "source_commit": "c269ae82bdff9a1573f0deb6ceba817d0f2f6890",
     "source_dirty": false,
-    "source_provenance_hash": "6e2d6805106829ec664d22d4d678aeded5d0f27b4bcfaff1e640ee07ce63c39e",
-    "source_root_id": "3465e92a34cf755ac792b974c82224a45614755df8e15632592f66302b493d34",
+    "source_provenance_hash": "3e1e2c2e2830bc991f263768d41bee75044e1159c5df3f7266d9feab94e17f75",
+    "source_root_id": "c568052a6bf2c0049a628e5b2062ec7e071930a5d61e148a8859953b16077bb4",
     "source_tag": null,
-    "source_tree_sha": "16b2b419e8b88bc607f590cfe774e108eee909d2"
+    "source_tree_sha": "345e66bd4e6e5b243155a65ec1cf2af9f96707ce"
   },
-  "skill_count": 106,
+  "skill_count": 102,
   "skills": [
     {
       "class": "core",
@@ -647,7 +647,7 @@
         "main",
         "router"
       ],
-      "version": "1.0"
+      "version": "1.1"
     },
     {
       "class": "integrations",
@@ -777,75 +777,7 @@
         "admin",
         "automation"
       ],
-      "version": "1.0"
-    },
-    {
-      "class": "integrations",
-      "id": "ls-omniroute-codex",
-      "name": "ls-omniroute-codex",
-      "owner_scope": "skill",
-      "packs": [
-        "omniroute"
-      ],
-      "path": "ls/skills/ls-omniroute-codex/SKILL.md",
-      "sort_priority": 50,
-      "tags": [
-        "omniroute",
-        "codex",
-        "onboarding"
-      ],
-      "version": "1.0"
-    },
-    {
-      "class": "integrations",
-      "id": "ls-omniroute-context",
-      "name": "ls-omniroute-context",
-      "owner_scope": "skill",
-      "packs": [
-        "omniroute"
-      ],
-      "path": "ls/skills/ls-omniroute-context/SKILL.md",
-      "sort_priority": 50,
-      "tags": [
-        "omniroute",
-        "context",
-        "compression"
-      ],
-      "version": "1.0"
-    },
-    {
-      "class": "integrations",
-      "id": "ls-omniroute-integrations",
-      "name": "ls-omniroute-integrations",
-      "owner_scope": "skill",
-      "packs": [
-        "omniroute"
-      ],
-      "path": "ls/skills/ls-omniroute-integrations/SKILL.md",
-      "sort_priority": 50,
-      "tags": [
-        "omniroute",
-        "mcp",
-        "a2a",
-        "integrations"
-      ],
-      "version": "1.0"
-    },
-    {
-      "class": "integrations",
-      "id": "ls-omniroute-observability",
-      "name": "ls-omniroute-observability",
-      "owner_scope": "skill",
-      "packs": [
-        "omniroute"
-      ],
-      "path": "ls/skills/ls-omniroute-observability/SKILL.md",
-      "sort_priority": 50,
-      "tags": [
-        "omniroute",
-        "observability"
-      ],
-      "version": "1.0"
+      "version": "1.1"
     },
     {
       "class": "integrations",
@@ -863,7 +795,7 @@
         "proxy",
         "runtime"
       ],
-      "version": "1.0"
+      "version": "1.1"
     },
     {
       "class": "integrations",
@@ -880,7 +812,7 @@
         "update",
         "provenance"
       ],
-      "version": "1.0"
+      "version": "1.1"
     },
     {
       "class": "integrations",
@@ -1806,7 +1738,7 @@
       "version": "1.0"
     }
   ],
-  "version": "4.2.19",
+  "version": "4.2.20",
   "workflow_count": 24,
   "workflows": [
     {

@@ -74,12 +74,12 @@
   ],
   "cli_commands": [],
   "counts": {
-    "docs": 445,
+    "docs": 441,
     "framework_docs": 66,
     "generated_docs": 5,
     "platforms": 6,
     "public_docs": 6,
-    "skills": 106,
+    "skills": 102,
     "workflow_packs": 34,
     "workflows": 24
   },
@@ -2836,46 +2836,6 @@
       "managed_blocks": [],
       "owner_package": "",
       "owner_skill": "",
-      "path": "ls/skills/ls-omniroute-codex/SKILL.md",
-      "status": "",
-      "version": ""
-    },
-    {
-      "class": "skill",
-      "has_frontmatter": true,
-      "managed_blocks": [],
-      "owner_package": "",
-      "owner_skill": "",
-      "path": "ls/skills/ls-omniroute-context/SKILL.md",
-      "status": "",
-      "version": ""
-    },
-    {
-      "class": "skill",
-      "has_frontmatter": true,
-      "managed_blocks": [],
-      "owner_package": "",
-      "owner_skill": "",
-      "path": "ls/skills/ls-omniroute-integrations/SKILL.md",
-      "status": "",
-      "version": ""
-    },
-    {
-      "class": "skill",
-      "has_frontmatter": true,
-      "managed_blocks": [],
-      "owner_package": "",
-      "owner_skill": "",
-      "path": "ls/skills/ls-omniroute-observability/SKILL.md",
-      "status": "",
-      "version": ""
-    },
-    {
-      "class": "skill",
-      "has_frontmatter": true,
-      "managed_blocks": [],
-      "owner_package": "",
-      "owner_skill": "",
       "path": "ls/skills/ls-omniroute-proxy/SKILL.md",
       "status": "",
       "version": ""
@@ -4582,16 +4542,16 @@
   ],
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "d8f4fdfbe44ca251b46682872c2ff9bd20ed8e6eca0e0e6a705acccb71eff5ec",
+    "artifact_sha256": "e6a770c431e02bcbbe72bec33649de6bb0a7b55503a89542d95ce8465eeab63f",
     "emitter": "docs-align",
-    "framework_version": "4.2.19",
+    "framework_version": "4.2.20",
     "schema_version": 1,
-    "source_commit": "e3da68416ffad95990e6f3525dd7ca524ff31afa",
+    "source_commit": "c269ae82bdff9a1573f0deb6ceba817d0f2f6890",
     "source_dirty": false,
-    "source_provenance_hash": "6e2d6805106829ec664d22d4d678aeded5d0f27b4bcfaff1e640ee07ce63c39e",
-    "source_root_id": "3465e92a34cf755ac792b974c82224a45614755df8e15632592f66302b493d34",
+    "source_provenance_hash": "3e1e2c2e2830bc991f263768d41bee75044e1159c5df3f7266d9feab94e17f75",
+    "source_root_id": "c568052a6bf2c0049a628e5b2062ec7e071930a5d61e148a8859953b16077bb4",
     "source_tag": null,
-    "source_tree_sha": "16b2b419e8b88bc607f590cfe774e108eee909d2"
+    "source_tree_sha": "345e66bd4e6e5b243155a65ec1cf2af9f96707ce"
   },
   "repo": ".",
   "schema_version": "1.0",
@@ -5231,66 +5191,6 @@
         "omniroute",
         "admin",
         "automation"
-      ]
-    },
-    {
-      "class": "integrations",
-      "name": "ls-omniroute-codex",
-      "owner_scope": "skill",
-      "packs": [
-        "omniroute"
-      ],
-      "path": "ls/skills/ls-omniroute-codex",
-      "sort_priority": 50,
-      "tags": [
-        "omniroute",
-        "codex",
-        "onboarding"
-      ]
-    },
-    {
-      "class": "integrations",
-      "name": "ls-omniroute-context",
-      "owner_scope": "skill",
-      "packs": [
-        "omniroute"
-      ],
-      "path": "ls/skills/ls-omniroute-context",
-      "sort_priority": 50,
-      "tags": [
-        "omniroute",
-        "context",
-        "compression"
-      ]
-    },
-    {
-      "class": "integrations",
-      "name": "ls-omniroute-integrations",
-      "owner_scope": "skill",
-      "packs": [
-        "omniroute"
-      ],
-      "path": "ls/skills/ls-omniroute-integrations",
-      "sort_priority": 50,
-      "tags": [
-        "omniroute",
-        "mcp",
-        "a2a",
-        "integrations"
-      ]
-    },
-    {
-      "class": "integrations",
-      "name": "ls-omniroute-observability",
-      "owner_scope": "skill",
-      "packs": [
-        "omniroute"
-      ],
-      "path": "ls/skills/ls-omniroute-observability",
-      "sort_priority": 50,
-      "tags": [
-        "omniroute",
-        "observability"
       ]
     },
     {

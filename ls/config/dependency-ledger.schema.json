@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://localsetup.dev/schemas/dependency-ledger.schema.json",
+  "title": "Localsetup package dependency ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "nodes", "edges"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "kind", "name"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^(skill|workflow|resource):[a-z0-9][a-z0-9-]*$"},
+          "kind": {"type": "string", "enum": ["skill", "workflow", "resource"]},
+          "name": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"}
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["from", "relation", "to"],
+        "properties": {
+          "from": {"type": "string", "pattern": "^(skill|workflow|resource):[a-z0-9][a-z0-9-]*$"},
+          "relation": {"const": "requires"},
+          "to": {"type": "string", "pattern": "^(skill|workflow|resource):[a-z0-9][a-z0-9-]*$"}
+        }
+      }
+    }
+  }
+}

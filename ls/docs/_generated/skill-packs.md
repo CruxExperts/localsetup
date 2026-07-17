@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 6e2d6805106829ec664d22d4d678aeded5d0f27b4bcfaff1e640ee07ce63c39e
+  source_provenance_hash: 3e1e2c2e2830bc991f263768d41bee75044e1159c5df3f7266d9feab94e17f75
   emitter: generate-docs
-framework_version: 4.2.19
-source_commit: e3da68416ffad95990e6f3525dd7ca524ff31afa
-artifact_sha256: 89f6164be8f160d6431d463900b6c7399e0c8263397f23bd6ded591bb8aa9bd9
+framework_version: 4.2.20
+source_commit: c269ae82bdff9a1573f0deb6ceba817d0f2f6890
+artifact_sha256: 87dfe0619aed910b4a66f6fbce1436dbf4ff10358f6dfc807088e61299c710d3
 ---
 # Skill And Workflow Packs
 
@@ -55,10 +55,6 @@ artifact_sha256: 89f6164be8f160d6431d463900b6c7399e0c8263397f23bd6ded591bb8aa9bd
 | `integrations` | `skill` | `ls-mcp-builder` | `integrations` | 50 | `mcp, builder` | `localsetup-mcp-builder` |
 | `integrations` | `skill` | `ls-npm-management` | `integrations` | 50 | `nginx-proxy-manager, api` | `localsetup-npm-management` |
 | `integrations, omniroute` | `skill` | `ls-omniroute-admin-automation` | `integrations` | 50 | `omniroute, admin, automation` | `localsetup-omniroute-admin-automation` |
-| `omniroute` | `skill` | `ls-omniroute-codex` | `integrations` | 50 | `omniroute, codex, onboarding` | `localsetup-omniroute-codex` |
-| `omniroute` | `skill` | `ls-omniroute-context` | `integrations` | 50 | `omniroute, context, compression` | `localsetup-omniroute-context` |
-| `omniroute` | `skill` | `ls-omniroute-integrations` | `integrations` | 50 | `omniroute, mcp, a2a, integrations` | `localsetup-omniroute-integrations` |
-| `omniroute` | `skill` | `ls-omniroute-observability` | `integrations` | 50 | `omniroute, observability` | `localsetup-omniroute-observability` |
 | `integrations, omniroute` | `skill` | `ls-omniroute-proxy` | `integrations` | 50 | `omniroute, proxy, runtime` | `localsetup-omniroute-proxy` |
 | `omniroute` | `skill` | `ls-omniroute-update` | `integrations` | 50 | `omniroute, update, provenance` | `localsetup-omniroute-update` |
 | `integrations` | `skill` | `ls-scrapling` | `integrations` | 50 | `scrapling, extraction` | `localsetup-scrapling` |

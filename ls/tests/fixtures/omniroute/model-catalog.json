@@ -1,0 +1,93 @@
+{
+  "catalog": {
+    "combo": {
+      "active": true,
+      "models": [
+        {
+          "custom": false,
+          "id": "auto/smart",
+          "name": "auto/smart",
+          "type": "chat"
+        },
+        {
+          "custom": true,
+          "id": "team-private",
+          "name": "team-private",
+          "type": "chat"
+        }
+      ],
+      "provider": "Combo"
+    },
+    "provider-a": {
+      "active": true,
+      "models": [
+        {
+          "capabilities": {
+            "reasoning": false,
+            "structured_output": true,
+            "tool_calling": true,
+            "vision": true
+          },
+          "context_length": 131072,
+          "custom": false,
+          "id": "alias-a/model-x",
+          "input_modalities": [
+            "text",
+            "image"
+          ],
+          "max_output_tokens": 8192,
+          "name": "model-x",
+          "output_modalities": [
+            "text"
+          ],
+          "supported_endpoints": [
+            "chat",
+            "responses"
+          ],
+          "type": "chat"
+        },
+        {
+          "custom": false,
+          "id": "provider-a/model-x",
+          "name": "model-x",
+          "type": "chat"
+        },
+        {
+          "custom": false,
+          "id": "model-x",
+          "name": "model-x",
+          "type": "chat"
+        }
+      ],
+      "provider": "Provider A"
+    },
+    "provider-custom": {
+      "active": true,
+      "models": [
+        {
+          "custom": true,
+          "id": "alias-custom/custom-model",
+          "input_modalities": [
+            "text"
+          ],
+          "name": "custom-model",
+          "output_modalities": [
+            "embedding"
+          ],
+          "supported_endpoints": [
+            "embeddings"
+          ],
+          "type": "embedding"
+        },
+        {
+          "custom": true,
+          "id": "provider-custom/custom-model",
+          "name": "custom-model",
+          "type": "embedding"
+        }
+      ],
+      "provider": "Provider Custom"
+    }
+  },
+  "catalogVersion": "catalog-v3"
+}

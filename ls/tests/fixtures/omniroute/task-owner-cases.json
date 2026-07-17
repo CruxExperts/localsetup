@@ -1,0 +1,111 @@
+{
+  "client_profile_cases": [
+    {
+      "candidate_owners": [
+        "ls-omniroute",
+        "ls-omniroute-proxy",
+        "ls-omniroute-admin-automation",
+        "ls-omniroute-update"
+      ],
+      "profile_access": "read",
+      "task": "Read a current client profile and report OmniRoute compatibility without changing it.",
+      "task_state": "classified",
+      "terminal_owner": "ls-omniroute-proxy"
+    },
+    {
+      "candidate_owners": [
+        "ls-omniroute",
+        "ls-omniroute-proxy",
+        "ls-omniroute-admin-automation",
+        "ls-omniroute-update"
+      ],
+      "profile_access": "write",
+      "task": "Apply an approved OmniRoute client-profile change with mutation safeguards.",
+      "task_state": "classified",
+      "terminal_owner": "ls-omniroute-admin-automation"
+    }
+  ],
+  "direct_cases": [
+    {
+      "candidate_owners": [
+        "ls-omniroute",
+        "ls-omniroute-proxy",
+        "ls-omniroute-admin-automation",
+        "ls-omniroute-update"
+      ],
+      "route_class": "ambiguous_triage",
+      "task": "An OmniRoute incident has no classified operational target; triage it and determine whether it needs preflight or a focused owner.",
+      "task_state": "unclassified",
+      "terminal_owner": "ls-omniroute"
+    },
+    {
+      "candidate_owners": [
+        "ls-omniroute",
+        "ls-omniroute-proxy",
+        "ls-omniroute-admin-automation",
+        "ls-omniroute-update"
+      ],
+      "route_class": "read_discovery",
+      "task": "Inspect current models and providers without changing OmniRoute.",
+      "task_state": "classified",
+      "terminal_owner": "ls-omniroute-proxy"
+    },
+    {
+      "candidate_owners": [
+        "ls-omniroute",
+        "ls-omniroute-proxy",
+        "ls-omniroute-admin-automation",
+        "ls-omniroute-update"
+      ],
+      "route_class": "live_mutation",
+      "task": "Rotate an approved provider key after planning and snapshotting the current configuration.",
+      "task_state": "classified",
+      "terminal_owner": "ls-omniroute-admin-automation"
+    },
+    {
+      "candidate_owners": [
+        "ls-omniroute",
+        "ls-omniroute-proxy",
+        "ls-omniroute-admin-automation",
+        "ls-omniroute-update"
+      ],
+      "route_class": "source_coverage_maintenance",
+      "task": "Compare Localsetup OmniRoute coverage with the immutable upstream source.",
+      "task_state": "classified",
+      "terminal_owner": "ls-omniroute-update"
+    }
+  ],
+  "legacy_selector_requests": [
+    {
+      "expected": "rejected_no_alias",
+      "selector": "ls-omniroute-codex"
+    },
+    {
+      "expected": "rejected_no_alias",
+      "selector": "ls-omniroute-context"
+    },
+    {
+      "expected": "rejected_no_alias",
+      "selector": "ls-omniroute-integrations"
+    },
+    {
+      "expected": "rejected_no_alias",
+      "selector": "ls-omniroute-observability"
+    }
+  ],
+  "ordered_sequences": [
+    {
+      "candidate_owners": [
+        "ls-omniroute-proxy",
+        "ls-omniroute-admin-automation"
+      ],
+      "ordered_owners": [
+        "ls-omniroute-proxy",
+        "ls-omniroute-admin-automation"
+      ],
+      "task": "Inspect current state before applying an approved live mutation.",
+      "terminal_owner": "ls-omniroute-admin-automation"
+    }
+  ],
+  "schema_version": 3
+}

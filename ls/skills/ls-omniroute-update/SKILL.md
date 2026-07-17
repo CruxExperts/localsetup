@@ -2,16 +2,16 @@
 name: ls-omniroute-update
 description: Coordinate OmniRoute update workflows, including upstream skill discovery, consolidated Localsetup coverage comparison, freshness validation, and report-first import, update, modification, or removal planning. Use when listing, checking, updating, modifying, importing, or removing OmniRoute-derived Localsetup skills.
 metadata:
-  version: "1.0"
+  version: "1.1"
 extensions:
   omniroute:
     source_kind: localsetup-native
     local_role: update-workflow
     source_repo: https://github.com/diegosouzapw/OmniRoute
-    source_ref: main
-    source_commit: 0c7f756f922fe3c0408e41852577027b496489bf
-    package_version: 3.8.43
-    release_package_commit: b729a8f27364f072c87082e03bb8e122f3d76251
+    source_ref: v3.8.48
+    source_commit: 7ee5bbc64dbb03e967521227f2afffeb7c9dad1e
+    package_version: 3.8.48
+    release_package_commit: 7ee5bbc64dbb03e967521227f2afffeb7c9dad1e
 ---
 
 # Omni Route Update
@@ -47,9 +47,11 @@ Do not use this skill for live OmniRoute proxy/model discovery; use `ls-omnirout
 
 - Upstream repository: `https://github.com/diegosouzapw/OmniRoute`
 - Upstream skills root: `skills/`
-- Planning-time checked branch head: `0c7f756f922fe3c0408e41852577027b496489bf`
-- Current strict-replace source: OmniRoute `v3.8.43` at `0c7f756f922fe3c0408e41852577027b496489bf`
-- Upstream skill inventory: `43` files under `skills/*/SKILL.md`
+- Authorized immutable source: OmniRoute `v3.8.48` at `7ee5bbc64dbb03e967521227f2afffeb7c9dad1e`
+- Source tree: `4048504f76c6fb3dedd00ff2aa7250109308de99`
+- Upstream skill inventory: `44` files under `skills/*/SKILL.md`
+- Immutable inventory helper: `scripts/omniroute_inventory.py` derives skills, OpenAPI, routes, and `omniroute_*` tool receipts from the exact pinned Git object.
+- Retained Localsetup claim references are a separate local input and require explicit `--localsetup-root`; neither the mirror root nor local claim root path is emitted.
 
 Refresh these facts before a real import or update wave. Record the refreshed source in `references/source-ledger.md`. Treat the actual `skills/*/SKILL.md` inventory as authoritative when upstream prose has stale count text.
 
@@ -61,7 +63,7 @@ Run the read-only check from the Localsetup checkout:
 python3 ls/skills/ls-omniroute-update/scripts/omniroute_update.py check \
   --repo-root . \
   --source-repo https://github.com/diegosouzapw/OmniRoute.git \
-  --ref 0c7f756f922fe3c0408e41852577027b496489bf \
+  --ref 7ee5bbc64dbb03e967521227f2afffeb7c9dad1e \
   --output markdown
 ```
 
@@ -85,7 +87,7 @@ Use the freshness check when validating converted or consolidated OmniRoute skil
 python3 ls/skills/ls-omniroute-update/scripts/omniroute_update.py freshness \
   --repo-root . \
   --source-repo https://github.com/diegosouzapw/OmniRoute.git \
-  --ref 0c7f756f922fe3c0408e41852577027b496489bf \
+  --ref 7ee5bbc64dbb03e967521227f2afffeb7c9dad1e \
   --output markdown
 ```
 
@@ -101,7 +103,7 @@ extensions:
     source_kind: upstream-converted
     source_repo: https://github.com/diegosouzapw/OmniRoute
     source_path: skills/<skill>/SKILL.md
-    source_ref: 0c7f756f922fe3c0408e41852577027b496489bf
+    source_ref: 7ee5bbc64dbb03e967521227f2afffeb7c9dad1e
     source_commit: <commit-sha>
     source_commit_date: <iso-date>
     source_sha256: <sha256-of-source-skill-md>
@@ -116,7 +118,7 @@ Localsetup-native OmniRoute skills should record this frontmatter shape instead:
 extensions:
   omniroute:
     source_kind: localsetup-native
-    local_role: <main-router|proxy-discovery|admin-automation|observability|context-compression|integrations|codex-onboarding|update-workflow>
+    local_role: <main-router|proxy-discovery|admin-automation|update-workflow>
 ```
 
 ## Decision workflow
