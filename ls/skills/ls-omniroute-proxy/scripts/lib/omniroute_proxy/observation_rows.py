@@ -157,6 +157,22 @@ def _model_identity_provider_values(
     return provider_raw, alias_raw, root_raw
 
 
+def _catalog_model_lists_accepted(catalog: dict[Any, Any]) -> bool:
+    """Return whether every non-empty provider list has usable model evidence."""
+    for provider_key, bucket in catalog.items():
+        provider = _bounded_raw(provider_key)
+        models = bucket["models"]
+        if not models:
+            continue
+        if provider is None or not any(
+            isinstance(row, dict)
+            and _model_identity_provider_values(row, provider) is not None
+            for row in models
+        ):
+            return False
+    return True
+
+
 def _generic_model_list(payload: Any) -> list[Any] | None:
     if isinstance(payload, list):
         return payload
@@ -179,7 +195,8 @@ def source_payload_accepted(payload: Any, source_endpoint: str) -> bool:
         and isinstance(payload, dict)
         and "catalog" in payload
     ):
-        return _catalog_mapping(payload) is not None
+        catalog = _catalog_mapping(payload)
+        return catalog is not None and _catalog_model_lists_accepted(catalog)
     candidates = _generic_model_list(payload)
     if candidates is None:
         return False
@@ -281,6 +298,8 @@ def source_rows(
         catalog = _catalog_mapping(payload)
         if catalog is None:
             return [], invalid + 1
+        if not _catalog_model_lists_accepted(catalog):
+            return [], invalid + sum(len(bucket["models"]) for bucket in catalog.values())
         for provider_key, bucket in catalog.items():
             models = bucket["models"]
             provider = _bounded_raw(provider_key)

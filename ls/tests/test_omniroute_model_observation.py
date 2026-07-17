@@ -763,6 +763,28 @@ def test_zero_model_catalogs_are_valid_sources(payload: object) -> None:
     assert observation["truncation"]["models"]["invalid_rows"] == 0
 
 
+@pytest.mark.parametrize(
+    ("models", "expected_invalid_rows"),
+    [
+        ([{"error": "tenant-secret-row-error"}], 1),
+        (["tenant-secret-scalar-error"], 1),
+    ],
+)
+def test_catalog_model_lists_require_usable_identity_provider_rows(
+    models: list[object],
+    expected_invalid_rows: int,
+) -> None:
+    _load_probe()
+    rows = sys.modules["omniroute_proxy.observation_rows"]
+    payload = {"catalog": {"provider-a": {"models": models}}}
+
+    assert rows.source_payload_accepted(payload, "/api/models/catalog") is False
+    assert rows.source_rows(payload, "/api/models/catalog") == (
+        [],
+        expected_invalid_rows,
+    )
+
+
 def test_model_observation_rejects_total_source_failure_without_success_output(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
@@ -946,6 +968,148 @@ def test_model_observation_rejects_mapping_shaped_error_list_sources(
     )
     assert "tenant-secret" not in captured.err
     assert requested_paths == ["/api/models/catalog", "/v1/models"]
+
+
+@pytest.mark.parametrize(
+    "models",
+    [
+        [{"error": "tenant-secret-row-error"}],
+        ["tenant-secret-scalar-error"],
+    ],
+)
+def test_model_observation_rejects_unusable_catalog_model_lists(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    models: list[object],
+) -> None:
+    probe = _load_probe()
+    observation = sys.modules["omniroute_proxy.observation"]
+    cli = sys.modules["omniroute_proxy.cli"]
+    requested_paths: list[str] = []
+
+    class OfflineSession:
+        def __enter__(self) -> "OfflineSession":
+            return self
+
+        def __exit__(self, *_: object) -> bool:
+            return False
+
+    def mixed_fetch(
+        session: object,
+        url: str,
+        api_key: str | None,
+        timeout: float,
+        *,
+        include_payload: bool,
+    ) -> dict[str, object]:
+        assert isinstance(session, OfflineSession)
+        assert api_key is None
+        assert timeout == 5
+        assert include_payload is True
+        path = url.rsplit(".invalid", 1)[1]
+        requested_paths.append(path)
+        if path == "/api/models/catalog":
+            return {
+                "ok": True,
+                "status": 200,
+                "_payload": {"catalog": {"provider-a": {"models": models}}},
+            }
+        return {"ok": False, "status": 503, "error": "tenant-secret-v1-error"}
+
+    monkeypatch.setattr(observation.requests, "Session", OfflineSession)
+    monkeypatch.setattr(observation, "fetch_json", mixed_fetch)
+
+    with pytest.raises(
+        probe.ObservationError,
+        match="^observation_sources_unavailable$",
+    ):
+        probe.run_model_observation(
+            "https://proxy.invalid",
+            None,
+            5,
+            observed_at=OBSERVED_AT,
+        )
+    assert requested_paths == ["/api/models/catalog", "/v1/models"]
+
+    requested_paths.clear()
+    assert cli.main(["--model-observation", "--base-url", "https://proxy.invalid"]) == 2
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == (
+        "omniroute_discover.py: invalid input: observation_sources_unavailable\n"
+    )
+    assert "tenant-secret" not in captured.err
+    assert requested_paths == ["/api/models/catalog", "/v1/models"]
+
+
+def test_model_observation_accepts_partial_valid_catalog_model_lists(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    probe = _load_probe()
+    observation = sys.modules["omniroute_proxy.observation"]
+
+    class OfflineSession:
+        def __enter__(self) -> "OfflineSession":
+            return self
+
+        def __exit__(self, *_: object) -> bool:
+            return False
+
+    payload = {
+        "catalog": {
+            "provider-a": {
+                "models": [
+                    {"error": "tenant-secret-row-error"},
+                    "tenant-secret-scalar-error",
+                    {"id": "provider-a/valid-model", "root": "valid-model"},
+                ]
+            }
+        }
+    }
+
+    def mixed_fetch(
+        session: object,
+        url: str,
+        api_key: str | None,
+        timeout: float,
+        *,
+        include_payload: bool,
+    ) -> dict[str, object]:
+        assert isinstance(session, OfflineSession)
+        assert api_key is None
+        assert timeout == 5
+        assert include_payload is True
+        path = url.rsplit(".invalid", 1)[1]
+        if path == "/api/models/catalog":
+            return {"ok": True, "status": 200, "_payload": payload}
+        return {"ok": False, "status": 503, "error": "tenant-secret-v1-error"}
+
+    monkeypatch.setattr(observation.requests, "Session", OfflineSession)
+    monkeypatch.setattr(observation, "fetch_json", mixed_fetch)
+
+    result = probe.run_model_observation(
+        "https://proxy.invalid",
+        None,
+        5,
+        observed_at=OBSERVED_AT,
+    )
+
+    assert result["runtime"]["source_endpoints"] == ["/api/models/catalog"]
+    assert len(result["models"]) == 1
+    assert result["truncation"]["models"] == {
+        "input_rows": 3,
+        "invalid_rows": 2,
+        "duplicate_rows": 0,
+        "unique_models": 1,
+        "retained": 1,
+        "dropped": 0,
+        "truncated": False,
+    }
+    assert result["endpoint_status"] == [
+        {"path": "/api/models/catalog", "available": True, "status": 200},
+        {"path": "/v1/models", "available": False, "status": 503},
+    ]
+    assert "tenant-secret" not in json.dumps(result, sort_keys=True)
 
 
 def test_model_observation_accepts_partial_valid_wrapped_model_lists(
