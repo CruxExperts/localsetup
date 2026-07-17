@@ -16,6 +16,10 @@ FIXTURE = ROOT / "ls/tests/fixtures/omniroute/immutable-inventory-7ee5bbc.json"
 ENDPOINT_REFERENCE = (
     ROOT / "ls/skills/ls-omniroute-proxy/references/omniroute-endpoints.md"
 )
+ADMIN_ENDPOINT_MATRIX = (
+    ROOT
+    / "ls/skills/ls-omniroute-admin-automation/references/omniroute-endpoint-matrix.md"
+)
 UPDATE_WORKFLOW = ROOT / "ls/skills/ls-omniroute-update/references/update-workflow.md"
 UPDATE_SKILL = ROOT / "ls/skills/ls-omniroute-update/SKILL.md"
 DECISION_SHAPED_PROXY_TOOLS = {
@@ -251,7 +255,7 @@ def test_registered_tool_patterns_reject_plain_text_false_positives() -> None:
     )
 
 
-def test_retained_claims_parse_backticked_endpoint_first_tables_and_method_first_prose(
+def test_retained_claims_parse_endpoint_first_and_method_first_tables_and_prose(
     tmp_path: Path,
 ) -> None:
     module = _load_inventory()
@@ -276,6 +280,15 @@ def test_retained_claims_parse_backticked_endpoint_first_tables_and_method_first
         "| `/api/unbounded` | GET/POST/etc. |\n"
         "| `/api/arbitrary` | runtime GET |\n"
         "| `/api/unknown` | HTTP INVOKE |\n"
+        "\n| Method | Endpoint |\n"
+        "| --- | --- |\n"
+        "| GET | `/api/method-first` |\n"
+        "| GET/POST | `/api/method-multi` |\n"
+        "| HTTP GET | `/api/http-method-first` |\n"
+        "| HTTP GET/POST | `/api/http-method-multi` |\n"
+        "| INVOKE | `/api/unknown-method` |\n"
+        "| runtime GET | `/api/arbitrary-method` |\n"
+        "| GET/POST/etc. | `/api/unbounded-method` |\n"
         "\nGET /v1/models\n",
         encoding="utf-8",
     )
@@ -288,10 +301,16 @@ def test_retained_claims_parse_backticked_endpoint_first_tables_and_method_first
         if row["package"] == "ls-omniroute-proxy" and row["kind"] == "endpoint"
     } == {
         "GET /api/http-get",
+        "GET /api/http-method-first",
+        "GET /api/http-method-multi",
         "GET /api/http-multi",
+        "GET /api/method-first",
+        "GET /api/method-multi",
         "GET /api/models/catalog",
         "GET /v1/models",
+        "POST /api/http-method-multi",
         "POST /api/http-multi",
+        "POST /api/method-multi",
         "POST /api/http-post",
         "POST /v1/models",
     }
@@ -396,6 +415,37 @@ def test_actual_endpoint_reference_emits_every_bounded_endpoint_first_table_clai
 
     assert expected <= actual
     assert "POST /api/models/alias" not in actual
+
+
+def test_actual_admin_endpoint_matrix_emits_every_bounded_method_first_table_claim() -> None:
+    module = _load_inventory()
+    method_cell = re.compile(
+        r"(?:HTTP[ \t]+)?"
+        r"((?:DELETE|GET|HEAD|OPTIONS|PATCH|POST|PUT)"
+        r"(?:/(?:DELETE|GET|HEAD|OPTIONS|PATCH|POST|PUT))*)"
+    )
+    expected: set[str] = set()
+    for line in ADMIN_ENDPOINT_MATRIX.read_text(encoding="utf-8").splitlines():
+        cells = [cell.strip() for cell in line.split("|")[1:-1]]
+        if len(cells) < 2:
+            continue
+        match = method_cell.fullmatch(cells[0])
+        endpoint = cells[1].strip("`")
+        if match and endpoint.startswith("/"):
+            expected.update(
+                f"{method} {endpoint}" for method in match.group(1).split("/")
+            )
+
+    actual = {
+        row["claim"]
+        for row in module._retained_claims(ROOT)
+        if row["package"] == "ls-omniroute-admin-automation"
+        and row["kind"] == "endpoint"
+        and row["source_path"]
+        == ADMIN_ENDPOINT_MATRIX.relative_to(ROOT).as_posix()
+    }
+
+    assert expected <= actual
 
 
 def test_configuration_suffix_wildcards_are_allowlisted_route_only_and_deterministic() -> None:
@@ -612,7 +662,7 @@ def test_immutable_inventory_snapshot_is_well_formed() -> None:
         "7ee5bbc64dbb03e967521227f2afffeb7c9dad1e"
     )
     assert expected["counts"]["skills"] == 44
-    assert expected["counts"]["retained_claims_resolved"] == 143
+    assert expected["counts"]["retained_claims_resolved"] == 218
     assert expected["counts"]["retained_claims_unresolved"] == 0
     assert len(expected["registered_tool_names"]) == expected["counts"]["registered_tools"]
     assert expected["registered_tool_names"] == sorted(

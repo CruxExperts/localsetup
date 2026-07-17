@@ -47,6 +47,15 @@ CLAIM_ENDPOINT_FIRST_TABLE_RE = re.compile(
     r"(?:/(?:DELETE|GET|HEAD|OPTIONS|PATCH|POST|PUT))*)"
     r"[ \t]*\|"
 )
+CLAIM_METHOD_FIRST_TABLE_RE = re.compile(
+    r"(?m)^[ \t]*\|[ \t]*"
+    r"(?:HTTP[ \t]+)?"
+    r"((?:DELETE|GET|HEAD|OPTIONS|PATCH|POST|PUT)"
+    r"(?:/(?:DELETE|GET|HEAD|OPTIONS|PATCH|POST|PUT))*)"
+    r"[ \t]*\|[ \t]*`?"
+    r"(/[A-Za-z0-9._~!$&'()*+,;=:@%/{}<>\[\]*:-]+)"
+    r"`?[ \t]*\|"
+)
 CLAIM_TOOL_RE = re.compile(r"\bomniroute_[a-z0-9_]+\b")
 RETAINED_PACKAGES = (
     "ls-omniroute",
@@ -339,6 +348,9 @@ def _retained_claims(localsetup_root: Path) -> list[dict[str, str]]:
                 for method in methods.split("/"):
                     claims.add((package, "endpoint", f"{method} {_normalize_claim_path(route)}", relative))
             for route, methods in CLAIM_ENDPOINT_FIRST_TABLE_RE.findall(text):
+                for method in methods.split("/"):
+                    claims.add((package, "endpoint", f"{method} {_normalize_claim_path(route)}", relative))
+            for methods, route in CLAIM_METHOD_FIRST_TABLE_RE.findall(text):
                 for method in methods.split("/"):
                     claims.add((package, "endpoint", f"{method} {_normalize_claim_path(route)}", relative))
             for name in CLAIM_TOOL_RE.findall(text):

@@ -8,7 +8,6 @@ Routes in this matrix are current Localsetup guidance for OmniRoute administrati
 |---|---|---|
 | GET | /api/monitoring/health | mgmt |
 | GET | /api/telemetry/summary | mgmt |
-| GET | /api/system-info | mgmt |
 | GET | /api/init | mgmt |
 | POST | /api/restart | mgmt |
 | POST | /api/shutdown | mgmt |
@@ -20,7 +19,7 @@ Routes in this matrix are current Localsetup guidance for OmniRoute administrati
 | GET/POST | /api/providers | mgmt |
 | GET/PUT/DELETE | /api/providers/{id} | mgmt |
 | POST | /api/providers/{id}/test | mgmt |
-| GET/POST/PATCH/DELETE | /api/provider-nodes | mgmt |
+| GET/POST | /api/provider-nodes | mgmt |
 | GET/POST/PATCH/DELETE | /api/provider-models | mgmt |
 | POST | /api/providers/validate | mgmt |
 
@@ -29,7 +28,7 @@ Routes in this matrix are current Localsetup guidance for OmniRoute administrati
 | Method | Path | Auth |
 |---|---|---|
 | GET | /api/models/catalog | mgmt |
-| GET/POST/PATCH/DELETE | /api/models/alias | mgmt |
+| GET/PUT/DELETE | /api/models/alias | mgmt |
 | GET | /api/models/openrouter-catalog | mgmt |
 | GET | /v1/models | runtime |
 | GET | /v1beta/models | runtime |
@@ -39,15 +38,15 @@ Routes in this matrix are current Localsetup guidance for OmniRoute administrati
 
 | Method | Path | Auth |
 |---|---|---|
-| GET/POST/PATCH/DELETE | /api/combos | mgmt |
+| GET/POST | /api/combos | mgmt |
 | GET | /api/combos/metrics | mgmt |
-| GET/POST/PATCH/DELETE | /api/fallback/chains | mgmt |
+| GET/POST/DELETE | /api/fallback/chains | mgmt |
 
 ## Keys, limits, budget, resilience
 
 | Method | Path | Auth |
 |---|---|---|
-| GET/POST/DELETE | /api/keys | mgmt |
+| GET/POST | /api/keys | mgmt |
 | GET | /api/rate-limits | mgmt |
 | GET/POST | /api/rate-limit | mgmt |
 | GET/PATCH | /api/resilience | mgmt |
@@ -76,7 +75,7 @@ Routes in this matrix are current Localsetup guidance for OmniRoute administrati
 | GET | /api/db-backups/exportAll | mgmt |
 | POST | /api/sync/initialize | mgmt |
 | POST | /api/sync/cloud | mgmt |
-| GET/POST/DELETE | /api/sync/tokens | mgmt |
+| GET/POST | /api/sync/tokens | mgmt |
 | GET | /api/sync/bundle | mgmt |
 
 ## Policies and evals
