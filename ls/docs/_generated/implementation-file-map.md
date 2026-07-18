@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 3e1e2c2e2830bc991f263768d41bee75044e1159c5df3f7266d9feab94e17f75
+  source_provenance_hash: 99d1becb96389fe86c47b41eba266389f4336227ea26160b994a34df729a33a7
   emitter: generate-docs
 framework_version: 4.2.20
-source_commit: c269ae82bdff9a1573f0deb6ceba817d0f2f6890
-artifact_sha256: bea7321f0472023d8adfdf1e1f7bba780b282d0a4c5c29b7979fbab564a880a1
+source_commit: 12511d4a4dbced88539570bd56e169ff7672920d
+artifact_sha256: 795dafc805ca816f7b3050f439280d661d3135711d7888c3e0143f89d8709247
 ---
 # Implementation File Map
 
@@ -347,6 +347,13 @@ artifact_sha256: bea7321f0472023d8adfdf1e1f7bba780b282d0a4c5c29b7979fbab564a880a
 | `keep` | `ls/lib/path_resolution.py` |
 | `keep` | `ls/skills/ls-accessibility-review/SKILL.md` |
 | `keep` | `ls/skills/ls-agent-email-inbox/SKILL.md` |
+| `keep` | `ls/skills/ls-agent-routing/SKILL.md` |
+| `keep` | `ls/skills/ls-agent-routing/resources/model-capability-matrix/manifest.json` |
+| `keep` | `ls/skills/ls-agent-routing/resources/model-capability-matrix/schema.json` |
+| `keep` | `ls/skills/ls-agent-routing/resources/model-capability-matrix/snapshot.json` |
+| `keep` | `ls/skills/ls-agent-routing/schemas/routing-receipt.schema.json` |
+| `keep` | `ls/skills/ls-agent-routing/schemas/routing-request.schema.json` |
+| `keep` | `ls/skills/ls-agent-routing/scripts/agent_routing.py` |
 | `keep` | `ls/skills/ls-agentlens/SKILL.md` |
 | `keep` | `ls/skills/ls-agentlens/references/navigation.md` |
 | `keep` | `ls/skills/ls-agentlens/references/structure.md` |
@@ -875,6 +882,8 @@ artifact_sha256: bea7321f0472023d8adfdf1e1f7bba780b282d0a4c5c29b7979fbab564a880a
 | `keep` | `ls/tests/manifest_test_helpers.py` |
 | `keep` | `ls/tests/skill_smoke_commands.yaml` |
 | `keep` | `ls/tests/test_adapter_parser.py` |
+| `keep` | `ls/tests/test_agent_routing.py` |
+| `keep` | `ls/tests/test_agent_routing_package_install.py` |
 | `keep` | `ls/tests/test_candidate_skill_cli.py` |
 | `keep` | `ls/tests/test_cli_version.py` |
 | `keep` | `ls/tests/test_client_registry.py` |
