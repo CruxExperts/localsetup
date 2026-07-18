@@ -267,4 +267,4 @@ Use `release-push` only when the release wave explicitly includes publishing:
 uv run --locked python ls/tools/localsetup.py --source-root . release-push
 ```
 
-For release preparation without pushing, run `publish-preflight --base origin/main --head HEAD --fix` first; it creates the required version-sync/generated-doc commit before the guarded push.
+For release preparation without pushing, run `publish-preflight --base origin/main --head HEAD` first from a clean worktree. It prepares the direct version-sync candidate unstaged and returns `prepared_not_ready` when the candidate needs review and a separate generated-document receipt. Add `--fix` only when the tool should prepare and commit the required version-sync/generated-document slices before the guarded push.

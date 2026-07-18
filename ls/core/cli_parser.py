@@ -267,10 +267,22 @@ def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_har
     version_sync_p.add_argument("--stage", action="store_true")
     version_sync_p.add_argument("--commit", action="store_true")
 
-    publish_preflight_p = sub.add_parser("publish-preflight")
+    publish_preflight_p = sub.add_parser(
+        "publish-preflight",
+        help="Prepare an unstaged direct version-sync candidate, or commit it with --fix.",
+        description=(
+            "On a clean worktree, publish-preflight without --fix prepares an unstaged direct "
+            "version-sync candidate for review. Use --fix to prepare and commit the required "
+            "version and generated-document release slices."
+        ),
+    )
     publish_preflight_p.add_argument("--base")
     publish_preflight_p.add_argument("--head")
-    publish_preflight_p.add_argument("--fix", action="store_true")
+    publish_preflight_p.add_argument(
+        "--fix",
+        action="store_true",
+        help="Prepare and commit the release version and generated-document sync slices.",
+    )
 
     release_push_p = sub.add_parser("release-push")
     release_push_p.add_argument("push_args", nargs=argparse.REMAINDER)

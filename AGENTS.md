@@ -13,16 +13,12 @@ Keep this file aligned with the repo's actual workflow. If a rule also belongs i
 ## COIT Repository Mapping
 
 Apply the machine-wide Controlled Outcome Investigation and Termination (COIT)
-control to material Localsetup retries. Keep append-only per-problem records in
-`.codex/runs/`, binding each record to its invariant, minimal reproduction,
-affected gate, exact source/diff state, and `0/3` counter. A full cycle uses one
-serialized writer, deterministic validation, and independent
-adversarial/reproduction, contract/provenance, and release/regression critics
-before controller reconciliation. Renames, path moves, partial repairs, and
-changed reviewer wording do not reset the counter. Stop and document the
-problem as unresolvable after three failed full cycles, or immediately for a
-major blocker; do not begin dependent work or publish while an upstream gate is
-open.
+control to material Localsetup retries. Keep append-only records in
+`.codex/runs/`, binding each Localsetup release problem to its invariant,
+minimal reproduction, affected gate, and exact source/tree/diff state. The
+common policy alone determines COIT triggers, cycle and review requirements,
+counter changes, and terminal dispositions. Do not begin dependent Localsetup
+work or publish while a common COIT or blocker gate remains open.
 
 ## Project Structure & Module Organization
 
@@ -35,7 +31,7 @@ This repository packages Localsetup, a repo-local framework for agent context, s
 - `workers="$(uv run --locked python ls/tools/localsetup.py --source-root . test-workers)" && uv run --locked pytest -n "$workers" ls/tests -q`: run the full Python pytest suite using Localsetup's hardened worker default. Use this as final consolidation verification for broad/shared changes, release or publish readiness, dependency changes, or explicit user requests, not as the first validation step for routine edits.
 - `./install --directory . --tools codex --sync-env --non-interactive --yes`: test a local non-interactive install path for one platform and sync the uv environment.
 - `uv run --locked python ls/tools/generate_docs_artifacts.py --repo-root .` and `uv run --locked python ls/tools/localsetup.py --source-root . generate-docs`: refresh generated docs artifacts when documentation inputs change.
-- `uv run --locked python ls/tools/localsetup.py --source-root . publish-preflight --base <base-ref> --head HEAD`: check the publish-time version and generated-document state before pushing; add `--fix` only after feature/docs changes are committed and you want the tool to create the needed sync commits.
+- `uv run --locked python ls/tools/localsetup.py --source-root . publish-preflight --base <base-ref> --head HEAD`: from a clean worktree, deterministically prepare an unstaged direct version-sync candidate; a changed candidate returns `prepared_not_ready` for review and separate generated-document receipt work. No-flag preflight never stages or commits; only `--fix` prepares and commits the version and generated-document sync slices.
 - `uv run --locked python ls/tools/localsetup.py --source-root . release-push`: compute the outgoing Conventional Commit version bump, sync versioned docs, create the release sync commit, and push.
 
 ## Command Choice Clarification
@@ -138,9 +134,9 @@ Update the volatile fact index in the same work wave whenever a volatile claim i
 
 ## Agent-Team Workflow Defaults
 
-For non-trivial development work, act as the controller and default to subagent-first execution. Optimize for task throughput by keeping each work unit small enough to verify, keeping the main context compact, and actively looking for useful read-only, research, implementation, validation, or review work to delegate. The controller owns requirements clarification, plan quality, task decomposition, delegation, state tracking, verification, and final acceptance. Use direct single-agent work only for trivial one-step tasks, simple questions, cases where no useful independent subtask exists, or active tool/mode constraints that prevent delegation.
+For non-trivial development work, act as the controller and choose the smallest sufficient route. Use a bounded subagent only when it provides independent falsification, materially reduces wall time, or isolates a risky write scope; non-triviality, file count, uncertainty, or available slots alone do not require delegation. The controller owns requirements clarification, plan quality, task decomposition, delegation, state tracking, verification, and final acceptance.
 
-Use agent-team mode by default for non-trivial work, especially when work may touch more than one or two files, the code path is unclear, the area is unfamiliar, validation is required, or the task involves architecture, migrations, auth, data flow, concurrency, security, external integrations, tests, current external facts, broad search, long logs, or likely compaction risk. Before doing substantial work directly, first identify whether at least one `explorer`, `researcher`, `worker`, `tester`, or `reviewer` assignment can reduce risk, preserve context, or improve verification.
+When a team is useful, define its bounded roles and evidence before launch. Use direct single-agent work when no independent assignment improves evidence, latency, or isolation; do not create a scout or critic merely to satisfy a process tier.
 
 Normal fanout is one or two agents for non-trivial tasks. Use three only when the scopes are clearly independent discovery, research, or validation tasks. Treat configured thread capacity as operational headroom, not a target. Explicit user instructions, tool restrictions, sandbox/approval policy, and active modes override delegation defaults.
 

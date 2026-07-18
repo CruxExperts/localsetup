@@ -3,7 +3,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from ls.core.versioning import SemVer, publish_preflight
+from ls.core.versioning import SemVer, prepare_version_sync_candidate, publish_preflight
 from ls.tests.versioning_test_helpers import (
     copy_full_repo,
     init_git_repo,
@@ -36,6 +36,74 @@ def test_publish_preflight_fix_creates_release_and_generated_docs_commits(tmp_pa
     assert f"chore: sync release version {expected}" in subjects
     assert repo_version(repo) == SemVer.parse(expected)
     assert run(repo, "git", "status", "--short").stdout.strip() == ""
+
+
+def test_publish_preflight_prepares_unstaged_direct_sync_candidate(tmp_path: Path) -> None:
+    repo = copy_full_repo(tmp_path)
+    remote = tmp_path / "remote.git"
+    run(tmp_path, "git", "init", "--bare", str(remote))
+    init_git_repo(repo, remote)
+    expected = next_patch_version(repo)
+    facts_path = repo / "ls" / "docs" / "_generated" / "facts.json"
+    facts_before = json.loads(facts_path.read_text(encoding="utf-8"))
+
+    (repo / "feature.txt").write_text("feature\n", encoding="utf-8")
+    run(repo, "git", "add", "feature.txt")
+    run(repo, "git", "commit", "-m", "feat: prepare routine capability", "--no-verify")
+
+    result = publish_preflight(repo, base="origin/main", head="HEAD")
+
+    expected_paths = [
+        "README.md",
+        "VERSION",
+        "ls/README.md",
+        "ls/docs/VERSIONING.md",
+        "pyproject.toml",
+        "uv.lock",
+    ]
+    assert result["ok"] is False
+    assert result["fixed"] is False
+    assert result["prepared"] is True
+    assert result["reason"] == "prepared_not_ready"
+    assert result["prepared_paths"] == expected_paths
+    assert result["version_check"] == {
+        "ok": False,
+        "mode": "direct_sync_candidate",
+        "target_version": expected,
+    }
+    assert repo_version(repo) == SemVer.parse(expected)
+    assert run(repo, "git", "diff", "--cached", "--name-only").stdout.strip() == ""
+    assert run(repo, "git", "diff", "--name-only").stdout.splitlines() == expected_paths
+    facts = json.loads(facts_path.read_text(encoding="utf-8"))
+    assert facts["provenance"]["framework_version"] == facts_before["provenance"]["framework_version"]
+
+    idempotent = prepare_version_sync_candidate(repo, expected)
+    assert idempotent["changed_candidates"] == []
+    assert run(repo, "git", "diff", "--name-only").stdout.splitlines() == expected_paths
+
+
+def test_publish_preflight_without_fix_refuses_dirty_worktree_without_write(tmp_path: Path) -> None:
+    repo = copy_full_repo(tmp_path)
+    remote = tmp_path / "remote.git"
+    run(tmp_path, "git", "init", "--bare", str(remote))
+    init_git_repo(repo, remote)
+    original_version = repo_version(repo)
+
+    (repo / "scratch.txt").write_text("scratch\n", encoding="utf-8")
+    before_status = run(repo, "git", "status", "--short").stdout
+    before_diff = run(repo, "git", "diff", "--binary").stdout
+    before_staged = run(repo, "git", "diff", "--cached", "--name-only").stdout
+
+    result = publish_preflight(repo, base="origin/main", head="HEAD")
+
+    assert result["ok"] is False
+    assert result["fixed"] is False
+    assert result["reason"] == "dirty_worktree"
+    assert "scratch.txt" in result["dirty_worktree"]
+    assert repo_version(repo) == original_version
+    assert run(repo, "git", "status", "--short").stdout == before_status
+    assert run(repo, "git", "diff", "--binary").stdout == before_diff
+    assert run(repo, "git", "diff", "--cached", "--name-only").stdout == before_staged
 
 
 def test_publish_preflight_fix_keeps_no_bump_generated_docs_refresh_none(tmp_path: Path) -> None:
