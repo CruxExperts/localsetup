@@ -17,6 +17,11 @@ GENERATED_SOURCE_DIRTY_PATHS = {
 GENERATED_SOURCE_DIRTY_PREFIXES = (
     "ls/docs/_generated/",
 )
+GENERATED_RECEIPT_PATHS = {
+    "README.md",
+    "ls/docs/FEATURES.md",
+    "ls/docs/README.md",
+}
 VERSION_SYNC_SUBJECT_PREFIX = "chore: sync release version "
 GENERATED_DOCS_SUBJECT_PREFIX = "docs: refresh "
 
@@ -76,6 +81,10 @@ def is_generated_output_path(path: str) -> bool:
     )
 
 
+def is_generated_receipt_path(path: str) -> bool:
+    return path.strip().strip('"') in GENERATED_RECEIPT_PATHS
+
+
 def source_dirty(repo_root: Path) -> bool:
     completed = run_git(
         repo_root,
@@ -110,11 +119,15 @@ def release_sync_parent_dirty(repo_root: Path) -> bool:
     """Return the pre-commit dirty flag encoded by a generated release-sync commit."""
     if head_subject(repo_root).startswith(VERSION_SYNC_SUBJECT_PREFIX):
         return True
+    if generated_docs_terminal_is_release_sync(repo_root, "HEAD"):
+        return True
     merge_head_subject = subject_for_ref(repo_root, "HEAD^2")
-    return bool(merge_head_subject and merge_head_subject.startswith(VERSION_SYNC_SUBJECT_PREFIX))
+    if merge_head_subject and merge_head_subject.startswith(VERSION_SYNC_SUBJECT_PREFIX):
+        return True
+    return generated_docs_terminal_is_release_sync(repo_root, "HEAD^2")
 
 
-def generated_docs_source_ref(repo_root: Path, ref: str) -> str | None:
+def generated_docs_terminal_ref(repo_root: Path, ref: str) -> str | None:
     current = ref
     subject = subject_for_ref(repo_root, current) or ""
     if not subject.startswith(GENERATED_DOCS_SUBJECT_PREFIX):
@@ -122,7 +135,10 @@ def generated_docs_source_ref(repo_root: Path, ref: str) -> str | None:
 
     while subject.startswith(GENERATED_DOCS_SUBJECT_PREFIX):
         changed_paths = changed_paths_for_ref(repo_root, current)
-        if not changed_paths or any(not is_generated_output_path(path) for path in changed_paths):
+        if not changed_paths or any(
+            not (is_generated_output_path(path) or is_generated_receipt_path(path))
+            for path in changed_paths
+        ):
             return None
         parent = git_text(repo_root, ["rev-parse", f"{current}^"])
         if not parent:
@@ -131,6 +147,24 @@ def generated_docs_source_ref(repo_root: Path, ref: str) -> str | None:
         subject = subject_for_ref(repo_root, current) or ""
 
     return current
+
+
+def generated_docs_terminal_is_release_sync(repo_root: Path, ref: str) -> bool:
+    terminal = generated_docs_terminal_ref(repo_root, ref)
+    return bool(
+        terminal
+        and (subject_for_ref(repo_root, terminal) or "").startswith(VERSION_SYNC_SUBJECT_PREFIX)
+    )
+
+
+def generated_docs_source_ref(repo_root: Path, ref: str) -> str | None:
+    terminal = generated_docs_terminal_ref(repo_root, ref)
+    if not terminal:
+        return None
+    subject = subject_for_ref(repo_root, terminal) or ""
+    if subject.startswith(VERSION_SYNC_SUBJECT_PREFIX):
+        return git_text(repo_root, ["rev-parse", f"{terminal}^"])
+    return terminal
 
 
 def generated_artifact_parent_source_commit(repo_root: Path) -> str | None:

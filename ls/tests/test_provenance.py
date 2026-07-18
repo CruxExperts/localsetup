@@ -14,7 +14,12 @@ from ls.core.provenance import (
     source_tag,
 )
 from ls.core.lockfile import save_json
-from ls.core.provenance_source import generated_artifact_parent_source_commit
+from ls.core.provenance_source import (
+    generated_artifact_parent_source_commit,
+    generated_docs_source_ref,
+    is_generated_output_path,
+    is_generated_receipt_path,
+)
 
 
 def clean_git_env(**overrides: str) -> dict[str, str]:
@@ -242,6 +247,42 @@ def test_generated_artifact_provenance_walks_generated_commit_chain(tmp_path: Pa
 
     assert generated_mode["source_commit"] == source
     assert generated_mode["source_dirty"] is False
+
+
+def test_generated_receipt_provenance_uses_release_source_and_keeps_root_readme_dirty(
+    tmp_path: Path,
+) -> None:
+    repo = make_git_repo(tmp_path)
+    release_source = run(repo, "rev-parse", "HEAD")
+    release_source_tree = run(repo, "rev-parse", "HEAD^{tree}")
+
+    (repo / "VERSION").write_text("4.9.1\n", encoding="utf-8")
+    run(repo, "add", "VERSION")
+    run(repo, "commit", "-q", "-m", "chore: sync release version 4.9.1")
+
+    receipt_paths = [
+        repo / "README.md",
+        repo / "ls" / "docs" / "README.md",
+        repo / "ls" / "docs" / "FEATURES.md",
+    ]
+    assert all(is_generated_receipt_path(path.relative_to(repo).as_posix()) for path in receipt_paths)
+    assert not is_generated_output_path("README.md")
+    assert not is_generated_receipt_path("ls/docs/SKILLS.md")
+    for path in receipt_paths:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("generated release facts\n", encoding="utf-8")
+
+    run(repo, "add", *(str(path.relative_to(repo)) for path in receipt_paths))
+    run(repo, "commit", "-q", "-m", "docs: refresh release version artifacts")
+
+    assert generated_docs_source_ref(repo, "HEAD") == release_source
+    generated_mode = base_provenance(repo, emitter="test", generated_commit_parent=True)
+    assert generated_mode["source_commit"] == release_source
+    assert generated_mode["source_tree_sha"] == release_source_tree
+    assert generated_mode["source_dirty"] is True
+
+    (repo / "README.md").write_text("manual source edit\n", encoding="utf-8")
+    assert source_dirty(repo) is True
 
 
 def test_generated_artifact_provenance_uses_dirty_parent_for_release_sync(tmp_path: Path) -> None:
