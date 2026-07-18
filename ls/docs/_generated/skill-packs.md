@@ -5,7 +5,7 @@ localsetup_provenance:
   emitter: generate-docs
 framework_version: 4.2.20
 source_commit: c269ae82bdff9a1573f0deb6ceba817d0f2f6890
-artifact_sha256: 87dfe0619aed910b4a66f6fbce1436dbf4ff10358f6dfc807088e61299c710d3
+artifact_sha256: 109beaae302c4ca8a26ac36c6a6f017889b5ffa84cf3eb0cb6a4749fae98c30d
 ---
 # Skill And Workflow Packs
 
@@ -109,6 +109,7 @@ artifact_sha256: 87dfe0619aed910b4a66f6fbce1436dbf4ff10358f6dfc807088e61299c710d
 | `dev, integrations` | `skill` | `ls-web-scraping-patterns` | `development` | 60 | `workflow, guidance` | `localsetup-web-scraping-patterns` |
 | `integrations` | `skill` | `ls-workos` | `integrations` | 60 | `external-service, integration` | `localsetup-workos` |
 | `integrations` | `skill` | `ls-workos-widgets` | `integrations` | 60 | `external-service, integration` | `localsetup-workos-widgets` |
+| `experimental` | `skill` | `ls-agent-routing` | `specialized` | 70 | `agent, routing` | `localsetup-agent-routing` |
 | `specialized` | `skill` | `ls-arbiter` | `specialized` | 70 | `arbiter, review` | `localsetup-arbiter` |
 | `growth-content, specialized` | `skill` | `ls-humanizer` | `specialized` | 70 | `writing, editing` | `localsetup-humanizer` |
 | `specialized` | `skill` | `ls-kilo-boss-orchestrator` | `specialized` | 70 | `kilo, orchestration` | `localsetup-kilo-boss-orchestrator` |

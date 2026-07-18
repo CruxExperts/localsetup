@@ -198,7 +198,8 @@ packs:
   - ls-humanizer
   - ls-kilo-boss-orchestrator
   - ls-kilo-visual-output
-  experimental: []
+  experimental:
+  - ls-agent-routing
 workflow_packs:
   bootstrap:
   - ls-workflow-audit-framework
@@ -250,6 +251,13 @@ workflow_packs:
   experimental: []
 extensions:
   skill_taxonomy:
+    ls-agent-routing:
+      class: specialized
+      sort_priority: 70
+      tags:
+      - agent
+      - routing
+      owner_scope: skill
     ls-context:
       class: core
       sort_priority: 10

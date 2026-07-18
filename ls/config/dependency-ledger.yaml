@@ -1,5 +1,11 @@
 schema_version: 1
 nodes:
+  - id: resource:model-capability-matrix
+    kind: resource
+    name: model-capability-matrix
+  - id: skill:ls-agent-routing
+    kind: skill
+    name: ls-agent-routing
   - id: skill:ls-omniroute
     kind: skill
     name: ls-omniroute
@@ -13,6 +19,9 @@ nodes:
     kind: skill
     name: ls-omniroute-update
 edges:
+  - from: skill:ls-agent-routing
+    relation: requires
+    to: resource:model-capability-matrix
   - from: skill:ls-omniroute
     relation: requires
     to: skill:ls-omniroute-admin-automation

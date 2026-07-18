@@ -41,7 +41,7 @@
   ],
   "provenance": {
     "artifact_path": "ls/docs/_generated/facts.json",
-    "artifact_sha256": "18e45057071a47acbb25ecbd0399a95063c02e2dadb13eecb60069e51525b6a2",
+    "artifact_sha256": "79a15ccdc07282566adb3c5c2e943d0322fbfabb56381ee88e0467ff0223ba40",
     "emitter": "generate-docs",
     "framework_version": "4.2.20",
     "schema_version": 1,
@@ -52,7 +52,7 @@
     "source_tag": null,
     "source_tree_sha": "345e66bd4e6e5b243155a65ec1cf2af9f96707ce"
   },
-  "skill_count": 102,
+  "skill_count": 103,
   "skills": [
     {
       "class": "core",
@@ -1669,6 +1669,22 @@
       "tags": [
         "external-service",
         "integration"
+      ],
+      "version": "1.0"
+    },
+    {
+      "class": "specialized",
+      "id": "ls-agent-routing",
+      "name": "ls-agent-routing",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "ls/skills/ls-agent-routing/SKILL.md",
+      "sort_priority": 70,
+      "tags": [
+        "agent",
+        "routing"
       ],
       "version": "1.0"
     },

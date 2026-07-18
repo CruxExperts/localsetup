@@ -8,13 +8,13 @@ localsetup_provenance:
   emitter: generate-docs
 framework_version: 4.2.20
 source_commit: c269ae82bdff9a1573f0deb6ceba817d0f2f6890
-artifact_sha256: 7d029d171a034ba37bd899d72c8c29ba455b4a51fda0d5e1415f80f18468164f
+artifact_sha256: 17982e8906ad1f127a3cedebd78798b235c001c3f3bed10a7c56b4f265dcb433
 ---
 # Shipped skills catalog
 
 This page is generated from `ls/skills/*/SKILL.md`.
 
-Total shipped skills: 102
+Total shipped skills: 103
 
 | Skill ID | Class | Priority | Packs | Tags | Name | Version | Description |
 |---|---|---:|---|---|---|---|---|
@@ -116,6 +116,7 @@ Total shipped skills: 102
 | `ls-web-scraping-patterns` | `development` | 60 | `dev`, `integrations` | `workflow`, `guidance` | `ls-web-scraping-patterns` | `1.0` | Guide ethical web scraping patterns. Use for crawl scope, extraction, anti-abuse limits, browser scraping, structured data, and integration with Scrapling/Firecrawl. |
 | `ls-workos` | `integrations` | 60 | `integrations` | `external-service`, `integration` | `ls-workos` | `1.0` | Guide WorkOS integration work. Use for AuthKit, SSO, organizations, directory sync, audit logs, RBAC, FGA, MFA, and migration tasks. |
 | `ls-workos-widgets` | `integrations` | 60 | `integrations` | `external-service`, `integration` | `ls-workos-widgets` | `1.0` | Guide WorkOS Widgets integration. Use for Admin Portal, user-management, profile, domain verification, and SSO connection widgets. |
+| `ls-agent-routing` | `specialized` | 70 | `experimental` | `agent`, `routing` | `ls-agent-routing` | `1.0` | Select a reviewed LocalSetup Agent-* lane from a bundled static capability matrix without probing accounts or networks. |
 | `ls-arbiter` | `specialized` | 70 | `specialized` | `arbiter`, `review` | `ls-arbiter` | `1.3` | Push decisions to Arbiter Zebu for async human review. Use when you need human input on plans, architectural choices, or approval before proceeding. |
 | `ls-humanizer` | `specialized` | 70 | `growth-content`, `specialized` | `writing`, `editing` | `ls-humanizer` | `2.1.2` | Remove signs of AI-generated writing from text. Use when editing or reviewing text to make it sound more natural and human-written. Based on Wikipedia's comprehensive "Signs of AI writing" guide. Detects and fixes patterns including: inflated symbolism, promotional language, superficial -ing analyses, vague attributions, em dash overuse, rule of three, AI vocabulary words, negative parallelisms, and excessive conjunctive phrases. |
 | `ls-kilo-boss-orchestrator` | `specialized` | 70 | `specialized` | `kilo`, `orchestration` | `ls-kilo-boss-orchestrator` | `1.0` | Orchestrate Kilo headless boss-worker execution with repo-local state, watchdog leases, consensus validation, and safety gates. Use when running multi-agent autonomous loops that require planning, delegation, verifier checks, and high/critical discrepancy adjudication. |

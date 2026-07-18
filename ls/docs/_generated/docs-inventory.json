@@ -74,12 +74,12 @@
   ],
   "cli_commands": [],
   "counts": {
-    "docs": 441,
+    "docs": 442,
     "framework_docs": 66,
     "generated_docs": 5,
     "platforms": 6,
     "public_docs": 6,
-    "skills": 102,
+    "skills": 103,
     "workflow_packs": 34,
     "workflows": 24
   },
@@ -977,6 +977,16 @@
       "owner_package": "",
       "owner_skill": "",
       "path": "ls/skills/ls-agent-email-inbox/SKILL.md",
+      "status": "",
+      "version": ""
+    },
+    {
+      "class": "skill",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "ls/skills/ls-agent-routing/SKILL.md",
       "status": "",
       "version": ""
     },
@@ -4542,7 +4552,7 @@
   ],
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "e6a770c431e02bcbbe72bec33649de6bb0a7b55503a89542d95ce8465eeab63f",
+    "artifact_sha256": "1392153d0f46b44a8f8cb40a90aeb5ae11fd0b9b1d9a7ca422bbf3c46264db63",
     "emitter": "docs-align",
     "framework_version": "4.2.20",
     "schema_version": 1,
@@ -5976,6 +5986,20 @@
       "tags": [
         "external-service",
         "integration"
+      ]
+    },
+    {
+      "class": "specialized",
+      "name": "ls-agent-routing",
+      "owner_scope": "skill",
+      "packs": [
+        "experimental"
+      ],
+      "path": "ls/skills/ls-agent-routing",
+      "sort_priority": 70,
+      "tags": [
+        "agent",
+        "routing"
       ]
     },
     {

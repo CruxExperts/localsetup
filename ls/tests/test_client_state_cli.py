@@ -125,6 +125,435 @@ def test_state_allocate_and_verify_cli(tmp_path: Path, capsys) -> None:
     assert code == 1 and not verified["ok"]
 
 
+def test_state_telemetry_uses_only_the_fixed_child_and_zero_byte_payload(
+    tmp_path: Path, capsys
+) -> None:
+    repo = repository(tmp_path / "repo")
+    code, allocated = invoke(
+        capsys,
+        "state", "telemetry", "--client", "codex/codex-cli", "--scope", "repo",
+        "--directory", str(repo),
+    )
+
+    assert code == 0 and allocated["ok"]
+    assert allocated["state_path"] == ".codex/state/agent-routing"
+    artifact = repo / ".codex" / "state" / "agent-routing" / allocated["artifact"]
+    metadata = artifact.with_name(f"{artifact.name}.meta.json")
+    assert artifact.read_bytes() == b""
+    record = json.loads(metadata.read_text(encoding="utf-8"))
+    assert record["kind"] == "agent-routing-telemetry"
+    assert record["schema"] == "agent-routing-telemetry"
+    assert record["producer"] == "agent-routing"
+    assert record["consumers"] == []
+    assert record["content"]["size"] == 0
+    assert not list((repo / ".codex" / "state").glob("*.json"))
+    exclude = repo / ".git" / "info" / "exclude"
+    assert "/.codex/state/agent-routing/\n" in exclude.read_text(encoding="utf-8")
+    assert "/.codex/state/\n" not in exclude.read_text(encoding="utf-8")
+
+    code, verified = invoke(
+        capsys,
+        "state", "verify", "--client", "codex/codex-cli", "--scope", "repo",
+        "--directory", str(repo), "--child", "agent-routing", "--artifact", allocated["artifact"],
+    )
+    assert code == 0 and verified["ok"]
+
+
+def test_state_telemetry_rejects_child_identity_swap_after_allocation_before_exclusion(
+    tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = repository(tmp_path / "repo")
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    exclude = repo / ".git" / "info" / "exclude"
+    before = exclude.read_bytes()
+    original = cli_client_state_commands.plan_git_exclude
+    original_root = repo / ".codex" / "state" / "agent-routing-prior"
+
+    def plan_then_swap(location, **kwargs):
+        assert location.child == "agent-routing"
+        assert kwargs == {"child_linearized": True}
+        location.root.rename(original_root)
+        location.root.symlink_to(outside, target_is_directory=True)
+        return original(location)
+
+    monkeypatch.setattr(cli_client_state_commands, "plan_git_exclude", plan_then_swap)
+    code, payload = invoke(
+        capsys,
+        "state", "telemetry", "--client", "codex/codex-cli", "--scope", "repo",
+        "--directory", str(repo),
+    )
+
+    assert code == 2
+    assert payload["error"]["code"] in {"stale_state_binding", "unsafe_state_path"}
+    assert exclude.read_bytes() == before
+    assert b"/.codex/state/agent-routing/\n" not in exclude.read_bytes()
+    assert b"/.codex/state/\n" not in exclude.read_bytes()
+    assert not list(outside.iterdir())
+    allocated = list(original_root.glob("agent-routing-*-routing-telemetry.json"))
+    assert len(allocated) == 1
+    assert allocated[0].parent == original_root
+    assert allocated[0].read_bytes() == b""
+
+
+def test_state_telemetry_linearizes_after_allocation_and_final_exclude_apply(
+    tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = repository(tmp_path / "repo")
+    events: list[str] = []
+    original_bind = cli_client_state_commands.bind_state_location
+    original_allocate = cli_client_state_commands.allocate_artifact
+    original_plan = cli_client_state_commands.plan_git_exclude
+    original_apply = cli_client_state_commands.apply_git_exclude
+
+    def record_bind(location):
+        events.append("bind")
+        return original_bind(location)
+
+    def record_allocate(location, **kwargs):
+        result = original_allocate(location, **kwargs)
+        events.append("allocate")
+        return result
+
+    def record_plan(location, **kwargs):
+        events.append("plan")
+        return original_plan(location, **kwargs)
+
+    def record_apply(plan):
+        events.append("apply-enter")
+        result = original_apply(plan)
+        events.append("apply-return")
+        return result
+
+    monkeypatch.setattr(cli_client_state_commands, "bind_state_location", record_bind)
+    monkeypatch.setattr(cli_client_state_commands, "allocate_artifact", record_allocate)
+    monkeypatch.setattr(cli_client_state_commands, "plan_git_exclude", record_plan)
+    monkeypatch.setattr(cli_client_state_commands, "apply_git_exclude", record_apply)
+
+    code, payload = invoke(
+        capsys,
+        "state", "telemetry", "--client", "codex/codex-cli", "--scope", "repo",
+        "--directory", str(repo),
+    )
+
+    assert code == 0 and payload["ok"]
+    assert events == ["bind", "allocate", "plan", "apply-enter", "apply-return"]
+
+
+def test_state_child_requires_explicit_scope(tmp_path: Path, capsys) -> None:
+    repo = repository(tmp_path / "repo")
+    code, payload = invoke(
+        capsys,
+        "state", "path", "--client", "codex/codex-cli", "--directory", str(repo),
+        "--child", "agent-routing",
+    )
+
+    assert code == 2
+    assert payload["error"]["code"] == "invalid_state_child"
+
+
+def _replace_cli_bound_child(location, target: str, outside: Path) -> Path:
+    if target == "parent":
+        prior = location.parent_root.with_name(f"{location.parent_root.name}-prior")
+        location.parent_root.rename(prior)
+        location.parent_root.symlink_to(outside, target_is_directory=True)
+        return prior / location.child
+    prior = location.root.with_name(f"{location.root.name}-prior")
+    location.root.rename(prior)
+    location.root.symlink_to(outside, target_is_directory=True)
+    return prior
+
+
+def test_state_allocate_repo_child_uses_child_only_exclusion_and_verifies(
+    tmp_path: Path, capsys
+) -> None:
+    repo = repository(tmp_path / "repo")
+    code, allocated = invoke(
+        capsys,
+        "state", "allocate", "--client", "codex/codex-cli", "--scope", "repo",
+        "--directory", str(repo), "--child", "agent-routing", *allocation_args(),
+    )
+
+    assert code == 0 and allocated["ok"]
+    assert allocated["state_path"] == ".codex/state/agent-routing"
+    exclude = repo / ".git" / "info" / "exclude"
+    assert b"/.codex/state/agent-routing/\n" in exclude.read_bytes()
+    assert b"/.codex/state/\n" not in exclude.read_bytes()
+    code, verified = invoke(
+        capsys,
+        "state", "verify", "--client", "codex/codex-cli", "--scope", "repo",
+        "--directory", str(repo), "--child", "agent-routing", "--artifact", allocated["artifact"],
+    )
+    assert code == 0 and verified["ok"]
+
+
+def test_state_allocate_repo_child_allocates_before_special_exclude_apply(
+    tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = repository(tmp_path / "repo")
+    events: list[str] = []
+    original_bind = cli_client_state_commands.bind_state_location
+    original_preflight = cli_client_state_commands.preflight_artifact_request
+    original_allocate = cli_client_state_commands.allocate_artifact
+    original_plan = cli_client_state_commands.plan_git_exclude
+    original_apply = cli_client_state_commands.apply_git_exclude
+
+    def record_bind(location):
+        events.append("bind")
+        return original_bind(location)
+
+    def record_preflight(location, request):
+        events.append("preflight")
+        return original_preflight(location, request)
+
+    def record_allocate(location, **kwargs):
+        result = original_allocate(location, **kwargs)
+        events.append("allocate")
+        return result
+
+    def record_plan(location, **kwargs):
+        assert kwargs == {"child_linearized": True}
+        events.append("plan")
+        return original_plan(location, **kwargs)
+
+    def record_apply(plan):
+        events.append("apply-enter")
+        result = original_apply(plan)
+        events.append("apply-return")
+        return result
+
+    monkeypatch.setattr(cli_client_state_commands, "bind_state_location", record_bind)
+    monkeypatch.setattr(cli_client_state_commands, "preflight_artifact_request", record_preflight)
+    monkeypatch.setattr(cli_client_state_commands, "allocate_artifact", record_allocate)
+    monkeypatch.setattr(cli_client_state_commands, "plan_git_exclude", record_plan)
+    monkeypatch.setattr(cli_client_state_commands, "apply_git_exclude", record_apply)
+    code, payload = invoke(
+        capsys,
+        "state", "allocate", "--client", "codex/codex-cli", "--scope", "repo",
+        "--directory", str(repo), "--child", "agent-routing", *allocation_args(),
+    )
+
+    assert code == 0 and payload["ok"]
+    assert events == ["bind", "preflight", "allocate", "plan", "apply-enter", "apply-return"]
+
+
+@pytest.mark.parametrize("exclude_present", [False, True])
+@pytest.mark.parametrize("target", ["parent", "child"])
+def test_state_allocate_repo_child_precommit_swap_preserves_exclude_and_residual(
+    tmp_path: Path,
+    capsys,
+    monkeypatch: pytest.MonkeyPatch,
+    exclude_present: bool,
+    target: str,
+) -> None:
+    repo = repository(tmp_path / "repo")
+    exclude = repo / ".git" / "info" / "exclude"
+    if not exclude_present:
+        exclude.unlink()
+    before = exclude.read_bytes() if exclude_present else None
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    original = git_exclude._require_state_binding
+    checks = 0
+    final_check = 5 if exclude_present else 3
+    residual: Path | None = None
+
+    def replace_before_final_state_check(plan) -> None:
+        nonlocal checks
+        nonlocal residual
+        checks += 1
+        if checks == final_check:
+            assert plan.state_binding_mode == "child-linearized"
+            assert plan.state_location is not None
+            residual = _replace_cli_bound_child(plan.state_location, target, outside)
+        original(plan)
+
+    monkeypatch.setattr(git_exclude, "_require_state_binding", replace_before_final_state_check)
+    content = tmp_path / "caller.md"
+    content.write_bytes(b"caller bytes\n")
+    code, payload = invoke(
+        capsys,
+        "state", "allocate", "--client", "codex/codex-cli", "--scope", "repo",
+        "--directory", str(repo), "--child", "agent-routing", *allocation_args(),
+        "--content-file", str(content),
+    )
+
+    assert code == 2 and payload["error"]["code"] in {"stale_state_binding", "unsafe_state_path"}
+    assert checks == final_check and residual is not None
+    assert (exclude.read_bytes() if exclude.exists() else None) == before
+    assert b"/.codex/state/\n" not in (exclude.read_bytes() if exclude.exists() else b"")
+    assert list(outside.iterdir()) == []
+    assert content.read_bytes() == b"caller bytes\n"
+    assert any(path.is_file() for path in residual.iterdir())
+
+
+@pytest.mark.parametrize("exclude_present", [False, True])
+@pytest.mark.parametrize("target", ["parent", "child"])
+def test_state_path_repo_child_precommit_swap_preserves_exclude_without_artifacts(
+    tmp_path: Path,
+    capsys,
+    monkeypatch: pytest.MonkeyPatch,
+    exclude_present: bool,
+    target: str,
+) -> None:
+    repo = repository(tmp_path / "repo")
+    exclude = repo / ".git" / "info" / "exclude"
+    if not exclude_present:
+        exclude.unlink()
+    before = exclude.read_bytes() if exclude_present else None
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    original = git_exclude._require_state_binding
+    checks = 0
+    final_check = 5 if exclude_present else 3
+    residual: Path | None = None
+
+    def replace_before_final_state_check(plan) -> None:
+        nonlocal checks
+        nonlocal residual
+        checks += 1
+        if checks == final_check:
+            assert plan.state_binding_mode == "child-linearized"
+            assert plan.state_location is not None
+            residual = _replace_cli_bound_child(plan.state_location, target, outside)
+        original(plan)
+
+    monkeypatch.setattr(git_exclude, "_require_state_binding", replace_before_final_state_check)
+    code, payload = invoke(
+        capsys,
+        "state", "path", "--client", "codex/codex-cli", "--scope", "repo",
+        "--directory", str(repo), "--child", "agent-routing", "--apply-exclude",
+    )
+
+    assert code == 2 and not payload["ok"]
+    assert payload["error"]["code"] in {"stale_state_binding", "unsafe_state_path"}
+    assert set(payload) == {"error", "ok"}
+    assert checks == final_check and residual is not None
+    current = exclude.read_bytes() if exclude.exists() else None
+    assert current == before
+    assert b"/.codex/state/agent-routing/\n" not in (current or b"")
+    assert b"/.codex/state/\n" not in (current or b"")
+    assert list(outside.iterdir()) == []
+    assert list(residual.iterdir()) == []
+
+
+@pytest.mark.parametrize("exclude_present", [False, True])
+@pytest.mark.parametrize("target", ["parent", "child"])
+@pytest.mark.parametrize("route", ["allocate", "telemetry", "path"])
+def test_repo_child_routes_linearize_postwrite_state_replacements(
+    tmp_path: Path,
+    capsys,
+    monkeypatch: pytest.MonkeyPatch,
+    exclude_present: bool,
+    target: str,
+    route: str,
+) -> None:
+    repo = repository(tmp_path / f"repo-{route}-{target}-{exclude_present}")
+    exclude = repo / ".git" / "info" / "exclude"
+    if not exclude_present:
+        exclude.unlink()
+    before = exclude.read_bytes() if exclude_present else b""
+    outside = tmp_path / f"outside-{route}-{target}-{exclude_present}"
+    outside.mkdir()
+    original_state = git_exclude._require_state_binding
+    original_effective_ignore = git_exclude._effective_ignore
+    bound_location = None
+    injected = False
+
+    def remember_special_plan(plan) -> None:
+        nonlocal bound_location
+        if plan.state_binding_mode == "child-linearized":
+            bound_location = plan.state_location
+        original_state(plan)
+
+    def confirm_then_replace(git_root: Path, entry: str) -> bool:
+        nonlocal injected
+        ignored = original_effective_ignore(git_root, entry)
+        if not injected and ignored and entry == "/.codex/state/agent-routing/":
+            assert bound_location is not None
+            injected = True
+            _replace_cli_bound_child(bound_location, target, outside)
+        return ignored
+
+    monkeypatch.setattr(git_exclude, "_require_state_binding", remember_special_plan)
+    monkeypatch.setattr(git_exclude, "_effective_ignore", confirm_then_replace)
+    if route == "allocate":
+        args = [
+            "state", "allocate", "--client", "codex/codex-cli", "--scope", "repo",
+            "--directory", str(repo), "--child", "agent-routing", *allocation_args(),
+        ]
+    elif route == "telemetry":
+        args = [
+            "state", "telemetry", "--client", "codex/codex-cli", "--scope", "repo",
+            "--directory", str(repo),
+        ]
+    else:
+        args = [
+            "state", "path", "--client", "codex/codex-cli", "--scope", "repo",
+            "--directory", str(repo), "--child", "agent-routing", "--apply-exclude",
+        ]
+    code, payload = invoke(capsys, *args)
+
+    assert code == 0 and payload["ok"] and payload["exclude"]["action"] == "applied"
+    assert injected and exclude.read_bytes() == before + b"/.codex/state/agent-routing/\n"
+    assert b"/.codex/state/\n" not in exclude.read_bytes()
+    assert list(outside.iterdir()) == []
+    if route == "telemetry":
+        residual_root = (
+            repo / ".codex" / "state-prior" / "agent-routing"
+            if target == "parent"
+            else repo / ".codex" / "state" / "agent-routing-prior"
+        )
+        assert (residual_root / payload["artifact"]).read_bytes() == b""
+
+
+@pytest.mark.parametrize("route", ["allocate", "telemetry", "path"])
+def test_global_child_routes_keep_not_applicable_default_exclusion(
+    tmp_path: Path,
+    capsys,
+    monkeypatch: pytest.MonkeyPatch,
+    route: str,
+) -> None:
+    plain = tmp_path / "plain"
+    plain.mkdir()
+    home = tmp_path / "home"
+    monkeypatch.setenv("CODEX_HOME", str(home / "codex-home"))
+    calls: list[dict] = []
+    original_plan = cli_client_state_commands.plan_git_exclude
+
+    def record_default_plan(location, **kwargs):
+        calls.append(kwargs)
+        return original_plan(location, **kwargs)
+
+    monkeypatch.setattr(cli_client_state_commands, "plan_git_exclude", record_default_plan)
+    if route == "allocate":
+        args = [
+            "--home", str(home), "state", "allocate", "--client", "codex/codex-cli",
+            "--scope", "global", "--directory", str(plain), "--child", "agent-routing",
+            *allocation_args(),
+        ]
+    elif route == "telemetry":
+        args = [
+            "--home", str(home), "state", "telemetry", "--client", "codex/codex-cli",
+            "--scope", "global", "--directory", str(plain),
+        ]
+    else:
+        args = [
+            "--home", str(home), "state", "path", "--client", "codex/codex-cli",
+            "--scope", "global", "--directory", str(plain), "--child", "agent-routing",
+            "--apply-exclude",
+        ]
+    code, payload = invoke(capsys, *args)
+
+    assert code == 0 and payload["ok"]
+    assert payload["exclude"] == {"action": "not-applicable", "entry": None}
+    assert calls == [{}]
+    assert not (plain / ".git").exists()
+    if route == "telemetry":
+        artifact = home / "codex-home" / "state" / "agent-routing" / payload["artifact"]
+        assert artifact.read_bytes() == b""
+
+
 def test_state_cli_broken_gitdir_is_private_and_never_allocates_global_state(
     tmp_path: Path, capsys
 ) -> None:

@@ -29,6 +29,8 @@ class ExcludePlan:
     exclude_present: bool | None = field(default=None, repr=False)
     exclude_device: int | None = field(default=None, repr=False)
     exclude_inode: int | None = field(default=None, repr=False)
+    state_location: StateLocation | None = field(default=None, repr=False)
+    state_binding_mode: str = field(default="strict", repr=False)
 
     def payload(self) -> dict[str, str | None]:
         return {"action": self.action, "entry": self.entry}
@@ -235,6 +237,12 @@ def _require_append_tokens(plan: ExcludePlan) -> None:
         raise ClientStateError("Git exclude plan has inconsistent identity bindings", code="stale_state_binding")
 
 
+def _require_state_binding(plan: ExcludePlan) -> None:
+    if plan.state_location is None:
+        raise ClientStateError("Git exclude plan is missing state binding", code="stale_state_binding")
+    refresh_state_location(plan.state_location)
+
+
 def _require_base_bindings(
     plan: ExcludePlan,
     path: Path,
@@ -310,8 +318,31 @@ def _raise_ambiguous(cause: BaseException | None = None) -> None:
     raise error from cause
 
 
-def plan_git_exclude(location: StateLocation) -> ExcludePlan:
-    current = refresh_state_location(location, allow_created_roots=True)
+def _child_linearized_location(location: StateLocation) -> StateLocation:
+    """Validate the narrow internal state-binding mode before planning a write."""
+    if (
+        location.scope != "repo"
+        or location.git is None
+        or location.child is None
+        or location.owner_identity is None
+        or location.parent_identity is None
+        or location.root_identity is None
+    ):
+        raise ClientStateError(
+            "child-linearized Git exclude planning requires a bound repo child",
+            code="stale_state_binding",
+        )
+    return refresh_state_location(location)
+
+
+def plan_git_exclude(
+    location: StateLocation, *, child_linearized: bool = False
+) -> ExcludePlan:
+    current = (
+        _child_linearized_location(location)
+        if child_linearized
+        else refresh_state_location(location, allow_created_roots=True)
+    )
     if current.scope != "repo":
         return ExcludePlan("not-applicable", None, None, None)
     assert current.git is not None
@@ -360,6 +391,8 @@ def plan_git_exclude(location: StateLocation) -> ExcludePlan:
                     *_identity(parent_details),
                     exclude_present,
                     *exclude_identity,
+                    state_location=current,
+                    state_binding_mode="child-linearized" if child_linearized else "strict",
                 )
                 _require_base_bindings(plan, path, root_fd, parent_fd)
                 if exclude_fd is None:
@@ -368,7 +401,11 @@ def plan_git_exclude(location: StateLocation) -> ExcludePlan:
                     _require_entry_binding(parent_fd, path.name, exclude_fd, label="Git info/exclude")
                 _require_utf8(data)
                 ignored = _effective_ignore(current.git.root, entry)
-                after = refresh_state_location(location, allow_created_roots=True)
+                after = (
+                    _child_linearized_location(location)
+                    if child_linearized
+                    else refresh_state_location(location, allow_created_roots=True)
+                )
                 if after.git is None:
                     raise ClientStateError("Git exclude binding changed", code="stale_state_binding")
                 _require_base_bindings(plan, path, root_fd, parent_fd)
@@ -405,6 +442,7 @@ def apply_git_exclude(plan: ExcludePlan) -> ExcludePlan:
     if plan.exclude_path is None or plan.entry is None or plan.git_root is None:
         raise ClientStateError("Git exclude plan is incomplete", code="stale_state_binding")
     _require_append_tokens(plan)
+    _require_state_binding(plan)
     path = plan.exclude_path
     try:
         root_fd, parent_fd = _open_bound_directories(plan.git_root, path.parent)
@@ -414,6 +452,7 @@ def apply_git_exclude(plan: ExcludePlan) -> ExcludePlan:
     lock_fd: int | None = None
     created_exclude = False
     write_started = False
+    mutable_exclude_started = False
     lock_name = f"{path.name}.localsetup.lock"
     try:
         _require_base_bindings(plan, path, root_fd, parent_fd)
@@ -462,6 +501,8 @@ def apply_git_exclude(plan: ExcludePlan) -> ExcludePlan:
             raise ClientStateError("Git exclude lock is unsafe or unavailable", code="unsafe_exclude") from exc
 
         def require_live() -> None:
+            if plan.state_binding_mode != "child-linearized" or not mutable_exclude_started:
+                _require_state_binding(plan)
             _require_base_bindings(plan, path, root_fd, parent_fd)
             assert lock_fd is not None
             _require_entry_binding(parent_fd, lock_name, lock_fd, label="Git exclude lock")
@@ -480,6 +521,7 @@ def apply_git_exclude(plan: ExcludePlan) -> ExcludePlan:
                     action="already-ignored",
                     expected_digest=_digest(b""),
                 )
+            mutable_exclude_started = True
             exclude_fd = _create_mutable_regular_exclusive(parent_fd, path.name, append=True)
             created_exclude = True
             os.fchmod(exclude_fd, 0o600)
@@ -502,6 +544,8 @@ def apply_git_exclude(plan: ExcludePlan) -> ExcludePlan:
         newline = b"\r\n" if b"\r\n" in current and b"\n" not in current.replace(b"\r\n", b"") else b"\n"
         separator = b"" if not current or current.endswith((b"\n", b"\r")) else newline
         owned = separator + plan.entry.encode("utf-8") + newline
+        require_live()
+        mutable_exclude_started = True
         write_started = True
         try:
             written = os.write(exclude_fd, owned)

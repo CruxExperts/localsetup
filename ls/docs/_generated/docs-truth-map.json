@@ -42,7 +42,7 @@
     ],
     "provenance": {
       "artifact_path": "ls/docs/_generated/facts.json",
-      "artifact_sha256": "18e45057071a47acbb25ecbd0399a95063c02e2dadb13eecb60069e51525b6a2",
+      "artifact_sha256": "79a15ccdc07282566adb3c5c2e943d0322fbfabb56381ee88e0467ff0223ba40",
       "emitter": "generate-docs",
       "framework_version": "4.2.20",
       "schema_version": 1,
@@ -53,7 +53,7 @@
       "source_tag": null,
       "source_tree_sha": "345e66bd4e6e5b243155a65ec1cf2af9f96707ce"
     },
-    "skill_count": 102,
+    "skill_count": 103,
     "skills": [
       {
         "class": "core",
@@ -1675,6 +1675,22 @@
       },
       {
         "class": "specialized",
+        "id": "ls-agent-routing",
+        "name": "ls-agent-routing",
+        "owner_scope": "skill",
+        "packs": [
+          "experimental"
+        ],
+        "path": "ls/skills/ls-agent-routing/SKILL.md",
+        "sort_priority": 70,
+        "tags": [
+          "agent",
+          "routing"
+        ],
+        "version": "1.0"
+      },
+      {
+        "class": "specialized",
         "id": "ls-arbiter",
         "name": "ls-arbiter",
         "owner_scope": "skill",
@@ -1898,10 +1914,10 @@
       "skill-lifecycle",
       "specialized"
     ],
-    "count": 102,
+    "count": 103,
     "provenance": {
       "artifact_path": "ls/docs/_generated/skill-taxonomy.json",
-      "artifact_sha256": "5c38ecc0814a110b4fdba916c4dad76ec15f31ed3e43a87e842186978f4d51a1",
+      "artifact_sha256": "9c6039b42d191945bc6078714b2a3b702b3221c13c2021c700cafa399870a3cc",
       "emitter": "generate-docs",
       "framework_version": "4.2.20",
       "schema_version": 1,
@@ -3338,6 +3354,20 @@
       },
       {
         "class": "specialized",
+        "id": "ls-agent-routing",
+        "owner_scope": "skill",
+        "packs": [
+          "experimental"
+        ],
+        "path": "ls/skills/ls-agent-routing",
+        "sort_priority": 70,
+        "tags": [
+          "agent",
+          "routing"
+        ]
+      },
+      {
+        "class": "specialized",
         "id": "ls-arbiter",
         "owner_scope": "skill",
         "packs": [
@@ -3397,7 +3427,7 @@
   },
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "d88b26fcaa87106c15deaeeda85d07f3df8e9fe5ed87c771cde391c22accb24e",
+    "artifact_sha256": "12fb2e45352f63f889fb1af2d3baaef4b143d1976e9f90a524d0771f6b91defe",
     "emitter": "docs-align",
     "framework_version": "4.2.20",
     "schema_version": 1,
@@ -3754,7 +3784,7 @@
         "ls/skills/ls-*/SKILL.md",
         "ls/config/pack.yaml"
       ],
-      "value": 102
+      "value": 103
     },
     "skill_taxonomy": {
       "sources": [
@@ -3771,7 +3801,7 @@
           "skill-lifecycle",
           "specialized"
         ],
-        "count": 102,
+        "count": 103,
         "schema_version": 1,
         "skills": [
           {
@@ -5194,6 +5224,20 @@
             "tags": [
               "external-service",
               "integration"
+            ]
+          },
+          {
+            "class": "specialized",
+            "id": "ls-agent-routing",
+            "owner_scope": "skill",
+            "packs": [
+              "experimental"
+            ],
+            "path": "ls/skills/ls-agent-routing",
+            "sort_priority": 70,
+            "tags": [
+              "agent",
+              "routing"
             ]
           },
           {

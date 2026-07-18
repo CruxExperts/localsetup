@@ -8,7 +8,7 @@ localsetup_provenance:
   emitter: generate-docs
 framework_version: 4.2.20
 source_commit: c269ae82bdff9a1573f0deb6ceba817d0f2f6890
-artifact_sha256: fb7371ef5ce3fe48f8c1c1431169b77692adbe77d8ecc3001a9e11e04a19f6f4
+artifact_sha256: 02a8467a725a5298fba9f3ba85ceafde8011aad91f3fc6f4ce9772223a21597c
 ---
 # Skill Alias Map
 
@@ -16,6 +16,7 @@ artifact_sha256: fb7371ef5ce3fe48f8c1c1431169b77692adbe77d8ecc3001a9e11e04a19f6f
 |---|---|
 | `localsetup-accessibility-review` | `ls-accessibility-review` |
 | `localsetup-agent-email-inbox` | `ls-agent-email-inbox` |
+| `localsetup-agent-routing` | `ls-agent-routing` |
 | `localsetup-agentlens` | `ls-agentlens` |
 | `localsetup-agentq-transport` | `ls-agentq-transport` |
 | `localsetup-alirezarezvani-skills` | `ls-alirezarezvani-skills` |

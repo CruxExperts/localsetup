@@ -14,7 +14,7 @@ from .client_state import (
     resolve_state_location,
     verify_artifact,
 )
-from .client_state.artifacts import preflight_artifact_request
+from .client_state.artifacts import bind_state_location, preflight_artifact_request
 
 
 MAX_CONTENT_BYTES = 16 * 1024 * 1024
@@ -34,12 +34,18 @@ def _effective_directory(args) -> Path:
 
 
 def _location(args, root: Path, home: Path):
+    child = "agent-routing" if args.state_action == "telemetry" else getattr(args, "child", None)
+    if child is not None and args.scope == "auto":
+        raise ClientStateError(
+            "state child requires an explicit repo or global scope", code="invalid_state_child"
+        )
     return resolve_state_location(
         root,
         args.client,
         cwd=_effective_directory(args),
         home=home,
         scope=args.scope,
+        child=child,
     )
 
 
@@ -70,6 +76,13 @@ def _content(path_value: str | None) -> bytes:
         os.close(fd)
 
 
+def _exclude_plan(location):
+    """Use the private linearization mode only for an already-bound repo child."""
+    if location.scope == "repo" and location.child is not None:
+        return plan_git_exclude(location, child_linearized=True)
+    return plan_git_exclude(location)
+
+
 def _print(payload: dict) -> None:
     print(json.dumps(payload, indent=2, sort_keys=True))
 
@@ -80,12 +93,16 @@ def handle(args, root: Path, home: Path) -> int | None:
     try:
         location = _location(args, root, home)
         if args.state_action == "path":
-            plan = plan_git_exclude(location)
+            if location.child is not None and args.apply_exclude:
+                location = bind_state_location(location)
+            plan = _exclude_plan(location) if args.apply_exclude else plan_git_exclude(location)
             if args.apply_exclude:
                 plan = apply_git_exclude(plan)
             payload = location.payload()
             payload["exclude"] = plan.payload()
         elif args.state_action == "allocate":
+            if location.child is not None:
+                location = bind_state_location(location)
             prepared = prepare_artifact_request(
                 location,
                 content=_content(args.content_file),
@@ -101,8 +118,33 @@ def handle(args, root: Path, home: Path) -> int | None:
                 metadata_schema=root / "ls" / "config" / "client-state-artifact.schema.json",
             )
             preflight_artifact_request(location, prepared)
-            exclude = apply_git_exclude(plan_git_exclude(location))
+            if location.scope == "repo" and location.child is not None:
+                payload = allocate_artifact(location, prepared=prepared)
+                exclude = apply_git_exclude(_exclude_plan(location))
+            else:
+                exclude = apply_git_exclude(plan_git_exclude(location))
+                payload = allocate_artifact(location, prepared=prepared)
+            payload["exclude"] = exclude.payload()
+            payload["ok"] = True
+            payload["scope"] = location.scope
+            payload["state_path"] = location.state_path
+        elif args.state_action == "telemetry":
+            location = bind_state_location(location)
+            prepared = prepare_artifact_request(
+                location,
+                content=b"",
+                purpose="routing-telemetry",
+                extension="json",
+                kind="agent-routing-telemetry",
+                schema="agent-routing-telemetry",
+                producer="agent-routing",
+                agent="agent-routing",
+                consumers=(),
+                metadata_schema=root / "ls" / "config" / "client-state-artifact.schema.json",
+            )
+            preflight_artifact_request(location, prepared)
             payload = allocate_artifact(location, prepared=prepared)
+            exclude = apply_git_exclude(_exclude_plan(location))
             payload["exclude"] = exclude.payload()
             payload["ok"] = True
             payload["scope"] = location.scope

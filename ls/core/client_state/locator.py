@@ -14,6 +14,7 @@ from .models import ClientStateError, GitContext, StateLocation
 
 
 _NOT_REPOSITORY = ("not a git repository", "outside repository")
+_STATE_CHILD = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
 def git_environment() -> dict[str, str]:
@@ -276,6 +277,16 @@ def _identity(path: Path) -> tuple[int, int] | None:
     return (result.st_dev, result.st_ino)
 
 
+def _child(value: str | None) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str) or not _STATE_CHILD.fullmatch(value):
+        raise ClientStateError(
+            "state child must be lowercase kebab-case", code="invalid_state_child"
+        )
+    return value
+
+
 def _global_path(raw: str, *, home: Path) -> tuple[Path, str, Path]:
     if raw == "$CODEX_HOME" or raw.startswith("$CODEX_HOME/"):
         configured = os.environ.get("CODEX_HOME")
@@ -348,9 +359,11 @@ def resolve_state_location(
     cwd: Path,
     home: Path,
     scope: str = "auto",
+    child: str | None = None,
 ) -> StateLocation:
     if scope not in {"auto", "repo", "global"}:
         raise ClientStateError(f"unsupported state scope: {scope}")
+    child = _child(child)
     repo_root = repo_root.resolve(strict=True)
     cwd = repo_root if scope == "global" else _resolve_directory(cwd)
     home = home.expanduser().resolve()
@@ -368,13 +381,18 @@ def resolve_state_location(
     raw = str(state["path"])
     if selected == "repo":
         assert git is not None
-        root = Path(os.path.abspath(git.root / raw))
-        _assert_safe_state_path(git.root, root)
-        display = root.relative_to(git.root).as_posix()
+        parent_root = Path(os.path.abspath(git.root / raw))
+        _assert_safe_state_path(git.root, parent_root)
+        parent_display = parent_root.relative_to(git.root).as_posix()
         owner_root = git.root
     else:
-        root, display, owner_root = _global_path(raw, home=home)
+        parent_root, parent_display, owner_root = _global_path(raw, home=home)
         git = None
+    root = parent_root / child if child else parent_root
+    display = f"{parent_display}/{child}" if child else parent_display
+    _assert_safe_state_path(owner_root, root)
+    if selected == "global":
+        _assert_global_ownership(owner_root, root)
     return StateLocation(
         client=client,
         scope=selected,
@@ -384,9 +402,12 @@ def resolve_state_location(
         home=home,
         owner_root=owner_root,
         owner_identity=_identity(owner_root),
+        parent_root=parent_root,
+        parent_identity=_identity(parent_root),
         root=root,
         root_identity=_identity(root),
         state_path=display,
+        child=child,
         git=git,
         registry_schema_version=registry.schema_version,
         variant_digest=variant_digest,
@@ -400,13 +421,15 @@ def refresh_state_location(location: StateLocation, *, allow_created_roots: bool
         cwd=location.cwd,
         home=location.home,
         scope=location.requested_scope,
+        child=location.child,
     )
     stable = (
-        "client", "scope", "owner_root", "root", "state_path",
+        "client", "scope", "owner_root", "parent_root", "root", "state_path", "child",
         "registry_schema_version", "variant_digest",
     )
     identities_match = (
         current.owner_identity == location.owner_identity
+        and current.parent_identity == location.parent_identity
         and current.root_identity == location.root_identity
     )
     if allow_created_roots:
@@ -414,6 +437,10 @@ def refresh_state_location(location: StateLocation, *, allow_created_roots: bool
             (
                 current.owner_identity == location.owner_identity
                 or (location.owner_identity is None and current.owner_identity is not None)
+            )
+            and (
+                current.parent_identity == location.parent_identity
+                or (location.parent_identity is None and current.parent_identity is not None)
             )
             and (
                 current.root_identity == location.root_identity

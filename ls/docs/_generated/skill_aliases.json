@@ -1,6 +1,7 @@
 {
   "localsetup-accessibility-review": "ls-accessibility-review",
   "localsetup-agent-email-inbox": "ls-agent-email-inbox",
+  "localsetup-agent-routing": "ls-agent-routing",
   "localsetup-agentlens": "ls-agentlens",
   "localsetup-agentq-transport": "ls-agentq-transport",
   "localsetup-alirezarezvani-skills": "ls-alirezarezvani-skills",
@@ -103,7 +104,7 @@
   "localsetup-workos-widgets": "ls-workos-widgets",
   "provenance": {
     "artifact_path": "ls/docs/_generated/skill_aliases.json",
-    "artifact_sha256": "a925cdbaccab6f9249fef9c78a0ae8b9062c6921ce84786f8ceafa3626998e26",
+    "artifact_sha256": "392bdd9b3fb3790c99d29d9e077876c7c853549b9459049c1dff26c6b08de67c",
     "emitter": "generate-docs",
     "framework_version": "4.2.20",
     "schema_version": 1,

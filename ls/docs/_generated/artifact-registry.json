@@ -23,7 +23,7 @@
       "type": "markdown"
     },
     {
-      "artifact_sha256": "c1ffdf065d357fabac3d55ad847b890aeace69dcebe2e14e709dd3b64d4532d9",
+      "artifact_sha256": "64471d1e00ea103e0890b3c24dd830b665818d87084053e5f3784f4b04760e52",
       "emitter": "generate-docs",
       "framework_version": "4.2.20",
       "path": "ls/docs/SKILLS.md",
@@ -89,7 +89,7 @@
       "type": "markdown"
     },
     {
-      "artifact_sha256": "d357c96331b5e8c2033d2b0c175138e23d1f3aa2a50a40e2f3602b115fd3fcdd",
+      "artifact_sha256": "28787262e699f8e97014341fb2814a6adcaae72663c5364677be682000c6a07d",
       "emitter": "generate-docs",
       "framework_version": "4.2.20",
       "path": "ls/docs/_generated/docs-alignment-summary.md",
@@ -155,7 +155,7 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "7a573d16f7f346df3595b38dbb46b2c2557ebb0d7fee5c4b06a62982c46ab782",
+      "artifact_sha256": "d09c6103dff410468685a3f9be9afdf4c388eb4343c9fb5cc8c109265e4d0f56",
       "emitter": "generate-docs",
       "framework_version": "4.2.20",
       "path": "ls/docs/_generated/docs-inventory.json",
@@ -177,7 +177,7 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "0893b41ea189bc645f423aac24a725f95c6d900f24cace58918f715dbb7f56c2",
+      "artifact_sha256": "379bff69c36e89e2ecc36fd3dc7066d87895ff0e3b2438e1e41586dd22055b11",
       "emitter": "generate-docs",
       "framework_version": "4.2.20",
       "path": "ls/docs/_generated/docs-truth-map.json",
@@ -199,7 +199,7 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "58d80187143974cb61eda4a5a6e18391eb4aa16d24466ec8782e061aa09562c4",
+      "artifact_sha256": "9c38c7dc71b6807182ff8247384c19a4943969bbe67376eb01b5923466d8f8b6",
       "emitter": "generate-docs",
       "framework_version": "4.2.20",
       "path": "ls/docs/_generated/facts.json",
@@ -309,7 +309,7 @@
       "type": "markdown"
     },
     {
-      "artifact_sha256": "63ea485566cbb96a8a7c22fb781b9eb0e4c3848501e3dabd5d4a9dc7cf159202",
+      "artifact_sha256": "2902d1edde9f2033a1deaf307cb0706c0d48050a410e26b5e4c7d89ee3521aa6",
       "emitter": "generate-docs",
       "framework_version": "4.2.20",
       "path": "ls/docs/_generated/skill-packs.md",
@@ -331,7 +331,7 @@
       "type": "markdown"
     },
     {
-      "artifact_sha256": "7fb13229783af4a13d2340627e479f47e5ad20e1eb6f9cdcb4b268db8ff85185",
+      "artifact_sha256": "fd52461b6b295369cdb619b192010a307d9f2591b7f27e1e509e5fc8fb86dcc8",
       "emitter": "generate-docs",
       "framework_version": "4.2.20",
       "path": "ls/docs/_generated/skill-taxonomy.json",
@@ -353,7 +353,7 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "b9d5f30ffe787113a8e9ada96100d2d18a3a7af285a8923a51dce9c756122625",
+      "artifact_sha256": "69a84b7078862c11ba3eccfd6aeb9001a5283bba0b89eebe52e8cdbf2f19598c",
       "emitter": "generate-docs",
       "framework_version": "4.2.20",
       "path": "ls/docs/_generated/skill_aliases.json",
@@ -397,7 +397,7 @@
       "type": "json"
     },
     {
-      "artifact_sha256": "0a7d2143f761eefe41197e6cb38612269438c2c9a76e4aece64ff0b7438724b6",
+      "artifact_sha256": "325eedc5e2d7f10a2b9c70595df71f9a8bcafa22e04886cd18b5164236a7d7fa",
       "emitter": "generate-docs",
       "framework_version": "4.2.20",
       "path": "ls/docs/migration/skill-alias-map.md",
@@ -421,7 +421,7 @@
   ],
   "provenance": {
     "artifact_path": "ls/docs/_generated/artifact-registry.json",
-    "artifact_sha256": "b82d02428fbbf9c8a9a7833fc377ccaf3cda6c4ded36788e88c0ddef26cbbdfc",
+    "artifact_sha256": "380e6803f453cd6f982da61a18abd5afb0792e3ed9cf13d6992676fdc9d29f25",
     "emitter": "generate-docs",
     "framework_version": "4.2.20",
     "schema_version": 1,
