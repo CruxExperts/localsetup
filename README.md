@@ -62,7 +62,7 @@ Start with the [workflow packages guide](ls/docs/WORKFLOW_PACKAGES.md) for usage
 <!-- facts-block:start -->
 | Fact | Value |
 |---|---|
-| Current version | `4.2.20` |
+| Current version | `4.2.21` |
 | Supported platforms | `codex, claude-code, cursor, kilo, opencode, openclaw` |
 | Shipped skills | `103` |
 | Workflow packages | `24` |
