@@ -2,6 +2,9 @@ import os
 import subprocess
 from pathlib import Path
 
+import pytest
+
+from ls.core import provenance, provenance_source
 from ls.core.baseline import tracked_files
 from ls.core.git_subprocess import GIT_ENV_TO_SCRUB
 from ls.core.provenance import (
@@ -188,12 +191,552 @@ def test_source_dirty_ignores_only_existing_facts_block_updates(tmp_path: Path) 
             encoding="utf-8",
         )
     assert source_dirty(repo) is False
+    run(repo, "add", *(str(path.relative_to(repo)) for path in receipt_paths))
+    assert source_dirty(repo) is False
+
 
     root_readme = receipt_paths[0]
     root_readme.write_text(
         root_readme.read_text(encoding="utf-8").replace("Manual content.", "Manual source edit."),
         encoding="utf-8",
     )
+    assert source_dirty(repo) is True
+
+
+
+def test_source_dirty_ignores_facts_block_only_line_insertion(tmp_path: Path) -> None:
+    repo = make_git_repo(tmp_path)
+    receipt = repo / "README.md"
+    receipt.write_text(
+        "# Document\n\n"
+        "<!-- facts-block:start -->\n"
+        "<!-- facts-block:end -->\n\n"
+        "Manual content.\n",
+        encoding="utf-8",
+    )
+    run(repo, "add", "README.md")
+    run(repo, "commit", "-q", "-m", "docs: add receipt")
+
+    receipt.write_text(
+        receipt.read_text(encoding="utf-8").replace(
+            "<!-- facts-block:start -->\n",
+            "<!-- facts-block:start -->\n- Current version: `4.9.1`\n",
+        ),
+        encoding="utf-8",
+    )
+
+    assert source_dirty(repo) is False
+
+
+@pytest.mark.parametrize(
+    "diff",
+    [
+        "@@ -3 +3 @@\n-old\n+new\n-Manual content.\n+Manual source edit.\n",
+        "@@ -3,2 +3,2 @@\n-old\n+new\n",
+        "@@ -3 +3 @@@\n-old\n+new\n",
+        f"@@ -{'9' * 5_000} +3 @@\n-old\n+new\n",
+    ],
+)
+def test_facts_block_hunk_parser_rejects_mismatched_body_ranges(diff: str) -> None:
+    before = [
+        "# Document",
+        provenance_source.FACTS_BLOCK_START,
+        "old",
+        provenance_source.FACTS_BLOCK_END,
+        "Manual content.",
+    ]
+    after = [
+        "# Document",
+        provenance_source.FACTS_BLOCK_START,
+        "new",
+        provenance_source.FACTS_BLOCK_END,
+        "Manual source edit.",
+    ]
+
+    assert not provenance_source._diff_hunks_are_within_facts_block(diff, before, after)
+
+
+def test_facts_block_hunk_parser_accepts_section_header() -> None:
+    before = [
+        "# Document",
+        provenance_source.FACTS_BLOCK_START,
+        "old",
+        provenance_source.FACTS_BLOCK_END,
+        "Manual content.",
+    ]
+    after = [
+        "# Document",
+        provenance_source.FACTS_BLOCK_START,
+        "new",
+        provenance_source.FACTS_BLOCK_END,
+        "Manual content.",
+    ]
+
+    assert provenance_source._diff_hunks_are_within_facts_block(
+        "@@ -3 +3 @@ section heading\n-old\n+new\n",
+        before,
+        after,
+    )
+
+
+def test_source_dirty_includes_non_lf_separator_outside_facts_block(tmp_path: Path) -> None:
+    repo = make_git_repo(tmp_path)
+    receipt = repo / "README.md"
+    receipt.write_text(
+        "# Document\n"
+        "<!-- facts-block:start -->\n"
+        "- Fact: `a\vb\vc`\n"
+        "<!-- facts-block:end -->\n"
+        "Manual content.\n",
+        encoding="utf-8",
+    )
+    run(repo, "add", "README.md")
+    run(repo, "commit", "-q", "-m", "docs: add receipt")
+
+    receipt.write_text(
+        receipt.read_text(encoding="utf-8").replace("Manual content.", "Manual source edit."),
+        encoding="utf-8",
+    )
+
+    assert source_dirty(repo) is True
+
+
+
+
+def test_source_dirty_ignores_non_lf_separator_in_facts_block(tmp_path: Path) -> None:
+    repo = make_git_repo(tmp_path)
+    receipt = repo / "README.md"
+    receipt.write_text(
+        "# Document\n"
+        "<!-- facts-block:start -->\n"
+        "- Fact: `a\v@@ -99 +99 @@`\n"
+        "<!-- facts-block:end -->\n"
+        "Manual content.\n",
+        encoding="utf-8",
+    )
+    run(repo, "add", "README.md")
+    run(repo, "commit", "-q", "-m", "docs: add receipt")
+
+    receipt.write_text(
+        receipt.read_text(encoding="utf-8").replace("`a\v@@ -99 +99 @@`", "`b\v@@ -99 +99 @@`"),
+        encoding="utf-8",
+    )
+
+    assert source_dirty(repo) is False
+
+
+def test_source_dirty_ignores_facts_block_update_with_forced_diff_color(
+    tmp_path: Path,
+) -> None:
+    repo = make_git_repo(tmp_path)
+    run(repo, "config", "color.diff", "always")
+    receipt = repo / "README.md"
+    receipt.write_text(
+        "# Document\n\n"
+        "<!-- facts-block:start -->\n"
+        "- Current version: `4.9.0`\n"
+        "<!-- facts-block:end -->\n\n"
+        "Manual content.\n",
+        encoding="utf-8",
+    )
+    run(repo, "add", "README.md")
+    run(repo, "commit", "-q", "-m", "docs: add receipt")
+
+    receipt.write_text(
+        receipt.read_text(encoding="utf-8").replace("`4.9.0`", "`4.9.1`"),
+        encoding="utf-8",
+    )
+
+    assert source_dirty(repo) is False
+
+
+def test_source_dirty_forces_canonical_diff_indicators(tmp_path: Path) -> None:
+    repo = make_git_repo(tmp_path)
+    run(repo, "config", "diff.outputIndicatorOld", "!")
+    run(repo, "config", "diff.outputIndicatorNew", "?")
+    run(repo, "config", "diff.outputIndicatorContext", ".")
+    receipt = repo / "README.md"
+    receipt.write_text(
+        "# Document\n\n"
+        "<!-- facts-block:start -->\n"
+        "- Current version: `4.9.0`\n"
+        "<!-- facts-block:end -->\n\n"
+        "Manual content.\n",
+        encoding="utf-8",
+    )
+    run(repo, "add", "README.md")
+    run(repo, "commit", "-q", "-m", "docs: add receipt")
+
+    receipt.write_text(
+        receipt.read_text(encoding="utf-8").replace("`4.9.0`", "`4.9.1`"),
+        encoding="utf-8",
+    )
+
+    assert source_dirty(repo) is False
+
+
+def test_source_dirty_ignores_crlf_facts_block_update(tmp_path: Path) -> None:
+    repo = make_git_repo(tmp_path)
+    run(repo, "config", "core.autocrlf", "false")
+    receipt = repo / "README.md"
+    receipt.write_bytes(
+        b"# Document\r\n"
+        b"\r\n"
+        b"<!-- facts-block:start -->\r\n"
+        b"- Current version: `4.9.0`\r\n"
+        b"<!-- facts-block:end -->\r\n"
+        b"\r\n"
+        b"Manual content.\r\n"
+    )
+    run(repo, "add", "README.md")
+    run(repo, "commit", "-q", "-m", "docs: add receipt")
+
+    receipt.write_bytes(receipt.read_bytes().replace(b"`4.9.0`", b"`4.9.1`"))
+
+    assert source_dirty(repo) is False
+
+
+
+
+
+
+def test_source_dirty_includes_manual_change_hidden_by_textconv(tmp_path: Path) -> None:
+    repo = make_git_repo(tmp_path)
+    converter = tmp_path / "receipt-textconv.py"
+    converter.write_text(
+        "#!/usr/bin/env python3\n"
+        "from pathlib import Path\n"
+        "import sys\n"
+        "for line in Path(sys.argv[1]).read_text(encoding='utf-8').splitlines():\n"
+        "    print(line if line.startswith('- Current version:') else 'constant')\n",
+        encoding="utf-8",
+    )
+    converter.chmod(0o755)
+    run(repo, "config", "diff.receipt.textconv", str(converter))
+    (repo / ".gitattributes").write_text("README.md diff=receipt\n", encoding="utf-8")
+    receipt = repo / "README.md"
+    receipt.write_text(
+        "# Document\n\n"
+        "<!-- facts-block:start -->\n"
+        "- Current version: `4.9.0`\n"
+        "<!-- facts-block:end -->\n\n"
+        "Manual content.\n",
+        encoding="utf-8",
+    )
+    run(repo, "add", ".gitattributes", "README.md")
+    run(repo, "commit", "-q", "-m", "docs: add receipt")
+
+    receipt.write_text(
+        receipt.read_text(encoding="utf-8")
+        .replace("`4.9.0`", "`4.9.1`")
+        .replace("Manual content.", "Manual source edit."),
+        encoding="utf-8",
+    )
+
+    assert source_dirty(repo) is True
+
+
+def test_source_dirty_includes_staged_manual_receipt_edit_with_facts_only_worktree(
+    tmp_path: Path,
+) -> None:
+    repo = make_git_repo(tmp_path)
+    receipt = repo / "README.md"
+    receipt.write_text(
+        "# Document\n\n"
+        "<!-- facts-block:start -->\n"
+        "- Current version: `4.9.0`\n"
+        "<!-- facts-block:end -->\n\n"
+        "Manual content.\n",
+        encoding="utf-8",
+    )
+    run(repo, "add", "README.md")
+    run(repo, "commit", "-q", "-m", "docs: add receipt")
+
+    receipt.write_text(
+        receipt.read_text(encoding="utf-8").replace("Manual content.", "Manual source edit."),
+        encoding="utf-8",
+    )
+    run(repo, "add", "README.md")
+    receipt.write_text(
+        receipt.read_text(encoding="utf-8")
+        .replace("`4.9.0`", "`4.9.1`")
+        .replace("Manual source edit.", "Manual content."),
+        encoding="utf-8",
+    )
+
+    assert run(repo, "status", "--short") == "MM README.md"
+    assert source_dirty(repo) is True
+
+
+def test_source_dirty_includes_mode_only_receipt_change(tmp_path: Path) -> None:
+    repo = make_git_repo(tmp_path)
+    receipt = repo / "README.md"
+    receipt.write_text(
+        "# Document\n\n"
+        "<!-- facts-block:start -->\n"
+        "- Current version: `4.9.0`\n"
+        "<!-- facts-block:end -->\n\n"
+        "Manual content.\n",
+        encoding="utf-8",
+    )
+    run(repo, "add", "README.md")
+    run(repo, "commit", "-q", "-m", "docs: add receipt")
+
+    receipt.chmod(0o755)
+
+    assert source_dirty(repo) is True
+
+
+def test_source_dirty_includes_mode_change_with_facts_block_update(tmp_path: Path) -> None:
+    repo = make_git_repo(tmp_path)
+    receipt = repo / "README.md"
+    receipt.write_text(
+        "# Document\n\n"
+        "<!-- facts-block:start -->\n"
+        "- Current version: `4.9.0`\n"
+        "<!-- facts-block:end -->\n\n"
+        "Manual content.\n",
+        encoding="utf-8",
+    )
+    run(repo, "add", "README.md")
+    run(repo, "commit", "-q", "-m", "docs: add receipt")
+
+    receipt.write_text(
+        receipt.read_text(encoding="utf-8").replace("`4.9.0`", "`4.9.1`"),
+        encoding="utf-8",
+    )
+    receipt.chmod(0o755)
+
+    assert source_dirty(repo) is True
+    run(repo, "add", "README.md")
+    assert source_dirty(repo) is True
+
+
+def test_source_dirty_includes_worktree_mode_change_with_staged_facts_update(
+    tmp_path: Path,
+) -> None:
+    repo = make_git_repo(tmp_path)
+    receipt = repo / "README.md"
+    receipt.write_text(
+        "# Document\n\n"
+        "<!-- facts-block:start -->\n"
+        "- Current version: `4.9.0`\n"
+        "<!-- facts-block:end -->\n\n"
+        "Manual content.\n",
+        encoding="utf-8",
+    )
+    run(repo, "add", "README.md")
+    run(repo, "commit", "-q", "-m", "docs: add receipt")
+
+    receipt.write_text(
+        receipt.read_text(encoding="utf-8").replace("`4.9.0`", "`4.9.1`"),
+        encoding="utf-8",
+    )
+    run(repo, "add", "README.md")
+    receipt.write_text(
+        receipt.read_text(encoding="utf-8").replace("`4.9.1`", "`4.9.0`"),
+        encoding="utf-8",
+    )
+    receipt.chmod(0o755)
+
+    assert run(repo, "status", "--short") == "MM README.md"
+    assert source_dirty(repo) is True
+
+
+def test_source_dirty_includes_symlink_receipt_with_facts_update(tmp_path: Path) -> None:
+    repo = make_git_repo(tmp_path)
+    receipt = repo / "README.md"
+    receipt.write_text(
+        "# Document\n\n"
+        "<!-- facts-block:start -->\n"
+        "- Current version: `4.9.0`\n"
+        "<!-- facts-block:end -->\n\n"
+        "Manual content.\n",
+        encoding="utf-8",
+    )
+    run(repo, "add", "README.md")
+    run(repo, "commit", "-q", "-m", "docs: add receipt")
+
+    target = tmp_path / "receipt-target.md"
+    target.write_text(
+        receipt.read_text(encoding="utf-8").replace("`4.9.0`", "`4.9.1`"),
+        encoding="utf-8",
+    )
+    receipt.unlink()
+    receipt.symlink_to(target)
+
+    assert source_dirty(repo) is True
+
+
+
+def test_source_dirty_includes_undecodable_staged_receipt(tmp_path: Path) -> None:
+    repo = make_git_repo(tmp_path)
+    receipt = repo / "README.md"
+    receipt.write_text(
+        "# Document\n\n"
+        "<!-- facts-block:start -->\n"
+        "- Current version: `4.9.0`\n"
+        "<!-- facts-block:end -->\n\n"
+        "Manual content.\n",
+        encoding="utf-8",
+    )
+    run(repo, "add", "README.md")
+    run(repo, "commit", "-q", "-m", "docs: add receipt")
+
+    original_text = receipt.read_text(encoding="utf-8")
+    receipt.write_bytes(b"\xff")
+    run(repo, "add", "README.md")
+    receipt.write_text(original_text, encoding="utf-8")
+
+    assert source_dirty(repo) is True
+
+
+def test_source_dirty_ignores_autocrlf_line_endings_with_facts_update(
+    tmp_path: Path,
+) -> None:
+    repo = make_git_repo(tmp_path)
+    run(repo, "config", "core.autocrlf", "true")
+    (repo / ".gitattributes").write_text("README.md text\n", encoding="utf-8")
+    receipt = repo / "README.md"
+    receipt.write_text(
+        "# Document\n\n"
+        "<!-- facts-block:start -->\n"
+        "- Current version: `4.9.0`\n"
+        "<!-- facts-block:end -->\n\n"
+        "Manual content.\n",
+        encoding="utf-8",
+    )
+    run(repo, "add", ".gitattributes", "README.md")
+    run(repo, "commit", "-q", "-m", "docs: add receipt")
+    receipt.unlink()
+    run(repo, "checkout", "--", "README.md")
+    assert b"\r\n" in receipt.read_bytes()
+
+    receipt.write_bytes(receipt.read_bytes().replace(b"`4.9.0`", b"`4.9.1`"))
+
+    assert source_dirty(repo) is False
+
+
+def test_source_dirty_includes_git_visible_line_ending_change_with_facts_update(
+    tmp_path: Path,
+) -> None:
+    repo = make_git_repo(tmp_path)
+    run(repo, "config", "core.autocrlf", "false")
+    receipt = repo / "README.md"
+    receipt.write_text(
+        "# Document\n\n"
+        "<!-- facts-block:start -->\n"
+        "- Current version: `4.9.0`\n"
+        "<!-- facts-block:end -->\n\n"
+        "Manual content.\n",
+        encoding="utf-8",
+    )
+    run(repo, "add", "README.md")
+    run(repo, "commit", "-q", "-m", "docs: add receipt")
+
+    receipt.write_bytes(
+        receipt.read_bytes()
+        .replace(b"`4.9.0`", b"`4.9.1`")
+        .replace(b"\n", b"\r\n")
+    )
+
+    assert source_dirty(repo) is True
+
+
+def test_source_dirty_uses_lf_boundaries_for_lone_carriage_returns(tmp_path: Path) -> None:
+    repo = make_git_repo(tmp_path)
+    receipt = repo / "README.md"
+    receipt.write_bytes(
+        b"# Title\rSubtitle\n"
+        b"<!-- facts-block:start -->\n"
+        b"- Current version: `4.9.0`\n"
+        b"<!-- facts-block:end -->\n"
+        b"Manual content.\n"
+    )
+    run(repo, "add", "README.md")
+    run(repo, "commit", "-q", "-m", "docs: add receipt")
+
+    receipt.write_bytes(
+        receipt.read_bytes().replace(b"`4.9.0`", b"`4.9.1`"),
+    )
+    assert source_dirty(repo) is False
+
+    receipt.write_bytes(
+        receipt.read_bytes().replace(b"Manual content.", b"Manual source edit."),
+    )
+    assert source_dirty(repo) is True
+
+
+
+
+
+
+@pytest.mark.parametrize(
+    "probe_error",
+    [
+        OSError("metadata probe failed"),
+        UnicodeDecodeError("utf-8", b"\xff", 0, 1, "invalid start byte"),
+    ],
+)
+def test_source_dirty_fails_closed_when_receipt_metadata_probe_errors(
+    tmp_path: Path,
+    monkeypatch,
+    probe_error: OSError | UnicodeDecodeError,
+) -> None:
+    repo = make_git_repo(tmp_path)
+    receipt = repo / "README.md"
+    receipt.write_text(
+        "# Document\n\n"
+        "<!-- facts-block:start -->\n"
+        "- Current version: `4.9.0`\n"
+        "<!-- facts-block:end -->\n\n"
+        "Manual content.\n",
+        encoding="utf-8",
+    )
+    run(repo, "add", "README.md")
+    run(repo, "commit", "-q", "-m", "docs: add receipt")
+    receipt.write_text(
+        receipt.read_text(encoding="utf-8").replace("`4.9.0`", "`4.9.1`"),
+        encoding="utf-8",
+    )
+
+    original_run_git = provenance.run_git
+
+    def raise_for_metadata_probe(repo_root: Path, args: list[str], **kwargs: object) -> object:
+        if args[0] == "diff" and "--summary" in args:
+            raise probe_error
+        return original_run_git(repo_root, args, **kwargs)
+
+    monkeypatch.setattr(provenance, "run_git", raise_for_metadata_probe)
+
+    assert source_dirty(repo) is True
+
+
+@pytest.mark.parametrize(
+    "probe_failure",
+    [
+        "nonzero",
+        OSError("status probe failed"),
+        UnicodeDecodeError("utf-8", b"\xff", 0, 1, "invalid start byte"),
+    ],
+)
+def test_source_dirty_fails_closed_when_status_probe_fails(
+    tmp_path: Path,
+    monkeypatch,
+    probe_failure: str | OSError | UnicodeDecodeError,
+) -> None:
+    repo = make_git_repo(tmp_path)
+    original_run_git = provenance.run_git
+
+    def fail_status_probe(repo_root: Path, args: list[str], **kwargs: object) -> object:
+        if args[0] != "status":
+            return original_run_git(repo_root, args, **kwargs)
+        if probe_failure == "nonzero":
+            return subprocess.CompletedProcess(args, 1, "", "fatal: status failed")
+        raise probe_failure
+
+    monkeypatch.setattr(provenance, "run_git", fail_status_probe)
+
     assert source_dirty(repo) is True
 
 
