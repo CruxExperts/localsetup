@@ -162,6 +162,41 @@ def test_source_dirty_ignores_generated_doc_outputs(tmp_path: Path) -> None:
     assert source_dirty(repo) is True
 
 
+def test_source_dirty_ignores_only_existing_facts_block_updates(tmp_path: Path) -> None:
+    repo = make_git_repo(tmp_path)
+    receipt_paths = [
+        repo / "README.md",
+        repo / "ls" / "docs" / "README.md",
+        repo / "ls" / "docs" / "FEATURES.md",
+    ]
+    for path in receipt_paths:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            "# Document\n\n"
+            "<!-- facts-block:start -->\n"
+            "- Current version: `4.9.0`\n"
+            "<!-- facts-block:end -->\n\n"
+            "Manual content.\n",
+            encoding="utf-8",
+        )
+    run(repo, "add", *(str(path.relative_to(repo)) for path in receipt_paths))
+    run(repo, "commit", "-q", "-m", "docs: add facts block documents")
+
+    for path in receipt_paths:
+        path.write_text(
+            path.read_text(encoding="utf-8").replace("`4.9.0`", "`4.9.1`"),
+            encoding="utf-8",
+        )
+    assert source_dirty(repo) is False
+
+    root_readme = receipt_paths[0]
+    root_readme.write_text(
+        root_readme.read_text(encoding="utf-8").replace("Manual content.", "Manual source edit."),
+        encoding="utf-8",
+    )
+    assert source_dirty(repo) is True
+
+
 def test_repo_git_probes_ignore_inherited_scratch_index(tmp_path: Path, monkeypatch) -> None:
     repo = make_git_repo(tmp_path)
     package = repo / "ls" / "skills" / "ls-demo"

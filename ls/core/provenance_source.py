@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from difflib import SequenceMatcher
 import hashlib
 import json
 from pathlib import Path
@@ -22,6 +23,8 @@ GENERATED_RECEIPT_PATHS = {
     "ls/docs/FEATURES.md",
     "ls/docs/README.md",
 }
+FACTS_BLOCK_START = "<!-- facts-block:start -->"
+FACTS_BLOCK_END = "<!-- facts-block:end -->"
 VERSION_SYNC_SUBJECT_PREFIX = "chore: sync release version "
 GENERATED_DOCS_SUBJECT_PREFIX = "docs: refresh "
 
@@ -85,6 +88,70 @@ def is_generated_receipt_path(path: str) -> bool:
     return path.strip().strip('"') in GENERATED_RECEIPT_PATHS
 
 
+def _facts_block_bounds(lines: list[str]) -> tuple[int, int] | None:
+    starts = [index for index, line in enumerate(lines) if line.rstrip("\r\n") == FACTS_BLOCK_START]
+    ends = [index for index, line in enumerate(lines) if line.rstrip("\r\n") == FACTS_BLOCK_END]
+    if len(starts) != 1 or len(ends) != 1 or starts[0] >= ends[0]:
+        return None
+    return starts[0], ends[0]
+
+
+def _diff_is_within_facts_block(
+    before: list[str],
+    after: list[str],
+) -> bool:
+    before_bounds = _facts_block_bounds(before)
+    after_bounds = _facts_block_bounds(after)
+    if not before_bounds or not after_bounds:
+        return False
+
+    before_start, before_end = before_bounds
+    after_start, after_end = after_bounds
+    changed = False
+    for tag, before_start_index, before_end_index, after_start_index, after_end_index in SequenceMatcher(
+        a=before,
+        b=after,
+        autojunk=False,
+    ).get_opcodes():
+        if tag == "equal":
+            continue
+        changed = True
+        if not (
+            before_start < before_start_index <= before_end_index <= before_end
+            and after_start < after_start_index <= after_end_index <= after_end
+        ):
+            return False
+    return changed
+
+
+def is_generated_facts_block_change(repo_root: Path, path: str) -> bool:
+    """Whether an exact receipt path differs from HEAD only inside its facts block."""
+    normalized = path.strip().strip('"')
+    if normalized not in GENERATED_RECEIPT_PATHS:
+        return False
+
+    working_path = repo_root / normalized
+    if not working_path.is_file():
+        return False
+    head = run_git(
+        repo_root,
+        ["show", f"HEAD:{normalized}"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if head.returncode != 0:
+        return False
+    try:
+        working_text = working_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return False
+    return _diff_is_within_facts_block(
+        head.stdout.splitlines(keepends=True),
+        working_text.splitlines(keepends=True),
+    )
+
+
 def source_dirty(repo_root: Path) -> bool:
     completed = run_git(
         repo_root,
@@ -97,8 +164,13 @@ def source_dirty(repo_root: Path) -> bool:
         return False
     for line in completed.stdout.splitlines():
         paths = status_entry_paths(line)
-        if not paths or any(not is_generated_output_path(path) for path in paths):
+        if not paths:
             return True
+        if all(is_generated_output_path(path) for path in paths):
+            continue
+        if len(paths) == 1 and is_generated_facts_block_change(repo_root, paths[0]):
+            continue
+        return True
     return False
 
 

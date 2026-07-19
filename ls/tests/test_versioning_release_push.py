@@ -140,6 +140,15 @@ def test_publish_preflight_fix_keeps_no_bump_generated_docs_refresh_none(tmp_pat
     assert result["plan"]["bump"] == "none"
     assert result["plan"]["current_version"] == expected_version
     assert result["plan"]["target_version"] == expected_version
+    assert result["version_check"] == {
+        "ok": True,
+        "dirty_before": "",
+        "dirty_after": "",
+        "diff_before": [],
+        "diff_after": [],
+        "staged_before": [],
+        "staged_after": [],
+    }
     assert run(repo, "git", "status", "--short").stdout.strip() == ""
 
 
