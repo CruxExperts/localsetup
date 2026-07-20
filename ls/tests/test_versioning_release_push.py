@@ -82,6 +82,36 @@ def test_publish_preflight_prepares_unstaged_direct_sync_candidate(tmp_path: Pat
     assert run(repo, "git", "diff", "--name-only").stdout.splitlines() == expected_paths
 
 
+def test_prepare_version_sync_candidate_excludes_generated_source_outputs(tmp_path: Path) -> None:
+    repo = copy_full_repo(tmp_path)
+    target = str(repo_version(repo).bump("minor"))
+    generated_paths = [
+        "ls/docs/SKILLS.md",
+        "ls/docs/WORKFLOW_REGISTRY.md",
+        "ls/docs/WORKFLOW_QUICK_REF.md",
+        "ls/docs/migration/skill-alias-map.md",
+    ]
+    generated_before = {
+        relative_path: (repo / relative_path).read_bytes()
+        for relative_path in generated_paths
+    }
+
+    result = prepare_version_sync_candidate(repo, target)
+
+    changed = set(result["changed_candidates"])
+    assert {
+        "README.md",
+        "VERSION",
+        "ls/README.md",
+        "ls/docs/VERSIONING.md",
+        "pyproject.toml",
+        "uv.lock",
+    } <= changed
+    assert not changed.intersection(generated_paths)
+    assert all((repo / relative_path).read_bytes() == before for relative_path, before in generated_before.items())
+    assert (repo / "VERSION").read_text(encoding="utf-8").strip() == target
+
+
 def test_publish_preflight_without_fix_refuses_dirty_worktree_without_write(tmp_path: Path) -> None:
     repo = copy_full_repo(tmp_path)
     remote = tmp_path / "remote.git"

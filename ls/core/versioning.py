@@ -8,6 +8,7 @@ from typing import Iterable
 
 from .git_subprocess import run_git
 from . import versioning_sync as _sync
+from .provenance_source import is_generated_output_path
 from .versioning_constants import (
     BREAKING_CHANGE_RE,
     BREAKING_SUBJECT_RE,
@@ -413,7 +414,13 @@ def prepare_version_sync_candidate(repo_root: Path, target_version: str) -> dict
             path.write_text(after, encoding="utf-8")
             changed.append(relative_path)
 
-    changed.extend(_sync.update_doc_frontmatter_versions(repo_root, target))
+    changed.extend(
+        _sync.update_doc_frontmatter_versions(
+            repo_root,
+            target,
+            include_path=lambda relative_path: not is_generated_output_path(relative_path),
+        )
+    )
     return {
         "version": str(target),
         "major_minor": target.major_minor,
