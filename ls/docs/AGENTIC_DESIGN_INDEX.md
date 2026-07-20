@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.2
+version: 4.4
 owner_skill: ls-docs-organization
 ---
 
@@ -24,6 +24,7 @@ Released under the MIT License. See the repository root [LICENSE](../../LICENSE)
 | [AGENTIC_AGENT_Q_PATTERN.md](AGENTIC_AGENT_Q_PATTERN.md) | Agent Q (queue) pattern: locate, implement, status, outcome; structured inbox/in/out/pending |
 | [AGENTIC_AGENT_TO_AGENT_PROTOCOL.md](AGENTIC_AGENT_TO_AGENT_PROTOCOL.md) | Agent-to-agent PRD handoff: OpenPGP outer blob, registry, file_drop ingest (ACTIVE) |
 | [AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md](AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md) | Bidirectional Agent Q **build order and backlog** (implementation contract); **Part 19** = remaining backlog; DEFERRED.md = short list |
+| [TRUSTED_WORK_QUEUE.md](TRUSTED_WORK_QUEUE.md) | Immutable review queue: full repository snapshots, opaque PRDs, and directional shared-folder deposits/claims |
 | [AGENTIC_AGENT_Q_SCENARIOS.md](AGENTIC_AGENT_Q_SCENARIOS.md) | file_drop/mail scenarios: same machine different repos, local/remote, sync, agent decision guide |
 | [DOCUMENT_LIFECYCLE_MANAGEMENT.md](DOCUMENT_LIFECYCLE_MANAGEMENT.md) | Doc status (ACTIVE/PROPOSAL/DRAFT); check before assuming implemented |
 | [OUTPUT_AND_DOC_GENERATION.md](OUTPUT_AND_DOC_GENERATION.md) | Platform default: rich output (code blocks, lists, typography, links, glyphs, humanized prose) for all generated content |
