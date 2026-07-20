@@ -3,7 +3,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from ls.core.versioning import SemVer, prepare_version_sync_candidate, publish_preflight
+from ls.core.versioning import SemVer, prepare_version_sync_candidate, publish_preflight, sync_version_files
 from ls.tests.versioning_test_helpers import (
     copy_full_repo,
     init_git_repo,
@@ -80,6 +80,54 @@ def test_publish_preflight_prepares_unstaged_direct_sync_candidate(tmp_path: Pat
     idempotent = prepare_version_sync_candidate(repo, expected)
     assert idempotent["changed_candidates"] == []
     assert run(repo, "git", "diff", "--name-only").stdout.splitlines() == expected_paths
+
+
+
+def test_publish_preflight_rejects_stale_generated_receipt_after_direct_sync_is_current(tmp_path: Path) -> None:
+    repo = copy_full_repo(tmp_path)
+    remote = tmp_path / "remote.git"
+    run(tmp_path, "git", "init", "--bare", str(remote))
+    init_git_repo(repo, remote)
+    target = str(repo_version(repo))
+
+    sync_version_files(repo, target)
+    run(repo, "git", "add", ".")
+    run(
+        repo,
+        "git",
+        "commit",
+        "-m",
+        "docs: refresh copied generated artifacts",
+        "-m",
+        "Release-Type: none",
+        "--no-verify",
+    )
+
+    facts_path = repo / "ls" / "docs" / "_generated" / "facts.json"
+    facts = json.loads(facts_path.read_text(encoding="utf-8"))
+    facts["platform_count"] = int(facts["platform_count"]) + 1
+    facts_path.write_text(json.dumps(facts, indent=2) + "\n", encoding="utf-8")
+    run(repo, "git", "add", "ls/docs/_generated/facts.json")
+    run(
+        repo,
+        "git",
+        "commit",
+        "-m",
+        "docs: refresh corrupt generated receipt",
+        "-m",
+        "Release-Type: none",
+        "--no-verify",
+    )
+
+    result = publish_preflight(repo, base="origin/main", head="HEAD")
+
+    assert result["ok"] is False
+    assert result["fixed"] is False
+    assert result["prepared"] is False
+    assert result["prepared_paths"] == []
+    assert result["version_check"]["ok"] is False
+    assert "ls/docs/_generated/facts.json" in result["version_check"]["diff_after"]
+    assert run(repo, "git", "status", "--short").stdout.strip() == ""
 
 
 def test_prepare_version_sync_candidate_excludes_generated_source_outputs(tmp_path: Path) -> None:

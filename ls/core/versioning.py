@@ -490,17 +490,17 @@ def publish_preflight(repo_root: Path, *, base: str | None = None, head: str | N
         prepared_paths = prepared["changed_candidates"]
         result["prepared"] = bool(prepared_paths)
         result["prepared_paths"] = prepared_paths
-        result["version_check"] = {
-            "ok": not prepared_paths and bool(plan["ok"]),
-            "mode": "direct_sync_candidate",
-            "target_version": target,
-        }
         if prepared_paths:
+            result["version_check"] = {
+                "ok": False,
+                "mode": "direct_sync_candidate",
+                "target_version": target,
+            }
             result["reason"] = "prepared_not_ready"
             return result
-        result["ok"] = bool(plan["ok"])
-        if not result["ok"]:
-            result["reason"] = "version_sync_required"
+        check = check_version_files(repo_root, target)
+        result["version_check"] = check
+        result["ok"] = bool(plan["ok"] and check["ok"])
         return result
 
     if fix:
