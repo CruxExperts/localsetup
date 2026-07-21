@@ -132,7 +132,7 @@ workers="$(uv run --locked python ls/tools/localsetup.py --source-root . test-wo
 uv run --locked pytest -n "$workers" ls/tests -q
 ```
 
-Run focused pytest files or test functions and matching Localsetup validators before the full suite. `localsetup test-workers` defaults to `ceil(available CPU cores / 2)`, clamps overrides into `1..255`, and can be overridden with `LOCALSETUP_TEST_WORKERS` or `--workers`. Use the full suite as final consolidation for broad/shared runtime changes, release or publish work, dependency changes, or explicit user requests.
+Run focused pytest files or test functions and matching Localsetup validators before the full suite. Resolve the permitted worker count with `localsetup test-workers`; [COMMAND_REFERENCE.md](../../docs/COMMAND_REFERENCE.md) owns its formula and aggregate-budget rule. Use the full suite as final consolidation for broad/shared runtime changes, release or publish work, dependency changes, or explicit user requests.
 
 Before publish, run publish preflight against the intended base and keep generated docs/version sync with the repo tooling.
 

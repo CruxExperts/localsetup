@@ -35,7 +35,7 @@ uv run --locked ./ls/tests/automated_test.sh
 git diff --check
 ```
 
-For daily maintenance and ordinary framework edits, run focused tests and matching Localsetup validators first. Use the full Python suite above as final consolidation for broad automation changes, release or publish readiness, dependency changes, or explicit maintainer requests. The default worker count is `ceil(available CPU cores / 2)`, clamped to `1..255`, with `LOCALSETUP_TEST_WORKERS` or `--workers` overrides.
+For daily maintenance and ordinary framework edits, run focused tests and matching Localsetup validators first. Use the full Python suite above as final consolidation for broad automation changes, release or publish readiness, dependency changes, or explicit maintainer requests. Resolve the permitted worker count with `localsetup test-workers`; [COMMAND_REFERENCE.md](COMMAND_REFERENCE.md) owns its formula and aggregate-budget rule.
 
 ## Managed Adapter Refresh
 

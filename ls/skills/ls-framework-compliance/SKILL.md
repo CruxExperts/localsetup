@@ -85,7 +85,7 @@ git diff --check
 - Run `validate-package-surface` after package materialization, deployed docs, resolver-token, workflow, or path-contract changes.
 - Run `scan-migration` when migration, installer, adapter, generated-artifact, or source-boundary behavior may be affected.
 - Run `audit-global-first` when global-first layout, lockfile, target-state, PowerShell removal, or source/target docs claims may be affected.
-- Run focused tests and compliance checks for the code you changed before broad suites. Use the full pytest suite only as final consolidation for broad/shared runtime behavior, release/publish work, dependency changes, or explicit user requests. `localsetup test-workers` defaults to `ceil(available CPU cores / 2)` and clamps overrides into `1..255`.
+- Run focused tests and compliance checks for the code you changed before broad suites. Use the full pytest suite only as final consolidation for broad/shared runtime behavior, release/publish work, dependency changes, or explicit user requests. Resolve the permitted worker count with `localsetup test-workers`; [COMMAND_REFERENCE.md](../../docs/COMMAND_REFERENCE.md) owns its formula and aggregate-budget rule.
 
 ## Git And Handoff
 

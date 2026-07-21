@@ -142,7 +142,7 @@ def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_har
     reprocess_paths_p.add_argument("--apply", action="store_true", help="Reserved for future allowlisted rewrites; currently rejected for safety")
     sub.add_parser("validate-package-surface")
     test_workers_p = sub.add_parser("test-workers")
-    test_workers_p.add_argument("--workers", help="Optional numeric override; clamped to 1..255")
+    test_workers_p.add_argument("--workers", help="Optional numeric override; clamped to the host-effective 1..8 limit")
     test_workers_p.add_argument("--json", action="store_true", help="Emit worker calculation details")
     audit_global_p = sub.add_parser("audit-global-first")
     audit_global_p.add_argument("--target-directory", default=argparse.SUPPRESS)

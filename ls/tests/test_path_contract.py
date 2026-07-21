@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -8,7 +9,12 @@ from pathlib import Path
 from ls.core.path_contract import paths_manifest_issues, paths_manifest_path
 from ls.core.path_reprocessor import reprocess_localsetup_paths
 from ls.core.repair import run_repair
-from ls.core.test_workers import default_test_workers, resolved_test_workers
+from ls.core.test_workers import (
+    default_test_workers,
+    effective_max_test_workers,
+    resolved_test_workers,
+    test_workers_payload as workers_payload,
+)
 from ls.tests.test_install_flow import make_temp_repo
 
 SOURCE_ROOT = Path(__file__).resolve().parents[2]
@@ -82,11 +88,16 @@ def test_doctor_reports_and_repair_refreshes_stale_paths_manifest(tmp_path: Path
 
 def test_test_worker_defaults_and_overrides_are_clamped() -> None:
     assert default_test_workers(1) == 1
-    assert default_test_workers(3) == 2
-    assert default_test_workers(512) == 255
+    assert default_test_workers(3) == 1
+    assert default_test_workers(512) == 8
     assert resolved_test_workers("-10") == 1
-    assert resolved_test_workers("999") == 255
-    assert resolved_test_workers(None, cpu_count=8, env={"LOCALSETUP_TEST_WORKERS": "5"}) == 5
+    assert resolved_test_workers("999", cpu_count=512) == 8
+    assert resolved_test_workers("999", cpu_count=512, env={"LOCALSETUP_TEST_WORKERS": "5"}) == 8
+    assert resolved_test_workers(None, cpu_count=512) == 8
+    assert resolved_test_workers(None, cpu_count=8, env={"LOCALSETUP_TEST_WORKERS": "5"}) == 4
+    assert resolved_test_workers("8", cpu_count=2) == 1
+    assert resolved_test_workers("8", cpu_count=3) == 1
+    assert resolved_test_workers(None, cpu_count=2, env={"LOCALSETUP_TEST_WORKERS": "8"}) == 1
 
 
 def test_test_workers_cli_outputs_json_and_rejects_bad_override(tmp_path: Path) -> None:
@@ -107,10 +118,22 @@ def test_test_workers_cli_outputs_json_and_rejects_bad_override(tmp_path: Path) 
         check=False,
     )
 
+    env_completed = subprocess.run(
+        [sys.executable, str(tool), "--repo", str(root), "--home", str(home), "test-workers", "--json"],
+        text=True,
+        capture_output=True,
+        check=False,
+        env={**os.environ, "LOCALSETUP_TEST_WORKERS": "999"},
+    )
     assert completed.returncode == 0, completed.stderr
-    assert json.loads(completed.stdout)["workers"] == 255
+    expected_workers = effective_max_test_workers(os.cpu_count())
+    assert json.loads(completed.stdout)["workers"] == expected_workers
+    assert env_completed.returncode == 0, env_completed.stderr
+    assert json.loads(env_completed.stdout)["workers"] == expected_workers
     assert bad.returncode == 2
     assert "must be an integer" in bad.stderr
+
+    assert workers_payload(cpu_count=4)["max_workers"] == 2
 
 
 def test_reprocess_paths_apply_is_not_exposed_until_allowlisted(tmp_path: Path) -> None:
