@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.5
+version: 4.6
 owner_skill: ls-docs-organization
 ---
 
@@ -31,6 +31,7 @@ Released under the MIT License. See the repository root [LICENSE](../../LICENSE)
 | [REPO_AND_DATA_SEPARATION.md](REPO_AND_DATA_SEPARATION.md) | Engine at ls/; local context vs framework; propose via PRD |
 | [PYTHON_ARCHITECTURE_STANDARD.md](PYTHON_ARCHITECTURE_STANDARD.md) | Python architecture: new and substantially refactored Python tooling follows ls/docs/PYTHON_ARCHITECTURE_STANDARD.md; keep entrypoints thin, package responsibilities explicit, and existing debt baseline-managed. |
 | [FRAMEWORK_LIBRARY_ARCHITECTURE.md](FRAMEWORK_LIBRARY_ARCHITECTURE.md) | Library, wrapper, CLI, target-node, and dashboard boundaries; queue-promotion and harness-extension gates |
+| [AGENT_CONTEXT_AND_MCP_CONTRACT.md](AGENT_CONTEXT_AND_MCP_CONTRACT.md) | Freshness-first retrieval, normalized provenance, privacy, and optional read-only MCP contract |
 | [GIT_TRACEABILITY.md](GIT_TRACEABILITY.md) | Attach git hash when referencing PRDs, specs, outcomes |
 | [SKILLS_AND_RULES.md](SKILLS_AND_RULES.md) | How master rule and skills interact; when to load which skill |
 | [FRONTEND_WEB_APP_SKILL_ROUTING.md](FRONTEND_WEB_APP_SKILL_ROUTING.md) | Canonical Localsetup routing for frontend web-app skills that overlap with the cached Build Web Apps plugin |
