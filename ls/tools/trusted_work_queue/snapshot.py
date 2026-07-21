@@ -126,10 +126,12 @@ def create_snapshot(
     """Create a complete repository tar.gz archive and deterministic sidecar.
 
     ``source_dir`` must be an existing directory. Every directory entry is
-    included, including hidden paths and ``.git``. Symbolic links and hard
-    links are rejected before an archive is committed, as are FIFOs, sockets,
-    device nodes, and other non-portable special entries. The archive output
-    must be outside the source tree.
+    included, including hidden paths and a self-contained ``.git`` directory.
+    Gitfiles, including linked-worktree and submodule Git metadata pointers,
+    are rejected because they are not portable snapshots. Symbolic links and
+    hard links are rejected before an archive is committed, as are FIFOs,
+    sockets, device nodes, and other non-portable special entries. The archive
+    output must be outside the source tree.
     """
     source = _resolve_source_dir(source_dir)
     root_name = _safe_root_name(source.name)
@@ -595,14 +597,7 @@ def _discover_git_head(source: Path) -> str | None:
         if git_entry.is_dir():
             git_dir = git_entry.resolve(strict=True)
         elif git_entry.is_file():
-            text = git_entry.read_text(encoding="utf-8", errors="replace")
-            prefix = "gitdir:"
-            if not text.startswith(prefix):
-                return None
-            location = text[len(prefix) :].strip()
-            if not location or _CONTROL_RE.search(location):
-                return None
-            git_dir = (git_entry.parent / location).resolve(strict=True)
+            return None
         else:
             return None
         if not git_dir.is_dir():

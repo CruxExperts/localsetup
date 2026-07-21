@@ -67,6 +67,20 @@ class SnapshotContractTests(unittest.TestCase):
         self.assertFalse(archive.exists())
         self.assertFalse(manifest_path_for(archive).exists())
 
+    def test_gitfile_source_is_not_inspected(self) -> None:
+        external_git = self.workspace / "external.git"
+        external_git.mkdir()
+        (external_git / "HEAD").write_text(
+            "0123456789abcdef0123456789abcdef01234567\n",
+            encoding="ascii",
+        )
+        (self.source / ".git").write_text(
+            f"gitdir: {external_git}\n",
+            encoding="ascii",
+        )
+
+        self.assertIsNone(snapshot_module._discover_git_head(self.source))
+
     def test_regular_file_permissions_are_retained(self) -> None:
         payload = self.source / "payload.txt"
         payload.write_text("payload", encoding="ascii")
