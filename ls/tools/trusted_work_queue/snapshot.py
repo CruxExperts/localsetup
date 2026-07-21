@@ -120,11 +120,11 @@ def create_snapshot(
 ) -> SnapshotResult:
     """Create a complete repository tar.gz archive and deterministic sidecar.
 
-    ``source_dir`` must be an existing directory.  Every directory entry is
-    included, including hidden paths and ``.git``.  Symbolic links are stored
-    as links and are never traversed.  FIFOs, sockets, device nodes, and any
-    other non-portable special entries are rejected before an archive is
-    committed.  The archive output must be outside the source tree.
+    ``source_dir`` must be an existing directory. Every directory entry is
+    included, including hidden paths and ``.git``. Symbolic links and hard
+    links are rejected before an archive is committed, as are FIFOs, sockets,
+    device nodes, and other non-portable special entries. The archive output
+    must be outside the source tree.
     """
     source = _resolve_source_dir(source_dir)
     root_name = _safe_root_name(source.name)
@@ -164,6 +164,11 @@ def create_snapshot(
                     )
             raw_archive.flush()
             os.fsync(raw_archive.fileno())
+            _validate_archive_members(
+                temporary_archive,
+                root_name,
+                error_type=SnapshotError,
+            )
             archive_sha256 = hashing_writer.hexdigest()
             total_bytes = hashing_writer.total_bytes
         git_head_after = _discover_git_head(source)
@@ -219,6 +224,10 @@ def validate_snapshot(
     archive = Path(archive_path)
     expected_manifest = manifest_path_for(archive)
     manifest = expected_manifest if manifest_path is None else Path(manifest_path)
+    if archive.is_symlink():
+        raise SnapshotValidationError("snapshot archive must not be a symbolic link")
+    if manifest.is_symlink():
+        raise SnapshotValidationError("snapshot sidecar must not be a symbolic link")
     if _resolved_path(manifest) != _resolved_path(expected_manifest):
         raise SnapshotValidationError("manifest is not the archive's adjacent sidecar")
     if not archive.is_file():
@@ -238,6 +247,17 @@ def validate_snapshot(
 
     _validate_archive_members(archive, metadata.source_root_name)
     return metadata
+
+
+def validate_snapshot_contents(
+    archive_path: os.PathLike[str] | str,
+    source_root_name: str,
+) -> None:
+    """Validate safe tar members when trusted metadata is held separately."""
+    archive = Path(archive_path)
+    if archive.is_symlink() or not archive.is_file():
+        raise SnapshotValidationError("snapshot archive does not exist or is not a file")
+    _validate_archive_members(archive, source_root_name)
 
 
 def _resolve_source_dir(source_dir: os.PathLike[str] | str) -> Path:
@@ -274,7 +294,7 @@ def _safe_root_name(name: str) -> str:
 
 
 def _scan_source_tree(source: Path) -> None:
-    """Reject non-portable filesystem entries without following symlinks."""
+    """Reject link and non-portable filesystem entries without following links."""
     pending = [source]
     while pending:
         directory = pending.pop()
@@ -292,8 +312,16 @@ def _scan_source_tree(source: Path) -> None:
             relative = Path(os.path.relpath(entry.path, source))
             if stat.S_ISDIR(mode):
                 pending.append(Path(entry.path))
-            elif stat.S_ISREG(mode) or stat.S_ISLNK(mode):
+            elif stat.S_ISREG(mode):
+                if info.st_nlink > 1:
+                    raise SnapshotError(
+                        "source contains a hard link: " + relative.as_posix()
+                    )
                 continue
+            elif stat.S_ISLNK(mode):
+                raise SnapshotError(
+                    "source contains a symbolic link: " + relative.as_posix()
+                )
             else:
                 raise SnapshotError(
                     "source contains a non-portable special entry: "
@@ -304,41 +332,54 @@ def _scan_source_tree(source: Path) -> None:
 def _archive_filter(info: tarfile.TarInfo, root_name: str) -> tarfile.TarInfo:
     """Reject a race-created special entry and unsafe generated member name."""
     _validate_member_name(info.name, root_name, SnapshotError)
-    if not (info.isdir() or info.isfile() or info.issym() or info.islnk()):
+    if info.issym() or info.islnk():
+        raise SnapshotError("archive contains a link member")
+    if not (info.isdir() or info.isfile()):
         raise SnapshotError("archive contains a non-portable special entry")
     return info
 
 
-def _validate_archive_members(archive: Path, root_name: str) -> None:
+def _validate_archive_members(
+    archive: Path,
+    root_name: str,
+    *,
+    error_type: type[SnapshotError] = SnapshotValidationError,
+) -> None:
     saw_root = False
     seen: set[str] = set()
+    member_types: dict[str, str] = {}
     try:
         with tarfile.open(archive, mode="r:*") as tar:
             for info in tar:
-                normalized = _validate_member_name(
-                    info.name, root_name, SnapshotValidationError
-                )
+                normalized = _validate_member_name(info.name, root_name, error_type)
                 if normalized in seen:
-                    raise SnapshotValidationError("archive contains duplicate members")
+                    raise error_type("archive contains duplicate members")
                 seen.add(normalized)
                 if normalized == root_name:
                     if not info.isdir():
-                        raise SnapshotValidationError("archive root member is not a directory")
+                        raise error_type("archive root member is not a directory")
                     saw_root = True
-                if not (info.isdir() or info.isfile() or info.issym() or info.islnk()):
-                    raise SnapshotValidationError("archive contains a non-portable special member")
-                if info.islnk():
-                    _validate_member_name(
-                        info.linkname,
-                        root_name,
-                        SnapshotValidationError,
-                    )
-    except SnapshotValidationError:
+                if info.issym() or info.islnk():
+                    raise error_type("archive contains a link member")
+                if info.isdir():
+                    member_types[normalized] = "directory"
+                elif info.isfile():
+                    member_types[normalized] = "file"
+                else:
+                    raise error_type("archive contains a non-portable special member")
+    except SnapshotError:
         raise
     except (OSError, tarfile.TarError) as exc:
-        raise SnapshotValidationError("snapshot archive is not a readable tar archive") from exc
+        raise error_type("snapshot archive is not a readable tar archive") from exc
     if not saw_root:
-        raise SnapshotValidationError("archive does not contain its top-level root directory")
+        raise error_type("archive does not contain its top-level root directory")
+
+    for member_name in member_types:
+        parent_parts = member_name.split("/")[:-1]
+        for index in range(1, len(parent_parts) + 1):
+            parent_name = "/".join(parent_parts[:index])
+            if member_types.get(parent_name) != "directory":
+                raise error_type("archive member parent is not a directory")
 
 
 def _validate_member_name(
@@ -362,6 +403,10 @@ def _validate_member_name(
     if any(part == "" for part in parts):
         raise error_type("archive contains an unsafe member name")
     return "/".join(parts)
+
+
+
+
 
 
 def _read_manifest(path: Path) -> SnapshotMetadata:

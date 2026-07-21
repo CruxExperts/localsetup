@@ -16,6 +16,7 @@ try:
         list_ready_packets,
     )
     from .snapshot import SnapshotError, create_snapshot, validate_snapshot
+    from .fanout import CandidateFanout, FanoutError, materialize_oldest_claim
 except ImportError:  # pragma: no cover - supports direct script execution.
     from shared_folder import (  # type: ignore
         QueuePacket,
@@ -25,6 +26,7 @@ except ImportError:  # pragma: no cover - supports direct script execution.
         list_ready_packets,
     )
     from snapshot import SnapshotError, create_snapshot, validate_snapshot  # type: ignore
+    from fanout import CandidateFanout, FanoutError, materialize_oldest_claim  # type: ignore
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -69,6 +71,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     claim.add_argument("queue_root", help="shared-folder queue root")
 
+    materialize = commands.add_parser(
+        "shared-materialize",
+        help="claim and offline-materialize the oldest packet into isolated candidates",
+    )
+    materialize.add_argument("queue_root", help="shared-folder queue root")
+    materialize.add_argument("candidate_root", help="private local candidate output root")
+
     return parser
 
 
@@ -97,10 +106,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.command == "shared-list":
             _print_json({"packets": [_packet_payload(packet) for packet in list_ready_packets(args.queue_root)]})
             return 0
-        claim = claim_oldest_packet(args.queue_root)
-        _print_json({"claimed": claim is not None, **(_packet_payload(claim.packet) if claim else {})})
+        if args.command == "shared-claim":
+            claim = claim_oldest_packet(args.queue_root)
+            _print_json({"claimed": claim is not None, **(_packet_payload(claim.packet) if claim else {})})
+            return 0
+        fanout = materialize_oldest_claim(args.queue_root, args.candidate_root)
+        _print_json({"materialized": fanout is not None, **(_fanout_payload(fanout) if fanout else {})})
         return 0
-    except (SnapshotError, SharedFolderError) as exc:
+    except (SnapshotError, SharedFolderError, FanoutError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
     except OSError:
@@ -118,6 +131,19 @@ def _packet_payload(packet: QueuePacket) -> dict[str, object]:
         "prd_bytes": packet.prd_bytes,
         "replication_count": packet.replication_count,
         "enqueued_at": packet.enqueued_at,
+    }
+
+
+def _fanout_payload(fanout: CandidateFanout) -> dict[str, object]:
+    """Render durable fanout metadata without local paths or PRD content."""
+    return {
+        "job_id": fanout.packet.job_id,
+        "archive_sha256": fanout.packet.snapshot.archive_sha256,
+        "archive_bytes": fanout.packet.snapshot.total_bytes,
+        "prd_sha256": fanout.packet.prd_sha256,
+        "prd_bytes": fanout.packet.prd_bytes,
+        "replication_count": fanout.packet.replication_count,
+        "candidate_ids": [candidate.candidate_id for candidate in fanout.candidates],
     }
 
 

@@ -21,6 +21,14 @@ from .shared_folder import (
     list_ready_packets,
     load_packet,
 )
+from .fanout import (
+    FANOUT_FILENAME,
+    CandidateFanout,
+    CandidateReplica,
+    FanoutError,
+    materialize_claim,
+    materialize_oldest_claim,
+)
 
 
 __all__ = [
@@ -41,4 +49,10 @@ __all__ = [
     "deposit_packet",
     "list_ready_packets",
     "load_packet",
+    "FANOUT_FILENAME",
+    "CandidateFanout",
+    "CandidateReplica",
+    "FanoutError",
+    "materialize_claim",
+    "materialize_oldest_claim",
 ]

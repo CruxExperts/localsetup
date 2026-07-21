@@ -54,24 +54,129 @@ class SnapshotContractTests(unittest.TestCase):
         self.assertIn("repo/.git/HEAD", names)
         self.assertIn("repo/.hidden", names)
 
-    def test_symlink_and_permissions_are_retained(self) -> None:
+    def test_regular_file_permissions_are_retained(self) -> None:
         payload = self.source / "payload.txt"
         payload.write_text("payload", encoding="ascii")
         os.chmod(payload, 0o750)
-        link = self.source / "payload-link"
-        if not hasattr(os, "symlink"):
-            self.skipTest("symbolic links are unavailable")
-        os.symlink("payload.txt", link)
         archive = self.workspace / "repo.tar.gz"
 
         create_snapshot(self.source, archive)
 
         with tarfile.open(archive, mode="r:gz") as tar:
             payload_info = tar.getmember("repo/payload.txt")
-            link_info = tar.getmember("repo/payload-link")
         self.assertEqual(stat.S_IMODE(payload_info.mode), 0o750)
-        self.assertTrue(link_info.issym())
-        self.assertEqual(link_info.linkname, "payload.txt")
+        validate_snapshot(archive)
+
+    def test_snapshot_creation_rejects_hard_links(self) -> None:
+        if not hasattr(os, "link"):
+            self.skipTest("hard links are unavailable")
+        payload = self.source / "payload.txt"
+        payload.write_text("payload", encoding="ascii")
+        os.link(payload, self.source / "payload-alias.txt")
+
+        with self.assertRaises(SnapshotError):
+            create_snapshot(self.source, self.workspace / "repo.tar.gz")
+
+    def test_snapshot_creation_rejects_symbolic_links(self) -> None:
+        if not hasattr(os, "symlink"):
+            self.skipTest("symbolic links are unavailable")
+        (self.source / "payload.txt").write_text("payload", encoding="ascii")
+        os.symlink("payload.txt", self.source / "payload-link")
+        archive = self.workspace / "repo.tar.gz"
+
+        with self.assertRaises(SnapshotError):
+            create_snapshot(self.source, archive)
+
+        self.assertFalse(archive.exists())
+        self.assertFalse(manifest_path_for(archive).exists())
+
+    def test_archive_validation_rejects_symbolic_and_hard_links(self) -> None:
+        for link_type in ("symbolic", "hard"):
+            with self.subTest(link_type=link_type):
+                archive = self.workspace / f"{link_type}-link.tar.gz"
+                with tarfile.open(archive, mode="w:gz") as tar:
+                    root = tarfile.TarInfo("repo")
+                    root.type = tarfile.DIRTYPE
+                    tar.addfile(root)
+                    if link_type == "hard":
+                        payload = tarfile.TarInfo("repo/payload")
+                        payload.size = 0
+                        tar.addfile(payload)
+                    link = tarfile.TarInfo("repo/link")
+                    link.type = (
+                        tarfile.SYMTYPE
+                        if link_type == "symbolic"
+                        else tarfile.LNKTYPE
+                    )
+                    link.linkname = (
+                        "payload" if link_type == "symbolic" else "repo/payload"
+                    )
+                    tar.addfile(link)
+                self._write_manifest_for_archive(archive, "repo")
+
+                with self.assertRaises(SnapshotValidationError):
+                    validate_snapshot(archive)
+                archive.unlink()
+                manifest_path_for(archive).unlink()
+
+
+
+
+
+    def test_member_nested_below_regular_file_is_rejected(self) -> None:
+        archive = self.workspace / "nested-file.tar.gz"
+        with tarfile.open(archive, mode="w:gz") as tar:
+            root = tarfile.TarInfo("repo")
+            root.type = tarfile.DIRTYPE
+            tar.addfile(root)
+            parent = tarfile.TarInfo("repo/file")
+            parent.size = 0
+            tar.addfile(parent)
+            child = tarfile.TarInfo("repo/file/child")
+            child.size = 0
+            tar.addfile(child)
+        self._write_manifest_for_archive(archive, "repo")
+
+        with self.assertRaises(SnapshotValidationError):
+            validate_snapshot(archive)
+
+    def test_member_with_undeclared_parent_is_rejected(self) -> None:
+        archive = self.workspace / "undeclared-parent.tar.gz"
+        with tarfile.open(archive, mode="w:gz") as tar:
+            root = tarfile.TarInfo("repo")
+            root.type = tarfile.DIRTYPE
+            tar.addfile(root)
+            child = tarfile.TarInfo("repo/missing/child")
+            child.size = 0
+            tar.addfile(child)
+        self._write_manifest_for_archive(archive, "repo")
+
+        with self.assertRaises(SnapshotValidationError):
+            validate_snapshot(archive)
+
+
+
+
+
+
+
+
+
+    def test_validation_rejects_symlink_archive_and_manifest_inputs(self) -> None:
+        if not hasattr(os, "symlink"):
+            self.skipTest("symbolic links are unavailable")
+        archive = self.workspace / "repo.tar.gz"
+        create_snapshot(self.source, archive)
+        manifest = manifest_path_for(archive)
+        archive_link = self.workspace / "archive-link.tar.gz"
+        manifest_link = self.workspace / "manifest-link.json"
+        os.symlink(archive, archive_link)
+        os.symlink(manifest, manifest_link)
+
+        with self.assertRaises(SnapshotValidationError):
+            validate_snapshot(archive_link, manifest)
+        with self.assertRaises(SnapshotValidationError):
+            validate_snapshot(archive, manifest_link)
 
     def test_unsafe_source_root_name_is_rejected(self) -> None:
         unsafe_source = self.workspace / "repo with spaces"
