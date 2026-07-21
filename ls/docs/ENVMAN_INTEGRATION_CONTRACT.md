@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 1.0
+version: 1.1
 owner_skill: ls-architecture
 ---
 
@@ -29,7 +29,7 @@ Localsetup must not read `environment.conf`, EnvMan release receipts, encrypted 
 
 The EnvMan installation/release protocol remains EnvMan-owned. A Localsetup capability may bind only the observed CLI version to its own compatibility decision; it does not copy EnvMan receipt provenance.
 
-Missing binaries, invalid JSON, nonzero checks, incompatible versions, unsafe stores, or shell-loader failures are nonfatal redacted capability states. They leave the caller environment unchanged and do not trigger a fallback configuration-file read.
+Missing binaries, invalid JSON, nonzero checks, incompatible versions, unsafe stores, or shell-loader failures are nonfatal redacted capability states. On every probe failure, Localsetup discards raw stdout and stderr without logging or returning either stream, then synthesizes only the bounded state and safe failure code. This prevents malformed EnvMan configuration diagnostics from leaking an assignment value. Failures leave the caller environment unchanged and do not trigger a fallback configuration-file read.
 
 ## Packaging
 
