@@ -20,6 +20,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from .archive_validation import (
+    filter_snapshot_archive_member,
+    validate_snapshot_archive_members,
+)
+
 FORMAT_VERSION = 1
 MANIFEST_SUFFIX = ".manifest.json"
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -160,11 +165,15 @@ def create_snapshot(
                         source,
                         arcname=root_name,
                         recursive=True,
-                        filter=lambda info: _archive_filter(info, root_name),
+                        filter=lambda info: filter_snapshot_archive_member(
+                            info,
+                            root_name,
+                            error_type=SnapshotError,
+                        ),
                     )
             raw_archive.flush()
             os.fsync(raw_archive.fileno())
-            _validate_archive_members(
+            validate_snapshot_archive_members(
                 temporary_archive,
                 root_name,
                 error_type=SnapshotError,
@@ -245,7 +254,11 @@ def validate_snapshot(
     if _sha256_file(archive) != metadata.archive_sha256:
         raise SnapshotValidationError("snapshot archive SHA-256 does not match sidecar")
 
-    _validate_archive_members(archive, metadata.source_root_name)
+    validate_snapshot_archive_members(
+        archive,
+        metadata.source_root_name,
+        error_type=SnapshotValidationError,
+    )
     return metadata
 
 
@@ -257,7 +270,11 @@ def validate_snapshot_contents(
     archive = Path(archive_path)
     if archive.is_symlink() or not archive.is_file():
         raise SnapshotValidationError("snapshot archive does not exist or is not a file")
-    _validate_archive_members(archive, source_root_name)
+    validate_snapshot_archive_members(
+        archive,
+        source_root_name,
+        error_type=SnapshotValidationError,
+    )
 
 
 def _resolve_source_dir(source_dir: os.PathLike[str] | str) -> Path:
@@ -329,80 +346,10 @@ def _scan_source_tree(source: Path) -> None:
                 )
 
 
-def _archive_filter(info: tarfile.TarInfo, root_name: str) -> tarfile.TarInfo:
-    """Reject a race-created special entry and unsafe generated member name."""
-    _validate_member_name(info.name, root_name, SnapshotError)
-    if info.issym() or info.islnk():
-        raise SnapshotError("archive contains a link member")
-    if not (info.isdir() or info.isfile()):
-        raise SnapshotError("archive contains a non-portable special entry")
-    return info
 
 
-def _validate_archive_members(
-    archive: Path,
-    root_name: str,
-    *,
-    error_type: type[SnapshotError] = SnapshotValidationError,
-) -> None:
-    saw_root = False
-    seen: set[str] = set()
-    member_types: dict[str, str] = {}
-    try:
-        with tarfile.open(archive, mode="r:*") as tar:
-            for info in tar:
-                normalized = _validate_member_name(info.name, root_name, error_type)
-                if normalized in seen:
-                    raise error_type("archive contains duplicate members")
-                seen.add(normalized)
-                if normalized == root_name:
-                    if not info.isdir():
-                        raise error_type("archive root member is not a directory")
-                    saw_root = True
-                if info.issym() or info.islnk():
-                    raise error_type("archive contains a link member")
-                if info.isdir():
-                    member_types[normalized] = "directory"
-                elif info.isfile():
-                    member_types[normalized] = "file"
-                else:
-                    raise error_type("archive contains a non-portable special member")
-    except SnapshotError:
-        raise
-    except (OSError, tarfile.TarError) as exc:
-        raise error_type("snapshot archive is not a readable tar archive") from exc
-    if not saw_root:
-        raise error_type("archive does not contain its top-level root directory")
-
-    for member_name in member_types:
-        parent_parts = member_name.split("/")[:-1]
-        for index in range(1, len(parent_parts) + 1):
-            parent_name = "/".join(parent_parts[:index])
-            if member_types.get(parent_name) != "directory":
-                raise error_type("archive member parent is not a directory")
 
 
-def _validate_member_name(
-    name: str,
-    root_name: str,
-    error_type: type[SnapshotError],
-) -> str:
-    if not isinstance(name, str) or not name or "\x00" in name:
-        raise error_type("archive contains an unsafe member name")
-    if name.startswith(("/", "\\")) or re.match(r"^[A-Za-z]:[\\/]", name):
-        raise error_type("archive contains an absolute member name")
-    if "\\" in name or _CONTROL_RE.search(name):
-        raise error_type("archive contains an unsafe member name")
-    parts = name.split("/")
-    while parts and parts[-1] == "":
-        parts.pop()
-    if not parts or parts[0] != root_name:
-        raise error_type("archive member is outside its single top-level root")
-    if any(part in {"", ".", ".."} for part in parts[1:]):
-        raise error_type("archive member is outside its single top-level root")
-    if any(part == "" for part in parts):
-        raise error_type("archive contains an unsafe member name")
-    return "/".join(parts)
 
 
 
