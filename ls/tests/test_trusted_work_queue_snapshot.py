@@ -54,6 +54,19 @@ class SnapshotContractTests(unittest.TestCase):
         self.assertIn("repo/.git/HEAD", names)
         self.assertIn("repo/.hidden", names)
 
+    def test_gitfile_source_is_rejected(self) -> None:
+        (self.source / ".git").write_text(
+            "gitdir: /host/worktrees/repo\n",
+            encoding="ascii",
+        )
+        archive = self.workspace / "repo.tar.gz"
+
+        with self.assertRaises(SnapshotError):
+            create_snapshot(self.source, archive)
+
+        self.assertFalse(archive.exists())
+        self.assertFalse(manifest_path_for(archive).exists())
+
     def test_regular_file_permissions_are_retained(self) -> None:
         payload = self.source / "payload.txt"
         payload.write_text("payload", encoding="ascii")
@@ -118,6 +131,20 @@ class SnapshotContractTests(unittest.TestCase):
                     validate_snapshot(archive)
                 archive.unlink()
                 manifest_path_for(archive).unlink()
+
+    def test_archive_git_entry_must_be_directory(self) -> None:
+        archive = self.workspace / "gitfile.tar.gz"
+        with tarfile.open(archive, mode="w:gz") as tar:
+            root = tarfile.TarInfo("repo")
+            root.type = tarfile.DIRTYPE
+            tar.addfile(root)
+            gitfile = tarfile.TarInfo("repo/.git")
+            gitfile.size = 0
+            tar.addfile(gitfile)
+        self._write_manifest_for_archive(archive, "repo")
+
+        with self.assertRaises(SnapshotValidationError):
+            validate_snapshot(archive)
 
 
 

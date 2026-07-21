@@ -17,16 +17,33 @@ def filter_snapshot_archive_member(
     error_type: type[Exception],
 ) -> tarfile.TarInfo:
     """Reject unsafe generated names, links, and special archive entries."""
-    _validate_snapshot_archive_member_name(
+    normalized = _validate_snapshot_archive_member_name(
         info.name,
         root_name,
         error_type=error_type,
     )
+    _validate_snapshot_archive_member_type(
+        info,
+        normalized,
+        root_name,
+        error_type=error_type,
+    )
+    return info
+
+
+def _validate_snapshot_archive_member_type(
+    info: tarfile.TarInfo,
+    normalized: str,
+    root_name: str,
+    *,
+    error_type: type[Exception],
+) -> None:
     if info.issym() or info.islnk():
         raise error_type("archive contains a link member")
+    if normalized == f"{root_name}/.git" and not info.isdir():
+        raise error_type("archive Git metadata entry is not a directory")
     if not (info.isdir() or info.isfile()):
         raise error_type("archive contains a non-portable special entry")
-    return info
 
 
 def validate_snapshot_archive_members(
@@ -54,14 +71,16 @@ def validate_snapshot_archive_members(
                     if not info.isdir():
                         raise error_type("archive root member is not a directory")
                     saw_root = True
-                if info.issym() or info.islnk():
-                    raise error_type("archive contains a link member")
+                _validate_snapshot_archive_member_type(
+                    info,
+                    normalized,
+                    root_name,
+                    error_type=error_type,
+                )
                 if info.isdir():
                     member_types[normalized] = "directory"
-                elif info.isfile():
-                    member_types[normalized] = "file"
                 else:
-                    raise error_type("archive contains a non-portable special member")
+                    member_types[normalized] = "file"
     except (OSError, tarfile.TarError) as exc:
         raise error_type("snapshot archive is not a readable tar archive") from exc
     if not saw_root:
