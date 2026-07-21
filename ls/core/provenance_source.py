@@ -373,6 +373,61 @@ def changed_paths_for_ref(repo_root: Path, ref: str) -> list[str]:
     return [line for line in (output or "").splitlines() if line]
 
 
+def _commit_receipt_has_only_generated_facts_block_changes(
+    repo_root: Path,
+    ref: str,
+    path: str,
+) -> bool:
+    normalized = path.strip().strip('"')
+    if normalized not in GENERATED_RECEIPT_PATHS:
+        return False
+    parent = git_text(repo_root, ["rev-parse", f"{ref}^"])
+    if not parent:
+        return False
+    before = _git_file_text(repo_root, f"{parent}:{normalized}")
+    after = _git_file_text(repo_root, f"{ref}:{normalized}")
+    if before is None or after is None:
+        return False
+    summary = _git_diff_text(
+        repo_root,
+        [
+            "diff",
+            "--no-color",
+            "--no-ext-diff",
+            "--no-textconv",
+            "--summary",
+            parent,
+            ref,
+            "--",
+            normalized,
+        ],
+    )
+    if summary is None or summary.strip():
+        return False
+    diff = _git_diff_text(
+        repo_root,
+        [
+            "diff",
+            "--output-indicator-old=-",
+            "--output-indicator-new=+",
+            "--output-indicator-context= ",
+            "--no-color",
+            "--no-ext-diff",
+            "--no-textconv",
+            "--unified=0",
+            parent,
+            ref,
+            "--",
+            normalized,
+        ],
+    )
+    return bool(diff) and _diff_hunks_are_within_facts_block(
+        diff,
+        _git_lines(before),
+        _git_lines(after),
+    )
+
+
 def release_sync_parent_dirty(repo_root: Path) -> bool:
     """Return the pre-commit dirty flag encoded by a generated release-sync commit."""
     if head_subject(repo_root).startswith(VERSION_SYNC_SUBJECT_PREFIX):
@@ -394,7 +449,12 @@ def generated_docs_terminal_ref(repo_root: Path, ref: str) -> str | None:
     while subject.startswith(GENERATED_DOCS_SUBJECT_PREFIX):
         changed_paths = changed_paths_for_ref(repo_root, current)
         if not changed_paths or any(
-            not (is_generated_output_path(path) or is_generated_receipt_path(path))
+            not is_generated_output_path(path)
+            and not _commit_receipt_has_only_generated_facts_block_changes(
+                repo_root,
+                current,
+                path,
+            )
             for path in changed_paths
         ):
             return None

@@ -831,6 +831,23 @@ def test_generated_receipt_provenance_uses_release_source_and_keeps_root_readme_
     tmp_path: Path,
 ) -> None:
     repo = make_git_repo(tmp_path)
+    receipt_paths = [
+        repo / "README.md",
+        repo / "ls" / "docs" / "README.md",
+        repo / "ls" / "docs" / "FEATURES.md",
+    ]
+    for path in receipt_paths:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            "# Document\n\n"
+            "<!-- facts-block:start -->\n"
+            "- Current version: `4.9.0`\n"
+            "<!-- facts-block:end -->\n\n"
+            "Manual content.\n",
+            encoding="utf-8",
+        )
+    run(repo, "add", *(str(path.relative_to(repo)) for path in receipt_paths))
+    run(repo, "commit", "-q", "-m", "docs: add receipt templates")
     release_source = run(repo, "rev-parse", "HEAD")
     release_source_tree = run(repo, "rev-parse", "HEAD^{tree}")
 
@@ -838,18 +855,11 @@ def test_generated_receipt_provenance_uses_release_source_and_keeps_root_readme_
     run(repo, "add", "VERSION")
     run(repo, "commit", "-q", "-m", "chore: sync release version 4.9.1")
 
-    receipt_paths = [
-        repo / "README.md",
-        repo / "ls" / "docs" / "README.md",
-        repo / "ls" / "docs" / "FEATURES.md",
-    ]
-    assert all(is_generated_receipt_path(path.relative_to(repo).as_posix()) for path in receipt_paths)
-    assert not is_generated_output_path("README.md")
-    assert not is_generated_receipt_path("ls/docs/SKILLS.md")
     for path in receipt_paths:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("generated release facts\n", encoding="utf-8")
-
+        path.write_text(
+            path.read_text(encoding="utf-8").replace("`4.9.0`", "`4.9.1`"),
+            encoding="utf-8",
+        )
     run(repo, "add", *(str(path.relative_to(repo)) for path in receipt_paths))
     run(repo, "commit", "-q", "-m", "docs: refresh release version artifacts")
 
@@ -861,6 +871,66 @@ def test_generated_receipt_provenance_uses_release_source_and_keeps_root_readme_
 
     (repo / "README.md").write_text("manual source edit\n", encoding="utf-8")
     assert source_dirty(repo) is True
+
+
+
+def test_generated_receipt_provenance_rejects_manual_receipt_refresh(tmp_path: Path) -> None:
+    repo = make_git_repo(tmp_path)
+    receipt = repo / "README.md"
+    initial = (
+        "# Document\n\n"
+        "<!-- facts-block:start -->\n"
+        "- Current version: `4.9.0`\n"
+        "<!-- facts-block:end -->\n\n"
+        "Manual content.\n"
+    )
+    receipt.write_text(initial, encoding="utf-8")
+    run(repo, "add", "README.md")
+    run(repo, "commit", "-q", "-m", "docs: add receipt template")
+
+    receipt.write_text(
+        initial.replace("Manual content.", "Manual source edit."),
+        encoding="utf-8",
+    )
+    run(repo, "add", "README.md")
+    run(repo, "commit", "-q", "-m", "docs: refresh manual receipt")
+
+    assert generated_docs_source_ref(repo, "HEAD") is None
+
+
+@pytest.mark.parametrize(
+    "replacement",
+    [
+        ("<!-- facts-block:end -->", ""),
+        (
+            "<!-- facts-block:end -->",
+            "<!-- facts-block:end -->\n<!-- facts-block:start -->",
+        ),
+    ],
+    ids=["missing-end", "duplicate-start"],
+)
+def test_generated_receipt_provenance_rejects_malformed_refresh(
+    tmp_path: Path,
+    replacement: tuple[str, str],
+) -> None:
+    repo = make_git_repo(tmp_path)
+    receipt = repo / "README.md"
+    initial = (
+        "# Document\n\n"
+        "<!-- facts-block:start -->\n"
+        "- Current version: `4.9.0`\n"
+        "<!-- facts-block:end -->\n\n"
+        "Manual content.\n"
+    )
+    receipt.write_text(initial, encoding="utf-8")
+    run(repo, "add", "README.md")
+    run(repo, "commit", "-q", "-m", "docs: add receipt template")
+
+    receipt.write_text(initial.replace(*replacement), encoding="utf-8")
+    run(repo, "add", "README.md")
+    run(repo, "commit", "-q", "-m", "docs: refresh malformed receipt")
+
+    assert generated_docs_source_ref(repo, "HEAD") is None
 
 
 def test_generated_artifact_provenance_uses_dirty_parent_for_release_sync(tmp_path: Path) -> None:
