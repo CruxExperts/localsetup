@@ -44,7 +44,7 @@ The phase-1 API returns archive and sidecar paths plus the parsed metadata objec
 
 ## Exact CLI contract
 
-The module is invoked with the repository `ls/tools` directory on `PYTHONPATH` (or through the installed package):
+The module is invoked with the repository `ls/tools` directory on `PYTHONPATH`:
 
 ```text
 python -m trusted_work_queue.cli snapshot-create SOURCE_DIR ARCHIVE_PATH
