@@ -69,6 +69,7 @@ jobs:
           uv run --frozen python ls/tools/localsetup.py --source-root . generate-docs
           git diff --exit-code
           uv run --frozen python ls/tools/localsetup.py --source-root . validate-catalog
+          uv run --frozen python ls/tools/python_architecture_check.py --repo-root . --baseline ls/config/python-architecture-baseline.json
           uv run --frozen python ls/skills/ls-framework-audit/scripts/run_framework_audit.py --output /tmp/ls-framework-audit.md
           workers="$(uv run --frozen python ls/tools/localsetup.py --source-root . test-workers)"
           uv run --frozen pytest -n "$workers" ls/tests -q
