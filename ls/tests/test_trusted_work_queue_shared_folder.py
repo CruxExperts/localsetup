@@ -22,6 +22,8 @@ from trusted_work_queue.shared_folder import (  # noqa: E402
     CLAIMS_DIRECTORY,
     INCOMING_DIRECTORY,
     READY_FILENAME,
+    PRD_FILENAME,
+    SNAPSHOT_FILENAME,
     SharedFolderError,
     claim_oldest_packet,
     deposit_packet,
@@ -64,6 +66,125 @@ class SharedFolderContractTests(unittest.TestCase):
         self.assertNotIn("Review the complete repository", packet.ready_path.read_text(encoding="ascii"))
         self.assertEqual(marker["job_id"], packet.job_id)
         self.assertEqual(marker["prd_bytes"], len(prd_bytes))
+
+    def test_packet_members_are_mode_0600_before_write_across_umasks(self) -> None:
+        archive = self._snapshot("modes", b"repository bytes")
+        prd = self.workspace / "modes.prd"
+        prd.write_bytes(b"PRD")
+        original_open = os.open
+        original_fchmod = os.fchmod
+        created_descriptors: dict[int, tuple[str, int]] = {}
+        observed_modes: dict[str, tuple[int, int, int]] = {}
+
+        def observe_create(path: object, flags: int, mode: int = 0o777, *args: object, **kwargs: object) -> int:
+            descriptor = original_open(path, flags, mode, *args, **kwargs)
+            if flags & os.O_CREAT and flags & os.O_EXCL:
+                created_descriptors[descriptor] = (Path(path).name, mode)
+            return descriptor
+
+        def observe_fchmod(descriptor: int, mode: int, *args: object, **kwargs: object) -> None:
+            original_fchmod(descriptor, mode, *args, **kwargs)
+            if descriptor in created_descriptors:
+                name, requested_mode = created_descriptors[descriptor]
+                observed_modes[name] = (
+                    requested_mode,
+                    mode,
+                    os.fstat(descriptor).st_mode & 0o777,
+                )
+
+        previous_umask = os.umask(0)
+        try:
+            with (
+                mock.patch.object(shared_folder_module.os, "open", side_effect=observe_create),
+                mock.patch.object(shared_folder_module.os, "fchmod", side_effect=observe_fchmod),
+            ):
+                permissive_packet = deposit_packet(self.queue_root, archive, prd, replication_count=1)
+        finally:
+            os.umask(previous_umask)
+
+        previous_umask = os.umask(0o777)
+        try:
+            with (
+                mock.patch.object(shared_folder_module.os, "open", side_effect=observe_create),
+                mock.patch.object(shared_folder_module.os, "fchmod", side_effect=observe_fchmod),
+            ):
+                shared_folder_module._copy_file(
+                    archive,
+                    self.workspace / "restrictive-member.bin",
+                )
+        finally:
+            os.umask(previous_umask)
+
+        for name in (SNAPSHOT_FILENAME, f"{SNAPSHOT_FILENAME}.manifest.json", PRD_FILENAME):
+            self.assertEqual(observed_modes.get(name), (0o600, 0o600, 0o600), name)
+        self.assertEqual(observed_modes["restrictive-member.bin"], (0o600, 0o600, 0o600))
+        for member in permissive_packet.packet_dir.iterdir():
+            if member.is_file():
+                self.assertEqual(member.stat().st_mode & 0o777, 0o600, member.name)
+
+    def test_ready_marker_accepts_bounded_json_and_rejects_valid_oversize(self) -> None:
+        archive = self._snapshot("bounded", b"repository bytes")
+        prd = self.workspace / "bounded.prd"
+        prd.write_bytes(b"PRD")
+        packet = deposit_packet(self.queue_root, archive, prd, replication_count=1)
+        marker = packet.ready_path.read_bytes().rstrip(b"\n")
+        limit = shared_folder_module._READY_MARKER_MAX_BYTES
+        self.assertLess(len(marker), limit)
+
+        packet.ready_path.write_bytes(marker + b" " * (limit - len(marker)))
+        self.assertEqual(load_packet(packet.packet_dir), packet)
+
+        packet.ready_path.write_bytes(marker + b" " * (limit - len(marker) + 1))
+        with self.assertRaises(SharedFolderError):
+            load_packet(packet.packet_dir)
+
+    @unittest.skipUnless(hasattr(os, "mkfifo") and hasattr(os, "symlink"), "special files are unavailable")
+    def test_ready_marker_fifo_nonregular_and_symlink_reject_promptly(self) -> None:
+        archive = self._snapshot("marker-types", b"repository bytes")
+        prd = self.workspace / "marker-types.prd"
+        prd.write_bytes(b"PRD")
+        packet = deposit_packet(self.queue_root, archive, prd, replication_count=1)
+        ready = packet.ready_path
+        target = self.workspace / "marker-target"
+        target.write_bytes(b"not a marker")
+
+        for marker_type in ("fifo", "directory", "symlink"):
+            if ready.is_dir() and not ready.is_symlink():
+                ready.rmdir()
+            elif ready.exists() or ready.is_symlink():
+                ready.unlink()
+            if marker_type == "fifo":
+                os.mkfifo(ready)
+            elif marker_type == "directory":
+                ready.mkdir()
+            else:
+                os.symlink(target, ready)
+
+            with self.assertRaises(SharedFolderError):
+                load_packet(packet.packet_dir)
+
+    def test_ready_marker_descriptor_closes_when_read_fails(self) -> None:
+        marker = self.workspace / READY_FILENAME
+        marker.write_bytes(b"{}")
+        with (
+            mock.patch.object(shared_folder_module.os, "read", side_effect=OSError("read failed")),
+            mock.patch.object(shared_folder_module.os, "close", wraps=os.close) as close,
+        ):
+            with self.assertRaises(SharedFolderError):
+                shared_folder_module._read_ready_marker(marker)
+        close.assert_called_once()
+
+    @unittest.skipUnless(hasattr(sys, "set_int_max_str_digits"), "integer conversion limits are unavailable")
+    def test_ready_marker_pathological_integer_is_normalized(self) -> None:
+        marker = self.workspace / READY_FILENAME
+        marker.write_bytes(b'{"integer":' + b"1" * 700 + b"}")
+        previous_limit = sys.get_int_max_str_digits()
+        sys.set_int_max_str_digits(640)
+        try:
+            with self.assertRaises(SharedFolderError):
+                shared_folder_module._read_ready_marker(marker)
+        finally:
+            sys.set_int_max_str_digits(previous_limit)
 
     def test_cli_deposit_list_and_claim_expose_only_safe_metadata(self) -> None:
         archive = self._snapshot("cli", b"repository bytes")

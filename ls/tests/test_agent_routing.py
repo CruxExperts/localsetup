@@ -79,6 +79,11 @@ def run_loaded_select(module, monkeypatch, capsys) -> dict[str, Any]:
     return json.loads(capsys.readouterr().out)
 
 
+def run_loaded_file_select(module, capsys, path: Path) -> dict[str, Any]:
+    assert module.main(["select", "--request", str(path)]) == 0
+    return json.loads(capsys.readouterr().out)
+
+
 def _install_replacement(target: Path, replacement: Path, *, directory: bool) -> None:
     if directory:
         replacement.mkdir()
@@ -158,6 +163,179 @@ def test_select_does_not_promote_family_scoped_vision_to_a_concrete_candidate() 
     assert receipt["status"] == "offline"
     assert receipt["reason"] == "candidate_evidence_unknown"
     assert "selected" not in receipt
+
+
+def test_request_file_rejects_oversize_before_reading_payload(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    module = load_selector_module(SCRIPT)
+    request = tmp_path / "oversized-request.json"
+    request.write_bytes(b"x" * (module.MAX_REQUEST_BYTES + 1))
+    monkeypatch.setattr(module, "_load_snapshot", lambda: ({}, "0" * 64, None))
+    monkeypatch.setattr(module.os, "read", lambda *args: pytest.fail("oversized request was read"))
+
+    receipt = run_loaded_file_select(module, capsys, request)
+
+    assert receipt["status"] == "rejected"
+    assert receipt["reason"] == "invalid_request"
+
+
+@pytest.mark.parametrize("kind", ("symlink", "directory", "fifo"))
+def test_request_path_rejects_symlink_and_nonregular_without_opening(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    kind: str,
+) -> None:
+    if not hasattr(os, "O_NOFOLLOW"):
+        pytest.skip("the platform lacks no-follow file opens")
+    target = tmp_path / kind
+    if kind == "symlink":
+        try:
+            target.symlink_to(tmp_path / "outside")
+        except (NotImplementedError, OSError):
+            pytest.skip("the platform lacks usable symlinks")
+    elif kind == "directory":
+        target.mkdir()
+    else:
+        if not hasattr(os, "mkfifo"):
+            pytest.skip("the platform lacks FIFOs")
+        try:
+            os.mkfifo(target)
+        except (NotImplementedError, OSError):
+            pytest.skip("the platform lacks usable FIFOs")
+
+    module = load_selector_module(SCRIPT)
+    monkeypatch.setattr(module, "_load_snapshot", lambda: ({}, "0" * 64, None))
+    monkeypatch.setattr(module.os, "open", lambda *args, **kwargs: pytest.fail("nonregular request was opened"))
+
+    receipt = run_loaded_file_select(module, capsys, target)
+
+    assert receipt["status"] == "rejected"
+    assert receipt["reason"] == "invalid_request"
+
+
+def test_request_stdin_reads_only_limit_plus_one_before_decoding(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = load_selector_module(SCRIPT)
+    sizes: list[int] = []
+
+    class BoundedInput:
+        def read(self, size: int) -> bytes:
+            sizes.append(size)
+            return b"x" * size
+
+    monkeypatch.setattr(module.sys, "stdin", BoundedInput())
+
+    with pytest.raises(module.RoutingError):
+        module._read_request("-")
+    assert sizes == [module.MAX_REQUEST_BYTES + 1]
+
+
+def test_request_file_and_stdin_accept_normal_bounded_requests(tmp_path: Path) -> None:
+    request = tmp_path / "request.json"
+    request.write_bytes(json.dumps(VALID_REQUEST).encode("utf-8"))
+
+    file_receipt = run_select(VALID_REQUEST, script=SCRIPT)
+    result = subprocess.run(
+        [sys.executable, "-I", str(SCRIPT), "select", "--request", str(request)],
+        text=True,
+        capture_output=True,
+        env={"PYTHONPATH": ""},
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    path_receipt = json.loads(result.stdout)
+
+    assert file_receipt["status"] == "selected"
+    assert path_receipt["status"] == "selected"
+    assert path_receipt["selected"] == file_receipt["selected"]
+
+
+def test_cli_rejects_valid_json_with_legal_trailing_whitespace_over_limit(tmp_path: Path) -> None:
+    payload = json.dumps(VALID_REQUEST).encode("utf-8") + b" " * (
+        65_536 - len(json.dumps(VALID_REQUEST).encode("utf-8")) + 1
+    )
+    assert len(payload) > 65_536
+    assert json.loads(payload) == VALID_REQUEST
+
+    request = tmp_path / "oversized-valid-request.json"
+    request.write_bytes(payload)
+    file_result = subprocess.run(
+        [sys.executable, "-I", str(SCRIPT), "select", "--request", str(request)],
+        text=True,
+        capture_output=True,
+        env={"PYTHONPATH": ""},
+        check=False,
+    )
+    stdin_result = subprocess.run(
+        [sys.executable, "-I", str(SCRIPT), "select", "--request", "-"],
+        input=payload.decode("utf-8"),
+        text=True,
+        capture_output=True,
+        env={"PYTHONPATH": ""},
+        check=False,
+    )
+    for result in (file_result, stdin_result):
+        assert result.returncode == 0
+        receipt = json.loads(result.stdout)
+        assert receipt["status"] == "rejected"
+        assert receipt["reason"] == "invalid_request"
+        assert result.stderr == ""
+
+
+@pytest.mark.parametrize(
+    "payload",
+    (
+        '{"schema":' + ("1" * 5_000) + '}',
+        "[" * 2_000 + "0" + "]" * 2_000,
+    ),
+    ids=("overlong-integer", "deeply-nested-json"),
+)
+def test_cli_normalizes_bounded_json_decoder_failures(
+    tmp_path: Path, payload: str
+) -> None:
+    request = tmp_path / "decoder-failure.json"
+    request.write_text(payload, encoding="utf-8")
+    file_result = subprocess.run(
+        [sys.executable, "-I", str(SCRIPT), "select", "--request", str(request)],
+        text=True,
+        capture_output=True,
+        env={"PYTHONPATH": ""},
+        check=False,
+    )
+    stdin_result = subprocess.run(
+        [sys.executable, "-I", str(SCRIPT), "select", "--request", "-"],
+        input=payload,
+        text=True,
+        capture_output=True,
+        env={"PYTHONPATH": ""},
+        check=False,
+    )
+    for result in (file_result, stdin_result):
+        assert result.returncode == 0
+        receipt = json.loads(result.stdout)
+        assert receipt["status"] == "rejected"
+        assert receipt["reason"] == "invalid_request"
+        assert result.stderr == ""
+
+
+def test_selector_resolves_symlinked_adapter_skill_root(tmp_path: Path) -> None:
+    if not hasattr(os, "symlink"):
+        pytest.skip("the platform lacks symlinks")
+    adapter = tmp_path / "adapter"
+    try:
+        adapter.symlink_to(SKILL, target_is_directory=True)
+    except (NotImplementedError, OSError):
+        pytest.skip("the platform lacks usable directory symlinks")
+
+    receipt = run_select(VALID_REQUEST, script=adapter / "scripts" / "agent_routing.py")
+
+    assert receipt["status"] == "selected"
+    assert receipt["reason"] == "selected_static_reviewed"
 
 
 def test_anchored_descriptors_reject_single_and_coordinated_tampering(tmp_path: Path) -> None:
@@ -504,6 +682,20 @@ def test_selector_normalizes_every_descriptor_capability_failure(
     assert str(skill) not in json.dumps(receipt)
 
 
+def test_selector_normalizes_skill_root_resolution_loop(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = load_selector_module(copied_skill(tmp_path / "root-loop") / "scripts" / "agent_routing.py")
+
+    def failing_skill_root() -> Path:
+        raise RuntimeError("symlink loop")
+
+    monkeypatch.setattr(module, "_skill_root", failing_skill_root)
+
+    assert module._load_snapshot() == ({}, "0" * 64, "resource_invalid")
+
+
 def test_selector_root_fstat_failure_closes_every_opened_descriptor_once(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -568,13 +760,23 @@ def test_selector_source_has_no_runtime_or_process_ingress() -> None:
         for node in ast.walk(tree)
         if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name) and node.value.id == "os"
     }
-    assert os_attributes <= {"open", "stat", "fstat", "read", "close", "O_RDONLY", "O_DIRECTORY", "O_NOFOLLOW"}
+    assert os_attributes <= {
+        "open",
+        "stat",
+        "fstat",
+        "read",
+        "close",
+        "O_RDONLY",
+        "O_DIRECTORY",
+        "O_NOFOLLOW",
+        "O_NONBLOCK",
+    }
     stat_attributes = {
         node.attr
         for node in ast.walk(tree)
         if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name) and node.value.id == "stat"
     }
-    assert stat_attributes <= {"S_ISDIR", "S_ISREG"}
+    assert stat_attributes <= {"S_ISDIR", "S_ISLNK", "S_ISREG"}
     source = SCRIPT.read_text(encoding="utf-8")
     for forbidden in ("Popen(", "os.system", "worker", "account probe", "R00"):
         assert forbidden not in source

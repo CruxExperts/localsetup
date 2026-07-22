@@ -68,6 +68,17 @@ class SnapshotContractTests(unittest.TestCase):
         self.assertFalse(archive.exists())
         self.assertFalse(manifest_path_for(archive).exists())
 
+    def test_nested_gitfile_source_is_rejected(self) -> None:
+        nested = self.source / "nested"
+        nested.mkdir()
+        (nested / ".git").write_text(
+            "gitdir: /host/worktrees/nested\n",
+            encoding="ascii",
+        )
+
+        with self.assertRaises(SnapshotError):
+            create_snapshot(self.source, self.workspace / "repo.tar.gz")
+
     def test_gitfile_source_is_not_inspected(self) -> None:
         external_git = self.workspace / "external.git"
         external_git.mkdir()
@@ -178,6 +189,16 @@ class SnapshotContractTests(unittest.TestCase):
         self.assertTrue(cached_sizes)
         self.assertLessEqual(max(cached_sizes), 1)
 
+    def test_local_snapshot_is_uncapped_but_external_validation_is_limited(self) -> None:
+        (self.source / "first").write_text("1", encoding="ascii")
+        (self.source / "second").write_text("2", encoding="ascii")
+        archive = self.workspace / "uncapped-local.tar.gz"
+
+        with mock.patch.object(archive_validation, "MAX_SNAPSHOT_ARCHIVE_MEMBERS", 2):
+            result = create_snapshot(self.source, archive)
+            with self.assertRaises(SnapshotValidationError):
+                validate_snapshot(result.archive_path)
+
     def test_archive_git_entry_must_be_directory(self) -> None:
         archive = self.workspace / "gitfile.tar.gz"
         with tarfile.open(archive, mode="w:gz") as tar:
@@ -191,6 +212,113 @@ class SnapshotContractTests(unittest.TestCase):
 
         with self.assertRaises(SnapshotValidationError):
             validate_snapshot(archive)
+
+    def test_nested_archive_gitfile_is_rejected(self) -> None:
+        archive = self.workspace / "nested-gitfile.tar.gz"
+        with tarfile.open(archive, mode="w:gz") as tar:
+            root = tarfile.TarInfo("repo")
+            root.type = tarfile.DIRTYPE
+            tar.addfile(root)
+            nested = tarfile.TarInfo("repo/nested")
+            nested.type = tarfile.DIRTYPE
+            tar.addfile(nested)
+            gitfile = tarfile.TarInfo("repo/nested/.git")
+            gitfile.size = 0
+            tar.addfile(gitfile)
+        self._write_manifest_for_archive(archive, "repo")
+
+        with self.assertRaises(SnapshotValidationError):
+            validate_snapshot(archive)
+
+    def test_oversized_sidecar_is_rejected_before_reading(self) -> None:
+        archive = self.workspace / "oversized-sidecar.tar.gz"
+        create_snapshot(self.source, archive)
+        manifest = manifest_path_for(archive)
+        original_manifest = manifest.read_bytes()
+        manifest.write_bytes(
+            original_manifest
+            + b" " * (snapshot_module.MAX_SNAPSHOT_MANIFEST_BYTES + 1 - len(original_manifest))
+        )
+
+        with mock.patch.object(
+            snapshot_module.os,
+            "read",
+            side_effect=AssertionError("oversized sidecar was read"),
+        ):
+            with self.assertRaises(SnapshotValidationError):
+                validate_snapshot(archive)
+
+    def test_sidecar_symlink_and_nonregular_inputs_are_rejected_before_open(self) -> None:
+        if not hasattr(os, "symlink"):
+            self.skipTest("symbolic links are unavailable")
+        archive = self.workspace / "sidecar-types.tar.gz"
+        create_snapshot(self.source, archive)
+        manifest = manifest_path_for(archive)
+        manifest_link = self.workspace / "sidecar-link.json"
+        os.symlink(manifest, manifest_link)
+        with mock.patch.object(
+            snapshot_module.os,
+            "open",
+            side_effect=AssertionError("symlink sidecar was opened"),
+        ):
+            with self.assertRaises(SnapshotValidationError):
+                validate_snapshot(archive, manifest_link)
+
+        if not hasattr(os, "mkfifo"):
+            self.skipTest("FIFOs are unavailable")
+        manifest_link.unlink()
+        manifest.unlink()
+        os.mkfifo(manifest)
+        with mock.patch.object(
+            snapshot_module.os,
+            "open",
+            side_effect=AssertionError("nonregular sidecar was opened"),
+        ):
+            with self.assertRaises(SnapshotValidationError):
+                validate_snapshot(archive)
+
+    @unittest.skipUnless(
+        hasattr(os, "mkfifo") and hasattr(os, "O_NONBLOCK"),
+        "nonblocking FIFOs are unavailable",
+    )
+    def test_sidecar_fifo_race_is_opened_nonblocking_and_rejected(self) -> None:
+        archive = self.workspace / "sidecar-fifo-race.tar.gz"
+        create_snapshot(self.source, archive)
+        manifest = manifest_path_for(archive)
+        original_open = snapshot_module.os.open
+        replacement = manifest.with_name("sidecar-original.json")
+        swapped = False
+        observed_flags: list[int] = []
+
+        def observe_open(
+            path: os.PathLike[str] | str,
+            flags: int,
+            mode: int = 0o777,
+            *,
+            dir_fd: int | None = None,
+        ) -> int:
+            nonlocal swapped
+            if Path(path) == manifest and not swapped:
+                swapped = True
+                manifest.rename(replacement)
+                os.mkfifo(manifest)
+            observed_flags.append(flags)
+            self.assertTrue(flags & os.O_NONBLOCK)
+            return original_open(path, flags, mode, dir_fd=dir_fd)
+
+        try:
+            with (
+                mock.patch.object(snapshot_module.os, "open", new=observe_open),
+            ):
+                with self.assertRaises(SnapshotValidationError):
+                    validate_snapshot(archive)
+        finally:
+            if manifest.exists():
+                manifest.unlink()
+            if replacement.exists():
+                replacement.rename(manifest)
+        self.assertTrue(swapped)
+        self.assertTrue(observed_flags)
 
 
 
@@ -340,6 +468,41 @@ class SnapshotContractTests(unittest.TestCase):
 
         self.assertFalse(archive.exists())
         self.assertFalse(manifest.exists())
+
+    def test_manifest_failure_removes_published_archive(self) -> None:
+        archive = self.workspace / "manifest-failure.tar.gz"
+
+        with mock.patch.object(
+            snapshot_module,
+            "_write_manifest",
+            side_effect=SnapshotError("simulated manifest failure"),
+        ):
+            with self.assertRaises(SnapshotError):
+                create_snapshot(self.source, archive)
+
+        self.assertFalse(archive.exists())
+        self.assertFalse(manifest_path_for(archive).exists())
+
+    def test_manifest_failure_preserves_concurrent_archive_replacement(self) -> None:
+        archive = self.workspace / "manifest-replacement.tar.gz"
+        replacement = self.workspace / "concurrent-replacement.tar.gz"
+        replacement_bytes = b"concurrent replacement"
+
+        def replace_archive(path: Path, metadata: object) -> None:
+            replacement.write_bytes(replacement_bytes)
+            replacement.replace(archive)
+            raise SnapshotError("simulated manifest failure")
+
+        with mock.patch.object(
+            snapshot_module,
+            "_write_manifest",
+            side_effect=replace_archive,
+        ):
+            with self.assertRaises(SnapshotError):
+                create_snapshot(self.source, archive)
+
+        self.assertEqual(archive.read_bytes(), replacement_bytes)
+        self.assertFalse(manifest_path_for(archive).exists())
 
     def test_changed_git_head_aborts_before_publication(self) -> None:
         archive = self.workspace / "head-change.tar.gz"

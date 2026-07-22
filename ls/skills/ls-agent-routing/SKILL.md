@@ -27,6 +27,8 @@ printf '%s' '{"schema":"agent_routing_request_v1","task_class":"routine","risk":
 
 Treat `rejected` and `offline` receipts as typed results. Do not add a model,
 price, account, observation, permission, or Ultra override to the request.
+Request input is limited to 65,536 UTF-8 bytes; oversized, unavailable, or
+malformed input is returned as a rejected `invalid_request` receipt.
 
 ## Boundaries
 

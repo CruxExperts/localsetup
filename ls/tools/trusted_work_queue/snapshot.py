@@ -21,9 +21,12 @@ from pathlib import Path
 from typing import Any
 
 from .archive_validation import (
+    MAX_SNAPSHOT_MANIFEST_BYTES,
     filter_snapshot_archive_member,
+    read_snapshot_manifest_bytes,
     validate_snapshot_archive_members,
 )
+from . import archive_validation
 
 FORMAT_VERSION = 1
 MANIFEST_SUFFIX = ".manifest.json"
@@ -179,6 +182,7 @@ def create_snapshot(
                 temporary_archive,
                 root_name,
                 error_type=SnapshotError,
+                max_members=None,
             )
             archive_sha256 = hashing_writer.hexdigest()
             total_bytes = hashing_writer.total_bytes
@@ -186,7 +190,7 @@ def create_snapshot(
         if git_head_after != git_head_before:
             raise SnapshotError("source Git HEAD changed while the snapshot streamed")
         git_head = git_head_before
-        _publish_no_clobber(temporary_archive, archive)
+        archive_identity = _publish_no_clobber(temporary_archive, archive)
         temporary_archive = None
     except (OSError, tarfile.TarError, SnapshotError) as exc:
         if temporary_archive is not None:
@@ -213,7 +217,7 @@ def create_snapshot(
     try:
         _write_manifest(manifest, metadata)
     except SnapshotError:
-        _unlink_quietly(archive)
+        _unlink_if_same_identity(archive, archive_identity)
         try:
             _fsync_parent(archive)
         except SnapshotError:
@@ -237,14 +241,10 @@ def validate_snapshot(
     manifest = expected_manifest if manifest_path is None else Path(manifest_path)
     if archive.is_symlink():
         raise SnapshotValidationError("snapshot archive must not be a symbolic link")
-    if manifest.is_symlink():
-        raise SnapshotValidationError("snapshot sidecar must not be a symbolic link")
     if _resolved_path(manifest) != _resolved_path(expected_manifest):
         raise SnapshotValidationError("manifest is not the archive's adjacent sidecar")
     if not archive.is_file():
         raise SnapshotValidationError("snapshot archive does not exist or is not a file")
-    if not manifest.is_file():
-        raise SnapshotValidationError("snapshot sidecar does not exist or is not a file")
 
     metadata = _read_manifest(manifest)
     try:
@@ -260,6 +260,7 @@ def validate_snapshot(
         archive,
         metadata.source_root_name,
         error_type=SnapshotValidationError,
+        max_members=archive_validation.MAX_SNAPSHOT_ARCHIVE_MEMBERS,
     )
     return metadata
 
@@ -276,6 +277,7 @@ def validate_snapshot_contents(
         archive,
         source_root_name,
         error_type=SnapshotValidationError,
+        max_members=archive_validation.MAX_SNAPSHOT_ARCHIVE_MEMBERS,
     )
 
 
@@ -332,6 +334,10 @@ def _scan_source_tree(source: Path) -> None:
             if stat.S_ISDIR(mode):
                 pending.append(Path(entry.path))
             elif stat.S_ISREG(mode):
+                if entry.name == ".git":
+                    raise SnapshotError(
+                        "source contains a Git metadata file: " + relative.as_posix()
+                    )
                 if info.st_nlink > 1:
                     raise SnapshotError(
                         "source contains a hard link: " + relative.as_posix()
@@ -360,8 +366,13 @@ def _scan_source_tree(source: Path) -> None:
 
 def _read_manifest(path: Path) -> SnapshotMetadata:
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        payload = json.loads(
+            read_snapshot_manifest_bytes(
+                path,
+                error_type=SnapshotValidationError,
+            ).decode("utf-8")
+        )
+    except (UnicodeError, ValueError, RecursionError) as exc:
         raise SnapshotValidationError("snapshot sidecar is not valid JSON") from exc
     if not isinstance(payload, dict):
         raise SnapshotValidationError("snapshot sidecar must contain a JSON object")
@@ -442,7 +453,6 @@ def _read_manifest(path: Path) -> SnapshotMetadata:
         source_fork=source_fork,
     )
 
-
 def _write_manifest(path: Path, metadata: SnapshotMetadata) -> None:
     temporary: Path | None = None
     try:
@@ -468,8 +478,11 @@ def _write_manifest(path: Path, metadata: SnapshotMetadata) -> None:
 
 
 
-def _publish_no_clobber(temporary: Path, destination: Path) -> None:
+def _publish_no_clobber(temporary: Path, destination: Path) -> tuple[int, int]:
     """Publish a same-filesystem temporary file without replacing an existing path."""
+    temporary_identity = _lstat_identity(temporary)
+    if temporary_identity is None:
+        raise SnapshotError("unable to inspect the temporary snapshot artifact")
     try:
         os.link(temporary, destination)
     except FileExistsError as exc:
@@ -488,21 +501,32 @@ def _publish_no_clobber(temporary: Path, destination: Path) -> None:
             pass
         raise
     _unlink_quietly(temporary)
+    return temporary_identity
 
 
 def _unlink_if_same_inode(expected: Path, destination: Path) -> None:
+    expected_identity = _lstat_identity(expected)
+    if expected_identity is not None:
+        _unlink_if_same_identity(destination, expected_identity)
+
+
+def _unlink_if_same_identity(path: Path, expected: tuple[int, int]) -> None:
+    current = _lstat_identity(path)
+    if current == expected:
+        try:
+            path.unlink()
+        except FileNotFoundError:
+            pass
+        except OSError:
+            pass
+
+
+def _lstat_identity(path: Path) -> tuple[int, int] | None:
     try:
-        expected_stat = expected.stat()
-        destination_stat = destination.stat()
-        if (
-            expected_stat.st_dev == destination_stat.st_dev
-            and expected_stat.st_ino == destination_stat.st_ino
-        ):
-            destination.unlink()
-    except FileNotFoundError:
-        pass
+        info = os.lstat(path)
     except OSError:
-        pass
+        return None
+    return info.st_dev, info.st_ino
 
 
 def _temporary_path(path: Path) -> Path:

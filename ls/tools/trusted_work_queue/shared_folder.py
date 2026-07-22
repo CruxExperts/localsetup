@@ -36,6 +36,7 @@ READY_FILENAME = "packet.json"
 CLAIM_SUFFIX = ".claim"
 MAX_REPLICATION_COUNT = 64
 _COPY_CHUNK_BYTES = 1024 * 1024
+_READY_MARKER_MAX_BYTES = 1024
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _UTC_TIMESTAMP_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}\+00:00$")
 
@@ -322,20 +323,32 @@ def _require_directory(path: Path, *, field: str, create: bool) -> None:
 def _copy_file(source: Path, destination: Path) -> tuple[str, int]:
     digest = hashlib.sha256()
     total = 0
+    descriptor: int | None = None
     try:
-        with source.open("rb") as reader, destination.open("xb") as writer:
-            while chunk := reader.read(_COPY_CHUNK_BYTES):
-                digest.update(chunk)
-                total += len(chunk)
-                writer.write(chunk)
-            writer.flush()
-            os.fsync(writer.fileno())
-        os.chmod(destination, 0o600)
+        with source.open("rb") as reader:
+            flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+            flags |= getattr(os, "O_CLOEXEC", 0)
+            descriptor = os.open(destination, flags, 0o600)
+            os.fchmod(descriptor, 0o600)
+            with os.fdopen(descriptor, "wb", closefd=True) as writer:
+                descriptor = None
+                while chunk := reader.read(_COPY_CHUNK_BYTES):
+                    digest.update(chunk)
+                    total += len(chunk)
+                    writer.write(chunk)
+                writer.flush()
+                os.fsync(writer.fileno())
         _fsync_directory(destination.parent)
     except FileExistsError as exc:
         raise SharedFolderError("queue packet member already exists") from exc
     except OSError as exc:
         raise SharedFolderError("cannot stream queue packet member") from exc
+    finally:
+        if descriptor is not None:
+            try:
+                os.close(descriptor)
+            except OSError:
+                pass
     return digest.hexdigest(), total
 
 
@@ -397,14 +410,88 @@ def _write_json_no_clobber(path: Path, payload: dict[str, Any], *, description: 
 
 
 def _read_ready_marker(path: Path) -> dict[str, Any]:
+    descriptor: int | None = None
     try:
-        if path.is_symlink():
-            raise SharedFolderError("queue ready marker must not be a symbolic link")
-        loaded = json.loads(path.read_text(encoding="ascii"))
+        try:
+            initial_stat = path.lstat()
+        except OSError as exc:
+            raise SharedFolderError("queue ready marker cannot be inspected") from exc
+        if not stat.S_ISREG(initial_stat.st_mode):
+            raise SharedFolderError("queue ready marker must be a regular non-symlink file")
+        if initial_stat.st_size > _READY_MARKER_MAX_BYTES:
+            raise SharedFolderError("queue ready marker is too large")
+
+        nofollow = getattr(os, "O_NOFOLLOW", None)
+        nonblock = getattr(os, "O_NONBLOCK", None)
+        if nofollow is None or nonblock is None:
+            raise SharedFolderError("queue ready marker cannot be opened safely")
+        flags = os.O_RDONLY | nofollow | nonblock
+        flags |= getattr(os, "O_CLOEXEC", 0)
+        try:
+            descriptor = os.open(path, flags)
+        except OSError as exc:
+            raise SharedFolderError("queue ready marker cannot be opened") from exc
+
+        try:
+            descriptor_stat = os.fstat(descriptor)
+        except OSError as exc:
+            raise SharedFolderError("queue ready marker cannot be inspected") from exc
+        identity = (initial_stat.st_dev, initial_stat.st_ino)
+        if (
+            not stat.S_ISREG(descriptor_stat.st_mode)
+            or (descriptor_stat.st_dev, descriptor_stat.st_ino) != identity
+            or descriptor_stat.st_size > _READY_MARKER_MAX_BYTES
+        ):
+            raise SharedFolderError("queue ready marker is not a bounded regular file")
+
+        data = bytearray()
+        while True:
+            remaining = _READY_MARKER_MAX_BYTES + 1 - len(data)
+            if remaining <= 0:
+                raise SharedFolderError("queue ready marker is too large")
+            try:
+                chunk = os.read(descriptor, min(64 * 1024, remaining))
+            except OSError as exc:
+                raise SharedFolderError("queue ready marker cannot be read") from exc
+            if not chunk:
+                break
+            data.extend(chunk)
+            if len(data) > _READY_MARKER_MAX_BYTES:
+                raise SharedFolderError("queue ready marker is too large")
+
+        try:
+            finished_stat = os.fstat(descriptor)
+        except OSError as exc:
+            raise SharedFolderError("queue ready marker cannot be inspected") from exc
+        if (
+            not stat.S_ISREG(finished_stat.st_mode)
+            or (finished_stat.st_dev, finished_stat.st_ino) != identity
+            or finished_stat.st_size > _READY_MARKER_MAX_BYTES
+            or len(data) != finished_stat.st_size
+        ):
+            raise SharedFolderError("queue ready marker changed while being read")
+
+        try:
+            final_stat = path.lstat()
+        except OSError as exc:
+            raise SharedFolderError("queue ready marker cannot be inspected") from exc
+        if (
+            not stat.S_ISREG(final_stat.st_mode)
+            or (final_stat.st_dev, final_stat.st_ino) != identity
+            or final_stat.st_size != finished_stat.st_size
+        ):
+            raise SharedFolderError("queue ready marker changed while being read")
+        loaded = json.loads(data.decode("utf-8"))
     except SharedFolderError:
         raise
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+    except (OSError, UnicodeError, ValueError, RecursionError) as exc:
         raise SharedFolderError("queue ready marker cannot be read") from exc
+    finally:
+        if descriptor is not None:
+            try:
+                os.close(descriptor)
+            except OSError as exc:
+                raise SharedFolderError("queue ready marker descriptor cannot be closed") from exc
     if not isinstance(loaded, dict):
         raise SharedFolderError("queue ready marker must be a JSON object")
     return loaded

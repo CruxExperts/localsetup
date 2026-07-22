@@ -31,6 +31,7 @@ LANE_ORDER = {
 MODEL_RE = re.compile(r"^gpt-5\.6-(sol|terra|luna)$")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 MAX_STATIC_RESOURCE_BYTES = 1_048_576
+MAX_REQUEST_BYTES = 65_536
 
 # These anchors are intentionally in the isolated standard-library selector, not
 # in a mutable manifest.  A valid manifest digest cannot substitute for one.
@@ -133,7 +134,7 @@ class RoutingError(ValueError):
 
 
 def _skill_root() -> Path:
-    return Path(__file__).absolute().parent.parent
+    return Path(__file__).resolve(strict=True).parent.parent
 
 
 def _valid_component(name: str) -> bool:
@@ -413,8 +414,68 @@ def _load_snapshot_inner() -> tuple[dict[str, Any], str, str | None]:
 def _load_snapshot() -> tuple[dict[str, Any], str, str | None]:
     try:
         return _load_snapshot_inner()
-    except (RoutingError, OSError, ValueError, UnicodeError, json.JSONDecodeError, AttributeError, TypeError, NotImplementedError):
+    except (RoutingError, OSError, ValueError, UnicodeError, json.JSONDecodeError, AttributeError, TypeError, NotImplementedError, RuntimeError):
         return {}, "0" * 64, "resource_invalid"
+
+
+def _request_bytes_from_stdin() -> bytes:
+    try:
+        stream = getattr(sys.stdin, "buffer", sys.stdin)
+        data = stream.read(MAX_REQUEST_BYTES + 1)
+    except (OSError, ValueError, TypeError, AttributeError, NotImplementedError):
+        raise RoutingError("request input is unavailable") from None
+    if isinstance(data, str):
+        try:
+            data = data.encode("utf-8")
+        except UnicodeError:
+            raise RoutingError("request input is invalid") from None
+    if not isinstance(data, bytes) or len(data) > MAX_REQUEST_BYTES:
+        raise RoutingError("request input is invalid")
+    return data
+
+
+def _request_bytes_from_file(value: str) -> bytes:
+    try:
+        observed = os.stat(value, follow_symlinks=False)
+    except (OSError, ValueError, TypeError, AttributeError, NotImplementedError):
+        raise RoutingError("request file is unavailable") from None
+    if stat.S_ISLNK(observed.st_mode) or not stat.S_ISREG(observed.st_mode):
+        raise RoutingError("request file is unavailable")
+    if not 0 <= observed.st_size <= MAX_REQUEST_BYTES:
+        raise RoutingError("request file is invalid")
+
+    fd: int | None = None
+    try:
+        fd = os.open(value, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+        opened = os.fstat(fd)
+        if (
+            _identity(opened) != _identity(observed)
+            or not stat.S_ISREG(opened.st_mode)
+            or opened.st_size != observed.st_size
+            or not 0 <= opened.st_size <= MAX_REQUEST_BYTES
+        ):
+            raise RoutingError("request file changed during open")
+        remaining = observed.st_size
+        chunks: list[bytes] = []
+        while remaining:
+            chunk = os.read(fd, min(MAX_REQUEST_BYTES, remaining))
+            if not chunk:
+                raise RoutingError("request file ended early")
+            chunks.append(chunk)
+            remaining -= len(chunk)
+        if os.read(fd, 1):
+            raise RoutingError("request file has trailing content")
+        final = os.fstat(fd)
+        if _identity(final) != _identity(observed) or final.st_size != observed.st_size:
+            raise RoutingError("request file changed during read")
+        return b"".join(chunks)
+    except RoutingError:
+        raise
+    except (OSError, ValueError, TypeError, AttributeError, NotImplementedError):
+        raise RoutingError("request file is invalid") from None
+    finally:
+        if fd is not None:
+            _close_fd(fd)
 
 
 def _validate_request(value: Any) -> dict[str, Any]:
@@ -494,11 +555,11 @@ def _select(snapshot: dict[str, Any], request: dict[str, Any], digest: str) -> d
 
 
 def _read_request(value: str) -> Any:
+    data = _request_bytes_from_stdin() if value == "-" else _request_bytes_from_file(value)
     try:
-        text = sys.stdin.read() if value == "-" else Path(value).read_text(encoding="utf-8")
-        return json.loads(text)
-    except (OSError, UnicodeError, json.JSONDecodeError):
-        return None
+        return json.loads(data.decode("utf-8"))
+    except (UnicodeError, json.JSONDecodeError, ValueError, RecursionError):
+        raise RoutingError("request input is invalid") from None
 
 
 def main(argv: list[str] | None = None) -> int:
