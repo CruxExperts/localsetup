@@ -41,7 +41,7 @@ ls/tools/trusted_work_queue.py  # direct-execution wrapper only
 
 The current `ls/tools/trusted_work_queue/` package may be removed during that clean cutover; do not retain a second implementation or an import alias. The migration must update every documented invocation and test import together.
 
-An S3-compatible adapter is the first plausible reason for `transport.py`. It must implement the same immutable deposit, ready-marker, claim, provenance, and result-shape contracts. It must not cause a new dependency to be added until the dependency security review and explicit package approval gates have passed.
+An S3-compatible adapter is the first plausible reason for `transport.py`. It must implement the same immutable deposit, ready-marker, claim, and provenance contracts. It must not cause a new dependency to be added until the dependency security review and explicit package approval gates have passed.
 
 ## Harness-extension gate
 
