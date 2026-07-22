@@ -9,12 +9,15 @@ this module never extracts, deletes, executes, or contacts a network endpoint.
 
 from __future__ import annotations
 
+import ctypes
+import errno
 import hashlib
 import json
 import os
 import re
 import shutil
 import stat
+import sys
 import tempfile
 import uuid
 from dataclasses import dataclass
@@ -37,8 +40,12 @@ CLAIM_SUFFIX = ".claim"
 MAX_REPLICATION_COUNT = 64
 _COPY_CHUNK_BYTES = 1024 * 1024
 _READY_MARKER_MAX_BYTES = 1024
+_AT_FDCWD = -100
+_RENAME_NOREPLACE = 1
+_RENAME_EXCL = 0x00000004
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _UTC_TIMESTAMP_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}\+00:00$")
+_NATIVE_LIBRARY = ctypes.CDLL(None, use_errno=True)
 
 
 class SharedFolderError(Exception):
@@ -150,10 +157,7 @@ def deposit_packet(
             )
         ):
             raise SharedFolderError("queue packet already exists for this snapshot job")
-        try:
-            os.rename(stage_dir, packet_dir)
-        except FileExistsError as exc:
-            raise SharedFolderError("queue packet already exists for this snapshot job") from exc
+        _rename_directory_no_clobber(stage_dir, packet_dir)
         _fsync_directory(incoming)
         return QueuePacket(
             packet_dir=packet_dir,
@@ -407,6 +411,47 @@ def _write_json_no_clobber(path: Path, payload: dict[str, Any], *, description: 
     finally:
         if temporary is not None:
             _unlink_quietly(temporary)
+
+
+def _rename_directory_no_clobber(source: Path, destination: Path) -> None:
+    if sys.platform.startswith("linux"):
+        function = getattr(_NATIVE_LIBRARY, "renameat2", None)
+        if function is None:
+            raise SharedFolderError("atomic no-clobber queue publication is unavailable")
+        function.argtypes = [
+            ctypes.c_int,
+            ctypes.c_char_p,
+            ctypes.c_int,
+            ctypes.c_char_p,
+            ctypes.c_uint,
+        ]
+        function.restype = ctypes.c_int
+        result = function(
+            _AT_FDCWD,
+            os.fsencode(source),
+            _AT_FDCWD,
+            os.fsencode(destination),
+            _RENAME_NOREPLACE,
+        )
+    elif sys.platform == "darwin":
+        function = getattr(_NATIVE_LIBRARY, "renamex_np", None)
+        if function is None:
+            raise SharedFolderError("atomic no-clobber queue publication is unavailable")
+        function.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_uint]
+        function.restype = ctypes.c_int
+        result = function(os.fsencode(source), os.fsencode(destination), _RENAME_EXCL)
+    else:
+        raise SharedFolderError("atomic no-clobber queue publication is unavailable")
+    if result == 0:
+        return
+    error = ctypes.get_errno()
+    if error in (errno.EEXIST, errno.ENOTEMPTY):
+        raise SharedFolderError("queue packet already exists for this snapshot job")
+    raise SharedFolderError("cannot publish queue packet") from OSError(
+        error,
+        os.strerror(error),
+        destination,
+    )
 
 
 def _read_ready_marker(path: Path) -> dict[str, Any]:

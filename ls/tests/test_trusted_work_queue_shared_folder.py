@@ -262,44 +262,61 @@ class SharedFolderContractTests(unittest.TestCase):
         packet = deposit_packet(self.queue_root, archive, prd, replication_count=1)
         self.assertTrue(packet.ready_path.is_file())
 
-    def test_concurrent_final_packet_publication_does_not_replace_existing_directory(self) -> None:
+    def test_concurrent_empty_final_packet_directory_is_not_replaced(self) -> None:
         archive = self._snapshot("race", b"repository bytes")
         prd = self.workspace / "race.prd"
         prd.write_bytes(b"PRD")
-        original_rename = os.rename
+        incoming = self.queue_root / INCOMING_DIRECTORY
+        original_publish = shared_folder_module._rename_directory_no_clobber
 
-        def publish_competing_packet(source: object, destination: object) -> None:
-            final = Path(destination)
-            final.mkdir()
-            (final / "foreign-owner").write_bytes(b"do not replace")
-            original_rename(source, destination)
+        def publish_competing_packet(source: Path, destination: Path) -> None:
+            destination.mkdir()
+            original_publish(source, destination)
 
         with mock.patch.object(
-            shared_folder_module.os,
-            "rename",
+            shared_folder_module,
+            "_rename_directory_no_clobber",
             side_effect=publish_competing_packet,
         ):
             with self.assertRaises(SharedFolderError):
                 deposit_packet(self.queue_root, archive, prd, replication_count=1)
 
-        packets = list((self.queue_root / INCOMING_DIRECTORY).iterdir())
+        packets = list(incoming.iterdir())
         self.assertEqual(len(packets), 1)
-        self.assertEqual((packets[0] / "foreign-owner").read_bytes(), b"do not replace")
+        self.assertEqual(list(packets[0].iterdir()), [])
 
-    def test_staged_ready_marker_is_not_visible_to_list_or_claim(self) -> None:
+    def test_macos_packet_publication_uses_exclusive_native_rename(self) -> None:
+        renamex_np = mock.Mock(return_value=0)
+        native_library = mock.Mock(renamex_np=renamex_np)
+        source = self.workspace / "source"
+        destination = self.workspace / "destination"
+
+        with (
+            mock.patch.object(shared_folder_module.sys, "platform", "darwin"),
+            mock.patch.object(shared_folder_module, "_NATIVE_LIBRARY", native_library),
+        ):
+            shared_folder_module._rename_directory_no_clobber(source, destination)
+
+        renamex_np.assert_called_once_with(
+            os.fsencode(source),
+            os.fsencode(destination),
+            0x00000004,
+        )
+
+    def test_staged_ready_marker_is_not_visible_before_publication(self) -> None:
         archive = self._snapshot("stage", b"repository bytes")
         prd = self.workspace / "stage.prd"
         prd.write_bytes(b"PRD")
-        original_rename = os.rename
+        original_publish = shared_folder_module._rename_directory_no_clobber
 
-        def inspect_before_publish(source: object, destination: object) -> None:
+        def inspect_before_publish(source: Path, destination: Path) -> None:
             self.assertEqual(list_ready_packets(self.queue_root), [])
             self.assertIsNone(claim_oldest_packet(self.queue_root))
-            original_rename(source, destination)
+            original_publish(source, destination)
 
         with mock.patch.object(
-            shared_folder_module.os,
-            "rename",
+            shared_folder_module,
+            "_rename_directory_no_clobber",
             side_effect=inspect_before_publish,
         ):
             packet = deposit_packet(self.queue_root, archive, prd, replication_count=1)
