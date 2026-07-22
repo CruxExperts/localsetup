@@ -3,9 +3,8 @@
 A ready packet is a directory under ``incoming/`` whose final ``packet.json``
 marker is published only after a streamed snapshot copy, its adjacent sidecar,
 and exact PRD bytes are durable. Claiming moves that directory under ``claims/``
-inside the same queue root. The claim is retained until a later candidate-fanout
-phase records durable replicas; this module never extracts, deletes, executes,
-or contacts a network endpoint.
+inside the same queue root. The claim remains retained for an external consumer;
+this module never extracts, deletes, executes, or contacts a network endpoint.
 """
 
 from __future__ import annotations
@@ -79,7 +78,7 @@ class QueuePacket:
 
 @dataclass(frozen=True)
 class QueueClaim:
-    """An exclusive claim retaining its packet until downstream fanout completes."""
+    """An exclusive claim retaining its immutable packet for an external consumer."""
 
     packet: QueuePacket
     claim_marker: Path
@@ -201,7 +200,7 @@ def claim_oldest_packet(queue_root: str | os.PathLike[str]) -> QueueClaim | None
 
     A no-clobber marker reserves the oldest job before its directory move. If a
     crashed contender already reserved that oldest ready job, no newer packet is
-    claimed; an operator/controller must resume or reconcile that claim first.
+    claimed; an operator/controller must reconcile that claim first.
     """
     root = _prepare_queue_root(queue_root)
     packets = list_ready_packets(root)

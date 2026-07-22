@@ -8,7 +8,7 @@ import json
 import os
 import sys
 import tempfile
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 from unittest import mock
 import unittest
 from datetime import datetime, timezone
@@ -98,6 +98,17 @@ class SharedFolderContractTests(unittest.TestCase):
         with redirect_stdout(output):
             self.assertEqual(cli_main(["shared-claim", str(self.queue_root)]), 0)
         self.assertTrue(json.loads(output.getvalue())["claimed"])
+
+    def test_cli_rejects_removed_shared_materialize_command(self) -> None:
+        errors = io.StringIO()
+
+        with redirect_stderr(errors):
+            with self.assertRaises(SystemExit) as raised:
+                cli_main(["shared-materialize", str(self.queue_root), str(self.workspace / "candidates")])
+
+        self.assertEqual(raised.exception.code, 2)
+        self.assertIn("invalid choice", errors.getvalue())
+        self.assertIn("shared-materialize", errors.getvalue())
 
     def test_duplicate_snapshot_job_refuses_to_replace_existing_packet(self) -> None:
         archive = self._snapshot("one", b"repository bytes")

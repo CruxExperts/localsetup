@@ -6,7 +6,7 @@ owner_skill: ls-architecture
 
 # Trusted work queue: full repository snapshots
 
-This document specifies a dedicated trusted remote-work queue. Phase 1 supplies the portable snapshot contract; phase 2 adds a local shared-folder deposit and claim transport; phase 3 adds offline candidate fanout for a retained claim. All phases are independent of Agent Q and have no model, provider, chat, RPC, callback, or network implementation.
+This document specifies a dedicated trusted remote-work queue. The released package contains phase 1's portable snapshot contract and phase 2's local shared-folder deposit and claim transport. It is independent of Agent Q and has no model, provider, chat, RPC, callback, or network implementation. Future deterministic materialization, isolation, execution, and returned-result handling are outside this package and belong to an explicitly separate harness-owned contract.
 
 ## Phase 1 scope
 
@@ -42,6 +42,8 @@ For archive `repo.tar.gz`, the required adjacent sidecar is `repo.tar.gz.manifes
 
 The phase-1 API returns archive and sidecar paths plus the parsed metadata object. Validation recomputes the archive size and SHA-256, checks the adjacent sidecar and deterministic `job_id`, checks that every archive member is contained beneath `source_root_name`, rejects absolute/traversal/backslash/control-name members, requires the root directory entry, and rejects special tar members. It does not extract anything.
 
+Archive validation bounds member bookkeeping at 100,000 entries and rejects member 100,001 before retaining its metadata. This bound applies to validation only; it does not interpret repository code or promise any downstream candidate operation.
+
 ## Exact CLI contract
 
 The module is invoked with the repository `ls/tools` directory on `PYTHONPATH`:
@@ -52,7 +54,6 @@ python -m trusted_work_queue.cli snapshot-validate ARCHIVE_PATH
 python -m trusted_work_queue.cli shared-deposit QUEUE_ROOT ARCHIVE_PATH PRD_PATH --replication-count N
 python -m trusted_work_queue.cli shared-list QUEUE_ROOT
 python -m trusted_work_queue.cli shared-claim QUEUE_ROOT
-python -m trusted_work_queue.cli shared-materialize QUEUE_ROOT CANDIDATE_ROOT
 ```
 
 `SOURCE_DIR` must already exist and be a directory. `ARCHIVE_PATH` must be a unique output filename/path outside the source tree; no extension is required, although `.tar.gz` is conventional. Creation refuses to replace either that archive or its adjacent `.manifest.json` sidecar, writes the sidecar only after publishing the archive, and prints only safe metadata JSON on stdout. Validation requires that sidecar and prints the metadata with `"valid": true` on stdout. Expected input, filesystem, archive, or validation failures print a short diagnostic to stderr and return exit status `1`; successful commands return `0`; argparse usage failures return its normal status `2`.
@@ -69,30 +70,11 @@ job_id_for_metadata(*, format_version, source_root_name, archive_sha256,
                     total_bytes, git_head) -> str
 ```
 
-
-`trusted_work_queue.fanout` exposes:
-
-```python
-materialize_oldest_claim(queue_root, candidate_root) -> CandidateFanout | None
-materialize_claim(claim, candidate_root) -> CandidateFanout
-```
-
-`CandidateFanout` returns the published job directory, manifest path, verified packet metadata, and per-candidate private paths to the caller. `FanoutError` reports validation, isolation, extraction, copy, or publication failures. The CLI never returns those paths.
-
 `SnapshotResult.archive_path`, `SnapshotResult.manifest_path`, and `SnapshotResult.metadata` identify the committed outputs. `SnapshotMetadata.as_dict()` is the sidecar schema above. `SnapshotError` reports creation failures and `SnapshotValidationError` reports validation failures. `manifest_path` is optional only for an explicit pairing check; it must resolve to the archive's adjacent sidecar.
 
-## Downstream lifecycle: phase 3 partial implementation
+## Future harness-owned boundary
 
-Shared-folder packet mechanics, deterministic claiming, offline candidate fanout, and opaque returned-patch validation are implemented below. Result deposit transport, lifecycle deletion, command execution, and external transports remain deferred.
-
-1. A controller deposits an opaque PRD document as bytes alongside the complete snapshot archive and sidecar in a directional incoming store. The PRD is preserved verbatim and is available for every candidate/controller to read; the queue core does not parse, summarize, or select a model from it. The incoming and outgoing stores are immutable deposit surfaces, not chat channels: no IRC, chat, RPC, callback, or interactive coordination is required.
-   Senders may receive queue-depth or size telemetry, but must not require payload read access to the remote-side store. Claims, durable copies, destruction, and result deposits are the only downstream data-plane coordination.
-2. A trusted remote materializer deterministically claims the oldest ready input. For `replication_count`, it creates exactly that many isolated candidate copies from the extracted snapshot filesystem. Each candidate has its own complete repository tree and verbatim opaque `prd.bin`; the source snapshot remains the complete filesystem context. Candidate setup never uses a Git checkout, worktree reset, cleanup, fetch, repository-code execution, model selection, or network access. The retained claim is not destroyed by this phase.
-3. One local controller process belongs to each machine/VM and may later orchestrate concurrent candidate copies and local agent teams. Candidates receive inference through the VM/root OmniRoute gateway and choose their own teams/routes locally; queue payloads remain provider/model agnostic and expose no chat channel. Deployment should apply explicit VM CPU/memory quotas so indexing (including QMD) and review work cannot saturate the host. These are deployment properties only, not phase-3 behavior.
-4. A later controller may use a private GitHub/Git-on-Docker master as an optional read-only ledger/provenance/data source at an immutable pinned revision. It may read the master remote/ref for provenance, but candidates receive no GitHub write, fork, branch, or merge permission. Queue workers do not fetch or network; snapshot creation preserves existing `.git` remotes and refs without contacting any host.
-5. Each candidate returns an immutable result deposit to the opposite-direction outgoing store. A result may be a Git commit, bundle, or diff, but its provenance record must bind the full snapshot digest (`archive_sha256`) and source Git provenance (`git_head`, plus any pinned master/ref/fork fields) to the returned commit/bundle/diff digest. Git commit hashes alone are insufficient because they cannot represent ignored, untracked, dirty, or other local filesystem context. The controller verifies the returned artifact and both provenance chains before accepting it.
-
-Shared-folder packet mechanics, deterministic claiming, and offline candidate fanout are implemented below. Result verification workflow, lifecycle deletion, command execution, and external transports remain deferred.
+This release stops after phase 2. The Localsetup filesystem package does not materialize candidates, isolate or execute repository copies, dispatch agents or models, validate returned results, delete claims, or contact network endpoints. Any future deterministic materialization, candidate isolation, execution, or returned-result handling must be specified and implemented by an explicitly separate harness-owned contract. That contract is not a Localsetup command, import, export, packet-schema extension, or promise that `replication_count` creates candidates.
 
 ## Phase 2: shared-folder packet transport
 
@@ -120,13 +102,7 @@ Every packet uses the snapshot's deterministic `job_id`; a second deposit of the
 
 `claim_oldest_packet(queue_root)` validates every ready packet, orders them by `(enqueued_at, job_id)`, and reserves the oldest with an exclusive `claims/<job-id>.claim` marker before atomically moving its packet directory from `incoming/` to `claims/`. It never claims a newer packet when the oldest is malformed, disappears, or has an existing reservation. The claim deliberately retains the complete packet; no source input is deleted by this phase.
 
-`materialize_oldest_claim(queue_root, candidate_root)` claims one packet, while `materialize_claim(claim, candidate_root)` resumes from an already-held claim. Before preparing output, the materializer resolves the candidate root's existing ancestors to a physical path while preserving its final name, so an existing final-root symlink is rejected and later retargeting an input ancestor cannot redirect output. The direct physical parent must be current-user-owned and must not grant group or other write access; an existing root must be current-user-owned and owner-only. Higher physical ancestors must be non-symlink directories owned by that user or by root; group/other-writable root-owned sticky system ancestors are the sole exception. Missing physical parents are created owner-only and each new parent entry is synced before continuing. The materializer opens the retained archive without following links and requires a regular source file with exactly one link, then copies it through a private staging file. It structurally validates the staged archive before descriptor binding, then hashes, extracts, and rehashes only the held staging descriptor; the staging pathname is unlinked before candidate materialization, and its size, change time, digest, and byte count are verified again before readiness publication. A detected mutation leaves the permanently reserved job directory incomplete.
-
-The materializer atomically reserves `CANDIDATE_ROOT/<job-id>` with exclusive directory creation before candidate data appears, copies opaque PRD bytes into every candidate, and writes `fanout.json` last. Existing job outputs are never replaced. `fanout.json` is the only readiness marker: a reserved directory without it is incomplete and must not be consumed. The manifest records only snapshot/PRD provenance, replica identifiers, and relative candidate paths; it contains no PRD bytes or local absolute paths.
-
-The `shared-materialize` CLI invokes that same local offline materializer and emits safe identifiers/digests/counts only. It does not run repository code or a test command. The queue root remains a directional local storage surface with no network client, agent dispatch, model selection, result deposit, credential handling, or automatic stale-claim cleanup. A controller may inspect queue depth/size separately, but senders do not need read access to the consumer-side payload storage.
-
-`trusted_work_queue.result_validation.validate_patch_result(fanout_path, result_dir)` validates an opaque `patch.diff` plus adjacent `result.json` against a published `fanout.json`. It anchors the fanout, result directory, and control files through no-follow descriptors, requires exactly `result.json` and `patch.diff`, and reads/hashes each validated descriptor without reopening it by pathname. The strict result schema binds the exact job id, candidate id, archive digest, and Git provenance; it verifies the patch byte count and SHA-256 without parsing or applying the patch. It rejects unsafe control paths, extra result members, unsupported schemas, unknown candidate identifiers, and provenance or byte mismatches. The returned `patch_path` identifies a mutable deposit location, so a later controller must copy-bind or revalidate it before using the path. That later controller owns result deposit transport, patch application, review, acceptance, and retention.
+`replication_count` is validated and retained in `packet.json` as transport metadata only. This release does not interpret it as a candidate count and makes no materialization, isolation, or execution promise. The queue root remains a directional local storage surface with no network client, agent dispatch, model selection, downstream execution, credential handling, or automatic stale-claim cleanup. An external controller may inspect queue depth or size separately, but senders do not need read access to consumer-side payload storage.
 
 ## Intended fixture coverage
 
@@ -150,10 +126,7 @@ The `shared-materialize` CLI invokes that same local offline materializer and em
 - no-replace behavior when a competing final packet appears;
 - deterministic `(enqueued_at, job_id)` ordering and retention of claimed packet contents;
 - malformed oldest packet blocking newer claims; and
-- shared-folder CLI deposit/list/claim metadata output.
+- shared-folder CLI deposit/list/claim metadata output; and
+- argparse rejection of commands outside the released phase-1/phase-2 surface.
 
-`ls/tests/test_trusted_work_queue_fanout.py` covers retained claims, ordinary isolated replicas, physical candidate-root anchoring and parent-entry durability, staged-archive byte binding and same-UID descriptor-mutation detection, symbolic-link rejection, permanent no-replace job reservation, manifest-last readiness with durable rollback, and safe CLI metadata.
-
-`ls/tests/test_trusted_work_queue_result_validation.py` covers strict result schema, candidate and snapshot provenance matching, patch digest/byte-count verification, and unsafe control-file rejection.
-
-Run all four focused fixture modules before accepting changes to the snapshot, shared-folder, fanout, or result-validation contracts.
+Run the focused snapshot and shared-folder fixture modules before accepting changes to these phase-1/phase-2 contracts.

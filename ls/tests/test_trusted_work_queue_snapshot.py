@@ -25,6 +25,7 @@ from trusted_work_queue.snapshot import (  # noqa: E402
     validate_snapshot,
 )
 import trusted_work_queue.snapshot as snapshot_module  # noqa: E402
+import trusted_work_queue.archive_validation as archive_validation  # noqa: E402
 
 
 class SnapshotContractTests(unittest.TestCase):
@@ -145,6 +146,37 @@ class SnapshotContractTests(unittest.TestCase):
                     validate_snapshot(archive)
                 archive.unlink()
                 manifest_path_for(archive).unlink()
+
+    def test_archive_validation_rejects_too_many_members(self) -> None:
+        archive = self.workspace / "member-limit.tar.gz"
+        with tarfile.open(archive, mode="w:gz") as tar:
+            root = tarfile.TarInfo("repo")
+            root.type = tarfile.DIRTYPE
+            tar.addfile(root)
+            for name in ("first", "second"):
+                member = tarfile.TarInfo(f"repo/{name}")
+                member.size = 0
+                tar.addfile(member)
+        self._write_manifest_for_archive(archive, "repo")
+
+        cached_sizes: list[int] = []
+        original_next = tarfile.TarFile.next
+
+        def observe_next(tar: tarfile.TarFile) -> tarfile.TarInfo | None:
+            member = original_next(tar)
+            if member is not None:
+                cached_sizes.append(len(tar.members))
+            return member
+
+        with (
+            mock.patch.object(tarfile.TarFile, "next", new=observe_next),
+            mock.patch.object(archive_validation, "MAX_SNAPSHOT_ARCHIVE_MEMBERS", 2),
+        ):
+            with self.assertRaises(SnapshotValidationError):
+                validate_snapshot(archive)
+
+        self.assertTrue(cached_sizes)
+        self.assertLessEqual(max(cached_sizes), 1)
 
     def test_archive_git_entry_must_be_directory(self) -> None:
         archive = self.workspace / "gitfile.tar.gz"

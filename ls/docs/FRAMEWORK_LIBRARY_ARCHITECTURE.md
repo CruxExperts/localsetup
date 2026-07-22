@@ -10,7 +10,7 @@ owner_skill: ls-architecture
 
 Localsetup framework capabilities belong in narrow, importable `ls/core/<domain>/` packages. Public `ls/tools/` files are thin direct-execution wrappers; the top-level `localsetup` CLI composes approved domains but does not contain their policy or filesystem logic.
 
-The trusted review queue remains intentionally isolated in `ls/tools/trusted_work_queue/` during snapshot and shared-folder transport phases. It is not yet a packaged Localsetup public API, a `localsetup` subcommand, or a harness extension. Promote it only when candidate fanout or a second transport needs a reusable library boundary.
+The trusted review queue remains intentionally isolated in `ls/tools/trusted_work_queue/` for the released snapshot and shared-folder transport phases. It is not a packaged Localsetup public API, a `localsetup` subcommand, or a harness extension. Promote it only when its phase-1/phase-2 contract or a second transport needs a reusable library boundary. Future deterministic materialization, isolation, and returned-result handling are external harness-owned concerns, not additional Localsetup filesystem APIs.
 
 ## Boundaries
 
@@ -31,7 +31,7 @@ Do not move the current package merely for folder consistency. Promote it in the
 ```text
 ls/core/trusted_work_queue/
   __init__.py       # lightweight exported types and errors
-  models.py         # SnapshotMetadata, QueuePacket, QueueClaim, ResultDeposit
+  models.py         # SnapshotMetadata, QueuePacket, QueueClaim
   snapshot.py       # full-tree archive creation and validation
   shared_folder.py  # local same-filesystem immutable transport
   transport.py      # small typed transport protocol after a second adapter exists
@@ -52,12 +52,11 @@ Introduce a typed `ls/core/harness_extensions/` registry only when two independe
 ## Evolution and validation
 
 1. Keep snapshot and shared-folder transport isolated while their contracts settle.
-2. Add candidate fanout and return-artifact validation as queue-domain operations, preserving exact snapshot digest provenance.
-3. When both shared-folder and S3 transports share a stable contract, promote the domain into `ls/core/trusted_work_queue/` in one cutover.
-4. Add a Localsetup CLI surface only after the promoted library has focused unit tests and a safe, bounded output contract.
-5. Consider a harness registry only after a second lifecycle extension demonstrates the shared need.
+2. When both shared-folder and a second transport share a stable phase-1/phase-2 contract, promote the domain into `ls/core/trusted_work_queue/` in one cutover.
+3. Add a Localsetup CLI surface only after the promoted library has focused unit tests and a safe, bounded output contract.
+4. Consider a harness registry only after a second lifecycle extension demonstrates the shared need.
 
-Every promotion must retain the focused snapshot, transport, fanout, and provenance-validation tests; add thin-wrapper black-box tests and update generated documentation. Python framework changes must also satisfy [PYTHON_ARCHITECTURE_STANDARD.md](PYTHON_ARCHITECTURE_STANDARD.md), including its package responsibilities and architecture check.
+Every promotion must retain the focused snapshot and shared-folder transport tests; add thin-wrapper black-box tests and update generated documentation. Python framework changes must also satisfy [PYTHON_ARCHITECTURE_STANDARD.md](PYTHON_ARCHITECTURE_STANDARD.md), including its package responsibilities and architecture check.
 
 ## Current direct-execution surface
 

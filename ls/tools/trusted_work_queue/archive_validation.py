@@ -7,6 +7,9 @@ import tarfile
 from pathlib import Path
 
 _ARCHIVE_CONTROL_RE = re.compile(r"[\x00-\x1f\x7f]")
+
+MAX_SNAPSHOT_ARCHIVE_MEMBERS = 100_000
+
 _ARCHIVE_WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:[\\/]")
 
 
@@ -58,7 +61,12 @@ def validate_snapshot_archive_members(
     member_types: dict[str, str] = {}
     try:
         with tarfile.open(archive, mode="r:*") as tar:
-            for info in tar:
+            member_count = 0
+            while (info := tar.next()) is not None:
+                tar.members.clear()
+                member_count += 1
+                if member_count > MAX_SNAPSHOT_ARCHIVE_MEMBERS:
+                    raise error_type("archive contains too many members")
                 normalized = _validate_snapshot_archive_member_name(
                     info.name,
                     root_name,
