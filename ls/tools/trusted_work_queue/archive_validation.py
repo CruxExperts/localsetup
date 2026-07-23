@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import os
+import hashlib
 import re
 import stat
 import tarfile
+from contextlib import contextmanager
 from pathlib import Path
+from typing import BinaryIO, Iterator
 
 _ARCHIVE_CONTROL_RE = re.compile(r"[\x00-\x1f\x7f]")
 
@@ -33,11 +36,12 @@ def read_snapshot_manifest_bytes(
 
     nofollow = getattr(os, "O_NOFOLLOW", None)
     nonblock = getattr(os, "O_NONBLOCK", None)
-    if nofollow is None or nonblock is None:
+    cloexec = getattr(os, "O_CLOEXEC", None)
+    if nofollow is None or nonblock is None or cloexec is None:
         raise error_type("snapshot sidecar cannot be opened safely")
     descriptor: int | None = None
     try:
-        descriptor = os.open(path, os.O_RDONLY | nofollow | nonblock)
+        descriptor = os.open(path, os.O_RDONLY | nofollow | nonblock | cloexec)
         opened = os.fstat(descriptor)
         if not _manifest_stat_matches(observed, opened):
             raise error_type("snapshot sidecar changed while opening")
@@ -141,13 +145,19 @@ def validate_snapshot_archive_members(
     *,
     error_type: type[Exception],
     max_members: int | None = MAX_SNAPSHOT_ARCHIVE_MEMBERS,
+    bound_file: BinaryIO | None = None,
 ) -> None:
     """Validate archive member names, types, root, and parent directories."""
     saw_root = False
     seen: set[str] = set()
     member_types: dict[str, str] = {}
     try:
-        with tarfile.open(archive, mode="r:*") as tar:
+        tar_source: BinaryIO | None = bound_file
+        if tar_source is None:
+            tar_context = tarfile.open(archive, mode="r:*")
+        else:
+            tar_context = tarfile.open(fileobj=tar_source, mode="r:*")
+        with tar_context as tar:
             member_count = 0
             while (info := tar.next()) is not None:
                 tar.members.clear()
@@ -176,7 +186,7 @@ def validate_snapshot_archive_members(
                     member_types[normalized] = "directory"
                 else:
                     member_types[normalized] = "file"
-    except (OSError, tarfile.TarError) as exc:
+    except (OSError, TypeError, ValueError, tarfile.TarError) as exc:
         raise error_type("snapshot archive is not a readable tar archive") from exc
     if not saw_root:
         raise error_type("archive does not contain its top-level root directory")
@@ -187,6 +197,120 @@ def validate_snapshot_archive_members(
             parent_name = "/".join(parent_parts[:index])
             if member_types.get(parent_name) != "directory":
                 raise error_type("archive member parent is not a directory")
+
+
+@contextmanager
+def open_bound_snapshot_archive(
+    path: Path,
+    *,
+    error_type: type[Exception],
+) -> Iterator[tuple[BinaryIO, os.stat_result]]:
+    """Open an archive without following a mutable path, binding its identity."""
+    descriptor: int | None = None
+    handle: BinaryIO | None = None
+    try:
+        try:
+            expected = os.lstat(path)
+        except OSError as exc:
+            raise error_type("snapshot archive does not exist or is not a file") from exc
+        if not stat.S_ISREG(expected.st_mode):
+            raise error_type("snapshot archive does not exist or is not a file")
+
+        nofollow = getattr(os, "O_NOFOLLOW", None)
+        nonblock = getattr(os, "O_NONBLOCK", None)
+        cloexec = getattr(os, "O_CLOEXEC", None)
+        if nofollow is None or nonblock is None or cloexec is None:
+            raise error_type("snapshot archive cannot be opened safely")
+        descriptor = os.open(
+            path,
+            os.O_RDONLY | nofollow | nonblock | cloexec,
+        )
+        handle = os.fdopen(descriptor, "rb", closefd=True)
+        descriptor = None
+        opened = os.fstat(handle.fileno())
+        if not _archive_stat_matches(expected, opened):
+            raise error_type("snapshot archive changed while opening")
+        yield handle, expected
+    except error_type:
+        raise
+    except (OSError, TypeError, ValueError) as exc:
+        raise error_type("snapshot archive cannot be read") from exc
+    finally:
+        if descriptor is not None:
+            try:
+                os.close(descriptor)
+            except OSError as exc:
+                raise error_type("snapshot archive descriptor cannot be closed") from exc
+        if handle is not None:
+            try:
+                handle.close()
+            except OSError as exc:
+                raise error_type("snapshot archive descriptor cannot be closed") from exc
+
+
+def hash_bound_snapshot_archive(
+    handle: BinaryIO,
+    *,
+    error_type: type[Exception],
+) -> tuple[str, int]:
+    """Hash bytes from an already-bound archive descriptor."""
+    digest = hashlib.sha256()
+    total_bytes = 0
+    try:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+            total_bytes += len(chunk)
+    except (OSError, TypeError, ValueError) as exc:
+        raise error_type("unable to read the snapshot archive") from exc
+    return digest.hexdigest(), total_bytes
+
+
+def post_validate_bound_snapshot_archive(
+    path: Path,
+    handle: BinaryIO,
+    expected: os.stat_result,
+    *,
+    expected_sha256: str,
+    expected_size: int,
+    error_type: type[Exception],
+) -> None:
+    """Recheck identity, size, path binding, and exact bytes after consumers run."""
+    try:
+        handle.seek(0)
+        digest, total_bytes = hash_bound_snapshot_archive(
+            handle,
+            error_type=error_type,
+        )
+        observed = os.fstat(handle.fileno())
+        current = os.lstat(path)
+    except error_type:
+        raise
+    except (OSError, TypeError, ValueError) as exc:
+        raise error_type("snapshot archive changed while reading") from exc
+    if (
+        not _archive_stat_matches(expected, observed)
+        or not _archive_stat_matches(expected, current)
+        or total_bytes != expected_size
+        or digest != expected_sha256
+    ):
+        raise error_type("snapshot archive changed while reading")
+
+
+def _archive_stat_matches(
+    expected: os.stat_result,
+    observed: os.stat_result,
+) -> bool:
+    return (
+        expected.st_dev,
+        expected.st_ino,
+        stat.S_IFMT(expected.st_mode),
+        expected.st_size,
+    ) == (
+        observed.st_dev,
+        observed.st_ino,
+        stat.S_IFMT(observed.st_mode),
+        observed.st_size,
+    ) and stat.S_ISREG(observed.st_mode)
 
 
 def _validate_snapshot_archive_member_name(

@@ -138,8 +138,16 @@ def test_select_uses_only_reviewed_static_candidate_and_omits_effort() -> None:
     assert receipt["reason"] == "selected_static_reviewed"
     assert receipt["selection_policy"] == "static_reviewed_only"
     assert receipt["ultra_selected"] is False
-    assert set(receipt["selected"]) == {"lane", "model"}
-    assert receipt["selected"]["model"].startswith("gpt-5.6-")
+    assert set(receipt["selected"]) == {"lane"}
+    assert receipt["selected"]["lane"].startswith("Agent-")
+
+
+def test_successful_serialized_receipt_hides_concrete_model_identity() -> None:
+    serialized = json.dumps(run_select(VALID_REQUEST), sort_keys=True)
+
+    assert '"model"' not in serialized
+    assert '"model_id"' not in serialized
+    assert "gpt-5.6-" not in serialized
 
 
 def test_select_rejects_r00_raw_model_and_ultra_fields_without_processing() -> None:
@@ -414,7 +422,7 @@ def test_snapshot_candidate_pattern_and_receipt_descriptor_tampering_never_selec
     receipt_skill = copied_skill(tmp_path / "receipt")
     receipt_schema = receipt_skill / "schemas/routing-receipt.schema.json"
     receipt = load_json(receipt_schema)
-    receipt["properties"]["selected"]["properties"]["model"]["pattern"] = ".*"
+    receipt["properties"]["selected"]["properties"]["lane"]["enum"] = ["Agent-Tampered"]
     write_json(receipt_schema, receipt)
     assert_resource_invalid(receipt_skill / "scripts" / "agent_routing.py")
 

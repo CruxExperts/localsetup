@@ -23,6 +23,9 @@ from typing import Any
 from .archive_validation import (
     MAX_SNAPSHOT_MANIFEST_BYTES,
     filter_snapshot_archive_member,
+    hash_bound_snapshot_archive,
+    open_bound_snapshot_archive,
+    post_validate_bound_snapshot_archive,
     read_snapshot_manifest_bytes,
     validate_snapshot_archive_members,
 )
@@ -239,29 +242,45 @@ def validate_snapshot(
     archive = Path(archive_path)
     expected_manifest = manifest_path_for(archive)
     manifest = expected_manifest if manifest_path is None else Path(manifest_path)
-    if archive.is_symlink():
-        raise SnapshotValidationError("snapshot archive must not be a symbolic link")
     if _resolved_path(manifest) != _resolved_path(expected_manifest):
         raise SnapshotValidationError("manifest is not the archive's adjacent sidecar")
-    if not archive.is_file():
-        raise SnapshotValidationError("snapshot archive does not exist or is not a file")
 
     metadata = _read_manifest(manifest)
-    try:
-        archive_size = archive.stat().st_size
-    except OSError as exc:
-        raise SnapshotValidationError("cannot stat snapshot archive") from exc
-    if archive_size != metadata.total_bytes:
-        raise SnapshotValidationError("snapshot archive byte count does not match sidecar")
-    if _sha256_file(archive) != metadata.archive_sha256:
-        raise SnapshotValidationError("snapshot archive SHA-256 does not match sidecar")
-
-    validate_snapshot_archive_members(
+    with open_bound_snapshot_archive(
         archive,
-        metadata.source_root_name,
         error_type=SnapshotValidationError,
-        max_members=archive_validation.MAX_SNAPSHOT_ARCHIVE_MEMBERS,
-    )
+    ) as (bound_file, expected_stat):
+        archive_sha256, archive_size = hash_bound_snapshot_archive(
+            bound_file,
+            error_type=SnapshotValidationError,
+        )
+        if archive_size != metadata.total_bytes:
+            raise SnapshotValidationError(
+                "snapshot archive byte count does not match sidecar"
+            )
+        if archive_sha256 != metadata.archive_sha256:
+            raise SnapshotValidationError(
+                "snapshot archive SHA-256 does not match sidecar"
+            )
+        try:
+            bound_file.seek(0)
+        except (OSError, ValueError) as exc:
+            raise SnapshotValidationError("unable to read the snapshot archive") from exc
+        validate_snapshot_archive_members(
+            archive,
+            metadata.source_root_name,
+            error_type=SnapshotValidationError,
+            max_members=archive_validation.MAX_SNAPSHOT_ARCHIVE_MEMBERS,
+            bound_file=bound_file,
+        )
+        post_validate_bound_snapshot_archive(
+            archive,
+            bound_file,
+            expected_stat,
+            expected_sha256=metadata.archive_sha256,
+            expected_size=metadata.total_bytes,
+            error_type=SnapshotValidationError,
+        )
     return metadata
 
 
@@ -352,13 +371,6 @@ def _scan_source_tree(source: Path) -> None:
                     "source contains a non-portable special entry: "
                     + relative.as_posix()
                 )
-
-
-
-
-
-
-
 
 
 
@@ -541,17 +553,6 @@ def _temporary_path(path: Path) -> Path:
     temporary = Path(handle.name)
     handle.close()
     return temporary
-
-
-def _sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    try:
-        with path.open("rb") as handle:
-            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-                digest.update(chunk)
-    except OSError as exc:
-        raise SnapshotValidationError("unable to read the snapshot archive") from exc
-    return digest.hexdigest()
 
 
 class _HashingWriter:

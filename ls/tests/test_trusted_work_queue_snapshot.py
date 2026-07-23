@@ -319,11 +319,119 @@ class SnapshotContractTests(unittest.TestCase):
                 replacement.rename(manifest)
         self.assertTrue(swapped)
         self.assertTrue(observed_flags)
-
-
-
-
-
+    def test_archive_fifo_symlink_and_nonregular_inputs_are_rejected_before_open(self) -> None:
+        archive = self.workspace / "archive-types.tar.gz"
+        create_snapshot(self.source, archive)
+        original = archive.read_bytes()
+        real_open = archive_validation.os.open
+        def reject_archive_open(path, flags, mode=0o777, *, dir_fd=None):
+            if Path(path) == archive:
+                raise AssertionError("unsafe archive was opened")
+            return real_open(path, flags, mode, dir_fd=dir_fd)
+        candidates = [("directory", lambda: archive.mkdir())]
+        if hasattr(os, "symlink"):
+            candidates.insert(0, ("symlink", lambda: os.symlink("missing", archive)))
+        if hasattr(os, "mkfifo"):
+            candidates.insert(0, ("fifo", lambda: os.mkfifo(archive)))
+        for kind, make in candidates:
+            with self.subTest(kind=kind):
+                archive.unlink()
+                make()
+                try:
+                    with mock.patch.object(archive_validation.os, "open", new=reject_archive_open):
+                        with self.assertRaises(SnapshotValidationError):
+                            validate_snapshot(archive)
+                finally:
+                    archive.rmdir() if archive.is_dir() and not archive.is_symlink() else archive.unlink()
+                    archive.write_bytes(original)
+    def test_archive_open_binds_rename_swap(self) -> None:
+        archive = self.workspace / "archive-rename-swap.tar.gz"
+        create_snapshot(self.source, archive)
+        real_open = archive_validation.os.open
+        replacement = archive.with_name("archive-rename-swap-replacement.tar.gz")
+        swapped = False
+        observed = []
+        def swap(path, flags, mode=0o777, *, dir_fd=None):
+            nonlocal swapped
+            if Path(path) == archive and not swapped:
+                swapped = True
+                observed.append(flags)
+                archive.rename(replacement)
+                archive.write_bytes(b"swapped")
+            return real_open(path, flags, mode, dir_fd=dir_fd)
+        try:
+            with mock.patch.object(archive_validation.os, "open", new=swap):
+                with self.assertRaises(SnapshotValidationError):
+                    validate_snapshot(archive)
+        finally:
+            if archive.exists():
+                archive.unlink()
+            if replacement.exists():
+                replacement.rename(archive)
+        self.assertTrue(swapped)
+        required = os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_CLOEXEC
+        self.assertTrue(observed and all(flags & required == required for flags in observed))
+    def test_archive_size_mutation_after_hash_is_rejected(self) -> None:
+        archive = self.workspace / "archive-size-race.tar.gz"
+        create_snapshot(self.source, archive)
+        original = archive.read_bytes()
+        real_hash = snapshot_module.hash_bound_snapshot_archive
+        calls = 0
+        def mutate(handle, *, error_type):
+            nonlocal calls
+            result = real_hash(handle, error_type=error_type)
+            calls += 1
+            if calls == 1:
+                os.truncate(archive, archive.stat().st_size + 1)
+            return result
+        try:
+            with mock.patch.object(snapshot_module, "hash_bound_snapshot_archive", new=mutate):
+                with self.assertRaises(SnapshotValidationError):
+                    validate_snapshot(archive)
+        finally:
+            archive.write_bytes(original)
+        self.assertEqual(calls, 1)
+    def test_archive_hash_and_member_validation_share_descriptor(self) -> None:
+        archive = self.workspace / "archive-bound-file.tar.gz"
+        create_snapshot(self.source, archive)
+        real_hash = snapshot_module.hash_bound_snapshot_archive
+        real_tar_open = archive_validation.tarfile.open
+        hashed, tar_sources = [], []
+        def observe_hash(handle, *, error_type):
+            hashed.append(handle)
+            return real_hash(handle, error_type=error_type)
+        def observe_tar_open(name=None, mode="r", fileobj=None, **kwargs):
+            tar_sources.append((name, fileobj))
+            return real_tar_open(name=name, mode=mode, fileobj=fileobj, **kwargs)
+        with (
+            mock.patch.object(snapshot_module, "hash_bound_snapshot_archive", new=observe_hash),
+            mock.patch.object(archive_validation.tarfile, "open", new=observe_tar_open),
+        ):
+            validate_snapshot(archive)
+        self.assertTrue(hashed)
+        self.assertEqual(len(tar_sources), 1)
+        self.assertIsNone(tar_sources[0][0])
+        self.assertIs(tar_sources[0][1], hashed[0])
+    def test_archive_bound_descriptor_is_closed_on_validation_failure(self) -> None:
+        archive = self.workspace / "archive-close.tar.gz"
+        create_snapshot(self.source, archive)
+        real_fdopen = archive_validation.os.fdopen
+        closed = []
+        class TrackingFile:
+            def __init__(self, wrapped):
+                self._wrapped = wrapped
+            def __getattr__(self, name):
+                return getattr(self._wrapped, name)
+            def close(self):
+                closed.append(True)
+                self._wrapped.close()
+        def track_fdopen(fd, mode, *, closefd=True):
+            return TrackingFile(real_fdopen(fd, mode, closefd=closefd))
+        with mock.patch.object(archive_validation.os, "fdopen", new=track_fdopen):
+            with mock.patch.object(snapshot_module, "validate_snapshot_archive_members", side_effect=SnapshotValidationError("member rejection")):
+                with self.assertRaises(SnapshotValidationError):
+                    validate_snapshot(archive)
+        self.assertEqual(closed, [True])
     def test_member_nested_below_regular_file_is_rejected(self) -> None:
         archive = self.workspace / "nested-file.tar.gz"
         with tarfile.open(archive, mode="w:gz") as tar:
@@ -340,7 +448,6 @@ class SnapshotContractTests(unittest.TestCase):
 
         with self.assertRaises(SnapshotValidationError):
             validate_snapshot(archive)
-
     def test_member_with_undeclared_parent_is_rejected(self) -> None:
         archive = self.workspace / "undeclared-parent.tar.gz"
         with tarfile.open(archive, mode="w:gz") as tar:
@@ -354,15 +461,6 @@ class SnapshotContractTests(unittest.TestCase):
 
         with self.assertRaises(SnapshotValidationError):
             validate_snapshot(archive)
-
-
-
-
-
-
-
-
-
     def test_validation_rejects_symlink_archive_and_manifest_inputs(self) -> None:
         if not hasattr(os, "symlink"):
             self.skipTest("symbolic links are unavailable")

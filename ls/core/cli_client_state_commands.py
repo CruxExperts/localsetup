@@ -119,8 +119,8 @@ def handle(args, root: Path, home: Path) -> int | None:
             )
             preflight_artifact_request(location, prepared)
             if location.scope == "repo" and location.child is not None:
-                payload = allocate_artifact(location, prepared=prepared)
                 exclude = apply_git_exclude(_exclude_plan(location))
+                payload = allocate_artifact(location, prepared=prepared)
             else:
                 exclude = apply_git_exclude(plan_git_exclude(location))
                 payload = allocate_artifact(location, prepared=prepared)

@@ -39,7 +39,7 @@ CANONICAL_MANIFEST_SHA256 = "bbfdbd619228fdcb08fdcd8873e28a4548d30940a6df69bdd04
 CANONICAL_MATRIX_SCHEMA_SHA256 = "476d1bc199db5e51070a10ae5fdea58e845eb8105be694879ea0f82d6900004f"
 CANONICAL_SNAPSHOT_SHA256 = "f484425ca6c51f42bc3f4816a07c8209e54faf49b370ac6279ff32ff6aeedd1e"
 CANONICAL_REQUEST_SCHEMA_SHA256 = "f05f89d84b8a4617855cf51a23663e08709051b9020f6cfdf4d22ee46d0ed562"
-CANONICAL_RECEIPT_SCHEMA_SHA256 = "a2aa36b163aa554f81b899f611dbbe70f43ff1feebc2c79f104a5c6a71a09b97"
+CANONICAL_RECEIPT_SCHEMA_SHA256 = "3a671905f1f12828087acef4ed2de6d09d9de64d535416b0971e911f29d500b4"
 
 CANONICAL_EVIDENCE = (
     ("api-family-gpt-5.6", "https://developers.openai.com/api/docs/guides/latest-model", "2026-07-17", "api_family"),
@@ -530,7 +530,7 @@ def _receipt_is_valid(value: Any) -> bool:
         return False
     selected = value.get("selected")
     if status == "selected":
-        return isinstance(selected, dict) and set(selected) == {"lane", "model"} and selected.get("lane") in LANE_ORDER and isinstance(selected.get("model"), str) and MODEL_RE.fullmatch(selected["model"]) is not None
+        return isinstance(selected, dict) and set(selected) == {"lane"} and selected.get("lane") in LANE_ORDER
     return selected is None and "selected" not in value
 
 
@@ -543,7 +543,7 @@ def _select(snapshot: dict[str, Any], request: dict[str, Any], digest: str) -> d
     eligible = [candidate for candidate in risk_candidates if all(candidate["capabilities"].get(capability, {"value": "unknown"})["value"] == "true" for capability in required)]
     if eligible:
         winner = min(eligible, key=lambda candidate: (candidate["policy_priority"], LANE_ORDER[candidate["lane"]], candidate["model_id"]))
-        return _receipt(status="selected", reason="selected_static_reviewed", digest=digest, summary="static-reviewed-candidate", selected={"lane": winner["lane"], "model": winner["model_id"]})
+        return _receipt(status="selected", reason="selected_static_reviewed", digest=digest, summary="static-reviewed-candidate", selected={"lane": winner["lane"]})
     if unknown:
         reason = "candidate_evidence_unknown"
     elif risk_candidates:

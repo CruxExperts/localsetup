@@ -82,6 +82,7 @@ This release stops after phase 2. The Localsetup filesystem package does not mat
 
 ```text
 QUEUE_ROOT/
+  .queue-operation.lock
   incoming/
     <snapshot-job-id>/
       snapshot.tar.gz
@@ -101,6 +102,8 @@ QUEUE_ROOT/
 Every packet uses the snapshot's deterministic `job_id`; a second deposit of the same snapshot job refuses to overwrite an incoming packet, retained claim directory, or claim reservation marker. Packet files are owner-only and ready markers are the only readiness signal. Incomplete directories have no marker and are never returned by `list_ready_packets`.
 
 `claim_oldest_packet(queue_root)` validates every ready packet, orders them by `(enqueued_at, job_id)`, and reserves the oldest with an exclusive `claims/<job-id>.claim` marker before atomically moving its packet directory from `incoming/` to `claims/`. It never claims a newer packet when the oldest is malformed, disappears, or has an existing reservation. The claim deliberately retains the complete packet; no source input is deleted by this phase.
+
+Deposits and claims use cooperative same-job serialization through the persistent owner-only `.queue-operation.lock` at the queue root. The lock is acquired with a descriptor-held exclusive `flock`; descriptor/process lifecycle releases it safely after a crash, without stale lock-file cleanup. A deposit holds the lock only for its final incoming/claims existence checks, native no-replace publication, and incoming-directory fsync, preventing a same-job duplicate from replacing or racing a retained packet. A claim holds the same lock across ready-packet list/select, claim-marker creation, the move into `claims/`, and the required directory fsyncs. The threaded regression `test_same_job_deposit_and_claim_are_serialized_at_final_publication` verifies that a competing claim waits for a same-job no-clobber deposit failure and then retains exactly one claim.
 
 `replication_count` is validated and retained in `packet.json` as transport metadata only. This release does not interpret it as a candidate count and makes no materialization, isolation, or execution promise. The queue root remains a directional local storage surface with no network client, agent dispatch, model selection, downstream execution, credential handling, or automatic stale-claim cleanup. An external controller may inspect queue depth or size separately, but senders do not need read access to consumer-side payload storage.
 
@@ -126,6 +129,7 @@ Every packet uses the snapshot's deterministic `job_id`; a second deposit of the
 - no-replace behavior when a competing final packet appears;
 - deterministic `(enqueued_at, job_id)` ordering and retention of claimed packet contents;
 - malformed oldest packet blocking newer claims; and
+- cooperative same-job deposit/claim serialization at final publication; and
 - shared-folder CLI deposit/list/claim metadata output; and
 - argparse rejection of commands outside the released phase-1/phase-2 surface.
 

@@ -287,7 +287,7 @@ def test_state_allocate_repo_child_uses_child_only_exclusion_and_verifies(
     assert code == 0 and verified["ok"]
 
 
-def test_state_allocate_repo_child_allocates_before_special_exclude_apply(
+def test_state_allocate_repo_child_applies_special_exclude_before_allocation(
     tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     repo = repository(tmp_path / "repo")
@@ -334,7 +334,54 @@ def test_state_allocate_repo_child_allocates_before_special_exclude_apply(
     )
 
     assert code == 0 and payload["ok"]
-    assert events == ["bind", "preflight", "allocate", "plan", "apply-enter", "apply-return"]
+    assert events == ["bind", "preflight", "plan", "apply-enter", "apply-return", "allocate"]
+
+
+def test_state_allocate_repo_child_exclude_failure_returns_error_without_artifact(
+    tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = repository(tmp_path / "repo")
+    code, path_payload = invoke(
+        capsys,
+        "state", "path", "--client", "codex/codex-cli", "--scope", "repo",
+        "--directory", str(repo), "--child", "agent-routing", "--apply-exclude",
+    )
+    assert code == 0 and path_payload["exclude"] == {
+        "action": "applied", "entry": "/.codex/state/agent-routing/"
+    }
+    exclude = repo / ".git" / "info" / "exclude"
+    before = exclude.read_bytes()
+    assert before.endswith(b"/.codex/state/agent-routing/\n")
+    assert b"/.codex/state/\n" not in before
+
+    allocated: list[object] = []
+    original_allocate = cli_client_state_commands.allocate_artifact
+
+    def record_allocate(location, **kwargs):
+        allocated.append(location)
+        return original_allocate(location, **kwargs)
+
+    def fail_apply(plan):
+        assert plan.state_binding_mode == "child-linearized"
+        raise ClientStateError("exclude update failed", code="exclude_write_failed")
+
+    monkeypatch.setattr(cli_client_state_commands, "allocate_artifact", record_allocate)
+    monkeypatch.setattr(cli_client_state_commands, "apply_git_exclude", fail_apply)
+    code, payload = invoke(
+        capsys,
+        "state", "allocate", "--client", "codex/codex-cli", "--scope", "repo",
+        "--directory", str(repo), "--child", "agent-routing", *allocation_args(),
+    )
+
+    assert code == 2
+    assert payload == {
+        "error": {"code": "exclude_write_failed", "message": "exclude update failed"},
+        "ok": False,
+    }
+    assert allocated == []
+    assert exclude.read_bytes() == before
+    assert b"/.codex/state/\n" not in before
+    assert not list((repo / ".codex" / "state" / "agent-routing").iterdir())
 
 
 @pytest.mark.parametrize("exclude_present", [False, True])
@@ -384,7 +431,7 @@ def test_state_allocate_repo_child_precommit_swap_preserves_exclude_and_residual
     assert b"/.codex/state/\n" not in (exclude.read_bytes() if exclude.exists() else b"")
     assert list(outside.iterdir()) == []
     assert content.read_bytes() == b"caller bytes\n"
-    assert any(path.is_file() for path in residual.iterdir())
+    assert not any(path.is_file() for path in residual.iterdir())
 
 
 @pytest.mark.parametrize("exclude_present", [False, True])
@@ -494,16 +541,21 @@ def test_repo_child_routes_linearize_postwrite_state_replacements(
         ]
     code, payload = invoke(capsys, *args)
 
-    assert code == 0 and payload["ok"] and payload["exclude"]["action"] == "applied"
+    residual_root = (
+        repo / ".codex" / "state-prior" / "agent-routing"
+        if target == "parent"
+        else repo / ".codex" / "state" / "agent-routing-prior"
+    )
+    if route == "allocate":
+        assert code == 2 and not payload["ok"]
+        assert payload["error"]["code"] in {"stale_state_binding", "unsafe_state_path"}
+        assert not any(path.is_file() for path in residual_root.rglob("*"))
+    else:
+        assert code == 0 and payload["ok"] and payload["exclude"]["action"] == "applied"
     assert injected and exclude.read_bytes() == before + b"/.codex/state/agent-routing/\n"
     assert b"/.codex/state/\n" not in exclude.read_bytes()
     assert list(outside.iterdir()) == []
     if route == "telemetry":
-        residual_root = (
-            repo / ".codex" / "state-prior" / "agent-routing"
-            if target == "parent"
-            else repo / ".codex" / "state" / "agent-routing-prior"
-        )
         assert (residual_root / payload["artifact"]).read_bytes() == b""
 
 

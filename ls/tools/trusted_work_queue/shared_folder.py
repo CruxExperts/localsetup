@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import ctypes
 import errno
+import fcntl
 import hashlib
 import json
 import os
@@ -20,6 +21,7 @@ import stat
 import sys
 import tempfile
 import uuid
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -37,6 +39,7 @@ SNAPSHOT_FILENAME = "snapshot.tar.gz"
 PRD_FILENAME = "prd.bin"
 READY_FILENAME = "packet.json"
 CLAIM_SUFFIX = ".claim"
+QUEUE_LOCK_FILENAME = ".queue-operation.lock"
 MAX_REPLICATION_COUNT = 64
 _COPY_CHUNK_BYTES = 1024 * 1024
 _READY_MARKER_MAX_BYTES = 1024
@@ -114,11 +117,6 @@ def deposit_packet(
     incoming = root / INCOMING_DIRECTORY
     claims = root / CLAIMS_DIRECTORY
     packet_dir = incoming / source_metadata.job_id
-    if any(
-        os.path.lexists(path)
-        for path in (packet_dir, claims / source_metadata.job_id, claims / f"{source_metadata.job_id}{CLAIM_SUFFIX}")
-    ):
-        raise SharedFolderError("queue packet already exists for this snapshot job")
     stage_dir = incoming / f".{source_metadata.job_id}.{uuid.uuid4().hex}.stage"
     try:
         os.mkdir(stage_dir, 0o700)
@@ -148,17 +146,18 @@ def deposit_packet(
             enqueued_at=_canonical_utc_timestamp(enqueued_at or datetime.now(timezone.utc)),
         )
         _write_ready_marker(staged_packet)
-        if any(
-            os.path.lexists(path)
-            for path in (
-                packet_dir,
-                claims / source_metadata.job_id,
-                claims / f"{source_metadata.job_id}{CLAIM_SUFFIX}",
-            )
-        ):
-            raise SharedFolderError("queue packet already exists for this snapshot job")
-        _rename_directory_no_clobber(stage_dir, packet_dir)
-        _fsync_directory(incoming)
+        with _queue_operation_lock(root):
+            if any(
+                os.path.lexists(path)
+                for path in (
+                    packet_dir,
+                    claims / source_metadata.job_id,
+                    claims / f"{source_metadata.job_id}{CLAIM_SUFFIX}",
+                )
+            ):
+                raise SharedFolderError("queue packet already exists for this snapshot job")
+            _rename_directory_no_clobber(stage_dir, packet_dir)
+            _fsync_directory(incoming)
         return QueuePacket(
             packet_dir=packet_dir,
             snapshot=copied_metadata,
@@ -208,25 +207,26 @@ def claim_oldest_packet(queue_root: str | os.PathLike[str]) -> QueueClaim | None
     claimed; an operator/controller must reconcile that claim first.
     """
     root = _prepare_queue_root(queue_root)
-    packets = list_ready_packets(root)
-    if not packets:
-        return None
-    packet = packets[0]
-    claims = root / CLAIMS_DIRECTORY
-    marker = claims / f"{packet.job_id}{CLAIM_SUFFIX}"
-    _write_claim_marker(marker, packet)
-    destination = claims / packet.job_id
-    try:
-        os.rename(packet.packet_dir, destination)
-    except FileNotFoundError as exc:
-        _unlink_quietly(marker)
-        raise SharedFolderError("oldest packet disappeared during claim") from exc
-    except OSError as exc:
-        raise SharedFolderError("cannot move claimed packet") from exc
-    _fsync_directory(packet.packet_dir.parent)
-    _fsync_directory(claims)
-    claimed_packet = load_packet(destination)
-    return QueueClaim(packet=claimed_packet, claim_marker=marker)
+    with _queue_operation_lock(root):
+        packets = list_ready_packets(root)
+        if not packets:
+            return None
+        packet = packets[0]
+        claims = root / CLAIMS_DIRECTORY
+        marker = claims / f"{packet.job_id}{CLAIM_SUFFIX}"
+        _write_claim_marker(marker, packet)
+        destination = claims / packet.job_id
+        try:
+            os.rename(packet.packet_dir, destination)
+        except FileNotFoundError as exc:
+            _unlink_quietly(marker)
+            raise SharedFolderError("oldest packet disappeared during claim") from exc
+        except OSError as exc:
+            raise SharedFolderError("cannot move claimed packet") from exc
+        _fsync_directory(packet.packet_dir.parent)
+        _fsync_directory(claims)
+        claimed_packet = load_packet(destination)
+        return QueueClaim(packet=claimed_packet, claim_marker=marker)
 
 
 def load_packet(packet_dir: str | os.PathLike[str]) -> QueuePacket:
@@ -298,6 +298,48 @@ def _prepare_queue_root(value: str | os.PathLike[str]) -> Path:
     return root
 
 
+@contextmanager
+def _queue_operation_lock(queue_root: Path):
+    """Hold the persistent cooperative queue-operation lock."""
+    lock_path = queue_root / QUEUE_LOCK_FILENAME
+    nofollow = getattr(os, "O_NOFOLLOW", None)
+    nonblock = getattr(os, "O_NONBLOCK", None)
+    cloexec = getattr(os, "O_CLOEXEC", None)
+    if (
+        not isinstance(nofollow, int)
+        or nofollow == 0
+        or not isinstance(nonblock, int)
+        or nonblock == 0
+        or not isinstance(cloexec, int)
+        or cloexec == 0
+    ):
+        raise SharedFolderError("queue operation lock cannot be opened safely")
+    descriptor: int | None = None
+    try:
+        try:
+            descriptor = os.open(
+                lock_path,
+                os.O_CREAT | os.O_RDWR | nofollow | nonblock | cloexec,
+                0o600,
+            )
+            os.fchmod(descriptor, 0o600)
+            descriptor_stat = os.fstat(descriptor)
+            if not stat.S_ISREG(descriptor_stat.st_mode):
+                raise SharedFolderError("queue operation lock must be a regular file")
+            fcntl.flock(descriptor, fcntl.LOCK_EX)
+        except SharedFolderError:
+            raise
+        except OSError as exc:
+            raise SharedFolderError("cannot acquire queue operation lock") from exc
+        yield
+    finally:
+        if descriptor is not None:
+            try:
+                os.close(descriptor)
+            except OSError as exc:
+                raise SharedFolderError("cannot close queue operation lock") from exc
+
+
 def _require_regular_file(value: str | os.PathLike[str], *, field: str) -> Path:
     path = Path(value).expanduser()
     try:
@@ -323,49 +365,107 @@ def _require_directory(path: Path, *, field: str, create: bool) -> None:
     if not stat.S_ISDIR(mode):
         raise SharedFolderError(f"{field} must be a non-symlink directory")
 
+def _matches_bound_stat(actual: os.stat_result, expected: os.stat_result, size: int) -> bool:
+    return stat.S_ISREG(actual.st_mode) and (actual.st_dev, actual.st_ino, actual.st_size) == (expected.st_dev, expected.st_ino, size)
+
+def _open_bound_packet_member(path: Path) -> tuple[int, os.stat_result, os.stat_result]:
+    initial_path_stat = os.lstat(path)
+    if not stat.S_ISREG(initial_path_stat.st_mode):
+        raise SharedFolderError("queue packet member must be a regular non-symlink file")
+    nofollow = getattr(os, "O_NOFOLLOW", None)
+    nonblock = getattr(os, "O_NONBLOCK", None)
+    cloexec = getattr(os, "O_CLOEXEC", None)
+    if any(not isinstance(flag, int) or flag == 0 for flag in (nofollow, nonblock, cloexec)):
+        raise SharedFolderError("queue packet member cannot be opened safely")
+    descriptor = os.open(path, os.O_RDONLY | nofollow | nonblock | cloexec)
+    try:
+        descriptor_stat = os.fstat(descriptor)
+        if not _matches_bound_stat(descriptor_stat, initial_path_stat, initial_path_stat.st_size):
+            raise SharedFolderError("queue packet member changed before being copied")
+    except (OSError, SharedFolderError):
+        try:
+            os.close(descriptor)
+        except OSError:
+            pass
+        raise
+    return descriptor, initial_path_stat, descriptor_stat
+
+
+def _validate_bound_packet_member(path: Path, initial_path_stat: os.stat_result, descriptor_stat: os.stat_result, descriptor: int, expected_size: int, total: int) -> None:
+    current_descriptor_stat = os.fstat(descriptor)
+    current_path_stat = os.lstat(path)
+    descriptor_ok = _matches_bound_stat(current_descriptor_stat, descriptor_stat, expected_size)
+    path_ok = _matches_bound_stat(current_path_stat, initial_path_stat, expected_size)
+    if not descriptor_ok or total != expected_size or not path_ok:
+        raise SharedFolderError("queue packet member changed while being copied")
+
 
 def _copy_file(source: Path, destination: Path) -> tuple[str, int]:
     digest = hashlib.sha256()
     total = 0
-    descriptor: int | None = None
+    source_descriptor: int | None = None
+    destination_descriptor: int | None = None
     try:
-        with source.open("rb") as reader:
-            flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
-            flags |= getattr(os, "O_CLOEXEC", 0)
-            descriptor = os.open(destination, flags, 0o600)
-            os.fchmod(descriptor, 0o600)
-            with os.fdopen(descriptor, "wb", closefd=True) as writer:
-                descriptor = None
-                while chunk := reader.read(_COPY_CHUNK_BYTES):
-                    digest.update(chunk)
-                    total += len(chunk)
-                    writer.write(chunk)
-                writer.flush()
-                os.fsync(writer.fileno())
+        source_descriptor, initial_path_stat, descriptor_stat = _open_bound_packet_member(source)
+        expected_size = initial_path_stat.st_size
+
+        destination_flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+        destination_flags |= getattr(os, "O_CLOEXEC", 0) or 0
+        destination_descriptor = os.open(destination, destination_flags, 0o600)
+        os.fchmod(destination_descriptor, 0o600)
+        while chunk := os.read(source_descriptor, _COPY_CHUNK_BYTES):
+            digest.update(chunk)
+            total += len(chunk)
+            view = memoryview(chunk)
+            while view:
+                written = os.write(destination_descriptor, view)
+                if written <= 0:
+                    raise OSError(errno.EIO, "short write while copying queue packet member")
+                view = view[written:]
+        os.fsync(destination_descriptor)
+
+        _validate_bound_packet_member(source, initial_path_stat, descriptor_stat, source_descriptor, expected_size, total)
         _fsync_directory(destination.parent)
     except FileExistsError as exc:
         raise SharedFolderError("queue packet member already exists") from exc
     except OSError as exc:
         raise SharedFolderError("cannot stream queue packet member") from exc
     finally:
-        if descriptor is not None:
+        close_error: OSError | None = None
+        for descriptor in (destination_descriptor, source_descriptor):
+            if descriptor is None:
+                continue
             try:
                 os.close(descriptor)
-            except OSError:
-                pass
+            except OSError as exc:
+                if close_error is None:
+                    close_error = exc
+        if close_error is not None:
+            raise SharedFolderError("cannot close queue packet member") from close_error
     return digest.hexdigest(), total
 
 
 def _hash_file(path: Path) -> tuple[str, int]:
     digest = hashlib.sha256()
     total = 0
+    descriptor: int | None = None
     try:
-        with path.open("rb") as handle:
-            while chunk := handle.read(_COPY_CHUNK_BYTES):
-                digest.update(chunk)
-                total += len(chunk)
+        descriptor, initial_path_stat, descriptor_stat = _open_bound_packet_member(path)
+        expected_size = initial_path_stat.st_size
+        while chunk := os.read(descriptor, _COPY_CHUNK_BYTES):
+            digest.update(chunk)
+            total += len(chunk)
+        _validate_bound_packet_member(path, initial_path_stat, descriptor_stat, descriptor, expected_size, total)
+    except SharedFolderError:
+        raise
     except OSError as exc:
         raise SharedFolderError("cannot read queue packet member") from exc
+    finally:
+        if descriptor is not None:
+            try:
+                os.close(descriptor)
+            except OSError as exc:
+                raise SharedFolderError("cannot close queue packet member") from exc
     return digest.hexdigest(), total
 
 
