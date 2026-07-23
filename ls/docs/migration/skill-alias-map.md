@@ -1,14 +1,14 @@
 ---
 status: ACTIVE
-version: 4.2
+version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 3e1e2c2e2830bc991f263768d41bee75044e1159c5df3f7266d9feab94e17f75
+  source_provenance_hash: 73c7ec34868c11df29c11366ce4fc9c8be1b4aa0e553c773de02eb40521f16e8
   emitter: generate-docs
-framework_version: 4.2.20
-source_commit: c269ae82bdff9a1573f0deb6ceba817d0f2f6890
-artifact_sha256: fb7371ef5ce3fe48f8c1c1431169b77692adbe77d8ecc3001a9e11e04a19f6f4
+framework_version: 4.3.0
+source_commit: 1afc80397f6cfc1b6eeed6624fe0caa8d6740b4e
+artifact_sha256: 9924c2b7b2b6edb3a97a70db0af192fce612b317a632ebef718797335c841a59
 ---
 # Skill Alias Map
 
@@ -16,6 +16,7 @@ artifact_sha256: fb7371ef5ce3fe48f8c1c1431169b77692adbe77d8ecc3001a9e11e04a19f6f
 |---|---|
 | `localsetup-accessibility-review` | `ls-accessibility-review` |
 | `localsetup-agent-email-inbox` | `ls-agent-email-inbox` |
+| `localsetup-agent-routing` | `ls-agent-routing` |
 | `localsetup-agentlens` | `ls-agentlens` |
 | `localsetup-agentq-transport` | `ls-agentq-transport` |
 | `localsetup-alirezarezvani-skills` | `ls-alirezarezvani-skills` |

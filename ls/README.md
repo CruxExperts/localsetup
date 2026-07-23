@@ -1,6 +1,6 @@
 # Localsetup Framework Engine
 
-**Version:** 4.2.20<br>
+**Version:** 4.3.0<br>
 
 `ls/` is the engine that makes the public Localsetup promise real. It stores the framework code, shipped skills, workflow packages, platform templates, docs, tests, and install manifests that turn a repository into a portable agent workspace.
 
@@ -117,7 +117,7 @@ uv run --locked pytest -n "$workers" ls/tests -q
 git diff --check
 ```
 
-For ordinary edits, run focused tests and matching Localsetup validators before this broad release-oriented set. Treat the full Python suite as final consolidation, not the first validation step. The `test-workers` default is `ceil(available CPU cores / 2)` clamped to `1..255`.
+For ordinary edits, run focused tests and matching Localsetup validators before this broad release-oriented set. Treat the full Python suite as final consolidation, not the first validation step. Resolve the permitted worker count with `localsetup test-workers`; [COMMAND_REFERENCE.md](docs/COMMAND_REFERENCE.md) owns its formula and aggregate-budget rule.
 
 For the full version and release flow, see [docs/VERSIONING.md](docs/VERSIONING.md).
 

@@ -2232,6 +2232,218 @@ def test_already_ignored_live_file_validation_fails_without_exclude_write(
     assert descriptor_count() == baseline
 
 
+def _bound_repo_child_location(repo: Path, home: Path):
+    location = resolve_state_location(
+        ROOT,
+        "codex/codex-cli",
+        cwd=repo,
+        home=home,
+        scope="repo",
+        child="agent-routing",
+    )
+    return artifacts.bind_state_location(location)
+
+
+def _replace_bound_child(location, target: str, outside: Path) -> Path:
+    if target == "parent":
+        prior = location.parent_root.with_name(f"{location.parent_root.name}-prior")
+        location.parent_root.rename(prior)
+        location.parent_root.symlink_to(outside, target_is_directory=True)
+        return prior / location.child
+    prior = location.root.with_name(f"{location.root.name}-prior")
+    location.root.rename(prior)
+    location.root.symlink_to(outside, target_is_directory=True)
+    return prior
+
+
+def test_child_linearized_plan_requires_a_bound_repo_child_and_preserves_strict_default(
+    tmp_path: Path,
+) -> None:
+    repo = repository(tmp_path / "repo")
+    home = tmp_path / "home"
+    parent = resolve_state_location(
+        ROOT, "codex/codex-cli", cwd=repo, home=home, scope="repo"
+    )
+    raw_child = resolve_state_location(
+        ROOT, "codex/codex-cli", cwd=repo, home=home, scope="repo", child="agent-routing"
+    )
+    global_child = resolve_state_location(
+        ROOT, "codex/codex-cli", cwd=repo, home=home, scope="global", child="agent-routing"
+    )
+
+    assert plan_git_exclude(parent).state_binding_mode == "strict"
+    for location in (parent, raw_child, global_child):
+        with pytest.raises(ClientStateError) as failure:
+            plan_git_exclude(location, child_linearized=True)
+        assert failure.value.code == "stale_state_binding"
+
+    bound = _bound_repo_child_location(repo, home)
+    special = plan_git_exclude(bound, child_linearized=True)
+    assert special.state_binding_mode == "child-linearized"
+    assert special.entry == "/.codex/state/agent-routing/"
+
+
+@pytest.mark.parametrize("exclude_present", [False, True])
+@pytest.mark.parametrize("target", ["parent", "child"])
+def test_child_linearized_precommit_swap_preserves_exclude_and_rejects(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    exclude_present: bool,
+    target: str,
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = _bound_repo_child_location(repo, tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    if not exclude_present:
+        exclude.unlink()
+    before = exclude.read_bytes() if exclude_present else None
+    plan = plan_git_exclude(location, child_linearized=True)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    original = git_exclude._require_state_binding
+    checks = 0
+    final_check = 5 if exclude_present else 3
+
+    def replace_before_final_state_check(candidate) -> None:
+        nonlocal checks
+        checks += 1
+        if checks == final_check:
+            _replace_bound_child(location, target, outside)
+        original(candidate)
+
+    monkeypatch.setattr(git_exclude, "_require_state_binding", replace_before_final_state_check)
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(plan)
+
+    assert failure.value.code in {"stale_state_binding", "unsafe_state_path"}
+    assert checks == final_check
+    assert (exclude.read_bytes() if exclude.exists() else None) == before
+    assert b"/.codex/state/\n" not in (exclude.read_bytes() if exclude.exists() else b"")
+    assert list(outside.iterdir()) == []
+
+
+@pytest.mark.parametrize("exclude_present", [False, True])
+@pytest.mark.parametrize("target", ["parent", "child"])
+def test_child_linearized_postwrite_swap_is_committed_not_stale(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    exclude_present: bool,
+    target: str,
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = _bound_repo_child_location(repo, tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    if not exclude_present:
+        exclude.unlink()
+    before = exclude.read_bytes() if exclude_present else b""
+    plan = plan_git_exclude(location, child_linearized=True)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    original_effective_ignore = git_exclude._effective_ignore
+    injected = False
+
+    def confirm_then_replace(git_root: Path, entry: str) -> bool:
+        nonlocal injected
+        ignored = original_effective_ignore(git_root, entry)
+        if not injected and ignored and entry == plan.entry:
+            injected = True
+            _replace_bound_child(location, target, outside)
+        return ignored
+
+    monkeypatch.setattr(git_exclude, "_effective_ignore", confirm_then_replace)
+    applied = apply_git_exclude(plan)
+
+    assert injected and applied.action == "applied"
+    final = exclude.read_bytes()
+    assert final == before + plan.entry.encode("utf-8") + b"\n"
+    assert b"/.codex/state/\n" not in final
+    assert list(outside.iterdir()) == []
+
+
+@pytest.mark.parametrize("exclude_present", [False, True])
+@pytest.mark.parametrize("target", ["lock", "exclude"])
+def test_child_linearized_postwrite_git_binding_failure_stays_ambiguous(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    exclude_present: bool,
+    target: str,
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = _bound_repo_child_location(repo, tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    if not exclude_present:
+        exclude.unlink()
+    before = exclude.read_bytes() if exclude_present else b""
+    plan = plan_git_exclude(location, child_linearized=True)
+    lock = exclude.with_name("exclude.localsetup.lock")
+    original_write = os.write
+    injected = False
+
+    def append_then_replace_git_binding(fd: int, data: bytes) -> int:
+        nonlocal injected
+        written = original_write(fd, data)
+        if not injected and plan.entry.encode("utf-8") in data:
+            injected = True
+            replacement = tmp_path / f"replacement-{target}"
+            replacement.write_bytes(b"replacement\n")
+            os.replace(replacement, lock if target == "lock" else exclude)
+        return written
+
+    monkeypatch.setattr(git_exclude.os, "write", append_then_replace_git_binding)
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(plan)
+
+    assert injected and failure.value.code == "exclude_commit_ambiguous"
+    if target == "lock":
+        assert exclude.read_bytes() == before + plan.entry.encode("utf-8") + b"\n"
+    else:
+        assert exclude.read_bytes() == b"replacement\n"
+
+
+@pytest.mark.parametrize("exclude_present", [False, True])
+@pytest.mark.parametrize("target", ["parent", "child"])
+def test_child_linearized_already_ignored_final_check_is_strict_and_no_write(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    exclude_present: bool,
+    target: str,
+) -> None:
+    repo = repository(tmp_path / "repo")
+    location = _bound_repo_child_location(repo, tmp_path / "home")
+    assert location.git
+    exclude = location.git.exclude_path
+    if not exclude_present:
+        exclude.unlink()
+    before = exclude.read_bytes() if exclude_present else None
+    (repo / ".gitignore").write_text("/.codex/state/agent-routing/\n", encoding="utf-8")
+    plan = plan_git_exclude(location, child_linearized=True)
+    assert plan.action == "already-ignored"
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    original = git_exclude._require_state_binding
+    checks = 0
+    final_check = 5 if exclude_present else 3
+
+    def replace_after_ignore_probe(candidate) -> None:
+        nonlocal checks
+        checks += 1
+        if checks == final_check:
+            _replace_bound_child(location, target, outside)
+        original(candidate)
+
+    monkeypatch.setattr(git_exclude, "_require_state_binding", replace_after_ignore_probe)
+    with pytest.raises(ClientStateError) as failure:
+        apply_git_exclude(plan)
+
+    assert failure.value.code in {"stale_state_binding", "unsafe_state_path"}
+    assert checks == final_check
+    assert (exclude.read_bytes() if exclude.exists() else None) == before
+    assert list(outside.iterdir()) == []
+
+
 def test_artifact_allocation_is_exclusive_deterministic_and_private(tmp_path: Path) -> None:
     repo = repository(tmp_path / "repo")
     location = resolve_state_location(ROOT, "codex/codex-cli", cwd=repo, home=tmp_path / "home")

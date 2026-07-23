@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://localsetup.dev/schemas/agent-routing-request-v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "task_class", "risk", "required_capabilities"],
+  "properties": {
+    "schema": {"const": "agent_routing_request_v1"},
+    "task_class": {"enum": ["discovery", "routine", "implementation", "research", "review"]},
+    "risk": {"enum": ["low", "medium", "high", "critical"]},
+    "required_capabilities": {"type": "array", "uniqueItems": true, "items": {"enum": ["vision"]}}
+  }
+}

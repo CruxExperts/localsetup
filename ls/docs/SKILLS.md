@@ -1,20 +1,20 @@
 ---
 status: ACTIVE
-version: 4.2
+version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 3e1e2c2e2830bc991f263768d41bee75044e1159c5df3f7266d9feab94e17f75
+  source_provenance_hash: 73c7ec34868c11df29c11366ce4fc9c8be1b4aa0e553c773de02eb40521f16e8
   emitter: generate-docs
-framework_version: 4.2.20
-source_commit: c269ae82bdff9a1573f0deb6ceba817d0f2f6890
-artifact_sha256: 7d029d171a034ba37bd899d72c8c29ba455b4a51fda0d5e1415f80f18468164f
+framework_version: 4.3.0
+source_commit: 1afc80397f6cfc1b6eeed6624fe0caa8d6740b4e
+artifact_sha256: 35bc33903a9eecc4dac2306eec30ae9f090efbe30e3f29eeb3ae3ddf59c70d04
 ---
 # Shipped skills catalog
 
 This page is generated from `ls/skills/*/SKILL.md`.
 
-Total shipped skills: 102
+Total shipped skills: 103
 
 | Skill ID | Class | Priority | Packs | Tags | Name | Version | Description |
 |---|---|---:|---|---|---|---|---|
@@ -116,6 +116,7 @@ Total shipped skills: 102
 | `ls-web-scraping-patterns` | `development` | 60 | `dev`, `integrations` | `workflow`, `guidance` | `ls-web-scraping-patterns` | `1.0` | Guide ethical web scraping patterns. Use for crawl scope, extraction, anti-abuse limits, browser scraping, structured data, and integration with Scrapling/Firecrawl. |
 | `ls-workos` | `integrations` | 60 | `integrations` | `external-service`, `integration` | `ls-workos` | `1.0` | Guide WorkOS integration work. Use for AuthKit, SSO, organizations, directory sync, audit logs, RBAC, FGA, MFA, and migration tasks. |
 | `ls-workos-widgets` | `integrations` | 60 | `integrations` | `external-service`, `integration` | `ls-workos-widgets` | `1.0` | Guide WorkOS Widgets integration. Use for Admin Portal, user-management, profile, domain verification, and SSO connection widgets. |
+| `ls-agent-routing` | `specialized` | 70 | `experimental` | `agent`, `routing` | `ls-agent-routing` | `1.0` | Select a reviewed LocalSetup Agent-* lane from a bundled static capability matrix without probing accounts or networks. |
 | `ls-arbiter` | `specialized` | 70 | `specialized` | `arbiter`, `review` | `ls-arbiter` | `1.3` | Push decisions to Arbiter Zebu for async human review. Use when you need human input on plans, architectural choices, or approval before proceeding. |
 | `ls-humanizer` | `specialized` | 70 | `growth-content`, `specialized` | `writing`, `editing` | `ls-humanizer` | `2.1.2` | Remove signs of AI-generated writing from text. Use when editing or reviewing text to make it sound more natural and human-written. Based on Wikipedia's comprehensive "Signs of AI writing" guide. Detects and fixes patterns including: inflated symbolism, promotional language, superficial -ing analyses, vague attributions, em dash overuse, rule of three, AI vocabulary words, negative parallelisms, and excessive conjunctive phrases. |
 | `ls-kilo-boss-orchestrator` | `specialized` | 70 | `specialized` | `kilo`, `orchestration` | `ls-kilo-boss-orchestrator` | `1.0` | Orchestrate Kilo headless boss-worker execution with repo-local state, watchdog leases, consensus validation, and safety gates. Use when running multi-agent autonomous loops that require planning, delegation, verifier checks, and high/critical discrepancy adjudication. |

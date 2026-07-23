@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 3e1e2c2e2830bc991f263768d41bee75044e1159c5df3f7266d9feab94e17f75
+  source_provenance_hash: 73c7ec34868c11df29c11366ce4fc9c8be1b4aa0e553c773de02eb40521f16e8
   emitter: generate-docs
-framework_version: 4.2.20
-source_commit: c269ae82bdff9a1573f0deb6ceba817d0f2f6890
-artifact_sha256: bea7321f0472023d8adfdf1e1f7bba780b282d0a4c5c29b7979fbab564a880a1
+framework_version: 4.3.0
+source_commit: 1afc80397f6cfc1b6eeed6624fe0caa8d6740b4e
+artifact_sha256: ca72befa0c5902c7c5cf8feb13b344615792c6f5c9a3f351062b4ea5002b7277
 ---
 # Implementation File Map
 
@@ -261,6 +261,7 @@ artifact_sha256: bea7321f0472023d8adfdf1e1f7bba780b282d0a4c5c29b7979fbab564a880a
 | `keep` | `ls/docs/AGENTIC_AGENT_TO_AGENT_PROTOCOL.md` |
 | `keep` | `ls/docs/AGENTIC_DESIGN_INDEX.md` |
 | `keep` | `ls/docs/AGENTIC_UMBRELLA_WORKFLOWS.md` |
+| `keep` | `ls/docs/AGENT_CONTEXT_AND_MCP_CONTRACT.md` |
 | `keep` | `ls/docs/AGENT_SKILLS_COMPLIANCE.md` |
 | `keep` | `ls/docs/CLIENT_STATE.md` |
 | `keep` | `ls/docs/CLI_SKILLS_ENV.md` |
@@ -268,12 +269,16 @@ artifact_sha256: bea7321f0472023d8adfdf1e1f7bba780b282d0a4c5c29b7979fbab564a880a
 | `keep` | `ls/docs/COMMAND_REFERENCE.md` |
 | `keep` | `ls/docs/DECISION_TREE_WORKFLOW.md` |
 | `keep` | `ls/docs/DOCUMENT_LIFECYCLE_MANAGEMENT.md` |
+| `keep` | `ls/docs/ENVMAN_INTEGRATION_CONTRACT.md` |
 | `keep` | `ls/docs/FEATURES.md` |
+| `keep` | `ls/docs/FRAMEWORK_LIBRARY_ARCHITECTURE.md` |
 | `keep` | `ls/docs/FRONTEND_WEB_APP_SKILL_ROUTING.md` |
 | `keep` | `ls/docs/GIT_TRACEABILITY.md` |
+| `keep` | `ls/docs/GLOBAL_HANDOFF_LEDGER.md` |
 | `keep` | `ls/docs/HARNESS_AUTOMATION.md` |
 | `keep` | `ls/docs/INPUT_HARDENING_STANDARD.md` |
 | `keep` | `ls/docs/MULTI_PLATFORM_INSTALL.md` |
+| `keep` | `ls/docs/NODE_DASHBOARD_CONTROL_BOUNDARY.md` |
 | `keep` | `ls/docs/OUTPUT_AND_DOC_GENERATION.md` |
 | `keep` | `ls/docs/PLATFORM_REGISTRY.md` |
 | `keep` | `ls/docs/PLUGIN_PACKS.md` |
@@ -297,6 +302,7 @@ artifact_sha256: bea7321f0472023d8adfdf1e1f7bba780b282d0a4c5c29b7979fbab564a880a
 | `keep` | `ls/docs/TASK_SKILL_MATCHING.md` |
 | `keep` | `ls/docs/TMUX_TERMINAL_MODE.md` |
 | `keep` | `ls/docs/TOOLING_POLICY.md` |
+| `keep` | `ls/docs/TRUSTED_WORK_QUEUE.md` |
 | `keep` | `ls/docs/VERSIONING.md` |
 | `keep` | `ls/docs/WORKFLOW_PACKAGES.md` |
 | `keep` | `ls/docs/WORKFLOW_QUICK_REF.md` |
@@ -347,6 +353,13 @@ artifact_sha256: bea7321f0472023d8adfdf1e1f7bba780b282d0a4c5c29b7979fbab564a880a
 | `keep` | `ls/lib/path_resolution.py` |
 | `keep` | `ls/skills/ls-accessibility-review/SKILL.md` |
 | `keep` | `ls/skills/ls-agent-email-inbox/SKILL.md` |
+| `keep` | `ls/skills/ls-agent-routing/SKILL.md` |
+| `keep` | `ls/skills/ls-agent-routing/resources/model-capability-matrix/manifest.json` |
+| `keep` | `ls/skills/ls-agent-routing/resources/model-capability-matrix/schema.json` |
+| `keep` | `ls/skills/ls-agent-routing/resources/model-capability-matrix/snapshot.json` |
+| `keep` | `ls/skills/ls-agent-routing/schemas/routing-receipt.schema.json` |
+| `keep` | `ls/skills/ls-agent-routing/schemas/routing-request.schema.json` |
+| `keep` | `ls/skills/ls-agent-routing/scripts/agent_routing.py` |
 | `keep` | `ls/skills/ls-agentlens/SKILL.md` |
 | `keep` | `ls/skills/ls-agentlens/references/navigation.md` |
 | `keep` | `ls/skills/ls-agentlens/references/structure.md` |
@@ -875,6 +888,8 @@ artifact_sha256: bea7321f0472023d8adfdf1e1f7bba780b282d0a4c5c29b7979fbab564a880a
 | `keep` | `ls/tests/manifest_test_helpers.py` |
 | `keep` | `ls/tests/skill_smoke_commands.yaml` |
 | `keep` | `ls/tests/test_adapter_parser.py` |
+| `keep` | `ls/tests/test_agent_routing.py` |
+| `keep` | `ls/tests/test_agent_routing_package_install.py` |
 | `keep` | `ls/tests/test_candidate_skill_cli.py` |
 | `keep` | `ls/tests/test_cli_version.py` |
 | `keep` | `ls/tests/test_client_registry.py` |
@@ -944,6 +959,8 @@ artifact_sha256: bea7321f0472023d8adfdf1e1f7bba780b282d0a4c5c29b7979fbab564a880a
 | `keep` | `ls/tests/test_skill_sandbox_tester.py` |
 | `keep` | `ls/tests/test_tmux_ops.py` |
 | `keep` | `ls/tests/test_tmux_terminal_mode.py` |
+| `keep` | `ls/tests/test_trusted_work_queue_shared_folder.py` |
+| `keep` | `ls/tests/test_trusted_work_queue_snapshot.py` |
 | `keep` | `ls/tests/test_ui_browser_debugging_skill.py` |
 | `keep` | `ls/tests/test_validation_tooling.py` |
 | `keep` | `ls/tests/test_versioning.py` |
@@ -1009,6 +1026,11 @@ artifact_sha256: bea7321f0472023d8adfdf1e1f7bba780b282d0a4c5c29b7979fbab564a880a
 | `keep` | `ls/tools/tmux_ops.py` |
 | `keep` | `ls/tools/tmux_terminal_mode` |
 | `keep` | `ls/tools/tmux_terminal_mode.py` |
+| `keep` | `ls/tools/trusted_work_queue/__init__.py` |
+| `keep` | `ls/tools/trusted_work_queue/archive_validation.py` |
+| `keep` | `ls/tools/trusted_work_queue/cli.py` |
+| `keep` | `ls/tools/trusted_work_queue/shared_folder.py` |
+| `keep` | `ls/tools/trusted_work_queue/snapshot.py` |
 | `keep` | `ls/tools/validate_output_contract.py` |
 | `keep` | `ls/tools/verify_context` |
 | `keep` | `ls/tools/verify_context.py` |

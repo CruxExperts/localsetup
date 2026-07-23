@@ -36,7 +36,7 @@ uv run --locked pytest -n "$workers" ls/tests -q
 git diff --check
 ```
 
-Run focused tests and Localsetup validators for the code you changed before the full Python suite. Treat the full Python suite as final consolidation for broad framework changes, release/publish work, dependency changes, or explicit maintainer review requests. `localsetup test-workers` computes a safe default from available CPU cores and clamps overrides into `1..255`.
+Run focused tests and Localsetup validators for the code you changed before the full Python suite. Treat the full Python suite as final consolidation for broad framework changes, release/publish work, dependency changes, or explicit maintainer review requests. Resolve the permitted worker count with `localsetup test-workers`; the [command reference](ls/docs/COMMAND_REFERENCE.md) owns its formula and aggregate-budget rule.
 
 ## Repository layout
 

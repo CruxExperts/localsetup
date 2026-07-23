@@ -21,6 +21,7 @@ def tmux_env(tmp_path):
         pytest.skip("tmux is not installed")
     socket = f"localsetup-test-{uuid.uuid4().hex}"
     env = os.environ.copy()
+    env["HOME"] = str(tmp_path)
     fake_bin = tmp_path / "bin"
     fake_bin.mkdir()
     sudo_mode_file = tmp_path / "sudo-mode"

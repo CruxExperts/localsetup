@@ -142,7 +142,7 @@ def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_har
     reprocess_paths_p.add_argument("--apply", action="store_true", help="Reserved for future allowlisted rewrites; currently rejected for safety")
     sub.add_parser("validate-package-surface")
     test_workers_p = sub.add_parser("test-workers")
-    test_workers_p.add_argument("--workers", help="Optional numeric override; clamped to 1..255")
+    test_workers_p.add_argument("--workers", help="Optional numeric override; clamped to the host-effective 1..8 limit")
     test_workers_p.add_argument("--json", action="store_true", help="Emit worker calculation details")
     audit_global_p = sub.add_parser("audit-global-first")
     audit_global_p.add_argument("--target-directory", default=argparse.SUPPRESS)
@@ -159,6 +159,7 @@ def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_har
         state_action_p.add_argument("--client", required=True, help="Canonical family/variant key")
         state_action_p.add_argument("--scope", choices=["auto", "repo", "global"], default="auto")
         state_action_p.add_argument("--directory", default=None, help="Directory used for Git worktree detection")
+        state_action_p.add_argument("--child", help="Validated state child; requires an explicit repo or global scope")
     state_path_p = state_sub.choices["path"]
     state_path_p.add_argument("--apply-exclude", action="store_true")
     state_allocate_p = state_sub.choices["allocate"]
@@ -176,7 +177,12 @@ def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_har
     state_verify_p.add_argument("--client", required=True, help="Canonical family/variant key")
     state_verify_p.add_argument("--scope", choices=["auto", "repo", "global"], default="auto")
     state_verify_p.add_argument("--directory", default=None, help="Directory used for Git worktree detection")
+    state_verify_p.add_argument("--child", help="Validated state child; requires an explicit repo or global scope")
     state_verify_p.add_argument("--artifact", required=True, help="Direct-child artifact filename")
+    state_telemetry_p = state_sub.add_parser("telemetry")
+    state_telemetry_p.add_argument("--client", required=True, help="Canonical family/variant key")
+    state_telemetry_p.add_argument("--scope", choices=["repo", "global"], required=True)
+    state_telemetry_p.add_argument("--directory", default=None, help="Directory used for Git worktree detection")
     provenance_p = sub.add_parser("provenance")
     provenance_sub = provenance_p.add_subparsers(dest="provenance_action", required=True)
     provenance_report_p = provenance_sub.add_parser("report")
@@ -261,10 +267,22 @@ def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_har
     version_sync_p.add_argument("--stage", action="store_true")
     version_sync_p.add_argument("--commit", action="store_true")
 
-    publish_preflight_p = sub.add_parser("publish-preflight")
+    publish_preflight_p = sub.add_parser(
+        "publish-preflight",
+        help="Prepare an unstaged direct version-sync candidate, or commit it with --fix.",
+        description=(
+            "On a clean worktree, publish-preflight without --fix prepares an unstaged direct "
+            "version-sync candidate for review. Use --fix to prepare and commit the required "
+            "version and generated-document release slices."
+        ),
+    )
     publish_preflight_p.add_argument("--base")
     publish_preflight_p.add_argument("--head")
-    publish_preflight_p.add_argument("--fix", action="store_true")
+    publish_preflight_p.add_argument(
+        "--fix",
+        action="store_true",
+        help="Prepare and commit the release version and generated-document sync slices.",
+    )
 
     release_push_p = sub.add_parser("release-push")
     release_push_p.add_argument("push_args", nargs=argparse.REMAINDER)

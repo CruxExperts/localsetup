@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 3e1e2c2e2830bc991f263768d41bee75044e1159c5df3f7266d9feab94e17f75
+  source_provenance_hash: 73c7ec34868c11df29c11366ce4fc9c8be1b4aa0e553c773de02eb40521f16e8
   emitter: generate-docs
-framework_version: 4.2.20
-source_commit: c269ae82bdff9a1573f0deb6ceba817d0f2f6890
-artifact_sha256: 87dfe0619aed910b4a66f6fbce1436dbf4ff10358f6dfc807088e61299c710d3
+framework_version: 4.3.0
+source_commit: 1afc80397f6cfc1b6eeed6624fe0caa8d6740b4e
+artifact_sha256: 109beaae302c4ca8a26ac36c6a6f017889b5ffa84cf3eb0cb6a4749fae98c30d
 ---
 # Skill And Workflow Packs
 
@@ -109,6 +109,7 @@ artifact_sha256: 87dfe0619aed910b4a66f6fbce1436dbf4ff10358f6dfc807088e61299c710d
 | `dev, integrations` | `skill` | `ls-web-scraping-patterns` | `development` | 60 | `workflow, guidance` | `localsetup-web-scraping-patterns` |
 | `integrations` | `skill` | `ls-workos` | `integrations` | 60 | `external-service, integration` | `localsetup-workos` |
 | `integrations` | `skill` | `ls-workos-widgets` | `integrations` | 60 | `external-service, integration` | `localsetup-workos-widgets` |
+| `experimental` | `skill` | `ls-agent-routing` | `specialized` | 70 | `agent, routing` | `localsetup-agent-routing` |
 | `specialized` | `skill` | `ls-arbiter` | `specialized` | 70 | `arbiter, review` | `localsetup-arbiter` |
 | `growth-content, specialized` | `skill` | `ls-humanizer` | `specialized` | 70 | `writing, editing` | `localsetup-humanizer` |
 | `specialized` | `skill` | `ls-kilo-boss-orchestrator` | `specialized` | 70 | `kilo, orchestration` | `localsetup-kilo-boss-orchestrator` |

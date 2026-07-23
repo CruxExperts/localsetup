@@ -30,10 +30,18 @@ def replace_regex(path: Path, pattern: str, replacement: str, *, flags: int = re
     return True
 
 
-def update_doc_frontmatter_versions(repo_root: Path, version: SemVer) -> list[str]:
+def update_doc_frontmatter_versions(
+    repo_root: Path,
+    version: SemVer,
+    *,
+    include_path: Callable[[str], bool] | None = None,
+) -> list[str]:
     changed: list[str] = []
     for pattern in VERSIONED_DOC_GLOBS:
         for path in sorted(repo_root.glob(pattern)):
+            relative_path = path.relative_to(repo_root).as_posix()
+            if include_path is not None and not include_path(relative_path):
+                continue
             if any(part in VERSIONED_DOC_EXCLUDED_PARTS for part in path.relative_to(repo_root).parts):
                 continue
             text = path.read_text(encoding="utf-8")

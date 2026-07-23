@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://localsetup.dev/schemas/agent-routing-receipt-v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "reason", "snapshot_sha256", "selection_policy", "ultra_selected", "evidence_summary"],
+  "properties": {
+    "schema": {"const": "agent_routing_receipt_v1"},
+    "status": {"enum": ["selected", "offline", "rejected"]},
+    "reason": {"enum": ["selected_static_reviewed", "invalid_request", "resource_invalid", "resource_stale", "candidate_evidence_unknown", "capability_unsatisfied", "risk_floor_unsatisfied", "offline_no_eligible_candidate"]},
+    "snapshot_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "selection_policy": {"const": "static_reviewed_only"},
+    "ultra_selected": {"const": false},
+    "selected": {"type": "object", "additionalProperties": false, "required": ["lane"], "properties": {"lane": {"enum": ["Agent-Compact", "Agent-Efficient", "Agent-Balanced", "Agent-Frontier", "Agent-Realtime"]}}},
+    "evidence_summary": {"type": "string", "enum": ["static-reviewed-candidate", "static-reviewed-no-eligible-candidate", "static-resource-validation"]}
+  },
+  "allOf": [
+    {"if": {"properties": {"status": {"const": "selected"}}}, "then": {"required": ["selected"]}},
+    {"if": {"properties": {"status": {"enum": ["offline", "rejected"]}}}, "then": {"not": {"required": ["selected"]}}}
+  ]
+}

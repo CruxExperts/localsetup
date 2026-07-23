@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://localsetup.dev/resources/model-capability-matrix/v1/schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "schema_version", "resource_id", "owner_skill", "reviewed_at", "fresh_until", "candidates", "model_records", "scoped_records"],
+  "properties": {
+    "$schema": {"const": "https://localsetup.dev/resources/model-capability-matrix/v1/schema.json"},
+    "schema_version": {"const": 1},
+    "resource_id": {"const": "model-capability-matrix"},
+    "owner_skill": {"const": "ls-agent-routing"},
+    "reviewed_at": {"type": "string", "format": "date"},
+    "fresh_until": {"type": "string", "format": "date"},
+    "candidates": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/candidate"}},
+    "model_records": {"type": "array", "minItems": 3, "items": {"$ref": "#/$defs/modelRecord"}},
+    "scoped_records": {"type": "array", "minItems": 4, "items": {"$ref": "#/$defs/scopedRecord"}}
+  },
+  "$defs": {
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lane", "model_id", "eligibility", "policy_priority", "task_classes", "maximum_risk", "capabilities"],
+      "properties": {
+        "lane": {"enum": ["Agent-Compact", "Agent-Efficient", "Agent-Balanced", "Agent-Frontier", "Agent-Realtime"]},
+        "model_id": {"type": "string", "pattern": "^gpt-5\\.6-(sol|terra|luna)$"},
+        "eligibility": {"const": "reviewed"},
+        "policy_priority": {"type": "integer", "minimum": 0},
+        "task_classes": {"type": "array", "uniqueItems": true, "items": {"enum": ["discovery", "routine", "implementation", "research", "review"]}},
+        "maximum_risk": {"enum": ["low", "medium", "high", "critical"]},
+        "capabilities": {"type": "object", "additionalProperties": false, "properties": {"vision": {"type": "object", "additionalProperties": false, "required": ["value"], "properties": {"value": {"enum": ["true", "false", "unknown"]}}}}}
+      }
+    },
+    "modelRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model_id", "evidence_id", "facts"],
+      "properties": {
+        "model_id": {"type": "string", "pattern": "^gpt-5\\.6-(sol|terra|luna)$"},
+        "evidence_id": {"type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"},
+        "facts": {"type": "object"}
+      }
+    },
+    "scopedRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_id", "scope", "evidence_id", "facts"],
+      "properties": {
+        "record_id": {"type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"},
+        "scope": {"enum": ["api_family", "client_product", "accounting"]},
+        "evidence_id": {"type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"},
+        "facts": {"type": "object"}
+      }
+    }
+  }
+}

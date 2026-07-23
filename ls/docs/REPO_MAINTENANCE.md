@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.2
+version: 4.3
 owner_skill: ls-framework-compliance
 ---
 
@@ -17,9 +17,9 @@ git status --short --branch
 uv lock --check
 uv sync --locked --all-groups
 git fetch --tags origin
-uv run --locked python ls/tools/localsetup.py --source-root . publish-preflight --base origin/main --head HEAD --fix
+uv run --locked python ls/tools/localsetup.py --source-root . publish-preflight --base origin/main --head HEAD
+# Review and commit a prepared_not_ready direct version-sync candidate, then create and validate its generated-doc receipt.
 uv run --locked python ls/tools/localsetup.py --source-root . version-plan
-uv run --locked python ls/tools/localsetup.py --source-root . version-sync --check --target "$(cat VERSION)"
 ./ls/tools/verify_context
 ./ls/tools/verify_rules
 uv run --locked python ls/tools/localsetup.py --source-root . validate-catalog
@@ -35,7 +35,7 @@ uv run --locked ./ls/tests/automated_test.sh
 git diff --check
 ```
 
-For daily maintenance and ordinary framework edits, run focused tests and matching Localsetup validators first. Use the full Python suite above as final consolidation for broad automation changes, release or publish readiness, dependency changes, or explicit maintainer requests. The default worker count is `ceil(available CPU cores / 2)`, clamped to `1..255`, with `LOCALSETUP_TEST_WORKERS` or `--workers` overrides.
+For daily maintenance and ordinary framework edits, run focused tests and matching Localsetup validators first. Use the full Python suite above as final consolidation for broad automation changes, release or publish readiness, dependency changes, or explicit maintainer requests. Resolve the permitted worker count with `localsetup test-workers`; [COMMAND_REFERENCE.md](COMMAND_REFERENCE.md) owns its formula and aggregate-budget rule.
 
 ## Managed Adapter Refresh
 
@@ -143,11 +143,15 @@ The triage workflow bootstraps these labels. Run the workflow manually once befo
 
 `VERSION` is the source of truth. Use [`VERSIONING.md`](VERSIONING.md) for the policy and command flow. Fetch tags before diagnosing a version or release mismatch, because stale local tags can make an already-published GitHub release look missing. For a pending release batch, `version-plan` is expected to report `ok: false` until the version-sync commit exists.
 
-Prepare the local release commit with:
+From a clean worktree, prepare the local direct version-sync candidate with:
 
 ```bash
-uv run --locked python ls/tools/localsetup.py --source-root . publish-preflight --base origin/main --head HEAD --fix
+uv run --locked python ls/tools/localsetup.py --source-root . publish-preflight --base origin/main --head HEAD
 ```
+
+When it returns `prepared_not_ready`, inspect and commit that unstaged direct
+candidate, then create and validate the post-version generated-document receipt.
+Use `--fix` only when the tool should prepare and commit both release slices.
 
 Then push through:
 

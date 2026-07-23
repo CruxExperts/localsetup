@@ -31,9 +31,12 @@ class StateLocation:
     home: Path
     owner_root: Path
     owner_identity: tuple[int, int] | None
+    parent_root: Path
+    parent_identity: tuple[int, int] | None
     root: Path
     root_identity: tuple[int, int] | None
     state_path: str
+    child: str | None
     git: GitContext | None
     registry_schema_version: int
     variant_digest: str

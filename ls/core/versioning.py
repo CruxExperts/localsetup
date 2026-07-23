@@ -8,6 +8,7 @@ from typing import Iterable
 
 from .git_subprocess import run_git
 from . import versioning_sync as _sync
+from .provenance_source import is_generated_output_path
 from .versioning_constants import (
     BREAKING_CHANGE_RE,
     BREAKING_SUBJECT_RE,
@@ -379,6 +380,54 @@ def sync_version_files(repo_root: Path, target_version: str) -> dict:
     return _sync.sync_version_files(repo_root, target_version)
 
 
+def prepare_version_sync_candidate(repo_root: Path, target_version: str) -> dict:
+    """Synchronize direct version surfaces without staging, committing, or generating docs.
+
+    ``publish-preflight`` uses this preparation phase when invoked without
+    ``--fix``.  The resulting candidate is deliberately left for maintainer
+    review and a separate generated-document receipt.
+    """
+    target = SemVer.parse(target_version)
+    changed: list[str] = []
+
+    direct_updates = [
+        ("VERSION", None, f"{target}\n"),
+        ("pyproject.toml", r'(?m)^version = "[0-9]+\.[0-9]+\.[0-9]+"$', f'version = "{target}"'),
+        ("README.md", r"(?m)^\*\*Version:\*\* [0-9]+\.[0-9]+\.[0-9]+<br>$", f"**Version:** {target}<br>"),
+        ("ls/README.md", r"(?m)^\*\*Version:\*\* [0-9]+\.[0-9]+\.[0-9]+<br>$", f"**Version:** {target}<br>"),
+        (
+            "ls/docs/VERSIONING.md",
+            r"(?m)^- Current value: `[0-9]+\.[0-9]+\.[0-9]+`$",
+            f"- Current value: `{target}`",
+        ),
+        (
+            "uv.lock",
+            r'(?m)(^\[\[package\]\]\nname = "localsetup"\nversion = ")[0-9]+\.[0-9]+\.[0-9]+(")',
+            rf"\g<1>{target}\2",
+        ),
+    ]
+    for relative_path, pattern, replacement in direct_updates:
+        path = repo_root / relative_path
+        before = path.read_text(encoding="utf-8")
+        after = replacement if pattern is None else re.sub(pattern, replacement, before)
+        if after != before:
+            path.write_text(after, encoding="utf-8")
+            changed.append(relative_path)
+
+    changed.extend(
+        _sync.update_doc_frontmatter_versions(
+            repo_root,
+            target,
+            include_path=lambda relative_path: not is_generated_output_path(relative_path),
+        )
+    )
+    return {
+        "version": str(target),
+        "major_minor": target.major_minor,
+        "changed_candidates": sorted(set(changed)),
+    }
+
+
 def check_version_files(repo_root: Path, target_version: str) -> dict:
     return _sync.check_version_files(
         repo_root,
@@ -419,8 +468,10 @@ def publish_preflight(repo_root: Path, *, base: str | None = None, head: str | N
     """
     Run the publish-time version/docs gate agents should satisfy before pushing.
 
-    The fix mode intentionally mirrors the CI order: sync the release version
-    first, then refresh generated artifacts from that version-sync parent.
+    Without ``--fix``, a clean worktree is prepared as an unstaged direct
+    version-sync candidate for review.  The fix mode intentionally mirrors the
+    CI order: sync the release version first, then refresh generated artifacts
+    from that version-sync parent and commit both accepted slices.
     """
     plan = plan_version(repo_root, base=base, head=head)
     result: dict = {"ok": False, "fixed": False, "commits": [], "plan": plan}
@@ -429,6 +480,29 @@ def publish_preflight(repo_root: Path, *, base: str | None = None, head: str | N
         return result
 
     target = str(plan["target_version"])
+    if not fix:
+        dirty = _git_text(repo_root, ["status", "--porcelain"])
+        if dirty:
+            result["reason"] = "dirty_worktree"
+            result["dirty_worktree"] = dirty
+            return result
+        prepared = prepare_version_sync_candidate(repo_root, target)
+        prepared_paths = prepared["changed_candidates"]
+        result["prepared"] = bool(prepared_paths)
+        result["prepared_paths"] = prepared_paths
+        if prepared_paths:
+            result["version_check"] = {
+                "ok": False,
+                "mode": "direct_sync_candidate",
+                "target_version": target,
+            }
+            result["reason"] = "prepared_not_ready"
+            return result
+        check = check_version_files(repo_root, target)
+        result["version_check"] = check
+        result["ok"] = bool(plan["ok"] and check["ok"])
+        return result
+
     if fix:
         dirty = _git_text(repo_root, ["status", "--porcelain"])
         if dirty:

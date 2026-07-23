@@ -783,6 +783,19 @@ def _open_location_directory(
     )
 
 
+def bind_state_location(location: StateLocation) -> StateLocation:
+    """Create and identity-bind a state root without allocating an artifact."""
+    refresh_state_location(location, allow_created_roots=True)
+    try:
+        directory_fd = _open_location_directory(location, create=True)
+    except OSError as exc:
+        raise ClientStateError("client state root is unsafe or unavailable", code="unsafe_state_path") from exc
+    try:
+        return _bound_location(location, directory_fd)
+    finally:
+        os.close(directory_fd)
+
+
 def allocate_artifact(location: StateLocation, *, prepared: ArtifactRequest | None = None, **kwargs) -> dict:
     request = prepared or prepare_artifact_request(location, **kwargs)
     preflight_artifact_request(location, request)

@@ -1,6 +1,6 @@
 {
   "generated_facts": {
-    "major_minor": "4.2",
+    "major_minor": "4.3",
     "platform_count": 6,
     "platforms": [
       {
@@ -42,18 +42,18 @@
     ],
     "provenance": {
       "artifact_path": "ls/docs/_generated/facts.json",
-      "artifact_sha256": "18e45057071a47acbb25ecbd0399a95063c02e2dadb13eecb60069e51525b6a2",
+      "artifact_sha256": "a77c47124f37b1472b38437e445051477c5d1d26b49c8c3d8ad27f7e1b040fac",
       "emitter": "generate-docs",
-      "framework_version": "4.2.20",
+      "framework_version": "4.3.0",
       "schema_version": 1,
-      "source_commit": "c269ae82bdff9a1573f0deb6ceba817d0f2f6890",
-      "source_dirty": false,
-      "source_provenance_hash": "3e1e2c2e2830bc991f263768d41bee75044e1159c5df3f7266d9feab94e17f75",
-      "source_root_id": "c568052a6bf2c0049a628e5b2062ec7e071930a5d61e148a8859953b16077bb4",
+      "source_commit": "1afc80397f6cfc1b6eeed6624fe0caa8d6740b4e",
+      "source_dirty": true,
+      "source_provenance_hash": "73c7ec34868c11df29c11366ce4fc9c8be1b4aa0e553c773de02eb40521f16e8",
+      "source_root_id": "17ef5f20d5fe708e4c5f6235eb58bf5ec174cde2c96f7c9155108fd31f42a32b",
       "source_tag": null,
-      "source_tree_sha": "345e66bd4e6e5b243155a65ec1cf2af9f96707ce"
+      "source_tree_sha": "e041e6e24f1a5f75342eee1be2802a150fe0d8c7"
     },
-    "skill_count": 102,
+    "skill_count": 103,
     "skills": [
       {
         "class": "core",
@@ -1675,6 +1675,22 @@
       },
       {
         "class": "specialized",
+        "id": "ls-agent-routing",
+        "name": "ls-agent-routing",
+        "owner_scope": "skill",
+        "packs": [
+          "experimental"
+        ],
+        "path": "ls/skills/ls-agent-routing/SKILL.md",
+        "sort_priority": 70,
+        "tags": [
+          "agent",
+          "routing"
+        ],
+        "version": "1.0"
+      },
+      {
+        "class": "specialized",
         "id": "ls-arbiter",
         "name": "ls-arbiter",
         "owner_scope": "skill",
@@ -1739,7 +1755,7 @@
         "version": "1.0"
       }
     ],
-    "version": "4.2.20",
+    "version": "4.3.0",
     "workflow_count": 24,
     "workflows": [
       {
@@ -1898,19 +1914,19 @@
       "skill-lifecycle",
       "specialized"
     ],
-    "count": 102,
+    "count": 103,
     "provenance": {
       "artifact_path": "ls/docs/_generated/skill-taxonomy.json",
-      "artifact_sha256": "5c38ecc0814a110b4fdba916c4dad76ec15f31ed3e43a87e842186978f4d51a1",
+      "artifact_sha256": "9c6039b42d191945bc6078714b2a3b702b3221c13c2021c700cafa399870a3cc",
       "emitter": "generate-docs",
-      "framework_version": "4.2.20",
+      "framework_version": "4.3.0",
       "schema_version": 1,
-      "source_commit": "c269ae82bdff9a1573f0deb6ceba817d0f2f6890",
-      "source_dirty": false,
-      "source_provenance_hash": "3e1e2c2e2830bc991f263768d41bee75044e1159c5df3f7266d9feab94e17f75",
-      "source_root_id": "c568052a6bf2c0049a628e5b2062ec7e071930a5d61e148a8859953b16077bb4",
+      "source_commit": "1afc80397f6cfc1b6eeed6624fe0caa8d6740b4e",
+      "source_dirty": true,
+      "source_provenance_hash": "73c7ec34868c11df29c11366ce4fc9c8be1b4aa0e553c773de02eb40521f16e8",
+      "source_root_id": "17ef5f20d5fe708e4c5f6235eb58bf5ec174cde2c96f7c9155108fd31f42a32b",
       "source_tag": null,
-      "source_tree_sha": "345e66bd4e6e5b243155a65ec1cf2af9f96707ce"
+      "source_tree_sha": "e041e6e24f1a5f75342eee1be2802a150fe0d8c7"
     },
     "schema_version": 1,
     "skills": [
@@ -3338,6 +3354,20 @@
       },
       {
         "class": "specialized",
+        "id": "ls-agent-routing",
+        "owner_scope": "skill",
+        "packs": [
+          "experimental"
+        ],
+        "path": "ls/skills/ls-agent-routing",
+        "sort_priority": 70,
+        "tags": [
+          "agent",
+          "routing"
+        ]
+      },
+      {
+        "class": "specialized",
         "id": "ls-arbiter",
         "owner_scope": "skill",
         "packs": [
@@ -3397,16 +3427,16 @@
   },
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "d88b26fcaa87106c15deaeeda85d07f3df8e9fe5ed87c771cde391c22accb24e",
+    "artifact_sha256": "48d4fb96e734852ac88814c96ad02d7f8394db7712e8441a6e8b9aaedd1423db",
     "emitter": "docs-align",
-    "framework_version": "4.2.20",
+    "framework_version": "4.3.0",
     "schema_version": 1,
-    "source_commit": "c269ae82bdff9a1573f0deb6ceba817d0f2f6890",
-    "source_dirty": false,
-    "source_provenance_hash": "3e1e2c2e2830bc991f263768d41bee75044e1159c5df3f7266d9feab94e17f75",
-    "source_root_id": "c568052a6bf2c0049a628e5b2062ec7e071930a5d61e148a8859953b16077bb4",
+    "source_commit": "1afc80397f6cfc1b6eeed6624fe0caa8d6740b4e",
+    "source_dirty": true,
+    "source_provenance_hash": "73c7ec34868c11df29c11366ce4fc9c8be1b4aa0e553c773de02eb40521f16e8",
+    "source_root_id": "17ef5f20d5fe708e4c5f6235eb58bf5ec174cde2c96f7c9155108fd31f42a32b",
     "source_tag": null,
-    "source_tree_sha": "345e66bd4e6e5b243155a65ec1cf2af9f96707ce"
+    "source_tree_sha": "e041e6e24f1a5f75342eee1be2802a150fe0d8c7"
   },
   "schema_version": "1.0",
   "truths": {
@@ -3452,6 +3482,11 @@
         },
         {
           "owner_package": "",
+          "owner_skill": "ls-context-index",
+          "path": "ls/docs/AGENT_CONTEXT_AND_MCP_CONTRACT.md"
+        },
+        {
+          "owner_package": "",
           "owner_skill": "ls-skill-creator",
           "path": "ls/docs/AGENT_SKILLS_COMPLIANCE.md"
         },
@@ -3487,8 +3522,18 @@
         },
         {
           "owner_package": "",
+          "owner_skill": "ls-architecture",
+          "path": "ls/docs/ENVMAN_INTEGRATION_CONTRACT.md"
+        },
+        {
+          "owner_package": "",
           "owner_skill": "ls-docs-organization",
           "path": "ls/docs/FEATURES.md"
+        },
+        {
+          "owner_package": "",
+          "owner_skill": "ls-architecture",
+          "path": "ls/docs/FRAMEWORK_LIBRARY_ARCHITECTURE.md"
         },
         {
           "owner_package": "",
@@ -3499,6 +3544,11 @@
           "owner_package": "",
           "owner_skill": "ls-git-workflows",
           "path": "ls/docs/GIT_TRACEABILITY.md"
+        },
+        {
+          "owner_package": "",
+          "owner_skill": "ls-framework-compliance",
+          "path": "ls/docs/GLOBAL_HANDOFF_LEDGER.md"
         },
         {
           "owner_package": "",
@@ -3514,6 +3564,11 @@
           "owner_package": "",
           "owner_skill": "ls-framework-compliance",
           "path": "ls/docs/MULTI_PLATFORM_INSTALL.md"
+        },
+        {
+          "owner_package": "",
+          "owner_skill": "ls-system-design",
+          "path": "ls/docs/NODE_DASHBOARD_CONTROL_BOUNDARY.md"
         },
         {
           "owner_package": "",
@@ -3614,6 +3669,11 @@
           "owner_package": "",
           "owner_skill": "ls-script-and-docs-quality",
           "path": "ls/docs/TOOLING_POLICY.md"
+        },
+        {
+          "owner_package": "",
+          "owner_skill": "ls-architecture",
+          "path": "ls/docs/TRUSTED_WORK_QUEUE.md"
         },
         {
           "owner_package": "",
@@ -3741,7 +3801,7 @@
       "sources": [
         "VERSION"
       ],
-      "value": "4.2"
+      "value": "4.3"
     },
     "platform_count": {
       "sources": [
@@ -3754,7 +3814,7 @@
         "ls/skills/ls-*/SKILL.md",
         "ls/config/pack.yaml"
       ],
-      "value": 102
+      "value": 103
     },
     "skill_taxonomy": {
       "sources": [
@@ -3771,7 +3831,7 @@
           "skill-lifecycle",
           "specialized"
         ],
-        "count": 102,
+        "count": 103,
         "schema_version": 1,
         "skills": [
           {
@@ -5198,6 +5258,20 @@
           },
           {
             "class": "specialized",
+            "id": "ls-agent-routing",
+            "owner_scope": "skill",
+            "packs": [
+              "experimental"
+            ],
+            "path": "ls/skills/ls-agent-routing",
+            "sort_priority": 70,
+            "tags": [
+              "agent",
+              "routing"
+            ]
+          },
+          {
+            "class": "specialized",
             "id": "ls-arbiter",
             "owner_scope": "skill",
             "packs": [
@@ -5257,14 +5331,14 @@
       }
     },
     "version": {
-      "facts_version": "4.2.20",
-      "pyproject_version": "4.2.20",
+      "facts_version": "4.3.0",
+      "pyproject_version": "4.3.0",
       "sources": [
         "VERSION",
         "pyproject.toml",
         "ls/docs/_generated/facts.json"
       ],
-      "value": "4.2.20"
+      "value": "4.3.0"
     },
     "workflow_catalog": {
       "sources": [
