@@ -142,6 +142,121 @@ def test_root_installer_unrelated_clean_git_managed_source_fails_without_mutatio
     assert not (managed_source / "ls").exists()
 
 
+def test_root_installer_ignored_legacy_marker_in_unrelated_git_source_fails_without_mutation(tmp_path: Path) -> None:
+    install_path = Path(__file__).resolve().parents[2] / "install"
+    bootstrap_repo = make_bootstrap_git_repo(tmp_path / "bootstrap")
+    outside = tmp_path / "outside"
+    managed_source = tmp_path / "managed-source"
+    outside.mkdir()
+    managed_source.mkdir()
+    (managed_source / ".gitignore").write_text("_localsetup/\n", encoding="utf-8")
+    (managed_source / "_localsetup/tools").mkdir(parents=True)
+    (managed_source / "_localsetup/tools/localsetup.py").write_text("# ignored unrelated marker\n", encoding="utf-8")
+    subprocess.run(["git", "init", "-b", "main"], cwd=managed_source, text=True, capture_output=True, check=True)
+    subprocess.run(["git", "add", "."], cwd=managed_source, text=True, capture_output=True, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Localsetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "unrelated"],
+        cwd=managed_source,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    before_head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=managed_source,
+        text=True,
+        capture_output=True,
+        check=True,
+    ).stdout.strip()
+    env = {
+        **os.environ,
+        "LOCALSETUP_BOOTSTRAP_REPO": str(bootstrap_repo),
+        "LOCALSETUP_BOOTSTRAP_REF": "main",
+        "LOCALSETUP_BOOTSTRAP_SOURCE_DIR": str(managed_source),
+    }
+
+    completed = subprocess.run(
+        [str(install_path), "--non-interactive", "--yes"],
+        cwd=outside,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    after_head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=managed_source,
+        text=True,
+        capture_output=True,
+        check=True,
+    ).stdout.strip()
+    assert completed.returncode != 0
+    assert "managed bootstrap source exists but is not a Localsetup checkout" in completed.stderr
+    assert before_head == after_head
+    assert (managed_source / "_localsetup/tools/localsetup.py").read_text(encoding="utf-8") == "# ignored unrelated marker\n"
+
+
+def test_root_installer_tracked_legacy_marker_from_other_origin_fails_without_mutation(tmp_path: Path) -> None:
+    install_path = Path(__file__).resolve().parents[2] / "install"
+    bootstrap_repo = make_bootstrap_git_repo(tmp_path / "bootstrap")
+    outside = tmp_path / "outside"
+    managed_source = tmp_path / "managed-source"
+    outside.mkdir()
+    (managed_source / "_localsetup/tools").mkdir(parents=True)
+    (managed_source / "_localsetup/tools/localsetup.py").write_text("# tracked unrelated marker\n", encoding="utf-8")
+    subprocess.run(["git", "init", "-b", "main"], cwd=managed_source, text=True, capture_output=True, check=True)
+    subprocess.run(["git", "add", "."], cwd=managed_source, text=True, capture_output=True, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Localsetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "unrelated"],
+        cwd=managed_source,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "remote", "add", "origin", str(tmp_path / "unrelated-remote")],
+        cwd=managed_source,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    before_head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=managed_source,
+        text=True,
+        capture_output=True,
+        check=True,
+    ).stdout.strip()
+    env = {
+        **os.environ,
+        "LOCALSETUP_BOOTSTRAP_REPO": str(bootstrap_repo),
+        "LOCALSETUP_BOOTSTRAP_REF": "main",
+        "LOCALSETUP_BOOTSTRAP_SOURCE_DIR": str(managed_source),
+    }
+
+    completed = subprocess.run(
+        [str(install_path), "--non-interactive", "--yes"],
+        cwd=outside,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    after_head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=managed_source,
+        text=True,
+        capture_output=True,
+        check=True,
+    ).stdout.strip()
+    assert completed.returncode != 0
+    assert "managed bootstrap source exists but is not a Localsetup checkout" in completed.stderr
+    assert before_head == after_head
+    assert (managed_source / "_localsetup/tools/localsetup.py").read_text(encoding="utf-8") == "# tracked unrelated marker\n"
+
+
 def test_root_installer_piped_bootstrap_selected_platform_attaches_caller_target(tmp_path: Path) -> None:
     install_path = Path(__file__).resolve().parents[2] / "install"
     bootstrap_repo = make_bootstrap_git_repo(tmp_path / "bootstrap")

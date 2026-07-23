@@ -357,11 +357,23 @@ sync_uv_environment() {
 }
 
 inspect_managed_bootstrap_source() {
+  SOURCE_DIR="$(cd "$SOURCE_DIR" && pwd -P)" || die "failed to resolve managed bootstrap source: $SOURCE_DIR"
   if ! git -C "$SOURCE_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     die "managed bootstrap source exists but is not a Git checkout: $SOURCE_DIR. Move or remove it, or pass --directory PATH to use an explicit Localsetup checkout."
   fi
-  if [[ ! -d "$SOURCE_DIR/ls" ]]; then
+  if [[ ! -d "$SOURCE_DIR/ls" && ! -f "$SOURCE_DIR/_localsetup/tools/localsetup.py" ]]; then
     die "managed bootstrap source exists but is not a Localsetup checkout: $SOURCE_DIR. Move or remove it, or pass --directory PATH to use an explicit Localsetup checkout."
+  fi
+  if [[ ! -d "$SOURCE_DIR/ls" ]]; then
+    local git_root origin
+    git_root="$(git -C "$SOURCE_DIR" rev-parse --show-toplevel)" || die "failed to identify managed bootstrap source root: $SOURCE_DIR"
+    if [[ "$git_root" != "$SOURCE_DIR" ]]; then
+      die "managed legacy bootstrap source must be the root of its Git checkout: $SOURCE_DIR. Move or remove it, or pass --directory PATH to use an explicit Localsetup checkout."
+    fi
+    origin="$(git -C "$SOURCE_DIR" remote get-url origin 2>/dev/null || true)"
+    if ! git -C "$SOURCE_DIR" ls-files --error-unmatch -- '_localsetup/tools/localsetup.py' >/dev/null 2>&1 || [[ "$origin" != "$BOOTSTRAP_REPO" ]]; then
+      die "managed bootstrap source exists but is not a Localsetup checkout: $SOURCE_DIR. Move or remove it, or pass --directory PATH to use an explicit Localsetup checkout."
+    fi
   fi
   local status
   status="$(git -C "$SOURCE_DIR" status --porcelain --untracked-files=all)" || {
@@ -372,9 +384,90 @@ inspect_managed_bootstrap_source() {
   fi
 }
 
+is_legacy_managed_bootstrap_source() {
+  local origin
+  [[ ! -d "$SOURCE_DIR/ls" && -f "$SOURCE_DIR/_localsetup/tools/localsetup.py" ]] || return 1
+  git -C "$SOURCE_DIR" ls-files --error-unmatch -- '_localsetup/tools/localsetup.py' >/dev/null 2>&1 || return 1
+  origin="$(git -C "$SOURCE_DIR" remote get-url origin 2>/dev/null || true)"
+  [[ "$origin" == "$BOOTSTRAP_REPO" ]]
+}
+
+legacy_bootstrap_rollback_root() {
+  local candidate fallback
+  if [[ "$SOURCE_DIR" == "$HOME_DIR/.local/share/localsetup/source" ]]; then
+    candidate="$HOME_DIR/.local/share/localsetup/state/source-migrations"
+  else
+    candidate="$(dirname "$SOURCE_DIR")/state/source-migrations"
+  fi
+  fallback="$HOME_DIR/.local/share/localsetup/state/source-migrations"
+  if bootstrap_rollback_path_is_within_source "$candidate"; then
+    candidate="$fallback"
+  fi
+  if bootstrap_rollback_path_is_within_source "$candidate"; then
+    die "cannot create legacy managed source rollback evidence outside source checkout: $SOURCE_DIR"
+  fi
+  printf '%s\n' "$candidate"
+}
+
+bootstrap_rollback_path_is_within_source() {
+  python3 - "$SOURCE_DIR" "$1" <<'PY'
+from __future__ import annotations
+
+from pathlib import Path
+import sys
+
+source_path = Path(sys.argv[1]).resolve()
+candidate_path = Path(sys.argv[2]).resolve()
+try:
+    candidate_path.relative_to(source_path)
+except ValueError:
+    raise SystemExit(1)
+raise SystemExit(0)
+PY
+}
+
+record_legacy_bootstrap_rollback() {
+  local rollback_root stamp bundle_path manifest_path original_head index
+  rollback_root="$(legacy_bootstrap_rollback_root)"
+  mkdir -p "$rollback_root" || die "failed to create legacy source rollback directory: $rollback_root"
+  original_head="$(git -C "$SOURCE_DIR" rev-parse HEAD)" || die "failed to identify legacy managed source revision: $SOURCE_DIR"
+  stamp="$(date -u '+%Y%m%dT%H%M%SZ')"
+  bundle_path="$rollback_root/legacy-source-$stamp.bundle"
+  index=1
+  while [[ -e "$bundle_path" || -L "$bundle_path" ]]; do
+    index=$((index + 1))
+    bundle_path="$rollback_root/legacy-source-$stamp-$index.bundle"
+  done
+  git -C "$SOURCE_DIR" bundle create "$bundle_path" --all "$original_head" || die "failed to preserve legacy managed source rollback bundle: $bundle_path"
+  manifest_path="${bundle_path%.bundle}.json"
+  python3 - "$manifest_path" "$SOURCE_DIR" "$original_head" "$BOOTSTRAP_REF" "$bundle_path" <<'PY' || die "failed to record legacy managed source rollback evidence: $manifest_path"
+from __future__ import annotations
+
+from datetime import datetime, timezone
+import json
+import sys
+
+manifest_path, source_path, original_head, target_ref, bundle_path = sys.argv[1:]
+payload = {
+    "schema_version": 1,
+    "source_path": source_path,
+    "original_head": original_head,
+    "target_ref": target_ref,
+    "created_at": datetime.now(timezone.utc).isoformat(),
+    "bundle_path": bundle_path,
+}
+with open(manifest_path, "w", encoding="utf-8") as handle:
+    json.dump(payload, handle, indent=2, sort_keys=True)
+    handle.write("\n")
+PY
+}
+
 refresh_bootstrap_source() {
   command -v git >/dev/null 2>&1 || die "git is required to refresh Localsetup from $BOOTSTRAP_REPO"
   inspect_managed_bootstrap_source
+  if is_legacy_managed_bootstrap_source; then
+    record_legacy_bootstrap_rollback
+  fi
   git -C "$SOURCE_DIR" fetch --quiet "$BOOTSTRAP_REPO" "$BOOTSTRAP_REF" || {
     die "failed to fetch Localsetup bootstrap source from $BOOTSTRAP_REPO at ref $BOOTSTRAP_REF"
   }

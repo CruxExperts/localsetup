@@ -151,9 +151,9 @@ def make_bootstrap_git_repo(tmp_path: Path) -> Path:
 def make_bootstrap_git_repo_with_legacy_commit(tmp_path: Path) -> tuple[Path, str, str]:
     source = Path(__file__).resolve().parents[2]
     repo = tmp_path / "repo"
-    marker = repo / "ls" / "README.md"
+    marker = repo / "_localsetup" / "tools" / "localsetup.py"
     marker.parent.mkdir(parents=True)
-    marker.write_text("# Localsetup\n", encoding="utf-8")
+    marker.write_text("# legacy Localsetup entrypoint\n", encoding="utf-8")
     shutil.copy2(source / "VERSION", repo / "VERSION")
     (repo / "README.md").write_text("# Localsetup\n", encoding="utf-8")
     (repo / "AGENTS.md").write_text("# Agents\n", encoding="utf-8")
@@ -174,7 +174,7 @@ def make_bootstrap_git_repo_with_legacy_commit(tmp_path: Path) -> tuple[Path, st
         check=True,
     ).stdout.strip()
 
-    shutil.rmtree(repo / "ls")
+    shutil.rmtree(repo / "_localsetup")
     shutil.copytree(source / "ls", repo / "ls", ignore=shutil.ignore_patterns("__pycache__", ".cache"))
     subprocess.run(["git", "add", "."], cwd=repo, text=True, capture_output=True, check=True)
     subprocess.run(

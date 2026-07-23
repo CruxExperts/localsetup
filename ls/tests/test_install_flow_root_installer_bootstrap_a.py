@@ -70,24 +70,60 @@ def test_root_installer_refreshes_clean_stale_managed_source_before_wizard(tmp_p
     assert "invalid choice: 'wizard'" not in combined
 
 
-def test_root_installer_refreshes_clean_stale_managed_source_before_non_interactive_install(tmp_path: Path) -> None:
+def test_root_installer_migrates_clean_legacy_managed_source_with_rollback_evidence(tmp_path: Path) -> None:
     install_path = Path(__file__).resolve().parents[2] / "install"
     bootstrap_repo, legacy_commit, current_commit = make_bootstrap_git_repo_with_legacy_commit(tmp_path / "bootstrap")
     outside = tmp_path / "outside"
     home = tmp_path / "home"
-    managed_source = tmp_path / "managed-source"
+    managed_source = tmp_path / "state"
+    target = make_temp_repo(tmp_path / "target")
     outside.mkdir()
     subprocess.run(["git", "clone", str(bootstrap_repo), str(managed_source)], text=True, capture_output=True, check=True)
-    subprocess.run(["git", "checkout", "--detach", legacy_commit], cwd=managed_source, text=True, capture_output=True, check=True)
     env = {
         **os.environ,
         "LOCALSETUP_BOOTSTRAP_REPO": str(bootstrap_repo),
         "LOCALSETUP_BOOTSTRAP_REF": "main",
-        "LOCALSETUP_BOOTSTRAP_SOURCE_DIR": str(managed_source),
+        "LOCALSETUP_BOOTSTRAP_SOURCE_DIR": str(managed_source / ".git" / ".."),
     }
 
+    initial = subprocess.run(
+        [
+            str(install_path),
+            "--non-interactive",
+            "--yes",
+            "--home",
+            str(home),
+            "--target-directory",
+            str(target),
+            "--platforms",
+            "codex",
+            "--no-register-shell",
+        ],
+        cwd=outside,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert initial.returncode == 0, initial.stderr
+    assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
+    assert_scoped_adapter(target / ".agents/skills", "ls-context")
+
+    subprocess.run(["git", "clean", "-fdx"], cwd=managed_source, text=True, capture_output=True, check=True)
+    subprocess.run(["git", "checkout", "--detach", legacy_commit], cwd=managed_source, text=True, capture_output=True, check=True)
     completed = subprocess.run(
-        [str(install_path), "--non-interactive", "--yes", "--home", str(home), "--no-register-shell"],
+        [
+            str(install_path),
+            "--non-interactive",
+            "--yes",
+            "--home",
+            str(home),
+            "--target-directory",
+            str(target),
+            "--platforms",
+            "codex",
+            "--no-register-shell",
+        ],
         cwd=outside,
         env=env,
         text=True,
@@ -104,6 +140,46 @@ def test_root_installer_refreshes_clean_stale_managed_source_before_non_interact
     assert completed.returncode == 0, completed.stderr
     assert refreshed == current_commit
     assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
+    assert_scoped_adapter(target / ".agents/skills", "ls-context")
+    rollback_root = home / ".local/share/localsetup/state/source-migrations"
+    manifests = sorted(rollback_root.glob("legacy-source-*.json"))
+    assert len(manifests) == 1
+    manifest = json.loads(manifests[0].read_text(encoding="utf-8"))
+    assert manifest["source_path"] == str(managed_source)
+    assert manifest["original_head"] == legacy_commit
+    assert manifest["target_ref"] == "main"
+    bundle_path = Path(manifest["bundle_path"])
+    assert bundle_path.is_file()
+    bundle_verified = subprocess.run(
+        ["git", "-C", str(managed_source), "bundle", "verify", str(bundle_path)],
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    assert "is okay" in bundle_verified.stderr
+    rollback_clone = tmp_path / "rollback-clone"
+    subprocess.run(["git", "clone", str(bundle_path), str(rollback_clone)], text=True, capture_output=True, check=True)
+    bundled_legacy = subprocess.run(
+        ["git", "-C", str(rollback_clone), "cat-file", "-e", f"{legacy_commit}^{{commit}}"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert bundled_legacy.returncode == 0, bundled_legacy.stderr
+
+    cli_base = [
+        sys.executable,
+        str(managed_source / "ls/tools/localsetup.py"),
+        "--home",
+        str(home),
+        "--source-root",
+        str(managed_source),
+        "--target-directory",
+        str(target),
+    ]
+    for command in (["--version"], ["doctor"], ["verify", "--platforms", "codex"]):
+        checked = subprocess.run([*cli_base, *command], text=True, capture_output=True, check=False)
+        assert checked.returncode == 0, checked.stderr
 
 
 def test_root_installer_discovers_latest_stable_release_tag_for_managed_source(tmp_path: Path) -> None:
