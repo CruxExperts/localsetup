@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 1.2
+version: 4.3
 owner_skill: ls-architecture
 ---
 

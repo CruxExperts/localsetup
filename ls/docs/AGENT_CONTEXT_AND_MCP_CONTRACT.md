@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 1.0
+version: 4.3
 owner_skill: ls-context-index
 ---
 
