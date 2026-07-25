@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Localsetup domain shapes",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/versioned_list"
+    },
+    {
+      "$ref": "#/$defs/named_map"
+    }
+  ],
+  "$defs": {
+    "versioned_list": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "domains"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "domains": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/domain_with_id"
+          }
+        }
+      }
+    },
+    "named_map": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "domains"
+      ],
+      "properties": {
+        "schema": {
+          "const": "localsetup.domain_shape.v1"
+        },
+        "domains": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "$ref": "#/$defs/domain_without_id"
+          }
+        }
+      }
+    },
+    "domain_with_id": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/domain_fields"
+        },
+        {
+          "type": "object",
+          "required": [
+            "id"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9._-]*$"
+            }
+          }
+        }
+      ]
+    },
+    "domain_without_id": {
+      "$ref": "#/$defs/domain_fields"
+    },
+    "domain_fields": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roots",
+        "max_files",
+        "max_bytes"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9._-]*$"
+        },
+        "roots": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/root"
+          }
+        },
+        "include": {
+          "$ref": "#/$defs/patterns"
+        },
+        "exclude": {
+          "$ref": "#/$defs/patterns"
+        },
+        "max_files": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_bytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "root": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "path"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "file",
+            "tree"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "patterns": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "glob": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "globs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "regex": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "regexes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

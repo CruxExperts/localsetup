@@ -252,6 +252,15 @@ def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_har
     context_index_p = sub.add_parser("context-index")
     context_index_p.add_argument("context_index_args", nargs=argparse.REMAINDER)
 
+    domain_p = sub.add_parser("domain")
+    domain_sub = domain_p.add_subparsers(dest="domain_action", required=True)
+    domain_validate_p = domain_sub.add_parser("validate")
+    domain_validate_p.add_argument("--config", required=True)
+    domain_compile_p = domain_sub.add_parser("compile")
+    domain_compile_p.add_argument("--config", required=True)
+    domain_compile_p.add_argument("--domain", required=True)
+    domain_compile_p.add_argument("--directory", required=True)
+
     hook_p = sub.add_parser("hook-gate")
     hook_p.add_argument("--out", default="/tmp/localsetup-public.tar.gz")
     hook_p.add_argument("--runner")
