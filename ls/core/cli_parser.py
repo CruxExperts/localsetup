@@ -152,6 +152,9 @@ def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_har
     client_registry_sub = client_registry_p.add_subparsers(dest="client_registry_action", required=True)
     client_registry_sub.add_parser("check")
     client_registry_sub.add_parser("generate")
+    client_registry_drift_p = client_registry_sub.add_parser("drift")
+    client_registry_drift_p.add_argument("--left", required=True, help="Canonical family/variant key")
+    client_registry_drift_p.add_argument("--right", required=True, help="Canonical family/variant key")
     state_p = sub.add_parser("state")
     state_sub = state_p.add_subparsers(dest="state_action", required=True)
     for state_action in ("path", "allocate"):
