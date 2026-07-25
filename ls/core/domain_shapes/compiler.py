@@ -30,6 +30,9 @@ _PRIVATE_COMPONENTS = frozenset(
         ".localsetup",
         ".localsetup-maint",
         ".omp",
+        ".mypy_cache",
+        ".pytest_cache",
+        ".ruff_cache",
         ".venv",
         "__pycache__",
         "node_modules",
@@ -191,7 +194,7 @@ def _repository_root(directory: Path | str) -> Path:
     return lexical
 
 
-def _content_digest(path: Path) -> tuple[int, str]:
+def _content_digest(path: Path, *, max_bytes: int) -> tuple[int, str]:
     flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
     try:
         descriptor = os.open(path, flags)
@@ -201,10 +204,20 @@ def _content_digest(path: Path) -> tuple[int, str]:
         metadata = os.fstat(descriptor)
         if not stat.S_ISREG(metadata.st_mode):
             raise DomainCompileError(f"selected path is no longer a regular file: {path}")
+        if metadata.st_size > max_bytes:
+            raise DomainCompileError(
+                f"selected file {path} exceeds remaining max_bytes={max_bytes} (max_bytes)"
+            )
         digest = hashlib.sha256()
+        bytes_read = 0
         while chunk := os.read(descriptor, 1024 * 1024):
+            bytes_read += len(chunk)
+            if bytes_read > max_bytes:
+                raise DomainCompileError(
+                    f"selected file {path} exceeds remaining max_bytes={max_bytes} (max_bytes)"
+                )
             digest.update(chunk)
-        return metadata.st_size, digest.hexdigest()
+        return bytes_read, digest.hexdigest()
     finally:
         os.close(descriptor)
 
@@ -225,14 +238,13 @@ def _enumerate_tree(path: Path, relative: str) -> Iterable[tuple[str, Path, int]
                 child_path = Path(entry.path)
                 try:
                     mode = entry.stat(follow_symlinks=False).st_mode
-                except OSError:
-                    yield child_relative, child_path, 0
-                    continue
+                except OSError as exc:
+                    raise DomainCompileError(f"could not inspect domain path {child_relative!r}: {exc}") from exc
                 yield child_relative, child_path, mode
                 if stat.S_ISDIR(mode) and _private_reason(child_relative) is None:
                     yield from _enumerate_tree(child_path, child_relative)
-    except OSError:
-        return
+    except OSError as exc:
+        raise DomainCompileError(f"could not enumerate domain path {relative!r}: {exc}") from exc
 
 
 def _root_entries(repo_root: Path, root: DomainRoot) -> Iterable[tuple[str, Path, int]]:
@@ -334,6 +346,7 @@ def compile_domain(
     ignored = _git_ignored(repo_root, discovered)
     selected: list[dict[str, Any]] = []
     excluded: list[dict[str, str]] = []
+    selected_bytes = 0
     for relative in sorted(discovered):
         _absolute, mode = discovered[relative]
         is_selected, reason = _classify(
@@ -345,11 +358,20 @@ def compile_domain(
             exclude_regex=exclude_regex,
         )
         if is_selected:
+            if len(selected) >= definition.max_files:
+                raise DomainCompileError(
+                    f"domain {domain_id!r} exceeds max_files={definition.max_files} (max_files)",
+                    issues=(f"max_files exceeded: {len(selected) + 1} > {definition.max_files}",),
+                )
             try:
-                size, content_digest = _content_digest(discovered[relative][0])
+                size, content_digest = _content_digest(
+                    discovered[relative][0],
+                    max_bytes=definition.max_bytes - selected_bytes,
+                )
             except DomainCompileError:
                 raise
             selected.append({"path": relative, "size": size, "sha256": content_digest})
+            selected_bytes += size
         else:
             if reason in {"private_runtime", "git_ignored"}:
                 continue
@@ -357,20 +379,6 @@ def compile_domain(
 
     selected.sort(key=lambda item: item["path"])
     excluded.sort(key=lambda item: (item["path"], item["reason"]))
-    if len(selected) > definition.max_files:
-        raise DomainCompileError(
-            f"domain {domain_id!r} exceeds max_files={definition.max_files} "
-            f"with {len(selected)} selected files (max_files)",
-            issues=(f"max_files exceeded: {len(selected)} > {definition.max_files}",),
-        )
-    total_bytes = sum(item["size"] for item in selected)
-    if total_bytes > definition.max_bytes:
-        raise DomainCompileError(
-            f"domain {domain_id!r} exceeds max_bytes={definition.max_bytes} "
-            f"with {total_bytes} selected bytes (max_bytes)",
-            issues=(f"max_bytes exceeded: {total_bytes} > {definition.max_bytes}",),
-        )
-
     payload_without_digest: dict[str, Any] = {
         "ok": True,
         "schema_version": loaded.schema_version,

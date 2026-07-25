@@ -101,6 +101,8 @@ def test_deny_rules_precede_user_allow_rules(tmp_path: Path) -> None:
     (tmp_path / ".gitignore").write_text("ignored.txt\n", encoding="utf-8")
     (tmp_path / ".localsetup-maint").mkdir()
     (tmp_path / ".localsetup-maint" / "private.txt").write_text("private", encoding="utf-8")
+    (tmp_path / ".pytest_cache").mkdir()
+    (tmp_path / ".pytest_cache" / "cache.txt").write_text("private", encoding="utf-8")
     (tmp_path / "ignored.txt").write_text("ignored", encoding="utf-8")
     (tmp_path / ".env").write_text("secret", encoding="utf-8")
     (tmp_path / "deploy.pem").write_text("secret", encoding="utf-8")
@@ -120,6 +122,7 @@ def test_deny_rules_precede_user_allow_rules(tmp_path: Path) -> None:
         item["path"] for item in result["excluded"]
     }
     assert ".localsetup-maint/private.txt" not in reported_paths
+    assert ".pytest_cache/cache.txt" not in reported_paths
     assert "ignored.txt" not in reported_paths
     assert ".env" not in reported_paths
     assert "deploy.pem" not in reported_paths
@@ -212,6 +215,40 @@ def test_missing_root_and_budgets_fail_before_success(tmp_path: Path) -> None:
     limited = _write_config(tmp_path, _domain(max_files=10, max_bytes=1))
     with pytest.raises(DomainCompileError, match="max_bytes"):
         compile_domain(limited, "test", tmp_path, schema_path=SCHEMA)
+
+
+def test_unreadable_tree_and_over_budget_files_fail_before_content_reads(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src" / "a.txt").write_text("123", encoding="utf-8")
+    config = _write_config(tmp_path, _domain())
+
+    def unreadable_scandir(_path: Path):
+        raise OSError("permission denied")
+
+    monkeypatch.setattr(domain_compiler.os, "scandir", unreadable_scandir)
+    with pytest.raises(DomainCompileError, match="could not enumerate"):
+        compile_domain(config, "test", tmp_path, schema_path=SCHEMA)
+
+    monkeypatch.undo()
+    monkeypatch.setattr(
+        domain_compiler,
+        "_content_digest",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("content digest")),
+    )
+    limited = _write_config(tmp_path, _domain(max_files=0, max_bytes=100))
+    with pytest.raises(DomainCompileError, match="max_files"):
+        compile_domain(limited, "test", tmp_path, schema_path=SCHEMA)
+
+    monkeypatch.undo()
+    monkeypatch.setattr(
+        domain_compiler.os,
+        "read",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("content read")),
+    )
+    with pytest.raises(DomainCompileError, match="max_bytes"):
+        domain_compiler._content_digest(tmp_path / "src" / "a.txt", max_bytes=1)
 
 
 def test_unchanged_compiles_have_identical_bytes_and_digest(tmp_path: Path) -> None:
