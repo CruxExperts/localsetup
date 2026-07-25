@@ -103,6 +103,7 @@ def test_schema_rejects_malformed_metadata(payload: dict[str, object]) -> None:
         _metadata(authoritative_sources=["https://:"]),
         _metadata(authoritative_sources=["https://example.test:invalid"]),
         _metadata(authoritative_sources=["https://[::1"]),
+        _metadata(verification_date="9999-12-31", review_interval_days=1),
     ],
 )
 def test_semantic_validation_rejects_invalid_calendar_or_interval(payload: dict[str, object]) -> None:

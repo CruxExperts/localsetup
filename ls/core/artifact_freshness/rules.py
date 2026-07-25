@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from re import fullmatch
 from typing import Any
 from urllib.parse import urlparse
@@ -80,9 +80,10 @@ def semantic_issues(payload: Mapping[str, Any]) -> tuple[str, ...]:
         if payload.get("target_version") is not None:
             issues.append(f"{target_state} target cannot claim target_version")
 
+    parsed_verification_date: date | None = None
     verification_date = payload.get("verification_date")
     try:
-        parse_utc_date(verification_date, field="verification_date")
+        parsed_verification_date = parse_utc_date(verification_date, field="verification_date")
     except ArtifactFreshnessSemanticError as exc:
         issues.extend(exc.issues)
 
@@ -97,6 +98,11 @@ def semantic_issues(payload: Mapping[str, Any]) -> tuple[str, ...]:
     interval = payload.get("review_interval_days")
     if isinstance(interval, bool) or not isinstance(interval, int) or interval < 1:
         issues.append("review_interval_days must be a positive integer")
+    elif parsed_verification_date is not None:
+        try:
+            parsed_verification_date + timedelta(days=interval)
+        except OverflowError:
+            issues.append("verification_date and review_interval_days exceed the UTC calendar range")
 
     risk_class = payload.get("risk_class")
     if risk_class not in _RISK_CLASSES:
