@@ -78,6 +78,18 @@ Use the existing Conventional Commit style: `feat:`, `fix:`, `docs:`, `chore:`, 
 
 Before publishing a branch or opening/updating a PR, treat generated docs and version sync as part of the publish surface, not as volatile noise. Run `publish-preflight` locally against the intended base ref; if it creates sync commits, rerun the focused tests and push the final generated-doc refresh commit with the branch. Do not weaken generated-doc/version validators or ignore those paths merely to get past GitHub validation.
 
+## Kilo Code Review Contract
+
+`REVIEW.md` is the canonical base-branch contract for Localsetup Kilo Code
+reviews. Maintainers must update it in the same change wave when changed review
+surfaces make it stale, keeping its concise, actionable, repository-specific
+regression standard intact. Kilo Code review agents must read and apply
+`REVIEW.md` before reviewing a change; do not assume or invent a Kilo
+configuration path or mechanism. Keep this public contract consistent with the
+public/private boundary and documentation ownership rules in this file. Agents
+report only concrete regressions tied to the changed diff, not unrelated debt or
+redesigns.
+
 ## Release Authority And Blockers
 
 Do not invent a maintainer-approval requirement. Require GitHub approval only when a live ruleset, branch-protection rule, repository policy, or the user's current instruction requires it. A user request to publish authorizes the ordinary in-scope release actions named in the accepted plan; do not re-ask for each step.
