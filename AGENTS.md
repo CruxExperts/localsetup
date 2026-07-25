@@ -152,6 +152,10 @@ When a team is useful, define its bounded roles and evidence before launch. Use 
 
 Normal fanout is one or two agents for non-trivial tasks. Use three only when the scopes are clearly independent discovery, research, or validation tasks. Treat configured thread capacity as operational headroom, not a target. Explicit user instructions, tool restrictions, sandbox/approval policy, and active modes override delegation defaults.
 
+Cap automated subagent routing at high effort/capability. Do not route max,
+ultra, or equivalent higher-cost lanes unless the user explicitly selects one
+for the current task.
+
 Keep the existing native roles generic: `explorer` maps relevant files, systems, docs, workflows, data, dependencies, tests, and risks; `researcher` verifies current or source-backed facts; `worker` executes one bounded task with exact write scope; `tester` runs validations, benchmarks, measurements, and failure summaries; `reviewer` checks final risk, correctness, regression, scope, and evidence. The `guardian_subagent` role is reserved for approval and permission review, not normal task delegation.
 
 For agent-team work, keep a repo-local ledger at `.codex/runs/<YYYYMMDD-HHMMSS>-<task-slug>.md`. If `.codex/runs/` is not already excluded from Git, add it to `.git/info/exclude`, not `.gitignore`. In Plan Mode or other no-write contexts, plan the ledger and subtasks but do not create ledger files or edit state until writes are allowed. Record objective, phase, plan, subtasks, checkpoints, validation, decisions, resume notes, and final acceptance criteria. After interruption or compaction, read the ledger, run `git status --short`, inspect outstanding diffs, and resume from the first non-completed task whose dependencies are satisfied.
