@@ -103,6 +103,8 @@ def test_schema_rejects_malformed_metadata(payload: dict[str, object]) -> None:
         _metadata(authoritative_sources=["https://:"]),
         _metadata(authoritative_sources=["https://example.test:invalid"]),
         _metadata(authoritative_sources=["https://[::1"]),
+        _metadata(authoritative_sources=["https://user@example.test/source"]),
+        _metadata(authoritative_sources=["https://user:token@example.test/source"]),
         _metadata(verification_date="9999-12-31", review_interval_days=1),
     ],
 )

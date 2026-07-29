@@ -10,6 +10,7 @@ from pathlib import Path
 import re
 import stat
 import subprocess
+import unicodedata
 from typing import Any
 
 from .config import load_domain_shapes
@@ -23,8 +24,8 @@ from .models import (
 
 _PRIVATE_COMPONENTS = frozenset(
     {
-        ".codex",
         ".cache",
+        ".codex",
         ".git",
         ".herdr",
         ".localsetup",
@@ -39,6 +40,12 @@ _PRIVATE_COMPONENTS = frozenset(
         "venv",
     }
 )
+_AGENT_ADAPTER_PREFIXES = (
+    ".codex/skills",
+    ".omp/skills",
+)
+_GIT_REGULAR_MODES = frozenset({0o100644, 0o100755})
+_GIT_INTENT_TO_ADD = 0x20000000
 _PRIVATE_FILENAMES = (".env", ".env.*", "*.key", "*.pem", "*.p12", "*.pfx", "*.secret", "*.secret.*", "secrets.*")
 
 
@@ -47,7 +54,7 @@ def canonical_json_bytes(payload: Mapping[str, Any]) -> bytes:
 
     return json.dumps(
         payload,
-        ensure_ascii=False,
+        ensure_ascii=True,
         sort_keys=True,
         separators=(",", ":"),
         allow_nan=False,
@@ -75,15 +82,31 @@ class CompileResult(Mapping[str, Any]):
 
 
 def _portable_path(path: str) -> str:
-    return path.replace("\\", "/")
+    return path.replace("\\", "/") if os.sep == "\\" else path
+
+
+def _security_path_key(path: str) -> str:
+    return unicodedata.normalize("NFC", _portable_path(path)).casefold()
+
+def _contains_agent_adapter(relative: str) -> bool:
+    normalized = _security_path_key(relative)
+    return any(prefix.startswith(f"{normalized}/") for prefix in _AGENT_ADAPTER_PREFIXES)
+
+
+def _is_agent_adapter_path(relative: str) -> bool:
+    normalized = _security_path_key(relative)
+    return any(normalized == prefix or normalized.startswith(f"{prefix}/") for prefix in _AGENT_ADAPTER_PREFIXES)
 
 
 def _private_reason(relative: str) -> str | None:
-    parts = relative.split("/")
-    if any(part in _PRIVATE_COMPONENTS for part in parts):
-        return "private_runtime"
-    if any(_glob_matches(parts[-1], pattern) for pattern in _PRIVATE_FILENAMES):
-        return "private_runtime"
+    normalized = _portable_path(relative)
+    parts = normalized.split("/")
+    adapter_prefix = _is_agent_adapter_path(normalized)
+    inspected_parts = parts[2:] if adapter_prefix else parts
+    for part in inspected_parts:
+        key = unicodedata.normalize("NFC", part).casefold()
+        if key in _PRIVATE_COMPONENTS or any(_glob_matches(key, pattern) for pattern in _PRIVATE_FILENAMES):
+            return "private_runtime"
     return None
 
 
@@ -124,7 +147,7 @@ def _git_ignored(repo_root: Path, relative_paths: Iterable[str]) -> set[str]:
     try:
         completed = subprocess.run(
             ["git", "-C", str(repo_root), "check-ignore", "--stdin", "-z"],
-            input=b"\0".join(item.encode("utf-8") for item in paths) + b"\0",
+            input=b"\0".join(b"./" + os.fsencode(item) for item in paths) + b"\0",
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
             check=False,
@@ -142,11 +165,76 @@ def _git_ignored(repo_root: Path, relative_paths: Iterable[str]) -> set[str]:
     ignored: set[str] = set()
     for item in completed.stdout.split(b"\0"):
         if item:
-            try:
-                ignored.add(item.decode("utf-8"))
-            except UnicodeDecodeError:
-                continue
+            ignored.add(_portable_path(os.fsdecode(item).removeprefix("./")))
     return ignored
+
+
+
+def _git_tracked_paths(repo_root: Path) -> dict[str, int]:
+    try:
+        completed = subprocess.run(
+            ["git", "-C", str(repo_root), "ls-files", "--stage", "--debug", "-z"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+    except OSError as exc:
+        raise DomainCompileError(
+            f"could not determine Git tracked paths: {exc}",
+            issues=("git tracked path status unavailable",),
+        ) from exc
+    if completed.returncode != 0:
+        raise DomainCompileError(
+            "could not determine Git tracked paths: git ls-files failed",
+            issues=("git tracked path status unavailable",),
+        )
+
+    tracked: dict[str, int] = {}
+    cursor = 0
+    output = completed.stdout
+    while cursor < len(output):
+        terminator = output.find(b"\0", cursor)
+        if terminator < 0:
+            raise DomainCompileError(
+                "could not determine Git tracked paths: malformed git ls-files output",
+                issues=("git tracked path status unavailable",),
+            )
+        header = output[cursor:terminator]
+        debug_end = terminator + 1
+        for _ in range(5):
+            debug_end = output.find(b"\n", debug_end) + 1
+            if debug_end == 0:
+                raise DomainCompileError(
+                    "could not determine Git tracked paths: malformed git ls-files output",
+                    issues=("git tracked path status unavailable",),
+                )
+        debug = output[terminator + 1 : debug_end]
+        cursor = debug_end
+
+        metadata, separator, path = header.partition(b"\t")
+        flags_match = re.search(rb"flags: ([0-9a-fA-F]+)\n$", debug)
+        try:
+            metadata_parts = metadata.split()
+            if not separator or len(metadata_parts) != 3 or flags_match is None:
+                raise ValueError("missing index metadata")
+            mode = int(metadata_parts[0], 8)
+            stage = int(metadata_parts[2], 10)
+            flags = int(flags_match.group(1), 16)
+        except (ValueError, IndexError) as exc:
+            raise DomainCompileError(
+                "could not determine Git tracked paths: malformed git ls-files output",
+                issues=("git tracked path status unavailable",),
+            ) from exc
+        if stage != 0:
+            raise DomainCompileError(
+                "could not determine Git tracked paths: repository index contains unmerged entries",
+                issues=("unmerged Git index",),
+            )
+        if flags & _GIT_INTENT_TO_ADD:
+            continue
+        tracked[os.fsdecode(path)] = mode
+    return tracked
+
 
 
 def _assert_no_symlink_components(repo_root: Path, relative: str) -> None:
@@ -229,25 +317,42 @@ def _root_absolute(repo_root: Path, root: DomainRoot) -> Path:
     return repo_root.joinpath(*root.path.split("/"))
 
 
-def _enumerate_tree(path: Path, relative: str) -> Iterable[tuple[str, Path, int]]:
+def _enumerate_tree(
+    repo_root: Path,
+    path: Path,
+    relative: str,
+) -> Iterable[tuple[str, Path, int]]:
     try:
         with os.scandir(path) as iterator:
-            entries = sorted(iterator, key=lambda item: item.name)
-            for entry in entries:
+            records: list[tuple[str, Path, int]] = []
+            for entry in sorted(iterator, key=lambda item: item.name):
                 child_relative = entry.name if relative == "." else f"{relative}/{entry.name}"
                 child_path = Path(entry.path)
                 try:
                     mode = entry.stat(follow_symlinks=False).st_mode
                 except OSError as exc:
                     raise DomainCompileError(f"could not inspect domain path {child_relative!r}: {exc}") from exc
-                yield child_relative, child_path, mode
-                if stat.S_ISDIR(mode) and _private_reason(child_relative) is None:
-                    yield from _enumerate_tree(child_path, child_relative)
+                records.append((child_relative, child_path, mode))
+        ignored_directories = _git_ignored(
+            repo_root,
+            (child_relative for child_relative, _child_path, mode in records if stat.S_ISDIR(mode)),
+        )
+        for child_relative, child_path, mode in records:
+            yield child_relative, child_path, mode
+            if (
+                stat.S_ISDIR(mode)
+                and child_relative not in ignored_directories
+                and _private_reason(child_relative) is None
+            ):
+                yield from _enumerate_tree(repo_root, child_path, child_relative)
     except OSError as exc:
         raise DomainCompileError(f"could not enumerate domain path {relative!r}: {exc}") from exc
 
 
-def _root_entries(repo_root: Path, root: DomainRoot) -> Iterable[tuple[str, Path, int]]:
+def _root_entries(
+    repo_root: Path,
+    root: DomainRoot,
+) -> Iterable[tuple[str, Path, int]]:
     path = _root_absolute(repo_root, root)
     try:
         mode = os.lstat(path).st_mode
@@ -272,6 +377,8 @@ def _root_entries(repo_root: Path, root: DomainRoot) -> Iterable[tuple[str, Path
                 f"file root {root.path!r} is not a regular file (root_kind)",
                 issues=(f"file root is not a regular file: {root.path}",),
             )
+        if _is_agent_adapter_path(root.path):
+            return
         yield root.path, path, mode
         return
     if not stat.S_ISDIR(mode):
@@ -279,7 +386,61 @@ def _root_entries(repo_root: Path, root: DomainRoot) -> Iterable[tuple[str, Path
             f"tree root {root.path!r} is not a directory (root_kind)",
             issues=(f"tree root is not a directory: {root.path}",),
         )
-    yield from _enumerate_tree(path, root.path)
+    if (
+        root.path in _git_ignored(repo_root, (root.path,))
+        or _contains_agent_adapter(root.path)
+        or _is_agent_adapter_path(root.path)
+        or _private_reason(root.path) is not None
+    ):
+        return
+    yield from _enumerate_tree(repo_root, path, root.path)
+
+
+def _root_covers_path(repo_root: Path, root: DomainRoot, target: Path) -> bool:
+    try:
+        root_path = _root_absolute(repo_root, root).resolve(strict=True)
+        target_path = target.resolve(strict=True)
+    except FileNotFoundError:
+        return False
+    if root.kind == "file":
+        return target_path == root_path
+    return target_path == root_path or target_path.is_relative_to(root_path)
+
+
+def _tracked_adapter_entries(
+    repo_root: Path,
+    definition: DomainDefinition,
+    tracked_paths: Mapping[str, int],
+) -> Iterable[tuple[str, Path, int]]:
+    blocked_identities: set[tuple[int, int]] = set()
+    candidates: list[tuple[str, Path, int, tuple[int, int]]] = []
+    candidate_counts: dict[tuple[int, int], int] = {}
+    for relative, index_mode in sorted(tracked_paths.items()):
+        if not _is_agent_adapter_path(relative) or _private_reason(relative) is not None:
+            continue
+        parent = relative.rpartition("/")[0] or "."
+        _assert_no_symlink_components(repo_root, parent)
+        path = repo_root.joinpath(*relative.split("/"))
+        try:
+            metadata = os.lstat(path)
+        except FileNotFoundError:
+            continue
+        except OSError as exc:
+            raise DomainCompileError(f"could not inspect tracked adapter path {relative!r}: {exc}") from exc
+        if not any(_root_covers_path(repo_root, root, path) for root in definition.roots):
+            continue
+        if metadata.st_nlink != 1:
+            continue
+        identity = (metadata.st_dev, metadata.st_ino)
+        if index_mode not in _GIT_REGULAR_MODES:
+            blocked_identities.add(identity)
+            continue
+        candidates.append((relative, path, metadata.st_mode, identity))
+        candidate_counts[identity] = candidate_counts.get(identity, 0) + 1
+
+    for relative, path, mode, identity in candidates:
+        if identity not in blocked_identities and candidate_counts[identity] == 1:
+            yield relative, path, mode
 
 
 def _compile_patterns(definition: DomainDefinition) -> tuple[tuple[re.Pattern[str], ...], tuple[re.Pattern[str], ...]]:
@@ -339,9 +500,16 @@ def compile_domain(
 
     discovered: dict[str, tuple[Path, int]] = {}
     for root in definition.roots:
-        for relative, absolute, mode in _root_entries(repo_root, root):
+        for relative, absolute, mode in _root_entries(
+            repo_root,
+            root,
+        ):
             relative = _portable_path(relative)
-            discovered.setdefault(relative, (absolute, mode))
+            _ = discovered.setdefault(relative, (absolute, mode))
+
+    tracked_paths = _git_tracked_paths(repo_root)
+    for relative, absolute, mode in _tracked_adapter_entries(repo_root, definition, tracked_paths):
+        _ = discovered.setdefault(relative, (absolute, mode))
 
     ignored = _git_ignored(repo_root, discovered)
     selected: list[dict[str, Any]] = []

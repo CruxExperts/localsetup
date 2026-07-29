@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import os
 import subprocess
 
 import pytest
@@ -98,13 +99,26 @@ def test_glob_and_regex_includes_and_excludes_are_applied(tmp_path: Path) -> Non
 
 
 def test_deny_rules_precede_user_allow_rules(tmp_path: Path) -> None:
-    (tmp_path / ".gitignore").write_text("ignored.txt\ntracked-ignored.txt\n", encoding="utf-8")
+    (tmp_path / ".gitignore").write_text(".codex/\n.omp/\nignored.txt\ntracked-ignored.txt\n", encoding="utf-8")
     (tmp_path / ".localsetup-maint").mkdir()
     (tmp_path / ".localsetup-maint" / "private.txt").write_text("private", encoding="utf-8")
     (tmp_path / ".pytest_cache").mkdir()
     (tmp_path / ".pytest_cache" / "cache.txt").write_text("private", encoding="utf-8")
     (tmp_path / "ignored.txt").write_text("ignored", encoding="utf-8")
     (tmp_path / "tracked-ignored.txt").write_text("tracked", encoding="utf-8")
+    adapter_skill = tmp_path / ".codex" / "skills" / "custom" / "SKILL.md"
+    adapter_skill.parent.mkdir(parents=True)
+    adapter_skill.write_text("tracked adapter", encoding="utf-8")
+    private_run = tmp_path / ".codex" / "runs" / "private.txt"
+    private_run.parent.mkdir(parents=True)
+    private_run.write_text("private", encoding="utf-8")
+    codex_runtime = tmp_path / ".codex" / "auth.json"
+    codex_runtime.write_text("credential", encoding="utf-8")
+    omp_skill = tmp_path / ".omp" / "skills" / "custom" / "SKILL.md"
+    omp_skill.parent.mkdir(parents=True)
+    omp_skill.write_text("tracked adapter", encoding="utf-8")
+    omp_runtime = tmp_path / ".omp" / "config.yml"
+    omp_runtime.write_text("runtime", encoding="utf-8")
     (tmp_path / ".env").write_text("secret", encoding="utf-8")
     (tmp_path / "deploy.pem").write_text("secret", encoding="utf-8")
     (tmp_path / "allowed.txt").write_text("allowed", encoding="utf-8")
@@ -116,7 +130,16 @@ def test_deny_rules_precede_user_allow_rules(tmp_path: Path) -> None:
         ),
     )
     subprocess.run(
-        ["git", "-C", str(tmp_path), "add", "-f", "tracked-ignored.txt"],
+        [
+            "git",
+            "-C",
+            str(tmp_path),
+            "add",
+            "-f",
+            "tracked-ignored.txt",
+            ".codex/skills/custom/SKILL.md",
+            ".omp/skills/custom/SKILL.md",
+        ],
         check=True,
     )
 
@@ -124,14 +147,327 @@ def test_deny_rules_precede_user_allow_rules(tmp_path: Path) -> None:
 
     assert "allowed.txt" in {item["path"] for item in result["selected"]}
     assert "tracked-ignored.txt" in {item["path"] for item in result["selected"]}
+    assert ".codex/skills/custom/SKILL.md" in {item["path"] for item in result["selected"]}
+    assert ".omp/skills/custom/SKILL.md" in {item["path"] for item in result["selected"]}
     reported_paths = {item["path"] for item in result["selected"]} | {
         item["path"] for item in result["excluded"]
     }
     assert ".localsetup-maint/private.txt" not in reported_paths
+    assert ".codex/runs/private.txt" not in reported_paths
+    assert ".codex/auth.json" not in reported_paths
+    assert ".omp/config.yml" not in reported_paths
     assert ".pytest_cache/cache.txt" not in reported_paths
     assert "ignored.txt" not in reported_paths
     assert ".env" not in reported_paths
     assert "deploy.pem" not in reported_paths
+
+
+def test_tracked_runtime_file_does_not_open_adapter_parent(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    (tmp_path / ".gitignore").write_text(".codex/\n", encoding="utf-8")
+    runtime = tmp_path / ".codex"
+    runtime.mkdir()
+    (runtime / "auth.json").write_text("private", encoding="utf-8")
+    config = _write_config(
+        tmp_path,
+        _domain(
+            roots=[{"kind": "tree", "path": "."}],
+            include={"glob": ["**/*"], "regex": []},
+        ),
+    )
+    subprocess.run(["git", "-C", str(tmp_path), "add", "-f", ".codex/auth.json"], check=True)
+    original_scandir = domain_compiler.os.scandir
+
+    def guarded_scandir(path: Path | str):
+        if Path(path) == runtime:
+            raise AssertionError("runtime directory was traversed")
+        return original_scandir(path)
+
+    monkeypatch.setattr(domain_compiler.os, "scandir", guarded_scandir)
+
+    result = compile_domain(config, "test", tmp_path, schema_path=SCHEMA)
+
+    reported_paths = {item["path"] for item in result["selected"]} | {
+        item["path"] for item in result["excluded"]
+    }
+    assert ".codex/auth.json" not in reported_paths
+
+
+def test_private_directory_below_tracked_adapter_is_pruned(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    (tmp_path / ".gitignore").write_text(".codex/\n", encoding="utf-8")
+    private = tmp_path / ".codex" / "skills" / "custom" / ".CACHE"
+    private.mkdir(parents=True)
+    tracked = private / "tracked.txt"
+    tracked.write_text("private", encoding="utf-8")
+    private_filename_directory = tmp_path / ".codex" / "skills" / "custom" / ".env"
+    private_filename_directory.mkdir()
+    (private_filename_directory / "tracked.txt").write_text("private", encoding="utf-8")
+    config = _write_config(
+        tmp_path,
+        _domain(
+            roots=[{"kind": "tree", "path": "."}],
+            include={"glob": ["**/*"], "regex": []},
+        ),
+    )
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(tmp_path),
+            "add",
+            "-f",
+            ".codex/skills/custom/.CACHE/tracked.txt",
+            ".codex/skills/custom/.env/tracked.txt",
+        ],
+        check=True,
+    )
+    original_scandir = domain_compiler.os.scandir
+
+    def guarded_scandir(path: Path | str):
+        if Path(path) == private:
+            raise AssertionError("private adapter directory was traversed")
+        return original_scandir(path)
+
+    monkeypatch.setattr(domain_compiler.os, "scandir", guarded_scandir)
+
+    result = compile_domain(config, "test", tmp_path, schema_path=SCHEMA)
+
+    reported_paths = {item["path"] for item in result["selected"]} | {
+        item["path"] for item in result["excluded"]
+    }
+    assert ".codex/skills/custom/.CACHE/tracked.txt" not in reported_paths
+    assert ".codex/skills/custom/.env/tracked.txt" not in reported_paths
+
+
+def test_gitlink_index_mode_cannot_select_replacement_file(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    replacement = tmp_path / ".codex" / "skills" / "vendor"
+    replacement.parent.mkdir(parents=True)
+    replacement.write_text("not tracked by the superproject", encoding="utf-8")
+    config = _write_config(
+        tmp_path,
+        _domain(
+            roots=[{"kind": "tree", "path": "."}],
+            include={"glob": ["**/*"], "regex": []},
+        ),
+    )
+    monkeypatch.setattr(
+        domain_compiler,
+        "_git_tracked_paths",
+        lambda _repo_root: {".codex/skills/vendor": 0o160000},
+    )
+
+    result = compile_domain(config, "test", tmp_path, schema_path=SCHEMA)
+
+    reported_paths = {item["path"] for item in result["selected"]} | {
+        item["path"] for item in result["excluded"]
+    }
+    assert ".codex/skills/vendor" not in reported_paths
+
+
+def test_intent_to_add_adapter_file_is_not_selected(tmp_path: Path) -> None:
+    adapter = tmp_path / ".codex" / "skills" / "custom"
+    adapter.mkdir(parents=True)
+    (adapter / "leak.txt").write_text("not in the index", encoding="utf-8")
+    config = _write_config(
+        tmp_path,
+        _domain(
+            roots=[{"kind": "tree", "path": "."}],
+            include={"glob": ["**/*"], "regex": []},
+        ),
+    )
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "add", "-N", "-f", ".codex/skills/custom/leak.txt"],
+        check=True,
+    )
+
+    result = compile_domain(config, "test", tmp_path, schema_path=SCHEMA)
+
+    reported_paths = {item["path"] for item in result["selected"]} | {
+        item["path"] for item in result["excluded"]
+    }
+    assert ".codex/skills/custom/leak.txt" not in reported_paths
+
+
+def test_hard_linked_adapter_file_is_not_selected(tmp_path: Path) -> None:
+    runtime = tmp_path / ".codex" / "auth.json"
+    runtime.parent.mkdir(parents=True)
+    runtime.write_text("private", encoding="utf-8")
+    adapter = tmp_path / ".codex" / "skills" / "custom" / "SKILL.md"
+    adapter.parent.mkdir(parents=True)
+    try:
+        os.link(runtime, adapter)
+    except OSError:
+        pytest.skip("filesystem does not support hard links")
+    config = _write_config(
+        tmp_path,
+        _domain(
+            roots=[{"kind": "tree", "path": "."}],
+            include={"glob": ["**/*"], "regex": []},
+        ),
+    )
+    subprocess.run(["git", "-C", str(tmp_path), "add", "-f", ".codex/skills/custom/SKILL.md"], check=True)
+
+    result = compile_domain(config, "test", tmp_path, schema_path=SCHEMA)
+
+    reported_paths = {item["path"] for item in result["selected"]} | {
+        item["path"] for item in result["excluded"]
+    }
+    assert ".codex/skills/custom/SKILL.md" not in reported_paths
+
+
+def test_git_ignored_untracked_directories_are_pruned_before_recursion(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    (tmp_path / ".gitignore").write_text("ignored-output/\n", encoding="utf-8")
+    ignored = tmp_path / "ignored-output"
+    ignored.mkdir()
+    (ignored / "generated.txt").write_text("generated", encoding="utf-8")
+    (tmp_path / "allowed.txt").write_text("allowed", encoding="utf-8")
+    config = _write_config(
+        tmp_path,
+        _domain(
+            roots=[{"kind": "tree", "path": "."}],
+            include={"glob": ["**/*"], "regex": []},
+        ),
+    )
+    original_scandir = domain_compiler.os.scandir
+
+    def guarded_scandir(path: Path | str):
+        if Path(path) == ignored:
+            raise AssertionError("ignored directory was traversed")
+        return original_scandir(path)
+
+    monkeypatch.setattr(domain_compiler.os, "scandir", guarded_scandir)
+
+    result = compile_domain(config, "test", tmp_path, schema_path=SCHEMA)
+
+    selected_paths = {item["path"] for item in result["selected"]}
+    assert "allowed.txt" in selected_paths
+    assert not any(path.startswith("ignored-output/") for path in selected_paths)
+
+
+def test_git_ignored_directory_with_tracked_descendant_is_traversed(tmp_path: Path) -> None:
+    (tmp_path / ".gitignore").write_text("ignored-mixed/\n", encoding="utf-8")
+    mixed = tmp_path / "ignored-mixed"
+    mixed.mkdir()
+    (mixed / "tracked.txt").write_text("tracked", encoding="utf-8")
+    (mixed / "generated.txt").write_text("generated", encoding="utf-8")
+    config = _write_config(
+        tmp_path,
+        _domain(
+            roots=[{"kind": "tree", "path": "."}],
+            include={"glob": ["**/*"], "regex": []},
+        ),
+    )
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "add", "-f", "ignored-mixed/tracked.txt"],
+        check=True,
+    )
+
+    result = compile_domain(config, "test", tmp_path, schema_path=SCHEMA)
+
+    selected_paths = {item["path"] for item in result["selected"]}
+    assert "ignored-mixed/tracked.txt" in selected_paths
+    assert "ignored-mixed/generated.txt" not in selected_paths
+
+
+def test_case_distinct_ignored_directory_does_not_prune_tracked_sibling(tmp_path: Path) -> None:
+    (tmp_path / ".gitignore").write_text("cache/\n", encoding="utf-8")
+    ignored = tmp_path / "cache"
+    ignored.mkdir()
+    try:
+        tracked_directory = tmp_path / "CACHE"
+        tracked_directory.mkdir()
+    except FileExistsError:
+        pytest.skip("filesystem is case-insensitive")
+    (ignored / "generated.txt").write_text("generated", encoding="utf-8")
+    (tracked_directory / "tracked.txt").write_text("tracked", encoding="utf-8")
+    config = _write_config(
+        tmp_path,
+        _domain(
+            roots=[{"kind": "tree", "path": "."}],
+            include={"glob": ["**/*"], "regex": []},
+        ),
+    )
+    subprocess.run(["git", "-C", str(tmp_path), "add", "CACHE/tracked.txt"], check=True)
+
+    result = compile_domain(config, "test", tmp_path, schema_path=SCHEMA)
+
+    selected_paths = {item["path"] for item in result["selected"]}
+    assert "CACHE/tracked.txt" in selected_paths
+    assert "cache/generated.txt" not in selected_paths
+
+
+def test_posix_backslash_index_path_cannot_authorize_adapter_path(tmp_path: Path) -> None:
+    if os.sep == "\\":
+        pytest.skip("POSIX-only filename behavior")
+    literal = ".codex\\skills\\tracked.txt"
+    (tmp_path / literal).write_text("tracked literal name", encoding="utf-8")
+    adapter = tmp_path / ".codex" / "skills"
+    adapter.mkdir(parents=True)
+    (adapter / "tracked.txt").write_text("untracked adapter", encoding="utf-8")
+    config = _write_config(
+        tmp_path,
+        _domain(
+            roots=[{"kind": "tree", "path": "."}],
+            include={"glob": ["**/*"], "regex": []},
+        ),
+    )
+    subprocess.run(["git", "-C", str(tmp_path), "add", literal], check=True)
+
+    result = compile_domain(config, "test", tmp_path, schema_path=SCHEMA)
+
+    selected_paths = {item["path"] for item in result["selected"]}
+    assert literal in selected_paths
+    assert ".codex/skills/tracked.txt" not in selected_paths
+
+
+def test_root_beginning_with_pathspec_magic_is_literal(tmp_path: Path) -> None:
+    (tmp_path / ".gitignore").write_text(":literal/\n", encoding="utf-8")
+    root = tmp_path / ":literal"
+    root.mkdir()
+    (root / "tracked.txt").write_text("tracked", encoding="utf-8")
+    (root / "generated.txt").write_text("generated", encoding="utf-8")
+    config = _write_config(
+        tmp_path,
+        _domain(roots=[{"kind": "tree", "path": ":literal"}]),
+    )
+    subprocess.run(
+        ["git", "--literal-pathspecs", "-C", str(tmp_path), "add", "-f", ":literal/tracked.txt"],
+        check=True,
+    )
+
+    result = compile_domain(config, "test", tmp_path, schema_path=SCHEMA)
+
+    assert [item["path"] for item in result["selected"]] == [":literal/tracked.txt"]
+
+
+def test_non_utf8_filename_has_stable_json_encoding(tmp_path: Path) -> None:
+    filename = os.fsdecode(b"non-utf8-\xff.txt")
+    if "\udcff" not in filename:
+        pytest.skip("filesystem encoding does not use surrogateescape")
+    (tmp_path / filename).write_text("content", encoding="utf-8")
+    config = _write_config(
+        tmp_path,
+        _domain(
+            roots=[{"kind": "tree", "path": "."}],
+            include={"glob": ["**/*"], "regex": []},
+        ),
+    )
+
+    result = compile_domain(config, "test", tmp_path, schema_path=SCHEMA)
+
+    assert filename in {item["path"] for item in result["selected"]}
+    assert b"non-utf8-\\udcff.txt" in result.output_bytes
 
 
 def test_git_ignore_unavailability_fails_closed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

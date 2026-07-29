@@ -53,7 +53,7 @@ def _is_https_url(value: Any) -> bool:
         parsed.port
     except ValueError:
         return False
-    return parsed.scheme == "https" and bool(hostname)
+    return parsed.scheme == "https" and bool(hostname) and parsed.username is None and parsed.password is None
 
 
 def semantic_issues(payload: Mapping[str, Any]) -> tuple[str, ...]:
