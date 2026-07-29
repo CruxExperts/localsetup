@@ -347,6 +347,8 @@ def test_docs_and_package(tmp_path: Path) -> None:
     ):
         assert asset in package["files"]
     assert "assets" in package["manifest"]["public_paths"]
+    assert "REVIEW.md" in package["files"]
+    assert "REVIEW.md" in package["manifest"]["public_paths"]
     assert "ls/__pycache__/cached.pyc" not in package["files"]
     assert "ls/.cache/scrapling/jobs/job.json" not in package["files"]
     assert "ls/docs/local-context/SECRETS_OVERVIEW.md" not in package["files"]

@@ -1,7 +1,33 @@
 from __future__ import annotations
 
-from .client_registry import load_client_registry, platform_rows, projection_matches, write_platforms_projection
+import re
+
+from .client_registry import (
+    ClientRegistry,
+    ClientRegistryError,
+    ClientVariant,
+    compare_variants,
+    load_client_registry,
+    platform_rows,
+    projection_matches,
+    write_platforms_projection,
+)
 from .cli_handler_sync import sync
+
+
+_CANONICAL_CLIENT_KEY = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*/[a-z0-9]+(?:-[a-z0-9]+)*$")
+
+
+def _resolve_variant(registry: ClientRegistry, key: str) -> ClientVariant:
+    if not isinstance(key, str) or _CANONICAL_CLIENT_KEY.fullmatch(key) is None:
+        raise ClientRegistryError(
+            f"invalid client registry key {key!r}: expected lowercase family/variant in kebab-case"
+        )
+    family_id, variant_id = key.split("/", 1)
+    try:
+        return registry.variant(family_id, variant_id)
+    except KeyError as exc:
+        raise ClientRegistryError(f"unknown client registry variant: {key}") from exc
 
 
 def _adapter_check_commands(platform_ids: list[str] | None, *, has_issues: bool) -> list[dict]:
@@ -104,6 +130,10 @@ def handle(cli, args, root, home) -> int | None:
 
     if args.cmd == "client-registry":
         registry = load_client_registry(root)
+        if args.client_registry_action == "drift":
+            payload = compare_variants(_resolve_variant(registry, args.left), _resolve_variant(registry, args.right))
+            print(json.dumps(payload, indent=2, sort_keys=True))
+            return 0
         matches = projection_matches(root, registry)
         if args.client_registry_action == "generate":
             write_platforms_projection(root, registry)

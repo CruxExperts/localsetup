@@ -273,7 +273,7 @@ def test_new_qc_workflow_static_contracts() -> None:
         data = yaml.safe_load(workflow.read_text(encoding="utf-8"))
         assert "permissions" in data, workflow
         text = workflow.read_text(encoding="utf-8")
-        assert "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" in text
+        assert "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1" in text
         if workflow.name == "qc-patrol.yml":
             assert data["permissions"]["actions"] == "read"
             assert "qc/category/inventory" in text
@@ -314,6 +314,22 @@ def test_new_qc_workflow_static_contracts() -> None:
             assert "github.event.inputs.issue" not in "\n".join(
                 str(step.get("run", "")) for step in data["jobs"]["autofix"]["steps"] if isinstance(step, dict)
             )
+
+
+def test_workflow_dependency_actions_are_pinned_and_cache_bounded() -> None:
+    setup_uv_steps = 0
+    for workflow in sorted((REPO / ".github/workflows").glob("*.yml")):
+        data = yaml.safe_load(workflow.read_text(encoding="utf-8"))
+        for job in data["jobs"].values():
+            for step in job["steps"]:
+                uses = str(step.get("uses", ""))
+                if uses.startswith("actions/checkout@"):
+                    assert uses == "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1"
+                if uses.startswith("astral-sh/setup-uv@"):
+                    setup_uv_steps += 1
+                    assert uses == "astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9"
+                    assert step["with"]["prune-cache"] is True
+    assert setup_uv_steps == 12
 
 
 def test_llm_client_disabled_without_secret() -> None:

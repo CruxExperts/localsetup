@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: df2eab5704b6f253f8a51335c0e2a01c10504b12e4c93c68ad3c5d0848a96f6a
+  source_provenance_hash: 46851918572cedc423d1e07d16323b3a00d9003d1717cecdbfadd309c4eb225f
   emitter: generate-docs
-framework_version: 4.3.1
-source_commit: 4a139eaa072287c13a7e0efb0e7c30e88511f8d3
-artifact_sha256: ca72befa0c5902c7c5cf8feb13b344615792c6f5c9a3f351062b4ea5002b7277
+framework_version: 4.3.2
+source_commit: 4b13df4809569858c6e723aae395fdcbfa328c75
+artifact_sha256: 69274a82e11f708c69cd7bd2756108b34d726e1962ff1b61cbcdfb7278edb17a
 ---
 # Implementation File Map
 
@@ -58,6 +58,7 @@ artifact_sha256: ca72befa0c5902c7c5cf8feb13b344615792c6f5c9a3f351062b4ea5002b727
 | `keep` | `LICENSE` |
 | `keep` | `MANIFEST.in` |
 | `keep` | `README.md` |
+| `keep` | `REVIEW.md` |
 | `keep` | `SECURITY.md` |
 | `keep` | `SUPPORT.md` |
 | `keep` | `VERSION` |
@@ -76,12 +77,15 @@ artifact_sha256: ca72befa0c5902c7c5cf8feb13b344615792c6f5c9a3f351062b4ea5002b727
 | `keep` | `ls/adapters/codex/agents/guardian_subagent.toml` |
 | `keep` | `ls/config/agent_queue.example.yaml` |
 | `keep` | `ls/config/agent_trust_registry.example.yaml` |
+| `keep` | `ls/config/artifact-freshness.schema.json` |
 | `keep` | `ls/config/client-state-artifact.schema.json` |
 | `refactor` | `ls/config/clients.schema.json` |
 | `refactor` | `ls/config/clients.yaml` |
 | `keep` | `ls/config/defaults/system_config.yaml` |
 | `keep` | `ls/config/dependency-ledger.schema.json` |
 | `keep` | `ls/config/dependency-ledger.yaml` |
+| `keep` | `ls/config/domain-shapes.schema.json` |
+| `keep` | `ls/config/domain-shapes.yaml` |
 | `keep` | `ls/config/install.schema.json` |
 | `keep` | `ls/config/mail_protocol_policy.yaml` |
 | `keep` | `ls/config/manifest.schema.json` |
@@ -104,6 +108,9 @@ artifact_sha256: ca72befa0c5902c7c5cf8feb13b344615792c6f5c9a3f351062b4ea5002b727
 | `refactor` | `ls/core/apply_lock.py` |
 | `refactor` | `ls/core/apply_packages.py` |
 | `refactor` | `ls/core/apply_preflight.py` |
+| `refactor` | `ls/core/artifact_freshness/__init__.py` |
+| `refactor` | `ls/core/artifact_freshness/models.py` |
+| `refactor` | `ls/core/artifact_freshness/rules.py` |
 | `refactor` | `ls/core/baseline.py` |
 | `refactor` | `ls/core/boundary.py` |
 | `refactor` | `ls/core/cli.py` |
@@ -115,6 +122,7 @@ artifact_sha256: ca72befa0c5902c7c5cf8feb13b344615792c6f5c9a3f351062b4ea5002b727
 | `refactor` | `ls/core/cli_parser.py` |
 | `refactor` | `ls/core/cli_state_commands.py` |
 | `refactor` | `ls/core/client_registry/__init__.py` |
+| `refactor` | `ls/core/client_registry/drift.py` |
 | `refactor` | `ls/core/client_registry/historical.py` |
 | `refactor` | `ls/core/client_registry/loader.py` |
 | `refactor` | `ls/core/client_registry/models.py` |
@@ -164,6 +172,11 @@ artifact_sha256: ca72befa0c5902c7c5cf8feb13b344615792c6f5c9a3f351062b4ea5002b727
 | `refactor` | `ls/core/docs_artifacts/common.py` |
 | `refactor` | `ls/core/docs_artifacts/writers.py` |
 | `refactor` | `ls/core/doctor.py` |
+| `refactor` | `ls/core/domain_shapes/__init__.py` |
+| `refactor` | `ls/core/domain_shapes/cli.py` |
+| `refactor` | `ls/core/domain_shapes/compiler.py` |
+| `refactor` | `ls/core/domain_shapes/config.py` |
+| `refactor` | `ls/core/domain_shapes/models.py` |
 | `refactor` | `ls/core/framework_version.py` |
 | `refactor` | `ls/core/git_state.py` |
 | `refactor` | `ls/core/git_subprocess.py` |
@@ -890,9 +903,11 @@ artifact_sha256: ca72befa0c5902c7c5cf8feb13b344615792c6f5c9a3f351062b4ea5002b727
 | `keep` | `ls/tests/test_adapter_parser.py` |
 | `keep` | `ls/tests/test_agent_routing.py` |
 | `keep` | `ls/tests/test_agent_routing_package_install.py` |
+| `keep` | `ls/tests/test_artifact_freshness.py` |
 | `keep` | `ls/tests/test_candidate_skill_cli.py` |
 | `keep` | `ls/tests/test_cli_version.py` |
 | `keep` | `ls/tests/test_client_registry.py` |
+| `keep` | `ls/tests/test_client_registry_drift.py` |
 | `keep` | `ls/tests/test_client_state.py` |
 | `keep` | `ls/tests/test_client_state_cli.py` |
 | `keep` | `ls/tests/test_codex_heartbeat.py` |
@@ -900,6 +915,7 @@ artifact_sha256: ca72befa0c5902c7c5cf8feb13b344615792c6f5c9a3f351062b4ea5002b727
 | `keep` | `ls/tests/test_context_index.py` |
 | `keep` | `ls/tests/test_dependency_ledger.py` |
 | `keep` | `ls/tests/test_docs_alignment.py` |
+| `keep` | `ls/tests/test_domain_shapes.py` |
 | `keep` | `ls/tests/test_github_starredrepos_skill.py` |
 | `keep` | `ls/tests/test_install_flow.py` |
 | `keep` | `ls/tests/test_install_flow_auto_convert_apply_a.py` |

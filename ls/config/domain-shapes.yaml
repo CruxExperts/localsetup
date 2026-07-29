@@ -1,0 +1,24 @@
+schema: localsetup.domain_shape.v1
+domains:
+  domain-shapes:
+    roots:
+      - kind: tree
+        path: ls/core/domain_shapes
+      - kind: file
+        path: ls/config/domain-shapes.schema.json
+      - kind: file
+        path: ls/config/domain-shapes.yaml
+      - kind: file
+        path: ls/core/cli.py
+      - kind: file
+        path: ls/core/cli_parser.py
+      - kind: file
+        path: ls/tests/test_domain_shapes.py
+    include:
+      globs: []
+      regex: []
+    exclude:
+      globs: []
+      regex: []
+    max_files: 64
+    max_bytes: 262144

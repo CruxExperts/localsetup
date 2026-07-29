@@ -119,6 +119,7 @@ def make_temp_repo(tmp_path: Path) -> Path:
     (repo / ".github").mkdir()
     (repo / "README.md").write_text("# Localsetup\n", encoding="utf-8")
     (repo / "AGENTS.md").write_text("# Agents\n", encoding="utf-8")
+    shutil.copy2(source / "REVIEW.md", repo / "REVIEW.md")
     return repo
 
 

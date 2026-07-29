@@ -85,6 +85,7 @@ from .versioning import (
 from .cli_parser import build_parser
 from . import cli_client_state_commands, cli_install_commands, cli_misc_commands, cli_state_commands
 from . import cli_install_support
+from .domain_shapes import cli as cli_domain_shapes
 
 
 def _repo_root() -> Path:
@@ -416,7 +417,7 @@ def _main(argv: list[str] | None = None) -> int:
     if client_state_result is not None:
         return client_state_result
     facade = sys.modules[__name__]
-    for handler in (cli_install_commands, cli_state_commands, cli_misc_commands):
+    for handler in (cli_install_commands, cli_state_commands, cli_misc_commands, cli_domain_shapes):
         result = handler.handle(facade, args, root, home)
         if result is not None:
             return result
