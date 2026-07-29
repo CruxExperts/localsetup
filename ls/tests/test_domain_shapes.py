@@ -98,12 +98,13 @@ def test_glob_and_regex_includes_and_excludes_are_applied(tmp_path: Path) -> Non
 
 
 def test_deny_rules_precede_user_allow_rules(tmp_path: Path) -> None:
-    (tmp_path / ".gitignore").write_text("ignored.txt\n", encoding="utf-8")
+    (tmp_path / ".gitignore").write_text("ignored.txt\ntracked-ignored.txt\n", encoding="utf-8")
     (tmp_path / ".localsetup-maint").mkdir()
     (tmp_path / ".localsetup-maint" / "private.txt").write_text("private", encoding="utf-8")
     (tmp_path / ".pytest_cache").mkdir()
     (tmp_path / ".pytest_cache" / "cache.txt").write_text("private", encoding="utf-8")
     (tmp_path / "ignored.txt").write_text("ignored", encoding="utf-8")
+    (tmp_path / "tracked-ignored.txt").write_text("tracked", encoding="utf-8")
     (tmp_path / ".env").write_text("secret", encoding="utf-8")
     (tmp_path / "deploy.pem").write_text("secret", encoding="utf-8")
     (tmp_path / "allowed.txt").write_text("allowed", encoding="utf-8")
@@ -114,10 +115,15 @@ def test_deny_rules_precede_user_allow_rules(tmp_path: Path) -> None:
             include={"glob": ["**/*"], "regex": []},
         ),
     )
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "add", "-f", "tracked-ignored.txt"],
+        check=True,
+    )
 
     result = compile_domain(config, "test", tmp_path, schema_path=SCHEMA)
 
     assert "allowed.txt" in {item["path"] for item in result["selected"]}
+    assert "tracked-ignored.txt" in {item["path"] for item in result["selected"]}
     reported_paths = {item["path"] for item in result["selected"]} | {
         item["path"] for item in result["excluded"]
     }

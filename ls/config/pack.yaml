@@ -989,6 +989,7 @@ public_private:
   - uv.lock
   - README.md
   - AGENTS.md
+  - REVIEW.md
   - assets
   - config/localsetup_finalizer.yaml
   - install
