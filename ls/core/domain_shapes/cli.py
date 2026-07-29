@@ -35,7 +35,7 @@ def handle(cli, args, root: Path, home: Path) -> int | None:
         payload = _error_payload(exc)
     except (OSError, TypeError, ValueError) as exc:
         payload = {"ok": False, "error": str(exc), "issues": [str(exc)]}
-    print(json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+    print(json.dumps(payload, ensure_ascii=True, sort_keys=True, separators=(",", ":")))
     return 0 if payload.get("ok") else 1
 
 

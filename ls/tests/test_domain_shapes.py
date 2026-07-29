@@ -162,6 +162,49 @@ def test_deny_rules_precede_user_allow_rules(tmp_path: Path) -> None:
     assert "deploy.pem" not in reported_paths
 
 
+@pytest.mark.parametrize(
+    "adapter_root",
+    [".agents", ".claude", ".cursor", ".kilo", ".openclaw", ".opencode"],
+)
+def test_supported_adapter_roots_select_only_tracked_skills(tmp_path: Path, adapter_root: str) -> None:
+    (tmp_path / ".gitignore").write_text(f"{adapter_root}/\n", encoding="utf-8")
+    skill = tmp_path / adapter_root / "skills" / "custom" / "SKILL.md"
+    skill.parent.mkdir(parents=True)
+    skill.write_text("tracked adapter", encoding="utf-8")
+    untracked_skill = tmp_path / adapter_root / "skills" / "untracked" / "SKILL.md"
+    untracked_skill.parent.mkdir(parents=True)
+    untracked_skill.write_text("untracked adapter", encoding="utf-8")
+    runtime = tmp_path / adapter_root / "settings.local.json"
+    runtime.write_text("private runtime", encoding="utf-8")
+    config = _write_config(
+        tmp_path,
+        _domain(
+            roots=[{"kind": "tree", "path": "."}],
+            include={"glob": ["**/*"], "regex": []},
+        ),
+    )
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(tmp_path),
+            "add",
+            "-f",
+            f"{adapter_root}/skills/custom/SKILL.md",
+            f"{adapter_root}/settings.local.json",
+        ],
+        check=True,
+    )
+
+    result = compile_domain(config, "test", tmp_path, schema_path=SCHEMA)
+
+    selected_paths = {item["path"] for item in result["selected"]}
+    reported_paths = selected_paths | {item["path"] for item in result["excluded"]}
+    assert f"{adapter_root}/skills/custom/SKILL.md" in selected_paths
+    assert f"{adapter_root}/settings.local.json" not in reported_paths
+    assert f"{adapter_root}/skills/untracked/SKILL.md" not in reported_paths
+
+
 def test_tracked_runtime_file_does_not_open_adapter_parent(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -451,7 +494,7 @@ def test_root_beginning_with_pathspec_magic_is_literal(tmp_path: Path) -> None:
     assert [item["path"] for item in result["selected"]] == [":literal/tracked.txt"]
 
 
-def test_non_utf8_filename_has_stable_json_encoding(tmp_path: Path) -> None:
+def test_non_utf8_filename_has_stable_json_encoding(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     filename = os.fsdecode(b"non-utf8-\xff.txt")
     if "\udcff" not in filename:
         pytest.skip("filesystem encoding does not use surrogateescape")
@@ -468,6 +511,24 @@ def test_non_utf8_filename_has_stable_json_encoding(tmp_path: Path) -> None:
 
     assert filename in {item["path"] for item in result["selected"]}
     assert b"non-utf8-\\udcff.txt" in result.output_bytes
+    assert (
+        main(
+            [
+                "domain",
+                "compile",
+                "--config",
+                str(config),
+                "--domain",
+                "test",
+                "--directory",
+                str(tmp_path),
+            ]
+        )
+        == 0
+    )
+    output = capsys.readouterr().out
+    assert "\\udcff" in output
+    assert filename in {item["path"] for item in json.loads(output)["selected"]}
 
 
 def test_git_ignore_unavailability_fails_closed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

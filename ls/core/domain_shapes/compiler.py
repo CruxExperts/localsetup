@@ -25,12 +25,18 @@ from .models import (
 _PRIVATE_COMPONENTS = frozenset(
     {
         ".cache",
+        ".agents",
+        ".claude",
+        ".cursor",
         ".codex",
         ".git",
         ".herdr",
+        ".kilo",
         ".localsetup",
         ".localsetup-maint",
         ".omp",
+        ".openclaw",
+        ".opencode",
         ".mypy_cache",
         ".pytest_cache",
         ".ruff_cache",
@@ -41,8 +47,14 @@ _PRIVATE_COMPONENTS = frozenset(
     }
 )
 _AGENT_ADAPTER_PREFIXES = (
+    ".agents/skills",
+    ".claude/skills",
     ".codex/skills",
+    ".cursor/skills",
+    ".kilo/skills",
     ".omp/skills",
+    ".openclaw/skills",
+    ".opencode/skills",
 )
 _GIT_REGULAR_MODES = frozenset({0o100644, 0o100755})
 _GIT_INTENT_TO_ADD = 0x20000000
