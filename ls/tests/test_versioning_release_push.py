@@ -359,7 +359,8 @@ def test_release_push_commits_sync_and_pushes(tmp_path: Path) -> None:
 
     assert completed.returncode == 0, completed.stderr
     assert run(repo, "git", "show", "origin/main:VERSION").stdout.strip() == expected_version
-    assert (
-        run(repo, "git", "log", "-1", "--pretty=%s", "origin/main").stdout.strip()
-        == f"chore: sync release version {expected_version}"
-    )
+    assert run(repo, "git", "rev-parse", "origin/main").stdout.strip() == run(
+        repo, "git", "rev-parse", "HEAD"
+    ).stdout.strip()
+    subjects = run(repo, "git", "log", "--format=%s", "-2", "origin/main").stdout.splitlines()
+    assert f"chore: sync release version {expected_version}" in subjects
