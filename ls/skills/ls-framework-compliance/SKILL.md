@@ -87,6 +87,8 @@ git diff --check
 - Run `audit-global-first` when global-first layout, lockfile, target-state, PowerShell removal, or source/target docs claims may be affected.
 - Run focused tests and compliance checks for the code you changed before broad suites. Use the full pytest suite only as final consolidation for broad/shared runtime behavior, release/publish work, dependency changes, or explicit user requests. Resolve the permitted worker count with `localsetup test-workers`; [COMMAND_REFERENCE.md](../../docs/COMMAND_REFERENCE.md) owns its formula and aggregate-budget rule.
 
+Unless a repository explicitly defines a stricter policy, every unit-test runner—regardless of language or framework—uses one aggregate budget of `max(1, floor(available CPU cores / 3))`. Round down before applying the minimum of one worker; concurrent test processes share the budget.
+
 ## Git And Handoff
 
 - Create commits only when the user asked for commits or the workflow explicitly requires a checkpoint.

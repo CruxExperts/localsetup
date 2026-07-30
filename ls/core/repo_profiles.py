@@ -11,6 +11,7 @@ from .lockfile import save_text
 
 UNIVERSAL_AGENT_REPO_PROFILE = "universal-agent-repo"
 REPO_PROFILES = {UNIVERSAL_AGENT_REPO_PROFILE}
+PRIVATE_STATE_ROOT = ".agents/state/"
 
 
 @dataclass(frozen=True)
@@ -80,7 +81,7 @@ def render_repo_profile(
             exclude_path = Path(exclude_action["path"])
             exclude_path.parent.mkdir(parents=True, exist_ok=True)
             with exclude_path.open("a", encoding="utf-8") as handle:
-                handle.write(".codex/runs/\n")
+                handle.write(f"{PRIVATE_STATE_ROOT}\n")
     elif apply and not ok:
         warnings.append("apply skipped because blockers were found")
 
@@ -110,14 +111,14 @@ def _git_exclude_action(target_root: Path) -> dict[str, Any] | None:
     status = "append"
     if exclude.exists():
         lines = exclude.read_text(encoding="utf-8").splitlines()
-        if ".codex/runs/" in lines:
+        if PRIVATE_STATE_ROOT in lines:
             status = "unchanged"
     return {
         "kind": "git_info_exclude",
         "path": str(exclude),
         "relative_path": ".git/info/exclude",
-        "description": "Ignore private Codex run ledgers in this checkout",
-        "entry": ".codex/runs/",
+        "description": "Ignore shared private agent task state in this checkout",
+        "entry": PRIVATE_STATE_ROOT,
         "status": status,
     }
 
@@ -169,7 +170,7 @@ This repository uses the universal agent repo shape.
 ## Operating Rules
 
 - Treat `AGENTS.md` as the shared repo instruction entrypoint.
-- Keep private run state under `.codex/runs/`; do not commit it.
+- Keep private task state under `.agents/state/<task-slug>/`; do not commit it.
 - Keep durable project documentation under `docs/`.
 - Review external skills before adding them to `external_skills.lock.json`.
 - Prefer small, verifiable changes with focused tests or checks.
@@ -193,7 +194,7 @@ def _agent_repo_shape_json() -> str:
     "shared_repo_skills": ".agents/skills"
   },
   "private_state": [
-    ".codex/runs/"
+    ".agents/state/"
   ]
 }
 """
@@ -242,7 +243,8 @@ and reviewed skill metadata in stable repository paths.
 
 ## Private State
 
-Use `.codex/runs/` for private run ledgers and other transient agent state.
-When the target is a Git repository, Localsetup adds `.codex/runs/` to
-`.git/info/exclude` instead of modifying tracked ignore files.
+Use `.agents/state/<task-slug>/` for private run ledgers and other transient
+task state. The controller assigns one Git-bound task slug for every agent and
+tool to reuse. When the target is a Git repository, Localsetup adds
+`.agents/state/` to `.git/info/exclude` instead of modifying tracked ignore files.
 """

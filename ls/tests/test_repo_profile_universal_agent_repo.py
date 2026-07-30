@@ -67,7 +67,7 @@ def test_universal_agent_repo_profile_apply_creates_shape_and_git_exclude(tmp_pa
     assert (target / "docs" / "INDEX.md").is_file()
     assert (target / "docs" / "index.yaml").is_file()
     assert (target / "docs" / "reference" / "agent-repo-shape.md").is_file()
-    assert subprocess.run(["git", "check-ignore", "-q", "--", ".codex/runs/"], cwd=target, check=False).returncode == 0
+    assert subprocess.run(["git", "check-ignore", "-q", "--", ".agents/state/"], cwd=target, check=False).returncode == 0
 
 
 def test_universal_agent_repo_profile_blocks_overwrite(tmp_path: Path, capsys) -> None:

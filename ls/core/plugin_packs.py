@@ -20,6 +20,7 @@ from .selection import resolve_package_selection
 SUPPORTED_PLATFORMS = {"codex"}
 PRIVATE_PATH_PREFIXES = (
     ".codex/",
+    ".agents/state/",
     ".localsetup-maint/",
     "graphify-out/",
     "state/",

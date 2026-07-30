@@ -53,6 +53,7 @@ __pycache__/
 *.pyc
 *.pyo
 *.egg-info/
+.venv/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
@@ -61,6 +62,7 @@ __pycache__/
 .localsetup/
 localsetup.lock.json
 .codex/skills
+.agents/state/
 .codex/runs/
 .codex/sessions/
 .codex/logs/

@@ -22,6 +22,7 @@ TEXT_FILENAMES = {"install", "VERSION", "LICENSE", "MANIFEST.in", "AGENTS.md", "
 EXCLUDED_PREFIXES = (
     ".git/",
     ".codex/",
+    ".agents/state/",
     ".localsetup-maint/",
     ".localsetup/",
     "graphify-out/",

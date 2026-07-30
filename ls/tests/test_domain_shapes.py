@@ -154,6 +154,7 @@ def test_deny_rules_precede_user_allow_rules(tmp_path: Path) -> None:
     }
     assert ".localsetup-maint/private.txt" not in reported_paths
     assert ".codex/runs/private.txt" not in reported_paths
+    assert ".agents/state/private.txt" not in reported_paths
     assert ".codex/auth.json" not in reported_paths
     assert ".omp/config.yml" not in reported_paths
     assert ".pytest_cache/cache.txt" not in reported_paths

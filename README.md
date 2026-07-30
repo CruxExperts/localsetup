@@ -10,7 +10,7 @@
   <a href="ls/docs/PLATFORM_REGISTRY.md"><img src="https://img.shields.io/badge/platforms-cursor%20%7C%20claude--code%20%7C%20codex%20%7C%20openclaw%20%7C%20kilo%20%7C%20opencode-1f6feb" alt="Supported platforms"></a>
 </p>
 
-**Version:** 4.3.2<br>
+**Version:** 4.3.8<br>
 
 **Localsetup gives coding agents a repo-local operating layer.**
 
@@ -62,7 +62,7 @@ Start with the [workflow packages guide](ls/docs/WORKFLOW_PACKAGES.md) for usage
 <!-- facts-block:start -->
 | Fact | Value |
 |---|---|
-| Current version | `4.3.2` |
+| Current version | `4.3.8` |
 | Supported platforms | `codex, claude-code, cursor, kilo, opencode, openclaw` |
 | Shipped skills | `103` |
 | Workflow packages | `24` |
@@ -108,6 +108,8 @@ curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install 
 ```
 
 Automation mode preserves machine-readable output. Without a terminal, the installer asks you to rerun with a TTY or with `--non-interactive --yes`.
+For a managed release bootstrap, this mode synchronizes the source checkout's locked production environment before running the CLI. If `uv` is absent, pass `--install-uv` to opt in to its bootstrap; explicit checkout installs continue to require `--sync-env` when environment synchronization is wanted.
+
 
 Localsetup CLI commands emit JSON by default unless a command has an explicit human-readable mode such as `context --markdown`. The `--json` config flag remains available when scripts want to make that output contract explicit.
 

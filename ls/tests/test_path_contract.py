@@ -5,7 +5,9 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+import pytest
 
+import ls.core.test_workers as test_workers_mod
 from ls.core.path_contract import paths_manifest_issues, paths_manifest_path
 from ls.core.path_reprocessor import reprocess_localsetup_paths
 from ls.core.repair import run_repair
@@ -89,15 +91,25 @@ def test_doctor_reports_and_repair_refreshes_stale_paths_manifest(tmp_path: Path
 def test_test_worker_defaults_and_overrides_are_clamped() -> None:
     assert default_test_workers(1) == 1
     assert default_test_workers(3) == 1
-    assert default_test_workers(512) == 8
+    assert default_test_workers(5) == 1
+    assert default_test_workers(6) == 2
+    assert default_test_workers(512) == 170
     assert resolved_test_workers("-10") == 1
-    assert resolved_test_workers("999", cpu_count=512) == 8
-    assert resolved_test_workers("999", cpu_count=512, env={"LOCALSETUP_TEST_WORKERS": "5"}) == 8
-    assert resolved_test_workers(None, cpu_count=512) == 8
-    assert resolved_test_workers(None, cpu_count=8, env={"LOCALSETUP_TEST_WORKERS": "5"}) == 4
+    assert resolved_test_workers("999", cpu_count=512) == 170
+    assert resolved_test_workers("999", cpu_count=512, env={"LOCALSETUP_TEST_WORKERS": "5"}) == 170
+    assert resolved_test_workers(None, cpu_count=512) == 170
+    assert resolved_test_workers(None, cpu_count=8, env={"LOCALSETUP_TEST_WORKERS": "5"}) == 2
     assert resolved_test_workers("8", cpu_count=2) == 1
     assert resolved_test_workers("8", cpu_count=3) == 1
     assert resolved_test_workers(None, cpu_count=2, env={"LOCALSETUP_TEST_WORKERS": "8"}) == 1
+
+
+def test_test_workers_uses_process_cpu_availability(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(test_workers_mod.os, "process_cpu_count", lambda: None, raising=False)
+    monkeypatch.setattr(test_workers_mod.os, "sched_getaffinity", lambda _pid: {2, 3, 4, 5, 6}, raising=False)
+
+    assert test_workers_mod.available_cpu_count() == 5
+    assert default_test_workers() == 1
 
 
 def test_test_workers_cli_outputs_json_and_rejects_bad_override(tmp_path: Path) -> None:
@@ -126,14 +138,16 @@ def test_test_workers_cli_outputs_json_and_rejects_bad_override(tmp_path: Path) 
         env={**os.environ, "LOCALSETUP_TEST_WORKERS": "999"},
     )
     assert completed.returncode == 0, completed.stderr
-    expected_workers = effective_max_test_workers(os.cpu_count())
-    assert json.loads(completed.stdout)["workers"] == expected_workers
+    payload = json.loads(completed.stdout)
+    assert payload["workers"] == payload["max_workers"]
     assert env_completed.returncode == 0, env_completed.stderr
-    assert json.loads(env_completed.stdout)["workers"] == expected_workers
+    env_payload = json.loads(env_completed.stdout)
+    assert env_payload["workers"] == env_payload["max_workers"]
     assert bad.returncode == 2
     assert "must be an integer" in bad.stderr
 
-    assert workers_payload(cpu_count=4)["max_workers"] == 2
+    assert workers_payload(cpu_count=4)["max_workers"] == 1
+    assert workers_payload(cpu_count=6)["max_workers"] == 2
 
 
 def test_reprocess_paths_apply_is_not_exposed_until_allowlisted(tmp_path: Path) -> None:

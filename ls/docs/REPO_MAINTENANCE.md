@@ -37,6 +37,10 @@ git diff --check
 
 For daily maintenance and ordinary framework edits, run focused tests and matching Localsetup validators first. Use the full Python suite above as final consolidation for broad automation changes, release or publish readiness, dependency changes, or explicit maintainer requests. Resolve the permitted worker count with `localsetup test-workers`; [COMMAND_REFERENCE.md](COMMAND_REFERENCE.md) owns its formula and aggregate-budget rule.
 
+## Unit-Test Concurrency Policy
+
+Unless a repository explicitly defines a stricter policy, every unit-test runner—regardless of language or framework—uses one aggregate budget: `max(1, floor(available CPU cores / 3))`. Round down before applying the minimum of one worker. Concurrent test processes share that budget rather than each claiming the full allowance.
+
 ## Managed Adapter Refresh
 
 Run this after changing shipped skills, workflow packages, platform adapters, or repo agent context when this machine should immediately use the current checkout:

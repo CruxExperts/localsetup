@@ -22,7 +22,7 @@ Use this skill when a repo needs documentation brought back into alignment with 
 
 ## Generic workflow
 
-1. Create or resume a run ledger under `.codex/runs/`.
+1. Create or resume a run ledger under `.agents/state/<task-slug>/ledger.md`; the controller assigns one Git-bound task slug for every agent and tool to reuse.
 2. Inventory the repo: public docs, internal docs, generated docs, skills/workflows, assets, CLI commands, CI, and lifecycle metadata.
 3. Map truth sources. For Localsetup, defaults are `VERSION`, `pyproject.toml`, `ls/config/*.yaml`, `ls/skills/*/SKILL.md`, `ls/workflows/*/workflow.yaml`, generated facts, assets, and CI workflows.
 4. Delegate scouts when scope is broad:

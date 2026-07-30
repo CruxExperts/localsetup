@@ -6,6 +6,7 @@ from pathlib import Path
 
 PRIVATE_MARKERS = (
     ".cache",
+    ".agents/state",
     ".localsetup-maint",
     ".mypy_cache",
     ".pytest_cache",

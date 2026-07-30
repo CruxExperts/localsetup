@@ -124,6 +124,7 @@ DEFAULT_EXCLUDES = [
     ".pytest_cache/**",
     ".cache/**",
     ".codex/runs/**",
+    ".agents/state/**",
     ".git-state-snapshots/**",
     ".localsetup-maint/**",
     "dist/**",

@@ -56,7 +56,7 @@ def test_migration_scanner_and_hook_gate(tmp_path: Path) -> None:
     private_backup = root / ".localsetup" / "backups" / "audit" / "localsetup.lock.json"
     private_backup.parent.mkdir(parents=True)
     private_backup.write_text('{"aliases": {"localsetup-context": "ls-context"}}\n', encoding="utf-8")
-    runtime_note = root / ".codex" / "runs" / "20260512-note.md"
+    runtime_note = root / ".agents" / "state" / "20260512-abcdef0-migration" / "ledger.md"
     runtime_note.parent.mkdir(parents=True)
     runtime_note.write_text("Use localsetup-context in runtime notes only.\n", encoding="utf-8")
     heartbeat_note = root / ".localsetup" / "state" / "codex-heartbeat" / "latest.json"
@@ -82,7 +82,7 @@ def test_migration_scanner_and_hook_gate(tmp_path: Path) -> None:
     assert by_path[".localsetup/backups/audit/localsetup.lock.json"]["category"] == "ignored_private_backup"
     assert all({"path", "line", "text"} <= set(finding) for finding in findings)
     assert {finding["path"] for finding in scan_legacy_references(root, include_expected=False)} == {"README.md"}
-    assert ".codex/runs/20260512-note.md" not in paths
+    assert ".agents/state/20260512-abcdef0-migration/ledger.md" not in paths
     assert ".localsetup/state/codex-heartbeat/latest.json" not in paths
     assert ".localsetup/lock.json" not in paths
 

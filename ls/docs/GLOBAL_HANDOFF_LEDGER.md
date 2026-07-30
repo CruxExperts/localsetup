@@ -12,6 +12,12 @@ Each controller keeps one private, append-only handoff ledger for a broad, deleg
 
 The ledger is allocated through the existing client-state artifact contract. Its sidecar hash, client capability snapshot, and repository/ref binding are authoritative at resume time.
 
+## Location and identity
+
+Create every new controller ledger at `.agents/state/<task-slug>/ledger.md`. The controller assigns `<task-slug>` once for the Git-bound objective as `<YYYYMMDD-HHMMSS>-<git-short-sha>-<objective-slug>` and every participating agent and tool reuses that exact directory. Task-local evidence, reviews, handoffs, and transient state may live beside `ledger.md`; no agent- or client-specific run root is created.
+
+The ledger header records the repository and initial immutable ref. Existing `.codex/`, `.omp/`, and `.localsetup-maint/` records are historical evidence: leave them in place, but do not create new task state there. `.agents/state/` is ignored by default.
+
 ## Record shape
 
 The ledger contains a stable objective header followed by ordered immutable records:
