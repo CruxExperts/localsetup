@@ -4,9 +4,9 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: ecee40c39d02c09f5cc20f08be5091546ca999390eda65fb711cf844062ae343
+  source_provenance_hash: 3b7d3c42da56ee82f58a839e22b6dbcf5aa25d759a8cddd8eb5f7a743901f6d6
   emitter: generate-docs
-framework_version: 4.3.6
+framework_version: 4.3.7
 source_commit: 445e25b377fb2337fe6be5515610c4f90e0d496c
 artifact_sha256: 482039214f0d41c77d57f18f327704e6b6d2d4124ce7664f81b4436af6957d61
 ---

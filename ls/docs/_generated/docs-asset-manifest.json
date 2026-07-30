@@ -64,11 +64,11 @@
     "artifact_path": "ls/docs/_generated/docs-asset-manifest.json",
     "artifact_sha256": "359f82ca43d831f78db8ebecc833a7b70922cd79d55dbf279cf2ba2a025ebcf4",
     "emitter": "docs-align",
-    "framework_version": "4.3.6",
+    "framework_version": "4.3.7",
     "schema_version": 1,
     "source_commit": "445e25b377fb2337fe6be5515610c4f90e0d496c",
     "source_dirty": false,
-    "source_provenance_hash": "ecee40c39d02c09f5cc20f08be5091546ca999390eda65fb711cf844062ae343",
+    "source_provenance_hash": "3b7d3c42da56ee82f58a839e22b6dbcf5aa25d759a8cddd8eb5f7a743901f6d6",
     "source_root_id": "e5999d540f708da323d2f080e82f0dc6de130afcbf45f58510fec77144532583",
     "source_tag": null,
     "source_tree_sha": "246b54b9c30e2ab136ecf3738359b61199f48a94"
