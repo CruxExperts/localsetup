@@ -78,8 +78,8 @@ def _markdown_files(repo_root: Path) -> list[Path]:
     for path in candidates:
         if not path.is_file():
             continue
-        rel_parts = path.relative_to(repo_root).parts
-        if any(part in LOCAL_DOC_EXCLUDES for part in rel_parts):
+        rel_path = path.relative_to(repo_root)
+        if any(part in LOCAL_DOC_EXCLUDES for part in rel_path.parts) or rel_path.is_relative_to(".agents/state"):
             continue
         files.append(path)
     return sorted(files)

@@ -14,7 +14,7 @@ LIFECYCLE_STATES = {"ACTIVE", "PROPOSAL", "DRAFT", "DEPRECATED", "ARCHIVED"}
 LOCAL_DOC_EXCLUDES = {
     ".git",
     ".cache",
-    ".agents",
+    ".agents/state",
     ".codex",
     ".claude",
     ".cursor",

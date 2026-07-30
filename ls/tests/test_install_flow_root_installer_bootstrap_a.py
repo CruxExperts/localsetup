@@ -66,6 +66,14 @@ def test_root_installer_piped_bootstrap_global_only_uses_managed_source(tmp_path
     assert (home / ".local/bin/localsetup").is_file()
     assert not (outside / ".codex").exists()
     assert not (outside / ".localsetup/lock.json").exists()
+    ignored = subprocess.run(
+        ["git", "check-ignore", ".venv/pyvenv.cfg"],
+        cwd=source,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert ignored.returncode == 0, ignored.stderr
 
 def test_root_installer_retry_sync_keeps_automation_stdout_json_only(tmp_path: Path) -> None:
     install_path = Path(__file__).resolve().parents[2] / "install"
