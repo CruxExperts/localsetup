@@ -25,6 +25,9 @@ runtime_ignored_globs:
   - .codex/runs
   - .codex/runs/
   - .codex/runs/**
+  - .agents/state
+  - .agents/state/
+  - .agents/state/**
 stage_allowlist_globs:
   - .localsetup/lock.json
   - config/localsetup_finalizer.yaml

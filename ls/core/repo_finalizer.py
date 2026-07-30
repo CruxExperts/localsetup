@@ -69,6 +69,10 @@ def _defaults() -> FinalizerSettings:
             ".codex/runs/",
             ".codex/runs/**",
             ".codex/runs/*",
+            ".agents/state",
+            ".agents/state/",
+            ".agents/state/**",
+            ".agents/state/*",
         ],
         stage_allowlist_globs=[
             ".localsetup/lock.json",

@@ -17,6 +17,7 @@ DEFAULT_SCAN_SUFFIXES = {".md", ".yaml", ".yml", ".json", ".toml", ".txt", ".sh"
 SKIP_DIRS = {".git", ".git-state-snapshots", ".venv", "__pycache__", "node_modules"}
 RUNTIME_SKIP_PREFIXES = {
     (".codex", "runs"),
+    (".agents", "state"),
     ("state", "codex-heartbeat"),
     ("state", "repo-finalizer"),
     (".localsetup", "state", "codex-heartbeat"),

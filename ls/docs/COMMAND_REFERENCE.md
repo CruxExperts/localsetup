@@ -240,7 +240,7 @@ localsetup test-workers --json
 localsetup test-workers --workers 4
 ```
 
-The default and maximum allocation is `max(1, min(8, floor(available CPU cores / 2)))`. `LOCALSETUP_TEST_WORKERS` or `--workers` can request a lower value; non-integer overrides fail with an explicit configuration error. Do not overlap worker-consuming test processes unless they share one aggregate budget.
+The default and maximum allocation is `max(1, floor(available CPU cores / 3))`; available cores are those usable by the current test process. `test-workers` reports the total shared budget, so a controller or CI job MUST divide it before starting concurrent test processes. `LOCALSETUP_TEST_WORKERS` or `--workers` can request a lower value; non-integer overrides fail with an explicit configuration error.
 
 ## Maintainer Commands
 
@@ -259,7 +259,7 @@ uv run --locked pytest -n "$workers" ls/tests -q
 git diff --check
 ```
 
-Run focused pytest targets and matching Localsetup validators before broad suites. Reserve the full Python suite for final consolidation on broad/shared runtime changes, release or publish work, dependency changes, or explicit maintainer requests. `test-workers` defaults to `max(1, min(8, floor(available CPU cores / 2)))`; concurrent test processes must share one aggregate budget.
+Run focused pytest targets and matching Localsetup validators before broad suites. Reserve the full Python suite for final consolidation on broad/shared runtime changes, release or publish work, dependency changes, or explicit maintainer requests. `test-workers` defaults to `max(1, floor(available CPU cores / 3))`; concurrent test processes must share one aggregate budget.
 
 Use `release-push` only when the release wave explicitly includes publishing:
 

@@ -97,7 +97,7 @@ Repair is conservative:
 
 ## Public And Private Context Boundary
 
-Public framework docs, generated docs, templates, tests, examples, and package/catalog surfaces are publishable. Keep private maintenance plans, audits, local indexes, credentials, logs, caches, run ledgers, and planning transcripts in ignored locations such as `.codex/runs/` or `.localsetup-maint/`.
+Public framework docs, generated docs, templates, tests, examples, and package/catalog surfaces are publishable. Create new private maintenance plans, audits, indexes, credentials, logs, caches, ledgers, and planning transcripts only under `.agents/state/<task-slug>/`; the controller assigns one Git-bound task slug for every agent and tool to reuse. Existing client-specific run directories are historical records and remain in place.
 
 Do not put private task ledgers into `ls/docs/` or package surfaces unless explicitly authorized as public framework documentation.
 
@@ -110,7 +110,7 @@ uv run --locked python ls/tools/generate_docs_artifacts.py --repo-root .
 uv run --locked python ls/tools/localsetup.py --source-root . generate-docs
 ```
 
-Before editing latest/current external claims, check `.localsetup-maint/docs/volatile-facts.yaml` if it exists. Verify volatile claims from primary upstream sources and keep the volatile fact index private and untracked.
+Before editing latest/current external claims, check `.agents/state/volatile-facts.yaml` if it exists. Verify volatile claims from primary upstream sources and keep the volatile fact index private and untracked.
 
 ## Validation Expectations
 
@@ -133,6 +133,8 @@ uv run --locked pytest -n "$workers" ls/tests -q
 ```
 
 Run focused pytest files or test functions and matching Localsetup validators before the full suite. Resolve the permitted worker count with `localsetup test-workers`; [COMMAND_REFERENCE.md](../../docs/COMMAND_REFERENCE.md) owns its formula and aggregate-budget rule. Use the full suite as final consolidation for broad/shared runtime changes, release or publish work, dependency changes, or explicit user requests.
+
+Unless a repository explicitly defines a stricter policy, every unit-test runner—regardless of language or framework—uses one aggregate budget of `max(1, floor(available CPU cores / 3))`. Round down before applying the minimum of one worker; concurrent test processes share the budget.
 
 Before publish, run publish preflight against the intended base and keep generated docs/version sync with the repo tooling.
 

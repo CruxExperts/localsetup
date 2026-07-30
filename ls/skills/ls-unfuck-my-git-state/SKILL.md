@@ -23,7 +23,7 @@ This skill owns Git repair and broken-state recovery behavior. Public maintenanc
 
 - Use ordinary `ls-git-workflows` for healthy advanced Git operations.
 - Use this skill when Git commands themselves report contradictory state, missing objects, broken index/cache-tree data, zero hashes, or stale worktree locks.
-- Keep private repair evidence under `.codex/runs/` or another ignored maintenance path.
+- Keep private repair evidence under `.agents/state/<task-slug>/` using the controller-assigned Git-bound task slug.
 
 ## Fast Workflow
 

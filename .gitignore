@@ -61,6 +61,7 @@ __pycache__/
 .localsetup/
 localsetup.lock.json
 .codex/skills
+.agents/state/
 .codex/runs/
 .codex/sessions/
 .codex/logs/

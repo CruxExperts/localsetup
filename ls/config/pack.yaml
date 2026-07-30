@@ -1005,6 +1005,7 @@ public_private:
   - scripts
   - docs
   - .localsetup-maint
+  - .agents/state
   - ls/.cache
   - ls/docs/local-context
   - ls/logs

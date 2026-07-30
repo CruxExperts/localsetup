@@ -5,15 +5,29 @@ from typing import Any
 
 
 MIN_TEST_WORKERS = 1
-MAX_TEST_WORKERS = 8
 TEST_WORKERS_ENV = "LOCALSETUP_TEST_WORKERS"
 
+def available_cpu_count() -> int | None:
+    process_count = getattr(os, "process_cpu_count", None)
+    if callable(process_count):
+        available = process_count()
+        if available:
+            return available
+    affinity = getattr(os, "sched_getaffinity", None)
+    if callable(affinity):
+        try:
+            available = len(affinity(0))
+        except OSError:
+            available = 0
+        if available:
+            return available
+    return os.cpu_count()
 
 def effective_max_test_workers(cpu_count: int | None = None) -> int:
-    available = cpu_count if cpu_count is not None else os.cpu_count()
+    available = cpu_count if cpu_count is not None else available_cpu_count()
     if available is None:
         return MIN_TEST_WORKERS
-    return min(MAX_TEST_WORKERS, max(MIN_TEST_WORKERS, available // 2))
+    return max(MIN_TEST_WORKERS, available // 3)
 
 
 def clamp_test_workers(value: int, *, cpu_count: int | None = None) -> int:
@@ -55,13 +69,13 @@ def test_workers_payload(
     cpu_count: int | None = None,
     env: dict[str, str] | None = None,
 ) -> dict[str, Any]:
-    available = cpu_count if cpu_count is not None else os.cpu_count()
+    available = cpu_count if cpu_count is not None else available_cpu_count()
     workers = resolved_test_workers(override, cpu_count=cpu_count, env=env)
     return {
         "ok": True,
         "workers": workers,
         "available_cpu_cores": available,
-        "default_formula": "floor(available_cpu_cores / 2), minimum 1, maximum 8",
+        "default_formula": "floor(available_cpu_cores / 3), minimum 1",
         "min_workers": MIN_TEST_WORKERS,
         "max_workers": effective_max_test_workers(cpu_count),
         "override_env": TEST_WORKERS_ENV,

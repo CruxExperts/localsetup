@@ -14,7 +14,7 @@ Keep this file aligned with the repo's actual workflow. If a rule also belongs i
 
 Apply the machine-wide Controlled Outcome Investigation and Termination (COIT)
 control to material Localsetup retries. Keep append-only records in
-`.codex/runs/`, binding each Localsetup release problem to its invariant,
+`.agents/state/<task-slug>/ledger.md`, binding each Localsetup release problem to its invariant,
 minimal reproduction, affected gate, and exact source/tree/diff state. The
 common policy alone determines COIT triggers, cycle and review requirements,
 counter changes, and terminal dispositions. Do not begin dependent Localsetup
@@ -47,10 +47,10 @@ When running `uv` commands from an agent sandbox, first check whether the sandbo
 If the sandbox cannot be changed from the current agent session, do not let `uv` default to a read-only user-level cache. That causes avoidable `Could not acquire lock` or read-only filesystem failures before pytest starts. Use a repo-local ignored cache:
 
 ```bash
-UV_CACHE_DIR="$PWD/.localsetup-maint/state/uv-cache" uv run --locked pytest ls/tests -q
+UV_CACHE_DIR="$PWD/.agents/state/<task-slug>/uv-cache" uv run --locked pytest ls/tests -q
 ```
 
-Use the same `UV_CACHE_DIR="$PWD/.localsetup-maint/state/uv-cache"` prefix for `uv run`, `uv sync`, and related validation commands unless the command intentionally needs the user cache. If the repo-local state path is unavailable, use a writable `/tmp` cache such as `UV_CACHE_DIR=/tmp/localsetup-uv-cache`. Escalate for `uv` cache access only when using the real user cache is required or after trying a writable cache location and confirming the command still fails for a reason that requires approval.
+Use the same `UV_CACHE_DIR="$PWD/.agents/state/<task-slug>/uv-cache"` prefix for `uv run`, `uv sync`, and related validation commands unless the command intentionally needs the user cache. The controller-assigned `<task-slug>` keeps transient caches Git-bound with the rest of the task state. If the repo-local state path is unavailable, use a writable `/tmp` cache such as `UV_CACHE_DIR=/tmp/localsetup-uv-cache`. Escalate for `uv` cache access only when using the real user cache is required or after trying a writable cache location and confirming the command still fails for a reason that requires approval.
 
 ## Single Checkout Development Boundary
 
@@ -68,7 +68,11 @@ Keep scripts portable and explicit: Bash files should use `set -euo pipefail`; P
 
 Add or update tests under `ls/tests/` for changes to path resolution, discovery, parsing, deploy behavior, or skill tooling. Name Python tests `test_<feature>.py` and keep shell wrappers thin. Before the full suite, run compliance and validation checks that match the code you changed, such as focused pytest files or test functions, `validate-catalog`, `validate-package-surface`, `doctor`, generated-doc drift checks, schema checks, and `git diff --check`.
 
-- Use the full Python suite as final consolidation verification for broad framework changes, shared runtime behavior, release/publish work, dependency changes, or explicit user requests. Compute the default worker count with `localsetup test-workers`: `max(1, min(8, floor(available CPU cores / 2)))`. Worker-consuming tests must not overlap unless they share that aggregate budget. Do not run the full suite as the default first-pass validation for routine daily work; the codebase is large and full-suite runs have noticeable CPU cost. Windows support is WSL2-only in the current framework.
+- Use the full Python suite as final consolidation verification for broad framework changes, shared runtime behavior, release/publish work, dependency changes, or explicit user requests. Compute the default worker count with `localsetup test-workers`: `max(1, floor(available CPU cores / 3))`. Worker-consuming tests must not overlap unless they share that aggregate budget. Do not run the full suite as the default first-pass validation for routine daily work; the codebase is large and full-suite runs have noticeable CPU cost. Windows support is WSL2-only in the current framework.
+
+## Unit-Test Concurrency Policy
+
+Unless a repository explicitly defines a stricter policy, every unit-test runner—regardless of language or framework—MUST use an aggregate concurrency budget of `max(1, floor(available CPU cores / 3))`. Always round down before applying the minimum of one worker. Concurrent unit-test processes share that one budget; they MUST NOT each claim the full allowance.
 
 Test effort must be proportional to risk. For tiny docs, policy, metadata, or one-line behavior changes, prefer static checks such as `git diff --check`, targeted syntax checks, or no test run when there is no executable surface. Do not add broad or repetitive tests merely to increase evidence. Add tests only for behavior that can realistically regress, and keep test code smaller than the implementation unless the behavior is safety-critical or has multiple important edge cases. Run the smallest relevant validation first; broaden only after focused checks pass or when the affected surface justifies it.
 
@@ -118,27 +122,27 @@ There are three separate destinations. Do not blur them:
 - tracked but release-archive-excluded: rare repo metadata examples that are safe on GitHub but should not ship in framework archives, controlled by `.gitattributes export-ignore`
 - local private and untracked: active maintenance state, run ledgers, private audit drafts, generated local indexes, credentials, logs, caches, and planning transcripts
 
-Use private or ignored locations for repo-maintenance state:
+Use `.agents/state/` for all new private repo-maintenance state. The controller allocates one shared task directory at `.agents/state/<task-slug>/`; ledgers, run evidence, audit drafts, handoff material, and task-local caches belong beneath it. Existing `.codex/`, `.omp/`, and `.localsetup-maint/` records are historical and remain in place; do not migrate or add new task state there.
 
-- `.codex/runs/` for controller ledgers, resume notes, validation evidence, and temporary handoff prompts
-- `.localsetup-maint/` for private maintenance plans, audit drafts, private inventories, and non-public working documents
-- `.git/info/exclude` for repo-local ignore rules that should not affect collaborators
+The controller assigns `<task-slug>` once per Git-bound objective as `<YYYYMMDD-HHMMSS>-<git-short-sha>-<objective-slug>`. Every agent and tool reuses that exact directory and records the repository/ref binding in the ledger; no agent-specific state root is created.
+
+Use `.git/info/exclude` only for one-machine extras that are not covered by the tracked `.agents/state/` ignore rule.
 
 Before creating or moving planning material, classify the destination as public framework context or private maintenance state. If public placement is not explicitly authorized, keep the material private and record only a compact public pointer when the user asks for one.
 
 Git hygiene defaults for this repo:
 
-- Keep `.codex/runs/`, `.codex/sessions/`, `.codex/logs/`, `.codex/tmp/`, `.localsetup-maint/docs/`, `graphify-out/`, `state/`, `data/`, and root `docs/` out of normal commits.
+- Keep `.agents/state/`, existing `.codex/runs/`, `.codex/sessions/`, `.codex/logs/`, `.codex/tmp/`, `.localsetup-maint/docs/`, `graphify-out/`, `state/`, `data/`, and root `docs/` out of normal commits.
 - Use `.gitignore` for repo-wide private-state patterns. Use `.git/info/exclude` only for one-machine extras.
-- Before committing or publishing, check `git status --short`, `git diff --cached --name-status`, and `git ls-files .codex/runs .localsetup-maint/docs graphify-out state data docs`.
+- Before committing or publishing, check `git status --short`, `git diff --cached --name-status`, and `git ls-files .agents/state .codex/runs .localsetup-maint/docs graphify-out state data docs`.
 - If a file must be tracked for local repository operation but should not ship in release archives, add an explicit `.gitattributes export-ignore` rule and state why in the commit.
 - The pre-commit hook blocks staged private/local maintenance paths by default. Use `LOCALSETUP_ALLOW_PRIVATE_STAGE=1` only after an explicit public-boundary review.
 
 ## Volatile Fact Verification
 
-Before editing or validating markdown claims about latest/current versions, release channels, rate cards, vendor behavior, APIs, protocols, external tool support, security advisories, package compatibility, or platform support, check `.localsetup-maint/docs/volatile-facts.yaml` if it exists.
+Before editing or validating markdown claims about latest/current versions, release channels, rate cards, vendor behavior, APIs, protocols, external tool support, security advisories, package compatibility, or platform support, check `.agents/state/volatile-facts.yaml` if it exists.
 
-If the volatile fact index is absent and a volatile claim is found or introduced, create it using the private repo schema. Keep `.localsetup-maint/docs/volatile-facts.yaml` private and untracked; do not move it into public framework docs.
+If the volatile fact index is absent and a volatile claim is found or introduced, create it using the private repo schema. Keep `.agents/state/volatile-facts.yaml` private and untracked; do not move it into public framework docs.
 
 Use source-code, config, and local CLI verification for Localsetup behavior claims. Use primary upstream research for external claims, such as official docs, release notes, package registries, standards, vendor API schemas, advisories, or live CLI/API behavior where safe. For broad or current external fact verification, use research agents and record source URLs, access dates, conflicts, and limitations in the volatile index.
 
@@ -154,7 +158,7 @@ Normal fanout is one or two agents for non-trivial tasks. Use three only when th
 
 Keep the existing native roles generic: `explorer` maps relevant files, systems, docs, workflows, data, dependencies, tests, and risks; `researcher` verifies current or source-backed facts; `worker` executes one bounded task with exact write scope; `tester` runs validations, benchmarks, measurements, and failure summaries; `reviewer` checks final risk, correctness, regression, scope, and evidence. The `guardian_subagent` role is reserved for approval and permission review, not normal task delegation.
 
-For agent-team work, keep a repo-local ledger at `.codex/runs/<YYYYMMDD-HHMMSS>-<task-slug>.md`. If `.codex/runs/` is not already excluded from Git, add it to `.git/info/exclude`, not `.gitignore`. In Plan Mode or other no-write contexts, plan the ledger and subtasks but do not create ledger files or edit state until writes are allowed. Record objective, phase, plan, subtasks, checkpoints, validation, decisions, resume notes, and final acceptance criteria. After interruption or compaction, read the ledger, run `git status --short`, inspect outstanding diffs, and resume from the first non-completed task whose dependencies are satisfied.
+For agent-team work, keep a repo-local ledger at `.agents/state/<task-slug>/ledger.md`. The controller assigns `<task-slug>` once as `<YYYYMMDD-HHMMSS>-<git-short-sha>-<objective-slug>` and every participating agent/tool reuses it; do not create client- or agent-specific run directories. Existing legacy ledger paths remain historical records only. In Plan Mode or other no-write contexts, plan the ledger and subtasks but do not create ledger files or edit state until writes are allowed. Record objective, phase, plan, subtasks, checkpoints, validation, decisions, resume notes, and final acceptance criteria. After interruption or compaction, read the ledger, run `git status --short`, inspect outstanding diffs, and resume from the first non-completed task whose dependencies are satisfied.
 
 Only the controller may mark subtasks `verified` or `completed`. A subagent report is evidence, not completion. Claims such as complete, implemented, validated, reviewed, or ready require ledger checkpoints, inspected diffs, validation results, and final review evidence. If evidence is missing, say "Not confirmed yet." and continue the workflow.
 
