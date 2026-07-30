@@ -340,14 +340,14 @@ sync_uv_environment() {
   pre_sync_repair_localsetup_envs
   mapfile -d '' -t uv_base < <(uv_project_base)
   if output="$("${uv_base[@]}" sync --locked --no-dev 2>&1)"; then
-    [[ -z "$output" ]] || printf '%s\n' "$output"
+    [[ -z "$output" ]] || printf '%s\n' "$output" >&2
     export LOCALSETUP_UV_ALREADY_SYNCED=1
     return 0
   fi
   if uv_error_is_environment_corruption "$output" && [[ -e "$SOURCE_DIR/.venv" || -L "$SOURCE_DIR/.venv" ]]; then
     quarantine_localsetup_env "$SOURCE_DIR/.venv" "source_venv" "uv sync reported source environment corruption" "$output"
     if output="$("${uv_base[@]}" sync --locked --no-dev 2>&1)"; then
-      [[ -z "$output" ]] || printf '%s\n' "$output"
+      [[ -z "$output" ]] || printf '%s\n' "$output" >&2
       export LOCALSETUP_UV_ALREADY_SYNCED=1
       return 0
     fi

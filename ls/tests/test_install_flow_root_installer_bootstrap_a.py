@@ -21,7 +21,7 @@ def test_root_installer_piped_bootstrap_global_only_uses_managed_source(tmp_path
     fake_uv.write_text(
         "#!/usr/bin/env bash\n"
         "if [[ \"$1\" == \"--version\" ]]; then echo 'uv 0.11.21'; exit 0; fi\n"
-        f"if [[ \" $* \" == *' sync --locked --no-dev '* ]]; then touch {shlex.quote(str(sync_marker))}; exit 0; fi\n"
+        f"if [[ \" $* \" == *' sync --locked --no-dev '* ]]; then echo 'uv sync progress'; touch {shlex.quote(str(sync_marker))}; exit 0; fi\n"
         "if [[ \" $* \" == *' lock '* ]]; then exit 0; fi\n"
         f"[[ -f {shlex.quote(str(sync_marker))} ]] || exit 97\n"
         "while [[ \"$1\" != \"run\" ]]; do shift; done\n"
@@ -56,12 +56,81 @@ def test_root_installer_piped_bootstrap_global_only_uses_managed_source(tmp_path
         )
 
     assert completed.returncode == 0, completed.stderr.decode()
+    payload = json.loads(completed.stdout)
+    assert payload["ok"] is True
+    assert b"uv sync progress" not in completed.stdout
+    assert b"uv sync progress" in completed.stderr
     assert (managed_source / "ls/tools/localsetup.py").is_file()
     assert sync_marker.is_file()
     assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
     assert (home / ".local/bin/localsetup").is_file()
     assert not (outside / ".codex").exists()
     assert not (outside / ".localsetup/lock.json").exists()
+
+def test_root_installer_retry_sync_keeps_automation_stdout_json_only(tmp_path: Path) -> None:
+    install_path = Path(__file__).resolve().parents[2] / "install"
+    bootstrap_repo = make_bootstrap_git_repo(tmp_path / "bootstrap")
+    source = Path(__file__).resolve().parents[2]
+    for name in ("pyproject.toml", "uv.lock"):
+        shutil.copy2(source / name, bootstrap_repo / name)
+    subprocess.run(["git", "add", "pyproject.toml", "uv.lock"], cwd=bootstrap_repo, text=True, capture_output=True, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Localsetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "add locked runtime"],
+        cwd=bootstrap_repo,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    managed_source = tmp_path / "managed-source"
+    subprocess.run(["git", "clone", str(bootstrap_repo), str(managed_source)], text=True, capture_output=True, check=True)
+    source_venv = managed_source / ".venv"
+    source_python = source_venv / "bin" / "python"
+    source_python.parent.mkdir(parents=True)
+    source_python.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    source_python.chmod(0o755)
+    (source_venv / "pyvenv.cfg").write_text("home = /usr/bin\n", encoding="utf-8")
+    fake_uv = tmp_path / "uv"
+    sync_attempt = tmp_path / "sync-attempt"
+    fake_uv.write_text(
+        "#!/usr/bin/env bash\n"
+        "if [[ \"$1\" == \"--version\" ]]; then echo 'uv 0.11.21'; exit 0; fi\n"
+        f"if [[ \" $* \" == *' sync --locked --no-dev '* ]]; then if [[ ! -f {shlex.quote(str(sync_attempt))} ]]; then touch {shlex.quote(str(sync_attempt))}; echo 'virtual environment failed'; exit 1; fi; echo 'uv sync retry progress'; exit 0; fi\n"
+        "if [[ \" $* \" == *' lock '* ]]; then exit 0; fi\n"
+        "while [[ \"$1\" != \"run\" ]]; do shift; done\n"
+        "shift\n"
+        "while [[ \"$1\" == --* ]]; do shift; done\n"
+        "exec \"$@\"\n",
+        encoding="utf-8",
+    )
+    fake_uv.chmod(0o755)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    home = tmp_path / "home"
+    completed = subprocess.run(
+        [
+            "bash",
+            str(install_path),
+            "--directory",
+            str(managed_source),
+            "--sync-env",
+            "--non-interactive",
+            "--yes",
+            "--home",
+            str(home),
+        ],
+        cwd=outside,
+        env={**os.environ, "LOCALSETUP_UV_BIN": str(fake_uv)},
+        text=False,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr.decode()
+    payload = json.loads(completed.stdout)
+    assert payload["ok"] is True
+    assert b"uv sync retry progress" not in completed.stdout
+    assert b"uv sync retry progress" in completed.stderr
+    assert sync_attempt.is_file()
 
 def test_root_installer_piped_bootstrap_requires_explicit_uv_install_when_missing(tmp_path: Path) -> None:
     install_path = Path(__file__).resolve().parents[2] / "install"
