@@ -108,7 +108,7 @@ curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install 
 ```
 
 Automation mode preserves machine-readable output. Without a terminal, the installer asks you to rerun with a TTY or with `--non-interactive --yes`.
-For a managed release bootstrap, this mode also provisions the source checkout's locked production environment before running the CLI; explicit checkout installs continue to require `--sync-env` when environment synchronization is wanted.
+For a managed release bootstrap, this mode synchronizes the source checkout's locked production environment before running the CLI. If `uv` is absent, pass `--install-uv` to opt in to its bootstrap; explicit checkout installs continue to require `--sync-env` when environment synchronization is wanted.
 
 
 Localsetup CLI commands emit JSON by default unless a command has an explicit human-readable mode such as `context --markdown`. The `--json` config flag remains available when scripts want to make that output contract explicit.

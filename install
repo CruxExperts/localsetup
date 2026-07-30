@@ -812,9 +812,11 @@ fi
 ensure_bootstrap_source
 # Managed non-interactive bootstrap must provision the locked CLI runtime before
 # doctor or package materialization. A bare system Python need not provide the
-# project's mandatory modules. Lightweight fixture/bootstrap sources without
-# uv metadata retain the existing dependency-free path.
-if ! "$EXPLICIT_SOURCE_DIR" && "$NON_INTERACTIVE" && ! "$SYNC_ENV" \
+# project's mandatory modules. When uv is absent, callers must explicitly select
+# --install-uv before the installer downloads and executes the uv bootstrap.
+# Lightweight fixture/bootstrap sources without uv metadata retain the
+# dependency-free path.
+if "$BOOTSTRAPPED_SOURCE" && "$NON_INTERACTIVE" && ! "$SYNC_ENV" \
   && [[ -f "$SOURCE_DIR/pyproject.toml" && -f "$SOURCE_DIR/uv.lock" ]]; then
   SYNC_ENV=true
 fi

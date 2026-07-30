@@ -63,6 +63,53 @@ def test_root_installer_piped_bootstrap_global_only_uses_managed_source(tmp_path
     assert not (outside / ".codex").exists()
     assert not (outside / ".localsetup/lock.json").exists()
 
+def test_root_installer_piped_bootstrap_requires_explicit_uv_install_when_missing(tmp_path: Path) -> None:
+    install_path = Path(__file__).resolve().parents[2] / "install"
+    bootstrap_repo = make_bootstrap_git_repo(tmp_path / "bootstrap")
+    source = Path(__file__).resolve().parents[2]
+    for name in ("pyproject.toml", "uv.lock"):
+        shutil.copy2(source / name, bootstrap_repo / name)
+    subprocess.run(["git", "add", "pyproject.toml", "uv.lock"], cwd=bootstrap_repo, text=True, capture_output=True, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Localsetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "add locked runtime"],
+        cwd=bootstrap_repo,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    curl_marker = tmp_path / "curl-called"
+    fake_curl = fake_bin / "curl"
+    fake_curl.write_text(f"#!/usr/bin/env bash\ntouch {shlex.quote(str(curl_marker))}\n", encoding="utf-8")
+    fake_curl.chmod(0o755)
+
+    home = tmp_path / "home"
+    env = {
+        **os.environ,
+        "HOME": str(home),
+        "PATH": f"{fake_bin}:/usr/bin:/bin",
+        "LOCALSETUP_BOOTSTRAP_REPO": str(bootstrap_repo),
+        "LOCALSETUP_BOOTSTRAP_REF": "main",
+        "LOCALSETUP_BOOTSTRAP_SOURCE_DIR": str(tmp_path / "managed-source"),
+    }
+
+    with install_path.open("rb") as stdin:
+        completed = subprocess.run(
+            ["bash", "-s", "--", "--non-interactive", "--yes", "--home", str(home)],
+            cwd=tmp_path,
+            env=env,
+            stdin=stdin,
+            text=False,
+            capture_output=True,
+            check=False,
+        )
+
+    assert completed.returncode != 0
+    assert b"pass --install-uv" in completed.stderr
+    assert not curl_marker.exists()
+
 
 def test_root_installer_explicit_source_keeps_sync_opt_in(tmp_path: Path) -> None:
     install_path = Path(__file__).resolve().parents[2] / "install"
