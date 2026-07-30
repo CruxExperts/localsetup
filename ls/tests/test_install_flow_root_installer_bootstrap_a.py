@@ -5,6 +5,33 @@ from ls.tests.test_install_flow import *
 def test_root_installer_piped_bootstrap_global_only_uses_managed_source(tmp_path: Path) -> None:
     install_path = Path(__file__).resolve().parents[2] / "install"
     bootstrap_repo = make_bootstrap_git_repo(tmp_path / "bootstrap")
+    source = Path(__file__).resolve().parents[2]
+    for name in ("pyproject.toml", "uv.lock"):
+        shutil.copy2(source / name, bootstrap_repo / name)
+    subprocess.run(["git", "add", "pyproject.toml", "uv.lock"], cwd=bootstrap_repo, text=True, capture_output=True, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Localsetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "add locked runtime"],
+        cwd=bootstrap_repo,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    fake_uv = tmp_path / "uv"
+    sync_marker = tmp_path / "sync-called"
+    fake_uv.write_text(
+        "#!/usr/bin/env bash\n"
+        "if [[ \"$1\" == \"--version\" ]]; then echo 'uv 0.11.21'; exit 0; fi\n"
+        f"if [[ \" $* \" == *' sync --locked --no-dev '* ]]; then touch {shlex.quote(str(sync_marker))}; exit 0; fi\n"
+        "if [[ \" $* \" == *' lock '* ]]; then exit 0; fi\n"
+        f"[[ -f {shlex.quote(str(sync_marker))} ]] || exit 97\n"
+        "while [[ \"$1\" != \"run\" ]]; do shift; done\n"
+        "shift\n"
+        "while [[ \"$1\" == --* ]]; do shift; done\n"
+        "exec \"$@\"\n",
+        encoding="utf-8",
+    )
+    fake_uv.chmod(0o755)
+
     outside = tmp_path / "outside"
     home = tmp_path / "home"
     managed_source = tmp_path / "managed-source"
@@ -14,6 +41,7 @@ def test_root_installer_piped_bootstrap_global_only_uses_managed_source(tmp_path
         "LOCALSETUP_BOOTSTRAP_REPO": str(bootstrap_repo),
         "LOCALSETUP_BOOTSTRAP_REF": "main",
         "LOCALSETUP_BOOTSTRAP_SOURCE_DIR": str(managed_source),
+        "LOCALSETUP_UV_BIN": str(fake_uv),
     }
 
     with install_path.open("rb") as stdin:
@@ -29,10 +57,47 @@ def test_root_installer_piped_bootstrap_global_only_uses_managed_source(tmp_path
 
     assert completed.returncode == 0, completed.stderr.decode()
     assert (managed_source / "ls/tools/localsetup.py").is_file()
+    assert sync_marker.is_file()
     assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
     assert (home / ".local/bin/localsetup").is_file()
     assert not (outside / ".codex").exists()
     assert not (outside / ".localsetup/lock.json").exists()
+
+
+def test_root_installer_explicit_source_keeps_sync_opt_in(tmp_path: Path) -> None:
+    install_path = Path(__file__).resolve().parents[2] / "install"
+    source = Path(__file__).resolve().parents[2]
+    fake_uv = tmp_path / "uv"
+    sync_marker = tmp_path / "sync-called"
+    fake_uv.write_text(
+        "#!/usr/bin/env bash\n"
+        f"if [[ \" $* \" == *' sync '* ]]; then touch {shlex.quote(str(sync_marker))}; exit 97; fi\n"
+        "exit 0\n",
+        encoding="utf-8",
+    )
+    fake_uv.chmod(0o755)
+
+    completed = subprocess.run(
+        [
+            str(install_path),
+            "--directory",
+            str(source),
+            "--target-directory",
+            str(tmp_path / "target"),
+            "--home",
+            str(tmp_path / "home"),
+            "--no-register-shell",
+            "--non-interactive",
+            "--yes",
+        ],
+        env={**os.environ, "LOCALSETUP_UV_BIN": str(fake_uv)},
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert not sync_marker.exists()
 
 
 def test_root_installer_refreshes_clean_stale_managed_source_before_wizard(tmp_path: Path) -> None:

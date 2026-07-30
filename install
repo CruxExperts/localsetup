@@ -808,7 +808,16 @@ fi
 if [[ "$NON_INTERACTIVE" != true && ! -t 1 && ! -t 2 ]]; then
   die "interactive installer requires a terminal. Run from a TTY, or use --non-interactive --yes for automation."
 fi
+
 ensure_bootstrap_source
+# Managed non-interactive bootstrap must provision the locked CLI runtime before
+# doctor or package materialization. A bare system Python need not provide the
+# project's mandatory modules. Lightweight fixture/bootstrap sources without
+# uv metadata retain the existing dependency-free path.
+if ! "$EXPLICIT_SOURCE_DIR" && "$NON_INTERACTIVE" && ! "$SYNC_ENV" \
+  && [[ -f "$SOURCE_DIR/pyproject.toml" && -f "$SOURCE_DIR/uv.lock" ]]; then
+  SYNC_ENV=true
+fi
 export LOCALSETUP_BOOTSTRAP_LATEST_REF="$BOOTSTRAP_LATEST_REF"
 export LOCALSETUP_BOOTSTRAP_RELEASE_STATUS="$BOOTSTRAP_RELEASE_STATUS"
 [[ -d "$SOURCE_DIR" ]] || die "directory does not exist: $SOURCE_DIR"
