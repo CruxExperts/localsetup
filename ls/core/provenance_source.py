@@ -481,7 +481,8 @@ def generated_docs_source_ref(repo_root: Path, ref: str) -> str | None:
         return None
     subject = subject_for_ref(repo_root, terminal) or ""
     if subject.startswith(VERSION_SYNC_SUBJECT_PREFIX):
-        return git_text(repo_root, ["rev-parse", f"{terminal}^"])
+        parent = git_text(repo_root, ["rev-parse", f"{terminal}^"])
+        return generated_docs_source_ref(repo_root, parent) or parent
     return terminal
 
 

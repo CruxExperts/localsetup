@@ -977,6 +977,7 @@ def test_generated_artifact_provenance_skips_generated_refresh_before_release_sy
     run(repo, "add", "VERSION")
     run(repo, "commit", "-q", "-m", "chore: sync release version 4.9.1")
 
+    assert generated_docs_source_ref(repo, "HEAD^") == source
     assert generated_artifact_parent_source_commit(repo) == source
 
 
