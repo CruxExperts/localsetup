@@ -955,6 +955,31 @@ def test_generated_artifact_provenance_uses_dirty_parent_for_release_sync(tmp_pa
     assert generated_mode["source_dirty"] is True
 
 
+def test_generated_artifact_provenance_skips_generated_refresh_before_release_sync(
+    tmp_path: Path,
+) -> None:
+    repo = make_git_repo(tmp_path)
+    (repo / "ls" / "skills" / "ls-demo" / "SKILL.md").write_text(
+        "---\nname: ls-demo\ndescription: Updated\n---\n",
+        encoding="utf-8",
+    )
+    run(repo, "add", ".")
+    run(repo, "commit", "-q", "-m", "feat: update runtime")
+    source = run(repo, "rev-parse", "HEAD")
+
+    generated = repo / "ls" / "docs" / "_generated" / "facts.json"
+    generated.parent.mkdir(parents=True, exist_ok=True)
+    generated.write_text("{}\n", encoding="utf-8")
+    run(repo, "add", ".")
+    run(repo, "commit", "-q", "-m", "docs: refresh generated artifacts")
+
+    (repo / "VERSION").write_text("4.9.1\n", encoding="utf-8")
+    run(repo, "add", "VERSION")
+    run(repo, "commit", "-q", "-m", "chore: sync release version 4.9.1")
+
+    assert generated_artifact_parent_source_commit(repo) == source
+
+
 def test_generated_artifact_provenance_uses_release_sync_source_for_pr_merge_commit(tmp_path: Path) -> None:
     repo = make_git_repo(tmp_path)
     base = run(repo, "rev-parse", "HEAD")

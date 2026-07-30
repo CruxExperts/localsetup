@@ -496,7 +496,8 @@ def generated_artifact_parent_source_commit(repo_root: Path) -> str | None:
     """
     subject = head_subject(repo_root)
     if subject.startswith(VERSION_SYNC_SUBJECT_PREFIX):
-        return git_text(repo_root, ["rev-parse", "HEAD^"])
+        parent = git_text(repo_root, ["rev-parse", "HEAD^"])
+        return generated_docs_source_ref(repo_root, parent) or parent
     if not subject.startswith(GENERATED_DOCS_SUBJECT_PREFIX):
         merge_head_subject = subject_for_ref(repo_root, "HEAD^2")
         if merge_head_subject is None:
