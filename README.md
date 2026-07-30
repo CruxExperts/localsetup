@@ -10,7 +10,7 @@
   <a href="ls/docs/PLATFORM_REGISTRY.md"><img src="https://img.shields.io/badge/platforms-cursor%20%7C%20claude--code%20%7C%20codex%20%7C%20openclaw%20%7C%20kilo%20%7C%20opencode-1f6feb" alt="Supported platforms"></a>
 </p>
 
-**Version:** 4.3.5<br>
+**Version:** 4.3.6<br>
 
 **Localsetup gives coding agents a repo-local operating layer.**
 
@@ -62,7 +62,7 @@ Start with the [workflow packages guide](ls/docs/WORKFLOW_PACKAGES.md) for usage
 <!-- facts-block:start -->
 | Fact | Value |
 |---|---|
-| Current version | `4.3.5` |
+| Current version | `4.3.6` |
 | Supported platforms | `codex, claude-code, cursor, kilo, opencode, openclaw` |
 | Shipped skills | `103` |
 | Workflow packages | `24` |
