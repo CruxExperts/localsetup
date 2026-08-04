@@ -21,6 +21,7 @@ Localsetup uses the root `VERSION` file as the source of truth for the framework
 - `Release-Type: major|minor|patch|none` is the only way to request a major bump, minor bump, explicit patch bump, or no release bump.
 - Breaking markers (`!` or `BREAKING CHANGE:`) are diagnostic only until paired with an explicit `Release-Type:` trailer. `version-plan` fails with an actionable message when a breaking marker appears without that trailer.
 - Merge commits, version-sync commits, and fully canceled unreleased reverts do not request a bump.
+- `version-plan` derives the target from the base `VERSION` and the net unreleased bump. Every in-range `chore: sync release version X` commit must name that target; when any sync commit is present, the HEAD `VERSION` must also equal it, including no-bump batches.
 - Version and documentation sync are automatic. Local hooks plan the bump from outgoing commits, update known version surfaces, regenerate docs artifacts, and create a version-sync commit before push.
 - From a clean worktree, `publish-preflight` without `--fix` deliberately prepares direct version surfaces as an unstaged candidate. When it changes files, it returns `prepared_not_ready`; review and commit that candidate, then create and validate the separate generated-document receipt. It never stages or commits the candidate.
 - `publish-preflight --fix` is the one-command alternative: it performs the clean preparation plus the version-sync and generated-document commits.
@@ -74,7 +75,7 @@ Useful planning check:
 uv run --locked python ls/tools/localsetup.py --source-root . version-plan
 ```
 
-The `version-plan` output includes `policy: "patch-default"`, diagnostic `raw_bump` values from Conventional Commit parsing, and the effective release `bump` after patch-default policy is applied.
+The `version-plan` output includes `policy: "patch-default"`, diagnostic `raw_bump` values from Conventional Commit parsing, the effective release `bump`, and `version_sync_matches_target` for validating in-range version-sync commits.
 
 ## GitHub release workflow
 

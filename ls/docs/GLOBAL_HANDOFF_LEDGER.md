@@ -10,7 +10,7 @@ owner_skill: ls-framework-compliance
 
 Each controller keeps one private, append-only handoff ledger for a broad, delegated, risky, validation-heavy, or restart-sensitive objective. It records accepted evidence and decisions; it is not a task queue, chat transcript, event stream, transport receipt store, database, or agent runtime.
 
-The ledger is allocated through the existing client-state artifact contract. Its sidecar hash, client capability snapshot, and repository/ref binding are authoritative at resume time.
+The ledger is deliberately separate from the client-state artifact contract. Its repository/ref binding is authoritative at resume time; a client capability snapshot may be cited as evidence but does not allocate the ledger path.
 
 ## Location and identity
 
@@ -54,10 +54,10 @@ Agent Q ledgers, trusted-queue packet manifests, command telemetry, context-inde
 
 ## Resume protocol
 
-Before resuming, the controller verifies the ledger artifact, sidecar, current repository/ref, capability snapshot, context freshness, task-owned diff, and the last accepted record. A mismatch creates a new `decision` or `blocked_external` record; it never silently reuses stale authority.
+Before resuming, the controller verifies the ledger artifact, current repository/ref, and the last accepted record. It verifies a capability snapshot, sidecar, context-freshness record, or task-owned diff only when the ledger cites that specific evidence. A mismatch creates a new `decision` or `blocked_external` record; it never silently reuses stale authority.
 
 A restart artifact may summarize the ledger for a specific client, but it is a derived handoff payload. The ledger remains the durable evidence source.
 
 ## Non-goals
 
-This design does not add a daemon, cross-machine replication, a generic event bus, native slash-command behavior, task dispatch, remote control, or persistence outside registered Localsetup client-state roots. Transport, dashboard, Herdr, A2A, Agent Q, OmniRoute, and trusted-queue systems consume bounded references only.
+This design does not add a daemon, cross-machine replication, a generic event bus, native slash-command behavior, task dispatch, remote control, or client-native persistence. The shared private controller-ledger root is the explicit exception: it is `.agents/state/` as defined above, not a registered client-state root.

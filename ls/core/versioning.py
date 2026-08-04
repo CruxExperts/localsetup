@@ -338,11 +338,18 @@ def plan_version(repo_root: Path, *, base: str | None = None, head: str | None =
     target = base_version.bump(bump)
     current = read_version(repo_root, resolved_head)
     worktree = read_version(repo_root)
-    sync_versions = [parsed for commit in commits if (parsed := version_from_sync_commit(commit.subject)) is not None]
-    version_sync_present = bool(sync_versions)
-    if sync_versions:
-        target = sync_versions[-1]
-    ok = (current == target if version_sync_present else bump == "none" or current == target) and not release_type_required
+    sync_commits = [commit for commit in commits if commit.subject.startswith(VERSION_SYNC_PREFIX)]
+    version_sync_present = bool(sync_commits)
+    version_sync_matches_target = all(
+        version_from_sync_commit(commit.subject) == target for commit in sync_commits
+    )
+    head_version_matches_target = current == target
+    head_version_required = version_sync_present or bump != "none"
+    ok = (
+        (not head_version_required or head_version_matches_target)
+        and version_sync_matches_target
+        and not release_type_required
+    )
     return {
         "ok": ok,
         "policy": "patch-default",
@@ -359,6 +366,7 @@ def plan_version(repo_root: Path, *, base: str | None = None, head: str | None =
         "release_type_required": bool(release_type_required),
         "release_type_required_commits": release_type_required,
         "version_sync_present": version_sync_present,
+        "version_sync_matches_target": version_sync_matches_target,
         "commit_count": len(commits),
         "net_commit_count": len(net_commits),
         "canceled_reverts": canceled,

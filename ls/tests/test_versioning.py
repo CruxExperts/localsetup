@@ -211,6 +211,79 @@ def test_version_plan_uses_release_sync_commit_version_as_target(tmp_path: Path)
     assert plan["target_version"] == expected
     assert plan["current_version"] == expected
 
+def test_version_plan_rejects_premature_sync_version(tmp_path: Path) -> None:
+    repo = copy_full_repo(tmp_path)
+    remote = tmp_path / "remote.git"
+    run(tmp_path, "git", "init", "--bare", str(remote))
+    init_git_repo(repo, remote)
+    expected = str(repo_version(repo).bump("patch"))
+    premature = str(SemVer.parse(expected).bump("patch"))
+
+    (repo / "bugfix.txt").write_text("bugfix\n", encoding="utf-8")
+    run(repo, "git", "add", "bugfix.txt")
+    run(repo, "git", "commit", "-m", "fix: resolve release bug", "--no-verify")
+    sync_version_files(repo, expected)
+    run(repo, "git", "add", ".")
+    run(repo, "git", "commit", "-m", f"chore: sync release version {expected}", "--no-verify")
+    sync_version_files(repo, premature)
+    run(repo, "git", "add", ".")
+    run(repo, "git", "commit", "-m", f"chore: sync release version {premature}", "--no-verify")
+
+    plan = plan_version(repo, base="origin/main", head="HEAD")
+
+    assert plan["ok"] is False
+    assert plan["version_sync_present"] is True
+    assert plan["version_sync_matches_target"] is False
+    assert plan["target_version"] == expected
+    assert plan["current_version"] == premature
+
+
+def test_version_plan_rejects_version_drift_after_no_bump_sync(tmp_path: Path) -> None:
+    repo = copy_full_repo(tmp_path)
+    remote = tmp_path / "remote.git"
+    run(tmp_path, "git", "init", "--bare", str(remote))
+    init_git_repo(repo, remote)
+    expected = str(repo_version(repo))
+    drifted = str(SemVer.parse(expected).bump("patch"))
+
+    (repo / "sync-receipt.txt").write_text("synced\n", encoding="utf-8")
+    run(repo, "git", "add", "sync-receipt.txt")
+    run(repo, "git", "commit", "-m", f"chore: sync release version {expected}", "--no-verify")
+    (repo / "VERSION").write_text(f"{drifted}\n", encoding="utf-8")
+    run(repo, "git", "add", "VERSION")
+    run(repo, "git", "commit", "-m", f"chore: sync release version {expected}", "--no-verify")
+
+    plan = plan_version(repo, base="origin/main", head="HEAD")
+
+    assert plan["ok"] is False
+    assert plan["bump"] == "none"
+    assert plan["version_sync_present"] is True
+    assert plan["version_sync_matches_target"] is True
+    assert plan["target_version"] == expected
+    assert plan["current_version"] == drifted
+
+
+
+def test_version_plan_rejects_malformed_sync_subject_with_version_drift(tmp_path: Path) -> None:
+    repo = copy_full_repo(tmp_path)
+    remote = tmp_path / "remote.git"
+    run(tmp_path, "git", "init", "--bare", str(remote))
+    init_git_repo(repo, remote)
+    expected = str(repo_version(repo))
+    drifted = str(SemVer.parse(expected).bump("patch"))
+
+    (repo / "VERSION").write_text(f"{drifted}\n", encoding="utf-8")
+    run(repo, "git", "add", "VERSION")
+    run(repo, "git", "commit", "-m", "chore: sync release version nope", "--no-verify")
+
+    plan = plan_version(repo, base="origin/main", head="HEAD")
+
+    assert plan["ok"] is False
+    assert plan["bump"] == "none"
+    assert plan["version_sync_present"] is True
+    assert plan["version_sync_matches_target"] is False
+    assert plan["target_version"] == expected
+    assert plan["current_version"] == drifted
 
 def test_version_plan_uses_local_main_when_no_remote_exists(tmp_path: Path) -> None:
     repo = tmp_path / "consumer"
