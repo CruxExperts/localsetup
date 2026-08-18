@@ -35,20 +35,20 @@ MAX_REQUEST_BYTES = 65_536
 
 # These anchors are intentionally in the isolated standard-library selector, not
 # in a mutable manifest.  A valid manifest digest cannot substitute for one.
-CANONICAL_MANIFEST_SHA256 = "bbfdbd619228fdcb08fdcd8873e28a4548d30940a6df69bdd0483bed5ceb1143"
+CANONICAL_MANIFEST_SHA256 = "07313b0ef4812c93a2b5f5bf4c26857e8169b6c25b13e8d37ad150fa10b2ff4b"
 CANONICAL_MATRIX_SCHEMA_SHA256 = "476d1bc199db5e51070a10ae5fdea58e845eb8105be694879ea0f82d6900004f"
-CANONICAL_SNAPSHOT_SHA256 = "f484425ca6c51f42bc3f4816a07c8209e54faf49b370ac6279ff32ff6aeedd1e"
+CANONICAL_SNAPSHOT_SHA256 = "c5cad4888f848eb6f2b0cb6422de5f9d217c43de73417587ed71c0542cd425d0"
 CANONICAL_REQUEST_SCHEMA_SHA256 = "f05f89d84b8a4617855cf51a23663e08709051b9020f6cfdf4d22ee46d0ed562"
 CANONICAL_RECEIPT_SCHEMA_SHA256 = "3a671905f1f12828087acef4ed2de6d09d9de64d535416b0971e911f29d500b4"
 
 CANONICAL_EVIDENCE = (
-    ("api-family-gpt-5.6", "https://developers.openai.com/api/docs/guides/latest-model", "2026-07-17", "api_family"),
-    ("model-gpt-5.6-sol", "https://developers.openai.com/api/docs/models/gpt-5.6-sol", "2026-07-17", "model_version"),
-    ("model-gpt-5.6-terra", "https://developers.openai.com/api/docs/models/gpt-5.6-terra", "2026-07-17", "model_version"),
-    ("model-gpt-5.6-luna", "https://developers.openai.com/api/docs/models/gpt-5.6-luna", "2026-07-17", "model_version"),
-    ("client-codex-subagents", "https://learn.chatgpt.com/docs/agent-configuration/subagents", "2026-07-17", "client_product"),
-    ("accounting-api-pricing-standard-short-context", "https://developers.openai.com/api/docs/pricing", "2026-07-17", "accounting"),
-    ("accounting-codex-token-rate-card", "https://help.openai.com/en/articles/20001106-codex-rate-card-2", "2026-07-17", "accounting"),
+    ("api-family-gpt-5.6", "https://developers.openai.com/api/docs/guides/latest-model", "2026-08-18", "api_family"),
+    ("model-gpt-5.6-sol", "https://developers.openai.com/api/docs/models/gpt-5.6-sol", "2026-08-18", "model_version"),
+    ("model-gpt-5.6-terra", "https://developers.openai.com/api/docs/models/gpt-5.6-terra", "2026-08-18", "model_version"),
+    ("model-gpt-5.6-luna", "https://developers.openai.com/api/docs/models/gpt-5.6-luna", "2026-08-18", "model_version"),
+    ("client-codex-subagents", "https://learn.chatgpt.com/docs/agent-configuration/subagents", "2026-08-18", "client_product"),
+    ("accounting-api-pricing-standard-short-context", "https://developers.openai.com/api/docs/pricing", "2026-08-18", "accounting"),
+    ("accounting-codex-token-rate-card", "https://help.openai.com/en/articles/20001106-codex-rate-card-2", "2026-08-18", "accounting"),
 )
 
 CANONICAL_FACT_PAYLOADS: dict[str, dict[str, Any]] = {
@@ -89,7 +89,12 @@ CANONICAL_FACT_PAYLOADS: dict[str, dict[str, Any]] = {
         "scope": "client_product",
         "facts": {
             "recommended_models": ["gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna"],
-            "documented_subagent_defaults": {"max_threads": 6, "max_depth": 1, "csv_job_max_runtime_seconds": 1800},
+            "documented_subagent_defaults": {
+                "agents_enabled": True,
+                "max_concurrent_threads_per_session": "client_selected_when_unset",
+                "legacy_max_threads_alias": "agents.max_threads",
+                "interrupt_message": True,
+            },
         },
     },
     "accounting-api-pricing-standard-short-context": {
@@ -104,8 +109,8 @@ CANONICAL_FACT_PAYLOADS: dict[str, dict[str, Any]] = {
             "plan_migration": "unknown",
             "models": {
                 "gpt-5.6-sol": {"input": 5, "cached_input": 0.5, "cache_write": 6.25, "output": 30},
-                "gpt-5.6-terra": {"input": 2.5, "cached_input": 0.25, "cache_write": 3.125, "output": 15},
-                "gpt-5.6-luna": {"input": 1, "cached_input": 0.1, "cache_write": 1.25, "output": 6},
+                "gpt-5.6-terra": {"input": 2, "cached_input": 0.2, "cache_write": 2.5, "output": 12},
+                "gpt-5.6-luna": {"input": 0.2, "cached_input": 0.02, "cache_write": 0.25, "output": 1.2},
             },
         },
     },
@@ -121,8 +126,8 @@ CANONICAL_FACT_PAYLOADS: dict[str, dict[str, Any]] = {
             "plan_migration": "unknown",
             "models": {
                 "gpt-5.6-sol": {"input": 125, "cached_input": 12.5, "output": 750},
-                "gpt-5.6-terra": {"input": 62.5, "cached_input": 6.25, "output": 375},
-                "gpt-5.6-luna": {"input": 25, "cached_input": 2.5, "output": 150},
+                "gpt-5.6-terra": {"input": 50, "cached_input": 5, "output": 300},
+                "gpt-5.6-luna": {"input": 5, "cached_input": 0.5, "output": 30},
             },
         },
     },
