@@ -184,7 +184,7 @@ Before install, use the dependency list below as the canonical source of truth. 
 | Python: `yaml` (PyYAML>=6.0) | Recommended | YAML parsing for skill index, config, and PRD files |
 | Python: `requests` (requests>=2.28) | Recommended | HTTP client used by index refresh and scrub tools |
 | Python: `frontmatter` (python-frontmatter>=1.1) | Recommended | YAML frontmatter parsing for skill and PRD markdown files |
-| Python: `cryptography` (cryptography>=42.0) | Recommended | Framework cryptographic primitives for secure envelope workflows |
+| Python: `cryptography` (cryptography>=50.0.0) | Recommended | Framework cryptographic primitives for secure envelope workflows |
 | Python: `pgpy` (PGPy>=0.6.0) | Recommended | Pure-Python OpenPGP support for secure mail workflows |
 
 Python package intent is listed in `pyproject.toml`; `uv.lock` is the committed lock used by automation and installer sync. Dependency PRs must update both files when dependency intent changes. The conservative default is `prompt-only` dependency checking; explicit `--sync-env` or `--dependency-mode uv-sync` creates or updates the uv-managed source checkout `.venv` without mutating externally managed system Python. To check the current machine without changing files, run:

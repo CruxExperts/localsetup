@@ -13,14 +13,14 @@
     "artifact_path": "ls/docs/_generated/skill-taxonomy.json",
     "artifact_sha256": "9c6039b42d191945bc6078714b2a3b702b3221c13c2021c700cafa399870a3cc",
     "emitter": "generate-docs",
-    "framework_version": "4.3.8",
+    "framework_version": "4.3.9",
     "schema_version": 1,
-    "source_commit": "d17cc96b93dbe17cb2016d67f307e29b1df3bdee",
+    "source_commit": "a670cedf63b791dd886015c4fdfa88c425b9e8d2",
     "source_dirty": true,
-    "source_provenance_hash": "251f8641e42587709d2de2fe45d3aab7ab847e3d23fd0331c7d30bbf1d77fb63",
-    "source_root_id": "fc71e6c7e7a907c09591acb2318132c57cef68fc81103dd82cfb14be313526bc",
+    "source_provenance_hash": "42feb5176a538f7b3953bc51866cca08b8bdb4ec3a60beac1c32847f8abde74a",
+    "source_root_id": "c99a5bfa0382f7fa268df8489fc03e6fd088128883e0eb7bc4790ccc3a94a61d",
     "source_tag": null,
-    "source_tree_sha": "2a6dd222e1aa4d9d82082162da37567d915c246b"
+    "source_tree_sha": "838a3a45e51650e4dd6be2bffebec190f4b6eab4"
   },
   "schema_version": 1,
   "skills": [
