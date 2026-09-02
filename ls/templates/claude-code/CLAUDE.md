@@ -80,7 +80,7 @@ Localsetup is deployed into this repo at `ls/`. All framework and context are re
 - **ls-cron-orchestrator**  - Manage cron from manifest; triggers, sequenced tasks, on-boot delay; create/remove/reorder/install
 - **ls-cloudflare-dns**  - Manage Cloudflare zones and DNS with the `cf` CLI; records, DNSSEC, scans, import/export, batch, analytics, settings, and transfers
 - **ls-npm-management**  - Manage Nginx Proxy Manager proxy hosts via REST API; coordinate Docker + NPM deploy workflows; diagnose 502s; backup/restore
-- **ls-keepass-secrets**  - KeePass-backed secrets via logical IDs; get/ensure credentials; bulk create or rotate; use when user asks for logins or workflow needs credentials
+- **ls-keepass-secrets**  - Validate logical-ID maps, configuration, and secret references; use the fake backend only in isolated tests/examples. It never retrieves real credentials or mutates real vaults.
 - **ls-mail-protocol-control**  - SMTP/IMAP; preencrypted_openpgp_armored for Agent Q strict mail ship; agent-driven mailbox read/send/mutate/encrypt workflows
 - **ls-docs-organization**  - Docs organization router; classify docs, pick folder slugs, and keep docs indexes up to date.
 - **ls-scrapling**  - Host-first Scrapling integration; install and upgrade Scrapling via pipx, run adaptive single-URL extractions (simple HTML/Markdown/text or structured JSONL) with job status/cancel, and keep adapters aligned with Scrapling releases via parsed CLI/docs state. This is the default preferred skill for fetching websites and web content from the internet.

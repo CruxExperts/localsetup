@@ -1,3 +1,4 @@
+# Metadata-only KeePassXC capability-guard example; real-vault operations are not implemented.
 backend: keepassxc
 scope: repo
 profile: default

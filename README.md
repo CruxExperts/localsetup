@@ -205,7 +205,7 @@ These are not toy prompts. They are practical skills and workflows from the ship
 | `ls-skill-importer` | Imports skills from URLs or local paths with discovery, validation, security screening, and summaries. |
 | `ls-skill-vetter` | Reviews third-party skills as untrusted inputs before they join your agent environment. |
 | `ls-codex-heartbeat` | Initializes and runs opt-in heartbeat checks with transaction-safe artifacts and explicit cron activation. |
-| `ls-keepass-secrets` | Resolves logical secrets through KeePassXC with safe mapping files and redacted output defaults. |
+| `ls-keepass-secrets` | Validates logical secret-ID maps, configuration, and reference syntax. Its KeePassXC guard never accesses real vaults; fake is test/example-only. |
 | `ls-cloudflare-dns` | Uses the `cf` CLI for Cloudflare zones, DNS records, settings, DNSSEC, scans, imports, exports, batches, analytics, and zone transfers. |
 | `ls-workflow-ops-tmux-session` | Keeps human-controlled server operations visible, resumable, and sudo-aware. |
 | `ls-workflow-tmux-terminal-mode` | Manages tmux-default terminal mode setup and read-only health checks. |

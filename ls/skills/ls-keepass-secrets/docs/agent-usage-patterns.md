@@ -15,4 +15,4 @@ For tests:
 python3 scripts/localsetup_secrets.py resolve mail.box03.example.admin --backend fake --map examples/map.yaml
 ```
 
-For real vaults, confirm the user expects an interactive KeePassXC operation before resolving sensitive fields.
+Do not request or display real vault values through this package. A KeePassXC-backed vault command reports missing_backend when the CLI is unavailable or interactive_backend_required before vault access; use map validation or reference parsing, and reserve --backend fake for isolated tests.

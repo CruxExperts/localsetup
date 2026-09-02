@@ -2,10 +2,10 @@
 
 ## 1.1
 
-- Adds operational JSON-first CLI.
-- Adds fake backend for tests and examples.
-- Adds schemas, examples, and operational docs.
-- Keeps PyKeePass as a documented future backend only.
+- Adds a JSON-first CLI for configuration, mapping, reference, audit, and schema validation.
+- Adds the fake backend for isolated tests and examples.
+- Keeps KeePassXC as a fail-closed capability guard and PyKeePass as a documented future backend.
+- Adds schemas, examples, and documentation for the supported non-vault contract.
 
 ## 1.0
 

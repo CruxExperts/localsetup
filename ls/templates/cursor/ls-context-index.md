@@ -48,7 +48,7 @@
 | ls-cron-orchestrator | Manage cron from manifest: triggers, sequenced tasks, on-boot delay | Create/remove/reorder cron tasks; install crontab fragment |
 | ls-cloudflare-dns | Manage Cloudflare zones and DNS with the `cf` CLI | Records; DNSSEC; scans; import/export; batch; analytics; settings; transfers |
 | ls-npm-management | Manage Nginx Proxy Manager proxy hosts via REST API; coordinate Docker service deployments with NPM routing | Create/modify/remove NPM proxy hosts; diagnose 502s; backup/restore; Docker + NPM deploy workflows |
-| ls-keepass-secrets | KeePass-backed secrets via logical IDs; get/ensure credentials; bulk create or rotate; never embed in repo | User asks for logins, workflow needs credentials, or bulk account creation |
+| ls-keepass-secrets | Validate logical-ID maps, configuration, and secret references; fake is isolated test/example-only | Safe mapping/config/reference validation or isolated test fixtures; never real credential retrieval or vault mutation |
 | ls-mail-protocol-control | Manage delegated SMTP/IMAP accounts with attachment-first MIME handling, chunked attachment retrieval, and full-envelope encryption/decryption tools | Agent-driven mailbox read/send/mutate/encrypt workflows; preencrypted_openpgp_armored for Agent Q strict mail ship |
 | ls-agentq-transport | Agent Q bidirectional transport: file_drop ship/ingest, mail pull/ship (strict gpg), registry, queue-pending, archive-prune | Ship/ingest sealed PRD manifests between agents; see AGENTIC_AGENT_Q_SCENARIOS.md |
 | ls-docs-organization | Docs organization router for repo docs; classify doc work, choose folder slugs, and keep docs indexes in sync | Creating, moving, or significantly updating docs; deciding placement and index updates |

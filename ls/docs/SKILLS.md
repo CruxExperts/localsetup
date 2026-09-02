@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: ee95236c0baf1b496306ee680122b2c951c6461a269892840d1c5532992f89e9
+  source_provenance_hash: f01ac88a228d902fe14b9a39aca8a731db9c522b6182cbd1fe2598e0a4874224
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 1f96df1432cad5a6bbc74600dd181d8cf0f5e01a
-artifact_sha256: 15022f3be38331fa35b674ba8b47fee1f7ad7cbb3cc1d53ede9b700c5a38e5ed
+source_commit: 3157a5869544f1ee899df9f2e058f9b2c6a3fd84
+artifact_sha256: 73970508fe18d0473dc6245381ccb92b178c8bb020acfbf71086ca8e25b157f6
 ---
 # Shipped skills catalog
 
@@ -57,7 +57,7 @@ Total shipped skills: 103
 | `ls-agentq-transport` | `integrations` | 50 | `integrations` | `agentq`, `transport` | `ls-agentq-transport` | `1.0` | Agent Q bidirectional transport client - file_drop ship/ingest, mail pull/ship (including strict gpg preencrypted), registry validation, queue-pending, archive-prune. Use when shipping or ingesting sealed PRD manifests between agents over shared folders or mail; when editing agent_trust_registry, manifest.schema.json, or agentq CLI. |
 | `ls-cloudflare-dns` | `integrations` | 50 | `integrations` | `cloudflare`, `dns` | `ls-cloudflare-dns` | `3.0` | Use the cf CLI for Cloudflare zones, DNS records, settings, DNSSEC, scans, imports, exports, batches, analytics, and zone transfers. |
 | `ls-github-starredrepos` | `integrations` | 50 | `integrations` | `github`, `archive` | `ls-github-starredrepos` | `1.0` | Manage a GitHub starred repositories archive named starredrepos with authenticated context checks, dry-run synchronization, repo scouting, metadata snapshots, and guarded publish workflows. |
-| `ls-keepass-secrets` | `integrations` | 50 | `integrations` | `keepass`, `secrets` | `ls-keepass-secrets` | `1.1` | Use when resolving logical secret IDs through KeePassXC using safe mapping files, JSON-first CLI commands, and redacted output by default. |
+| `ls-keepass-secrets` | `integrations` | 50 | `integrations` | `keepass`, `secrets` | `ls-keepass-secrets` | `1.1` | Use when validating logical secret-ID maps, config, and reference syntax for a KeePassXC integration; output is redacted and the fake backend is test-only. |
 | `ls-mail-protocol-control` | `integrations` | 50 | `integrations` | `mail`, `protocols` | `ls-mail-protocol-control` | `1.2` | Provide full SMTP and IMAP account control for delegated mailboxes with attachment-first MIME handling and full-envelope encryption. Use when an agent must read, send, organize, decrypt, and manage mailbox state with strict admin controls. |
 | `ls-mcp-builder` | `integrations` | 50 | `integrations` | `mcp`, `builder` | `ls-mcp-builder` | `1.2` | Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services through well-designed tools. Use when building MCP servers to integrate external APIs or services, whether in Python (FastMCP) or Node/TypeScript (MCP SDK). |
 | `ls-npm-management` | `integrations` | 50 | `integrations` | `nginx-proxy-manager`, `api` | `ls-npm-management` | `1.0` | Manage Nginx Proxy Manager (NPM) reverse proxy hosts via its REST API using the native Python client npm_api.py. Use when creating, modifying, diagnosing, removing, or cleaning up proxy hosts, or when coordinating Docker service deployments with NPM routing. |

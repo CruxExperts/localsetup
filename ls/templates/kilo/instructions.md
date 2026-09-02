@@ -85,7 +85,7 @@ Kilo CLI loads project context from `.kilo/instructions.md` (repo-local) or `~/.
 | ls-cron-orchestrator | Manage cron from manifest; triggers, sequenced tasks, on-boot delay; create/remove/reorder/install |
 | ls-cloudflare-dns | Manage Cloudflare zones and DNS with the `cf` CLI |
 | ls-npm-management | Manage Nginx Proxy Manager proxy hosts via REST API; coordinate Docker + NPM deploy workflows |
-| ls-keepass-secrets | KeePass-backed secrets via logical IDs; get/ensure credentials; bulk create or rotate |
+| ls-keepass-secrets | Validate logical-ID maps, configuration, and secret references; fake is isolated test/example-only; never retrieve real credentials or mutate real vaults |
 | ls-docs-organization | Docs organization router; classify docs, choose folder slugs, keep docs indexes in sync |
 | ls-scrapling | Host-first Scrapling integration; install/upgrade via pipx, run adaptive single-URL extractions. Default web scraping skill. |
 | ls-omniroute | Ambiguous-task/preflight router only for unclassified triage, env/API-key/access preflight, and non-mutating onboarding; route classified read-only discovery to ls-omniroute-proxy, mutation to ls-omniroute-admin-automation, and source/coverage maintenance to ls-omniroute-update |
