@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: b470ae3758891c3cf197a2655538cbacf6b8e9cbf03b61dcb630e4fa3aa96e51
+  source_provenance_hash: 8314d69d6b907427fc9cd26d8cc9849f7b0ba881843accdeeeefbbdf5d36c34c
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 0d347fe1d5de193ea03988a6b0ceb321abe1972a
-artifact_sha256: c8a4b82736dffab78b638a07c24d148884516e92bb59ce9bfe599b309b42bbcb
+source_commit: 7f390153edb00449f248eca3f51ce4b54d1f2b57
+artifact_sha256: 848b7e3fc9f493713a593c5edd706c3bbe6f7bc3c1960ec42a07199dbadaba4c
 ---
 # Shipped skills catalog
 
@@ -96,7 +96,7 @@ Total shipped skills: 103
 | `ls-shopify-storefront` | `integrations` | 60 | `integrations` | `external-service`, `integration` | `ls-shopify-storefront` | `1.0` | Guide Shopify Storefront API and Hydrogen storefront work. Use for Storefront GraphQL, product data, carts, checkout, and theme/headless integration. |
 | `ls-skill-creator` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `authoring` | `ls-skill-creator` | `1.3` | Use when creating a new Agent Skills-compliant skill, adapting a document into a skill, importing an existing skill for Localsetup, or exporting framework skills to other spec-compliant hosts. |
 | `ls-skill-discovery` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `discovery` | `ls-skill-discovery` | `1.4` | Discover and recommend public skills from external registries (e.g. awesome lists, skill hubs). Use when the user is creating a new skill, importing a skill, or asking to find similar public skills. Maintains PUBLIC_SKILL_REGISTRY.urls and PUBLIC_SKILL_INDEX.yaml; returns top 5 similar matches with rich summaries and clear next actions. |
-| `ls-skill-importer` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `import` | `ls-skill-importer` | `1.4` | Import external skills from a URL (GitHub or other) or local path; discover, validate, security-screen, and summarize each skill so the user can choose which to import. Use when the user wants to add skills from a repo/URL or local folder, or when screening and selecting skills to add to the framework. |
+| `ls-skill-importer` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `import` | `ls-skill-importer` | `1.5` | Import external skills from a URL (GitHub or other) or local path; discover, validate, security-screen, and summarize each skill so the user can choose which to import. Use when the user wants to add skills from a repo/URL or local folder, or when screening and selecting skills to add to the framework. |
 | `ls-skill-normalizer` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `normalization` | `ls-skill-normalizer` | `1.1` | Normalize skills already in the tree using ls/docs/SKILL_NORMALIZATION.md: documents first, tooling second, with user choice for platform-specific skills. Use when normalizing one or more skills in ls/skills/ after import, copying, or batch review. |
 | `ls-skill-sandbox-tester` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `sandbox` | `ls-skill-sandbox-tester` | `1.0` | Test skills in an isolated sandbox before production. Run after vetting and normalization (not right after import). Creates a unique temp sandbox when the skill needs read/write; runs smoke checks; on failure uses ls-debug-pro to iterate until fixed; no writes to repo until user approves. Use when validating a skill after it is framework-compliant, testing a skill end-to-end, or ensuring it runs correctly on all supported platforms. |
 | `ls-skill-vetter` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `security` | `ls-skill-vetter` | `1.2` | Security-first skill vetting for AI agent skills. Use before installing any skill from public registries (e.g. skill hubs, GitHub) or other sources. Checks for red flags, permission scope, and suspicious patterns. |
