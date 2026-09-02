@@ -74,3 +74,71 @@ def test_markdown_reference_validator_profiles_load(monkeypatch) -> None:
     default_ignores = configs["markdown_reference_audit.yaml"].ignore.source_file_globs
     assert "**/docs/reference/markdown-reference-audit.md" in default_ignores
     assert "**/.localsetup/state/markdown-reference/**" in default_ignores
+
+    default = configs["markdown_reference_audit.yaml"]
+    assert default.report_path == root / ".localsetup/state/markdown-reference/default.md"
+    assert default.state_file == root / ".localsetup/state/markdown-reference/default-last-run-epoch"
+    assert all(target["base_dir"] == "{repo_root}" for target in default.targets)
+    assert default.kilo_manifests == []
+
+
+def test_markdown_reference_report_redacts_outside_repo_paths(tmp_path, monkeypatch) -> None:
+    root = Path(__file__).resolve().parents[2]
+    module = load_script_module("ls/skills/ls-markdown-reference-validator/scripts/markdown_reference_validator.py")
+    monkeypatch.chdir(root)
+    config = module._load_config(root / "ls/skills/ls-markdown-reference-validator/templates/markdown_reference_audit.yaml")
+    config_module = sys.modules["markdown_reference_config"]
+    outside = tmp_path.parent / "host confidential" / "secret.md"
+    finding = config_module.Finding(str(outside), 1, "unreadable_source", str(outside), str(outside), f"Could not read source markdown: {outside}")
+    discovery_module = sys.modules["markdown_reference_discovery"]
+    manifest_note = discovery_module.ManifestNote
+    report = module._render_report(config_path=outside, config=config, reason="test", files_scanned=[], checked_refs=1, findings=[finding], manifest_notes=[manifest_note("manifest-ok", outside)])
+    assert str(outside) not in report
+    assert outside.name not in report
+    assert "<outside-repo>" in report
+    assert ".localsetup/state/markdown-reference/default.md" in report
+
+    in_repo_report = module._render_report(
+        config_path=root / "validator.yaml",
+        config=config,
+        reason="test",
+        files_scanned=[],
+        checked_refs=0,
+        findings=[],
+        manifest_notes=[manifest_note("manifest-ok", Path("kilo.jsonc"))],
+    )
+    assert "manifest-ok:kilo.jsonc" in in_repo_report
+
+    delimiter_path = tmp_path.parent / "private (scope)" / "kilo.jsonc"
+    delimiter_report = module._render_report(
+        config_path=outside,
+        config=config,
+        reason="test",
+        files_scanned=[],
+        checked_refs=0,
+        findings=[],
+        manifest_notes=[manifest_note("manifest-ok", delimiter_path)],
+    )
+    assert str(delimiter_path) not in delimiter_report
+    assert "private (scope)" not in delimiter_report
+
+    symlink_target_finding = config_module.Finding(
+        str(root / "README.md"),
+        1,
+        "missing_path",
+        str(outside),
+        str(root / "README.md"),
+        f"Resolved target through a symlink: {outside}",
+    )
+    symlink_target_report = module._render_report(
+        config_path=root / "validator.yaml",
+        config=config,
+        reason="test",
+        files_scanned=[],
+        checked_refs=1,
+        findings=[symlink_target_finding],
+        manifest_notes=[],
+    )
+    assert str(outside) not in symlink_target_report
+    assert "| missing_path | README.md | 1 | <outside-repo> | README.md |" in symlink_target_report
+    assert "manifest-ok:<outside-repo>" in delimiter_report

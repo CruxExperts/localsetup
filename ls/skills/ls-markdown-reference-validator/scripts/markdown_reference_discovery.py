@@ -4,10 +4,17 @@ from __future__ import annotations
 
 import glob
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from markdown_reference_config import _normalize_path, _sanitize_text
+
+@dataclass(frozen=True)
+class ManifestNote:
+    kind: str
+    path: Path
+    detail: str = ""
 
 def _collect_glob_files(
     base_dir: Path, patterns: list[str], excludes: list[str]
@@ -136,25 +143,25 @@ def _load_json_or_jsonc(path: Path) -> Any:
 
 def _discover_manifest_targets(
     manifest_path: Path, repo_root: Path
-) -> tuple[set[Path], list[str]]:
+) -> tuple[set[Path], list[ManifestNote]]:
     discovered: set[Path] = set()
-    notes: list[str] = []
+    notes: list[ManifestNote] = []
 
     if not manifest_path.is_file():
-        notes.append(f"manifest-missing:{manifest_path}")
+        notes.append(ManifestNote("manifest-missing", manifest_path))
         return discovered, notes
 
     try:
         data = _load_json_or_jsonc(manifest_path)
     except json.JSONDecodeError as exc:
-        notes.append(f"manifest-invalid-json-or-jsonc:{manifest_path} ({exc})")
+        notes.append(ManifestNote("manifest-invalid-json-or-jsonc", manifest_path, str(exc)))
         return discovered, notes
     except OSError as exc:
-        notes.append(f"manifest-read-error:{manifest_path} ({exc})")
+        notes.append(ManifestNote("manifest-read-error", manifest_path, str(exc)))
         return discovered, notes
 
     if not isinstance(data, dict):
-        notes.append(f"manifest-invalid-schema:{manifest_path} (root must be object)")
+        notes.append(ManifestNote("manifest-invalid-schema", manifest_path, "root must be object"))
         return discovered, notes
 
     instructions = data.get("instructions", [])
@@ -182,5 +189,5 @@ def _discover_manifest_targets(
                 p, ["**/SKILL.md"], ["**/node_modules/**"]
             )
 
-    notes.append(f"manifest-ok:{manifest_path}")
+    notes.append(ManifestNote("manifest-ok", manifest_path))
     return discovered, notes

@@ -1,6 +1,6 @@
 ---
 name: ls-markdown-reference-validator
-description: "Use when validating markdown local references and anchors across configured global+repo paths; scheduled-safe report generator with YAML sidecar config."
+description: "Use when validating repository Markdown local references and anchors; scheduled-safe YAML-configured reports keep host-aware scans explicit and local-only."
 metadata:
   version: "1.0"
 compatibility: "Python 3.12+, PyYAML. Config-driven targets and Kilo manifest discovery."
@@ -8,7 +8,7 @@ compatibility: "Python 3.12+, PyYAML. Config-driven targets and Kilo manifest di
 
 # Markdown reference validator
 
-Validate markdown reference integrity across Localsetup docs, skills, templates, repo docs, and host-global Kilo markdown surfaces.
+Validate repository Markdown reference integrity across Localsetup docs, skills, templates, and repository documentation.
 
 ## Purpose
 
@@ -29,8 +29,8 @@ Framework and ops docs evolve quickly. Broken references waste agent cycles and 
 - **Host-aware profile:** `ls/skills/ls-markdown-reference-validator/templates/markdown_reference_host_aware.yaml`
 - **Skill entrypoint:** `scripts/markdown_reference_audit.py`
 - **Engine script:** `ls/skills/ls-markdown-reference-validator/scripts/markdown_reference_validator.py`
-- **Default report:** `docs/reference/markdown-reference-audit.md`
-- **Default run-state marker:** `.kilo/state/markdown_reference_audit_last_run_epoch`
+- **Default report:** .localsetup/state/markdown-reference/default.md (ignored local state)
+- **Default run-state marker:** .localsetup/state/markdown-reference/default-last-run-epoch (ignored local state)
 
 ## Typical commands
 
@@ -51,7 +51,7 @@ python3 ls/skills/ls-markdown-reference-validator/scripts/markdown_reference_aud
   --reason manual
 ```
 
-Run the broader host-aware profile:
+Run the explicit host-aware profile (its report stays in ignored local state and outside-repository paths are redacted):
 
 ```bash
 python3 ls/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py \
@@ -88,7 +88,7 @@ The sidecar config defines:
 - `extraction.inline_code_mode`: `off | smart | all` (`smart` is default and recommended).
 - `ignore.*` blocks to reduce false positives from templates/examples while keeping strict checks for concrete links.
 
-The shipped default profile scans repo and selected host Kilo documentation but excludes its own default report, generated state reports, and managed host skill mirrors to avoid self-scan and mirror noise. Use the strict repo profile for tracked source link and anchor review, and use the host-aware profile when you also need local adapter or host instruction surfaces plus broader inline-code path classification.
+The shipped default profile is repo-only and writes report/state only beneath ignored .localsetup/state/markdown-reference/. Use the strict repo profile for narrower tracked-source link and anchor review. Use the host-aware profile only when you explicitly need local adapter or host instruction surfaces; its report remains local-only and redacts paths outside repo_root.
 
 ### Config schema (practical defaults)
 

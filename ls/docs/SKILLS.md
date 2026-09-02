@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: c466573de7b59749d2f15f6802d46d7ef83dc369b6593cfa72c28b47f1e7eb6c
+  source_provenance_hash: b1e8707ce1f5a5ec61235c57fcc7efb6f999fe143dd76275dc6cdef1b02ee0b4
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: d2f6fcf80c0b94bf43ab12056aa9ac141d92325d
-artifact_sha256: 73970508fe18d0473dc6245381ccb92b178c8bb020acfbf71086ca8e25b157f6
+source_commit: a71ba7d4f2cbf2a6a892766a9dc82b2a89f2d83a
+artifact_sha256: 3836a81bc17784562b444651fe1fba7fc4cea7bcdded671468a17061ac2e117e
 ---
 # Shipped skills catalog
 
@@ -33,7 +33,7 @@ Total shipped skills: 103
 | `ls-git-workflows` | `framework-governance` | 20 | `bootstrap`, `dev` | `git`, `workflows` | `ls-git-workflows` | `1.3` | Advanced git operations beyond add/commit/push. Use when rebasing, bisecting bugs, using worktrees for parallel development, recovering with reflog, managing subtrees/submodules, resolving merge conflicts, cherry-picking across branches, or working with monorepos. |
 | `ls-github-publishing-workflow` | `framework-governance` | 20 | `publishing` | `github`, `publishing` | `ls-github-publishing-workflow` | `1.1` | Use when publishing to GitHub, preparing a public release, or reviewing repo readiness. Covers public-doc structure, licensing, PII/secrets/path scrub, version checks, and repository settings. |
 | `ls-localsetup-doctor` | `framework-governance` | 20 | `core` | `doctor`, `repair` | `ls-localsetup-doctor` | `1.0` | Use for Localsetup doctor repair workflows: dry-run review, decision handling, conservative apply, backup evidence, and post-repair verification. |
-| `ls-markdown-reference-validator` | `framework-governance` | 20 | `dev` | `markdown`, `references` | `ls-markdown-reference-validator` | `1.0` | Use when validating markdown local references and anchors across configured global+repo paths; scheduled-safe report generator with YAML sidecar config. |
+| `ls-markdown-reference-validator` | `framework-governance` | 20 | `dev` | `markdown`, `references` | `ls-markdown-reference-validator` | `1.0` | Use when validating repository Markdown local references and anchors; scheduled-safe YAML-configured reports keep host-aware scans explicit and local-only. |
 | `ls-public-repo-identity` | `framework-governance` | 20 | `publishing` | `identity`, `publishing` | `ls-public-repo-identity` | `1.2` | Public repo identity - use in README and published repos. For real identity details, use a local-only identity file that is not committed. Use when editing README*, CONTRIBUTING*. |
 | `ls-receiving-code-review` | `framework-governance` | 20 | `dev` | `review`, `feedback` | `ls-receiving-code-review` | `1.2` | Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable. Requires technical rigor and verification, not performative agreement or blind implementation. |
 | `ls-requesting-code-review` | `framework-governance` | 20 | `dev` | `review`, `feedback` | `ls-requesting-code-review` | `1.0` | Use when requesting code review before merge or after substantial changes; provide focused requirements, diff range, and severity-calibrated review instructions. |

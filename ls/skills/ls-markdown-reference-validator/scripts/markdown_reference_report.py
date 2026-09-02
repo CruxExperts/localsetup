@@ -5,9 +5,39 @@ from __future__ import annotations
 from datetime import datetime
 from pathlib import Path
 
-from markdown_reference_config import Config, Finding, _normalize_path, _sanitize_text
-from markdown_reference_discovery import _collect_glob_files, _discover_manifest_targets
+from markdown_reference_config import (
+    Config,
+    Finding,
+    _display_path,
+    _normalize_path,
+    _sanitize_text,
+)
+from markdown_reference_discovery import ManifestNote, _collect_glob_files, _discover_manifest_targets
 
+
+def _display_target(target: str, *, repo_root: Path) -> str:
+    target_path = Path(target)
+    if not target_path.is_absolute():
+        return target
+    return _display_path(target_path, repo_root=repo_root)
+
+
+def _display_finding_detail(finding: Finding, *, repo_root: Path) -> str:
+    detail = finding.detail
+    for raw, display in (
+        (finding.source_file, _display_path(Path(finding.source_file), repo_root=repo_root)),
+        (finding.target, _display_target(finding.target, repo_root=repo_root)),
+        (finding.resolved_path, _display_path(Path(finding.resolved_path), repo_root=repo_root)),
+    ):
+        if raw:
+            detail = detail.replace(raw, display)
+    return detail
+
+def _display_manifest_note(note: ManifestNote, *, repo_root: Path) -> str:
+    safe_path = _display_path(note.path, repo_root=repo_root)
+    safe_detail = note.detail.replace(str(note.path), safe_path)
+    suffix = f" ({safe_detail})" if safe_detail else ""
+    return f"{note.kind}:{safe_path}{suffix}"
 def _render_report(
     *,
     config_path: Path,
@@ -16,7 +46,7 @@ def _render_report(
     files_scanned: list[Path],
     checked_refs: int,
     findings: list[Finding],
-    manifest_notes: list[str],
+    manifest_notes: list[ManifestNote],
 ) -> str:
     ts = datetime.now().astimezone().isoformat(timespec="seconds")
 
@@ -29,7 +59,7 @@ def _render_report(
         "",
         f"Updated: {ts}",
         "Status: ACTIVE",
-        f"Source: {config_path}",
+        f"Source: {_display_path(config_path, repo_root=config.repo_root)}",
         f"Auto reason: {reason}",
         "",
         "## Summary",
@@ -43,9 +73,9 @@ def _render_report(
         "",
         "## Config",
         "",
-        f"- Repo root: `{config.repo_root}`",
-        f"- Report path: `{config.report_path}`",
-        f"- State file: `{config.state_file}`",
+        f"- Repo root: {_display_path(config.repo_root, repo_root=config.repo_root)}",
+        f"- Report path: {_display_path(config.report_path, repo_root=config.repo_root)}",
+        f"- State file: {_display_path(config.state_file, repo_root=config.repo_root)}",
         f"- Max findings: `{config.max_findings}`",
         f"- Inline code mode: `{config.inline_code_mode}`",
         f"- Ignore source globs: `{len(config.ignore.source_file_globs)}`",
@@ -59,7 +89,7 @@ def _render_report(
 
     if manifest_notes:
         for note in manifest_notes:
-            lines.append(f"- {note}")
+            lines.append(f"- {_display_manifest_note(note, repo_root=config.repo_root)}")
     else:
         lines.append("- None")
 
@@ -73,9 +103,12 @@ def _render_report(
             ]
         )
         for f in findings:
+            source = _display_path(Path(f.source_file), repo_root=config.repo_root)
+            resolved = _display_path(Path(f.resolved_path), repo_root=config.repo_root)
+            target = _display_target(f.target, repo_root=config.repo_root)
+            detail = _display_finding_detail(f, repo_root=config.repo_root)
             lines.append(
-                "| "
-                + f"{f.category} | `{f.source_file}` | {f.line} | `{f.target}` | `{f.resolved_path}` | {f.detail} |"
+                f"| {f.category} | {source} | {f.line} | {target} | {resolved} | {detail} |"
             )
     else:
         lines.append("- No missing local references detected.")
@@ -93,9 +126,11 @@ def _render_report(
     )
     return "\n".join(lines)
 
-def _collect_files(config: Config, config_path: Path) -> tuple[list[Path], list[str]]:
+def _collect_files(
+    config: Config, config_path: Path
+) -> tuple[list[Path], list[ManifestNote]]:
     files: set[Path] = set()
-    manifest_notes: list[str] = []
+    manifest_notes: list[ManifestNote] = []
 
     for target in config.targets:
         if not isinstance(target, dict):
