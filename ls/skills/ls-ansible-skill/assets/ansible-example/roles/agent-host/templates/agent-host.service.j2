@@ -6,12 +6,13 @@ After=network.target
 Type=simple
 User={{ agent_host_user }}
 WorkingDirectory={{ agent_host_workspace | default('/home/' + agent_host_user) }}
-ExecStart=/usr/bin/{{ agent_host_command }} {{ agent_host_command_args }}
+ExecStart={{ agent_host_executable }} {{ agent_host_command_args }}
 Restart=on-failure
 RestartSec=10
-{% for key, value in agent_host_env_vars.items() %}
-Environment={{ key }}={{ value }}
+{% for key, value in agent_host_env_vars | dictsort %}
+Environment="{{ key }}={{ value | string | replace('\\', '\\\\') | replace('"', '\\"') | replace('\n', '\\n') }}"
 {% endfor %}
+EnvironmentFile=-{{ agent_host_secret_env_file }}
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier={{ agent_host_service_name }}

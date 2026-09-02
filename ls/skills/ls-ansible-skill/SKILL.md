@@ -3,7 +3,7 @@ name: ls-ansible-skill
 description: "Infrastructure automation with Ansible. Use for server provisioning, configuration management, application deployment, and multi-host orchestration. Includes example playbooks for VPS setup, security hardening, and common server configurations. Bundled examples may reference one platform; adapt paths and commands for your environment."
 metadata:
   version: "1.1"
-compatibility: "Requires Ansible 8+ or ansible-core 2.15+, ansible-playbook, ansible-galaxy, and collections community.general 8+ plus ansible.posix 1.5+."
+compatibility: "Requires Ansible tooling. The bundled example is untested until you validate an explicit Ansible/core, collection, image/provider, architecture, and SSH/fail2ban tuple."
 ---
 
 # Ansible Skill
@@ -14,10 +14,7 @@ Infrastructure as Code automation for server provisioning, configuration managem
 
 ## Compatibility
 
-The bundled example targets Ansible 8+ or ansible-core 2.15+ and requires these collections:
-
-- `community.general` 8.0.0 or newer
-- `ansible.posix` 1.5.0 or newer
+The bundled example is illustrative, not a compatibility certification. Validate an explicit Ansible/core version, exact collection versions, image/provider, architecture, and SSH/fail2ban assumptions in an isolated target before production use. The repository does not publish an exercised compatibility matrix.
 
 ### Prerequisites
 
@@ -164,48 +161,53 @@ Base system configuration:
 - User creation with SSH keys
 
 ### 2. security
-Hardening following CIS benchmarks:
+Illustrative Ubuntu SSH, UFW, fail2ban, and automatic-update hardening:
 - SSH hardening (key-only, no root)
 - fail2ban for brute-force protection
 - UFW firewall configuration
 - Automatic security updates
 
+This role is not a CIS benchmark implementation or conformance result. It has no
+benchmark version, profile, control mapping, or compliance test evidence.
+
 ### 3. nodejs
 Node.js installation via NodeSource:
-- Configurable version (default: 22.x LTS)
+- Configurable major version (default: 22)
 - npm global packages
 - pm2 process manager (optional)
 
+Node.js 22 is currently LTS and scheduled through 2027-04-30. Validate the
+NodeSource repository, installed Node/npm version, architecture, and target image.
+
 ### 4. agent-host
-Generic agent-host role. The bundled defaults install OpenClaw as a sample npm-based agent service, but the role name, playbook, group, and variables are intentionally generic so you can change the package, command, config path, and service name without renaming files.
+Generic agent-host role. The bundled defaults use OpenClaw as a sample npm-based
+service. Configure an absolute executable path, use setup/onboard for initialization,
+run gateway run for foreground verification, and use ~/.openclaw/openclaw.json by
+default (or OPENCLAW_CONFIG_PATH for another file).
 
 ## Usage Patterns
 
 ### Pattern 1: New VPS setup (example: agent host)
 
-Bundled playbook `agent-host-vps.yml` is the verified VPS/agent-host example.
+The bundled playbook is an untested example. Copy this complete inventory shape,
+bootstrap with root, and switch to the created deploy user only after provisioning:
 
-```bash
-# 1. Add host to inventory
-cat >> inventory/hosts.yml << 'EOF'
+```yaml
+all:
+  children:
+    vps:
+      hosts:
         new_server:
           ansible_host: 203.0.113.20
-          ansible_user: deploy
+          ansible_user: root
           ansible_ssh_private_key_file: "~/.ssh/id_ed25519_example"
-          deploy_user: deploy
-          deploy_ssh_pubkey: "ssh-ed25519 AAAA... user@example"
-EOF
-
-# 2. Run VPS/agent-host playbook
-ansible-playbook -i inventory/hosts.yml playbooks/agent-host-vps.yml \
-  --limit new_server \
-  --ask-vault-pass
-
-# 3. After initial setup, update inventory to use key auth
-# ansible_user: deploy
-# ansible_ssh_private_key_file: ~/.ssh/id_ed25519_example
+          common_deploy_ssh_pubkey: "ssh-ed25519 AAAA... user@example"
 ```
 
+```bash
+ansible-playbook -i inventory/hosts.yml playbooks/agent-host-vps.yml --limit new_server
+# Then set ansible_user: deploy and retain key authentication for later runs.
+```
 ### Pattern 2: Security Hardening Only
 
 ```bash
@@ -217,9 +219,11 @@ ansible-playbook -i inventory/hosts.yml playbooks/security.yml \
 ### Pattern 3: Rolling Updates
 
 ```bash
-# Update one server at a time
-ansible-playbook -i inventory/hosts.yml playbooks/update.yml \
-  --serial 1
+# The playbook already defaults to one host at a time.
+ansible-playbook -i inventory/hosts.yml playbooks/update.yml
+
+# Override the playbook variable when needed.
+ansible-playbook -i inventory/hosts.yml playbooks/update.yml -e update_serial=1
 ```
 
 ### Pattern 4: Ad-hoc Commands
@@ -242,27 +246,32 @@ ansible all -i inventory/hosts.yml -m copy -a "src=./file.txt dest=/tmp/"
 ```yaml
 # inventory/group_vars/all.yml
 ---
-timezone: Etc/UTC
-deploy_user: deploy
-ssh_port: 22
+common_timezone: Etc/UTC
+common_deploy_user: deploy
+# Define common_deploy_ssh_pubkey in host or vault-backed inventory.
 
 # Security
-security_ssh_password_auth: false
-security_ssh_permit_root: false
+security_ssh_port: 22
+security_ssh_password_auth: "no"
+security_ssh_permit_root: "no"
 security_fail2ban_enabled: true
 security_ufw_enabled: true
 security_ufw_allowed_ports:
-  - 22
-  - 80
-  - 443
+  - { port: "22", proto: "tcp" }
+  - { port: "80", proto: "tcp" }
+  - { port: "443", proto: "tcp" }
 
 # Node.js
-nodejs_version: "22.x"
+nodejs_version: "22"
 
 # Agent-host sample defaults
 agent_host_package_name: openclaw
-agent_host_command: openclaw
+agent_host_executable: /usr/local/bin/openclaw
+agent_host_command_args: "gateway run"
 agent_host_service_name: openclaw
+agent_host_config_dir: "/home/{{ agent_host_user }}/.openclaw"
+agent_host_secret_env_vars:
+  API_TOKEN: "{{ vault_api_token }}"
 ```
 
 ### Vault for Secrets
@@ -275,10 +284,10 @@ ansible-vault create inventory/group_vars/all/vault.yml
 ansible-vault edit inventory/group_vars/all/vault.yml
 
 # Run with vault
-ansible-playbook site.yml --ask-vault-pass
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml --ask-vault-pass
 
 # Or use vault password file
-ansible-playbook site.yml --vault-password-file ~/.vault_pass
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml --vault-password-file ~/.vault_pass
 ```
 
 Vault file structure:
@@ -410,8 +419,8 @@ ansible-inventory -i inventory --list
 - Add `become: yes` to playbook
 
 **"Host key verification failed"**
-- Add to ansible.cfg: `host_key_checking = False`
-- Or add host key: `ssh-keyscan -H host >> ~/.ssh/known_hosts`
+- Obtain the expected fingerprint from a trusted out-of-band source, then compare it before accepting a scanned key.
+- Only as a temporary high-risk diagnostic, use `ANSIBLE_HOST_KEY_CHECKING=False`; do not persist it in inventory or ansible.cfg.
 
 **"Module not found"**
 - Use FQCN: `ansible.builtin.apt` instead of `apt`
@@ -421,18 +430,18 @@ ansible-inventory -i inventory --list
 
 ```bash
 # Verbose output
-ansible-playbook site.yml -v    # Basic
-ansible-playbook site.yml -vv   # More
-ansible-playbook site.yml -vvv  # Maximum
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml -v    # Basic
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml -vv   # More
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml -vvv  # Maximum
 
 # Step through tasks
-ansible-playbook site.yml --step
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml --step
 
 # Start at specific task
-ansible-playbook site.yml --start-at-task="Install nginx"
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml --start-at-task="Install nginx"
 
 # Check mode (dry run)
-ansible-playbook site.yml --check --diff
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml --check --diff
 ```
 
 ## Running playbooks from an agent

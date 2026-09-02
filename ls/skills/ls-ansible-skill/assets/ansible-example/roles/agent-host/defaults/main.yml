@@ -1,17 +1,18 @@
 ---
 # Agent-host role defaults.
-# These defaults use OpenClaw as a concrete npm-based example.
+# These defaults use OpenClaw as a concrete npm-based example. Verify the
+# package, Node.js, binary path, and target before using this outside a test VM.
 
 agent_host_package_name: openclaw
 agent_host_package_version: latest
-agent_host_command: openclaw
-agent_host_command_args: "gateway start --foreground"
+agent_host_executable: /usr/local/bin/openclaw
+agent_host_command_args: "gateway run"
 agent_host_service_name: openclaw
 agent_host_service_description: "OpenClaw Gateway"
 
 agent_host_user: deploy
-
-agent_host_config_dir: "/home/{{ agent_host_user }}/.config/{{ agent_host_service_name }}"
+agent_host_config_dir: "/home/{{ agent_host_user }}/.openclaw"
+agent_host_config_file: "{{ agent_host_config_dir }}/openclaw.json"
 
 # Workspace directory (optional)
 # agent_host_workspace: "/home/{{ agent_host_user }}/agent-workspace"
@@ -20,8 +21,13 @@ agent_host_config_dir: "/home/{{ agent_host_user }}/.config/{{ agent_host_servic
 agent_host_service_enabled: false   # Enable on boot
 agent_host_service_started: false   # Start immediately after provisioning
 
-# Environment variables for service
+# Non-secret environment variables are rendered in the public unit.
 agent_host_env_vars:
   NODE_ENV: production
+
+# Secret environment variables are rendered only in the root-readable file
+# named by agent_host_secret_env_file.
+agent_host_secret_env_vars: {}
 # Example:
 #   ANTHROPIC_API_KEY: "{{ vault_anthropic_key }}"
+agent_host_secret_env_file: "/etc/{{ agent_host_service_name }}.env"

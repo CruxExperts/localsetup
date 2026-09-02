@@ -1,6 +1,38 @@
 ---
 # Agent-host role - install and configure an npm-based agent service.
 
+- name: Validate agent-host executable and environment mappings
+  ansible.builtin.assert:
+    that:
+      - agent_host_executable is match('^/')
+      - agent_host_env_vars is mapping
+      - agent_host_secret_env_vars is mapping
+    fail_msg: >-
+      agent_host_executable must be an absolute path and both environment
+      variable values must be mappings.
+  tags: [agent-host]
+
+- name: Validate agent-host public environment variable names
+  ansible.builtin.assert:
+    that:
+      - item.key is match('^[A-Za-z_][A-Za-z0-9_]*$')
+    fail_msg: "Invalid public environment variable name: {{ item.key }}"
+  loop: "{{ agent_host_env_vars | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  tags: [agent-host]
+
+- name: Validate agent-host secret environment variable names
+  ansible.builtin.assert:
+    that:
+      - item.key is match('^[A-Za-z_][A-Za-z0-9_]*$')
+    fail_msg: "Invalid secret environment variable name: {{ item.key }}"
+  loop: "{{ agent_host_secret_env_vars | dict2items }}"
+  loop_control:
+    label: "secret environment variable"
+  no_log: true
+  tags: [agent-host]
+
 - name: Install agent-host package globally
   community.general.npm:
     name: "{{ agent_host_package_name }}"
@@ -9,16 +41,15 @@
     version: "{{ omit if agent_host_package_version == 'latest' else agent_host_package_version }}"
   tags: [agent-host]
 
-- name: Verify agent-host command
-  ansible.builtin.command: "{{ agent_host_command }} --version"
+- name: Verify agent-host executable
+  ansible.builtin.command: "{{ agent_host_executable }} --version"
   register: agent_host_installed_version
   changed_when: false
-  failed_when: false
   tags: [agent-host]
 
 - name: Display agent-host version
   ansible.builtin.debug:
-    msg: "{{ agent_host_package_name }} {{ agent_host_installed_version.stdout | default('not installed') }}"
+    msg: "{{ agent_host_package_name }} {{ agent_host_installed_version.stdout }}"
   tags: [agent-host]
 
 # === Config Directory ===
@@ -42,12 +73,41 @@
   tags: [agent-host, config]
 
 # === Systemd Service ===
+- name: Gather service facts before updating agent-host unit
+  ansible.builtin.service_facts:
+  tags: [agent-host, systemd]
+
+- name: Create root-readable agent-host secret environment file
+  ansible.builtin.template:
+    src: agent-host.env.j2
+    dest: "{{ agent_host_secret_env_file }}"
+    owner: root
+    group: root
+    mode: '0600'
+  register: agent_host_secret_environment_created
+  when: agent_host_secret_env_vars | length > 0
+  no_log: true
+  tags: [agent-host, systemd]
+
+- name: Remove unused agent-host secret environment file
+  ansible.builtin.file:
+    path: "{{ agent_host_secret_env_file }}"
+    state: absent
+  register: agent_host_secret_environment_removed
+  when: agent_host_secret_env_vars | length == 0
+  no_log: true
+  tags: [agent-host, systemd]
 - name: Create agent-host systemd service
   ansible.builtin.template:
     src: agent-host.service.j2
     dest: "/etc/systemd/system/{{ agent_host_service_name }}.service"
     mode: '0644'
+  register: agent_host_service_unit
   notify: Reload systemd
+  tags: [agent-host, systemd]
+
+- name: Reload systemd before service lifecycle actions
+  ansible.builtin.meta: flush_handlers
   tags: [agent-host, systemd]
 
 - name: Enable agent-host service
@@ -66,10 +126,20 @@
     - agent_host_service_started | default(false) | bool
   tags: [agent-host, systemd]
 
+- name: Restart previously running agent-host service after unit change
+  ansible.builtin.systemd:
+    name: "{{ agent_host_service_name }}"
+    state: restarted
+  when:
+    - agent_host_service_unit.changed or agent_host_secret_environment_created.changed or agent_host_secret_environment_removed.changed
+    - ansible_facts.services[agent_host_service_name + '.service'] is defined
+    - ansible_facts.services[agent_host_service_name + '.service'].state == 'running'
+  tags: [agent-host, systemd]
+
 # === Post-install Notes ===
 - name: Check if agent host is configured
   ansible.builtin.stat:
-    path: "{{ agent_host_config_dir }}/config.json"
+    path: "{{ agent_host_config_file }}"
   register: agent_host_config_exists
   tags: [agent-host]
 
@@ -80,11 +150,13 @@
 
       Next steps:
       1. SSH to server: ssh {{ agent_host_user }}@{{ ansible_host }}
-      2. Initialize: {{ agent_host_command }} init
+      2. Initialize: {{ agent_host_executable }} setup (or onboard)
       3. Configure credentials and channels for your environment.
-      4. Enable service: sudo systemctl enable --now {{ agent_host_service_name }}
+      4. Verify foreground operation: {{ agent_host_executable }} gateway run
+      5. Enable service: sudo systemctl enable --now {{ agent_host_service_name }}
 
-      Config location: {{ agent_host_config_dir }}
+      Default config location: {{ agent_host_config_file }}
+      Set OPENCLAW_CONFIG_PATH when using a different config file.
       Workspace: {{ agent_host_workspace | default('/home/' + agent_host_user) }}
   when: not agent_host_config_exists.stat.exists
   tags: [agent-host]

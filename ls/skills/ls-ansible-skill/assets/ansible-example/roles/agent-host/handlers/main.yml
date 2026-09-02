@@ -4,9 +4,3 @@
 - name: Reload systemd
   ansible.builtin.systemd:
     daemon_reload: yes
-
-- name: Restart agent host
-  ansible.builtin.systemd:
-    name: "{{ agent_host_service_name }}"
-    state: restarted
-  when: agent_host_service_enabled | default(false) | bool

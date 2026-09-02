@@ -2,16 +2,19 @@
 # Rolling package update playbook.
 #
 # Usage:
-#   ansible-playbook -i inventory/hosts.yml playbooks/update.yml --serial 1
+#   ansible-playbook -i inventory/hosts.yml playbooks/update.yml
+#
+# The playbook updates one host at a time by default. Override that with:
+#   ansible-playbook -i inventory/hosts.yml playbooks/update.yml -e update_serial=1
 
 - name: Apply package updates
   hosts: all
-  become: yes
+  become: true
   serial: "{{ update_serial | default(1) }}"
   tasks:
     - name: Update apt cache
       ansible.builtin.apt:
-        update_cache: yes
+        update_cache: true
         cache_valid_time: 3600
       when: ansible_os_family == "Debian"
       tags: [updates]

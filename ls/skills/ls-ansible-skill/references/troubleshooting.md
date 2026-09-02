@@ -22,17 +22,16 @@ ansible all -i inventory -m ping -vvv
 
 ### "Host key verification failed"
 
+Obtain the expected host-key fingerprint from a trusted provider console or other
+out-of-band channel. Compare that fingerprint before accepting any scanned key.
+
 ```bash
-# Option 1: Add host key manually
+# Scan only after verifying the out-of-band fingerprint matches this host.
 ssh-keyscan -H hostname >> ~/.ssh/known_hosts
 
-# Option 2: Disable host key checking (less secure)
-# In ansible.cfg:
-[defaults]
-host_key_checking = False
-
-# Or per-command:
-ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook site.yml
+# Temporary, high-risk diagnostic only: never leave this disabled in inventory
+# or ansible.cfg after diagnosing a connection problem.
+ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory/hosts.yml playbooks/site.yml
 ```
 
 ### "No route to host" / Network Issues
@@ -69,7 +68,7 @@ myhost:
 
 ```bash
 # Option 1: Ask for password
-ansible-playbook site.yml --ask-become-pass
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml --ask-become-pass
 
 # Option 2: Use passwordless sudo on target
 # /etc/sudoers.d/myuser:
@@ -85,13 +84,13 @@ all:
 
 ```bash
 # Interactive password prompt
-ansible-playbook site.yml --ask-vault-pass
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml --ask-vault-pass
 
 # Password file
-ansible-playbook site.yml --vault-password-file ~/.vault_pass
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml --vault-password-file ~/.vault_pass
 
 # Multiple vault passwords
-ansible-playbook site.yml --vault-id dev@~/.vault_dev --vault-id prod@~/.vault_prod
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml --vault-id dev@~/.vault_dev --vault-id prod@~/.vault_prod
 
 # View encrypted file
 ansible-vault view group_vars/all/vault.yml
@@ -135,11 +134,11 @@ ansible myhost -m pip -a "name=xyz state=present"
 
 ```bash
 # Check syntax
-ansible-playbook site.yml --syntax-check
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml --syntax-check
 
 # Lint playbook
 uv tool install ansible-lint
-ansible-lint site.yml
+ansible-lint playbooks/site.yml
 ```
 
 ### Variable Undefined
@@ -173,26 +172,26 @@ ansible localhost -m template -a "src=template.j2 dest=/dev/stdout"
 
 ```bash
 # Increasing verbosity levels
-ansible-playbook site.yml -v      # Basic
-ansible-playbook site.yml -vv     # More
-ansible-playbook site.yml -vvv    # Connection debug
-ansible-playbook site.yml -vvvv   # Maximum
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml -v      # Basic
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml -vv     # More
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml -vvv    # Connection debug
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml -vvvv   # Maximum
 ```
 
 ### Step Through Tasks
 
 ```bash
 # Step mode - confirm each task
-ansible-playbook site.yml --step
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml --step
 
 # Start at specific task
-ansible-playbook site.yml --start-at-task="Install nginx"
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml --start-at-task="Install nginx"
 
 # List tasks without running
-ansible-playbook site.yml --list-tasks
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml --list-tasks
 
 # List hosts that would be affected
-ansible-playbook site.yml --list-hosts
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml --list-hosts
 ```
 
 ### Debug Module
@@ -302,7 +301,7 @@ ssh_args = -o ControlMaster=auto -o ControlPersist=60s
 ansible_ssh_timeout: 30
 
 # Or command line:
-ansible-playbook site.yml -T 30
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml -T 30
 ```
 
 ### "Error while fetching server API version"
@@ -324,10 +323,11 @@ Usually Docker-related:
 ### Retry Failed Hosts
 
 ```bash
-# Ansible creates .retry file with failed hosts
-ansible-playbook site.yml --limit @site.retry
+# Retry files are disabled by default. Enable them explicitly when wanted.
+# In ansible.cfg: retry_files_enabled = true
+# Ansible then writes or overwrites the configured retry file after failures.
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml --limit @playbooks/site.retry
 ```
-
 ### Rollback
 
 ```yaml
