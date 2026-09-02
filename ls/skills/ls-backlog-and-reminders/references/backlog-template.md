@@ -11,7 +11,11 @@ Use this template when creating the canonical backlog file at `.localsetup/backl
 
 - [ ] Short title (due: YYYY-MM-DD) optional note
 
-## Due soon (next 7 days)
+## Due soon (today through 6 days after today)
+
+- [ ] Short title (due: YYYY-MM-DD) optional note
+
+## Scheduled (7 or more days after today)
 
 - [ ] Short title (due: YYYY-MM-DD) optional note
 
@@ -32,4 +36,4 @@ Use this template when creating the canonical backlog file at `.localsetup/backl
 
 ## Timezone rule
 
-Resolve relative due dates with one consistent timezone: explicit user or environment timezone, then `LOCALSETUP_TIMEZONE`, then `TZ`, then host local timezone. Ask once before writing when the date would be ambiguous.
+Resolve relative due dates with one consistent timezone: explicit user or environment timezone, then `LOCALSETUP_TIMEZONE`, then `TZ`, then host local timezone. Ask once before writing when the date would be ambiguous. Store exact-time reminders only in a scheduler that can deliver them; conversion to this date-only backlog requires explicit user confirmation. Reclassify incomplete dated items on every read or update: overdue before today, due soon from today through six days after today, and scheduled seven or more days after today.

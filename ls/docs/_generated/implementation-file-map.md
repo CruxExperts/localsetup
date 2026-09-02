@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 42feb5176a538f7b3953bc51866cca08b8bdb4ec3a60beac1c32847f8abde74a
+  source_provenance_hash: 914e1e897dd2d989532162a6c942224898219e94977585d18179514803e385d5
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: a670cedf63b791dd886015c4fdfa88c425b9e8d2
-artifact_sha256: 69274a82e11f708c69cd7bd2756108b34d726e1962ff1b61cbcdfb7278edb17a
+source_commit: 69f665a7d8eb3f6674f0433a41ea3803c32670ad
+artifact_sha256: 0df7344e34013693ca50a5fa1e4a50c189c2e97771bff8c74063d03d18a7a603
 ---
 # Implementation File Map
 
@@ -391,6 +391,7 @@ artifact_sha256: 69274a82e11f708c69cd7bd2756108b34d726e1962ff1b61cbcdfb7278edb17
 | `keep` | `ls/skills/ls-ansible-skill/assets/ansible-example/roles/agent-host/defaults/main.yml` |
 | `keep` | `ls/skills/ls-ansible-skill/assets/ansible-example/roles/agent-host/handlers/main.yml` |
 | `keep` | `ls/skills/ls-ansible-skill/assets/ansible-example/roles/agent-host/tasks/main.yml` |
+| `keep` | `ls/skills/ls-ansible-skill/assets/ansible-example/roles/agent-host/templates/agent-host.env.j2` |
 | `keep` | `ls/skills/ls-ansible-skill/assets/ansible-example/roles/agent-host/templates/agent-host.service.j2` |
 | `keep` | `ls/skills/ls-ansible-skill/assets/ansible-example/roles/common/defaults/main.yml` |
 | `keep` | `ls/skills/ls-ansible-skill/assets/ansible-example/roles/common/tasks/main.yml` |
@@ -408,6 +409,7 @@ artifact_sha256: 69274a82e11f708c69cd7bd2756108b34d726e1962ff1b61cbcdfb7278edb17
 | `keep` | `ls/skills/ls-arbiter/SKILL.md` |
 | `keep` | `ls/skills/ls-arbiter/references/overview.md` |
 | `keep` | `ls/skills/ls-arbiter/scripts/arbiter_cli.py` |
+| `keep` | `ls/skills/ls-arbiter/scripts/test_arbiter_cli.py` |
 | `keep` | `ls/skills/ls-arbiter/templates/decision.md` |
 | `keep` | `ls/skills/ls-architecture/SKILL.md` |
 | `keep` | `ls/skills/ls-automatic-versioning/SKILL.md` |
