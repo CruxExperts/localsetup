@@ -1,55 +1,55 @@
 ---
 status: ACTIVE
-version: 4.3
+version: 4.4
 owner_skill: ls-skill-creator
 ---
 
 # Skill interoperability (Localsetup)
 
-**Purpose:** Framework skills are [Agent Skills](https://agentskills.io/specification)-compliant so they can be used in any spec-compliant host. External skills (e.g. from [Anthropic's skills](https://github.com/anthropics/skills)) can be used in this framework with minimal adaptation. Skills are interchangeable across ecosystems that follow the same spec.
+**Purpose:** Define the boundary between Agent Skills format compatibility and behavioral portability. Localsetup can import external skills only through its gated import workflow; exporting a framework skill requires target-host adaptation and verification when behavior depends on local paths, tools, sibling skills, runtime dependencies, coordination protocols, or deployment semantics.
 
 ## Interoperability principle
 
-- **Our skills** use only the Agent Skills spec: required `name` and `description`, optional `metadata.version`, optional `license` / `compatibility`. Directory layout is `SKILL.md` plus optional `scripts/`, `references/`, `assets/`. No framework-only required fields. They are valid Agent Skills and can be copied into another host (e.g. Claude Code, Anthropic's skills repo) as-is; the `ls-*` name is a convention, not a spec requirement.
-- **External skills** that comply with the Agent Skills spec can be used in this framework by copying them into `ls/skills/`, optionally renaming to `ls-*` for consistency, adding `metadata.version` if missing, and registering them in our platform indexes (see below). No change to the skill body or structure is required for spec compliance.
-- **Workflow packages** under `ls/workflows/ls-workflow-*` are executable Agent Skills packages because they include `SKILL.md`. Their `workflow.yaml` metadata is Localsetup-specific and is used for workflow validation, pack selection, generated registries, and install dependency inclusion.
+- **Format compatibility:** Agent Skills frontmatter and directory shape let a compliant host parse a skill. The `ls-*` prefix is a Localsetup convention, not a format requirement.
+- **Behavioral portability:** Parsing does not prove that repository links, sibling handoffs, scripts, dependencies, platform tools, environment providers, coordination protocols, or deployment behavior work in another host. Verify and adapt those boundaries.
+- **External imports:** Never copy an external candidate directly into `ls/skills/`. `ls-skill-importer` owns acquisition, collision decisions, safety screening, and the gated path through vetting, normalization, sandbox testing, canonical copy, and registration.
+- **Workflow packages:** `SKILL.md` follows the Agent Skills format. `workflow.yaml` is Localsetup-specific orchestration metadata and requires explicit target-host support or adaptation.
 
 ## Using an external skill in this framework (import)
 
-1. **Obtain the skill**  - Clone or download a spec-compliant skill (e.g. from [anthropics/skills](https://github.com/anthropics/skills)) so you have a directory containing `SKILL.md` and any optional `scripts/`, `references/`, `assets/`.
-2. **Copy into the framework**  - Place it under `ls/skills/<skill-name>/`. If you want it to follow our naming convention, use `ls/skills/ls-<name>/` and set `name: ls-<name>` in the frontmatter (directory name must match `name` per spec).
-3. **Add metadata.version if missing**  - Ensure frontmatter includes `metadata.version: "1.0"` (or any string) so our versioning hook can bump it. The spec allows optional `metadata`; we use it for document versioning.
-4. **Register**  - Add the skill to every file listed in [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md) under "Skill registration (new skills)" so it appears in each platform's context index. Use a short "When to use" line consistent with the skill's `description`.
-5. **Deploy**  - Run deploy (or rely on existing deploy) so platform-specific paths get the new skill. The skill content is already spec-compliant; no body changes are required for interoperability.
+1. Load `ls-skill-importer` with the external URL or local directory and the intended Localsetup purpose.
+2. For pasted content or a single-document URL, preserve the exact bytes in a temporary path and pass the path-based `skill_importer_scan` required by [SKILL_IMPORTING.md](SKILL_IMPORTING.md#adding-a-skill-from-paste-or-url).
+3. Keep the importer as operational owner. Require passing `ls-skill-vetter`, `ls-skill-normalizer`, and `ls-skill-sandbox-tester` evidence before canonical copy or registration. If any result is missing, rejected, unresolved, or untested, stop.
+4. Confirm success only after the importer reports all gate evidence, canonical copy, and registration. Deployment is a separate action.
 
 ## Using a framework skill elsewhere (export)
 
-- **Copy the skill directory**  - Use `ls/skills/<name>/` as source when you want canonical framework source. After install, managed emitted copies live in `~/.local/share/localsetup/packages`. If an adapter is explicitly selected with `--tools` or `--platforms`, platform paths such as `.cursor/skills/<name>` or `.agents/skills/<name>` attach to that emitted library by symlink or portable copy.
-- **Use in any Agent Skills host**  - The directory is a valid Agent Skills skill. The host only needs to support the [Agent Skills](https://agentskills.io/specification) format (SKILL.md with `name` and `description`, optional dirs). No need to change the skill; `ls-*` is a naming choice and does not affect spec validity.
-- **Prefer emitted copies for lean hosts**  - Managed installed packages and Codex plugin packs rewrite runtime-facing public framework doc links to package-local `references/localsetup/docs/...` files and include a transform manifest at `references/localsetup/.localsetup-reference-bundle.json`. Use these emitted copies when the target host does not have a Localsetup source checkout.
-- **Optional**  - If the target host expects a different name, rename the directory and the `name` field so they match (spec requirement). Treat source-checkout paths such as `ls/docs/...` as authoring references unless they have been materialized into `references/localsetup/...`.
+1. Start from `ls/skills/<name>/` or a managed emitted package. Emitted packages may materialize public framework references beneath `references/localsetup/` and record transformations in `.localsetup-reference-bundle.json`.
+2. Run the export audit owned by `ls-skill-creator`: inspect `SKILL.md`, references, scripts, and assets for local or absolute paths, sibling-skill handoffs, commands, adapter assumptions, dependencies, executables, tools, environment or secret providers, coordination protocols, and deployment behavior.
+3. Adapt every unsupported boundary to the target host. If the host expects another name, rename both the directory and `name` field.
+4. Execute the skill's real smoke scenario in the target host. Claim behavioral portability only for the verified host and scenario.
 
 ## Using a workflow package elsewhere
 
-Workflow packages can be copied to another Agent Skills-compatible host as executable `SKILL.md` packages, but only Localsetup understands the full `workflow.yaml` contract.
+Workflow packages need the same export audit. Copying their Agent Skills-shaped content does not transfer Localsetup orchestration semantics.
 
-- Copy `ls/workflows/<name>/` when you want the workflow instructions plus metadata.
-- Copy only the `SKILL.md` package content when the target host only needs executable instructions.
-- Preserve the directory name and `name` field match.
-- Treat `workflow.yaml` as advisory metadata outside Localsetup unless the target host has explicit support for it. `workflow.yaml.required_docs` remains source-repo validation metadata; emitted packages record those entries as source-only metadata in the transform manifest instead of rewriting the YAML contract.
+- Preserve the directory and `name` field match.
+- Treat `workflow.yaml` as Localsetup-specific metadata unless the target host explicitly supports its contract.
+- Adapt required documents, sibling workflows, tools, and coordination behavior before use.
+- Run the workflow's real target-host smoke scenario before claiming support.
 
 ## Specification and design references
 
-- **Format (required for interchange):** [Agent Skills specification](https://agentskills.io/specification)  - [agentskills/agentskills](https://github.com/agentskills/agentskills).
-- **Design and authoring:** [Anthropic's skill-creator](https://github.com/anthropics/skills/tree/main/skills/skill-creator)  - principles (concise, degrees of freedom), anatomy (scripts/references/assets), progressive disclosure, what to include/avoid. Our skill-creator adds framework placement and registration; for structure and content design, follow the Agent Skills spec and Anthropic's guidance so skills remain portable.
-- **Validation:** [skills-ref](https://github.com/agentskills/agentskills/tree/main/skills-ref)  - `agentskills validate path/to/skill` to check frontmatter and naming.
+- **Format:** [Agent Skills specification](https://agentskills.io/specification) and [agentskills/agentskills](https://github.com/agentskills/agentskills).
+- **Design and authoring:** [Anthropic's skill-creator](https://github.com/anthropics/skills/tree/main/skills/skill-creator) for concise instructions, progressive disclosure, and scripts/references/assets structure.
+- **Validation:** [skills-ref](https://github.com/agentskills/agentskills/tree/main/skills-ref) for frontmatter and naming checks. Format validation does not replace import safety gates or target-host behavior testing.
 
 ## Summary
 
-| Direction | Action |
-|-----------|--------|
-| **External -> Framework** | Copy skill dir into `ls/skills/`; optionally rename to `ls-*`; add `metadata.version` if missing; register per PLATFORM_REGISTRY. |
-| **Framework -> External** | Copy `ls/skills/<name>/` from source, or copy the managed installed skill from `~/.local/share/localsetup/packages`; use as-is in any Agent Skills host; optionally rename dir and `name` to match host conventions. |
-| **Workflow package -> External** | Copy `ls/workflows/<name>/`; use `SKILL.md` as the portable execution surface and treat `workflow.yaml` as Localsetup metadata. |
+| Direction | Required action |
+|-----------|-----------------|
+| **External -> Framework** | Route through `ls-skill-importer`; require vetting, normalization, sandbox testing, canonical copy, and registration evidence. |
+| **Framework -> External** | Audit and adapt host-specific behavior, then run the real target-host smoke scenario. |
+| **Workflow package -> External** | Treat `SKILL.md` as format-compatible and adapt Localsetup-specific metadata and orchestration before testing. |
 
-Skills that follow the Agent Skills spec are interchangeable; this framework adds placement, registration, and optional `metadata.version` for versioning, without breaking spec compliance. Workflow packages keep that executable shape while adding Localsetup-specific orchestration metadata.
+Agent Skills compliance establishes format compatibility only. Behavioral portability is a separately verified property of a specific target host and scenario.
