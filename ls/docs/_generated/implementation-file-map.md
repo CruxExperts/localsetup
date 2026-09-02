@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 0dddf3eb872c9745b2475fd9efd1c20e0b9446d3bd92fe2f44f994148f1b00d9
+  source_provenance_hash: e40a444f61d777dfd2b004781e17c11e700a7623888a035d642e0a74f324ac62
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 8cb94c817e751be870932a4142b9e55f8d6454c9
-artifact_sha256: 8fc83d6cc6db4f90e44e4e5c02a8237cbf39a2515780b56e1a6e6e7e65beb04e
+source_commit: 037e0dfcc18fe46a2a738462a5d7dd4a32d2eb74
+artifact_sha256: 7fafc4d832170f64c4bc911361c7b96fea9f4be6bec25eaf188e59fb8fa596bc
 ---
 # Implementation File Map
 
@@ -926,6 +926,7 @@ artifact_sha256: 8fc83d6cc6db4f90e44e4e5c02a8237cbf39a2515780b56e1a6e6e7e65beb04
 | `keep` | `ls/tests/test_ls_kilo_boss_orchestrator_runner.py` |
 | `keep` | `ls/tests/test_ls_linux_patcher_patch_cli.py` |
 | `keep` | `ls/tests/test_manifests.py` |
+| `keep` | `ls/tests/test_mcp_builder_connections.py` |
 | `keep` | `ls/tests/test_omniroute_api_cli.py` |
 | `keep` | `ls/tests/test_omniroute_consolidation_migration.py` |
 | `keep` | `ls/tests/test_omniroute_immutable_inventory.py` |
