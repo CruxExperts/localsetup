@@ -7,6 +7,8 @@ Handles framework-specific patterns, imports, and test structure.
 
 from typing import Optional
 import argparse
+import json
+import re
 from enum import Enum
 
 from cli_support import SkillCliError, emit_json, fail, read_text
@@ -36,34 +38,37 @@ class FrameworkAdapter:
     """Adapter for multiple testing frameworks."""
 
     def __init__(self, framework: Framework, language: Language):
-        """
-        Initialize framework adapter.
-
-        Args:
-            framework: Testing framework
-            language: Programming language
-        """
+        """Initialize a valid framework/language adapter."""
+        compatible = {
+            Framework.JEST: {Language.TYPESCRIPT, Language.JAVASCRIPT},
+            Framework.VITEST: {Language.TYPESCRIPT, Language.JAVASCRIPT},
+            Framework.MOCHA: {Language.TYPESCRIPT, Language.JAVASCRIPT},
+            Framework.JASMINE: {Language.TYPESCRIPT, Language.JAVASCRIPT},
+            Framework.PYTEST: {Language.PYTHON},
+            Framework.UNITTEST: {Language.PYTHON},
+            Framework.JUNIT: {Language.JAVA},
+            Framework.TESTNG: {Language.JAVA},
+        }
+        if language not in compatible[framework]:
+            raise ValueError(
+                f"Framework {framework.value} does not support language {language.value}"
+            )
         self.framework = framework
         self.language = language
 
     def generate_imports(self) -> str:
-        """Generate framework-specific imports."""
-        if self.framework == Framework.JEST:
-            return self._jest_imports()
-        elif self.framework == Framework.VITEST:
-            return self._vitest_imports()
-        elif self.framework == Framework.PYTEST:
-            return self._pytest_imports()
-        elif self.framework == Framework.UNITTEST:
-            return self._unittest_imports()
-        elif self.framework == Framework.JUNIT:
-            return self._junit_imports()
-        elif self.framework == Framework.TESTNG:
-            return self._testng_imports()
-        elif self.framework == Framework.MOCHA:
-            return self._mocha_imports()
-        else:
-            return ""
+        """Generate framework-specific imports or global declarations."""
+        generators = {
+            Framework.JEST: self._jest_imports,
+            Framework.VITEST: self._vitest_imports,
+            Framework.PYTEST: self._pytest_imports,
+            Framework.UNITTEST: self._unittest_imports,
+            Framework.JUNIT: self._junit_imports,
+            Framework.TESTNG: self._testng_imports,
+            Framework.MOCHA: self._mocha_imports,
+            Framework.JASMINE: self._jasmine_imports,
+        }
+        return generators[self.framework]()
 
     def _jest_imports(self) -> str:
         """Generate Jest imports."""
@@ -96,9 +101,13 @@ import org.testng.annotations.AfterMethod;
 import static org.testng.Assert.*;"""
 
     def _mocha_imports(self) -> str:
-        """Generate Mocha imports."""
+        """Generate Mocha and Chai imports."""
         return """import { describe, it, beforeEach, afterEach } from 'mocha';
 import { expect } from 'chai';"""
+
+    def _jasmine_imports(self) -> str:
+        """Describe Jasmine's runner-provided global API."""
+        return "// Jasmine provides describe, it, expect, beforeEach, and afterEach as runner globals."
 
     def generate_test_suite_wrapper(
         self,
@@ -115,121 +124,97 @@ import { expect } from 'chai';"""
         Returns:
             Complete test suite code
         """
-        if self.framework in [Framework.JEST, Framework.VITEST, Framework.MOCHA]:
-            return f"""describe('{suite_name}', () => {{
+        if self.framework in [
+            Framework.JEST,
+            Framework.VITEST,
+            Framework.MOCHA,
+            Framework.JASMINE,
+        ]:
+            return f"""describe({self._js_literal(suite_name)}, () => {{
 {self._indent(test_content, 2)}
 }});"""
+        if self.framework == Framework.PYTEST:
+            return f"""# Pytest suite: {self._comment_text(suite_name)}
 
-        elif self.framework == Framework.PYTEST:
-            return f"""class Test{self._to_class_name(suite_name)}:
-    \"\"\"Test suite for {suite_name}.\"\"\"
+{test_content}"""
+        if self.framework == Framework.UNITTEST:
+            return f'''class Test{self._to_class_name(suite_name)}(unittest.TestCase):
+    """Test suite for {self._comment_text(suite_name)}."""
 
-{self._indent(test_content, 4)}"""
-
-        elif self.framework == Framework.UNITTEST:
-            return f"""class Test{self._to_class_name(suite_name)}(unittest.TestCase):
-    \"\"\"Test suite for {suite_name}.\"\"\"
-
-{self._indent(test_content, 4)}"""
-
-        elif self.framework in [Framework.JUNIT, Framework.TESTNG]:
-            return f"""public class {self._to_class_name(suite_name)}Test {{
+{self._indent(test_content, 4)}'''
+        return f"""public class {self._to_class_name(suite_name)}Test {{
 
 {self._indent(test_content, 4)}
 }}"""
-
-        return test_content
 
     def generate_test_function(
         self,
         test_name: str,
         test_body: str,
-        description: str = ""
+        description: str = "",
     ) -> str:
-        """
-        Generate framework-specific test function.
-
-        Args:
-            test_name: Name of test
-            test_body: Test body code
-            description: Test description
-
-        Returns:
-            Complete test function
-        """
-        if self.framework == Framework.JEST:
-            return self._jest_test(test_name, test_body, description)
-        elif self.framework == Framework.VITEST:
-            return self._vitest_test(test_name, test_body, description)
-        elif self.framework == Framework.PYTEST:
-            return self._pytest_test(test_name, test_body, description)
-        elif self.framework == Framework.UNITTEST:
-            return self._unittest_test(test_name, test_body, description)
-        elif self.framework == Framework.JUNIT:
-            return self._junit_test(test_name, test_body, description)
-        elif self.framework == Framework.TESTNG:
-            return self._testng_test(test_name, test_body, description)
-        elif self.framework == Framework.MOCHA:
-            return self._mocha_test(test_name, test_body, description)
-        else:
-            return ""
+        """Generate one framework-specific test function."""
+        if not isinstance(test_name, str) or not test_name.strip():
+            raise ValueError("Test name must be non-empty text")
+        if not isinstance(test_body, str) or not test_body.strip():
+            raise ValueError("Test body must be non-empty text")
+        generators = {
+            Framework.JEST: self._jest_test,
+            Framework.VITEST: self._vitest_test,
+            Framework.PYTEST: self._pytest_test,
+            Framework.UNITTEST: self._unittest_test,
+            Framework.JUNIT: self._junit_test,
+            Framework.TESTNG: self._testng_test,
+            Framework.MOCHA: self._mocha_test,
+            Framework.JASMINE: self._jasmine_test,
+        }
+        return generators[self.framework](test_name, test_body, description)
 
     def _jest_test(self, test_name: str, test_body: str, description: str) -> str:
-        """Generate Jest test."""
-        return f"""it('{test_name}', () => {{
-  // {description}
-{self._indent(test_body, 2)}
-}});"""
+        return self._javascript_test(test_name, test_body, description)
 
     def _vitest_test(self, test_name: str, test_body: str, description: str) -> str:
-        """Generate Vitest test."""
-        return f"""it('{test_name}', () => {{
-  // {description}
+        return self._javascript_test(test_name, test_body, description)
+
+    def _mocha_test(self, test_name: str, test_body: str, description: str) -> str:
+        return self._javascript_test(test_name, test_body, description)
+
+    def _jasmine_test(self, test_name: str, test_body: str, description: str) -> str:
+        return self._javascript_test(test_name, test_body, description)
+
+    def _javascript_test(self, test_name: str, test_body: str, description: str) -> str:
+        comment = self._comment_text(description)
+        return f"""it({self._js_literal(test_name)}, () => {{
+  // {comment}
 {self._indent(test_body, 2)}
 }});"""
 
     def _pytest_test(self, test_name: str, test_body: str, description: str) -> str:
-        """Generate Pytest test."""
-        func_name = test_name.replace(' ', '_').replace('-', '_')
-        return f"""def test_{func_name}(self):
-    \"\"\"
-    {description or test_name}
-    \"\"\"
-{self._indent(test_body, 4)}"""
+        """Generate a standalone pytest function without a fixture-like self argument."""
+        function_name = self._python_identifier(test_name)
+        return f'''def test_{function_name}():
+    """{self._comment_text(description or test_name)}"""
+{self._indent(test_body, 4)}'''
 
     def _unittest_test(self, test_name: str, test_body: str, description: str) -> str:
-        """Generate unittest test."""
-        func_name = self._to_camel_case(test_name)
-        return f"""def test_{func_name}(self):
-    \"\"\"
-    {description or test_name}
-    \"\"\"
-{self._indent(test_body, 4)}"""
+        function_name = self._python_identifier(test_name)
+        return f'''def test_{function_name}(self):
+    """{self._comment_text(description or test_name)}"""
+{self._indent(test_body, 4)}'''
 
     def _junit_test(self, test_name: str, test_body: str, description: str) -> str:
-        """Generate JUnit test."""
-        method_name = self._to_camel_case(test_name)
-        return f"""@Test
-public void test{method_name}() {{
-    // {description}
-{self._indent(test_body, 4)}
-}}"""
+        return self._java_test(test_name, test_body, description)
 
     def _testng_test(self, test_name: str, test_body: str, description: str) -> str:
-        """Generate TestNG test."""
-        method_name = self._to_camel_case(test_name)
+        return self._java_test(test_name, test_body, description)
+
+    def _java_test(self, test_name: str, test_body: str, description: str) -> str:
+        method_name = self._to_class_name(test_name)
         return f"""@Test
 public void test{method_name}() {{
-    // {description}
+    // {self._comment_text(description)}
 {self._indent(test_body, 4)}
 }}"""
-
-    def _mocha_test(self, test_name: str, test_body: str, description: str) -> str:
-        """Generate Mocha test."""
-        return f"""it('{test_name}', () => {{
-  // {description}
-{self._indent(test_body, 2)}
-}});"""
 
     def generate_assertion(
         self,
@@ -248,16 +233,15 @@ public void test{method_name}() {{
         Returns:
             Assertion statement
         """
-        if self.framework in [Framework.JEST, Framework.VITEST]:
+        if self.framework in [Framework.JEST, Framework.VITEST, Framework.JASMINE]:
             return self._jest_assertion(actual, expected, assertion_type)
-        elif self.framework in [Framework.PYTEST, Framework.UNITTEST]:
+        if self.framework in [Framework.PYTEST, Framework.UNITTEST]:
             return self._python_assertion(actual, expected, assertion_type)
-        elif self.framework in [Framework.JUNIT, Framework.TESTNG]:
+        if self.framework in [Framework.JUNIT, Framework.TESTNG]:
             return self._java_assertion(actual, expected, assertion_type)
-        elif self.framework == Framework.MOCHA:
+        if self.framework == Framework.MOCHA:
             return self._chai_assertion(actual, expected, assertion_type)
-        else:
-            return f"assert {actual} == {expected}"
+        raise ValueError(f"Unsupported framework: {self.framework.value}")
 
     def _jest_assertion(self, actual: str, expected: str, assertion_type: str) -> str:
         """Generate Jest assertion."""
@@ -327,7 +311,12 @@ public void test{method_name}() {{
         """Generate setup and teardown hooks."""
         result = []
 
-        if self.framework in [Framework.JEST, Framework.VITEST, Framework.MOCHA]:
+        if self.framework in [
+            Framework.JEST,
+            Framework.VITEST,
+            Framework.MOCHA,
+            Framework.JASMINE,
+        ]:
             if setup_code:
                 result.append(f"""beforeEach(() => {{
 {self._indent(setup_code, 2)}
@@ -379,55 +368,49 @@ public void tearDown() {{
         return '\n'.join(indent + line if line.strip() else line for line in lines)
 
     def _to_camel_case(self, text: str) -> str:
-        """Convert text to camelCase."""
-        words = text.replace('-', ' ').replace('_', ' ').split()
+        """Convert untrusted text to a non-empty lower camel-case identifier."""
+        words = re.findall(r'[A-Za-z0-9]+', text)
         if not words:
-            return text
+            return 'generated'
         return words[0].lower() + ''.join(word.capitalize() for word in words[1:])
 
     def _to_class_name(self, text: str) -> str:
-        """Convert text to ClassName."""
-        words = text.replace('-', ' ').replace('_', ' ').split()
-        return ''.join(word.capitalize() for word in words)
+        """Convert untrusted text to a non-empty class or method suffix."""
+        words = re.findall(r'[A-Za-z0-9]+', text)
+        return ''.join(word.capitalize() for word in words) or 'Generated'
+
+    def _python_identifier(self, text: str) -> str:
+        identifier = re.sub(r'[^A-Za-z0-9_]+', '_', text.strip()).strip('_').lower()
+        if not identifier:
+            return 'generated'
+        return f"case_{identifier}" if identifier[0].isdigit() else identifier
+
+    def _js_literal(self, text: str) -> str:
+        return json.dumps(text, ensure_ascii=False)
+
+    def _comment_text(self, text: str) -> str:
+        return ' '.join(str(text).replace('*/', '* /').splitlines()).strip()
 
     def detect_framework(self, code: str) -> Optional[Framework]:
-        """
-        Auto-detect testing framework from code.
-
-        Args:
-            code: Test code
-
-        Returns:
-            Detected framework or None
-        """
-        # Jest patterns
-        if 'from \'@jest/globals\'' in code or '@jest/' in code:
+        """Auto-detect a supported framework from non-empty test code."""
+        if not isinstance(code, str) or not code.strip():
+            raise ValueError("Test code must be non-empty text")
+        if "from '@jest/globals'" in code or '@jest/' in code:
             return Framework.JEST
-
-        # Vitest patterns
-        if 'from \'vitest\'' in code or 'import { vi }' in code:
+        if "from 'vitest'" in code or 'import { vi }' in code:
             return Framework.VITEST
-
-        # Pytest patterns
-        if 'import pytest' in code or 'def test_' in code and 'pytest.fixture' in code:
+        if 'import pytest' in code or ('def test_' in code and 'pytest.fixture' in code):
             return Framework.PYTEST
-
-        # Unittest patterns
         if 'import unittest' in code and 'unittest.TestCase' in code:
             return Framework.UNITTEST
-
-        # JUnit patterns
         if '@Test' in code and 'import org.junit' in code:
             return Framework.JUNIT
-
-        # TestNG patterns
         if '@Test' in code and 'import org.testng' in code:
             return Framework.TESTNG
-
-        # Mocha patterns
-        if 'from \'mocha\'' in code or ('describe(' in code and 'from \'chai\'' in code):
+        if "from 'mocha'" in code or ('describe(' in code and "from 'chai'" in code):
             return Framework.MOCHA
-
+        if 'jasmine.createSpy' in code or "import 'jasmine'" in code:
+            return Framework.JASMINE
         return None
 
 

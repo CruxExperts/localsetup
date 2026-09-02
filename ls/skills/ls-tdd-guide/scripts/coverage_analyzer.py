@@ -5,10 +5,11 @@ Parse and analyze test coverage reports in multiple formats (LCOV, JSON, XML).
 Identify gaps, calculate metrics, and provide actionable recommendations.
 """
 
-from typing import Dict, List, Any, Optional
 import argparse
 import json
+import re
 import xml.etree.ElementTree as ET
+from typing import Any, Dict, List, Optional
 
 from cli_support import SkillCliError, emit_json, fail, read_text
 
@@ -33,199 +34,239 @@ class CoverageAnalyzer:
     def parse_coverage_report(
         self,
         report_content: str,
-        format_type: str
+        format_type: str,
     ) -> Dict[str, Any]:
-        """
-        Parse coverage report in various formats.
-
-        Args:
-            report_content: Raw coverage report content
-            format_type: Format (lcov, json, xml, cobertura)
-
-        Returns:
-            Parsed coverage data
-        """
+        """Parse a non-empty LCOV, Istanbul JSON, Cobertura XML, or JaCoCo XML report."""
+        if not isinstance(report_content, str) or not report_content.strip():
+            raise ValueError("Coverage report must be non-empty text")
         if format_type == CoverageFormat.LCOV:
             return self._parse_lcov(report_content)
-        elif format_type == CoverageFormat.JSON:
+        if format_type == CoverageFormat.JSON:
             return self._parse_json(report_content)
-        elif format_type in [CoverageFormat.XML, CoverageFormat.COBERTURA]:
+        if format_type in [CoverageFormat.XML, CoverageFormat.COBERTURA]:
             return self._parse_xml(report_content)
-        else:
-            raise ValueError(f"Unsupported format: {format_type}")
+        raise ValueError(f"Unsupported format: {format_type}")
 
     def _parse_lcov(self, content: str) -> Dict[str, Any]:
-        """Parse LCOV format coverage report."""
-        files = {}
-        current_file = None
-        file_data = {}
+        """Parse LCOV line, function, and branch records."""
+        files: Dict[str, Any] = {}
+        current_file: Optional[str] = None
+        file_data: Dict[str, Any] = {}
 
-        for line in content.split('\n'):
-            line = line.strip()
-
+        for raw_line in content.splitlines():
+            line = raw_line.strip()
             if line.startswith('SF:'):
-                # Source file
                 current_file = line[3:]
-                file_data = {
-                    'lines': {},
-                    'functions': {},
-                    'branches': {}
-                }
-
+                if not current_file:
+                    raise ValueError("LCOV source-file record is missing a path")
+                file_data = {'lines': {}, 'functions': {}, 'branches': {}}
             elif line.startswith('DA:'):
-                # Line coverage data (line_number,hit_count)
+                self._require_current_lcov_file(current_file, line)
                 parts = line[3:].split(',')
-                line_num = int(parts[0])
-                hit_count = int(parts[1])
-                file_data['lines'][line_num] = hit_count
-
+                if len(parts) < 2:
+                    raise ValueError(f"Invalid LCOV line record: {line}")
+                file_data['lines'][int(parts[0])] = int(parts[1])
             elif line.startswith('FNDA:'):
-                # Function coverage (hit_count,function_name)
+                self._require_current_lcov_file(current_file, line)
                 parts = line[5:].split(',', 1)
-                hit_count = int(parts[0])
-                func_name = parts[1] if len(parts) > 1 else 'unknown'
-                file_data['functions'][func_name] = hit_count
-
+                if len(parts) != 2 or not parts[1]:
+                    raise ValueError(f"Invalid LCOV function record: {line}")
+                file_data['functions'][parts[1]] = int(parts[0])
             elif line.startswith('BRDA:'):
-                # Branch coverage (line,block,branch,hit_count)
+                self._require_current_lcov_file(current_file, line)
                 parts = line[5:].split(',')
+                if len(parts) != 4:
+                    raise ValueError(f"Invalid LCOV branch record: {line}")
                 branch_id = f"{parts[0]}:{parts[1]}:{parts[2]}"
-                hit_count = 0 if parts[3] == '-' else int(parts[3])
-                file_data['branches'][branch_id] = hit_count
-
+                file_data['branches'][branch_id] = 0 if parts[3] == '-' else int(parts[3])
             elif line == 'end_of_record':
                 if current_file:
                     files[current_file] = file_data
                 current_file = None
                 file_data = {}
 
+        if current_file:
+            files[current_file] = file_data
+        if not files:
+            raise ValueError("LCOV report contains no source-file records")
         self.coverage_data = files
         return files
 
+    def _require_current_lcov_file(self, current_file: Optional[str], record: str) -> None:
+        if current_file is None:
+            raise ValueError(f"LCOV record appears before a source file: {record}")
+
     def _parse_json(self, content: str) -> Dict[str, Any]:
-        """Parse JSON format coverage report (Istanbul/nyc)."""
+        """Parse an Istanbul/nyc JSON coverage report."""
         try:
             data = json.loads(content)
-            files = {}
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"Invalid JSON coverage report: {exc}") from exc
+        if not isinstance(data, dict):
+            raise ValueError("JSON coverage report must be an object keyed by file path")
 
-            for file_path, file_data in data.items():
-                lines = {}
-                functions = {}
-                branches = {}
+        files: Dict[str, Any] = {}
+        for file_path, file_data in data.items():
+            if not isinstance(file_path, str) or not isinstance(file_data, dict):
+                raise ValueError("Each JSON coverage entry must map a file path to an object")
+            lines: Dict[int, int] = {}
+            functions: Dict[str, int] = {}
+            branches: Dict[str, int] = {}
+            statements = file_data.get('s', {})
+            statement_map = file_data.get('statementMap', {})
+            if not isinstance(statements, dict) or not isinstance(statement_map, dict):
+                raise ValueError(f"Coverage entry for {file_path} has invalid statement data")
+            for statement_id, hit_count in statements.items():
+                statement = statement_map.get(statement_id, {})
+                line_number = statement.get('start', {}).get('line') if isinstance(statement, dict) else None
+                if line_number is not None:
+                    lines[int(line_number)] = int(hit_count)
+            function_hits = file_data.get('f', {})
+            function_map = file_data.get('fnMap', {})
+            if not isinstance(function_hits, dict) or not isinstance(function_map, dict):
+                raise ValueError(f"Coverage entry for {file_path} has invalid function data")
+            for function_id, hit_count in function_hits.items():
+                function = function_map.get(function_id, {})
+                name = function.get('name', f'func_{function_id}') if isinstance(function, dict) else f'func_{function_id}'
+                functions[str(name)] = int(hit_count)
+            branch_map = file_data.get('b', {})
+            if not isinstance(branch_map, dict):
+                raise ValueError(f"Coverage entry for {file_path} has invalid branch data")
+            for branch_id, locations in branch_map.items():
+                if not isinstance(locations, list):
+                    raise ValueError(f"Coverage entry for {file_path} has invalid branch hits")
+                for index, hit_count in enumerate(locations):
+                    branches[f"{branch_id}:{index}"] = int(hit_count)
+            files[file_path] = {
+                'lines': lines,
+                'functions': functions,
+                'branches': branches,
+            }
 
-                # Line coverage
-                if 's' in file_data:  # Statement map
-                    statement_map = file_data['s']
-                    for stmt_id, hit_count in statement_map.items():
-                        # Map statement to line number
-                        if 'statementMap' in file_data:
-                            stmt_info = file_data['statementMap'].get(stmt_id, {})
-                            line_num = stmt_info.get('start', {}).get('line')
-                            if line_num:
-                                lines[line_num] = hit_count
-
-                # Function coverage
-                if 'f' in file_data:
-                    func_map = file_data['f']
-                    func_names = file_data.get('fnMap', {})
-                    for func_id, hit_count in func_map.items():
-                        func_info = func_names.get(func_id, {})
-                        func_name = func_info.get('name', f'func_{func_id}')
-                        functions[func_name] = hit_count
-
-                # Branch coverage
-                if 'b' in file_data:
-                    branch_map = file_data['b']
-                    for branch_id, locations in branch_map.items():
-                        for idx, hit_count in enumerate(locations):
-                            branch_key = f"{branch_id}:{idx}"
-                            branches[branch_key] = hit_count
-
-                files[file_path] = {
-                    'lines': lines,
-                    'functions': functions,
-                    'branches': branches
-                }
-
-            self.coverage_data = files
-            return files
-
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Invalid JSON coverage report: {e}")
+        self.coverage_data = files
+        return files
 
     def _parse_xml(self, content: str) -> Dict[str, Any]:
-        """Parse XML/Cobertura format coverage report."""
+        """Parse Cobertura or JaCoCo XML selected from the report shape."""
         try:
             root = ET.fromstring(content)
-            files = {}
+        except ET.ParseError as exc:
+            raise ValueError(f"Invalid XML coverage report: {exc}") from exc
+        root_name = root.tag.rsplit('}', 1)[-1]
+        if root_name == 'report' and root.findall('.//sourcefile'):
+            files = self._parse_jacoco_root(root)
+        elif root_name == 'coverage' or root.findall('.//class'):
+            files = self._parse_cobertura_root(root)
+        else:
+            raise ValueError("Unsupported XML coverage report shape")
+        if not files:
+            raise ValueError("XML coverage report contains no source files")
+        self.coverage_data = files
+        return files
 
-            # Handle Cobertura format
-            for package in root.findall('.//package'):
-                for cls in package.findall('classes/class'):
-                    filename = cls.get('filename', cls.get('name', 'unknown'))
+    def _parse_cobertura_root(self, root: ET.Element) -> Dict[str, Any]:
+        files: Dict[str, Any] = {}
+        for cls in root.findall('.//class'):
+            filename = cls.get('filename') or cls.get('name')
+            if not filename:
+                raise ValueError("Cobertura class is missing filename and name")
+            lines: Dict[int, int] = {}
+            branches: Dict[str, int] = {}
+            covered_branches = 0
+            total_branches = 0
+            for line in cls.findall('lines/line'):
+                line_number = self._required_nonnegative_int(line, 'number', 'Cobertura line')
+                lines[line_number] = self._required_nonnegative_int(line, 'hits', 'Cobertura line')
+                if line.get('branch', 'false').lower() != 'true':
+                    continue
+                match = re.search(r'\((\d+)\s*/\s*(\d+)\)', line.get('condition-coverage', ''))
+                if not match:
+                    raise ValueError(f"Cobertura branch line {line_number} has invalid condition-coverage")
+                covered, total = map(int, match.groups())
+                if covered > total:
+                    raise ValueError(f"Cobertura branch line {line_number} covers more branches than exist")
+                self._append_branch_slots(branches, str(line_number), covered, total)
+                covered_branches += covered
+                total_branches += total
+            files[filename] = {
+                'lines': lines,
+                'functions': {},
+                'branches': branches,
+                'branch_counts': {'covered': covered_branches, 'total': total_branches},
+            }
+        return files
 
-                    lines = {}
-                    branches = {}
+    def _parse_jacoco_root(self, root: ET.Element) -> Dict[str, Any]:
+        files: Dict[str, Any] = {}
+        for package in root.findall('.//package'):
+            package_name = package.get('name', '').strip('/')
+            for source in package.findall('sourcefile'):
+                source_name = source.get('name')
+                if not source_name:
+                    raise ValueError("JaCoCo sourcefile is missing name")
+                filename = f"{package_name}/{source_name}" if package_name else source_name
+                lines: Dict[int, int] = {}
+                branches: Dict[str, int] = {}
+                covered_branches = 0
+                total_branches = 0
+                for line in source.findall('line'):
+                    line_number = self._required_nonnegative_int(line, 'nr', 'JaCoCo line')
+                    lines[line_number] = self._required_nonnegative_int(line, 'ci', 'JaCoCo line')
+                    covered = self._required_nonnegative_int(line, 'cb', 'JaCoCo line')
+                    missed = self._required_nonnegative_int(line, 'mb', 'JaCoCo line')
+                    total = covered + missed
+                    self._append_branch_slots(branches, str(line_number), covered, total)
+                    covered_branches += covered
+                    total_branches += total
+                files[filename] = {
+                    'lines': lines,
+                    'functions': {},
+                    'branches': branches,
+                    'branch_counts': {'covered': covered_branches, 'total': total_branches},
+                }
+        return files
 
-                    for line in cls.findall('lines/line'):
-                        line_num = int(line.get('number', 0))
-                        hit_count = int(line.get('hits', 0))
-                        lines[line_num] = hit_count
+    def _required_nonnegative_int(
+        self,
+        element: ET.Element,
+        attribute: str,
+        context: str,
+    ) -> int:
+        value = element.get(attribute)
+        try:
+            parsed = int(value) if value is not None else -1
+        except ValueError as exc:
+            raise ValueError(f"{context} has invalid {attribute}: {value!r}") from exc
+        if parsed < 0:
+            raise ValueError(f"{context} has invalid {attribute}: {value!r}")
+        return parsed
 
-                        # Branch info
-                        branch = line.get('branch', 'false')
-                        if branch == 'true':
-                            condition_coverage = line.get('condition-coverage', '0% (0/0)')
-                            # Parse "(covered/total)"
-                            if '(' in condition_coverage:
-                                branch_info = condition_coverage.split('(')[1].split(')')[0]
-                                covered, total = map(int, branch_info.split('/'))
-                                branches[f"{line_num}:branch"] = covered
-
-                    files[filename] = {
-                        'lines': lines,
-                        'functions': {},
-                        'branches': branches
-                    }
-
-            self.coverage_data = files
-            return files
-
-        except ET.ParseError as e:
-            raise ValueError(f"Invalid XML coverage report: {e}")
+    def _append_branch_slots(
+        self,
+        branches: Dict[str, int],
+        prefix: str,
+        covered: int,
+        total: int,
+    ) -> None:
+        for index in range(total):
+            branches[f"{prefix}:branch:{index}"] = 1 if index < covered else 0
 
     def calculate_summary(self) -> Dict[str, Any]:
-        """
-        Calculate overall coverage summary.
+        """Calculate overall coverage, using null for non-applicable dimensions."""
+        total_lines = covered_lines = 0
+        total_branches = covered_branches = 0
+        total_functions = covered_functions = 0
 
-        Returns:
-            Summary with line, branch, and function coverage percentages
-        """
-        total_lines = 0
-        covered_lines = 0
-        total_branches = 0
-        covered_branches = 0
-        total_functions = 0
-        covered_functions = 0
-
-        for file_path, file_data in self.coverage_data.items():
-            # Lines
-            for line_num, hit_count in file_data.get('lines', {}).items():
-                total_lines += 1
-                if hit_count > 0:
-                    covered_lines += 1
-
-            # Branches
-            for branch_id, hit_count in file_data.get('branches', {}).items():
-                total_branches += 1
-                if hit_count > 0:
-                    covered_branches += 1
-
-            # Functions
-            for func_name, hit_count in file_data.get('functions', {}).items():
-                total_functions += 1
-                if hit_count > 0:
-                    covered_functions += 1
+        for file_data in self.coverage_data.values():
+            lines = file_data.get('lines', {})
+            total_lines += len(lines)
+            covered_lines += sum(1 for hit in lines.values() if hit > 0)
+            branch_covered, branch_total = self._branch_totals(file_data)
+            covered_branches += branch_covered
+            total_branches += branch_total
+            functions = file_data.get('functions', {})
+            total_functions += len(functions)
+            covered_functions += sum(1 for hit in functions.values() if hit > 0)
 
         summary = {
             'line_coverage': self._safe_percentage(covered_lines, total_lines),
@@ -236,35 +277,41 @@ class CoverageAnalyzer:
             'total_branches': total_branches,
             'covered_branches': covered_branches,
             'total_functions': total_functions,
-            'covered_functions': covered_functions
+            'covered_functions': covered_functions,
         }
-
         self.summary = summary
         return summary
 
-    def _safe_percentage(self, covered: int, total: int) -> float:
-        """Safely calculate percentage."""
+    def _branch_totals(self, file_data: Dict[str, Any]) -> tuple[int, int]:
+        branch_counts = file_data.get('branch_counts')
+        if branch_counts is not None:
+            if not isinstance(branch_counts, dict):
+                raise ValueError("branch_counts must be an object")
+            covered = int(branch_counts.get('covered', -1))
+            total = int(branch_counts.get('total', -1))
+            if covered < 0 or total < 0 or covered > total:
+                raise ValueError("branch_counts must contain valid covered and total counts")
+            return covered, total
+        branches = file_data.get('branches', {})
+        if not isinstance(branches, dict):
+            raise ValueError("branches must be an object")
+        return sum(1 for hit in branches.values() if hit > 0), len(branches)
+
+    def _safe_percentage(self, covered: int, total: int) -> Optional[float]:
+        """Calculate a percentage, or null when the dimension is not applicable."""
         if total == 0:
-            return 0.0
+            return None
         return round((covered / total) * 100, 2)
 
     def identify_gaps(self, threshold: float = 80.0) -> List[Dict[str, Any]]:
-        """
-        Identify coverage gaps below threshold.
-
-        Args:
-            threshold: Minimum acceptable coverage percentage
-
-        Returns:
-            List of files with coverage gaps
-        """
+        """Identify file coverage dimensions below a 0-100 threshold."""
+        if not 0 <= threshold <= 100:
+            raise ValueError("Coverage threshold must be between 0 and 100")
         gaps = []
-
         for file_path, file_data in self.coverage_data.items():
             file_gaps = self._analyze_file_gaps(file_path, file_data, threshold)
             if file_gaps:
                 gaps.append(file_gaps)
-
         self.gaps = gaps
         return gaps
 
@@ -272,123 +319,100 @@ class CoverageAnalyzer:
         self,
         file_path: str,
         file_data: Dict[str, Any],
-        threshold: float
+        threshold: float,
     ) -> Optional[Dict[str, Any]]:
-        """Analyze coverage gaps for a single file."""
+        """Analyze only applicable coverage dimensions for one file."""
         lines = file_data.get('lines', {})
         branches = file_data.get('branches', {})
-        functions = file_data.get('functions', {})
-
-        # Calculate file coverage
         total_lines = len(lines)
         covered_lines = sum(1 for hit in lines.values() if hit > 0)
         line_coverage = self._safe_percentage(covered_lines, total_lines)
-
-        total_branches = len(branches)
-        covered_branches = sum(1 for hit in branches.values() if hit > 0)
+        covered_branches, total_branches = self._branch_totals(file_data)
         branch_coverage = self._safe_percentage(covered_branches, total_branches)
-
-        # Find uncovered lines
-        uncovered_lines = [line_num for line_num, hit in lines.items() if hit == 0]
-        uncovered_branches = [branch_id for branch_id, hit in branches.items() if hit == 0]
-
-        # Only report if below threshold
-        if line_coverage < threshold or branch_coverage < threshold:
-            return {
-                'file': file_path,
-                'line_coverage': line_coverage,
-                'branch_coverage': branch_coverage,
-                'uncovered_lines': sorted(uncovered_lines),
-                'uncovered_branches': uncovered_branches,
-                'priority': self._calculate_priority(line_coverage, branch_coverage, threshold)
-            }
-
-        return None
+        uncovered_lines = sorted(line for line, hit in lines.items() if hit == 0)
+        uncovered_branches = sorted(branch for branch, hit in branches.items() if hit == 0)
+        below_threshold = [
+            value
+            for value in (line_coverage, branch_coverage)
+            if value is not None and value < threshold
+        ]
+        if not below_threshold:
+            return None
+        return {
+            'file': file_path,
+            'line_coverage': line_coverage,
+            'branch_coverage': branch_coverage,
+            'branch_applicable': total_branches > 0,
+            'uncovered_lines': uncovered_lines,
+            'uncovered_branches': uncovered_branches,
+            'priority': self._calculate_priority(
+                line_coverage, branch_coverage, threshold
+            ),
+        }
 
     def _calculate_priority(
         self,
-        line_coverage: float,
-        branch_coverage: float,
-        threshold: float
+        line_coverage: Optional[float],
+        branch_coverage: Optional[float],
+        threshold: float,
     ) -> str:
-        """Calculate priority based on coverage gap severity."""
-        gap = threshold - min(line_coverage, branch_coverage)
-
+        """Calculate priority from the lowest applicable coverage dimension."""
+        applicable = [value for value in (line_coverage, branch_coverage) if value is not None]
+        if not applicable:
+            raise ValueError("Cannot prioritize a file with no applicable coverage dimensions")
+        gap = threshold - min(applicable)
         if gap >= 40:
-            return 'P0'  # Critical - less than 40% coverage
-        elif gap >= 20:
-            return 'P1'  # Important - 60-80% coverage
-        else:
-            return 'P2'  # Nice to have - 80%+ coverage
+            return 'P0'
+        if gap >= 20:
+            return 'P1'
+        return 'P2'
 
     def get_file_coverage(self, file_path: str) -> Dict[str, Any]:
-        """
-        Get detailed coverage information for a specific file.
-
-        Args:
-            file_path: Path to file
-
-        Returns:
-            Detailed coverage data for file
-        """
+        """Return detailed coverage for one known file."""
         if file_path not in self.coverage_data:
             return {}
-
         file_data = self.coverage_data[file_path]
         lines = file_data.get('lines', {})
         branches = file_data.get('branches', {})
         functions = file_data.get('functions', {})
-
-        total_lines = len(lines)
-        covered_lines = sum(1 for hit in lines.values() if hit > 0)
-
-        total_branches = len(branches)
-        covered_branches = sum(1 for hit in branches.values() if hit > 0)
-
-        total_functions = len(functions)
-        covered_functions = sum(1 for hit in functions.values() if hit > 0)
-
+        covered_branches, total_branches = self._branch_totals(file_data)
         return {
             'file': file_path,
-            'line_coverage': self._safe_percentage(covered_lines, total_lines),
+            'line_coverage': self._safe_percentage(
+                sum(1 for hit in lines.values() if hit > 0), len(lines)
+            ),
             'branch_coverage': self._safe_percentage(covered_branches, total_branches),
-            'function_coverage': self._safe_percentage(covered_functions, total_functions),
+            'branch_applicable': total_branches > 0,
+            'function_coverage': self._safe_percentage(
+                sum(1 for hit in functions.values() if hit > 0), len(functions)
+            ),
             'lines': lines,
             'branches': branches,
-            'functions': functions
+            'functions': functions,
         }
 
     def generate_recommendations(self) -> List[Dict[str, Any]]:
-        """
-        Generate prioritized recommendations for improving coverage.
-
-        Returns:
-            List of recommendations with priority and actions
-        """
+        """Generate recommendations only for applicable coverage dimensions."""
         recommendations = []
-
-        # Check overall coverage
         summary = self.summary or self.calculate_summary()
-
-        if summary['line_coverage'] < 80:
+        line_coverage = summary['line_coverage']
+        branch_coverage = summary['branch_coverage']
+        if line_coverage is not None and line_coverage < 80:
             recommendations.append({
                 'priority': 'P0',
                 'type': 'overall_coverage',
-                'message': f"Overall line coverage ({summary['line_coverage']}%) is below 80% threshold",
+                'message': f"Overall line coverage ({line_coverage}%) is below 80% threshold",
                 'action': 'Focus on adding tests for critical paths and business logic',
-                'impact': 'high'
+                'impact': 'high',
             })
-
-        if summary['branch_coverage'] < 70:
+        if branch_coverage is not None and branch_coverage < 70:
             recommendations.append({
                 'priority': 'P0',
                 'type': 'branch_coverage',
-                'message': f"Branch coverage ({summary['branch_coverage']}%) is below 70% threshold",
+                'message': f"Branch coverage ({branch_coverage}%) is below 70% threshold",
                 'action': 'Add tests for conditional logic and error handling paths',
-                'impact': 'high'
+                'impact': 'high',
             })
-
-        # File-specific recommendations
         for gap in self.gaps:
             if gap['priority'] == 'P0':
                 recommendations.append({
@@ -397,43 +421,31 @@ class CoverageAnalyzer:
                     'file': gap['file'],
                     'message': f"Critical coverage gap in {gap['file']}",
                     'action': f"Add tests for lines: {gap['uncovered_lines'][:10]}",
-                    'impact': 'high'
+                    'impact': 'high',
                 })
-
-        # Sort by priority
         priority_order = {'P0': 0, 'P1': 1, 'P2': 2}
-        recommendations.sort(key=lambda x: priority_order.get(x['priority'], 3))
-
+        recommendations.sort(key=lambda item: priority_order.get(item['priority'], 3))
         return recommendations
 
     def detect_format(self, content: str) -> str:
-        """
-        Automatically detect coverage report format.
-
-        Args:
-            content: Raw coverage report content
-
-        Returns:
-            Detected format (lcov, json, xml)
-        """
+        """Detect LCOV, Istanbul JSON, Cobertura XML, or JaCoCo XML input."""
+        if not isinstance(content, str) or not content.strip():
+            raise ValueError("Coverage report must be non-empty text")
         content_stripped = content.strip()
-
-        # Check for LCOV format
         if content_stripped.startswith('TN:') or 'SF:' in content_stripped[:100]:
             return CoverageFormat.LCOV
-
-        # Check for JSON format
         if content_stripped.startswith('{') or content_stripped.startswith('['):
             try:
                 json.loads(content_stripped)
                 return CoverageFormat.JSON
             except json.JSONDecodeError as exc:
                 raise ValueError(f"Content looks like JSON but is invalid: {exc}") from exc
-
-        # Check for XML format
-        if content_stripped.startswith('<?xml') or content_stripped.startswith('<coverage'):
+        xml_start = content_stripped
+        if xml_start.startswith('<?xml'):
+            declaration_end = xml_start.find('?>')
+            xml_start = xml_start[declaration_end + 2:].lstrip() if declaration_end >= 0 else xml_start
+        if xml_start.startswith('<coverage') or xml_start.startswith('<report'):
             return CoverageFormat.XML
-
         raise ValueError("Unable to detect coverage report format")
 
 

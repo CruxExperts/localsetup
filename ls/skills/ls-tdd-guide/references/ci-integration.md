@@ -18,10 +18,10 @@ Integrating test coverage and quality gates into CI pipelines.
 ### Coverage Report Flow
 
 1. Run tests with coverage enabled
-2. Generate report in machine-readable format (LCOV, JSON, XML)
-3. Parse report for threshold validation
-4. Upload to coverage service (Codecov, Coveralls)
-5. Fail build if below threshold
+2. Generate LCOV, Istanbul JSON, Cobertura XML, or JaCoCo XML.
+3. Parse the report with `coverage_analyzer.py` and enforce applicable thresholds; branchless files report `null` branch coverage.
+4. Upload the original report to the selected coverage service.
+5. Fail the build when an applicable dimension is below threshold.
 
 ### Report Formats by Tool
 
@@ -30,7 +30,9 @@ Integrating test coverage and quality gates into CI pipelines.
 | Jest | `jest --coverage --coverageReporters=lcov` | LCOV |
 | Pytest | `pytest --cov-report=xml` | Cobertura XML |
 | JUnit/JaCoCo | `mvn jacoco:report` | JaCoCo XML |
-| Vitest | `vitest --coverage` | LCOV/JSON |
+| Vitest | `vitest --coverage --coverage.reporter=lcov` | LCOV |
+
+Compatibility floors live only in the [authoritative matrix](framework-guide.md#compatibility-matrix).
 
 ---
 
@@ -50,7 +52,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22.12'
 
       - run: npm ci
       - run: npm test -- --coverage
@@ -82,7 +84,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
       - uses: astral-sh/setup-uv@v6
 
       - run: uv run --with pytest --with pytest-cov -- pytest --cov=src --cov-report=xml --cov-fail-under=80

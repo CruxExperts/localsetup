@@ -46,98 +46,88 @@ class TDDWorkflow:
         self.history = []
 
     def start_cycle(self, requirement: str) -> Dict[str, Any]:
-        """
-        Start a new TDD cycle.
-
-        Args:
-            requirement: User story or requirement to implement
-
-        Returns:
-            Guidance for RED phase
-        """
+        """Start a new cycle from a non-empty requirement."""
+        if not isinstance(requirement, str) or not requirement.strip():
+            raise ValueError("Requirement must be non-empty text")
         self.current_phase = TDDPhase.RED
         self.state = WorkflowState.INITIAL
-
         return {
             'phase': 'RED',
             'instruction': 'Write a failing test for the requirement',
-            'requirement': requirement,
+            'requirement': requirement.strip(),
             'checklist': [
                 'Write test that describes desired behavior',
-                'Test should fail when run (no implementation yet)',
-                'Test name clearly describes what is being tested',
-                'Test has clear arrange-act-assert structure'
+                'Run it and capture an assertion or expectation failure',
+                'Verify collection, syntax, imports, and infrastructure succeeded',
+                'Record a non-empty failure message from the intended assertion',
             ],
             'tips': [
                 'Focus on behavior, not implementation',
                 'Start with simplest test case',
-                'Test should be specific and focused'
-            ]
+                'Test should be specific and focused',
+            ],
         }
 
     def validate_red_phase(
         self,
         test_code: str,
-        test_result: Optional[Dict[str, Any]] = None
+        test_result: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        """
-        Validate RED phase completion.
-
-        Args:
-            test_code: The test code written
-            test_result: Test execution result (optional)
-
-        Returns:
-            Validation result and next steps
-        """
+        """Require a real assertion failure before advancing from RED."""
+        if not isinstance(test_code, str):
+            raise ValueError("Test code must be text")
         validations = []
-
-        # Check test exists
-        if not test_code or len(test_code.strip()) < 10:
-            validations.append({
-                'valid': False,
-                'message': 'No test code provided'
-            })
-        else:
-            validations.append({
-                'valid': True,
-                'message': 'Test code provided'
-            })
-
-        # Check for assertions
-        has_assertion = any(keyword in test_code.lower()
-                           for keyword in ['assert', 'expect', 'should'])
+        code_present = len(test_code.strip()) >= 10
+        validations.append({
+            'valid': code_present,
+            'message': 'Test code provided' if code_present else 'No test code provided',
+        })
+        has_assertion = any(
+            keyword in test_code.lower() for keyword in ['assert', 'expect', 'should']
+        )
         validations.append({
             'valid': has_assertion,
-            'message': 'Contains assertions' if has_assertion else 'Missing assertions'
+            'message': 'Contains assertions' if has_assertion else 'Missing assertions',
         })
 
-        # Check test result if provided
-        if test_result:
-            test_failed = test_result.get('status') == 'failed'
-            validations.append({
-                'valid': test_failed,
-                'message': 'Test fails as expected' if test_failed else 'Test should fail in RED phase'
-            })
+        if test_result is None:
+            evidence_valid = False
+            evidence_message = 'Missing structured failing-test evidence'
+        else:
+            status = self._validated_result_status(test_result)
+            failure_kind = test_result.get('failure_kind')
+            failure_message = test_result.get('failure_message')
+            assertion_failure = failure_kind in {'assertion', 'expectation'}
+            message_present = isinstance(failure_message, str) and bool(failure_message.strip())
+            evidence_valid = status == 'failed' and assertion_failure and message_present
+            if status != 'failed':
+                evidence_message = 'RED evidence must report status failed'
+            elif not assertion_failure:
+                evidence_message = (
+                    'RED failure_kind must be assertion or expectation; '
+                    'collection, syntax, import, and infrastructure failures do not qualify'
+                )
+            elif not message_present:
+                evidence_message = 'RED evidence requires a non-empty failure_message'
+            else:
+                evidence_message = 'Test fails at the intended assertion'
+        validations.append({'valid': evidence_valid, 'message': evidence_message})
 
-        all_valid = all(v['valid'] for v in validations)
-
-        if all_valid:
+        if all(validation['valid'] for validation in validations):
             self.state = WorkflowState.TEST_FAILING
             self.current_phase = TDDPhase.GREEN
             return {
                 'phase_complete': True,
                 'next_phase': 'GREEN',
                 'validations': validations,
-                'instruction': 'Write minimal code to make the test pass'
+                'instruction': 'Write minimal code to make the test pass',
             }
-        else:
-            return {
-                'phase_complete': False,
-                'current_phase': 'RED',
-                'validations': validations,
-                'instruction': 'Address validation issues before proceeding'
-            }
+        return {
+            'phase_complete': False,
+            'current_phase': 'RED',
+            'validations': validations,
+            'instruction': 'Address validation issues before proceeding',
+        }
 
     def validate_green_phase(
         self,
@@ -154,6 +144,8 @@ class TDDWorkflow:
         Returns:
             Validation result and next steps
         """
+        if not isinstance(implementation_code, str):
+            raise ValueError("Implementation code must be text")
         validations = []
 
         # Check implementation exists
@@ -169,10 +161,11 @@ class TDDWorkflow:
             })
 
         # Check test now passes
-        test_passed = test_result.get('status') == 'passed'
+        status = self._validated_result_status(test_result)
+        test_passed = status == 'passed'
         validations.append({
             'valid': test_passed,
-            'message': 'Test passes' if test_passed else 'Test still failing'
+            'message': 'Test passes' if test_passed else 'Test still failing',
         })
 
         # Check for minimal implementation (heuristic)
@@ -220,34 +213,32 @@ class TDDWorkflow:
         Returns:
             Validation result and cycle completion status
         """
+        if not isinstance(original_code, str) or not isinstance(refactored_code, str):
+            raise ValueError("Original and refactored code must be text")
+        if not original_code.strip() or not refactored_code.strip():
+            raise ValueError("Original and refactored code must be non-empty")
         validations = []
-
-        # Check tests still pass
-        test_passed = test_result.get('status') == 'passed'
+        status = self._validated_result_status(test_result)
+        test_passed = status == 'passed'
         validations.append({
             'valid': test_passed,
             'message': 'Tests still pass after refactoring' if test_passed
-                      else 'Tests broken by refactoring'
+                       else 'Tests broken by refactoring',
         })
-
-        # Check code was actually refactored
         code_changed = original_code != refactored_code
         validations.append({
-            'valid': code_changed,
+            'valid': True,
             'message': 'Code was refactored' if code_changed
-                      else 'No refactoring applied (optional)'
+                       else 'No refactoring applied (optional)',
         })
-
-        # Check code quality improved
-        quality_improved = self._check_quality_improvement(original_code, refactored_code)
         if code_changed:
+            quality_improved = self._check_quality_improvement(original_code, refactored_code)
             validations.append({
                 'valid': quality_improved,
                 'message': 'Code quality improved' if quality_improved
-                          else 'Consider further refactoring for better quality'
+                           else 'Changed code does not improve measured quality',
             })
-
-        all_valid = all(v['valid'] for v in validations if v.get('valid') is not None)
+        all_valid = all(validation['valid'] for validation in validations)
 
         if all_valid:
             self.state = WorkflowState.CODE_REFACTORED
@@ -273,6 +264,14 @@ class TDDWorkflow:
                 'validations': validations,
                 'instruction': 'Ensure tests still pass after refactoring'
             }
+
+    def _validated_result_status(self, test_result: Dict[str, Any]) -> str:
+        if not isinstance(test_result, dict):
+            raise ValueError("Test result must be an object")
+        status = test_result.get('status')
+        if status not in {'passed', 'failed'}:
+            raise ValueError("Test result status must be passed or failed")
+        return status
 
     def _check_minimal_implementation(self, code: str) -> bool:
         return check_minimal_implementation(code)

@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 2566ee2171e45fb3c654fd8e4be4e8ba4c1f46cade303cd217e49f5bb068b067
+  source_provenance_hash: fdeb1520e85adfc064fc2265b0dfcb783b8de888b30749819a4269a5c7edd6ef
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: aa87e4de98685879d1e9e90bf84168b4dd1bc66e
-artifact_sha256: e8ed2254613c2b3b6eccf5d07f282c2815dc94e89bae217b5860a8b4edcdae83
+source_commit: 435bbd5ac32492540bd0689c69b8a0b7657319fd
+artifact_sha256: 46aba3334f7bd5ad8721f2e57c560f9cd84d727c4fe9ceb26ea4746db4d8ff02
 ---
 # Shipped skills catalog
 
@@ -43,7 +43,7 @@ Total shipped skills: 103
 | `ls-nodejs-nextjs` | `development` | 30 | `dev` | `nodejs`, `nextjs` | `ls-nodejs-nextjs` | `1.0` | Practical Node.js and Next.js project runbook. Use for Node, Next.js, React, package-manager, build, migration, debugging, testing, security, deployment, and version-verification tasks. |
 | `ls-pr-reviewer` | `development` | 30 | `bootstrap`, `publishing` | `review`, `pull-requests` | `ls-pr-reviewer` | `1.2` | Automated GitHub PR code review with diff analysis, lint integration, and structured reports. Use when reviewing pull requests, checking for security issues, error handling gaps, test coverage, or code style problems. Supports Go, Python, and JavaScript/TypeScript. Requires gh CLI authenticated with repo access. |
 | `ls-shadcn-ui` | `development` | 30 | `dev`, `frontend` | `react`, `ui` | `ls-shadcn-ui` | `1.0` | Project-aware shadcn/ui guide. Use for shadcn setup, components, CLI/MCP, registry, theming, forms, Radix/Base UI, aliases, updates, and troubleshooting in React UI projects. |
-| `ls-tdd-guide` | `development` | 30 | `core` | `tdd`, `testing` | `ls-tdd-guide` | `1.1` | Use when following a test-driven development workflow with test generation, coverage analysis, and multi-framework support. |
+| `ls-tdd-guide` | `development` | 30 | `core` | `tdd`, `testing` | `ls-tdd-guide` | `1.2` | Use when following a test-driven development workflow with test generation, coverage analysis, and multi-framework support. |
 | `ls-typescript-code-quality` | `development` | 30 | `dev` | `typescript`, `quality` | `ls-typescript-code-quality` | `1.0` | Guide TypeScript code quality work. Use when touching TypeScript, TSX, tsconfig, typed ESLint or Biome config, Node TypeScript scripts, or TypeScript-heavy framework code. |
 | `ls-ui-browser-debugging` | `development` | 30 | `dev`, `frontend` | `ui`, `browser`, `debugging`, `mcp` | `ls-ui-browser-debugging` | `1.0` | UI review and browser-driven debugging workflow for Chrome DevTools MCP, Playwright MCP/CLI, browser ownership, evidence capture, minimal fixes, and durable UI regression tests. |
 | `ls-ansible-skill` | `operations` | 40 | `ops` | `ansible`, `infrastructure` | `ls-ansible-skill` | `1.1` | Infrastructure automation with Ansible. Use for server provisioning, configuration management, application deployment, and multi-host orchestration. Includes example playbooks for VPS setup, security hardening, and common server configurations. Bundled examples may reference one platform; adapt paths and commands for your environment. |

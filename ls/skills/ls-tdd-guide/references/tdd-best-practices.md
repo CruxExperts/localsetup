@@ -17,9 +17,10 @@ Guidelines for effective test-driven development workflows.
 
 ### RED Phase
 1. Write a failing test before any implementation
-2. Test should fail for the right reason (not compilation errors)
-3. Name tests as specifications describing expected behavior
-4. Keep tests small and focused on single behaviors
+2. Capture a real assertion or expectation failure with its failure message
+3. Reject syntax, import, collection, and infrastructure failures; they do not prove RED
+4. Name tests as specifications describing expected behavior
+5. Keep tests small and focused on single behaviors
 
 ### GREEN Phase
 1. Write minimal code to make the test pass
