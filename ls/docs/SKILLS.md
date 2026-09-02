@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: aa1ac3c9ef8f9c2afa9428f288bff97408c68c09762ef16e966389e9cded6ca1
+  source_provenance_hash: f02a292966e9491b2de5deff05af773308f29c3a4bd38e36994ed9e3832d87d7
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 0d9fd5570a494facbb2627645591ddda25dfaf81
-artifact_sha256: a08b30fb89ed91406d11fbadef3dedf0f36195a38988478aee901cfc97b955a3
+source_commit: 78c00023f383d32e5d33b15cc336dbdb0ed500b9
+artifact_sha256: 15022f3be38331fa35b674ba8b47fee1f7ad7cbb3cc1d53ede9b700c5a38e5ed
 ---
 # Shipped skills catalog
 
@@ -48,7 +48,7 @@ Total shipped skills: 103
 | `ls-ui-browser-debugging` | `development` | 30 | `dev`, `frontend` | `ui`, `browser`, `debugging`, `mcp` | `ls-ui-browser-debugging` | `1.0` | UI review and browser-driven debugging workflow for Chrome DevTools MCP, Playwright MCP/CLI, browser ownership, evidence capture, minimal fixes, and durable UI regression tests. |
 | `ls-ansible-skill` | `operations` | 40 | `ops` | `ansible`, `infrastructure` | `ls-ansible-skill` | `1.1` | Infrastructure automation with Ansible. Use for server provisioning, configuration management, application deployment, and multi-host orchestration. Includes example playbooks for VPS setup, security hardening, and common server configurations. Bundled examples may reference one platform; adapt paths and commands for your environment. |
 | `ls-backlog-and-reminders` | `operations` | 40 | `ops` | `backlog`, `reminders` | `ls-backlog-and-reminders` | `1.1` | Record deferred ideas, to-dos, and reminders (with optional due date or 'whenever'); show due/overdue when user starts a session or asks. Use when user says 'add to backlog', 'remind me', 'I'll do this later', 'what's due?', 'show my backlog', 'start my session', or wants to capture ideas for later. |
-| `ls-codex-heartbeat` | `operations` | 40 | `harness` | `heartbeat`, `automation` | `ls-codex-heartbeat` | `1.0` | Opt-in Codex heartbeat harness for target repositories: initialize config, run transaction-safe heartbeat checks, preserve artifacts, and wire cron only after explicit activation. |
+| `ls-codex-heartbeat` | `operations` | 40 | `harness` | `heartbeat`, `automation` | `ls-codex-heartbeat` | `1.0` | Opt-in agent heartbeat harness for target repositories: initialize config, run transaction-safe checks, preserve artifacts, and wire cron only after explicit activation. |
 | `ls-cron-orchestrator` | `operations` | 40 | `harness`, `ops` | `cron`, `scheduling` | `ls-cron-orchestrator` | `1.0` | Use when managing cron from a repo-local manifest: time triggers, on-boot-with-delay, sequenced tasks; create, remove, reorder, install. |
 | `ls-linux-patcher` | `operations` | 40 | `ops` | `linux`, `patching` | `ls-linux-patcher` | `1.1` | Create safe Linux server patching and Docker update plans. Use when the user asks to update, patch, or upgrade Linux servers, check maintenance readiness, plan package updates, plan Docker Compose refreshes, or coordinate multi-host maintenance. The bundled helper is plan-only; PatchMon API execution is unavailable until a tested Python client is added. |
 | `ls-linux-service-triage` | `operations` | 40 | `ops` | `linux`, `services` | `ls-linux-service-triage` | `1.1` | Diagnoses common Linux service issues using logs, systemd/PM2, file permissions, Nginx reverse proxy checks, and DNS sanity checks. Use when a server app is failing, unreachable, or misconfigured. |
