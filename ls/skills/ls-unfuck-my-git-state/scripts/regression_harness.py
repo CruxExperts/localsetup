@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Purpose: Disposable Git state regression scenarios.
 # Created: 2026-02-20
-# Last updated: 2026-05-09
+# Last updated: 2026-09-02
 
 """
 Run regression scenarios that verify guided_repair_plan detection.
@@ -30,42 +30,44 @@ class HarnessError(RuntimeError):
     pass
 
 
-def _sanitize(s: str) -> str:
-    if not isinstance(s, str) or len(s) > NAME_MAX:
+def _sanitize(value: str) -> str:
+    if not isinstance(value, str) or len(value) > NAME_MAX:
         raise ValueError(f"scenario name invalid (max {NAME_MAX})")
-    s = " ".join(s.split()).strip()
-    if not s:
+    value = " ".join(value.split()).strip()
+    if not value:
         raise ValueError("scenario name empty")
-    return s
+    return value
 
 
-def run_cmd(cwd: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess:
-    r = subprocess.run(
+def run_cmd(cwd: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
+    result = subprocess.run(
         list(args),
         cwd=str(cwd),
         capture_output=True,
         text=True,
         timeout=60,
     )
-    if check and r.returncode != 0:
-        cmd = " ".join(args)
-        detail = (r.stderr or r.stdout or "").strip()
-        raise HarnessError(f"command failed ({r.returncode}) in {cwd}: {cmd}\n{detail}")
-    return r
+    if check and result.returncode != 0:
+        command = " ".join(args)
+        detail = (result.stderr or result.stdout or "").strip()
+        raise HarnessError(f"command failed ({result.returncode}) in {cwd}: {command}\n{detail}")
+    return result
 
 
-def run_guided(*args: str, timeout: int = 120) -> subprocess.CompletedProcess:
-    r = subprocess.run(
+def run_guided(*args: str, timeout: int = 120) -> subprocess.CompletedProcess[str]:
+    result = subprocess.run(
         [sys.executable, str(GUIDED_SCRIPT), *args],
         capture_output=True,
         text=True,
         timeout=timeout,
         cwd=str(SCRIPT_DIR),
     )
-    if r.returncode != 0:
-        detail = (r.stderr or r.stdout or "").strip()
-        raise HarnessError(f"guided_repair_plan.py failed ({r.returncode}) for {' '.join(args)}\n{detail}")
-    return r
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "").strip()
+        raise HarnessError(
+            f"guided_repair_plan.py failed ({result.returncode}) for {' '.join(args)}\n{detail}"
+        )
+    return result
 
 
 def make_repo(work_root: Path, name: str) -> Path:
@@ -80,50 +82,74 @@ def make_repo(work_root: Path, name: str) -> Path:
     return repo
 
 
-def assert_contains(haystack: str, needle: str) -> bool:
-    return needle in haystack
+def task_output_dir(work_root: Path) -> Path:
+    output = work_root / ".agents" / "state" / "git-state-regression-harness"
+    output.mkdir(parents=True, exist_ok=True)
+    return output
 
 
 def scenario_orphaned_worktree(work_root: Path) -> bool:
     repo = make_repo(work_root, "orphaned-worktree")
     run_cmd(repo, "git", "branch", "repair-me")
-    wt = work_root / "orphaned-worktree-wt"
-    run_cmd(repo, "git", "worktree", "add", "-q", str(wt), "repair-me")
-    if wt.exists():
-        shutil.rmtree(wt, ignore_errors=True)
-    r = run_guided("--repo", str(repo))
-    out = r.stdout or ""
-    return assert_contains(out, "[orphaned-worktree-metadata]") and assert_contains(out, "git worktree prune -v")
+    worktree = work_root / "orphaned-worktree-wt"
+    run_cmd(repo, "git", "worktree", "add", "-q", str(worktree), "repair-me")
+    if worktree.exists():
+        shutil.rmtree(worktree, ignore_errors=True)
+    result = run_guided(
+        "--repo",
+        str(repo),
+        "--output-dir",
+        str(task_output_dir(work_root)),
+    )
+    output = result.stdout or ""
+    return "[orphaned-worktree-metadata]" in output and "git worktree prune -v" in output
 
 
 def scenario_detached_head(work_root: Path) -> bool:
     repo = make_repo(work_root, "detached-head")
     run_cmd(repo, "git", "checkout", "-q", "--detach")
-    r = run_guided("--repo", str(repo))
-    out = r.stdout or ""
-    return assert_contains(out, "[detached-head-state]") and assert_contains(out, "git reflog --date=iso -n 20")
+    result = run_guided(
+        "--repo",
+        str(repo),
+        "--output-dir",
+        str(task_output_dir(work_root)),
+    )
+    output = result.stdout or ""
+    return (
+        "[detached-head-state]" in output
+        and "porcelain v2" in output
+        and "git branch rescue/" in output
+    )
 
 
 def scenario_zero_hash_worktree(work_root: Path) -> bool:
     repo = make_repo(work_root, "zero-hash-worktree")
     run_cmd(repo, "git", "branch", "zero-head")
-    wt = work_root / "zero-hash-worktree-wt"
-    run_cmd(repo, "git", "worktree", "add", "-q", str(wt), "zero-head")
-    wt_meta = Path(repo / ".git" / "worktrees")
-    if wt_meta.is_dir():
-        for d in wt_meta.iterdir():
-            if d.is_dir():
-                (d / "HEAD").write_text("0000000000000000000000000000000000000000\n", encoding="utf-8")
+    worktree = work_root / "zero-hash-worktree-wt"
+    run_cmd(repo, "git", "worktree", "add", "-q", str(worktree), "zero-head")
+    worktree_metadata = repo / ".git" / "worktrees"
+    if worktree_metadata.is_dir():
+        for directory in worktree_metadata.iterdir():
+            if directory.is_dir():
+                (directory / "HEAD").write_text(
+                    "0000000000000000000000000000000000000000\n",
+                    encoding="utf-8",
+                )
                 break
-    r = run_guided("--repo", str(repo))
-    out = r.stdout or ""
-    return assert_contains(out, "[zero-hash-worktree-entry]")
+    result = run_guided(
+        "--repo",
+        str(repo),
+        "--output-dir",
+        str(task_output_dir(work_root)),
+    )
+    return "[zero-hash-worktree-entry]" in (result.stdout or "")
 
 
 def scenario_manual_phantom_branch_lock(work_root: Path) -> bool:
-    r = run_guided("--symptom", "phantom-branch-lock", timeout=30)
-    out = r.stdout or ""
-    return assert_contains(out, "[phantom-branch-lock]") and assert_contains(out, "git worktree list --porcelain")
+    del work_root
+    result = run_guided("--symptom", "phantom-branch-lock", timeout=30)
+    output = result.stdout or ""
+    return "[phantom-branch-lock]" in output and "git worktree list --porcelain" in output
 
 
 def run_scenario(name: str, work_root: Path) -> bool:
@@ -140,17 +166,16 @@ def run_scenario(name: str, work_root: Path) -> bool:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Regression harness for Git state repair plans.")
-    ap.add_argument("--scenario", metavar="NAME", help="Run single scenario")
-    ap.add_argument("--list", action="store_true", help="List scenarios")
-    ap.add_argument("--keep-temp", action="store_true", help="Keep temp workspace")
-    args = ap.parse_args()
+    parser = argparse.ArgumentParser(description="Regression harness for Git state repair plans.")
+    parser.add_argument("--scenario", metavar="NAME", help="Run single scenario")
+    parser.add_argument("--list", action="store_true", help="List scenarios")
+    parser.add_argument("--keep-temp", action="store_true", help="Keep temp workspace")
+    args = parser.parse_args()
 
     if args.list:
-        for s in SCENARIOS:
-            print(s)
+        for scenario in SCENARIOS:
+            print(scenario)
         return 0
-
     if not GUIDED_SCRIPT.is_file():
         print(f"Error: guided script not found: {GUIDED_SCRIPT}", file=sys.stderr)
         return 2
@@ -159,8 +184,8 @@ def main() -> int:
     if args.scenario:
         try:
             _sanitize(args.scenario)
-        except ValueError as e:
-            print(f"Error: {e}", file=sys.stderr)
+        except ValueError as exc:
+            print(f"Error: {exc}", file=sys.stderr)
             return 2
         if args.scenario not in SCENARIOS:
             print(f"Error: unknown scenario '{args.scenario}'", file=sys.stderr)
@@ -168,23 +193,23 @@ def main() -> int:
 
     work_root = Path(tempfile.mkdtemp(prefix="git-state-harness-"))
     try:
-        pass_count = 0
-        fail_count = 0
+        passed_count = 0
+        failed_count = 0
         for scenario in scenarios:
             try:
                 passed = run_scenario(scenario, work_root)
-            except (HarnessError, subprocess.TimeoutExpired) as e:
-                print(f"ERROR {scenario}: {e}", file=sys.stderr)
+            except (HarnessError, subprocess.TimeoutExpired) as exc:
+                print(f"ERROR {scenario}: {exc}", file=sys.stderr)
                 passed = False
             if passed:
                 print(f"PASS {scenario}")
-                pass_count += 1
+                passed_count += 1
             else:
                 print(f"FAIL {scenario}")
-                fail_count += 1
+                failed_count += 1
         print()
-        print(f"Harness result: {pass_count} passed, {fail_count} failed")
-        return 0 if fail_count == 0 else 1
+        print(f"Harness result: {passed_count} passed, {failed_count} failed")
+        return 0 if failed_count == 0 else 1
     finally:
         if not args.keep_temp and work_root.exists():
             shutil.rmtree(work_root, ignore_errors=True)

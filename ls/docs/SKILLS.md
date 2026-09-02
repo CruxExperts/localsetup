@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: fdeb1520e85adfc064fc2265b0dfcb783b8de888b30749819a4269a5c7edd6ef
+  source_provenance_hash: 656b9c07546f2fad7ff4ea1c55dbbc837887c61cdd933b9954e8ffd7ebf9601e
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 435bbd5ac32492540bd0689c69b8a0b7657319fd
-artifact_sha256: 46aba3334f7bd5ad8721f2e57c560f9cd84d727c4fe9ceb26ea4746db4d8ff02
+source_commit: 246cadba334cae02cb847b0d5db4666c82159030
+artifact_sha256: 167dd158aff2ea89b9ffb89e63df4be184a5b0e93723f341758c48e72114344f
 ---
 # Shipped skills catalog
 
@@ -37,7 +37,7 @@ Total shipped skills: 103
 | `ls-public-repo-identity` | `framework-governance` | 20 | `publishing` | `identity`, `publishing` | `ls-public-repo-identity` | `1.2` | Public repo identity - use in README and published repos. For real identity details, use a local-only identity file that is not committed. Use when editing README*, CONTRIBUTING*. |
 | `ls-receiving-code-review` | `framework-governance` | 20 | `dev` | `review`, `feedback` | `ls-receiving-code-review` | `1.2` | Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable. Requires technical rigor and verification, not performative agreement or blind implementation. |
 | `ls-requesting-code-review` | `framework-governance` | 20 | `dev` | `review`, `feedback` | `ls-requesting-code-review` | `1.0` | Use when requesting code review before merge or after substantial changes; provide focused requirements, diff range, and severity-calibrated review instructions. |
-| `ls-unfuck-my-git-state` | `framework-governance` | 20 | `dev` | `git`, `recovery` | `ls-unfuck-my-git-state` | `1.2` | Diagnose and recover broken Git state and worktree metadata with a staged, low-risk recovery flow. Use when Git reports detached or contradictory HEAD state, phantom worktree locks, orphaned worktree entries, missing refs, 0000000000000000000000000000000000000000 hashes, or branch operations fail with errors like already checked out, unknown revision, not a valid object name, or cannot lock ref. |
+| `ls-unfuck-my-git-state` | `framework-governance` | 20 | `dev` | `git`, `recovery` | `ls-unfuck-my-git-state` | `1.3` | Diagnose and recover broken Git state and worktree metadata with a staged, low-risk recovery flow. Use when Git reports detached or contradictory HEAD state, phantom worktree locks, orphaned worktree entries, missing refs, 0000000000000000000000000000000000000000 hashes, or branch operations fail with errors like already checked out, unknown revision, not a valid object name, or cannot lock ref. |
 | `ls-agentlens` | `development` | 30 | `dev` | `codebase`, `navigation` | `ls-agentlens` | `1.0` | Navigate and understand codebases using agentlens hierarchical documentation. Use when exploring new projects, finding modules, locating symbols in large files, finding TODOs/warnings, or understanding code structure. |
 | `ls-debug-pro` | `development` | 30 | `dev` | `debugging`, `diagnostics` | `ls-debug-pro` | `1.2` | Use when debugging reproducible failures with a systematic method and language-specific commands for Node, Python, Swift, CSS/layout, network, or git bisect. |
 | `ls-nodejs-nextjs` | `development` | 30 | `dev` | `nodejs`, `nextjs` | `ls-nodejs-nextjs` | `1.0` | Practical Node.js and Next.js project runbook. Use for Node, Next.js, React, package-manager, build, migration, debugging, testing, security, deployment, and version-verification tasks. |

@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: fdeb1520e85adfc064fc2265b0dfcb783b8de888b30749819a4269a5c7edd6ef
+  source_provenance_hash: 656b9c07546f2fad7ff4ea1c55dbbc837887c61cdd933b9954e8ffd7ebf9601e
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 435bbd5ac32492540bd0689c69b8a0b7657319fd
-artifact_sha256: 7fafc4d832170f64c4bc911361c7b96fea9f4be6bec25eaf188e59fb8fa596bc
+source_commit: 246cadba334cae02cb847b0d5db4666c82159030
+artifact_sha256: 0dca19a213ccb36ce7d99e8f7ed46d5dff877bf7fabba5b5af8031fb7ae7fc66
 ---
 # Implementation File Map
 
@@ -843,6 +843,7 @@ artifact_sha256: 7fafc4d832170f64c4bc911361c7b96fea9f4be6bec25eaf188e59fb8fa596b
 | `keep` | `ls/skills/ls-unfuck-my-git-state/references/overview.md` |
 | `keep` | `ls/skills/ls-unfuck-my-git-state/references/recovery-checklist.md` |
 | `keep` | `ls/skills/ls-unfuck-my-git-state/references/symptom-map.md` |
+| `keep` | `ls/skills/ls-unfuck-my-git-state/scripts/backup_git_metadata.py` |
 | `keep` | `ls/skills/ls-unfuck-my-git-state/scripts/guided_repair_plan.py` |
 | `keep` | `ls/skills/ls-unfuck-my-git-state/scripts/regression_harness.py` |
 | `keep` | `ls/skills/ls-unfuck-my-git-state/scripts/snapshot_git_state.py` |
@@ -952,6 +953,7 @@ artifact_sha256: 7fafc4d832170f64c4bc911361c7b96fea9f4be6bec25eaf188e59fb8fa596b
 | `keep` | `ls/tests/test_trusted_work_queue_shared_folder.py` |
 | `keep` | `ls/tests/test_trusted_work_queue_snapshot.py` |
 | `keep` | `ls/tests/test_ui_browser_debugging_skill.py` |
+| `keep` | `ls/tests/test_unfuck_my_git_state.py` |
 | `keep` | `ls/tests/test_validation_tooling.py` |
 | `keep` | `ls/tests/test_versioning.py` |
 | `keep` | `ls/tests/test_versioning_release_push.py` |
