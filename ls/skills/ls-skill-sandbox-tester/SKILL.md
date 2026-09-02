@@ -1,6 +1,6 @@
 ---
 name: ls-skill-sandbox-tester
-description: "Test skills in an isolated sandbox before production. Run after vetting and normalization (not right after import). Creates a unique temp sandbox when the skill needs read/write; runs smoke checks; on failure uses ls-debug-pro to iterate until fixed; no writes to repo until user approves. Use when validating a skill after it is framework-compliant, testing a skill end-to-end, or ensuring it runs correctly on all supported platforms."
+description: "Test normalized skills in a bounded temporary staging copy before production. Creates a provenance-marked copy under platform temp, rejects symlinked inputs, runs smoke checks with a minimal environment, and uses ls-debug-pro on failure; no writes return to the repo until user approval. Use when validating a framework-compliant skill end-to-end on a supported platform."
 metadata:
   version: "1.0"
 compatibility: "Python 3.12+ for any bundled tooling. Sandbox paths follow platform temp (Linux /tmp, macOS /tmp or $TMPDIR, Windows %TEMP%). Resolves skill paths per ls/docs/PLATFORM_REGISTRY.md. Tooling must follow ls/docs/TOOLING_POLICY.md and INPUT_HARDENING_STANDARD.md."
@@ -8,7 +8,7 @@ compatibility: "Python 3.12+ for any bundled tooling. Sandbox paths follow platf
 
 # Skill Sandbox Tester
 
-**Purpose:** Validate skills in an isolated sandbox so bugs are found and fixed before promoting to production. Handles staging (unique sandbox dir, no collision), smoke runs, and ties into **ls-debug-pro** for the fix loop. Does not write to the repo until the user approves.
+**Purpose:** Validate skills in a bounded temporary staging copy so bugs are found and fixed before production promotion. The helpers enforce copy provenance, temporary-root containment, symlink rejection, and environment minimization; **ls-debug-pro** owns the fix loop. No changes return to the repository until the user approves.
 
 ## When to use this skill
 
@@ -18,7 +18,7 @@ compatibility: "Python 3.12+ for any bundled tooling. Sandbox paths follow platf
 
 ## How it actually works
 
-**Testing:** The skill does not run a built-in test suite. You (the agent) choose a **smoke command** that should succeed if the skill is healthy: for example run the skill's main script with `--help`, or a dry-run/list mode, or whatever the skill's SKILL.md says to run to verify. The tooling (1) copies the skill into a unique temp directory (the sandbox), then (2) runs that one command with the sandbox as the current working directory. **Pass** = the command exits 0. **Fail** = non-zero exit or crash. So "test" here means: run the chosen command in an isolated copy and treat exit code as the result.
+**Testing:** The skill does not run a built-in test suite. You (the agent) choose a **smoke command** that should succeed if the skill is healthy: for example, run the skill's main script with `--help`, a dry-run/list mode, or the verification command documented by its SKILL.md. The tooling copies the skill to a provenance-marked directory under platform temp, rejects source and staged symlinks, and runs that command from the copy with an allowlisted environment and sandbox-local home and temp paths. **Pass** = exit 0. **Fail** = non-zero exit or crash.
 
 **Debugging:** When the smoke command fails, this skill does not implement the fix. You **load ls-debug-pro** and follow its 7-step protocol (reproduce, isolate, hypothesize, instrument, verify, fix, regression). The important rule: **all reproduction and edits happen in the sandbox copy only.** You run the failing command in the sandbox, inspect logs or add print/debugger, change code in the sandbox, then run the same smoke command again from the sandbox. Repeat until the smoke command exits 0. Only then do you summarize the changes and **ask the user** to approve copying those fixes from the sandbox into the real skill directory (e.g. `ls/skills/<name>/`). No writes to the repo until the user says so.
 
@@ -30,7 +30,7 @@ compatibility: "Python 3.12+ for any bundled tooling. Sandbox paths follow platf
 4. If non-zero: load debug-pro, reproduce and fix **inside the sandbox**, re-run the same smoke command in the sandbox until it passes.
 5. After it passes: summarize what you changed in the sandbox and ask the user to approve applying those changes to the real skill; only then copy back and (if needed) run deploy.
 
-So the sandbox tester provides the **staging and run** (copy, run one command, interpret exit code); debug-pro provides the **how to fix** when that command fails. The agent ties them together by choosing the smoke command, running it, and on failure following debug-pro while keeping all edits in the sandbox.
+The sandbox tester provides bounded **staging and run** behavior; debug-pro provides the **how to fix** when that command fails. This is not an OS security sandbox: a command can still use absolute paths, spawn processes, access the network, or mutate external systems. Choose non-destructive smoke commands and obtain every approval those effects require.
 
 ## Rule ownership
 
@@ -38,7 +38,7 @@ This skill owns post-normalization skill validation behavior. Public validation 
 
 - Never run sandbox testing before vetting and normalization have completed.
 - Never write sandbox fixes back to the repo without user approval.
-- Smoke commands must run inside the sandbox copy and must not write outside that directory.
+- Smoke commands must run inside the staged copy and be selected not to write outside it. The helper minimizes cwd and environment exposure but cannot enforce filesystem, process, network, or external-service confinement.
 
 ## Design: use debug-pro in conjunction
 
@@ -68,8 +68,8 @@ Python 3.12+ scripts under `scripts/` (per TOOLING_POLICY and INPUT_HARDENING_ST
 
 | Script | Purpose |
 |--------|---------|
-| `scripts/create_sandbox.py` | Create a unique temp directory with a full copy of the skill. Prints the skill copy path (use as `--sandbox-dir` for run_smoke). |
-| `scripts/run_smoke.py` | Run a single command with cwd set to the sandbox (skill copy). Exit code matches the command; use for smoke checks (e.g. `--command "python3 scripts/pr_review.py --help"`). |
+| `scripts/create_sandbox.py` | Copy a symlink-free skill into a unique, provenance-marked directory under platform temp. Prints the skill-copy path for `run_smoke.py`. |
+| `scripts/run_smoke.py` | Validate that marked copy, reject arbitrary or symlinked directories, and run one command there with an allowlisted environment and sandbox-local home/temp paths. Exit code matches the command. |
 
 **Quick start (by name):**
 
@@ -93,19 +93,19 @@ Smoke passes if the command exits 0. On non-zero, use ls-debug-pro in the sandbo
 
 - **Input:** Skill name (e.g. `ls-pr-reviewer`) or path. Resolve to the skill directory per platform (see above).
 - **Read/write need:** If the skill has no scripts or side effects (e.g. doc-only), you can run a lightweight check (e.g. parse SKILL.md, check frontmatter). If the skill has `scripts/` or clearly writes output (state files, reports), treat it as needing a sandbox.
-- **Sandbox only when needed:** Create an isolated environment only when the skill will read/write; otherwise a quick validation may suffice without a full sandbox.
+- **Staging only when needed:** Create the bounded temporary copy when the skill will read or write; otherwise a quick static validation may suffice without staging.
 
 ### 2. Create unique sandbox (when needed)
 
 - **Location:** Use platform-appropriate temp: Linux `/tmp`; macOS `/tmp` or `$TMPDIR`; Windows `%TEMP%` or `%TMP%`. See ls-safety-and-backup for temp file policy.
 - **Naming:** Unique dir to avoid collision, e.g. `skill-sandbox-<skill-name>-<timestamp>` or `mktemp -d` (Bash) / `tempfile.mkdtemp` (Python). Example: `/tmp/skill-sandbox-ls-pr-reviewer-20260220-120000`.
-- **Contents:** Copy the skill directory into the sandbox (do not symlink into the repo, so all writes stay in the sandbox). Optionally set env (e.g. `PR_REVIEW_STATE`, `PR_REVIEW_OUTDIR`) to point inside the sandbox so any state or reports go there.
+- **Contents:** Copy the complete skill directory after rejecting every source symlink. The helper records source/copy provenance beside the copy; `run_smoke.py` rejects missing, malformed, moved, or inconsistent markers and symlinks introduced after staging.
 - **Cleanup:** Remove the sandbox when the test session is done, or leave it for inspection when the user wants to debug; document the path.
 
 ### 3. Run smoke
 
-- **Entrypoints:** Run the skill's main entrypoints (e.g. from SKILL.md "Quick Start" or "Usage"): run scripts with minimal safe arguments (e.g. `--help`, or a dry-run/list mode if the skill has one). Prefer invoking the framework tooling (Python scripts) from the sandbox copy so behavior matches production.
-- **Smoke criteria:** Exit code 0 for success paths; no writes outside the sandbox; expected stdout/stderr shape (e.g. no tracebacks, or expected error message for known failure cases). If the skill documents "run X to verify," run that.
+- **Entrypoints:** Run the skill's main entrypoints from its SKILL.md with minimal safe arguments such as `--help` or a documented dry-run/list mode. The runner removes inherited `PYTHONPATH` and non-allowlisted variables, then supplies home, XDG, and temp paths under the staged copy. Declare or copy any runtime dependency the candidate intentionally needs; the helper never injects checkout `ls/lib`.
+- **Smoke criteria:** Exit code 0 for success paths; expected stdout/stderr shape; and no intended writes outside the staged copy. Because this is a staging boundary rather than OS confinement, use only commands whose filesystem, process, network, credential, and external-service behavior is already understood and authorized.
 - **Platform:** Run in the same environment the user is on (same OS, same interpreter) so results are valid for that platform.
 
 ### 4. On success

@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 588785899659027d85b6972033c3854a27488c64e789324d4640bc51b2c7ee9f
+  source_provenance_hash: 74322fbca741a9f89130927cbca6da69333f9e376e22c03c6ad168b7633df2d0
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: bd835c3fb01d339bb0bec862267cef1a4be1c2c8
-artifact_sha256: 848b7e3fc9f493713a593c5edd706c3bbe6f7bc3c1960ec42a07199dbadaba4c
+source_commit: b5477b7f8ddf753add268ee0b9ec22bb7ec948d5
+artifact_sha256: 038e2421b343d285751ea778cfc0d5b17bf33833448df1e6a98a4ab2021eefc5
 ---
 # Shipped skills catalog
 
@@ -98,7 +98,7 @@ Total shipped skills: 103
 | `ls-skill-discovery` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `discovery` | `ls-skill-discovery` | `1.4` | Discover and recommend public skills from external registries (e.g. awesome lists, skill hubs). Use when the user is creating a new skill, importing a skill, or asking to find similar public skills. Maintains PUBLIC_SKILL_REGISTRY.urls and PUBLIC_SKILL_INDEX.yaml; returns top 5 similar matches with rich summaries and clear next actions. |
 | `ls-skill-importer` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `import` | `ls-skill-importer` | `1.5` | Import external skills from a URL (GitHub or other) or local path; discover, validate, security-screen, and summarize each skill so the user can choose which to import. Use when the user wants to add skills from a repo/URL or local folder, or when screening and selecting skills to add to the framework. |
 | `ls-skill-normalizer` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `normalization` | `ls-skill-normalizer` | `1.1` | Normalize skills already in the tree using ls/docs/SKILL_NORMALIZATION.md: documents first, tooling second, with user choice for platform-specific skills. Use when normalizing one or more skills in ls/skills/ after import, copying, or batch review. |
-| `ls-skill-sandbox-tester` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `sandbox` | `ls-skill-sandbox-tester` | `1.0` | Test skills in an isolated sandbox before production. Run after vetting and normalization (not right after import). Creates a unique temp sandbox when the skill needs read/write; runs smoke checks; on failure uses ls-debug-pro to iterate until fixed; no writes to repo until user approves. Use when validating a skill after it is framework-compliant, testing a skill end-to-end, or ensuring it runs correctly on all supported platforms. |
+| `ls-skill-sandbox-tester` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `sandbox` | `ls-skill-sandbox-tester` | `1.0` | Test normalized skills in a bounded temporary staging copy before production. Creates a provenance-marked copy under platform temp, rejects symlinked inputs, runs smoke checks with a minimal environment, and uses ls-debug-pro on failure; no writes return to the repo until user approval. Use when validating a framework-compliant skill end-to-end on a supported platform. |
 | `ls-skill-vetter` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `security` | `ls-skill-vetter` | `1.2` | Security-first skill vetting for AI agent skills. Use before installing any skill from public registries (e.g. skill hubs, GitHub) or other sources. Checks for red flags, permission scope, and suspicious patterns. |
 | `ls-stripe-payments` | `integrations` | 60 | `integrations` | `external-service`, `integration` | `ls-stripe-payments` | `1.0` | Guide Stripe payments integration. Use for Checkout, PaymentIntents, subscriptions, webhooks, Connect, billing, and payment security review. |
 | `ls-supabase` | `integrations` | 60 | `integrations` | `external-service`, `integration` | `ls-supabase` | `1.0` | Guide Supabase application work. Use for Supabase Auth, Postgres, RLS, Edge Functions, Storage, Realtime, migrations, and local development. |
