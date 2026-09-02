@@ -46,7 +46,7 @@
 | ls-markdown-reference-validator | Validate markdown local references/anchors from YAML-configured targets and emit audit report | Validating docs/skills/global Kilo references; periodic archive integrity checks |
 | ls-system-info | Quick system diagnostics: CPU, memory, disk, uptime | Capture server baseline, host layout and specs for further operations |
 | ls-cron-orchestrator | Manage cron from manifest: triggers, sequenced tasks, on-boot delay | Create/remove/reorder cron tasks; install crontab fragment |
-| ls-cloudflare-dns | Manage Cloudflare DNS records and zone DNS settings through direct Cloudflare v4 REST API tooling | DNS record changes; DNS settings; dry-run plans; snapshots |
+| ls-cloudflare-dns | Manage Cloudflare zones and DNS with the `cf` CLI | Records; DNSSEC; scans; import/export; batch; analytics; settings; transfers |
 | ls-npm-management | Manage Nginx Proxy Manager proxy hosts via REST API; coordinate Docker service deployments with NPM routing | Create/modify/remove NPM proxy hosts; diagnose 502s; backup/restore; Docker + NPM deploy workflows |
 | ls-keepass-secrets | KeePass-backed secrets via logical IDs; get/ensure credentials; bulk create or rotate; never embed in repo | User asks for logins, workflow needs credentials, or bulk account creation |
 | ls-mail-protocol-control | Manage delegated SMTP/IMAP accounts with attachment-first MIME handling, chunked attachment retrieval, and full-envelope encryption/decryption tools | Agent-driven mailbox read/send/mutate/encrypt workflows; preencrypted_openpgp_armored for Agent Q strict mail ship |

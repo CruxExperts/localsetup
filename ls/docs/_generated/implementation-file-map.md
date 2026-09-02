@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 914e1e897dd2d989532162a6c942224898219e94977585d18179514803e385d5
+  source_provenance_hash: aa1ac3c9ef8f9c2afa9428f288bff97408c68c09762ef16e966389e9cded6ca1
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 69f665a7d8eb3f6674f0433a41ea3803c32670ad
-artifact_sha256: 0df7344e34013693ca50a5fa1e4a50c189c2e97771bff8c74063d03d18a7a603
+source_commit: 0d9fd5570a494facbb2627645591ddda25dfaf81
+artifact_sha256: c547cdabacaada174211cd09aecd2fda79cf7fcc81117eed97f661b08915e1d6
 ---
 # Implementation File Map
 
@@ -416,36 +416,6 @@ artifact_sha256: 0df7344e34013693ca50a5fa1e4a50c189c2e97771bff8c74063d03d18a7a60
 | `keep` | `ls/skills/ls-backlog-and-reminders/SKILL.md` |
 | `keep` | `ls/skills/ls-backlog-and-reminders/references/backlog-template.md` |
 | `keep` | `ls/skills/ls-cloudflare-dns/SKILL.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/api-scope.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/auth-permissions.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/batch-import-export-scan.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/cloudflare-openapi-dns-paths.json` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/deterministic-tooling.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/dns-records.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/dns-settings.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/dynamic-dns.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/examples.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/record-types.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/safety.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/snapshots-plans.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/source-ledger.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/troubleshooting.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/update-procedure.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/zones.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/schemas/cli-output.schema.json` |
-| `keep` | `ls/skills/ls-cloudflare-dns/schemas/dns-change-plan.schema.json` |
-| `keep` | `ls/skills/ls-cloudflare-dns/schemas/dns-record-normalized.schema.json` |
-| `keep` | `ls/skills/ls-cloudflare-dns/schemas/dns-snapshot.schema.json` |
-| `keep` | `ls/skills/ls-cloudflare-dns/scripts/cf_dns.py` |
-| `keep` | `ls/skills/ls-cloudflare-dns/scripts/cf_dns_parser.py` |
-| `keep` | `ls/skills/ls-cloudflare-dns/scripts/cf_dns_support.py` |
-| `keep` | `ls/skills/ls-cloudflare-dns/scripts/refresh_cloudflare_dns_schema.py` |
-| `keep` | `ls/skills/ls-cloudflare-dns/scripts/validate_cf_dns_skill.py` |
-| `keep` | `ls/skills/ls-cloudflare-dns/tests/fixtures/change-plan.json` |
-| `keep` | `ls/skills/ls-cloudflare-dns/tests/fixtures/cli-output.json` |
-| `keep` | `ls/skills/ls-cloudflare-dns/tests/fixtures/normalized-record.json` |
-| `keep` | `ls/skills/ls-cloudflare-dns/tests/fixtures/snapshot.json` |
-| `keep` | `ls/skills/ls-cloudflare-dns/tests/test_cf_dns.py` |
 | `keep` | `ls/skills/ls-codex-heartbeat/SKILL.md` |
 | `keep` | `ls/skills/ls-codex-heartbeat/references/artifacts.md` |
 | `keep` | `ls/skills/ls-codex-heartbeat/references/command-logging.md` |

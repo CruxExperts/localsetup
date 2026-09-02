@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 914e1e897dd2d989532162a6c942224898219e94977585d18179514803e385d5
+  source_provenance_hash: aa1ac3c9ef8f9c2afa9428f288bff97408c68c09762ef16e966389e9cded6ca1
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 69f665a7d8eb3f6674f0433a41ea3803c32670ad
-artifact_sha256: 35bc33903a9eecc4dac2306eec30ae9f090efbe30e3f29eeb3ae3ddf59c70d04
+source_commit: 0d9fd5570a494facbb2627645591ddda25dfaf81
+artifact_sha256: a08b30fb89ed91406d11fbadef3dedf0f36195a38988478aee901cfc97b955a3
 ---
 # Shipped skills catalog
 
@@ -55,7 +55,7 @@ Total shipped skills: 103
 | `ls-system-info` | `operations` | 40 | `ops` | `system`, `diagnostics` | `ls-system-info` | `1.1` | Quick system diagnostics: CPU, memory, disk, uptime. Use when capturing server baseline or recording host layout and specs for further operations. |
 | `ls-omniroute` | `integrations` | 45 | `integrations`, `omniroute` | `omniroute`, `main`, `router` | `ls-omniroute` | `1.1` | Main OmniRoute router for ambiguous first-response triage, environment/API-key/access preflight, and non-mutating client onboarding. Use only before a task is classified; route classified discovery, mutation, and source-coverage work to their focused OmniRoute skills. |
 | `ls-agentq-transport` | `integrations` | 50 | `integrations` | `agentq`, `transport` | `ls-agentq-transport` | `1.0` | Agent Q bidirectional transport client - file_drop ship/ingest, mail pull/ship (including strict gpg preencrypted), registry validation, queue-pending, archive-prune. Use when shipping or ingesting sealed PRD manifests between agents over shared folders or mail; when editing agent_trust_registry, manifest.schema.json, or agentq CLI. |
-| `ls-cloudflare-dns` | `integrations` | 50 | `integrations` | `cloudflare`, `dns` | `ls-cloudflare-dns` | `2.0` | Manage Cloudflare DNS records and zone DNS settings with a Python-first direct Cloudflare v4 REST API CLI, deterministic JSON output, snapshots, dry-run plans, and apply safety gates. |
+| `ls-cloudflare-dns` | `integrations` | 50 | `integrations` | `cloudflare`, `dns` | `ls-cloudflare-dns` | `3.0` | Use the cf CLI for Cloudflare zones, DNS records, settings, DNSSEC, scans, imports, exports, batches, analytics, and zone transfers. |
 | `ls-github-starredrepos` | `integrations` | 50 | `integrations` | `github`, `archive` | `ls-github-starredrepos` | `1.0` | Manage a GitHub starred repositories archive named starredrepos with authenticated context checks, dry-run synchronization, repo scouting, metadata snapshots, and guarded publish workflows. |
 | `ls-keepass-secrets` | `integrations` | 50 | `integrations` | `keepass`, `secrets` | `ls-keepass-secrets` | `1.1` | Use when resolving logical secret IDs through KeePassXC using safe mapping files, JSON-first CLI commands, and redacted output by default. |
 | `ls-mail-protocol-control` | `integrations` | 50 | `integrations` | `mail`, `protocols` | `ls-mail-protocol-control` | `1.2` | Provide full SMTP and IMAP account control for delegated mailboxes with attachment-first MIME handling and full-envelope encryption. Use when an agent must read, send, organize, decrypt, and manage mailbox state with strict admin controls. |

@@ -206,7 +206,7 @@ These are not toy prompts. They are practical skills and workflows from the ship
 | `ls-skill-vetter` | Reviews third-party skills as untrusted inputs before they join your agent environment. |
 | `ls-codex-heartbeat` | Initializes and runs opt-in heartbeat checks with transaction-safe artifacts and explicit cron activation. |
 | `ls-keepass-secrets` | Resolves logical secrets through KeePassXC with safe mapping files and redacted output defaults. |
-| `ls-cloudflare-dns` | Manages Cloudflare DNS through deterministic JSON plans, snapshots, dry runs, and guarded apply flows. |
+| `ls-cloudflare-dns` | Uses the `cf` CLI for Cloudflare zones, DNS records, settings, DNSSEC, scans, imports, exports, batches, analytics, and zone transfers. |
 | `ls-workflow-ops-tmux-session` | Keeps human-controlled server operations visible, resumable, and sudo-aware. |
 | `ls-workflow-tmux-terminal-mode` | Manages tmux-default terminal mode setup and read-only health checks. |
 
