@@ -102,7 +102,7 @@ def _spawn_worker_task(task_id: str, worker_id: str, session_id: str) -> None:
     script_root = Path(__file__).resolve().parent
     cmd: list[str] = [
         "python3",
-        "scripts/kilo_headless_runner.py",
+        str(script_root / "kilo_headless_runner.py"),
         "--task-id",
         str(task_id),
         "--worker-id",

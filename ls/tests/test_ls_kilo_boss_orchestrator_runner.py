@@ -172,6 +172,36 @@ def test_run_worker_executes_safe_argv_without_shell(monkeypatch, tmp_path: Path
     assert "a&&b" in result["stdout"]
 
 
+def test_spawn_worker_task_uses_package_local_runner(monkeypatch) -> None:
+    captured: dict[str, object] = {}
+
+    class Result:
+        returncode = 0
+        stdout = ""
+        stderr = ""
+
+    def fake_run(command: list[str], **kwargs: object) -> Result:
+        captured["command"] = command
+        captured.update(kwargs)
+        return Result()
+
+    monkeypatch.setattr("subprocess.run", fake_run)
+
+    boss_ctl._spawn_worker_task("task-path", "worker-path", "session-path")
+
+    assert captured["command"] == [
+        "python3",
+        str(SKILL_ROOT / "kilo_headless_runner.py"),
+        "--task-id",
+        "task-path",
+        "--worker-id",
+        "worker-path",
+        "--session-id",
+        "session-path",
+    ]
+    assert captured["cwd"] == str(SKILL_ROOT)
+    assert captured["shell"] is False
+
 def test_spawn_worker_task_raises_actionable_error(monkeypatch) -> None:
     def _raise_oserror(*args, **kwargs):
         raise OSError("spawn blocked")
