@@ -56,8 +56,8 @@ Run commands from this skill directory unless a script option names another path
 
 - `sync-starredrepos.mjs --dry-run` plans archive changes without writing files, creating remotes, committing, or pushing.
 - `--apply` allows local archive file updates only.
-- `--create-remote` may create `OWNER/starredrepos` only when combined with `--apply`.
-- `--commit` may create a local commit only when combined with `--apply`.
+- `--create-remote` may create `OWNER/starredrepos` only when combined with `--apply`; the helper initializes a new archive Git repository or verifies that the requested worktree is its root before remote creation.
+- `--commit` may create a local commit only when combined with `--apply`; the helper initializes a new archive Git repository or verifies that the requested worktree is its root before committing.
 - `--push` may push only when combined with `--apply --commit`.
 - Do not delete, deinitialize, or rewrite existing submodules unless the user explicitly asks for that cleanup; this helper does not create submodules yet.
 - Never print GitHub tokens, authorization headers, or full `gh auth token` output.

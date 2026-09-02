@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import subprocess
 from pathlib import Path
-
 import pytest
 import yaml
 
@@ -145,7 +145,7 @@ def test_github_starredrepos_script_help_exits_cleanly() -> None:
 
 def test_github_starredrepos_source_ledger_dates_volatile_claims() -> None:
     text = (SKILL / "references/source-ledger.md").read_text(encoding="utf-8")
-    assert "Accessed: 2026-05-12." in text
+    assert "Accessed: 2026-09-02." in text
     assert "Planning Verification Pattern" in text
     assert "CruxExperts" not in text
     assert "22 starred" not in text
@@ -305,3 +305,121 @@ def test_github_starredrepos_redaction_helper_covers_github_tokens() -> None:
     )
     assert result.returncode == 0, result.stderr
     assert "ok" in result.stdout
+
+
+def test_github_starredrepos_initializes_only_a_fresh_archive_git_root() -> None:
+    if not shutil.which("node") or not shutil.which("git"):
+        pytest.skip("node and git are required")
+
+    script = (
+        "import { mkdtemp, rm } from 'node:fs/promises';"
+        "import { tmpdir } from 'node:os';"
+        "import { join } from 'node:path';"
+        "import { ensureGitRepository } from './scripts/common.mjs';"
+        "const worktree = await mkdtemp(join(tmpdir(), 'starredrepos-git-'));"
+        "try {"
+        "const first = await ensureGitRepository(worktree);"
+        "const second = await ensureGitRepository(worktree);"
+        "if (first !== true || second !== false) process.exit(2);"
+        "process.stdout.write('ok\\n');"
+        "} finally { await rm(worktree, { recursive: true, force: true }); }"
+    )
+    result = subprocess.run(
+        ["node", "--input-type=module", "-e", script],
+        cwd=SKILL,
+        check=False,
+        text=True,
+        capture_output=True,
+        timeout=10,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "ok\n"
+
+
+def test_github_starredrepos_rejects_nested_worktrees_even_with_git_error_text_in_path(tmp_path: Path) -> None:
+    if not shutil.which("node") or not shutil.which("git"):
+        pytest.skip("node and git are required")
+    outer = tmp_path / "outer"
+    nested = outer / "not a git repository"
+    subprocess.run(["git", "init", str(outer)], check=True, text=True, capture_output=True)
+    nested.mkdir()
+    script = (
+        "import { ensureGitRepository } from './scripts/common.mjs';"
+        f"const worktree = {json.dumps(str(nested))};"
+        "try { await ensureGitRepository(worktree); process.exit(2); }"
+        "catch (error) { process.exit(String(error.message).includes('Git repository root') ? 0 : 3); }"
+    )
+    result = subprocess.run(
+        ["node", "--input-type=module", "-e", script],
+        cwd=SKILL,
+        check=False,
+        text=True,
+        capture_output=True,
+        timeout=10,
+    )
+    assert result.returncode == 0, result.stderr
+    assert not (nested / ".git").exists()
+
+
+def test_github_starredrepos_remote_creation_push_sets_upstream(tmp_path: Path) -> None:
+    if not shutil.which("node") or not shutil.which("git"):
+        pytest.skip("node and git are required")
+    worktree = tmp_path / "archive"
+    remote = tmp_path / "archive.git"
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    fake_gh = bin_dir / "gh"
+    fake_gh.write_text(
+        "#!/bin/sh\n"
+        "case \"$*\" in\n"
+        "  *' /user/starred?per_page=100'*) printf 'HTTP/1.1 200 OK\n\n[]\n' ;;\n"
+        "  *' /user'*) printf '{\"login\":\"test-user\"}\n' ;;\n"
+        "  *'repo create '*) git init --bare \"$FAKE_GH_REMOTE\" >/dev/null && git -C \"$FAKE_GH_WORKTREE\" remote add origin \"$FAKE_GH_REMOTE\" ;;\n"
+        "  *) exit 2 ;;\n"
+        "esac\n",
+        encoding="utf-8",
+    )
+    fake_gh.chmod(0o755)
+    env = {
+        **os.environ,
+        "PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}",
+        "STARREDREPOS_WORKTREE": str(worktree),
+        "FAKE_GH_REMOTE": str(remote),
+        "FAKE_GH_WORKTREE": str(worktree),
+        "GIT_AUTHOR_NAME": "Test User",
+        "GIT_AUTHOR_EMAIL": "test@example.invalid",
+        "GIT_COMMITTER_NAME": "Test User",
+        "GIT_COMMITTER_EMAIL": "test@example.invalid",
+    }
+    result = subprocess.run(
+        ["node", "scripts/sync-starredrepos.mjs", "--apply", "--create-remote", "--commit", "--push"],
+        cwd=SKILL,
+        env=env,
+        check=False,
+        text=True,
+        capture_output=True,
+        timeout=30,
+    )
+    assert result.returncode == 0, result.stderr
+    upstream = subprocess.run(
+        ["git", "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}"],
+        cwd=worktree,
+        check=True,
+        text=True,
+        capture_output=True,
+    )
+    assert upstream.stdout.strip().startswith("origin/")
+
+def test_github_starredrepos_mutation_paths_require_git_root_and_sha_pinned_actions() -> None:
+    sync = (SKILL / "scripts/sync-starredrepos.mjs").read_text(encoding="utf-8")
+    assert "if (options.create_remote || options.commit)" in sync
+    assert sync.index("await ensureGitRepository(worktree)") < sync.index('"repo", "create"')
+    assert sync.index("await ensureGitRepository(worktree)") < sync.index('["add", "manifest.json"')
+
+    template = (SKILL / "templates/github-actions-starredrepos.yml").read_text(encoding="utf-8")
+    uses_lines = [line.strip() for line in template.splitlines() if "uses:" in line]
+    assert uses_lines == [
+        "- uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0",
+        "- uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0",
+    ]
+    assert all(re.fullmatch(r"- uses: [A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[0-9a-f]{40} # v[0-9]+\.[0-9]+\.[0-9]+", line) for line in uses_lines)

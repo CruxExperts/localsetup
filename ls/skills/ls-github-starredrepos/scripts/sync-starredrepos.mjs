@@ -6,6 +6,7 @@ import {
   GITHUB_HOST,
   REPO_NAME,
   defaultWorktree,
+  ensureGitRepository,
   fetchStarredRepos,
   ghApi,
   githubEnv,
@@ -87,6 +88,9 @@ async function main() {
   }
 
   await mkdir(worktree, { recursive: true });
+  if (options.create_remote || options.commit) {
+    await ensureGitRepository(worktree);
+  }
   await writeJson(join(worktree, "manifest.json"), manifest);
   await writeJson(join(worktree, "snapshots", "latest.json"), manifest);
 
@@ -105,7 +109,8 @@ async function main() {
     await run("git", ["commit", "-m", "chore: sync starred repositories"], { cwd: worktree, timeoutMs: 30000 });
   }
   if (options.push) {
-    await run("git", ["push"], { cwd: worktree, timeoutMs: 30000 });
+    const pushArgs = options.create_remote ? ["push", "--set-upstream", "origin", "HEAD"] : ["push"];
+    await run("git", pushArgs, { cwd: worktree, timeoutMs: 30000 });
   }
 
   process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);

@@ -1,6 +1,6 @@
 # Node Runtime
 
-Target Node.js >=22 LTS.
+Target the supported Node.js 22.x LTS line.
 
 The scripts rely on:
 
