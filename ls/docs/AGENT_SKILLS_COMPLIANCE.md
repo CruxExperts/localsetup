@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.3
+version: 4.4
 owner_skill: ls-skill-creator
 ---
 
@@ -48,7 +48,7 @@ The extra `workflow.yaml` file is Localsetup metadata, not part of the Agent Ski
 
 - **Framework skills are valid Agent Skills.** They use only spec-defined fields and layout; they can be copied into any Agent Skills-compatible host (e.g. [Anthropic's skills](https://github.com/anthropics/skills), Claude Code) and used as-is.
 - **Framework workflow packages are executable Agent Skills packages.** Their `SKILL.md` files are portable; their `workflow.yaml` files are Localsetup-specific and may be ignored by hosts that do not understand Localsetup workflow metadata.
-- **External spec-compliant skills can be used in this framework.** Copy the skill directory into `ls/skills/`, add `metadata.version` if missing, register per [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md), and deploy. No body or structure changes required for spec compliance.
+- **External spec-compliant skills can be imported into this framework only through `ls-skill-importer`.** Complete its full vetting, staged normalization, and frozen-byte sandbox-validation gates before canonical copy or registration; deployment remains a separate explicitly authorized action. Format compliance alone does not prove behavioral portability or permit bypassing those gates.
 - Full import/export steps: [SKILL_INTEROPERABILITY.md](SKILL_INTEROPERABILITY.md).
 
 ## Reference
