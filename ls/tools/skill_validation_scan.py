@@ -3,7 +3,7 @@
 # Created: 2026-02-19
 # Last updated: 2026-02-19
 
-# Optional max file size for body/scripts to avoid DoS (bytes); skip files over this, do not treat as hit.
+# Candidate files over the scan limit fail validation instead of being skipped.
 MAX_FILE_SIZE_BYTES = 1 * 1024 * 1024  # 1 MiB
 OUTPUT_MAX_FIELD_LEN = 2000  # truncate long fields in output
 
@@ -17,6 +17,7 @@ substantial runs of non-Latin natural-language script (CJK, Cyrillic, Arabic, et
 """
 
 import re
+import stat as stat_module
 import sys
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -28,6 +29,8 @@ require_deps(["requests", "yaml"])
 
 import requests
 import yaml
+
+PATTERN_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 
 # Canonical GitHub raw URL for the pattern file (documented in SKILL_VALIDATION_PATTERNS.md)
 PATTERN_FILE_RAW_URL = "https://raw.githubusercontent.com/CruxExperts/localsetup/main/ls/docs/SKILL_VALIDATION_PATTERNS.yaml"
@@ -179,7 +182,7 @@ def load_patterns(path: Path) -> list[dict]:
         items = data.get(category)
         if not isinstance(items, list):
             continue
-        for p in items:
+        for index, p in enumerate(items):
             if not isinstance(p, dict):
                 continue
             scope = p.get("scope") or "all"
@@ -187,8 +190,14 @@ def load_patterns(path: Path) -> list[dict]:
             desc = p.get("description") or ""
             keywords = p.get("keywords") if isinstance(p.get("keywords"), list) else None
             regex = p.get("regex") if p.get("regex") else None
-            if keywords or regex:
-                out.append({"scope": scope, "id": pid, "description": desc, "keywords": keywords, "regex": regex})
+            if not keywords and not regex:
+                continue
+            if not isinstance(pid, str) or not PATTERN_ID_RE.fullmatch(pid):
+                raise ValueError(
+                    f"Pattern {category}[{index}] requires an id matching "
+                    "[A-Za-z0-9][A-Za-z0-9._-]{0,127}"
+                )
+            out.append({"scope": scope, "id": pid, "description": desc, "keywords": keywords, "regex": regex})
     return out
 
 
@@ -220,13 +229,13 @@ def find_matches_in_text(
                 for kw in p["keywords"]:
                     pos = line.lower().find(kw.lower())
                     if pos >= 0:
-                        results.append((p["id"] or kw, line_num, pos + 1, kw, p["description"]))
+                        results.append((p["id"], line_num, pos + 1, kw, p["description"]))
                         break
             if p.get("regex"):
                 try:
                     m = re.search(p["regex"], line)
                     if m:
-                        results.append((p["id"] or p["regex"], line_num, m.start() + 1, p["regex"], p["description"]))
+                        results.append((p["id"], line_num, m.start() + 1, p["regex"], p["description"]))
                 except re.error:
                     pass
     return results
@@ -242,57 +251,89 @@ def _resolved_under(base: Path, path: Path) -> bool:
         return False
 
 
+def _candidate_label(skill_dir: Path, path: Path) -> str:
+    """Return a sanitized candidate-relative path for diagnostics."""
+    try:
+        relative = path.relative_to(skill_dir)
+    except ValueError:
+        relative = Path(path.name)
+    return sanitize_for_output(relative.as_posix(), max_len=500)
+
+
+def _read_candidate_text(skill_dir: Path, path: Path) -> str:
+    """Read one regular candidate file or raise a sanitized validation error."""
+    label = _candidate_label(skill_dir, path)
+    if not _resolved_under(skill_dir, path):
+        raise ValueError(f"candidate path resolves outside skill directory: {label}")
+    try:
+        file_stat = path.stat()
+    except OSError as exc:
+        raise OSError(f"could not stat candidate file: {label}") from exc
+    if not stat_module.S_ISREG(file_stat.st_mode):
+        raise ValueError(f"unsupported candidate file type: {label}")
+    if file_stat.st_size > MAX_FILE_SIZE_BYTES:
+        raise ValueError(
+            f"candidate file exceeds {MAX_FILE_SIZE_BYTES}-byte scan limit: {label}"
+        )
+    try:
+        return path.read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        raise OSError(f"could not read candidate file: {label}") from exc
+
+
 def scan_skill_dir(skill_dir: Path, pattern_file_path: Path, patterns: list[dict]) -> tuple[list[dict], bool]:
     """
     Scan skill dir: body (skill_body/all), scripts/assets (scripts_and_assets/all).
     Returns (list of hit dicts with file, line, col, pattern_id, matched, description), non_english_flag.
-    Symlink escape: only read files whose resolved path is under skill_dir. Skip files over MAX_FILE_SIZE_BYTES.
+    Candidate files that cannot be read completely fail validation.
     """
     hits = []
     non_english = False
     skill_dir_resolved = skill_dir.resolve()
 
     skill_md = skill_dir / "SKILL.md"
-    if skill_md.exists() and _resolved_under(skill_dir_resolved, skill_md):
-        try:
-            stat = skill_md.stat()
-            if stat.st_size > MAX_FILE_SIZE_BYTES:
-                pass  # skip; do not treat as hit
-            else:
-                body = strip_frontmatter(skill_md.read_text(encoding="utf-8", errors="replace"))
-                if has_substantial_foreign_language(body):
-                    non_english = True
-                for pid, line, col, matched, desc in find_matches_in_text(body, patterns, "skill_body"):
-                    hits.append({
-                        "file": str(skill_md),
-                        "line": line,
-                        "col": col,
-                        "pattern_id": pid,
-                        "matched": matched,
-                        "description": desc,
-                    })
-        except Exception:
-            pass
+    try:
+        skill_md.lstat()
+    except FileNotFoundError:
+        pass
+    except OSError as exc:
+        raise OSError("could not stat candidate file: SKILL.md") from exc
+    else:
+        body = strip_frontmatter(_read_candidate_text(skill_dir_resolved, skill_md))
+        if has_substantial_foreign_language(body):
+            non_english = True
+        for pid, line, col, matched, desc in find_matches_in_text(body, patterns, "skill_body"):
+            hits.append({
+                "file": str(skill_md),
+                "line": line,
+                "col": col,
+                "pattern_id": pid,
+                "matched": matched,
+                "description": desc,
+            })
 
     for sub in ("scripts", "assets"):
-        d = skill_dir / sub
-        if not d.is_dir():
+        directory = skill_dir / sub
+        try:
+            directory_entry = directory.lstat()
+        except FileNotFoundError:
             continue
-        for f in d.rglob("*"):
-            if not f.is_file():
-                continue
-            if not _resolved_under(skill_dir_resolved, f):
-                continue
+        except OSError as exc:
+            raise OSError(f"could not stat candidate directory: {sub}") from exc
+        if not stat_module.S_ISDIR(directory_entry.st_mode):
+            raise ValueError(f"candidate entry must be a directory: {sub}")
+        for path in directory.rglob("*"):
+            label = _candidate_label(skill_dir, path)
             try:
-                stat = f.stat()
-                if stat.st_size > MAX_FILE_SIZE_BYTES:
-                    continue
-                text = f.read_text(encoding="utf-8", errors="replace")
-            except Exception:
+                entry_stat = path.lstat()
+            except OSError as exc:
+                raise OSError(f"could not stat candidate entry: {label}") from exc
+            if stat_module.S_ISDIR(entry_stat.st_mode):
                 continue
+            text = _read_candidate_text(skill_dir_resolved, path)
             for pid, line, col, matched, desc in find_matches_in_text(text, patterns, "scripts_and_assets"):
                 hits.append({
-                    "file": str(f),
+                    "file": str(path),
                     "line": line,
                     "col": col,
                     "pattern_id": pid,
@@ -380,14 +421,11 @@ def main() -> int:
         for h in hits:
             fp = sanitize_for_output(h["file"])
             pid = sanitize_for_output(str(h["pattern_id"]))
-            mat = sanitize_for_output(str(h["matched"]))
             desc = sanitize_for_output(h["description"] or "")
-            print(f"  file:{fp} line:{h['line']} col:{h['col']} pattern:{pid} matched:{mat!r} description:{desc}")
+            print(f"  file:{fp} line:{h['line']} col:{h['col']} pattern:{pid} description:{desc}")
         return 0
     except Exception as e:
-        err_msg = str(e)
-        if len(err_msg) > 200:
-            err_msg = err_msg[:197] + "..."
+        err_msg = sanitize_for_output(str(e), max_len=200)
         print(f"VALIDATION_ERROR: {type(e).__name__}: {err_msg}", file=sys.stderr)
         return 1
 

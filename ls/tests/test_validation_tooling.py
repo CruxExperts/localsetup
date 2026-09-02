@@ -16,6 +16,22 @@ def load_script_module(relative_path: str):
     return module
 
 
+def run_skill_validation_scan(module, monkeypatch, skill_dir: Path, pattern_path: Path) -> int:
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "skill_validation_scan.py",
+            "--scan-root",
+            str(skill_dir.parent),
+            "--pattern-file",
+            str(pattern_path),
+            str(skill_dir),
+        ],
+    )
+    return module.main()
+
+
 def test_skill_validation_pattern_fallback_uses_canonical_repo(tmp_path, monkeypatch) -> None:
     module = load_script_module("ls/tools/skill_validation_scan.py")
     target = tmp_path / "docs" / "SKILL_VALIDATION_PATTERNS.yaml"
@@ -37,6 +53,145 @@ def test_skill_validation_pattern_fallback_uses_canonical_repo(tmp_path, monkeyp
     assert message == "fetched"
     assert fetched_urls == [expected_url]
     assert target.is_file()
+
+
+def test_skill_validation_scan_stdout_omits_matched_content(tmp_path, monkeypatch, capsys) -> None:
+    module = load_script_module("ls/tools/skill_validation_scan.py")
+    skill_dir = tmp_path / "candidate"
+    skill_dir.mkdir()
+    pattern_path = tmp_path / "patterns.yaml"
+    pattern_path.write_text("updated: 2099-01-01T00:00:00Z\n", encoding="utf-8")
+    sensitive_match = "candidate-secret-must-not-appear"
+
+    monkeypatch.setattr(module, "ensure_pattern_file", lambda *_args, **_kwargs: (True, "ok"))
+    monkeypatch.setattr(module, "load_patterns", lambda _path: [])
+    monkeypatch.setattr(
+        module,
+        "scan_skill_dir",
+        lambda *_args: (
+            [
+                {
+                    "file": "SKILL.md",
+                    "line": 7,
+                    "col": 3,
+                    "pattern_id": "prompt.example",
+                    "matched": sensitive_match,
+                    "description": "Potential hidden instruction",
+                }
+            ],
+            False,
+        ),
+    )
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "skill_validation_scan.py",
+            "--scan-root",
+            str(tmp_path),
+            "--pattern-file",
+            str(pattern_path),
+            str(skill_dir),
+        ],
+    )
+
+    assert module.main() == 0
+    output = capsys.readouterr().out
+    assert "file:SKILL.md line:7 col:3 pattern:prompt.example" in output
+    assert "description:Potential hidden instruction" in output
+    assert "matched:" not in output
+    assert sensitive_match not in output
+
+
+def test_skill_validation_scan_rejects_idless_pattern_without_echo(
+    tmp_path, monkeypatch, capsys
+) -> None:
+    module = load_script_module("ls/tools/skill_validation_scan.py")
+    skill_dir = tmp_path / "candidate"
+    skill_dir.mkdir()
+    sensitive_match = "idless-candidate-secret"
+    (skill_dir / "SKILL.md").write_text(sensitive_match, encoding="utf-8")
+    pattern_path = tmp_path / "patterns.yaml"
+    pattern_path.write_text(
+        "updated: '2099-01-01T00:00:00Z'\n"
+        "prompt_injection:\n"
+        "  - description: Synthetic missing-ID pattern\n"
+        "    scope: skill_body\n"
+        "    keywords:\n"
+        f"      - {sensitive_match}\n",
+        encoding="utf-8",
+    )
+
+    assert run_skill_validation_scan(module, monkeypatch, skill_dir, pattern_path) == 1
+    captured = capsys.readouterr()
+    output = captured.out + captured.err
+    assert "Pattern prompt_injection[0] requires an id matching" in output
+    assert "matched:" not in output
+    assert sensitive_match not in output
+
+
+def test_skill_validation_scan_rejects_oversized_candidate(tmp_path, monkeypatch, capsys) -> None:
+    module = load_script_module("ls/tools/skill_validation_scan.py")
+    skill_dir = tmp_path / "candidate"
+    skill_dir.mkdir()
+    (skill_dir / "SKILL.md").write_text(
+        "x" * (module.MAX_FILE_SIZE_BYTES + 1), encoding="utf-8"
+    )
+    pattern_path = tmp_path / "patterns.yaml"
+    pattern_path.write_text("updated: '2099-01-01T00:00:00Z'\n", encoding="utf-8")
+
+    assert run_skill_validation_scan(module, monkeypatch, skill_dir, pattern_path) == 1
+    captured = capsys.readouterr()
+    assert "candidate file exceeds 1048576-byte scan limit: SKILL.md" in captured.err
+    assert "Content safety: No concerns" not in captured.out
+
+
+def test_skill_validation_scan_propagates_candidate_stat_failure(
+    tmp_path, monkeypatch, capsys
+) -> None:
+    module = load_script_module("ls/tools/skill_validation_scan.py")
+    skill_dir = tmp_path / "candidate"
+    skill_dir.mkdir()
+    skill_path = skill_dir / "SKILL.md"
+    skill_path.write_text("candidate", encoding="utf-8")
+    pattern_path = tmp_path / "patterns.yaml"
+    pattern_path.write_text("updated: '2099-01-01T00:00:00Z'\n", encoding="utf-8")
+    original_stat = Path.stat
+
+    def fail_candidate_stat(path, *args, **kwargs):
+        if path == skill_path:
+            raise OSError("synthetic stat failure")
+        return original_stat(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "stat", fail_candidate_stat)
+    assert run_skill_validation_scan(module, monkeypatch, skill_dir, pattern_path) == 1
+    captured = capsys.readouterr()
+    assert "could not stat candidate file: SKILL.md" in captured.err
+    assert "Content safety: No concerns" not in captured.out
+
+
+def test_skill_validation_scan_propagates_candidate_read_failure(
+    tmp_path, monkeypatch, capsys
+) -> None:
+    module = load_script_module("ls/tools/skill_validation_scan.py")
+    skill_dir = tmp_path / "candidate"
+    skill_dir.mkdir()
+    skill_path = skill_dir / "SKILL.md"
+    skill_path.write_text("candidate", encoding="utf-8")
+    pattern_path = tmp_path / "patterns.yaml"
+    pattern_path.write_text("updated: '2099-01-01T00:00:00Z'\n", encoding="utf-8")
+    original_read_text = Path.read_text
+
+    def fail_candidate_read(path, *args, **kwargs):
+        if path == skill_path:
+            raise OSError("synthetic read failure")
+        return original_read_text(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", fail_candidate_read)
+    assert run_skill_validation_scan(module, monkeypatch, skill_dir, pattern_path) == 1
+    captured = capsys.readouterr()
+    assert "could not read candidate file: SKILL.md" in captured.err
+    assert "Content safety: No concerns" not in captured.out
 
 
 def test_markdown_reference_validator_slugifies_gfm_punctuation() -> None:

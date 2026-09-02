@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 74322fbca741a9f89130927cbca6da69333f9e376e22c03c6ad168b7633df2d0
+  source_provenance_hash: 2566ee2171e45fb3c654fd8e4be4e8ba4c1f46cade303cd217e49f5bb068b067
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: b5477b7f8ddf753add268ee0b9ec22bb7ec948d5
-artifact_sha256: 038e2421b343d285751ea778cfc0d5b17bf33833448df1e6a98a4ab2021eefc5
+source_commit: aa87e4de98685879d1e9e90bf84168b4dd1bc66e
+artifact_sha256: e8ed2254613c2b3b6eccf5d07f282c2815dc94e89bae217b5860a8b4edcdae83
 ---
 # Shipped skills catalog
 
@@ -99,7 +99,7 @@ Total shipped skills: 103
 | `ls-skill-importer` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `import` | `ls-skill-importer` | `1.5` | Import external skills from a URL (GitHub or other) or local path; discover, validate, security-screen, and summarize each skill so the user can choose which to import. Use when the user wants to add skills from a repo/URL or local folder, or when screening and selecting skills to add to the framework. |
 | `ls-skill-normalizer` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `normalization` | `ls-skill-normalizer` | `1.1` | Normalize skills already in the tree using ls/docs/SKILL_NORMALIZATION.md: documents first, tooling second, with user choice for platform-specific skills. Use when normalizing one or more skills in ls/skills/ after import, copying, or batch review. |
 | `ls-skill-sandbox-tester` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `sandbox` | `ls-skill-sandbox-tester` | `1.0` | Test normalized skills in a bounded temporary staging copy before production. Creates a provenance-marked copy under platform temp, rejects symlinked inputs, runs smoke checks with a minimal environment, and uses ls-debug-pro on failure; no writes return to the repo until user approval. Use when validating a framework-compliant skill end-to-end on a supported platform. |
-| `ls-skill-vetter` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `security` | `ls-skill-vetter` | `1.2` | Security-first skill vetting for AI agent skills. Use before installing any skill from public registries (e.g. skill hubs, GitHub) or other sources. Checks for red flags, permission scope, and suspicious patterns. |
+| `ls-skill-vetter` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `security` | `ls-skill-vetter` | `1.3` | Security-first skill vetting for AI agent skills. Use before installing any skill from public registries (e.g. skill hubs, GitHub) or other sources. Checks for red flags, permission scope, and suspicious patterns. |
 | `ls-stripe-payments` | `integrations` | 60 | `integrations` | `external-service`, `integration` | `ls-stripe-payments` | `1.0` | Guide Stripe payments integration. Use for Checkout, PaymentIntents, subscriptions, webhooks, Connect, billing, and payment security review. |
 | `ls-supabase` | `integrations` | 60 | `integrations` | `external-service`, `integration` | `ls-supabase` | `1.0` | Guide Supabase application work. Use for Supabase Auth, Postgres, RLS, Edge Functions, Storage, Realtime, migrations, and local development. |
 | `ls-superpowers` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `inventory` | `ls-superpowers` | `1.1` | Use when mapping upstream Superpowers skill names to Localsetup-native skills and workflows without activating duplicate upstream runtime tooling. |
