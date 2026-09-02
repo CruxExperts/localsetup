@@ -4,10 +4,12 @@ from abc import ABC, abstractmethod
 from contextlib import AsyncExitStack
 from typing import Any
 
+import httpx2
+
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.sse import sse_client
 from mcp.client.stdio import stdio_client
-from mcp.client.streamable_http import streamablehttp_client
+from mcp.client.streamable_http import streamable_http_client
 
 
 class MCPConnection(ABC):
@@ -18,7 +20,7 @@ class MCPConnection(ABC):
         self._stack = None
 
     @abstractmethod
-    def _create_context(self):
+    async def _create_context(self):
         """Create the connection context based on connection type."""
 
     async def __aenter__(self):
@@ -27,7 +29,7 @@ class MCPConnection(ABC):
         await self._stack.__aenter__()
 
         try:
-            ctx = self._create_context()
+            ctx = await self._create_context()
             result = await self._stack.enter_async_context(ctx)
 
             if len(result) == 2:
@@ -59,7 +61,7 @@ class MCPConnection(ABC):
             {
                 "name": tool.name,
                 "description": tool.description,
-                "input_schema": tool.inputSchema,
+                "input_schema": tool.input_schema,
             }
             for tool in response.tools
         ]
@@ -79,21 +81,21 @@ class MCPConnectionStdio(MCPConnection):
         self.args = args or []
         self.env = env
 
-    def _create_context(self):
+    async def _create_context(self):
         return stdio_client(
             StdioServerParameters(command=self.command, args=self.args, env=self.env)
         )
 
 
 class MCPConnectionSSE(MCPConnection):
-    """MCP connection using Server-Sent Events."""
+    """MCP connection using legacy HTTP+SSE."""
 
     def __init__(self, url: str, headers: dict[str, str] = None):
         super().__init__()
         self.url = url
         self.headers = headers or {}
 
-    def _create_context(self):
+    async def _create_context(self):
         return sse_client(url=self.url, headers=self.headers)
 
 
@@ -105,8 +107,13 @@ class MCPConnectionHTTP(MCPConnection):
         self.url = url
         self.headers = headers or {}
 
-    def _create_context(self):
-        return streamablehttp_client(url=self.url, headers=self.headers)
+    async def _create_context(self):
+        if self._stack is None:
+            raise RuntimeError("Connection stack is not initialized")
+        http_client = await self._stack.enter_async_context(
+            httpx2.AsyncClient(headers=self.headers)
+        )
+        return streamable_http_client(url=self.url, http_client=http_client)
 
 
 def create_connection(
@@ -142,10 +149,11 @@ def create_connection(
             raise ValueError("URL is required for sse transport")
         return MCPConnectionSSE(url=url, headers=headers)
 
-    elif transport in ["http", "streamable_http", "streamable-http"]:
+    elif transport == "streamable-http":
         if not url:
-            raise ValueError("URL is required for http transport")
+            raise ValueError("URL is required for streamable-http transport")
         return MCPConnectionHTTP(url=url, headers=headers)
 
-    else:
-        raise ValueError(f"Unsupported transport type: {transport}. Use 'stdio', 'sse', or 'http'")
+    raise ValueError(
+        "Unsupported transport type: use 'stdio', 'sse', or 'streamable-http'"
+    )

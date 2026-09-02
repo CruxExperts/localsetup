@@ -10,9 +10,9 @@ This document provides Node/TypeScript-specific best practices and examples for 
 
 ### Key Imports
 ```typescript
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { z } from "zod";
+import { McpServer } from "@modelcontextprotocol/server";
+import { serveStdio } from "@modelcontextprotocol/server/stdio";
+import * as z from "zod/v4";
 import axios, { AxiosError } from "axios";
 ```
 
@@ -95,8 +95,8 @@ Tools are registered using the `registerTool` method with the following requirem
 - Type all parameters and return values explicitly
 
 ```typescript
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import { McpServer } from "@modelcontextprotocol/server";
+import * as z from "zod/v4";
 
 const server = new McpServer({
   name: "example-mcp",
@@ -271,7 +271,7 @@ Error Handling:
 Zod provides runtime type validation:
 
 ```typescript
-import { z } from "zod";
+import * as z from "zod/v4";
 
 // Basic schema with validation
 const CreateUserSchema = z.object({
@@ -534,12 +534,12 @@ async function getUser(id: string): Promise<any> {
     "clean": "rm -rf dist"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.6.1",
+    "@modelcontextprotocol/server": "^2.0.0",
     "axios": "^1.7.9",
-    "zod": "^3.23.8"
+    "zod": "^4.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
@@ -585,9 +585,9 @@ async function getUser(id: string): Promise<any> {
  * project management, and data export capabilities.
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { z } from "zod";
+import { McpServer } from "@modelcontextprotocol/server";
+import { serveStdio } from "@modelcontextprotocol/server/stdio";
+import * as z from "zod/v4";
 import axios, { AxiosError } from "axios";
 
 // Constants
@@ -689,33 +689,23 @@ server.registerTool(
       openWorldHint: true
     }
   },
-  async (params: UserSearchInput) => {
-    // Implementation as shown above
-  }
+  async (params: UserSearchInput) => ({
+    content: [{
+      type: "text" as const,
+      text: `Searching for ${params.query}`
+    }]
+  })
 );
 
-// Main function
-async function main() {
-  // Verify environment variables if needed
-  if (!process.env.EXAMPLE_API_KEY) {
-    console.error("ERROR: EXAMPLE_API_KEY environment variable is required");
-    process.exit(1);
-  }
-
-  // Create transport
-  const transport = new StdioServerTransport();
-
-  // Connect server to transport
-  await server.connect(transport);
-
-  console.error("Example MCP server running via stdio");
+// Verify server-side credentials before serving requests.
+if (!process.env.EXAMPLE_API_KEY) {
+  console.error("ERROR: EXAMPLE_API_KEY environment variable is required");
+  process.exit(1);
 }
 
-// Run the server
-main().catch((error) => {
-  console.error("Server error:", error);
-  process.exit(1);
-});
+// v2 stdio accepts a server factory.
+void serveStdio(() => server);
+console.error("Example MCP server running via stdio");
 ```
 
 ---
@@ -724,101 +714,56 @@ main().catch((error) => {
 
 ### Resource Registration
 
-Expose data as resources for efficient, URI-based access:
+Expose parameterized data with a v2 `ResourceTemplate`:
 
 ```typescript
-import { ResourceTemplate } from "@modelcontextprotocol/sdk/types.js";
+import { ResourceTemplate } from "@modelcontextprotocol/server";
 
-// Register a resource with URI template
 server.registerResource(
+  "document",
+  new ResourceTemplate("file://documents/{name}", { list: undefined }),
   {
-    uri: "file://documents/{name}",
-    name: "Document Resource",
     description: "Access documents by name",
     mimeType: "text/plain"
   },
-  async (uri: string) => {
-    // Extract parameter from URI
-    const match = uri.match(/^file:\/\/documents\/(.+)$/);
-    if (!match) {
-      throw new Error("Invalid URI format");
-    }
-
-    const documentName = match[1];
-    const content = await loadDocument(documentName);
-
-    return {
-      contents: [{
-        uri,
-        mimeType: "text/plain",
-        text: content
-      }]
-    };
-  }
-);
-
-// List available resources dynamically
-server.registerResourceList(async () => {
-  const documents = await getAvailableDocuments();
-  return {
-    resources: documents.map(doc => ({
-      uri: `file://documents/${doc.name}`,
-      name: doc.name,
+  async (uri, { name }) => ({
+    contents: [{
+      uri: uri.href,
       mimeType: "text/plain",
-      description: doc.description
-    }))
-  };
-});
+      text: await loadDocument(name)
+    }]
+  })
+);
 ```
 
 **When to use Resources vs Tools:**
-- **Resources**: For data access with simple URI-based parameters
-- **Tools**: For complex operations requiring validation and business logic
-- **Resources**: When data is relatively static or template-based
-- **Tools**: When operations have side effects or complex workflows
+- **Resources**: Data access with simple URI-based parameters
+- **Tools**: Operations requiring validation or business logic
+- **Resources**: Relatively static or template-based data
+- **Tools**: Side effects or complex workflows
 
-### Multiple Transport Options
+### Transport Options
 
-The TypeScript SDK supports different transport mechanisms:
+Use stdio for local subprocess integration and Streamable HTTP for new remote
+servers. Legacy SSE belongs only in compatibility code built on the frozen v1
+server package.
 
 ```typescript
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import { createMcpHandler } from "@modelcontextprotocol/server";
+import { serveStdio } from "@modelcontextprotocol/server/stdio";
 
-// Stdio transport (default - for CLI tools)
-const stdioTransport = new StdioServerTransport();
-await server.connect(stdioTransport);
+// Stdio: createServer returns a newly configured McpServer.
+void serveStdio(createServer);
 
-// SSE transport (for real-time web updates)
-const sseTransport = new SSEServerTransport("/message", response);
-await server.connect(sseTransport);
-
-// HTTP transport (for web services)
-// Configure based on your HTTP framework integration
+// Streamable HTTP: export this handler in web-standard runtimes, or adapt it
+// with the framework package appropriate to the selected Node HTTP stack.
+const handler = createMcpHandler(createServer);
 ```
 
 **Transport selection guide:**
 - **Stdio**: Command-line tools, subprocess integration, local development
-- **HTTP**: Web services, remote access, multiple simultaneous clients
-- **SSE**: Real-time updates, server-push notifications, web dashboards
-
-### Notification Support
-
-Notify clients when server state changes:
-
-```typescript
-// Notify when tools list changes
-server.notification({
-  method: "notifications/tools/list_changed"
-});
-
-// Notify when resources change
-server.notification({
-  method: "notifications/resources/list_changed"
-});
-```
-
-Use notifications sparingly - only when server capabilities genuinely change.
+- **Streamable HTTP**: Remote access and multiple simultaneous clients
+- **Legacy SSE**: Existing v1 compatibility only; do not use for new servers
 
 ---
 

@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: b1e8707ce1f5a5ec61235c57fcc7efb6f999fe143dd76275dc6cdef1b02ee0b4
+  source_provenance_hash: 0dddf3eb872c9745b2475fd9efd1c20e0b9446d3bd92fe2f44f994148f1b00d9
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: a71ba7d4f2cbf2a6a892766a9dc82b2a89f2d83a
-artifact_sha256: 3836a81bc17784562b444651fe1fba7fc4cea7bcdded671468a17061ac2e117e
+source_commit: 8cb94c817e751be870932a4142b9e55f8d6454c9
+artifact_sha256: c8a4b82736dffab78b638a07c24d148884516e92bb59ce9bfe599b309b42bbcb
 ---
 # Shipped skills catalog
 
@@ -59,7 +59,7 @@ Total shipped skills: 103
 | `ls-github-starredrepos` | `integrations` | 50 | `integrations` | `github`, `archive` | `ls-github-starredrepos` | `1.0` | Manage a GitHub starred repositories archive named starredrepos with authenticated context checks, dry-run synchronization, repo scouting, metadata snapshots, and guarded publish workflows. |
 | `ls-keepass-secrets` | `integrations` | 50 | `integrations` | `keepass`, `secrets` | `ls-keepass-secrets` | `1.1` | Use when validating logical secret-ID maps, config, and reference syntax for a KeePassXC integration; output is redacted and the fake backend is test-only. |
 | `ls-mail-protocol-control` | `integrations` | 50 | `integrations` | `mail`, `protocols` | `ls-mail-protocol-control` | `1.2` | Provide full SMTP and IMAP account control for delegated mailboxes with attachment-first MIME handling and full-envelope encryption. Use when an agent must read, send, organize, decrypt, and manage mailbox state with strict admin controls. |
-| `ls-mcp-builder` | `integrations` | 50 | `integrations` | `mcp`, `builder` | `ls-mcp-builder` | `1.2` | Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services through well-designed tools. Use when building MCP servers to integrate external APIs or services, whether in Python (FastMCP) or Node/TypeScript (MCP SDK). |
+| `ls-mcp-builder` | `integrations` | 50 | `integrations` | `mcp`, `builder` | `ls-mcp-builder` | `1.2` | Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services through well-designed tools. Use when building MCP servers to integrate external APIs or services, whether in Python (MCPServer) or Node/TypeScript (MCP SDK). |
 | `ls-npm-management` | `integrations` | 50 | `integrations` | `nginx-proxy-manager`, `api` | `ls-npm-management` | `1.0` | Manage Nginx Proxy Manager (NPM) reverse proxy hosts via its REST API using the native Python client npm_api.py. Use when creating, modifying, diagnosing, removing, or cleaning up proxy hosts, or when coordinating Docker service deployments with NPM routing. |
 | `ls-omniroute-admin-automation` | `integrations` | 50 | `integrations`, `omniroute` | `omniroute`, `admin`, `automation` | `ls-omniroute-admin-automation` | `1.1` | Comprehensive OmniRoute administration and automation via Python tooling. Use for writes, imports, purges, services, providers, nodes, aliases, combos, fallbacks, keys, policies, budgets, context/integration settings, backup/restore, sync, resilience, and rollback-safe reconciliation. |
 | `ls-omniroute-proxy` | `integrations` | 50 | `integrations`, `omniroute` | `omniroute`, `proxy`, `runtime` | `ls-omniroute-proxy` | `1.1` | Guide read-only OmniRoute discovery across models/providers, context/compression, health/usage/resilience, integrations, and agent clients, and emit sanitized model observations. Use for OmniRoute catalogs, runtime metadata, diagnostics, MCP/A2A, CLI tools, plugins, tunnels, webhooks, or client compatibility. |
