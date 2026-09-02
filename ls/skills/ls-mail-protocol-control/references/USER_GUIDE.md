@@ -10,14 +10,14 @@
 
 ## What this skill does
 
-This skill gives an agent controlled access to delegated mail accounts over SMTP and IMAP. It can read messages, send messages, organize folders, and run mailbox mutation actions through policy-aware MCP tools.
+This skill gives an agent controlled access to delegated mail accounts over SMTP and IMAP. It can read messages, send messages, organize folders, and run mailbox mutation actions through policy-aware JSON CLI operations.
 
 ## Quick start
 
 1. Define account entries in `ls/config/mail_accounts.json`.
 2. Define policy rules in `ls/config/mail_protocol_policy.yaml`.
 3. Export account credentials as environment variables.
-4. Call tools through `mcp_server.py`.
+4. Run one operation through `mail_json_cli.py`; it writes one JSON response and exits.
 
 See [Account config schema](ACCOUNT_CONFIG_SCHEMA.md) for the canonical
 `mail_accounts.json` structure, validation rules, and sample file.
@@ -26,8 +26,8 @@ See [Account config schema](ACCOUNT_CONFIG_SCHEMA.md) for the canonical
 
 ```mermaid
 flowchart TD
-  agent[Agent] --> mcp[MCP Tools]
-  mcp --> policy[Policy Gate]
+  agent[Agent] --> cli[JSON CLI]
+  cli --> policy[Policy Gate]
   policy --> smtp[SMTP Adapter]
   policy --> imap[IMAP Adapter]
 ```
@@ -36,70 +36,40 @@ flowchart TD
 
 ### List accounts
 
-```json
-{
-  "tool": "mail_accounts_list",
-  "args": {}
-}
+```bash
+python3 scripts/mail_json_cli.py --tool mail_accounts_list --args-json '{}'
 ```
 
 ### Query latest inbox items
 
-```json
-{
-  "tool": "mail_query",
-  "args": {
-    "acct": "support",
-    "mailbox": "INBOX",
-    "query": "UNSEEN",
-    "lim": 25
-  }
-}
+```bash
+python3 scripts/mail_json_cli.py \
+  --tool mail_query \
+  --args-json '{"acct":"support","mailbox":"INBOX","query":"UNSEEN","lim":25}'
 ```
 
 ### Fetch one message with body
 
-```json
-{
-  "tool": "mail_get",
-  "args": {
-    "acct": "support",
-    "mailbox": "INBOX",
-    "id": "2142",
-    "detail": true
-  }
-}
+```bash
+python3 scripts/mail_json_cli.py \
+  --tool mail_get \
+  --args-json '{"acct":"support","mailbox":"INBOX","id":"2142","detail":true}'
 ```
 
 ### Send a reply
 
-```json
-{
-  "tool": "mail_send",
-  "args": {
-    "acct": "support",
-    "from": "help@example.com",
-    "to": ["customer@example.com"],
-    "subject": "Re: Ticket update",
-    "body": "Thanks for the follow-up. Here is the current status."
-  }
-}
+```bash
+python3 scripts/mail_json_cli.py \
+  --tool mail_send \
+  --args-json '{"acct":"support","from":"help@example.com","to":["customer@example.com"],"subject":"Re: Ticket update","body":"Thanks for the follow-up. Here is the current status."}'
 ```
 
 ### Fetch an attachment chunk
 
-```json
-{
-  "tool": "mail_get_attachment",
-  "args": {
-    "acct": "support",
-    "mailbox": "INBOX",
-    "id": "2142",
-    "attachment_index": 0,
-    "offset": 0,
-    "chunk_size": 262144
-  }
-}
+```bash
+python3 scripts/mail_json_cli.py \
+  --tool mail_get_attachment \
+  --args-json '{"acct":"support","mailbox":"INBOX","id":"2142","attachment_index":0,"offset":0,"chunk_size":262144}'
 ```
 
 ## Secure workflows

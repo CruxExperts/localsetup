@@ -50,7 +50,7 @@ ls-keepass-secrets: "python3 scripts/localsetup_secrets.py map-validate --map ex
 ls-linux-patcher: "python3 scripts/patch_cli.py --help"
 ls-linux-service-triage: "N/A"
 ls-localsetup-doctor: "N/A"
-ls-mail-protocol-control: "python3 scripts/mcp_server.py --help"
+ls-mail-protocol-control: "python3 scripts/mail_json_cli.py --help"
 ls-mcp-builder: "python3 scripts/evaluation.py --help"
 ls-next-js-app-router: "N/A"
 ls-nodejs-nextjs: "node scripts/verify-current-versions.mjs --help"

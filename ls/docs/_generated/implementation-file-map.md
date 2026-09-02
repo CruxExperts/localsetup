@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: c466573de7b59749d2f15f6802d46d7ef83dc369b6593cfa72c28b47f1e7eb6c
+  source_provenance_hash: c159394b4859d9a6ac9c580da296acf0265a46c66520ba8cfab4c3819b0cdb7b
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: d2f6fcf80c0b94bf43ab12056aa9ac141d92325d
-artifact_sha256: c547cdabacaada174211cd09aecd2fda79cf7fcc81117eed97f661b08915e1d6
+source_commit: 3d89fb830903d3a088ed6ba73916533cd1f404da
+artifact_sha256: 8fc83d6cc6db4f90e44e4e5c02a8237cbf39a2515780b56e1a6e6e7e65beb04e
 ---
 # Implementation File Map
 
@@ -589,8 +589,8 @@ artifact_sha256: c547cdabacaada174211cd09aecd2fda79cf7fcc81117eed97f661b08915e1d
 | `keep` | `ls/skills/ls-mail-protocol-control/references/API_EXAMPLES.md` |
 | `keep` | `ls/skills/ls-mail-protocol-control/references/CREDENTIAL_PROVIDER_CONTRACT.md` |
 | `keep` | `ls/skills/ls-mail-protocol-control/references/ENCRYPTION_MODEL.md` |
+| `keep` | `ls/skills/ls-mail-protocol-control/references/JSON_CLI_TOOL_SCHEMA.md` |
 | `keep` | `ls/skills/ls-mail-protocol-control/references/KEY_MANAGEMENT.md` |
-| `keep` | `ls/skills/ls-mail-protocol-control/references/MCP_TOOL_SCHEMA.md` |
 | `keep` | `ls/skills/ls-mail-protocol-control/references/POLICY_SCHEMA.md` |
 | `keep` | `ls/skills/ls-mail-protocol-control/references/SMTP_IMAP_OPERATION_MATRIX.md` |
 | `keep` | `ls/skills/ls-mail-protocol-control/references/TROUBLESHOOTING.md` |
@@ -599,16 +599,17 @@ artifact_sha256: c547cdabacaada174211cd09aecd2fda79cf7fcc81117eed97f661b08915e1d
 | `keep` | `ls/skills/ls-mail-protocol-control/scripts/__init__.py` |
 | `keep` | `ls/skills/ls-mail-protocol-control/scripts/crypto_engine.py` |
 | `keep` | `ls/skills/ls-mail-protocol-control/scripts/crypto_types.py` |
+| `keep` | `ls/skills/ls-mail-protocol-control/scripts/mail_json_cli.py` |
 | `keep` | `ls/skills/ls-mail-protocol-control/scripts/mail_protocol_control.py` |
 | `keep` | `ls/skills/ls-mail-protocol-control/scripts/mail_protocol_imap.py` |
 | `keep` | `ls/skills/ls-mail-protocol-control/scripts/mail_protocol_support.py` |
 | `keep` | `ls/skills/ls-mail-protocol-control/scripts/mail_types.py` |
 | `keep` | `ls/skills/ls-mail-protocol-control/scripts/mail_utils.py` |
-| `keep` | `ls/skills/ls-mail-protocol-control/scripts/mcp_server.py` |
 | `keep` | `ls/skills/ls-mail-protocol-control/scripts/policy_engine.py` |
 | `keep` | `ls/skills/ls-mail-protocol-control/scripts/tests/mail_protocol_test_helpers.py` |
 | `keep` | `ls/skills/ls-mail-protocol-control/scripts/tests/test_mail_protocol_control.py` |
-| `keep` | `ls/skills/ls-mail-protocol-control/scripts/tests/test_mail_protocol_mcp_errors.py` |
+| `keep` | `ls/skills/ls-mail-protocol-control/scripts/tests/test_mail_protocol_json_cli_errors.py` |
+| `keep` | `ls/skills/ls-mail-protocol-control/scripts/tests/test_mail_protocol_transport_safety.py` |
 | `keep` | `ls/skills/ls-markdown-reference-validator/SKILL.md` |
 | `keep` | `ls/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py` |
 | `keep` | `ls/skills/ls-markdown-reference-validator/scripts/markdown_reference_config.py` |

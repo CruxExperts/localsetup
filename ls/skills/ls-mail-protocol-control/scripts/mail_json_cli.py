@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Purpose: MCP-oriented bridge for mail protocol control tooling.
+# Purpose: One-shot JSON CLI bridge for mail protocol control tooling.
 # Created: 2026-03-07
 # Last updated: 2026-03-07
 
@@ -107,23 +107,29 @@ def _load_accounts(path: Path) -> list[AccountConfig]:
                 f"Duplicate account_id in accounts file: {account_id}",
             )
         seen_account_ids.add(account_id)
+        smtp_tls_mode = sanitize_text(row.get("smtp_tls_mode", "starttls"), 16).lower()
+        if smtp_tls_mode not in {"ssl", "starttls"}:
+            raise BootstrapError(
+                "ACCOUNT_CONFIG_TLS_REQUIRED",
+                f"Account row {index} smtp_tls_mode must be 'ssl' or 'starttls'.",
+            )
+        imap_tls = as_bool(row.get("imap_tls"), True)
+        if not imap_tls:
+            raise BootstrapError(
+                "ACCOUNT_CONFIG_TLS_REQUIRED",
+                f"Account row {index} imap_tls must be true.",
+            )
         accounts.append(
             AccountConfig(
                 account_id=account_id,
                 smtp_host=smtp_host,
                 smtp_port=_parse_port(row.get("smtp_port"), 587, "smtp_port", index),
-                smtp_tls_mode=sanitize_text(
-                    row.get("smtp_tls_mode", "starttls"), 16
-                ),
+                smtp_tls_mode=smtp_tls_mode,
                 imap_host=imap_host,
                 imap_port=_parse_port(row.get("imap_port"), 993, "imap_port", index),
-                imap_tls=as_bool(row.get("imap_tls"), True),
-                username_field=sanitize_text(
-                    row.get("username_field", "username"), 64
-                ),
-                password_field=sanitize_text(
-                    row.get("password_field", "password"), 64
-                ),
+                imap_tls=imap_tls,
+                username_field=sanitize_text(row.get("username_field", "username"), 64),
+                password_field=sanitize_text(row.get("password_field", "password"), 64),
             )
         )
     if not accounts:
@@ -133,7 +139,7 @@ def _load_accounts(path: Path) -> list[AccountConfig]:
     return accounts
 
 
-class MailMcpServer:
+class MailJsonCli:
     def __init__(self, policy_path: Path, accounts_path: Path):
         self.controller = MailProtocolControl(
             policy_path=policy_path,
@@ -141,7 +147,7 @@ class MailMcpServer:
             credential_provider=EnvCredentialProvider(),
         )
 
-    def call_tool(
+    def execute(
         self, tool_name: str, arguments: dict[str, Any] | None
     ) -> dict[str, Any]:
         payload = arguments if isinstance(arguments, dict) else {}
@@ -149,7 +155,10 @@ class MailMcpServer:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Mail protocol MCP bridge")
+    parser = argparse.ArgumentParser(
+        description="Mail protocol JSON CLI",
+        epilog="Executes one tool request, writes one JSON response, and exits.",
+    )
     parser.add_argument(
         "--policy", default="ls/config/mail_protocol_policy.yaml"
     )
@@ -161,8 +170,8 @@ def main() -> int:
     args = parser.parse_args()
     try:
         payload = _parse_args_json(args.args_json)
-        server = MailMcpServer(Path(args.policy), Path(args.accounts))
-        result = server.call_tool(args.tool, payload)
+        cli = MailJsonCli(Path(args.policy), Path(args.accounts))
+        result = cli.execute(args.tool, payload)
         print(json.dumps(result, ensure_ascii=False))
         return 0 if result.get("ok") else 1
     except BootstrapError as exc:

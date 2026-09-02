@@ -1,4 +1,6 @@
-# MCP tool schema
+# JSON CLI tool schema
+
+Run `python3 scripts/mail_json_cli.py --tool <tool-name> --args-json '<json-object>'`. The bridge accepts exactly one request, writes one JSON response, and exits; it does not implement an MCP transport.
 
 ## Atomic tools
 

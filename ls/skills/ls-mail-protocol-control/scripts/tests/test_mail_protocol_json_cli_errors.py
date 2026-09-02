@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""MCP bootstrap/error tests for mail protocol control."""
+"""JSON CLI bootstrap, request, and error tests for mail protocol control."""
 
 from __future__ import annotations
 
@@ -11,8 +11,8 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from scripts import mcp_server
-from scripts.mcp_server import BootstrapError, _load_accounts
+from scripts import mail_json_cli
+from scripts.mail_json_cli import BootstrapError, _load_accounts
 from mail_protocol_test_helpers import control as _control
 
 
@@ -61,7 +61,7 @@ def test_load_accounts_rejects_duplicate_account_ids(tmp_path: Path) -> None:
     assert excinfo.value.code == "ACCOUNT_CONFIG_DUPLICATE_ACCOUNT"
 
 
-def test_mcp_bootstrap_reports_account_config_error(
+def test_json_cli_reports_account_config_error(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
@@ -72,7 +72,7 @@ def test_mcp_bootstrap_reports_account_config_error(
         sys,
         "argv",
         [
-            "mcp_server.py",
+            "mail_json_cli.py",
             "--policy",
             str(tmp_path / "missing-policy.yaml"),
             "--accounts",
@@ -81,13 +81,13 @@ def test_mcp_bootstrap_reports_account_config_error(
             "mail_accounts_list",
         ],
     )
-    assert mcp_server.main() == 1
+    assert mail_json_cli.main() == 1
     output = json.loads(capsys.readouterr().out)
     assert output["ok"] is False
     assert output["code"] == "ACCOUNT_CONFIG_INVALID_ROOT"
 
 
-def test_mcp_bootstrap_reports_invalid_args_json(
+def test_json_cli_reports_invalid_args_json(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
@@ -96,7 +96,7 @@ def test_mcp_bootstrap_reports_invalid_args_json(
         sys,
         "argv",
         [
-            "mcp_server.py",
+            "mail_json_cli.py",
             "--policy",
             str(tmp_path / "missing-policy.yaml"),
             "--accounts",
@@ -108,14 +108,14 @@ def test_mcp_bootstrap_reports_invalid_args_json(
         ],
     )
 
-    assert mcp_server.main() == 1
+    assert mail_json_cli.main() == 1
     output = json.loads(capsys.readouterr().out)
 
     assert output["ok"] is False
     assert output["code"] == "ARGS_JSON_INVALID_JSON"
 
 
-def test_mcp_bootstrap_reports_non_object_args_json(
+def test_json_cli_reports_non_object_args_json(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
@@ -124,7 +124,7 @@ def test_mcp_bootstrap_reports_non_object_args_json(
         sys,
         "argv",
         [
-            "mcp_server.py",
+            "mail_json_cli.py",
             "--policy",
             str(tmp_path / "missing-policy.yaml"),
             "--accounts",
@@ -136,11 +136,33 @@ def test_mcp_bootstrap_reports_non_object_args_json(
         ],
     )
 
-    assert mcp_server.main() == 1
+    assert mail_json_cli.main() == 1
     output = json.loads(capsys.readouterr().out)
 
     assert output["ok"] is False
     assert output["code"] == "ARGS_JSON_INVALID_ROOT"
+
+def test_load_accounts_rejects_insecure_transport(tmp_path: Path) -> None:
+    accounts = tmp_path / "mail_accounts.json"
+    accounts.write_text(
+        json.dumps(
+            [
+                {
+                    "account_id": "acct",
+                    "smtp_host": "smtp.example.test",
+                    "smtp_tls_mode": "plain",
+                    "imap_host": "imap.example.test",
+                    "imap_tls": False,
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(BootstrapError) as excinfo:
+        _load_accounts(accounts)
+
+    assert excinfo.value.code == "ACCOUNT_CONFIG_TLS_REQUIRED"
 
 
 def test_dispatch_unhandled_error_fallback_is_deterministic(
@@ -158,3 +180,39 @@ def test_dispatch_unhandled_error_fallback_is_deterministic(
     assert result["ok"] is False
     assert result["code"] == "UNHANDLED_ERROR"
     assert "unexpected adapter failure" in result["message"]
+
+
+def test_json_cli_executes_one_json_request(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    captured: dict[str, object] = {}
+
+    class FakeMailJsonCli:
+        def __init__(self, policy_path: Path, accounts_path: Path) -> None:
+            captured["paths"] = (policy_path, accounts_path)
+
+        def execute(self, tool_name: str, payload: dict[str, object]) -> dict[str, object]:
+            captured["request"] = (tool_name, payload)
+            return {"ok": True, "code": "OK"}
+
+    monkeypatch.setattr(mail_json_cli, "MailJsonCli", FakeMailJsonCli)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "mail_json_cli.py",
+            "--policy",
+            str(tmp_path / "policy.yaml"),
+            "--accounts",
+            str(tmp_path / "accounts.json"),
+            "--tool",
+            "mail_accounts_list",
+            "--args-json",
+            '{"acct":"support"}',
+        ],
+    )
+
+    assert mail_json_cli.main() == 0
+    assert captured["paths"] == (tmp_path / "policy.yaml", tmp_path / "accounts.json")
+    assert captured["request"] == ("mail_accounts_list", {"acct": "support"})
+    assert json.loads(capsys.readouterr().out) == {"ok": True, "code": "OK"}

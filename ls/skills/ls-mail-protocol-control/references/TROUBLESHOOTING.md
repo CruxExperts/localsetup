@@ -8,6 +8,9 @@
 | `CREDENTIAL_NOT_FOUND` | Missing auth value | Export required environment variables |
 | `AUTH_FAILED` | SMTP or IMAP login rejected | Verify credentials and auth mode |
 | `TLS_NEGOTIATION_FAILED` | STARTTLS failed | Check server TLS support and port |
+| `TLS_REQUIRED` | A direct adapter call requested plaintext IMAP or SMTP | Use IMAP TLS and SMTP `ssl` or `starttls` |
+| `ACCOUNT_CONFIG_TLS_REQUIRED` | JSON CLI account settings requested plaintext transport | Correct the account configuration before retrying |
+| `IMAP_MOVE_INCOMPLETE` | The fallback copied and marked only selected messages but could not safely expunge them | Inspect the mailbox and explicitly confirm `imap.expunge_mailbox` if appropriate |
 | `ACTION_BLOCKED` | Policy denied action | Review `allow_actions` and `deny_actions` |
 | `CONFIRMATION_REQUIRED` | Action crossed threshold | Re-run with issued confirmation token |
 | `CONFIRMATION_EXPIRED` | Token timed out | Re-run and use fresh token |

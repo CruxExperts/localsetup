@@ -34,10 +34,10 @@ The account file root is a JSON array. Each item defines one delegated mailbox a
 | `account_id` | string | yes | none | Stable delegated account ID used as `acct` in tool calls |
 | `smtp_host` | string | yes | none | SMTP hostname |
 | `smtp_port` | integer | no | `587` | Must be between `1` and `65535` |
-| `smtp_tls_mode` | string | no | `starttls` | Use `starttls`, `ssl`, or provider-specific plain mode only when policy permits |
+| `smtp_tls_mode` | string | no | `starttls` | Must be `starttls` or `ssl`; every other mode is rejected before connection |
 | `imap_host` | string | yes | none | IMAP hostname |
 | `imap_port` | integer | no | `993` | Must be between `1` and `65535` |
-| `imap_tls` | boolean/string | no | `true` | Accepts JSON booleans or `true`/`false` style strings |
+| `imap_tls` | boolean/string | no | `true` | Must resolve to `true`; `false` is rejected before connection |
 | `username_field` | string | no | `username` | Credential provider field name |
 | `password_field` | string | no | `password` | Credential provider field name |
 
@@ -48,6 +48,7 @@ The account file root is a JSON array. Each item defines one delegated mailbox a
 - `account_id`, `smtp_host`, and `imap_host` are required.
 - `account_id` values must be unique after sanitization.
 - `smtp_port` and `imap_port` must be bounded integers.
+- SMTP transport must be `ssl` or `starttls`, and IMAP transport must have `imap_tls: true`; plaintext settings fail startup with `ACCOUNT_CONFIG_TLS_REQUIRED`.
 - Invalid files fail startup with `ACCOUNT_CONFIG_*` error codes instead of generic bootstrap errors.
 
 ## Credential environment names
