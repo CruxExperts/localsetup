@@ -38,10 +38,14 @@ git branch --show-current
    force-push shared history unless the user explicitly asks for that operation.
 3. Preserve unrelated work. If the worktree is dirty, only stage or modify files
    that belong to the task.
-4. Before destructive recovery commands such as `git reset --hard`, create a
-   branch or tag at the current commit when practical:
+4. Before **every** `git reset --hard`, require a clean worktree. Preserve desired
+   staged, unstaged, and relevant untracked work first with an approved WIP
+   commit, patch, stash (use `-u` when needed), or separate worktree. A backup
+   branch or tag preserves only commits; it does not preserve uncommitted work.
 
 ```bash
+git status --short
+git stash push -u -m "WIP before recovery"
 git branch backup/before-recovery
 ```
 

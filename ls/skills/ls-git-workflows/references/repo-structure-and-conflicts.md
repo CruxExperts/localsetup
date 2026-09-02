@@ -95,45 +95,43 @@ git checkout main
 
 ## Conflict Resolution
 
-### Understand Conflict Markers
+### Understand Conflict Sides
 
-```text
-<<<<<<< HEAD (or "ours")
-Your changes on the current branch
-=======
-Their changes from the incoming branch
->>>>>>> feature-branch (or "theirs")
-```
+Conflict markers delimit the two candidate sections; edit the file to the intended
+resolved content, then remove all three marker lines before staging.
 
-### Resolution Strategies
+<code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code><br>
+first candidate section<br>
+<code>&equals;&equals;&equals;&equals;&equals;&equals;&equals;</code><br>
+second candidate section<br>
+<code>&gt;&gt;&gt;&gt;&gt;&gt;&gt; commit-or-branch</code>
+
+For a **merge**, index stage `:1` is the common ancestor, `:2` is the current
+branch (ours), and `:3` is the incoming branch (theirs). `git checkout --ours`
+therefore selects the current branch; `--theirs` selects the merged-in branch.
+
+For a **rebase**, Git applies the commit being replayed onto the upstream/base
+branch. Stage `:1` is the merge base, `:2` (ours) is the upstream/base version,
+and `:3` (theirs) is the commit being replayed. Do not use whole-file
+`--ours` or `--theirs` until this mapping matches the intended content.
 
 ```bash
-# Accept all of ours: current branch wins for this file.
+# Inspect base, ours, and theirs before choosing a side.
+git show :1:path/to/file.ts
+git show :2:path/to/file.ts
+git show :3:path/to/file.ts
+git diff --cc path/to/file.ts
+
+# After choosing the correct side for the current merge or rebase context.
 git checkout --ours path/to/file.ts
 git add path/to/file.ts
 
-# Accept all of theirs: incoming branch wins for this file.
+# Or select theirs after applying the mapping above.
 git checkout --theirs path/to/file.ts
 git add path/to/file.ts
 
-# Accept ours for all conflicted files.
-git checkout --ours .
-git add .
-
-# Use a merge tool.
+# Use a merge tool when neither whole-file side is correct.
 git mergetool
-
-# See the three-way diff: base, ours, theirs.
-git diff --cc path/to/file.ts
-
-# Show common ancestor version.
-git show :1:path/to/file.ts
-
-# Show ours.
-git show :2:path/to/file.ts
-
-# Show theirs.
-git show :3:path/to/file.ts
 ```
 
 ### Rebase Conflict Workflow
@@ -142,8 +140,6 @@ git show :3:path/to/file.ts
 # During rebase, conflicts appear one commit at a time.
 # Fix the conflict in the file, then stage it.
 git add fixed-file.ts
-
-# Continue to the next commit.
 git rebase --continue
 
 # If a commit is now empty after resolution, skip it.
