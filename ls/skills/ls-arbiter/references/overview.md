@@ -26,7 +26,7 @@ Use `--queue-dir <path>` on any subcommand to test against a temporary queue wit
 
 ## Generated Plan Shape
 
-The generated markdown file has YAML frontmatter with plan metadata and a `decisions` list. The body repeats the same decisions in a reviewer-friendly format.
+The generated markdown file has YAML frontmatter with plan metadata and a `decisions` list. The body repeats the same decisions in a reviewer-friendly format but is not an answer store for the bundled CLI.
 
 Important frontmatter fields:
 
@@ -34,15 +34,15 @@ Important frontmatter fields:
 |---|---|
 | `planId` / `id` | Unique plan identifier |
 | `tag` | Project or topic lookup key |
-| `status` | `pending` or `completed` |
-| `total`, `answered`, `remaining` | Decision counts |
-| `decisions[].answer` | Completed answer value |
+| `status` | Derived completion state: `pending` or `completed` |
+| `total`, `answered`, `remaining` | Counts derived from the decisions list |
+| `decisions[].answer` | Non-empty completed answer value |
 
-`status` and `get` read the frontmatter first. If an external reviewer uses a different answer format, normalize it back into the frontmatter before relying on the bundled CLI.
+`status`, `get`, and `await` validate answers from the frontmatter `decisions` list against each matching decision's option keys and `allowCustom` setting. A compatible reviewer must write answers into that list; plan-level completion fields and body text never bypass validation.
 
 ## Minimal Completion Convention
 
-A completed plan should either be moved into `completed/` or have `status: completed` in frontmatter. Each answered decision should include:
+A completed plan may be moved into `completed/` or marked `status: completed` in frontmatter, but neither signal bypasses answer validation. Each answered frontmatter decision should include:
 
 ```yaml
 status: answered
@@ -50,7 +50,7 @@ answer: selected-option-key
 answered_at: "2026-05-09T18:00:00Z"
 ```
 
-When all decisions have answers, `get` returns a JSON `answers` object keyed by decision ID.
+When every decision has a valid non-empty string answer, `get` returns a JSON `answers` object keyed by decision ID. An answer must match one of that decision's option keys unless `allowCustom: true`; otherwise the plan remains pending.
 
 ## Heartbeat Reference
 

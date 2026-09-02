@@ -105,7 +105,7 @@ Successful output:
 | `agent` | No | Agent ID; defaults from `ARBITER_AGENT`, `AGENT_ID`, or `USER` |
 | `session` | No | Session ID; defaults from `ARBITER_SESSION` or `AGENT_SESSION` |
 
-Decision objects require `id`, `title`, and a non-empty `options` array. Each option requires `key` and `label`; `note` is optional. Set `allowCustom: true` if the reviewer may answer with free text.
+Decision objects require `id`, `title`, and a non-empty `options` array. Each option requires `key` and `label`; `note` is optional. Set `allowCustom: true` if the reviewer may answer with free text. `push` rejects plan or decision completion fields and always writes each new decision as `status: pending` with null `answer` and `answered_at` values.
 
 ## Check Status
 
@@ -116,18 +116,18 @@ python3 scripts/arbiter_cli.py status abc123
 python3 scripts/arbiter_cli.py status --tag nft-marketplace
 ```
 
-Output includes `status`, `total`, `answered`, `remaining`, and per-decision answer state.
+Output includes `status`, `total`, `answered`, `remaining`, and per-decision answer state derived from the frontmatter `decisions` list. A decision is answered only when its answer is a non-empty string matching an option key, unless that decision has `allowCustom: true`.
 
 ## Get Answers
 
-After the plan is completed and moved or marked complete:
+After the reviewer records a valid answer in frontmatter for every decision:
 
 ```bash
 python3 scripts/arbiter_cli.py get abc123
 python3 scripts/arbiter_cli.py get --tag nft-marketplace
 ```
 
-If the plan is still pending, the command exits non-zero and reports the remaining decision count.
+If any answer is missing or invalid, the command exits non-zero and reports the remaining decision count. A file location or plan-level `status: completed` value does not override answer validation.
 
 ## Await Completion
 
