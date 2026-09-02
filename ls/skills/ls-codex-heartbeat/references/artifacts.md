@@ -7,12 +7,12 @@ version: 3.4
 
 Runtime artifacts live under `.localsetup/state/codex-heartbeat/` in the target repository.
 
-Each run starts as `runs/<run-id>.staged`. A run is successful only after `manifest.json`, `heartbeat-result.json`, and `command-log.json` validate and the staged directory is atomically promoted to `runs/<run-id>`.
+Each run starts as `runs/<run-id>.staged`. Promotion requires valid hashes for `manifest.json`, `heartbeat-result.json`, `command-log.json`, and every command sidecar referenced by the command log.
 
-Pointers:
+Pointers and lock evidence:
 
 - `active.json`: points at the staged run while work is active.
 - `latest.json`: points at the most recently promoted run and records the manifest hash.
 - `heartbeat.lock`: prevents concurrent runs.
 
-Pointers must stay relative to the heartbeat state directory. Absolute paths and parent traversal are rejected.
+Pointers and artifact references must stay relative to their heartbeat-state base. Absolute paths and parent traversal are rejected.

@@ -237,9 +237,9 @@ def _float_or_default(value: Any, default: float) -> float:
 
 def _heartbeat_budget_policy(config: dict[str, Any], queue_policy: dict[str, Any] | None = None) -> dict[str, Any]:
     heartbeat = config.get("heartbeat") if isinstance(config.get("heartbeat"), dict) else {}
-    codex = config.get("codex") if isinstance(config.get("codex"), dict) else {}
+    agent = config.get("agent") if isinstance(config.get("agent"), dict) else {}
     profiles = config.get("agent_profiles") if isinstance(config.get("agent_profiles"), dict) else {}
-    profile_name = str(codex.get("profile") or "heartbeat")
+    profile_name = str(agent.get("profile") or "heartbeat")
     profile = profiles.get(profile_name) if isinstance(profiles.get(profile_name), dict) else {}
     direct_policy = config.get("direct_command_policy") if isinstance(config.get("direct_command_policy"), dict) else {}
     queue_policy = queue_policy or {}
@@ -250,7 +250,7 @@ def _heartbeat_budget_policy(config: dict[str, Any], queue_policy: dict[str, Any
         occupancy_ratio = 0.0
     if occupancy_ratio > 1:
         occupancy_ratio = 1.0
-    default_timeout = _positive_int_or_default(codex.get("timeout_seconds"), 0)
+    default_timeout = _positive_int_or_default(agent.get("timeout_seconds"), 0)
     if default_timeout <= 0:
         default_timeout = _positive_int_or_default(profile.get("timeout_seconds"), 1800)
     return {

@@ -1,4 +1,4 @@
-"""Support helpers for the Codex heartbeat runtime."""
+"""Support helpers for the generic agent heartbeat runtime."""
 
 from __future__ import annotations
 
@@ -28,8 +28,39 @@ RUNS_DIR_NAME = "runs"
 MAX_TAIL_CHARS = 12000
 DEFAULT_COMMAND_TIMEOUT = 300
 MAX_COMMAND_TIMEOUT = 86400
+PROMPT_PLACEHOLDER = "{heartbeat_prompt}"
 
 BLOCKED_GIT_SUBCOMMANDS = {"commit", "push"}
+GIT_GLOBAL_OPTIONS_WITH_VALUE = {
+    "-C",
+    "-c",
+    "--config-env",
+    "--git-dir",
+    "--namespace",
+    "--super-prefix",
+    "--work-tree",
+}
+GIT_GLOBAL_OPTIONS_WITH_EQUALS = (
+    "--config-env=",
+    "--exec-path=",
+    "--git-dir=",
+    "--namespace=",
+    "--super-prefix=",
+    "--work-tree=",
+)
+GIT_GLOBAL_FLAG_OPTIONS = {
+    "--bare",
+    "--glob-pathspecs",
+    "--icase-pathspecs",
+    "--literal-pathspecs",
+    "--no-lazy-fetch",
+    "--no-optional-locks",
+    "--no-pager",
+    "--no-replace-objects",
+    "--noglob-pathspecs",
+    "--paginate",
+    "-p",
+}
 BLOCKED_EXECUTABLES = {
     "dd",
     "chmod",
@@ -132,18 +163,50 @@ def _command_key(argv: list[str]) -> str:
     return " ".join(argv)
 
 
+def _git_subcommand(argv: list[str]) -> str | None:
+    index = 1
+    while index < len(argv):
+        token = argv[index]
+        if token == "--":
+            return None
+        if not token.startswith("-"):
+            return token
+        if token in GIT_GLOBAL_OPTIONS_WITH_VALUE:
+            if index + 1 >= len(argv) or not argv[index + 1]:
+                raise HeartbeatError(f"git global option requires a value: {token}")
+            index += 2
+            continue
+        if token.startswith(GIT_GLOBAL_OPTIONS_WITH_EQUALS):
+            if token.endswith("="):
+                raise HeartbeatError(f"git global option requires a value: {token[:-1]}")
+            index += 1
+            continue
+        if token.startswith("-C") and token != "-C":
+            index += 1
+            continue
+        if token.startswith("-c") and token != "-c":
+            index += 1
+            continue
+        if token in GIT_GLOBAL_FLAG_OPTIONS:
+            index += 1
+            continue
+        raise HeartbeatError(f"unable to validate git global option: {token}")
+    return None
+
+
 def validate_direct_command(argv: list[str], config: dict[str, Any], *, allow_direct: bool = False) -> None:
     if not argv:
         raise HeartbeatError("command argv must not be empty")
     policy = command_policy(config)
-    key = _command_key(argv)
-    if allow_direct or key in policy["allowlist"]:
-        return
     executable = Path(argv[0]).name
-    if executable == "git" and len(argv) > 1 and argv[1] in BLOCKED_GIT_SUBCOMMANDS and not policy["allow_git_writes"]:
-        raise HeartbeatError(f"direct command policy blocked git {argv[1]}")
+    if executable == "git" and not policy["allow_git_writes"]:
+        subcommand = _git_subcommand(argv)
+        if subcommand in BLOCKED_GIT_SUBCOMMANDS:
+            raise HeartbeatError(f"direct command policy blocked git {subcommand}")
     if executable in BLOCKED_EXECUTABLES and not policy["allow_destructive"]:
         raise HeartbeatError(f"direct command policy blocked destructive executable: {executable}")
+    if allow_direct or _command_key(argv) in policy["allowlist"]:
+        return
 
 
 def normalize_timeout(value: Any) -> int:
@@ -162,6 +225,13 @@ def _tail(text: str) -> str:
     return text[-MAX_TAIL_CHARS:]
 
 
+def write_command_sidecar(sidecar_path: Path, entry: dict[str, Any]) -> dict[str, Any]:
+    atomic_write_json(sidecar_path, entry)
+    entry["sidecar"] = sidecar_path.name
+    entry["sidecar_sha256"] = sha256_file(sidecar_path)
+    return entry
+
+
 def run_command(
     command_id: str,
     argv: list[str],
@@ -170,6 +240,7 @@ def run_command(
     timeout_seconds: int,
     sidecar_path: Path,
     launcher_info: dict[str, Any] | None = None,
+    stdin_text: str | None = None,
 ) -> dict[str, Any]:
     started = utc_now()
     entry: dict[str, Any] = {
@@ -188,6 +259,7 @@ def run_command(
             cwd=cwd,
             shell=False,
             text=True,
+            stdin=subprocess.PIPE if stdin_text is not None else None,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             start_new_session=True,
@@ -199,7 +271,7 @@ def run_command(
         except OSError:
             pass
         try:
-            stdout, stderr = proc.communicate(timeout=timeout_seconds)
+            stdout, stderr = proc.communicate(input=stdin_text, timeout=timeout_seconds)
             entry["returncode"] = proc.returncode
             entry["timed_out"] = False
         except subprocess.TimeoutExpired:
@@ -229,10 +301,7 @@ def run_command(
                 "finished_at": utc_now(),
             }
         )
-    atomic_write_json(sidecar_path, entry)
-    entry["sidecar"] = sidecar_path.name
-    entry["sidecar_sha256"] = sha256_file(sidecar_path)
-    return entry
+    return write_command_sidecar(sidecar_path, entry)
 
 
 def load_hooks(config: dict[str, Any], name: str) -> list[dict[str, Any]]:
@@ -286,25 +355,24 @@ def _profile_prompt(profile: dict[str, Any]) -> str:
 
 def _profile_command_argv(profile: dict[str, Any]) -> list[str]:
     command = profile.get("command")
-    if isinstance(command, list) and command and all(isinstance(part, str) and part for part in command):
-        return list(command)
-    command_name = str(profile.get("command_name") or "codex").strip()
-    if not command_name:
-        raise HeartbeatError("agent profile command_name must not be empty")
-    argv = [command_name, "exec"]
-    model = profile.get("model")
-    if isinstance(model, str) and model.strip():
-        argv.extend(["--model", model.strip()])
-    reasoning_effort = profile.get("reasoning_effort")
-    if isinstance(reasoning_effort, str) and reasoning_effort.strip():
-        argv.extend(["-c", f'model_reasoning_effort="{reasoning_effort.strip()}"'])
-    sandbox = profile.get("sandbox")
-    if isinstance(sandbox, str) and sandbox.strip():
-        argv.extend(["--sandbox", sandbox.strip()])
-    if bool(profile.get("json", False)):
-        argv.append("--json")
-    argv.extend(["--", _profile_prompt(profile)])
-    return argv
+    if not isinstance(command, list) or not command or not all(isinstance(part, str) and part for part in command):
+        raise HeartbeatError("agent profile command must be a non-empty argv list")
+    return list(command)
+
+
+def _prompt_input(profile: dict[str, Any], argv: list[str]) -> tuple[list[str], str | None, str]:
+    transport = str(profile.get("prompt_transport") or "argv").strip()
+    if transport not in {"argv", "stdin", "none"}:
+        raise HeartbeatError("agent profile prompt_transport must be one of: argv, stdin, none")
+    placeholder_count = argv.count(PROMPT_PLACEHOLDER)
+    prompt = _profile_prompt(profile)
+    if transport == "argv":
+        if placeholder_count != 1:
+            raise HeartbeatError(f"argv prompt transport requires exactly one {PROMPT_PLACEHOLDER} argument")
+        return [prompt if item == PROMPT_PLACEHOLDER else item for item in argv], None, transport
+    if placeholder_count:
+        raise HeartbeatError(f"{PROMPT_PLACEHOLDER} is only valid with argv prompt transport")
+    return argv, prompt if transport == "stdin" else None, transport
 
 
 def _resolve_profile_executable(profile: dict[str, Any], argv: list[str]) -> tuple[list[str], str]:
@@ -329,82 +397,59 @@ def _shell_login_command(profile: dict[str, Any], argv: list[str]) -> tuple[list
     return [shell_path, "-lc", rendered], rendered
 
 
-def _codex_profile_command(config: dict[str, Any], codex: dict[str, Any]) -> dict[str, Any] | None:
-    profile_name = str(codex.get("profile") or "heartbeat")
-    profiles = config.get("agent_profiles") if isinstance(config.get("agent_profiles"), dict) else {}
-    if profile_name not in profiles:
+def load_agent_command(config: dict[str, Any]) -> dict[str, Any] | None:
+    if "codex" in config:
+        raise HeartbeatError("codex configuration is obsolete; replace it with the agent configuration")
+    agent = config.get("agent") if isinstance(config.get("agent"), dict) else {}
+    if not bool(agent.get("enabled", False)):
         return None
+    profile_name = str(agent.get("profile") or "").strip()
+    if not profile_name:
+        raise HeartbeatError("agent.profile must name an agent_profiles entry when agent.enabled is true")
     profile = _agent_profile(config, profile_name)
+    client = str(profile.get("client") or "").strip()
+    if not client:
+        raise HeartbeatError("agent profile client must be a non-empty label")
     launcher = str(profile.get("launcher") or "resolved-path").strip()
-    logical_argv = _profile_command_argv(profile)
-    timeout_seconds = normalize_timeout(codex.get("timeout_seconds", profile.get("timeout_seconds")))
-    model = profile.get("model")
-    info: dict[str, Any] = {
-        "launcher_mode": launcher,
-        "profile": profile_name,
-        "app": str(profile.get("app") or "codex"),
-        "model_policy": str(profile.get("model_policy") or "configurable"),
-        "model": model if isinstance(model, str) and model.strip() else None,
-        "reasoning_effort": profile.get("reasoning_effort"),
-        "json": bool(profile.get("json", False)),
-        "logical_argv": logical_argv,
-    }
+    logical_argv, stdin_text, prompt_transport = _prompt_input(profile, _profile_command_argv(profile))
     command = logical_argv
+    info: dict[str, Any] = {
+        "client": client,
+        "launcher_mode": launcher,
+        "logical_argv": logical_argv,
+        "profile": profile_name,
+        "prompt_transport": prompt_transport,
+    }
     if launcher == "direct-argv":
         info["resolved_executable"] = str(Path(command[0]).resolve()) if Path(command[0]).is_absolute() else None
     elif launcher == "resolved-path":
         command, resolved = _resolve_profile_executable(profile, logical_argv)
         info["resolved_executable"] = resolved
     elif launcher == "shell-login":
+        if stdin_text is not None:
+            raise HeartbeatError("shell-login profiles do not support stdin prompt transport")
         command, rendered = _shell_login_command(profile, logical_argv)
-        info["rendered_command"] = command[-1]
+        info["rendered_command"] = rendered
         info["resolved_executable"] = None
     else:
         raise HeartbeatError("agent profile launcher must be one of: direct-argv, resolved-path, shell-login")
     return {
+        "allow_direct": bool(agent.get("allow_direct", profile.get("allow_direct", False))),
+        "command": command,
         "id": f"{profile_name}-agent",
-        "command": command,
-        "policy_command": logical_argv,
-        "timeout_seconds": timeout_seconds,
-        "allow_direct": bool(codex.get("allow_direct", profile.get("allow_direct", False))),
         "launcher_info": info,
-    }
-
-
-def load_codex_command(config: dict[str, Any]) -> dict[str, Any] | None:
-    codex = config.get("codex") if isinstance(config.get("codex"), dict) else {}
-    if not bool(codex.get("enabled", False)):
-        return None
-    profile_command = _codex_profile_command(config, codex)
-    if profile_command:
-        return profile_command
-    command = codex.get("command")
-    if not isinstance(command, list) or not command or not all(isinstance(part, str) and part for part in command):
-        raise HeartbeatError("codex.command must be a non-empty argv list when codex.enabled is true")
-    return {
-        "id": "codex-agent",
-        "command": command,
-        "policy_command": command,
-        "launcher_info": {
-            "launcher_mode": "direct-argv",
-            "profile": None,
-            "app": "codex",
-            "model_policy": "legacy-command",
-            "model": codex.get("model") if isinstance(codex.get("model"), str) else None,
-            "logical_argv": command,
-            "resolved_executable": str(Path(command[0]).resolve()) if Path(command[0]).is_absolute() else None,
-        },
-        "timeout_seconds": normalize_timeout(codex.get("timeout_seconds")),
-        "allow_direct": bool(codex.get("allow_direct", False)),
+        "policy_command": logical_argv,
+        "stdin_text": stdin_text,
+        "timeout_seconds": normalize_timeout(agent.get("timeout_seconds", profile.get("timeout_seconds"))),
     }
 
 
 def planned_commands(config: dict[str, Any], *, no_agent: bool = False) -> list[dict[str, Any]]:
     commands: list[dict[str, Any]] = []
     commands.extend(load_hooks(config, "before"))
-    codex_command = load_codex_command(config)
-    if codex_command and not no_agent:
-        commands.append(codex_command)
+    agent_command = load_agent_command(config)
+    if agent_command and not no_agent:
+        commands.append(agent_command)
     commands.extend(load_hooks(config, "after"))
     return commands
 
@@ -427,11 +472,11 @@ def plan_summary(*, target_root: Path, config_path: Path | None = None, no_agent
                 "id": command["id"],
                 "argv": command["command"],
                 "policy_argv": command.get("policy_command", command["command"]),
+                "client": info.get("client"),
                 "launcher_mode": info.get("launcher_mode", command.get("launcher_mode", "direct-argv")),
+                "prompt_transport": info.get("prompt_transport"),
                 "resolved_executable": info.get("resolved_executable"),
                 "rendered_command": info.get("rendered_command"),
-                "model_policy": info.get("model_policy"),
-                "model": info.get("model"),
                 "timeout_seconds": command["timeout_seconds"],
             }
         )

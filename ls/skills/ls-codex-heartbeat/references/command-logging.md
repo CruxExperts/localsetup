@@ -5,8 +5,8 @@ version: 3.4
 
 # Command Logging
 
-Hooks and launch commands run in serial order. Hook commands and `direct-argv` or `resolved-path` agent profiles execute with `shell=False`; `shell-login` profiles are opt-in and run a recorded `bash -lc` style command for compatibility with profile-managed installs.
+Hooks and configured agent commands run in serial order. Hook commands and `direct-argv` or `resolved-path` profiles execute with `shell=False`; `shell-login` is opt-in and records the rendered command for profile-managed compatibility.
 
-Every command gets a sidecar JSON file with argv, cwd, timeout, launcher mode, resolved executable when available, model policy, PID, process group/session metadata when available, return code, timeout state, and stdout/stderr tails.
+Every executed command and every command blocked by direct-command policy gets a `command-<index>.json` sidecar. The command log records each sidecar filename and SHA-256, while the run manifest commits hashes for `heartbeat-result.json`, `command-log.json`, and every referenced sidecar. Promotion rejects a staged run if a required artifact, reference, or hash is missing or mismatched.
 
-The run manifest stores hashes for committed artifacts so corrupt staged output cannot be promoted as a successful run.
+Sidecars record argv, cwd, timeout, launcher metadata, client label, resolved executable when available, PID, process group/session metadata when available, return code, timeout state, errors, and stdout/stderr tails.

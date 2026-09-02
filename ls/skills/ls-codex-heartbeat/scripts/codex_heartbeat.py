@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Codex heartbeat harness runtime with atomic run artifacts."""
+"""Generic agent heartbeat harness runtime with atomic run artifacts."""
 
 from __future__ import annotations
 
 import argparse
+import fcntl
 import json
 import os
 import sys
-import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -41,14 +41,12 @@ from codex_heartbeat_support import atomic_write_text
 from codex_heartbeat_support import command_policy
 from codex_heartbeat_support import config_path_for
 from codex_heartbeat_support import heartbeat_enabled
-from codex_heartbeat_support import load_codex_command
-from codex_heartbeat_support import load_hooks
 from codex_heartbeat_support import load_yaml
-from codex_heartbeat_support import normalize_timeout
 from codex_heartbeat_support import plan_summary
 from codex_heartbeat_support import planned_commands
 from codex_heartbeat_support import run_command
 from codex_heartbeat_support import sha256_file
+from codex_heartbeat_support import write_command_sidecar
 from codex_heartbeat_support import sha256_json
 from codex_heartbeat_support import state_root_from_config
 from codex_heartbeat_support import utc_now
@@ -153,34 +151,141 @@ def recover_staged_runs(state_root: Path) -> list[dict[str, Any]]:
     return recovered
 
 
-def acquire_lock(state_root: Path) -> tuple[bool, dict[str, Any]]:
+def stale_after_seconds(config: dict[str, Any]) -> int:
+    heartbeat = config.get("heartbeat") if isinstance(config.get("heartbeat"), dict) else {}
+    raw = heartbeat.get("stale_after_seconds", 3600)
+    try:
+        seconds = int(raw)
+    except (TypeError, ValueError) as exc:
+        raise HeartbeatError("heartbeat.stale_after_seconds must be an integer") from exc
+    if seconds < 1:
+        raise HeartbeatError("heartbeat.stale_after_seconds must be at least one second")
+    return seconds
+
+
+def _current_hostname() -> str:
+    return os.uname().nodename if hasattr(os, "uname") else ""
+
+
+def _read_lock_payload(lock_fd: int) -> dict[str, Any]:
+    try:
+        os.lseek(lock_fd, 0, os.SEEK_SET)
+        loaded = json.loads(os.read(lock_fd, 65536).decode("utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return {"state": "unreadable"}
+    return loaded if isinstance(loaded, dict) else {"state": "invalid"}
+
+
+def _is_proven_stale_lock(payload: dict[str, Any], stale_after: int) -> bool:
+    created_at = payload.get("created_at")
+    hostname = payload.get("hostname")
+    pid = payload.get("pid")
+    if not isinstance(created_at, str) or not isinstance(hostname, str) or hostname != _current_hostname():
+        return False
+    if not isinstance(pid, int) or isinstance(pid, bool) or pid < 1:
+        return False
+    try:
+        created = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    if created.tzinfo is None:
+        return False
+    age_seconds = (datetime.now(timezone.utc) - created).total_seconds()
+    if age_seconds < stale_after:
+        return False
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return True
+    except OSError:
+        return False
+    return False
+
+
+def _write_lock_payload(lock_fd: int, payload: dict[str, Any]) -> None:
+    encoded = (json.dumps(payload, indent=2, sort_keys=True) + "\n").encode("utf-8")
+    if os.write(lock_fd, encoded) != len(encoded):
+        raise HeartbeatError("unable to write complete heartbeat lock payload")
+    os.fsync(lock_fd)
+
+
+def acquire_lock(state_root: Path, stale_after: int) -> tuple[int | None, dict[str, Any]]:
     state_root.mkdir(parents=True, exist_ok=True)
     lock_path = state_root / LOCK_NAME
-    payload = {
-        "pid": os.getpid(),
-        "created_at": utc_now(),
-        "hostname": os.uname().nodename if hasattr(os, "uname") else "",
-    }
-    try:
-        fd = os.open(lock_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-    except FileExistsError:
+    payload = {"created_at": utc_now(), "hostname": _current_hostname(), "pid": os.getpid()}
+    unready_retries = 0
+    while True:
         try:
-            existing = json.loads(lock_path.read_text(encoding="utf-8"))
+            lock_fd = os.open(lock_path, os.O_RDWR | os.O_CREAT | os.O_EXCL, 0o600)
+        except FileExistsError:
+            try:
+                existing_fd = os.open(lock_path, os.O_RDONLY)
+            except FileNotFoundError:
+                continue
+            try:
+                fcntl.flock(existing_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                existing = _read_lock_payload(existing_fd)
+                os.close(existing_fd)
+                return None, existing
+            retry_unready = False
+            try:
+                existing = _read_lock_payload(existing_fd)
+                try:
+                    current_stat = lock_path.stat()
+                except FileNotFoundError:
+                    continue
+                if not os.path.samestat(os.fstat(existing_fd), current_stat):
+                    continue
+                if existing.get("state") in {"unreadable", "invalid"}:
+                    if unready_retries >= 1:
+                        return None, {"state": "acquiring"}
+                    unready_retries += 1
+                    retry_unready = True
+                elif not _is_proven_stale_lock(existing, stale_after):
+                    return None, existing
+                else:
+                    try:
+                        lock_path.unlink()
+                    except FileNotFoundError:
+                        continue
+            finally:
+                fcntl.flock(existing_fd, fcntl.LOCK_UN)
+                os.close(existing_fd)
+            if retry_unready:
+                continue
+            continue
+        try:
+            fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            _write_lock_payload(lock_fd, payload)
         except Exception:
-            existing = {"path": str(lock_path)}
-        return False, existing if isinstance(existing, dict) else {"path": str(lock_path)}
-    with os.fdopen(fd, "w", encoding="utf-8") as handle:
-        json.dump(payload, handle, indent=2, sort_keys=True)
-        handle.write("\n")
-    return True, payload
+            fcntl.flock(lock_fd, fcntl.LOCK_UN)
+            os.close(lock_fd)
+            try:
+                lock_path.unlink()
+            except FileNotFoundError:
+                pass
+            raise
+        return lock_fd, payload
 
 
-def release_lock(state_root: Path) -> None:
+def release_lock(state_root: Path, lock_fd: int) -> None:
     lock_path = state_root / LOCK_NAME
     try:
-        lock_path.unlink()
-    except FileNotFoundError:
-        pass
+        try:
+            if os.path.samestat(os.fstat(lock_fd), lock_path.stat()):
+                lock_path.unlink()
+        except FileNotFoundError:
+            pass
+    finally:
+        fcntl.flock(lock_fd, fcntl.LOCK_UN)
+        os.close(lock_fd)
+
+
+def _staged_artifact_path(staged: Path, name: Any) -> Path:
+    if not isinstance(name, str) or not name:
+        raise HeartbeatError("staged artifact name must be a non-empty relative path")
+    return _is_relative_child(name, staged)
 
 
 def validate_staged_run(staged: Path) -> dict[str, Any]:
@@ -202,12 +307,34 @@ def validate_staged_run(staged: Path) -> dict[str, Any]:
     artifacts = manifest.get("artifacts")
     if not isinstance(artifacts, dict) or not artifacts:
         raise HeartbeatError("staged manifest must include artifact hashes")
+    for required in ("heartbeat-result.json", "command-log.json"):
+        if required not in artifacts:
+            raise HeartbeatError(f"staged manifest missing required artifact: {required}")
     for name, expected in artifacts.items():
-        path = staged / str(name)
+        if not isinstance(expected, str):
+            raise HeartbeatError(f"staged artifact hash must be a string: {name}")
+        path = _staged_artifact_path(staged, name)
         if not path.is_file():
             raise HeartbeatError(f"staged artifact missing: {name}")
         if sha256_file(path) != expected:
             raise HeartbeatError(f"staged artifact hash mismatch: {name}")
+    command_log_path = _staged_artifact_path(staged, "command-log.json")
+    try:
+        command_log = json.loads(command_log_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise HeartbeatError("staged command log is not valid JSON") from exc
+    commands = command_log.get("commands") if isinstance(command_log, dict) else None
+    if not isinstance(commands, list):
+        raise HeartbeatError("staged command log must contain a commands list")
+    for index, entry in enumerate(commands, start=1):
+        if not isinstance(entry, dict):
+            raise HeartbeatError(f"staged command log entry {index} must be an object")
+        sidecar = entry.get("sidecar")
+        sidecar_hash = entry.get("sidecar_sha256")
+        if not isinstance(sidecar_hash, str) or artifacts.get(sidecar) != sidecar_hash:
+            raise HeartbeatError(f"staged command sidecar is not committed: {sidecar}")
+        if sha256_file(_staged_artifact_path(staged, sidecar)) != sidecar_hash:
+            raise HeartbeatError(f"staged command sidecar hash mismatch: {sidecar}")
     return manifest
 
 
@@ -246,12 +373,26 @@ def _finalize_staged(
     result: dict[str, Any],
     command_log: dict[str, Any],
 ) -> dict[str, Any]:
+    commands = command_log.get("commands")
+    if not isinstance(commands, list):
+        raise HeartbeatError("command log must contain a commands list")
     atomic_write_json(staged / "heartbeat-result.json", result)
     atomic_write_json(staged / "command-log.json", command_log)
     artifacts = {
         "heartbeat-result.json": sha256_file(staged / "heartbeat-result.json"),
         "command-log.json": sha256_file(staged / "command-log.json"),
     }
+    for index, entry in enumerate(commands, start=1):
+        if not isinstance(entry, dict):
+            raise HeartbeatError(f"command log entry {index} must be an object")
+        sidecar = entry.get("sidecar")
+        sidecar_hash = entry.get("sidecar_sha256")
+        sidecar_path = _staged_artifact_path(staged, sidecar)
+        if not isinstance(sidecar_hash, str) or not sidecar_path.is_file():
+            raise HeartbeatError(f"command sidecar is incomplete: {sidecar}")
+        if sha256_file(sidecar_path) != sidecar_hash:
+            raise HeartbeatError(f"command sidecar hash mismatch: {sidecar}")
+        artifacts[sidecar] = sidecar_hash
     manifest["artifacts"] = artifacts
     atomic_write_json(staged / "manifest.json", manifest)
     return manifest
@@ -276,15 +417,17 @@ def run_once(
             "target_root": str(target_root),
             "config_path": str(config_path),
         }
-    recovered = recover_staged_runs(state_root)
-    validate_active_pointer(state_root)
-    locked, lock_payload = acquire_lock(state_root)
-    if not locked:
+    lock_fd, lock_payload = acquire_lock(state_root, stale_after_seconds(config))
+    if lock_fd is None:
         return {"ok": False, "status": "locked", "lock": lock_payload, "target_root": str(target_root)}
-    run_id = _new_run_id()
-    staged = state_root / RUNS_DIR_NAME / f"{run_id}.staged"
+    staged: Path | None = None
+    run_id = ""
     command_entries: list[dict[str, Any]] = []
     try:
+        recovered = recover_staged_runs(state_root)
+        validate_active_pointer(state_root)
+        run_id = _new_run_id()
+        staged = state_root / RUNS_DIR_NAME / f"{run_id}.staged"
         staged.mkdir(parents=True, exist_ok=False)
         _write_active_pointer(state_root, staged, run_id)
         config_hash = sha256_json(config)
@@ -307,23 +450,32 @@ def run_once(
         status = "succeeded"
         for index, command in enumerate(planned, start=1):
             argv = command["command"]
+            sidecar = staged / f"command-{index:02d}.json"
             try:
                 validate_direct_command(command.get("policy_command", argv), config, allow_direct=bool(command.get("allow_direct")))
             except HeartbeatError as exc:
                 launcher_info = command.get("launcher_info") if isinstance(command.get("launcher_info"), dict) else {}
-                command_entries.append(
+                entry = write_command_sidecar(
+                    sidecar,
                     {
                         "id": command["id"],
                         "argv": argv,
+                        "cwd": str(target_root),
+                        "started_at": utc_now(),
+                        "timeout_seconds": int(command["timeout_seconds"]),
                         **launcher_info,
                         "blocked": True,
+                        "returncode": None,
+                        "timed_out": False,
+                        "stdout_tail": "",
+                        "stderr_tail": "",
                         "error": str(exc),
                         "finished_at": utc_now(),
-                    }
+                    },
                 )
+                command_entries.append(entry)
                 status = "failed"
                 break
-            sidecar = staged / f"command-{index:02d}.json"
             entry = run_command(
                 str(command["id"]),
                 argv,
@@ -331,6 +483,7 @@ def run_once(
                 timeout_seconds=int(command["timeout_seconds"]),
                 sidecar_path=sidecar,
                 launcher_info=command.get("launcher_info") if isinstance(command.get("launcher_info"), dict) else None,
+                stdin_text=command.get("stdin_text") if isinstance(command.get("stdin_text"), str) else None,
             )
             command_entries.append(entry)
             if entry.get("returncode") != 0:
@@ -364,7 +517,7 @@ def run_once(
             "result": result,
         }
     except Exception:
-        if staged.exists() and staged.name.endswith(".staged"):
+        if staged is not None and staged.exists() and staged.name.endswith(".staged"):
             try:
                 manifest_path = staged / "manifest.json"
                 manifest = {}
@@ -388,7 +541,7 @@ def run_once(
                 pass
         raise
     finally:
-        release_lock(state_root)
+        release_lock(state_root, lock_fd)
 
 
 def status(*, target_root: Path, config_path: Path | None = None) -> dict[str, Any]:
@@ -420,13 +573,11 @@ def status(*, target_root: Path, config_path: Path | None = None) -> dict[str, A
         payload["ok"] = False
         payload.setdefault("issues", []).append(str(exc))
     return payload
-
-
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run the Codex heartbeat harness.")
+    parser = argparse.ArgumentParser(description="Run the generic agent heartbeat harness.")
     parser.add_argument("--target-root", default=".", help="Target repository root.")
     parser.add_argument("--config", default=None, help="Path to config/codex_heartbeat.yaml.")
-    parser.add_argument("--no-agent", action="store_true", help="Skip Codex model execution and exercise transactions only.")
+    parser.add_argument("--no-agent", action="store_true", help="Skip the configured agent command and exercise transactions only.")
     parser.add_argument("--force", action="store_true", help="Run even when heartbeat.enabled is false.")
     parser.add_argument("--status", action="store_true", help="Report status instead of running.")
     return parser

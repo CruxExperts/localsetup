@@ -192,7 +192,12 @@ def test_harness_budget_caps_runtime_from_interval_and_queue_policy(tmp_path: Pa
 def test_harness_budget_serial_carryover_uses_actual_for_completed(tmp_path: Path) -> None:
     target = tmp_path / "target"
     target.mkdir()
-    write_config(target, task_queue_path="queues/heartbeat-tasks.yaml", codex={"enabled": False, "timeout_seconds": 120})
+    write_config(
+        target,
+        task_queue_path="queues/heartbeat-tasks.yaml",
+        agent={"enabled": False, "profile": "lower-cost", "timeout_seconds": 120},
+        agent_profiles={"lower-cost": {"timeout_seconds": 300}},
+    )
     queue = target / "queues" / "heartbeat-tasks.yaml"
     queue.parent.mkdir()
     queue.write_text(
@@ -218,13 +223,27 @@ def test_harness_budget_serial_carryover_uses_actual_for_completed(tmp_path: Pat
     assert payload["summary"]["reserved_runtime_seconds"] == 465
 
 
+def test_harness_budget_uses_selected_agent_profile_timeout(tmp_path: Path) -> None:
+    target = tmp_path / "target"
+    target.mkdir()
+    write_config(
+        target,
+        agent={"enabled": False, "profile": "alternate"},
+        agent_profiles={"heartbeat": {"timeout_seconds": 60}, "alternate": {"timeout_seconds": 90}},
+    )
+
+    payload = harness_budget(ROOT, target)
+
+    assert payload["policy"]["default_timeout_seconds"] == 90
+
+
 def test_harness_budget_clamps_hostile_numeric_values(tmp_path: Path) -> None:
     target = tmp_path / "target"
     target.mkdir()
     write_config(
         target,
         task_queue_path="queues/heartbeat-tasks.yaml",
-        codex={"enabled": False, "profile": "heartbeat"},
+        agent={"enabled": False, "profile": "heartbeat"},
         agent_profiles={"heartbeat": {"timeout_seconds": -5}},
     )
     queue = target / "queues" / "heartbeat-tasks.yaml"
