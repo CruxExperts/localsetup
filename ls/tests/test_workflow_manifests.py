@@ -216,6 +216,63 @@ def test_repo_convert_workflow_requires_report_evidence_before_apply() -> None:
     assert "only after that evidence is explicit" in skill_text
 
 
+def test_server_triage_patch_workflow_is_plan_only() -> None:
+    workflow_dir = ROOT / "ls" / "workflows" / "ls-workflow-pipeline-server-triage-patch"
+    skill_text = (workflow_dir / "SKILL.md").read_text(encoding="utf-8").lower()
+    manifest = yaml.safe_load((workflow_dir / "workflow.yaml").read_text(encoding="utf-8"))
+
+    assert manifest["required_skills"] == [
+        "ls-system-info",
+        "ls-linux-service-triage",
+        "ls-linux-patcher",
+    ]
+    assert manifest["required_tools"] == []
+    assert manifest["required_docs"] == ["ls/docs/WORKFLOW_QUICK_REF.md"]
+    assert [phase["id"] for phase in manifest["phases"]] == [
+        "baseline",
+        "triage",
+        "patch_plan",
+    ]
+
+    assert [gate["id"] for gate in manifest["gates"]] == [
+        "read_only_boundary",
+        "plan_only_capability",
+        "separate_execution_handoff",
+    ]
+    gate_rules = "\n".join(gate["rule"] for gate in manifest["gates"]).lower()
+    for required_term in (
+        "stop before ssh",
+        "plan",
+        "never claim",
+        "ls-safety-and-backup",
+        "ls-workflow-ops-guarded",
+        "ls-workflow-ops-tmux-session",
+        "exact commands",
+        "targets",
+        "consequences",
+        "backup",
+        "rollback",
+        "explicit user approval at the point of risk",
+    ):
+        assert required_term in gate_rules
+
+    assert "planning-only" in skill_text
+    assert "does not open ssh sessions" in skill_text
+    assert "bundled helper emits plans only" in skill_text
+    assert "manual execution is outside this workflow" in skill_text
+    assert "tmux is transport only" in skill_text
+    assert "immediate explicit user approval" in skill_text
+
+    package_text = f"{skill_text}\n{yaml.safe_dump(manifest, sort_keys=True).lower()}"
+    for stale_claim in (
+        "followed by patching",
+        "apply approved updates",
+        "post-patch status",
+        "localsetup://tool/tmux_ops",
+    ):
+        assert stale_claim not in package_text
+
+
 def test_workflow_catalog_rejects_unsafe_smoke_and_migration_strings(tmp_path: Path) -> None:
     root = make_workflow_validation_repo(tmp_path)
     manifest = root / "ls" / "workflows" / "ls-workflow-demo" / "workflow.yaml"

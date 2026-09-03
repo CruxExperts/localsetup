@@ -46,12 +46,12 @@
       "emitter": "generate-docs",
       "framework_version": "4.3.9",
       "schema_version": 1,
-      "source_commit": "2f6175c266dded582ba63f8e9df6546f69f2091b",
+      "source_commit": "84589364ca9d762b732aa0a39e6b8fff6c64cfa0",
       "source_dirty": true,
-      "source_provenance_hash": "58d490a0c8975030900a3dd9b068f629cc103df7959d04025d11f502e13f7668",
-      "source_root_id": "8d35df3a296248032ff5b389435dd219e5b52ad658d5997441764ab3c7fdd2e5",
+      "source_provenance_hash": "e52873e33fbffb7a1f8900ba5f956ea4c63a71193660b5b5dd54de637859b60d",
+      "source_root_id": "9b3f901fb0ca5039aaae4641bb2cc2e5bf48021949adb2935b2c51a5a6664bf8",
       "source_tag": null,
-      "source_tree_sha": "af4878e3efc255117450b648d69f7c75fda25aec"
+      "source_tree_sha": "5b63387663793dab381e48cf0b00f0d00f74d4d4"
     },
     "skill_count": 103,
     "skills": [
@@ -1921,12 +1921,12 @@
       "emitter": "generate-docs",
       "framework_version": "4.3.9",
       "schema_version": 1,
-      "source_commit": "2f6175c266dded582ba63f8e9df6546f69f2091b",
+      "source_commit": "84589364ca9d762b732aa0a39e6b8fff6c64cfa0",
       "source_dirty": true,
-      "source_provenance_hash": "58d490a0c8975030900a3dd9b068f629cc103df7959d04025d11f502e13f7668",
-      "source_root_id": "8d35df3a296248032ff5b389435dd219e5b52ad658d5997441764ab3c7fdd2e5",
+      "source_provenance_hash": "e52873e33fbffb7a1f8900ba5f956ea4c63a71193660b5b5dd54de637859b60d",
+      "source_root_id": "9b3f901fb0ca5039aaae4641bb2cc2e5bf48021949adb2935b2c51a5a6664bf8",
       "source_tag": null,
-      "source_tree_sha": "af4878e3efc255117450b648d69f7c75fda25aec"
+      "source_tree_sha": "5b63387663793dab381e48cf0b00f0d00f74d4d4"
     },
     "schema_version": 1,
     "skills": [
@@ -3427,16 +3427,16 @@
   },
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "58de21a2ecd88ccc97a559d965e8235dd6f2c2e402be183b4d83dc936a545468",
+    "artifact_sha256": "6d8f3c4e679e6fb5450df501cd41657f0d3e503be6bb8f38ce4dc6ee945b246e",
     "emitter": "docs-align",
     "framework_version": "4.3.9",
     "schema_version": 1,
-    "source_commit": "2f6175c266dded582ba63f8e9df6546f69f2091b",
+    "source_commit": "84589364ca9d762b732aa0a39e6b8fff6c64cfa0",
     "source_dirty": true,
-    "source_provenance_hash": "58d490a0c8975030900a3dd9b068f629cc103df7959d04025d11f502e13f7668",
-    "source_root_id": "8d35df3a296248032ff5b389435dd219e5b52ad658d5997441764ab3c7fdd2e5",
+    "source_provenance_hash": "e52873e33fbffb7a1f8900ba5f956ea4c63a71193660b5b5dd54de637859b60d",
+    "source_root_id": "9b3f901fb0ca5039aaae4641bb2cc2e5bf48021949adb2935b2c51a5a6664bf8",
     "source_tag": null,
-    "source_tree_sha": "af4878e3efc255117450b648d69f7c75fda25aec"
+    "source_tree_sha": "5b63387663793dab381e48cf0b00f0d00f74d4d4"
   },
   "schema_version": "1.0",
   "truths": {
@@ -5719,7 +5719,7 @@
             "aliases": [
               "server triage patch pipeline"
             ],
-            "description": "Use when capturing a server baseline, triaging service issues, and planning or applying patch operations.",
+            "description": "Use when capturing a Linux server baseline, diagnosing service issues from read-only evidence, and producing a patch plan without executing changes.",
             "display_name": "Pipeline Server Triage Patch",
             "package": "ls-workflow-pipeline-server-triage-patch",
             "packs": [
@@ -5727,17 +5727,14 @@
             ],
             "path": "ls/workflows/ls-workflow-pipeline-server-triage-patch",
             "required_docs": [
-              "ls/docs/WORKFLOW_QUICK_REF.md",
-              "ls/docs/ops/tmux-ops-managed.md"
+              "ls/docs/WORKFLOW_QUICK_REF.md"
             ],
             "required_skills": [
               "ls-system-info",
               "ls-linux-service-triage",
               "ls-linux-patcher"
             ],
-            "required_tools": [
-              "localsetup://tool/tmux_ops"
-            ],
+            "required_tools": [],
             "workflow_id": "pipeline-server-triage-patch"
           },
           {

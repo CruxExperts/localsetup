@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 58d490a0c8975030900a3dd9b068f629cc103df7959d04025d11f502e13f7668
+  source_provenance_hash: e52873e33fbffb7a1f8900ba5f956ea4c63a71193660b5b5dd54de637859b60d
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 2f6175c266dded582ba63f8e9df6546f69f2091b
-artifact_sha256: 08d8630dbae8c327bb8a07b6aed51bd054707893f90c7ae972a2651797aaf643
+source_commit: 84589364ca9d762b732aa0a39e6b8fff6c64cfa0
+artifact_sha256: 123ce3e8ca5b26fcae8d641f9f75d1dca70774cc9da2f6433f523b9c50cf16d8
 ---
 # Workflow and module registry (Localsetup)
 
@@ -41,7 +41,7 @@ For the framework rules, see [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md).
 | `pipeline-pre-publish` | `ls-workflow-pipeline-pre-publish` | Pipeline Pre Publish | Use when running pre-publish checks, version sync, and framework audit before release actions. | pre publish pipeline | `ls-github-publishing-workflow`; `ls-automatic-versioning`; `ls-framework-audit` | [VERSIONING.md](VERSIONING.md); [WORKFLOW_QUICK_REF.md](WORKFLOW_QUICK_REF.md) |
 | `pipeline-repo-convert` | `ls-workflow-pipeline-repo-convert` | Pipeline Repo Convert | Use when converting an existing repo to the current Localsetup framework with backup, blocker, install, and verification gates. | repo convert pipeline; convert repo; localsetup convert | `ls-framework-compliance`; `ls-safety-and-backup`; `ls-git-workflows`; `ls-test-runner` | [REPO_CONVERSION.md](REPO_CONVERSION.md); [MULTI_PLATFORM_INSTALL.md](MULTI_PLATFORM_INSTALL.md); `git` |
 | `pipeline-repo-polish` | `ls-workflow-pipeline-repo-polish` | Pipeline Repo Polish | Use when polishing repository docs and scripts for sharing readiness. | repo polish pipeline | `ls-script-and-docs-quality`; `ls-humanizer`; `ls-github-publishing-workflow` | [WORKFLOW_QUICK_REF.md](WORKFLOW_QUICK_REF.md); [README.md](README.md) |
-| `pipeline-server-triage-patch` | `ls-workflow-pipeline-server-triage-patch` | Pipeline Server Triage Patch | Use when capturing a server baseline, triaging service issues, and planning or applying patch operations. | server triage patch pipeline | `ls-system-info`; `ls-linux-service-triage`; `ls-linux-patcher` | [WORKFLOW_QUICK_REF.md](WORKFLOW_QUICK_REF.md); [tmux-ops-managed.md](ops/tmux-ops-managed.md); `localsetup://tool/tmux_ops` |
+| `pipeline-server-triage-patch` | `ls-workflow-pipeline-server-triage-patch` | Pipeline Server Triage Patch | Use when capturing a Linux server baseline, diagnosing service issues from read-only evidence, and producing a patch plan without executing changes. | server triage patch pipeline | `ls-system-info`; `ls-linux-service-triage`; `ls-linux-patcher` | [WORKFLOW_QUICK_REF.md](WORKFLOW_QUICK_REF.md) |
 | `pipeline-skill-onboard` | `ls-workflow-pipeline-skill-onboard` | Pipeline Skill Onboard | Use when running the skill onboarding pipeline from vetting through sandbox testing. | skill onboarding pipeline | `ls-skill-vetter`; `ls-skill-importer`; `ls-skill-normalizer`; `ls-skill-sandbox-tester` | [WORKFLOW_QUICK_REF.md](WORKFLOW_QUICK_REF.md); [SKILL_IMPORTING.md](SKILL_IMPORTING.md) |
 | `planning-critic-loop` | `ls-workflow-planning-critic-loop` | Planning Critic Loop | Use when creating decision-complete plans through grounding, capped clarification, subagent delegation, and critic iteration. | planning critic loop; planning agent critic; critic reviewed plan | n/a | [DECISION_TREE_WORKFLOW.md](DECISION_TREE_WORKFLOW.md); [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md); [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md); [SKILLS_AND_RULES.md](SKILLS_AND_RULES.md) |
 | `queue-batch-implement` | `ls-workflow-queue-batch-implement` | Queue Batch Implement | Use when processing queued PRD tasks in batch with status tracking and outcome reporting. | Agent Q queue; process PRDs | n/a | [AGENTIC_AGENT_Q_PATTERN.md](AGENTIC_AGENT_Q_PATTERN.md); [PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md](PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md) |
