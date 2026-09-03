@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: be8fb067a126368bc09d5bee580385399ca8ae166cbabafef50c93ff576405f7
+  source_provenance_hash: ab7ff480087f66fbfb51d20e8f3dc4553bbaf5f34bb20a7721e413e143b8d1c7
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 1d45494bfbc15ade30b3a221a19d75bc87ee963c
-artifact_sha256: b6601fbb1404107150ba6ab13f942427912e34f0cb3964bd182438e2967dda08
+source_commit: 88ca586d7d7cf6973bb02e7440ebb18be3d4e25b
+artifact_sha256: 028ad9133b34fc040a247b6aed03f36babbc3b50103c010e37eb32b2433e67dc
 ---
 # Shipped skills catalog
 
@@ -64,7 +64,7 @@ Total shipped skills: 103
 | `ls-omniroute-admin-automation` | `integrations` | 50 | `integrations`, `omniroute` | `omniroute`, `admin`, `automation` | `ls-omniroute-admin-automation` | `1.1` | Comprehensive OmniRoute administration and automation via Python tooling. Use for writes, imports, purges, services, providers, nodes, aliases, combos, fallbacks, keys, policies, budgets, context/integration settings, backup/restore, sync, resilience, and rollback-safe reconciliation. |
 | `ls-omniroute-proxy` | `integrations` | 50 | `integrations`, `omniroute` | `omniroute`, `proxy`, `runtime` | `ls-omniroute-proxy` | `1.1` | Guide read-only OmniRoute discovery across models/providers, context/compression, health/usage/resilience, integrations, and agent clients, and emit sanitized model observations. Use for OmniRoute catalogs, runtime metadata, diagnostics, MCP/A2A, CLI tools, plugins, tunnels, webhooks, or client compatibility. |
 | `ls-omniroute-update` | `integrations` | 50 | `omniroute` | `omniroute`, `update`, `provenance` | `ls-omniroute-update` | `1.2` | Coordinate OmniRoute update workflows, including upstream skill discovery, consolidated Localsetup coverage comparison, freshness validation, and report-first import, update, modification, or removal planning. Use when listing, checking, updating, modifying, importing, or removing OmniRoute-derived Localsetup skills. |
-| `ls-scrapling` | `integrations` | 50 | `integrations` | `scrapling`, `extraction` | `ls-scrapling` | `1.0` | Host-first Scrapling integration skill: install or upgrade Scrapling via pipx, run single-URL extractions (simple and structured), and manage adapter and version refresh flows, with Docker as an optional escape hatch. |
+| `ls-scrapling` | `integrations` | 50 | `integrations` | `scrapling`, `extraction` | `ls-scrapling` | `1.0` | Host-first Scrapling integration skill: plan or run supported single-URL extraction through pipx, with Docker as an optional escape hatch and controlled adapter refresh. |
 | `ls-accessibility-review` | `development` | 60 | `dev`, `frontend` | `workflow`, `guidance` | `ls-accessibility-review` | `1.0` | Guide accessibility reviews for UI, documents, and workflows. Use for WCAG-oriented audits, keyboard review, semantics, contrast, and remediation planning. |
 | `ls-agent-email-inbox` | `integrations` | 60 | `integrations` | `external-service`, `integration` | `ls-agent-email-inbox` | `1.0` | Guide agent email inbox workflows with prompt-injection defenses. Use for inbound email processing, webhooks, routing, and safety review. |
 | `ls-alirezarezvani-skills` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `inventory` | `ls-alirezarezvani-skills` | `1.0` | Inventory wrapper for the alirezarezvani Claude skills bundle. Use when triaging its broad skill catalog and large script surface before any targeted import. |

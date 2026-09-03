@@ -1,8 +1,4 @@
-"""
-Purpose: Tests for Scrapling adapter parser and refresh flow.
-Created: 2026-03-16
-Last Updated: 2026-03-16
-"""
+"""Tests for Scrapling adapter parsing and controlled refresh."""
 
 from __future__ import annotations
 
@@ -13,6 +9,9 @@ from ls.tools.scrapling_helper import adapter_parser
 from ls.tools.scrapling_helper import adapter_state
 from ls.tools.scrapling_helper import config as scrapling_config
 from ls.tools.scrapling_helper import main as scrapling_main
+
+
+REMOVED_SURFACES = ("extract_url_structured", "run_spider", "resume_spider")
 
 
 def _temp_cfg(tmp_path: Path) -> scrapling_config.ScraplingConfig:
@@ -26,23 +25,30 @@ def _temp_cfg(tmp_path: Path) -> scrapling_config.ScraplingConfig:
     )
 
 
-def test_parse_current_features_uses_help_output(monkeypatch) -> None:
+def test_parse_current_features_uses_only_supported_help_surfaces(monkeypatch) -> None:
     cfg = scrapling_config.load_config()
+    calls: list[list[str]] = []
 
     def fake_run_help(_cfg, args):
+        calls.append(args)
         if args == ["--help"]:
             return "--help output\n--flag-x (deprecated)\n"
         if args == ["extract", "--help"]:
             return "extract help\n--extract-flag (experimental)\n"
-        return "spider help\n"
+        raise AssertionError(f"unexpected help probe: {args}")
 
     monkeypatch.setattr(adapter_parser, "_run_scrapling_help", fake_run_help)
     state = adapter_parser.parse_current_features(cfg)
-    assert "top" in state.cli_commands
+
+    assert calls == [["--help"], ["extract", "--help"]]
+    assert set(state.cli_commands) == {"top", "extract"}
+    assert state.spiders == {}
     assert "--flag-x" in state.flags
     assert "deprecated" in state.flags["--flag-x"]["tags"]
     assert "--extract-flag" in state.flags
     assert "experimental" in state.flags["--extract-flag"]["tags"]
+    for name in REMOVED_SURFACES:
+        assert not hasattr(scrapling_main, name)
 
 
 def test_refresh_adapters_dry_run_does_not_write(tmp_path: Path, monkeypatch) -> None:
@@ -92,7 +98,7 @@ def test_refresh_adapters_apply_writes_state_and_capability_index(tmp_path: Path
     assert json.loads(adapter_state.capability_index_path(cfg).read_text(encoding="utf-8")) == result["capabilities"]
 
 
-def test_packaged_capability_artifact_matches_builder_keys() -> None:
+def test_packaged_capability_artifact_matches_builder_contract() -> None:
     root = Path(__file__).resolve().parents[2]
     cfg = scrapling_config.ScraplingConfig(
         framework_root=root,
@@ -107,5 +113,8 @@ def test_packaged_capability_artifact_matches_builder_keys() -> None:
 
     data = json.loads(artifact.read_text(encoding="utf-8"))
 
-    assert set(data) == set(scrapling_main.build_capability_index(cfg))
+    assert data == scrapling_main.build_capability_index(cfg)
     assert not retired.exists()
+    assert "extract_url_structured" not in data
+    assert "run_spider" not in data
+    assert all("scrapling spider" not in capability["cli"] for capability in data.values())

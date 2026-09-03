@@ -51,7 +51,7 @@ def build_scrapling_docker_command(
     workdir: Optional[Path] = None,
 ) -> list[str]:
     docker_bin = shutil.which("docker") or "docker"
-    workdir = workdir or Path.cwd()
+    workdir = (workdir or Path.cwd()).resolve()
 
     return [
         docker_bin,
@@ -62,6 +62,5 @@ def build_scrapling_docker_command(
         "-v",
         f"{workdir}:/workspace",
         cfg.docker_image,
-        "scrapling",
         *args,
     ]

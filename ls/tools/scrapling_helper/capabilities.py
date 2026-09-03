@@ -7,28 +7,21 @@ from typing import Any, Dict
 from .config import ScraplingConfig
 
 
+SUPPORTED_EXTRACTION_MODES = "get, post, put, delete, fetch, stealthy-fetch"
+
+
 def build_capability_index(cfg: ScraplingConfig) -> Dict[str, Any]:
     """Return the machine-readable helper capability index without writing files."""
     return {
         "scrapling_status": {
             "cli": "scrapling --help",
             "helper": "scrapling_status()",
-            "description": "Detect Scrapling availability, environment type, Docker availability, and basic health.",
+            "description": "Report host Scrapling health and Docker daemon availability without running a Scrapling image.",
         },
         "extract_url_simple": {
             "cli": "scrapling extract <mode> <url> <output_path>",
             "helper": "extract_url_simple(url, output_path, selector=None, mode_hint=None, use_docker=False)",
-            "description": "Single URL extraction to HTML/Markdown/text using modes like get, fetch, or stealthy-fetch.",
-        },
-        "extract_url_structured": {
-            "cli": "scrapling extract <mode> <url> <output_path>",
-            "helper": "extract_url_structured(url, output_path, selectors_schema, mode_hint=None, use_docker=False)",
-            "description": "Single URL structured extraction to JSONL based on a selector schema.",
-        },
-        "run_spider": {
-            "cli": "scrapling spider <name> [options]",
-            "helper": "run_spider(project_dir, spider_name, crawl_dir=None, extra_args=None, use_docker=False)",
-            "description": "Run a named Scrapling spider in a project directory.",
+            "description": f"Single URL extraction using supported modes: {SUPPORTED_EXTRACTION_MODES}.",
         },
         "scrapling_job_status": {
             "cli": "n/a (filesystem-backed job registry)",
@@ -46,9 +39,9 @@ def build_capability_index(cfg: ScraplingConfig) -> Dict[str, Any]:
             "description": "Upgrade the Scrapling CLI via pipx or Docker.",
         },
         "refresh_adapters": {
-            "cli": "scrapling --help; scrapling extract --help; scrapling spider --help",
+            "cli": "scrapling --help; scrapling extract --help",
             "helper": "refresh_adapters(dry_run=True)",
-            "description": "Parse current CLI help output and refresh the adapter state model.",
+            "description": "Parse top-level and extraction CLI help, then refresh the adapter state model.",
         },
         "scrapling_self_test": {
             "cli": "scrapling extract get <fixture> <output_path>",
