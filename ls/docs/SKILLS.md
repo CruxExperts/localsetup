@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 26c7b54b6eccbd88fea02ceb8a78c1ae7d15e20d6b4a2c5d10146645bbb489a3
+  source_provenance_hash: 13d48f6b423b162a012e12c25128bdb400a7d3f41cd1d1ce13664a8133532d6b
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 6752465d8412ec92f6bd922a699df353ea6c40f5
-artifact_sha256: 167dd158aff2ea89b9ffb89e63df4be184a5b0e93723f341758c48e72114344f
+source_commit: 88025425e3a1b5ce24dad256d810b94373940bba
+artifact_sha256: b6601fbb1404107150ba6ab13f942427912e34f0cb3964bd182438e2967dda08
 ---
 # Shipped skills catalog
 
@@ -63,7 +63,7 @@ Total shipped skills: 103
 | `ls-npm-management` | `integrations` | 50 | `integrations` | `nginx-proxy-manager`, `api` | `ls-npm-management` | `1.0` | Manage Nginx Proxy Manager (NPM) reverse proxy hosts via its REST API using the native Python client npm_api.py. Use when creating, modifying, diagnosing, removing, or cleaning up proxy hosts, or when coordinating Docker service deployments with NPM routing. |
 | `ls-omniroute-admin-automation` | `integrations` | 50 | `integrations`, `omniroute` | `omniroute`, `admin`, `automation` | `ls-omniroute-admin-automation` | `1.1` | Comprehensive OmniRoute administration and automation via Python tooling. Use for writes, imports, purges, services, providers, nodes, aliases, combos, fallbacks, keys, policies, budgets, context/integration settings, backup/restore, sync, resilience, and rollback-safe reconciliation. |
 | `ls-omniroute-proxy` | `integrations` | 50 | `integrations`, `omniroute` | `omniroute`, `proxy`, `runtime` | `ls-omniroute-proxy` | `1.1` | Guide read-only OmniRoute discovery across models/providers, context/compression, health/usage/resilience, integrations, and agent clients, and emit sanitized model observations. Use for OmniRoute catalogs, runtime metadata, diagnostics, MCP/A2A, CLI tools, plugins, tunnels, webhooks, or client compatibility. |
-| `ls-omniroute-update` | `integrations` | 50 | `omniroute` | `omniroute`, `update`, `provenance` | `ls-omniroute-update` | `1.1` | Coordinate OmniRoute update workflows, including upstream skill discovery, consolidated Localsetup coverage comparison, freshness validation, and report-first import, update, modification, or removal planning. Use when listing, checking, updating, modifying, importing, or removing OmniRoute-derived Localsetup skills. |
+| `ls-omniroute-update` | `integrations` | 50 | `omniroute` | `omniroute`, `update`, `provenance` | `ls-omniroute-update` | `1.2` | Coordinate OmniRoute update workflows, including upstream skill discovery, consolidated Localsetup coverage comparison, freshness validation, and report-first import, update, modification, or removal planning. Use when listing, checking, updating, modifying, importing, or removing OmniRoute-derived Localsetup skills. |
 | `ls-scrapling` | `integrations` | 50 | `integrations` | `scrapling`, `extraction` | `ls-scrapling` | `1.0` | Host-first Scrapling integration skill: install or upgrade Scrapling via pipx, run single-URL extractions (simple and structured), and manage adapter and version refresh flows, with Docker as an optional escape hatch. |
 | `ls-accessibility-review` | `development` | 60 | `dev`, `frontend` | `workflow`, `guidance` | `ls-accessibility-review` | `1.0` | Guide accessibility reviews for UI, documents, and workflows. Use for WCAG-oriented audits, keyboard review, semantics, contrast, and remediation planning. |
 | `ls-agent-email-inbox` | `integrations` | 60 | `integrations` | `external-service`, `integration` | `ls-agent-email-inbox` | `1.0` | Guide agent email inbox workflows with prompt-injection defenses. Use for inbound email processing, webhooks, routing, and safety review. |

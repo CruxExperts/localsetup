@@ -2,16 +2,20 @@
 
 ## List Or Check
 
-1. Run `scripts/omniroute_update.py check`.
-2. Save Markdown or JSON output to the run ledger or a private maintenance path if the report is long.
-3. Verify the source commit and source hash before using the report for import or update decisions.
-4. For the approved v3.8.48 source, run this command from the repository root and compare its source object IDs and canonical inventory digests with the tracked immutable fixture before accepting coverage:
+1. Run `scripts/omniroute_update.py check` against the desired pinned source.
+2. Save the Markdown or JSON report to the run ledger or a private maintenance path if it is long.
+3. Verify the release tag, commit, source tree, skills tree, and actual `skills/*/SKILL.md` inventory before using the report for decisions.
+4. Compare the refreshed report with the last accepted ledger and inventory. Record every added, removed, and source-hash-changed skill before updating ledger facts or coverage.
+5. Keep newly discovered skills as `missing-local` until an owner or converted package is reviewed; never infer coverage from a name or neighboring skill.
+6. Retain the prior accepted report and immutable receipt as rollback evidence.
 
-   ```bash
-   python3 ls/skills/ls-omniroute-update/scripts/omniroute_inventory.py --git-dir <bare-mirror> --localsetup-root <repo-root>
-   ```
+For rollback verification of the previously accepted `v3.8.48` source, run this command from the repository root and compare its source object IDs and canonical inventory digests with the tracked immutable fixture:
 
-   The local root is required to read retained Localsetup claim references; immutable skills and OpenAPI evidence still come from the pinned Git objects.
+```bash
+python3 ls/skills/ls-omniroute-update/scripts/omniroute_inventory.py --git-dir <bare-mirror> --localsetup-root <repo-root>
+```
+
+The local root is required to read retained Localsetup claim references; immutable skills and OpenAPI evidence still come from the pinned historical Git objects. Refreshing that fixture is a separate reviewed inventory wave, not part of an ordinary source-ledger update.
 
 ## Freshness Check
 
@@ -22,7 +26,7 @@ Run `scripts/omniroute_update.py freshness` before validating any converted or c
 - Add `--require-all-upstream` when the task requires every upstream OmniRoute skill to have converted or native Localsetup coverage.
 - A non-zero exit means the skill set is not fresh enough for the chosen validation policy.
 
-For consolidated native waves, use both `--require-all-upstream` and `--strict-untracked`. The expected healthy state for OmniRoute `v3.8.48` is 44 upstream skills reported as `covered-native` or `current`, the four Localsetup-native OmniRoute skills reported as `local-native`, and zero `missing-local`, `stale-local`, `local-only`, or `untracked-local` rows.
+For consolidated native waves, use both `--require-all-upstream` and `--strict-untracked`. At OmniRoute `v3.8.50`, the expected report has 46 upstream skills: 44 `covered-native` or `current`, `cli-skill-collector` and `ponytail` as `missing-local`, and the four Localsetup-native OmniRoute skills as `local-native`. The strict command must remain non-zero until those two gaps receive reviewed ownership; do not weaken the gate or claim a healthy full-coverage state.
 
 ## Import
 
@@ -42,24 +46,27 @@ For consolidated native waves, use both `--require-all-upstream` and `--strict-u
 Use strict replacement only when the maintainer explicitly wants Localsetup to mirror the current upstream skill set and remove older converted entry points.
 
 1. Verify the upstream commit, tag, package version, and actual `skills/*/SKILL.md` count from primary sources.
-2. Run the importer scan when the validation pattern file is fresh. If the scanner blocks on stale pattern metadata and no non-mutating use-existing path is available, record that blocker and perform a static vetting pass instead.
-3. Delete only local skills whose frontmatter declares `extensions.omniroute.source_kind: upstream-converted`. Do not glob-delete OmniRoute-named directories.
-4. Preserve all `extensions.omniroute.source_kind: localsetup-native` skills.
-5. Generate each converted skill from the pinned upstream `SKILL.md` with complete `extensions.omniroute` provenance and Localsetup safety wording before source-derived commands.
-6. Update `pack.yaml`, smoke-command metadata, tests, source ledger, generated docs, and aliases in the same wave.
-7. Validate with strict freshness, catalog checks, focused updater/manifest tests, native helper help commands, generated-doc drift checks, and final suite checks proportionate to the surface changed.
+2. Save the report, the source delta from the last accepted baseline, and restorable rollback evidence before proposing mutations.
+3. Obtain the repo owner's explicit replacement decision; the report does not authorize deletion or promotion.
+4. Run the importer scan when the validation pattern file is fresh. If the scanner blocks on stale pattern metadata and no non-mutating use-existing path is available, record that blocker and perform a static vetting pass instead.
+5. Delete only local skills whose frontmatter declares `extensions.omniroute.source_kind: upstream-converted`. Do not glob-delete OmniRoute-named directories.
+6. Preserve all `extensions.omniroute.source_kind: localsetup-native` skills.
+7. Generate each converted skill from the pinned upstream `SKILL.md` with complete `extensions.omniroute` provenance and Localsetup safety wording before source-derived commands.
+8. Update `pack.yaml`, smoke-command metadata, tests, source ledger, generated docs, and aliases in the same wave.
+9. Validate with strict freshness, catalog checks, focused updater/manifest tests, native helper help commands, generated-doc drift checks, and final suite checks proportionate to the surface changed.
 
 ## Consolidated Native Coverage
 
 Use consolidated native coverage when the maintainer wants a smaller, better-routed Localsetup pack instead of one Localsetup skill per upstream OmniRoute skill.
 
 1. Verify the upstream commit, tag, package version, and actual `skills/*/SKILL.md` count from primary sources.
-2. Group upstream skills by Localsetup operator workflow, not by upstream folder prefix alone.
-3. Keep each native skill narrow enough to route accurately but broad enough to cover the related API/CLI surface.
-4. Update the human coverage map in `../../ls-omniroute/references/upstream-skill-coverage.md`.
-5. Update the machine coverage map in `scripts/omniroute_update.py`.
-6. Remove converted package registrations and taxonomy rows after preserving source provenance in the ledger.
-7. Validate with `freshness --require-all-upstream --strict-untracked`, catalog checks, focused updater/manifest/API helper tests, generated-doc drift checks, and final suite checks proportionate to the surface changed.
+2. Compare the refreshed inventory with the last accepted inventory and record additions, removals, and changed source hashes.
+3. Group upstream skills by Localsetup operator workflow, not by upstream folder prefix alone.
+4. Keep each native skill narrow enough to route accurately but broad enough to cover the related API/CLI surface.
+5. Review every `missing-local` row and document the owner or conversion decision before changing either coverage map.
+6. Update the human coverage map in `../../ls-omniroute/references/upstream-skill-coverage.md` and the machine coverage map in `scripts/omniroute_update.py` together only after that review.
+7. Remove converted package registrations and taxonomy rows only after preserving source provenance and rollback evidence in the ledger.
+8. Validate with `freshness --require-all-upstream --strict-untracked`, catalog checks, focused updater/manifest/API helper tests, generated-doc drift checks, and final suite checks proportionate to the surface changed.
 
 ## Update
 
@@ -82,7 +89,7 @@ Localsetup-specific changes may be appropriate after conversion, but keep the pr
 
 ## Scope Boundary
 
-The repo-local physical-copy rule applies to Localsetup installations that consume the framework. It does not apply when the task is maintenance of the Localsetup framework source repository itself; in that case, changes belong in the framework source tree and follow the repository's normal validation and publishing workflow.
+`ls-omniroute` remains the ambiguity router for unclassified runtime requests; this package owns only source inventory, coverage comparison, freshness, and change planning after routing. The repo-local physical-copy rule applies to Localsetup installations that consume the framework. It does not apply when the task is maintenance of the Localsetup framework source repository itself; in that case, changes belong in the framework source tree and follow the repository's normal validation and publishing workflow.
 
 ## Remove
 
@@ -93,7 +100,7 @@ The repo-local physical-copy rule applies to Localsetup installations that consu
 
 ## Status Handling
 
-- `missing-local`: candidate import.
+- `missing-local`: candidate reviewed ownership or import; never automatic native coverage.
 - `covered-native`: upstream skill is covered by a consolidated Localsetup-native skill.
 - `current`: no import/update action needed.
 - `stale-local`: candidate update after diff review.

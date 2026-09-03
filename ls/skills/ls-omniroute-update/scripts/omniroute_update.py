@@ -29,7 +29,7 @@ except ImportError as exc:  # pragma: no cover - environment guidance
 
 
 DEFAULT_SOURCE_REPO = "https://github.com/diegosouzapw/OmniRoute.git"
-DEFAULT_REF = "7ee5bbc64dbb03e967521227f2afffeb7c9dad1e"
+DEFAULT_REF = "5458026c216f77a3da68ea49152dc33470cfe2cb"
 CONVERTER_VERSION = "1.0"
 NATIVE_COVERAGE: dict[str, list[str]] = {
     "cli-a2a": ["ls-omniroute-proxy", "ls-omniroute-admin-automation"],
