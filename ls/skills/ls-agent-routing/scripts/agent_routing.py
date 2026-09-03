@@ -35,20 +35,20 @@ MAX_REQUEST_BYTES = 65_536
 
 # These anchors are intentionally in the isolated standard-library selector, not
 # in a mutable manifest.  A valid manifest digest cannot substitute for one.
-CANONICAL_MANIFEST_SHA256 = "07313b0ef4812c93a2b5f5bf4c26857e8169b6c25b13e8d37ad150fa10b2ff4b"
+CANONICAL_MANIFEST_SHA256 = "c10d64becd3f3e78eee9433bb8c9d4449b05af54c2f33d88b5cda222571bf733"
 CANONICAL_MATRIX_SCHEMA_SHA256 = "476d1bc199db5e51070a10ae5fdea58e845eb8105be694879ea0f82d6900004f"
-CANONICAL_SNAPSHOT_SHA256 = "c5cad4888f848eb6f2b0cb6422de5f9d217c43de73417587ed71c0542cd425d0"
+CANONICAL_SNAPSHOT_SHA256 = "7243e1d0759af31f6bb73fbb2d9ca8655426042b8539bfd81d2ba56dbf845c4d"
 CANONICAL_REQUEST_SCHEMA_SHA256 = "f05f89d84b8a4617855cf51a23663e08709051b9020f6cfdf4d22ee46d0ed562"
-CANONICAL_RECEIPT_SCHEMA_SHA256 = "3a671905f1f12828087acef4ed2de6d09d9de64d535416b0971e911f29d500b4"
+CANONICAL_RECEIPT_SCHEMA_SHA256 = "b9c8076f8af65af04e214d9729d21f2200e9b5f9397dab8a0943b95aa693f1f5"
 
 CANONICAL_EVIDENCE = (
-    ("api-family-gpt-5.6", "https://developers.openai.com/api/docs/guides/latest-model", "2026-08-18", "api_family"),
-    ("model-gpt-5.6-sol", "https://developers.openai.com/api/docs/models/gpt-5.6-sol", "2026-08-18", "model_version"),
-    ("model-gpt-5.6-terra", "https://developers.openai.com/api/docs/models/gpt-5.6-terra", "2026-08-18", "model_version"),
-    ("model-gpt-5.6-luna", "https://developers.openai.com/api/docs/models/gpt-5.6-luna", "2026-08-18", "model_version"),
-    ("client-codex-subagents", "https://learn.chatgpt.com/docs/agent-configuration/subagents", "2026-08-18", "client_product"),
-    ("accounting-api-pricing-standard-short-context", "https://developers.openai.com/api/docs/pricing", "2026-08-18", "accounting"),
-    ("accounting-codex-token-rate-card", "https://help.openai.com/en/articles/20001106-codex-rate-card-2", "2026-08-18", "accounting"),
+    ("api-family-gpt-5.6", "https://developers.openai.com/api/docs/guides/latest-model", "2026-09-02", "api_family"),
+    ("model-gpt-5.6-sol", "https://developers.openai.com/api/docs/models/gpt-5.6-sol", "2026-09-02", "model_version"),
+    ("model-gpt-5.6-terra", "https://developers.openai.com/api/docs/models/gpt-5.6-terra", "2026-09-02", "model_version"),
+    ("model-gpt-5.6-luna", "https://developers.openai.com/api/docs/models/gpt-5.6-luna", "2026-09-02", "model_version"),
+    ("client-codex-subagents", "https://learn.chatgpt.com/docs/agent-configuration/subagents", "2026-09-02", "client_product"),
+    ("accounting-api-pricing-standard-short-context", "https://developers.openai.com/api/docs/pricing", "2026-09-02", "accounting"),
+    ("accounting-codex-token-rate-card", "https://learn.chatgpt.com/docs/pricing", "2026-09-02", "accounting"),
 )
 
 CANONICAL_FACT_PAYLOADS: dict[str, dict[str, Any]] = {
@@ -108,7 +108,7 @@ CANONICAL_FACT_PAYLOADS: dict[str, dict[str, Any]] = {
             "account_entitlement": "unknown",
             "plan_migration": "unknown",
             "models": {
-                "gpt-5.6-sol": {"input": 5, "cached_input": 0.5, "cache_write": 6.25, "output": 30},
+                "gpt-5.6-sol": {"input": 4, "cached_input": 0.4, "cache_write": 5, "output": 20},
                 "gpt-5.6-terra": {"input": 2, "cached_input": 0.2, "cache_write": 2.5, "output": 12},
                 "gpt-5.6-luna": {"input": 0.2, "cached_input": 0.02, "cache_write": 0.25, "output": 1.2},
             },
@@ -125,7 +125,7 @@ CANONICAL_FACT_PAYLOADS: dict[str, dict[str, Any]] = {
             "account_entitlement": "unknown",
             "plan_migration": "unknown",
             "models": {
-                "gpt-5.6-sol": {"input": 125, "cached_input": 12.5, "output": 750},
+                "gpt-5.6-sol": {"input": 100, "cached_input": 10, "output": 500},
                 "gpt-5.6-terra": {"input": 50, "cached_input": 5, "output": 300},
                 "gpt-5.6-luna": {"input": 5, "cached_input": 0.5, "output": 30},
             },

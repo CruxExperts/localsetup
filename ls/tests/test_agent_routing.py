@@ -16,6 +16,7 @@ import types
 from typing import Any
 
 import pytest
+from jsonschema import Draft202012Validator
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -141,6 +142,89 @@ def test_select_uses_only_reviewed_static_candidate_and_omits_effort() -> None:
     assert set(receipt["selected"]) == {"lane"}
     assert receipt["selected"]["lane"].startswith("Agent-")
 
+
+def test_receipt_schema_matches_runtime_cross_field_contract() -> None:
+    module = load_selector_module(SCRIPT)
+    validator = Draft202012Validator(load_json(SKILL / "schemas/routing-receipt.schema.json"))
+    reasons = (
+        "selected_static_reviewed",
+        "invalid_request",
+        "resource_invalid",
+        "resource_stale",
+        "candidate_evidence_unknown",
+        "capability_unsatisfied",
+        "risk_floor_unsatisfied",
+        "offline_no_eligible_candidate",
+    )
+    summaries = (
+        "static-reviewed-candidate",
+        "static-reviewed-no-eligible-candidate",
+        "static-resource-validation",
+    )
+
+    for status in ("selected", "rejected", "offline"):
+        for reason in reasons:
+            for summary in summaries:
+                for has_selected in (False, True):
+                    receipt = module._receipt(
+                        status=status,
+                        reason=reason,
+                        digest="a" * 64,
+                        summary=summary,
+                        selected={"lane": "Agent-Compact"} if has_selected else None,
+                    )
+                    expected = module._receipt_is_valid(receipt)
+                    assert validator.is_valid(receipt) is expected, (
+                        status,
+                        reason,
+                        summary,
+                        has_selected,
+                    )
+
+
+@pytest.mark.parametrize(
+    ("task_class", "risk", "expected_lane"),
+    (
+        ("routine", "low", "Agent-Realtime"),
+        ("discovery", "low", "Agent-Compact"),
+        ("implementation", "low", "Agent-Balanced"),
+        ("routine", "high", "Agent-Efficient"),
+        ("discovery", "critical", "Agent-Frontier"),
+    ),
+)
+def test_every_retained_lane_is_reachable_through_cli(
+    task_class: str,
+    risk: str,
+    expected_lane: str,
+) -> None:
+    receipt = run_select(
+        {
+            **VALID_REQUEST,
+            "task_class": task_class,
+            "risk": risk,
+        }
+    )
+
+    assert receipt["status"] == "selected"
+    assert receipt["selected"] == {"lane": expected_lane}
+
+
+@pytest.mark.parametrize("resource_error", ("resource_invalid", "resource_stale"))
+def test_resource_error_precedes_request_read(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    resource_error: str,
+) -> None:
+    module = load_selector_module(SCRIPT)
+    monkeypatch.setattr(module, "_load_snapshot", lambda: ({}, "a" * 64, resource_error))
+    monkeypatch.setattr(module, "_read_request", lambda value: pytest.fail(f"request was read: {value}"))
+
+    assert module.main(["select", "--request", "missing-or-invalid.json"]) == 0
+    receipt = json.loads(capsys.readouterr().out)
+
+    assert receipt["status"] == "rejected"
+    assert receipt["reason"] == resource_error
+    assert "selected" not in receipt
 
 def test_successful_serialized_receipt_hides_concrete_model_identity() -> None:
     serialized = json.dumps(run_select(VALID_REQUEST), sort_keys=True)

@@ -28,12 +28,17 @@ printf '%s' '{"schema":"agent_routing_request_v1","task_class":"routine","risk":
 Treat `rejected` and `offline` receipts as typed results. Do not add a model,
 price, account, observation, permission, or Ultra override to the request.
 Request input is limited to 65,536 UTF-8 bytes; oversized, unavailable, or
-malformed input is returned as a rejected `invalid_request` receipt.
+malformed input is returned as a rejected `invalid_request` receipt after the
+bundled resource passes validation. Resource validation runs first, so an invalid
+or expired resource returns `resource_invalid` or `resource_stale` without
+reading or classifying the request.
 
 ## Boundaries
 
 - The matrix is static reviewed evidence. Unknown capability evidence never
   satisfies a request.
+- `fresh_until` is the repository's local review-expiry policy, not an upstream
+  freshness guarantee.
 - `Agent-*` is a LocalSetup routing-policy label, not a provider model claim.
 - The selector is read-only and does not inspect runtime availability or
   observations.
