@@ -106,13 +106,47 @@ def test_workflow_registry_renders_resolver_doc_tokens_as_local_links(tmp_path: 
 def test_tmux_ops_workflow_trigger_metadata_covers_elevated_execution() -> None:
     workflow_dir = ROOT / "ls" / "workflows" / "ls-workflow-ops-tmux-session"
     skill_text = (workflow_dir / "SKILL.md").read_text(encoding="utf-8").lower()
-    manifest = yaml.safe_load((workflow_dir / "workflow.yaml").read_text(encoding="utf-8"))
+    manifest_path = workflow_dir / "workflow.yaml"
+    manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
     manifest_text = yaml.safe_dump(manifest, sort_keys=True).lower()
     trigger_surface = f"{skill_text}\n{manifest_text}"
 
     for term in ("sudo", "elevated", "password prompt", "require_escalated", "tmux_ops run"):
         assert term in trigger_surface
 
+    assert manifest["required_skills"] == ["ls-safety-and-backup"]
+    assert manifest["required_tools"] == ["ls/tools/tmux_ops"]
+    assert manifest["required_docs"] == [
+        "ls/docs/ops/tmux-ops-managed.md",
+        "ls/docs/ops/tmux-ops-remote.md",
+    ]
+    assert manifest["smoke"] == [{"id": "tmux_ops_exists", "check": "ls/tools/tmux_ops exists"}]
+    assert manifest["migration"]["source"] == "ls/docs/ops/tmux-ops-managed.md"
+    assert "localsetup://" not in manifest_path.read_text(encoding="utf-8")
+
+    assert [gate["id"] for gate in manifest["gates"]] == ["execution_authorization", "probe_gate"]
+    authorization_rule = manifest["gates"][0]["rule"].lower()
+    for term in (
+        "before every run",
+        "ls-workflow-ops-guarded",
+        "ls-safety-and-backup",
+        "risk classification",
+        "backup or no-backup decision",
+        "rollback",
+        "exact command or edit",
+        "values",
+        "target",
+        "consequences",
+        "affected scope",
+        "immediate explicit user approval",
+        "still matches",
+        "changed records",
+    ):
+        assert term in authorization_rule
+
+    assert "tmux is only the elevated or pty transport" in skill_text
+    assert "sudo ready" in skill_text
+    assert "do not authorize a command" in skill_text
     assert "raw tmux send-keys" not in trigger_surface
     assert "tmux send-keys" not in trigger_surface
 

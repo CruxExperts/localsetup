@@ -10,12 +10,14 @@ aliases:
   - pseudo-terminal ops
   - managed tmux ops
 invocation: Use when commands need sudo, root/admin elevation, require_escalated, pseudo-terminal/PTY handling, interactive sudo or elevated terminal password prompts, or managed tmux run tracking through tmux_ops run/status evidence.
-required_skills: []
-required_tools: [localsetup://tool/tmux_ops]
+required_skills: [ls-safety-and-backup]
+required_tools: [ls/tools/tmux_ops]
 required_docs:
-  - localsetup://doc/ops/tmux-ops-managed.md
-  - localsetup://doc/ops/tmux-ops-remote.md
+  - ls/docs/ops/tmux-ops-managed.md
+  - ls/docs/ops/tmux-ops-remote.md
 gates:
+  - id: execution_authorization
+    rule: Before every run, require either a verified ls-workflow-ops-guarded handoff or an equivalent direct ls-safety-and-backup gate that records the exact command or edit and values, exact target, risk classification, likely consequences and affected scope, backup or no-backup decision, rollback action, and immediate explicit user approval; confirm the record still matches the pending payload and reject missing, stale, incomplete, or changed records.
   - id: probe_gate
     rule: Probe session and sudo readiness before run.
 phases:
@@ -23,6 +25,8 @@ phases:
     summary: Select active session target.
   - id: probe
     summary: Verify readiness and permission state.
+  - id: verify_execution_authorization
+    summary: Confirm the approved exact payload still matches before transport.
   - id: run_and_watch
     summary: Run command with run_id and status tracking.
 validation:
@@ -31,7 +35,7 @@ outputs:
   - Tmux run evidence
 smoke:
   - id: tmux_ops_exists
-    check: localsetup://tool/tmux_ops exists
+    check: ls/tools/tmux_ops exists
 migration:
-  source: localsetup://doc/ops/tmux-ops-managed.md
+  source: ls/docs/ops/tmux-ops-managed.md
   note: Package references managed and remote guidance.

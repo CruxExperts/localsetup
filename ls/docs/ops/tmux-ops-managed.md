@@ -53,6 +53,17 @@ Managed state lives outside the repo:
 
 The session directory is returned as `state_dir` by `pick`. Logs and generated scripts are intentionally in `/tmp`, not in the repository.
 
+## Transport and approval boundary
+
+`tmux_ops` is only the elevated or PTY transport. Picking or attaching to a session, probing sudo, receiving `sudo ready`, and holding cached sudo credentials do not authorize the command sent through `run`.
+
+Before every managed `run`, the agent must have one still-matching authorization record:
+
+- a verified handoff from `ls-workflow-ops-guarded`; or
+- a direct application of `ls-safety-and-backup` with equivalent evidence.
+
+The record must freeze the exact command or edit and values, exact target, risk classification, likely consequences and affected users, services, files, or other scope, backup or no-backup decision, rollback action, and the user's immediate explicit approval. Reject missing, incomplete, stale, or changed records and return to the applicable approval workflow. Each `run` payload requires its own record; transport readiness never substitutes for point-of-risk approval.
+
 ## Human workflow
 
 1. Pick a session:
@@ -75,29 +86,31 @@ The session directory is returned as `state_dir` by `pick`. Logs and generated s
    ./ls/tools/tmux_ops probe -t ops
    ```
 
-4. If the probe says `password_required` or `action_required: true`, attach with the returned `attach_command`, run `sudo -v` in that exact tmux pane, enter the password, then tell the agent `sudo ready` so it can probe again.
+4. If the probe says `password_required` or `action_required: true`, attach with the returned `attach_command`, run `sudo -v` in that exact tmux pane, enter the password, then tell the agent `sudo ready` so it can probe again. This confirms readiness only; it does not approve a command.
 
-5. Run commands:
+5. Verify the exact pending command has the complete, still-matching authorization record described above. If not, stop before `run`.
+
+6. Run the approved command:
 
    ```bash
    ./ls/tools/tmux_ops run -t ops -- sudo apt update
    ```
 
-6. Read the returned `tail` first. If you need more context, read the returned `log_path`.
+7. Read the returned `tail` first. If you need more context, read the returned `log_path`.
 
-7. If the command is still active:
+8. If the command is still active:
 
    ```bash
    ./ls/tools/tmux_ops status -t ops --run-id <run_id> --wait --timeout 120
    ```
 
-8. Cancel only when you intend to interrupt that exact run:
+9. Cancel only when you intend to interrupt that exact run:
 
    ```bash
    ./ls/tools/tmux_ops cancel -t ops --run-id <run_id>
    ```
 
-9. For long privileged maintenance, request bounded keepalive only after sudo is ready:
+10. For long privileged maintenance, request bounded keepalive only after sudo is ready and while the approved privileged work remains active:
 
    ```bash
    ./ls/tools/tmux_ops keepalive request -t ops --owner agent-id --ttl-seconds 7200 --max-refreshes 24 --reason "active privileged maintenance"
@@ -113,35 +126,37 @@ The session directory is returned as `state_dir` by `pick`. Logs and generated s
 
 Agents should follow this script exactly:
 
-1. Run `./ls/tools/tmux_ops pick`.
-2. Parse JSON. If it has `error`, report the error and stop.
-3. Show `attach_command` to the user in a copy-paste code block.
-4. Run `./ls/tools/tmux_ops probe -t <session>`.
-5. If `action_required` is `true` or `sudo` is `password_required`, tell the user to attach with the returned `attach_command`, run `sudo -v` in that exact tmux pane, enter the password, and reply `sudo ready`. Do not run commands yet.
-6. After `sudo ready`, run `probe` again.
-7. If `sudo` is `failed`, report `detail` and stop.
-8. If `sudo` is `ready`, run exactly one logical command with:
+1. Prepare the exact pending command or edit and values, exact target, risk classification, consequences and affected scope, backup or no-backup decision, and rollback action.
+2. Before any `run`, either verify a complete `ls-workflow-ops-guarded` handoff or apply `ls-safety-and-backup` directly and obtain the user's immediate explicit approval for that frozen payload. Record the approval. If the payload changes, reject the record and repeat the gate.
+3. Run `./ls/tools/tmux_ops pick`.
+4. Parse JSON. If it has `error`, report the error and stop.
+5. Show `attach_command` to the user in a copy-paste code block.
+6. Run `./ls/tools/tmux_ops probe -t <session>`.
+7. If `action_required` is `true` or `sudo` is `password_required`, tell the user to attach with the returned `attach_command`, run `sudo -v` in that exact tmux pane, enter the password, and reply `sudo ready`. Do not run commands yet; `sudo ready` confirms readiness only and is not command approval.
+8. After `sudo ready`, run `probe` again.
+9. If `sudo` is `failed`, report `detail` and stop.
+10. If `sudo` is `ready`, reconfirm that the recorded payload still matches, then run exactly that one approved logical command with:
 
    ```bash
    ./ls/tools/tmux_ops run -t <session> -- <command>
    ```
 
-9. Check `status`:
+11. Check `status`:
    - `completed`: read `exit_code`, `tail`, and `log_path`; continue only after verifying the result.
    - `running`: keep the `run_id`; use `status --wait` to continue watching.
-10. Start another `run` only after the active run has completed or the user explicitly asks to cancel it.
-11. Interrupt only with:
+12. Start another `run` only after the active run has completed and the next payload has its own still-matching authorization record. Cancel only when the user explicitly asks to interrupt the active run.
+13. Interrupt only with:
 
    ```bash
    ./ls/tools/tmux_ops cancel -t <session> --run-id <run_id>
    ```
-12. If privileged work must keep the same sudo timestamp alive, request a bounded marker only after sudo is `ready`:
+14. If approved privileged work must keep the same sudo timestamp alive, request a bounded marker only after sudo is `ready`:
 
    ```bash
    ./ls/tools/tmux_ops keepalive request -t <session> --owner <id> --ttl-seconds 7200 --max-refreshes 24 --reason "<reason>"
    ```
 
-   Run `keepalive refresh -t <session>` only as an explicit one-shot refresh while the work is active and the managed pane is idle between commands. Check `keepalive status -t <session>` for heartbeat/reporting, and end it with `keepalive clear -t <session> --owner <id>`.
+   Run `keepalive refresh -t <session>` only as an explicit one-shot refresh while the approved work is active and the managed pane is idle between commands. Check `keepalive status -t <session>` for heartbeat/reporting, and end it with `keepalive clear -t <session> --owner <id>`.
 
 ## Command reference
 

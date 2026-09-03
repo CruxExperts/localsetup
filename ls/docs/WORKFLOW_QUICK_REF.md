@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: d9f179840044aee50a937b711c0ad568d0ba267cd1589de53062423a99cccb5d
+  source_provenance_hash: fad1ac25d133258dfc29a70639f1bba0d9443dd1c1144109674a12aa85db61a8
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: e59f3fe3719aae554f13b34c676a8e395af0c2a7
-artifact_sha256: 8c315dd61a9521d465b163d9f3cfca7722a4a996b85d7364174b416ab27d7697
+source_commit: 610b1d9ff36579ededb3654015111008158c3626
+artifact_sha256: 807e093c2d9bc425c6be753fbbe9bb74c494883fb2fbd1a508465c143785fd8f
 ---
 # Workflow quick reference
 
@@ -26,7 +26,7 @@ This page is generated from `ls/workflows/*/workflow.yaml`.
 | `context-index-refresh` | Context Index Refresh | context refresh; refresh context index | `ls-workflow-context-index-refresh` | `ls-context-index` |
 | `documentation-alignment` | Documentation Alignment | docs alignment; documentation sync; repo docs audit | `ls-workflow-documentation-alignment` | `ls-documentation-alignment`; `ls-docs-organization`; `ls-markdown-reference-validator`; `ls-script-and-docs-quality`; `ls-test-runner` |
 | `ops-guarded` | Ops Guarded | lazy admin; manual execution | `ls-workflow-ops-guarded` | `ls-framework-compliance`; `ls-safety-and-backup` |
-| `ops-tmux-session` | Ops Tmux Session | tmux shared session; sudo tmux; elevated permissions; interactive sudo prompt; sudo password prompt handoff; require_escalated; pseudo-terminal ops; managed tmux ops | `ls-workflow-ops-tmux-session` | n/a |
+| `ops-tmux-session` | Ops Tmux Session | tmux shared session; sudo tmux; elevated permissions; interactive sudo prompt; sudo password prompt handoff; require_escalated; pseudo-terminal ops; managed tmux ops | `ls-workflow-ops-tmux-session` | `ls-safety-and-backup` |
 | `pipeline-git-repair-hygiene` | Pipeline Git Repair Hygiene | git repair pipeline | `ls-workflow-pipeline-git-repair-hygiene` | `ls-unfuck-my-git-state`; `ls-git-workflows`; `ls-framework-compliance` |
 | `pipeline-pr-feedback-loop` | Pipeline PR Feedback Loop | pr feedback pipeline | `ls-workflow-pipeline-pr-feedback-loop` | `ls-receiving-code-review`; `ls-tdd-guide`; `ls-pr-reviewer` |
 | `pipeline-pre-publish` | Pipeline Pre Publish | pre publish pipeline | `ls-workflow-pipeline-pre-publish` | `ls-github-publishing-workflow`; `ls-automatic-versioning`; `ls-framework-audit` |
