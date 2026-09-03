@@ -1,35 +1,60 @@
 {
-  "verifiedAt": "2026-07-05T04:15:11.177Z",
+  "verifiedAt": "2026-09-03T06:17:06.012Z",
   "sources": {
-    "nextRegistry": "https://registry.npmjs.org/next",
-    "reactRegistry": "https://registry.npmjs.org/react",
-    "reactDomRegistry": "https://registry.npmjs.org/react-dom",
+    "next": "https://registry.npmjs.org/next",
+    "react": "https://registry.npmjs.org/react",
+    "reactDom": "https://registry.npmjs.org/react-dom",
     "nodeSchedule": "https://raw.githubusercontent.com/nodejs/Release/main/schedule.json",
-    "nodeDistIndex": "https://nodejs.org/dist/index.json",
-    "nodePreviousReleases": "https://nodejs.org/en/about/previous-releases",
-    "nodeDownload": "https://nodejs.org/en/download",
-    "npmPackageJsonDocs": "https://docs.npmjs.com/cli/v11/configuring-npm/package-json",
-    "nodeCorepackDocs": "https://nodejs.org/api/corepack.html",
-    "nextDocs": "https://nextjs.org/docs",
-    "nextReleases": "https://github.com/vercel/next.js/releases",
-    "nextSelfHosting": "https://nextjs.org/docs/app/guides/self-hosting",
-    "nextEdgeRuntime": "https://nextjs.org/docs/pages/api-reference/edge",
-    "reactDomGithubPackageManifest": "https://raw.githubusercontent.com/facebook/react/v19.2.7/packages/react-dom/package.json",
-    "reactVersions": "https://react.dev/versions",
-    "reactBlog": "https://react.dev/blog",
-    "vercelSecurityChangelog": "https://vercel.com/changelog?category=security",
-    "dockerNextjsGuide": "https://docs.docker.com/guides/nextjs/"
+    "nodeDistIndex": "https://nodejs.org/dist/index.json"
   },
   "packages": {
     "next": {
-      "latest": "16.2.10",
+      "latest": "16.3.4",
+      "publication": {
+        "publishedAt": "2026-08-31T20:00:51.381Z",
+        "ageAtVerificationMs": 209774631,
+        "under48HoursAtVerification": false
+      },
+      "supplyChain": {
+        "integrity": "sha512-/Ztf6CeRH+ejEXUrYtqI4gkS66eFIHuSwqi60RgcpWKodxFZx2/dqVCMKBwILfAHXQ+F1b1vAudgj3mnxqtoIA==",
+        "shasum": "eaa69d905ac44ad8d57e8f3461d9da0fc4a7058b",
+        "tarball": "https://registry.npmjs.org/next/-/next-16.3.4.tgz",
+        "signatures": [
+          {
+            "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+            "sig": "MEUCIQDztoB2GaoYg6IAJb5pm0aS9hQlMAfyCkMgVrmfej/iGgIgLiVGmSqp2CGNTh239yPRbodtglKPQEJRq5u+tuW2M4o="
+          },
+          {
+            "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+            "sig": "MEUCIAQwICl9abZlDaPLHANx8MPE9hZ4t6PkN8mZQ0K1+phRAiEAvEO0gBTGm2gXxroCgWxioPMAXMAVt187b+fOPhhlBSI="
+          }
+        ],
+        "signatureCount": 2,
+        "signatureKeyIds": [
+          "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        ],
+        "provenance": {
+          "url": "https://registry.npmjs.org/-/npm/v1/attestations/next@16.3.4",
+          "predicateType": "https://slsa.dev/provenance/v1"
+        }
+      },
       "distTags": {
-        "latest": "16.2.10",
-        "canary": "16.3.0-canary.78",
-        "beta": "16.0.0-beta.0",
+        "next-11": "11.1.4",
+        "next-12-2-6": "12.2.6",
+        "next-14-1": "14.1.1",
         "rc": "15.0.0-rc.1",
-        "backport": "15.5.20",
-        "preview": "16.3.0-preview.5"
+        "next-13": "13.5.11",
+        "next-12-3-2": "12.3.7",
+        "beta": "16.0.0-beta.0",
+        "next-14": "14.2.35",
+        "next-15-3": "15.3.9",
+        "next-15-2": "15.2.9",
+        "next-15-0": "15.1.12",
+        "next-15-0-0": "15.0.8",
+        "preview": "16.3.0-preview.10",
+        "backport": "15.5.25",
+        "latest": "16.3.4",
+        "canary": "16.4.0-canary.15"
       },
       "engines": {
         "node": ">=20.9.0"
@@ -41,58 +66,86 @@
         "@playwright/test": "^1.51.1",
         "@opentelemetry/api": "^1.1.0",
         "babel-plugin-react-compiler": "*"
-      },
-      "channelNotes": {
-        "latest": "Stable npm channel.",
-        "canary": "Non-stable prerelease channel; do not use as a stable default.",
-        "beta": "Non-stable prerelease channel; do not use as a stable default.",
-        "rc": "Release-candidate tag; do not use as a stable default."
       }
     },
     "react": {
-      "latest": "19.2.7",
+      "latest": "19.2.8",
+      "publication": {
+        "publishedAt": "2026-07-21T15:41:28.716Z",
+        "ageAtVerificationMs": 3767737296,
+        "under48HoursAtVerification": false
+      },
+      "supplyChain": {
+        "integrity": "sha512-PWaYA1L/q9u2u7xYQi+Y3L3Yfnie7XyLeaJICV1MGD6LprsBxcAqGjYyr0eY3p+QdsA+x/Irkt4Qif8D63+Sbw==",
+        "shasum": "a80663dbb58d69c6fe3fd291d3cb324e8a7dff2d",
+        "tarball": "https://registry.npmjs.org/react/-/react-19.2.8.tgz",
+        "signatures": [
+          {
+            "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+            "sig": "MEYCIQCCmnis0gzyZIp8pPdpFV387Lljmx4ah4Pjs3dgMujpiwIhAPzEs2mi+AlgkTXXTDLnSQ9wtZK8R7ywMKY/mkKjCwVi"
+          }
+        ],
+        "signatureCount": 1,
+        "signatureKeyIds": [
+          "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        ],
+        "provenance": {
+          "url": "https://registry.npmjs.org/-/npm/v1/attestations/react@19.2.8",
+          "predicateType": "https://slsa.dev/provenance/v1"
+        }
+      },
       "distTags": {
-        "latest": "19.2.7",
-        "canary": "19.3.0-canary-e71a6393-20260702",
-        "experimental": "0.0.0-experimental-e71a6393-20260702",
-        "next": "19.3.0-canary-d5736f09-20260507",
-        "backport": "19.1.8",
         "beta": "19.0.0-beta-26f2496093-20240514",
-        "rc": "19.0.0-rc.1"
+        "rc": "19.0.0-rc.1",
+        "next": "19.3.0-canary-d5736f09-20260507",
+        "latest": "19.2.8",
+        "backport": "19.0.8",
+        "canary": "19.3.0-canary-f4e439e1-20260902",
+        "experimental": "0.0.0-experimental-f4e439e1-20260902"
       },
       "engines": {
         "node": ">=0.10.0"
       },
-      "channelNotes": {
-        "latest": "Stable npm channel.",
-        "canary": "Non-stable prerelease channel; do not use as a stable default.",
-        "experimental": "Experimental channel; do not use as a stable default.",
-        "next": "Alias to canary at verification time.",
-        "beta": "Historical non-stable prerelease tag.",
-        "rc": "Historical release-candidate tag."
-      }
+      "peerDependencies": {}
     },
     "react-dom": {
-      "latest": "19.2.7",
+      "latest": "19.2.8",
+      "publication": {
+        "publishedAt": "2026-07-21T15:41:41.267Z",
+        "ageAtVerificationMs": 3767724745,
+        "under48HoursAtVerification": false
+      },
+      "supplyChain": {
+        "integrity": "sha512-rVprimfGBG3DR+Tq0IQG2DT5PxKth1WIGDmj5yPmlzr4YBe7uyE+Du4oVqTDXZSHGGGXRtTJEGSSePyQCMBglQ==",
+        "shasum": "3b46b9eeda877cdff2cf13d2770fff4ae36c2ec2",
+        "tarball": "https://registry.npmjs.org/react-dom/-/react-dom-19.2.8.tgz",
+        "signatures": [
+          {
+            "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+            "sig": "MEUCIQCPmtf94IFkzqmoB7YuzdzCHLzlvRiMb8B+cW6Kx+UFcQIgLlRbtwvmh5S95mx+1iWuq0DjcFdyBkA4QVAgRqK9niQ="
+          }
+        ],
+        "signatureCount": 1,
+        "signatureKeyIds": [
+          "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        ],
+        "provenance": {
+          "url": "https://registry.npmjs.org/-/npm/v1/attestations/react-dom@19.2.8",
+          "predicateType": "https://slsa.dev/provenance/v1"
+        }
+      },
       "distTags": {
-        "latest": "19.2.7",
-        "canary": "19.3.0-canary-e71a6393-20260702",
-        "experimental": "0.0.0-experimental-e71a6393-20260702",
-        "next": "19.3.0-canary-d5736f09-20260507",
-        "backport": "19.1.8",
         "beta": "19.0.0-beta-26f2496093-20240514",
-        "rc": "19.0.0-rc.1"
+        "rc": "19.0.0-rc.1",
+        "next": "19.3.0-canary-d5736f09-20260507",
+        "latest": "19.2.8",
+        "backport": "19.0.8",
+        "experimental": "0.0.0-experimental-f4e439e1-20260902",
+        "canary": "19.3.0-canary-f4e439e1-20260902"
       },
+      "engines": {},
       "peerDependencies": {
-        "react": "^19.2.7"
-      },
-      "channelNotes": {
-        "latest": "Stable npm channel.",
-        "canary": "Non-stable prerelease channel; do not use as a stable default.",
-        "experimental": "Experimental channel; do not use as a stable default.",
-        "next": "Alias to canary at verification time.",
-        "beta": "Historical non-stable prerelease tag.",
-        "rc": "Historical release-candidate tag."
+        "react": "^19.2.8"
       }
     }
   },
@@ -109,8 +162,7 @@
         "latestDist": "v20.20.2",
         "latestDistDate": "2026-03-24",
         "latestDistLts": "Iron",
-        "latestDistSecurity": true,
-        "channelNotes": "End-of-life as of 2026-04-30; avoid for new production baselines even when a framework minimum allows it."
+        "latestDistSecurity": true
       },
       "22": {
         "scheduleKey": "v22",
@@ -120,11 +172,10 @@
         "lts": "2024-10-29",
         "maintenance": "2025-10-21",
         "end": "2027-04-30",
-        "latestDist": "v22.23.1",
-        "latestDistDate": "2026-06-22",
+        "latestDist": "v22.23.2",
+        "latestDistDate": "2026-07-28",
         "latestDistLts": "Jod",
-        "latestDistSecurity": false,
-        "channelNotes": "Supported maintenance LTS line."
+        "latestDistSecurity": true
       },
       "24": {
         "scheduleKey": "v24",
@@ -134,11 +185,10 @@
         "lts": "2025-10-28",
         "maintenance": "2026-10-20",
         "end": "2028-04-30",
-        "latestDist": "v24.18.0",
-        "latestDistDate": "2026-06-23",
+        "latestDist": "v24.20.0",
+        "latestDistDate": "2026-08-26",
         "latestDistLts": "Krypton",
-        "latestDistSecurity": false,
-        "channelNotes": "Preferred production baseline when project and host support it."
+        "latestDistSecurity": false
       },
       "25": {
         "scheduleKey": "v25",
@@ -150,8 +200,7 @@
         "latestDist": "v25.9.0",
         "latestDistDate": "2026-03-31",
         "latestDistLts": false,
-        "latestDistSecurity": false,
-        "channelNotes": "End-of-life as of 2026-06-01; not a default production baseline."
+        "latestDistSecurity": false
       },
       "26": {
         "scheduleKey": "v26",
@@ -161,11 +210,10 @@
         "lts": "2026-10-28",
         "maintenance": "2027-10-20",
         "end": "2029-04-30",
-        "latestDist": "v26.4.0",
-        "latestDistDate": "2026-06-24",
+        "latestDist": "v26.8.1",
+        "latestDistDate": "2026-08-26",
         "latestDistLts": false,
-        "latestDistSecurity": false,
-        "channelNotes": "Current release line; not a default production baseline before LTS."
+        "latestDistSecurity": false
       }
     }
   }

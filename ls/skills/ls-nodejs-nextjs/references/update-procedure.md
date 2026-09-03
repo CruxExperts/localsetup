@@ -10,14 +10,16 @@ Use this when refreshing the skill's volatile version facts.
    node ls/skills/ls-nodejs-nextjs/scripts/verify-current-versions.mjs --json
    ```
 
-2. Compare the output with `data/verified-versions.json`.
-3. If facts changed, update:
-   - `data/verified-versions.json`
+2. Compare the output with `data/verified-versions.json`. Preserve the exact
+   `verifiedAt`, publication timestamp, computed age, 48-hour result, integrity,
+   signature records, tarball, and provenance values from that single verifier run.
+3. If facts changed, replace the stored snapshot with the verifier current object
+   after removing only the computed `drift` array, then update:
    - `SKILL.md` current stable snapshot
    - `references/version-matrix.md`
    - `references/nextjs-latest-stable.md`
    - any reference that names the changed release line or date
-4. Keep source URLs and verification timestamps next to the changed facts.
+4. Keep source URLs and the exact verification timestamp next to changed facts.
 5. Run:
 
    ```bash

@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 7221863600107a95246d62bb2388189cf0f0873e04c91702fd4a4674614541c6
+  source_provenance_hash: 26c7b54b6eccbd88fea02ceb8a78c1ae7d15e20d6b4a2c5d10146645bbb489a3
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 6e7a55116ec6dc1860fff12b7b8f0e3d57203b89
-artifact_sha256: 0dca19a213ccb36ce7d99e8f7ed46d5dff877bf7fabba5b5af8031fb7ae7fc66
+source_commit: 6752465d8412ec92f6bd922a699df353ea6c40f5
+artifact_sha256: c92b8e6bae9c7213839df9ac7c59bd1c5284ed8b9db6af80d6b5509451296144
 ---
 # Implementation File Map
 
@@ -651,6 +651,7 @@ artifact_sha256: 0dca19a213ccb36ce7d99e8f7ed46d5dff877bf7fabba5b5af8031fb7ae7fc6
 | `keep` | `ls/skills/ls-nodejs-nextjs/references/update-procedure.md` |
 | `keep` | `ls/skills/ls-nodejs-nextjs/references/version-matrix.md` |
 | `keep` | `ls/skills/ls-nodejs-nextjs/scripts/verify-current-versions.mjs` |
+| `keep` | `ls/skills/ls-nodejs-nextjs/tests/verify-current-versions.test.mjs` |
 | `keep` | `ls/skills/ls-notion-api/SKILL.md` |
 | `keep` | `ls/skills/ls-npm-management/SKILL.md` |
 | `keep` | `ls/skills/ls-npm-management/references/npm-api-conf-example.md` |

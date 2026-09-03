@@ -1,6 +1,6 @@
 # Source Ledger
 
-Verified on 2026-07-05 UTC unless a source entry states otherwise.
+Version and release metadata were verified at `2026-09-03T06:17:06.012Z`.
 
 ## Package Metadata
 
@@ -8,8 +8,10 @@ Verified on 2026-07-05 UTC unless a source entry states otherwise.
 - npm registry metadata for `react`: `https://registry.npmjs.org/react`
 - npm registry metadata for `react-dom`: `https://registry.npmjs.org/react-dom`
 - npm package manifest fields: `https://docs.npmjs.com/cli/v11/configuring-npm/package-json`
-- React DOM package manifest:
-  `https://raw.githubusercontent.com/facebook/react/v19.2.7/packages/react-dom/package.json`
+- npm registry attestation endpoint pattern:
+  `https://registry.npmjs.org/-/npm/v1/attestations/{package}@{version}`
+- The verifier records package `time`, version `dist` integrity/tarball/signature
+  fields, and registry attestation metadata; it does not verify artifact bytes.
 
 ## Node.js Runtime
 

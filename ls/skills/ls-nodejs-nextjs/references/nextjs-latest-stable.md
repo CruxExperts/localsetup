@@ -1,16 +1,20 @@
 # Next.js Latest Stable
 
-Verified on 2026-07-05 UTC from npm registry metadata for `next`.
+Verified at `2026-09-03T06:17:06.012Z` from npm registry metadata for `next`.
 
 ## Current Package Facts
 
-- Stable npm `latest`: `16.2.10`.
-- Canary tag: `16.3.0-canary.78`.
+- Stable npm `latest`: `16.3.4`.
+- Canary tag: `16.4.0-canary.15`.
 - Beta tag: `16.0.0-beta.0`.
 - RC tag: `15.0.0-rc.1`.
-- Engine for `next@16.2.10`: Node `>=20.9.0`.
-- React peers for `next@16.2.10`:
+- Engine for `next@16.3.4`: Node `>=20.9.0`.
+- React peers for `next@16.3.4`:
   `^18.2.0 || 19.0.0-rc-de68d2f4-20241204 || ^19.0.0`.
+- Published at `2026-08-31T20:00:51.381Z`; age at verification was
+  `209774631` ms, so the release was not inside the 48-hour quarantine window.
+- Registry-reported integrity, signature values and keys, tarball, and SLSA
+  provenance metadata are preserved in `../data/verified-versions.json`.
 
 ## Before Acting On These Facts
 
