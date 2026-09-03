@@ -25,18 +25,19 @@ Do not assume `agentlens` is available from this repository or from `PATH`.
 
 | Level | File | Purpose |
 |-------|------|---------|
-| L0 | `INDEX.md` | Project overview, all modules listed |
-| L0 | `AGENT.md` | Optional generated agent instructions for this repo |
+| L0 | `INDEX.md` | Project overview and module routing |
 | L1 | `modules/{slug}/MODULE.md` | Module details, file list |
-| L1 | `modules/{slug}/outline.md` | Symbols in large files |
-| L1 | `modules/{slug}/notes.md` | TODOs, warnings, business rules |
-| L1 | `modules/{slug}/imports.md` | File dependencies |
-| L2 | `files/{slug}.md` | Deep docs for complex files |
+| L1 | `modules/{slug}/outline.md` | Symbols in large files, when generated |
+| L1 | `modules/{slug}/memory.md` | Warnings and TODOs, when generated |
+| L1 | `modules/{slug}/imports.md` | File dependencies, when generated |
+| L2 | `files/{slug}.md` | Deep docs for complex files, when generated |
+
+This is the public output hierarchy documented by the current [upstream AgentLens README](https://github.com/nguyenphutrong/agentlens/blob/e28f9395af4aba1ccb3cf2820bbf0234bd60c360/README.md#L30-L40). Do not infer additional filenames from older package guidance.
 
 ## Navigation Flow
 
 ```
-INDEX.md -> Find module -> MODULE.md -> outline.md/notes.md -> Source file
+INDEX.md -> Find module -> MODULE.md -> available sidecars -> Source file
 ```
 
 ## When To Read What
@@ -46,16 +47,17 @@ INDEX.md -> Find module -> MODULE.md -> outline.md/notes.md -> Source file
 | Project overview | `.agentlens/INDEX.md` |
 | Find a module | INDEX.md, search module name |
 | Understand a module | `modules/{slug}/MODULE.md` |
-| Find function/class in large file | `modules/{slug}/outline.md` |
-| Find TODOs, warnings, rules | `modules/{slug}/notes.md` |
-| Understand file dependencies | `modules/{slug}/imports.md` |
+| Find function/class in large file | `modules/{slug}/outline.md` if present; otherwise search source |
+| Find TODOs and warnings | `modules/{slug}/memory.md` if present; otherwise search source markers |
+| Understand file dependencies | `modules/{slug}/imports.md` if present; otherwise inspect source imports |
 
 ## Best Practices
 
-1. **Don't read source files directly** for large codebases - use outline.md first
-2. **Check notes.md before modifying** code to see warnings and TODOs
-3. **Use outline.md to locate symbols**, then read only the needed source sections
-4. **Verify stale docs against source** before relying on them; regenerate only when the target repo or external AgentLens installation provides a documented command
+1. **Start with the generated map** for large codebases, then use `outline.md` when present to target source reads
+2. **Check `memory.md` when present** before modifying code; otherwise search source markers for warnings and TODOs
+3. **Use `outline.md` when present to locate symbols**; otherwise search source, then read only the needed sections
+4. **Verify generated claims against source** before editing; source remains authoritative when documentation is absent or stale
+5. **Regenerate only through a documented command** supplied by the target repo or an external AgentLens installation
 
 ## Sidecars and Provenance
 

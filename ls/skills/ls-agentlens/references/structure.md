@@ -5,16 +5,17 @@
 ```
 .agentlens/
 ├── INDEX.md              # L0: Global routing table
-├── AGENT.md              # Optional generated agent instructions for this repo
 ├── modules/
 │   └── {module-slug}/
 │       ├── MODULE.md     # L1: Module overview
-│       ├── outline.md    # L1: Symbol maps for large files
-│       ├── notes.md      # L1: TODOs, warnings, rules
-│       └── imports.md    # L1: File dependencies
+│       ├── outline.md    # L1: Symbol maps, when generated
+│       ├── memory.md     # L1: Warnings and TODOs, when generated
+│       └── imports.md    # L1: Dependencies, when generated
 └── files/
-    └── {file-slug}.md    # L2: Deep docs for complex files
+    └── {file-slug}.md    # L2: Deep docs for complex files, when generated
 ```
+
+This layout follows the current [upstream README hierarchy](https://github.com/nguyenphutrong/agentlens/blob/e28f9395af4aba1ccb3cf2820bbf0234bd60c360/README.md#L30-L40) and its [output-structure table](https://github.com/nguyenphutrong/agentlens/blob/e28f9395af4aba1ccb3cf2820bbf0234bd60c360/README.md#L264-L273).
 
 ## Lifecycle
 
@@ -23,11 +24,9 @@ The `.agentlens/` tree is target-repo documentation produced outside this skill.
 Use the tree as follows:
 
 1. Read `.agentlens/INDEX.md` first.
-2. Read `.agentlens/AGENT.md` when it exists; treat it as generated repo-local operating guidance.
-3. Navigate into `modules/` and `files/` for focused context.
+2. Navigate into `modules/` and `files/` for focused context.
+3. Treat module sidecars as optional: use the files that the generator produced.
 4. When content appears stale, verify against source. Regenerate only with a command documented by the target repo or by an external AgentLens installation.
-
-If `.agentlens/AGENT.md` is absent, continue with `INDEX.md`; the file is optional and its absence is not a Localsetup install failure.
 
 ## File Purposes
 
@@ -37,12 +36,6 @@ If `.agentlens/AGENT.md` is absent, continue with `INDEX.md`; the file is option
 - Entry points (main files)
 - Hub files (heavily imported)
 - High-priority warnings summary
-
-### AGENT.md (Optional)
-- Generated operating guidance for agents working in the target repo
-- May summarize repo conventions, caution areas, or navigation rules
-- Lifecycle is owned by the target repo's AgentLens generator, not by Localsetup
-- If missing or stale, use source files and other `.agentlens/` docs as the authority
 
 ### MODULE.md
 - Module purpose and responsibility
@@ -56,7 +49,7 @@ If `.agentlens/AGENT.md` is absent, continue with `INDEX.md`; the file is option
 - Line numbers for quick navigation
 - Visibility (public/private)
 
-### notes.md
+### memory.md
 - TODO comments
 - FIXME and BUG markers
 - WARNING and SAFETY notes
