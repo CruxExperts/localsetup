@@ -189,6 +189,33 @@ def test_ops_guarded_workflow_enforces_safety_and_handoff_contract() -> None:
     assert "generated workflow registry" not in package_text
     assert "sudo ready" in skill_text
     assert "frozen approval payload still matches" in skill_text
+
+
+def test_repo_convert_workflow_requires_report_evidence_before_apply() -> None:
+    skill_path = ROOT / "ls" / "workflows" / "ls-workflow-pipeline-repo-convert" / "SKILL.md"
+    skill_text = skill_path.read_text(encoding="utf-8").lower()
+    backup_assignment = 'backup_dir="$target_root/.localsetup/backups/conversion-$(date -u +%y%m%dt%h%m%sz)"'
+    report_command = (
+        'localsetup convert --target-directory "$target_root" --backup-dir "$backup_dir" '
+        "--tools codex --packs core"
+    )
+    apply_command = f"{report_command} --yes"
+
+    assert skill_text.count(report_command) == 2
+    assert skill_text.count(apply_command) == 1
+    assert skill_text.count('--backup-dir "$backup_dir"') == 2
+    assert skill_text.index(backup_assignment) < skill_text.index(report_command)
+    assert skill_text.index(report_command) < skill_text.index("blockers are empty")
+    assert skill_text.index("blockers are empty") < skill_text.index(apply_command)
+    assert "every conversion starts with a report-only run" in skill_text
+    assert "do not add `--yes` to this first command" in skill_text
+    assert "unmanaged or ambiguous content is a blocker" in skill_text
+    assert "source checkout and target repository root are the intended roots" in skill_text
+    assert "the same timestamped `backup_dir`" in skill_text
+    assert "conversion-report.json" in skill_text
+    assert "only after that evidence is explicit" in skill_text
+
+
 def test_workflow_catalog_rejects_unsafe_smoke_and_migration_strings(tmp_path: Path) -> None:
     root = make_workflow_validation_repo(tmp_path)
     manifest = root / "ls" / "workflows" / "ls-workflow-demo" / "workflow.yaml"
