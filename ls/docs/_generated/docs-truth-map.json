@@ -46,12 +46,12 @@
       "emitter": "generate-docs",
       "framework_version": "4.3.9",
       "schema_version": 1,
-      "source_commit": "246cadba334cae02cb847b0d5db4666c82159030",
+      "source_commit": "e59f3fe3719aae554f13b34c676a8e395af0c2a7",
       "source_dirty": true,
-      "source_provenance_hash": "656b9c07546f2fad7ff4ea1c55dbbc837887c61cdd933b9954e8ffd7ebf9601e",
-      "source_root_id": "e2ce22757497462b8fa144f6c4701fee2f7f3cfd98673048e7a605a8b06f2b24",
+      "source_provenance_hash": "d9f179840044aee50a937b711c0ad568d0ba267cd1589de53062423a99cccb5d",
+      "source_root_id": "ff06b5e0e4e8c2f1d247ae8ab4f76f9aa00959abe90933dab701baa61cea6799",
       "source_tag": null,
-      "source_tree_sha": "72b144a24626a45fe31b82feb60abf98231996ec"
+      "source_tree_sha": "a1cc0c6ceb39f501c1145667900a7561f5737c69"
     },
     "skill_count": 103,
     "skills": [
@@ -1921,12 +1921,12 @@
       "emitter": "generate-docs",
       "framework_version": "4.3.9",
       "schema_version": 1,
-      "source_commit": "246cadba334cae02cb847b0d5db4666c82159030",
+      "source_commit": "e59f3fe3719aae554f13b34c676a8e395af0c2a7",
       "source_dirty": true,
-      "source_provenance_hash": "656b9c07546f2fad7ff4ea1c55dbbc837887c61cdd933b9954e8ffd7ebf9601e",
-      "source_root_id": "e2ce22757497462b8fa144f6c4701fee2f7f3cfd98673048e7a605a8b06f2b24",
+      "source_provenance_hash": "d9f179840044aee50a937b711c0ad568d0ba267cd1589de53062423a99cccb5d",
+      "source_root_id": "ff06b5e0e4e8c2f1d247ae8ab4f76f9aa00959abe90933dab701baa61cea6799",
       "source_tag": null,
-      "source_tree_sha": "72b144a24626a45fe31b82feb60abf98231996ec"
+      "source_tree_sha": "a1cc0c6ceb39f501c1145667900a7561f5737c69"
     },
     "schema_version": 1,
     "skills": [
@@ -3427,16 +3427,16 @@
   },
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "0b48c65d59f7e9dc7ebf2228337812a9886f06d40d5c9f59810846e010a42957",
+    "artifact_sha256": "e53fa7adedee703b9c11d05a903a5339f97b08076aa2d8274736e23cb37a9ea7",
     "emitter": "docs-align",
     "framework_version": "4.3.9",
     "schema_version": 1,
-    "source_commit": "246cadba334cae02cb847b0d5db4666c82159030",
+    "source_commit": "e59f3fe3719aae554f13b34c676a8e395af0c2a7",
     "source_dirty": true,
-    "source_provenance_hash": "656b9c07546f2fad7ff4ea1c55dbbc837887c61cdd933b9954e8ffd7ebf9601e",
-    "source_root_id": "e2ce22757497462b8fa144f6c4701fee2f7f3cfd98673048e7a605a8b06f2b24",
+    "source_provenance_hash": "d9f179840044aee50a937b711c0ad568d0ba267cd1589de53062423a99cccb5d",
+    "source_root_id": "ff06b5e0e4e8c2f1d247ae8ab4f76f9aa00959abe90933dab701baa61cea6799",
     "source_tag": null,
-    "source_tree_sha": "72b144a24626a45fe31b82feb60abf98231996ec"
+    "source_tree_sha": "a1cc0c6ceb39f501c1145667900a7561f5737c69"
   },
   "schema_version": "1.0",
   "truths": {
@@ -5553,10 +5553,12 @@
             ],
             "path": "ls/workflows/ls-workflow-ops-guarded",
             "required_docs": [
-              "ls/docs/WORKFLOW_REGISTRY.md"
+              "ls/skills/ls-safety-and-backup/SKILL.md",
+              "ls/workflows/ls-workflow-ops-tmux-session/SKILL.md"
             ],
             "required_skills": [
-              "ls-framework-compliance"
+              "ls-framework-compliance",
+              "ls-safety-and-backup"
             ],
             "required_tools": [],
             "workflow_id": "ops-guarded"

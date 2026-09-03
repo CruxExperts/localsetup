@@ -2,16 +2,16 @@
   "count": 24,
   "provenance": {
     "artifact_path": "ls/docs/_generated/workflow-catalog.json",
-    "artifact_sha256": "acd61acc5c551c63be382684d05668b75ae308fc93d7f50cd38be877594ce769",
+    "artifact_sha256": "cb8d6a1aa5ed1cd1a1ca930558e4e6930517406de9319263794d52d32421f9d0",
     "emitter": "generate-docs",
     "framework_version": "4.3.9",
     "schema_version": 1,
-    "source_commit": "246cadba334cae02cb847b0d5db4666c82159030",
+    "source_commit": "e59f3fe3719aae554f13b34c676a8e395af0c2a7",
     "source_dirty": true,
-    "source_provenance_hash": "656b9c07546f2fad7ff4ea1c55dbbc837887c61cdd933b9954e8ffd7ebf9601e",
-    "source_root_id": "e2ce22757497462b8fa144f6c4701fee2f7f3cfd98673048e7a605a8b06f2b24",
+    "source_provenance_hash": "d9f179840044aee50a937b711c0ad568d0ba267cd1589de53062423a99cccb5d",
+    "source_root_id": "ff06b5e0e4e8c2f1d247ae8ab4f76f9aa00959abe90933dab701baa61cea6799",
     "source_tag": null,
-    "source_tree_sha": "72b144a24626a45fe31b82feb60abf98231996ec"
+    "source_tree_sha": "a1cc0c6ceb39f501c1145667900a7561f5737c69"
   },
   "workflows": [
     {
@@ -220,10 +220,12 @@
       ],
       "path": "ls/workflows/ls-workflow-ops-guarded",
       "required_docs": [
-        "ls/docs/WORKFLOW_REGISTRY.md"
+        "ls/skills/ls-safety-and-backup/SKILL.md",
+        "ls/workflows/ls-workflow-ops-tmux-session/SKILL.md"
       ],
       "required_skills": [
-        "ls-framework-compliance"
+        "ls-framework-compliance",
+        "ls-safety-and-backup"
       ],
       "required_tools": [],
       "workflow_id": "ops-guarded"

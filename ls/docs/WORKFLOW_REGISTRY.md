@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 656b9c07546f2fad7ff4ea1c55dbbc837887c61cdd933b9954e8ffd7ebf9601e
+  source_provenance_hash: d9f179840044aee50a937b711c0ad568d0ba267cd1589de53062423a99cccb5d
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 246cadba334cae02cb847b0d5db4666c82159030
-artifact_sha256: 3c194ec41c7254e27c372d77b7fcc19b15224bdb728ae558c1a693ee2b56ecea
+source_commit: e59f3fe3719aae554f13b34c676a8e395af0c2a7
+artifact_sha256: 51eb5622debd5b3d42cd8d38f41f88a48a52711b240126f7c6863b82d2e56b4e
 ---
 # Workflow and module registry (Localsetup)
 
@@ -34,7 +34,7 @@ For the framework rules, see [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md).
 | `context-index-query` | `ls-workflow-context-index-query` | Context Index Query | Use when querying the Localsetup context index with vector-first retrieval and deterministic preflight/logging controls. | query context index; context search | `ls-context-index` | [agent-usage.md](../../ls/skills/ls-context-index/docs/agent-usage.md); [security-and-privacy.md](../../ls/skills/ls-context-index/docs/security-and-privacy.md) |
 | `context-index-refresh` | `ls-workflow-context-index-refresh` | Context Index Refresh | Use when refreshing the Localsetup context index with deterministic lifecycle checks and reset/rebuild/vector-rebuild decisions. | context refresh; refresh context index | `ls-context-index` | [README.md](../../ls/skills/ls-context-index/README.md); [architecture.md](../../ls/skills/ls-context-index/docs/architecture.md) |
 | `documentation-alignment` | `ls-workflow-documentation-alignment` | Documentation Alignment | Use when running automated repo documentation alignment with source-truth scouting, current-doc research, generated artifacts, CI checks, and final review. | docs alignment; documentation sync; repo docs audit | `ls-documentation-alignment`; `ls-docs-organization`; `ls-markdown-reference-validator`; `ls-script-and-docs-quality`; `ls-test-runner` | [SKILL.md](../../ls/skills/ls-documentation-alignment/SKILL.md); [OUTPUT_AND_DOC_GENERATION.md](OUTPUT_AND_DOC_GENERATION.md); [DOCUMENT_LIFECYCLE_MANAGEMENT.md](DOCUMENT_LIFECYCLE_MANAGEMENT.md); `ls/tools/docs_alignment.py`; `ls/tools/generate_docs_artifacts.py` |
-| `ops-guarded` | `ls-workflow-ops-guarded` | Ops Guarded | Use when risky operations need approval checkpoints, impact review, or guarded execution; hand off sudo, elevated, PTY, or interactive password execution to ls-workflow-ops-tmux-session. | lazy admin; manual execution | `ls-framework-compliance` | [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md) |
+| `ops-guarded` | `ls-workflow-ops-guarded` | Ops Guarded | Use when risky operations need approval checkpoints, impact review, or guarded execution; hand off sudo, elevated, PTY, or interactive password execution to ls-workflow-ops-tmux-session. | lazy admin; manual execution | `ls-framework-compliance`; `ls-safety-and-backup` | [SKILL.md](../../ls/skills/ls-safety-and-backup/SKILL.md); [SKILL.md](../../ls/workflows/ls-workflow-ops-tmux-session/SKILL.md) |
 | `ops-tmux-session` | `ls-workflow-ops-tmux-session` | Ops Tmux Session | Use when commands need sudo, root/admin elevation, require_escalated, pseudo-terminal/PTY handling, interactive sudo or elevated terminal password prompts, or managed tmux run tracking. | tmux shared session; sudo tmux; elevated permissions; interactive sudo prompt; sudo password prompt handoff; require_escalated; pseudo-terminal ops; managed tmux ops | n/a | [tmux-ops-managed.md](ops/tmux-ops-managed.md); [tmux-ops-remote.md](ops/tmux-ops-remote.md); `localsetup://tool/tmux_ops` |
 | `pipeline-git-repair-hygiene` | `ls-workflow-pipeline-git-repair-hygiene` | Pipeline Git Repair Hygiene | Use when recovering broken Git state and enforcing follow-up workflow hygiene checks. | git repair pipeline | `ls-unfuck-my-git-state`; `ls-git-workflows`; `ls-framework-compliance` | [WORKFLOW_QUICK_REF.md](WORKFLOW_QUICK_REF.md); [GIT_TRACEABILITY.md](GIT_TRACEABILITY.md) |
 | `pipeline-pr-feedback-loop` | `ls-workflow-pipeline-pr-feedback-loop` | Pipeline PR Feedback Loop | Use when turning pull request feedback into fixes, tests, and follow-up review. | pr feedback pipeline | `ls-receiving-code-review`; `ls-tdd-guide`; `ls-pr-reviewer` | [WORKFLOW_QUICK_REF.md](WORKFLOW_QUICK_REF.md) |

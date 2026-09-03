@@ -117,6 +117,44 @@ def test_tmux_ops_workflow_trigger_metadata_covers_elevated_execution() -> None:
     assert "tmux send-keys" not in trigger_surface
 
 
+def test_ops_guarded_workflow_enforces_safety_and_handoff_contract() -> None:
+    workflow_dir = ROOT / "ls" / "workflows" / "ls-workflow-ops-guarded"
+    skill_text = (workflow_dir / "SKILL.md").read_text(encoding="utf-8").lower()
+    manifest = yaml.safe_load((workflow_dir / "workflow.yaml").read_text(encoding="utf-8"))
+
+    assert manifest["required_skills"] == ["ls-framework-compliance", "ls-safety-and-backup"]
+    assert manifest["required_docs"] == [
+        "ls/skills/ls-safety-and-backup/SKILL.md",
+        "ls/workflows/ls-workflow-ops-tmux-session/SKILL.md",
+    ]
+
+    gates = manifest["gates"]
+    assert [gate["id"] for gate in gates] == [
+        "risk_classification",
+        "backup_and_rollback_review",
+        "freeze_approval_payload",
+        "explicit_pre_execution_approval",
+        "tmux_handoff_preconditions",
+    ]
+    gate_rules = "\n".join(gate["rule"] for gate in gates).lower()
+    for required_term in (
+        "risk class",
+        "backup",
+        "rollback",
+        "exact command or edit",
+        "values",
+        "target",
+        "explicit user approval",
+        "only after every prior gate passes",
+        "ls-workflow-ops-tmux-session",
+    ):
+        assert required_term in gate_rules
+
+    package_text = f"{skill_text}\n{yaml.safe_dump(manifest, sort_keys=True).lower()}"
+    assert "workflow_registry" not in package_text
+    assert "generated workflow registry" not in package_text
+    assert "sudo ready" in skill_text
+    assert "frozen approval payload still matches" in skill_text
 def test_workflow_catalog_rejects_unsafe_smoke_and_migration_strings(tmp_path: Path) -> None:
     root = make_workflow_validation_repo(tmp_path)
     manifest = root / "ls" / "workflows" / "ls-workflow-demo" / "workflow.yaml"
