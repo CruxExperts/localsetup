@@ -12,6 +12,11 @@ POINTER = (
     "ls/docs/PYTHON_ARCHITECTURE_STANDARD.md; keep entrypoints thin, package "
     "responsibilities explicit, and existing debt baseline-managed."
 )
+RESOLVER_POINTER = (
+    "Python architecture: new and substantially refactored Python tooling follows "
+    "`localsetup://doc/PYTHON_ARCHITECTURE_STANDARD.md`; keep entrypoints thin, package "
+    "responsibilities explicit, and existing debt baseline-managed."
+)
 ANCHORS = (
     "# Scope And Authority",
     "# Environment Standard",
@@ -61,7 +66,8 @@ def make_repo(tmp_path: Path, *, large_lines: int = 10) -> Path:
         + "\n",
     )
     for rel_path in POINTER_PATHS:
-        write(repo / rel_path, POINTER + "\n")
+        pointer = RESOLVER_POINTER if rel_path == "ls/skills/ls-context/SKILL.md" else POINTER
+        write(repo / rel_path, pointer + "\n")
     write(
         repo / "ls/config/python-architecture-baseline.json",
         json.dumps(
@@ -234,6 +240,16 @@ def test_checker_missing_template_pointer_fails(tmp_path: Path) -> None:
     assert "PYA006_REQUIRED_TEMPLATE_POINTER_MISSING" in finding_codes(result)
 
 
+def test_checker_requires_resolver_pointer_for_context_skill(tmp_path: Path) -> None:
+    repo = make_repo(tmp_path)
+    write(repo / "ls/skills/ls-context/SKILL.md", POINTER + "\n")
+
+    result = run_checker(repo)
+
+    assert result.returncode == 1
+    assert "PYA006_REQUIRED_TEMPLATE_POINTER_MISSING" in finding_codes(result)
+
+
 def test_checker_missing_wrapper_fails(tmp_path: Path) -> None:
     repo = make_repo(tmp_path)
     (repo / "ls/tools/python_architecture_check.py").unlink()
@@ -251,5 +267,6 @@ def test_template_parity_uses_pointer_and_required_anchors() -> None:
 
     for rel_path in POINTER_PATHS:
         text = (ROOT / rel_path).read_text(encoding="utf-8")
-        assert POINTER in text
+        pointer = RESOLVER_POINTER if rel_path == "ls/skills/ls-context/SKILL.md" else POINTER
+        assert pointer in text
         assert "# Source Evidence" not in text

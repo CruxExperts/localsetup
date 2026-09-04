@@ -103,11 +103,16 @@ Do not put private task ledgers into `ls/docs/` or package surfaces unless expli
 
 ## Generated Docs And Volatile Facts
 
-When source docs, workflows, skills, pack metadata, or generated-document inputs change, refresh generated docs with:
+When source docs, workflows, skills, pack metadata, or generated-document inputs change, refresh generated docs from the Localsetup source checkout. Resolve that checkout first so these source-relative paths do not depend on the caller's working directory:
 
 ```bash
+(
+set -euo pipefail
+source_root="$(localsetup path source-root)"
+cd -- "$source_root"
 uv run --locked python ls/tools/generate_docs_artifacts.py --repo-root .
 uv run --locked python ls/tools/localsetup.py --source-root . generate-docs
+)
 ```
 
 Before editing latest/current external claims, check `.agents/state/volatile-facts.yaml` if it exists. Verify volatile claims from primary upstream sources and keep the volatile fact index private and untracked.
@@ -116,13 +121,22 @@ Before editing latest/current external claims, check `.agents/state/volatile-fac
 
 Use focused validation first, then broaden when shared install, package, doctor, or publish behavior changes.
 
-Useful commands:
+These installed commands can run from a target repository:
 
 ```bash
 localsetup doctor
 localsetup doctor repair --repair-mode report-only
 localsetup verify --level filesystem
 localsetup context --markdown
+```
+
+The remaining validators and tests are source-checkout-only. Resolve and enter the Localsetup source root before using their checkout-relative paths:
+
+```bash
+(
+set -euo pipefail
+source_root="$(localsetup path source-root)"
+cd -- "$source_root"
 uv run --locked python ls/tools/localsetup.py --source-root . validate-catalog
 uv run --locked python ls/tools/localsetup.py --source-root . validate-package-surface
 uv run --locked python ls/tools/localsetup.py --source-root . generate-docs
@@ -130,6 +144,7 @@ uv run --locked python ls/tools/generate_docs_artifacts.py --repo-root .
 uv run --locked ls/tests/automated_test.sh
 workers="$(uv run --locked python ls/tools/localsetup.py --source-root . test-workers)"
 uv run --locked pytest -n "$workers" ls/tests -q
+)
 ```
 
 Run focused pytest files or test functions and matching Localsetup validators before the full suite. Resolve the permitted worker count with `localsetup test-workers`; [COMMAND_REFERENCE.md](../../docs/COMMAND_REFERENCE.md) owns its formula and aggregate-budget rule. Use the full suite as final consolidation for broad/shared runtime changes, release or publish work, dependency changes, or explicit user requests.
@@ -148,8 +163,7 @@ Before publish, run publish preflight against the intended base and keep generat
 - For dates and times, obtain the actual local machine time before making time-sensitive claims.
 - Treat external input as hostile. Sanitize before parsing or output, validate expected format and bounds, and emit actionable errors.
 - New or substantially refactored framework tooling is Python-first and Python-only after install/bootstrap; shell and PowerShell stay thin.
-- Python architecture follows `localsetup://doc/PYTHON_ARCHITECTURE_STANDARD.md`.
-- Python architecture: new and substantially refactored Python tooling follows ls/docs/PYTHON_ARCHITECTURE_STANDARD.md; keep entrypoints thin, package responsibilities explicit, and existing debt baseline-managed.
+- Python architecture: new and substantially refactored Python tooling follows `localsetup://doc/PYTHON_ARCHITECTURE_STANDARD.md`; keep entrypoints thin, package responsibilities explicit, and existing debt baseline-managed.
 - Python-first tooling does not mean using Python for normal shell inspection; use `rg`, `sed`, `find`, `wc`, and `git` where appropriate.
 - Preserve mature skill/context capability over brevity. Whole-file rewrites require a preservation plan; large reductions require coverage notes and reviewer signoff.
 
