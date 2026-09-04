@@ -1,6 +1,6 @@
 # Browser MCP Landscape
 
-Accessed: 2026-06-29. Browser lifecycle facts refreshed: 2026-07-02.
+Accessed: 2026-09-04.
 
 ## Tool Roles
 
@@ -23,24 +23,29 @@ Use Chrome DevTools MCP page tools deliberately:
 - `close_page` only for recorded agent-owned pages.
 
 Use `--isolated=true` for default ephemeral sessions. Use `--userDataDir` with
-the dedicated `.localsetup-maint/ui-browser-profiles/chrome-devtools` profile
-only when login or state reuse is required. Chrome 136 restricts remote
+the dedicated absolute `.localsetup-maint/ui-browser-profiles/chrome-devtools`
+profile derived from an explicit project/state root only when login or state
+reuse is required. Chrome 136 restricts remote
 debugging against the default Chrome profile, so agent automation must not use a
 user's everyday profile unless the user explicitly authorizes a supported
 non-default profile flow.
 
-Use `--experimentalPageIdRouting` only for a controller-assigned multi-agent
-workflow where each actor has an explicit page id. Otherwise, isolate actors
-with separate profiles or keep live browser control serial.
+Chrome DevTools MCP 1.8.0 enables `--pageIdRouting` by default and requires page
+ids for page-scoped tools. For multi-agent control, give each actor an explicit
+page id on one routed server or a separately owned isolated MCP server instance
+with a unique session id. Otherwise keep live browser control serial.
 
 ## Dated Version Snapshot
 
 These values are volatile and must be rechecked before version-sensitive work:
 
-- `chrome-devtools-mcp`: 1.4.0 on npm, checked 2026-06-29.
-- `@playwright/mcp`: 0.0.77 on npm, checked 2026-06-29.
-- `@playwright/cli`: 0.1.14 on npm, checked 2026-06-29.
-- `playwright`: 1.61.1 on npm, checked 2026-06-29.
+- `chrome-devtools-mcp`: 1.8.0 on npm, checked 2026-09-04.
+- `@playwright/mcp`: 0.0.80 on npm, checked 2026-09-04.
+- `@playwright/cli`: 0.1.19 on npm, checked 2026-09-04.
+- `playwright`: 1.62.1 on npm, checked 2026-09-04.
+
+The Playwright MCP and CLI packages currently depend on a Playwright 1.63 alpha;
+do not infer that their bundled engine matches standalone `playwright@latest`.
 
 The recommended setup examples use `chrome-devtools-mcp@latest` so normal agent
 config picks up current fixes. Pin a version only for a dated reproduction or
