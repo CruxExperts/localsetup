@@ -1,44 +1,19 @@
 {
-  "count": 22,
+  "count": 21,
   "provenance": {
     "artifact_path": "ls/docs/_generated/workflow-catalog.json",
-    "artifact_sha256": "c8236ba954f035f6ba58b4e6b7db4084e465b80f40dc5c6062ea124641bbbcea",
+    "artifact_sha256": "f3488d2ae3872dc93f625421aa2c302d290de9ce859e5f97a52a563c2d822e81",
     "emitter": "generate-docs",
     "framework_version": "4.3.9",
     "schema_version": 1,
-    "source_commit": "e9137a99c088bc560f9f6a2b7c597d2be7dd1a14",
+    "source_commit": "93540b4ff28ff163a3fa1116a37f2f91c64cbe2e",
     "source_dirty": true,
-    "source_provenance_hash": "d13a6f9410025b5eb4cf2c4e876692ff6b184f3084565256f424672872bc22d0",
-    "source_root_id": "ea75d33c3b24a95cb0e52f98a2fc047bc9c5487dae12c805454844356beb5e8c",
+    "source_provenance_hash": "eb906a84e2028126d65f607f83b3fc1590bbb439f5d271589ef0bc3b2f1c2a54",
+    "source_root_id": "9cf926e4085e18fedf855df92adbebd30fd2630ba19250b082b7ebd355b9f9ff",
     "source_tag": null,
-    "source_tree_sha": "7f659ae00460b4132bf1ac7662e1f8e6ad297531"
+    "source_tree_sha": "db060aec75815ae8d7790468595d9ceeef0f8e06"
   },
   "workflows": [
-    {
-      "aliases": [
-        "run audit",
-        "framework audit"
-      ],
-      "description": "Use when running a Localsetup framework audit with an explicit report path and summarized findings.",
-      "display_name": "Audit Framework",
-      "package": "ls-workflow-audit-framework",
-      "packs": [
-        "bootstrap",
-        "dev"
-      ],
-      "path": "ls/workflows/ls-workflow-audit-framework",
-      "required_docs": [
-        "ls/docs/WORKFLOW_REGISTRY.md",
-        "ls/docs/DOCUMENT_LIFECYCLE_MANAGEMENT.md"
-      ],
-      "required_skills": [
-        "ls-framework-audit"
-      ],
-      "required_tools": [
-        "ls/skills/ls-framework-audit/scripts/run_framework_audit.py"
-      ],
-      "workflow_id": "audit-framework"
-    },
     {
       "aliases": [
         "reference audit",

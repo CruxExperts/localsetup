@@ -42,16 +42,16 @@
     ],
     "provenance": {
       "artifact_path": "ls/docs/_generated/facts.json",
-      "artifact_sha256": "064e7c981718809a563df154dc977b6fab17f4ce811ae8db8d2bf5097977b5c3",
+      "artifact_sha256": "ce61e680b7628422a8f6d6a9fbf40112f1d3792e24ed490aff0e3e0b749dec8b",
       "emitter": "generate-docs",
       "framework_version": "4.3.9",
       "schema_version": 1,
-      "source_commit": "e9137a99c088bc560f9f6a2b7c597d2be7dd1a14",
+      "source_commit": "93540b4ff28ff163a3fa1116a37f2f91c64cbe2e",
       "source_dirty": true,
-      "source_provenance_hash": "d13a6f9410025b5eb4cf2c4e876692ff6b184f3084565256f424672872bc22d0",
-      "source_root_id": "ea75d33c3b24a95cb0e52f98a2fc047bc9c5487dae12c805454844356beb5e8c",
+      "source_provenance_hash": "eb906a84e2028126d65f607f83b3fc1590bbb439f5d271589ef0bc3b2f1c2a54",
+      "source_root_id": "9cf926e4085e18fedf855df92adbebd30fd2630ba19250b082b7ebd355b9f9ff",
       "source_tag": null,
-      "source_tree_sha": "7f659ae00460b4132bf1ac7662e1f8e6ad297531"
+      "source_tree_sha": "db060aec75815ae8d7790468595d9ceeef0f8e06"
     },
     "skill_count": 103,
     "skills": [
@@ -231,6 +231,7 @@
         "name": "ls-framework-audit",
         "owner_scope": "skill",
         "packs": [
+          "bootstrap",
           "dev"
         ],
         "path": "ls/skills/ls-framework-audit/SKILL.md",
@@ -1757,14 +1758,8 @@
       }
     ],
     "version": "4.3.9",
-    "workflow_count": 22,
+    "workflow_count": 21,
     "workflows": [
-      {
-        "id": "audit-framework",
-        "name": "Audit Framework",
-        "package": "ls-workflow-audit-framework",
-        "path": "ls/workflows/ls-workflow-audit-framework/SKILL.md"
-      },
       {
         "id": "audit-markdown-references",
         "name": "Audit Markdown References",
@@ -1906,16 +1901,16 @@
     "count": 103,
     "provenance": {
       "artifact_path": "ls/docs/_generated/skill-taxonomy.json",
-      "artifact_sha256": "1299e850a0cb0ac88ef7377280d09fb3401e801b3437d8eb37ddc5c4f1bef22d",
+      "artifact_sha256": "eb2874d8dd3418876eafd4928ba0f92cfe655e4a1f8e5776dfa3df147ca16149",
       "emitter": "generate-docs",
       "framework_version": "4.3.9",
       "schema_version": 1,
-      "source_commit": "e9137a99c088bc560f9f6a2b7c597d2be7dd1a14",
+      "source_commit": "93540b4ff28ff163a3fa1116a37f2f91c64cbe2e",
       "source_dirty": true,
-      "source_provenance_hash": "d13a6f9410025b5eb4cf2c4e876692ff6b184f3084565256f424672872bc22d0",
-      "source_root_id": "ea75d33c3b24a95cb0e52f98a2fc047bc9c5487dae12c805454844356beb5e8c",
+      "source_provenance_hash": "eb906a84e2028126d65f607f83b3fc1590bbb439f5d271589ef0bc3b2f1c2a54",
+      "source_root_id": "9cf926e4085e18fedf855df92adbebd30fd2630ba19250b082b7ebd355b9f9ff",
       "source_tag": null,
-      "source_tree_sha": "7f659ae00460b4132bf1ac7662e1f8e6ad297531"
+      "source_tree_sha": "db060aec75815ae8d7790468595d9ceeef0f8e06"
     },
     "schema_version": 1,
     "skills": [
@@ -2074,6 +2069,7 @@
         "id": "ls-framework-audit",
         "owner_scope": "skill",
         "packs": [
+          "bootstrap",
           "dev"
         ],
         "path": "ls/skills/ls-framework-audit",
@@ -3417,16 +3413,16 @@
   },
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "9d80bcb3bb5bfc51464670447a528d3329142e2e96142bbfc168e944d84f3eb4",
+    "artifact_sha256": "fb1c9f5e659be3988bbd5b7464d38e9c5cd7008244e70a2e78ed52146edf3453",
     "emitter": "docs-align",
     "framework_version": "4.3.9",
     "schema_version": 1,
-    "source_commit": "e9137a99c088bc560f9f6a2b7c597d2be7dd1a14",
+    "source_commit": "93540b4ff28ff163a3fa1116a37f2f91c64cbe2e",
     "source_dirty": true,
-    "source_provenance_hash": "d13a6f9410025b5eb4cf2c4e876692ff6b184f3084565256f424672872bc22d0",
-    "source_root_id": "ea75d33c3b24a95cb0e52f98a2fc047bc9c5487dae12c805454844356beb5e8c",
+    "source_provenance_hash": "eb906a84e2028126d65f607f83b3fc1590bbb439f5d271589ef0bc3b2f1c2a54",
+    "source_root_id": "9cf926e4085e18fedf855df92adbebd30fd2630ba19250b082b7ebd355b9f9ff",
     "source_tag": null,
-    "source_tree_sha": "7f659ae00460b4132bf1ac7662e1f8e6ad297531"
+    "source_tree_sha": "db060aec75815ae8d7790468595d9ceeef0f8e06"
   },
   "schema_version": "1.0",
   "truths": {
@@ -3979,6 +3975,7 @@
             "id": "ls-framework-audit",
             "owner_scope": "skill",
             "packs": [
+              "bootstrap",
               "dev"
             ],
             "path": "ls/skills/ls-framework-audit",
@@ -5336,33 +5333,8 @@
         "ls/workflows/*/workflow.yaml"
       ],
       "value": {
-        "count": 22,
+        "count": 21,
         "workflows": [
-          {
-            "aliases": [
-              "run audit",
-              "framework audit"
-            ],
-            "description": "Use when running a Localsetup framework audit with an explicit report path and summarized findings.",
-            "display_name": "Audit Framework",
-            "package": "ls-workflow-audit-framework",
-            "packs": [
-              "bootstrap",
-              "dev"
-            ],
-            "path": "ls/workflows/ls-workflow-audit-framework",
-            "required_docs": [
-              "ls/docs/WORKFLOW_REGISTRY.md",
-              "ls/docs/DOCUMENT_LIFECYCLE_MANAGEMENT.md"
-            ],
-            "required_skills": [
-              "ls-framework-audit"
-            ],
-            "required_tools": [
-              "ls/skills/ls-framework-audit/scripts/run_framework_audit.py"
-            ],
-            "workflow_id": "audit-framework"
-          },
           {
             "aliases": [
               "reference audit",
@@ -5893,7 +5865,7 @@
       "sources": [
         "ls/workflows/ls-workflow-*/workflow.yaml"
       ],
-      "value": 22
+      "value": 21
     }
   }
 }

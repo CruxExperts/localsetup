@@ -13,7 +13,7 @@ def test_phase3_command_family_outputs_json(tmp_path: Path) -> None:
         ["skill", "search", "context"],
         ["skill", "info", "ls-context"],
         ["workflow", "search", "audit"],
-        ["workflow", "info", "ls-workflow-audit-framework"],
+        ["skill", "info", "ls-framework-audit"],
         ["why", "--packs", "core"],
         ["graph"],
         ["audit-global-first"],

@@ -74,14 +74,14 @@
   ],
   "cli_commands": [],
   "counts": {
-    "docs": 433,
+    "docs": 432,
     "framework_docs": 72,
     "generated_docs": 5,
     "platforms": 6,
     "public_docs": 6,
     "skills": 103,
-    "workflow_packs": 31,
-    "workflows": 22
+    "workflow_packs": 29,
+    "workflows": 21
   },
   "docs": [
     {
@@ -4206,16 +4206,6 @@
       "managed_blocks": [],
       "owner_package": "",
       "owner_skill": "",
-      "path": "ls/workflows/ls-workflow-audit-framework/SKILL.md",
-      "status": "",
-      "version": ""
-    },
-    {
-      "class": "skill",
-      "has_frontmatter": true,
-      "managed_blocks": [],
-      "owner_package": "",
-      "owner_skill": "",
       "path": "ls/workflows/ls-workflow-audit-markdown-references/SKILL.md",
       "status": "",
       "version": ""
@@ -4462,16 +4452,16 @@
   ],
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "b19ed093e427270e229a0307ff4bb7132c17c149e8692ca6aaa4d57b2751dce2",
+    "artifact_sha256": "83347fad925d662f5bac6ac025303c7a20dc752f2a999833a46c92a2587f5d2d",
     "emitter": "docs-align",
     "framework_version": "4.3.9",
     "schema_version": 1,
-    "source_commit": "e9137a99c088bc560f9f6a2b7c597d2be7dd1a14",
+    "source_commit": "93540b4ff28ff163a3fa1116a37f2f91c64cbe2e",
     "source_dirty": true,
-    "source_provenance_hash": "d13a6f9410025b5eb4cf2c4e876692ff6b184f3084565256f424672872bc22d0",
-    "source_root_id": "ea75d33c3b24a95cb0e52f98a2fc047bc9c5487dae12c805454844356beb5e8c",
+    "source_provenance_hash": "eb906a84e2028126d65f607f83b3fc1590bbb439f5d271589ef0bc3b2f1c2a54",
+    "source_root_id": "9cf926e4085e18fedf855df92adbebd30fd2630ba19250b082b7ebd355b9f9ff",
     "source_tag": null,
-    "source_tree_sha": "7f659ae00460b4132bf1ac7662e1f8e6ad297531"
+    "source_tree_sha": "db060aec75815ae8d7790468595d9ceeef0f8e06"
   },
   "repo": ".",
   "schema_version": "1.0",
@@ -4631,6 +4621,7 @@
       "name": "ls-framework-audit",
       "owner_scope": "skill",
       "packs": [
+        "bootstrap",
         "dev"
       ],
       "path": "ls/skills/ls-framework-audit",
@@ -5972,15 +5963,6 @@
     }
   ],
   "workflows": [
-    {
-      "package": "ls-workflow-audit-framework",
-      "packs": [
-        "bootstrap",
-        "dev"
-      ],
-      "path": "ls/workflows/ls-workflow-audit-framework",
-      "workflow_id": "audit-framework"
-    },
     {
       "package": "ls-workflow-audit-markdown-references",
       "packs": [

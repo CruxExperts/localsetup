@@ -18,8 +18,8 @@ compatibility: "Python 3.12+ and PyYAML via the framework dependency helper. Ski
 ## Workflow
 
 1. **Run the entrypoint** from repo root: `python ls/skills/ls-framework-audit/scripts/run_framework_audit.py [--output /path/to/report]` or set `LOCALSETUP_AUDIT_OUTPUT` to a writable path. If no output path is given, the script prints a short summary to stdout only; no file is written in the repo. For installed packages, run the package script from the target repo or pass `--repo-root /path/to/repo`; pass `--framework-root /path/to/source/ls` only when auto-detection cannot find the framework source.
-2. **Phases:** Doc checks (key docs exist), link checks (plain-text refs to docs/ or ls/ reported for conversion to markdown links), skill matrix (sandbox or repo-root smoke from smoke list), version/facts (VERSION vs README vs facts.json if present), private release refs (hardcoded private paths or script names).
-3. **Report:** Contains a `requires_review` / `human_decision` section for items that need user resolution. The script is non-interactive; the agent presents the report and asks the user.
+2. **Phases:** Root prerequisites; doc checks; local Markdown target and supported ATX-heading anchor checks; plain-text refs to docs/ or ls/ as conversion warnings; skill matrix; version/facts with invalid existing facts treated as errors; and private release refs. Markdown checks skip external URLs, fenced examples, generated/dependency trees, and private runtime state.
+3. **Report:** Contains every maintainer-reference finding and a `requires_review` / `human_decision` section for items that need user resolution. The script is non-interactive; the agent presents the report and asks the user.
 4. **Doc-only skills:** The smoke list marks them as `N/A`. The script does not run tooling for those. The **agent** (not the script) produces an enumerated one-sentence/paragraph per logical step and flags logic gaps for user resolution, per SKILL.md of each doc-only skill.
 
 ## Smoke list (skill matrix)
@@ -64,8 +64,8 @@ python ~/.local/share/localsetup/packages/ls-framework-audit/scripts/run_framewo
 
 ## Errors vs warnings
 
-- **Error:** Smoke non-zero/crash, syntax/lint failure, missing required doc, broken link that should be fixed. Exit non-zero.
-- **Warning:** N/A or item to fix or explicitly accept; logged in report. Zero errors and zero unexplained warnings before release.
+- **Error:** Invalid repository/framework prerequisites, smoke non-zero/crash, syntax/lint failure, missing required doc, missing local Markdown target or supported anchor, or an existing invalid/versionless facts file. Exit non-zero.
+- **Warning:** Missing optional facts, plain-link conversion candidate, N/A, maintainer reference, or another item to fix or explicitly accept; every logical warning is counted and logged in the report. Zero errors and zero unexplained warnings before release.
 
 ## References
 

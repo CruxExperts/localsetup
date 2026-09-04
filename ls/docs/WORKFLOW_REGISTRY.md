@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: d13a6f9410025b5eb4cf2c4e876692ff6b184f3084565256f424672872bc22d0
+  source_provenance_hash: eb906a84e2028126d65f607f83b3fc1590bbb439f5d271589ef0bc3b2f1c2a54
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: e9137a99c088bc560f9f6a2b7c597d2be7dd1a14
-artifact_sha256: 0408527134e9dc5d24c25f8c65cbe9eceeefc84e089508d7df3f4339e76f94cc
+source_commit: 93540b4ff28ff163a3fa1116a37f2f91c64cbe2e
+artifact_sha256: fc3cd3db4401dc735c5afedc542992e2ac7640132d1d953438f35e0c1a1324ac
 ---
 # Workflow and module registry (Localsetup)
 
@@ -27,7 +27,6 @@ For the framework rules, see [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md).
 
 | Workflow ID | Package | Name | Description | Aliases | Required skills | Primary docs/tools |
 |-------------|---------|------|-------------|---------|-----------------|--------------------|
-| `audit-framework` | `ls-workflow-audit-framework` | Audit Framework | Use when running a Localsetup framework audit with an explicit report path and summarized findings. | run audit; framework audit | `ls-framework-audit` | [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md); [DOCUMENT_LIFECYCLE_MANAGEMENT.md](DOCUMENT_LIFECYCLE_MANAGEMENT.md); `ls/skills/ls-framework-audit/scripts/run_framework_audit.py` |
 | `audit-markdown-references` | `ls-workflow-audit-markdown-references` | Audit Markdown References | Use when validating markdown references and anchors across configured documentation targets. | reference audit; link integrity audit | `ls-markdown-reference-validator` | [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md); [SKILL_VALIDATION_PATTERNS.md](SKILL_VALIDATION_PATTERNS.md); `ls/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py` |
 | `codex-github-issue-goal-loop` | `ls-workflow-codex-github-issue-goal-loop` | Codex GitHub Issue Goal Loop | Use when running a bounded Codex goal loop over GitHub issues, PRs, and maintenance alerts with explicit approval gates. | codex github issue goal loop; github issue goal loop; slash goal issue sweep; github maintenance goal | `ls-framework-compliance`; `ls-git-workflows`; `ls-safety-and-backup`; `ls-test-runner`; `ls-tdd-guide`; `ls-receiving-code-review`; `ls-pr-reviewer`; `ls-github-publishing-workflow`; `ls-automatic-versioning`; `ls-framework-audit` | [CODEX_GITHUB_ISSUE_GOAL_LOOP.md](CODEX_GITHUB_ISSUE_GOAL_LOOP.md); [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md); `git`; `gh` |
 | `codex-heartbeat` | `ls-workflow-codex-heartbeat` | Codex Heartbeat | Use when initializing, activating, running, inspecting, or disabling the opt-in Codex heartbeat harness with transaction evidence and cron manifest validation. | codex heartbeat; heartbeat harness; harness heartbeat | `ls-codex-heartbeat`; `ls-cron-orchestrator`; `ls-framework-compliance` | [HARNESS_AUTOMATION.md](HARNESS_AUTOMATION.md); [SKILL.md](../../ls/skills/ls-codex-heartbeat/SKILL.md); [transactions.md](../../ls/skills/ls-codex-heartbeat/references/transactions.md); `ls/skills/ls-codex-heartbeat/scripts/codex_heartbeat.py`; `ls/skills/ls-cron-orchestrator/scripts/cron_ctl.py` |

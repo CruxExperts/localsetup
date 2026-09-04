@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: d13a6f9410025b5eb4cf2c4e876692ff6b184f3084565256f424672872bc22d0
+  source_provenance_hash: eb906a84e2028126d65f607f83b3fc1590bbb439f5d271589ef0bc3b2f1c2a54
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: e9137a99c088bc560f9f6a2b7c597d2be7dd1a14
-artifact_sha256: eebb19f0a4aafb44abe1aaed7ae5a78ebfcebe39b303635437fc6faca6761aa8
+source_commit: 93540b4ff28ff163a3fa1116a37f2f91c64cbe2e
+artifact_sha256: bb5853366104bd85f20b3c9786fccb2b2d19db022cf1d8e4516f125062c0da57
 ---
 # Workflow quick reference
 
@@ -18,7 +18,6 @@ This page is generated from `ls/workflows/*/workflow.yaml`.
 
 | Workflow ID | Name | Aliases | Package | Required skills |
 |------------|------|---------|---------|-----------------|
-| `audit-framework` | Audit Framework | run audit; framework audit | `ls-workflow-audit-framework` | `ls-framework-audit` |
 | `audit-markdown-references` | Audit Markdown References | reference audit; link integrity audit | `ls-workflow-audit-markdown-references` | `ls-markdown-reference-validator` |
 | `codex-github-issue-goal-loop` | Codex GitHub Issue Goal Loop | codex github issue goal loop; github issue goal loop; slash goal issue sweep; github maintenance goal | `ls-workflow-codex-github-issue-goal-loop` | `ls-framework-compliance`; `ls-git-workflows`; `ls-safety-and-backup`; `ls-test-runner`; `ls-tdd-guide`; `ls-receiving-code-review`; `ls-pr-reviewer`; `ls-github-publishing-workflow`; `ls-automatic-versioning`; `ls-framework-audit` |
 | `codex-heartbeat` | Codex Heartbeat | codex heartbeat; heartbeat harness; harness heartbeat | `ls-workflow-codex-heartbeat` | `ls-codex-heartbeat`; `ls-cron-orchestrator`; `ls-framework-compliance` |
@@ -43,8 +42,6 @@ This page is generated from `ls/workflows/*/workflow.yaml`.
 
 ## Common Phrases
 
-- "run audit" -> `audit-framework`
-- "framework audit" -> `audit-framework`
 - "reference audit" -> `audit-markdown-references`
 - "link integrity audit" -> `audit-markdown-references`
 - "codex github issue goal loop" -> `codex-github-issue-goal-loop`

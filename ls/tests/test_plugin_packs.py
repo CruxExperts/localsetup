@@ -126,7 +126,8 @@ def test_codex_plugin_generator_emits_marketplace_manifest_and_context(tmp_path:
     assert manifest["name"] == "localsetup-bootstrap"
     assert manifest["interface"] == "v1"
     assert "ls-context" in manifest["skills"]
-    assert "ls-workflow-audit-framework" in manifest["skills"]
+    assert "ls-framework-audit" in manifest["skills"]
+    assert "ls-workflow-audit-framework" not in manifest["skills"]
     assert "ls-plugin-bootstrap-context" in manifest["skills"]
     assert (plugin_root / "skills" / "ls-plugin-bootstrap-context" / "SKILL.md").is_file()
     assert (plugin_root / "skills" / "ls-context" / REFERENCE_BUNDLE_PATH).is_file()

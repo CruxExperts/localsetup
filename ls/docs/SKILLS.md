@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: d13a6f9410025b5eb4cf2c4e876692ff6b184f3084565256f424672872bc22d0
+  source_provenance_hash: eb906a84e2028126d65f607f83b3fc1590bbb439f5d271589ef0bc3b2f1c2a54
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: e9137a99c088bc560f9f6a2b7c597d2be7dd1a14
-artifact_sha256: c2a63a4cf7d4cfc0b571c601c99616b8c8458e5254a26445e7da40839002c059
+source_commit: 93540b4ff28ff163a3fa1116a37f2f91c64cbe2e
+artifact_sha256: 41d57d3b994f1b5ab8192c8f6bfb78ee43fb9ca28893f221f881d795aea55d38
 ---
 # Shipped skills catalog
 
@@ -28,7 +28,7 @@ Total shipped skills: 103
 | `ls-automatic-versioning` | `framework-governance` | 20 | `publishing` | `versioning`, `release` | `ls-automatic-versioning` | `1.1` | Use and maintain automatic versioning from conventional commits; VERSION as source of truth; sync to READMEs and docs. Use when working on version bumps, release workflow, or when the user asks about versioning or conventional commits. |
 | `ls-docs-organization` | `framework-governance` | 20 | `bootstrap`, `dev` | `docs`, `organization` | `ls-docs-organization` | `0.1.0` | Use when creating, moving, renaming, or significantly updating repo docs; classifies documentation requests, proposes paths, and keeps indexes in sync. |
 | `ls-documentation-alignment` | `framework-governance` | 20 | `dev`, `publishing` | `docs`, `alignment` | `ls-documentation-alignment` | `1.0` | Run automated repo documentation alignment: discover source truth, audit public/internal docs, refresh generated artifacts, coordinate subagent research, and verify docs in one pass. |
-| `ls-framework-audit` | `framework-governance` | 20 | `dev` | `audit`, `release` | `ls-framework-audit` | `1.0` | Run doc, link, skill matrix, and version/facts checks before release. Single entrypoint script; output to user-specified path only; no in-repo default. Use when user says 'run audit', 'run framework audit', or before release. |
+| `ls-framework-audit` | `framework-governance` | 20 | `bootstrap`, `dev` | `audit`, `release` | `ls-framework-audit` | `1.0` | Run doc, link, skill matrix, and version/facts checks before release. Single entrypoint script; output to user-specified path only; no in-repo default. Use when user says 'run audit', 'run framework audit', or before release. |
 | `ls-framework-compliance` | `framework-governance` | 20 | `bootstrap`, `dev` | `compliance`, `framework` | `ls-framework-compliance` | `1.2` | Pre-task workflow, certainty assessment, context load, document status, testing, Git checkpoints, document maintenance. Use for framework modifications, PRDs, or any task that must follow checklist and checkpoints. |
 | `ls-git-workflows` | `framework-governance` | 20 | `bootstrap`, `dev` | `git`, `workflows` | `ls-git-workflows` | `1.3` | Advanced git operations beyond add/commit/push. Use when rebasing, bisecting bugs, using worktrees for parallel development, recovering with reflog, managing subtrees/submodules, resolving merge conflicts, cherry-picking across branches, or working with monorepos. |
 | `ls-github-publishing-workflow` | `framework-governance` | 20 | `publishing` | `github`, `publishing` | `ls-github-publishing-workflow` | `1.1` | Use when publishing to GitHub, preparing a public release, or reviewing repo readiness. Covers public-doc structure, licensing, PII/secrets/path scrub, version checks, and repository settings. |

@@ -230,6 +230,8 @@ def test_catalog_validation_and_pack_selection() -> None:
     assert "ls-system-info" in selected_skill_names(root, ["ops"])
     assert "ls-context-index" in selected_skill_names(root, ["dev"])
     assert "ls-context-index" in selected_skill_names(root, ["harness"])
+    assert "ls-framework-audit" in selected_skill_names(root, ["bootstrap"])
+    assert "ls-framework-audit" in selected_skill_names(root, ["dev"])
     assert not (root / "ls/workflows/ls-workflow-context-index-query").exists()
     assert not (root / "ls/workflows/ls-workflow-context-index-refresh").exists()
     assert "ls-workflow-context-index-query" not in selected_workflow_names(root, ["dev"])
@@ -246,6 +248,16 @@ def test_catalog_validation_and_pack_selection() -> None:
         "context-index-refresh",
         "context refresh",
         "refresh context index",
+    ):
+        with pytest.raises(ValueError, match="unknown workflow selector"):
+            resolve_package_selection(root, workflows=[selector])
+    assert not (root / "ls/workflows/ls-workflow-audit-framework").exists()
+    assert "ls-workflow-audit-framework" not in selected_workflow_names(root, ["bootstrap", "dev"])
+    for selector in (
+        "ls-workflow-audit-framework",
+        "audit-framework",
+        "run audit",
+        "framework audit",
     ):
         with pytest.raises(ValueError, match="unknown workflow selector"):
             resolve_package_selection(root, workflows=[selector])

@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: d13a6f9410025b5eb4cf2c4e876692ff6b184f3084565256f424672872bc22d0
+  source_provenance_hash: eb906a84e2028126d65f607f83b3fc1590bbb439f5d271589ef0bc3b2f1c2a54
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: e9137a99c088bc560f9f6a2b7c597d2be7dd1a14
-artifact_sha256: 94cc8fe3e4bfc15f7f0a5f80d50950a3e6f989c9c88f8a1c1c9b7a75a0b05222
+source_commit: 93540b4ff28ff163a3fa1116a37f2f91c64cbe2e
+artifact_sha256: 90dc4fa7152e17e8a50dc0a5c2c3c7137cd96e271d883875f42136696f239635
 ---
 # Skill And Workflow Packs
 
@@ -21,7 +21,7 @@ artifact_sha256: 94cc8fe3e4bfc15f7f0a5f80d50950a3e6f989c9c88f8a1c1c9b7a75a0b0522
 | `publishing` | `skill` | `ls-automatic-versioning` | `framework-governance` | 20 | `versioning, release` | `localsetup-automatic-versioning` |
 | `bootstrap, dev` | `skill` | `ls-docs-organization` | `framework-governance` | 20 | `docs, organization` | `localsetup-docs-organization` |
 | `dev, publishing` | `skill` | `ls-documentation-alignment` | `framework-governance` | 20 | `docs, alignment` | `localsetup-documentation-alignment` |
-| `dev` | `skill` | `ls-framework-audit` | `framework-governance` | 20 | `audit, release` | `localsetup-framework-audit` |
+| `bootstrap, dev` | `skill` | `ls-framework-audit` | `framework-governance` | 20 | `audit, release` | `localsetup-framework-audit` |
 | `bootstrap, dev` | `skill` | `ls-framework-compliance` | `framework-governance` | 20 | `compliance, framework` | `localsetup-framework-compliance` |
 | `bootstrap, dev` | `skill` | `ls-git-workflows` | `framework-governance` | 20 | `git, workflows` | `localsetup-git-workflows` |
 | `publishing` | `skill` | `ls-github-publishing-workflow` | `framework-governance` | 20 | `github, publishing` | `localsetup-github-publishing-workflow` |
@@ -114,7 +114,6 @@ artifact_sha256: 94cc8fe3e4bfc15f7f0a5f80d50950a3e6f989c9c88f8a1c1c9b7a75a0b0522
 | `growth-content, specialized` | `skill` | `ls-humanizer` | `specialized` | 70 | `writing, editing` | `localsetup-humanizer` |
 | `specialized` | `skill` | `ls-kilo-boss-orchestrator` | `specialized` | 70 | `kilo, orchestration` | `localsetup-kilo-boss-orchestrator` |
 | `specialized` | `skill` | `ls-kilo-visual-output` | `specialized` | 70 | `kilo, output` | `localsetup-kilo-visual-output` |
-| `bootstrap, dev` | `workflow` | `ls-workflow-audit-framework` | n/a | n/a | n/a | `n/a` |
 | `dev` | `workflow` | `ls-workflow-audit-markdown-references` | n/a | n/a | n/a | `n/a` |
 | `dev, publishing` | `workflow` | `ls-workflow-codex-github-issue-goal-loop` | n/a | n/a | n/a | `n/a` |
 | `harness` | `workflow` | `ls-workflow-codex-heartbeat` | n/a | n/a | n/a | `n/a` |

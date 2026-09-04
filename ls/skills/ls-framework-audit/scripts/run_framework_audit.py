@@ -16,7 +16,9 @@ import re
 import shlex
 import subprocess
 import sys
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Literal
 
 # Limits and patterns (INPUT_HARDENING)
 OUTPUT_PATH_MAX = 4096
@@ -40,6 +42,20 @@ PRIVATE_RUNTIME_PREFIXES = (
     ("state",),
     ("data",),
 )
+
+
+@dataclass(frozen=True)
+class FactsVersionRead:
+    state: Literal["absent", "valid", "invalid"]
+    version: str | None = None
+    error: str | None = None
+
+
+@dataclass(frozen=True)
+class RootValidation:
+    target_valid: bool
+    framework_valid: bool
+    errors: tuple[str, ...]
 
 
 def _script_dir() -> Path:
@@ -249,21 +265,53 @@ def _read_readme_version(root: Path) -> str | None:
         return None
 
 
-def _read_facts_version(root: Path) -> str | None:
+def _read_facts_version(root: Path) -> FactsVersionRead:
     facts = root / "ls" / "docs" / "_generated" / "facts.json"
-    if not facts.is_file():
-        return None
+    try:
+        facts_stat = facts.stat()
+    except FileNotFoundError:
+        return FactsVersionRead("absent")
+    except OSError as exc:
+        return FactsVersionRead("invalid", error=f"could not stat: {type(exc).__name__}: {exc}")
+    if not facts_stat.st_mode or not facts.is_file():
+        return FactsVersionRead("invalid", error="path exists but is not a regular file")
     try:
         text = facts.read_text(encoding="utf-8", errors="replace")
         payload = json.loads(text)
-        if isinstance(payload, dict):
-            version = payload.get("version")
-            return version.strip() if isinstance(version, str) and version.strip() else None
-    except OSError:
-        pass
-    except json.JSONDecodeError:
-        return None
-    return None
+    except OSError as exc:
+        return FactsVersionRead("invalid", error=f"could not read: {type(exc).__name__}: {exc}")
+    except json.JSONDecodeError as exc:
+        return FactsVersionRead(
+            "invalid",
+            error=f"malformed JSON at line {exc.lineno}, column {exc.colno}",
+        )
+    if not isinstance(payload, dict):
+        return FactsVersionRead("invalid", error="top level must be a JSON object")
+    version = payload.get("version")
+    if not isinstance(version, str) or not version.strip():
+        return FactsVersionRead("invalid", error="top-level version must be a non-empty string")
+    return FactsVersionRead("valid", version=version.strip())
+
+
+def validate_audit_roots(root: Path, fw: Path) -> RootValidation:
+    errors: list[str] = []
+    target_valid = root.is_dir()
+    if not target_valid:
+        errors.append(f"Target repository root missing or not a directory: {root}")
+    framework_valid = fw.is_dir()
+    if not framework_valid:
+        errors.append(f"Framework root missing or not a directory: {fw}")
+    else:
+        for directory in ("lib", "docs", "skills", "tests"):
+            path = fw / directory
+            if not path.is_dir():
+                errors.append(f"Framework root missing required directory: {path}")
+                framework_valid = False
+        deps = fw / "lib" / "deps.py"
+        if not deps.is_file():
+            errors.append(f"Framework root missing required file: {deps}")
+            framework_valid = False
+    return RootValidation(target_valid, framework_valid, tuple(errors))
 
 
 def phase_doc_checks(root: Path, fw: Path) -> list[str]:
@@ -287,8 +335,8 @@ def phase_doc_checks(root: Path, fw: Path) -> list[str]:
     return errors
 
 
-def phase_link_checks(root: Path) -> list[tuple[str, int, str]]:
-    """Return list of (file, line_no, snippet) for plain 'see docs/...' or 'See ls/...'."""
+def phase_link_checks(root: Path) -> tuple[list[str], list[str]]:
+    """Return local Markdown link errors and plain-reference warnings."""
     from audit_links import phase_link_checks as _phase_link_checks
 
     return _phase_link_checks(root)
@@ -312,7 +360,7 @@ def phase_version_facts(root: Path) -> tuple[list[str], list[str]]:
     warnings: list[str] = []
     v = _read_version_file(root)
     rv = _read_readme_version(root)
-    fv = _read_facts_version(root)
+    facts_result = _read_facts_version(root)
     if not v:
         errors.append("VERSION file missing or unreadable")
     if not rv:
@@ -321,9 +369,11 @@ def phase_version_facts(root: Path) -> tuple[list[str], list[str]]:
         )
     if v and rv and v != rv:
         errors.append(f"VERSION ({v}) != README version ({rv})")
-    if v and fv and v != fv:
-        errors.append(f"VERSION ({v}) != facts.json version ({fv})")
-    if not (root / "ls" / "docs" / "_generated" / "facts.json").is_file():
+    if facts_result.state == "valid" and v and v != facts_result.version:
+        errors.append(f"VERSION ({v}) != facts.json version ({facts_result.version})")
+    elif facts_result.state == "invalid":
+        errors.append(f"facts.json invalid: {facts_result.error}")
+    elif facts_result.state == "absent":
         warnings.append("facts.json missing; version/facts comparison partial")
     return (errors, warnings)
 
@@ -373,29 +423,33 @@ def main() -> int:
     except ValueError as e:
         print(f"run_framework_audit: {e}", file=sys.stderr)
         return 2
-    all_errors: list[str] = []
+    root_validation = validate_audit_roots(root, fw)
+    all_errors: list[str] = list(root_validation.errors)
     all_warnings: list[str] = []
-    link_findings: list[tuple[str, int, str]] = []
     maintainer_findings: list[str] = []
 
     # Phase 1: doc checks
-    all_errors.extend(phase_doc_checks(root, fw))
+    if root_validation.target_valid and root_validation.framework_valid:
+        all_errors.extend(phase_doc_checks(root, fw))
     # Phase 2: link checks
-    link_findings = phase_link_checks(root)
-    for f, ln, snip in link_findings:
-        all_warnings.append(f"Plain link candidate {f}:{ln}: {snip}")
+    if root_validation.target_valid:
+        link_errors, link_warnings = phase_link_checks(root)
+        all_errors.extend(link_errors)
+        all_warnings.extend(link_warnings)
     # Phase 3: skill matrix
-    em, wm = phase_skill_matrix(root, fw)
-    all_errors.extend(em)
-    all_warnings.extend(wm)
+    if root_validation.target_valid and root_validation.framework_valid:
+        em, wm = phase_skill_matrix(root, fw)
+        all_errors.extend(em)
+        all_warnings.extend(wm)
     # Phase 4: version/facts
-    ev, wv = phase_version_facts(root)
-    all_errors.extend(ev)
-    all_warnings.extend(wv)
+    if root_validation.target_valid:
+        ev, wv = phase_version_facts(root)
+        all_errors.extend(ev)
+        all_warnings.extend(wv)
     # Phase 5: maintainer refs
-    maintainer_findings = phase_maintainer_refs(root)
-    if maintainer_findings:
-        all_warnings.extend([f"Maintainer ref: {x}" for x in maintainer_findings[:20]])
+    if root_validation.target_valid:
+        maintainer_findings = phase_maintainer_refs(root)
+        all_warnings.extend([f"Maintainer ref: {x}" for x in maintainer_findings])
 
     # Report
     report_lines: list[str] = []
