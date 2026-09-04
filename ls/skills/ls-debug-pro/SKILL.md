@@ -77,7 +77,9 @@ lldb ./MyApp
 ```bash
 # HTTP debugging
 curl -v https://api.example.com/endpoint
-curl -w "@curl-format.txt" -o /dev/null -s https://example.com
+curl --silent --show-error --output /dev/null \
+  --write-out 'status=%{http_code} dns=%{time_namelookup}s connect=%{time_connect}s tls=%{time_appconnect}s first_byte=%{time_starttransfer}s total=%{time_total}s\n' \
+  https://example.com
 
 # DNS
 dig example.com

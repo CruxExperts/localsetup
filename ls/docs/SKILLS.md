@@ -4,10 +4,10 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: d1b6b2796d284339757c850aa0aa22fc76b7d2ee4e1c957cf260ba7c44b412d8
+  source_provenance_hash: b369c654bee07bfe36e9732518eb172d870b72d1666d7a95cc781a0a9154a144
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 33cf0d05975bb53619b013c9eda9cd7bd7488ab4
+source_commit: acc72788115dbd69d7f94636bf6562372bf2d8fd
 artifact_sha256: c2a63a4cf7d4cfc0b571c601c99616b8c8458e5254a26445e7da40839002c059
 ---
 # Shipped skills catalog
