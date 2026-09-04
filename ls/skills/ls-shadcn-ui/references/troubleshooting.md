@@ -17,7 +17,7 @@ Start with project state, then reproduce with the smallest shadcn CLI command.
 
 ## Debug Order
 
-1. `info`; use `info --json` only when current `shadcn info --help` confirms it
+1. `info --json`; fall back to text `info` if the pinned/local CLI predates it
 2. `docs <component> --json` when available
 3. `view <component or item>`
 4. `add --dry-run <item>`

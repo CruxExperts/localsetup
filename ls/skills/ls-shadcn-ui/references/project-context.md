@@ -7,8 +7,8 @@ Start every task by building a local project picture.
 - Locate `package.json`, lockfiles, workspace files, framework config, Tailwind
   config or CSS entry, and the nearest `components.json`.
 - Read `packageManager`; use lockfiles only when `packageManager` is missing.
-- Run `<runner> shadcn@latest info` from the project root. Use top-level
-  `info --json` only when current `shadcn info --help` confirms it.
+- Run `<runner> shadcn@latest info --json` from the project root for structured
+  project context; fall back to text output if the pinned/local CLI predates it.
 - For monorepos, find all `components.json` files and map each file to the
   package where generated UI code lives.
 

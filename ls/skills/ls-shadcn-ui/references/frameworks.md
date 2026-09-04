@@ -16,7 +16,7 @@ Use official installation pages and live CLI help before choosing a setup path.
 
 ## Setup Controls
 
-Current setup controls include `--monorepo`, `--base radix|base`, `--rtl`,
+Current setup controls include `--monorepo`, `--base base|radix|aria`, `--rtl`,
 `--pointer`, `--css-variables`, and `--preset`. Verify exact spelling with
 `init --help` because this surface changes.
 

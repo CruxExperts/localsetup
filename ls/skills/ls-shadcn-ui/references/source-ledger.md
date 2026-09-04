@@ -1,12 +1,13 @@
 # Source Ledger
 
-Volatile facts were last verified on 2026-07-05 UTC from the official shadcn/ui
+Volatile facts were last verified on 2026-09-04 UTC from the official shadcn/ui
 site, changelog, npm registry metadata, and published schemas. The verifier
 checks package structure, source reachability, and npm latest metadata; it does
-not parse every current documentation claim below. Re-run
-`python3 scripts/verify_shadcn_sources.py --refresh --json` and manually review
-the cited official sources before release work or before relying on
-syntax-sensitive current facts.
+not parse every current documentation claim below. From the Localsetup
+repository root, re-run
+`python3 ls/skills/ls-shadcn-ui/scripts/verify_shadcn_sources.py --refresh --json`
+and manually review the cited official sources before release work or before
+relying on syntax-sensitive current facts.
 
 ## Primary Sources
 
@@ -28,6 +29,7 @@ syntax-sensitive current facts.
 - Registry schema: <https://ui.shadcn.com/schema/registry.json>
 - Registry item schema: <https://ui.shadcn.com/schema/registry-item.json>
 - GitHub repository: <https://github.com/shadcn-ui/ui>
+- Verified package snapshot: <https://raw.githubusercontent.com/shadcn-ui/ui/7c9eaba1c0a6404c990c144a654792e3313c650d/packages/shadcn/package.json>
 - Official upstream skill: <https://github.com/shadcn-ui/ui/tree/main/skills/shadcn>
 - GitHub releases: <https://github.com/shadcn-ui/ui/releases>
 - Changelog: <https://ui.shadcn.com/docs/changelog>
@@ -35,24 +37,24 @@ syntax-sensitive current facts.
 
 ## Verified Snapshot
 
-- Latest npm package observed: `shadcn@4.13.0`. Official docs use
+- Latest npm package observed: `shadcn@4.21.0`, published
+  `2026-09-04T05:34:07.022Z`. Official docs use
   `shadcn@latest`; the current package is `shadcn`, not the older `shadcn-ui`
-  package name.
+  package name. Because this release was published on the observation date,
+  recheck npm metadata immediately before relying on it as the current version.
 - Official docs/changelog around this version mention package imports, registry
   target alias placeholders, previous-version error suggestions, presets,
   pointer cursor setup, partial preset apply, RTL, Radix migration, and Sera.
 - Official docs/changelog list commands including `init`/`create`, `apply`,
   `add`, deprecated `diff`, `docs`, `view`, `search`/`list`, `migrate`,
-  `info`, `build`, `mcp init`, `preset decode|resolve|info|url|open`, and
-  `registry add`.
-- Official docs/changelog confirm top-level `shadcn info`, but not top-level
-  `info --json`. JSON is documented for preset commands such as
-  `preset resolve` and `preset info`; use top-level `info --json` only if
-  current `shadcn info --help` confirms it.
+  `info`, `eject`, `build`, `mcp init`, `preset decode|resolve|info|url|open`,
+  and `registry add`.
+- Official docs confirm top-level `shadcn info --json`. JSON is also documented
+  for commands including `docs`, `preset resolve`, and `preset info`.
 - `docs`, `view`, `add --dry-run`, `add --diff`, and `add --view` remain
   current.
-- Template targets observed for `init -t`: Next.js, TanStack Start, Vite,
-  React Router, Laravel, and Astro.
+- Template targets observed for `init -t`: Next.js, Vite, TanStack Start,
+  React Router, Laravel, and Astro. Base choices are `base`, `radix`, and `aria`.
 
 ## Known Conflicts
 
@@ -63,9 +65,12 @@ syntax-sensitive current facts.
   or `base-nova`, and `info` output.
 - The current `components.json` schema supports `iconLibrary`, `rtl`, and
   `registries`.
-- Base UI is the default for new projects as of July 2026, while Radix remains
-  supported with `-b radix`, `--base radix`, or the equivalent flag confirmed by
-  current help.
+- Base UI is the default and recommended choice for new projects as of July
+  2026. Radix remains supported with `-b radix` or `--base radix`, and React
+  Aria is supported with `--base aria`.
+- Rendered documentation and current source disagree on the exact preset token
+  implied by `--defaults`; verify that syntax with current help rather than
+  encoding either value here.
 - Live CLI help should win over stale rendered docs when syntax differs.
 
 ## Official Component Pages Checked
