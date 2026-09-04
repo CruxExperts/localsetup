@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: f1c0c3b66c0b244eb3413d5e244c72ce2829d0b74b23432bc8bb48d335c65430
+  source_provenance_hash: ebe76ca575143394fa096433d45b4146274dd804a3b790888ef7ae71bf391c1f
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 9d0e794128e0b02b4829ea21842b9912e61b3369
-artifact_sha256: 41d57d3b994f1b5ab8192c8f6bfb78ee43fb9ca28893f221f881d795aea55d38
+source_commit: 491cfba1de3ee9ffda34b2a24c54155cd775a60f
+artifact_sha256: aae608a8b8256d208e2d4692f5c46482fc8364d90a99567b98696ca4747c9357
 ---
 # Shipped skills catalog
 
@@ -92,7 +92,7 @@ Total shipped skills: 103
 | `ls-remotion-best-practices` | `development` | 60 | `dev`, `frontend` | `workflow`, `guidance` | `ls-remotion-best-practices` | `1.0` | Guide Remotion projects and video-rendering best practices. Use for Remotion compositions, rendering, media assets, performance, and deploy workflows. |
 | `ls-resend` | `integrations` | 60 | `integrations` | `external-service`, `integration` | `ls-resend` | `1.0` | Guide Resend API integration. Use for sending, domains, contacts, broadcasts, webhooks, logs, templates, and API-key handling. |
 | `ls-sentry-error-handling` | `integrations` | 60 | `integrations` | `external-service`, `integration` | `ls-sentry-error-handling` | `1.0` | Guide Sentry error handling and observability work. Use for SDK setup, issue triage, instrumentation, alerts, releases, and privacy review. |
-| `ls-seo-geo-claude-skills` | `skill-lifecycle` | 60 | `growth-content`, `skill-lifecycle` | `skills`, `inventory` | `ls-seo-geo-claude-skills` | `1.0` | Inventory wrapper for SEO/GEO Claude skills. Use when evaluating search, generative-engine optimization, schema, content, backlink, and rank workflows. |
+| `ls-seo-geo-claude-skills` | `skill-lifecycle` | 60 | `growth-content`, `skill-lifecycle` | `skills`, `inventory` | `ls-seo-geo-claude-skills` | `1.0` | Provenance inventory for pinned upstream SEO/GEO Claude skills covering search, generative-engine optimization, schema, content, backlink, and rank categories. Use to inspect recorded paths and hashes or plan one candidate's future gated import; this wrapper does not evaluate or execute those workflows. |
 | `ls-shopify-storefront` | `integrations` | 60 | `integrations` | `external-service`, `integration` | `ls-shopify-storefront` | `1.0` | Guide Shopify Storefront API and Hydrogen storefront work. Use for Storefront GraphQL, product data, carts, checkout, and theme/headless integration. |
 | `ls-skill-creator` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `authoring` | `ls-skill-creator` | `1.3` | Use when creating a new Agent Skills-compliant skill, adapting a document into a skill, importing an existing skill for Localsetup, or exporting framework skills to other spec-compliant hosts. |
 | `ls-skill-discovery` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `discovery` | `ls-skill-discovery` | `1.4` | Discover and recommend public skills from external registries (e.g. awesome lists, skill hubs). Use when the user is creating a new skill, importing a skill, or asking to find similar public skills. Maintains PUBLIC_SKILL_REGISTRY.urls and PUBLIC_SKILL_INDEX.yaml; returns top 5 similar matches with rich summaries and clear next actions. |
