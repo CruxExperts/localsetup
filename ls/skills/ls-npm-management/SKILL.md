@@ -216,7 +216,7 @@ Restore: NPM does not expose a REST restore endpoint. Re-import from backup by r
 - For multi-item destructive operations: numbered list, user selection by number, echo-back, named confirmation phrase.
 - If `npm_api.py` exits non-zero, the STDERR message is actionable; surface it to the user verbatim.
 - If the API token is stale, `npm_api.py` auto-refreshes. If that fails, the error message will specify which config field to check (NGINX_IP, NGINX_PORT, API_USER, or API_PASS).
-- Set `LOCALSETUP_DEBUG=1` before the command for full HTTP trace output when diagnosing connectivity issues.
+- Set `LOCALSETUP_DEBUG=1` before starting the command to add diagnostic events to STDERR: HTTP method and API URL, token refresh/cache timing, and backup item counts. These debug-added lines do not intentionally include request or response headers, request or response bodies, passwords, or bearer-token values. They can disclose private API endpoints and exception context, so review and sanitize them before sharing.
 - Warn if a container is not found on `<NPM_NETWORK>` when creating a proxy host.
 
 ## Placeholders reference

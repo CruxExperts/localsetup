@@ -18,7 +18,7 @@ or the path set via NPM_CONF environment variable.
 
 Environment variables:
     NPM_CONF          Path to config file (default: <script_dir>/npm-api.conf)
-    LOCALSETUP_DEBUG  Set to 1 for verbose HTTP tracing
+    LOCALSETUP_DEBUG  Set to 1 before startup for redacted diagnostic events
 """
 
 from __future__ import annotations
