@@ -1,6 +1,6 @@
 # TypeScript Quality Standards Snapshot
 
-Source snapshot checked: 2026-06-23.
+Source snapshot checked: 2026-09-04.
 
 This reference is a dated starting point for agents. Always verify official
 project docs before changing version-sensitive TypeScript, Node, framework,
@@ -8,10 +8,12 @@ lint, or build configuration.
 
 ## Current Version Signals
 
-- TypeScript latest on npm: `6.0.3`, verified with
-  `npm view typescript version dist-tags --json` on 2026-06-23. The official
-  TypeScript 6.0 announcement was published on 2026-03-23 and says TypeScript
-  6.0 is a bridge release toward the new Go-based TypeScript 7 line.
+- TypeScript latest on npm: `7.0.2`, observed from official registry metadata on
+  2026-09-04. TypeScript 7 final was announced on 2026-07-08 as the Go-based
+  native port. Version 7.0 does not expose a programmatic compiler API, so tools
+  that embed that API, including typescript-eslint and specialized framework or
+  template tooling, may still require TypeScript 6 side-by-side. An exact npm
+  patch version is volatile; recheck it before version-sensitive work.
 - Do not upgrade framework-pinned projects blindly. Angular, Next.js, Vite, and
   other framework toolchains may support only a bounded TypeScript or Node range.
 - Node release guidance: production applications should use Active LTS or
@@ -29,9 +31,11 @@ TypeScript compilation.
 - Node performs no type checking.
 - Node ignores `tsconfig.json` at runtime.
 - `.tsx` files are unsupported.
-- TypeScript syntax that requires code generation will error, including runtime
-  `enum`, runtime `namespace`, parameter properties, import aliases, and
-  decorators before JavaScript has native support for them.
+- Under current Node native support, TypeScript syntax that requires code
+  generation will error, including runtime `enum`, runtime `namespace`,
+  parameter properties, import aliases, and decorators before JavaScript has
+  native support for them. Node 26 removed the former optional transform-types
+  flag.
 - Type-only imports need the `type` keyword so Node does not treat them as value
   imports.
 - Node refuses to run TypeScript files from dependencies under `node_modules`.
@@ -69,22 +73,24 @@ it costs more because TypeScript has to analyze the project.
 - typescript-eslint currently declares ESLint support as
   `^8.57.0 || ^9.0.0 || ^10.0.0`, Node support as
   `^18.18.0 || ^20.9.0 || >=21.1.0`, and TypeScript support as
-  `>=4.8.4 <6.1.0`. Verify the dependency-versions page before changing
-  dependencies.
+  `>=4.8.4 <6.1.0`. This excludes the current TypeScript 7.0.2 release; latest
+  compiler and supported typed-lint compiler are not interchangeable. Verify
+  the dependency-versions page before changing dependencies.
 
 ## Framework Compatibility Examples
 
 These examples are deliberately narrow. They show why agents must inspect the
 project's pinned framework version before changing TypeScript or Node versions.
 
-- Next.js installation docs list minimum Node.js `20.9` and minimum TypeScript
-  `5.1.0`. Treat those as framework minimums, not a reason to target an older
-  Node line when the latest LTS works.
+- Current Next.js 16.3.4 installation docs list minimum Node.js `20.9` and
+  minimum TypeScript `5.1.0`. Treat those as framework minimums, not a reason to
+  target Node 20, which is EOL, when a supported LTS works.
 - Vite guide docs list Node.js `20.19+` or `22.12+`. The Vite 8 announcement
   says Vite 8 keeps the same Node requirements as Vite 7.
 - Angular compatibility docs for Angular `22.0.x` list Node
   `^22.22.3 || ^24.15.0 || ^26.0.0` and TypeScript `>=6.0.0 <6.1.0`;
-  Angular `21.x` remains on TypeScript `>=5.9.0 <6.0.0`.
+  Angular `21.x` remains on TypeScript `>=5.9.0 <6.0.0`. Neither range implies
+  support for TypeScript 7.
 
 ## Practical Defaults
 
@@ -99,10 +105,10 @@ project's pinned framework version before changing TypeScript or Node versions.
 
 ## Source URLs
 
-- TypeScript 6.0 announcement:
-  https://devblogs.microsoft.com/typescript/announcing-typescript-6-0/
-- npm TypeScript package:
-  https://www.npmjs.com/package/typescript
+- TypeScript 7.0 announcement:
+  https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/
+- npm TypeScript registry metadata:
+  https://registry.npmjs.org/typescript/latest
 - Node release schedule:
   https://github.com/nodejs/Release
 - Node releases page:
