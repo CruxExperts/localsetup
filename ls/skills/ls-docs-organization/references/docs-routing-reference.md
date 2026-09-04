@@ -16,7 +16,7 @@ Optional fields:
 - `tags`: list of component, domain, feature, or workflow tags.
 - `allow_nonstandard_docs`: boolean override flag, default false.
 
-Example:
+Default-root example (`<root>` resolves to `docs`):
 
 ```yaml
 intent: "Document how to rotate API keys for the payments service"
@@ -58,13 +58,13 @@ index_entry:
 warnings: []
 ```
 
-Warnings should include `nonstandard_location` when the selected path differs from the recommended placement.
+When a selected path differs from the recommended placement, a permitted override should include a `nonstandard_location` warning. A denied override returns the warning and recommendation without creating a document or index entry.
 
 ## Category Manifest
 
 Optional repo-local manifest:
 
-- Path: `docs/.docs-classifications.yaml`
+- Path: `<root>/.docs-classifications.yaml`
 - Purpose: record known documentation categories and their folder slugs.
 
 Each entry should include:
@@ -104,9 +104,13 @@ required_front_matter_fields:
   - "last_updated"
   - "doc_type"
   - "tags"
+exclude_globs:
+  - "_generated/**"
 ```
 
-When config exists, use it before heuristics and before the category manifest.
+`docs.config.yaml` remains at repository root. Load it first, resolve `root` as a normalized repo-relative `<root>` (default `docs`), strip trailing separators, and reject absolute paths or `..` escapes. Then derive `<root>/index.yaml`, `<root>/INDEX.md`, and `<root>/.docs-classifications.yaml`; apply config categories, aliases, required fields, and exclusions; load the category manifest for unresolved values; and use heuristics last.
+
+Changing the root changes all three active metadata paths. Do not retain `docs/index.yaml` as a second active index or silently move or merge legacy state. Report split state for an explicit consolidation decision. Exclusions apply before proposing or accepting a path, and `allow_nonstandard_docs` does not bypass them.
 
 ## Slug Examples
 
@@ -122,7 +126,7 @@ Strong update candidates:
 
 - Same `component_slug` and very similar title.
 - Same `category_label` and overlapping tags where the topic is clearly the same.
-- Existing `docs/index.yaml` entry whose path and title match the requested work.
+- Existing `<root>/index.yaml` entry whose path and title match the requested work.
 
 Weak candidates:
 
@@ -149,7 +153,7 @@ Use lifecycle values from the repo's documentation lifecycle guidance when prese
 
 ## Human Index Shape
 
-`docs/INDEX.md` should be derived from `docs/index.yaml`. A typical category section is:
+`<root>/INDEX.md` should be derived from `<root>/index.yaml`. Links inside the human index are relative to `<root>`. A typical category section is:
 
 ```markdown
 ## Runbooks
@@ -161,11 +165,11 @@ Choose one ordering rule within each category, usually alphabetical by title or 
 
 ## Validation Scenarios
 
-New repo:
+New repo using the default root:
 
 - Start with no `docs/` directory.
 - Create one architecture doc, one runbook, and one how-to.
-- Verify docs folders, `docs/index.yaml`, and `docs/INDEX.md` are created and aligned.
+- Verify docs folders, `<root>/index.yaml`, and `<root>/INDEX.md` are created and aligned.
 
 Messy existing repo:
 
@@ -178,7 +182,18 @@ Move and rename:
 - Move a managed doc from one folder to another.
 - Verify the path changes, the stable `id` stays the same, and both indexes update.
 
-Override:
+Custom root:
+
+- Set repo-root `docs.config.yaml` to `root: "project-docs/"`.
+- Verify the normalized root is `project-docs`, recommended documents live below it, and the active metadata files are `project-docs/index.yaml`, `project-docs/INDEX.md`, and `project-docs/.docs-classifications.yaml`.
+- Verify `docs/index.yaml` is not treated as a fallback active index; report existing split state instead of silently consolidating it.
+
+Nonstandard placement denied:
+
+- Request a path that differs from the recommendation with `allow_nonstandard_docs: false` or omit the flag.
+- Verify the result returns requested and recommended paths, a warning, and a confirmation-needed state without creating, moving, or indexing a document.
+
+Nonstandard placement approved:
 
 - Intentionally write a doc outside the recommended location with `allow_nonstandard_docs: true`.
-- Verify the warning is present and the index entry sets `nonstandard_location: true`.
+- Verify containment, exclusions, ownership, and generated/private boundaries still pass; the warning is present; and the single `<root>/index.yaml` entry records the actual repo-relative path with `nonstandard_location: true`.
