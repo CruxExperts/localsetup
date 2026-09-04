@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 60fb67c66ad176078844f11f082c825586701543231383324fd4580828687b6b
+  source_provenance_hash: d1b6b2796d284339757c850aa0aa22fc76b7d2ee4e1c957cf260ba7c44b412d8
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 8b89d2625ae4ea66dd4e7930142f870ec69f9964
-artifact_sha256: bfd814e4e6f3cfb7701b3cec23e5fbd0f1f4014d589f0c46cbc7571c9288d2f5
+source_commit: 33cf0d05975bb53619b013c9eda9cd7bd7488ab4
+artifact_sha256: d1d19b31d3d5851b2575a0a05a2faa61c57d104534b9dd2a92e51275da0409b5
 ---
 # Implementation File Map
 
@@ -1038,10 +1038,6 @@ artifact_sha256: bfd814e4e6f3cfb7701b3cec23e5fbd0f1f4014d589f0c46cbc7571c9288d2f
 | `keep` | `ls/workflows/ls-workflow-codex-github-issue-goal-loop/workflow.yaml` |
 | `keep` | `ls/workflows/ls-workflow-codex-heartbeat/SKILL.md` |
 | `keep` | `ls/workflows/ls-workflow-codex-heartbeat/workflow.yaml` |
-| `keep` | `ls/workflows/ls-workflow-context-index-query/SKILL.md` |
-| `keep` | `ls/workflows/ls-workflow-context-index-query/workflow.yaml` |
-| `keep` | `ls/workflows/ls-workflow-context-index-refresh/SKILL.md` |
-| `keep` | `ls/workflows/ls-workflow-context-index-refresh/workflow.yaml` |
 | `keep` | `ls/workflows/ls-workflow-documentation-alignment/SKILL.md` |
 | `keep` | `ls/workflows/ls-workflow-documentation-alignment/workflow.yaml` |
 | `keep` | `ls/workflows/ls-workflow-ops-guarded/SKILL.md` |

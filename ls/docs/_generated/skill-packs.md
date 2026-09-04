@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 60fb67c66ad176078844f11f082c825586701543231383324fd4580828687b6b
+  source_provenance_hash: d1b6b2796d284339757c850aa0aa22fc76b7d2ee4e1c957cf260ba7c44b412d8
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 8b89d2625ae4ea66dd4e7930142f870ec69f9964
-artifact_sha256: 109beaae302c4ca8a26ac36c6a6f017889b5ffa84cf3eb0cb6a4749fae98c30d
+source_commit: 33cf0d05975bb53619b013c9eda9cd7bd7488ab4
+artifact_sha256: 94cc8fe3e4bfc15f7f0a5f80d50950a3e6f989c9c88f8a1c1c9b7a75a0b05222
 ---
 # Skill And Workflow Packs
 
@@ -13,7 +13,7 @@ artifact_sha256: 109beaae302c4ca8a26ac36c6a6f017889b5ffa84cf3eb0cb6a4749fae98c30
 |---|---|---|---|---:|---|---|
 | `bootstrap, core` | `skill` | `ls-communication-and-tools` | `core` | 10 | `communication, tools` | `localsetup-communication-and-tools` |
 | `bootstrap, core` | `skill` | `ls-context` | `core` | 10 | `context, bootstrap` | `localsetup-context` |
-| `core, dev` | `skill` | `ls-context-index` | `core` | 10 | `context, index` | `localsetup-context-index` |
+| `core, dev, harness` | `skill` | `ls-context-index` | `core` | 10 | `context, index` | `localsetup-context-index` |
 | `bootstrap, core` | `skill` | `ls-safety-and-backup` | `core` | 10 | `safety, backup` | `localsetup-safety-and-backup` |
 | `bootstrap, core` | `skill` | `ls-script-and-docs-quality` | `core` | 10 | `scripts, docs` | `localsetup-script-and-docs-quality` |
 | `bootstrap, core` | `skill` | `ls-task-skill-matcher` | `core` | 10 | `routing, skills` | `localsetup-task-skill-matcher` |
@@ -118,8 +118,6 @@ artifact_sha256: 109beaae302c4ca8a26ac36c6a6f017889b5ffa84cf3eb0cb6a4749fae98c30
 | `dev` | `workflow` | `ls-workflow-audit-markdown-references` | n/a | n/a | n/a | `n/a` |
 | `dev, publishing` | `workflow` | `ls-workflow-codex-github-issue-goal-loop` | n/a | n/a | n/a | `n/a` |
 | `harness` | `workflow` | `ls-workflow-codex-heartbeat` | n/a | n/a | n/a | `n/a` |
-| `dev` | `workflow` | `ls-workflow-context-index-query` | n/a | n/a | n/a | `n/a` |
-| `dev, harness` | `workflow` | `ls-workflow-context-index-refresh` | n/a | n/a | n/a | `n/a` |
 | `dev, publishing` | `workflow` | `ls-workflow-documentation-alignment` | n/a | n/a | n/a | `n/a` |
 | `bootstrap, dev` | `workflow` | `ls-workflow-ops-guarded` | n/a | n/a | n/a | `n/a` |
 | `core, ops` | `workflow` | `ls-workflow-ops-tmux-session` | n/a | n/a | n/a | `n/a` |

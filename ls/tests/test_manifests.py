@@ -4,11 +4,13 @@ import subprocess
 import shutil
 from pathlib import Path
 
+import pytest
 import yaml
 
 from ls.core.baseline import classify_path
 from ls.core.baseline import tracked_files
 from ls.core.manifests import load_pack_config, load_platforms, validate_manifest_schemas
+from ls.core.selection import resolve_package_selection
 from ls.core.skills import ALLOWED_SKILL_TAXONOMY_CLASSES
 from ls.core.skills import load_skill_catalog
 from ls.core.skills import selected_skill_names
@@ -226,6 +228,27 @@ def test_catalog_validation_and_pack_selection() -> None:
     assert "ls-workflow-ops-tmux-session" in selected_workflow_names(root, ["ops"])
     assert "ls-workflow-tmux-terminal-mode" in selected_workflow_names(root, ["ops"])
     assert "ls-system-info" in selected_skill_names(root, ["ops"])
+    assert "ls-context-index" in selected_skill_names(root, ["dev"])
+    assert "ls-context-index" in selected_skill_names(root, ["harness"])
+    assert not (root / "ls/workflows/ls-workflow-context-index-query").exists()
+    assert not (root / "ls/workflows/ls-workflow-context-index-refresh").exists()
+    assert "ls-workflow-context-index-query" not in selected_workflow_names(root, ["dev"])
+    assert "ls-workflow-context-index-refresh" not in selected_workflow_names(root, ["dev", "harness"])
+    ledger = (root / "ls/skills/ls-context-index/docs/source-ledger.md").read_text(encoding="utf-8")
+    assert "ls-workflow-context-index-query" not in ledger
+    assert "ls-workflow-context-index-refresh" not in ledger
+    for selector in (
+        "ls-workflow-context-index-query",
+        "context-index-query",
+        "query context index",
+        "context search",
+        "ls-workflow-context-index-refresh",
+        "context-index-refresh",
+        "context refresh",
+        "refresh context index",
+    ):
+        with pytest.raises(ValueError, match="unknown workflow selector"):
+            resolve_package_selection(root, workflows=[selector])
 
 
 def test_skill_taxonomy_covers_all_shipped_skills_and_allowed_classes() -> None:

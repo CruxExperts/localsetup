@@ -45,6 +45,10 @@ def test_plugin_pack_manifest_loads_and_resolves_source_packs() -> None:
     }
     assert payload["count"] == len(configs) == 12
     assert any(item["id"] == "localsetup-bootstrap" and "ls-context" in item["skills"] for item in payload["plugin_packs"])
+    assert any(
+        item["id"] == "localsetup-harness" and "ls-context-index" in item["skills"]
+        for item in payload["plugin_packs"]
+    )
 
 
 def test_plugin_pack_manifest_rejects_unknown_source_pack(tmp_path: Path) -> None:

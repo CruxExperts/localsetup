@@ -80,7 +80,7 @@ plugin_packs:
       - ls/docs/WORKFLOW_REGISTRY.md
   - id: localsetup-harness
     display_name: Localsetup Harness
-    description: Automation harness skills and workflows for Codex heartbeat, context-index refresh, cron, and repo finalization.
+    description: Automation harness skills for Codex heartbeat, context-index maintenance, cron, and repo finalization.
     category: harness
     source_pack: harness
     platforms:

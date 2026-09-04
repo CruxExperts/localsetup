@@ -83,7 +83,7 @@ Search combines:
 - Local deterministic vector scores from packed vector blobs.
 - Hybrid ranking weights from config.
 
-The default embedding provider is `local_hash`, which is deterministic, local, no-network, and testable. Config keeps provider/model/dimensions explicit. `openai_compatible`, `openai`, and `llama_cpp` use a configured OpenAI-compatible HTTP embeddings endpoint, so maintainers can point the same command surface at a hosted API or a local llama.cpp-style service without changing database schema.
+The default embedding provider is `local_hash`, which is deterministic, local, no-network, and testable. Config keeps provider/model/dimensions explicit. `openai_compatible`, `openai`, and `llama_cpp` are names for the same HTTP adapter, not independent implementations. Verified targets are OpenAI's `/v1/embeddings` endpoint and llama.cpp's compatible endpoint when it serves an embedding-capable model with non-`none` pooling. Other services need provider-specific compatibility checks.
 
 `vector-rebuild plan|apply` recomputes vector rows for existing chunks without re-extracting source files. This is the intended path after embedding provider, model, prefix, or dimension changes when source chunks are otherwise acceptable.
 

@@ -1,6 +1,6 @@
 ---
 name: ls-context-index
-description: Use when building or querying the Localsetup context index with vector-first SQLite RAG, deterministic freshness/worklist surfaces, and agent-preflight checks.
+description: Use when building, querying, or refreshing the Localsetup context index with hybrid SQLite retrieval, deterministic freshness/worklist surfaces, and agent-preflight checks.
 metadata:
   version: "0.1"
 ---
@@ -16,7 +16,7 @@ Use this skill when an agent needs fast Localsetup context retrieval across repo
 3. Use `context-index search "query" --scope repo --top-k 10` for fresh indexed context.
 4. Use `lookup --chunk-id UUID` before relying on a specific result.
 5. Use `worker nudge` or `refresh` when the worklist has pending items.
-6. Use `rebuild plan` and `rebuild apply --plan PLAN_ID` only when a reset/reindex is appropriate.
+6. Use plan/apply operations only after reviewing the plan JSON and passing its returned `plan_id` to apply as `--plan "<REVIEWED_PLAN_ID>"`.
 
 ## Commands
 
@@ -33,6 +33,14 @@ localsetup context-index worker nudge --scope repo
 localsetup context-index vector-rebuild plan --scope repo
 localsetup context-index prune plan --scope repo
 ```
+
+## Query Contract
+
+Before retrieval, validate configuration and scope, confirm privacy exclusions are active, and interpret `safe_to_use_index`, `read_direct_paths`, and the worklist rather than relying on top-level `ok` alone. Search results must identify the selected scope/context, path, line range, chunk ID, source and chunk hashes, and freshness state. Use `lookup` and then read the source file directly before exact edits or citations.
+
+## Refresh Contract
+
+Choose lifecycle actions from observed freshness and worklist state: no work means no-op; changed or unindexed paths use refresh/worker execution; embedding-only drift uses vector rebuild; a contaminated or explicitly clean index uses rebuild; tombstoned sources use prune. `worker nudge` only queues eligible work. After any action, rerun preflight, freshness, or worklist and retain the input, selected action, command JSON, and verification JSON as decision evidence.
 
 ## Scope Model
 

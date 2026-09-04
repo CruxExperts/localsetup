@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 60fb67c66ad176078844f11f082c825586701543231383324fd4580828687b6b
+  source_provenance_hash: d1b6b2796d284339757c850aa0aa22fc76b7d2ee4e1c957cf260ba7c44b412d8
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 8b89d2625ae4ea66dd4e7930142f870ec69f9964
-artifact_sha256: 028ad9133b34fc040a247b6aed03f36babbc3b50103c010e37eb32b2433e67dc
+source_commit: 33cf0d05975bb53619b013c9eda9cd7bd7488ab4
+artifact_sha256: c2a63a4cf7d4cfc0b571c601c99616b8c8458e5254a26445e7da40839002c059
 ---
 # Shipped skills catalog
 
@@ -20,7 +20,7 @@ Total shipped skills: 103
 |---|---|---:|---|---|---|---|---|
 | `ls-communication-and-tools` | `core` | 10 | `bootstrap`, `core` | `communication`, `tools` | `ls-communication-and-tools` | `1.2` | Communication and response guidelines, tool selection and enhancement, periodic context updates. Use for user communication style, choosing tools, MCP/context updates. |
 | `ls-context` | `core` | 10 | `bootstrap`, `core` | `context`, `bootstrap` | `ls-context` | `1.6` | Localsetup framework context - overview, invariants, resolver rules, install layout, and skills index. Load first when working in a repo that uses Localsetup. |
-| `ls-context-index` | `core` | 10 | `core`, `dev` | `context`, `index` | `ls-context-index` | `0.1` | Use when building or querying the Localsetup context index with vector-first SQLite RAG, deterministic freshness/worklist surfaces, and agent-preflight checks. |
+| `ls-context-index` | `core` | 10 | `core`, `dev`, `harness` | `context`, `index` | `ls-context-index` | `0.1` | Use when building, querying, or refreshing the Localsetup context index with hybrid SQLite retrieval, deterministic freshness/worklist surfaces, and agent-preflight checks. |
 | `ls-safety-and-backup` | `core` | 10 | `bootstrap`, `core` | `safety`, `backup` | `ls-safety-and-backup` | `1.1` | Security and safety (conservative), backup management, temporary file management, firewall management. Use for destructive ops, system config changes, backups, temp files, or when adding services. |
 | `ls-script-and-docs-quality` | `core` | 10 | `bootstrap`, `core` | `scripts`, `docs` | `ls-script-and-docs-quality` | `1.2` | Markdown/encoding standards, script generation quality, file creation discipline, documentation discipline. Use when generating scripts, creating/editing markdown or docs. |
 | `ls-task-skill-matcher` | `core` | 10 | `bootstrap`, `core` | `routing`, `skills` | `ls-task-skill-matcher` | `1.1` | Match user tasks to installed Localsetup skills, recommend top matches, and run single-task or batch skill-selection flow with minimal interruption. Delegates complementary public-skill discovery to ls-skill-discovery. |

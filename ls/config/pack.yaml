@@ -124,6 +124,7 @@ packs:
   - ls-system-info
   harness:
   - ls-codex-heartbeat
+  - ls-context-index
   - ls-cron-orchestrator
   integrations:
   - ls-agent-email-inbox
@@ -213,8 +214,6 @@ workflow_packs:
   - ls-workflow-audit-framework
   - ls-workflow-audit-markdown-references
   - ls-workflow-codex-github-issue-goal-loop
-  - ls-workflow-context-index-query
-  - ls-workflow-context-index-refresh
   - ls-workflow-documentation-alignment
   - ls-workflow-ops-guarded
   - ls-workflow-planning-critic-loop
@@ -241,7 +240,6 @@ workflow_packs:
   - ls-workflow-pipeline-pre-publish
   harness:
   - ls-workflow-codex-heartbeat
-  - ls-workflow-context-index-refresh
   - ls-workflow-repo-finalizer
   skill-lifecycle:
   - ls-workflow-pipeline-skill-onboard

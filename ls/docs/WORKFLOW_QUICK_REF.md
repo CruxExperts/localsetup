@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 60fb67c66ad176078844f11f082c825586701543231383324fd4580828687b6b
+  source_provenance_hash: d1b6b2796d284339757c850aa0aa22fc76b7d2ee4e1c957cf260ba7c44b412d8
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 8b89d2625ae4ea66dd4e7930142f870ec69f9964
-artifact_sha256: 807e093c2d9bc425c6be753fbbe9bb74c494883fb2fbd1a508465c143785fd8f
+source_commit: 33cf0d05975bb53619b013c9eda9cd7bd7488ab4
+artifact_sha256: eebb19f0a4aafb44abe1aaed7ae5a78ebfcebe39b303635437fc6faca6761aa8
 ---
 # Workflow quick reference
 
@@ -22,8 +22,6 @@ This page is generated from `ls/workflows/*/workflow.yaml`.
 | `audit-markdown-references` | Audit Markdown References | reference audit; link integrity audit | `ls-workflow-audit-markdown-references` | `ls-markdown-reference-validator` |
 | `codex-github-issue-goal-loop` | Codex GitHub Issue Goal Loop | codex github issue goal loop; github issue goal loop; slash goal issue sweep; github maintenance goal | `ls-workflow-codex-github-issue-goal-loop` | `ls-framework-compliance`; `ls-git-workflows`; `ls-safety-and-backup`; `ls-test-runner`; `ls-tdd-guide`; `ls-receiving-code-review`; `ls-pr-reviewer`; `ls-github-publishing-workflow`; `ls-automatic-versioning`; `ls-framework-audit` |
 | `codex-heartbeat` | Codex Heartbeat | codex heartbeat; heartbeat harness; harness heartbeat | `ls-workflow-codex-heartbeat` | `ls-codex-heartbeat`; `ls-cron-orchestrator`; `ls-framework-compliance` |
-| `context-index-query` | Context Index Query | query context index; context search | `ls-workflow-context-index-query` | `ls-context-index` |
-| `context-index-refresh` | Context Index Refresh | context refresh; refresh context index | `ls-workflow-context-index-refresh` | `ls-context-index` |
 | `documentation-alignment` | Documentation Alignment | docs alignment; documentation sync; repo docs audit | `ls-workflow-documentation-alignment` | `ls-documentation-alignment`; `ls-docs-organization`; `ls-markdown-reference-validator`; `ls-script-and-docs-quality`; `ls-test-runner` |
 | `ops-guarded` | Ops Guarded | lazy admin; manual execution | `ls-workflow-ops-guarded` | `ls-framework-compliance`; `ls-safety-and-backup` |
 | `ops-tmux-session` | Ops Tmux Session | tmux shared session; sudo tmux; elevated permissions; interactive sudo prompt; sudo password prompt handoff; require_escalated; pseudo-terminal ops; managed tmux ops | `ls-workflow-ops-tmux-session` | `ls-safety-and-backup` |
@@ -56,10 +54,6 @@ This page is generated from `ls/workflows/*/workflow.yaml`.
 - "codex heartbeat" -> `codex-heartbeat`
 - "heartbeat harness" -> `codex-heartbeat`
 - "harness heartbeat" -> `codex-heartbeat`
-- "query context index" -> `context-index-query`
-- "context search" -> `context-index-query`
-- "context refresh" -> `context-index-refresh`
-- "refresh context index" -> `context-index-refresh`
 - "docs alignment" -> `documentation-alignment`
 - "documentation sync" -> `documentation-alignment`
 - "repo docs audit" -> `documentation-alignment`

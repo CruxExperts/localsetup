@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 60fb67c66ad176078844f11f082c825586701543231383324fd4580828687b6b
+  source_provenance_hash: d1b6b2796d284339757c850aa0aa22fc76b7d2ee4e1c957cf260ba7c44b412d8
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 8b89d2625ae4ea66dd4e7930142f870ec69f9964
-artifact_sha256: a93f33d215d46ccdba6dd5c31dd73ceb5caa811e611a958f4b9096f6a3d2995e
+source_commit: 33cf0d05975bb53619b013c9eda9cd7bd7488ab4
+artifact_sha256: bf361a84eaaf7284a868fee9bbd2c51d9666efdf51c97bdfd6a123e5345f9768
 ---
 # Plugin Packs
 
@@ -15,13 +15,13 @@ Portable plugin pack metadata is generated from `ls/config/plugin-packs.yaml`.
 |---|---|---|---|---:|---:|---|
 | `localsetup-bootstrap` | `bootstrap` | `bootstrap` | `codex` | 12 | 4 | `ls-plugin-bootstrap-context` |
 | `localsetup-core` | `core` | `core` | `codex` | 9 | 2 | `ls-plugin-core-context` |
-| `localsetup-dev` | `dev` | `development` | `codex` | 46 | 16 | `ls-plugin-dev-context` |
+| `localsetup-dev` | `dev` | `development` | `codex` | 46 | 14 | `ls-plugin-dev-context` |
 | `localsetup-frontend` | `frontend` | `frontend` | `codex` | 11 | 0 | `ls-plugin-frontend-context` |
 | `localsetup-architecture` | `architecture` | `architecture` | `codex` | 6 | 0 | `ls-plugin-architecture-context` |
 | `localsetup-ops` | `ops` | `operations` | `codex` | 10 | 3 | `ls-plugin-ops-context` |
 | `localsetup-integrations` | `integrations` | `integrations` | `codex` | 33 | 1 | `ls-plugin-integrations-context` |
 | `localsetup-publishing` | `publishing` | `publishing` | `codex` | 17 | 3 | `ls-plugin-publishing-context` |
-| `localsetup-harness` | `harness` | `harness` | `codex` | 5 | 3 | `ls-plugin-harness-context` |
+| `localsetup-harness` | `harness` | `harness` | `codex` | 5 | 2 | `ls-plugin-harness-context` |
 | `localsetup-skill-lifecycle` | `skill-lifecycle` | `skill-lifecycle` | `codex` | 13 | 1 | `ls-plugin-skill-lifecycle-context` |
 | `localsetup-growth-content` | `growth-content` | `growth-content` | `codex` | 7 | 0 | `ls-plugin-growth-content-context` |
 | `localsetup-specialized` | `specialized` | `specialized` | `codex` | 4 | 1 | `ls-plugin-specialized-context` |

@@ -1,17 +1,17 @@
 {
-  "count": 24,
+  "count": 22,
   "provenance": {
     "artifact_path": "ls/docs/_generated/workflow-catalog.json",
-    "artifact_sha256": "90ae33984d2860eac8c049692596b2837612b14492b8634cd7cd60c8352193a0",
+    "artifact_sha256": "c8236ba954f035f6ba58b4e6b7db4084e465b80f40dc5c6062ea124641bbbcea",
     "emitter": "generate-docs",
     "framework_version": "4.3.9",
     "schema_version": 1,
-    "source_commit": "8b89d2625ae4ea66dd4e7930142f870ec69f9964",
+    "source_commit": "33cf0d05975bb53619b013c9eda9cd7bd7488ab4",
     "source_dirty": true,
-    "source_provenance_hash": "60fb67c66ad176078844f11f082c825586701543231383324fd4580828687b6b",
-    "source_root_id": "1d3c00b408ec6af8397a49dedbf7d3d0991a6888ed297d9308182e3ff39055ce",
+    "source_provenance_hash": "d1b6b2796d284339757c850aa0aa22fc76b7d2ee4e1c957cf260ba7c44b412d8",
+    "source_root_id": "9406e0f588214495d3437acbac10cc3ac1089ff2f49cacfeefe4860740388b89",
     "source_tag": null,
-    "source_tree_sha": "6e8267eee4609e215907a4ac208ea7ba4945a528"
+    "source_tree_sha": "22e87429a48728af532697643353ce88d23337f6"
   },
   "workflows": [
     {
@@ -128,51 +128,6 @@
         "ls/skills/ls-cron-orchestrator/scripts/cron_ctl.py"
       ],
       "workflow_id": "codex-heartbeat"
-    },
-    {
-      "aliases": [
-        "query context index",
-        "context search"
-      ],
-      "description": "Use when querying the Localsetup context index with vector-first retrieval and deterministic preflight/logging controls.",
-      "display_name": "Context Index Query",
-      "package": "ls-workflow-context-index-query",
-      "packs": [
-        "dev"
-      ],
-      "path": "ls/workflows/ls-workflow-context-index-query",
-      "required_docs": [
-        "ls/skills/ls-context-index/docs/agent-usage.md",
-        "ls/skills/ls-context-index/docs/security-and-privacy.md"
-      ],
-      "required_skills": [
-        "ls-context-index"
-      ],
-      "required_tools": [],
-      "workflow_id": "context-index-query"
-    },
-    {
-      "aliases": [
-        "context refresh",
-        "refresh context index"
-      ],
-      "description": "Use when refreshing the Localsetup context index with deterministic lifecycle checks and reset/rebuild/vector-rebuild decisions.",
-      "display_name": "Context Index Refresh",
-      "package": "ls-workflow-context-index-refresh",
-      "packs": [
-        "dev",
-        "harness"
-      ],
-      "path": "ls/workflows/ls-workflow-context-index-refresh",
-      "required_docs": [
-        "ls/skills/ls-context-index/README.md",
-        "ls/skills/ls-context-index/docs/architecture.md"
-      ],
-      "required_skills": [
-        "ls-context-index"
-      ],
-      "required_tools": [],
-      "workflow_id": "context-index-refresh"
     },
     {
       "aliases": [
