@@ -64,6 +64,28 @@ def _command_for_phase(steps: list[dict[str, str]], phase: str) -> str:
     raise AssertionError(f"phase not found: {phase}")
 
 
+def test_host_only_preflight_lists_exact_sudo_policy_without_execution() -> None:
+    result = run_cli("--json", "host-only", "admin@example.com")
+    payload = json.loads(result.stdout)
+
+    assert result.returncode == 0
+    assert payload["mode"] == "plan-only"
+    assert payload["title"] == "Host Package Patch Plan: admin@example.com"
+    assert [step["phase"] for step in payload["steps"]] == ["preflight", "packages", "verify"]
+
+    command = _command_for_phase(payload["steps"], "preflight")
+    argv = shlex.split(command)
+    assert argv[:2] == ["ssh", "admin@example.com"]
+    assert argv[2] == (
+        'if pm=$(command -v apt 2>/dev/null); then sudo -n -l -- "$pm" update; '
+        'elif pm=$(command -v dnf 2>/dev/null); then sudo -n -l -- "$pm" check-update; '
+        'elif pm=$(command -v yum 2>/dev/null); then sudo -n -l -- "$pm" check-update; '
+        'elif pm=$(command -v zypper 2>/dev/null); then sudo -n -l -- "$pm" list-updates; '
+        "else printf '%s\\n' 'no supported package manager found' >&2; exit 1; fi"
+    )
+    assert "sudo -n " + "true" not in argv[2]
+
+
 def test_host_full_quotes_remote_path_with_spaces() -> None:
     result = run_cli("--json", "host-full", "admin@example.com", "/opt/docker apps")
     command = _command_for_phase(_json_steps(result), "docker-update")

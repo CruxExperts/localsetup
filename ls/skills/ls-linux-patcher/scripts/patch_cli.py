@@ -37,6 +37,14 @@ CAPABILITIES = {
     ],
 }
 
+PACKAGE_PREFLIGHT = (
+    'if pm=$(command -v apt 2>/dev/null); then sudo -n -l -- "$pm" update; '
+    'elif pm=$(command -v dnf 2>/dev/null); then sudo -n -l -- "$pm" check-update; '
+    'elif pm=$(command -v yum 2>/dev/null); then sudo -n -l -- "$pm" check-update; '
+    'elif pm=$(command -v zypper 2>/dev/null); then sudo -n -l -- "$pm" list-updates; '
+    "else printf '%s\\n' 'no supported package manager found' >&2; exit 1; fi"
+)
+
 
 def _clean_text(value: str, *, max_len: int, label: str) -> str:
     if not isinstance(value, str):
@@ -82,7 +90,7 @@ def _host_only_steps(host: str) -> list[dict[str, str]]:
             "phase": "preflight",
             "command": _ssh_command(
                 host,
-                "sudo -n true && command -v apt || command -v dnf || command -v yum || command -v zypper",
+                PACKAGE_PREFLIGHT,
             ),
         },
         {
