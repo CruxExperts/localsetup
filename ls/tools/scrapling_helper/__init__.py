@@ -1,5 +1,5 @@
 """
-Purpose: Helpers for integrating Scrapling with Localsetup (public API re-export).
+Purpose: Helpers for integrating Scrapling with LocalSetup (public API re-export).
 Created: 2026-03-16
 Last Updated: 2026-03-16
 """

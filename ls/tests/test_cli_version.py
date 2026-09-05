@@ -70,7 +70,7 @@ def test_framework_version_rejects_invalid_source_values(
     version_file.write_text(value, encoding="utf-8")
     monkeypatch.setattr(version_module, "_source_version_path", lambda: version_file)
 
-    with pytest.raises(RuntimeError, match="invalid Localsetup version"):
+    with pytest.raises(RuntimeError, match="invalid LocalSetup version"):
         version_module.framework_version()
 
 
@@ -84,5 +84,5 @@ def test_framework_version_fails_clearly_when_no_version_source_exists(
 
     monkeypatch.setattr(version_module.metadata, "version", missing_distribution)
 
-    with pytest.raises(RuntimeError, match="unable to determine Localsetup version"):
+    with pytest.raises(RuntimeError, match="unable to determine LocalSetup version"):
         version_module.framework_version()

@@ -112,7 +112,7 @@ def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_har
     why_p.add_argument("--packs", nargs="*")
     sub.add_parser("graph")
     path_p = sub.add_parser("path")
-    path_p.add_argument("--json", action="store_true", help="Emit all Localsetup resolved paths as JSON")
+    path_p.add_argument("--json", action="store_true", help="Emit all LocalSetup resolved paths as JSON")
     path_sub = path_p.add_subparsers(dest="path_action")
     path_sub.add_parser("source-root")
     path_sub.add_parser("framework-root")

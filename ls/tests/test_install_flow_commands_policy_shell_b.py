@@ -307,7 +307,7 @@ def test_refuses_unmanaged_adapter_collisions(tmp_path: Path, collision_kind: st
     if collision_kind == "directory":
         adapter.mkdir()
         (adapter / "ls-context").write_text("user content\n", encoding="utf-8")
-        expected = "adapter contains custom or unknown entries with selected Localsetup package names"
+        expected = "adapter contains custom or unknown entries with selected LocalSetup package names"
     elif collision_kind == "file":
         adapter.write_text("not a directory\n", encoding="utf-8")
         expected = "regular file"

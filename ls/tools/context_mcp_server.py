@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Optional MCP entry point for Localsetup context-index.
+"""Optional MCP entry point for LocalSetup context-index.
 
 The core context index intentionally has no MCP dependency. This wrapper is the
 stable command target emitted by `context-index mcp config`; environments that

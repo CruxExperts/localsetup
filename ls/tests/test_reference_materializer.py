@@ -135,7 +135,7 @@ def test_materializer_rejects_dangling_localsetup_absolute_paths(tmp_path: Path)
     validation = validate_materialized_package(package, repo_root=tmp_path)
 
     assert validation["ok"] is False
-    assert any("dangling Localsetup absolute path" in issue for issue in validation["issues"])
+    assert any("dangling LocalSetup absolute path" in issue for issue in validation["issues"])
 
 
 def test_materializer_rejects_forbidden_paths_in_python_files(tmp_path: Path) -> None:
@@ -146,7 +146,7 @@ def test_materializer_rejects_forbidden_paths_in_python_files(tmp_path: Path) ->
     validation = validate_materialized_package(package, repo_root=tmp_path)
 
     assert validation["ok"] is False
-    assert any("forbidden Localsetup path reference in helper.py" in issue for issue in validation["issues"])
+    assert any("forbidden LocalSetup path reference in helper.py" in issue for issue in validation["issues"])
 
 
 def test_validate_materialized_package_rejects_unrecorded_framework_source_paths(tmp_path: Path) -> None:
@@ -180,7 +180,7 @@ def test_validate_materialized_package_rejects_unrecorded_framework_source_paths
     validation = validate_materialized_package(package, check_digest=False)
 
     assert validation["ok"] is False
-    assert any("forbidden Localsetup path reference in SKILL.md" in issue for issue in validation["issues"])
+    assert any("forbidden LocalSetup path reference in SKILL.md" in issue for issue in validation["issues"])
 
 
 def test_materializer_records_framework_source_paths_as_metadata(tmp_path: Path) -> None:
@@ -228,7 +228,7 @@ def test_materializer_rejects_unrecorded_existing_source_absolute_paths(tmp_path
         encoding="utf-8",
     )
 
-    with pytest.raises(ValueError, match="unrecorded Localsetup absolute path"):
+    with pytest.raises(ValueError, match="unrecorded LocalSetup absolute path"):
         materialize_package_artifact(
             repo,
             skill,
@@ -271,7 +271,7 @@ public_private:
     validation = validate_materialized_package(package, repo_root=repo, home=home, runtime_package_root=package_root)
 
     assert validation["ok"] is False
-    assert any("dangling Localsetup absolute path" in issue for issue in validation["issues"])
+    assert any("dangling LocalSetup absolute path" in issue for issue in validation["issues"])
 
 
 def test_materializer_records_directory_like_doc_literals_as_metadata(tmp_path: Path) -> None:
@@ -577,7 +577,7 @@ def test_materializer_rejects_private_raw_doc_reference_without_source_metadata(
     (skill / "SKILL.md").write_text("---\nname: ls-demo\ndescription: Demo.\n---\n", encoding="utf-8")
     (skill / "notes.txt").write_text("Read ls/docs/private/secret.md.\n", encoding="utf-8")
 
-    with pytest.raises(ValueError, match="forbidden Localsetup path reference"):
+    with pytest.raises(ValueError, match="forbidden LocalSetup path reference"):
         materialize_package_artifact(
             repo,
             skill,
@@ -756,7 +756,7 @@ def test_validate_materialized_package_rejects_unrelated_absolute_tool_path(tmp_
     validation = validate_materialized_package(package, repo_root=repo, check_digest=False)
 
     assert validation["ok"] is False
-    assert any(f"unrecorded Localsetup absolute path in SKILL.md: {other_tool}" in issue for issue in validation["issues"])
+    assert any(f"unrecorded LocalSetup absolute path in SKILL.md: {other_tool}" in issue for issue in validation["issues"])
 
 
 def test_validate_materialized_package_rejects_unresolved_resolver_tokens(tmp_path: Path) -> None:

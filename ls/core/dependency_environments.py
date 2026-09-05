@@ -113,7 +113,7 @@ def owned_environment_statuses(repo_root: Path, data_root: Path | None, target_r
             ignored=True,
             repair_hint=(
                 f"Run `./install --directory {repo_root} --target-directory {target_root} --sync-env --non-interactive --yes` "
-                "to quarantine the legacy Localsetup target-local venv"
+                "to quarantine the legacy LocalSetup target-local venv"
             ),
         )
         if target_legacy:

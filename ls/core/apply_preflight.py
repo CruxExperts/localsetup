@@ -109,7 +109,7 @@ def preflight_install_plan(repo_root: Path, plan, home: Path, *, target_root: Pa
                     {
                         "path": str(action.path),
                         "status_code": "adapter_custom_package_name_collision",
-                        "reason": "adapter contains custom or unknown entries with selected Localsetup package names",
+                        "reason": "adapter contains custom or unknown entries with selected LocalSetup package names",
                         "entries": unsafe_entries,
                     }
                 )

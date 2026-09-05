@@ -55,8 +55,8 @@ def _managed_shim_content(source_root: Path, home: Path) -> str:
             'if python3 "$LOCALSETUP_TOOL" --help >/dev/null 2>&1; then',
             '  exec python3 "$LOCALSETUP_TOOL" --source-root "$LOCALSETUP_SOURCE_ROOT" --home "$LOCALSETUP_HOME" "$@"',
             "fi",
-            'echo "localsetup: no usable Python runtime for Localsetup." >&2',
-            'echo "The source checkout .venv is missing or unhealthy, and system python3 cannot import Localsetup." >&2',
+            'echo "localsetup: no usable Python runtime for LocalSetup." >&2',
+            'echo "The source checkout .venv is missing or unhealthy, and system python3 cannot import LocalSetup." >&2',
             'printf "Repair: %q --directory %q --sync-env --non-interactive --yes\\n" "$LOCALSETUP_SOURCE_ROOT/install" "$LOCALSETUP_SOURCE_ROOT" >&2',
             "exit 2",
             "",
@@ -92,7 +92,7 @@ def _recorded_source_root(path: Path) -> str | None:
 
 def register_shell_command(source_root: Path, *, home: Path, path_env: str | None = None) -> dict:
     if not (source_root / "ls" / "tools" / "localsetup.py").is_file():
-        raise FileNotFoundError(f"missing Localsetup source checkout: {source_root}")
+        raise FileNotFoundError(f"missing LocalSetup source checkout: {source_root}")
 
     bin_dir = user_bin_dir(home)
     path = shim_path(home)

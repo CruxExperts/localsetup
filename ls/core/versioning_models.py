@@ -1,4 +1,4 @@
-"""Data models for Localsetup version planning."""
+"""Data models for LocalSetup version planning."""
 
 from __future__ import annotations
 

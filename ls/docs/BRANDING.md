@@ -20,6 +20,17 @@ generator, never by editing a rendered tail.
 
 ## Runtime identity
 
+Installer help, wizard titles, core diagnostics, package descriptions and new
+release titles use the canonical display spelling. The wizard uses a plain
+`LocalSetup installer` title so its terminal banner has the same spelling.
+Diagnostic prose may change case; command prefixes, JSON keys, error codes,
+environment-variable names and recorded paths retain their existing contracts.
+Automation should use those structured values instead of matching display prose.
+
+The Agent Q processed-mailbox identifier and existing non-model skill-index and
+skill-validation user-agent values are compatibility identifiers. Their retained
+spelling does not define the model-request identity below.
+
 `ls.core.branding` exports `PRODUCT_NAME`, `PRODUCT_ABBREVIATION`, `CLI_NAME` and
 `CLI_COMMAND`. Its `user_agent()` constructs the exact model-request identity
 `LocalSetup/<framework_version()>` through the existing runtime version resolver.

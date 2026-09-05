@@ -1,4 +1,4 @@
-"""Localsetup core package."""
+"""LocalSetup core package."""
 
 from .cli import main
 

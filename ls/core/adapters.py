@@ -196,7 +196,7 @@ def _adapter_package_integrity(repo_path: Path, global_root: Path, *, target_roo
             if _is_managed_portable_adapter_entry(child):
                 row["ok"] = True
             elif child.is_dir() and not child.is_symlink():
-                row["reason"] = "portable adapter package lacks Localsetup provenance"
+                row["reason"] = "portable adapter package lacks LocalSetup provenance"
             else:
                 row["reason"] = "portable adapter package is not a directory copy"
         elif child.is_symlink():

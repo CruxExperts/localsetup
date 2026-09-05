@@ -24,8 +24,8 @@ def _platform_choices(repo_root: Path) -> list[Choice]:
                 value=platform.platform_id,
                 label=label,
                 summary=f"Writes adapter path {repo_paths}.",
-                effect=f"Connects this repo to Localsetup skills for {label} through {repo_paths}.",
-                best_for=f"You use {label} in this repository and want its agent skill picker to see Localsetup.",
+                effect=f"Connects this repo to LocalSetup skills for {label} through {repo_paths}.",
+                best_for=f"You use {label} in this repository and want its agent skill picker to see LocalSetup.",
                 tradeoff=f"Creates or updates repo-local adapter path(s); global fallback is {global_paths}.",
             )
         )
@@ -36,7 +36,7 @@ def _pack_choices(repo_root: Path) -> list[Choice]:
     names = list(dict.fromkeys(["core", *pack.optional_packs, *pack.packs.keys()]))
     metadata = {
         "core": (
-            "Everyday Localsetup context, safety, task matching, and test workflow basics.",
+            "Everyday LocalSetup context, safety, task matching, and test workflow basics.",
             "Installs the compact starter set for interactive agent work.",
             "You want a smaller baseline than the normal fresh-install profile.",
             "Keeps the install compact; specialized ops, publishing, and integrations stay out until selected.",
@@ -92,7 +92,7 @@ def _pack_choices(repo_root: Path) -> list[Choice]:
         "skill-lifecycle": (
             "Skill authoring, discovery, import, normalization, vetting, sandbox testing, and bundle inventories.",
             "Adds the skill maintenance pipeline and upstream skill bundle wrappers.",
-            "You maintain or import Localsetup/Agent Skills content.",
+            "You maintain or import LocalSetup/Agent Skills content.",
             "Not usually needed for ordinary application development.",
         ),
         "growth-content": (
@@ -174,7 +174,7 @@ def _attach_choices() -> list[Choice]:
         Choice(
             "symlink",
             "Symlink adapters",
-            "Repo adapter paths point at the managed Localsetup library.",
+            "Repo adapter paths point at the managed LocalSetup library.",
             "Creates links such as `.agents/skills` so updates to the managed library are picked up immediately.",
             "You want the easiest update path and are comfortable with repo-local symlinks.",
             "The repo depends on the managed library path existing on this machine.",
@@ -202,7 +202,7 @@ def _dependency_choices() -> list[Choice]:
         Choice(
             "uv-sync",
             "Sync uv environment",
-            "Prepares Localsetup's uv-managed Python environment.",
+            "Prepares LocalSetup's uv-managed Python environment.",
             "Creates or updates the source checkout .venv from pyproject.toml and uv.lock.",
             "You want the installer to prepare Python tooling now.",
             "Takes longer and requires uv plus access to the configured package index or cache.",
@@ -382,7 +382,7 @@ def _load_prior_defaults(state: WizardState) -> None:
 def _action_summary(actions: list[object]) -> list[str]:
     labels = {
         "ensure_dir": "Ensure managed skill library exists",
-        "write_registry": "Write Localsetup registry",
+        "write_registry": "Write LocalSetup registry",
         "install_skills": "Install selected skills",
         "install_workflows": "Install selected workflows",
         "attach_repo_path": "Attach selected adapter",

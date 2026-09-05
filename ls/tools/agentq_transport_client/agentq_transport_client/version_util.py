@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Purpose: Read Localsetup framework VERSION from project root for PRD stamping.
+# Purpose: Read LocalSetup framework VERSION from project root for PRD stamping.
 # Created: 2026-03-09
 # Last updated: 2026-03-09
 

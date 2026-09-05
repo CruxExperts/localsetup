@@ -128,6 +128,6 @@ jobs:
               "dist/localsetup-v${version}.tar.gz.sha256" \
               "dist/localsetup-v${version}.tar.gz.cdx.json" \
               --target "$GITHUB_SHA" \
-              --title "Localsetup ${version}" \
-              --notes "Automated release for Localsetup ${version}."
+              --title "LocalSetup ${version}" \
+              --notes "Automated release for LocalSetup ${version}."
           fi

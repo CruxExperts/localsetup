@@ -65,7 +65,7 @@ def run_doctor(
         "target_root": str(attachment_root),
     }
     if platform.system().lower().startswith("windows"):
-        blockers.append("native Windows is unsupported; run Localsetup from WSL2")
+        blockers.append("native Windows is unsupported; run LocalSetup from WSL2")
     resolver_issues = paths_manifest_issues(repo_root, home)
     warnings.extend(f"resolver: {issue}" for issue in resolver_issues)
 

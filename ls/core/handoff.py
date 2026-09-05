@@ -71,7 +71,7 @@ def render_agent_prompt(payload: dict[str, Any]) -> str:
         shlex.join(["localsetup", "verify", "--target-directory", target_root]),
     ]
     lines = [
-        "# Localsetup Repair Handoff",
+        "# LocalSetup Repair Handoff",
         "",
         "## Target",
         "",

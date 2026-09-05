@@ -36,7 +36,7 @@ def _show_welcome(term: TerminalWizard, state: WizardState) -> str:
     term.write("")
     term.title("Source and Release")
     term.detail_line("Decides: Confirms the installer source and release channel before package choices.")
-    term.detail_line("This wizard installs the managed Localsetup package library and can attach repo adapters for agent tools.")
+    term.detail_line("This wizard installs the managed LocalSetup package library and can attach repo adapters for agent tools.")
     latest_ref = os.environ.get("LOCALSETUP_BOOTSTRAP_LATEST_REF") or "not checked"
     release_status = os.environ.get("LOCALSETUP_BOOTSTRAP_RELEASE_STATUS") or "explicit/local source"
     term.key_value_block(
@@ -53,17 +53,17 @@ def _show_welcome(term: TerminalWizard, state: WizardState) -> str:
         term,
         "Press Enter to continue",
         help_text="This first screen only orients you. Nothing changes until the Review screen is applied.",
-        detail_text="Localsetup keeps a managed shared library under your home directory and can optionally attach repo adapter paths.",
+        detail_text="LocalSetup keeps a managed shared library under your home directory and can optionally attach repo adapter paths.",
     )
 
 def _source_step(term: TerminalWizard, state: WizardState) -> str:
     term.title("Source")
-    term.detail_line("Decides: Which Localsetup checkout provides the installer files and shipped skills.")
-    term.key_value_block([("Using Localsetup source", str(state.repo_root))])
+    term.detail_line("Decides: Which LocalSetup checkout provides the installer files and shipped skills.")
+    term.key_value_block([("Using LocalSetup source", str(state.repo_root))])
     term.detail_line("Explicit --directory values are used as-is; raw installs use the managed source checkout.")
     if term.detail_mode:
         term.detail_line("Does: Reads manifests, skills, workflows, and installer code from this checkout.")
-        term.detail_line("Choose when: This source path is the Localsetup version you want to install from.")
+        term.detail_line("Choose when: This source path is the LocalSetup version you want to install from.")
         term.detail_line("Tradeoff: A stale source checkout can install stale skills; refresh the source first if that is a concern.")
     return _continue_prompt(
         term,
@@ -78,7 +78,7 @@ def _mode_step(term: TerminalWizard, state: WizardState) -> str:
         Choice(
             "none",
             "No repo setup",
-            "Updates the managed Localsetup package library without repo adapter paths.",
+            "Updates the managed LocalSetup package library without repo adapter paths.",
             "On reruns, removes only prior managed adapter paths while leaving the shared library intact.",
             "You only want the shared package library refreshed right now.",
             "No `.agents/skills` or other repo adapter paths are created.",
@@ -221,7 +221,7 @@ def _pack_step(term: TerminalWizard, state: WizardState) -> str:
         _pack_choices(state.repo_root),
         default=default_packs,
         allow_none=True,
-        decides="Which baseline packages are kept in the managed Localsetup library.",
+        decides="Which baseline packages are kept in the managed LocalSetup library.",
         suggested_reason="Normal is the default global baseline unless prior registry settings or CLI selectors are present.",
         help_text="Choose one or more packs for the shared package library. Repo adapter visibility is selected separately.",
     )
@@ -312,9 +312,9 @@ def _options_step(term: TerminalWizard, state: WizardState) -> str:
         "Dependency mode",
         _dependency_choices(),
         default=state.dependency_mode,
-        decides="Whether the installer only reports dependencies or prepares Localsetup's Python environment.",
+        decides="Whether the installer only reports dependencies or prepares LocalSetup's Python environment.",
         suggested_reason="Prompt-only avoids changing host dependencies during a first install.",
-        help_text="Prompt-only reports needs without installing. uv-sync prepares Localsetup's project .venv.",
+        help_text="Prompt-only reports needs without installing. uv-sync prepares LocalSetup's project .venv.",
     )
     if deps in {BACK, CANCEL}:
         return deps

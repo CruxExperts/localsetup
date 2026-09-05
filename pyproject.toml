@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "localsetup"
 version = "4.4.1"
-description = "Global-first Localsetup skill pack manager"
+description = "Global-first LocalSetup skill pack manager"
 requires-python = ">=3.12"
 dependencies = [
   "PyYAML>=6.0.3",
