@@ -1,5 +1,19 @@
 # Localsetup - Agent context (Codex)
 
+## Product Naming Contract
+
+Use **LocalSetup (LS)** when introducing the framework abbreviation. Product
+and framework display text uses **LocalSetup**; integrated CLI display text uses
+**LSCli** and its command is `lscli`. The existing framework command and Python
+distribution remain `localsetup`. Do not create `LS` or `ls` command aliases.
+Preserve established imports, paths, URLs, environment variables, persisted keys
+and other compatibility identifiers. Model-request identity is constructed by
+`ls.core.branding.user_agent()` as `LocalSetup/<framework_version()>` and verified
+at final transport send. Preserve upstream attribution, immutable historical
+evidence, and managed source ownership. Correct generators before their outputs;
+review embedded asset text visually and keep accessibility text aligned. Follow
+`ls/docs/BRANDING.md` and the exact exceptions in `ls/config/branding.json`.
+
 ## Overview
 Localsetup keeps framework source and target repositories separate. `ls/` is the source-checkout layout; selected packages live in the managed user library and explicitly selected adapters expose them to a target repo. Load `ls-context` and use `localsetup path framework-root` or `localsetup path doc <name>` to resolve source files and documentation. Paths beginning with `ls/` below describe source locations, not required target-repo files. Bind PRDs, specs, and outcomes to Git hashes; see [GIT_TRACEABILITY.md](../../docs/GIT_TRACEABILITY.md).
 

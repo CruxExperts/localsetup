@@ -20,6 +20,35 @@ common policy alone determines COIT triggers, cycle and review requirements,
 counter changes, and terminal dispositions. Do not begin dependent Localsetup
 work or publish while a common COIT or blocker gate remains open.
 
+## Product Naming Contract
+
+Use **LocalSetup (LS)** when introducing the framework abbreviation. Product
+and framework display text uses **LocalSetup**; integrated CLI display text uses
+**LSCli** and its command is `lscli`. The existing framework command and Python
+distribution remain `localsetup`. Do not create `LS` or `ls` command aliases.
+Preserve established imports, paths, URLs, environment variables, persisted keys
+and other compatibility identifiers. Model-request identity is constructed by
+`ls.core.branding.user_agent()` as `LocalSetup/<framework_version()>` and verified
+at final transport send. Preserve upstream attribution, immutable historical
+evidence, and managed source ownership. Correct generators before their outputs;
+review embedded asset text visually and keep accessibility text aligned. Follow
+`ls/docs/BRANDING.md` and the exact exceptions in `ls/config/branding.json`.
+
+## Sequential Release Version Policy
+
+Starting at the last verified published version, apply logical accepted slices
+in integration ancestry order: each independently accepted user-visible feature
+increments MINOR once and resets PATCH to zero; each small fix, documentation
+consolidation, or maintenance slice increments PATCH once. Breaking changes need
+an explicit compatibility decision and appropriate MAJOR treatment. Count a
+slice's final accepted outcome once, not its fixups, merges, generated receipts,
+release syncs, or work already published. Record the deterministic mapping from
+logical slice to source commit, classification, and resulting version.
+
+Use canonical version/release tooling and preserve source/receipt semantics.
+If tooling cannot represent this sequence, implement and validate the missing
+policy before publication; never hand-edit generated versions or weaken gates.
+
 ## Project Structure & Module Organization
 
 This repository packages Localsetup, a repo-local framework for agent context, skills, and install workflows. Root files include the Bash installer (`install`), top-level docs, `VERSION`, and support files. The main engine lives in `ls/`: reusable code is under `ls/lib/`, OS discovery helpers under `ls/discovery/`, shipped skills under `ls/skills/`, platform templates under `ls/templates/`, and framework docs under `ls/docs/`. Tests live in `ls/tests/`; static assets live in `assets/`.
