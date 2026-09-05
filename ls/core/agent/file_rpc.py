@@ -34,4 +34,8 @@ class FileHandler(CheckpointHandler):
         operation = self.owner.write(self.broker, data['path'], data['content'].encode(),
                                      expected_before=data['expected_before'], checkpoint=data['checkpoint'],
                                      tool_call=call, profile=self.profile)
-        return {'operation':operation,'status':'applied'}
+        result = {'operation':operation,'status':'applied'}
+        from .tool_results import save
+        with self.owner._operation():
+            save(self.owner, result, profile=self.profile, checkpoint=data['checkpoint'], tool_call=call)
+        return result

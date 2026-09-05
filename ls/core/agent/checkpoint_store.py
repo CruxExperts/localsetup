@@ -40,7 +40,7 @@ def _validate(value):
         raise ValueError('Checkpoint requires bounded serialized SDK message array')
 
 
-def _read(directory, name):
+def _read(directory, name, validate=_validate):
     fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=directory)
     try:
         info = os.fstat(fd)
@@ -51,7 +51,7 @@ def _read(directory, name):
         if len(raw) > MAX_RECORD or hashlib.sha256(raw).hexdigest()+'.json' != name:
             raise ValueError('Checkpoint size or digest mismatch')
         value = json.loads(raw)
-        _validate(value)
+        validate(value)
         if _encode(value) != raw:
             raise ValueError('Checkpoint encoding is not canonical')
         return raw, value
@@ -60,11 +60,12 @@ def _read(directory, name):
 
 
 class Checkpoints:
-    def __init__(self, root: Path):
+    def __init__(self, root: Path, *, validate=_validate):
         self.root = root.absolute()
+        self._validate = validate
 
     def save(self, value, *, timeout=30):
-        _validate(value)
+        self._validate(value)
         raw = _encode(value)
         digest = hashlib.sha256(raw).hexdigest()
         with runtime_use(self.root, exclusive=True, timeout=timeout):
@@ -84,7 +85,7 @@ class Checkpoints:
                         raise ValueError('Interrupted checkpoint must be a bounded private regular file')
                     total += info.st_size
                 for name in records:
-                    data, _ = _read(directory, name)
+                    data, _ = _read(directory, name, self._validate)
                     total += len(data)
                     if total > MAX_TOTAL:
                         raise ValueError('Checkpoint storage exceeds byte limit')
@@ -113,6 +114,6 @@ class Checkpoints:
             try:
                 if os.fstat(directory).st_mode & 0o077:
                     raise ValueError('Checkpoint root must be private')
-                return _read(directory, digest+'.json')[1]
+                return _read(directory, digest+'.json', self._validate)[1]
             finally:
                 os.close(directory)

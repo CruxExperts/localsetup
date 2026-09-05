@@ -94,5 +94,9 @@ class ProcessHandler(FileHandler):
             result={'operation':operation,'status':outcome.status,'returncode':outcome.returncode,'output':outcome.data}
             if outcome.data is not None:
                 grant.check(owner._journal.task,owner._journal.session)
+            from .tool_results import save
+            save(owner, result, profile=self.profile, checkpoint=data['checkpoint'], tool_call=call)
+            if outcome.data is not None:
+                grant.check(owner._journal.task,owner._journal.session)
             owner._check()
             return result

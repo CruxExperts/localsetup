@@ -1091,3 +1091,32 @@ An altered context was refused without another request. Cancellation at the firs
 stream event stopped a second run after one request, returned no result data,
 and left the workspace unchanged. These are bounded internal controller checks;
 interactive and crash-recovery acceptance remain separate requirements.
+
+
+## Durable tool results for local recovery
+
+File-write and process RPC handlers now flush a private immutable receipt after
+journal settlement and before returning the tool result. Each receipt binds the
+session/task, provider profile, pre-tool checkpoint, SDK run/call identity and
+argument digest to the exact result. Process stdout/stderr are retained only when
+their hash matches the settled journal evidence. Storage uses the checkpoint
+store's atomic write/fsync and private regular-file checks, in a separate
+`tool-results` directory: at most 1,000 records/pending files, 256 MiB total, and
+4 MiB per serialized receipt. It never prunes sessions automatically.
+
+The internal `tool_results.recover(owner, operation, profile=...)` reads that
+receipt under a fresh exclusive session owner and validates the journal and
+checkpoint identity again. For example, after losing a file-write acknowledgement,
+inspect the operation journal, obtain its operation ID, and recover its recorded
+result. This does not write the file again or claim its current contents still
+match the historical result. A later workspace edit remains untouched. Receipts
+are local evidence; sending their contents to a provider still requires current
+explicit disclosure authority.
+
+Missing, damaged, conflicting, foreign-profile or uncertain-operation evidence
+fails recovery. A crash after journal settlement but before receipt persistence
+can leave a settled operation with no recoverable output; the operation must not
+be repeated to recreate that output. A receipt alone does not make the interrupted
+pre-tool checkpoint resumable: existing frontier and complete-history checks
+remain enforced. SDK history reconstruction and the public recovery interface
+remain pending. Saved data carries no grants, approvals or authority.

@@ -36,7 +36,8 @@ def test_recipe_projection_identity_and_replay_gate(state,broker,monkeypatch):
             assert grant.expires<=owner.expires
             operation=journal.begin('process',{'argv_sha256':'b'*64,'snapshot_sha256':kwargs['snapshot_sha256']},
                                     checkpoint=kwargs['checkpoint'],tool_call=kwargs['tool_call'])
-            journal.finish(operation,'completed',evidence_sha256='c'*64)
+            from ls.core.agent.tool_results import _digest
+            journal.finish(operation,'completed',evidence_sha256=_digest({'status':'completed','returncode':0,'data':{'stdout':'passed','stderr':''}}))
             seen.append(operation)
             return Outcome('completed',0,{'stdout':'passed','stderr':''})
         monkeypatch.setattr(process_rpc,'run_recorded',run)
@@ -75,3 +76,32 @@ def test_exposed_system_runtime_refused_before_projection(state,broker):
         with pytest.raises(ValueError,match='separate'):
             dispatch('process.run',request(owner))
         assert not list(dispatch.snapshots.iterdir()) and owner.inspect()=={}
+
+
+def test_process_grant_expiring_during_receipt_flush_refuses_delivery(state,broker,monkeypatch):
+    import time
+    from ls.core.agent import tool_results
+    allowed=FileBroker(replace(broker.grant,disclose=('src',)),broker.lease_root)
+    captured=[]
+    with own(state,broker) as owner:
+        dispatch=handler(owner,allowed)
+        def run(runtimes,grant,journal,**kwargs):
+            operation=journal.begin('process',{'argv_sha256':'b'*64,'snapshot_sha256':kwargs['snapshot_sha256']},
+                checkpoint=kwargs['checkpoint'],tool_call=kwargs['tool_call'])
+            output={'stdout':'passed','stderr':''}
+            journal.finish(operation,'completed',evidence_sha256=tool_results._digest({'status':'completed','returncode':0,'data':output}))
+            captured.append(grant)
+            return Outcome('completed',0,output)
+        original=tool_results.save
+        def flush(*args,**kwargs):
+            result=original(*args,**kwargs)
+            # Only the narrower recipe grant expires; session authority remains live.
+            monkeypatch.setattr(time,'monotonic',lambda:captured[0].expires+0.01)
+            return result
+        monkeypatch.setattr(process_rpc,'run_recorded',run)
+        monkeypatch.setattr(tool_results,'save',flush)
+        with pytest.raises(PermissionError,match='expired'):
+            dispatch('process.run',request(owner))
+        owner._check()
+        operation,=owner.inspect()
+        assert tool_results.recover(owner,operation,profile='a'*64)['result']['output']['stdout']=='passed'
