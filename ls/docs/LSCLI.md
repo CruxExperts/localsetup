@@ -45,10 +45,10 @@ The new CLI follows the existing global framework home under the user's home:
 | Explicit provider profile configuration | `.local/share/localsetup/config/lscli/profiles.json` |
 | Managed release runtimes | `.local/share/localsetup/runtimes/lscli` |
 
-Diagnostics only reports these locations. Profile creation, session persistence,
-protected runtime installation, PATH collision handling, runtime-use locks, and
-agent dispatch are subsequent implementation gates. Do not infer support for
-those operations from the existence of an entry point or a reported path.
+Diagnostics only reports these locations. Offline setup and runtime-use leases
+are implemented as described below. Profile creation, session persistence,
+sandbox protection, worker supervision, PATH collision handling, and agent
+dispatch remain subsequent gates. A reported location does not enable them.
 Existing framework state, adapter ownership, and stored heartbeat identifiers
 are unchanged. See [SDK source and dependency maintenance](SDK_FORK.md) for the
 private payload, dependency lock, build, and artifact boundaries.
@@ -82,7 +82,63 @@ the runtime or replacing its root. Do not rename the root while it is leased.
 
 When an operation also needs the existing framework package-root lock, acquire
 that lock first, then the runtime lease. Do not convert a shared lease to an
-exclusive lease in place. Runtime installation, upgrade integration, worker
-lifetime supervision, and platform qualification still need to consume this
-foundation before execution can be enabled; doctor continues to report that
+exclusive lease in place. Installation and selection now consume this foundation. Worker lifetime
+supervision and platform qualification remain required before execution can be
+enabled; doctor continues to report that
 execution is unavailable.
+
+
+## Explicit offline runtime setup
+
+Setup can plan or apply a runtime installation from a specific verified framework
+wheel and a local directory containing its audited external artifacts. It does
+not select a release from the network, download Python, discover credentials, or
+make provider calls. Obtain the expected SHA-256 from the trusted release source;
+a hash computed from an untrusted download does not authenticate it.
+
+```bash
+lscli setup --plan --wheel /path/to/framework.whl --sha256 EXPECTED_SHA256 --wheelhouse /path/to/dependency-artifacts
+lscli setup --apply --wheel /path/to/framework.whl --sha256 EXPECTED_SHA256 --wheelhouse /path/to/dependency-artifacts --timeout 300
+```
+
+Replace all placeholders. Both commands emit JSON to stdout and return 0 on
+success; setup errors produce diagnostics on stderr and return 2. Keyboard
+interruption returns 130 after command teardown. Plan validates
+artifact identity, SDK payload, local inputs, and workspace separation without
+creating persistent runtime state. The result records the effective workspace,
+framework version, artifact digest, runtime root, and release path. The default
+root is the managed runtime path above; `--runtime-root` selects an explicit
+alternative. The runtime must lie outside the current directory and every
+enclosing repository, and cannot contain that workspace. Wheel input is limited
+to 256 MiB; ambiguous or oversized distribution metadata is rejected.
+
+Apply acquires an exclusive runtime lease, creates a digest-named release slot,
+and writes an incomplete installation record. It creates the environment at its
+final path, avoiding virtual-environment relocation. Build and runtime dependencies
+come from the wheel's hashed exports and local artifacts only. Build tools are
+preloaded; build isolation is disabled so no implicit build dependencies are
+resolved. The framework wheel installs without dependency resolution. Dependency
+compatibility and installed SDK payload checks must pass before activation.
+The managed CLI launcher invokes the absolute installed Python with `-I`,
+preventing inherited Python path settings, the working directory, or user site
+hooks from selecting checkout code at startup. This rewrites only the framework
+CLI launcher; the isolated SDK worker and sandbox still require separate checks.
+
+Only a completed installation replaces `current.json`, using an atomic regular
+file replacement and filesystem flushes. The record retains the previous digest,
+and prior release directories and sessions remain untouched. Installation
+commands share one deadline after preflight, suppress output, and terminate their
+process groups on completion or interruption. A failed command reports failure
+and retains the incomplete slot for inspection; it does not replay or remove it.
+If the process stops near activation, inspect `current.json` and the slot's
+`status.json` before deciding what happened. Existing slots are refused, including
+completed slots: re-selection/repair and recovery policy remain subsequent gates.
+Do not manually edit selection records to bypass validation.
+
+The internal `selected` context holds a shared lease and checks the selected
+completion record for the entire caller-owned operation. Runtime installation
+and selection are now implemented, but worker supervision, immutable installed
+file enforcement, and sandbox protection still need integration. Successful setup
+does not enable agent execution or change doctor's unavailable-execution result.
+The installer assumes the caller trusts the uv executable and supplied release
+digest; artifact authenticity and platform qualification remain external gates.

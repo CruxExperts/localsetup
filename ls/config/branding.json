@@ -3976,6 +3976,22 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Canonical global runtime/state directory segments in the documented CLI location table."
+    },
+    {
+      "path": "ls/core/agent/runtime_install.py",
+      "line_sha256": "710eb705cbb1a11c3f13e97a6a22f8dddf74a67aa42ae2e70c8e610b73bdf952",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Established framework distribution name or managed CLI executable path used during runtime installation."
+    },
+    {
+      "path": "ls/core/agent/runtime_install.py",
+      "line_sha256": "e0ffce298e9e2f340fc9e66ebb80648aa931d3a5b27b259824ce0d521c017a69",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Established framework distribution name or managed CLI executable path used during runtime installation."
     }
   ],
   "visual_reviews": [
