@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: e54023a57ff0a2414d5dda6279c04b7db57f2f53c6a2682525724e3430b5c61c
+  source_provenance_hash: ca7742eeb358175e4d7c9c0a90382a2042b6c6b4d07f0e006e90551d69f37fa9
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: dba56a980301a58b4f8b49a54edb3b72640d899f
-artifact_sha256: e2891694231ba6d8431283ead18db64062d6ca40907c7cd13e54e4c130db3b2b
+source_commit: 81681680121d29816b8f3f6cc51a46a7c599aa09
+artifact_sha256: cc587c90835b5415dfee06a68da98551986bb1a23eb4233b9f7b99c9d98e5613
 ---
 # Implementation File Map
 
@@ -109,6 +109,8 @@ artifact_sha256: e2891694231ba6d8431283ead18db64062d6ca40907c7cd13e54e4c130db3b2
 | `refactor` | `ls/core/agent/__init__.py` |
 | `refactor` | `ls/core/agent/cli.py` |
 | `refactor` | `ls/core/agent/diagnostics.py` |
+| `refactor` | `ls/core/agent/profiles.py` |
+| `refactor` | `ls/core/agent/provider_client.py` |
 | `refactor` | `ls/core/agent/runtime_install.py` |
 | `refactor` | `ls/core/agent/runtime_integrity.py` |
 | `refactor` | `ls/core/agent/runtime_lock.py` |
@@ -908,6 +910,7 @@ artifact_sha256: e2891694231ba6d8431283ead18db64062d6ca40907c7cd13e54e4c130db3b2
 | `keep` | `ls/tests/manifest_test_helpers.py` |
 | `keep` | `ls/tests/skill_smoke_commands.yaml` |
 | `keep` | `ls/tests/test_adapter_parser.py` |
+| `keep` | `ls/tests/test_agent_provider.py` |
 | `keep` | `ls/tests/test_agent_routing.py` |
 | `keep` | `ls/tests/test_agent_routing_package_install.py` |
 | `keep` | `ls/tests/test_artifact_freshness.py` |
