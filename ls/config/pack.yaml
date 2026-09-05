@@ -170,10 +170,13 @@ packs:
   - ls-automatic-versioning
   - ls-deploy-checklist
   - ls-documentation-alignment
+  - ls-docs-organization
   - ls-github-actions-builder
   - ls-github-publishing-workflow
+  - ls-markdown-reference-validator
   - ls-pr-reviewer
   - ls-public-repo-identity
+  - ls-script-and-docs-quality
   skill-lifecycle:
   - ls-alirezarezvani-skills
   - ls-antigravity-awesome-skills
@@ -213,7 +216,6 @@ workflow_packs:
   - ls-workflow-tmux-terminal-mode
   dev:
   - ls-workflow-codex-github-issue-goal-loop
-  - ls-workflow-documentation-alignment
   - ls-workflow-ops-guarded
   - ls-workflow-planning-critic-loop
   - ls-workflow-pipeline-git-repair-hygiene
@@ -234,7 +236,6 @@ workflow_packs:
   omniroute: []
   publishing:
   - ls-workflow-codex-github-issue-goal-loop
-  - ls-workflow-documentation-alignment
   - ls-workflow-pipeline-pre-publish
   harness:
   - ls-workflow-repo-finalizer

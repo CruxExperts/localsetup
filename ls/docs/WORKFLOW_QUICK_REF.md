@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: d6c394bfb0597cdac0afa050e75481423e9915644e4fb266db46c8265c9d8e47
+  source_provenance_hash: ea0e54d9616fae6b1145c960d91cabb359bf413910864800af7b2b1a60c69bf5
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: b0f7cfb95155b8a356001e77adc42a13e5090f5a
-artifact_sha256: 9ea4b346bebea9d8d6eb332d99313765dea0e327ca0b6ed57f8b71558de87773
+source_commit: 748448b2a701ccdf536f27bf83550c28747fd45e
+artifact_sha256: 7464a9d1b9660226d6c97dc6b130fbac577c2afa765bc1c9ac4d798b27bdd9f0
 ---
 # Workflow quick reference
 
@@ -19,7 +19,6 @@ This page is generated from `ls/workflows/*/workflow.yaml`.
 | Workflow ID | Name | Aliases | Package | Required skills |
 |------------|------|---------|---------|-----------------|
 | `codex-github-issue-goal-loop` | Codex GitHub Issue Goal Loop | codex github issue goal loop; github issue goal loop; slash goal issue sweep; github maintenance goal | `ls-workflow-codex-github-issue-goal-loop` | `ls-framework-compliance`; `ls-git-workflows`; `ls-safety-and-backup`; `ls-test-runner`; `ls-tdd-guide`; `ls-receiving-code-review`; `ls-pr-reviewer`; `ls-github-publishing-workflow`; `ls-automatic-versioning`; `ls-framework-audit` |
-| `documentation-alignment` | Documentation Alignment | docs alignment; documentation sync; repo docs audit | `ls-workflow-documentation-alignment` | `ls-documentation-alignment`; `ls-docs-organization`; `ls-markdown-reference-validator`; `ls-script-and-docs-quality`; `ls-test-runner` |
 | `ops-guarded` | Ops Guarded | lazy admin; manual execution | `ls-workflow-ops-guarded` | `ls-framework-compliance`; `ls-safety-and-backup` |
 | `ops-tmux-session` | Ops Tmux Session | tmux shared session; sudo tmux; elevated permissions; interactive sudo prompt; sudo password prompt handoff; require_escalated; pseudo-terminal ops; managed tmux ops | `ls-workflow-ops-tmux-session` | `ls-safety-and-backup` |
 | `pipeline-git-repair-hygiene` | Pipeline Git Repair Hygiene | git repair pipeline | `ls-workflow-pipeline-git-repair-hygiene` | `ls-unfuck-my-git-state`; `ls-git-workflows`; `ls-framework-compliance` |
@@ -43,9 +42,6 @@ This page is generated from `ls/workflows/*/workflow.yaml`.
 - "github issue goal loop" -> `codex-github-issue-goal-loop`
 - "slash goal issue sweep" -> `codex-github-issue-goal-loop`
 - "github maintenance goal" -> `codex-github-issue-goal-loop`
-- "docs alignment" -> `documentation-alignment`
-- "documentation sync" -> `documentation-alignment`
-- "repo docs audit" -> `documentation-alignment`
 - "lazy admin" -> `ops-guarded`
 - "manual execution" -> `ops-guarded`
 - "tmux shared session" -> `ops-tmux-session`

@@ -74,14 +74,14 @@
   ],
   "cli_commands": [],
   "counts": {
-    "docs": 429,
+    "docs": 428,
     "framework_docs": 72,
     "generated_docs": 5,
     "platforms": 6,
     "public_docs": 6,
     "skills": 103,
-    "workflow_packs": 26,
-    "workflows": 18
+    "workflow_packs": 24,
+    "workflows": 17
   },
   "docs": [
     {
@@ -4216,16 +4216,6 @@
       "managed_blocks": [],
       "owner_package": "",
       "owner_skill": "",
-      "path": "ls/workflows/ls-workflow-documentation-alignment/SKILL.md",
-      "status": "",
-      "version": ""
-    },
-    {
-      "class": "skill",
-      "has_frontmatter": true,
-      "managed_blocks": [],
-      "owner_package": "",
-      "owner_skill": "",
       "path": "ls/workflows/ls-workflow-ops-guarded/SKILL.md",
       "status": "",
       "version": ""
@@ -4422,16 +4412,16 @@
   ],
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "ae7c32bafb9659b96ed5094d6b884e868de503e5dbb8d55e3d4909e6e5ed8059",
+    "artifact_sha256": "86e60c072294fba7f0cbc1793a5f5b50d809a1ad1fd4f4539e23af798e7842b3",
     "emitter": "docs-align",
     "framework_version": "4.3.9",
     "schema_version": 1,
-    "source_commit": "b0f7cfb95155b8a356001e77adc42a13e5090f5a",
+    "source_commit": "748448b2a701ccdf536f27bf83550c28747fd45e",
     "source_dirty": true,
-    "source_provenance_hash": "d6c394bfb0597cdac0afa050e75481423e9915644e4fb266db46c8265c9d8e47",
-    "source_root_id": "f854681a8f35cac8eba4d008314741d070ea7e99d1dee917467d6439508e687c",
+    "source_provenance_hash": "ea0e54d9616fae6b1145c960d91cabb359bf413910864800af7b2b1a60c69bf5",
+    "source_root_id": "f53f4fad8e1b5d4c0a1d3969df39bcf18b40173d7d2bed0e5d925f782914494f",
     "source_tag": null,
-    "source_tree_sha": "52aed411a29875e2fd7af5b14587ffa16bee4c0b"
+    "source_tree_sha": "e54858f8546ecf1ee721df11da4beade0d850761"
   },
   "repo": ".",
   "schema_version": "1.0",
@@ -4503,7 +4493,8 @@
       "owner_scope": "skill",
       "packs": [
         "bootstrap",
-        "core"
+        "core",
+        "publishing"
       ],
       "path": "ls/skills/ls-script-and-docs-quality",
       "sort_priority": 10,
@@ -4562,7 +4553,8 @@
       "owner_scope": "skill",
       "packs": [
         "bootstrap",
-        "dev"
+        "dev",
+        "publishing"
       ],
       "path": "ls/skills/ls-docs-organization",
       "sort_priority": 20,
@@ -4664,7 +4656,8 @@
       "name": "ls-markdown-reference-validator",
       "owner_scope": "skill",
       "packs": [
-        "dev"
+        "dev",
+        "publishing"
       ],
       "path": "ls/skills/ls-markdown-reference-validator",
       "sort_priority": 20,
@@ -5942,15 +5935,6 @@
       ],
       "path": "ls/workflows/ls-workflow-codex-github-issue-goal-loop",
       "workflow_id": "codex-github-issue-goal-loop"
-    },
-    {
-      "package": "ls-workflow-documentation-alignment",
-      "packs": [
-        "dev",
-        "publishing"
-      ],
-      "path": "ls/workflows/ls-workflow-documentation-alignment",
-      "workflow_id": "documentation-alignment"
     },
     {
       "package": "ls-workflow-ops-guarded",

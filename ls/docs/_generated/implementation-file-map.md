@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: d6c394bfb0597cdac0afa050e75481423e9915644e4fb266db46c8265c9d8e47
+  source_provenance_hash: ea0e54d9616fae6b1145c960d91cabb359bf413910864800af7b2b1a60c69bf5
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: b0f7cfb95155b8a356001e77adc42a13e5090f5a
-artifact_sha256: 2c09bc8319f3d42f882a9ba272dcfbe10c271bac0d5161f054f0b39856242057
+source_commit: 748448b2a701ccdf536f27bf83550c28747fd45e
+artifact_sha256: 2cc21b9207f91dd4359be188132449e0435dd03fc197afbc295d0b1f1c4ef514
 ---
 # Implementation File Map
 
@@ -1032,8 +1032,6 @@ artifact_sha256: 2c09bc8319f3d42f882a9ba272dcfbe10c271bac0d5161f054f0b3985624205
 | `keep` | `ls/tools/verify_rules.py` |
 | `keep` | `ls/workflows/ls-workflow-codex-github-issue-goal-loop/SKILL.md` |
 | `keep` | `ls/workflows/ls-workflow-codex-github-issue-goal-loop/workflow.yaml` |
-| `keep` | `ls/workflows/ls-workflow-documentation-alignment/SKILL.md` |
-| `keep` | `ls/workflows/ls-workflow-documentation-alignment/workflow.yaml` |
 | `keep` | `ls/workflows/ls-workflow-ops-guarded/SKILL.md` |
 | `keep` | `ls/workflows/ls-workflow-ops-guarded/workflow.yaml` |
 | `keep` | `ls/workflows/ls-workflow-ops-tmux-session/SKILL.md` |

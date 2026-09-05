@@ -1,17 +1,17 @@
 {
-  "count": 18,
+  "count": 17,
   "provenance": {
     "artifact_path": "ls/docs/_generated/workflow-catalog.json",
-    "artifact_sha256": "d3b16bf9908a53078941b668343fcc53d9fbc954175dd72611cf8a684842795a",
+    "artifact_sha256": "d0b4f5418e4f83f2748ad84f9a6a50f39176a4c623441bb34320be6cfd0e5772",
     "emitter": "generate-docs",
     "framework_version": "4.3.9",
     "schema_version": 1,
-    "source_commit": "b0f7cfb95155b8a356001e77adc42a13e5090f5a",
+    "source_commit": "748448b2a701ccdf536f27bf83550c28747fd45e",
     "source_dirty": true,
-    "source_provenance_hash": "d6c394bfb0597cdac0afa050e75481423e9915644e4fb266db46c8265c9d8e47",
-    "source_root_id": "f854681a8f35cac8eba4d008314741d070ea7e99d1dee917467d6439508e687c",
+    "source_provenance_hash": "ea0e54d9616fae6b1145c960d91cabb359bf413910864800af7b2b1a60c69bf5",
+    "source_root_id": "f53f4fad8e1b5d4c0a1d3969df39bcf18b40173d7d2bed0e5d925f782914494f",
     "source_tag": null,
-    "source_tree_sha": "52aed411a29875e2fd7af5b14587ffa16bee4c0b"
+    "source_tree_sha": "e54858f8546ecf1ee721df11da4beade0d850761"
   },
   "workflows": [
     {
@@ -50,38 +50,6 @@
         "gh"
       ],
       "workflow_id": "codex-github-issue-goal-loop"
-    },
-    {
-      "aliases": [
-        "docs alignment",
-        "documentation sync",
-        "repo docs audit"
-      ],
-      "description": "Use when running automated repo documentation alignment with source-truth scouting, current-doc research, generated artifacts, CI checks, and final review.",
-      "display_name": "Documentation Alignment",
-      "package": "ls-workflow-documentation-alignment",
-      "packs": [
-        "dev",
-        "publishing"
-      ],
-      "path": "ls/workflows/ls-workflow-documentation-alignment",
-      "required_docs": [
-        "ls/skills/ls-documentation-alignment/SKILL.md",
-        "ls/docs/OUTPUT_AND_DOC_GENERATION.md",
-        "ls/docs/DOCUMENT_LIFECYCLE_MANAGEMENT.md"
-      ],
-      "required_skills": [
-        "ls-documentation-alignment",
-        "ls-docs-organization",
-        "ls-markdown-reference-validator",
-        "ls-script-and-docs-quality",
-        "ls-test-runner"
-      ],
-      "required_tools": [
-        "ls/tools/docs_alignment.py",
-        "ls/tools/generate_docs_artifacts.py"
-      ],
-      "workflow_id": "documentation-alignment"
     },
     {
       "aliases": [

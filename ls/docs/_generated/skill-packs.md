@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: d6c394bfb0597cdac0afa050e75481423e9915644e4fb266db46c8265c9d8e47
+  source_provenance_hash: ea0e54d9616fae6b1145c960d91cabb359bf413910864800af7b2b1a60c69bf5
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: b0f7cfb95155b8a356001e77adc42a13e5090f5a
-artifact_sha256: bcc47865d9df24b74a8253edbd01383185e4e04117c17cfc73b50e9037cf2ae7
+source_commit: 748448b2a701ccdf536f27bf83550c28747fd45e
+artifact_sha256: d63d1508b507db8011577a138d5926fe4f5d51b94ee93e8fe388bf758ed35d81
 ---
 # Skill And Workflow Packs
 
@@ -15,18 +15,18 @@ artifact_sha256: bcc47865d9df24b74a8253edbd01383185e4e04117c17cfc73b50e9037cf2ae
 | `bootstrap, core` | `skill` | `ls-context` | `core` | 10 | `context, bootstrap` | `localsetup-context` |
 | `core, dev, harness` | `skill` | `ls-context-index` | `core` | 10 | `context, index` | `localsetup-context-index` |
 | `bootstrap, core` | `skill` | `ls-safety-and-backup` | `core` | 10 | `safety, backup` | `localsetup-safety-and-backup` |
-| `bootstrap, core` | `skill` | `ls-script-and-docs-quality` | `core` | 10 | `scripts, docs` | `localsetup-script-and-docs-quality` |
+| `bootstrap, core, publishing` | `skill` | `ls-script-and-docs-quality` | `core` | 10 | `scripts, docs` | `localsetup-script-and-docs-quality` |
 | `bootstrap, core` | `skill` | `ls-task-skill-matcher` | `core` | 10 | `routing, skills` | `localsetup-task-skill-matcher` |
 | `bootstrap, core` | `skill` | `ls-test-runner` | `core` | 10 | `testing, validation` | `localsetup-test-runner` |
 | `publishing` | `skill` | `ls-automatic-versioning` | `framework-governance` | 20 | `versioning, release` | `localsetup-automatic-versioning` |
-| `bootstrap, dev` | `skill` | `ls-docs-organization` | `framework-governance` | 20 | `docs, organization` | `localsetup-docs-organization` |
+| `bootstrap, dev, publishing` | `skill` | `ls-docs-organization` | `framework-governance` | 20 | `docs, organization` | `localsetup-docs-organization` |
 | `dev, publishing` | `skill` | `ls-documentation-alignment` | `framework-governance` | 20 | `docs, alignment` | `localsetup-documentation-alignment` |
 | `bootstrap, dev` | `skill` | `ls-framework-audit` | `framework-governance` | 20 | `audit, release` | `localsetup-framework-audit` |
 | `bootstrap, dev` | `skill` | `ls-framework-compliance` | `framework-governance` | 20 | `compliance, framework` | `localsetup-framework-compliance` |
 | `bootstrap, dev` | `skill` | `ls-git-workflows` | `framework-governance` | 20 | `git, workflows` | `localsetup-git-workflows` |
 | `publishing` | `skill` | `ls-github-publishing-workflow` | `framework-governance` | 20 | `github, publishing` | `localsetup-github-publishing-workflow` |
 | `core` | `skill` | `ls-localsetup-doctor` | `framework-governance` | 20 | `doctor, repair` | `localsetup-localsetup-doctor` |
-| `dev` | `skill` | `ls-markdown-reference-validator` | `framework-governance` | 20 | `markdown, references` | `localsetup-markdown-reference-validator` |
+| `dev, publishing` | `skill` | `ls-markdown-reference-validator` | `framework-governance` | 20 | `markdown, references` | `localsetup-markdown-reference-validator` |
 | `publishing` | `skill` | `ls-public-repo-identity` | `framework-governance` | 20 | `identity, publishing` | `localsetup-public-repo-identity` |
 | `dev` | `skill` | `ls-receiving-code-review` | `framework-governance` | 20 | `review, feedback` | `localsetup-receiving-code-review` |
 | `dev` | `skill` | `ls-requesting-code-review` | `framework-governance` | 20 | `review, feedback` | `localsetup-requesting-code-review` |
@@ -115,7 +115,6 @@ artifact_sha256: bcc47865d9df24b74a8253edbd01383185e4e04117c17cfc73b50e9037cf2ae
 | `specialized` | `skill` | `ls-kilo-boss-orchestrator` | `specialized` | 70 | `kilo, orchestration` | `localsetup-kilo-boss-orchestrator` |
 | `specialized` | `skill` | `ls-kilo-visual-output` | `specialized` | 70 | `kilo, output` | `localsetup-kilo-visual-output` |
 | `dev, publishing` | `workflow` | `ls-workflow-codex-github-issue-goal-loop` | n/a | n/a | n/a | `n/a` |
-| `dev, publishing` | `workflow` | `ls-workflow-documentation-alignment` | n/a | n/a | n/a | `n/a` |
 | `bootstrap, dev` | `workflow` | `ls-workflow-ops-guarded` | n/a | n/a | n/a | `n/a` |
 | `core, ops` | `workflow` | `ls-workflow-ops-tmux-session` | n/a | n/a | n/a | `n/a` |
 | `bootstrap, dev` | `workflow` | `ls-workflow-pipeline-git-repair-hygiene` | n/a | n/a | n/a | `n/a` |
