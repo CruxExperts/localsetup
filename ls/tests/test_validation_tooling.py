@@ -202,6 +202,31 @@ def test_markdown_reference_validator_slugifies_gfm_punctuation() -> None:
     assert module._slugify_heading("Stealth & Anti-Bot") == "stealth--anti-bot"
 
 
+def test_strict_reference_profile_excludes_only_inert_upstream_source(tmp_path, monkeypatch) -> None:
+    root = Path(__file__).resolve().parents[2]
+    module = load_script_module(
+        "ls/skills/ls-markdown-reference-validator/scripts/markdown_reference_validator.py"
+    )
+    monkeypatch.chdir(root)
+    config = module._load_config(
+        root / "ls/skills/ls-markdown-reference-validator/templates/markdown_reference_strict_repo.yaml"
+    )
+    archive = tmp_path / "ls/skills/ls-demo/references/upstream/demo"
+    archive.mkdir(parents=True)
+    snapshot = archive / "UPSTREAM_SKILL.source.md"
+    authored = archive / "coverage.md"
+    for path in (snapshot, authored):
+        path.write_text("[Missing](../auxiliary/missing.md)\n", encoding="utf-8")
+
+    findings, checked = module._extract_findings(
+        [snapshot, authored], repo_root=tmp_path, inline_code_mode=config.inline_code_mode,
+        ignore=config.ignore, max_findings=config.max_findings,
+    )
+
+    assert checked == 1
+    assert [(finding.source_file, finding.category) for finding in findings] == [(str(authored), "missing_path")]
+
+
 def test_markdown_reference_validator_profiles_load(monkeypatch) -> None:
     root = Path(__file__).resolve().parents[2]
     module = load_script_module(

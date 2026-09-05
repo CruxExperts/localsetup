@@ -1,7 +1,7 @@
 # Localsetup
 
 <p align="center">
-  <img src="assets/localsetup-readme-hero.svg" alt="Localsetup visual: repo-local agent workflow framework" width="960">
+  <img src="assets/localsetup-readme-hero.png" alt="Localsetup: portable skills and deliberate workflows, with one package library serving selected agent hosts" width="960">
 </p>
 
 <p align="center">
@@ -14,11 +14,20 @@
 
 **Localsetup gives coding agents a repo-local operating layer.**
 
-Agent work is moving from one-off prompts into repeatable development operations. The hard part is not only giving an agent more context; it is keeping that context durable, reviewable, portable across tools, and safe enough for real repositories.
+Keep reusable agent skills in one managed library, expose the packages each project needs, and review the instructions alongside your code.
 
-Localsetup turns your repository into the source of truth for agent instructions, skills, workflow packages, adapter configuration, safety gates, install state, documentation truth, and release evidence. It is not another chat prompt collection. It is a portable framework with adapters for Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode, plus a disciplined package library and predictable controller workflow model.
+Localsetup provides capability skills, executable workflow packages, explicit adapter selection, install planning, verification, and rollback records. It supports Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode. Custom project skills can live beside managed packages.
 
-Use it when you want agents to stop improvising from hidden local setup and start working from auditable context that travels with the code.
+Start with the [quickstart](ls/docs/QUICKSTART.md), browse the [documentation](ls/docs/README.md), or read the [4.4.0 release guide](ls/docs/releases/4.4.0.md).
+
+## What's new in 4.4
+
+- **Focused context:** Platform templates use canonical catalogs and current-client discovery instead of repeating the package inventory. Optional templates remain distinct from installed adapters.
+- **Clear workflow ownership:** Audit, documentation, heartbeat, and transport entry points route to their owning capability packages. The generated registry lists the supported workflow packages.
+- **Cleaner managed packages:** Source materialization omits Python bytecode caches while retaining source files, hidden assets, and package data.
+- **Isolated audit execution:** Sandbox smoke commands receive an explicitly staged shared helper without inheriting host import paths.
+
+See the [release guide](ls/docs/releases/4.4.0.md) for compatibility, updating, and verification.
 
 ## The short version
 
@@ -39,7 +48,7 @@ That means your agent setup travels with the repo, survives context resets, and 
 ## How it fits together
 
 <p align="center">
-  <img src="assets/localsetup-architecture.svg" alt="Localsetup architecture: repo source, config resolver, managed home library, adapters, and rollback metadata" width="960">
+  <img src="assets/localsetup-architecture.png" alt="Framework source flows through the Localsetup CLI into a managed library and selected project adapters; custom project skills stay in place" width="960">
 </p>
 
 The registered Localsetup source checkout is the canonical framework source. The installer resolves configuration, creates the managed package library for skills and workflow packages, attaches only explicitly selected target adapter paths, writes target lock/report metadata under `.localsetup/`, and records an install journal under `.localsetup/install-journal/`. Consuming repos do not receive a copied `ls/` by default.
@@ -129,6 +138,8 @@ localsetup update --target-directory .
 
 When invoked through the managed command, Localsetup uses the registered framework checkout as the source and the nearest Git worktree root from your current directory as the target. Outside Git, it targets the current directory. Use `--target-directory /path/to/project` to override that target.
 
+`localsetup update` reapplies that registered source; it does not download a newer release. Follow the [update guide](ls/docs/QUICKSTART.md#update) to refresh the source first.
+
 Attach adapters only for the hosts you choose:
 
 ```bash
@@ -215,7 +226,7 @@ See the generated catalogs for all shipped skills and workflows: [ls/docs/SKILLS
 ## Install lifecycle
 
 <p align="center">
-  <img src="assets/localsetup-install-lifecycle.svg" alt="Localsetup install lifecycle: doctor, configure, context, plan, install, verify, ship, and rollback" width="960">
+  <img src="assets/localsetup-install-lifecycle.png" alt="Inspect the target, plan changes, confirm scope, apply, and verify; rollback restores recorded managed paths" width="960">
 </p>
 
 The Bash wrapper stays thin. The Python CLI handles preflight, dependency setup, adapter planning, managed skill installation, verification, generated docs, packaging, and rollback.

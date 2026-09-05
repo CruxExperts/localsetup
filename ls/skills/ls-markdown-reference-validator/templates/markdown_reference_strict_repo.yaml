@@ -11,6 +11,8 @@ extraction:
 
 ignore:
   source_file_globs:
+    # Selective upstream provenance keeps original links; active companions stay in scope.
+    - "**/references/upstream/**/*.source.md"
     - "**/node_modules/**"
     - "**/_generated/**"
     - "**/docs/reference/markdown-reference-audit.md"

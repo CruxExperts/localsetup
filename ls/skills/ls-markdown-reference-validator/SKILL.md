@@ -98,6 +98,13 @@ The sidecar config defines:
 
 The shipped default profile is repo-only and writes report/state only beneath ignored .localsetup/state/markdown-reference/. Use the strict repo profile for narrower tracked-source link and anchor review. Use the host-aware profile only when you explicitly need local adapter or host instruction surfaces; its report remains local-only and redacts paths outside repo_root.
 
+The strict profile checks active documentation, not the transitive completeness of
+selectively imported upstream archives. It excludes only `*.source.md` snapshots
+under `references/upstream/`; authored coverage notes and ordinary references remain
+in scope. Preserve snapshot bytes and verify their recorded hashes separately.
+Use a custom profile without that exclusion when intentionally auditing archived
+upstream links, and interpret omissions against the archive's import policy.
+
 ### Config schema (practical defaults)
 
 ```yaml

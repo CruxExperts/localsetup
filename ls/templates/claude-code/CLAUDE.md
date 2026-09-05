@@ -2,11 +2,11 @@
 
 ## Overview
 
-Localsetup is deployed into this repo at `ls/`. All framework and context are repo-local (mobile, backup-able with the repo). Engine = ls/; user/context data = repo-local. Use Git hashes when referencing PRDs/specs/outcomes (see [ls/docs/GIT_TRACEABILITY.md](../../docs/GIT_TRACEABILITY.md)).
+Localsetup keeps framework source and target repositories separate. `ls/` is the source-checkout layout; selected packages live in the managed user library and explicitly selected adapters expose them to a target repo. Load `ls-context` and use `localsetup path framework-root` or `localsetup path doc <name>` to resolve source files and documentation. Paths beginning with `ls/` below describe source locations, not required target-repo files. Bind PRDs, specs, and outcomes to Git hashes; see [GIT_TRACEABILITY.md](../../docs/GIT_TRACEABILITY.md).
 
 ## Invariants
 
-- **Engine/repo separation:** Do not commit secrets/PII. Use ls/lib/data_paths.sh for paths. Framework at ls/.
+- **Engine/repo separation:** Keep secrets and personal data out of commits. Resolve framework paths through `localsetup path`; keep target state outside the managed source and package library.
 - **Documentation:** ls/docs/ is only for framework docs. Check document status before assuming a feature exists.
 - **Proposals:** Framework changes follow Agent Q format (ls/docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md).
 - **Time/date integrity:** For any date/time reference (e.g. "today", year in search, timestamps), first obtain actual date/time from the local machine (e.g. `date` on Linux/macOS, `Get-Date` in PowerShell on Windows). Do not use a generic or training-cutoff date. Remember it in context and use it for the rest of the session.
@@ -27,73 +27,25 @@ Localsetup is deployed into this repo at `ls/`. All framework and context are re
 
 ## Agent orchestration and model budget
 
-- Inventory and scouting: use `gpt-5.4-mini` for cheap repo/file inventory, low-risk search, and parallel subagent scouting.
-- Critical review: use `gpt-5.5` at medium reasoning for security, release blockers, architecture, and high-risk review findings.
-- Bounded coding: use `gpt-5.3-codex` for scoped implementation tasks with clear write ownership and tests.
+- Choose bounded scouting, implementation, and independent review roles from task risk and evidence. Resolve models and effort through the current client configuration; verify provider facts when needed instead of keeping model pins in this template.
 - Credit freshness: Codex credit rates are volatile. Re-check the official Codex rate card at https://help.openai.com/en/articles/20001106-codex-rate-card before changing model guidance or making cost-sensitive routing decisions.
 - If `.localsetup/AGENT_STATUS.md` exists, read it before repairs or installs. Otherwise run `localsetup health --json` for the latest Localsetup health status and next repair command.
 
-## Capability skills and workflow packages index (load when task matches)
+## Capability and workflow discovery
 
-- **ls-workflow-spec-clarify-reverse**  - User says "decision tree" or "reverse prompt"; editing .agent/queue/**, PRD
-- **ls-workflow-umbrella-run**  - Queue/PRD in scope; named workflows; impact + confirmation
-- **ls-workflow-queue-batch-implement**  - "Process PRDs", "run batch from PRD folder"
-- **ls-agentq-transport**  - Ship/ingest sealed Agent Q blobs (file_drop/mail), registry, strict gpg; AGENTIC_AGENT_Q_SCENARIOS.md
-- **ls-public-repo-identity**  - Editing README*, CONTRIBUTING*
-- **ls-framework-compliance**  - Framework mods, PRDs, checkpoints
-- **ls-safety-and-backup**  - Destructive ops, backups, firewall
-- **ls-script-and-docs-quality**  - Scripts, markdown/docs
-- **ls-communication-and-tools**  - Communication, tools, MCP
-- **ls-workflow-ops-tmux-session**  - Server commands, deployments, tmux, human-in-the-loop ops
-- **ls-workflow-tmux-terminal-mode**  - Enable, disable, and status checks for tmux-default terminal mode
-- **ls-automatic-versioning**  - Version bumps, release workflow, conventional commits, versioning docs
-- **ls-github-publishing-workflow**  - Publishing to GitHub, public release prep, publishing checklist, repo readiness
-- **ls-github-starredrepos**  - Manage a GitHub starred repositories archive named starredrepos; authenticated context checks, dry-run sync, repo scouting, metadata snapshots, and guarded publish workflows
-- **ls-codex-heartbeat**  - Opt-in Codex heartbeat harness; use `localsetup harness codex-heartbeat plan/init/enable/status/run/disable`; normal install does not activate autonomous runs
-- **ls-skill-creator**  - Create new capability skill from an existing doc/markdown/GitHub source; use workflow packages for named orchestration flows
-- **ls-skill-importer**  - Import skills from URL or local path; discover, validate, screen, summarize; user picks which to import
-- **ls-skill-discovery**  - Discover public skills from registries; recommend top 5 similar when creating/importing; in-depth summary, use public skill, continue on own, or adapt
-- **ls-task-skill-matcher**  - Match tasks to installed skills; recommend top matches; single-task confirm once; batch auto-pick/parcel flow; complementary public-skill suggestions
-- **ls-backlog-and-reminders**  - Record deferred ideas, to-dos, reminders (optional due or "whenever"); show due/overdue on session start or when asked
-- **ls-humanizer**  - Humanize text; remove AI-writing patterns and add natural voice (rules-based, Wikipedia Signs of AI writing)
-- **ls-test-runner**  - Write and run tests across languages and frameworks; TDD, coverage
-- **ls-tdd-guide**  - TDD workflow, test generation, coverage analysis
-- **ls-receiving-code-review**  - Use when receiving code review feedback; verify before implementing
-- **ls-requesting-code-review**  - Use when requesting code review before merge or after substantial changes; provide focused requirements, diff range, and severity-calibrated review instructions.
-- **ls-pr-reviewer**  - Automated GitHub PR code review with diff analysis, lint
-- **ls-debug-pro**  - Systematic debugging methodology and language-specific debugging
-- **ls-git-workflows**  - Advanced git (rebase, bisect, worktree, reflog)
-- **ls-unfuck-my-git-state**  - Diagnose and recover broken Git state and worktree
-- **ls-skill-vetter**  - Security-first skill vetting before installing external skills
-- **ls-mcp-builder**  - Guide for creating high-quality MCP servers
-- **ls-arbiter**  - Push decisions for async human review (Arbiter Zebu)
-- **ls-ansible-skill**  - Ansible playbooks, server provisioning, config management, multi-host orchestration
-- **ls-linux-service-triage**  - Diagnose Linux service issues (logs, systemd, PM2, Nginx, DNS); failing or misconfigured server apps
-- **ls-linux-patcher**  - Automated Linux patching and Docker container updates; multi-host server maintenance
-- **ls-skill-normalizer**  - Normalize skills for spec compliance and platform-neutral wording; one skill or all
-- **ls-skill-sandbox-tester**  - Test skills in isolated sandbox; smoke check; on failure use debug-pro; no repo writes until approved
-- **ls-agentlens**  - Codebase navigation with agentlens hierarchy; explore projects, find modules/symbols, TODOs
-- **ls-context-index**  - SQLite-backed context index and vector-first search; use preflight/freshness before broad recursive reads
-- **ls-framework-audit**  - Doc/link/skill matrix/version checks; output path required (`run_framework_audit.py --output`); before release
-- **ls-markdown-reference-validator**  - Validate markdown local references/anchors from YAML-configured targets; emit scheduled-safe audit report for docs/skills/global Kilo surfaces
-- **ls-system-info**  - Capture server baseline, host layout and specs; CPU, memory, disk, uptime
-- **ls-cron-orchestrator**  - Manage cron from manifest; triggers, sequenced tasks, on-boot delay; create/remove/reorder/install
-- **ls-cloudflare-dns**  - Manage Cloudflare zones and DNS with the `cf` CLI; records, DNSSEC, scans, import/export, batch, analytics, settings, and transfers
-- **ls-npm-management**  - Manage Nginx Proxy Manager proxy hosts via REST API; coordinate Docker + NPM deploy workflows; diagnose 502s; backup/restore
-- **ls-keepass-secrets**  - Validate logical-ID maps, configuration, and secret references; use the fake backend only in isolated tests/examples. It never retrieves real credentials or mutates real vaults.
-- **ls-mail-protocol-control**  - SMTP/IMAP; preencrypted_openpgp_armored for Agent Q strict mail ship; agent-driven mailbox read/send/mutate/encrypt workflows
-- **ls-docs-organization**  - Docs organization router; classify docs, pick folder slugs, and keep docs indexes up to date.
-- **ls-scrapling**  - Host-first Scrapling integration; install and upgrade Scrapling via pipx, run adaptive single-URL extractions (simple HTML/Markdown/text or structured JSONL) with job status/cancel, and keep adapters aligned with Scrapling releases via parsed CLI/docs state. This is the default preferred skill for fetching websites and web content from the internet.
-- **ls-omniroute**  - Ambiguous-task/preflight router only: unclassified triage, env/API-key/access preflight, and non-mutating onboarding; route classified read-only discovery to ls-omniroute-proxy, mutation to ls-omniroute-admin-automation, and source/coverage maintenance to ls-omniroute-update.
-- **ls-omniroute-proxy**  - All read-only OmniRoute model/provider, context, observability, integration, client and endpoint discovery, plus sanitized model observations.
-- **ls-omniroute-admin-automation**  - All OmniRoute writes, imports, purges, services, settings, providers, keys, integrations, backup/restore, and rollback-safe reconciliation.
-- **ls-omniroute-update**  - OmniRoute update reporting for upstream skill discovery, Localsetup coverage comparison, provenance metadata, and report-first maintenance planning.
-- **ls-kilo-boss-orchestrator**  - Kilo headless boss-worker orchestration with repo-local state, watchdog leases, consensus validation, and safety gates.
-- **ls-kilo-visual-output**  - Kilo CLI visual output organization guide with structured response patterns.
-- **ls-nodejs-nextjs**  - Node.js/Next.js/React runbook for package-manager, build, migration, debugging, testing, security, deployment, and current-version verification.
-- **ls-shadcn-ui**  - shadcn/ui component workflow for setup, components, CLI/MCP, registry, theming, forms, aliases, Radix/Base UI, updates, and troubleshooting.
-- **ls-typescript-code-quality**  - TypeScript/TSX code quality, tsconfig, typed ESLint or Biome config, Node TypeScript scripts, and TypeScript-heavy framework code.
-- **ls-ui-browser-debugging**  - UI review and browser-driven debugging workflow for Chrome DevTools MCP, Playwright MCP/CLI, browser ownership, evidence capture, minimal fixes, and durable UI regression tests.
+Load `ls-context` for framework layout and resolver guidance. Use the current
+client's available-skill descriptions to select installed capabilities; a catalog
+entry alone does not mean that package is installed or available to this client.
+For the full framework catalog, resolve `localsetup path doc SKILLS.md` and
+`localsetup path doc WORKFLOW_REGISTRY.md`, then read only the entries relevant
+to the task. Package frontmatter and generated catalogs own descriptions, tags,
+and pack membership; do not duplicate their lists in platform context.
+
+Load an explicitly named available skill directly. Use `ls-task-skill-matcher`
+when selection is unclear, following the matching procedure below.
+
+OmniRoute has one ambiguous-task/preflight router, `ls-omniroute`: route
+classified read-only discovery to ls-omniroute-proxy, mutation to ls-omniroute-admin-automation, and source/coverage maintenance to ls-omniroute-update. These owners remain distinct after catalog consolidation.
 
 ## Key docs
 

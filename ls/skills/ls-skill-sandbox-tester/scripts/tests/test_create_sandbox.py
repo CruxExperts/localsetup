@@ -139,3 +139,29 @@ def test_create_sandbox_rejects_source_symlinks(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="contains a symlink"):
         create_sandbox._create_sandbox(source, tmp_path)
+
+
+@pytest.mark.parametrize("kind", ["missing", "directory", "oversized", "symlink", "parent-symlink", "wrong-name"])
+def test_rejects_invalid_shared_deps(tmp_path: Path, kind: str) -> None:
+    module = load_create_sandbox()
+    source = make_skill(tmp_path / "source", "ls-example")
+    dependency = tmp_path / "deps.py"
+    if kind == "directory":
+        dependency.mkdir()
+    elif kind == "oversized":
+        dependency.write_bytes(b"x" * (module.SHARED_DEPS_MAX + 1))
+    elif kind in {"symlink", "parent-symlink"}:
+        actual = tmp_path / "actual"
+        actual.mkdir()
+        (actual / "deps.py").write_text("", encoding="utf-8")
+        if kind == "symlink":
+            dependency.symlink_to(actual / "deps.py")
+        else:
+            (tmp_path / "linked").symlink_to(actual, target_is_directory=True)
+            dependency = tmp_path / "linked" / "deps.py"
+    elif kind == "wrong-name":
+        dependency = tmp_path / "other.py"
+        dependency.write_text("", encoding="utf-8")
+    with pytest.raises(ValueError, match="shared deps"):
+        module._create_sandbox(source, tmp_path, dependency)
+    assert not list(tmp_path.glob("skill-sandbox-*"))

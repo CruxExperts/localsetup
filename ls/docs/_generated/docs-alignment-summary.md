@@ -8,7 +8,7 @@ localsetup_provenance:
   emitter: docs-align
 framework_version: 4.3.9
 source_commit: 8920479bdfce6806889bf411bdf707faacbd9920
-artifact_sha256: aa629ddcbea24ac529a00928f6830e0559bb9920dc2ffcaced0d83867f58798a
+artifact_sha256: dba023da7dc5b5a52b087c4959bc2fae386fc43f37aea8f28766041d97bf08cf
 ---
 # Documentation Alignment Summary
 
@@ -17,7 +17,7 @@ This page is generated from repository inventory, source-truth manifests, asset 
 | Signal | Value |
 |---|---:|
 | Version | `4.3.9` |
-| Public/framework docs scanned | 427 |
+| Public/framework docs scanned | 428 |
 | Shipped skills | 103 |
 | Workflow packages | 16 |
 | Supported platforms | 6 |

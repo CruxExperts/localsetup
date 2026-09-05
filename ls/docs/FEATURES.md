@@ -20,6 +20,8 @@ This is the full public capability catalog for Localsetup. The [root README](../
 
 ## Engine And Install
 
+The [4.4.0 release guide](releases/4.4.0.md) describes the current context and package modernization. Materialized package contents exclude Python bytecode caches while retaining source and data assets. Optional platform templates route to canonical catalogs instead of duplicating their inventory.
+
 | Capability | What it gives you |
 |---|---|
 | Global framework source | The registered source checkout carries `ls/`; consuming repos keep `.localsetup/` state and selected adapters, not copied framework source. |

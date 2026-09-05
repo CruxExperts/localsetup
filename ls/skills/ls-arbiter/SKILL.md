@@ -154,7 +154,7 @@ Add a heartbeat or session-resume check that:
 |---|---|
 | `python-frontmatter is required` | Run `uv sync --locked --no-dev` from the Localsetup source checkout |
 | Plan not visible to Arbiter | Confirm the generated file is under `~/.arbiter/queue/pending/` and has YAML frontmatter |
-| `get` reports pending | The reviewer has not completed every decision or the plan has not been moved to `completed/` |
+| `get` reports pending | Check for missing or invalid per-decision answers in frontmatter; moving the plan to `completed/` does not determine completion |
 | Tag finds the wrong plan | Use the explicit `planId`; tag lookup returns the newest matching plan |
 
 ## Reference

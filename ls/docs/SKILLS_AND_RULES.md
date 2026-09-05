@@ -10,9 +10,9 @@ owner_skill: ls-task-skill-matcher
 
 ## Model
 
-- **One always-loaded context** per platform: Cursor uses `.cursor/rules/ls-context.mdc`; Claude Code uses `.claude/CLAUDE.md`; Codex uses `AGENTS.md`; OpenClaw uses its platform template; OpenCode uses `AGENTS.md`; Kilo CLI uses `.kilo/instructions.md`.
+- **Context is client-owned:** Localsetup ships optional platform context templates. The native installer installs selected packages and explicitly selected adapters; it does not adopt those templates or replace the user's context files. Check the current client registry and active workspace before assuming a template is loaded.
 - **Capability skills and workflow packages:** Capability skills live in `ls/skills/`. Workflow packages live in `ls/workflows/` and also contain `SKILL.md`, so installs both package types into the managed package library.
-- **When to load a skill or workflow:** Load when the task matches the package description (e.g. user says "decision tree" -> ls-workflow-spec-clarify-reverse). The master rule/context includes an index of key packages and when to use them.
+- **When to load a skill or workflow:** Load an available package when the task matches its description (e.g. user says "decision tree" -> ls-workflow-spec-clarify-reverse). Use current client discovery for installed availability, `ls-context` for framework orientation, and generated catalogs for the complete source inventory. Read relevant entries on demand; catalog membership does not prove installation.
 
 ## Skills vs workflow packages
 
@@ -34,7 +34,7 @@ Use [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) as the canonical definition of:
 
 ## Platform paths
 
-**Canonical list:** Supported platforms and their context and skills paths are defined in [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md). Reference that file when listing platforms or adding a new one. The skills paths below are created only when that platform adapter is explicitly selected; a global-only install does not create repo adapter paths. Summary:
+**Canonical list:** Supported platforms and their context and skills paths are defined in [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md). Reference that file when listing platforms or adding a new one. The skills paths below are created only when that platform adapter is explicitly selected; a global-only install does not create repo adapter paths. Context paths identify template or user-owned guidance and do not describe installer output. Verify actual loading through the current client's registry entry and configuration.
 
 | Platform | Context loader | Skills |
 |----------|----------------|--------|

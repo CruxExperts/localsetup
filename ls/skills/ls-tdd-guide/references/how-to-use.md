@@ -51,7 +51,7 @@ Framework: Pytest
 
 ### Example 1: Generate Tests from Code
 
-```
+````text
 @tdd-guide
 
 Generate comprehensive tests for this function:
@@ -69,7 +69,7 @@ Include:
 - Error cases
 - Boundary values
 - Edge cases
-```
+````
 
 ### Example 2: Improve Coverage
 
@@ -90,7 +90,7 @@ Prioritize critical paths.
 
 ### Example 3: Review Test Quality
 
-```
+````text
 @tdd-guide
 
 Review the quality of these tests:
@@ -113,11 +113,11 @@ Suggest improvements for:
 - Assertion quality
 - Naming conventions
 - Test organization
-```
+````
 
 ### Example 4: Framework Migration
 
-```
+````text
 @tdd-guide
 
 Convert these Jest tests to Pytest:
@@ -137,7 +137,7 @@ describe('Calculator', () => {
 ```
 
 Maintain test structure and coverage.
-```
+````
 
 ### Example 5: Generate Test Fixtures
 

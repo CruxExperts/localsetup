@@ -3391,7 +3391,7 @@
   },
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "dfd824c0f8e905835b6c16c8804fb2759c2a4fcba93847f29ffc0220db9f249d",
+    "artifact_sha256": "1f48045d5453f5584ccf978329f7d96645264ede071f956f7d68bc1f05bc8b53",
     "emitter": "docs-align",
     "framework_version": "4.3.9",
     "schema_version": 1,
@@ -3753,6 +3753,11 @@
           "owner_package": "ls-workflow-ops-tmux-session",
           "owner_skill": "",
           "path": "ls/docs/ops/tmux-ops-remote.md"
+        },
+        {
+          "owner_package": "",
+          "owner_skill": "ls-automatic-versioning",
+          "path": "ls/docs/releases/4.4.0.md"
         },
         {
           "owner_package": "",

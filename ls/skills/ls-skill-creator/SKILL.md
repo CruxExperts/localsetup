@@ -47,11 +47,11 @@ This skill owns framework skill-authoring, import handoff, and export-audit beha
 
 ## Registration (required for discoverability)
 
-After creating the skill, **register it** in every place that lists framework skills so it appears in each platform's context and can be loaded when the task matches. Add one row or bullet per skill with a short "When to use" line.
+After creating the skill, **register it** in its owning metadata and regenerate the shared catalogs so clients can discover it when the task matches.
 
-**Canonical list of files to update:** Read [PLATFORM_REGISTRY.md](../../docs/PLATFORM_REGISTRY.md), section **"Skill registration (new skills)"**. That table lists every file (per platform and shared) that must include the new skill. Update every file listed there. Do not maintain a separate list in this skill; the registry is the source of truth so that when new platforms are added, registration stays complete.
+**Canonical registration contract:** Read [PLATFORM_REGISTRY.md](../../docs/PLATFORM_REGISTRY.md), section **"Skill registration (new skills)"**, and complete its metadata, smoke-matrix, generation, and validation requirements. Do not maintain a separate registration list in this skill.
 
-Use the same "When to use" phrasing across all files so indexes stay consistent.
+Keep the current task description in package frontmatter. Platform templates route to that metadata and the generated catalogs; do not add duplicate per-skill lists to each template.
 
 ## Workflow (agent steps)
 
@@ -69,7 +69,7 @@ Use the same "When to use" phrasing across all files so indexes stay consistent.
 4. **Duplicate, overlap, and namespace check**  - For this newly authored skill only, list existing `ls/skills/` names and descriptions. If the proposed name already exists or its purpose and triggers strongly overlap, warn and offer **Keep existing**, **Replace existing**, **Merge**, or **Create as new**. Get explicit user choice. Imported candidates never use this step; their decision belongs exclusively to `ls-skill-importer`.
 5. **Draft SKILL.md**  - Use spec-compliant frontmatter and body. Follow the Agent Skills specification and Anthropic's skill-creator for structure; avoid unnecessary framework-only behavior and document every required host capability.
 6. **Create file**  - Write `ls/skills/<name>/SKILL.md` or the user-approved alternative. Deploy maps it to each platform's configured adapter skills root; manual adapter copy is optional when needed.
-7. **Register**  - Add the skill to every file named by [PLATFORM_REGISTRY.md](../../docs/PLATFORM_REGISTRY.md) under "Skill registration (new skills)."
+7. **Register**  - Complete the registration and generated-catalog checks in [PLATFORM_REGISTRY.md](../../docs/PLATFORM_REGISTRY.md) under "Skill registration (new skills)."
 8. **Confirm**  - Confirm the skill is created, spec-compliant, and registered. Before claiming it works in another Agent Skills host, complete the export audit below and adapt any host-specific behavior.
 
 ## Duplicate and overlap for new authoring
@@ -81,7 +81,7 @@ Use the same "When to use" phrasing across all files so indexes stay consistent.
 - Skill is [Agent Skills](https://agentskills.io/specification)-compliant: `name` matches directory, `description` is present and under 1024 characters, and optional directories follow the specification.
 - For framework use: name follows the `ls-*` convention, `metadata.version` is present, and registration is complete per `PLATFORM_REGISTRY.md`.
 - Description includes what the skill does and when to apply it. Body has clear sections; committed content contains no personal data or machine-specific paths.
-- All registration files named by [PLATFORM_REGISTRY.md](../../docs/PLATFORM_REGISTRY.md) are updated. Imports additionally require passing vetting, normalization, and sandbox evidence before canonical copy or registration.
+- Registration metadata and generated catalogs satisfy [PLATFORM_REGISTRY.md](../../docs/PLATFORM_REGISTRY.md). Imports additionally require passing vetting, normalization, and sandbox evidence before canonical copy or registration.
 
 ## Using our skills in another host (export)
 

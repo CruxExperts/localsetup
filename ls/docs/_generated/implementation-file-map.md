@@ -5,7 +5,7 @@ localsetup_provenance:
   emitter: generate-docs
 framework_version: 4.3.9
 source_commit: 8920479bdfce6806889bf411bdf707faacbd9920
-artifact_sha256: 8798687abe35ab08700a9c4392c9273db35322fac2134b7939fea5438da5fe77
+artifact_sha256: d38662227de69e8d6c1bd713649b0d1566c72dbc4d91832ce815f45b39645b7a
 ---
 # Implementation File Map
 
@@ -64,10 +64,10 @@ artifact_sha256: 8798687abe35ab08700a9c4392c9273db35322fac2134b7939fea5438da5fe7
 | `keep` | `VERSION` |
 | `keep` | `agent-repo-shape.json` |
 | `keep` | `assets/README.md` |
-| `keep` | `assets/localsetup-architecture.svg` |
-| `keep` | `assets/localsetup-install-lifecycle.svg` |
+| `keep` | `assets/localsetup-architecture.png` |
+| `keep` | `assets/localsetup-install-lifecycle.png` |
 | `keep` | `assets/localsetup-logo.png` |
-| `keep` | `assets/localsetup-readme-hero.svg` |
+| `keep` | `assets/localsetup-readme-hero.png` |
 | `keep` | `config/localsetup_finalizer.yaml` |
 | `keep` | `docs.config.yaml` |
 | `keep` | `external_skills.lock.json` |
@@ -193,6 +193,8 @@ artifact_sha256: 8798687abe35ab08700a9c4392c9273db35322fac2134b7939fea5438da5fe7
 | `refactor` | `ls/core/models.py` |
 | `refactor` | `ls/core/package.py` |
 | `refactor` | `ls/core/package_cleanup.py` |
+| `refactor` | `ls/core/package_content/__init__.py` |
+| `refactor` | `ls/core/package_content/copy.py` |
 | `refactor` | `ls/core/package_surface.py` |
 | `refactor` | `ls/core/path_contract.py` |
 | `refactor` | `ls/core/path_reprocessor.py` |
@@ -359,6 +361,7 @@ artifact_sha256: 8798687abe35ab08700a9c4392c9273db35322fac2134b7939fea5438da5fe7
 | `keep` | `ls/docs/migration/skill-alias-map.md` |
 | `keep` | `ls/docs/ops/tmux-ops-managed.md` |
 | `keep` | `ls/docs/ops/tmux-ops-remote.md` |
+| `keep` | `ls/docs/releases/4.4.0.md` |
 | `keep` | `ls/docs/scrapling-cheat-sheet.md` |
 | `keep` | `ls/lib/data_paths.sh` |
 | `keep` | `ls/lib/deps.py` |

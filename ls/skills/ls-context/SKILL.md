@@ -71,6 +71,10 @@ Adapters such as `.codex/skills`, `.claude/skills`, `.cursor/skills`, `.kilo/ski
 
 Package materialization copies source packages into the managed package root, rewrites public doc references, bundles public doc closure under `references/localsetup/docs`, writes a reference-bundle manifest, and validates the deployed package surface.
 
+Materialization omits Python bytecode (`*.pyc`, `*.pyo`, and `__pycache__/` trees),
+matching the source archive's bytecode boundary. It preserves other source assets,
+including hidden files and package data; it does not use blanket Git-ignore filtering.
+
 ## Recursive Path Contract
 
 Whole-project reprocessing treats every tracked text-bearing file as a complete unit. It excludes `.git`, caches, private maintenance state, build artifacts, and ignored runtime state.

@@ -111,7 +111,10 @@ def phase_skill_matrix(
                     )
                 continue
             cp = subprocess.run(
-                [sys.executable, str(create_sandbox), "--skill-path", str(skill_path)],
+                [
+                    sys.executable, str(create_sandbox), "--skill-path", str(skill_path),
+                    "--shared-deps", str(fw / "lib" / "deps.py"),
+                ],
                 cwd=str(root),
                 capture_output=True,
                 text=True,

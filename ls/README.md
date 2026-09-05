@@ -7,7 +7,7 @@
 For the public product overview, start with the [root README](../README.md). This page is the contributor and maintainer map for the framework internals.
 
 <p align="center">
-  <img src="../assets/localsetup-architecture.svg" alt="Localsetup architecture: repo source, config resolver, managed home library, adapters, and rollback metadata" width="960">
+  <img src="../assets/localsetup-architecture.png" alt="Localsetup architecture: repo source, config resolver, managed home library, adapters, and rollback metadata" width="960">
 </p>
 
 ## What this directory owns
@@ -19,12 +19,14 @@ For the public product overview, start with the [root README](../README.md). Thi
 - **Public docs:** `docs/` explains install behavior, platform support, workflow registries, skill import, Agent Q transport, versioning, and release validation.
 - **Verification:** The Localsetup CLI and framework audit tools validate catalog shape, generated docs, migration state, and release readiness.
 
-Generated adapter folders in consuming repositories are install output. Do not treat them as framework source.
+Localsetup-managed entries in consuming repositories are install output. Adapter directories may also contain project-owned skills, files, and symlinks; preserve that content in place. See [adapter ownership](docs/ADAPTER_OWNERSHIP.md).
+
+The [4.4.0 release guide](docs/releases/4.4.0.md) explains the consolidated context, workflow routing, and package-content changes.
 
 ## Install flow
 
 <p align="center">
-  <img src="../assets/localsetup-install-lifecycle.svg" alt="Localsetup install lifecycle: doctor, configure, context, plan, install, verify, ship, and rollback" width="960">
+  <img src="../assets/localsetup-install-lifecycle.png" alt="Inspect, plan, confirm scope, apply, verify, and restore recorded managed paths with rollback" width="960">
 </p>
 
 The root Bash installer delegates to the Python CLI. The CLI resolves platform intent, creates or refreshes the managed home package library, attaches only explicitly selected repo adapter paths, writes lock/report metadata, and supports rollback for managed paths.

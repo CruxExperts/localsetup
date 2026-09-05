@@ -33,6 +33,9 @@ VERSION_LINE = re.compile(r"^\*\*Version:\*\*\s*([\d.]+)", re.MULTILINE)
 SMOKE_COMMAND_MAX = 2048
 REPO_MARKERS = (".localsetup/lock.json", "ls", "VERSION", "README.md", ".git")
 PRIVATE_RUNTIME_PREFIXES = (
+    (".agents", "state"),
+    (".omp",),
+    (".localsetup", "state"),
     (".codex", "runs"),
     (".codex", "sessions"),
     (".codex", "logs"),

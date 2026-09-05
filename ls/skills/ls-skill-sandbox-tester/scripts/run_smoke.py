@@ -15,6 +15,7 @@ Stdout/stderr from the command are streamed; capture them when invoking from a s
 """
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -30,6 +31,8 @@ CONTROL_CHARS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 MARKER_NAME = ".localsetup-sandbox.json"
 MARKER_MAX = 16 * 1024
 MARKER_SCHEMA_VERSION = 1
+SHARED_DEPS_PATH = ".localsetup-runtime/lib/deps.py"
+SHARED_DEPS_MAX = 256 * 1024
 INHERITED_ENV_KEYS = (
     "COMSPEC",
     "LANG",
@@ -103,12 +106,43 @@ def _validate_marker(sandbox: Path, payload: dict[str, object]) -> None:
         raise ValueError("sandbox skill name does not match provenance marker")
 
 
+def _shared_deps_library(sandbox: Path, payload: dict[str, object]) -> Path | None:
+    if "shared_deps" not in payload:
+        return None
+    declaration = payload["shared_deps"]
+    if (
+        not isinstance(declaration, dict)
+        or set(declaration) != {"path", "sha256"}
+        or declaration.get("path") != SHARED_DEPS_PATH
+        or not isinstance(declaration.get("sha256"), str)
+        or re.fullmatch(r"[0-9a-f]{64}", declaration["sha256"]) is None
+    ):
+        raise ValueError("sandbox shared deps declaration is invalid")
+    dependency = sandbox.parent / SHARED_DEPS_PATH
+    runtime = sandbox.parent / ".localsetup-runtime"
+    _reject_symlinks(runtime)
+    if not _is_within(dependency.resolve(), sandbox.parent):
+        raise ValueError("sandbox shared deps escapes sandbox root")
+    if not dependency.is_file() or dependency.stat().st_size > SHARED_DEPS_MAX:
+        raise ValueError("sandbox shared deps is missing, nonregular, or oversized")
+    with dependency.open("rb") as stream:
+        content = stream.read(SHARED_DEPS_MAX + 1)
+    if len(content) > SHARED_DEPS_MAX or hashlib.sha256(content).hexdigest() != declaration["sha256"]:
+        raise ValueError("sandbox shared deps hash does not match provenance")
+    if set(dependency.parent.iterdir()) != {dependency}:
+        raise ValueError("sandbox shared deps library contains undeclared files")
+    return dependency.parent
+
+
 def _smoke_env(sandbox: Path) -> dict[str, str]:
     env = {
         key: value
         for key in INHERITED_ENV_KEYS
         if (value := os.environ.get(key)) and "\x00" not in value
     }
+    library = _shared_deps_library(sandbox, _load_marker(sandbox))
+    if library is not None:
+        env["PYTHONPATH"] = str(library)
     runtime_root = sandbox / ".localsetup-runtime"
     home = runtime_root / "home"
     temp = runtime_root / "tmp"
@@ -151,6 +185,7 @@ def _sanitize_path(value: str, max_len: int = SANDBOX_PATH_MAX) -> Path:
         raise ValueError(f"sandbox directory must be within platform temp root: {temp_root}")
     payload = _load_marker(path)
     _validate_marker(path, payload)
+    _shared_deps_library(path, payload)
     _reject_symlinks(path)
     return path
 
@@ -197,7 +232,7 @@ def main() -> int:
     try:
         sandbox = _sanitize_path(args.sandbox_dir)
         command = _sanitize_command(args.command)
-    except ValueError as exc:
+    except (ValueError, OSError) as exc:
         print(f"run_smoke: {exc}", file=sys.stderr)
         return 2
 
@@ -212,6 +247,9 @@ def main() -> int:
     except subprocess.TimeoutExpired:
         print("run_smoke: command timed out (300s)", file=sys.stderr)
         return 124
+    except ValueError as exc:
+        print(f"run_smoke: {exc}", file=sys.stderr)
+        return 2
     except OSError as exc:
         print(f"run_smoke: {exc}", file=sys.stderr)
         return 1

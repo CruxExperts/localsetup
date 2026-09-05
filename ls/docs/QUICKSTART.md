@@ -238,7 +238,9 @@ localsetup sbom --installed --target-directory . --out /tmp/localsetup-installed
 
 ## Update
 
-Re-run install with the same directory and platform selection:
+Refresh the framework source before applying a newer release. Managed bootstrap installations can rerun the [public bootstrap](#install-in-one-command), which resolves the latest stable release and opens the setup wizard. Explicitly selected checkouts remain source-authoritative: update that checkout to your intended release before rerunning install.
+
+`localsetup update` refreshes packages from the registered source. It does not fetch a newer framework release. From an updated source checkout, re-run install with the same directory and platform selection:
 
 ```bash
 ./install --directory . --tools codex,kilo

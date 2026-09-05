@@ -12,7 +12,7 @@ version: 3.4
 - `heartbeat.enabled`: `false` after init. `enable` flips it to `true`; `disable` flips it back.
 - `heartbeat.interval_minutes`: schedule cadence used when upserting `cron/manifest.yaml`.
 - `heartbeat.state_dir`: repo-relative runtime artifact directory. Absolute paths and parent traversal are rejected.
-- `heartbeat.stale_after_seconds`: minimum age before a same-host lock whose recorded PID is no longer live is quarantined. It defaults to 3600 and must be a positive integer.
+- `heartbeat.stale_after_seconds`: minimum age before a same-host lock whose recorded PID is no longer live is eligible for reclamation under the [recovery contract](recovery.md). It defaults to 3600 and must be a positive integer.
 - `agent.enabled`: controls whether normal `run` may launch the configured agent profile. `run --no-agent` skips that launch.
 - `agent.profile`: profile name under `agent_profiles`; the shipped disabled default is `heartbeat`.
 - `agent.timeout_seconds`: optional override for the selected profile timeout.

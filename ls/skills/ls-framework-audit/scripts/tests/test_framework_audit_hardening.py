@@ -370,6 +370,9 @@ def test_main_reports_every_maintainer_finding(
     "runtime_path",
     [
         Path(".codex/runs/ledger.md"),
+        Path(".omp/runs/ledger.md"),
+        Path(".agents/state/ledger.md"),
+        Path(".localsetup/state/ledger.md"),
         Path(".codex/sessions/session.md"),
         Path(".codex/logs/log.md"),
         Path(".codex/tmp/scratch.md"),
@@ -504,3 +507,27 @@ def test_skill_matrix_converts_skills_directory_oserror_to_audit_error(
     assert warnings == []
     assert len(errors) == 1
     assert "OSError: fixture listing failure" in errors[0]
+
+
+def test_skill_matrix_stages_shared_helper_without_ambient_imports(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    fw = tmp_path / "ls"
+    scripts = fw / "skills" / "ls-skill-sandbox-tester" / "scripts"
+    scripts.mkdir(parents=True)
+    original = SCRIPT_ROOT.parents[1] / "ls-skill-sandbox-tester" / "scripts"
+    for name in ("create_sandbox.py", "run_smoke.py"):
+        shutil.copy2(original / name, scripts / name)
+    candidate = fw / "skills" / "ls-example"
+    candidate.mkdir()
+    (candidate / "probe.py").write_text(
+        "import deps, importlib.util\nassert deps.VALUE == 'staged'\n"
+        "assert importlib.util.find_spec('ambient_only') is None\n", encoding="utf-8"
+    )
+    (fw / "lib").mkdir()
+    (fw / "lib" / "deps.py").write_text("VALUE = 'staged'\n", encoding="utf-8")
+    (fw / "lib" / "ambient_only.py").write_text("", encoding="utf-8")
+    monkeypatch.setenv("PYTHONPATH", str(fw / "lib"))
+    (fw / "tests").mkdir()
+    (fw / "tests" / "skill_smoke_commands.yaml").write_text(
+        'ls-example: "python3 probe.py"\nls-skill-sandbox-tester: "N/A"\n', encoding="utf-8"
+    )
+    assert audit.phase_skill_matrix(tmp_path, fw) == ([], [])

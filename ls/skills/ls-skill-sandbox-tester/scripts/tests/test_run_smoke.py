@@ -154,3 +154,38 @@ def test_rejects_symlink_added_to_sandbox(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="contains a symlink"):
         run_smoke._sanitize_path(str(sandbox))
+
+
+@pytest.mark.parametrize("tamper", ["content", "symlink", "parent-symlink", "missing", "declaration", "path", "hash", "extra-file"])
+def test_shared_deps_tampering_prevents_execution(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, tamper: str) -> None:
+    source = tmp_path / "source" / "ls-example"
+    source.mkdir(parents=True)
+    dependency = tmp_path / "deps.py"
+    dependency.write_text("VALUE = 1\n", encoding="utf-8")
+    sandbox = create_sandbox._create_sandbox(source, tmp_path, dependency)
+    staged = sandbox.parent / run_smoke.SHARED_DEPS_PATH
+    marker = sandbox.parent / run_smoke.MARKER_NAME
+    payload = json.loads(marker.read_text(encoding="utf-8"))
+    if tamper == "content":
+        staged.write_text("VALUE = 2\n", encoding="utf-8")
+    elif tamper == "symlink":
+        staged.unlink()
+        staged.symlink_to(dependency)
+    elif tamper == "parent-symlink":
+        staged.unlink()
+        staged.parent.rmdir()
+        staged.parent.symlink_to(tmp_path, target_is_directory=True)
+    elif tamper == "missing":
+        staged.unlink()
+    elif tamper == "extra-file":
+        (staged.parent / "ambient_only.py").write_text("", encoding="utf-8")
+    elif tamper == "declaration":
+        payload["shared_deps"] = None
+    elif tamper == "path":
+        payload["shared_deps"]["path"] = str(dependency)
+    else:
+        payload["shared_deps"]["sha256"] = "invalid"
+    marker.write_text(json.dumps(payload), encoding="utf-8")
+    monkeypatch.setattr(sys, "argv", ["run_smoke.py", "--sandbox-dir", str(sandbox), "--command", "python3 -V"])
+    monkeypatch.setattr(run_smoke.subprocess, "run", lambda *args, **kwargs: pytest.fail("command executed"))
+    assert run_smoke.main() == 2

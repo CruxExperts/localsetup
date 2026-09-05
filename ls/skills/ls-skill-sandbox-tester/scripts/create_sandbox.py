@@ -16,6 +16,7 @@ Prints the skill copy path to stdout on success (one line). Use this path as
 """
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -32,6 +33,8 @@ PLATFORM_PROJECTION_MAX = 256 * 1024
 MARKER_NAME = ".localsetup-sandbox.json"
 MARKER_MAX = 16 * 1024
 MARKER_SCHEMA_VERSION = 1
+SHARED_DEPS_PATH = ".localsetup-runtime/lib/deps.py"
+SHARED_DEPS_MAX = 256 * 1024
 FALLBACK_SKILL_ROOT_SUBPATHS = (
     "ls/skills",
     ".agents/skills",
@@ -197,29 +200,53 @@ def _reject_source_symlinks(source: Path) -> None:
                 raise ValueError(f"skill source contains a symlink: {candidate}")
 
 
-def _write_marker(sandbox_root: Path, source: Path, skill_copy: Path) -> None:
+def _read_shared_deps(path: Path) -> bytes:
+    if path.name != "deps.py" or any(part.is_symlink() for part in (path, *path.parents)):
+        raise ValueError("shared deps must be a nonsymlink deps.py file")
+    if not path.is_file() or path.stat().st_size > SHARED_DEPS_MAX:
+        raise ValueError("shared deps must be a regular file within the size limit")
+    with path.open("rb") as stream:
+        content = stream.read(SHARED_DEPS_MAX + 1)
+    if len(content) > SHARED_DEPS_MAX:
+        raise ValueError("shared deps exceeds size limit")
+    return content
+
+
+def _write_marker(
+    sandbox_root: Path, source: Path, skill_copy: Path, shared_deps: bytes | None = None
+) -> None:
     payload = {
         "schema_version": MARKER_SCHEMA_VERSION,
         "sandbox_dir": str(skill_copy.resolve()),
         "skill_name": source.name,
         "source_dir": str(source.resolve()),
     }
+    if shared_deps is not None:
+        payload["shared_deps"] = {
+            "path": SHARED_DEPS_PATH,
+            "sha256": hashlib.sha256(shared_deps).hexdigest(),
+        }
     encoded = json.dumps(payload, indent=2, sort_keys=True) + "\n"
     if len(encoded.encode("utf-8")) > MARKER_MAX:
         raise ValueError("sandbox provenance marker exceeds size limit")
     (sandbox_root / MARKER_NAME).write_text(encoded, encoding="utf-8")
 
 
-def _create_sandbox(skill_dir: Path, base: Path) -> Path:
+def _create_sandbox(skill_dir: Path, base: Path, shared_deps: Path | None = None) -> Path:
     _reject_source_symlinks(skill_dir)
     source = skill_dir.resolve()
+    dependency = _read_shared_deps(shared_deps) if shared_deps is not None else None
     sandbox_root = Path(
         tempfile.mkdtemp(prefix=f"skill-sandbox-{source.name}-", dir=str(base))
     )
     try:
         skill_copy = sandbox_root / source.name
         shutil.copytree(source, skill_copy, symlinks=False, dirs_exist_ok=False)
-        _write_marker(sandbox_root, source, skill_copy)
+        if dependency is not None:
+            staged = sandbox_root / SHARED_DEPS_PATH
+            staged.parent.mkdir(parents=True)
+            staged.write_bytes(dependency)
+        _write_marker(sandbox_root, source, skill_copy, dependency)
         return skill_copy
     except Exception:
         shutil.rmtree(sandbox_root, ignore_errors=True)
@@ -243,6 +270,10 @@ def main() -> int:
         metavar="DIR",
         help="Parent directory within platform temp (default: platform temp root)",
     )
+    parser.add_argument(
+        "--shared-deps", metavar="FILE",
+        help="Explicit framework deps.py to stage and hash for isolated imports",
+    )
     args = parser.parse_args()
 
     try:
@@ -263,7 +294,12 @@ def main() -> int:
             base = _sanitize_path(args.base_dir, max_len=BASE_DIR_MAX)
         base = _validate_base_dir(base)
 
-        skill_copy = _create_sandbox(skill_dir, base)
+        shared_deps = None
+        if args.shared_deps is not None:
+            if len(args.shared_deps) > PATH_MAX or not args.shared_deps.strip() or "\x00" in args.shared_deps:
+                raise ValueError("shared deps path is empty or invalid")
+            shared_deps = Path(args.shared_deps)
+        skill_copy = _create_sandbox(skill_dir, base, shared_deps)
         print(skill_copy)
         return 0
     except (ValueError, FileNotFoundError) as exc:
