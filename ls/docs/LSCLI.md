@@ -1015,3 +1015,41 @@ revocation to the same task limits before calling the supervisor. Channel I/O
 bounds cannot interrupt an arbitrary blocking handler. The SDK tool handlers use
 the separately bounded file/process brokers. Public coding dispatch still needs
 to combine this service with preflight, session authority and terminal validation.
+
+## Installed coding worker exchange
+
+The internal installed `coding_worker` uses isolated Python and the verified SDK
+payload. Its arguments contain only the inherited channel descriptor, task,
+session and monotonic deadline. `run.start` retrieves an explicit profile,
+credential, run ID, prompt, instructions, optional reconciled history and usage
+limits from the supervisor. Credentials are not placed in process arguments,
+inherited environment, stdout or error diagnostics. The worker uses the existing
+explicit SDK model adapter and final-send transport; it does not discover a model,
+provider or credential. Its generic failure diagnostic excludes exception text.
+
+`CodingHandler` binds that request to the tool broker's profile digest and run ID.
+It permits one start, refuses dispatch before start or after a reported result,
+and acknowledges native SDK stream events through `stream.event`. Events are
+untrusted data for the caller's safe renderer; limits are 1 MiB total and 10,000
+events. Prompt and instructions are each capped at 128 KiB; restored history at
+8 MiB; the complete request at 12 MiB. Accepted request/tool/reported-token limits
+are bounded integers, passed directly to SDK iteration with implicit retries off.
+
+`run.finish` carries output, reported usage and a checkpoint reference. The
+supervisor requires that checkpoint to belong to the current run and pass the
+current owner's complete-history/profile/journal-frontier resume checks before
+acknowledging it. Usage is bounded report data, not authority. The worker then
+emits only a small completion receipt on stdout. The controller must require a
+successful process outcome and validate that receipt with `terminal()` against
+the acknowledged result. A result reported before process failure is insufficient.
+
+The owning controller must first qualify tools, authorize context/history and
+provider disclosure, and bind operation deadlines and cancellation to the task.
+This worker exchange supplies no public approval policy or recovery synthesis.
+Public command dispatch remains gated until those requirements are integrated.
+
+Installed deterministic qualification exercised four streamed Chat Completions
+requests: read, conditional edit, sandbox test and final answer. All captured
+requests carried the framework-resolved user-agent, and the final checkpoint was
+read by a fresh owner. This coding sequence does not yet qualify the Responses
+interface or constitute the complete public coding/recovery acceptance suite.

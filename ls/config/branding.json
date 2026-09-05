@@ -4128,6 +4128,14 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Canonical vendor directory used by isolated source qualification fixtures."
+    },
+    {
+      "path": "ls/core/agent/resource_group.py",
+      "line_sha256": "05900d8b7910fb7062416d22d0e6a3952d81d8a810fe2a91eba1f0e0d029b830",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Private cgroup names use the integrated CLI technical identifier as a unique resource prefix."
     }
   ],
   "visual_reviews": [
