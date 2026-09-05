@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: ebe76ca575143394fa096433d45b4146274dd804a3b790888ef7ae71bf391c1f
+  source_provenance_hash: 282f72017565fea244ec802b8d38d73a5a9c9d1f1125c22f5eef22eacae787f1
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 491cfba1de3ee9ffda34b2a24c54155cd775a60f
-artifact_sha256: bb5853366104bd85f20b3c9786fccb2b2d19db022cf1d8e4516f125062c0da57
+source_commit: 684c6dd3e10dfde0c7cb3d46abd04db63acee92c
+artifact_sha256: 05b3c55beee53b43c8c8b01e33b6315915fba496c37140f05d6006709c8ddf84
 ---
 # Workflow quick reference
 
@@ -34,7 +34,6 @@ This page is generated from `ls/workflows/*/workflow.yaml`.
 | `planning-critic-loop` | Planning Critic Loop | planning critic loop; planning agent critic; critic reviewed plan | `ls-workflow-planning-critic-loop` | n/a |
 | `queue-batch-implement` | Queue Batch Implement | Agent Q queue; process PRDs | `ls-workflow-queue-batch-implement` | n/a |
 | `repo-finalizer` | Repo Finalizer | repo finalizer; finalizer harness; finalization checkpoint | `ls-workflow-repo-finalizer` | `ls-framework-compliance`; `ls-git-workflows` |
-| `skills-index-refresh` | Skills Index Refresh | refresh skills; scrub index | `ls-workflow-skills-index-refresh` | `ls-skill-discovery` |
 | `spec-clarify-reverse` | Reverse Prompt Spec Clarify | decision tree; reverse prompt | `ls-workflow-spec-clarify-reverse` | n/a |
 | `tmux-terminal-mode` | Tmux Terminal Mode | tmux terminal mode; always-on tmux | `ls-workflow-tmux-terminal-mode` | n/a |
 | `transport-handoff` | Transport Handoff | Agent Q bidirectional | `ls-workflow-transport-handoff` | `ls-agentq-transport`; `ls-mail-protocol-control` |
@@ -81,8 +80,6 @@ This page is generated from `ls/workflows/*/workflow.yaml`.
 - "repo finalizer" -> `repo-finalizer`
 - "finalizer harness" -> `repo-finalizer`
 - "finalization checkpoint" -> `repo-finalizer`
-- "refresh skills" -> `skills-index-refresh`
-- "scrub index" -> `skills-index-refresh`
 - "decision tree" -> `spec-clarify-reverse`
 - "reverse prompt" -> `spec-clarify-reverse`
 - "tmux terminal mode" -> `tmux-terminal-mode`

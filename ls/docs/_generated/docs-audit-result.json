@@ -11,12 +11,12 @@
     "emitter": "docs-align",
     "framework_version": "4.3.9",
     "schema_version": 1,
-    "source_commit": "491cfba1de3ee9ffda34b2a24c54155cd775a60f",
+    "source_commit": "684c6dd3e10dfde0c7cb3d46abd04db63acee92c",
     "source_dirty": true,
-    "source_provenance_hash": "ebe76ca575143394fa096433d45b4146274dd804a3b790888ef7ae71bf391c1f",
-    "source_root_id": "2606730c8e6afa4d597f2630c7783dd7183e2d6985211346fb29eec4b0949ab4",
+    "source_provenance_hash": "282f72017565fea244ec802b8d38d73a5a9c9d1f1125c22f5eef22eacae787f1",
+    "source_root_id": "acb7c7f3fafcd72787320878d7ac34f3d488cef18e4a0ccbbba46b8b8c0c72ee",
     "source_tag": null,
-    "source_tree_sha": "f44ee3a6c87e0e51cca909317d772232e30f6841"
+    "source_tree_sha": "37bb4b37c47d980224eba1b38c85a00e35d49cd8"
   },
   "schema_version": "1.0"
 }

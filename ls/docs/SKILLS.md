@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: ebe76ca575143394fa096433d45b4146274dd804a3b790888ef7ae71bf391c1f
+  source_provenance_hash: 282f72017565fea244ec802b8d38d73a5a9c9d1f1125c22f5eef22eacae787f1
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 491cfba1de3ee9ffda34b2a24c54155cd775a60f
-artifact_sha256: aae608a8b8256d208e2d4692f5c46482fc8364d90a99567b98696ca4747c9357
+source_commit: 684c6dd3e10dfde0c7cb3d46abd04db63acee92c
+artifact_sha256: 993bb9138d8d557088ccef2877c2058e0f6232fefab3b34e7e87f656555963fa
 ---
 # Shipped skills catalog
 
@@ -95,7 +95,7 @@ Total shipped skills: 103
 | `ls-seo-geo-claude-skills` | `skill-lifecycle` | 60 | `growth-content`, `skill-lifecycle` | `skills`, `inventory` | `ls-seo-geo-claude-skills` | `1.0` | Provenance inventory for pinned upstream SEO/GEO Claude skills covering search, generative-engine optimization, schema, content, backlink, and rank categories. Use to inspect recorded paths and hashes or plan one candidate's future gated import; this wrapper does not evaluate or execute those workflows. |
 | `ls-shopify-storefront` | `integrations` | 60 | `integrations` | `external-service`, `integration` | `ls-shopify-storefront` | `1.0` | Guide Shopify Storefront API and Hydrogen storefront work. Use for Storefront GraphQL, product data, carts, checkout, and theme/headless integration. |
 | `ls-skill-creator` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `authoring` | `ls-skill-creator` | `1.3` | Use when creating a new Agent Skills-compliant skill, adapting a document into a skill, importing an existing skill for Localsetup, or exporting framework skills to other spec-compliant hosts. |
-| `ls-skill-discovery` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `discovery` | `ls-skill-discovery` | `1.4` | Discover and recommend public skills from external registries (e.g. awesome lists, skill hubs). Use when the user is creating a new skill, importing a skill, or asking to find similar public skills. Maintains PUBLIC_SKILL_REGISTRY.urls and PUBLIC_SKILL_INDEX.yaml; returns top 5 similar matches with rich summaries and clear next actions. |
+| `ls-skill-discovery` | `skill-lifecycle` | 60 | `dev`, `skill-lifecycle` | `skills`, `discovery` | `ls-skill-discovery` | `1.4` | Discover and recommend public skills from external registries, and own public-index refresh and scrub requests. Use when creating or importing a skill, finding similar public skills, refreshing the index, or scrubbing it. Maintains PUBLIC_SKILL_REGISTRY.urls and PUBLIC_SKILL_INDEX.yaml; returns up to 5 similar matches with rich summaries and clear next actions. |
 | `ls-skill-importer` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `import` | `ls-skill-importer` | `1.5` | Import external skills from a URL (GitHub or other) or local path; discover, validate, security-screen, and summarize each skill so the user can choose which to import. Use when the user wants to add skills from a repo/URL or local folder, or when screening and selecting skills to add to the framework. |
 | `ls-skill-normalizer` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `normalization` | `ls-skill-normalizer` | `1.1` | Normalize skills already in the tree using ls/docs/SKILL_NORMALIZATION.md: documents first, tooling second, with user choice for platform-specific skills. Use when normalizing one or more skills in ls/skills/ after import, copying, or batch review. |
 | `ls-skill-sandbox-tester` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `sandbox` | `ls-skill-sandbox-tester` | `1.0` | Test normalized skills in a bounded temporary staging copy before production. Creates a provenance-marked copy under platform temp, rejects symlinked inputs, runs smoke checks with a minimal environment, and uses ls-debug-pro on failure; no writes return to the repo until user approval. Use when validating a framework-compliant skill end-to-end on a supported platform. |

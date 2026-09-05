@@ -83,6 +83,7 @@ packs:
   - ls-requesting-code-review
   - ls-remotion-best-practices
   - ls-shadcn-ui
+  - ls-skill-discovery
   - ls-system-architecture-diagrams
   - ls-system-design
   - ls-tailwind-best-practices
@@ -223,7 +224,6 @@ workflow_packs:
   - ls-workflow-pipeline-skill-onboard
   - ls-workflow-queue-batch-implement
   - ls-workflow-spec-clarify-reverse
-  - ls-workflow-skills-index-refresh
   frontend: []
   architecture: []
   ops:

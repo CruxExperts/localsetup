@@ -49,6 +49,9 @@ def test_plugin_pack_manifest_loads_and_resolves_source_packs() -> None:
         item["id"] == "localsetup-harness" and "ls-context-index" in item["skills"]
         for item in payload["plugin_packs"]
     )
+    dev = next(item for item in payload["plugin_packs"] if item["id"] == "localsetup-dev")
+    assert "ls-skill-discovery" in dev["skills"]
+    assert "ls-workflow-skills-index-refresh" not in dev["workflows"]
 
 
 def test_plugin_pack_manifest_rejects_unknown_source_pack(tmp_path: Path) -> None:

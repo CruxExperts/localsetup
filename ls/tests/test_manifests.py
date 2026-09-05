@@ -1,3 +1,4 @@
+import argparse
 import importlib.util
 import json
 import subprocess
@@ -11,6 +12,8 @@ from ls.core.baseline import classify_path
 from ls.core.baseline import tracked_files
 from ls.core.manifests import load_pack_config, load_platforms, validate_manifest_schemas
 from ls.core.selection import resolve_package_selection
+from ls.core.skill_index_scrub import audit as scrub_audit
+from ls.core.skill_index_scrub.reporting import build_report
 from ls.core.skills import ALLOWED_SKILL_TAXONOMY_CLASSES
 from ls.core.skills import load_skill_catalog
 from ls.core.skills import selected_skill_names
@@ -123,6 +126,76 @@ skills:
     assert [skill["name"] for skill in payload["skills"]] == ["transient", "network", "fixable", "no-license"]
     assert payload["skills"][2]["description"] == "Real upstream description."
     assert payload["skills"][3]["description"] == "Anthropic skill: No License"
+
+
+def test_skill_index_scrub_report_distinguishes_skipped_url_checks() -> None:
+    result = {
+        "name": "clean", "url": "https://example.com/skill", "url_live": None,
+        "url_status": None, "desc_stub": False, "desc_reason": "",
+        "fetched_desc": None, "fetched_source": None, "action": "ok",
+    }
+    args = argparse.Namespace(skip_url_check=True, skip_desc_fetch=False, fix=False)
+    report = build_report([result], args, "current", False)
+    assert "URL check: skipped" in report
+    assert "| Dead / unreachable URLs | not checked |" in report
+    assert "URL liveness was not checked" in report
+    assert "Index looks clean" not in report
+
+    args.skip_url_check = False
+    result["url_live"] = True
+    report = build_report([result], args, "current", False)
+    assert "URL check: enabled" in report
+    assert "| Dead / unreachable URLs | 0 |" in report
+    assert "description and URL-liveness checks passed" in report
+
+
+def test_skill_index_scrub_report_does_not_pass_incomplete_checks() -> None:
+    args = argparse.Namespace(skip_url_check=False, skip_desc_fetch=False, fix=False)
+    result = {
+        "name": "failed", "url": "https://example.com/skill", "url_live": None,
+        "url_status": None, "desc_stub": False, "desc_reason": "",
+        "fetched_desc": None, "fetched_source": None, "action": "error",
+        "error": "probe failed",
+    }
+    report = build_report([result], args, "current", False)
+    assert "## Worker Errors (1)" in report
+    assert "All audited" not in report
+
+    result["action"] = "ok"
+    report = build_report([result], args, "current", False)
+    assert "All audited" not in report
+
+
+def test_skill_index_scrub_skip_url_check_avoids_liveness_probe(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fail_probe(*args: object, **kwargs: object) -> tuple[bool, int]:
+        raise AssertionError("URL liveness probe must not run")
+
+    monkeypatch.setattr(scrub_audit, "check_url_liveness", fail_probe)
+    result = scrub_audit.audit_skill(
+        {"name": "skill", "url": "https://example.com/skill", "description": "A sufficiently descriptive skill entry."},
+        skip_url_check=True,
+        skip_desc_fetch=True,
+    )
+    assert result["url_live"] is None
+    assert result["url_status"] is None
+
+
+def test_skill_index_scrub_full_url_check_uses_liveness_probe(monkeypatch: pytest.MonkeyPatch) -> None:
+    observed: list[str] = []
+
+    def live_probe(url: str, **kwargs: object) -> tuple[bool, int]:
+        observed.append(url)
+        return True, 200
+
+    monkeypatch.setattr(scrub_audit, "check_url_liveness", live_probe)
+    result = scrub_audit.audit_skill(
+        {"name": "skill", "url": "https://example.com/skill", "description": "A sufficiently descriptive skill entry."},
+        skip_url_check=False,
+        skip_desc_fetch=True,
+    )
+    assert observed == ["https://example.com/skill"]
+    assert result["url_live"] is True
+    assert result["url_status"] == 200
 
 
 def test_pack_manifest_loads() -> None:
@@ -248,6 +321,17 @@ def test_catalog_validation_and_pack_selection() -> None:
         "context-index-refresh",
         "context refresh",
         "refresh context index",
+    ):
+        with pytest.raises(ValueError, match="unknown workflow selector"):
+            resolve_package_selection(root, workflows=[selector])
+    assert not (root / "ls/workflows/ls-workflow-skills-index-refresh").exists()
+    assert "ls-skill-discovery" in selected_skill_names(root, ["dev"])
+    assert "ls-workflow-skills-index-refresh" not in selected_workflow_names(root, ["dev"])
+    for selector in (
+        "ls-workflow-skills-index-refresh",
+        "skills-index-refresh",
+        "refresh skills",
+        "scrub index",
     ):
         with pytest.raises(ValueError, match="unknown workflow selector"):
             resolve_package_selection(root, workflows=[selector])

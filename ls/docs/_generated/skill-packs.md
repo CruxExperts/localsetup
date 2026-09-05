@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: ebe76ca575143394fa096433d45b4146274dd804a3b790888ef7ae71bf391c1f
+  source_provenance_hash: 282f72017565fea244ec802b8d38d73a5a9c9d1f1125c22f5eef22eacae787f1
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 491cfba1de3ee9ffda34b2a24c54155cd775a60f
-artifact_sha256: 90dc4fa7152e17e8a50dc0a5c2c3c7137cd96e271d883875f42136696f239635
+source_commit: 684c6dd3e10dfde0c7cb3d46abd04db63acee92c
+artifact_sha256: 26e6848aa1b388040af4d49036530f6a72a3cc9129bfad6ae8ea89805ec1ffc8
 ---
 # Skill And Workflow Packs
 
@@ -88,7 +88,7 @@ artifact_sha256: 90dc4fa7152e17e8a50dc0a5c2c3c7137cd96e271d883875f42136696f23963
 | `growth-content, skill-lifecycle` | `skill` | `ls-seo-geo-claude-skills` | `skill-lifecycle` | 60 | `skills, inventory` | `localsetup-seo-geo-claude-skills` |
 | `integrations` | `skill` | `ls-shopify-storefront` | `integrations` | 60 | `external-service, integration` | `localsetup-shopify-storefront` |
 | `skill-lifecycle` | `skill` | `ls-skill-creator` | `skill-lifecycle` | 60 | `skills, authoring` | `localsetup-skill-creator` |
-| `skill-lifecycle` | `skill` | `ls-skill-discovery` | `skill-lifecycle` | 60 | `skills, discovery` | `localsetup-skill-discovery` |
+| `dev, skill-lifecycle` | `skill` | `ls-skill-discovery` | `skill-lifecycle` | 60 | `skills, discovery` | `localsetup-skill-discovery` |
 | `skill-lifecycle` | `skill` | `ls-skill-importer` | `skill-lifecycle` | 60 | `skills, import` | `localsetup-skill-importer` |
 | `skill-lifecycle` | `skill` | `ls-skill-normalizer` | `skill-lifecycle` | 60 | `skills, normalization` | `localsetup-skill-normalizer` |
 | `skill-lifecycle` | `skill` | `ls-skill-sandbox-tester` | `skill-lifecycle` | 60 | `skills, sandbox` | `localsetup-skill-sandbox-tester` |
@@ -130,7 +130,6 @@ artifact_sha256: 90dc4fa7152e17e8a50dc0a5c2c3c7137cd96e271d883875f42136696f23963
 | `dev` | `workflow` | `ls-workflow-planning-critic-loop` | n/a | n/a | n/a | `n/a` |
 | `dev` | `workflow` | `ls-workflow-queue-batch-implement` | n/a | n/a | n/a | `n/a` |
 | `harness` | `workflow` | `ls-workflow-repo-finalizer` | n/a | n/a | n/a | `n/a` |
-| `dev` | `workflow` | `ls-workflow-skills-index-refresh` | n/a | n/a | n/a | `n/a` |
 | `dev` | `workflow` | `ls-workflow-spec-clarify-reverse` | n/a | n/a | n/a | `n/a` |
 | `core, ops` | `workflow` | `ls-workflow-tmux-terminal-mode` | n/a | n/a | n/a | `n/a` |
 | `integrations` | `workflow` | `ls-workflow-transport-handoff` | n/a | n/a | n/a | `n/a` |
