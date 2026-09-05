@@ -35,21 +35,35 @@ For a single combined snapshot, run in order: `lscpu`, `free -h`, `df -h`, `upti
 
 To get maximum context without sudo or extra dependencies, use the bundled script. It uses only Python stdlib and commands/files readable by unprivileged users, with no network access. By default it writes only to stdout; `--output-basename` enables timestamped file output for unattended runs.
 
-From the repo root (or with the skill directory as cwd):
+Choose the command for your current working directory. The repository-root examples apply to this document in the Localsetup source checkout. Installed copies rewrite bundled paths; use the skill-directory examples there, from the directory containing this `SKILL.md`.
+
+From the Localsetup source repository root:
 
 ```bash
 python3 ls/skills/ls-system-info/scripts/system_snapshot.py
 ```
 
+From the skill directory (in the source checkout or an installed package):
+
+```bash
+python3 scripts/system_snapshot.py
+```
+
 Output is GFM markdown to stdout. It includes: identity and time, OS release, uptime and load, CPU, memory, disk and block devices, network (ip addr/route, resolv.conf), sessions (w/who), loaded kernel modules sample, and runtimes in PATH (e.g. python3, node). Redirect to a file to save a baseline, e.g. `... > baseline.md`.
 
-For cron or unattended runs, write a timestamped markdown file with a relative output basename:
+For cron or unattended runs, set the job's working directory explicitly and write a timestamped markdown file with a relative output basename. From the Localsetup source repository root:
 
 ```bash
 python3 ls/skills/ls-system-info/scripts/system_snapshot.py --output-basename reports/system-snapshots/daily
 ```
 
-This creates parent directories as needed and writes `reports/system-snapshots/daily-YYYYMMDDTHHMMSSZ.md`. The script prints the written path to stdout and emits warnings to stderr when optional commands are unavailable or exit nonzero.
+From the skill directory (in the source checkout or an installed package):
+
+```bash
+python3 scripts/system_snapshot.py --output-basename reports/system-snapshots/daily
+```
+
+The output basename is relative to the process working directory, not the script location. These examples create parent directories as needed and write `reports/system-snapshots/daily-YYYYMMDDTHHMMSSZ.md` beneath the selected repository root or skill directory, respectively. Choose a writable working directory for unattended output. The script prints the written path to stdout and emits warnings to stderr when optional commands are unavailable or exit nonzero.
 
 If you prefer not to run the script, you can run these manually (all no sudo):
 
@@ -66,4 +80,4 @@ If you prefer not to run the script, you can run these manually (all no sudo):
 
 ## Install
 
-No installation needed. The quick commands use `free`, `df`, `uptime`, and `lscpu` (or `/proc`); the extended script uses Python 3.12+ stdlib only. On minimal images, install `util-linux` if `lscpu` or `lsblk` is missing.
+No installation needed. The quick commands use `free`, `df`, `uptime`, and `lscpu` (or `/proc`); the extended script uses Python 3.12+ stdlib only. If `lscpu` or `lsblk` is missing, the script retains its `/proc` fallbacks. To add an optional command, consult the target distribution's package metadata and obtain the required installation approval; do not assume a package named `util-linux` supplies it on every image. For example, Alpine lists separate [lscpu](https://pkgs.alpinelinux.org/package/v3.23/main/x86_64/lscpu) and [lsblk](https://pkgs.alpinelinux.org/package/v3.23/main/x86_64/lsblk) packages with `util-linux` as their origin.
