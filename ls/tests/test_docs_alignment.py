@@ -403,3 +403,27 @@ def test_broad_generator_refreshes_alias_owned_docs_before_alignment(tmp_path: P
         row for row in inventory["docs"] if row["path"] == "ls/docs/migration/skill-alias-map.md"
     )
     assert migration_row["owner_package"] == "generate-docs"
+
+
+def test_verified_upstream_docs_keep_ownership_without_hiding_owned_links(tmp_path: Path) -> None:
+    from ls.core.docs_alignment.audit import audit
+    from ls.core.docs_alignment.inventory import collect_inventory
+    from ls.core.sdk_payload.ownership import upstream_documents
+
+    repo = copy_docs_alignment_repo(tmp_path)
+    source = Path(__file__).resolve().parents[2]
+    shutil.copytree(source / "vendor", repo / "vendor")
+    owned = repo / "vendor" / "unowned" / "README.md"
+    owned.parent.mkdir()
+    owned.write_text("[Broken owned reference](missing-file.md)\n")
+    inventory = collect_inventory(repo)
+    upstream = [row for row in inventory["docs"] if row["class"] == "upstream"]
+    assert len(upstream) == 64
+    assert all("/blob/" in row["upstream"]["source_url"] for row in upstream)
+    findings = audit(repo)["findings"]
+    assert any(f["path"] == "vendor/unowned/README.md" and f["category"] == "link" for f in findings)
+    assert not any(f["path"].startswith("vendor/lscli/") for f in findings)
+    retained = repo / upstream[0]["path"]
+    retained.write_text(retained.read_text() + "\nModified retained content\n")
+    with pytest.raises(ValueError, match="digest mismatch"):
+        upstream_documents(repo)

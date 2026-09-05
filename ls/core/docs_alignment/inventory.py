@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+from ls.core.sdk_payload.ownership import upstream_documents
 from ls.core.manifests import load_pack_config, load_platforms
 from ls.core.skills import load_skill_catalog, skill_taxonomy_payload
 from ls.core.workflows import load_workflow_catalog, workflow_catalog_payload
@@ -15,13 +16,15 @@ from .io import _classify_doc, _frontmatter, _managed_blocks, _markdown_files, _
 
 def collect_inventory(repo_root: Path) -> dict[str, Any]:
     docs = []
+    upstream = upstream_documents(repo_root)
     for path in _markdown_files(repo_root):
         text = _read_text(path)
         fm = _frontmatter(text)
         docs.append(
             {
                 "path": _rel(repo_root, path),
-                "class": _classify_doc(repo_root, path),
+                "class": "upstream" if _rel(repo_root, path) in upstream else _classify_doc(repo_root, path),
+                **({"upstream": upstream[_rel(repo_root, path)]} if _rel(repo_root, path) in upstream else {}),
                 "status": str(fm.get("status", "")),
                 "version": str(fm.get("version", "")),
                 "owner_skill": str(fm.get("owner_skill", "")),
@@ -45,6 +48,7 @@ def collect_inventory(repo_root: Path) -> dict[str, Any]:
         "docs": docs,
         "counts": {
             "docs": len(docs),
+            "upstream_docs": sum(1 for row in docs if row["class"] == "upstream"),
             "public_docs": sum(1 for row in docs if row["class"] == "public"),
             "framework_docs": sum(1 for row in docs if row["class"] == "framework"),
             "generated_docs": sum(1 for row in docs if row["class"] == "generated"),

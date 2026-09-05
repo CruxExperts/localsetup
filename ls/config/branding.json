@@ -3736,6 +3736,86 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Exact ignore-rule path retaining upstream SDK runtime modules; directory spelling is a technical identifier."
+    },
+    {
+      "path": "ls/core/sdk_payload/ownership.py",
+      "line_sha256": "282d71ad712e62d2b773ca88364f5d4e777a7a0f04bc6cc4c1b9056745a0d070",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact SDK filesystem path or path segment in verified ownership lookup, its regression assertion, or the generated source file inventory."
+    },
+    {
+      "path": "ls/core/sdk_payload/ownership.py",
+      "line_sha256": "cecfe46b75435cb2c1562e4cc113917555d50511732fe4e837ff4c1a3e356146",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact SDK filesystem path or path segment in verified ownership lookup, its regression assertion, or the generated source file inventory."
+    },
+    {
+      "path": "ls/docs/_generated/implementation-file-map.md",
+      "line_sha256": "f2b92adbeaa0d473bf35968c4e0e451fc9704bababc5e3e09060857dec537d38",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact SDK filesystem path or path segment in verified ownership lookup, its regression assertion, or the generated source file inventory."
+    },
+    {
+      "path": "ls/docs/_generated/implementation-file-map.md",
+      "line_sha256": "d0386762c8fa35a4511abd55e661e570c015928bc493bd0b32b0e77802f8008b",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact SDK filesystem path or path segment in verified ownership lookup, its regression assertion, or the generated source file inventory."
+    },
+    {
+      "path": "ls/docs/_generated/implementation-file-map.md",
+      "line_sha256": "45260320f318acb1bb68352bf3d55bdfafa2e82f820d872d25ae50966cef9f49",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact SDK filesystem path or path segment in verified ownership lookup, its regression assertion, or the generated source file inventory."
+    },
+    {
+      "path": "ls/docs/_generated/implementation-file-map.md",
+      "line_sha256": "13bc7259d1b47702e8e7a7bcc141c2016bed572617d97a36a48d7d11c118ff86",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact SDK filesystem path or path segment in verified ownership lookup, its regression assertion, or the generated source file inventory."
+    },
+    {
+      "path": "ls/docs/_generated/implementation-file-map.md",
+      "line_sha256": "9007e4f75c382707853232f299e5b81b1ac3c03c41edee66e4c1bfe2fa32db4d",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact SDK filesystem path or path segment in verified ownership lookup, its regression assertion, or the generated source file inventory."
+    },
+    {
+      "path": "ls/docs/_generated/implementation-file-map.md",
+      "line_sha256": "c0ca8c22e2cd5090fef0514be6e4cbb0c78875009248df9aa39e3da923fe290c",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact SDK filesystem path or path segment in verified ownership lookup, its regression assertion, or the generated source file inventory."
+    },
+    {
+      "path": "ls/docs/_generated/implementation-file-map.md",
+      "line_sha256": "57dd44622c3a47c0ed62d7857ee2019955623b4c0d062dff8f73ce98ce0450fe",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact SDK filesystem path or path segment in verified ownership lookup, its regression assertion, or the generated source file inventory."
+    },
+    {
+      "path": "ls/tests/test_docs_alignment.py",
+      "line_sha256": "b66f54a7112267115a42ccc44930845455daf6aed54412da16ee581b3a55dd7f",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact SDK filesystem path or path segment in verified ownership lookup, its regression assertion, or the generated source file inventory."
     }
   ],
   "visual_reviews": [

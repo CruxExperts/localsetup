@@ -1,3 +1,9 @@
+---
+status: ACTIVE
+version: 4.4
+owner_skill: ls-architecture
+---
+
 # LSCli SDK source ownership
 
 LocalSetup owns one canonical SDK source tree at `vendor/lscli`. It retains the
@@ -35,6 +41,14 @@ OSV, GitHub Advisory Database, and deps.dev/PyPI returned no advisories for thos
 for source adoption, not a supported-platform lock or a guarantee of safety.
 Managed runtime locks, combined framework dependency compatibility, installed
 imports, and ordinary wheel compatibility require separate executable evidence.
+
+The documentation inventory identifies byte-identical retained manuals as
+upstream documents with immutable source URLs. Their examples and links retain
+the original repository context and are not LocalSetup operational guidance.
+LocalSetup lifecycle, capability-count, and local-link rules apply to owned
+documents; payload integrity and source ownership still apply to every retained
+manual. New or modified files cannot acquire upstream status through a directory
+name alone.
 
 ## Verify and refresh
 
