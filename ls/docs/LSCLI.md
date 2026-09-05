@@ -960,3 +960,34 @@ Installed qualification used 16 MiB filesystems and verified `ENOSPC` for both,
 read-only refusal for `/inputs` and the namespace root, and unchanged host input
 after editing `/work`. The same artifact passed normal execution, a memory-limit
 failure and cancellation with suppressed output under a delegated resource group.
+
+## Provider-free tool preflight
+
+`qualified_tools(runtimes, scratch, resource_parent, task=..., session=...,
+expires=..., limits=...)` runs the installed sealed sandbox before yielding to
+its caller. Use this context before provider dispatch and keep it open for the
+run. It retains the selected runtime lease, exercises actual cgroup membership,
+and probes mount, network, PID and user namespace separation from the supervisor.
+The probe checks read-only host inputs and root, absent cgroup control mounts,
+only a loopback network interface, bounded filesystem capacities and unchanged
+host input. Failure, cancellation, malformed results or diagnostics refuse the
+caller body; no provider, credential or SDK initialization is part of this API.
+
+Scratch must be an explicit existing private directory separate from runtime,
+system and delegation paths. Preflight creates and removes only its temporary
+synthetic fixture, with a probe deadline capped at 15 seconds and the task expiry.
+It does not repair host permissions, configure a delegation, or create provider
+configuration. The selected runtime lease remains held after probe cleanup.
+
+The live `ToolQualification` binds task/session, selected release, delegation,
+resource limits, deadline and revocation. `bind(grant)` applies those settings to
+freshly authorized process grants and combines their revocation with the context
+lifetime. Storage requests above the qualified 512 MiB work / 64 MiB temporary
+capacities are refused. `run(grant)` uses that same runtime root. Leaving the
+context invalidates both the result and previously bound grants. The result is
+not a persisted permission; current file/disclosure/session authority remains
+separate and every process still recreates and verifies its limited group.
+
+This establishes an internal preflight boundary. Public supervisor dispatch must
+still be wired through it, and complete installed SDK coding/recovery acceptance
+remains required before public agent execution is enabled.
