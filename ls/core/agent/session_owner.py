@@ -81,13 +81,23 @@ class SessionOwner:
         return FileBroker(replace(grant, expires=min(grant.expires, self.expires),
                                   revoked=_Revocation(grant.revoked, self.revoked)), broker.lease_root)
 
-    def write(self, broker, name, data, *, expected_before, checkpoint=None):
+    def write(self, broker, name, data, *, expected_before, checkpoint=None, tool_call=None, profile=None):
         with self._operation():
-            if checkpoint is not None:
-                self._checkpoint(checkpoint)
+            value = self._checkpoint(checkpoint) if checkpoint is not None else None
+            if tool_call is not None and (value is None or value['run_id'] != tool_call.get('run_id') or value['profile'] != profile):
+                raise PermissionError('Tool operation requires a matching run/profile checkpoint')
             bound = self._broker(broker)
             return bound.write_recorded(self._journal.task, self._journal.session, name, data,
-                                        expected_before=expected_before, journal=self._journal, checkpoint=checkpoint)
+                                        expected_before=expected_before, journal=self._journal, checkpoint=checkpoint, tool_call=tool_call)
+
+    def read_text(self, broker, name, *, for_provider=False):
+        with self._operation():
+            bound = self._broker(broker)
+            raw = bound.read(self._journal.task, self._journal.session, name, for_provider=for_provider)
+            result = {'content': raw.decode('utf-8'), 'sha256': hashlib.sha256(raw).hexdigest()}
+            bound.grant.check(self._journal.task, self._journal.session, 'read', name, provider=for_provider)
+            self._check()
+            return result
 
     def reconcile_file(self, broker, operation):
         with self._operation(recovery=True):

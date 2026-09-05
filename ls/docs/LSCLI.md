@@ -798,3 +798,42 @@ promote the local snapshot or checkpoint handle. This adapter durably saves
 conversation snapshots; SDK run/event/tool-effect metadata remains process-local.
 Durable broker tool-call/result mapping and recovery history reconstruction are
 still required before public coding or automatic resume is enabled.
+
+## SDK file tools and durable tool-call identity
+
+The isolated `sdk_file_tools.file_tools` factory exposes only sequential,
+zero-retry `read_file` and `write_file` tools. Both delegate to `FileHandler` on
+the supervisor's owning thread; neither opens workspace files in the worker.
+Reads return granted UTF-8 text and its SHA-256 and require current file-read
+**and provider-disclosure** authority. The owner rechecks the bound file-read/disclosure grant after decoding and hashing
+the response, as well as session authority. Binary files need a separate image
+or binary interface; this text tool refuses invalid UTF-8.
+
+Before a write request, the worker serializes the native live SDK history and
+awaits an interrupted pre-tool checkpoint. It then sends the path, replacement
+text, expected content hash (null means absence), checkpoint digest and SDK tool
+call ID. The supervisor binds its configured run/profile and `write_file` name,
+hashes the canonical broker arguments, and uses the fresh file broker grant.
+Extra identity/authority fields in the request are refused.
+
+The operation intent optionally records `tool_call` with `run_id`, `call_id`,
+`name` and `arguments_sha256`, alongside its checkpoint reference. Such records
+require a checkpoint and bounded validated identifiers. The journal rejects a
+second intent for the same `(run_id, call_id)`, even after the first operation
+completed or was reconciled. Changing arguments does not make that call ID new.
+Existing journal records without tool metadata remain readable. This is a replay
+barrier, not permission to dispatch saved calls or infer their outcomes.
+
+`SessionOwner.write` checks the referenced checkpoint's run/profile and current
+journal frontier before invoking the recorded broker. File preconditions, unsafe
+paths, authority loss and journal conflicts still fail before replacement. The
+result reports the operation ID and `applied` only after the broker's durable
+outcome. A later SDK snapshot contains the returned tool result and the new
+journal frontier; an older snapshot remains stale. Read-only calls do not create
+mutation intents; their message/result history is captured by Harness snapshots.
+
+The installed deterministic fixture exercises SDK read → hash-conditional write
+→ journal/tool-call/checkpoint linkage → settled history, all across the inherited
+worker channel. This does not yet supply process tools, recovery synthesis for
+lost tool results, public approvals or the complete installed coding proof.
+Public agent execution remains disabled until those runtime gates pass.

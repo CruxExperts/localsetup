@@ -74,15 +74,15 @@ class FileBroker:
     def write(self, task: str, session: str, name: str, data: bytes) -> None:
         self._write(task, session, name, data)
 
-    def write_recorded(self, task: str, session: str, name: str, data: bytes, *, expected_before: str | None, journal, checkpoint: str | None = None) -> str:
+    def write_recorded(self, task: str, session: str, name: str, data: bytes, *, expected_before: str | None, journal, checkpoint: str | None = None, tool_call: dict | None = None) -> str:
         from .file_recovery import journal_binding
         journal_binding(self, journal, task, session)
         self.grant.check(task, session, 'read', name)
         if expected_before is not None and (not isinstance(expected_before, str) or len(expected_before) != 64 or any(c not in '0123456789abcdef' for c in expected_before)):
             raise ValueError('Expected file precondition must be SHA-256 or absence')
-        return self._write(task, session, name, data, journal=journal, expected_before=expected_before, checkpoint=checkpoint)
+        return self._write(task, session, name, data, journal=journal, expected_before=expected_before, checkpoint=checkpoint, tool_call=tool_call)
 
-    def _write(self, task, session, name, data, *, journal=None, expected_before=None, checkpoint=None):
+    def _write(self, task, session, name, data, *, journal=None, expected_before=None, checkpoint=None, tool_call=None):
         if not isinstance(data, bytes) or len(data) > MAX_FILE:
             raise ValueError('Broker replacement must be bytes within 8 MiB')
         recorded_root = None
@@ -147,7 +147,7 @@ class FileBroker:
                     operation = journal.begin('file_replace', {'path': name, 'before': before_digest,
                         'after': hashlib.sha256(data).hexdigest(), 'root_sha256': recorded_root,
                         'before_properties': before_properties, 'after_properties': after_properties},
-                        checkpoint=checkpoint, timeout=max(0, self.grant.expires-time.monotonic()))
+                        checkpoint=checkpoint, tool_call=tool_call, timeout=max(0, self.grant.expires-time.monotonic()))
                     check_target()
                 os.replace(temporary, leaf, src_dir_fd=directory, dst_dir_fd=directory)
                 os.fsync(directory)

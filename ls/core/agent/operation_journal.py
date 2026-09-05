@@ -91,18 +91,28 @@ class Journal:
 
     @staticmethod
     def _states(records):
-        states = {}
+        states, calls = {}, set()
         common = {'schema_version', 'sequence', 'previous', 'task', 'session', 'operation', 'type'}
         for record in records:
             operation = record.get('operation')
             if not isinstance(operation, str) or not re.fullmatch(r'[0-9a-f]{32}', operation):
                 raise ValueError('Invalid operation identity')
-            if record.get('type') == 'intent' and set(record) == common | {'kind', 'request', 'checkpoint'}:
+            if record.get('type') == 'intent' and set(record) in (common | {'kind', 'request', 'checkpoint'}, common | {'kind', 'request', 'checkpoint', 'tool_call'}):
                 if operation in states or any(x['outcome'] == 'uncertain' for x in states.values()):
                     raise ValueError('Unreconciled or duplicate operation intent')
                 _request(record['kind'], record['request'])
                 if record['checkpoint'] is not None and (not isinstance(record['checkpoint'], str) or not DIGEST.fullmatch(record['checkpoint'])):
                     raise ValueError('Invalid checkpoint evidence digest')
+                if 'tool_call' in record:
+                    call = record['tool_call']
+                    if not isinstance(call, dict) or set(call) != {'run_id','call_id','name','arguments_sha256'} or record['checkpoint'] is None:
+                        raise ValueError('Tool operation requires a checkpoint and explicit call identity')
+                    if any(not isinstance(call[k], str) or not IDENTIFIER.fullmatch(call[k]) for k in ('run_id','call_id','name')) or not isinstance(call['arguments_sha256'], str) or not DIGEST.fullmatch(call['arguments_sha256']):
+                        raise ValueError('Invalid tool call identity or argument digest')
+                    identity = (call['run_id'], call['call_id'])
+                    if identity in calls:
+                        raise ValueError('Tool call already has an operation; reconcile without replay')
+                    calls.add(identity)
                 states[operation] = {'intent': record, 'outcome': 'uncertain'}
             elif record.get('type') == 'outcome' and set(record) == common | {'outcome', 'evidence_sha256', 'reconciled'}:
                 state = states.get(operation)
@@ -146,10 +156,10 @@ class Journal:
                 os.close(directory)
         return value
 
-    def begin(self, kind: str, request: dict, *, checkpoint: str | None = None, timeout: float = 30) -> str:
+    def begin(self, kind: str, request: dict, *, checkpoint: str | None = None, tool_call: dict | None = None, timeout: float = 30) -> str:
         operation = uuid.uuid4().hex
         self._append({'type': 'intent', 'operation': operation, 'kind': kind,
-                      'request': request, 'checkpoint': checkpoint}, timeout=timeout)
+                      'request': request, 'checkpoint': checkpoint, **({'tool_call': tool_call} if tool_call is not None else {})}, timeout=timeout)
         self._issued.add(operation)
         return operation
 
