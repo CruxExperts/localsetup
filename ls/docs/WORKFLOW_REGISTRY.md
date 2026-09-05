@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 826970fb5ae32dafb209009ebf5741263dc508cf593a0ac016e1372c1edc0cdc
+  source_provenance_hash: 6192e56d53f7ad47346a46cd550ccc6695903dd826258257319ee7e2d45c7ddb
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 739dc0d17054775ede36c6b5382a7ca200249a22
-artifact_sha256: a3ce8890fbf3d5b79728ca4c463aab39ac7bc074e482baf43c9d18d63c0d7db0
+source_commit: 85a76e6d2fc60370a7b405e6ef3a8b634b0259e6
+artifact_sha256: 34b5657970712cce139a805e82c63d77b478301356ce20a6817274e321a4b492
 ---
 # Workflow and module registry (Localsetup)
 
@@ -44,7 +44,7 @@ For the framework rules, see [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md).
 | `queue-batch-implement` | `ls-workflow-queue-batch-implement` | Queue Batch Implement | Use when processing queued PRD tasks in batch with status tracking and outcome reporting. | Agent Q queue; process PRDs | n/a | [AGENTIC_AGENT_Q_PATTERN.md](AGENTIC_AGENT_Q_PATTERN.md); [PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md](PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md) |
 | `repo-finalizer` | `ls-workflow-repo-finalizer` | Repo Finalizer | Use when safely inspecting repo dirty state and optionally checkpointing allowlisted managed outputs without destructive git operations. | repo finalizer; finalizer harness; finalization checkpoint | `ls-framework-compliance`; `ls-git-workflows` | [HARNESS_AUTOMATION.md](HARNESS_AUTOMATION.md); [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md); `ls/tools/localsetup.py` |
 | `spec-clarify-reverse` | `ls-workflow-spec-clarify-reverse` | Reverse Prompt Spec Clarify | Use when running reverse-prompt spec clarification with one question per turn and bounded choices. | decision tree; reverse prompt | n/a | [DECISION_TREE_WORKFLOW.md](DECISION_TREE_WORKFLOW.md) |
-| `tmux-terminal-mode` | `ls-workflow-tmux-terminal-mode` | Tmux Terminal Mode | Use when enabling, disabling, defaulting, or checking tmux terminal mode; do not use for one-off sudo or interactive password handoff. | tmux terminal mode; always-on tmux | n/a | [TMUX_TERMINAL_MODE.md](TMUX_TERMINAL_MODE.md); [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md); `localsetup://tool/tmux_terminal_mode` |
+| `tmux-terminal-mode` | `ls-workflow-tmux-terminal-mode` | Tmux Terminal Mode | Use when enabling, disabling, defaulting, or checking tmux terminal mode; do not use for one-off sudo or interactive password handoff. | tmux terminal mode; always-on tmux | n/a | [TMUX_TERMINAL_MODE.md](TMUX_TERMINAL_MODE.md); `ls/tools/tmux_terminal_mode` |
 | `transport-handoff` | `ls-workflow-transport-handoff` | Transport Handoff | Use when handling sealed Agent Q handoff payload transport over file_drop or mail adapters. | Agent Q bidirectional | `ls-agentq-transport`; `ls-mail-protocol-control` | [AGENTIC_AGENT_TO_AGENT_PROTOCOL.md](AGENTIC_AGENT_TO_AGENT_PROTOCOL.md); [AGENTIC_AGENT_Q_SCENARIOS.md](AGENTIC_AGENT_Q_SCENARIOS.md); [AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md](AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md); `ls/tools/agentq_transport_client/agentq_cli.py` |
 | `umbrella-run` | `ls-workflow-umbrella-run` | Umbrella Run | Use when executing a named multi-phase umbrella workflow with explicit pre-human-confirmation gates. | umbrella workflow | n/a | [AGENTIC_UMBRELLA_WORKFLOWS.md](AGENTIC_UMBRELLA_WORKFLOWS.md); [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md) |
 
