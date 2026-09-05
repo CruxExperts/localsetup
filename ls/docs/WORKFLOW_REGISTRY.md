@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 6db1b174489811cd94e3d6bcc5ff92c532b5c3f323b930dc9783a3a1ae260bc8
+  source_provenance_hash: 77859f2f39cab9a68076b16ccea817f80c3b8dd3ab08a7ab9e8e5731392c3616
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 4923d4f24c79808ffcce3651e1bc8b41a2f2c3f3
-artifact_sha256: 247f9e27b8f0479aae22a65a52085293bb7ae55b0fa67252a2ca1544d554446f
+source_commit: a03cb1ea9f1ab4201f2336eb6bb3b71d148607f9
+artifact_sha256: 99b763c2479979b9a2dd8344aa2ca5dfef5caf303667d4b468b57fa0fbf2d01c
 ---
 # Workflow and module registry (Localsetup)
 
@@ -39,7 +39,7 @@ For the framework rules, see [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md).
 | `pipeline-repo-convert` | `ls-workflow-pipeline-repo-convert` | Pipeline Repo Convert | Use when converting an existing repo to the current Localsetup framework with backup, blocker, install, and verification gates. | repo convert pipeline; convert repo; localsetup convert | `ls-framework-compliance`; `ls-safety-and-backup`; `ls-git-workflows`; `ls-test-runner` | [REPO_CONVERSION.md](REPO_CONVERSION.md); [MULTI_PLATFORM_INSTALL.md](MULTI_PLATFORM_INSTALL.md); `git` |
 | `pipeline-repo-polish` | `ls-workflow-pipeline-repo-polish` | Pipeline Repo Polish | Use when polishing repository docs and scripts for sharing readiness. | repo polish pipeline | `ls-script-and-docs-quality`; `ls-humanizer`; `ls-github-publishing-workflow` | [README.md](README.md); [SKILL.md](../../ls/skills/ls-script-and-docs-quality/SKILL.md); [SKILL.md](../../ls/skills/ls-humanizer/SKILL.md); [SKILL.md](../../ls/skills/ls-github-publishing-workflow/SKILL.md) |
 | `pipeline-server-triage-patch` | `ls-workflow-pipeline-server-triage-patch` | Pipeline Server Triage Patch | Use when capturing a Linux server baseline, diagnosing service issues from read-only evidence, and producing a patch plan without executing changes. | server triage patch pipeline | `ls-system-info`; `ls-linux-service-triage`; `ls-linux-patcher` | [WORKFLOW_QUICK_REF.md](WORKFLOW_QUICK_REF.md) |
-| `pipeline-skill-onboard` | `ls-workflow-pipeline-skill-onboard` | Pipeline Skill Onboard | Use when running the skill onboarding pipeline from vetting through sandbox testing. | skill onboarding pipeline | `ls-skill-vetter`; `ls-skill-importer`; `ls-skill-normalizer`; `ls-skill-sandbox-tester` | [WORKFLOW_QUICK_REF.md](WORKFLOW_QUICK_REF.md); [SKILL_IMPORTING.md](SKILL_IMPORTING.md) |
+| `pipeline-skill-onboard` | `ls-workflow-pipeline-skill-onboard` | Pipeline Skill Onboard | Use when running the skill onboarding pipeline from vetting through sandbox testing. | skill onboarding pipeline | `ls-skill-vetter`; `ls-skill-importer`; `ls-skill-normalizer`; `ls-skill-sandbox-tester` | [SKILL_IMPORTING.md](SKILL_IMPORTING.md); [SKILL.md](../../ls/skills/ls-skill-vetter/SKILL.md); [SKILL.md](../../ls/skills/ls-skill-importer/SKILL.md); [SKILL.md](../../ls/skills/ls-skill-normalizer/SKILL.md); [SKILL.md](../../ls/skills/ls-skill-sandbox-tester/SKILL.md) |
 | `planning-critic-loop` | `ls-workflow-planning-critic-loop` | Planning Critic Loop | Use when creating decision-complete plans through grounding, capped clarification, subagent delegation, and critic iteration. | planning critic loop; planning agent critic; critic reviewed plan | n/a | [DECISION_TREE_WORKFLOW.md](DECISION_TREE_WORKFLOW.md); [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md); [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md); [SKILLS_AND_RULES.md](SKILLS_AND_RULES.md) |
 | `queue-batch-implement` | `ls-workflow-queue-batch-implement` | Queue Batch Implement | Use when processing queued PRD tasks in batch with status tracking and outcome reporting. | Agent Q queue; process PRDs | n/a | [AGENTIC_AGENT_Q_PATTERN.md](AGENTIC_AGENT_Q_PATTERN.md); [PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md](PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md) |
 | `repo-finalizer` | `ls-workflow-repo-finalizer` | Repo Finalizer | Use when safely inspecting repo dirty state and optionally checkpointing allowlisted managed outputs without destructive git operations. | repo finalizer; finalizer harness; finalization checkpoint | `ls-framework-compliance`; `ls-git-workflows` | [HARNESS_AUTOMATION.md](HARNESS_AUTOMATION.md); [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md); `ls/tools/localsetup.py` |

@@ -46,12 +46,12 @@
       "emitter": "generate-docs",
       "framework_version": "4.3.9",
       "schema_version": 1,
-      "source_commit": "4923d4f24c79808ffcce3651e1bc8b41a2f2c3f3",
+      "source_commit": "a03cb1ea9f1ab4201f2336eb6bb3b71d148607f9",
       "source_dirty": true,
-      "source_provenance_hash": "6db1b174489811cd94e3d6bcc5ff92c532b5c3f323b930dc9783a3a1ae260bc8",
-      "source_root_id": "be7638aad3d4f42d1f5919a2882b67bd0b0c66ce0f268746804195f8c912e374",
+      "source_provenance_hash": "77859f2f39cab9a68076b16ccea817f80c3b8dd3ab08a7ab9e8e5731392c3616",
+      "source_root_id": "78ec31cad2392abf742513d0a8feb2e6d419ca8c6023af7d5528b74418a89674",
       "source_tag": null,
-      "source_tree_sha": "fcd394879b245582456c08c1bffb9cda0a7d9589"
+      "source_tree_sha": "09672604001030d4f690cdd7e2f7cac86ce76ba4"
     },
     "skill_count": 103,
     "skills": [
@@ -1900,12 +1900,12 @@
       "emitter": "generate-docs",
       "framework_version": "4.3.9",
       "schema_version": 1,
-      "source_commit": "4923d4f24c79808ffcce3651e1bc8b41a2f2c3f3",
+      "source_commit": "a03cb1ea9f1ab4201f2336eb6bb3b71d148607f9",
       "source_dirty": true,
-      "source_provenance_hash": "6db1b174489811cd94e3d6bcc5ff92c532b5c3f323b930dc9783a3a1ae260bc8",
-      "source_root_id": "be7638aad3d4f42d1f5919a2882b67bd0b0c66ce0f268746804195f8c912e374",
+      "source_provenance_hash": "77859f2f39cab9a68076b16ccea817f80c3b8dd3ab08a7ab9e8e5731392c3616",
+      "source_root_id": "78ec31cad2392abf742513d0a8feb2e6d419ca8c6023af7d5528b74418a89674",
       "source_tag": null,
-      "source_tree_sha": "fcd394879b245582456c08c1bffb9cda0a7d9589"
+      "source_tree_sha": "09672604001030d4f690cdd7e2f7cac86ce76ba4"
     },
     "schema_version": 1,
     "skills": [
@@ -3409,16 +3409,16 @@
   },
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "f3ab341276ed1bf531bcd39ff99a7f95c8de4090d58cb446383690a6ef377ddc",
+    "artifact_sha256": "8707b89342e248ab5274db341e842c75c19bc841b51919e4f6f6c510c4568211",
     "emitter": "docs-align",
     "framework_version": "4.3.9",
     "schema_version": 1,
-    "source_commit": "4923d4f24c79808ffcce3651e1bc8b41a2f2c3f3",
+    "source_commit": "a03cb1ea9f1ab4201f2336eb6bb3b71d148607f9",
     "source_dirty": true,
-    "source_provenance_hash": "6db1b174489811cd94e3d6bcc5ff92c532b5c3f323b930dc9783a3a1ae260bc8",
-    "source_root_id": "be7638aad3d4f42d1f5919a2882b67bd0b0c66ce0f268746804195f8c912e374",
+    "source_provenance_hash": "77859f2f39cab9a68076b16ccea817f80c3b8dd3ab08a7ab9e8e5731392c3616",
+    "source_root_id": "78ec31cad2392abf742513d0a8feb2e6d419ca8c6023af7d5528b74418a89674",
     "source_tag": null,
-    "source_tree_sha": "fcd394879b245582456c08c1bffb9cda0a7d9589"
+    "source_tree_sha": "09672604001030d4f690cdd7e2f7cac86ce76ba4"
   },
   "schema_version": "1.0",
   "truths": {
@@ -5665,8 +5665,11 @@
             ],
             "path": "ls/workflows/ls-workflow-pipeline-skill-onboard",
             "required_docs": [
-              "ls/docs/WORKFLOW_QUICK_REF.md",
-              "ls/docs/SKILL_IMPORTING.md"
+              "ls/docs/SKILL_IMPORTING.md",
+              "ls/skills/ls-skill-vetter/SKILL.md",
+              "ls/skills/ls-skill-importer/SKILL.md",
+              "ls/skills/ls-skill-normalizer/SKILL.md",
+              "ls/skills/ls-skill-sandbox-tester/SKILL.md"
             ],
             "required_skills": [
               "ls-skill-vetter",
