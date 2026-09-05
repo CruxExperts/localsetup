@@ -21,6 +21,12 @@ if _sbom_spec is None or _sbom_spec.loader is None:
 _sbom = module_from_spec(_sbom_spec)
 _sbom_spec.loader.exec_module(_sbom)
 
+_dependency_spec = spec_from_file_location("_localsetup_sdk_dependency_integrity", Path(__file__).with_name("dependency_integrity.py"))
+if _dependency_spec is None or _dependency_spec.loader is None:
+    raise RuntimeError("Cannot load dependency lock verifier")
+_dependencies = module_from_spec(_dependency_spec)
+_dependency_spec.loader.exec_module(_dependencies)
+
 
 class BuildSDK(build_py):
     """Copy only validated SDK files; never install their public import names."""
@@ -30,6 +36,7 @@ class BuildSDK(build_py):
             super().run()
             return
         source = Path(__file__).resolve().parents[3] / "vendor" / "lscli"
+        _dependencies.verify(source.parents[1])
         manifest = verify(source)
         build_root = Path(self.build_lib).absolute()
         destination = build_root / "ls" / "_sdk_payload"
@@ -40,7 +47,25 @@ class BuildSDK(build_py):
             previous = verify(destination)
             if previous != manifest:
                 raise ValueError("Stale SDK build payload: use a fresh build output directory")
+        config = build_root / "ls" / "config"
+        if config.is_symlink() or (config.exists() and not config.is_dir()):
+            raise ValueError("Dependency build directory must be a regular directory")
+        dependency_data = {
+            name: _dependencies.regular_bytes(source.parents[1] / "ls" / "config" / name)
+            for name in (*_dependencies.LOCKS, _dependencies.RECEIPT)
+        }
+        for name, data in dependency_data.items():
+            target = config / name
+            if target.is_symlink() or (target.exists() and _dependencies.regular_bytes(target) != data):
+                raise ValueError("Stale dependency build output: use a fresh build directory")
         super().run()
+        config.mkdir(parents=True, exist_ok=True)
+        for name, data in dependency_data.items():
+            (config / name).write_bytes(data)
+        _dependencies.verify(source.parents[1])
+        for name, data in dependency_data.items():
+            if _dependencies.regular_bytes(config / name) != data:
+                raise ValueError("Dependency build output changed during copying")
         destination.mkdir(parents=True, exist_ok=True)
         for name in ["manifest.json", *sorted(manifest["files"])]:
             target = destination / name

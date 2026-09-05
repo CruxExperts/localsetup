@@ -6,6 +6,8 @@ from pathlib import Path
 import subprocess
 import sys
 
+from .dependency_integrity import RECEIPT, receipt
+
 OUTPUTS = {"runtime": "sdk-runtime.lock", "build": "sdk-build.lock"}
 
 
@@ -31,8 +33,9 @@ def exports(root: Path) -> dict[str, bytes]:
 
 
 def refresh(root: Path, *, check: bool) -> list[str]:
-    """Check exact generator output, or replace only its two owned regular files."""
+    """Check exact generator output, or replace only its owned regular files."""
     expected = exports(root)
+    expected[RECEIPT] = receipt(root, expected)
     directory = root / "ls" / "config"
     if any(p.is_symlink() for p in (directory, *directory.parents)):
         raise ValueError("Dependency lock directory must not contain symlinks")

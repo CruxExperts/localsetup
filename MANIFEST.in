@@ -1,3 +1,4 @@
+include uv.lock
 recursive-include vendor/lscli *
 recursive-include assets *
 prune ls/docs/local-context

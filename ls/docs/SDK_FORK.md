@@ -227,3 +227,22 @@ installed separately after its artifact verification. This is a qualification
 procedure, not the protected installer or an instruction to alter an existing
 user environment. Python 3.12/Linux candidate installation passed with these
 options; other marker branches remain separate qualification requirements.
+
+
+### Build-time export consistency
+
+The exporter also owns `ls/config/sdk-dependency-receipt.json`. It binds both
+exported byte streams to the canonical project and lock inputs. Ordinary wheel
+builds validate this receipt using only the standard library before copying the
+SDK payload. Missing inputs, changed exports, or stale source bindings stop the
+build and require regeneration. Reused build directories must also contain only
+matching dependency files; the build rejects stale destinations and verifies
+the bytes copied into wheel output. Source distributions retain `uv.lock` so the
+same check applies when building a wheel from an sdist.
+
+The binding ignores only the framework project version and its local editable
+lock record's version, allowing canonical release version synchronization without
+changing external dependency exports. Other project or lock changes invalidate
+the receipt. The receipt is consistency evidence, not an independent signature:
+coordinated replacement of source, locks, and receipt can replace that evidence.
+Release provenance and protected installed-runtime checks remain separate gates.

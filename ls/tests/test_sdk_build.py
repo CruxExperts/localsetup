@@ -61,3 +61,14 @@ def test_core_preserves_lazy_main_export_without_runtime_imports():
     from ls.core.cli import main
 
     assert ls.core.main is main
+
+
+def test_reused_build_rejects_newer_modified_dependency_lock(tmp_path):
+    import os
+    build = command(tmp_path)
+    build.run()
+    target = Path(build.build_lib) / 'ls/config/sdk-runtime.lock'
+    target.write_bytes(b'changed==1')
+    os.utime(target, (4102444800, 4102444800))
+    with pytest.raises(ValueError, match='Stale dependency build output'):
+        build.run()
