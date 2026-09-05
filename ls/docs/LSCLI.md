@@ -324,9 +324,9 @@ protected runtime/state boundaries before dispatch.
 
 The broker is internal and not yet exposed as SDK tools. A cooperating lease and
 pre-replacement identity check do not stop an untrusted same-user process from
-renaming directories or racing the final replacement. Sandbox containment,
-shared target/session ownership, prompt-bound approval flow, and durable mutation
-journaling remain required before tool-enabled execution. Grant expiry/revocation
+renaming directories or racing the final replacement. Tool-enabled execution must
+combine sandbox containment, shared target/session ownership, prompt-bound
+approvals and durable journaling; public integration is pending. Grant expiry/revocation
 is checked before and after lease waits and before returning data or replacing a
 file; it does not interrupt a blocked filesystem syscall.
 
@@ -538,9 +538,9 @@ authority, snapshot-digest provenance and read-only reconciliation evidence.
 
 No journal method re-executes an operation. Recovery must inspect target state,
 reconcile unfinished effects and reassess permissions before further dispatch.
-Session leases, SDK checkpoint joins and automatic recovery orchestration remain
-required; the journal alone does not
-make workspace writeback or public agent execution available.
+SDK checkpoint joins and public recovery orchestration remain required. Use the
+exclusive session facade below for internal broker dispatch; the journal alone
+does not make public agent execution available.
 
 ## Recorded file replacement and read-only reconciliation
 
@@ -582,11 +582,63 @@ produced that state. It is a local recovery result, not permission to disclose
 file contents to a provider.
 
 Earlier journal file requests without root/property bindings remain readable as
-historical evidence, but cannot drive this automatic comparison. Session
-exclusivity, SDK checkpoint integration and a public recovery protocol remain
-required before unattended dispatch or public agent execution is enabled.
+historical evidence, but cannot drive this automatic comparison. The exclusive
+session facade below supplies lifetime ownership for this primitive. SDK
+checkpoint integration and a public recovery protocol remain required before
+public agent execution is enabled.
 
 Reconciliation rechecks the workspace root, parent directory and current leaf
 identity after hashing, immediately before recording its observation. A displaced
 path leaves the intent unfinished. These checks detect observed external races;
 they cannot eliminate the final race with writers outside the shared lease.
+
+## Exclusive session ownership and recovery dispatch
+
+The internal `session_owner.lease` context takes an explicit private state root,
+validated task/session identifiers, workspace, monotonic deadline and optional
+live revocation event. A SHA-256 of the session identifier selects one directory
+within that state root. Its exclusive lease lasts until context exit, separate
+from the journal's short append/read leases. Competing owners wait only until
+their deadline. Process exit releases the kernel lease; lock files are retained.
+All controllers for a session must use the same configured state root.
+
+The durable identity binds task, session and workspace path/device/inode digest.
+A different task or replaced workspace cannot silently reuse the session; an
+explicit branch/rebinding workflow remains required. No grants, credentials or
+monotonic deadlines are restored from this record. State must remain protected
+from tool processes and separate from workspace, runtime, staging and target
+lease trees. The owner checks these boundaries at the applicable dispatch path.
+
+The yielded synchronous owner is bound to its creating thread and rejects
+reentrant dispatch, expired/revoked authority and use after context exit.
+`inspect()` returns journal evidence; `write()` and `run()` require no unfinished
+operation, then call the recorded brokers with fresh grants capped to the owner's
+deadline and combined revocation. `reconcile_file()` permits the existing fresh
+read-only file comparison while dispatch is blocked. Uncertain process operations
+remain blocked for explicit evidence-backed reconciliation; this facade does not
+infer process effects or restart them. Inspection and reconciliation do not grant
+provider disclosure permission.
+
+Lock order is session first, then runtime for process execution or target for
+file operations, then the short journal lease. Child operations must not acquire
+the session lease again. The state-root choice and live grant issuance belong to
+the supervisor, never model input or conversation summaries. Low-level broker and
+journal methods remain internal primitives, not independently exposed tools.
+SDK checkpoint joins, public session branching and recovery commands, resource
+qualification and public agent dispatch are still pending.
+
+Internal caller example, using a supervisor-issued `broker` and private `state`:
+
+```python
+with lease(state, task=broker.grant.task, session=broker.grant.session,
+           workspace=broker.grant.root, expires=broker.grant.expires) as owner:
+    pending = [key for key, value in owner.inspect().items()
+               if value["outcome"] == "uncertain"]
+    # Inspect pending kinds and reconcile evidence before requesting new work.
+    if not pending:
+        operation = owner.write(broker, "src/new.py", b"VALUE = 1\n",
+                                expected_before=None)
+```
+
+The example requires an existing granted `src` write/read scope and an absent
+`src/new.py`; it does not widen either scope or overwrite an existing file.
