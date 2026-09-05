@@ -111,3 +111,29 @@ def test_policy_rejects_broad_or_unexplained_exceptions(tmp_path: Path) -> None:
     path.write_text(json.dumps(settings))
     with pytest.raises(ValueError, match="repository-relative"):
         load_policy(path)
+
+
+def test_shell_fences_classify_only_executable_position() -> None:
+    text = "```bash\nlocalsetup doctor # Localsetup display\necho localsetup\n```\nlocalsetup prose\n"
+    assert [r["classification"] for r in references("guide.md", text)] == [
+        "technical", "unclassified", "unclassified", "unclassified",
+    ]
+    assert references("guide.md", "```text\nlocalsetup prose\n```")[0]["classification"] == "unclassified"
+    assert references("guide.md", "~~~sh\n$ lscli run\n~~~")[0]["classification"] == "technical"
+    assert references("guide.md", "```sh\nlocalsetup-owned text\n```")[0]["classification"] == "unclassified"
+
+
+def test_environment_punctuation_and_relative_filenames_preserve_mixed_display() -> None:
+    text = '${LOCALSETUP_HOME:-/tmp} LOCALSETUP_OTHER. assets/localsetup-logo.png Localsetup display'
+    assert [r["classification"] for r in references("guide.md", text)] == [
+        "technical", "technical", "technical", "unclassified",
+    ]
+    for text in ("LOCALSETUP display", "Localsetup/LSCli", "localsetup-owned display"):
+        assert references("guide.md", text)[0]["classification"] == "unclassified"
+
+
+def test_shell_literal_bodies_and_console_output_remain_unclassified() -> None:
+    for body in ("cat <<'EOF'\nlocalsetup is our framework.\nEOF", 'echo "\nlocalsetup display\n"'):
+        assert references("guide.md", "```bash\n" + body + "\n```")[0]["classification"] == "unclassified"
+    rows = references("guide.md", "```console\n$ localsetup doctor\nlocalsetup display\n```")
+    assert [r["classification"] for r in rows] == ["technical", "unclassified"]

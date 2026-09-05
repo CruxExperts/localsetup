@@ -140,3 +140,15 @@ and accessibility evidence live in `ls/config/branding.json`.
 Keep asset filenames stable. Review a changed raster in full, including small
 labels, and check each current consumer's alt text. The historical release note
 remains immutable; its descriptive alt text is retained with the release record.
+
+## Technical syntax recognition
+
+The scanner recognizes uppercase environment identifiers independently of shell
+expansion punctuation, and recognizes relative resource filenames with known
+extensions. Lowercase `localsetup` and `lscli` at the executable position in a
+simple shell-labelled Markdown fence are command identifiers. Blocks containing
+here-documents, line continuations or multiline quotes remain conservative;
+console transcripts require a prompt prefix for automatic command recognition.
+This does not exempt the
+rest of the line or block: comments, echoed prose, unlabelled prose and display
+separators still require canonical branding or an exact reviewed exception.
