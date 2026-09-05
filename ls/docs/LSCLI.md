@@ -1825,3 +1825,33 @@ rate_limited 8, transport_failed 9, uncertain 10, provider_error 11,
 output_limit 12, deadline 124 and cancelled 130. Provider messages, prompts and
 credentials must not become reason strings. Worker dispatch, bounded transport,
 status normalization and installed execution remain required integration gates.
+
+### Direct-model worker adapter foundation
+
+`sdk_completion.complete` uses the SDK's direct `Model.request` API inside the
+isolated importer, with empty function/native/output tool lists, one attempt and
+no Agent loop. It uses the shared explicit transport and native schema output
+when requested; validate-only output still passes local schema validation.
+Optional reasoning effort currently refuses before dispatch until model-parameter
+qualification is integrated. This adapter does not yet expose the public command
+or replace the QC wrapper.
+
+Before SDK response normalization, a completion-only transport guard caps the
+identity-encoded body at 1 MiB plus 64 KiB of protocol overhead. It requests
+identity encoding and rejects compressed responses before reading their bodies.
+Other coding and compaction transport behavior is unchanged. The guard inspects
+raw completion status and refusals, preventing SDK normalization from converting
+an unfinished result into success. Responses reasoning items are skipped and
+output text is joined in message/content order. Hosted tools and non-text outputs
+are rejected; no tools are executed. A bounded ASCII `x-request-id` and available
+input/output token counts are retained, without raw provider diagnostics.
+
+The effective deadline begins at adapter entry and includes provider processing,
+local validation and envelope construction. Authority is checked again before
+success is returned. Network connection failures are distinguished from uncertain
+transport interruptions; neither is retried. The protected supervisor still must
+bound synchronous processing and own final delivery when the command is integrated.
+Deterministic fixtures cover both APIs, success/schema/refusal/incomplete/malformed
+results, rate limits, missing credentials, connection/read failures, oversized
+responses, revocation and deadline expiry during validation. This qualifies the
+adapter path only; public command and installed-consumer acceptance remain pending.

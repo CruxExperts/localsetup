@@ -10,7 +10,7 @@ from .sdk_imports import PayloadFinder
 
 
 @asynccontextmanager
-async def model(profile: Profile, environment: dict[str, str], finder: PayloadFinder, *, transport=None):
+async def model(profile: Profile, environment: dict[str, str], finder: PayloadFinder, *, transport=None, response_guard=None):
     if not sys.flags.isolated or not sys.dont_write_bytecode or sys.meta_path[0] is not finder:
         raise RuntimeError('SDK models require the active isolated worker importer')
     finder.verify_origins()
@@ -24,7 +24,7 @@ async def model(profile: Profile, environment: dict[str, str], finder: PayloadFi
         'supports_json_object_output': False,
         'supported_native_tools': frozenset(),
     }
-    async with client(profile, environment, transport=transport) as sdk:
+    async with client(profile, environment, transport=transport, response_guard=response_guard) as sdk:
         provider = OpenAIProvider(openai_client=sdk)
         from .sdk_response_stream import guarded_type
         adapter = OpenAIChatModel if profile.api == 'chat_completions' else guarded_type(OpenAIResponsesModel)

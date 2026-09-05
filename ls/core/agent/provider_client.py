@@ -11,8 +11,9 @@ from .profiles import Profile
 
 
 class BoundTransport(httpx.AsyncBaseTransport):
-    def __init__(self, profile: Profile, credential: str, delegate: httpx.AsyncBaseTransport):
+    def __init__(self, profile: Profile, credential: str, delegate: httpx.AsyncBaseTransport, response_guard=None):
         self.profile, self.credential, self.delegate = profile, credential, delegate
+        self.response_guard = response_guard
 
     async def handle_async_request(self, request):
         if request.method != 'POST' or request.url != httpx.URL(self.profile.endpoint):
@@ -26,21 +27,23 @@ class BoundTransport(httpx.AsyncBaseTransport):
             'Authorization': 'Bearer ' + self.credential, 'Content-Type': 'application/json',
             'Accept': 'application/json', 'Content-Length': str(len(content)),
         })
-        return await self.delegate.handle_async_request(request)
+        if self.response_guard: request.headers['Accept-Encoding'] = 'identity'
+        response = await self.delegate.handle_async_request(request)
+        return await self.response_guard(response) if self.response_guard else response
 
     async def aclose(self):
         await self.delegate.aclose()
 
 
 @asynccontextmanager
-async def client(profile: Profile, environment: dict[str, str], *, transport=None):
+async def client(profile: Profile, environment: dict[str, str], *, transport=None, response_guard=None):
     from openai import AsyncOpenAI
     credential = profile.credential(environment)
     # Explicit trust store excludes ambient proxy, CA and SDK credential settings.
     import certifi
     context = ssl.create_default_context(cafile=certifi.where())
     delegate = transport if transport is not None else httpx.AsyncHTTPTransport(verify=context, retries=0, trust_env=False)
-    http = httpx.AsyncClient(transport=BoundTransport(profile, credential, delegate),
+    http = httpx.AsyncClient(transport=BoundTransport(profile, credential, delegate, response_guard),
                             trust_env=False, follow_redirects=False, timeout=profile.timeout_seconds)
     sdk = AsyncOpenAI(api_key=credential, admin_api_key='', base_url=profile.base_url, organization='', project='',
                       webhook_secret='', max_retries=0, timeout=profile.timeout_seconds, http_client=http)

@@ -1,0 +1,60 @@
+"""Isolated direct model completion with synthetic protocol responses."""
+import asyncio,json,sys,time
+from pathlib import Path
+if len(sys.argv)>1:
+    sys.path.insert(0,sys.argv[1]);payload=Path(sys.argv[1])/'./vendor/lscli'
+else:
+    import ls
+    payload=Path(ls.__file__).parent/'_sdk_payload'
+from ls.core.agent.sdk_imports import activate
+finder=activate(payload)
+from ls.core.agent.sdk_completion import complete
+import ls.core.agent.sdk_completion as completion
+base_validate=completion.validate_output
+from ls.core.agent.profiles import parse
+from ls.core.branding import user_agent
+import httpx2 as httpx
+
+async def main():
+    reports=[]
+    for api in ('chat_completions','responses'):
+        profile=parse({'base_url':'https://fixture.invalid/v1/','api':api,'model':'fixture','credential_env':'KEY','timeout_seconds':5,'capabilities':['native_schema'],'allow_loopback_http':False})
+        request=json.dumps({'interface_version':1,'model':'fixture','deadline_seconds':3,'max_attempts':1,'max_output_tokens':100,'input':{'facts':[]},'output_schema':{'type':'object','properties':{'ok':{'type':'boolean'}},'required':['ok'],'additionalProperties':False}}).encode()
+        for mode,expected in [('success','succeeded'),('refusal','refused'),('incomplete','incomplete'),('malformed','malformed'),('schema','schema_rejected'),('rate','rate_limited'),('error','provider_error'),('missing','unavailable'),('connect','transport_failed'),('read','uncertain'),('large','output_limit'),('revoke','cancelled'),('deadline','deadline')]:
+            calls=[];revoked=False
+            def current():
+                if revoked:raise PermissionError('revoked')
+            def validate(text,request):
+                nonlocal revoked
+                result=base_validate(text,request)
+                if mode=='revoke':revoked=True
+                if mode=='deadline':time.sleep(0.3)
+                return result
+            completion.validate_output=validate
+            actual_request=request
+            if mode=='deadline':
+                value=json.loads(request);value['deadline_seconds']=0.2
+                actual_request=json.dumps(value).encode()
+            def receive(wire):
+                calls.append(wire);body=json.loads(wire.content)
+                assert wire.headers['user-agent']==user_agent() and not body.get('tools') and not body.get('stream') and 'temperature' not in body
+                if mode=='connect':raise httpx.ConnectError('private connect')
+                if mode=='read':raise httpx.ReadError('private read')
+                if mode=='large':return httpx.Response(200,content=b'x'*(1048576+65537))
+                if mode in ('rate','error'):return httpx.Response(429 if mode=='rate' else 500,json={'error':{'message':'private diagnostic'}})
+                text='{' if mode=='malformed' else '{"ok":"yes"}' if mode=='schema' else '{"ok":true}'
+                if api=='chat_completions':
+                    value={'id':'fixture','created':1,'object':'chat.completion','model':'fixture','choices':[{'index':0,'finish_reason':'length' if mode=='incomplete' else 'stop','message':{'role':'assistant','content':text,'refusal':'private refusal' if mode=='refusal' else None}}],'usage':{'prompt_tokens':7,'completion_tokens':3,'total_tokens':10}}
+                    assert body['response_format']['type']=='json_schema'
+                else:
+                    value={'id':'resp_fixture','created_at':1,'object':'response','model':'fixture','status':'incomplete' if mode=='incomplete' else 'completed','output':[{'type':'reasoning','id':'rs_fixture','summary':[]},{'type':'message','id':'msg_fixture','role':'assistant','status':'completed','content':[{'type':'refusal','refusal':'private refusal'}] if mode=='refusal' else [{'type':'output_text','text':text,'annotations':[]}]}],'usage':{'input_tokens':7,'output_tokens':3,'total_tokens':10}}
+                    assert body['text']['format']['type']=='json_schema'
+                return httpx.Response(200,json=value,headers={'x-request-id':'fixture-request'})
+            result=await complete(profile,{} if mode=='missing' else {'KEY':'fixture'},finder,actual_request,expires=time.monotonic()+5,check=current,transport=httpx.MockTransport(receive))
+            assert result['status']==expected,(api,mode,result)
+            assert len(calls)==(0 if mode=='missing' else 1)
+            if mode=='success':assert result['data']=={'ok':True} and result['request_id']=='fixture-request' and result['usage']=={'input_tokens':7,'output_tokens':3}
+            assert 'private' not in json.dumps(result)
+            reports.append([api,mode,result['status']])
+    print(json.dumps(reports))
+asyncio.run(main())
