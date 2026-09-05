@@ -452,3 +452,41 @@ a caller must map these failures into its public protocol. Public tool dispatch,
 authorized snapshot production, resource isolation beyond time/output bounds,
 safe terminal rendering, operation journaling and accepted writeback remain
 required before enabling agent execution.
+
+## Authorized process snapshots
+
+The snapshot producer accepts a `FileBroker`, an existing private storage root,
+an explicit nonempty tuple of file names, task/session identifiers and an optional
+provider-disclosure request. It performs no recursive source discovery. Before
+allocating state it checks read authority, disclosure authority when requested,
+canonical names, duplicates, file/directory conflicts and protected context.
+Paths are limited to 4 KiB and 128 components; the complete inventory, including
+created parent directories, is limited to 30,000 entries. Storage must be separate
+from the source workspace and target lease tree. The sandbox's additional runtime
+and system-tree exclusions still apply before execution.
+
+Each projection receives a new private container with `files/` and a sibling
+`manifest.json`. Only `files/` is exposed to the process. The producer holds one
+shared target lease across all source reads, blocking cooperating broker writes.
+Reads use anchored descriptors and capture content and source mode together;
+individual files remain bounded to 8 MiB and total copied content to 256 MiB.
+Copies are private regular files, retaining the owner's executable bit. Nested
+directories are private. Source content, modes and neighboring files are unchanged.
+The shared lease does not make a transaction out of unrelated external writers;
+recorded hashes identify the exact bytes actually copied.
+
+The schema-1 manifest records task/session identifiers and `status: incomplete`
+until all files and directories are flushed and current authority is rechecked.
+A prepared record adds a `files` mapping from relative name to `sha256`, `size`
+and `source_mode`. Failed projections remain incomplete for inspection and are
+never silently replayed or promoted to prepared. The manifest is local evidence,
+not executable authority or a session checkpoint.
+
+The returned live snapshot can derive an exact process grant whose deadline
+cannot exceed the source grant's deadline and whose revocation event is shared
+with that grant. Output disclosure is enabled only when every copied input was
+authorized for provider disclosure during creation. A local-only snapshot cannot
+mint that flag through this API. Saved manifests cannot reconstruct grants;
+resuming requires current authorization and reconciliation. Snapshot changes are
+disposable until the broker validates and journals an explicit writeback. No
+workspace writeback or automatic snapshot cleanup is implemented by this producer.

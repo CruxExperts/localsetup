@@ -47,6 +47,10 @@ class FileBroker:
                 yield target
 
     def read(self, task: str, session: str, name: str, *, for_provider: bool = False) -> bytes:
+        return self.read_entry(task, session, name, for_provider=for_provider)[0]
+
+    def read_entry(self, task: str, session: str, name: str, *, for_provider: bool = False) -> tuple[bytes, int]:
+        """Read coherent bytes and source mode under the same anchored descriptor."""
         with self._target(task, session, 'read', name, for_provider) as (directory, leaf):
             fd = os.open(leaf, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=directory)
             try:
@@ -61,7 +65,7 @@ class FileBroker:
                 if (before.st_size, before.st_mtime_ns, before.st_ctime_ns) != (after.st_size, after.st_mtime_ns, after.st_ctime_ns):
                     raise PermissionError('Broker file changed during read')
                 self.grant.check(task, session, 'read', name, provider=for_provider)
-                return bytes(data)
+                return bytes(data), stat.S_IMODE(before.st_mode)
             finally:
                 os.close(fd)
 
