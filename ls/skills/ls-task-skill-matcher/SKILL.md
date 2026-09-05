@@ -26,7 +26,7 @@ metadata:
 - Claude Code: the workspace Claude context file.
 - Codex: the workspace `AGENTS.md`.
 - Other platforms: the workspace context source identified by the platform registry.
-- For complementary public-skill suggestions, load `ls-skill-discovery` and follow its public-index check, refresh prompt, and recommendation flow.
+- For complementary public-skill suggestions, check whether `ls-skill-discovery` is available to the current client. If available, load it and delegate the public discovery flow. If unavailable, report "Public-skill discovery is unavailable. Recommendations: none." and continue installed-skill selection; do not read the public index as a fallback or install a missing package automatically.
 - For framework-generated catalogs, prefer `ls/docs/_generated/skill-taxonomy.json` and `ls/docs/SKILLS.md`; both are sorted by `sort_priority` then skill ID and expose class, tags, and pack membership.
 
 ## Rule ownership
@@ -55,8 +55,8 @@ This skill owns task-to-skill selection behavior. `TASK_SKILL_MATCHING.md` and `
 
 3. **Single-task flow**
    - If one clear installed match exists, ask once: **"Use this skill?"**
-   - Same turn: include up to 3 complementary public skills from `ls-skill-discovery` when its index is ready.
-   - If the public index is missing, has no `updated` value, or is stale, still show the installed match and **"Use this skill?"** first. Then load `ls-skill-discovery` and follow its required prompt behavior, including the last refresh date, computed age reminder, 7-day stale threshold, and full refresh-and-scrub sequence before returning public suggestions.
+   - Show the installed match and **"Use this skill?"** first, then request complementary public suggestions only if `ls-skill-discovery` is available, using the availability rule above.
+   - Same turn: include up to 3 recommendations returned by discovery, preserving its index-status disclosures and any pending user question. If discovery returns no recommendations, report that result; it does not prevent installed-skill selection.
 
 4. **Batch / long-running flow**
    - Prompt once at start with options:
@@ -68,13 +68,13 @@ This skill owns task-to-skill selection behavior. `TASK_SKILL_MATCHING.md` and `
 
 5. **No installed fit**
    - State that no installed skill is a good fit.
-   - Offer up to 3 complementary public skills to import by delegating discovery to `ls-skill-discovery`.
+   - If `ls-skill-discovery` is available, offer up to 3 returned complementary public skills to import; otherwise report the unavailable/no-recommendations result above.
    - Optionally suggest creating a new skill with `ls-skill-creator`.
 
 ## Public index rules
 
 - Do not implement a separate stale-index policy in this matcher. `ls-skill-discovery` owns the public index, the standard last-refresh reminder, stale detection, user prompt, refresh, and scrub behavior.
-- When invoking `ls-skill-discovery`, preserve its required status line: `Last index refresh: YYYY-MM-DD (X days/weeks/years ago).` If the index is missing or never refreshed, use its "not built yet" prompt. If the index is at least 7 days old, include its stale refresh prompt before relying on public recommendations.
+- Preserve discovery's returned last-refresh status (date and age when available), availability and freshness disclosures, and any pending user question. Do not calculate a separate freshness decision, reconstruct its prompts, or perform its maintenance sequence in this matcher.
 - For complementary suggestions: return up to 3 public skills from the discovery result, each with one-line fit reason.
 - To import suggestions, point user to `ls-skill-importer` (or run it if user asks).
 

@@ -165,6 +165,16 @@ def _normalize_path(value: str, *, cwd: Path, repo_root: Path) -> Path:
         p = (cwd / p).resolve()
     return p
 
+def _display_path(path: Path, *, repo_root: Path) -> str:
+    """Render paths for reports without disclosing lexical locations outside the repo."""
+    absolute_path = Path(os.path.abspath(path))
+    absolute_repo_root = Path(os.path.abspath(repo_root))
+    try:
+        relative = absolute_path.relative_to(absolute_repo_root)
+    except ValueError:
+        return "<outside-repo>"
+    return relative.as_posix() or "."
+
 def _compile_regexes(patterns: list[str]) -> list[Pattern[str]]:
     compiled: list[Pattern[str]] = []
     for pattern in patterns:
@@ -219,13 +229,13 @@ def _load_config(config_path: Path) -> Config:
     report_path_raw = _optional_string(
         report,
         "output_path",
-        "{repo_root}/docs/reference/markdown-reference-audit.md",
+        "{repo_root}/.localsetup/state/markdown-reference/default.md",
         "report.output_path",
     )
     state_path_raw = _optional_string(
         report,
         "state_file",
-        "{repo_root}/.kilo/state/markdown_reference_audit_last_run_epoch",
+        "{repo_root}/.localsetup/state/markdown-reference/default-last-run-epoch",
         "report.state_file",
     )
     max_findings = _optional_int(

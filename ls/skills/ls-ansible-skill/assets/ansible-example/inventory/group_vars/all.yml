@@ -11,22 +11,30 @@ common_upgrade_packages: true
 common_deploy_user: deploy
 common_deploy_user_groups: [sudo]
 common_deploy_user_nopasswd_sudo: false
+# Define this in host or vault-backed inventory for a real target.
+# common_deploy_ssh_pubkey: "ssh-ed25519 AAAA... user@example"
 
 # Security
+security_ssh_port: 22
 security_ssh_permit_root: "no"
 security_ssh_password_auth: "no"
-security_ufw_enabled: true
 security_fail2ban_enabled: true
+security_ufw_enabled: true
+security_ufw_allowed_ports:
+  - { port: "22", proto: "tcp" }
+  - { port: "80", proto: "tcp" }
+  - { port: "443", proto: "tcp" }
 security_autoupdate_enabled: true
 
-# Node.js
+# Node.js 22 is currently LTS; verify the installed version for the target.
 nodejs_version: "22"
 
-# Agent-host sample application.
-# Defaults install OpenClaw as an example npm-based agent service.
+# Agent-host sample application. OpenClaw and NodeSource behavior are external
+# dependencies; validate the package, executable path, and target before use.
 agent_host_package_name: openclaw
 agent_host_package_version: latest
-agent_host_command: openclaw
+agent_host_executable: /usr/local/bin/openclaw
+agent_host_command_args: "gateway run"
 agent_host_service_name: openclaw
 agent_host_user: "{{ common_deploy_user }}"
-agent_host_config_dir: "/home/{{ agent_host_user }}/.config/{{ agent_host_service_name }}"
+agent_host_config_dir: "/home/{{ agent_host_user }}/.openclaw"

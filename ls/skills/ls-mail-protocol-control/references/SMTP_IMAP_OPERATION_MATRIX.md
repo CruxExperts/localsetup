@@ -34,4 +34,6 @@ When server `MOVE` capability is missing:
 
 1. `UID COPY`
 2. `UID STORE +FLAGS (\Deleted)`
-3. `EXPUNGE`
+3. When `UIDPLUS` is available, `UID EXPUNGE <selected-uids>`.
+
+The fallback never calls mailbox-wide `EXPUNGE`. If `UIDPLUS` is absent or scoped expunge fails, it returns `IMAP_MOVE_INCOMPLETE`; an operator may separately use the confirmation-gated `imap.expunge_mailbox` action.

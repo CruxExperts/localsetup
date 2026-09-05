@@ -36,6 +36,9 @@ def phase_skill_matrix(
         errors.append("skill_smoke_commands.yaml must be a YAML map")
         return (errors, warnings)
     skills_dir = fw / "skills"
+    if not skills_dir.is_dir():
+        errors.append(f"Framework skills directory missing or invalid: {skills_dir}")
+        return (errors, warnings)
     invalid_keys = [
         repr(key) for key in data if not isinstance(key, str) or not key.strip()
     ]
@@ -45,7 +48,14 @@ def phase_skill_matrix(
             + ", ".join(invalid_keys)
         )
         return (errors, warnings)
-    skill_ids = sorted(p.name for p in skills_dir.iterdir() if p.is_dir())
+    try:
+        skill_ids = sorted(p.name for p in skills_dir.iterdir() if p.is_dir())
+    except OSError as exc:
+        errors.append(
+            f"Could not list framework skills directory {skills_dir}: "
+            f"{type(exc).__name__}: {exc}"
+        )
+        return (errors, warnings)
     smoke_ids = set(data)
     missing_smoke_rows = [
         skill_id for skill_id in skill_ids if skill_id not in smoke_ids
@@ -101,7 +111,10 @@ def phase_skill_matrix(
                     )
                 continue
             cp = subprocess.run(
-                [sys.executable, str(create_sandbox), "--skill-path", str(skill_path)],
+                [
+                    sys.executable, str(create_sandbox), "--skill-path", str(skill_path),
+                    "--shared-deps", str(fw / "lib" / "deps.py"),
+                ],
                 cwd=str(root),
                 capture_output=True,
                 text=True,

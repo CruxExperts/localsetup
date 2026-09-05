@@ -155,10 +155,10 @@ Use tags for selective execution:
 
 ```bash
 # Run only tagged tasks
-ansible-playbook site.yml --tags "config"
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml --tags "config"
 
 # Skip tagged tasks
-ansible-playbook site.yml --skip-tags "packages"
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml --skip-tags "packages"
 ```
 
 ## Error Handling
@@ -231,17 +231,17 @@ ansible-playbook site.yml --skip-tags "packages"
 
 ### Syntax Check
 ```bash
-ansible-playbook site.yml --syntax-check
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml --syntax-check
 ```
 
 ### Check Mode (Dry Run)
 ```bash
-ansible-playbook site.yml --check --diff
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml --check --diff
 ```
 
 ### Lint
 ```bash
-ansible-lint site.yml
+ansible-lint playbooks/site.yml
 ```
 
 ## Security

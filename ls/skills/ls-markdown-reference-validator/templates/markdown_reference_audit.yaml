@@ -1,8 +1,8 @@
 repo_root: "{repo_root}"
 
 report:
-  output_path: "{repo_root}/docs/reference/markdown-reference-audit.md"
-  state_file: "{repo_root}/.kilo/state/markdown_reference_audit_last_run_epoch"
+  output_path: "{repo_root}/.localsetup/state/markdown-reference/default.md"
+  state_file: "{repo_root}/.localsetup/state/markdown-reference/default-last-run-epoch"
   max_findings: 1500
 
 extraction:
@@ -79,28 +79,6 @@ targets:
       - "ls/**/_generated/**"
       - "ls/**/node_modules/**"
 
-  - name: repo-kilo-config-docs
-    base_dir: "{repo_root}"
-    include_globs:
-      - ".kilo/**/*.md"
-    exclude_globs:
-      - ".kilo/**/node_modules/**"
-
-  - name: host-kilo-global
-    base_dir: "~"
-    include_globs:
-      - ".kilo/instructions/*.md"
-      # Intentionally exclude broad global skill trees here; those are often mirrored/template
-      # surfaces and produce high expected-noise. Validate them in their own repo context.
-    exclude_globs:
-      - ".kilo/**/node_modules/**"
-      - ".kilo/skills/**"
-      - ".kilo/state/**"
 
 kilo_manifest_discovery:
-  manifests:
-    - "{repo_root}/kilo.jsonc"
-    - "{repo_root}/kilo.json"
-    - "{repo_root}/templates/repo-scaffold/kilo.jsonc"
-    - "~/.config/kilo/kilo.jsonc"
-    - "~/.config/kilo/kilo.json"
+ manifests: []

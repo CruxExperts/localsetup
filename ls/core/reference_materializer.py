@@ -11,6 +11,7 @@ import yaml
 
 from .lockfile import save_json
 from .manifests import load_pack_config
+from .package_content.copy import copy_source_tree as _copy_source_tree
 from .path_contract import resolve_token
 from .paths import expand_user_path
 from .paths import PathValidationError, validate_repo_relative_path
@@ -582,24 +583,6 @@ def _copy_doc_closure(
             added_path, _sep, _fragment = added.partition("#")
             if added_path not in seen and added_path not in pending:
                 pending.append(added_path)
-
-
-def _copy_source_tree(source: Path, destination: Path) -> None:
-    source_resolved = source.resolve(strict=True)
-    for path in sorted(source.rglob("*")):
-        rel = path.relative_to(source)
-        if path.is_symlink():
-            resolved = path.resolve(strict=True)
-            try:
-                resolved.relative_to(source_resolved)
-            except ValueError as exc:
-                raise ValueError(f"package symlink resolves outside package source: {path}") from exc
-        target = destination / rel
-        if path.is_dir():
-            target.mkdir(parents=True, exist_ok=True)
-        elif path.is_file():
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(path, target)
 
 
 def _required_docs(source: Path) -> list[str]:

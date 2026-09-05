@@ -11,16 +11,16 @@
   "count": 103,
   "provenance": {
     "artifact_path": "ls/docs/_generated/skill-taxonomy.json",
-    "artifact_sha256": "9c6039b42d191945bc6078714b2a3b702b3221c13c2021c700cafa399870a3cc",
+    "artifact_sha256": "3d8fb2fccb6f10b0bb39a26f778eabe88ca7c92eafd23341a9d1f296ced6012d",
     "emitter": "generate-docs",
-    "framework_version": "4.3.9",
+    "framework_version": "4.4.0",
     "schema_version": 1,
-    "source_commit": "a670cedf63b791dd886015c4fdfa88c425b9e8d2",
+    "source_commit": "e8b7971a5b63885f157a2bdfaed90c276f77b72f",
     "source_dirty": true,
-    "source_provenance_hash": "42feb5176a538f7b3953bc51866cca08b8bdb4ec3a60beac1c32847f8abde74a",
-    "source_root_id": "c99a5bfa0382f7fa268df8489fc03e6fd088128883e0eb7bc4790ccc3a94a61d",
+    "source_provenance_hash": "63ed750f9b865fb766e21a67dfe80aa9fce422496d54ce403c730a4081b1f6a4",
+    "source_root_id": "585761070824e4e7ee4dd83364f76ac7b9b23f574393d59315ed9130ece83814",
     "source_tag": null,
-    "source_tree_sha": "838a3a45e51650e4dd6be2bffebec190f4b6eab4"
+    "source_tree_sha": "d99b69361ebbb62df2ff7d9b927f2a934f3d9a2a"
   },
   "schema_version": 1,
   "skills": [
@@ -60,7 +60,8 @@
       "owner_scope": "skill",
       "packs": [
         "core",
-        "dev"
+        "dev",
+        "harness"
       ],
       "path": "ls/skills/ls-context-index",
       "sort_priority": 10,
@@ -90,7 +91,8 @@
       "owner_scope": "skill",
       "packs": [
         "bootstrap",
-        "core"
+        "core",
+        "publishing"
       ],
       "path": "ls/skills/ls-script-and-docs-quality",
       "sort_priority": 10,
@@ -149,7 +151,8 @@
       "owner_scope": "skill",
       "packs": [
         "bootstrap",
-        "dev"
+        "dev",
+        "publishing"
       ],
       "path": "ls/skills/ls-docs-organization",
       "sort_priority": 20,
@@ -178,6 +181,7 @@
       "id": "ls-framework-audit",
       "owner_scope": "skill",
       "packs": [
+        "bootstrap",
         "dev"
       ],
       "path": "ls/skills/ls-framework-audit",
@@ -250,7 +254,8 @@
       "id": "ls-markdown-reference-validator",
       "owner_scope": "skill",
       "packs": [
-        "dev"
+        "dev",
+        "publishing"
       ],
       "path": "ls/skills/ls-markdown-reference-validator",
       "sort_priority": 20,
@@ -1149,6 +1154,7 @@
       "id": "ls-skill-discovery",
       "owner_scope": "skill",
       "packs": [
+        "dev",
         "skill-lifecycle"
       ],
       "path": "ls/skills/ls-skill-discovery",

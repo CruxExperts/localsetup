@@ -1,8 +1,10 @@
 """Generate test cases and test files from requirement inputs."""
 
-from typing import Dict, List, Any, Optional
 import argparse
+import json
+import re
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 from cli_support import SkillCliError, emit_json, fail, read_json
 
@@ -27,44 +29,72 @@ class TestGenerator:
     """Generate test cases and test stubs from requirements and code."""
 
     def __init__(self, framework: TestFramework, language: str):
+        if not isinstance(language, str) or not language.strip():
+            raise ValueError("Language must be non-empty text")
+        normalized_language = language.strip().lower()
+        compatible = {
+            TestFramework.JEST: {'javascript', 'typescript'},
+            TestFramework.VITEST: {'javascript', 'typescript'},
+            TestFramework.MOCHA: {'javascript', 'typescript'},
+            TestFramework.PYTEST: {'python'},
+            TestFramework.JUNIT: {'java'},
+        }
+        if normalized_language not in compatible[framework]:
+            raise ValueError(
+                f"Framework {framework.value} does not support language {normalized_language}"
+            )
         self.framework = framework
-        self.language = language
-        self.test_cases = []
+        self.language = normalized_language
+        self.test_cases: List[Dict[str, Any]] = []
 
     def generate_from_requirements(
         self,
         requirements: Dict[str, Any],
-        test_type: TestType = TestType.UNIT
+        test_type: TestType = TestType.UNIT,
     ) -> List[Dict[str, Any]]:
-        """
-        Generate test cases from requirements.
+        """Generate test-type-specific cases from validated requirements."""
+        if not isinstance(requirements, dict):
+            raise ValueError("Requirements JSON must be an object")
+        if not isinstance(test_type, TestType):
+            raise ValueError("test_type must be unit, integration, or e2e")
 
-        Args:
-            requirements: Dictionary with user_stories, acceptance_criteria, api_specs
-            test_type: Type of tests to generate
+        test_cases: List[Dict[str, Any]] = []
+        for story in self._records(requirements, 'user_stories'):
+            story_cases = self._test_cases_from_story(story)
+            if test_type == TestType.INTEGRATION:
+                story_cases = [case for case in story_cases if case['type'] != 'edge_case']
+            elif test_type == TestType.E2E:
+                story_cases = [case for case in story_cases if case['type'] == 'happy_path']
+            test_cases.extend(story_cases)
+        for criterion in self._records(requirements, 'acceptance_criteria'):
+            test_cases.extend(self._test_cases_from_criteria(criterion))
+        for endpoint in self._records(requirements, 'api_specs'):
+            api_cases = self._test_cases_from_api(endpoint)
+            if test_type == TestType.E2E:
+                api_cases = [
+                    case for case in api_cases
+                    if case['type'] in {'api_success', 'api_auth'}
+                ]
+            test_cases.extend(api_cases)
 
-        Returns:
-            List of test case specifications
-        """
-        test_cases = []
-
-        # Generate from user stories
-        if 'user_stories' in requirements:
-            for story in requirements['user_stories']:
-                test_cases.extend(self._test_cases_from_story(story))
-
-        # Generate from acceptance criteria
-        if 'acceptance_criteria' in requirements:
-            for criterion in requirements['acceptance_criteria']:
-                test_cases.extend(self._test_cases_from_criteria(criterion))
-
-        # Generate from API specs
-        if 'api_specs' in requirements:
-            for endpoint in requirements['api_specs']:
-                test_cases.extend(self._test_cases_from_api(endpoint))
-
+        scope = {
+            TestType.UNIT: 'isolated_unit',
+            TestType.INTEGRATION: 'service_boundary',
+            TestType.E2E: 'deployed_system',
+        }[test_type]
+        for case in test_cases:
+            case['test_type'] = test_type.value
+            case['execution_scope'] = scope
         self.test_cases = test_cases
         return test_cases
+
+    def _records(self, container: Dict[str, Any], key: str) -> List[Dict[str, Any]]:
+        records = container.get(key, [])
+        if not isinstance(records, list):
+            raise ValueError(f"{key} must be a list")
+        if any(not isinstance(record, dict) for record in records):
+            raise ValueError(f"Every {key} entry must be an object")
+        return records
 
     def _test_cases_from_story(self, story: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Generate test cases from user story."""
@@ -83,7 +113,7 @@ class TestGenerator:
 
         # Error cases
         if 'error_conditions' in story:
-            for error in story['error_conditions']:
+            for error in self._records(story, 'error_conditions'):
                 test_cases.append({
                     'name': f"should_handle_{error.get('condition', 'error')}",
                     'type': 'error_case',
@@ -94,7 +124,7 @@ class TestGenerator:
 
         # Edge cases
         if 'edge_cases' in story:
-            for edge_case in story['edge_cases']:
+            for edge_case in self._records(story, 'edge_cases'):
                 test_cases.append({
                     'name': f"should_handle_{edge_case.get('scenario', 'edge_case')}",
                     'type': 'edge_case',
@@ -119,6 +149,8 @@ class TestGenerator:
         test_cases = []
         method = endpoint.get('method', 'GET')
         path = endpoint.get('path', '/')
+        if not isinstance(method, str) or not isinstance(path, str):
+            raise ValueError("API method and path must be text")
 
         # Success case
         test_cases.append({
@@ -155,268 +187,227 @@ class TestGenerator:
         return test_cases
 
     def generate_test_stub(self, test_case: Dict[str, Any]) -> str:
-        """
-        Generate test stub code for a test case.
-
-        Args:
-            test_case: Test case specification
-
-        Returns:
-            Test stub code as string
-        """
-        if self.framework == TestFramework.JEST:
-            return self._generate_jest_stub(test_case)
-        elif self.framework == TestFramework.PYTEST:
-            return self._generate_pytest_stub(test_case)
-        elif self.framework == TestFramework.JUNIT:
-            return self._generate_junit_stub(test_case)
-        elif self.framework == TestFramework.VITEST:
-            return self._generate_vitest_stub(test_case)
-        else:
-            return self._generate_generic_stub(test_case)
+        """Generate one validated, framework-specific test stub."""
+        self._validate_test_case(test_case)
+        generators = {
+            TestFramework.JEST: self._generate_jest_stub,
+            TestFramework.VITEST: self._generate_vitest_stub,
+            TestFramework.PYTEST: self._generate_pytest_stub,
+            TestFramework.JUNIT: self._generate_junit_stub,
+            TestFramework.MOCHA: self._generate_mocha_stub,
+        }
+        return generators[self.framework](test_case)
 
     def _generate_jest_stub(self, test_case: Dict[str, Any]) -> str:
-        """Generate Jest test stub."""
-        name = test_case.get('name', 'test')
-        description = test_case.get('description', '')
-
-        stub = f"""
-describe('{{Feature Name}}', () => {{
-  it('{name}', () => {{
-    // {description}
-
-    // Arrange
-    // TODO: Set up test data and dependencies
-
-    // Act
-    // TODO: Execute the code under test
-
-    // Assert
-    // TODO: Verify expected behavior
-    expect(true).toBe(true); // Replace with actual assertion
-  }});
-}});
-"""
-        return stub.strip()
-
-    def _generate_pytest_stub(self, test_case: Dict[str, Any]) -> str:
-        """Generate Pytest test stub."""
-        name = test_case.get('name', 'test')
-        description = test_case.get('description', '')
-
-        stub = f"""
-def test_{name}():
-    \"\"\"
-    {description}
-    \"\"\"
-    # Arrange
-    # TODO: Set up test data and dependencies
-
-    # Act
-    # TODO: Execute the code under test
-
-    # Assert
-    # TODO: Verify expected behavior
-    assert True  # Replace with actual assertion
-"""
-        return stub.strip()
-
-    def _generate_junit_stub(self, test_case: Dict[str, Any]) -> str:
-        """Generate JUnit test stub."""
-        name = test_case.get('name', 'test')
-        description = test_case.get('description', '')
-
-        # Convert snake_case to camelCase for Java
-        method_name = ''.join(word.capitalize() if i > 0 else word
-                             for i, word in enumerate(name.split('_')))
-
-        stub = f"""
-@Test
-public void {method_name}() {{
-    // {description}
-
-    // Arrange
-    // TODO: Set up test data and dependencies
-
-    // Act
-    // TODO: Execute the code under test
-
-    // Assert
-    // TODO: Verify expected behavior
-    assertTrue(true); // Replace with actual assertion
-}}
-"""
-        return stub.strip()
+        return self._generate_javascript_stub(test_case, "toBe")
 
     def _generate_vitest_stub(self, test_case: Dict[str, Any]) -> str:
-        """Generate Vitest test stub (similar to Jest)."""
-        name = test_case.get('name', 'test')
-        description = test_case.get('description', '')
+        return self._generate_javascript_stub(test_case, "toBe")
 
-        stub = f"""
-describe('{{Feature Name}}', () => {{
-  it('{name}', () => {{
+    def _generate_mocha_stub(self, test_case: Dict[str, Any]) -> str:
+        return self._generate_javascript_stub(test_case, "to.equal")
+
+    def _generate_javascript_stub(
+        self,
+        test_case: Dict[str, Any],
+        matcher: str,
+    ) -> str:
+        name = self._js_literal(str(test_case['name']))
+        description = self._comment_text(test_case.get('description', ''))
+        setup, action, assertion = self._template_steps(test_case)
+        return f"""describe('Feature Name', () => {{
+  it({name}, () => {{
     // {description}
-
-    // Arrange
-    // TODO: Set up test data and dependencies
-
-    // Act
-    // TODO: Execute the code under test
-
-    // Assert
-    // TODO: Verify expected behavior
-    expect(true).toBe(true); // Replace with actual assertion
+    // Arrange: {setup}
+    // Act: {action}
+    // Assert: {assertion}
+    expect(true).{matcher}(true); // Replace with an observable assertion
   }});
-}});
-"""
-        return stub.strip()
+}});"""
+
+    def _generate_pytest_stub(self, test_case: Dict[str, Any]) -> str:
+        name = self._safe_identifier(str(test_case['name']))
+        description = self._comment_text(test_case.get('description', '') or name)
+        setup, action, assertion = self._template_steps(test_case)
+        return f'''def test_{name}():
+    """{description}"""
+    # Arrange: {setup}
+    # Act: {action}
+    # Assert: {assertion}
+    assert True  # Replace with an observable assertion'''
+
+    def _generate_junit_stub(self, test_case: Dict[str, Any]) -> str:
+        method_name = self._class_suffix(str(test_case['name']))
+        description = self._comment_text(test_case.get('description', ''))
+        setup, action, assertion = self._template_steps(test_case)
+        return f"""@Test
+public void {method_name}() {{
+    // {description}
+    // Arrange: {setup}
+    // Act: {action}
+    // Assert: {assertion}
+    assertTrue(true); // Replace with an observable assertion
+}}"""
 
     def _generate_generic_stub(self, test_case: Dict[str, Any]) -> str:
-        """Generate generic test stub."""
-        name = test_case.get('name', 'test')
-        description = test_case.get('description', '')
+        setup, action, assertion = self._template_steps(test_case)
+        return (
+            f"# Test: {self._comment_text(test_case['name'])}\n"
+            f"# Description: {self._comment_text(test_case.get('description', ''))}\n"
+            f"# Arrange: {setup}\n# Act: {action}\n# Assert: {assertion}"
+        )
 
-        return f"""
-# Test: {name}
-# Description: {description}
-#
-# TODO: Implement test
-# 1. Arrange: Set up test data
-# 2. Act: Execute code under test
-# 3. Assert: Verify expected behavior
-"""
+    def _template_steps(self, test_case: Dict[str, Any]) -> tuple[str, str, str]:
+        test_type = test_case.get('test_type', TestType.UNIT.value)
+        templates = {
+            TestType.UNIT.value: (
+                'isolate the unit and replace external collaborators',
+                'call one unit behavior',
+                'verify its direct result or state change',
+            ),
+            TestType.INTEGRATION.value: (
+                'start real boundary dependencies and reset shared state',
+                'exercise the service boundary',
+                'verify the result and persisted or emitted effects',
+            ),
+            TestType.E2E.value: (
+                'launch the complete system and establish a user context',
+                'perform the user journey through the public interface',
+                'verify the user-visible outcome',
+            ),
+        }
+        if test_type not in templates:
+            raise ValueError("Test case test_type must be unit, integration, or e2e")
+        return templates[test_type]
+
+    def _validate_test_case(self, test_case: Dict[str, Any]) -> None:
+        if not isinstance(test_case, dict):
+            raise ValueError("Test case must be an object")
+        name = test_case.get('name')
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError("Test case name must be non-empty text")
+
+    def _safe_identifier(self, text: str) -> str:
+        identifier = re.sub(r'[^A-Za-z0-9_]+', '_', text).strip('_').lower()
+        if not identifier:
+            return 'generated'
+        return f"case_{identifier}" if identifier[0].isdigit() else identifier
+
+    def _class_suffix(self, text: str) -> str:
+        words = re.findall(r'[A-Za-z0-9]+', text)
+        return ''.join(word.capitalize() for word in words) or 'Generated'
+
+    def _js_literal(self, text: str) -> str:
+        return json.dumps(text, ensure_ascii=False)
+
+    def _comment_text(self, value: Any) -> str:
+        return ' '.join(str(value).replace('*/', '* /').splitlines()).strip()
 
     def generate_test_file(
         self,
         module_name: str,
-        test_cases: Optional[List[Dict[str, Any]]] = None
+        test_cases: Optional[List[Dict[str, Any]]] = None,
     ) -> str:
-        """
-        Generate complete test file with all test stubs.
-
-        Args:
-            module_name: Name of module being tested
-            test_cases: List of test cases (uses self.test_cases if not provided)
-
-        Returns:
-            Complete test file content
-        """
-        cases = test_cases or self.test_cases
-
-        if self.framework == TestFramework.JEST:
-            return self._generate_jest_file(module_name, cases)
-        elif self.framework == TestFramework.PYTEST:
-            return self._generate_pytest_file(module_name, cases)
-        elif self.framework == TestFramework.JUNIT:
-            return self._generate_junit_file(module_name, cases)
-        elif self.framework == TestFramework.VITEST:
-            return self._generate_vitest_file(module_name, cases)
-        else:
-            return ""
+        """Generate a complete file for every advertised framework choice."""
+        module_path = self._validated_module_name(module_name)
+        cases = self.test_cases if test_cases is None else test_cases
+        if not isinstance(cases, list) or any(not isinstance(case, dict) for case in cases):
+            raise ValueError("test_cases must be a list of objects")
+        generators = {
+            TestFramework.JEST: self._generate_jest_file,
+            TestFramework.VITEST: self._generate_vitest_file,
+            TestFramework.PYTEST: self._generate_pytest_file,
+            TestFramework.JUNIT: self._generate_junit_file,
+            TestFramework.MOCHA: self._generate_mocha_file,
+        }
+        return generators[self.framework](module_path, cases)
 
     def _generate_jest_file(self, module_name: str, test_cases: List[Dict[str, Any]]) -> str:
-        """Generate complete Jest test file."""
-        imports = f"import {{ {module_name} }} from '../{module_name}';\n\n"
-
-        stubs = []
-        for test_case in test_cases:
-            stubs.append(self._generate_jest_stub(test_case))
-
-        return imports + "\n\n".join(stubs)
+        imports = f"import * as moduleUnderTest from '../{module_name}';\n\n"
+        return imports + self._render_stubs(test_cases, self._generate_jest_stub, "\n\n")
 
     def _generate_pytest_file(self, module_name: str, test_cases: List[Dict[str, Any]]) -> str:
-        """Generate complete Pytest test file."""
-        imports = f"import importlib\n\nimport pytest\n\nmodule_under_test = importlib.import_module({module_name!r})\n\n\n"
-
-        stubs = []
-        for test_case in test_cases:
-            stubs.append(self._generate_pytest_stub(test_case))
-
-        return imports + "\n\n\n".join(stubs)
+        imports = (
+            "import importlib\n\n"
+            f"module_under_test = importlib.import_module({module_name!r})\n\n\n"
+        )
+        return imports + self._render_stubs(test_cases, self._generate_pytest_stub, "\n\n\n")
 
     def _generate_junit_file(self, module_name: str, test_cases: List[Dict[str, Any]]) -> str:
-        """Generate complete JUnit test file."""
-        class_name = ''.join(word.capitalize() for word in module_name.split('_'))
-
+        class_name = self._class_suffix(module_name)
         imports = """import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 """
-
-        class_header = f"public class {class_name}Test {{\n\n"
-
-        stubs = []
-        for test_case in test_cases:
-            stubs.append(self._generate_junit_stub(test_case))
-
-        class_footer = "\n}"
-
-        return imports + class_header + "\n\n".join(stubs) + class_footer
+        stubs = self._render_stubs(test_cases, self._generate_junit_stub, "\n\n")
+        return imports + f"public class {class_name}Test {{\n\n{stubs}\n}}"
 
     def _generate_vitest_file(self, module_name: str, test_cases: List[Dict[str, Any]]) -> str:
-        """Generate complete Vitest test file."""
-        imports = f"import {{ describe, it, expect }} from 'vitest';\nimport {{ {module_name} }} from '../{module_name}';\n\n"
+        imports = (
+            "import { describe, it, expect } from 'vitest';\n"
+            f"import * as moduleUnderTest from '../{module_name}';\n\n"
+        )
+        return imports + self._render_stubs(test_cases, self._generate_vitest_stub, "\n\n")
 
+    def _generate_mocha_file(self, module_name: str, test_cases: List[Dict[str, Any]]) -> str:
+        imports = (
+            "import { describe, it } from 'mocha';\n"
+            "import { expect } from 'chai';\n"
+            f"import * as moduleUnderTest from '../{module_name}';\n\n"
+        )
+        return imports + self._render_stubs(test_cases, self._generate_mocha_stub, "\n\n")
+
+    def _render_stubs(self, test_cases, renderer, separator: str) -> str:
         stubs = []
         for test_case in test_cases:
-            stubs.append(self._generate_vitest_stub(test_case))
+            self._validate_test_case(test_case)
+            stubs.append(renderer(test_case))
+        return separator.join(stubs)
 
-        return imports + "\n\n".join(stubs)
+    def _validated_module_name(self, module_name: str) -> str:
+        if not isinstance(module_name, str) or not module_name.strip():
+            raise ValueError("Module name must be non-empty text")
+        normalized = module_name.strip()
+        if (
+            not re.fullmatch(r'[A-Za-z0-9_./-]+', normalized)
+            or normalized.startswith('/')
+            or '..' in normalized
+        ):
+            raise ValueError("Module name contains unsafe path or identifier characters")
+        return normalized
 
     def suggest_missing_scenarios(
         self,
         existing_tests: List[str],
-        code_analysis: Dict[str, Any]
+        code_analysis: Dict[str, Any],
     ) -> List[Dict[str, Any]]:
-        """
-        Suggest missing test scenarios based on code analysis.
-
-        Args:
-            existing_tests: List of existing test names
-            code_analysis: Analysis of code under test (branches, error paths, etc.)
-
-        Returns:
-            List of suggested test scenarios
-        """
+        """Suggest uncovered error, branch, and boundary scenarios."""
+        if not isinstance(existing_tests, list) or any(
+            not isinstance(test, str) for test in existing_tests
+        ):
+            raise ValueError("existing_tests must be a list of names")
+        if not isinstance(code_analysis, dict):
+            raise ValueError("code_analysis must be an object")
         suggestions = []
-
-        # Check for untested error conditions
-        if 'error_handlers' in code_analysis:
-            for error_handler in code_analysis['error_handlers']:
-                error_name = error_handler.get('type', 'error')
-                if not self._has_test_for(existing_tests, error_name):
+        definitions = [
+            ('error_handlers', 'type', 'should_handle_{}', 'error_case',
+             'Error handler exists but no corresponding test', 'P0'),
+            ('conditional_branches', 'condition', 'should_test_{}_branch', 'branch_coverage',
+             'Conditional branch not fully tested', 'P1'),
+            ('input_validation', 'parameter', 'should_test_{}_boundary_values', 'boundary',
+             'Input validation exists but boundary tests missing', 'P1'),
+        ]
+        for key, field, template, scenario_type, reason, priority in definitions:
+            for item in self._records(code_analysis, key):
+                keyword = str(item.get(field, field))
+                lookup = f"{keyword}_boundary" if key == 'input_validation' else keyword
+                if not self._has_test_for(existing_tests, lookup):
                     suggestions.append({
-                        'name': f"should_handle_{error_name}",
-                        'type': 'error_case',
-                        'reason': 'Error handler exists but no corresponding test',
-                        'priority': 'P0'
+                        'name': template.format(keyword),
+                        'type': scenario_type,
+                        'reason': reason,
+                        'priority': priority,
                     })
-
-        # Check for untested branches
-        if 'conditional_branches' in code_analysis:
-            for branch in code_analysis['conditional_branches']:
-                branch_name = branch.get('condition', 'condition')
-                if not self._has_test_for(existing_tests, branch_name):
-                    suggestions.append({
-                        'name': f"should_test_{branch_name}_branch",
-                        'type': 'branch_coverage',
-                        'reason': 'Conditional branch not fully tested',
-                        'priority': 'P1'
-                    })
-
-        # Check for boundary conditions
-        if 'input_validation' in code_analysis:
-            for validation in code_analysis['input_validation']:
-                param = validation.get('parameter', 'input')
-                if not self._has_test_for(existing_tests, f"{param}_boundary"):
-                    suggestions.append({
-                        'name': f"should_test_{param}_boundary_values",
-                        'type': 'boundary',
-                        'reason': 'Input validation exists but boundary tests missing',
-                        'priority': 'P1'
-                    })
-
         return suggestions
 
     def _has_test_for(self, existing_tests: List[str], keyword: str) -> bool:

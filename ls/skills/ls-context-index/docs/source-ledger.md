@@ -1,14 +1,14 @@
 # Source Ledger
 
-Snapshot date: 2026-05-12.
+Localsetup source snapshot recorded: 2026-05-12. Upstream source review refreshed: 2026-09-04.
 
 ## Localsetup Sources
 
 - `ls/tools/context_index.py`: runtime implementation source of truth.
 - `ls/core/cli.py`: top-level `localsetup.py context-index` delegation.
-- `ls/config/pack.yaml`: skill/workflow pack registration.
-- `ls/workflows/ls-workflow-context-index-query/workflow.yaml`: query workflow package.
-- `ls/workflows/ls-workflow-context-index-refresh/workflow.yaml`: refresh workflow package.
+- `ls/config/pack.yaml`: skill pack registration.
+- `ls/skills/ls-context-index/SKILL.md`: canonical query and refresh operating contract.
+- `ls/skills/ls-context-index/docs/agent-usage.md`: detailed query, plan review, maintenance selection, and verification flow.
 - `ls/docs/SKILLS.md` and `ls/docs/WORKFLOW_REGISTRY.md`: generated catalogs updated from source manifests.
 
 ## Upstream And Comparative Sources
@@ -20,6 +20,8 @@ Snapshot date: 2026-05-12.
 - LangChain repository: https://github.com/langchain-ai/langchain
 - LangGraph repository: https://github.com/langchain-ai/langgraph
 - LangGraph overview: https://www.langchain.com/langgraph
+- OpenAI embeddings API: https://developers.openai.com/api/reference/resources/embeddings/methods/create
+- llama.cpp server embeddings API: https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md
 
 ## Verification Evidence To Keep Current
 

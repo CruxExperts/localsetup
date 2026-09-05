@@ -134,12 +134,60 @@ def test_render_template_and_tracked_output_refusal(tmp_path: Path) -> None:
     assert payload(ignored)["data"]["would_write"] is True
 
 
-def test_keepassxc_backend_methods_return_json_errors() -> None:
-    result = run_cli("ensure", "postgres.box03.app1", "--backend", "keepassxc", "--map", str(MAP))
+def test_keepassxc_vault_methods_fail_closed_before_binary_invocation(tmp_path: Path) -> None:
+    binary = tmp_path / "keepassxc-cli"
+    sentinel = tmp_path / "keepassxc-cli-invoked"
+    script = "\n".join(
+        (
+            "#!/usr/bin/env python3",
+            "from pathlib import Path",
+            f"Path({str(sentinel)!r}).touch()",
+            "raise SystemExit(1)",
+            "",
+        )
+    )
+    _ = binary.write_text(script, encoding="utf-8")
+    _ = binary.chmod(0o755)
+    operations = (
+        ("list",),
+        ("search", "postgres"),
+        ("resolve", "postgres.box03.app1"),
+        ("ensure", "postgres.box03.app1"),
+        ("set", "postgres.box03.app1", "username", "operator"),
+        ("rotate", "postgres.box03.app1"),
+        ("delete", "postgres.box03.app1"),
+    )
+    for operation in operations:
+        result = run_cli(
+            *operation,
+            "--backend",
+            "keepassxc",
+            "--keepassxc-binary",
+            str(binary),
+            "--map",
+            str(MAP),
+        )
+        data = payload(result)
+        assert result.returncode != 0
+        assert data["ok"] is False
+        assert data["errors"][0]["code"] == "interactive_backend_required"
+        assert not sentinel.exists()
+        assert "Traceback" not in result.stderr
+
+def test_keepassxc_missing_binary_returns_json_error(tmp_path: Path) -> None:
+    result = run_cli(
+        "resolve",
+        "postgres.box03.app1",
+        "--backend",
+        "keepassxc",
+        "--keepassxc-binary",
+        str(tmp_path / "missing-keepassxc-cli"),
+        "--map",
+        str(MAP),
+    )
     data = payload(result)
     assert result.returncode != 0
-    assert data["ok"] is False
-    assert data["errors"][0]["code"] in {"interactive_backend_required", "missing_backend"}
+    assert data["errors"][0]["code"] == "missing_backend"
     assert "Traceback" not in result.stderr
 
 

@@ -20,6 +20,10 @@ def build_report(
     fixable = [r for r in results if r["action"] == "fixable"]
     worker_errors = [r for r in results if r["action"] == "error"]
     ok = [r for r in results if r["action"] == "ok"]
+    dead_summary = "not checked" if args.skip_url_check else str(len(dead))
+    liveness_complete = args.skip_url_check or all(
+        not r.get("url") or r.get("url_live") is not None for r in results
+    )
 
     lines = [
         "# Public skill index scrub report",
@@ -36,7 +40,7 @@ def build_report(
         "",
         "| Category | Count |",
         "|---|---|",
-        f"| Dead / unreachable URLs | {len(dead)} |",
+        f"| Dead / unreachable URLs | {dead_summary} |",
         f"| Stub or too-short descriptions | {len(stubs)} |",
         f"| Fixable (upstream desc found) | {len(fixable)} |",
         f"| Pruned dead URLs | {pruned_dead_urls} |",
@@ -103,7 +107,11 @@ def build_report(
             lines.append(f"| `{name}` | `{source}` |")
         lines.append("")
 
-    if not dead and not stubs:
-        lines += ["## Result", "", "All audited entries passed. Index looks clean.", ""]
+    if not dead and not stubs and not worker_errors and liveness_complete:
+        if args.skip_url_check:
+            result = "All audited description checks passed. URL liveness was not checked."
+        else:
+            result = "All audited description and URL-liveness checks passed."
+        lines += ["## Result", "", result, ""]
 
     return "\n".join(lines)

@@ -3,14 +3,35 @@ from __future__ import annotations
 from ls.tests.test_install_flow import *
 
 def test_skill_smoke_runner_uses_current_python_without_shell(tmp_path: Path) -> None:
-    sandbox = tmp_path / "sandbox"
-    sandbox.mkdir()
-    script = Path(__file__).resolve().parents[2] / "ls/skills/ls-skill-sandbox-tester/scripts/run_smoke.py"
+    root = Path(__file__).resolve().parents[2]
+    source = tmp_path / "source" / "ls-example-skill"
+    source.mkdir(parents=True)
+    (source / "SKILL.md").write_text(
+        "---\nname: ls-example-skill\ndescription: Test skill.\n---\n",
+        encoding="utf-8",
+    )
+    creator = root / "ls/skills/ls-skill-sandbox-tester/scripts/create_sandbox.py"
+    runner = root / "ls/skills/ls-skill-sandbox-tester/scripts/run_smoke.py"
+    created = subprocess.run(
+        [
+            sys.executable,
+            str(creator),
+            "--skill-path",
+            str(source),
+            "--base-dir",
+            str(tmp_path),
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert created.returncode == 0, created.stderr
+    sandbox = Path(created.stdout.strip())
 
     completed = subprocess.run(
         [
             sys.executable,
-            str(script),
+            str(runner),
             "--sandbox-dir",
             str(sandbox),
             "--command",
@@ -341,9 +362,9 @@ def test_docs_and_package(tmp_path: Path) -> None:
     assert verified["metadata"]["pack_id"] == "localsetup"
     for asset in (
         "assets/README.md",
-        "assets/localsetup-readme-hero.svg",
-        "assets/localsetup-architecture.svg",
-        "assets/localsetup-install-lifecycle.svg",
+        "assets/localsetup-readme-hero.png",
+        "assets/localsetup-architecture.png",
+        "assets/localsetup-install-lifecycle.png",
     ):
         assert asset in package["files"]
     assert "assets" in package["manifest"]["public_paths"]

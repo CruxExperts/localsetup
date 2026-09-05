@@ -1,14 +1,19 @@
+import argparse
 import importlib.util
 import json
 import subprocess
 import shutil
 from pathlib import Path
 
+import pytest
 import yaml
 
 from ls.core.baseline import classify_path
 from ls.core.baseline import tracked_files
 from ls.core.manifests import load_pack_config, load_platforms, validate_manifest_schemas
+from ls.core.selection import resolve_package_selection
+from ls.core.skill_index_scrub import audit as scrub_audit
+from ls.core.skill_index_scrub.reporting import build_report
 from ls.core.skills import ALLOWED_SKILL_TAXONOMY_CLASSES
 from ls.core.skills import load_skill_catalog
 from ls.core.skills import selected_skill_names
@@ -123,6 +128,76 @@ skills:
     assert payload["skills"][3]["description"] == "Anthropic skill: No License"
 
 
+def test_skill_index_scrub_report_distinguishes_skipped_url_checks() -> None:
+    result = {
+        "name": "clean", "url": "https://example.com/skill", "url_live": None,
+        "url_status": None, "desc_stub": False, "desc_reason": "",
+        "fetched_desc": None, "fetched_source": None, "action": "ok",
+    }
+    args = argparse.Namespace(skip_url_check=True, skip_desc_fetch=False, fix=False)
+    report = build_report([result], args, "current", False)
+    assert "URL check: skipped" in report
+    assert "| Dead / unreachable URLs | not checked |" in report
+    assert "URL liveness was not checked" in report
+    assert "Index looks clean" not in report
+
+    args.skip_url_check = False
+    result["url_live"] = True
+    report = build_report([result], args, "current", False)
+    assert "URL check: enabled" in report
+    assert "| Dead / unreachable URLs | 0 |" in report
+    assert "description and URL-liveness checks passed" in report
+
+
+def test_skill_index_scrub_report_does_not_pass_incomplete_checks() -> None:
+    args = argparse.Namespace(skip_url_check=False, skip_desc_fetch=False, fix=False)
+    result = {
+        "name": "failed", "url": "https://example.com/skill", "url_live": None,
+        "url_status": None, "desc_stub": False, "desc_reason": "",
+        "fetched_desc": None, "fetched_source": None, "action": "error",
+        "error": "probe failed",
+    }
+    report = build_report([result], args, "current", False)
+    assert "## Worker Errors (1)" in report
+    assert "All audited" not in report
+
+    result["action"] = "ok"
+    report = build_report([result], args, "current", False)
+    assert "All audited" not in report
+
+
+def test_skill_index_scrub_skip_url_check_avoids_liveness_probe(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fail_probe(*args: object, **kwargs: object) -> tuple[bool, int]:
+        raise AssertionError("URL liveness probe must not run")
+
+    monkeypatch.setattr(scrub_audit, "check_url_liveness", fail_probe)
+    result = scrub_audit.audit_skill(
+        {"name": "skill", "url": "https://example.com/skill", "description": "A sufficiently descriptive skill entry."},
+        skip_url_check=True,
+        skip_desc_fetch=True,
+    )
+    assert result["url_live"] is None
+    assert result["url_status"] is None
+
+
+def test_skill_index_scrub_full_url_check_uses_liveness_probe(monkeypatch: pytest.MonkeyPatch) -> None:
+    observed: list[str] = []
+
+    def live_probe(url: str, **kwargs: object) -> tuple[bool, int]:
+        observed.append(url)
+        return True, 200
+
+    monkeypatch.setattr(scrub_audit, "check_url_liveness", live_probe)
+    result = scrub_audit.audit_skill(
+        {"name": "skill", "url": "https://example.com/skill", "description": "A sufficiently descriptive skill entry."},
+        skip_url_check=False,
+        skip_desc_fetch=True,
+    )
+    assert observed == ["https://example.com/skill"]
+    assert result["url_live"] is True
+    assert result["url_status"] == 200
+
+
 def test_pack_manifest_loads() -> None:
     root = Path(__file__).resolve().parents[2]
     pack = load_pack_config(root)
@@ -226,6 +301,50 @@ def test_catalog_validation_and_pack_selection() -> None:
     assert "ls-workflow-ops-tmux-session" in selected_workflow_names(root, ["ops"])
     assert "ls-workflow-tmux-terminal-mode" in selected_workflow_names(root, ["ops"])
     assert "ls-system-info" in selected_skill_names(root, ["ops"])
+    assert "ls-context-index" in selected_skill_names(root, ["dev"])
+    assert "ls-context-index" in selected_skill_names(root, ["harness"])
+    assert "ls-framework-audit" in selected_skill_names(root, ["bootstrap"])
+    assert "ls-framework-audit" in selected_skill_names(root, ["dev"])
+    assert not (root / "ls/workflows/ls-workflow-context-index-query").exists()
+    assert not (root / "ls/workflows/ls-workflow-context-index-refresh").exists()
+    assert "ls-workflow-context-index-query" not in selected_workflow_names(root, ["dev"])
+    assert "ls-workflow-context-index-refresh" not in selected_workflow_names(root, ["dev", "harness"])
+    ledger = (root / "ls/skills/ls-context-index/docs/source-ledger.md").read_text(encoding="utf-8")
+    assert "ls-workflow-context-index-query" not in ledger
+    assert "ls-workflow-context-index-refresh" not in ledger
+    for selector in (
+        "ls-workflow-context-index-query",
+        "context-index-query",
+        "query context index",
+        "context search",
+        "ls-workflow-context-index-refresh",
+        "context-index-refresh",
+        "context refresh",
+        "refresh context index",
+    ):
+        with pytest.raises(ValueError, match="unknown workflow selector"):
+            resolve_package_selection(root, workflows=[selector])
+    assert not (root / "ls/workflows/ls-workflow-skills-index-refresh").exists()
+    assert "ls-skill-discovery" in selected_skill_names(root, ["dev"])
+    assert "ls-workflow-skills-index-refresh" not in selected_workflow_names(root, ["dev"])
+    for selector in (
+        "ls-workflow-skills-index-refresh",
+        "skills-index-refresh",
+        "refresh skills",
+        "scrub index",
+    ):
+        with pytest.raises(ValueError, match="unknown workflow selector"):
+            resolve_package_selection(root, workflows=[selector])
+    assert not (root / "ls/workflows/ls-workflow-audit-framework").exists()
+    assert "ls-workflow-audit-framework" not in selected_workflow_names(root, ["bootstrap", "dev"])
+    for selector in (
+        "ls-workflow-audit-framework",
+        "audit-framework",
+        "run audit",
+        "framework audit",
+    ):
+        with pytest.raises(ValueError, match="unknown workflow selector"):
+            resolve_package_selection(root, workflows=[selector])
 
 
 def test_skill_taxonomy_covers_all_shipped_skills_and_allowed_classes() -> None:
@@ -291,6 +410,47 @@ def test_skill_allowed_tools_frontmatter_is_space_separated() -> None:
         assert isinstance(allowed_tools, str), skill_md
         assert "," not in allowed_tools, skill_md
         assert allowed_tools.split(), skill_md
+
+
+def test_skill_normalization_has_one_normative_owner_and_blocking_conflict_rule() -> None:
+    root = Path(__file__).resolve().parents[2]
+    normalizer = (root / "ls/skills/ls-skill-normalizer/SKILL.md").read_text(encoding="utf-8")
+    public_mirror = (root / "ls/docs/SKILL_NORMALIZATION.md").read_text(encoding="utf-8")
+    importer = (root / "ls/skills/ls-skill-importer/SKILL.md").read_text(encoding="utf-8")
+    importing_doc = (root / "ls/docs/SKILL_IMPORTING.md").read_text(encoding="utf-8")
+
+    assert normalizer.count("normative normalization execution contract") == 1
+    assert "owner_skill: ls-skill-normalizer" in public_mirror
+    assert "synchronized public mirror and detailed reference" in public_mirror
+    for text in (normalizer, public_mirror):
+        assert "the skill controls" in text
+        assert "stop before any affected write" in text
+        assert "higher-level user, repository, and safety policy" in text
+
+    for text in (normalizer, public_mirror, importer, importing_doc):
+        assert "single source of truth" not in text.lower()
+        assert "normalization source of truth" not in text.lower()
+    for text in (importer, importing_doc):
+        assert "`ls-skill-normalizer` as the normative normalization contract" in text
+        assert "synchronized public checklist and examples" in text
+
+    assert "keep as is" in public_mirror
+    assert "keep platform-specific but normalized" in public_mirror
+    assert "fully normalize" in public_mirror
+    assert "documents first" in normalizer
+    assert "tooling second" in normalizer
+    assert "present them for approval, then write" in normalizer
+    assert "If approved" in normalizer
+    assert "TOOLING_POLICY.md" in normalizer
+    assert "INPUT_HARDENING_STANDARD.md" in normalizer
+    assert "keep-original-tooling exception" in importing_doc
+    assert "Replicate behavior" in public_mirror
+    assert "Update all documents" in public_mirror
+    assert "Pass full vetting" in importer
+    assert "Validate the frozen bytes" in importer
+    assert "Copy, register, and confirm" in importer
+    assert "the normalization gate remains unpassed" in public_mirror
+    assert "copy as-is and warn" not in public_mirror
 
 
 def test_old_workflow_skill_references_are_cut_over() -> None:

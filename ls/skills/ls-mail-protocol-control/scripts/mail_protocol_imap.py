@@ -21,14 +21,11 @@ class ImapAdapter:
         self.timeout_seconds = timeout_seconds
 
     def _connect(self, account: AccountConfig, creds: dict[str, str]) -> imaplib.IMAP4:
-        if account.imap_tls:
-            client: imaplib.IMAP4 = imaplib.IMAP4_SSL(
-                account.imap_host, account.imap_port, timeout=self.timeout_seconds
-            )
-        else:
-            client = imaplib.IMAP4(
-                account.imap_host, account.imap_port, timeout=self.timeout_seconds
-            )
+        if not account.imap_tls:
+            raise MailControlError("TLS_REQUIRED", "IMAP connections require TLS.")
+        client: imaplib.IMAP4 = imaplib.IMAP4_SSL(
+            account.imap_host, account.imap_port, timeout=self.timeout_seconds
+        )
         status, _ = client.login(creds["username"], creds["password"])
         if status != "OK":
             raise MailControlError("AUTH_FAILED", "IMAP authentication failed.")
@@ -295,10 +292,16 @@ class ImapAdapter:
                         raise MailControlError(
                             "IMAP_MOVE_FAILED", "MOVE fallback STORE failed."
                         )
-                    e_status, _ = client.expunge()
+                    if b"UIDPLUS" not in (client.capabilities or ()):
+                        raise MailControlError(
+                            "IMAP_MOVE_INCOMPLETE",
+                            "MOVE fallback marked selected messages deleted; explicit expunge is required.",
+                        )
+                    e_status, _ = client.uid("EXPUNGE", uid_set)
                     if e_status != "OK":
                         raise MailControlError(
-                            "IMAP_MOVE_FAILED", "MOVE fallback EXPUNGE failed."
+                            "IMAP_MOVE_INCOMPLETE",
+                            "MOVE fallback could not expunge only the selected messages.",
                         )
                 return {"moved": len(uids), "target": target}
             if action == "delete_messages":

@@ -9,9 +9,9 @@ extensions:
     source_kind: wrapper
     source_url: https://github.com/OpenClaudia/openclaudia-skills
     source_path: <repository inventory>
-    source_commit: f97d104d4c2caa7d591d52834d73b0becbf07cd5
+    source_commit: 221b37d7ab95c14d5343c7b24fd9f9367a3fb400
     source_ref: main
-    source_sha256: 2937fc67e8e540e36445b4fd4caa7e269f89b2f4fe931dcf2394f0a28e4c5507
+    source_sha256: 175993722ba0f4025f71a4894344ef7f53cd5c9b5c9cab43d6c3f222d87595c0
     license: MIT
     import_date: '2026-07-03'
     vetting_status: provenance-recorded-no-bundled-tooling-executed
@@ -23,12 +23,15 @@ Use this skill when working on OpenClaudia marketing skills tasks.
 
 ## Workflow
 
-- Use this wrapper to triage marketing bundle coverage and avoid duplicate Localsetup skill IDs.
+- Use this wrapper only to inspect the upstream inventory, triage bundle coverage, and avoid duplicate Localsetup skill IDs.
+- Treat every listed upstream path as inventory evidence, not as an installed, vetted, or executable Localsetup skill.
+- For a candidate import, select one upstream path and run the Localsetup importer, vetter, normalizer, and sandbox-validation workflow before use.
 - Do not expose ad-platform, CRM, analytics, or social account credentials during evaluation.
 - Prefer native Localsetup skills for repeatable CRO, SEO, content, and email workflows.
 
 ## Boundaries
 
+- Do not install, invoke, or delegate to upstream skills through this wrapper.
 - Inspect the target repository before making changes.
 - Prefer existing project patterns, declared package managers, and documented validation commands.
 - Do not expose secrets, credentials, private user data, or production account identifiers in source, examples, or logs.
@@ -37,12 +40,14 @@ Use this skill when working on OpenClaudia marketing skills tasks.
 
 ## Upstream Coverage
 
-See [upstream coverage](./references/upstream-coverage.md) for the compact inventory captured during this import wave.
+See [upstream coverage](./references/upstream-coverage.md) for the verified 75-file inventory, representative categories, content hashes, and digest method.
 
 ## Provenance
 
 - Source: `https://github.com/OpenClaudia/openclaudia-skills`
-- Ref: `main` at `f97d104d4c2caa7d591d52834d73b0becbf07cd5`
+- Ref: `main` at `221b37d7ab95c14d5343c7b24fd9f9367a3fb400`
 - Source path: `<repository inventory>`
 - License classification: `MIT`
-- Source SHA-256: `2937fc67e8e540e36445b4fd4caa7e269f89b2f4fe931dcf2394f0a28e4c5507`
+- Inventoried `SKILL.md` files: `75`
+- Source SHA-256: `175993722ba0f4025f71a4894344ef7f53cd5c9b5c9cab43d6c3f222d87595c0`
+- Verified: `2026-09-03` from the immutable upstream commit and its non-truncated tree.

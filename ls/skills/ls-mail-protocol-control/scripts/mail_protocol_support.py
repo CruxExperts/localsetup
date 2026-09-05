@@ -282,6 +282,15 @@ def extract_encrypted_blob(message_data: dict[str, Any]) -> dict[str, Any]:
     return parsed
 
 
+def _smtp_tls_mode(account: AccountConfig) -> str:
+    mode = sanitize_text(account.smtp_tls_mode, 16).lower() or "starttls"
+    if mode not in {"ssl", "starttls"}:
+        raise MailControlError(
+            "TLS_REQUIRED", "SMTP connections require ssl or starttls transport."
+        )
+    return mode
+
+
 class SmtpAdapter:
     def __init__(self, timeout_seconds: int = 20):
         self.timeout_seconds = timeout_seconds
@@ -289,7 +298,7 @@ class SmtpAdapter:
     def verify_connectivity(
         self, account: AccountConfig, creds: dict[str, str]
     ) -> dict[str, Any]:
-        mode = sanitize_text(account.smtp_tls_mode, 16).lower() or "starttls"
+        mode = _smtp_tls_mode(account)
         if mode == "ssl":
             with smtplib.SMTP_SSL(
                 account.smtp_host, account.smtp_port, timeout=self.timeout_seconds
@@ -314,7 +323,7 @@ class SmtpAdapter:
     def _send_prebuilt(
         self, account: AccountConfig, creds: dict[str, str], message: EmailMessage
     ) -> None:
-        mode = sanitize_text(account.smtp_tls_mode, 16).lower() or "starttls"
+        mode = _smtp_tls_mode(account)
         if mode == "ssl":
             with smtplib.SMTP_SSL(
                 account.smtp_host, account.smtp_port, timeout=self.timeout_seconds

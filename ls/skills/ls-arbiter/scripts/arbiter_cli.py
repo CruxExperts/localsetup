@@ -26,6 +26,18 @@ ID_MAX = 128
 POLL_INTERVAL_DEFAULT = 30
 TIMEOUT_DEFAULT = 3600
 PRIORITY_VALUES = {"low", "normal", "high", "urgent"}
+PLAN_COMPLETION_FIELDS = {
+    "answered",
+    "answers",
+    "completed_at",
+    "created_at",
+    "remaining",
+    "status",
+    "total",
+    "updated_at",
+    "version",
+}
+DECISION_COMPLETION_FIELDS = {"answer", "answered_at", "status"}
 
 
 class InputError(ValueError):
@@ -136,6 +148,10 @@ def _normalize_decisions(raw_decisions: Any) -> list[dict[str, Any]]:
         if not isinstance(raw, dict):
             raise InputError(f"decision {index}: expected object")
         decision_id = _clean_text(raw.get("id"), label=f"decision {index} id", max_len=ID_MAX)
+        injected_fields = DECISION_COMPLETION_FIELDS.intersection(raw)
+        if injected_fields:
+            fields = ", ".join(sorted(injected_fields))
+            raise InputError(f"decision {decision_id}: completion fields are not allowed in push: {fields}")
         if decision_id in seen:
             raise InputError(f"decision id duplicated: {decision_id}")
         seen.add(decision_id)
@@ -153,9 +169,9 @@ def _normalize_decisions(raw_decisions: Any) -> list[dict[str, Any]]:
             ),
             "options": _normalize_options(raw.get("options"), decision_id),
             "allowCustom": allow_custom,
-            "status": _clean_text(raw.get("status", "pending"), label=f"decision {decision_id} status"),
-            "answer": raw.get("answer"),
-            "answered_at": raw.get("answered_at"),
+            "status": "pending",
+            "answer": None,
+            "answered_at": None,
         }
         default = _clean_text(raw.get("default"), label=f"decision {decision_id} default", required=False)
         if default:
@@ -168,6 +184,10 @@ def _normalize_decisions(raw_decisions: Any) -> list[dict[str, Any]]:
 
 
 def _normalize_plan(payload: dict[str, Any], args: argparse.Namespace) -> dict[str, Any]:
+    injected_fields = PLAN_COMPLETION_FIELDS.intersection(payload)
+    if injected_fields:
+        fields = ", ".join(sorted(injected_fields))
+        raise InputError(f"plan: completion fields are not allowed in push: {fields}")
     now = _utc_now()
     priority = _clean_text(payload.get("priority", "normal"), label="priority", max_len=16)
     if priority not in PRIORITY_VALUES:
@@ -185,7 +205,6 @@ def _normalize_plan(payload: dict[str, Any], args: argparse.Namespace) -> dict[s
         max_len=ID_MAX,
     )
     tag = _clean_text(payload.get("tag", "general"), label="tag", max_len=ID_MAX)
-    answered = sum(1 for decision in decisions if decision.get("status") == "answered" or decision.get("answer") not in (None, ""))
     total = len(decisions)
     return {
         "id": plan_id,
@@ -201,8 +220,8 @@ def _normalize_plan(payload: dict[str, Any], args: argparse.Namespace) -> dict[s
         "updated_at": now,
         "completed_at": None,
         "total": total,
-        "answered": answered,
-        "remaining": total - answered,
+        "answered": 0,
+        "remaining": total,
         "notify_session": _clean_text(payload.get("notify"), label="notify", max_len=ID_MAX, required=False) or None,
         "context": _clean_text(payload.get("context"), label="context", max_len=DESCRIPTION_MAX, required=False),
         "decisions": decisions,
@@ -280,26 +299,61 @@ def _find_plan(root: Path, *, plan_id: str | None = None, tag: str | None = None
     raise InputError(f"plan not found: {target}")
 
 
+def _validated_answer(decision: dict[str, Any]) -> str | None:
+    answer = decision.get("answer")
+    if not isinstance(answer, str):
+        return None
+    try:
+        cleaned_answer = _clean_text(answer, label="decision answer")
+    except InputError:
+        return None
+    if decision.get("allowCustom") is True:
+        return cleaned_answer
+
+    options = decision.get("options")
+    if not isinstance(options, list):
+        return None
+    option_keys: set[str] = set()
+    for option in options:
+        if not isinstance(option, dict):
+            continue
+        try:
+            option_keys.add(_clean_text(option.get("key"), label="option key", max_len=ID_MAX))
+        except InputError:
+            continue
+    return cleaned_answer if cleaned_answer in option_keys else None
+
+
+def _validated_decision_id(value: Any) -> str | None:
+    try:
+        return _clean_text(value, label="decision id", max_len=ID_MAX)
+    except InputError:
+        return None
+
+
 def _status_from_metadata(metadata: dict[str, Any]) -> dict[str, Any]:
     decisions = metadata.get("decisions") if isinstance(metadata.get("decisions"), list) else []
-    total = len(decisions) if decisions else int(metadata.get("total") or 0)
+    raw_total = metadata.get("total")
+    metadata_total = raw_total if isinstance(raw_total, int) and not isinstance(raw_total, bool) and raw_total >= 0 else 0
+    total = len(decisions) if decisions else metadata_total
     answered = 0
+    seen_decision_ids: set[str] = set()
     decision_status: dict[str, dict[str, Any]] = {}
-    for decision in decisions:
+    for index, decision in enumerate(decisions, start=1):
         if not isinstance(decision, dict):
             continue
-        decision_id = str(decision.get("id", "unknown"))
-        answer = decision.get("answer")
-        status = str(decision.get("status") or ("answered" if answer not in (None, "") else "pending"))
-        if status == "answered" or answer not in (None, ""):
+        decision_id = _validated_decision_id(decision.get("id"))
+        duplicate = decision_id in seen_decision_ids if decision_id is not None else False
+        if decision_id is not None:
+            seen_decision_ids.add(decision_id)
+        answer = None if decision_id is None or duplicate else _validated_answer(decision)
+        status = "answered" if answer is not None else "pending"
+        if answer is not None:
             answered += 1
-        decision_status[decision_id] = {"status": status, "answer": answer}
-    if not decisions:
-        answered = int(metadata.get("answered") or 0)
+        display_id = decision_id or f"unknown-{index}"
+        decision_status[display_id] = {"status": status, "answer": answer}
     remaining = max(0, total - answered)
-    status = str(metadata.get("status") or ("completed" if total and remaining == 0 else "pending"))
-    if total and remaining == 0:
-        status = "completed"
+    status = "completed" if decisions and remaining == 0 else "pending"
     return {
         "planId": metadata.get("planId") or metadata.get("id"),
         "title": metadata.get("title"),
@@ -314,14 +368,19 @@ def _status_from_metadata(metadata: dict[str, Any]) -> dict[str, Any]:
 
 def _answers_from_metadata(metadata: dict[str, Any]) -> dict[str, Any]:
     answers: dict[str, Any] = {}
-    explicit = metadata.get("answers")
-    if isinstance(explicit, dict):
-        answers.update(explicit)
+    seen_decision_ids: set[str] = set()
     decisions = metadata.get("decisions")
     if isinstance(decisions, list):
         for decision in decisions:
-            if isinstance(decision, dict) and decision.get("id") and decision.get("answer") not in (None, ""):
-                answers[str(decision["id"])] = decision.get("answer")
+            if not isinstance(decision, dict):
+                continue
+            decision_id = _validated_decision_id(decision.get("id"))
+            if decision_id is None or decision_id in seen_decision_ids:
+                continue
+            seen_decision_ids.add(decision_id)
+            answer = _validated_answer(decision)
+            if answer is not None:
+                answers[decision_id] = answer
     return answers
 
 
@@ -412,7 +471,8 @@ def cmd_await(args: argparse.Namespace) -> int:
                 )
             )
             return 0
-        if time.monotonic() >= deadline:
+        remaining_time = deadline - time.monotonic()
+        if remaining_time <= 0:
             print(
                 json.dumps(
                     {
@@ -427,7 +487,7 @@ def cmd_await(args: argparse.Namespace) -> int:
                 file=sys.stderr,
             )
             return 1
-        time.sleep(args.interval)
+        time.sleep(min(args.interval, remaining_time))
 
 
 def build_parser() -> argparse.ArgumentParser:

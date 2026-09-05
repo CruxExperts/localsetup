@@ -1,6 +1,6 @@
 ---
 name: ls-skill-discovery
-description: "Discover and recommend public skills from external registries (e.g. awesome lists, skill hubs). Use when the user is creating a new skill, importing a skill, or asking to find similar public skills. Maintains PUBLIC_SKILL_REGISTRY.urls and PUBLIC_SKILL_INDEX.yaml; returns top 5 similar matches with rich summaries and clear next actions."
+description: "Discover and recommend public skills from external registries, and own public-index refresh and scrub requests. Use when creating or importing a skill, finding similar public skills, refreshing the index, or scrubbing it. Maintains PUBLIC_SKILL_REGISTRY.urls and PUBLIC_SKILL_INDEX.yaml; returns up to 5 similar matches with rich summaries and clear next actions."
 metadata:
   version: "1.4"
 ---
@@ -33,16 +33,16 @@ This skill owns public skill discovery behavior. `SKILL_DISCOVERY.md` is the pub
 ## Index refresh and prompts
 
 - **Current date:** Obtain the current date from the environment (e.g. `date` on Linux/macOS, `Get-Date` in PowerShell) for all age calculations.
-- **Index missing or never refreshed:** If the index file does not exist or `updated` is null/missing/empty, **always prompt the user** to build the index: e.g. "The public skill index has not been built yet. I can refresh it now from the registry URLs. Should I proceed?" Do not run discovery until the user agrees and the index is built, or the user declines.
+- **Index unavailable or never refreshed:** If the index is missing, unreadable, malformed, not a YAML mapping, has a non-list `skills` field, or has a null/missing/empty `updated`, **always prompt the user** to build it: e.g. "The public skill index has not been built yet. I can refresh it now from the registry URLs. Should I proceed?" If the user declines, return "Public-skill discovery was not run because the local index is unavailable and the index build was declined. Recommendations: none." End the discovery subflow; when called from skill-creator or skill-importer, return control so the original task can continue without public-index recommendations.
 - **Default minimum: 7 days.** Do not prompt to refresh if last refresh was less than 7 days ago. If `updated` is 7 or more days ago, **prompt to refresh**: e.g. "The index was last refreshed on YYYY-MM-DD (X days ago). Would you like to refresh it now?"
 - **On every skill operation:** Whenever you use this skill (create, import, or discover), **remind the user**: "Last index refresh: YYYY-MM-DD (X days ago)." or "(X weeks ago)" or "(X years ago)" using the `updated` value and the current date. Then if the index is older than 7 days, add: "The index is over 7 days old. Would you like to refresh it now?" If the user says yes, perform the refresh (fetch registry URLs, parse, write YAML, set `updated` to now).
 - **After refresh:** Write `updated` to the YAML with the current date/time (ISO8601) so the next run shows the correct "last refreshed" age.
 
 ## Post-refresh scrub (mandatory)
 
-This is the named workflow `skills-index-refresh` in the workflow registry. Common trigger phrases include: "refresh skills", "update public skill index", "refresh and scrub", "scrub the index", and "scrub public skill index".
+This skill solely owns the triggers "refresh skills", "update public skill index", "refresh and scrub", "scrub the index", and "scrub public skill index".
 
-After every index refresh, the scrub step **must** run before the index is considered ready for discovery. The scrub catches dead URLs, stub/placeholder descriptions, and schema gaps that the refresh tool introduces automatically (e.g. Anthropic skills get generated placeholder descriptions; OpenClaw entries often have minimal or truncated text).
+After every index refresh, the scrub step **must** run before the index is considered ready for discovery. Record the refresh result and scrub result separately; refresh success alone is not completion. The normal sequence checks and repairs description/content-schema quality. Because it uses `--skip-url-check`, it does not assess URL liveness.
 
 **Sequence (agent steps):**
 
@@ -50,16 +50,16 @@ After every index refresh, the scrub step **must** run before the index is consi
 2. **Scrub dry-run** - Run `uv run --locked python ls/tools/skill_index_scrub.py --skip-url-check`. This fetches real descriptions from upstream SKILL.md files for any stub entries and prints a GFM report to stdout. Add `--report FILE` when you need a saved markdown artifact. URL checking is skipped in normal flow to keep runtime short; run with full URL checking only when explicitly requested or before a public release.
 3. **Review report** - Check the summary table. If "Fixable (upstream desc found)" > 0, proceed to step 4. If "Stub or too-short descriptions" > 0 but fixable count is 0, note the unfixable entries (upstream had no usable content) and accept them.
 4. **Apply fixes** - Run `uv run --locked python ls/tools/skill_index_scrub.py --skip-url-check --fix`. Confirm the "Applied fixes" count in the report.
-5. **Done** - The index is now ready. Report summary to the user: total skills, stubs fixed, stubs unfixable (if any), `updated` timestamp.
+5. **Done** - The index is ready for discovery based on the completed refresh and description/schema scrub. Report the refresh result, scrub result and fix counts, total skills, unfixable descriptions (if any), `updated` timestamp, mode `description/schema`, and `URL liveness: not checked`.
 
-**With URL check (optional, slower):** Add `--workers 20` and remove `--skip-url-check` to also validate liveness of all skill URLs. Recommended before publishing the index upstream or before a framework release. If the URL audit finds dead entries, run `uv run --locked python ls/tools/skill_index_scrub.py --workers 20 --fix --prune-dead-urls --report FILE` after reviewing the report. Use `--report FILE` to save the GFM report.
+**With URL check (optional, slower):** Add `--workers 20` and remove `--skip-url-check` to assess liveness of all skill URLs. Only a completed full check supports `URL liveness: checked`. Recommended before publishing the index upstream or before a framework release. If the URL audit finds dead entries, run `uv run --locked python ls/tools/skill_index_scrub.py --workers 20 --fix --prune-dead-urls --report FILE` after reviewing the report. Use `--report FILE` to save the GFM report.
 
 **Shorthand for agents:** "refresh and scrub" means run steps 1-5 above in order.
 
 ## Workflow (agent steps)
 
-1. **Check index and last refresh** - Read PUBLIC_SKILL_INDEX.yaml (or confirm it is missing). Get current date from the environment. If file missing or `updated` is null/empty: prompt user to build the index; do not continue until built or user declines. Otherwise compute age (days/weeks/years since `updated`) and show: "Last index refresh: <date> (<X days/weeks/years ago>)." If age >= 7 days, prompt: "The index is over 7 days old. Would you like to refresh it now?" If user says yes, run the **full refresh + scrub sequence** (see "Post-refresh scrub" above): refresh, dry-run scrub, apply fixes, report summary.
-2. **Match and rank** - Read the user's intent (proposed skill description, or candidate skill name/description). Compare to each index entry using `summary_*`, `capabilities`, and `description` with keyword overlap and intent similarity. Return the **top 5** best matches. If fewer than 5 exist, return what is available.
+1. **Check index and last refresh** - Read PUBLIC_SKILL_INDEX.yaml. Ranking requires a readable YAML mapping with a list-valued `skills` field. If it is unavailable or `updated` is null/empty, prompt to build it; if declined, return no recommendations and end only this discovery subflow. Otherwise compute age and show it. If age >= 7 days, offer refresh; if declined, disclose that recommendations use the stale readable index and continue. If accepted, run the full refresh + scrub sequence.
+2. **Match and rank** - Only after the readable-index gate passes, read the user's intent and compare it to each index entry using `summary_*`, `capabilities`, and `description`. Return the **top 5** best matches; an empty `skills` list returns zero matches.
 3. **Present recommendations** - Always use the **default recommendation format** (see below). Each recommendation must include a concise but rich summary (2-4 sentences), constraints, and a clear recommendation status. After the formatted list, offer: "Would you like: **(1) In-depth summary** of each, **(2) Use a public skill** (I'll pull it from the source and run it through our import process so it's compliant), **(3) Continue on your own** (ignore these and keep creating/importing as planned), or **(4) Adapt from one** (use one as a base and customize)?" Ask the user to choose.
 4. **Handle choice** - (1) For each of the top 5, fetch or summarize the skill (e.g. from README or SKILL.md) and present a short in-depth summary. (2) Resolve the skill URL (e.g. from awesome list to actual repo), then run the **skill-importer** workflow: fetch, run skill_importer_scan, validate, security screen, user selects, duplicate/overlap check, import. The result is a framework-compliant skill; no need to recreate. (3) Do nothing; continue with skill-creator or skill-importer as before. (4) Same as (2) but after import, help the user adapt the skill (edit name, description, add/remove sections) so it fits their case.
 

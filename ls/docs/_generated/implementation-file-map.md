@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 42feb5176a538f7b3953bc51866cca08b8bdb4ec3a60beac1c32847f8abde74a
+  source_provenance_hash: 63ed750f9b865fb766e21a67dfe80aa9fce422496d54ce403c730a4081b1f6a4
   emitter: generate-docs
-framework_version: 4.3.9
-source_commit: a670cedf63b791dd886015c4fdfa88c425b9e8d2
-artifact_sha256: 69274a82e11f708c69cd7bd2756108b34d726e1962ff1b61cbcdfb7278edb17a
+framework_version: 4.4.0
+source_commit: e8b7971a5b63885f157a2bdfaed90c276f77b72f
+artifact_sha256: d38662227de69e8d6c1bd713649b0d1566c72dbc4d91832ce815f45b39645b7a
 ---
 # Implementation File Map
 
@@ -64,10 +64,10 @@ artifact_sha256: 69274a82e11f708c69cd7bd2756108b34d726e1962ff1b61cbcdfb7278edb17
 | `keep` | `VERSION` |
 | `keep` | `agent-repo-shape.json` |
 | `keep` | `assets/README.md` |
-| `keep` | `assets/localsetup-architecture.svg` |
-| `keep` | `assets/localsetup-install-lifecycle.svg` |
+| `keep` | `assets/localsetup-architecture.png` |
+| `keep` | `assets/localsetup-install-lifecycle.png` |
 | `keep` | `assets/localsetup-logo.png` |
-| `keep` | `assets/localsetup-readme-hero.svg` |
+| `keep` | `assets/localsetup-readme-hero.png` |
 | `keep` | `config/localsetup_finalizer.yaml` |
 | `keep` | `docs.config.yaml` |
 | `keep` | `external_skills.lock.json` |
@@ -193,6 +193,8 @@ artifact_sha256: 69274a82e11f708c69cd7bd2756108b34d726e1962ff1b61cbcdfb7278edb17
 | `refactor` | `ls/core/models.py` |
 | `refactor` | `ls/core/package.py` |
 | `refactor` | `ls/core/package_cleanup.py` |
+| `refactor` | `ls/core/package_content/__init__.py` |
+| `refactor` | `ls/core/package_content/copy.py` |
 | `refactor` | `ls/core/package_surface.py` |
 | `refactor` | `ls/core/path_contract.py` |
 | `refactor` | `ls/core/path_reprocessor.py` |
@@ -359,6 +361,7 @@ artifact_sha256: 69274a82e11f708c69cd7bd2756108b34d726e1962ff1b61cbcdfb7278edb17
 | `keep` | `ls/docs/migration/skill-alias-map.md` |
 | `keep` | `ls/docs/ops/tmux-ops-managed.md` |
 | `keep` | `ls/docs/ops/tmux-ops-remote.md` |
+| `keep` | `ls/docs/releases/4.4.0.md` |
 | `keep` | `ls/docs/scrapling-cheat-sheet.md` |
 | `keep` | `ls/lib/data_paths.sh` |
 | `keep` | `ls/lib/deps.py` |
@@ -391,6 +394,7 @@ artifact_sha256: 69274a82e11f708c69cd7bd2756108b34d726e1962ff1b61cbcdfb7278edb17
 | `keep` | `ls/skills/ls-ansible-skill/assets/ansible-example/roles/agent-host/defaults/main.yml` |
 | `keep` | `ls/skills/ls-ansible-skill/assets/ansible-example/roles/agent-host/handlers/main.yml` |
 | `keep` | `ls/skills/ls-ansible-skill/assets/ansible-example/roles/agent-host/tasks/main.yml` |
+| `keep` | `ls/skills/ls-ansible-skill/assets/ansible-example/roles/agent-host/templates/agent-host.env.j2` |
 | `keep` | `ls/skills/ls-ansible-skill/assets/ansible-example/roles/agent-host/templates/agent-host.service.j2` |
 | `keep` | `ls/skills/ls-ansible-skill/assets/ansible-example/roles/common/defaults/main.yml` |
 | `keep` | `ls/skills/ls-ansible-skill/assets/ansible-example/roles/common/tasks/main.yml` |
@@ -408,42 +412,13 @@ artifact_sha256: 69274a82e11f708c69cd7bd2756108b34d726e1962ff1b61cbcdfb7278edb17
 | `keep` | `ls/skills/ls-arbiter/SKILL.md` |
 | `keep` | `ls/skills/ls-arbiter/references/overview.md` |
 | `keep` | `ls/skills/ls-arbiter/scripts/arbiter_cli.py` |
+| `keep` | `ls/skills/ls-arbiter/scripts/test_arbiter_cli.py` |
 | `keep` | `ls/skills/ls-arbiter/templates/decision.md` |
 | `keep` | `ls/skills/ls-architecture/SKILL.md` |
 | `keep` | `ls/skills/ls-automatic-versioning/SKILL.md` |
 | `keep` | `ls/skills/ls-backlog-and-reminders/SKILL.md` |
 | `keep` | `ls/skills/ls-backlog-and-reminders/references/backlog-template.md` |
 | `keep` | `ls/skills/ls-cloudflare-dns/SKILL.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/api-scope.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/auth-permissions.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/batch-import-export-scan.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/cloudflare-openapi-dns-paths.json` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/deterministic-tooling.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/dns-records.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/dns-settings.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/dynamic-dns.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/examples.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/record-types.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/safety.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/snapshots-plans.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/source-ledger.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/troubleshooting.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/update-procedure.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/references/zones.md` |
-| `keep` | `ls/skills/ls-cloudflare-dns/schemas/cli-output.schema.json` |
-| `keep` | `ls/skills/ls-cloudflare-dns/schemas/dns-change-plan.schema.json` |
-| `keep` | `ls/skills/ls-cloudflare-dns/schemas/dns-record-normalized.schema.json` |
-| `keep` | `ls/skills/ls-cloudflare-dns/schemas/dns-snapshot.schema.json` |
-| `keep` | `ls/skills/ls-cloudflare-dns/scripts/cf_dns.py` |
-| `keep` | `ls/skills/ls-cloudflare-dns/scripts/cf_dns_parser.py` |
-| `keep` | `ls/skills/ls-cloudflare-dns/scripts/cf_dns_support.py` |
-| `keep` | `ls/skills/ls-cloudflare-dns/scripts/refresh_cloudflare_dns_schema.py` |
-| `keep` | `ls/skills/ls-cloudflare-dns/scripts/validate_cf_dns_skill.py` |
-| `keep` | `ls/skills/ls-cloudflare-dns/tests/fixtures/change-plan.json` |
-| `keep` | `ls/skills/ls-cloudflare-dns/tests/fixtures/cli-output.json` |
-| `keep` | `ls/skills/ls-cloudflare-dns/tests/fixtures/normalized-record.json` |
-| `keep` | `ls/skills/ls-cloudflare-dns/tests/fixtures/snapshot.json` |
-| `keep` | `ls/skills/ls-cloudflare-dns/tests/test_cf_dns.py` |
 | `keep` | `ls/skills/ls-codex-heartbeat/SKILL.md` |
 | `keep` | `ls/skills/ls-codex-heartbeat/references/artifacts.md` |
 | `keep` | `ls/skills/ls-codex-heartbeat/references/command-logging.md` |
@@ -617,8 +592,8 @@ artifact_sha256: 69274a82e11f708c69cd7bd2756108b34d726e1962ff1b61cbcdfb7278edb17
 | `keep` | `ls/skills/ls-mail-protocol-control/references/API_EXAMPLES.md` |
 | `keep` | `ls/skills/ls-mail-protocol-control/references/CREDENTIAL_PROVIDER_CONTRACT.md` |
 | `keep` | `ls/skills/ls-mail-protocol-control/references/ENCRYPTION_MODEL.md` |
+| `keep` | `ls/skills/ls-mail-protocol-control/references/JSON_CLI_TOOL_SCHEMA.md` |
 | `keep` | `ls/skills/ls-mail-protocol-control/references/KEY_MANAGEMENT.md` |
-| `keep` | `ls/skills/ls-mail-protocol-control/references/MCP_TOOL_SCHEMA.md` |
 | `keep` | `ls/skills/ls-mail-protocol-control/references/POLICY_SCHEMA.md` |
 | `keep` | `ls/skills/ls-mail-protocol-control/references/SMTP_IMAP_OPERATION_MATRIX.md` |
 | `keep` | `ls/skills/ls-mail-protocol-control/references/TROUBLESHOOTING.md` |
@@ -627,16 +602,17 @@ artifact_sha256: 69274a82e11f708c69cd7bd2756108b34d726e1962ff1b61cbcdfb7278edb17
 | `keep` | `ls/skills/ls-mail-protocol-control/scripts/__init__.py` |
 | `keep` | `ls/skills/ls-mail-protocol-control/scripts/crypto_engine.py` |
 | `keep` | `ls/skills/ls-mail-protocol-control/scripts/crypto_types.py` |
+| `keep` | `ls/skills/ls-mail-protocol-control/scripts/mail_json_cli.py` |
 | `keep` | `ls/skills/ls-mail-protocol-control/scripts/mail_protocol_control.py` |
 | `keep` | `ls/skills/ls-mail-protocol-control/scripts/mail_protocol_imap.py` |
 | `keep` | `ls/skills/ls-mail-protocol-control/scripts/mail_protocol_support.py` |
 | `keep` | `ls/skills/ls-mail-protocol-control/scripts/mail_types.py` |
 | `keep` | `ls/skills/ls-mail-protocol-control/scripts/mail_utils.py` |
-| `keep` | `ls/skills/ls-mail-protocol-control/scripts/mcp_server.py` |
 | `keep` | `ls/skills/ls-mail-protocol-control/scripts/policy_engine.py` |
 | `keep` | `ls/skills/ls-mail-protocol-control/scripts/tests/mail_protocol_test_helpers.py` |
 | `keep` | `ls/skills/ls-mail-protocol-control/scripts/tests/test_mail_protocol_control.py` |
-| `keep` | `ls/skills/ls-mail-protocol-control/scripts/tests/test_mail_protocol_mcp_errors.py` |
+| `keep` | `ls/skills/ls-mail-protocol-control/scripts/tests/test_mail_protocol_json_cli_errors.py` |
+| `keep` | `ls/skills/ls-mail-protocol-control/scripts/tests/test_mail_protocol_transport_safety.py` |
 | `keep` | `ls/skills/ls-markdown-reference-validator/SKILL.md` |
 | `keep` | `ls/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py` |
 | `keep` | `ls/skills/ls-markdown-reference-validator/scripts/markdown_reference_config.py` |
@@ -678,6 +654,7 @@ artifact_sha256: 69274a82e11f708c69cd7bd2756108b34d726e1962ff1b61cbcdfb7278edb17
 | `keep` | `ls/skills/ls-nodejs-nextjs/references/update-procedure.md` |
 | `keep` | `ls/skills/ls-nodejs-nextjs/references/version-matrix.md` |
 | `keep` | `ls/skills/ls-nodejs-nextjs/scripts/verify-current-versions.mjs` |
+| `keep` | `ls/skills/ls-nodejs-nextjs/tests/verify-current-versions.test.mjs` |
 | `keep` | `ls/skills/ls-notion-api/SKILL.md` |
 | `keep` | `ls/skills/ls-npm-management/SKILL.md` |
 | `keep` | `ls/skills/ls-npm-management/references/npm-api-conf-example.md` |
@@ -789,6 +766,7 @@ artifact_sha256: 69274a82e11f708c69cd7bd2756108b34d726e1962ff1b61cbcdfb7278edb17
 | `keep` | `ls/skills/ls-shadcn-ui/rules/updates.md` |
 | `keep` | `ls/skills/ls-shadcn-ui/scripts/verify_shadcn_sources.py` |
 | `keep` | `ls/skills/ls-shadcn-ui/tests/fixtures/README.md` |
+| `keep` | `ls/skills/ls-shadcn-ui/tests/test_verify_shadcn_sources.py` |
 | `keep` | `ls/skills/ls-shadcn-ui/tests/validation-checklist.md` |
 | `keep` | `ls/skills/ls-shopify-storefront/SKILL.md` |
 | `keep` | `ls/skills/ls-skill-creator/SKILL.md` |
@@ -870,6 +848,7 @@ artifact_sha256: 69274a82e11f708c69cd7bd2756108b34d726e1962ff1b61cbcdfb7278edb17
 | `keep` | `ls/skills/ls-unfuck-my-git-state/references/overview.md` |
 | `keep` | `ls/skills/ls-unfuck-my-git-state/references/recovery-checklist.md` |
 | `keep` | `ls/skills/ls-unfuck-my-git-state/references/symptom-map.md` |
+| `keep` | `ls/skills/ls-unfuck-my-git-state/scripts/backup_git_metadata.py` |
 | `keep` | `ls/skills/ls-unfuck-my-git-state/scripts/guided_repair_plan.py` |
 | `keep` | `ls/skills/ls-unfuck-my-git-state/scripts/regression_harness.py` |
 | `keep` | `ls/skills/ls-unfuck-my-git-state/scripts/snapshot_git_state.py` |
@@ -953,6 +932,7 @@ artifact_sha256: 69274a82e11f708c69cd7bd2756108b34d726e1962ff1b61cbcdfb7278edb17
 | `keep` | `ls/tests/test_ls_kilo_boss_orchestrator_runner.py` |
 | `keep` | `ls/tests/test_ls_linux_patcher_patch_cli.py` |
 | `keep` | `ls/tests/test_manifests.py` |
+| `keep` | `ls/tests/test_mcp_builder_connections.py` |
 | `keep` | `ls/tests/test_omniroute_api_cli.py` |
 | `keep` | `ls/tests/test_omniroute_consolidation_migration.py` |
 | `keep` | `ls/tests/test_omniroute_immutable_inventory.py` |
@@ -978,6 +958,7 @@ artifact_sha256: 69274a82e11f708c69cd7bd2756108b34d726e1962ff1b61cbcdfb7278edb17
 | `keep` | `ls/tests/test_trusted_work_queue_shared_folder.py` |
 | `keep` | `ls/tests/test_trusted_work_queue_snapshot.py` |
 | `keep` | `ls/tests/test_ui_browser_debugging_skill.py` |
+| `keep` | `ls/tests/test_unfuck_my_git_state.py` |
 | `keep` | `ls/tests/test_validation_tooling.py` |
 | `keep` | `ls/tests/test_versioning.py` |
 | `keep` | `ls/tests/test_versioning_release_push.py` |
@@ -1052,20 +1033,8 @@ artifact_sha256: 69274a82e11f708c69cd7bd2756108b34d726e1962ff1b61cbcdfb7278edb17
 | `keep` | `ls/tools/verify_context.py` |
 | `keep` | `ls/tools/verify_rules` |
 | `keep` | `ls/tools/verify_rules.py` |
-| `keep` | `ls/workflows/ls-workflow-audit-framework/SKILL.md` |
-| `keep` | `ls/workflows/ls-workflow-audit-framework/workflow.yaml` |
-| `keep` | `ls/workflows/ls-workflow-audit-markdown-references/SKILL.md` |
-| `keep` | `ls/workflows/ls-workflow-audit-markdown-references/workflow.yaml` |
 | `keep` | `ls/workflows/ls-workflow-codex-github-issue-goal-loop/SKILL.md` |
 | `keep` | `ls/workflows/ls-workflow-codex-github-issue-goal-loop/workflow.yaml` |
-| `keep` | `ls/workflows/ls-workflow-codex-heartbeat/SKILL.md` |
-| `keep` | `ls/workflows/ls-workflow-codex-heartbeat/workflow.yaml` |
-| `keep` | `ls/workflows/ls-workflow-context-index-query/SKILL.md` |
-| `keep` | `ls/workflows/ls-workflow-context-index-query/workflow.yaml` |
-| `keep` | `ls/workflows/ls-workflow-context-index-refresh/SKILL.md` |
-| `keep` | `ls/workflows/ls-workflow-context-index-refresh/workflow.yaml` |
-| `keep` | `ls/workflows/ls-workflow-documentation-alignment/SKILL.md` |
-| `keep` | `ls/workflows/ls-workflow-documentation-alignment/workflow.yaml` |
 | `keep` | `ls/workflows/ls-workflow-ops-guarded/SKILL.md` |
 | `keep` | `ls/workflows/ls-workflow-ops-guarded/workflow.yaml` |
 | `keep` | `ls/workflows/ls-workflow-ops-tmux-session/SKILL.md` |
@@ -1090,14 +1059,10 @@ artifact_sha256: 69274a82e11f708c69cd7bd2756108b34d726e1962ff1b61cbcdfb7278edb17
 | `keep` | `ls/workflows/ls-workflow-queue-batch-implement/workflow.yaml` |
 | `keep` | `ls/workflows/ls-workflow-repo-finalizer/SKILL.md` |
 | `keep` | `ls/workflows/ls-workflow-repo-finalizer/workflow.yaml` |
-| `keep` | `ls/workflows/ls-workflow-skills-index-refresh/SKILL.md` |
-| `keep` | `ls/workflows/ls-workflow-skills-index-refresh/workflow.yaml` |
 | `keep` | `ls/workflows/ls-workflow-spec-clarify-reverse/SKILL.md` |
 | `keep` | `ls/workflows/ls-workflow-spec-clarify-reverse/workflow.yaml` |
 | `keep` | `ls/workflows/ls-workflow-tmux-terminal-mode/SKILL.md` |
 | `keep` | `ls/workflows/ls-workflow-tmux-terminal-mode/workflow.yaml` |
-| `keep` | `ls/workflows/ls-workflow-transport-handoff/SKILL.md` |
-| `keep` | `ls/workflows/ls-workflow-transport-handoff/workflow.yaml` |
 | `keep` | `ls/workflows/ls-workflow-umbrella-run/SKILL.md` |
 | `keep` | `ls/workflows/ls-workflow-umbrella-run/workflow.yaml` |
 | `keep` | `pyproject.toml` |

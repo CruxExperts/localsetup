@@ -90,6 +90,39 @@ export async function run(command, args, options = {}) {
   });
 }
 
+async function gitWorktreeRoot(worktree) {
+  const result = await run("git", ["rev-parse", "--show-toplevel"], {
+    cwd: worktree,
+    timeoutMs: 30000,
+  });
+  return resolve(result.stdout.trim());
+}
+
+export async function ensureGitRepository(worktree) {
+  const expectedRoot = resolve(worktree);
+  let root;
+  try {
+    root = await gitWorktreeRoot(worktree);
+  } catch (error) {
+    if (!String(error.message).includes("not a git repository")) {
+      throw error;
+    }
+  }
+  if (root) {
+    if (root !== expectedRoot) {
+      throw new Error("Archive worktree must be the Git repository root: " + expectedRoot);
+    }
+    return false;
+  }
+
+  await run("git", ["init"], { cwd: worktree, timeoutMs: 30000 });
+  const initializedRoot = await gitWorktreeRoot(worktree);
+  if (initializedRoot !== expectedRoot) {
+    throw new Error("Git initialization did not create the requested archive worktree: " + expectedRoot);
+  }
+  return true;
+}
+
 export async function ghApi(path, extraArgs = []) {
   const args = [
     "api",

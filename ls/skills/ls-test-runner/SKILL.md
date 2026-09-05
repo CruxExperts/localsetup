@@ -26,16 +26,16 @@ npm install -D vitest @testing-library/react @testing-library/jest-dom
 ```
 
 ```typescript
-// vitest.config.ts
+// vitest.config.ts - minimal configuration for non-DOM tests
 import { defineConfig } from 'vitest/config'
 export default defineConfig({
   test: {
     globals: true,
-    environment: 'jsdom',
-    setupFiles: './tests/setup.ts',
   },
 })
 ```
+
+Vitest uses the [Node environment by default](https://vitest.dev/guide/environment.html). For the React component example below or other DOM tests, retain the repository's configured DOM environment; select `environment: 'jsdom'` only when the target project already supplies a compatible `jsdom` dependency. Add [setupFiles](https://vitest.dev/config/setupfiles) only for an existing setup file with the required initialization and installed imports. The minimal configuration above does not create `tests/setup.ts` or provide a DOM environment.
 
 ```bash
 npx vitest              # Watch mode
@@ -64,9 +64,9 @@ uv add --dev pytest pytest-cov pytest-asyncio httpx
 uv run pytest                   # Run all
 uv run pytest -v                # Verbose
 uv run pytest -x                # Stop on first failure
-pytest --cov=app                # With coverage
-pytest tests/test_api.py -k "test_login"  # Specific test
-pytest --tb=short               # Short tracebacks
+uv run pytest --cov=app         # With coverage
+uv run pytest tests/test_api.py -k "test_login"  # Specific test
+uv run pytest --tb=short        # Short tracebacks
 ```
 
 ### XCTest (Swift)
@@ -96,7 +96,7 @@ npx playwright show-report             # View HTML report
 2. **Green** - Write the minimum code to make the test pass.
 3. **Refactor** - Clean up the code while keeping tests green.
 
-Source note: imported from `test-runner` by cmanfre7, with provenance previously recorded in release-only `_meta.json` metadata.
+Legacy attribution: `test-runner` by cmanfre7. The tracked package does not retain the source URL, revision, digest, license, or cited release-only `_meta.json`; this attribution remains unverified.
 
 ## Test Patterns
 
@@ -168,9 +168,9 @@ npx vitest --coverage          # Vitest (uses v8 or istanbul)
 npx jest --coverage            # Jest
 
 # Python
-pytest --cov=app --cov-report=html    # HTML report
-pytest --cov=app --cov-report=term    # Terminal output
-pytest --cov=app --cov-fail-under=80  # Fail if < 80%
+uv run pytest --cov=app --cov-report=html    # HTML report
+uv run pytest --cov=app --cov-report=term    # Terminal output
+uv run pytest --cov=app --cov-fail-under=80  # Fail if < 80%
 
 # View HTML coverage report
 open coverage/index.html       # macOS

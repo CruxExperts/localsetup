@@ -14,14 +14,14 @@ CAPABILITY_RELATIVE_PATH = Path("ls/tools/scrapling_helper/scrapling_capabilitie
 REQUIRED_CAPABILITIES = (
     "scrapling_status",
     "extract_url_simple",
-    "extract_url_structured",
-    "run_spider",
     "scrapling_job_status",
     "scrapling_cancel_job",
     "upgrade_scrapling",
     "refresh_adapters",
     "scrapling_self_test",
 )
+REMOVED_CAPABILITIES = ("extract_url_structured", "run_spider")
+FORBIDDEN_CLI_REFERENCE = "scrapling spider"
 REQUIRED_FIELDS = ("cli", "helper", "description")
 
 
@@ -44,12 +44,22 @@ def find_capability_index() -> Path:
 
 def load_capabilities(path: Path) -> dict[str, Any]:
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        raise ValueError(f"could not read capability index {path}: {exc}") from exc
+
+    try:
+        data = json.loads(text)
     except json.JSONDecodeError as exc:
         raise ValueError(f"{path} is not valid JSON: {exc}") from exc
+
     if not isinstance(data, dict):
         raise ValueError(f"{path} must contain a JSON object")
     return data
+
+
+def _normalized_cli(value: str) -> str:
+    return " ".join(value.lower().split())
 
 
 def verify_capabilities(data: dict[str, Any]) -> list[str]:
@@ -62,12 +72,29 @@ def verify_capabilities(data: dict[str, Any]) -> list[str]:
         for field in REQUIRED_FIELDS:
             if not isinstance(capability.get(field), str) or not capability[field].strip():
                 errors.append(f"{name} missing non-empty string field: {field}")
+
+    for name in REMOVED_CAPABILITIES:
+        if name in data:
+            errors.append(f"removed capability present: {name}")
+
+    for name, capability in data.items():
+        if not isinstance(capability, dict):
+            continue
+        cli = capability.get("cli")
+        if isinstance(cli, str) and FORBIDDEN_CLI_REFERENCE in _normalized_cli(cli):
+            errors.append(f"unsupported CLI claim in {name}.cli: {FORBIDDEN_CLI_REFERENCE}")
+
     return errors
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Verify Localsetup's packaged Scrapling capability index.",
+    )
+    parser.add_argument(
+        "--capabilities",
+        type=Path,
+        help="Verify this capability-index path instead of discovering the packaged index.",
     )
     parser.add_argument(
         "--json",
@@ -82,7 +109,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     try:
-        path = find_capability_index()
+        path = args.capabilities or find_capability_index()
         data = load_capabilities(path)
         errors = verify_capabilities(data)
     except (FileNotFoundError, ValueError) as exc:

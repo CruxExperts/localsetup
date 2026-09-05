@@ -5,21 +5,17 @@ heartbeat:
   stale_after_seconds: 3600
   task_queue_path: null
 
-codex:
+agent:
   enabled: false
   profile: heartbeat
   timeout_seconds: 1800
 
 agent_profiles:
   heartbeat:
-    app: codex
+    client: codex
     launcher: resolved-path
-    command_name: codex
-    model_policy: configurable-low-cost
-    model: null
-    reasoning_effort: low
-    json: true
-    sandbox: workspace-write
+    command: [codex, exec, --json, "{heartbeat_prompt}"]
+    prompt_transport: argv
     prompt: Read HEARTBEAT.md, inspect queued heartbeat work, and produce a concise status report.
 
 hooks:

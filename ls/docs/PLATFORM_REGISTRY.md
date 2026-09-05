@@ -1,12 +1,12 @@
 ---
 status: ACTIVE
-version: 4.3
+version: 4.4
 owner_skill: ls-framework-compliance
 ---
 
 # Platform registry (Localsetup)
 
-**Purpose:** Human-readable summary of the AI client variants Localsetup supports. When registering a new skill or workflow package, use the registration lists below so no platform is missed.
+**Purpose:** Human-readable summary of the AI client variants Localsetup supports and the canonical registration sources for skills and workflow packages.
 
 **Manifest source:** `ls/config/clients.yaml` is canonical. It records client families and distinct CLI/IDE variants, their researched native surfaces, Localsetup state contracts, and compatibility projection eligibility. `ls/config/platforms.yaml` is generated from the six compatible variants for existing installer consumers; do not edit it directly. The root `--tools` flag remains a compatibility alias for current `--platforms`.
 
@@ -29,27 +29,22 @@ Localsetup installs selected skills and workflow packages to `~/.local/share/loc
 
 ## Skill registration (new skills)
 
-When adding a new framework skill, register it in **every** file below so the skill appears in each platform's context and in the framework README. Paths are relative to the **framework source root** (the directory that contains `templates/`, `skills/`, `workflows/`, and `docs/`).
+Register capabilities in their owning metadata, then regenerate the shared catalogs. Paths below are relative to the source checkout, which contains `ls/`.
 
-Add one row or bullet per new skill with a short "When to use" description. Use the same phrasing everywhere.
+| Registration surface | Required update |
+|----------------------|-----------------|
+| `ls/skills/<name>/SKILL.md` | Name, description, version, and task-specific instructions |
+| `ls/config/pack.yaml` | Applicable pack membership and skill taxonomy |
+| `ls/tests/skill_smoke_commands.yaml` | Supported smoke command or explicit doc-only `N/A` |
+| Generated catalogs | Run both documentation generators; validate catalog and package surfaces |
 
-| Platform / scope | File to update |
-|-----------------|----------------|
-| Cursor (templates) | ls/templates/cursor/ls-context-index.md |
-| Cursor (templates) | ls/templates/cursor/ls-context.mdc |
-| Claude Code | ls/templates/claude-code/CLAUDE.md |
-| Codex | ls/templates/codex/AGENTS.md |
-| OpenClaw | ls/templates/openclaw/OPENCLAW_CONTEXT.md |
-| OpenCode | ls/templates/opencode/AGENTS.md |
-| Kilo (templates) | ls/templates/kilo/instructions.md |
-| Framework docs index | ls/docs/README.md |
-| Context skill (source) | ls/skills/ls-context/SKILL.md |
+[SKILLS.md](SKILLS.md), [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md), and the generated taxonomy provide the complete inventory. Each package's frontmatter owns its current description. Platform templates carry discovery guidance and distinct routing boundaries, not a second catalog. Do not add a row to every template, the docs index, or `ls-context` for each new skill. Add a documentation-index entry only when introducing a distinct maintained document.
 
-**If you add a new platform:** extend the Supported platforms table above, add the platform's context/skills paths, and add the corresponding registration file(s) to this table so the skill-creator and maintainers keep all platforms in sync.
+**If you add a new platform:** update the canonical client registry and research evidence, regenerate its compatibility projection, and update this summary. Preserve platform-specific loader instructions and adapter ownership. Template adoption is separate from installing selected package adapters; the installer does not copy these context templates into target repositories.
 
 ## Workflow registration (new workflow packages)
 
-When adding a new workflow package, create `ls/workflows/ls-workflow-<id>/SKILL.md` and `workflow.yaml`, then update the same platform context templates when the workflow should be visible as a common trigger. Generated workflow catalogs are refreshed from `workflow.yaml`.
+When adding a new workflow package, create `ls/workflows/ls-workflow-<id>/SKILL.md` and `workflow.yaml`, register its workflow-pack membership in `ls/config/pack.yaml`, and regenerate the workflow catalogs from `workflow.yaml`. Keep task triggers in package metadata rather than repeating them across platform templates.
 
 Use [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) for the model and [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md) for the manifest contract.
 

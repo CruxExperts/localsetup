@@ -18,13 +18,20 @@ not require concurrent control of the same page.
 - Do not ask subagents to drive the same browser page concurrently.
 - A subagent may drive a browser only when the controller assigns one of these
   ownership models before the subagent starts:
-  - `--experimentalPageIdRouting` with an explicit page id assigned to that
-    subagent.
-  - A separate isolated profile or isolated Chrome DevTools MCP session owned
-    by that subagent.
-- Record the assigned page id, isolated profile, owner, and purpose with
-  `browser_session_guard.py` before the subagent uses the page.
-- If neither page-id routing nor an isolated profile is assigned, the subagent
+  - Default-on `--pageIdRouting` with an explicit page id assigned to that
+    subagent on one shared, controller-owned MCP server record; do not disable
+    routing with `--no-page-id-routing`.
+  - A separate isolated Chrome DevTools MCP server instance with a unique,
+    controller-assigned MCP session id owned by that subagent.
+- For a shared routed server, the controller starts one record for the server
+  and records every assigned page with `--page-owner <agent>` before that actor
+  uses it. Subagents do not create separate records that claim the shared MCP
+  server.
+- For a separate isolated server, start `browser_session_guard.py` with its
+  unique MCP session id as both `--session-id` and `--mcp-session-id`. In both
+  models, record the page id, page owner, purpose, and the same absolute state
+  root before use.
+- If neither page-id routing nor an isolated MCP instance is assigned, the subagent
   must not use live browser MCP tools. It may review saved screenshots,
   snapshots, console excerpts, traces, or run non-browser tests.
 - Subagents may review screenshots, snapshots, console excerpts, and traces
@@ -33,7 +40,8 @@ not require concurrent control of the same page.
 
 ## Closeout
 
-The controller owns final browser closeout. At task end, each subagent-owned
-record must be audited. Close only recorded owned pages with `close_page`, mark
-them closed, and leave user or pre-existing pages alone unless the user
-explicitly authorized closing them.
+The controller owns final browser closeout. At task end, audit every applicable
+record: the shared controller-owned routed-server record and each separately
+isolated subagent-owned record. Close only recorded owned pages with
+`close_page`, mark them closed, and leave user or pre-existing pages alone
+unless the user explicitly authorized closing them.

@@ -8,8 +8,10 @@ required_skills:
   - ls-github-publishing-workflow
 required_tools: []
 required_docs:
-  - ls/docs/WORKFLOW_QUICK_REF.md
   - ls/docs/README.md
+  - ls/skills/ls-script-and-docs-quality/SKILL.md
+  - ls/skills/ls-humanizer/SKILL.md
+  - ls/skills/ls-github-publishing-workflow/SKILL.md
 gates:
   - id: audience_gate
     rule: Confirm target audience and publishing scope.

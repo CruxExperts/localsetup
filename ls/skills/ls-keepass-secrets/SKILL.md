@@ -1,32 +1,33 @@
 ---
 name: ls-keepass-secrets
-description: Use when resolving logical secret IDs through KeePassXC using safe mapping files, JSON-first CLI commands, and redacted output by default.
+description: Use when validating logical secret-ID maps, config, and reference syntax for a KeePassXC integration; output is redacted and the fake backend is test-only.
 metadata:
   version: "1.1"
-compatibility: "Linux/WSL2 focused; Python 3.12+; PyYAML; keepassxc-cli 2.7+ for the operational KeePassXC backend."
+compatibility: "Linux/WSL2 focused; Python 3.12+; PyYAML; optional keepassxc-cli capability detection only. This skill does not open or manage KeePassXC vaults."
 ---
 
-# KeePass-backed secrets
+# KeePass secret mappings
 
-Use this skill when a workflow needs a secret value by logical ID without writing that value into a repository, logs, docs, or long-lived artifacts.
+Use this skill to validate non-secret logical-ID metadata and reference syntax. It does not resolve, display, create, rotate, update, delete, or otherwise access real KeePassXC entries.
 
-## Commands
+## Supported commands
 
-Primary CLI:
+Primary validation commands:
 
-```bash
-python3 scripts/localsetup_secrets.py --help
-```
+~~~bash
+python3 scripts/localsetup_secrets.py map-validate --map examples/map.yaml
+python3 scripts/localsetup_secrets.py reference '{{secret:mail.box03.example.admin:password}}'
+~~~
 
 Capability check:
 
-```bash
+~~~bash
 python3 scripts/verify_keepassxc.py --format json
-```
+~~~
 
 The CLI emits JSON envelopes by default:
 
-```json
+~~~json
 {
   "ok": true,
   "command": "map-validate",
@@ -37,19 +38,21 @@ The CLI emits JSON envelopes by default:
   "sensitive": false,
   "redactions": []
 }
-```
+~~~
 
-Use `--format human` only for interactive display. Diagnostics are redacted. Protected values require `--show-sensitive`.
+Use --format human only for interactive display. Diagnostics are redacted. Protected values require --show-sensitive.
+
+The default keepassxc backend preserves existing configuration and may check the CLI version. When keepassxc-cli is unavailable it reports missing_backend; otherwise it refuses every vault operation with interactive_backend_required. fake exists only for deterministic tests and examples; it is not a secret store.
 
 ## Logical IDs
 
 Canonical IDs are lowercase and may contain letters, digits, dots, underscores, and hyphens:
 
-```text
+~~~text
 mail.box03.example.admin
 postgres.box03.app1
 api.box03.stripe.live
-```
+~~~
 
 Aliases, including email-like aliases, may be declared in map files. Ambiguous aliases fail clearly.
 
@@ -57,11 +60,11 @@ Aliases, including email-like aliases, may be declared in map files. Ambiguous a
 
 Supported forms:
 
-```text
+~~~text
 Secret ID: mail.box03.example.admin
 {{secret:mail.box03.example.admin:password}}
 secret://localsetup/repo/default/mail.box03.example.admin#field=password
-```
+~~~
 
 See [docs/reference-format.md](docs/reference-format.md).
 
@@ -70,10 +73,10 @@ See [docs/reference-format.md](docs/reference-format.md).
 Resolution order:
 
 1. CLI flags.
-2. `LOCALSETUP_SECRETS_*` environment variables.
-3. Repo-local `.localsetup/secrets/config.yaml` and map.
-4. Legacy `secrets/keepass-config.yaml` plus `secrets/*-secrets-map.yaml`.
-5. Global `~/.config/localsetup/secrets/config.yaml` and `~/.local/share/localsetup/secrets/maps/default.yaml`.
+2. LOCALSETUP_SECRETS_* environment variables.
+3. Repo-local .localsetup/secrets/config.yaml and map.
+4. Legacy secrets/keepass-config.yaml plus secrets/*-secrets-map.yaml.
+5. Global ~/.config/localsetup/secrets/config.yaml and ~/.local/share/localsetup/secrets/maps/default.yaml.
 
 Config and map files may contain metadata, entry paths, usernames, URLs, and aliases. They must not contain passwords, tokens, key material, or passphrases.
 
@@ -81,16 +84,16 @@ Examples live in [examples/](examples/). Contract schemas live in [schemas/](sch
 
 ## Backends
 
-- `keepassxc`: primary backend. Uses `keepassxc-cli` with `subprocess.run([...], shell=False)`. Safe writes are limited to `UserName`, `Password`, `URL`, `Notes`, title, and path.
-- `fake`: test backend for placeholder data and CI.
+- keepassxc: the default capability guard. It checks that keepassxc-cli is present for diagnostics but never opens a vault or runs read/write operations.
+- fake: deterministic test and example backend for placeholder data only. It must not be used as a secret store.
 - PyKeePass: future optional backend only; not installed or required by this skill.
 
 ## Safety Rules
 
 - Never put secret values in tracked files.
-- Keep `.kdbx`, keyfiles, and `.env` files out of Git.
-- Use dry-run output first; write commands require `--apply`.
-- Do not request protected values unless the user explicitly needs them for the current operation.
+- Keep .kdbx, keyfiles, and .env files out of Git.
+- Treat interactive_backend_required as an explicit refusal, not a request to bypass the vault boundary.
+- Use the fake backend only in isolated tests and examples.
 - Do not open, create, or inspect real vaults during tests.
 
 ## Documentation

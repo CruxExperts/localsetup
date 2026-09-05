@@ -24,7 +24,7 @@ def write_config(
     enabled: bool = True,
     task_queue_path: str | None = None,
     hooks: dict | None = None,
-    codex: dict | None = None,
+    agent: dict | None = None,
     agent_profiles: dict | None = None,
 ) -> Path:
     config = {
@@ -32,9 +32,10 @@ def write_config(
             "enabled": enabled,
             "interval_minutes": 15,
             "state_dir": ".localsetup/state/codex-heartbeat",
+            "stale_after_seconds": 3600,
             "task_queue_path": task_queue_path,
         },
-        "codex": {"enabled": False, "command": ["codex", "exec", "--", "status"]},
+        "agent": {"enabled": False},
         "hooks": hooks or {"before": [], "after": []},
         "direct_command_policy": {
             "allow_git_writes": False,
@@ -42,8 +43,8 @@ def write_config(
             "allowlist": [],
         },
     }
-    if codex is not None:
-        config["codex"] = codex
+    if agent is not None:
+        config["agent"] = agent
     if agent_profiles is not None:
         config["agent_profiles"] = agent_profiles
     path = target / "config" / "codex_heartbeat.yaml"

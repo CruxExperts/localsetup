@@ -2,9 +2,9 @@
 
 ## KeePassXC
 
-KeePassXC CLI is the operational backend. The wrapper checks for the local binary and keeps calls in argv form with `shell=False`.
+KeePassXC is the preserved default capability guard, not an operational backend. The wrapper checks for the local binary and may run --version for diagnostics. It reports missing_backend when the binary is unavailable; otherwise every vault read or write returns interactive_backend_required before vault access. It never opens or unlocks a vault.
 
-The safe write field set is limited to `UserName`, `Password`, `URL`, `Notes`, title, and path. Custom protected attribute writes are rejected with `unsupported_field` unless a future version verifies a safe local CLI capability.
+The safe write-field constants remain validation metadata for future approved backend work. They do not authorize writes in this package.
 
 ## Fake
 

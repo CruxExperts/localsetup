@@ -23,6 +23,32 @@ def test_reference_classifier_covers_public_private_and_source_paths() -> None:
     assert classify_reference("ls/docs/../../.localsetup-maint/secret.md").category == "blocked_escape"
 
 
+def test_materializer_omits_bytecode_and_preserves_package_assets(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    source = repo / "ls/skills/ls-demo"
+    source.mkdir(parents=True)
+    schema = repo / "ls/config/reference-bundle.schema.json"
+    schema.parent.mkdir(parents=True)
+    schema.write_bytes((Path(__file__).resolve().parents[1] / "config" / schema.name).read_bytes())
+    retained = {"SKILL.md", "scripts/helper.py", ".hidden.txt", "data/fixture.txt"}
+    excluded = {"scripts/__pycache__/helper.cpython-312.pyc", "scripts/__pycache__/note.txt", "legacy.pyc", "legacy.pyo"}
+    for name in retained | excluded:
+        path = source / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# fixture\n", encoding="utf-8")
+    destination = tmp_path / "materialized"
+
+    manifest = materialize_package_artifact(
+        repo, source, destination, package_name="ls-demo", package_type="skill", emitter="test"
+    )
+
+    assert manifest["validation"]["ok"] is True
+    assert all((destination / name).read_bytes() == (source / name).read_bytes() for name in retained)
+    assert all(not (destination / name).exists() for name in excluded)
+    assert not (destination / "scripts/__pycache__").exists()
+    assert all((source / name).exists() for name in excluded)
+
+
 def test_materializer_rewrites_markdown_refs_and_copies_public_doc_closure(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     docs = repo / "ls" / "docs"

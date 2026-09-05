@@ -1,40 +1,37 @@
 ---
-# Agent-host VPS setup playbook
-# Sets up a fresh VPS with an npm-based agent service ready to configure.
+# Agent-host VPS setup playbook.
 #
 # Usage:
-#   ansible-playbook -i inventory/hosts.yml playbooks/agent-host-vps.yml --limit newserver
+#   ansible-playbook -i inventory/hosts.yml playbooks/agent-host-vps.yml --limit new_server
+#
+# This is an untested Ubuntu example. Before relying on it, validate the exact
+# image, provider, architecture, Ansible/core version, collection versions, and
+# SSH/fail2ban assumptions in an isolated target.
 #
 # Requirements:
-#   - Fresh Ubuntu 22.04/24.04 VPS
-#   - Root SSH access (password or key)
-#   - Variables defined in inventory or group_vars
+#   - Bootstrap SSH access as root with either an existing private key or --ask-pass
+#   - common_deploy_user, common_deploy_ssh_pubkey, and ansible_ssh_private_key_file
+#     (matching the supplied public key) in inventory or group_vars for final verification
 
 - name: Initial server setup
   hosts: all
   gather_facts: yes
   become: yes
 
-  vars:
-    # Override these in inventory/group_vars
-    deploy_user: deploy
-    deploy_user_groups: [sudo]
-    deploy_ssh_pubkey: ""
-    deploy_user_nopasswd_sudo: false
-    timezone: Etc/UTC
-    common_timezone: "{{ timezone }}"
-    common_deploy_user: "{{ deploy_user }}"
-    common_deploy_user_groups: "{{ deploy_user_groups }}"
-    common_deploy_ssh_pubkey: "{{ deploy_ssh_pubkey }}"
-    common_deploy_user_nopasswd_sudo: "{{ deploy_user_nopasswd_sudo }}"
-
   pre_tasks:
-    - name: Validate required variables
+    - name: Validate required bootstrap and final-verification variables
       ansible.builtin.assert:
         that:
-          - deploy_user is defined
-          - deploy_ssh_pubkey is defined and deploy_ssh_pubkey != ""
-        fail_msg: "Required variables: deploy_user, deploy_ssh_pubkey"
+          - common_deploy_user is defined
+          - common_deploy_user | length > 0
+          - common_deploy_ssh_pubkey is defined
+          - common_deploy_ssh_pubkey | length > 0
+          - ansible_ssh_private_key_file is defined
+          - ansible_ssh_private_key_file | length > 0
+        fail_msg: >-
+          Required variables: common_deploy_user, common_deploy_ssh_pubkey, and
+          ansible_ssh_private_key_file. Define them in inventory, group_vars, or
+          extra variables; the private key must match common_deploy_ssh_pubkey.
 
   roles:
     - role: common
@@ -46,22 +43,23 @@
     - role: agent-host
       tags: [agent-host, app]
 
-
 - name: Final verification
   hosts: all
   gather_facts: no
   become: no
 
   vars:
-    deploy_user: deploy
+    ansible_user: "{{ common_deploy_user }}"
+  pre_tasks:
+    - name: Reset bootstrap SSH connection before final verification
+      ansible.builtin.meta: reset_connection
 
   tasks:
-    - name: Test SSH as deploy user
+    - name: Test SSH as the configured deploy user
       ansible.builtin.wait_for_connection:
         timeout: 30
-      vars:
-        ansible_user: "{{ deploy_user }}"
-        ansible_ssh_pass: ""
+      # The initial inventory connection uses the bootstrap account. Subsequent
+      # inventory runs should use this account and key authentication.
 
     - name: Summary
       ansible.builtin.debug:
@@ -69,7 +67,7 @@
           VPS setup complete.
 
           Server: {{ inventory_hostname }} ({{ ansible_host }})
-          User: {{ deploy_user }}
+          User: {{ common_deploy_user }}
 
           Installed:
           - Essential packages
@@ -84,7 +82,9 @@
           - SSH key required
 
           Next steps:
-          1. ssh {{ deploy_user }}@{{ ansible_host }}
-          2. {{ agent_host_command | default('openclaw') }} init
-          3. Configure required credentials
-          4. sudo systemctl enable --now {{ agent_host_service_name | default('openclaw') }}
+          1. ssh {{ common_deploy_user }}@{{ ansible_host }}
+          2. {{ agent_host_executable | default('/usr/local/bin/openclaw') }} setup (or onboard)
+          3. Configure credentials in /home/{{ common_deploy_user }}/.openclaw/openclaw.json,
+             or set OPENCLAW_CONFIG_PATH for a different file.
+          4. Run {{ agent_host_executable | default('/usr/local/bin/openclaw') }} gateway run
+             in the foreground to verify configuration before enabling the service.

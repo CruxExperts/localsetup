@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.3
+version: 4.4
 owner_skill: ls-docs-organization
 ---
 
@@ -59,7 +59,7 @@ Released under the MIT License. See the repository root [LICENSE](../../LICENSE)
 
 - **Run decision tree:** Load workflow package `ls-workflow-spec-clarify-reverse`; see [DECISION_TREE_WORKFLOW.md](DECISION_TREE_WORKFLOW.md).
 - **Process queue / PRDs:** Load `ls-workflow-queue-batch-implement`; see [PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md](PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md), [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md).
-- **Agent Q ship/ingest (file_drop or mail):** Load `ls-workflow-transport-handoff` for the orchestration flow and `ls-agentq-transport` for the transport capability; see [AGENTIC_AGENT_Q_SCENARIOS.md](AGENTIC_AGENT_Q_SCENARIOS.md), `ls/tools/agentq_transport_client/docs/USER_GUIDE.md`; mail strict path uses `ls-mail-protocol-control` with `preencrypted_openpgp_armored`.
+- **Agent Q ship/ingest (file_drop or mail):** Load `ls-agentq-transport` for the handoff flow and transport capability; see [AGENTIC_AGENT_Q_SCENARIOS.md](AGENTIC_AGENT_Q_SCENARIOS.md), `ls/tools/agentq_transport_client/docs/USER_GUIDE.md`; mail strict path uses `ls-mail-protocol-control` with `preencrypted_openpgp_armored`.
 - **Umbrella workflow:** Load `ls-workflow-umbrella-run`; see [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md).
 - **Create a new skill:** Load `ls-skill-creator`; see [SKILL_INTEROPERABILITY.md](SKILL_INTEROPERABILITY.md).
 - **Create or update a workflow package:** Follow [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) and [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md); edit `ls/workflows/<package>/workflow.yaml`, then regenerate docs.
@@ -68,6 +68,6 @@ Released under the MIT License. See the repository root [LICENSE](../../LICENSE)
 - **Audit and scrub the public skill index:** Run `uv run --locked python ls/tools/skill_index_scrub.py` to check for dead URLs, stub/placeholder descriptions, and schema gaps. Add `--fix` to fetch real descriptions from upstream and write them back. Add `--report FILE` for a GFM report.
 - **Tmux shared session and sudo:** Load workflow package `ls-workflow-ops-tmux-session`; use `ls/tools/tmux_ops` (`pick`, `probe`, `run`, `status`, `cancel`). The workflow package defines the minimal agent script. [ops/tmux-ops-managed.md](ops/tmux-ops-managed.md) explains the implementation, state files, JSON contracts, timeout semantics, and human/operator view. For remote/VMs: see [ops/tmux-ops-remote.md](ops/tmux-ops-remote.md) (`REMOTE_TMUX_HOST`). See [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md).
 - **Tmux-default terminal mode:** Run `ls/tools/tmux_terminal_mode enable [--mode ide|shell]` to wire up automatic tmux session launch (IDE terminal profile or shell RC auto-attach) and inject the mandatory agent ops rule. `disable` restores originals from backup. `status` reports all layers. See [TMUX_TERMINAL_MODE.md](TMUX_TERMINAL_MODE.md).
-- **Run framework audit:** Load `ls-workflow-audit-framework` for the workflow or `ls-framework-audit` for the capability; run from repo root: `python ls/skills/ls-framework-audit/scripts/run_framework_audit.py --output /path/to/report.md` (or set `LOCALSETUP_AUDIT_OUTPUT`). No `--deep` in the current script; if docs elsewhere mention Deep Analysis, treat as backlog until the audit skill ships it. See [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md).
-- **Run markdown reference audit:** Load `ls-workflow-audit-markdown-references` for the workflow or `ls-markdown-reference-validator` for the capability; run `python ls/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py --force --reason manual` (uses YAML sidecar config and writes markdown report). Use this for periodic integrity checks across docs/skills/templates/global Kilo markdown surfaces.
+- **Run framework audit:** Load `ls-framework-audit`; run from repo root: `python ls/skills/ls-framework-audit/scripts/run_framework_audit.py --output /path/to/report.md` (or set `LOCALSETUP_AUDIT_OUTPUT`). No `--deep` in the current script; if docs elsewhere mention Deep Analysis, treat as backlog until the audit skill ships it. See [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md).
+- **Run markdown reference audit:** Load `ls-markdown-reference-validator`; run `python ls/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py --force --reason manual` (uses the repo-only YAML sidecar profile and writes ignored local state). Use the explicit host-aware profile only when local adapter or host instruction surfaces are required.
 - **Route docs creation and updates:** Load `ls-docs-organization`; see `ls/skills/ls-docs-organization/SKILL.md`. Use it to classify docs, choose folder slugs, and keep indexes aligned.

@@ -6,4 +6,9 @@ metadata:
 ---
 
 Use this pipeline package to prepare a repo for publishing.
-Primary references: `ls/docs/VERSIONING.md` and `ls/docs/WORKFLOW_QUICK_REF.md`.
+Follow [ls-github-publishing-workflow](../../skills/ls-github-publishing-workflow/SKILL.md)
+for publishing readiness, `ls-automatic-versioning` and
+[VERSIONING.md](../../docs/VERSIONING.md) for version consistency, then
+[ls-framework-audit](../../skills/ls-framework-audit/SKILL.md) for audit checks.
+These owners define the procedures. This pipeline prepares readiness evidence;
+release actions remain with the publishing skill and its authorization gates.

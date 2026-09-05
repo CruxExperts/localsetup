@@ -384,7 +384,7 @@ After creating your evaluation file, you can use the provided evaluation harness
 1. **Run With Dependencies**
 
    ```bash
-   uv run --with 'mcp>=1.1.0' --with 'anthropic>=0.39.0' --with 'openai>=1.0.0' -- python scripts/evaluation.py --help
+   uv run --with 'mcp>=2,<3' --with 'anthropic>=0.39.0' --with 'openai>=1.0.0' -- python scripts/evaluation.py --help
    ```
 
    Or add packages to an existing uv project:
@@ -417,66 +417,47 @@ Evaluation files use XML format with `<qa_pair>` elements:
 
 ## Running Evaluations
 
-The evaluation script (`scripts/evaluation.py`) supports three transport types:
+The evaluation script (`scripts/evaluation.py`) supports three transport types.
 
 **Important:**
-- **stdio transport**: The evaluation script automatically launches and manages the MCP server process for you. Do not run the server manually.
-- **sse/http transports**: You must start the MCP server separately before running the evaluation. The script connects to the already-running server at the specified URL.
+- **stdio**: The script launches and manages the MCP server process. Do not start it separately.
+- **sse** and **streamable-http**: Start the server first; the script connects to its URL.
 
-### 1. Local STDIO Server
-
-For locally-run MCP servers (script launches the server automatically):
+### 1. Local stdio server
 
 ```bash
-python scripts/evaluation.py \
-  -t stdio \
-  -c python \
-  -a my_mcp_server.py \
-  evaluation.xml
+python scripts/evaluation.py -t stdio -c python -a my_mcp_server.py evaluation.xml
 ```
 
-With environment variables:
+Pass server environment variables explicitly when required:
+
 ```bash
-python scripts/evaluation.py \
-  -t stdio \
-  -c python \
-  -a my_mcp_server.py \
-  -e API_KEY=abc123 \
-  -e DEBUG=true \
-  evaluation.xml
+python scripts/evaluation.py -t stdio -c python -a my_mcp_server.py \
+  -e API_KEY=abc123 -e DEBUG=true evaluation.xml
 ```
 
-### 2. Server-Sent Events (SSE)
+### 2. Legacy SSE server
 
-For SSE-based MCP servers (you must start the server first):
+Use SSE only for an existing compatibility requirement:
 
 ```bash
-python scripts/evaluation.py \
-  -t sse \
-  -u https://example.com/mcp \
-  -H "Authorization: Bearer token123" \
-  -H "X-Custom-Header: value" \
-  evaluation.xml
+python scripts/evaluation.py -t sse -u https://example.com/mcp \
+  -H "Authorization: Bearer token123" evaluation.xml
 ```
 
-### 3. HTTP (Streamable HTTP)
-
-For HTTP-based MCP servers (you must start the server first):
+### 3. Streamable HTTP server
 
 ```bash
-python scripts/evaluation.py \
-  -t http \
-  -u https://example.com/mcp \
-  -H "Authorization: Bearer token123" \
-  evaluation.xml
+python scripts/evaluation.py -t streamable-http -u https://example.com/mcp \
+  -H "Authorization: Bearer token123" evaluation.xml
 ```
 
 ## Command-Line Options
 
-```
-usage: evaluation.py [-h] [-t {stdio,sse,http}] [-m MODEL] [-c COMMAND]
-                     [-a ARGS [ARGS ...]] [-e ENV [ENV ...]] [-u URL]
-                     [-H HEADERS [HEADERS ...]] [-o OUTPUT]
+```text
+usage: evaluation.py [-h] [-t {stdio,sse,streamable-http}] [-m MODEL]
+                     [-c COMMAND] [-a ARGS [ARGS ...]] [-e ENV [ENV ...]]
+                     [-u URL] [-H HEADERS [HEADERS ...]] [-o OUTPUT]
                      eval_file
 
 positional arguments:
@@ -484,18 +465,18 @@ positional arguments:
 
 optional arguments:
   -h, --help            Show help message
-  -t, --transport       Transport type: stdio, sse, or http (default: stdio)
-  -m, --model           Claude model to use (default: claude-3-7-sonnet-20250219)
-  -o, --output          Output file for report (default: print to stdout)
+  -t, --transport       Transport: stdio, sse, or streamable-http
+  -m, --model           Provider model override
+  -o, --output          Output report path; defaults to stdout
 
 stdio options:
-  -c, --command         Command to run MCP server (e.g., python, node)
-  -a, --args            Arguments for the command (e.g., server.py)
+  -c, --command         MCP server command
+  -a, --args            MCP server command arguments
   -e, --env             Environment variables in KEY=VALUE format
 
-sse/http options:
+remote transport options:
   -u, --url             MCP server URL
-  -H, --header          HTTP headers in 'Key: Value' format
+  -H, --header          HTTP header in 'Key: Value' format
 ```
 
 ## Output
@@ -553,14 +534,14 @@ Here's a complete example of creating and running an evaluation:
 2. **Prepare dependencies**:
 
 ```bash
-uv run --with 'mcp>=1.1.0' --with 'anthropic>=0.39.0' --with 'openai>=1.0.0' -- python scripts/evaluation.py --help
+uv run --with 'mcp>=2,<3' --with 'anthropic>=0.39.0' --with 'openai>=1.0.0' -- python scripts/evaluation.py --help
 export ANTHROPIC_API_KEY=your_api_key
 ```
 
 3. **Run evaluation**:
 
 ```bash
-uv run --with 'mcp>=1.1.0' --with 'anthropic>=0.39.0' --with 'openai>=1.0.0' -- python scripts/evaluation.py \
+uv run --with 'mcp>=2,<3' --with 'anthropic>=0.39.0' --with 'openai>=1.0.0' -- python scripts/evaluation.py \
   -t stdio \
   -c python \
   -a github_mcp_server.py \

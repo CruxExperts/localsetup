@@ -1,14 +1,14 @@
 ---
 status: ACTIVE
-version: 4.3
+version: 4.4
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 42feb5176a538f7b3953bc51866cca08b8bdb4ec3a60beac1c32847f8abde74a
+  source_provenance_hash: 63ed750f9b865fb766e21a67dfe80aa9fce422496d54ce403c730a4081b1f6a4
   emitter: generate-docs
-framework_version: 4.3.9
-source_commit: a670cedf63b791dd886015c4fdfa88c425b9e8d2
-artifact_sha256: 482039214f0d41c77d57f18f327704e6b6d2d4124ce7664f81b4436af6957d61
+framework_version: 4.4.0
+source_commit: e8b7971a5b63885f157a2bdfaed90c276f77b72f
+artifact_sha256: eb5ed6c4aa75e23ca5b125eb83b512ae498d6feb21b0a4fd1231734453f82abe
 ---
 # Workflow quick reference
 
@@ -18,15 +18,9 @@ This page is generated from `ls/workflows/*/workflow.yaml`.
 
 | Workflow ID | Name | Aliases | Package | Required skills |
 |------------|------|---------|---------|-----------------|
-| `audit-framework` | Audit Framework | run audit; framework audit | `ls-workflow-audit-framework` | `ls-framework-audit` |
-| `audit-markdown-references` | Audit Markdown References | reference audit; link integrity audit | `ls-workflow-audit-markdown-references` | `ls-markdown-reference-validator` |
 | `codex-github-issue-goal-loop` | Codex GitHub Issue Goal Loop | codex github issue goal loop; github issue goal loop; slash goal issue sweep; github maintenance goal | `ls-workflow-codex-github-issue-goal-loop` | `ls-framework-compliance`; `ls-git-workflows`; `ls-safety-and-backup`; `ls-test-runner`; `ls-tdd-guide`; `ls-receiving-code-review`; `ls-pr-reviewer`; `ls-github-publishing-workflow`; `ls-automatic-versioning`; `ls-framework-audit` |
-| `codex-heartbeat` | Codex Heartbeat | codex heartbeat; heartbeat harness; harness heartbeat | `ls-workflow-codex-heartbeat` | `ls-codex-heartbeat`; `ls-cron-orchestrator`; `ls-framework-compliance` |
-| `context-index-query` | Context Index Query | query context index; context search | `ls-workflow-context-index-query` | `ls-context-index` |
-| `context-index-refresh` | Context Index Refresh | context refresh; refresh context index | `ls-workflow-context-index-refresh` | `ls-context-index` |
-| `documentation-alignment` | Documentation Alignment | docs alignment; documentation sync; repo docs audit | `ls-workflow-documentation-alignment` | `ls-documentation-alignment`; `ls-docs-organization`; `ls-markdown-reference-validator`; `ls-script-and-docs-quality`; `ls-test-runner` |
-| `ops-guarded` | Ops Guarded | lazy admin; manual execution | `ls-workflow-ops-guarded` | `ls-framework-compliance` |
-| `ops-tmux-session` | Ops Tmux Session | tmux shared session; sudo tmux; elevated permissions; interactive sudo prompt; sudo password prompt handoff; require_escalated; pseudo-terminal ops; managed tmux ops | `ls-workflow-ops-tmux-session` | n/a |
+| `ops-guarded` | Ops Guarded | lazy admin; manual execution | `ls-workflow-ops-guarded` | `ls-framework-compliance`; `ls-safety-and-backup` |
+| `ops-tmux-session` | Ops Tmux Session | tmux shared session; sudo tmux; elevated permissions; interactive sudo prompt; sudo password prompt handoff; require_escalated; pseudo-terminal ops; managed tmux ops | `ls-workflow-ops-tmux-session` | `ls-safety-and-backup` |
 | `pipeline-git-repair-hygiene` | Pipeline Git Repair Hygiene | git repair pipeline | `ls-workflow-pipeline-git-repair-hygiene` | `ls-unfuck-my-git-state`; `ls-git-workflows`; `ls-framework-compliance` |
 | `pipeline-pr-feedback-loop` | Pipeline PR Feedback Loop | pr feedback pipeline | `ls-workflow-pipeline-pr-feedback-loop` | `ls-receiving-code-review`; `ls-tdd-guide`; `ls-pr-reviewer` |
 | `pipeline-pre-publish` | Pipeline Pre Publish | pre publish pipeline | `ls-workflow-pipeline-pre-publish` | `ls-github-publishing-workflow`; `ls-automatic-versioning`; `ls-framework-audit` |
@@ -37,32 +31,16 @@ This page is generated from `ls/workflows/*/workflow.yaml`.
 | `planning-critic-loop` | Planning Critic Loop | planning critic loop; planning agent critic; critic reviewed plan | `ls-workflow-planning-critic-loop` | n/a |
 | `queue-batch-implement` | Queue Batch Implement | Agent Q queue; process PRDs | `ls-workflow-queue-batch-implement` | n/a |
 | `repo-finalizer` | Repo Finalizer | repo finalizer; finalizer harness; finalization checkpoint | `ls-workflow-repo-finalizer` | `ls-framework-compliance`; `ls-git-workflows` |
-| `skills-index-refresh` | Skills Index Refresh | refresh skills; scrub index | `ls-workflow-skills-index-refresh` | `ls-skill-discovery` |
 | `spec-clarify-reverse` | Reverse Prompt Spec Clarify | decision tree; reverse prompt | `ls-workflow-spec-clarify-reverse` | n/a |
 | `tmux-terminal-mode` | Tmux Terminal Mode | tmux terminal mode; always-on tmux | `ls-workflow-tmux-terminal-mode` | n/a |
-| `transport-handoff` | Transport Handoff | Agent Q bidirectional | `ls-workflow-transport-handoff` | `ls-agentq-transport`; `ls-mail-protocol-control` |
 | `umbrella-run` | Umbrella Run | umbrella workflow | `ls-workflow-umbrella-run` | n/a |
 
 ## Common Phrases
 
-- "run audit" -> `audit-framework`
-- "framework audit" -> `audit-framework`
-- "reference audit" -> `audit-markdown-references`
-- "link integrity audit" -> `audit-markdown-references`
 - "codex github issue goal loop" -> `codex-github-issue-goal-loop`
 - "github issue goal loop" -> `codex-github-issue-goal-loop`
 - "slash goal issue sweep" -> `codex-github-issue-goal-loop`
 - "github maintenance goal" -> `codex-github-issue-goal-loop`
-- "codex heartbeat" -> `codex-heartbeat`
-- "heartbeat harness" -> `codex-heartbeat`
-- "harness heartbeat" -> `codex-heartbeat`
-- "query context index" -> `context-index-query`
-- "context search" -> `context-index-query`
-- "context refresh" -> `context-index-refresh`
-- "refresh context index" -> `context-index-refresh`
-- "docs alignment" -> `documentation-alignment`
-- "documentation sync" -> `documentation-alignment`
-- "repo docs audit" -> `documentation-alignment`
 - "lazy admin" -> `ops-guarded`
 - "manual execution" -> `ops-guarded`
 - "tmux shared session" -> `ops-tmux-session`
@@ -90,11 +68,8 @@ This page is generated from `ls/workflows/*/workflow.yaml`.
 - "repo finalizer" -> `repo-finalizer`
 - "finalizer harness" -> `repo-finalizer`
 - "finalization checkpoint" -> `repo-finalizer`
-- "refresh skills" -> `skills-index-refresh`
-- "scrub index" -> `skills-index-refresh`
 - "decision tree" -> `spec-clarify-reverse`
 - "reverse prompt" -> `spec-clarify-reverse`
 - "tmux terminal mode" -> `tmux-terminal-mode`
 - "always-on tmux" -> `tmux-terminal-mode`
-- "Agent Q bidirectional" -> `transport-handoff`
 - "umbrella workflow" -> `umbrella-run`

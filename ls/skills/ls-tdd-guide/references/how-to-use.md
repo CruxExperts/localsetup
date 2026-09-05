@@ -51,7 +51,7 @@ Framework: Pytest
 
 ### Example 1: Generate Tests from Code
 
-```
+````text
 @tdd-guide
 
 Generate comprehensive tests for this function:
@@ -69,7 +69,7 @@ Include:
 - Error cases
 - Boundary values
 - Edge cases
-```
+````
 
 ### Example 2: Improve Coverage
 
@@ -90,7 +90,7 @@ Prioritize critical paths.
 
 ### Example 3: Review Test Quality
 
-```
+````text
 @tdd-guide
 
 Review the quality of these tests:
@@ -113,11 +113,11 @@ Suggest improvements for:
 - Assertion quality
 - Naming conventions
 - Test organization
-```
+````
 
 ### Example 4: Framework Migration
 
-```
+````text
 @tdd-guide
 
 Convert these Jest tests to Pytest:
@@ -137,7 +137,7 @@ describe('Calculator', () => {
 ```
 
 Maintain test structure and coverage.
-```
+````
 
 ### Example 5: Generate Test Fixtures
 
@@ -162,20 +162,21 @@ Generate 5 fixtures with edge cases:
 ## What to Provide
 
 ### For Test Generation
-- Source code (TypeScript, JavaScript, Python, or Java)
-- Requirements (user stories, API specs, or business rules)
-- Testing framework preference (Jest, Pytest, JUnit, Vitest)
+- Requirements JSON containing user stories, acceptance criteria, or API specifications
+- Compatible generator framework/language pair: Jest, Vitest, or Mocha with JavaScript/TypeScript; pytest with Python; JUnit with Java
+- Test scope: unit, integration, or E2E
 - Specific scenarios to cover (optional)
 
 ### For Coverage Analysis
-- Coverage report (LCOV, JSON, or XML format)
+- LCOV, Istanbul JSON, Cobertura XML, or JaCoCo XML report
 - Source code files (optional, for context)
-- Coverage threshold target (e.g., 80%)
+- Coverage threshold from 0 through 100
 
 ### For TDD Workflow
-- Feature requirements
+- Feature requirement
 - Current phase (RED, GREEN, or REFACTOR)
-- Test code and implementation (for validation)
+- Test and implementation code required by that phase
+- Structured execution evidence; RED additionally requires assertion/expectation failure kind and message
 
 ### For Quality Review
 - Existing test code
@@ -289,21 +290,18 @@ Framework: Jest (test.each)
 **Issue**: Generated tests don't match my framework syntax
 - **Solution**: Explicitly specify framework (e.g., "using Pytest" or "with Jest")
 
-**Issue**: Coverage analysis shows 0% coverage
-- **Solution**: Verify coverage report format (LCOV, JSON, XML) and try including raw content
+**Issue**: Coverage analysis reports a gap or `null` branch coverage
+- **Solution**: Verify LCOV, Istanbul JSON, Cobertura XML, or JaCoCo XML input. `null` means the file has no branches and is not a branch gap.
 
-**Issue**: TDD workflow validation fails
-- **Solution**: Ensure you're providing test results (passed/failed status) along with code
+**Issue**: RED phase validation fails
+- **Solution**: Supply a real failed run with `status: failed`, `failure_kind: assertion` or `expectation`, and a non-empty `failure_message`. Syntax, import, collection, and infrastructure failures do not complete RED.
 
 **Issue**: Too many recommendations
 - **Solution**: Ask for "top 3 P0 recommendations only" for focused output
 
 ## Version Support
 
-- **Node.js**: 16+ (Jest 29+, Vitest 0.34+)
-- **Python**: 3.8+ (Pytest 7+)
-- **Java**: 11+ (JUnit 5.9+)
-- **TypeScript**: 4.5+
+The single authoritative set of runtime and framework floors is the [compatibility matrix](framework-guide.md#compatibility-matrix). Use that matrix rather than copying versions into prompts or automation.
 
 ## Feedback
 

@@ -23,6 +23,14 @@ POINTER_TEXT = (
     "ls/docs/PYTHON_ARCHITECTURE_STANDARD.md; keep entrypoints thin, package "
     "responsibilities explicit, and existing debt baseline-managed."
 )
+RESOLVER_POINTER_TEXT = (
+    "Python architecture: new and substantially refactored Python tooling follows "
+    "`localsetup://doc/PYTHON_ARCHITECTURE_STANDARD.md`; keep entrypoints thin, package "
+    "responsibilities explicit, and existing debt baseline-managed."
+)
+RESOLVER_POINTER_PATHS = (
+    "ls/skills/ls-context/SKILL.md",
+)
 REQUIRED_POINTER_PATHS = (
     "AGENTS.md",
     "ls/docs/TOOLING_POLICY.md",
@@ -148,7 +156,8 @@ def evaluate_contract_files(repo_root: Path) -> list[Finding]:
 
     for rel_path in REQUIRED_POINTER_PATHS:
         path = repo_root / rel_path
-        if not path.is_file() or POINTER_TEXT not in path.read_text(encoding="utf-8", errors="replace"):
+        pointer = RESOLVER_POINTER_TEXT if rel_path in RESOLVER_POINTER_PATHS else POINTER_TEXT
+        if not path.is_file() or pointer not in path.read_text(encoding="utf-8", errors="replace"):
             findings.append(
                 Finding(
                     code="PYA006_REQUIRED_TEMPLATE_POINTER_MISSING",

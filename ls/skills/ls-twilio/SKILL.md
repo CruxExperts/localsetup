@@ -1,6 +1,6 @@
 ---
 name: ls-twilio
-description: Inventory wrapper for Twilio AI skills and MCP surfaces. Use when planning
+description: Inventory wrapper for Twilio AI skill paths. Use when planning
   Twilio messaging, voice, Verify, SendGrid, or communications integrations.
 metadata:
   version: '1.0'
@@ -8,7 +8,7 @@ extensions:
   external_skill:
     source_kind: wrapper
     source_url: https://github.com/twilio/ai
-    source_path: <repository inventory>
+    source_path: .
     source_commit: aa67a6d476107d6742f31a53d68b10749552930f
     source_ref: main
     source_sha256: 1bdb513e484c15fafbc8f9d3187d5c239a4c7d2afe4faf72c7fcb45bbcdffb07
@@ -17,13 +17,13 @@ extensions:
     vetting_status: provenance-recorded-no-bundled-tooling-executed
 ---
 
-# Twilio Ai Skill And Mcp Bundle
+# Twilio AI Skill-Path Inventory
 
-Use this skill when working on Twilio AI skill and MCP bundle tasks.
+Use this skill when planning from the pinned Twilio AI skill-path inventory.
 
 ## Workflow
 
-- Check whether the task needs Twilio REST APIs, messaging/voice webhooks, SendGrid email, or MCP tooling.
+- Check whether the task needs Twilio REST APIs, messaging/voice webhooks, or SendGrid email.
 - Protect account SIDs, auth tokens, API keys, phone numbers, message bodies, call recordings, and webhook secrets.
 - Use test credentials or sandbox numbers where available before production sends or calls.
 
@@ -43,6 +43,6 @@ See [upstream coverage](./references/upstream-coverage.md) for the compact inven
 
 - Source: `https://github.com/twilio/ai`
 - Ref: `main` at `aa67a6d476107d6742f31a53d68b10749552930f`
-- Source path: `<repository inventory>`
+- Source path: `.` (upstream repository root; see the ordered manifest and aggregate recipe in [upstream coverage](./references/upstream-coverage.md))
 - License classification: `MIT`
 - Source SHA-256: `1bdb513e484c15fafbc8f9d3187d5c239a4c7d2afe4faf72c7fcb45bbcdffb07`

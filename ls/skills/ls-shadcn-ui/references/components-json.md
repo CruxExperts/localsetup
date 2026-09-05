@@ -5,8 +5,8 @@ files and how it writes imports.
 
 ## Fields To Inspect
 
-- `style`: style family such as `new-york`, or style values that encode Radix
-  or Base variants in newer setups.
+- `style`: style family such as `new-york`, or style values that encode Base,
+  Radix, or React Aria variants in newer setups.
 - `tsx`: whether generated components use TypeScript/TSX.
 - `rsc`: whether React Server Components are expected.
 - `tailwind`: config, CSS file, base color, CSS variables, and prefix.
@@ -18,11 +18,10 @@ files and how it writes imports.
 ## Current Base Selection Fact
 
 The current public schema does not expose a top-level `base` field. Base choice
-is selected during setup with CLI controls such as `--base radix|base`, style
-values such as `radix-nova` or `base-nova`, and the CLI `info` output. Base UI
-is the default for new projects as of July 2026; choose Radix with
-`-b radix`, `--base radix`, or the equivalent flag confirmed by current help
-when maintaining Radix compatibility.
+is selected during setup with `--base base|radix|aria`, style values such as
+`base-nova`, `radix-nova`, or `aria-nova`, and the CLI `info` output. Base UI is
+the default for new projects as of July 2026; Radix and React Aria remain
+supported alternatives.
 
 ## Package Imports
 

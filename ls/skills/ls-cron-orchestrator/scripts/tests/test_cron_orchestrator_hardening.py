@@ -2,6 +2,7 @@ import subprocess
 import sys
 import os
 import stat
+import time
 from pathlib import Path
 
 import yaml
@@ -371,3 +372,288 @@ def test_missing_pyyaml_uses_shared_dependency_error(tmp_path: Path) -> None:
     assert proc.returncode == 2
     assert "[FATAL] Missing Python packages: yaml" in proc.stderr
     assert "uv sync --locked --no-dev" in proc.stderr
+
+
+def test_validate_enforces_linux_cron_field_semantics(tmp_path: Path) -> None:
+    manifest = tmp_path / "manifest.yaml"
+    valid_payload = {
+        "triggers": {"nightly": {"schedule": "*/15 0-23 1,15 1-12 0-6"}},
+        "tasks": [{"id": "task", "trigger": "nightly", "sequence_order": 1, "command": ["python3", "--version"]}],
+    }
+    _write_manifest(manifest, valid_payload)
+
+    assert _run_cron_ctl(manifest, "validate").returncode == 0
+
+    for schedule in ("60 0 * * *", "*/0 * * * *", "0 0 0 * *", "0 0 * 13 *", "0 0 * * 8"):
+        _write_manifest(
+            manifest,
+            {
+                "triggers": {"nightly": {"schedule": schedule}},
+                "tasks": [{"id": "task", "trigger": "nightly", "sequence_order": 1, "command": ["python3", "--version"]}],
+            },
+        )
+
+        proc = _run_cron_ctl(manifest, "validate")
+
+        assert proc.returncode == 1
+        assert "triggers.nightly.schedule" in proc.stderr
+
+
+def test_validate_requires_typed_task_order_and_enabled_fields(tmp_path: Path) -> None:
+    manifest = tmp_path / "manifest.yaml"
+    payload = {
+        "triggers": {"nightly": {"schedule": "0 2 * * *"}},
+        "tasks": [{"id": "task", "trigger": "nightly", "command": ["python3", "--version"]}],
+    }
+    _write_manifest(manifest, payload)
+
+    missing_order = _run_cron_ctl(manifest, "validate")
+
+    assert missing_order.returncode == 1
+    assert "tasks[0].sequence_order: is required" in missing_order.stderr
+    payload["tasks"][0]["sequence_order"] = 1.0
+    payload["tasks"][0]["enabled"] = "true"
+    _write_manifest(manifest, payload)
+
+    wrong_order_type = _run_cron_ctl(manifest, "validate")
+
+    assert wrong_order_type.returncode == 1
+    assert "tasks[0].sequence_order: must be an integer" in wrong_order_type.stderr
+
+    payload["tasks"][0]["sequence_order"] = 1
+    _write_manifest(manifest, payload)
+
+    wrong_enabled_type = _run_cron_ctl(manifest, "validate")
+
+    assert wrong_enabled_type.returncode == 1
+    assert "tasks[0].enabled: must be a boolean" in wrong_enabled_type.stderr
+
+
+def test_run_trigger_rejects_negative_delay_without_type_coercion(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    manifest = tmp_path / "manifest.yaml"
+    _write_manifest(
+        manifest,
+        {
+            "triggers": {"nightly": {"schedule": "0 2 * * *"}},
+            "tasks": [{"id": "task", "trigger": "nightly", "sequence_order": 1, "command": ["python3", "--version"]}],
+        },
+    )
+
+    proc = _run_trigger(manifest, "--repo-root", str(repo_root), "--delay-seconds", "-1", "nightly")
+
+    assert proc.returncode == 1
+    assert "delay_seconds: must be in the range 0..86400" in proc.stderr
+
+
+def test_install_emits_reviewable_user_crontab_fragment(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    manifest = tmp_path / "manifest.yaml"
+    output = tmp_path / "cron" / "fragment"
+    _write_manifest(
+        manifest,
+        {
+            "triggers": {"nightly": {"schedule": "0 2 * * *"}},
+            "tasks": [{"id": "task", "trigger": "nightly", "sequence_order": 1, "command": ["python3", "--version"]}],
+        },
+    )
+
+    proc = _run_cron_ctl(manifest, "install", "--repo-root", str(repo_root), "--output", str(output))
+    fragment = output.read_text(encoding="utf-8")
+
+    assert proc.returncode == 0
+    assert fragment.startswith("# Generated user-crontab fragment; merge manually after inspecting the current crontab.\n")
+    assert "0 2 * * *\t" in fragment
+    assert "/etc/cron.d" not in fragment
+
+
+def test_run_trigger_streams_output_and_bounds_log_tails(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    log_dir = tmp_path / "logs"
+    manifest = tmp_path / "manifest.yaml"
+    _write_manifest(
+        manifest,
+        {
+            "triggers": {"nightly": {"schedule": "0 2 * * *"}},
+            "tasks": [
+                {
+                    "id": "noisy",
+                    "trigger": "nightly",
+                    "sequence_order": 1,
+                    "command": [
+                        sys.executable,
+                        "-c",
+                        "import sys; print('A' * 5000, flush=True); print('B' * 5000, file=sys.stderr, flush=True)",
+                    ],
+                }
+            ],
+        },
+    )
+
+    proc = _run_trigger(manifest, "--repo-root", str(repo_root), "--log-dir", str(log_dir), "nightly")
+    log_text = (log_dir / "nightly.log").read_text(encoding="utf-8")
+
+    assert proc.returncode == 0
+    assert "A" * 5000 in proc.stdout
+    assert "A" * 3999 in log_text
+    assert "B" * 3999 in log_text
+    assert "A" * 4000 not in log_text
+    assert "B" * 4000 not in log_text
+    assert "B" * 4001 not in log_text
+
+
+def test_run_trigger_timeout_kills_process_and_logs_outcome(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    log_dir = tmp_path / "logs"
+    manifest = tmp_path / "manifest.yaml"
+    _write_manifest(
+        manifest,
+        {
+            "triggers": {"nightly": {"schedule": "0 2 * * *"}},
+            "tasks": [
+                {
+                    "id": "slow",
+                    "trigger": "nightly",
+                    "sequence_order": 1,
+                    "timeout_seconds": 1,
+                    "command": [sys.executable, "-c", "import time; print('starting', flush=True); time.sleep(30)"],
+                }
+            ],
+        },
+    )
+
+    started = time.monotonic()
+    proc = _run_trigger(manifest, "--repo-root", str(repo_root), "--log-dir", str(log_dir), "nightly")
+    elapsed = time.monotonic() - started
+    log_text = (log_dir / "nightly.log").read_text(encoding="utf-8")
+
+    assert proc.returncode == 124
+    assert elapsed < 10
+    assert "starting" in proc.stdout
+    assert "task_timeout id=slow timeout_seconds=1" in log_text
+    assert "runner_exit trigger=nightly exit_code=124" in log_text
+
+
+def test_run_trigger_reports_closed_output_sink_without_stalling(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    log_dir = tmp_path / "logs"
+    manifest = tmp_path / "manifest.yaml"
+    _write_manifest(
+        manifest,
+        {
+            "triggers": {"nightly": {"schedule": "0 2 * * *"}},
+            "tasks": [
+                {
+                    "id": "noisy",
+                    "trigger": "nightly",
+                    "sequence_order": 1,
+                    "command": [sys.executable, "-c", "print('x' * 100000, flush=True)"],
+                }
+            ],
+        },
+    )
+
+    runner = subprocess.Popen(
+        [sys.executable, str(RUN_TRIGGER), "--manifest", str(manifest), "--repo-root", str(repo_root), "--log-dir", str(log_dir), "nightly"],
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    assert runner.stdout is not None
+    assert runner.stderr is not None
+    runner.stdout.close()
+    stderr = runner.stderr.read()
+
+    assert runner.wait(timeout=10) == 1
+    assert "Task noisy output relay failed" in stderr
+    log_text = (log_dir / "nightly.log").read_text(encoding="utf-8")
+    assert "task_output_error id=noisy detail=stdout relay failed: BrokenPipeError:" in log_text
+    assert "runner_exit trigger=nightly exit_code=1 reason=output_relay_failed" in log_text
+
+
+def test_add_task_rejects_out_of_range_sequence_order_without_writing(tmp_path: Path) -> None:
+    manifest = tmp_path / "manifest.yaml"
+    _write_manifest(
+        manifest,
+        {
+            "triggers": {"nightly": {"schedule": "0 2 * * *"}},
+            "tasks": [{"id": "last", "trigger": "nightly", "sequence_order": 86400, "command": ["python3", "--version"]}],
+        },
+    )
+    before = manifest.read_text(encoding="utf-8")
+
+    explicit = _run_cron_ctl(
+        manifest,
+        "add-task",
+        "--trigger",
+        "nightly",
+        "--id",
+        "too-high",
+        "--sequence-order",
+        "86401",
+        "--command",
+        "python3 --version",
+    )
+    computed = _run_cron_ctl(
+        manifest,
+        "add-task",
+        "--trigger",
+        "nightly",
+        "--id",
+        "after-last",
+        "--command",
+        "python3 --version",
+    )
+
+    assert explicit.returncode == 1
+    assert computed.returncode == 1
+    assert "sequence_order: must be in the range 0..86400" in explicit.stderr
+    assert "sequence_order: must be in the range 0..86400" in computed.stderr
+    assert manifest.read_text(encoding="utf-8") == before
+
+
+def test_run_trigger_relay_failure_takes_precedence_over_timeout(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    log_dir = tmp_path / "logs"
+    manifest = tmp_path / "manifest.yaml"
+    _write_manifest(
+        manifest,
+        {
+            "triggers": {"nightly": {"schedule": "0 2 * * *"}},
+            "tasks": [
+                {
+                    "id": "slow-noisy",
+                    "trigger": "nightly",
+                    "sequence_order": 1,
+                    "timeout_seconds": 1,
+                    "command": [sys.executable, "-c", "import time; print('x' * 100000, flush=True); time.sleep(30)"],
+                }
+            ],
+        },
+    )
+
+    runner = subprocess.Popen(
+        [sys.executable, str(RUN_TRIGGER), "--manifest", str(manifest), "--repo-root", str(repo_root), "--log-dir", str(log_dir), "nightly"],
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    assert runner.stdout is not None
+    assert runner.stderr is not None
+    runner.stdout.close()
+    stderr = runner.stderr.read()
+
+    assert runner.wait(timeout=10) == 1
+    assert "Task slow-noisy output relay failed" in stderr
+    log_text = (log_dir / "nightly.log").read_text(encoding="utf-8")
+    assert "task_output_error id=slow-noisy detail=stdout relay failed: BrokenPipeError:" in log_text
+    assert "runner_exit trigger=nightly exit_code=1 reason=output_relay_failed" in log_text
+    assert "task_timeout id=slow-noisy timeout_seconds=1" not in log_text

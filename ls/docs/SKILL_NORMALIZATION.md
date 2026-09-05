@@ -1,12 +1,14 @@
 ---
 status: ACTIVE
-version: 4.3
+version: 4.4
 owner_skill: ls-skill-normalizer
 ---
 
 # Skill normalization (spec compliance and platform-neutral)
 
-**Purpose:** When importing skills or normalizing skills already in the tree, apply this doc so each skill is (1) compliant with the [Agent Skills specification](https://agentskills.io/specification), (2) document-normalized with a **user choice** when the skill is platform-specific (keep as is, keep platform-specific but normalized, or fully normalize for any platform), and (3) **tooling-normalized** so any bundled scripts match the framework's tooling standard. Normalization runs in order: **Phase 1 (SKILL.md and documents)**, then **Phase 2 (tooling)**. We do not force full platform-neutralization when the user works with one platform exclusively; Phase 1 offers options when the skill references a specific platform. The skill-importer and the standalone normalizer (ls-skill-normalizer) both use this doc as the single source of truth.
+**Purpose:** When importing skills or normalizing skills already in the tree, apply this doc so each skill is (1) compliant with the [Agent Skills specification](https://agentskills.io/specification), (2) document-normalized with a **user choice** when the skill is platform-specific (keep as is, keep platform-specific but normalized, or fully normalize for any platform), and (3) **tooling-normalized** so any bundled scripts match the framework's tooling standard. Normalization runs in order: **Phase 1 (SKILL.md and documents)**, then **Phase 2 (tooling)**. We do not force full platform-neutralization when the user works with one platform exclusively; Phase 1 offers options when the skill references a specific platform.
+
+The normative normalization execution contract is `ls/skills/ls-skill-normalizer/SKILL.md`, subject to higher-level user, repository, and safety policy. This document is its synchronized public mirror and detailed reference. If the two surfaces conflict, the skill controls: do not apply the conflicting public instruction, stop before any affected write, report the mismatch, and synchronize both surfaces in one authorized change before resuming that normalization step.
 
 ## When normalization runs
 
@@ -168,7 +170,7 @@ If the original section mentioned a specific product's secret integration (e.g. 
 1. **Determine if the skill is platform-specific**  - Check for references to a specific platform or context (e.g. OpenClaw, Cursor, product-named sections, "Integration with X", platform-specific metadata). If **not** platform-specific, go to step 4 (apply full spec + platform-neutralization, then approve and write). If **platform-specific**, go to step 2.
 2. **Offer the user a choice**  - Present: "This skill references [platform/context]. How would you like to handle it? (1) Keep as is - no platform wording changes; (2) Keep platform-specific but normalized - spec compliance and standardized wording, platform references stay; (3) Fully normalize - make it adaptable for any platform." Get the user's choice.
 3. **Apply the chosen action**  - (1) Keep as is: only ensure `name` matches directory and `metadata.version` present if missing; no other edits. (2) Platform-specific but normalized: apply spec-compliance checklist only; do not apply platform-neutralization rules (leave platform names and sections). (3) Fully normalize: apply full spec-compliance checklist and platform-neutralization rules. Produce a **summary** and **concrete list of key edits** for (2) or (3); present and get approval; if approved, write the normalized SKILL.md. For (1), no summary needed; proceed to Phase 2.
-4. **When skill is not platform-specific**  - Apply the spec-compliance checklist and platform-neutralization rules to SKILL.md (in memory or a temp copy). Produce a **summary** and **concrete list of key edits**; present to the user and get explicit approval. If approved, write the normalized SKILL.md. If not, skip (during import: copy as-is and warn; standalone: do not write).
+4. **When skill is not platform-specific**  - Apply the spec-compliance checklist and platform-neutralization rules to SKILL.md (in memory or a temp copy). Produce a **summary** and **concrete list of key edits**; present to the user and get explicit approval. If approved, write the normalized SKILL.md. If approval is not granted, standalone normalization performs no write. During import, the normalization gate remains unpassed, so the candidate must not be frozen as accepted, sandboxed as accepted, copied to the canonical tree, registered, or reported as successfully imported.
 5. Proceed to Phase 2.
 
 **Phase 2 (tooling)**

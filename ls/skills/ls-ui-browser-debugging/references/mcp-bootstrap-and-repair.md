@@ -15,13 +15,14 @@
 From this skill directory:
 
 ```bash
-python3 scripts/chrome_devtools_mcp_environment.py inspect --json
+python3 scripts/chrome_devtools_mcp_environment.py inspect --state-root <absolute-project-root> --json
 python3 scripts/chrome_devtools_mcp_environment.py standard-config --json
-python3 scripts/chrome_devtools_mcp_environment.py standard-config --mode persistent --json
+python3 scripts/chrome_devtools_mcp_environment.py standard-config --mode persistent --state-root <absolute-project-root> --json
 ```
 
 `inspect` reports `node`, `npx`, Chrome executable candidates, the dedicated
-persistent agent-owned profile path, and warning-only host issues. Use
+absolute persistent agent-owned profile path resolved from `--state-root`, and
+warning-only host issues. Use
 `--require` only in automation that should fail when host prerequisites are
 missing.
 
@@ -57,13 +58,15 @@ Use persistent mode only when login or state reuse is required:
     "--no-usage-statistics",
     "--no-performance-crux",
     "--redactNetworkHeaders",
-    "--userDataDir=.localsetup-maint/ui-browser-profiles/chrome-devtools"
+    "--userDataDir=<absolute-project-root>/.localsetup-maint/ui-browser-profiles/chrome-devtools"
   ]
 }
 ```
 
-Translate that definition through the active agent's current docs. Do not guess
-syntax for unsupported or undocumented platforms.
+The helper requires an absolute `--state-root` for persistent output so the MCP
+process working directory cannot redirect profile state. Use the same root in
+the browser-session guard. Translate the definition through the active agent's
+current docs. Do not guess syntax for unsupported or undocumented platforms.
 
 ## Repair Guidance
 
@@ -81,5 +84,9 @@ syntax for unsupported or undocumented platforms.
   directory, note that Chrome 136 restricts remote debugging on the default
   profile and recommend `--isolated=true` or `--userDataDir` with a non-default
   agent profile.
+- Chrome 144 and newer may offer consented automatic connection through
+  `chrome://inspect/#remote-debugging`; treat that as separate from launch-time
+  remote-debugging switches and never attach to an everyday profile without
+  explicit user authorization.
 - Do not delete profiles, kill browsers, or edit existing MCP config without a
   user-approved platform-specific workflow.

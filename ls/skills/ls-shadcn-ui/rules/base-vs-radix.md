@@ -2,8 +2,8 @@
 
 - Confirm base from CLI `info`, setup flags, style values, and generated code.
 - Base UI is the default for new projects as of July 2026; choose Radix with
-  `-b radix`, `--base radix`, or the equivalent flag confirmed by current help
-  when maintaining Radix compatibility.
+  `-b radix` or `--base radix` when maintaining Radix compatibility. React Aria
+  is also supported with `--base aria`.
 - Radix composition commonly uses `asChild`.
 - Base UI composition commonly uses `render`.
 - Use `nativeButton={false}` only when a Base UI part that defaults to native

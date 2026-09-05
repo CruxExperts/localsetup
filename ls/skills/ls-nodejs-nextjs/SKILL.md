@@ -10,9 +10,15 @@ compatibility:
 
 # Node.js And Next.js
 
-Use this skill when working on Node.js, Next.js, React, package-manager,
-build, migration, debugging, testing, security, deployment, or version
-verification tasks.
+Use this skill for project-wide Node.js, Next.js, React, package-manager, build,
+migration, debugging, testing, security, deployment, and version-verification
+work.
+
+Use `ls-next-js-app-router` instead for focused App Router semantics: app-directory
+routing, layouts, route handlers, server actions, caching, metadata, and migration
+from the Pages Router. When both skills apply, this skill owns runtime, dependency,
+package-manager, build, and deployment constraints; `ls-next-js-app-router` owns
+the App Router behavior.
 
 ## Inspect The Project First
 
@@ -58,20 +64,26 @@ Node, Next.js, React, or package-manager versions.
 
 ## Current Stable Snapshot
 
-Volatile facts below were verified on 2026-07-05 UTC from npm registry metadata
-and Node release metadata. Re-run
-[`scripts/verify-current-versions.mjs`](./scripts/verify-current-versions.mjs)
+Volatile facts below were verified at `2026-09-03T06:17:06.012Z` from npm
+registry metadata, the Node release schedule, and the Node distribution index.
+Re-run [`scripts/verify-current-versions.mjs`](./scripts/verify-current-versions.mjs)
 before relying on them for new work.
 
-- `next` latest is `16.2.10`; `canary` is `16.3.0-canary.78`; `beta` is
+- `next` latest is `16.3.4`; `canary` is `16.4.0-canary.15`; `beta` is
   `16.0.0-beta.0`; `rc` is `15.0.0-rc.1`.
-- `next@16.2.10` declares Node `>=20.9.0` and React peers
+- `next@16.3.4` declares Node `>=20.9.0` and React peers
   `^18.2.0 || 19.0.0-rc-de68d2f4-20241204 || ^19.0.0`.
-- `react` and `react-dom` latest are `19.2.7`; `react-dom@19.2.7` peers on
-  `react ^19.2.7`.
-- Node `26.x` is Current; latest dist entry checked was `v26.4.0`.
-- Node `24.x` Krypton is Active LTS; latest dist entry checked was `v24.18.0`.
-- Node `22.x` Jod is Maintenance LTS; latest dist entry checked was `v22.23.1`.
+- `next@16.3.4` was published at `2026-08-31T20:00:51.381Z`; it was
+  `209774631` ms old at verification and therefore older than 48 hours.
+- `react` and `react-dom` latest are `19.2.8`; `react-dom@19.2.8` peers on
+  `react ^19.2.8`.
+- The snapshot records registry-reported SRI, SHA-1, signature values and keys,
+  tarball, and SLSA provenance metadata. The verifier validates metadata shape
+  and drift; it does not download artifacts or cryptographically verify signatures
+  or attestations.
+- Node `26.x` is Current; latest dist entry checked was `v26.8.1`.
+- Node `24.x` Krypton is Active LTS; latest dist entry checked was `v24.20.0`.
+- Node `22.x` Jod is Maintenance LTS; latest dist entry checked was `v22.23.2`.
 - Node `20.x` Iron reached end of life on 2026-04-30. It may satisfy some
   framework engine ranges, but it should not be selected for new production
   baselines.
@@ -107,8 +119,10 @@ node scripts/verify-current-versions.mjs --json
 
 The script is read-only. It performs no installs, makes no dependency changes,
 and does not rewrite the snapshot. It fetches npm registry metadata, the Node
-release schedule, and the Node dist index, then reports required facts and drift
-against `data/verified-versions.json` when that file is present.
+release schedule, and the Node dist index. Its output includes package publication
+times, age at verification, the 48-hour age gate, registry-reported integrity,
+signature values and keys, provenance metadata, and drift against
+`data/verified-versions.json` when that file is present.
 
 ## Boundaries
 

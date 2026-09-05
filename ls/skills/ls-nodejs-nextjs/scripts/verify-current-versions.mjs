@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { readFile } from "node:fs/promises";
+import { readFile, realpath } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -86,16 +86,73 @@ function assertString(value, label) {
   }
 }
 
-function packageSnapshot(name, metadata, extra = {}) {
-  assertObject(metadata, `${name} metadata`);
-  assertObject(metadata["dist-tags"], `${name} dist-tags`);
+export function packageSnapshot(name, metadata, verifiedAt, extra = {}) {
+  assertObject(metadata, name + " metadata");
+  assertObject(metadata["dist-tags"], name + " dist-tags");
   const latest = metadata["dist-tags"].latest;
-  assertString(latest, `${name} dist-tags.latest`);
+  assertString(latest, name + " dist-tags.latest");
+  const packageLabel = name + "@" + latest;
   const latestVersion = metadata.versions?.[latest];
-  assertObject(latestVersion, `${name}@${latest} package metadata`);
+  assertObject(latestVersion, packageLabel + " package metadata");
+  const publishedAt = metadata.time?.[latest];
+  assertString(publishedAt, packageLabel + " publication time");
+  const publishedAtMs = Date.parse(publishedAt);
+  const verifiedAtMs = Date.parse(verifiedAt);
+  if (!Number.isFinite(publishedAtMs) || !Number.isFinite(verifiedAtMs)) {
+    throw new Error("Expected " + packageLabel + " publication and verification times to be valid ISO dates");
+  }
+  if (publishedAtMs > verifiedAtMs) {
+    throw new Error("Expected " + packageLabel + " publication time not to be in the future");
+  }
 
+  assertObject(latestVersion.dist, packageLabel + " dist metadata");
+  assertString(latestVersion.dist.integrity, packageLabel + " dist.integrity");
+  assertString(latestVersion.dist.shasum, packageLabel + " dist.shasum");
+  assertString(latestVersion.dist.tarball, packageLabel + " dist.tarball");
+  const signatures = latestVersion.dist.signatures;
+  if (!Array.isArray(signatures) || signatures.length === 0) {
+    throw new Error("Expected " + packageLabel + " dist.signatures to be a non-empty array");
+  }
+  const verifiedSignatures = signatures.map((signature, index) => {
+    const signatureLabel = packageLabel + " dist.signatures[" + index + "]";
+    assertObject(signature, signatureLabel);
+    assertString(signature.keyid, signatureLabel + ".keyid");
+    assertString(signature.sig, signatureLabel + ".sig");
+    return { keyid: signature.keyid, sig: signature.sig };
+  });
+  const attestationMetadata = latestVersion.dist.attestations;
+  let provenance = null;
+  if (attestationMetadata !== undefined) {
+    assertObject(attestationMetadata, packageLabel + " dist.attestations");
+    assertString(attestationMetadata.url, packageLabel + " dist.attestations.url");
+    assertObject(attestationMetadata.provenance, packageLabel + " dist.attestations.provenance");
+    assertString(
+      attestationMetadata.provenance.predicateType,
+      packageLabel + " dist.attestations.provenance.predicateType",
+    );
+    provenance = {
+      url: attestationMetadata.url,
+      predicateType: attestationMetadata.provenance.predicateType,
+    };
+  }
+
+  const ageAtVerificationMs = verifiedAtMs - publishedAtMs;
   return {
     latest,
+    publication: {
+      publishedAt,
+      ageAtVerificationMs,
+      under48HoursAtVerification: ageAtVerificationMs < 48 * 60 * 60 * 1000,
+    },
+    supplyChain: {
+      integrity: latestVersion.dist.integrity,
+      shasum: latestVersion.dist.shasum,
+      tarball: latestVersion.dist.tarball,
+      signatures: verifiedSignatures,
+      signatureCount: verifiedSignatures.length,
+      signatureKeyIds: [...new Set(verifiedSignatures.map((signature) => signature.keyid))],
+      provenance,
+    },
     distTags: metadata["dist-tags"],
     engines: latestVersion.engines || {},
     peerDependencies: latestVersion.peerDependencies || {},
@@ -129,7 +186,7 @@ function latestDistByLine(distIndex) {
   return latest;
 }
 
-function statusForLine(line, scheduleEntry, now) {
+export function statusForLine(line, scheduleEntry, now) {
   const start = Date.parse(scheduleEntry.start);
   const lts = scheduleEntry.lts ? Date.parse(scheduleEntry.lts) : null;
   const maintenance = scheduleEntry.maintenance ? Date.parse(scheduleEntry.maintenance) : null;
@@ -194,7 +251,7 @@ async function readStoredSnapshot() {
   }
 }
 
-function compareSnapshots(current, stored) {
+export function compareSnapshots(current, stored) {
   if (!stored) {
     return [{ path: "data/verified-versions.json", before: null, after: "missing" }];
   }
@@ -210,18 +267,27 @@ function compareSnapshots(current, stored) {
     "packages.next.distTags.rc",
     "packages.next.engines",
     "packages.next.peerDependencies",
+    "packages.next.publication.publishedAt",
+    "packages.next.publication.under48HoursAtVerification",
+    "packages.next.supplyChain",
     "packages.react.latest",
     "packages.react.distTags.latest",
     "packages.react.distTags.canary",
     "packages.react.distTags.experimental",
     "packages.react.distTags.next",
     "packages.react.engines",
+    "packages.react.publication.publishedAt",
+    "packages.react.publication.under48HoursAtVerification",
+    "packages.react.supplyChain",
     "packages.react-dom.latest",
     "packages.react-dom.distTags.latest",
     "packages.react-dom.distTags.canary",
     "packages.react-dom.distTags.experimental",
     "packages.react-dom.distTags.next",
     "packages.react-dom.peerDependencies",
+    "packages.react-dom.publication.publishedAt",
+    "packages.react-dom.publication.under48HoursAtVerification",
+    "packages.react-dom.supplyChain",
   ];
 
   for (const line of REQUIRED_NODE_LINES) {
@@ -252,13 +318,14 @@ async function buildSnapshot() {
     fetchJson(SOURCES.nodeDistIndex, "Node dist index"),
   ]);
 
+  const verifiedAt = new Date().toISOString();
   const current = {
-    verifiedAt: new Date().toISOString(),
+    verifiedAt,
     sources: SOURCES,
     packages: {
-      next: packageSnapshot("next", nextMeta),
-      react: packageSnapshot("react", reactMeta),
-      "react-dom": packageSnapshot("react-dom", reactDomMeta),
+      next: packageSnapshot("next", nextMeta, verifiedAt),
+      react: packageSnapshot("react", reactMeta, verifiedAt),
+      "react-dom": packageSnapshot("react-dom", reactDomMeta, verifiedAt),
     },
     node: nodeSnapshot(schedule, distIndex),
   };
@@ -279,10 +346,20 @@ function printHuman(snapshot) {
   lines.push(`    rc: ${snapshot.packages.next.distTags.rc ?? "n/a"}`);
   lines.push(`    engines.node: ${snapshot.packages.next.engines.node ?? "n/a"}`);
   lines.push(`    peer react: ${snapshot.packages.next.peerDependencies.react ?? "n/a"}`);
-  lines.push(`    peer react-dom: ${snapshot.packages.next.peerDependencies["react-dom"] ?? "n/a"}`);
-  lines.push(`  react latest: ${snapshot.packages.react.latest}`);
-  lines.push(`  react-dom latest: ${snapshot.packages["react-dom"].latest}`);
-  lines.push(`    peer react: ${snapshot.packages["react-dom"].peerDependencies.react ?? "n/a"}`);
+  lines.push("    peer react-dom: " + (snapshot.packages.next.peerDependencies["react-dom"] ?? "n/a"));
+  lines.push("    published: " + snapshot.packages.next.publication.publishedAt);
+  lines.push(
+    "    age at verification: "
+      + (snapshot.packages.next.publication.ageAtVerificationMs / 3600000).toFixed(1)
+      + " hours",
+  );
+  lines.push("    integrity: " + snapshot.packages.next.supplyChain.integrity);
+  lines.push(
+    "    provenance: " + (snapshot.packages.next.supplyChain.provenance?.predicateType ?? "not reported"),
+  );
+  lines.push("  react latest: " + snapshot.packages.react.latest);
+  lines.push("  react-dom latest: " + snapshot.packages["react-dom"].latest);
+  lines.push("    peer react: " + (snapshot.packages["react-dom"].peerDependencies.react ?? "n/a"));
   lines.push("");
   lines.push("Node release lines:");
   for (const line of REQUIRED_NODE_LINES) {
@@ -330,4 +407,17 @@ async function main() {
   }
 }
 
-await main();
+async function invokedAsMainModule() {
+  if (!process.argv[1]) {
+    return false;
+  }
+  try {
+    return (await realpath(resolve(process.argv[1]))) === (await realpath(fileURLToPath(import.meta.url)));
+  } catch {
+    return false;
+  }
+}
+
+if (await invokedAsMainModule()) {
+  await main();
+}

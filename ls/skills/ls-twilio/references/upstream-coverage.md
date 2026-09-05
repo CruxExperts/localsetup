@@ -9,7 +9,20 @@
 This wrapper intentionally does not expose every upstream subskill as a Localsetup skill.
 Select one upstream path at a time for future import, then run importer, vetter, normalizer, and sandbox validation.
 
-## Representative Paths
+## Inventory Manifest And Hash Recipe
+
+The enumeration root is `.` in the pinned upstream repository. The manifest below
+lists every regular `SKILL.md` file recursively beneath that root, using
+repository-relative paths and SHA-256 hashes of the raw file bytes. It inventories
+skill paths; it does not inventory MCP servers, tools, resources, prompts, or
+configuration.
+
+To reproduce the inventory hash, preserve the manifest row order below. For each
+row, concatenate its path, one ASCII space, and its lowercase hexadecimal hash.
+Join those records with one LF (`\n`), without a trailing newline, encode as UTF-8,
+and compute SHA-256. `source_sha256` identifies this aggregate, not an individual
+file.
+
 
 - `skills/sendgrid/twilio-sendgrid-account-setup/SKILL.md` (`de1599908000a8fb6035e1a973ca39fd48c268a56c76bc45136e6999f7252299`)
 - `skills/sendgrid/twilio-sendgrid-deliverability-advisor/SKILL.md` (`f008f75a4705071c9d5d0c68d3cdc606a8f748118ffe707192febc22f68faf26`)

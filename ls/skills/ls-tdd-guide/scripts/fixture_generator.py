@@ -126,7 +126,7 @@ class FixtureGenerator:
             "1900-01-01",  # Very old date
             "1970-01-01",  # Unix epoch
             "2000-01-01",  # Y2K
-            "2025-11-05",  # Today (example)
+            "2025-11-05",  # Fixed reference date
             "2099-12-31",  # Far future
             "invalid-date",  # Invalid format
         ]

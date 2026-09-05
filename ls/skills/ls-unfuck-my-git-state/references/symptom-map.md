@@ -1,18 +1,21 @@
 # Symptom Map
 
-Use this map after running `scripts/snapshot_git_state.py`.
+Use this map after running `scripts/snapshot_git_state.py` with the controller task output directory.
 
 | Symptom | Evidence to Confirm | Lowest-Risk First Move | Escalation |
 | --- | --- | --- | --- |
-| Phantom worktree path | `worktree_list.txt` includes a path that does not exist | `git worktree prune -v` | Remove stale `.git/worktrees/<name>` entry after backing up `.git/` |
-| Branch "already used by worktree" | Branch delete/switch fails with lock message | Locate holder with `git worktree list --porcelain`; switch branch in that worktree | Remove stale worktree metadata after backup |
-| Detached HEAD surprise | `status.txt` says detached and `symbolic_ref_head.txt` is empty | `git reflog`, then `git switch <known-branch>` | Create `rescue/<timestamp>` branch and reattach later |
-| HEAD/ref disagreement | `branch_current.txt` does not match symbolic ref expectation | Use `git symbolic-ref HEAD refs/heads/<branch>` | Edit `.git/HEAD` only after backup and failed symbolic-ref |
-| Missing object/ref errors | "unknown revision", "not a valid object name", "cannot lock ref" | `git fetch --all --prune` and verify remote ref exists | Force local branch pointer with `git branch -f` after reflog check |
-| Zero-hash worktree entries | Worktree list contains all-zero hash values | Prune worktrees and verify filesystem paths | Recreate affected worktree from remote branch |
+| Phantom worktree path | `worktree_list.txt` includes a path that does not exist | `git worktree prune -v` | Resolve `--git-common-dir`, create a verified backup, and confirm the exact stale metadata path before removal |
+| Branch "already used by worktree" | Branch delete/switch fails with a lock message | Locate the holder with `git worktree list --porcelain`; switch branch in that worktree | Treat verified stale ownership metadata as a phantom worktree path |
+| Detached HEAD surprise | `status.txt` has `# branch.head (detached)`, symbolic-ref output is empty, and `rev_parse_head.txt` resolves a commit | Inspect reflog and create a rescue ref at `HEAD` | Switch only after the rescue ref resolves |
+| HEAD/ref disagreement | Successful branch-current and symbolic-ref captures name different branches | Generate with `--repo` so the planner creates a verified backup automatically | Repair through `git symbolic-ref`; use only the planner's resolved per-worktree `HEAD` fallback after separate confirmation |
+| Missing object/ref errors | A failed status or show-ref capture contains "unknown revision", "not a valid object name", or "cannot lock ref" | Inspect reflog and create verified rescue refs for local-only tips | Verify the remote target, then obtain exact point-of-risk confirmation before `git branch -f` |
+| Zero-hash worktree entries | Worktree list contains an all-zero hash outside an initial unborn branch | Prune worktrees and verify filesystem paths | Recreate the affected worktree from a verified branch ref |
 
 ## Read the Room Before Acting
 
-- If unpushed commits might exist, inspect `reflog_head.txt` before force operations.
-- If multiple worktrees exist, fix branch ownership in the worktree that actually holds the branch.
-- If refs are broadly broken, stop and back up `.git/` before continuing.
+- Keep all snapshots, backup archives, and receipts beneath the explicit controller-assigned `.agents/state/<task-slug>/` directory.
+- Treat `snapshot.json` as the path handoff. Do not guess the latest snapshot by directory modification time.
+- If unpushed commits might exist, inspect `reflog_head.txt` and create rescue refs before any force operation.
+- If multiple worktrees exist, use `--git-dir` for the current worktree and `--git-common-dir` for shared metadata.
+- A backup is valid only when `backup_git_metadata.py` verifies required archive members and writes the digest receipt.
+- Force updates and manual metadata edits require point-of-risk confirmation for the exact repository, target, values, and applicable receipt.

@@ -75,7 +75,72 @@ def test_read_facts_version_uses_top_level_version(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    assert audit._read_facts_version(tmp_path) == "3.8.6"
+    assert audit._read_facts_version(tmp_path) == audit.FactsVersionRead(
+        "valid", version="3.8.6"
+    )
+
+
+@pytest.mark.parametrize(
+    ("payload", "message"),
+    [
+        ("{", "malformed JSON"),
+        ("[]", "top level must be a JSON object"),
+        ("{}", "top-level version must be a non-empty string"),
+        ('{"version": ""}', "top-level version must be a non-empty string"),
+        ('{"version": 4}', "top-level version must be a non-empty string"),
+    ],
+)
+def test_read_facts_version_rejects_existing_invalid_payloads(
+    tmp_path: Path, payload: str, message: str
+) -> None:
+    facts = tmp_path / "ls" / "docs" / "_generated" / "facts.json"
+    facts.parent.mkdir(parents=True)
+    facts.write_text(payload, encoding="utf-8")
+
+    result = audit._read_facts_version(tmp_path)
+
+    assert result.state == "invalid"
+    assert result.error is not None
+    assert message in result.error
+
+
+def test_read_facts_version_distinguishes_absent_and_unreadable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    assert audit._read_facts_version(tmp_path).state == "absent"
+    facts = tmp_path / "ls" / "docs" / "_generated" / "facts.json"
+    facts.parent.mkdir(parents=True)
+    facts.write_text("{}", encoding="utf-8")
+    original_read_text = Path.read_text
+
+    def fail_facts_read(path: Path, *args: object, **kwargs: object) -> str:
+        if path == facts:
+            raise OSError("fixture read failure")
+        return original_read_text(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", fail_facts_read)
+    result = audit._read_facts_version(tmp_path)
+
+    assert result.state == "invalid"
+    assert result.error is not None
+    assert "OSError: fixture read failure" in result.error
+
+
+def test_version_facts_warns_only_when_facts_are_absent(tmp_path: Path) -> None:
+    (tmp_path / "VERSION").write_text("3.8.6\n", encoding="utf-8")
+    (tmp_path / "README.md").write_text("**Version:** 3.8.6\n", encoding="utf-8")
+
+    errors, warnings = audit.phase_version_facts(tmp_path)
+    assert errors == []
+    assert warnings == ["facts.json missing; version/facts comparison partial"]
+
+    facts = tmp_path / "ls" / "docs" / "_generated" / "facts.json"
+    facts.parent.mkdir(parents=True)
+    facts.write_text("not json", encoding="utf-8")
+    errors, warnings = audit.phase_version_facts(tmp_path)
+    assert warnings == []
+    assert len(errors) == 1
+    assert errors[0].startswith("facts.json invalid: malformed JSON")
 
 
 def test_framework_root_resolves_installed_package_source_layout(tmp_path: Path) -> None:
@@ -146,7 +211,12 @@ def test_main_honors_explicit_repo_root_and_framework_root(tmp_path: Path, monke
         return []
 
     monkeypatch.setattr(audit, "phase_doc_checks", fake_doc_checks)
-    monkeypatch.setattr(audit, "phase_link_checks", lambda root: [])
+    monkeypatch.setattr(
+        audit,
+        "validate_audit_roots",
+        lambda root, fw: audit.RootValidation(True, True, ()),
+    )
+    monkeypatch.setattr(audit, "phase_link_checks", lambda root: ([], []))
     monkeypatch.setattr(audit, "phase_skill_matrix", lambda root, fw: ([], []))
     monkeypatch.setattr(audit, "phase_version_facts", lambda root: ([], []))
     monkeypatch.setattr(audit, "phase_maintainer_refs", lambda root: [])
@@ -167,10 +237,142 @@ def test_main_honors_explicit_repo_root_and_framework_root(tmp_path: Path, monke
     assert seen["doc"] == (repo.resolve(), framework.resolve())
 
 
+def test_link_checks_separate_missing_targets_from_plain_warnings(tmp_path: Path) -> None:
+    (tmp_path / "target.md").write_text("# Existing Section\n", encoding="utf-8")
+    (tmp_path / "examples").mkdir()
+    (tmp_path / "README.md").write_text(
+        dedent(
+            """\
+            # Home
+            [valid](target.md#existing-section)
+            [missing file](missing.md)
+            [missing anchor](target.md#not-there)
+            [same file](#home)
+            [valid directory](examples/)
+            [external](https://example.com/docs)
+            [external scheme](ftp://example.com/archive)
+            See docs/plain-reference.md for background.
+            ```markdown
+            [fenced missing](also-missing.md)
+            ```
+            """
+        ),
+        encoding="utf-8",
+    )
+    generated = tmp_path / "ls" / "docs" / "_generated" / "ignored.md"
+    generated.parent.mkdir(parents=True)
+    generated.write_text("[ignored](missing.md)\n", encoding="utf-8")
+    private = tmp_path / ".agents" / "state" / "ignored.md"
+    private.parent.mkdir(parents=True)
+    private.write_text("[ignored](missing.md)\n", encoding="utf-8")
+    localsetup_private = tmp_path / ".localsetup" / "state" / "ignored.md"
+    localsetup_private.parent.mkdir(parents=True)
+    localsetup_private.write_text("[ignored](missing.md)\n", encoding="utf-8")
+    omp_private = tmp_path / ".omp" / "runs" / "ignored.md"
+    omp_private.parent.mkdir(parents=True)
+    omp_private.write_text("[ignored](missing.md)\n", encoding="utf-8")
+    upstream = tmp_path / "ls" / "skills" / "example" / "references" / "upstream" / "ignored.md"
+    upstream.parent.mkdir(parents=True)
+    upstream.write_text("[archived upstream link](missing.md)\n", encoding="utf-8")
+    nested_state = tmp_path / "docs" / "state" / "checked.md"
+    nested_state.parent.mkdir(parents=True)
+    nested_state.write_text("[checked](missing.md)\n", encoding="utf-8")
+
+    errors, warnings = audit.phase_link_checks(tmp_path)
+
+    assert len(errors) == 3
+    assert any("Missing Markdown link target README.md:3: missing.md" in item for item in errors)
+    assert any("Missing Markdown anchor README.md:4: target.md#not-there" in item for item in errors)
+    assert any(
+        "Missing Markdown link target docs/state/checked.md:1: missing.md" in item
+        for item in errors
+    )
+    assert warnings == [
+        "Plain link candidate README.md:9: See docs/plain-reference.md for background."
+    ]
+
+
+@pytest.mark.parametrize("invalid_kind", ["repo", "framework"])
+def test_main_reports_invalid_roots_without_traceback(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, invalid_kind: str
+) -> None:
+    repo = tmp_path / "repo"
+    framework = tmp_path / "framework" / "ls"
+    if invalid_kind != "repo":
+        repo.mkdir()
+        (repo / "VERSION").write_text("1.0.0\n", encoding="utf-8")
+        (repo / "README.md").write_text("**Version:** 1.0.0\n", encoding="utf-8")
+    if invalid_kind != "framework":
+        for directory in ("lib", "docs", "skills", "tests"):
+            (framework / directory).mkdir(parents=True, exist_ok=True)
+        (framework / "lib" / "deps.py").write_text("# fixture\n", encoding="utf-8")
+    report = tmp_path / f"{invalid_kind}-report.md"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "run_framework_audit.py",
+            "--repo-root",
+            str(repo),
+            "--framework-root",
+            str(framework),
+            "--output",
+            str(report),
+        ],
+    )
+
+    assert audit.main() == 1
+    text = report.read_text(encoding="utf-8")
+    assert "## Errors" in text
+    assert f"{invalid_kind.title()}" in text
+
+
+def test_main_reports_every_maintainer_finding(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = tmp_path / "repo"
+    framework = tmp_path / "framework"
+    repo.mkdir()
+    framework.mkdir()
+    findings = [f"doc-{index}.md:1: private maintainer" for index in range(23)]
+    report = tmp_path / "report.md"
+    monkeypatch.setattr(
+        audit,
+        "validate_audit_roots",
+        lambda root, fw: audit.RootValidation(True, True, ()),
+    )
+    monkeypatch.setattr(audit, "phase_doc_checks", lambda root, fw: [])
+    monkeypatch.setattr(audit, "phase_link_checks", lambda root: ([], []))
+    monkeypatch.setattr(audit, "phase_skill_matrix", lambda root, fw: ([], []))
+    monkeypatch.setattr(audit, "phase_version_facts", lambda root: ([], []))
+    monkeypatch.setattr(audit, "phase_maintainer_refs", lambda root: findings)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "run_framework_audit.py",
+            "--repo-root",
+            str(repo),
+            "--framework-root",
+            str(framework),
+            "--output",
+            str(report),
+        ],
+    )
+
+    assert audit.main() == 0
+    text = report.read_text(encoding="utf-8")
+    assert "Warnings: 23" in text
+    assert text.count("Maintainer ref: doc-") == 23
+
+
 @pytest.mark.parametrize(
     "runtime_path",
     [
         Path(".codex/runs/ledger.md"),
+        Path(".omp/runs/ledger.md"),
+        Path(".agents/state/ledger.md"),
+        Path(".localsetup/state/ledger.md"),
         Path(".codex/sessions/session.md"),
         Path(".codex/logs/log.md"),
         Path(".codex/tmp/scratch.md"),
@@ -281,3 +483,51 @@ def test_skill_matrix_rejects_invalid_structured_smoke_entry(tmp_path: Path) -> 
     assert errors == [
         "Skill matrix ls-present: invalid smoke entry: mapping cwd must be 'skill-sandbox' or 'repo-root'"
     ]
+
+
+def test_skill_matrix_converts_skills_directory_oserror_to_audit_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    fw = tmp_path / "ls"
+    skills = fw / "skills"
+    skills.mkdir(parents=True)
+    (fw / "tests").mkdir()
+    (fw / "tests" / "skill_smoke_commands.yaml").write_text("{}\n", encoding="utf-8")
+    original_iterdir = Path.iterdir
+
+    def fail_skills_iterdir(path: Path):  # type: ignore[no-untyped-def]
+        if path == skills:
+            raise OSError("fixture listing failure")
+        return original_iterdir(path)
+
+    monkeypatch.setattr(Path, "iterdir", fail_skills_iterdir)
+
+    errors, warnings = audit.phase_skill_matrix(tmp_path, fw)
+
+    assert warnings == []
+    assert len(errors) == 1
+    assert "OSError: fixture listing failure" in errors[0]
+
+
+def test_skill_matrix_stages_shared_helper_without_ambient_imports(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    fw = tmp_path / "ls"
+    scripts = fw / "skills" / "ls-skill-sandbox-tester" / "scripts"
+    scripts.mkdir(parents=True)
+    original = SCRIPT_ROOT.parents[1] / "ls-skill-sandbox-tester" / "scripts"
+    for name in ("create_sandbox.py", "run_smoke.py"):
+        shutil.copy2(original / name, scripts / name)
+    candidate = fw / "skills" / "ls-example"
+    candidate.mkdir()
+    (candidate / "probe.py").write_text(
+        "import deps, importlib.util\nassert deps.VALUE == 'staged'\n"
+        "assert importlib.util.find_spec('ambient_only') is None\n", encoding="utf-8"
+    )
+    (fw / "lib").mkdir()
+    (fw / "lib" / "deps.py").write_text("VALUE = 'staged'\n", encoding="utf-8")
+    (fw / "lib" / "ambient_only.py").write_text("", encoding="utf-8")
+    monkeypatch.setenv("PYTHONPATH", str(fw / "lib"))
+    (fw / "tests").mkdir()
+    (fw / "tests" / "skill_smoke_commands.yaml").write_text(
+        'ls-example: "python3 probe.py"\nls-skill-sandbox-tester: "N/A"\n', encoding="utf-8"
+    )
+    assert audit.phase_skill_matrix(tmp_path, fw) == ([], [])

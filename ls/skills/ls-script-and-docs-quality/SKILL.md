@@ -28,8 +28,9 @@ metadata:
 ## External input hardening
 
 - Treat every external input as hostile: CLI arguments, filesystem content, network payloads, copied text, imported archives.
-- Sanitize untrusted strings before parsing and before printing: strip control characters, normalize whitespace, enforce max length.
-- Validate type, schema, and allowed ranges before use; reject invalid values with clear error text.
+- Before parsing, enforce a bounded input size and the expected encoding. Reject decoding errors; never replace, strip, or normalize canonical input to make it parseable.
+- Use the format-specific parser, then validate type, schema, and allowed ranges before use; reject invalid values with clear error text.
+- Sanitize untrusted values only when rendering them for a specific output context. Use context-appropriate escaping or quoting and bounded truncation without mutating the canonical input.
 - Exception handling must be explicit and actionable: print source, exception type, and message to STDERR; return non-zero exit when task cannot continue.
 - Never swallow errors (`except: pass`, silent `|| true` on critical operations). Partial-failure mode is allowed only when warnings are emitted and processing decisions are explicit.
 

@@ -3,75 +3,77 @@
     {
       "alt_text_required": true,
       "dimensions": {
-        "height": 560,
-        "width": 1200
+        "height": 1024,
+        "width": 1536
       },
       "license": "Repository license unless otherwise documented",
-      "path": "assets/localsetup-architecture.svg",
+      "path": "assets/localsetup-architecture.png",
       "provenance": "repository-maintained asset",
       "references": [
         "README.md",
         "ls/README.md",
         "ls/docs/README.md"
       ],
-      "type": "svg"
+      "type": "png"
     },
     {
       "alt_text_required": true,
       "dimensions": {
-        "height": 430,
-        "width": 1200
+        "height": 1024,
+        "width": 1536
       },
       "license": "Repository license unless otherwise documented",
-      "path": "assets/localsetup-install-lifecycle.svg",
+      "path": "assets/localsetup-install-lifecycle.png",
       "provenance": "repository-maintained asset",
       "references": [
         "README.md",
         "ls/README.md",
         "ls/docs/MULTI_PLATFORM_INSTALL.md"
       ],
-      "type": "svg"
-    },
-    {
-      "alt_text_required": true,
-      "dimensions": {
-        "height": 1024,
-        "width": 1024
-      },
-      "license": "Repository license unless otherwise documented",
-      "path": "assets/localsetup-logo.png",
-      "provenance": "repository-maintained asset",
-      "references": [],
       "type": "png"
     },
     {
       "alt_text_required": true,
       "dimensions": {
-        "height": 630,
-        "width": 1200
+        "height": 1254,
+        "width": 1254
       },
       "license": "Repository license unless otherwise documented",
-      "path": "assets/localsetup-readme-hero.svg",
+      "path": "assets/localsetup-logo.png",
+      "provenance": "repository-maintained asset",
+      "references": [
+        "ls/docs/releases/4.4.0.md"
+      ],
+      "type": "png"
+    },
+    {
+      "alt_text_required": true,
+      "dimensions": {
+        "height": 1024,
+        "width": 1536
+      },
+      "license": "Repository license unless otherwise documented",
+      "path": "assets/localsetup-readme-hero.png",
       "provenance": "repository-maintained asset",
       "references": [
         "README.md"
       ],
-      "type": "svg"
+      "type": "png"
     }
   ],
   "count": 4,
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-asset-manifest.json",
-    "artifact_sha256": "359f82ca43d831f78db8ebecc833a7b70922cd79d55dbf279cf2ba2a025ebcf4",
+    "artifact_sha256": "ac0d30f46e4711d5fdfeac55bde4e268784918f7ae7f3703942230e59cd90282",
     "emitter": "docs-align",
-    "framework_version": "4.3.9",
+    "framework_version": "4.4.0",
     "schema_version": 1,
-    "source_commit": "a670cedf63b791dd886015c4fdfa88c425b9e8d2",
+    "source_commit": "e8b7971a5b63885f157a2bdfaed90c276f77b72f",
     "source_dirty": true,
-    "source_provenance_hash": "42feb5176a538f7b3953bc51866cca08b8bdb4ec3a60beac1c32847f8abde74a",
-    "source_root_id": "c99a5bfa0382f7fa268df8489fc03e6fd088128883e0eb7bc4790ccc3a94a61d",
+    "source_provenance_hash": "63ed750f9b865fb766e21a67dfe80aa9fce422496d54ce403c730a4081b1f6a4",
+    "source_root_id": "585761070824e4e7ee4dd83364f76ac7b9b23f574393d59315ed9130ece83814",
     "source_tag": null,
-    "source_tree_sha": "838a3a45e51650e4dd6be2bffebec190f4b6eab4"
+    "source_tree_sha": "d99b69361ebbb62df2ff7d9b927f2a934f3d9a2a"
   },
   "schema_version": "1.0"
 }

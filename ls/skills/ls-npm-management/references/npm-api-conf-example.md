@@ -42,4 +42,9 @@ NPM_CONF=/custom/path/npm-api.conf python3 npm_api.py --info
 LOCALSETUP_DEBUG=1 python3 npm_api.py --host-list
 ```
 
-Prints full HTTP request/response trace to STDERR.
+Set the variable before process start. It adds diagnostic events to STDERR,
+including HTTP method and API URL, token refresh/cache timing, and backup item
+counts. These debug-added lines do not intentionally include request or response
+headers, request or response bodies, passwords, or bearer-token values. They can
+disclose private API endpoints and exception context, so review and sanitize them
+before sharing.

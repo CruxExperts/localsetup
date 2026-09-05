@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.3
+version: 4.4
 owner_skill: ls-task-skill-matcher
 ---
 
@@ -29,7 +29,7 @@ owner_skill: ls-task-skill-matcher
 
 4. **Single-task flow**
    - If one clear installed match exists, ask once: "Use this skill?"
-   - In the same response, include up to 3 complementary public skills (one-line reason each).
+   - If `ls-skill-discovery` is available to the current client, delegate complementary public suggestions and include up to 3 returned recommendations in the same response (one-line reason each). Otherwise report public discovery unavailable with no recommendations and continue installed-skill selection.
 
 5. **Batch flow**
    - Prompt once at start with options: auto-pick for full run, parcel prompts, or parcel auto-pick.
@@ -38,16 +38,14 @@ owner_skill: ls-task-skill-matcher
 
 6. **No installed fit**
    - Say no installed skill fits.
-   - Offer up to 3 complementary public skills to import.
+   - Offer up to 3 returned complementary public skills to import when discovery is available; otherwise report public discovery unavailable with no recommendations.
    - Optionally suggest creating a new skill via `ls-skill-creator`.
 
 ## Public index handling
 
-- Source: [PUBLIC_SKILL_INDEX.yaml](PUBLIC_SKILL_INDEX.yaml)
-- Stale definition: file missing, missing `updated`, or `updated` older than 7 days.
-- If index is missing/stale while providing complementary suggestions:
-  - Still present installed-skill match and "Use this skill?" first.
-  - Then ask whether to refresh the public index.
+- `ls-skill-discovery` owns [PUBLIC_SKILL_INDEX.yaml](PUBLIC_SKILL_INDEX.yaml) availability, freshness policy, prompts, and maintenance. Delegate the public discovery flow only when that skill is available to the current client; do not define another policy here. If unavailable, return no public recommendations without reading the index as a fallback or automatically installing a package.
+- Present the installed-skill match and "Use this skill?" first. Preserve discovery's returned last-refresh status (date and age when available), availability and freshness disclosures, and any pending user question.
+- If discovery returns no recommendations, report that result and continue the installed-skill flow. Complementary suggestions use only the returned discovery results.
 
 ## Platform paths
 

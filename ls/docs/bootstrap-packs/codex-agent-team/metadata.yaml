@@ -32,6 +32,7 @@ included_skills:
   - ls-context
   - ls-communication-and-tools
   - ls-docs-organization
+  - ls-framework-audit
   - ls-framework-compliance
   - ls-git-workflows
   - ls-pr-reviewer
@@ -54,7 +55,6 @@ effective_install_skills:
   - ls-unfuck-my-git-state
 skill_membership_note: included_skills lists direct pack.yaml membership; effective_install_skills also includes required skills from selected workflow packages.
 included_workflows:
-  - ls-workflow-audit-framework
   - ls-workflow-ops-guarded
   - ls-workflow-pipeline-git-repair-hygiene
 required_audit_artifacts:

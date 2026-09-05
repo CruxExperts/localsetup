@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.3
+version: 4.4
 owner_skill: ls-docs-organization
 ---
 
@@ -9,16 +9,16 @@ owner_skill: ls-docs-organization
 This is the public documentation map for Localsetup. Start here when you want the install path, platform behavior, shipped skills, workflow model, or release/verification rules.
 
 <p align="center">
-  <img src="../../assets/localsetup-architecture.svg" alt="Localsetup architecture: repo source, config resolver, managed home library, adapters, and rollback metadata" width="960">
+  <img src="../../assets/localsetup-architecture.png" alt="Localsetup architecture: repo source, config resolver, managed home library, adapters, and rollback metadata" width="960">
 </p>
 
 ## Generated Facts
 
 <!-- facts-block:start -->
-- Current version: `4.3.9`
+- Current version: `4.4.0`
 - Supported platforms: `codex, claude-code, cursor, kilo, opencode, openclaw`
 - Shipped skills: `103`
-- Workflow packages: `24`
+- Workflow packages: `16`
 - Source: `ls/docs/_generated/facts.json`
 <!-- facts-block:end -->
 
@@ -28,6 +28,7 @@ This is the public documentation map for Localsetup. Start here when you want th
 |---|---|
 | [Project README](../../README.md) | Why Localsetup exists and why people should use it. |
 | [Quickstart](QUICKSTART.md) | How to install, select platforms, verify, and update. |
+| [4.4.0 release guide](releases/4.4.0.md) | Context consolidation, workflow ownership, package cleanup, and update verification. |
 | [Command reference](COMMAND_REFERENCE.md) | Copy-paste installer, managed CLI, validation, and maintainer commands. |
 | [Deterministic client state](CLIENT_STATE.md) | Resolve client state, allocate private artifacts, and verify restart bindings. |
 | [Features](FEATURES.md) | Full capability catalog grouped by practical use. |

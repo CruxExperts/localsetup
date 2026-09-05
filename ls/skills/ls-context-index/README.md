@@ -30,17 +30,17 @@ localsetup context-index ingest --scope repo
 localsetup context-index search "workflow registry" --scope repo --top-k 10
 localsetup context-index lookup --chunk-id UUID
 localsetup context-index vector-rebuild plan --scope repo
-localsetup context-index vector-rebuild apply --scope repo --plan PLAN_ID
+localsetup context-index vector-rebuild apply --scope repo --plan "<REVIEWED_PLAN_ID>"
 localsetup context-index rebuild plan --scope repo
-localsetup context-index rebuild apply --scope repo --plan PLAN_ID
+localsetup context-index rebuild apply --scope repo --plan "<REVIEWED_PLAN_ID>"
 localsetup context-index prune plan --scope repo
-localsetup context-index prune apply --scope repo --plan PLAN_ID
+localsetup context-index prune apply --scope repo --plan "<REVIEWED_PLAN_ID>"
 localsetup context-index worker nudge --scope repo
 localsetup context-index logs status --scope repo
 localsetup context-index mcp config --scope repo
 ```
 
-All agent-facing commands emit JSON. Agents should check `freshness`, `worklist`, or `agent-preflight` first, then use search only for paths that are not listed in `read_direct_paths`.
+All agent-facing commands emit JSON. Agents should check `freshness`, `worklist`, or `agent-preflight` first, then use search only for paths that are not listed in `read_direct_paths`. For every plan/apply pair, review the plan's `ok`, `context_key`, `mode`, and proposed effect, then replace `<REVIEWED_PLAN_ID>` with its returned `plan_id`; never apply an unreviewed placeholder.
 
 ## Indexed Data
 
@@ -63,7 +63,7 @@ The SQLite schema is deliberately relational and future PostgreSQL-friendly. Com
 
 ## Configuration
 
-Run `config init` to create a config file, then tune storage, includes/excludes, chunking, embedding provider names, model names, dimensions, retrieval weights, worker limits, and logging. The default provider is `local_hash`; `openai_compatible`, `openai`, and `llama_cpp` route to a configured OpenAI-compatible HTTP embeddings endpoint, which can be a hosted API or local server. See [schemas/config.schema.json](schemas/config.schema.json).
+Run `config init` to create a config file, then tune storage, includes/excludes, chunking, embedding provider names, model names, dimensions, retrieval weights, worker limits, and logging. The default provider is `local_hash`. The `openai_compatible`, `openai`, and `llama_cpp` names select the same HTTP adapter: configure the full embeddings endpoint, a compatible embedding model, and its returned dimension. OpenAI `/v1/embeddings` is supported. A llama.cpp `/v1/embeddings` server additionally needs an embedding-capable model with non-`none` pooling, normally served with `--embedding`. Other compatible services require provider-specific verification. See [schemas/config.schema.json](schemas/config.schema.json).
 
 ## Safety Contract
 

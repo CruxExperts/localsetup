@@ -33,13 +33,17 @@ def test_heartbeat_validates_staged_artifacts_before_promotion(tmp_path: Path) -
     staged = root / "runs" / "bad.staged"
     staged.mkdir(parents=True)
     (staged / "heartbeat-result.json").write_text("{}\n", encoding="utf-8")
+    (staged / "command-log.json").write_text('{"commands": []}\n', encoding="utf-8")
     (staged / "manifest.json").write_text(
         json.dumps(
             {
                 "schema_version": runtime.SCHEMA_VERSION,
                 "run_id": "bad",
                 "status": "succeeded",
-                "artifacts": {"heartbeat-result.json": "not-the-real-hash"},
+                "artifacts": {
+                    "heartbeat-result.json": "not-the-real-hash",
+                    "command-log.json": runtime.sha256_file(staged / "command-log.json"),
+                },
             }
         ),
         encoding="utf-8",
@@ -80,28 +84,24 @@ def test_heartbeat_captures_command_output_sidecars(tmp_path: Path) -> None:
     assert (state_root(target) / latest["path"] / entry["sidecar"]).is_file()
 
 
-def test_heartbeat_resolved_path_launcher_finds_codex_in_controlled_path(tmp_path: Path) -> None:
+def test_heartbeat_resolved_path_launcher_supports_configured_client(tmp_path: Path) -> None:
     runtime = load_runtime()
     target = tmp_path / "repo"
     target.mkdir()
     fake_bin = tmp_path / "bin"
     fake_bin.mkdir()
-    fake_codex = fake_bin / "codex"
-    fake_codex.write_text("#!/bin/sh\nprintf 'fake codex %s\\n' \"$1\"\n", encoding="utf-8")
-    fake_codex.chmod(0o755)
+    fake_client = fake_bin / "agent-cli"
+    fake_client.write_text("#!/bin/sh\nprintf 'fake client %s\n' \"$1\"\n", encoding="utf-8")
+    fake_client.chmod(0o755)
     write_config(
         target,
-        codex={"enabled": True, "profile": "heartbeat", "timeout_seconds": 5},
+        agent={"enabled": True, "profile": "heartbeat", "timeout_seconds": 5},
         agent_profiles={
             "heartbeat": {
-                "app": "codex",
+                "client": "future-agent-cli",
                 "launcher": "resolved-path",
-                "command_name": "codex",
+                "command": ["agent-cli", "{heartbeat_prompt}"],
                 "path": [str(fake_bin)],
-                "model_policy": "configurable-low-cost",
-                "model": None,
-                "reasoning_effort": "low",
-                "json": True,
                 "prompt": "status",
             }
         },
@@ -113,11 +113,44 @@ def test_heartbeat_resolved_path_launcher_finds_codex_in_controlled_path(tmp_pat
     latest = json.loads((state_root(target) / "latest.json").read_text(encoding="utf-8"))
     command_log = json.loads((state_root(target) / latest["path"] / "command-log.json").read_text(encoding="utf-8"))
     entry = command_log["commands"][0]
+    assert entry["client"] == "future-agent-cli"
     assert entry["launcher_mode"] == "resolved-path"
-    assert entry["resolved_executable"] == str(fake_codex)
-    assert entry["argv"][0] == str(fake_codex)
-    assert entry["model_policy"] == "configurable-low-cost"
+    assert entry["resolved_executable"] == str(fake_client)
+    assert entry["argv"][0] == str(fake_client)
     assert entry["timeout_seconds"] == 5
+
+
+def test_heartbeat_stdin_prompt_transport_reaches_configured_client(tmp_path: Path) -> None:
+    runtime = load_runtime()
+    target = tmp_path / "repo"
+    target.mkdir()
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    fake_client = fake_bin / "stdin-client"
+    fake_client.write_text("#!/bin/sh\ncat\n", encoding="utf-8")
+    fake_client.chmod(0o755)
+    write_config(
+        target,
+        agent={"enabled": True, "profile": "heartbeat", "timeout_seconds": 5},
+        agent_profiles={
+            "heartbeat": {
+                "client": "stdin-client",
+                "launcher": "resolved-path",
+                "command": ["stdin-client"],
+                "path": [str(fake_bin)],
+                "prompt_transport": "stdin",
+                "prompt": "stdin status",
+            }
+        },
+    )
+
+    payload = runtime.run_once(target_root=target)
+
+    assert payload["ok"] is True
+    run_dir = state_root(target) / payload["latest"]["path"]
+    entry = json.loads((run_dir / "command-log.json").read_text(encoding="utf-8"))["commands"][0]
+    assert entry["prompt_transport"] == "stdin"
+    assert entry["stdout_tail"] == "stdin status"
 
 
 def test_heartbeat_direct_argv_launcher_preserves_explicit_command(tmp_path: Path) -> None:
@@ -127,14 +160,13 @@ def test_heartbeat_direct_argv_launcher_preserves_explicit_command(tmp_path: Pat
     command = [sys.executable, "-c", "print('direct profile')"]
     write_config(
         target,
-        codex={"enabled": True, "profile": "heartbeat", "timeout_seconds": 5},
+        agent={"enabled": True, "profile": "heartbeat", "timeout_seconds": 5},
         agent_profiles={
             "heartbeat": {
-                "app": "codex",
+                "client": "kilo",
                 "launcher": "direct-argv",
                 "command": command,
-                "model_policy": "test-direct",
-                "json": False,
+                "prompt_transport": "none",
             }
         },
     )
@@ -145,6 +177,7 @@ def test_heartbeat_direct_argv_launcher_preserves_explicit_command(tmp_path: Pat
     latest = json.loads((state_root(target) / "latest.json").read_text(encoding="utf-8"))
     command_log = json.loads((state_root(target) / latest["path"] / "command-log.json").read_text(encoding="utf-8"))
     entry = command_log["commands"][0]
+    assert entry["client"] == "kilo"
     assert entry["launcher_mode"] == "direct-argv"
     assert entry["logical_argv"] == command
     assert "direct profile" in entry["stdout_tail"]
@@ -157,14 +190,13 @@ def test_heartbeat_shell_login_launcher_is_opt_in_and_records_rendered_command(t
     command = [sys.executable, "-c", "print('shell profile')"]
     write_config(
         target,
-        codex={"enabled": True, "profile": "heartbeat", "timeout_seconds": 5},
+        agent={"enabled": True, "profile": "heartbeat", "timeout_seconds": 5},
         agent_profiles={
             "heartbeat": {
-                "app": "codex",
+                "client": "openclaw",
                 "launcher": "shell-login",
                 "command": command,
-                "model_policy": "test-shell",
-                "json": False,
+                "prompt_transport": "none",
             }
         },
     )
@@ -175,6 +207,7 @@ def test_heartbeat_shell_login_launcher_is_opt_in_and_records_rendered_command(t
     latest = json.loads((state_root(target) / "latest.json").read_text(encoding="utf-8"))
     command_log = json.loads((state_root(target) / latest["path"] / "command-log.json").read_text(encoding="utf-8"))
     entry = command_log["commands"][0]
+    assert entry["client"] == "openclaw"
     assert entry["launcher_mode"] == "shell-login"
     assert "rendered_command" in entry
     assert shlex_join_safe(command[0]) in entry["rendered_command"]
@@ -215,14 +248,13 @@ def test_heartbeat_sidecar_filename_ignores_malicious_profile_name(tmp_path: Pat
     command = [sys.executable, "-c", "print('profile safe')"]
     write_config(
         target,
-        codex={"enabled": True, "profile": profile_name, "timeout_seconds": 5},
+        agent={"enabled": True, "profile": profile_name, "timeout_seconds": 5},
         agent_profiles={
             profile_name: {
-                "app": "codex",
+                "client": "gemini",
                 "launcher": "direct-argv",
                 "command": command,
-                "model_policy": "test-direct",
-                "json": False,
+                "prompt_transport": "none",
             }
         },
     )
@@ -365,3 +397,156 @@ def test_heartbeat_direct_command_policy_blocks_destructive_hooks(tmp_path: Path
     command_log = json.loads((state_root(target) / latest["path"] / "command-log.json").read_text(encoding="utf-8"))
     assert command_log["commands"][0]["blocked"] is True
     assert "destructive executable" in command_log["commands"][0]["error"]
+
+
+def test_heartbeat_reclaims_only_proven_stale_locks(tmp_path: Path) -> None:
+    runtime = load_runtime()
+    target = tmp_path / "repo"
+    target.mkdir()
+    write_config(target)
+    root = state_root(target)
+    root.mkdir(parents=True)
+    stale_owner = {
+        "created_at": "2000-01-01T00:00:00Z",
+        "hostname": runtime._current_hostname(),
+        "pid": 999_999_999,
+    }
+    (root / "heartbeat.lock").write_text(json.dumps(stale_owner), encoding="utf-8")
+
+    payload = runtime.run_once(target_root=target, no_agent=True)
+
+    assert payload["ok"] is True
+    assert not list(root.glob("heartbeat.lock.recovered-*"))
+    assert not (root / "heartbeat.lock").exists()
+
+
+def test_heartbeat_stale_lock_retries_until_contender_owner_is_recorded(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runtime = load_runtime()
+    root = state_root(tmp_path / "repo")
+    root.mkdir(parents=True)
+    lock_path = root / "heartbeat.lock"
+    stale_owner = {"created_at": "2000-01-01T00:00:00Z", "hostname": runtime._current_hostname(), "pid": 999_999_999}
+    contender_owner = {"created_at": "2026-01-01T00:00:00Z", "hostname": runtime._current_hostname(), "pid": 1}
+    lock_path.write_text(json.dumps(stale_owner), encoding="utf-8")
+    original_open = runtime.os.open
+    contender_fd: int | None = None
+    contender_reads = 0
+
+    def contender_wins(path: str | Path, flags: int, mode: int = 0o777) -> int:
+        nonlocal contender_fd, contender_reads
+        if Path(path) == lock_path and flags == (runtime.os.O_RDWR | runtime.os.O_CREAT | runtime.os.O_EXCL) and not lock_path.exists():
+            contender_fd = original_open(path, flags, mode)
+        elif Path(path) == lock_path and flags == runtime.os.O_RDONLY and contender_fd is not None:
+            contender_reads += 1
+            if contender_reads == 2:
+                runtime.os.write(contender_fd, json.dumps(contender_owner).encode("utf-8"))
+                runtime.fcntl.flock(contender_fd, runtime.fcntl.LOCK_EX)
+        return original_open(path, flags, mode)
+
+    monkeypatch.setattr(runtime.os, "open", contender_wins)
+    try:
+        lock_fd, payload = runtime.acquire_lock(root, stale_after=1)
+    finally:
+        if contender_fd is not None:
+            runtime.fcntl.flock(contender_fd, runtime.fcntl.LOCK_UN)
+            runtime.os.close(contender_fd)
+
+    assert lock_fd is None
+    assert contender_reads == 2
+    assert payload == contender_owner
+    assert not list(root.glob("heartbeat.lock.recovered-*"))
+    assert json.loads(lock_path.read_text(encoding="utf-8")) == contender_owner
+
+
+def test_heartbeat_pre_run_failure_is_not_masked_by_cleanup(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    runtime = load_runtime()
+    target = tmp_path / "repo"
+    target.mkdir()
+    write_config(target)
+
+    def fail_run_id() -> str:
+        raise runtime.HeartbeatError("run identifier failure")
+
+    monkeypatch.setattr(runtime, "_new_run_id", fail_run_id)
+    with pytest.raises(runtime.HeartbeatError, match="run identifier failure"):
+        runtime.run_once(target_root=target, no_agent=True)
+
+
+def test_heartbeat_locked_run_does_not_recover_active_state(tmp_path: Path) -> None:
+    runtime = load_runtime()
+    target = tmp_path / "repo"
+    target.mkdir()
+    write_config(target)
+    root = state_root(target)
+    staged = root / "runs" / "active.staged"
+    staged.mkdir(parents=True)
+    active = root / "active.json"
+    active.write_text(json.dumps({"path": "runs/active.staged"}), encoding="utf-8")
+    active_before = active.read_text(encoding="utf-8")
+    lock_fd, _ = runtime.acquire_lock(root, stale_after=1)
+    assert lock_fd is not None
+    try:
+        payload = runtime.run_once(target_root=target, no_agent=True)
+    finally:
+        runtime.release_lock(root, lock_fd)
+
+    assert payload["status"] == "locked"
+    assert staged.is_dir()
+    assert active.read_text(encoding="utf-8") == active_before
+
+
+def test_heartbeat_manifest_commits_and_validates_each_sidecar(tmp_path: Path) -> None:
+    runtime = load_runtime()
+    target = tmp_path / "repo"
+    target.mkdir()
+    write_config(
+        target,
+        hooks={
+            "before": [{"id": "sidecar", "command": [sys.executable, "-c", "print('ok')"], "timeout_seconds": 5}],
+            "after": [],
+        },
+    )
+
+    payload = runtime.run_once(target_root=target, no_agent=True)
+
+    assert payload["ok"] is True
+    run_dir = state_root(target) / payload["latest"]["path"]
+    entry = json.loads((run_dir / "command-log.json").read_text(encoding="utf-8"))["commands"][0]
+    assert payload["manifest"]["artifacts"][entry["sidecar"]] == entry["sidecar_sha256"]
+    (run_dir / entry["sidecar"]).write_text("{}\n", encoding="utf-8")
+    with pytest.raises(runtime.HeartbeatError, match="artifact hash mismatch"):
+        runtime.validate_staged_run(run_dir)
+
+
+@pytest.mark.parametrize(
+    ("command", "error"),
+    [
+        (["git", "-C", ".", "push"], "git push"),
+        (["git", "--git-dir=.", "commit"], "git commit"),
+    ],
+)
+def test_heartbeat_direct_command_policy_blocks_git_global_option_bypasses(
+    tmp_path: Path, command: list[str], error: str
+) -> None:
+    runtime = load_runtime()
+    target = tmp_path / "repo"
+    target.mkdir()
+    write_config(target, hooks={"before": [{"id": "blocked", "command": command, "allow_direct": True}], "after": []})
+
+    payload = runtime.run_once(target_root=target, no_agent=True)
+
+    assert payload["ok"] is False
+    run_dir = state_root(target) / payload["latest"]["path"]
+    entry = json.loads((run_dir / "command-log.json").read_text(encoding="utf-8"))["commands"][0]
+    assert entry["blocked"] is True
+    assert error in entry["error"]
+    assert entry["sidecar"] in payload["manifest"]["artifacts"]
+    assert entry["cwd"] == str(target)
+    assert entry["timeout_seconds"] > 0
+    assert entry["started_at"] <= entry["finished_at"]
+    assert entry["returncode"] is None
+    assert entry["timed_out"] is False
+    assert entry["stdout_tail"] == ""
+    assert entry["stderr_tail"] == ""

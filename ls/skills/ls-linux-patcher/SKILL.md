@@ -68,6 +68,8 @@ python scripts/patch_cli.py --json host-only admin@webserver.example.com
 
 Do not copy a universal sudoers block blindly. Generate the plan first, identify the exact commands your host will need, then create a narrow `/etc/sudoers.d/` entry for a dedicated user.
 
+Sudoers rules that include arguments are command-line-specific. Verify the executable path on the target host and choose its matching readiness command: `apt update`, `dnf check-update`, `yum check-update`, or `zypper list-updates`. Do not grant every alternative merely because the planner can recognize them.
+
 Example pattern:
 
 ```sudoers
@@ -83,8 +85,10 @@ Validate with:
 
 ```bash
 sudo visudo -c -f /etc/sudoers.d/linux-patcher
-ssh patchbot@host 'sudo -n true'
+ssh patchbot@host 'sudo -n -l -- /usr/bin/apt update'
 ```
+
+The remote `sudo -n -l` command lists whether that exact path and argument vector is authorized; it does not execute `apt update`. It proves only that one readiness command is listed. Each later update, upgrade, autoremove, or Docker command still needs its own reviewed rule, and the operator must separately confirm backups, the maintenance window, and service readiness.
 
 ## PatchMon
 

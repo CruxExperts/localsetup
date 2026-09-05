@@ -15,7 +15,8 @@
     "evidence_summary": {"type": "string", "enum": ["static-reviewed-candidate", "static-reviewed-no-eligible-candidate", "static-resource-validation"]}
   },
   "allOf": [
-    {"if": {"properties": {"status": {"const": "selected"}}}, "then": {"required": ["selected"]}},
-    {"if": {"properties": {"status": {"enum": ["offline", "rejected"]}}}, "then": {"not": {"required": ["selected"]}}}
+    {"if": {"properties": {"status": {"const": "selected"}}}, "then": {"required": ["selected"], "properties": {"reason": {"const": "selected_static_reviewed"}, "evidence_summary": {"const": "static-reviewed-candidate"}}}},
+    {"if": {"properties": {"status": {"const": "rejected"}}}, "then": {"not": {"required": ["selected"]}, "properties": {"reason": {"enum": ["invalid_request", "resource_invalid", "resource_stale"]}, "evidence_summary": {"const": "static-resource-validation"}}}},
+    {"if": {"properties": {"status": {"const": "offline"}}}, "then": {"not": {"required": ["selected"]}, "properties": {"reason": {"enum": ["candidate_evidence_unknown", "capability_unsatisfied", "risk_floor_unsatisfied", "offline_no_eligible_candidate"]}, "evidence_summary": {"const": "static-reviewed-no-eligible-candidate"}}}}
   ]
 }

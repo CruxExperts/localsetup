@@ -3,7 +3,7 @@ name: ls-mail-protocol-control
 description: Provide full SMTP and IMAP account control for delegated mailboxes with attachment-first MIME handling and full-envelope encryption. Use when an agent must read, send, organize, decrypt, and manage mailbox state with strict admin controls.
 metadata:
   version: "1.2"
-compatibility: "Python 3.12+ using stdlib SMTP/IMAP/MIME plus PyYAML and cryptography for policy and encryption helpers. Requires delegated SMTP/IMAP accounts, repo-local policy/account config, and environment-provided credentials; no shell commands or subprocess execution."
+compatibility: "Python 3.12+ using stdlib smtplib, imaplib, and email.mime plus the environment's installed PyYAML and cryptography dependencies. This documents local API requirements only; validate target SMTP/IMAP provider profiles and encryption wire formats separately—no unspecified SMTP/IMAP or cross-library interoperability is guaranteed. Requires delegated SMTP/IMAP accounts, repo-local policy/account config, and environment-provided credentials; no shell commands or subprocess execution."
 ---
 
 # Mail protocol control
@@ -16,7 +16,7 @@ Give an AI agent full operational control of delegated SMTP and IMAP accounts wh
 
 - User asks for agent-driven mailbox automation over SMTP or IMAP.
 - User needs policy-controlled read, write, and destructive mailbox actions.
-- User needs token-efficient MCP tools for mail triage and response workflows.
+- User needs token-efficient JSON CLI operations for mail triage and response workflows.
 - User needs auditable account actions with confirmation gates for high-impact operations.
 
 ## Scope
@@ -35,7 +35,7 @@ Give an AI agent full operational control of delegated SMTP and IMAP accounts wh
   - Password-derived AES-GCM.
   - Pure-Python OpenPGP.
 - Policy gate for all mutating operations.
-- MCP bridge with compact atomic and composite tools.
+- One-shot JSON CLI bridge with compact atomic and composite operations.
 - Confirmation token lifecycle for threshold-gated destructive operations.
 
 ## Tooling layout
@@ -50,12 +50,12 @@ ls/skills/ls-mail-protocol-control/
     policy_engine.py
     crypto_types.py
     crypto_engine.py
-    mcp_server.py
+    mail_json_cli.py
     tests/
         test_mail_protocol_control.py
  references/
      SMTP_IMAP_OPERATION_MATRIX.md
-     MCP_TOOL_SCHEMA.md
+     JSON_CLI_TOOL_SCHEMA.md
      POLICY_SCHEMA.md
      CREDENTIAL_PROVIDER_CONTRACT.md
      USER_GUIDE.md
@@ -74,7 +74,9 @@ ls/skills/ls-mail-protocol-control/
 - Threshold controls for high-impact operations.
 - Confirmation token challenge for gated destructive actions.
 
-## MCP tools
+## JSON CLI operations
+
+The `mail_json_cli.py` bridge executes one `--tool` request with one `--args-json` object, writes one JSON response, and exits. It is not an MCP transport.
 
 - Atomic tools:
   - `mail_accounts_list`
@@ -111,7 +113,7 @@ Agent-to-agent PRD handoff can use this skill as the **mail adapter** backend (S
 - Treat every external input as hostile.
 - Enforce schema and bounds checks before execution.
 - No shell interpolation of untrusted values.
-- Enforce TLS or STARTTLS unless policy explicitly allows otherwise.
+- Require TLS for IMAP and `ssl` or `starttls` for SMTP; plaintext modes are denied before connection.
 - Redact secrets and message payload data in logs.
 
 ## Documentation requirement

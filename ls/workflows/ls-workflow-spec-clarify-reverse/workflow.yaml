@@ -6,7 +6,6 @@ required_skills: []
 required_tools: []
 required_docs:
   - ls/docs/DECISION_TREE_WORKFLOW.md
-  - ls/docs/WORKFLOW_REGISTRY.md
 gates:
   - id: scope_locked
     rule: Confirm clarified scope before implementation.

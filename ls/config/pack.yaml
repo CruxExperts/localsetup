@@ -42,6 +42,7 @@ packs:
   - ls-context
   - ls-communication-and-tools
   - ls-docs-organization
+  - ls-framework-audit
   - ls-framework-compliance
   - ls-git-workflows
   - ls-pr-reviewer
@@ -82,6 +83,7 @@ packs:
   - ls-requesting-code-review
   - ls-remotion-best-practices
   - ls-shadcn-ui
+  - ls-skill-discovery
   - ls-system-architecture-diagrams
   - ls-system-design
   - ls-tailwind-best-practices
@@ -124,6 +126,7 @@ packs:
   - ls-system-info
   harness:
   - ls-codex-heartbeat
+  - ls-context-index
   - ls-cron-orchestrator
   integrations:
   - ls-agent-email-inbox
@@ -167,10 +170,13 @@ packs:
   - ls-automatic-versioning
   - ls-deploy-checklist
   - ls-documentation-alignment
+  - ls-docs-organization
   - ls-github-actions-builder
   - ls-github-publishing-workflow
+  - ls-markdown-reference-validator
   - ls-pr-reviewer
   - ls-public-repo-identity
+  - ls-script-and-docs-quality
   skill-lifecycle:
   - ls-alirezarezvani-skills
   - ls-antigravity-awesome-skills
@@ -202,7 +208,6 @@ packs:
   - ls-agent-routing
 workflow_packs:
   bootstrap:
-  - ls-workflow-audit-framework
   - ls-workflow-ops-guarded
   - ls-workflow-pipeline-git-repair-hygiene
   - ls-workflow-pipeline-repo-convert
@@ -210,12 +215,7 @@ workflow_packs:
   - ls-workflow-ops-tmux-session
   - ls-workflow-tmux-terminal-mode
   dev:
-  - ls-workflow-audit-framework
-  - ls-workflow-audit-markdown-references
   - ls-workflow-codex-github-issue-goal-loop
-  - ls-workflow-context-index-query
-  - ls-workflow-context-index-refresh
-  - ls-workflow-documentation-alignment
   - ls-workflow-ops-guarded
   - ls-workflow-planning-critic-loop
   - ls-workflow-pipeline-git-repair-hygiene
@@ -225,23 +225,18 @@ workflow_packs:
   - ls-workflow-pipeline-skill-onboard
   - ls-workflow-queue-batch-implement
   - ls-workflow-spec-clarify-reverse
-  - ls-workflow-skills-index-refresh
   frontend: []
   architecture: []
   ops:
   - ls-workflow-ops-tmux-session
   - ls-workflow-pipeline-server-triage-patch
   - ls-workflow-tmux-terminal-mode
-  integrations:
-  - ls-workflow-transport-handoff
+  integrations: []
   omniroute: []
   publishing:
   - ls-workflow-codex-github-issue-goal-loop
-  - ls-workflow-documentation-alignment
   - ls-workflow-pipeline-pre-publish
   harness:
-  - ls-workflow-codex-heartbeat
-  - ls-workflow-context-index-refresh
   - ls-workflow-repo-finalizer
   skill-lifecycle:
   - ls-workflow-pipeline-skill-onboard

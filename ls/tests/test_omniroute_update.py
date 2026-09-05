@@ -78,7 +78,7 @@ def test_upstream_to_local_name_mapping() -> None:
 def test_default_ref_is_pinned_to_validated_source_commit() -> None:
     converter = load_converter()
 
-    assert converter.DEFAULT_REF == "7ee5bbc64dbb03e967521227f2afffeb7c9dad1e"
+    assert converter.DEFAULT_REF == "5458026c216f77a3da68ea49152dc33470cfe2cb"
 
 
 def test_boundary_coverage_owners_match_operator_workflow() -> None:
@@ -92,6 +92,8 @@ def test_boundary_coverage_owners_match_operator_workflow() -> None:
         "ls-omniroute-admin-automation",
         "ls-omniroute",
     ]
+    assert "cli-skill-collector" not in converter.NATIVE_COVERAGE
+    assert "ponytail" not in converter.NATIVE_COVERAGE
 
 
 def test_reads_upstream_skill_manifests_from_local_fixture(tmp_path: Path) -> None:

@@ -16,11 +16,11 @@ MCP_NAME = "chrome-devtools"
 MCP_PACKAGE = "chrome-devtools-mcp@latest"
 PINNED_SNAPSHOT = {
     "package": "chrome-devtools-mcp",
-    "version": "1.4.0",
-    "access_date": "2026-06-29",
-    "source": "https://www.npmjs.com/package/chrome-devtools-mcp",
+    "version": "1.8.0",
+    "access_date": "2026-09-04",
+    "source": "https://registry.npmjs.org/chrome-devtools-mcp/latest",
 }
-DEFAULT_PROFILE = ".localsetup-maint/ui-browser-profiles/chrome-devtools"
+DEFAULT_PROFILE_RELATIVE = ".localsetup-maint/ui-browser-profiles/chrome-devtools"
 PRIVACY_ARGS = [
     "-y",
     MCP_PACKAGE,
@@ -29,7 +29,6 @@ PRIVACY_ARGS = [
     "--redactNetworkHeaders",
 ]
 ISOLATED_ARGS = [*PRIVACY_ARGS, "--isolated=true"]
-PERSISTENT_ARGS = [*PRIVACY_ARGS, f"--userDataDir={DEFAULT_PROFILE}"]
 SUPPORTED_AGENTS = {"codex", "claude-code", "cursor", "kilo", "opencode", "openclaw"}
 
 
@@ -81,25 +80,41 @@ def chrome_fact() -> dict[str, Any]:
     return {"available": bool(found), "paths": found, "checked": checked}
 
 
-def standard_config(mode: str = "isolated") -> dict[str, Any]:
+def resolve_state_root(value: str | Path | None) -> Path:
+    root = repo_root() if value is None else Path(value).expanduser()
+    if not root.is_absolute():
+        raise ValueError("state root must be an absolute path")
+    return root.resolve()
+
+
+def persistent_profile_dir(state_root: str | Path | None) -> Path:
+    return resolve_state_root(state_root) / DEFAULT_PROFILE_RELATIVE
+
+
+def standard_config(mode: str = "isolated", state_root: str | Path | None = None) -> dict[str, Any]:
     if mode not in {"isolated", "persistent"}:
         raise ValueError("mode must be isolated or persistent")
-    args = ISOLATED_ARGS if mode == "isolated" else PERSISTENT_ARGS
+    if mode == "persistent" and state_root is None:
+        raise ValueError("persistent mode requires an explicit absolute state root")
+    root = resolve_state_root(state_root) if state_root is not None or mode == "persistent" else None
+    profile = persistent_profile_dir(root) if root is not None else None
+    args = ISOLATED_ARGS if mode == "isolated" else [*PRIVACY_ARGS, f"--userDataDir={profile}"]
     return {
         "name": MCP_NAME,
         "mode": mode,
         "transport": "stdio",
         "command": "npx",
         "args": args,
-        "recommended_profile_dir": None if mode == "isolated" else DEFAULT_PROFILE,
-        "persistent_profile_dir": DEFAULT_PROFILE,
+        "state_root": str(root) if root is not None else None,
+        "recommended_profile_dir": None if mode == "isolated" else str(profile),
+        "persistent_profile_dir": str(profile) if profile is not None else None,
         "pinned_reproducibility_snapshot": PINNED_SNAPSHOT,
     }
 
 
-def inspect(require: bool) -> tuple[dict[str, Any], int]:
-    root = repo_root()
-    profile = root / DEFAULT_PROFILE
+def inspect(require: bool, state_root: str | Path | None = None) -> tuple[dict[str, Any], int]:
+    root = resolve_state_root(state_root)
+    profile = persistent_profile_dir(root)
     node = command_fact("node")
     npx = command_fact("npx")
     chrome = chrome_fact()
@@ -135,9 +150,10 @@ def inspect(require: bool) -> tuple[dict[str, Any], int]:
         "profile": {
             "path": str(profile),
             "exists": profile.exists(),
-            "recommended_relative_path": DEFAULT_PROFILE,
+            "state_root": str(root),
+            "recommended_relative_path": DEFAULT_PROFILE_RELATIVE,
         },
-        "recommended_mcp_server": standard_config(),
+        "recommended_mcp_server": standard_config(state_root=root),
         "warnings": warnings,
         "errors": errors,
     }
@@ -187,10 +203,10 @@ def example(agent: str) -> dict[str, Any]:
             "schema_version": 1,
             "agent": agent,
             "status": "source_backed",
-            "source": "https://kilo.ai/docs/automate/mcp/using-in-cli",
+            "source": "https://kilo.ai/docs/automate/mcp/using-in-kilo-code",
             "example": {
                 "format": "json",
-                "path": "~/.config/kilo/mcp.json",
+                "path": "~/.config/kilo/kilo.json[c], ./kilo.json[c], or ./.kilo/kilo.json[c]",
                 "snippet": json.dumps(
                     {
                         "mcp": {
@@ -212,7 +228,7 @@ def example(agent: str) -> dict[str, Any]:
             "source": "https://opencode.ai/docs/mcp-servers/",
             "example": {
                 "format": "json",
-                "path": "opencode.jsonc, opencode.json, or .local/opencode/*.json",
+                "path": "~/.config/opencode/opencode.json[c] or project-root opencode.json[c]",
                 "snippet": json.dumps(
                     {
                         "$schema": "https://opencode.ai/config.json",
@@ -265,6 +281,7 @@ def build_parser() -> argparse.ArgumentParser:
     inspect_parser = subparsers.add_parser("inspect", help="Report host facts and warning-only readiness checks.")
     inspect_parser.add_argument("--json", action="store_true", help="Print JSON output.")
     inspect_parser.add_argument("--require", action="store_true", help="Exit non-zero when node, npx, or Chrome are missing.")
+    inspect_parser.add_argument("--state-root", help="Absolute project/state root used to resolve the dedicated profile path.")
 
     standard_parser = subparsers.add_parser("standard-config", help="Emit a client-neutral MCP server definition.")
     standard_parser.add_argument(
@@ -274,6 +291,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="Browser profile mode. Defaults to isolated ephemeral sessions.",
     )
     standard_parser.add_argument("--json", action="store_true", help="Print JSON output.")
+    standard_parser.add_argument(
+        "--state-root",
+        help="Absolute project/state root; required for persistent mode so --userDataDir never depends on process cwd.",
+    )
 
     example_parser = subparsers.add_parser("example", help="Emit a source-backed agent config example when available.")
     example_parser.add_argument("--agent", required=True, help="Agent platform id.")
@@ -285,11 +306,15 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.command == "inspect":
-        payload, code = inspect(require=args.require)
+        payload, code = inspect(require=args.require, state_root=args.state_root)
         emit(payload, args.json)
         return code
     if args.command == "standard-config":
-        emit({"schema_version": 1, "status": "ok", "mcp_server": standard_config(args.mode)}, args.json)
+        try:
+            config = standard_config(args.mode, args.state_root)
+        except ValueError as error:
+            build_parser().error(str(error))
+        emit({"schema_version": 1, "status": "ok", "mcp_server": config}, args.json)
         return 0
     if args.command == "example":
         emit(example(args.agent), args.json)

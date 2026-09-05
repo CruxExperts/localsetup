@@ -10,7 +10,7 @@ Language and framework selection, configuration, and patterns.
 - [TypeScript/JavaScript](#typescriptjavascript)
 - [Python](#python)
 - [Java](#java)
-- [Version Requirements](#version-requirements)
+- [Compatibility Matrix](#compatibility-matrix)
 
 ---
 
@@ -18,10 +18,10 @@ Language and framework selection, configuration, and patterns.
 
 | Language | Recommended | Alternatives | Best For |
 |----------|-------------|--------------|----------|
-| TypeScript/JS | Jest | Vitest, Mocha | React, Node.js, Next.js |
-| Python | Pytest | unittest, nose2 | Django, Flask, FastAPI |
-| Java | JUnit 5 | TestNG | Spring, Android |
-| Vite projects | Vitest | Jest | Modern Vite-based apps |
+| TypeScript/JS | Jest 30 | Vitest 5, Mocha, Jasmine | React, Node.js, Next.js |
+| Python | pytest 9 | unittest | Django, Flask, FastAPI |
+| Java | JUnit 6 | TestNG | Spring and JVM services |
+| Vite projects | Vitest 5 | Jest 30 | Vite 6.4+ applications |
 
 ---
 
@@ -72,7 +72,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    coverage: { provider: 'c8' }
+    coverage: { provider: 'v8' }
   }
 });
 ```
@@ -133,14 +133,14 @@ class TestCalculator:
 
 ## Java
 
-### JUnit 5 Configuration (Maven)
+### JUnit 6 Configuration (Maven)
 
 ```xml
 <!-- pom.xml -->
 <dependency>
     <groupId>org.junit.jupiter</groupId>
     <artifactId>junit-jupiter</artifactId>
-    <version>5.9.3</version>
+    <version>6.0.0</version>
     <scope>test</scope>
 </dependency>
 <plugin>
@@ -150,10 +150,12 @@ class TestCalculator:
 </plugin>
 ```
 
-### JUnit 5 Test Pattern
+### JUnit 6 Test Pattern
 
 ```java
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CalculatorTest {
@@ -192,15 +194,28 @@ class CalculatorTest {
 
 ---
 
-## Version Requirements
+## Compatibility Matrix
 
-| Tool | Minimum Version | Notes |
-|------|-----------------|-------|
-| Node.js | 16+ | Required for Jest 29+ |
-| Jest | 29+ | Modern async support |
-| Vitest | 0.34+ | Stable API |
-| Python | 3.8+ | f-strings, async support |
-| Pytest | 7+ | Modern fixtures |
-| Java | 11+ | JUnit 5 support |
-| JUnit | 5.9+ | ParameterizedTest improvements |
-| TypeScript | 4.5+ | Strict mode features |
+This is the package's only authoritative framework matrix. The shared Node floor is deliberately the stricter Vitest floor so every advertised Node framework works in one environment.
+
+| Runtime or tool | Supported floor | Compatibility reason |
+|-----------------|-----------------|----------------------|
+| Node.js | 22.12+ | Vitest 5 requires Node 22.12+; this also satisfies Jest 30's Node 18+ floor |
+| Jest | 30+ | Current supported Jest major represented by the generated API |
+| Vitest | 5+ | Current Vitest major; pair with Vite 6.4+ |
+| Vite | 6.4+ | Minimum accepted by Vitest 5 |
+| Python | 3.12+ | Localsetup package runtime floor |
+| pytest | 9+ | Current pytest major; its upstream Python 3.10+ floor is covered by Python 3.12+ |
+| Java | 17+ | Minimum runtime for JUnit 6 |
+| JUnit | 6+ | Current JUnit generation and examples |
+| TypeScript | 5.4+ | Baseline for current typed examples |
+
+Verified against primary upstream documentation on 2026-09-02:
+
+- [Node.js release schedule](https://nodejs.org/en/about/previous-releases)
+- [Jest 30 upgrade guide](https://jestjs.io/docs/upgrading-to-jest30)
+- [Vitest guide](https://main.vitest.dev/guide/)
+- [pytest 9 documentation](https://docs.pytest.org/en/9.0.x/)
+- [Python 3.12 release](https://www.python.org/downloads/release/python-3120/)
+- [JUnit current user guide](https://docs.junit.org/current/user-guide/)
+- [TypeScript 5.4 release notes](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-4.html)

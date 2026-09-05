@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 42feb5176a538f7b3953bc51866cca08b8bdb4ec3a60beac1c32847f8abde74a
+  source_provenance_hash: 63ed750f9b865fb766e21a67dfe80aa9fce422496d54ce403c730a4081b1f6a4
   emitter: generate-docs
-framework_version: 4.3.9
-source_commit: a670cedf63b791dd886015c4fdfa88c425b9e8d2
-artifact_sha256: 109beaae302c4ca8a26ac36c6a6f017889b5ffa84cf3eb0cb6a4749fae98c30d
+framework_version: 4.4.0
+source_commit: e8b7971a5b63885f157a2bdfaed90c276f77b72f
+artifact_sha256: 9c19a1db48f8405359c9bb51e65bc1b3286bae53bc9862f67a747577577485d3
 ---
 # Skill And Workflow Packs
 
@@ -13,20 +13,20 @@ artifact_sha256: 109beaae302c4ca8a26ac36c6a6f017889b5ffa84cf3eb0cb6a4749fae98c30
 |---|---|---|---|---:|---|---|
 | `bootstrap, core` | `skill` | `ls-communication-and-tools` | `core` | 10 | `communication, tools` | `localsetup-communication-and-tools` |
 | `bootstrap, core` | `skill` | `ls-context` | `core` | 10 | `context, bootstrap` | `localsetup-context` |
-| `core, dev` | `skill` | `ls-context-index` | `core` | 10 | `context, index` | `localsetup-context-index` |
+| `core, dev, harness` | `skill` | `ls-context-index` | `core` | 10 | `context, index` | `localsetup-context-index` |
 | `bootstrap, core` | `skill` | `ls-safety-and-backup` | `core` | 10 | `safety, backup` | `localsetup-safety-and-backup` |
-| `bootstrap, core` | `skill` | `ls-script-and-docs-quality` | `core` | 10 | `scripts, docs` | `localsetup-script-and-docs-quality` |
+| `bootstrap, core, publishing` | `skill` | `ls-script-and-docs-quality` | `core` | 10 | `scripts, docs` | `localsetup-script-and-docs-quality` |
 | `bootstrap, core` | `skill` | `ls-task-skill-matcher` | `core` | 10 | `routing, skills` | `localsetup-task-skill-matcher` |
 | `bootstrap, core` | `skill` | `ls-test-runner` | `core` | 10 | `testing, validation` | `localsetup-test-runner` |
 | `publishing` | `skill` | `ls-automatic-versioning` | `framework-governance` | 20 | `versioning, release` | `localsetup-automatic-versioning` |
-| `bootstrap, dev` | `skill` | `ls-docs-organization` | `framework-governance` | 20 | `docs, organization` | `localsetup-docs-organization` |
+| `bootstrap, dev, publishing` | `skill` | `ls-docs-organization` | `framework-governance` | 20 | `docs, organization` | `localsetup-docs-organization` |
 | `dev, publishing` | `skill` | `ls-documentation-alignment` | `framework-governance` | 20 | `docs, alignment` | `localsetup-documentation-alignment` |
-| `dev` | `skill` | `ls-framework-audit` | `framework-governance` | 20 | `audit, release` | `localsetup-framework-audit` |
+| `bootstrap, dev` | `skill` | `ls-framework-audit` | `framework-governance` | 20 | `audit, release` | `localsetup-framework-audit` |
 | `bootstrap, dev` | `skill` | `ls-framework-compliance` | `framework-governance` | 20 | `compliance, framework` | `localsetup-framework-compliance` |
 | `bootstrap, dev` | `skill` | `ls-git-workflows` | `framework-governance` | 20 | `git, workflows` | `localsetup-git-workflows` |
 | `publishing` | `skill` | `ls-github-publishing-workflow` | `framework-governance` | 20 | `github, publishing` | `localsetup-github-publishing-workflow` |
 | `core` | `skill` | `ls-localsetup-doctor` | `framework-governance` | 20 | `doctor, repair` | `localsetup-localsetup-doctor` |
-| `dev` | `skill` | `ls-markdown-reference-validator` | `framework-governance` | 20 | `markdown, references` | `localsetup-markdown-reference-validator` |
+| `dev, publishing` | `skill` | `ls-markdown-reference-validator` | `framework-governance` | 20 | `markdown, references` | `localsetup-markdown-reference-validator` |
 | `publishing` | `skill` | `ls-public-repo-identity` | `framework-governance` | 20 | `identity, publishing` | `localsetup-public-repo-identity` |
 | `dev` | `skill` | `ls-receiving-code-review` | `framework-governance` | 20 | `review, feedback` | `localsetup-receiving-code-review` |
 | `dev` | `skill` | `ls-requesting-code-review` | `framework-governance` | 20 | `review, feedback` | `localsetup-requesting-code-review` |
@@ -88,7 +88,7 @@ artifact_sha256: 109beaae302c4ca8a26ac36c6a6f017889b5ffa84cf3eb0cb6a4749fae98c30
 | `growth-content, skill-lifecycle` | `skill` | `ls-seo-geo-claude-skills` | `skill-lifecycle` | 60 | `skills, inventory` | `localsetup-seo-geo-claude-skills` |
 | `integrations` | `skill` | `ls-shopify-storefront` | `integrations` | 60 | `external-service, integration` | `localsetup-shopify-storefront` |
 | `skill-lifecycle` | `skill` | `ls-skill-creator` | `skill-lifecycle` | 60 | `skills, authoring` | `localsetup-skill-creator` |
-| `skill-lifecycle` | `skill` | `ls-skill-discovery` | `skill-lifecycle` | 60 | `skills, discovery` | `localsetup-skill-discovery` |
+| `dev, skill-lifecycle` | `skill` | `ls-skill-discovery` | `skill-lifecycle` | 60 | `skills, discovery` | `localsetup-skill-discovery` |
 | `skill-lifecycle` | `skill` | `ls-skill-importer` | `skill-lifecycle` | 60 | `skills, import` | `localsetup-skill-importer` |
 | `skill-lifecycle` | `skill` | `ls-skill-normalizer` | `skill-lifecycle` | 60 | `skills, normalization` | `localsetup-skill-normalizer` |
 | `skill-lifecycle` | `skill` | `ls-skill-sandbox-tester` | `skill-lifecycle` | 60 | `skills, sandbox` | `localsetup-skill-sandbox-tester` |
@@ -114,13 +114,7 @@ artifact_sha256: 109beaae302c4ca8a26ac36c6a6f017889b5ffa84cf3eb0cb6a4749fae98c30
 | `growth-content, specialized` | `skill` | `ls-humanizer` | `specialized` | 70 | `writing, editing` | `localsetup-humanizer` |
 | `specialized` | `skill` | `ls-kilo-boss-orchestrator` | `specialized` | 70 | `kilo, orchestration` | `localsetup-kilo-boss-orchestrator` |
 | `specialized` | `skill` | `ls-kilo-visual-output` | `specialized` | 70 | `kilo, output` | `localsetup-kilo-visual-output` |
-| `bootstrap, dev` | `workflow` | `ls-workflow-audit-framework` | n/a | n/a | n/a | `n/a` |
-| `dev` | `workflow` | `ls-workflow-audit-markdown-references` | n/a | n/a | n/a | `n/a` |
 | `dev, publishing` | `workflow` | `ls-workflow-codex-github-issue-goal-loop` | n/a | n/a | n/a | `n/a` |
-| `harness` | `workflow` | `ls-workflow-codex-heartbeat` | n/a | n/a | n/a | `n/a` |
-| `dev` | `workflow` | `ls-workflow-context-index-query` | n/a | n/a | n/a | `n/a` |
-| `dev, harness` | `workflow` | `ls-workflow-context-index-refresh` | n/a | n/a | n/a | `n/a` |
-| `dev, publishing` | `workflow` | `ls-workflow-documentation-alignment` | n/a | n/a | n/a | `n/a` |
 | `bootstrap, dev` | `workflow` | `ls-workflow-ops-guarded` | n/a | n/a | n/a | `n/a` |
 | `core, ops` | `workflow` | `ls-workflow-ops-tmux-session` | n/a | n/a | n/a | `n/a` |
 | `bootstrap, dev` | `workflow` | `ls-workflow-pipeline-git-repair-hygiene` | n/a | n/a | n/a | `n/a` |
@@ -133,8 +127,6 @@ artifact_sha256: 109beaae302c4ca8a26ac36c6a6f017889b5ffa84cf3eb0cb6a4749fae98c30
 | `dev` | `workflow` | `ls-workflow-planning-critic-loop` | n/a | n/a | n/a | `n/a` |
 | `dev` | `workflow` | `ls-workflow-queue-batch-implement` | n/a | n/a | n/a | `n/a` |
 | `harness` | `workflow` | `ls-workflow-repo-finalizer` | n/a | n/a | n/a | `n/a` |
-| `dev` | `workflow` | `ls-workflow-skills-index-refresh` | n/a | n/a | n/a | `n/a` |
 | `dev` | `workflow` | `ls-workflow-spec-clarify-reverse` | n/a | n/a | n/a | `n/a` |
 | `core, ops` | `workflow` | `ls-workflow-tmux-terminal-mode` | n/a | n/a | n/a | `n/a` |
-| `integrations` | `workflow` | `ls-workflow-transport-handoff` | n/a | n/a | n/a | `n/a` |
 | `specialized` | `workflow` | `ls-workflow-umbrella-run` | n/a | n/a | n/a | `n/a` |

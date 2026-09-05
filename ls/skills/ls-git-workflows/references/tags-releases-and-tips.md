@@ -32,7 +32,7 @@ git push origin --delete v1.2.0
 
 - `git rebase -i` is the single most useful advanced git command. Learn it first.
 - Never rebase commits that have been pushed to a shared branch. Rebase your local/feature work only.
-- `git reflog` is your safety net. If you lose commits, they're almost always recoverable within 90 days.
+- `git reflog` can help locate prior local reference tips, but recovery is not guaranteed. The 90-day `gc.reflogExpire` default is configurable; unreachable entries use a separate 30-day default and `git gc` can prune reflogs and unreachable objects. Inspect the relevant local reflog promptly.
 - `git bisect run` with an automated test is faster than manual binary search and eliminates human error.
 - Worktrees are cheaper than multiple clones because they share `.git` storage.
 - Prefer `git subtree` over `git submodule` unless you have a specific reason. Subtrees are simpler for collaborators.

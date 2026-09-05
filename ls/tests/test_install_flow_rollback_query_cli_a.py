@@ -246,7 +246,7 @@ def test_query_payloads_cover_catalog_reasoning_graph_and_adoption(tmp_path: Pat
     (target / ".github" / "workflows").mkdir(parents=True)
 
     skills = skill_payload(root, "context")
-    workflows = workflow_payload(root, "heartbeat")
+    workflows = workflow_payload(root, "repo-finalizer")
     reasoning = pack_reasoning(root, ["core"])
     graph = graph_payload(root)
     adoption = adopt_recommendations(target)

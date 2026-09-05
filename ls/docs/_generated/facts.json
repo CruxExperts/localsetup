@@ -1,5 +1,5 @@
 {
-  "major_minor": "4.3",
+  "major_minor": "4.4",
   "platform_count": 6,
   "platforms": [
     {
@@ -41,16 +41,16 @@
   ],
   "provenance": {
     "artifact_path": "ls/docs/_generated/facts.json",
-    "artifact_sha256": "f2d3f748831fefb46896a575b149c4facab3c3cc2077b9afcab52336d49c0676",
+    "artifact_sha256": "c0c133fb07d1b0108e737bbf6026bbc4b4c107ebe30b923a38477c6ff860024e",
     "emitter": "generate-docs",
-    "framework_version": "4.3.9",
+    "framework_version": "4.4.0",
     "schema_version": 1,
-    "source_commit": "a670cedf63b791dd886015c4fdfa88c425b9e8d2",
+    "source_commit": "e8b7971a5b63885f157a2bdfaed90c276f77b72f",
     "source_dirty": true,
-    "source_provenance_hash": "42feb5176a538f7b3953bc51866cca08b8bdb4ec3a60beac1c32847f8abde74a",
-    "source_root_id": "c99a5bfa0382f7fa268df8489fc03e6fd088128883e0eb7bc4790ccc3a94a61d",
+    "source_provenance_hash": "63ed750f9b865fb766e21a67dfe80aa9fce422496d54ce403c730a4081b1f6a4",
+    "source_root_id": "585761070824e4e7ee4dd83364f76ac7b9b23f574393d59315ed9130ece83814",
     "source_tag": null,
-    "source_tree_sha": "838a3a45e51650e4dd6be2bffebec190f4b6eab4"
+    "source_tree_sha": "d99b69361ebbb62df2ff7d9b927f2a934f3d9a2a"
   },
   "skill_count": 103,
   "skills": [
@@ -95,7 +95,8 @@
       "owner_scope": "skill",
       "packs": [
         "core",
-        "dev"
+        "dev",
+        "harness"
       ],
       "path": "ls/skills/ls-context-index/SKILL.md",
       "sort_priority": 10,
@@ -129,7 +130,8 @@
       "owner_scope": "skill",
       "packs": [
         "bootstrap",
-        "core"
+        "core",
+        "publishing"
       ],
       "path": "ls/skills/ls-script-and-docs-quality/SKILL.md",
       "sort_priority": 10,
@@ -196,7 +198,8 @@
       "owner_scope": "skill",
       "packs": [
         "bootstrap",
-        "dev"
+        "dev",
+        "publishing"
       ],
       "path": "ls/skills/ls-docs-organization/SKILL.md",
       "sort_priority": 20,
@@ -229,6 +232,7 @@
       "name": "ls-framework-audit",
       "owner_scope": "skill",
       "packs": [
+        "bootstrap",
         "dev"
       ],
       "path": "ls/skills/ls-framework-audit/SKILL.md",
@@ -311,7 +315,8 @@
       "name": "ls-markdown-reference-validator",
       "owner_scope": "skill",
       "packs": [
-        "dev"
+        "dev",
+        "publishing"
       ],
       "path": "ls/skills/ls-markdown-reference-validator/SKILL.md",
       "sort_priority": 20,
@@ -383,7 +388,7 @@
         "git",
         "recovery"
       ],
-      "version": "1.2"
+      "version": "1.3"
     },
     {
       "class": "development",
@@ -481,7 +486,7 @@
         "tdd",
         "testing"
       ],
-      "version": "1.1"
+      "version": "1.2"
     },
     {
       "class": "development",
@@ -679,7 +684,7 @@
         "cloudflare",
         "dns"
       ],
-      "version": "2.0"
+      "version": "3.0"
     },
     {
       "class": "integrations",
@@ -812,7 +817,7 @@
         "update",
         "provenance"
       ],
-      "version": "1.1"
+      "version": "1.2"
     },
     {
       "class": "integrations",
@@ -1334,6 +1339,7 @@
       "name": "ls-skill-discovery",
       "owner_scope": "skill",
       "packs": [
+        "dev",
         "skill-lifecycle"
       ],
       "path": "ls/skills/ls-skill-discovery/SKILL.md",
@@ -1358,7 +1364,7 @@
         "skills",
         "import"
       ],
-      "version": "1.4"
+      "version": "1.5"
     },
     {
       "class": "skill-lifecycle",
@@ -1406,7 +1412,7 @@
         "skills",
         "security"
       ],
-      "version": "1.2"
+      "version": "1.3"
     },
     {
       "class": "integrations",
@@ -1754,50 +1760,14 @@
       "version": "1.0"
     }
   ],
-  "version": "4.3.9",
-  "workflow_count": 24,
+  "version": "4.4.0",
+  "workflow_count": 16,
   "workflows": [
-    {
-      "id": "audit-framework",
-      "name": "Audit Framework",
-      "package": "ls-workflow-audit-framework",
-      "path": "ls/workflows/ls-workflow-audit-framework/SKILL.md"
-    },
-    {
-      "id": "audit-markdown-references",
-      "name": "Audit Markdown References",
-      "package": "ls-workflow-audit-markdown-references",
-      "path": "ls/workflows/ls-workflow-audit-markdown-references/SKILL.md"
-    },
     {
       "id": "codex-github-issue-goal-loop",
       "name": "Codex GitHub Issue Goal Loop",
       "package": "ls-workflow-codex-github-issue-goal-loop",
       "path": "ls/workflows/ls-workflow-codex-github-issue-goal-loop/SKILL.md"
-    },
-    {
-      "id": "codex-heartbeat",
-      "name": "Codex Heartbeat",
-      "package": "ls-workflow-codex-heartbeat",
-      "path": "ls/workflows/ls-workflow-codex-heartbeat/SKILL.md"
-    },
-    {
-      "id": "context-index-query",
-      "name": "Context Index Query",
-      "package": "ls-workflow-context-index-query",
-      "path": "ls/workflows/ls-workflow-context-index-query/SKILL.md"
-    },
-    {
-      "id": "context-index-refresh",
-      "name": "Context Index Refresh",
-      "package": "ls-workflow-context-index-refresh",
-      "path": "ls/workflows/ls-workflow-context-index-refresh/SKILL.md"
-    },
-    {
-      "id": "documentation-alignment",
-      "name": "Documentation Alignment",
-      "package": "ls-workflow-documentation-alignment",
-      "path": "ls/workflows/ls-workflow-documentation-alignment/SKILL.md"
     },
     {
       "id": "ops-guarded",
@@ -1872,12 +1842,6 @@
       "path": "ls/workflows/ls-workflow-repo-finalizer/SKILL.md"
     },
     {
-      "id": "skills-index-refresh",
-      "name": "Skills Index Refresh",
-      "package": "ls-workflow-skills-index-refresh",
-      "path": "ls/workflows/ls-workflow-skills-index-refresh/SKILL.md"
-    },
-    {
       "id": "spec-clarify-reverse",
       "name": "Reverse Prompt Spec Clarify",
       "package": "ls-workflow-spec-clarify-reverse",
@@ -1888,12 +1852,6 @@
       "name": "Tmux Terminal Mode",
       "package": "ls-workflow-tmux-terminal-mode",
       "path": "ls/workflows/ls-workflow-tmux-terminal-mode/SKILL.md"
-    },
-    {
-      "id": "transport-handoff",
-      "name": "Transport Handoff",
-      "package": "ls-workflow-transport-handoff",
-      "path": "ls/workflows/ls-workflow-transport-handoff/SKILL.md"
     },
     {
       "id": "umbrella-run",

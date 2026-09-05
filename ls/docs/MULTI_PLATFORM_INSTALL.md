@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.3
+version: 4.4
 owner_skill: ls-framework-compliance
 ---
 
@@ -9,7 +9,7 @@ owner_skill: ls-framework-compliance
 **Purpose:** How to install Localsetup for each supported AI agent platform. Supported platforms are listed in `ls/config/platforms.yaml` and summarized in [_generated/platform-adapters.md](_generated/platform-adapters.md). Same framework; explicitly selected platform adapter paths point at a shared managed package library. For a copy-paste option table, see [Command reference](COMMAND_REFERENCE.md).
 
 <p align="center">
-  <img src="../../assets/localsetup-install-lifecycle.svg" alt="Localsetup install lifecycle: doctor, configure, context, plan, install, verify, ship, and rollback" width="960">
+  <img src="../../assets/localsetup-install-lifecycle.png" alt="Inspect, plan, confirm scope, apply, verify, and restore recorded managed paths with rollback" width="960">
 </p>
 
 ## Platform detection and script selection

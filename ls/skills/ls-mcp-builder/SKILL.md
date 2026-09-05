@@ -1,6 +1,6 @@
 ---
 name: ls-mcp-builder
-description: "Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services through well-designed tools. Use when building MCP servers to integrate external APIs or services, whether in Python (FastMCP) or Node/TypeScript (MCP SDK)."
+description: "Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services through well-designed tools. Use when building MCP servers to integrate external APIs or services, whether in Python (MCPServer) or Node/TypeScript (MCP SDK)."
 metadata:
   version: "1.2"
 compatibility: "Python 3.12+. Scripts in scripts/ (evaluation.py, connections.py, llm_providers/) follow framework tooling standard. MCP connection: mcp. Claude: anthropic. OpenAI-compatible: openai. Emulation: no extra deps; uses JSON script to simulate LLM."
@@ -73,22 +73,22 @@ verifiable questions and run the bundled harness.
 Run the harness with its dependencies from the skill directory:
 
 ```bash
-uv run --with 'mcp>=1.1.0' --with 'anthropic>=0.39.0' --with 'openai>=1.0.0' -- python scripts/evaluation.py --help
+uv run --with 'mcp>=2,<3' --with 'anthropic>=0.39.0' --with 'openai>=1.0.0' -- python scripts/evaluation.py --help
 ```
 
 Provider examples:
 
 ```bash
 # Claude provider
-ANTHROPIC_API_KEY=... uv run --with 'mcp>=1.1.0' --with 'anthropic>=0.39.0' --with 'openai>=1.0.0' -- python scripts/evaluation.py \
+ANTHROPIC_API_KEY=... uv run --with 'mcp>=2,<3' --with 'anthropic>=0.39.0' --with 'openai>=1.0.0' -- python scripts/evaluation.py \
   -t stdio -c python -a my_server.py evaluation.xml
 
 # OpenAI-compatible provider
-OPENAI_API_KEY=... uv run --with 'mcp>=1.1.0' --with 'anthropic>=0.39.0' --with 'openai>=1.0.0' -- python scripts/evaluation.py --provider openai \
+OPENAI_API_KEY=... uv run --with 'mcp>=2,<3' --with 'anthropic>=0.39.0' --with 'openai>=1.0.0' -- python scripts/evaluation.py --provider openai \
   -t stdio -c python -a my_server.py evaluation.xml
 
 # Emulation provider, no LLM key
-uv run --with 'mcp>=1.1.0' -- python scripts/evaluation.py --provider emulation \
+uv run --with 'mcp>=2,<3' -- python scripts/evaluation.py --provider emulation \
   --emulation-script assets/smoke_emulation.json \
   -t stdio -c python -a my_server.py assets/smoke_eval.xml
 ```
@@ -108,7 +108,7 @@ The evaluation XML format is:
 
 - [MCP best practices](./references/mcp_best_practices.md): universal design,
   naming, response, pagination, security, and error-handling guidance.
-- [Python implementation guide](./references/python_mcp_server.md): FastMCP
+- [Python implementation guide](./references/python_mcp_server.md): MCPServer
   examples, Pydantic patterns, resources, prompts, and quality checklist.
 - [TypeScript implementation guide](./references/node_mcp_server.md): SDK server
   structure, Zod patterns, tool registration, build setup, and checklist.

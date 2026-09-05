@@ -11,11 +11,11 @@ alwaysApply: true
 
 ## Overview
 
-Localsetup is a universal, cross-platform agentic workflow engine. It is **deployed into the client repository** at `ls/`. All framework code lives in `ls/`; mutable user/context data belongs in repo-level or platform-owned paths outside `ls/`. Git coupling: attach git hash when referencing PRDs, specs, or outcomes. See ls/docs/GIT_TRACEABILITY.md.
+Localsetup keeps framework source and target repositories separate. `ls/` is the source-checkout layout; selected packages live in the managed user library and explicitly selected adapters expose them to a target repo. Load `ls-context` and use `localsetup path framework-root` or `localsetup path doc <name>` to resolve source files and documentation. Paths beginning with `ls/` below describe source locations, not required target-repo files. Bind PRDs, specs, and outcomes to Git hashes; see [GIT_TRACEABILITY.md](../../docs/GIT_TRACEABILITY.md).
 
 ## Invariants (always apply)
 
-- **Engine/repo separation:** Never commit repo-local secrets or PII. Use ls/lib/data_paths.sh (or equivalent) for path resolution. Framework lives at ls/; upgrades replace that folder.
+- **Engine/repo separation:** Keep secrets and personal data out of commits. Resolve framework paths through `localsetup path`; keep target state outside the managed source and package library.
 - **Documentation discipline:** ls/docs/ is ONLY for framework documentation. Check document status (ACTIVE/PROPOSAL/DRAFT) before assuming a feature is implemented.
 - **Proposals:** Any change to the framework must follow the Agent Q format; see ls/docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md.
 - **Time/date integrity:** For any date or time reference (e.g. "today", year in a search, timestamps), first obtain the actual date/time from the local machine using a platform-appropriate command (e.g. `date` on Linux/macOS, `Get-Date` in PowerShell on Windows). Do not use a generic or training-cutoff date (e.g. 2024 when the current year is different). Remember the obtained date/time in context and use it consistently for the remainder of the session.
@@ -37,77 +37,25 @@ Localsetup is a universal, cross-platform agentic workflow engine. It is **deplo
 
 ## Agent orchestration and model budget
 
-- Inventory and scouting: use `gpt-5.4-mini` for cheap repo/file inventory, low-risk search, and parallel subagent scouting.
-- Critical review: use `gpt-5.5` at medium reasoning for security, release blockers, architecture, and high-risk review findings.
-- Bounded coding: use `gpt-5.3-codex` for scoped implementation tasks with clear write ownership and tests.
+- Choose bounded scouting, implementation, and independent review roles from task risk and evidence. Resolve models and effort through the current client configuration; verify provider facts when needed instead of keeping model pins in this template.
 - Credit freshness: Codex credit rates are volatile. Re-check the official Codex rate card at https://help.openai.com/en/articles/20001106-codex-rate-card before changing model guidance or making cost-sensitive routing decisions.
 - If `.localsetup/AGENT_STATUS.md` exists, read it before repairs or installs. Otherwise run `localsetup health --json` for the latest Localsetup health status and next repair command.
 
-## Capability skills and workflow packages index
+## Capability and workflow discovery
 
-Load the appropriate skill when the task matches. Runtime skills are managed in `~/.local/share/localsetup/packages` and exposed to Cursor through the `.cursor/skills` adapter path.
+Load `ls-context` for framework layout and resolver guidance. Use the current
+client's available-skill descriptions to select installed capabilities; a catalog
+entry alone does not mean that package is installed or available to this client.
+For the full framework catalog, resolve `localsetup path doc SKILLS.md` and
+`localsetup path doc WORKFLOW_REGISTRY.md`, then read only the entries relevant
+to the task. Package frontmatter and generated catalogs own descriptions, tags,
+and pack membership; do not duplicate their lists in platform context.
 
-| Package | When to use |
-|-------|--------------|
-| ls-workflow-spec-clarify-reverse | User says "decision tree", "reverse prompt"; editing .agent/queue/**, PRD |
-| ls-workflow-umbrella-run | Queue/PRD in scope; named workflows; impact summary + confirmation |
-| ls-workflow-queue-batch-implement | "Process PRDs", "run batch from PRD folder"; implement per spec, outcome |
-| ls-agentq-transport | Ship/ingest Agent Q blobs (file_drop/mail), registry, strict gpg; AGENTIC_AGENT_Q_SCENARIOS.md |
-| ls-mail-protocol-control | SMTP/IMAP; preencrypted_openpgp_armored for Agent Q strict mail |
-| ls-public-repo-identity | Editing README*, CONTRIBUTING*; public identity |
-| ls-framework-compliance | Framework modifications, PRDs, checklist/checkpoints |
-| ls-safety-and-backup | Destructive ops, backups, temp files, firewall |
-| ls-script-and-docs-quality | Generating scripts, markdown/docs |
-| ls-communication-and-tools | Communication style, tool choice, MCP/context updates |
-| ls-workflow-ops-tmux-session | Server/system commands, deployments, tmux, shared session, human-in-the-loop ops |
-| ls-workflow-tmux-terminal-mode | Enable, disable, and status checks for tmux-default terminal mode |
-| ls-automatic-versioning | Version bumps, release workflow, conventional commits, versioning docs |
-| ls-github-publishing-workflow | Publishing to GitHub, public release prep, publishing checklist, repo readiness |
-| ls-github-starredrepos | Manage a GitHub starred repositories archive named starredrepos; authenticated context checks, dry-run sync, repo scouting, metadata snapshots, and guarded publish workflows |
-| ls-codex-heartbeat | Opt-in Codex heartbeat harness; use localsetup harness codex-heartbeat plan/init/enable/status/run/disable; normal install does not activate autonomous runs |
-| ls-skill-creator | Create new capability skill from an existing doc/markdown/GitHub source; use workflow packages for named orchestration flows |
-| ls-skill-importer | Import skills from URL or local path; discover, validate, screen, summarize; user picks which to import |
-| ls-skill-discovery | Discover public skills from registries (awesome lists, etc.); recommend top 5 similar when creating/importing; offer in-depth summary, use public skill, continue on own, or adapt |
-| ls-task-skill-matcher | Match user tasks to installed skills; recommend top matches; single-task confirm once; batch auto-pick/parcel flow; complementary public-skill suggestions |
-| ls-backlog-and-reminders | Record deferred ideas, to-dos, reminders (optional due or "whenever"); show due/overdue on session start or when asked |
-| ls-humanizer | Humanize text; remove AI-writing patterns and add natural voice (rules-based, Wikipedia Signs of AI writing) |
-| ls-test-runner | Write and run tests across languages and frameworks; TDD, coverage |
-| ls-tdd-guide | TDD workflow, test generation, coverage analysis |
-| ls-receiving-code-review | Use when receiving code review feedback; verify before implementing |
-| ls-requesting-code-review | Use when requesting code review before merge or after substantial changes; provide focused requirements, diff range, and severity-calibrated review instructions. |
-| ls-pr-reviewer | Automated GitHub PR code review with diff analysis, lint |
-| ls-debug-pro | Systematic debugging methodology and language-specific debugging |
-| ls-git-workflows | Advanced git (rebase, bisect, worktree, reflog) |
-| ls-unfuck-my-git-state | Diagnose and recover broken Git state and worktree |
-| ls-skill-vetter | Security-first skill vetting before installing external skills |
-| ls-mcp-builder | Guide for creating high-quality MCP servers |
-| ls-arbiter | Push decisions for async human review (Arbiter Zebu) |
-| ls-ansible-skill | Ansible playbooks, server provisioning, config management, multi-host orchestration |
-| ls-linux-service-triage | Diagnose Linux service issues (logs, systemd, PM2, Nginx, DNS); failing or misconfigured server apps |
-| ls-linux-patcher | Automated Linux patching and Docker container updates; multi-host server maintenance |
-| ls-skill-normalizer | Normalize skills for spec compliance and platform-neutral wording; one skill or all |
-| ls-skill-sandbox-tester | Test skills in isolated sandbox; smoke check; on failure use debug-pro; no repo writes until approved |
-| ls-agentlens | Codebase navigation with agentlens hierarchy; explore projects, find modules/symbols, TODOs |
-| ls-context-index | SQLite-backed context index and vector-first search; use preflight/freshness before broad recursive reads |
-| ls-framework-audit | Run doc/link/skill matrix/version checks; output user-specified path only (`run_framework_audit.py --output`); before release |
-| ls-markdown-reference-validator | Validate markdown local references/anchors from YAML-configured targets; emit scheduled-safe audit report for docs/skills/global Kilo surfaces |
-| ls-system-info | Capture server baseline, host layout and specs; CPU, memory, disk, uptime |
-| ls-cron-orchestrator | Manage cron from manifest; triggers, sequenced tasks, on-boot delay; create/remove/reorder/install |
-| ls-cloudflare-dns | Manage Cloudflare DNS records and zone DNS settings through direct Cloudflare v4 REST API tooling | DNS record changes; DNS settings; dry-run plans; snapshots |
-| ls-npm-management | Manage Nginx Proxy Manager proxy hosts via REST API; coordinate Docker + NPM deploy workflows | Create/modify/remove NPM proxy hosts; diagnose 502s; backup/restore; Docker service deployments |
-| ls-keepass-secrets | KeePass-backed secrets via logical IDs; get/ensure credentials; bulk create or rotate; never embed in repo | User asks for logins, workflow needs credentials, or bulk account creation |
-| ls-docs-organization | Docs organization router for repo docs; classify doc work, choose folder slugs, and keep docs indexes in sync | Creating, moving, or significantly updating docs; deciding placement and index updates |
-| ls-scrapling | Host-first Scrapling integration; install/upgrade via pipx, run adaptive single-URL extractions (simple or structured) with job status/cancel, and keep adapters aligned with Scrapling releases via parsed CLI/docs state | **Default choice** for fetching websites and web content from the internet; use for web scraping and crawling tasks that should rely on Scrapling CLI or its MCP server, from quick single-URL fetches to Scrapling-backed services |
-| ls-omniroute | Ambiguous-task/preflight router only for unclassified triage, env/API-key/access preflight, and non-mutating onboarding | Route classified read-only discovery to ls-omniroute-proxy, mutation to ls-omniroute-admin-automation, and source/coverage maintenance to ls-omniroute-update |
-| ls-omniroute-proxy | All read-only OmniRoute model/provider, context, observability, integration, client and endpoint discovery, plus sanitized model observations | OmniRoute catalogs, diagnostics, integrations, context state, client compatibility, or normalized observations |
-| ls-omniroute-admin-automation | All OmniRoute writes, imports, purges, services, settings, providers, keys, integrations, backup/restore, and rollback-safe reconciliation | Any OmniRoute mutation, import, service action, reconciliation, backup/restore, key or policy management |
-| ls-omniroute-update | OmniRoute update reporting for upstream skill discovery, Localsetup comparison, provenance metadata, and report-first import/update/removal planning | Listing, checking, updating, modifying, importing, or removing OmniRoute-derived Localsetup skills |
-| ls-kilo-boss-orchestrator | Kilo headless boss-worker orchestration with repo-local state, watchdog leases, consensus validation, and safety gates | Multi-agent autonomous loops requiring planning, delegation, verification, and discrepancy adjudication |
-| ls-kilo-visual-output | Kilo CLI visual output organization guide with structured response patterns | Kilo output formatting, options, rationale blocks, and execution summaries |
-| ls-nodejs-nextjs | Node.js/Next.js/React runbook | Package-manager, build, migration, debugging, testing, security, deployment, and current-version verification |
-| ls-shadcn-ui | shadcn/ui component workflow | Setup, components, CLI/MCP, registry, theming, forms, aliases, Radix/Base UI, updates, and troubleshooting |
-| ls-typescript-code-quality | TypeScript code quality guide | TypeScript/TSX code quality, tsconfig, typed ESLint or Biome config, Node TypeScript scripts, and TypeScript-heavy framework code |
-| ls-ui-browser-debugging | UI browser debugging workflow | UI review, Chrome DevTools MCP, Playwright MCP/CLI, browser ownership, evidence capture, minimal fixes, durable UI regression tests |
+Load an explicitly named available skill directly. Use `ls-task-skill-matcher`
+when selection is unclear, following the matching procedure below.
+
+OmniRoute has one ambiguous-task/preflight router, `ls-omniroute`: route
+classified read-only discovery to ls-omniroute-proxy, mutation to ls-omniroute-admin-automation, and source/coverage maintenance to ls-omniroute-update. These owners remain distinct after catalog consolidation.
 
 ## Framework docs index
 
@@ -127,7 +75,7 @@ For full procedures (pre-task workflow, script quality, safety), load the matchi
 - Treat as **batch** when user request includes multiple distinct subtasks, or says "batch", "multiple steps", or "run the whole thing". Otherwise treat as **single task**.
 - If user names a specific skill, load it directly. Do not run task-skill-matcher.
 - If uncertain which skill fits, or user asks "what skill should I use?" / "pick the best", load `ls-task-skill-matcher`.
-- **Single task:** if one clear installed match exists, ask once "Use this skill?" before loading. In the same response, include up to 3 complementary public skills from `ls/docs/PUBLIC_SKILL_INDEX.yaml` (one-line reason each). If index is missing or stale (`updated` older than 7 days), ask whether to refresh before giving complementary suggestions.
+- **Single task:** if one clear installed match exists, ask once "Use this skill?" before loading. If `ls-skill-discovery` is available to the current client, delegate complementary public suggestions to it; include up to 3 returned recommendations in the same response (one-line reason each), preserving discovery's index-status disclosures and any pending user question. Otherwise report public discovery unavailable with no recommendations and continue installed-skill selection; do not read the index as a fallback or automatically install a package.
 - **Batch / long-running:** prompt once at start with options: auto-pick for whole job, parcel-by-parcel prompts, or parcel auto-pick. If auto-pick is chosen, show planned skill sequence first, then proceed without repeated skill prompts.
 - Keep this section short. Full behavior lives in `ls-task-skill-matcher` and `ls/docs/TASK_SKILL_MATCHING.md`.
 

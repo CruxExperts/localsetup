@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import subprocess
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import pytest
@@ -125,17 +126,55 @@ def test_environment_standard_config_defaults_to_isolated_mode() -> None:
     assert "--isolated=true" in config["args"]
     assert not any(arg.startswith("--userDataDir=") for arg in config["args"])
     assert config["recommended_profile_dir"] is None
-    assert config["pinned_reproducibility_snapshot"]["version"] == "1.4.0"
+    assert config["pinned_reproducibility_snapshot"]["version"] == "1.8.0"
 
 
 def test_environment_standard_config_supports_explicit_persistent_mode() -> None:
     module = env_module()
-    config = module.standard_config("persistent")
+    config = module.standard_config("persistent", ROOT)
+    expected_profile = str((ROOT / ".localsetup-maint/ui-browser-profiles/chrome-devtools").resolve())
 
     assert config["mode"] == "persistent"
     assert "--isolated=true" not in config["args"]
-    assert "--userDataDir=.localsetup-maint/ui-browser-profiles/chrome-devtools" in config["args"]
-    assert config["recommended_profile_dir"] == ".localsetup-maint/ui-browser-profiles/chrome-devtools"
+    assert f"--userDataDir={expected_profile}" in config["args"]
+    assert config["recommended_profile_dir"] == expected_profile
+    assert config["state_root"] == str(ROOT.resolve())
+
+
+def test_environment_persistent_config_requires_absolute_explicit_state_root() -> None:
+    module = env_module()
+
+    with pytest.raises(ValueError, match="explicit absolute state root"):
+        module.standard_config("persistent")
+    with pytest.raises(ValueError, match="absolute path"):
+        module.standard_config("persistent", "relative/project")
+
+
+def test_persistent_profile_invariant_matches_inspect_config_and_guard(monkeypatch, tmp_path) -> None:
+    environment = env_module()
+    guard = guard_module()
+    project_root = (tmp_path / "project").resolve()
+    monkeypatch.setattr(environment.shutil, "which", lambda _name: None)
+    monkeypatch.setattr(environment.platform, "system", lambda: "Linux")
+    monkeypatch.setattr(guard, "repo_root", lambda: tmp_path)
+
+    inspected, _code = environment.inspect(require=False, state_root=project_root)
+    config = environment.standard_config("persistent", project_root)
+    record = guard.start_session(
+        "chrome-devtools",
+        "persistent",
+        "controller",
+        "authenticated ui debug",
+        "persistent-invariant",
+        state_root=project_root,
+    )
+
+    expected = str((project_root / ".localsetup-maint/ui-browser-profiles/chrome-devtools").resolve())
+    assert inspected["profile"]["path"] == expected
+    assert config["persistent_profile_dir"] == expected
+    assert config["recommended_profile_dir"] == expected
+    assert f"--userDataDir={expected}" in config["args"]
+    assert record["profile_dir"] == expected
 
 
 def test_environment_repo_root_is_checkout_root() -> None:
@@ -185,8 +224,18 @@ def test_environment_cli_outputs_json() -> None:
 
 
 def test_environment_cli_supports_persistent_mode() -> None:
+    expected_profile = str((ROOT / ".localsetup-maint/ui-browser-profiles/chrome-devtools").resolve())
     result = subprocess.run(
-        ["python3", "scripts/chrome_devtools_mcp_environment.py", "standard-config", "--mode", "persistent", "--json"],
+        [
+            "python3",
+            "scripts/chrome_devtools_mcp_environment.py",
+            "standard-config",
+            "--mode",
+            "persistent",
+            "--state-root",
+            str(ROOT),
+            "--json",
+        ],
         cwd=SKILL,
         check=False,
         text=True,
@@ -196,7 +245,8 @@ def test_environment_cli_supports_persistent_mode() -> None:
     assert result.returncode == 0
     payload = json.loads(result.stdout)
     assert payload["mcp_server"]["mode"] == "persistent"
-    assert "--userDataDir=.localsetup-maint/ui-browser-profiles/chrome-devtools" in payload["mcp_server"]["args"]
+    assert f"--userDataDir={expected_profile}" in payload["mcp_server"]["args"]
+    assert payload["mcp_server"]["persistent_profile_dir"] == expected_profile
 
 
 def test_environment_cli_non_json_output_is_human_readable() -> None:
@@ -219,12 +269,21 @@ def test_browser_session_guard_start_records_isolated_session(monkeypatch, tmp_p
     module = guard_module()
     monkeypatch.setattr(module, "repo_root", lambda: tmp_path)
 
-    payload = module.start_session("chrome-devtools", "isolated", "controller", "ui debug", "session-1")
+    payload = module.start_session(
+        "chrome-devtools",
+        "isolated",
+        "controller",
+        "ui debug",
+        "session-1",
+        mcp_session_id="session-1",
+    )
 
-    assert payload["schema_version"] == 2
+    assert payload["schema_version"] == 3
     assert payload["status"] == "active"
     assert payload["mode"] == "isolated"
     assert payload["profile_dir"] is None
+    assert payload["mcp_session_id"] == "session-1"
+    assert payload["state_root"] == str(tmp_path.resolve())
     assert payload["pages"] == []
     record_path = tmp_path / ".localsetup-maint" / "ui-browser-sessions" / "session-1.json"
     assert record_path.is_file()
@@ -234,24 +293,34 @@ def test_browser_session_guard_record_select_and_finish_requires_cleanup(monkeyp
     module = guard_module()
     monkeypatch.setattr(module, "repo_root", lambda: tmp_path)
 
-    module.start_session("chrome-devtools", "isolated", "controller", "ui debug", "session-2")
-    recorded = module.record_page("session-2", "page-1", "http://localhost:3000", "inspect route")
+    module.start_session(
+        "chrome-devtools", "isolated", "controller", "ui debug", "session-2", mcp_session_id="session-2"
+    )
+    recorded = module.record_page(
+        "session-2", "page-1", "http://localhost:3000", "inspect route", page_owner="agent-a"
+    )
     selected = module.select_page("session-2", "page-1")
     payload, code = module.finish_session("session-2")
 
     assert recorded["active_page_id"] == "page-1"
+    assert recorded["pages"][0]["owner"] == "agent-a"
     assert selected["active_page_id"] == "page-1"
     assert code == 1
     assert payload["status"] == "needs_cleanup"
     assert payload["cleanup_actions"][0]["action"] == "close_page"
     assert payload["cleanup_actions"][0]["page_id"] == "page-1"
+    assert payload["cleanup_actions"][0]["owner"] == "agent-a"
+    assert payload["cleanup_actions"][0]["mcp_session_id"] == "session-2"
+    assert payload["cleanup_actions"][0]["profile_dir"] is None
 
 
 def test_browser_session_guard_mark_closed_then_finish_succeeds(monkeypatch, tmp_path) -> None:
     module = guard_module()
     monkeypatch.setattr(module, "repo_root", lambda: tmp_path)
 
-    module.start_session("chrome-devtools", "isolated", "controller", "ui debug", "session-3")
+    module.start_session(
+        "chrome-devtools", "isolated", "controller", "ui debug", "session-3", mcp_session_id="session-3"
+    )
     module.record_page("session-3", "page-1", "http://localhost:3000", "inspect route")
     closed = module.mark_closed("session-3", "page-1")
     payload, code = module.finish_session("session-3")
@@ -407,14 +476,18 @@ def test_browser_session_guard_rejects_unsafe_session_id(monkeypatch, tmp_path) 
     monkeypatch.setattr(module, "repo_root", lambda: tmp_path)
 
     with pytest.raises(module.SessionGuardError):
-        module.start_session("chrome-devtools", "isolated", "controller", "ui debug", "../bad")
+        module.start_session(
+            "chrome-devtools", "isolated", "controller", "ui debug", "../bad", mcp_session_id="../bad"
+        )
 
 
 def test_browser_session_guard_rejects_unsafe_page_id(monkeypatch, tmp_path) -> None:
     module = guard_module()
     monkeypatch.setattr(module, "repo_root", lambda: tmp_path)
 
-    module.start_session("chrome-devtools", "isolated", "controller", "ui debug", "session-4")
+    module.start_session(
+        "chrome-devtools", "isolated", "controller", "ui debug", "session-4", mcp_session_id="session-4"
+    )
     with pytest.raises(module.SessionGuardError):
         module.record_page("session-4", "../bad", "http://localhost:3000", "inspect route")
 
@@ -443,6 +516,126 @@ def test_browser_session_guard_rejects_unsafe_profile_dir(monkeypatch, tmp_path)
 
     with pytest.raises(module.SessionGuardError):
         module.audit_session("bad-profile")
+
+
+def test_browser_session_guard_persistent_profile_matches_explicit_state_root(monkeypatch, tmp_path) -> None:
+    module = guard_module()
+    monkeypatch.setattr(module, "repo_root", lambda: tmp_path)
+    project_root = tmp_path / "project"
+
+    payload = module.start_session(
+        "chrome-devtools",
+        "persistent",
+        "controller",
+        "authenticated ui debug",
+        "persistent-1",
+        state_root=project_root.resolve(),
+    )
+
+    expected_profile = str((project_root / ".localsetup-maint/ui-browser-profiles/chrome-devtools").resolve())
+    assert payload["state_root"] == str(project_root.resolve())
+    assert payload["profile_dir"] == expected_profile
+    assert payload["mcp_session_id"] is None
+
+
+def test_browser_session_guard_requires_isolated_mcp_session_identifier(monkeypatch, tmp_path) -> None:
+    module = guard_module()
+    monkeypatch.setattr(module, "repo_root", lambda: tmp_path)
+
+    with pytest.raises(module.SessionGuardError, match="require an explicit mcp_session_id"):
+        module.start_session("chrome-devtools", "isolated", "controller", "ui debug", "isolated-without-id")
+
+
+def test_browser_session_guard_isolated_identifier_is_unique_and_matches_record(monkeypatch, tmp_path) -> None:
+    module = guard_module()
+    monkeypatch.setattr(module, "repo_root", lambda: tmp_path)
+
+    payload = module.start_session(
+        "chrome-devtools",
+        "isolated",
+        "agent-a",
+        "ui debug",
+        "isolated-agent-a",
+        mcp_session_id="isolated-agent-a",
+    )
+    assert payload["mcp_session_id"] == payload["session_id"]
+
+    with pytest.raises(module.SessionGuardError, match="already exists"):
+        module.start_session(
+            "chrome-devtools",
+            "isolated",
+            "agent-b",
+            "ui debug",
+            "isolated-agent-a",
+            mcp_session_id="isolated-agent-a",
+        )
+    with pytest.raises(module.SessionGuardError, match="must match session_id"):
+        module.start_session(
+            "chrome-devtools",
+            "isolated",
+            "agent-b",
+            "ui debug",
+            "isolated-agent-b",
+            mcp_session_id="different-instance",
+        )
+
+
+def test_browser_session_guard_concurrent_isolated_claim_has_one_winner(monkeypatch, tmp_path) -> None:
+    module = guard_module()
+    monkeypatch.setattr(module, "repo_root", lambda: tmp_path)
+
+    def claim(owner: str) -> str:
+        try:
+            module.start_session(
+                "chrome-devtools",
+                "isolated",
+                owner,
+                "ui debug",
+                "shared-mcp-instance",
+                mcp_session_id="shared-mcp-instance",
+            )
+        except module.SessionGuardError:
+            return "rejected"
+        return "created"
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        outcomes = sorted(pool.map(claim, ["agent-a", "agent-b"]))
+
+    assert outcomes == ["created", "rejected"]
+    record = module.read_record("shared-mcp-instance")
+    assert record["owner"] in {"agent-a", "agent-b"}
+
+
+def test_browser_session_guard_cli_records_isolated_instance_identity(monkeypatch, tmp_path, capsys) -> None:
+    module = guard_module()
+    monkeypatch.setattr(module, "repo_root", lambda: tmp_path)
+
+    code = module.main(
+        [
+            "start",
+            "--tool",
+            "chrome-devtools",
+            "--mode",
+            "isolated",
+            "--session-id",
+            "cli-isolated-1",
+            "--mcp-session-id",
+            "cli-isolated-1",
+            "--state-root",
+            str(tmp_path),
+            "--owner",
+            "controller",
+            "--purpose",
+            "ui debug",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert code == 0
+    assert payload["session_id"] == "cli-isolated-1"
+    assert payload["mcp_session_id"] == "cli-isolated-1"
+    assert payload["state_root"] == str(tmp_path.resolve())
 
 
 def test_browser_session_guard_reads_and_upgrades_v1_records(monkeypatch, tmp_path) -> None:
@@ -476,7 +669,7 @@ def test_browser_session_guard_reads_and_upgrades_v1_records(monkeypatch, tmp_pa
     audited = module.audit_session("legacy")
     finished, code = module.finish_session("legacy")
 
-    assert audited["schema_version"] == 2
+    assert audited["schema_version"] == 3
     assert audited["owner"] == "controller"
     assert audited["tool"] == "chrome-devtools"
     assert audited["pages"][0]["page_id"] == "7"
@@ -516,22 +709,55 @@ def test_browser_session_guard_reads_v1_isolated_profile_records(monkeypatch, tm
     audited = module.audit_session("legacy-isolated")
     finished, code = module.finish_session("legacy-isolated")
 
-    assert audited["schema_version"] == 2
+    assert audited["schema_version"] == 3
     assert audited["mode"] == "persistent"
-    assert audited["profile_dir"] == ".localsetup-maint/ui-browser-profiles/subagent-a"
+    assert audited["profile_dir"] == str(
+        (tmp_path / ".localsetup-maint/ui-browser-profiles/subagent-a").resolve()
+    )
     assert audited["pages"][0]["owned"] is True
     assert audited["cleanup_actions"][0]["action"] == "close_page"
     assert code == 1
     assert finished["status"] == "needs_cleanup"
 
 
+@pytest.mark.parametrize("mcp_session_id", [None, "different-instance"])
+def test_browser_session_guard_rejects_invalid_v3_isolated_identity(
+    monkeypatch, tmp_path, mcp_session_id
+) -> None:
+    module = guard_module()
+    monkeypatch.setattr(module, "repo_root", lambda: tmp_path)
+    record_dir = tmp_path / ".localsetup-maint" / "ui-browser-sessions"
+    record_dir.mkdir(parents=True)
+    payload = {
+        "schema_version": 3,
+        "session_id": "isolated-v3",
+        "status": "active",
+        "mode": "isolated",
+        "tool": "chrome-devtools",
+        "owner": "controller",
+        "purpose": "ui debug",
+        "state_root": str(tmp_path),
+        "profile_dir": None,
+        "active_page_id": None,
+        "pages": [],
+    }
+    if mcp_session_id is not None:
+        payload["mcp_session_id"] = mcp_session_id
+    (record_dir / "isolated-v3.json").write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(module.SessionGuardError, match="must be present and match session_id"):
+        module.audit_session("isolated-v3")
+
+
 def test_browser_session_guard_main_finish_returns_one_when_cleanup_remains(monkeypatch, tmp_path, capsys) -> None:
     module = guard_module()
     monkeypatch.setattr(module, "repo_root", lambda: tmp_path)
 
-    module.start_session("chrome-devtools", "isolated", "controller", "ui debug", "session-5")
+    module.start_session(
+        "chrome-devtools", "isolated", "controller", "ui debug", "session-5", mcp_session_id="session-5"
+    )
     module.record_page("session-5", "page-1", "http://localhost:3000", "inspect route")
-    code = module.main(["finish", "--session-id", "session-5", "--json"])
+    code = module.main(["finish", "--session-id", "session-5", "--state-root", str(tmp_path), "--json"])
     output = json.loads(capsys.readouterr().out)
 
     assert code == 1
@@ -558,6 +784,14 @@ def test_verifier_required_file_checks_pass() -> None:
     assert issues == []
 
 
+def test_subagent_closeout_includes_shared_controller_record() -> None:
+    text = (SKILL / "references/subagent-browser-workflows.md").read_text(encoding="utf-8")
+
+    assert "audit every applicable" in text
+    assert "shared controller-owned routed-server record" in text
+    assert "each separately\nisolated subagent-owned record" in text
+
+
 def test_verifier_npm_snapshot_uses_primary_registry(monkeypatch) -> None:
     module = verifier_module()
 
@@ -571,7 +805,7 @@ def test_verifier_npm_snapshot_uses_primary_registry(monkeypatch) -> None:
             return False
 
         def read(self) -> bytes:
-            return b'{"version":"1.4.0"}'
+            return b'{"version":"1.8.0"}'
 
     def fake_urlopen(request, timeout):
         assert request.full_url == "https://registry.npmjs.org/chrome-devtools-mcp/latest"
@@ -579,10 +813,39 @@ def test_verifier_npm_snapshot_uses_primary_registry(monkeypatch) -> None:
         return FakeResponse()
 
     monkeypatch.setattr(module.urllib.request, "urlopen", fake_urlopen)
-    result = module.check_npm_version("chrome-devtools-mcp", "1.4.0", 3.0)
+    result = module.check_npm_version("chrome-devtools-mcp", "1.8.0", 3.0)
 
     assert result["ok"] is True
-    assert result["actual"] == "1.4.0"
+    assert result["actual"] == "1.8.0"
+
+
+def test_verifier_labels_url_checks_as_reachability_not_semantic_verification(monkeypatch, capsys) -> None:
+    module = verifier_module()
+    monkeypatch.setattr(module, "SOURCE_URLS", ["https://example.invalid/source"])
+    monkeypatch.setattr(module, "NPM_VERSION_SNAPSHOT", {})
+    monkeypatch.setattr(
+        module,
+        "check_url",
+        lambda url, _timeout: {"url": url, "ok": True, "status": 200},
+    )
+
+    code = module.main(["--refresh", "--json"])
+    payload = json.loads(capsys.readouterr().out)
+
+    assert code == 0
+    assert payload["source_reachability"] == [
+        {"url": "https://example.invalid/source", "ok": True, "status": 200}
+    ]
+    assert "does not verify" in payload["source_reachability_limitation"]
+    assert "sources" not in payload
+
+
+def test_verifier_reachability_urls_are_cited_in_source_ledger() -> None:
+    module = verifier_module()
+    ledger = (SKILL / "references/source-ledger.md").read_text(encoding="utf-8")
+
+    assert all(url in ledger for url in module.SOURCE_URLS)
+    assert "https://kilo.ai/docs/automate/mcp/using-in-cli" not in module.SOURCE_URLS
 
 
 def test_browser_private_paths_are_gitignored() -> None:

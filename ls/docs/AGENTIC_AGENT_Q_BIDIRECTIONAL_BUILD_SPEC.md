@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.3
+version: 4.4
 owner_skill: ls-agentq-transport
 implemented: "mail preencrypted armored send; ship-mail-strict; mail pull direct manifest; ship-file-drop-multi to_agent_ids; manifest.schema to_agent_ids; StubDrive/Telegram + ADAPTER_REGISTRY; claim lockfile + poll --use-lockfile; ADMIN_GUIDE Part 18; plus prior: ready-sha256; mail-move-retry; archive-prune; queue-pending; strict gpg file_drop; ship-bundle; tests"
 deferred: "ls/tools/agentq_transport_client/docs/DEFERRED.md"

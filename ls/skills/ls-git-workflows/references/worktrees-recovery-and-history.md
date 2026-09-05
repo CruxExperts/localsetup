@@ -64,6 +64,11 @@ ghi789 HEAD@{2}: checkout: moving from feature to main
 
 ### Recover From Mistakes
 
+Before **every** `git reset --hard` below, stop unless `git status --short` is
+clean. Preserve desired staged, unstaged, and relevant untracked work with an
+approved WIP commit, patch, `git stash push -u`, or separate worktree. A backup
+branch preserves the current commit only; it does not preserve uncommitted work.
+
 ```bash
 # Undo a bad rebase after finding the pre-rebase commit in reflog.
 git reflog

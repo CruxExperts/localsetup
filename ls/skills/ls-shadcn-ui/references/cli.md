@@ -20,7 +20,7 @@ Prefer live help for exact syntax:
 
 - `init` / `create`: initialize a new or existing project. Current template
   choices include `next`, `start`, `vite`, `react-router`, `laravel`, and
-  `astro`. Setup controls include `--monorepo`, `--base radix|base`, `--rtl`,
+  `astro`. Setup controls include `--monorepo`, `--base base|radix|aria`, `--rtl`,
   `--pointer`, `--css-variables`, and `--preset`.
 - `add [components...]`: install registry components or blocks into the local
   project. Preview with `--dry-run`, inspect with `--view`, and inspect specific
@@ -31,11 +31,12 @@ Prefer live help for exact syntax:
   use `--json` and `--base` when live help exposes them.
 - `view <items...>`: inspect registry items before install.
 - `search` / `list`: search official and configured registries.
-- `migrate`: current migration helpers include list, icons, Radix, and RTL
-  flows; confirm flags with `migrate --help`.
-- `info`: inspect project, config, preset, components, and links. Use top-level
-  `info --json` only if current `shadcn info --help` confirms it. JSON output is
-  documented for preset commands such as `preset resolve` and `preset info`.
+- `migrate`: current migration helpers include `cn`, `icons`, `base-color`,
+  `radix`, and `rtl`; confirm flags with `migrate --help`.
+- `info`: inspect project, config, preset, components, and links. Current
+  official docs support top-level `info --json`.
+- `eject`: eject a selected registry item into local project ownership; preview
+  its current behavior with live help before use.
 - `build`: build registry output from registry config.
 - `registry add`: add registry configuration.
 - `mcp init --client claude|cursor|vscode|codex|opencode`: initialize MCP

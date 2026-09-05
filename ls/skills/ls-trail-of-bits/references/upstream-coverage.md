@@ -2,14 +2,26 @@
 
 - Source: `https://github.com/trailofbits/skills`
 - Ref: `main` at `cfe5d7b1619e47fb5b38b7e2561dad7e5f1e89af`
-- License classification: `CC-BY-SA`
+- License classification: `CC-BY-SA-4.0`; governing [upstream LICENSE](https://github.com/trailofbits/skills/blob/cfe5d7b1619e47fb5b38b7e2561dad7e5f1e89af/LICENSE)
 - Inventoried `SKILL.md` files: `75`
 - Inventory hash: `6867b487caf10c73043a264b4bcc035f7fd943085b50545c7c0b0c996ad7fe57`
 
 This wrapper intentionally does not expose every upstream subskill as a Localsetup skill.
 Select one upstream path at a time for future import, then run importer, vetter, normalizer, and sandbox validation.
 
-## Representative Paths
+## Inventory Manifest And Hash Recipe
+
+The enumeration root is `.` in the pinned upstream repository. The manifest below
+lists every regular `SKILL.md` file recursively beneath that root, using
+repository-relative paths and SHA-256 hashes of the raw file bytes.
+
+To reproduce the inventory hash, preserve the manifest row order below. For each
+row, concatenate its path, one ASCII space, and its lowercase hexadecimal hash.
+Join those records with one LF (`\n`), without a trailing newline, encode as UTF-8,
+and compute SHA-256. The manifest order is part of the hash contract; sorting the
+rows produces a different digest. `source_sha256` identifies this aggregate, not
+an individual file.
+
 
 - `plugins/agentic-actions-auditor/skills/agentic-actions-auditor/SKILL.md` (`80e36ab06e3ee667ac45bab036ed395fc425c4d54fa72c4b4981a5b982a389aa`)
 - `plugins/ask-questions-if-underspecified/skills/ask-questions-if-underspecified/SKILL.md` (`fef9189249c46d08d5172f7010e0d83ae8dc104cc3d07714a909dd12f9e92e79`)

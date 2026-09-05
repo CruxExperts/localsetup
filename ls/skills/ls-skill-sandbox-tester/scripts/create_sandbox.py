@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 # Purpose: Create a unique temp sandbox with a copy of a skill for safe testing.
 # Created: 2026-02-20
-# Last updated: 2026-02-20
+# Last updated: 2026-09-02
 
 """
-Create an isolated sandbox directory containing a copy of a skill. No symlinks;
-all writes stay in the sandbox. Follows INPUT_HARDENING_STANDARD and TOOLING_POLICY.
+Create a bounded temporary staging directory containing a copy of a skill.
+Source symlinks are rejected. Follows INPUT_HARDENING_STANDARD and TOOLING_POLICY.
 
 Usage:
   create_sandbox.py --skill-path /path/to/skill/dir [--base-dir /tmp]
   create_sandbox.py --skill-name ls-pr-reviewer [--skills-root /path] [--base-dir /tmp]
 
-Prints the skill copy path to stdout on success (one line). Use this path as --sandbox-dir for run_smoke.py. Errors to stderr, exit non-zero.
+Prints the skill copy path to stdout on success (one line). Use this path as
+--sandbox-dir for run_smoke.py. Errors go to stderr and return non-zero.
 """
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -28,6 +30,11 @@ SKILL_NAME_PATTERN = re.compile(r"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$")
 PATH_MAX = 4096
 BASE_DIR_MAX = 1024
 PLATFORM_PROJECTION_MAX = 256 * 1024
+MARKER_NAME = ".localsetup-sandbox.json"
+MARKER_MAX = 16 * 1024
+MARKER_SCHEMA_VERSION = 1
+SHARED_DEPS_PATH = ".localsetup-runtime/lib/deps.py"
+SHARED_DEPS_MAX = 256 * 1024
 FALLBACK_SKILL_ROOT_SUBPATHS = (
     "ls/skills",
     ".agents/skills",
@@ -38,15 +45,29 @@ FALLBACK_SKILL_ROOT_SUBPATHS = (
 )
 
 
+def _framework_repo_root(value: str) -> Path:
+    candidate = Path(value).resolve()
+    if (candidate / "ls" / "skills").is_dir():
+        return candidate
+    if candidate.name == "ls" and (candidate / "skills").is_dir():
+        return candidate.parent
+    return candidate
+
+
 def _projection_candidates() -> list[Path]:
     candidates: list[Path] = []
     framework_dir = os.environ.get("LOCALSETUP_FRAMEWORK_DIR", "").strip()
     if framework_dir:
-        root = Path(framework_dir).resolve()
-        candidates.extend((root / "config" / "platforms.yaml", root / "ls" / "config" / "platforms.yaml"))
+        root = _framework_repo_root(framework_dir)
+        candidates.append(root / "ls" / "config" / "platforms.yaml")
     script = Path(__file__).resolve()
     for parent in script.parents:
-        candidates.extend((parent / "ls" / "config" / "platforms.yaml", parent / "config" / "platforms.yaml"))
+        candidates.extend(
+            (
+                parent / "ls" / "config" / "platforms.yaml",
+                parent / "config" / "platforms.yaml",
+            )
+        )
     return list(dict.fromkeys(candidates))
 
 
@@ -90,48 +111,54 @@ SKILL_ROOT_SUBPATHS = _skill_root_subpaths()
 
 
 def _sanitize_skill_name(name: str) -> str:
-    s = (name or "").strip().replace("\x00", "")
-    if len(s) > SKILL_NAME_MAX:
+    sanitized = (name or "").strip().replace("\x00", "")
+    if len(sanitized) > SKILL_NAME_MAX:
         raise ValueError(f"skill name length exceeds {SKILL_NAME_MAX}")
-    if not SKILL_NAME_PATTERN.match(s) or "--" in s:
+    if not SKILL_NAME_PATTERN.match(sanitized) or "--" in sanitized:
         raise ValueError(
             "skill name must use lowercase letters, numbers, and single hyphens only"
         )
-    return s
+    return sanitized
 
 
-def _sanitize_path(s: str, max_len: int = PATH_MAX) -> Path:
-    if not isinstance(s, str) or len(s) > max_len:
+def _sanitize_path(value: str, max_len: int = PATH_MAX) -> Path:
+    if not isinstance(value, str) or len(value) > max_len:
         raise ValueError(f"path invalid or length > {max_len}")
-    s = s.strip().strip("\x00").strip()
-    if not s:
+    value = value.strip().strip("\x00").strip()
+    if not value:
         raise ValueError("path is empty")
-    p = Path(s).resolve()
-    if not p.exists():
-        raise ValueError(f"path does not exist: {p}")
-    if not p.is_dir():
-        raise ValueError(f"path is not a directory: {p}")
-    return p
+    raw = Path(value)
+    if raw.is_symlink():
+        raise ValueError(f"path must not be a symlink: {raw}")
+    path = raw.resolve()
+    if not path.exists():
+        raise ValueError(f"path does not exist: {path}")
+    if not path.is_dir():
+        raise ValueError(f"path is not a directory: {path}")
+    return path
 
 
 def _resolve_skill_dir_by_name(name: str, skills_root: Path | None) -> Path:
-    """Resolve skill directory from name by searching common roots."""
+    """Resolve a skill directory from one ordered list of known roots."""
     roots: list[Path] = []
     if skills_root and skills_root.is_dir():
         roots.append(skills_root)
+
+    framework_dir = os.environ.get("LOCALSETUP_FRAMEWORK_DIR", "").strip()
+    if framework_dir:
+        roots.append(_framework_repo_root(framework_dir) / "ls" / "skills")
+
     cwd = Path.cwd()
     if cwd.parent.name == "skills" and cwd.is_dir():
         roots.append(cwd.parent)
     if cwd.name == "skills" and cwd.is_dir():
         roots.append(cwd)
     for base in (cwd, *cwd.parents):
-        for sub in SKILL_ROOT_SUBPATHS:
-            r = base / sub
-            if r.is_dir():
-                roots.append(r)
-    env_fw = os.environ.get("LOCALSETUP_FRAMEWORK_DIR", "").strip()
-    if env_fw:
-        roots.insert(0, Path(env_fw).resolve() / "skills")
+        for subpath in SKILL_ROOT_SUBPATHS:
+            root = base / subpath
+            if root.is_dir():
+                roots.append(root)
+
     seen: set[Path] = set()
     for root in roots:
         root = root.resolve()
@@ -141,12 +168,94 @@ def _resolve_skill_dir_by_name(name: str, skills_root: Path | None) -> Path:
         candidate = root / name
         if candidate.is_dir():
             return candidate
-    raise FileNotFoundError(f"skill directory not found for name '{name}' in any known skills root")
+    raise FileNotFoundError(
+        f"skill directory not found for name '{name}' in any known skills root"
+    )
+
+
+def _is_within(path: Path, root: Path) -> bool:
+    return path == root or root in path.parents
+
+
+def _temp_root() -> Path:
+    return Path(tempfile.gettempdir()).resolve()
+
+
+def _validate_base_dir(base: Path) -> Path:
+    resolved = base.resolve()
+    temp_root = _temp_root()
+    if not _is_within(resolved, temp_root):
+        raise ValueError(f"base-dir must be within platform temp root: {temp_root}")
+    return resolved
+
+
+def _reject_source_symlinks(source: Path) -> None:
+    if source.is_symlink():
+        raise ValueError(f"skill source must not be a symlink: {source}")
+    for current, directories, files in os.walk(source, followlinks=False):
+        current_path = Path(current)
+        for name in (*directories, *files):
+            candidate = current_path / name
+            if candidate.is_symlink():
+                raise ValueError(f"skill source contains a symlink: {candidate}")
+
+
+def _read_shared_deps(path: Path) -> bytes:
+    if path.name != "deps.py" or any(part.is_symlink() for part in (path, *path.parents)):
+        raise ValueError("shared deps must be a nonsymlink deps.py file")
+    if not path.is_file() or path.stat().st_size > SHARED_DEPS_MAX:
+        raise ValueError("shared deps must be a regular file within the size limit")
+    with path.open("rb") as stream:
+        content = stream.read(SHARED_DEPS_MAX + 1)
+    if len(content) > SHARED_DEPS_MAX:
+        raise ValueError("shared deps exceeds size limit")
+    return content
+
+
+def _write_marker(
+    sandbox_root: Path, source: Path, skill_copy: Path, shared_deps: bytes | None = None
+) -> None:
+    payload = {
+        "schema_version": MARKER_SCHEMA_VERSION,
+        "sandbox_dir": str(skill_copy.resolve()),
+        "skill_name": source.name,
+        "source_dir": str(source.resolve()),
+    }
+    if shared_deps is not None:
+        payload["shared_deps"] = {
+            "path": SHARED_DEPS_PATH,
+            "sha256": hashlib.sha256(shared_deps).hexdigest(),
+        }
+    encoded = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+    if len(encoded.encode("utf-8")) > MARKER_MAX:
+        raise ValueError("sandbox provenance marker exceeds size limit")
+    (sandbox_root / MARKER_NAME).write_text(encoded, encoding="utf-8")
+
+
+def _create_sandbox(skill_dir: Path, base: Path, shared_deps: Path | None = None) -> Path:
+    _reject_source_symlinks(skill_dir)
+    source = skill_dir.resolve()
+    dependency = _read_shared_deps(shared_deps) if shared_deps is not None else None
+    sandbox_root = Path(
+        tempfile.mkdtemp(prefix=f"skill-sandbox-{source.name}-", dir=str(base))
+    )
+    try:
+        skill_copy = sandbox_root / source.name
+        shutil.copytree(source, skill_copy, symlinks=False, dirs_exist_ok=False)
+        if dependency is not None:
+            staged = sandbox_root / SHARED_DEPS_PATH
+            staged.parent.mkdir(parents=True)
+            staged.write_bytes(dependency)
+        _write_marker(sandbox_root, source, skill_copy, dependency)
+        return skill_copy
+    except Exception:
+        shutil.rmtree(sandbox_root, ignore_errors=True)
+        raise
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Create a unique sandbox with a copy of a skill for safe testing."
+        description="Create a bounded temporary copy of a skill for smoke testing."
     )
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--skill-path", metavar="DIR", help="Path to the skill directory")
@@ -159,7 +268,11 @@ def main() -> int:
     parser.add_argument(
         "--base-dir",
         metavar="DIR",
-        help="Parent directory for sandbox (default: platform temp)",
+        help="Parent directory within platform temp (default: platform temp root)",
+    )
+    parser.add_argument(
+        "--shared-deps", metavar="FILE",
+        help="Explicit framework deps.py to stage and hash for isolated imports",
     )
     args = parser.parse_args()
 
@@ -168,27 +281,32 @@ def main() -> int:
             skill_dir = _sanitize_path(args.skill_path)
         else:
             name = _sanitize_skill_name(args.skill_name)
-            skills_root = Path(args.skills_root).resolve() if args.skills_root else None
-            if args.skills_root and not skills_root.is_dir():
-                raise ValueError(f"skills-root is not a directory: {skills_root}")
+            if args.skills_root:
+                skills_root = Path(str(args.skills_root)).resolve()
+                if not skills_root.is_dir():
+                    raise ValueError(f"skills-root is not a directory: {skills_root}")
+            else:
+                skills_root = None
             skill_dir = _resolve_skill_dir_by_name(name, skills_root)
 
-        base = tempfile.gettempdir()
+        base = _temp_root()
         if args.base_dir:
             base = _sanitize_path(args.base_dir, max_len=BASE_DIR_MAX)
+        base = _validate_base_dir(base)
 
-        prefix = f"skill-sandbox-{skill_dir.name}-"
-        sandbox_root = Path(tempfile.mkdtemp(prefix=prefix, dir=str(base)))
-        skill_copy = sandbox_root / skill_dir.name
-        shutil.copytree(skill_dir, skill_copy, symlinks=False, dirs_exist_ok=False)
-        # Print skill copy path so run_smoke.py can use it as --sandbox-dir (cwd for commands).
+        shared_deps = None
+        if args.shared_deps is not None:
+            if len(args.shared_deps) > PATH_MAX or not args.shared_deps.strip() or "\x00" in args.shared_deps:
+                raise ValueError("shared deps path is empty or invalid")
+            shared_deps = Path(args.shared_deps)
+        skill_copy = _create_sandbox(skill_dir, base, shared_deps)
         print(skill_copy)
         return 0
-    except (ValueError, FileNotFoundError) as e:
-        print(f"create_sandbox: {e}", file=sys.stderr)
+    except (ValueError, FileNotFoundError) as exc:
+        print(f"create_sandbox: {exc}", file=sys.stderr)
         return 2
-    except OSError as e:
-        print(f"create_sandbox: {e}", file=sys.stderr)
+    except OSError as exc:
+        print(f"create_sandbox: {exc}", file=sys.stderr)
         return 1
 
 

@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.3
+version: 4.4
 owner_skill: ls-docs-organization
 ---
 
@@ -31,7 +31,7 @@ Codex builds create a marketplace root with relative plugin paths:
         `-- skills/
             |-- ls-context/
             |-- ls-communication-and-tools/
-            |-- ls-workflow-audit-framework/
+            |-- ls-framework-audit/
             `-- ls-plugin-bootstrap-context/
 ```
 

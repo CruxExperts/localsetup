@@ -1,11 +1,13 @@
 # Troubleshooting
 
-`missing_backend`: install KeePassXC and confirm `keepassxc-cli` is on `PATH`.
+missing_backend: the optional KeePassXC capability diagnostic cannot find keepassxc-cli on PATH. Install it only when that diagnostic is required; map validation and reference parsing do not require it.
 
-`invalid_secret_id`: use lowercase letters, digits, dots, underscores, and hyphens only.
+interactive_backend_required: KeePassXC vault operations are deliberately unavailable. Use mapping/config/reference validation or an approved human-operated secret-manager process.
 
-`secret_value_in_file`: remove passwords, tokens, keys, or passphrases from config or map files.
+invalid_secret_id: use lowercase letters, digits, dots, underscores, and hyphens only.
 
-`unknown_secret_id`: add the canonical ID to the configured map or fix the alias.
+secret_value_in_file: remove passwords, tokens, keys, or passphrases from config or map files.
 
-`unsupported_field`: use one of the safe standard fields or wait for a verified backend capability.
+unknown_secret_id: add the canonical ID to the configured map or fix the alias.
+
+unsupported_field: standard-field validation applies only to the fake fixture and a future approved backend. The current KeePassXC capability guard refuses every write.

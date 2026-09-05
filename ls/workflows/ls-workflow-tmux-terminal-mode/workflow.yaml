@@ -3,10 +3,9 @@ display_name: Tmux Terminal Mode
 aliases: [tmux terminal mode, always-on tmux]
 invocation: Use when enabling or managing tmux terminal mode behavior.
 required_skills: []
-required_tools: [localsetup://tool/tmux_terminal_mode]
+required_tools: [ls/tools/tmux_terminal_mode]
 required_docs:
-  - localsetup://doc/TMUX_TERMINAL_MODE.md
-  - localsetup://doc/WORKFLOW_REGISTRY.md
+  - ls/docs/TMUX_TERMINAL_MODE.md
 gates:
   - id: mode_gate
     rule: Confirm target mode and session naming before enable.
@@ -21,7 +20,7 @@ outputs:
   - Terminal mode status summary
 smoke:
   - id: tmux_terminal_mode_exists
-    check: localsetup://tool/tmux_terminal_mode exists
+    check: ls/tools/tmux_terminal_mode exists
 migration:
-  source: localsetup://doc/TMUX_TERMINAL_MODE.md
+  source: ls/docs/TMUX_TERMINAL_MODE.md
   note: Procedure details stay in dedicated mode doc.

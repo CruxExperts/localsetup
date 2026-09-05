@@ -88,23 +88,15 @@ class MetricsCalculator:
         return complexity_assessment(cyclomatic, cognitive)
 
     def calculate_test_quality(self, test_code: str) -> Dict[str, Any]:
-        """
-        Calculate test quality metrics.
-
-        Args:
-            test_code: Test code to analyze
-
-        Returns:
-            Test quality metrics
-        """
+        """Calculate test quality without inventing tests or dividing by zero."""
+        if not isinstance(test_code, str):
+            raise ValueError("Test code must be text")
         assertions = self._count_assertions(test_code)
         test_functions = self._count_test_functions(test_code)
         isolation_score = self._isolation_score(test_code)
         naming_quality = self._naming_quality(test_code)
         test_smells = self._detect_test_smells(test_code)
-
-        avg_assertions = assertions / test_functions if test_functions > 0 else 0
-
+        avg_assertions = assertions / test_functions if test_functions else 0.0
         return {
             'total_tests': test_functions,
             'total_assertions': assertions,
@@ -114,41 +106,38 @@ class MetricsCalculator:
             'test_smells': test_smells,
             'quality_score': self._calculate_quality_score(
                 avg_assertions, isolation_score, naming_quality, test_smells
-            )
+            ),
         }
 
     def _count_assertions(self, test_code: str) -> int:
-        """Count assertion statements."""
-        # Common assertion patterns
+        """Count each common assertion syntax once."""
         patterns = [
-            r'\bassert[A-Z]\w*\(',  # JUnit: assertTrue, assertEquals
-            r'\bexpect\(',  # Jest/Vitest: expect()
-            r'\bassert\s+',  # Python: assert
-            r'\.should\.',  # Chai: should
-            r'\.to\.',  # Chai: expect().to
+            r'\bassert[A-Z]\w*\s*\(',
+            r'\bexpect\s*\(',
+            r'^\s*assert(?:\s|$)',
+            r'\.should\.',
         ]
-
-        count = 0
-        for pattern in patterns:
-            count += len(re.findall(pattern, test_code))
-
-        return count
+        return sum(
+            len(re.findall(pattern, test_code, re.MULTILINE))
+            for pattern in patterns
+        )
 
     def _count_test_functions(self, test_code: str) -> int:
-        """Count test functions."""
-        patterns = [
-            r'\btest_\w+',  # Python: test_*
-            r'\bit\(',  # Jest/Mocha: it()
-            r'\btest\(',  # Jest: test()
-            r'@Test',  # JUnit: @Test
-            r'\bdef test_',  # Python def test_
-        ]
-
-        count = 0
-        for pattern in patterns:
-            count += len(re.findall(pattern, test_code))
-
-        return max(1, count)  # At least 1 to avoid division by zero
+        """Count non-overlapping Python, JavaScript, and Java declarations."""
+        python_tests = re.findall(
+            r'^\s*(?:async\s+)?def\s+test_[A-Za-z0-9_]+\s*\(',
+            test_code,
+            re.MULTILINE,
+        )
+        javascript_tests = re.findall(
+            r'\b(?:it|test)(?:\.(?:only|skip|todo|each))?\s*\(',
+            test_code,
+        )
+        java_tests = re.findall(
+            r'@\s*(?:Test|ParameterizedTest)\b',
+            test_code,
+        )
+        return len(python_tests) + len(javascript_tests) + len(java_tests)
 
     def _isolation_score(self, test_code: str) -> float:
         """
@@ -175,42 +164,35 @@ class MetricsCalculator:
         return max(0.0, min(100.0, score))
 
     def _naming_quality(self, test_code: str) -> float:
-        """
-        Calculate test naming quality score (0-100).
-
-        Better names are descriptive and follow conventions.
-        """
-        test_names = re.findall(r'(?:it|test|def test_)\s*\(?\s*["\']?([^"\')\n]+)', test_code)
-
+        """Score names extracted from supported test declarations."""
+        test_names = re.findall(
+            r'^\s*(?:async\s+)?def\s+(test_[A-Za-z0-9_]+)\s*\(',
+            test_code,
+            re.MULTILINE,
+        )
+        test_names.extend(
+            re.findall(
+                r'\b(?:it|test)(?:\.(?:only|skip|todo|each))?\s*\(\s*["\']([^"\']+)',
+                test_code,
+            )
+        )
         if not test_names:
-            return 50.0
-
+            return 0.0
         score = 0
         for name in test_names:
             name_score = 0
-
-            # Check length (too short or too long is bad)
             if 20 <= len(name) <= 80:
                 name_score += 30
             elif 10 <= len(name) < 20 or 80 < len(name) <= 100:
                 name_score += 15
-
-            # Check for descriptive words
             descriptive_words = ['should', 'when', 'given', 'returns', 'throws', 'handles']
             if any(word in name.lower() for word in descriptive_words):
                 name_score += 30
-
-            # Check for underscores or camelCase (not just letters)
             if '_' in name or re.search(r'[a-z][A-Z]', name):
                 name_score += 20
-
-            # Avoid generic names
-            generic = ['test1', 'test2', 'testit', 'mytest']
-            if name.lower() not in generic:
+            if name.lower() not in ['test1', 'test2', 'testit', 'mytest']:
                 name_score += 20
-
             score += name_score
-
         return min(100.0, score / len(test_names))
 
     def _detect_test_smells(self, test_code: str) -> List[Dict[str, str]]:
@@ -259,38 +241,29 @@ class MetricsCalculator:
         avg_assertions: float,
         isolation: float,
         naming: float,
-        smells: List[Dict[str, str]]
+        smells: List[Dict[str, str]],
     ) -> float:
-        """Calculate overall test quality score."""
-        score = 0.0
-
-        # Assertions (30 points)
+        """Calculate a genuine 100-point score including 20 smell-free points."""
         if 1 <= avg_assertions <= 3:
-            score += 30
-        elif 0 < avg_assertions < 1 or 3 < avg_assertions <= 5:
-            score += 20
+            assertion_score = 30.0
+        elif 0 < avg_assertions <= 5:
+            assertion_score = 20.0
+        elif avg_assertions > 5:
+            assertion_score = 10.0
         else:
-            score += 10
-
-        # Isolation (30 points)
-        score += isolation * 0.3
-
-        # Naming (20 points)
-        score += naming * 0.2
-
-        # Smells (20 points - deduct based on severity)
+            assertion_score = 0.0
         smell_penalty = 0
         for smell in smells:
-            if smell['severity'] == 'high':
+            severity = smell.get('severity')
+            if severity == 'high':
                 smell_penalty += 10
-            elif smell['severity'] == 'medium':
+            elif severity == 'medium':
                 smell_penalty += 5
             else:
                 smell_penalty += 2
-
-        score = max(0, score - smell_penalty)
-
-        return round(min(100.0, score), 2)
+        smell_score = max(0.0, 20.0 - smell_penalty)
+        score = assertion_score + isolation * 0.3 + naming * 0.2 + smell_score
+        return round(max(0.0, min(100.0, score)), 2)
 
     def analyze_execution_metrics(
         self,

@@ -4,15 +4,17 @@
 # Last updated: 2026-02-24
 
 from __future__ import annotations
-
 import argparse
+import codecs
 import os
 import stat
 import subprocess
 import sys
+import threading
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import BinaryIO, TextIO
 
 from _cron_manifest import (
     MAX_DELAY_SECONDS,
@@ -62,8 +64,65 @@ def _log_file(log_dir: Path | None, trigger_name: str) -> Path | None:
     return log_dir / f"{safe_trigger}.log"
 
 
-def _tail(text: str) -> str:
-    return text[-LOG_TAIL_CHARS:] if len(text) > LOG_TAIL_CHARS else text
+def _append_tail(tail: bytearray, chunk: bytes) -> None:
+    tail.extend(chunk)
+    excess = len(tail) - LOG_TAIL_CHARS
+    if excess > 0:
+        del tail[:excess]
+
+
+def _stream_output(
+    source: BinaryIO,
+    destination: TextIO,
+    tail: bytearray,
+    stream_name: str,
+    relay_errors: list[str],
+) -> None:
+    decoder = codecs.getincrementaldecoder("utf-8")(errors="replace")
+    relay_error: str | None = None
+    try:
+        while chunk := source.read(8192):
+            _append_tail(tail, chunk)
+            if relay_error is not None:
+                continue
+            text = decoder.decode(chunk)
+            if not text:
+                continue
+            try:
+                destination.write(text)
+                destination.flush()
+            except (OSError, UnicodeError, ValueError) as exc:
+                relay_error = f"{stream_name} relay failed: {type(exc).__name__}: {exc}"
+        if relay_error is None:
+            remaining = decoder.decode(b"", final=True)
+            if remaining:
+                try:
+                    destination.write(remaining)
+                    destination.flush()
+                except (OSError, UnicodeError, ValueError) as exc:
+                    relay_error = f"{stream_name} relay failed: {type(exc).__name__}: {exc}"
+    except OSError as exc:
+        relay_error = f"{stream_name} pipe read failed: {type(exc).__name__}: {exc}"
+    if relay_error is not None:
+        relay_errors.append(relay_error)
+
+
+def _safe_stderr(message: str) -> None:
+    try:
+        print(message, file=sys.stderr)
+    except (OSError, UnicodeError, ValueError):
+        pass
+
+
+def _record_relay_failures(log_path: Path | None, task_id: str, relay_errors: list[str]) -> bool:
+    details = "; ".join(relay_errors)
+    _safe_stderr(f"[run_trigger] Task {task_id} output relay failed: {details}")
+    try:
+        _append_log(log_path, f"task_output_error id={task_id} detail={details}")
+    except RunnerLogError as exc:
+        _safe_stderr(f"[run_trigger] {exc}")
+        return False
+    return True
 
 
 def _append_log(path: Path | None, message: str) -> None:
@@ -95,6 +154,7 @@ def main() -> int:
     parser.add_argument(
         "--delay-seconds",
         default=0,
+        type=int,
         help=f"Delay execution before running tasks, for @reboot cron entries (0..{MAX_DELAY_SECONDS})",
     )
     parser.add_argument("trigger", help="Trigger name")
@@ -160,52 +220,87 @@ def main() -> int:
             print(f"[run_trigger] {exc}", file=sys.stderr)
             return 1
         try:
-            r = subprocess.run(
+            process = subprocess.Popen(
                 argv,
                 shell=False,
                 cwd=repo_root,
                 env={**os.environ, "LANG": "C"},
-                text=True,
-                capture_output=True,
-                errors="replace",
-                timeout=timeout,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
             )
-            if r.stdout:
-                print(r.stdout, end="")
-            if r.stderr:
-                print(r.stderr, end="", file=sys.stderr)
+            assert process.stdout is not None
+            assert process.stderr is not None
+            stdout_tail = bytearray()
+            stderr_tail = bytearray()
+            relay_errors: list[str] = []
+            stdout_reader = threading.Thread(
+                target=_stream_output,
+                args=(process.stdout, sys.stdout, stdout_tail, "stdout", relay_errors),
+            )
+            stderr_reader = threading.Thread(
+                target=_stream_output,
+                args=(process.stderr, sys.stderr, stderr_tail, "stderr", relay_errors),
+            )
+            stdout_reader.start()
+            stderr_reader.start()
+            try:
+                returncode = process.wait(timeout=timeout)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait()
+                stdout_reader.join()
+                stderr_reader.join()
+                if relay_errors:
+                    if not _record_relay_failures(log_path, task_id, relay_errors):
+                        return 1
+                    try:
+                        _append_log(log_path, f"runner_exit trigger={trigger_name} exit_code=1 reason=output_relay_failed")
+                    except RunnerLogError as exc:
+                        _safe_stderr(f"[run_trigger] {exc}")
+                    return 1
+                print(f"[run_trigger] Task {task_id} timed out after {timeout}s", file=sys.stderr)
+                try:
+                    _append_log(log_path, f"task_timeout id={task_id} timeout_seconds={timeout}")
+                    _append_log(log_path, f"runner_exit trigger={trigger_name} exit_code=124")
+                except RunnerLogError as exc:
+                    print(f"[run_trigger] {exc}", file=sys.stderr)
+                    return 1
+                return 124
+            stdout_reader.join()
+            stderr_reader.join()
+            stdout_text = stdout_tail.decode("utf-8", errors="replace")
+            stderr_text = stderr_tail.decode("utf-8", errors="replace")
             try:
                 _append_log(
                     log_path,
-                    f"task_exit id={task_id} exit_code={r.returncode} stdout_tail={_tail(r.stdout)!r} stderr_tail={_tail(r.stderr)!r}",
+                    f"task_exit id={task_id} exit_code={returncode} stdout_tail={stdout_text!r} stderr_tail={stderr_text!r}",
                 )
             except RunnerLogError as exc:
                 print(f"[run_trigger] {exc}", file=sys.stderr)
                 return 1
-            if r.returncode != 0:
-                print(f"[run_trigger] Task {task_id} exited {r.returncode}", file=sys.stderr)
+            if relay_errors:
+                if not _record_relay_failures(log_path, task_id, relay_errors):
+                    return 1
                 try:
-                    _append_log(log_path, f"runner_exit trigger={trigger_name} exit_code={r.returncode}")
+                    _append_log(log_path, f"runner_exit trigger={trigger_name} exit_code=1 reason=output_relay_failed")
+                except RunnerLogError as exc:
+                    _safe_stderr(f"[run_trigger] {exc}")
+                return 1
+            if returncode != 0:
+                print(f"[run_trigger] Task {task_id} exited {returncode}", file=sys.stderr)
+                try:
+                    _append_log(log_path, f"runner_exit trigger={trigger_name} exit_code={returncode}")
                 except RunnerLogError as exc:
                     print(f"[run_trigger] {exc}", file=sys.stderr)
                     return 1
-                return r.returncode
-        except subprocess.TimeoutExpired:
-            print(f"[run_trigger] Task {task_id} timed out after {timeout}s", file=sys.stderr)
+                return returncode
+        except Exception as exc:
+            print(f"[run_trigger] Task {task_id}: {type(exc).__name__}: {exc}", file=sys.stderr)
             try:
-                _append_log(log_path, f"task_timeout id={task_id} timeout_seconds={timeout}")
-                _append_log(log_path, f"runner_exit trigger={trigger_name} exit_code=124")
-            except RunnerLogError as exc:
-                print(f"[run_trigger] {exc}", file=sys.stderr)
-                return 1
-            return 124
-        except Exception as e:
-            print(f"[run_trigger] Task {task_id}: {type(e).__name__}: {e}", file=sys.stderr)
-            try:
-                _append_log(log_path, f"task_error id={task_id} error={type(e).__name__}: {e}")
+                _append_log(log_path, f"task_error id={task_id} error={type(exc).__name__}: {exc}")
                 _append_log(log_path, f"runner_exit trigger={trigger_name} exit_code=1")
-            except RunnerLogError as exc:
-                print(f"[run_trigger] {exc}", file=sys.stderr)
+            except RunnerLogError as log_exc:
+                print(f"[run_trigger] {log_exc}", file=sys.stderr)
                 return 1
             return 1
     try:
@@ -214,7 +309,6 @@ def main() -> int:
         print(f"[run_trigger] {exc}", file=sys.stderr)
         return 1
     return 0
-
 
 if __name__ == "__main__":
     sys.exit(main())

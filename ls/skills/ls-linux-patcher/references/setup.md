@@ -46,6 +46,15 @@ Host webserver-maint
 
 Passwordless sudo is sensitive. Do not use broad examples as final policy. Generate a plan first, inspect the exact commands, then grant only the approved command paths for a dedicated user.
 
+Verify the executable path on the target host, then select only its matching readiness command. Sudoers rules with arguments are exact: permission for one row does not grant a different manager or operation.
+
+| Package manager | Readiness command listed by the generated preflight |
+| --- | --- |
+| `apt` | `<resolved-path>/apt update` |
+| `dnf` | `<resolved-path>/dnf check-update` |
+| `yum` | `<resolved-path>/yum check-update` |
+| `zypper` | `<resolved-path>/zypper list-updates` |
+
 Example Ubuntu/Debian pattern:
 
 ```sudoers
@@ -68,10 +77,10 @@ Validate the file:
 ```bash
 sudo chmod 0440 /etc/sudoers.d/linux-patcher
 sudo visudo -c -f /etc/sudoers.d/linux-patcher
-ssh patchbot@targethost.example.com 'sudo -n true'
+ssh patchbot@targethost.example.com 'sudo -n -l -- /usr/bin/apt update'
 ```
 
-If `sudo -n true` fails, fix sudo policy before any maintenance window.
+`sudo -n -l` asks whether the exact path and arguments are authorized; it does not execute the package manager. If the listing fails, correct that exact executable/argument rule or the noninteractive listing policy before the maintenance window. A successful listing does not authorize later upgrade, autoremove, or Docker commands and does not replace backup, rollback, or service-readiness checks.
 
 ## Check CLI Status
 

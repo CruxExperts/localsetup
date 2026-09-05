@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.3
+version: 4.4
 owner_skill: ls-skill-discovery
 ---
 
@@ -38,12 +38,12 @@ owner_skill: ls-skill-discovery
   uv run --locked python ls/tools/skill_index_scrub.py --skip-url-check --fix
   ```
 
-  Optional: save a report with `--report path/to/report.md`. The report includes the index `updated` date/age, a warning when the index is stale or invalid, and a Worker Errors section when any parallel audit worker fails. Full URL liveness checking (omit `--skip-url-check`) is only needed before a public release or when dead link auditing is explicitly requested. Use `--fix --prune-dead-urls` with URL checking enabled to remove dead registry entries after reviewing the report. See the scrub tool's `--help` for all options.
+  This normal sequence establishes description/schema readiness only; its summary must say `URL liveness: not checked`. Save a report with `--report path/to/report.md` when needed. The report includes the index `updated` date/age, stale/invalid warnings, and Worker Errors. Full URL liveness checking requires omitting `--skip-url-check`; only a completed full check may report `URL liveness: checked`. Use `--fix --prune-dead-urls` with URL checking enabled to remove reviewed hard-dead entries. See the scrub tool's `--help` for all options.
 
 ## Index refresh and user prompts
 
 - **When to prompt for refresh:** Base behavior on the index file and the `updated` field. Obtain the current date from the environment (e.g. `date` on Linux/macOS, `Get-Date` in PowerShell) so calculations are correct.
-- **Index missing or never refreshed:** If the index file does not exist, or `updated` is null/missing/empty, **always prompt the user** to build or rebuild the index before using discovery: e.g. "The public skill index has not been built yet. I can refresh it now from the registry URLs (this may take a minute). Should I proceed?"
+- **Index unavailable or never refreshed:** Ranking requires a readable YAML mapping with a list-valued `skills` field. If the index is missing, unreadable, malformed, has the wrong shape, or `updated` is null/missing/empty, **always prompt the user** to build or rebuild it. If the user declines, report that discovery was not run and return no public-index recommendations. End only the discovery subflow; a calling create/import task may continue without those recommendations.
 - **Default minimum before prompting:** **7 days.** Do not prompt to refresh if the last refresh (`updated`) was less than 7 days ago. If `updated` is 7 or more days ago, prompt the user to refresh: e.g. "The public skill index was last refreshed on YYYY-MM-DD (X days ago). Would you like to refresh it now for up-to-date recommendations?"
 - **On every skill operation:** Whenever the user does a skill operation that uses discovery (creating a skill, importing a skill, or asking to discover/recommend public skills), **remind them** of the last refresh and how long ago it was. For example: "Last index refresh: 2026-02-10 (8 days ago)." Use the actual `updated` date and compute the elapsed time in **days** (e.g. "3 days ago"), **weeks** (e.g. "2 weeks ago"), or **years** (e.g. "1 year ago") as appropriate. Then, if the index is older than 7 days, add the prompt: "The index is over 7 days old. Would you like to refresh it now?"
 - **After a refresh:** When the agent or user completes a refresh, set `updated` in the YAML to the current date/time so the next run can compute "last refreshed X days ago" correctly.
@@ -55,8 +55,8 @@ owner_skill: ls-skill-discovery
 
 ## Recommendation flow
 
-1. **Index and refresh:** Read [PUBLIC_SKILL_INDEX.yaml](PUBLIC_SKILL_INDEX.yaml) (or detect if missing). Get current date from the environment. If index missing or `updated` null: prompt user to build the index; do not proceed until built or user declines. Otherwise show "Last index refresh: YYYY-MM-DD (X days/weeks/years ago)." If age >= 7 days, prompt to refresh. If user agrees to refresh, fetch registry URLs, parse, write YAML, set `updated` to now.
-2. Compare user intent (new skill description or candidate skill description) to index entries (e.g. by keyword overlap, description similarity); rank and take top 5.
+1. **Index and refresh:** Read [PUBLIC_SKILL_INDEX.yaml](PUBLIC_SKILL_INDEX.yaml). If the readable mapping/list gate fails or `updated` is null, prompt to build it; a decline returns no recommendations and ends discovery. Otherwise show its age. If a stale-index refresh is declined, disclose staleness and continue with the readable entries. If accepted, run refresh then scrub and record both outcomes separately.
+2. Only after the readable-index gate passes, compare user intent to index entries; rank and take the top 5. An empty list returns zero matches.
 3. **Present recommendations** using the **default recommendation output format** (see below). After the formatted list, offer the four options: (1) In-depth summary of each, (2) Use one (pull and run through our import process so it's compliant), (3) Continue working on your own, (4) Adapt from one (use as base and customize).
 4. If user chooses (2) or (4): resolve the skill URL (e.g. from awesome list link to actual repo), then run the skill-importer workflow (fetch, scan, validate, screen, user selects, duplicate check, import). The imported skill becomes framework-compliant; no need to recreate from scratch.
 

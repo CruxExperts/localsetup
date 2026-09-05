@@ -32,8 +32,11 @@ REQUIRED_PHRASES = {
         "browser_session_guard.py",
     ],
     "references/browser-session-management.md": [
-        '"schema_version": 2',
+        '"schema_version": 3',
         '"status": "active"',
+        '"mcp_session_id"',
+        '"state_root"',
+        '"owner": "<agent/platform>"',
         '"may_close": true',
         "cleanup_actions",
         "list_pages",
@@ -47,23 +50,24 @@ REQUIRED_PHRASES = {
         "Concurrent browser control requires",
     ],
     "references/subagent-browser-workflows.md": [
-        "--experimentalPageIdRouting",
-        "isolated profile",
+        "--pageIdRouting",
+        "--mcp-session-id",
+        "--page-owner",
+        "shared controller-owned routed-server record",
         "must not use live browser MCP tools",
         "close_page",
     ],
     "references/browser-mcp-landscape.md": [
         "--isolated=true",
         "--userDataDir",
-        "--experimentalPageIdRouting",
+        "--pageIdRouting",
         "Chrome 136",
         "list_pages",
         "close_page",
         "context.close()",
     ],
     "references/source-ledger.md": [
-        "Accessed: 2026-06-29.",
-        "2026-07-02",
+        "Accessed: 2026-09-04.",
         "https://developer.chrome.com/blog/remote-debugging-port",
         "https://developer.chrome.com/docs/devtools/agents",
         "https://github.com/ChromeDevTools/chrome-devtools-mcp",
@@ -71,7 +75,7 @@ REQUIRED_PHRASES = {
         "https://playwright.dev/docs/pages",
         "https://modelcontextprotocol.io/docs/getting-started/intro",
         "https://cursor.com/docs/mcp",
-        "https://kilo.ai/docs/automate/mcp/using-in-cli",
+        "https://kilo.ai/docs/automate/mcp/using-in-kilo-code",
         "https://opencode.ai/docs/mcp-servers/",
         "https://docs.openclaw.ai/cli/mcp",
     ],
@@ -79,6 +83,8 @@ REQUIRED_PHRASES = {
 SOURCE_URLS = [
     "https://developer.chrome.com/docs/devtools/agents",
     "https://github.com/ChromeDevTools/chrome-devtools-mcp",
+    "https://raw.githubusercontent.com/ChromeDevTools/chrome-devtools-mcp/chrome-devtools-mcp-v1.8.0/src/config/mcp-options.ts",
+    "https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/main/CHANGELOG.md",
     "https://developer.chrome.com/blog/remote-debugging-port",
     "https://playwright.dev/docs/getting-started-mcp",
     "https://playwright.dev/docs/getting-started-cli",
@@ -89,16 +95,16 @@ SOURCE_URLS = [
     "https://code.claude.com/docs/en/mcp",
     "https://cursor.com/docs/mcp",
     "https://cursor.com/docs/cli/mcp",
-    "https://kilo.ai/docs/automate/mcp/using-in-cli",
+    "https://kilo.ai/docs/automate/mcp/using-in-kilo-code",
     "https://opencode.ai/docs/mcp-servers/",
     "https://opencode.ai/docs/config/",
     "https://docs.openclaw.ai/cli/mcp",
 ]
 NPM_VERSION_SNAPSHOT = {
-    "chrome-devtools-mcp": "1.4.0",
-    "@playwright/mcp": "0.0.77",
-    "@playwright/cli": "0.1.14",
-    "playwright": "1.61.1",
+    "chrome-devtools-mcp": "1.8.0",
+    "@playwright/mcp": "0.0.80",
+    "@playwright/cli": "0.1.19",
+    "playwright": "1.62.1",
 }
 
 
@@ -155,9 +161,13 @@ def check_npm_version(package: str, expected: str, timeout: float) -> dict[str, 
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Verify ls-ui-browser-debugging source structure, source reachability, and dated npm snapshots.")
+    parser = argparse.ArgumentParser(description="Verify ls-ui-browser-debugging source structure, URL reachability, and structured npm version snapshots.")
     parser.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
-    parser.add_argument("--refresh", action="store_true", help="Check primary source URLs and dated npm version snapshots.")
+    parser.add_argument(
+        "--refresh",
+        action="store_true",
+        help="Check URL reachability and exact npm registry versions; URL success does not semantically verify a cited claim.",
+    )
     parser.add_argument("--timeout", type=float, default=10.0, help="Per-source network timeout in seconds.")
     return parser
 
@@ -166,13 +176,13 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     root = skill_root()
     issues = check_static(root)
-    sources: list[dict[str, Any]] = []
+    source_reachability: list[dict[str, Any]] = []
     npm_versions: list[dict[str, Any]] = []
     if args.refresh:
-        sources = [check_url(url, args.timeout) for url in SOURCE_URLS]
-        for result in sources:
+        source_reachability = [check_url(url, args.timeout) for url in SOURCE_URLS]
+        for result in source_reachability:
             if not result.get("ok"):
-                issues.append({"path": result["url"], "severity": "warning", "message": "source refresh did not confirm URL"})
+                issues.append({"path": result["url"], "severity": "warning", "message": "source URL was not reachable"})
         npm_versions = [check_npm_version(package, version, args.timeout) for package, version in NPM_VERSION_SNAPSHOT.items()]
         for result in npm_versions:
             if not result.get("ok"):
@@ -191,7 +201,8 @@ def main(argv: list[str] | None = None) -> int:
         "status": "failed" if has_errors else "ok",
         "root": str(root),
         "issues": issues,
-        "sources": sources,
+        "source_reachability": source_reachability,
+        "source_reachability_limitation": "HTTP success confirms reachability only; it does not verify that a page still supports a cited claim.",
         "npm_versions": npm_versions,
     }
     if args.json:

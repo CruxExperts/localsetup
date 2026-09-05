@@ -12,7 +12,7 @@ extensions:
     source_commit: bef529f88175f0f9bbce6d203f93383e394d1467
     source_ref: main
     source_sha256: baa8dee53af3be96de34d298b7e577e2d9d54ae6a1e31b8f6e8635d18fe008a2
-    license: MIT
+    license: Apache-2.0
     import_date: '2026-07-03'
     vetting_status: provenance-recorded-no-bundled-tooling-executed
 ---
@@ -39,5 +39,5 @@ Use this skill when working on Sentry error handling tasks.
 - Source: `https://github.com/getsentry/sentry-for-ai`
 - Ref: `main` at `bef529f88175f0f9bbce6d203f93383e394d1467`
 - Source path: `skills/sentry-workflow/SKILL.md`
-- License classification: `MIT`
+- License classification: `Apache-2.0` (declared by the pinned `SKILL.md`; the repository-root `LICENSE` is `MIT` and is not the file-level classification).
 - Source SHA-256: `baa8dee53af3be96de34d298b7e577e2d9d54ae6a1e31b8f6e8635d18fe008a2`

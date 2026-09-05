@@ -28,20 +28,8 @@ except ImportError:  # pragma: no cover - package-local pytest collection path
 from .docker_env import DockerEnvStatus, build_scrapling_docker_command, detect_docker
 from .adapter_state import AdapterState, load_state, save_state, save_capability_index
 from .adapter_parser import parse_current_features
-from .extraction import (
-    extract_url_simple as _extract_url_simple,
-    extract_url_structured as _extract_url_structured,
-)
-from .job_registry import (
-    JobRecord,
-    JobRegistryError,
-    cancel_job,
-    create_job,
-    load_job,
-    list_jobs_with_errors,
-    update_job,
-    _utc_now_iso,
-)
+from .extraction import extract_url_simple as _extract_url_simple
+from .job_registry import JobRegistryError, cancel_job, load_job, list_jobs_with_errors
 
 
 @dataclass
@@ -142,8 +130,8 @@ def get_scrapling_version() -> Optional[str]:
     Best-effort version/health check for Scrapling.
 
     Scrapling does not support a --version flag, so we rely on a lightweight
-    CLI startup check. When the host CLI is missing or unhealthy, we attempt
-    a Docker-based check when available.
+    host CLI startup check. Docker availability is reported separately; this
+    function never runs or pulls a Docker image.
     """
     cfg = load_config()
     host_status: HostEnvStatus = detect_host_env(cfg)
@@ -156,17 +144,7 @@ def get_scrapling_version() -> Optional[str]:
             # the CLI is present and responding.
             return "available"
 
-    docker_status: DockerEnvStatus = detect_docker()
-    if not docker_status.available:
-        return None
-    # Call scrapling --help in Docker as a basic health probe.
-    docker_probe_dir = cfg.cache_dir / "docker-health"
-    docker_probe_dir.mkdir(parents=True, exist_ok=True)
-    cmd = _build_scrapling_command(cfg, ["--help"], use_docker=True, workdir=docker_probe_dir)
-    result = apply_command_plan(cmd)
-    if result["returncode"] != 0:
-        return None
-    return "available"
+    return None
 
 
 def upgrade_scrapling(host: bool = True, dry_run: bool = False, auto_confirm: bool = False) -> Dict[str, Any]:
@@ -269,76 +247,12 @@ def extract_url_simple(
     )
 
 
-def extract_url_structured(
-    url: str,
-    output_path: Path,
-    selectors_schema: Dict[str, str],
-    mode_hint: Optional[str] = None,
-    use_docker: bool = False,
-) -> Dict[str, Any]:
-    cfg = load_config()
-    return _extract_url_structured(
-        cfg=cfg,
-        apply_command_plan=apply_command_plan,
-        build_scrapling_command=_build_scrapling_command,
-        write_status_json=_write_status_json,
-        url=url,
-        output_path=output_path,
-        selectors_schema=selectors_schema,
-        mode_hint=mode_hint,
-        use_docker=use_docker,
-    )
-
-
 def run_shell(use_docker: bool = False) -> Dict[str, Any]:
     cfg = load_config()
     args: list[str] = ["shell"]
     cmd = _build_scrapling_command(cfg, args, use_docker=use_docker)
     result = apply_command_plan(cmd)
     return result
-
-
-def run_spider(
-    project_dir: Path,
-    spider_name: str,
-    crawl_dir: Optional[Path] = None,
-    extra_args: Optional[Sequence[str]] = None,
-    use_docker: bool = False,
-) -> Dict[str, Any]:
-    cfg = load_config()
-    args: list[str] = ["spider", spider_name]
-    if crawl_dir:
-        args.extend(["--crawldir", str(crawl_dir)])
-    if extra_args:
-        args.extend(list(extra_args))
-    cmd = _build_scrapling_command(cfg, args, use_docker=use_docker, workdir=project_dir)
-    # Record a job for this spider run; for now we treat it as a foreground job
-    # and only persist basic metadata. Background execution can build on this.
-    job = JobRecord(
-        job_id=_utc_now_iso(),
-        kind="spider",
-        status="running",
-        created_at=_utc_now_iso(),
-        updated_at=_utc_now_iso(),
-        command=cmd,
-        workdir=str(project_dir),
-    )
-    create_job(cfg, job)
-    result = apply_command_plan(cmd)
-    # Update job with final status and optional error message.
-    final_status = "succeeded" if result.get("returncode", 1) == 0 else "failed"
-    job.error = result.get("stderr") or None
-    update_job(cfg, job, status=final_status)
-    result["job_id"] = job.job_id
-    return result
-
-
-def resume_spider(
-    project_dir: Path,
-    crawl_dir: Path,
-    use_docker: bool = False,
-) -> Dict[str, Any]:
-    return run_spider(project_dir=project_dir, spider_name="", crawl_dir=crawl_dir, extra_args=None, use_docker=use_docker)
 
 
 def scrapling_job_status(job_id: str) -> Dict[str, Any]:

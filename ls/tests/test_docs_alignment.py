@@ -68,7 +68,9 @@ def test_inventory_discovers_docs_assets_skills_workflows_and_ci(tmp_path: Path)
 
     assert payload["schema_version"] == "1.0"
     assert payload["counts"]["skills"] >= 49
-    assert payload["counts"]["workflows"] >= 18
+    expected_workflows = list((repo / "ls" / "workflows").glob("*/workflow.yaml"))
+    assert expected_workflows
+    assert payload["counts"]["workflows"] == len(expected_workflows)
     assert payload["counts"]["platforms"] == 6
     assert any(row["path"] == "README.md" for row in payload["docs"])
     assert any(row["path"].startswith("assets/") for row in payload["assets"])

@@ -115,14 +115,18 @@ npm run build
 ```
 
 Adapt for the package manager (`pnpm`, `yarn`, `bun`) and monorepo task runner
-already in use. If scripts are missing but dependencies exist, fall back to the
-least surprising direct commands, such as:
+already in use. If a repository script is missing, use a direct tool invocation
+only after confirming that the specific tool is declared in the project
+manifest, resolved by the lockfile, and installed locally. Use the repository
+package manager's documented local-only mode that fails when the executable is
+missing.
 
-```bash
-npx tsc --noEmit
-npx eslint .
-npx vitest run
-```
+Do not use acquisition-capable fallbacks such as `npx`, default `npm exec`,
+`pnpm dlx`, `yarn dlx`, or `bunx` to fill a missing validation tool. If the
+executable is absent or local-only behavior is uncertain, stop and surface an
+explicit dependency decision. Add or change the dependency only through the
+repository package manager and lockfile after the required approval and
+dependency-security review.
 
 For framework projects, also run the framework build or checker that the repo
 uses in CI. Record any skipped checks and why.

@@ -35,7 +35,7 @@ as not initialized and inspect framework setup before running `init`.
 
 Use `config.aliases`, `components`, `resolvedPaths`, `project.rsc`,
 `project.typescript`, `project.tailwindVersion`, `config.iconLibrary`,
-`config.rtl`, `config.registries`, and the derived base (`radix` or `base`)
+`config.rtl`, `config.registries`, and the derived base (`base`, `radix`, or `aria`)
 when planning code changes. Never assume `@/components/ui`.
 
 ## Decision Flow
@@ -115,12 +115,15 @@ Use examples as starting checklists, not as copy-paste source:
 ## Verifier
 
 ```bash
-python3 scripts/verify_shadcn_sources.py --help
-python3 scripts/verify_shadcn_sources.py
-python3 scripts/verify_shadcn_sources.py --json
-python3 scripts/verify_shadcn_sources.py --refresh --json
+python3 ls/skills/ls-shadcn-ui/scripts/verify_shadcn_sources.py --help
+python3 ls/skills/ls-shadcn-ui/scripts/verify_shadcn_sources.py
+python3 ls/skills/ls-shadcn-ui/scripts/verify_shadcn_sources.py --json
+python3 ls/skills/ls-shadcn-ui/scripts/verify_shadcn_sources.py --refresh --json
 ```
 
-The default verifier path is offline and checks skill structure. `--refresh`
+Run these repository validation commands from the Localsetup repository root.
+For an installed copy of the skill, run the equivalent `scripts/...` path from
+the `ls-shadcn-ui` skill directory. The default verifier path is offline and
+uses only the Python standard library to check skill structure. `--refresh`
 checks official source reachability and npm latest metadata; it does not replace
 manual review of syntax-sensitive current docs.

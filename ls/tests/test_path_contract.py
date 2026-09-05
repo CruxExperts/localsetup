@@ -22,6 +22,28 @@ from ls.tests.test_install_flow import make_temp_repo
 SOURCE_ROOT = Path(__file__).resolve().parents[2]
 
 
+def test_context_skill_source_commands_resolve_checkout_root() -> None:
+    text = (SOURCE_ROOT / "ls" / "skills" / "ls-context" / "SKILL.md").read_text(encoding="utf-8")
+    generated_section = text.split("## Generated Docs And Volatile Facts", 1)[1].split(
+        "## Validation Expectations", 1
+    )[0]
+    validation_section = text.split("## Validation Expectations", 1)[1].split("## Invariants", 1)[0]
+    source_root_assignment = 'source_root="$(localsetup path source-root)"'
+    enter_source_root = 'cd -- "$source_root"'
+
+    for section in (generated_section, validation_section):
+        assert section.index("set -euo pipefail") < section.index(source_root_assignment)
+        assert section.index(source_root_assignment) < section.index("uv run --locked")
+        assert section.index(enter_source_root) < section.index("uv run --locked")
+
+    assert text.count("(\nset -euo pipefail\n" + source_root_assignment) == 2
+    assert validation_section.index("localsetup context --markdown") < validation_section.index(source_root_assignment)
+    assert text.count(source_root_assignment) == 2
+    assert text.count(enter_source_root) == 2
+    assert "follows ls/docs/PYTHON_ARCHITECTURE_STANDARD.md" not in text
+    assert "follows `localsetup://doc/PYTHON_ARCHITECTURE_STANDARD.md`" in text
+
+
 def test_localsetup_path_cli_writes_json_manifest_and_resolves_paths(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home with space"

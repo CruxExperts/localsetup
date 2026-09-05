@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.3
+version: 4.4
 owner_package: ls-workflow-ops-tmux-session
 ---
 
@@ -12,10 +12,12 @@ For the local managed workflow, state layout, JSON examples, and agent script, s
 
 ## Configuration
 
-- `REMOTE_TMUX_HOST` - Hostname or IP of the machine where tmux runs. When set, `localsetup://tool/tmux_ops` runs the Python tool over SSH on that host and returns the same JSON.
+- `REMOTE_TMUX_HOST` - Hostname or IP of the machine where tmux runs. When set, `ls/tools/tmux_ops` runs the Python tool over SSH on that host and returns the same JSON. Installed packages expose the same entrypoint through the `localsetup://tool/tmux_ops` alias.
 - `REMOTE_TMUX_CWD` - Optional repo path on the remote host. Default: `/opt/devzone/devops`.
 
 ## Flow
+
+Remote mode changes only the transport location. Before every managed `run`, require either a still-matching verified `ls-workflow-ops-guarded` handoff or a direct `ls-safety-and-backup` record containing the exact command or edit and values, exact remote target, risk classification, likely consequences and affected scope, backup or no-backup decision, rollback action, and the user's immediate explicit approval. `sudo ready` proves only credential readiness. Reject an incomplete, stale, or changed record before sending anything to the remote pane.
 
 Use the same managed commands locally or remotely:
 
@@ -46,6 +48,7 @@ Interrupt only through the managed cancel path:
 - Do not use raw SSH plus tmux commands.
 - Do not assume local `/tmp/localsetup-tmux-ops` contains remote status.
 - Do not start another `run` while the remote session has an active `run_id`.
+- Do not use tmux readiness as authorization; verify the exact approved payload immediately before each `run`.
 - If sudo returns `password_required`, ask the user to attach to the remote tmux session and enter the password there.
 
 ## When not to set it

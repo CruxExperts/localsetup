@@ -4,23 +4,13 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import re
 import sys
 from pathlib import Path
+from types import ModuleType
 
-for parent in Path(__file__).resolve().parents:
-    if (parent / "lib" / "deps.py").is_file():
-        sys.path.insert(0, str(parent / "lib"))
-        from deps import require_deps
-
-        require_deps(["requests"])
-        break
-
-try:
-    import requests
-except ImportError as exc:  # pragma: no cover - environment guidance
-    raise SystemExit("Missing dependency: requests. Run `uv sync --locked --no-dev` from the Localsetup source checkout.") from exc
 
 REQUIRED_FILES = [
     "SKILL.md",
@@ -87,17 +77,48 @@ OFFICIAL_URLS = [
 ]
 
 
-def fetch_url(url: str, timeout: int) -> dict[str, object]:
+def load_requests() -> ModuleType:
+    for parent in Path(__file__).resolve().parents:
+        if (parent / "lib" / "deps.py").is_file():
+            sys.path.insert(0, str(parent / "lib"))
+            from deps import require_deps
+
+            require_deps(["requests"])
+            break
+
     try:
-        response = requests.get(url, headers={"User-Agent": "ls-shadcn-ui-verifier/1.0"}, timeout=timeout)
+        return importlib.import_module("requests")
+    except ImportError as exc:  # pragma: no cover - environment guidance
+        raise SystemExit(
+            "Missing dependency: requests. Run `uv sync --locked --no-dev` "
+            "from the Localsetup source checkout."
+        ) from exc
+
+
+def fetch_url(requests_module: ModuleType, url: str, timeout: int) -> dict[str, object]:
+    try:
+        response = requests_module.get(
+            url,
+            headers={"User-Agent": "ls-shadcn-ui-verifier/1.0"},
+            timeout=timeout,
+        )
         data = response.content[: 1024 * 1024]
-        return {"url": url, "ok": 200 <= response.status_code < 400, "status": response.status_code, "bytes": len(data)}
-    except requests.RequestException as exc:
+        return {
+            "url": url,
+            "ok": 200 <= response.status_code < 400,
+            "status": response.status_code,
+            "bytes": len(data),
+        }
+    except requests_module.RequestException as exc:
         return {"url": url, "ok": False, "status": None, "error": str(exc)}
 
 
-def fetch_json(url: str, timeout: int) -> dict[str, object]:
-    response = requests.get(url, headers={"User-Agent": "ls-shadcn-ui-verifier/1.0"}, timeout=timeout)
+def fetch_json(requests_module: ModuleType, url: str, timeout: int) -> dict[str, object]:
+    response = requests_module.get(
+        url,
+        headers={"User-Agent": "ls-shadcn-ui-verifier/1.0"},
+        timeout=timeout,
+    )
     response.raise_for_status()
     data = response.json()
     return data if isinstance(data, dict) else {}
@@ -130,9 +151,11 @@ def validate_static(skill_root: Path) -> list[str]:
     source_ledger = skill_root / "references/source-ledger.md"
     if source_ledger.is_file():
         ledger = source_ledger.read_text(encoding="utf-8")
-        for expected in ["https://ui.shadcn.com/docs", "https://registry.npmjs.org/shadcn", "shadcn@4.13.0"]:
+        for expected in ["https://ui.shadcn.com/docs", "https://registry.npmjs.org/shadcn"]:
             if expected not in ledger:
                 errors.append(f"source ledger missing {expected}")
+        if not re.search(r"shadcn@[0-9]+\.[0-9]+\.[0-9]+", ledger):
+            errors.append("source ledger missing a dated shadcn package version")
 
     return errors
 
@@ -152,22 +175,28 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     skill_root = args.skill_root.resolve()
-    errors = validate_static(skill_root)
+    static_errors = validate_static(skill_root)
+    refresh_errors: list[str] = []
     refresh_results: list[dict[str, object]] = []
     npm_check: dict[str, object] | None = None
 
     if args.refresh:
-        refresh_results = [fetch_url(url, args.timeout) for url in OFFICIAL_URLS]
+        requests_module = load_requests()
+        refresh_results = [
+            fetch_url(requests_module, url, args.timeout) for url in OFFICIAL_URLS
+        ]
         for item in refresh_results:
             if not item.get("ok"):
-                errors.append(f"source check failed: {item['url']} ({item.get('status') or item.get('error')})")
+                refresh_errors.append(
+                    f"source check failed: {item['url']} ({item.get('status') or item.get('error')})"
+                )
 
         source_ledger = skill_root / "references/source-ledger.md"
         if source_ledger.is_file():
             ledger = source_ledger.read_text(encoding="utf-8")
             expected_version, expected_timestamp = ledger_expected_npm(ledger)
             try:
-                npm = fetch_json(NPM_URL, args.timeout)
+                npm = fetch_json(requests_module, NPM_URL, args.timeout)
                 latest = str(npm.get("dist-tags", {}).get("latest", ""))
                 latest_time = str(npm.get("time", {}).get(latest, ""))
                 npm_check = {
@@ -180,18 +209,27 @@ def main(argv: list[str] | None = None) -> int:
                 }
                 if expected_version and latest != expected_version:
                     npm_check["ok"] = False
-                    errors.append(f"npm latest mismatch: ledger {expected_version}, live {latest}")
+                    refresh_errors.append(
+                        f"npm latest mismatch: ledger {expected_version}, live {latest}"
+                    )
                 if expected_timestamp and latest_time != expected_timestamp:
                     npm_check["ok"] = False
-                    errors.append(f"npm timestamp mismatch: ledger {expected_timestamp}, live {latest_time}")
-            except (requests.RequestException, ValueError) as exc:
+                    refresh_errors.append(
+                        f"npm timestamp mismatch: ledger {expected_timestamp}, live {latest_time}"
+                    )
+            except (requests_module.RequestException, ValueError) as exc:
                 npm_check = {"url": NPM_URL, "ok": False, "error": str(exc)}
-                errors.append(f"npm metadata check failed: {exc}")
+                refresh_errors.append(f"npm metadata check failed: {exc}")
+
+    errors = [*static_errors, *refresh_errors]
 
     payload = {
         "skill_root": str(skill_root),
-        "static_ok": not [error for error in errors if not error.startswith("source check failed:")],
+        "static_ok": not static_errors,
+        "static_errors": static_errors,
         "refresh": args.refresh,
+        "refresh_ok": not refresh_errors if args.refresh else None,
+        "refresh_errors": refresh_errors,
         "refresh_results": refresh_results,
         "npm_check": npm_check,
         "ok": not errors,

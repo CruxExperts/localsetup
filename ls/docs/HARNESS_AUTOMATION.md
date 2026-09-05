@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.3
+version: 4.4
 owner_skill: ls-codex-heartbeat
 ---
 
@@ -16,7 +16,7 @@ The important boundary is simple: selecting or installing the `harness` pack onl
 localsetup install --packs harness --tools codex --yes
 ```
 
-This installs `ls-codex-heartbeat`, `ls-cron-orchestrator`, `ls-workflow-codex-heartbeat`, and `ls-workflow-repo-finalizer` into the managed Localsetup package library. Normal Localsetup install behavior remains user-initiated.
+This installs `ls-codex-heartbeat`, `ls-cron-orchestrator`, and `ls-workflow-repo-finalizer` into the managed Localsetup package library. Normal Localsetup install behavior remains user-initiated.
 
 ## Activate a target repo
 
@@ -137,13 +137,13 @@ Pointers stay relative to the state directory:
 
 Interrupted staged runs are preserved as recovered failures before a fresh run starts.
 
-## Command and Codex boundary
+## Command and agent boundary
 
 Hooks and launch commands run in serial order with explicit timeouts, stdout/stderr tails, sidecar JSON logs, PID/process group/session metadata where available, and manifest hashes. Hooks plus `direct-argv` and `resolved-path` agent profiles run with `shell=False`; `shell-login` is explicit opt-in compatibility mode and records the rendered command.
 
 Direct hook policy blocks `git commit`, `git push`, and common destructive executables unless the target config explicitly allows them.
 
-Codex execution is additionally constrained by the configured agent profile, launcher mode, Codex client configuration, sandbox, and approval settings. The heartbeat harness records and gates execution; it does not replace Codex's sandbox or approval model.
+Agent execution is additionally constrained by the configured agent profile, launcher mode, selected agent-client configuration, sandbox, and approval settings. The heartbeat harness records and gates execution; it does not replace an agent client's sandbox or approval model.
 
 ## Cron launcher
 

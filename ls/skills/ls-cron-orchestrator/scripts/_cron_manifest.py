@@ -20,12 +20,14 @@ MAX_CMD_LEN = 8192
 MAX_ID_LEN = 128
 MAX_TRIGGER_LEN = 128
 MAX_TIMEOUT_SECONDS = 86400
+MAX_SEQUENCE_ORDER = 86400
 MAX_DELAY_SECONDS = 86400
 MAX_BOOT_DELAY_MINUTES = 1440
 DEFAULT_TIMEOUT_SECONDS = 3600
 
 IDENTIFIER_RE = re.compile(r"^[A-Za-z0-9_.:@+-]+$")
-CRON_FIELD_RE = re.compile(r"^[A-Za-z0-9*/,\-?#LW]+$")
+CRON_FIELD_CHARS_RE = re.compile(r"^[0-9*/,\-]+$")
+CRON_FIELD_RANGES = ((0, 59), (0, 23), (1, 31), (1, 12), (0, 7))
 SHELL_OPERATOR_TOKENS = ("&&", "||", ";", "|", ">", "<", "`", "\n", "\r", "$(", "${")
 
 
@@ -136,36 +138,68 @@ def normalize_command(raw: Any, path: str) -> list[str]:
     return argv
 
 
+def _normalize_integer(value: Any, path: str, minimum: int, maximum: int) -> int:
+    if type(value) is not int:
+        raise ManifestError(f"{path}: must be an integer")
+    if value < minimum or value > maximum:
+        raise ManifestError(f"{path}: must be in the range {minimum}..{maximum}")
+    return value
+
+
 def normalize_timeout(value: Any, path: str) -> int:
     if value is None:
         return DEFAULT_TIMEOUT_SECONDS
-    try:
-        timeout = int(value)
-    except (TypeError, ValueError) as exc:
-        raise ManifestError(f"{path}: must be an integer") from exc
-    if timeout < 1 or timeout > MAX_TIMEOUT_SECONDS:
-        raise ManifestError(f"{path}: must be in the range 1..{MAX_TIMEOUT_SECONDS}")
-    return timeout
+    return _normalize_integer(value, path, 1, MAX_TIMEOUT_SECONDS)
+
+
+def normalize_sequence_order(value: Any, path: str) -> int:
+    return _normalize_integer(value, path, 0, MAX_SEQUENCE_ORDER)
 
 
 def normalize_delay_seconds(value: Any, path: str) -> int:
-    try:
-        delay = int(value)
-    except (TypeError, ValueError) as exc:
-        raise ManifestError(f"{path}: must be an integer") from exc
-    if delay < 0 or delay > MAX_DELAY_SECONDS:
-        raise ManifestError(f"{path}: must be in the range 0..{MAX_DELAY_SECONDS}")
-    return delay
+    return _normalize_integer(value, path, 0, MAX_DELAY_SECONDS)
 
 
 def normalize_boot_delay_minutes(value: Any, path: str) -> int:
-    try:
-        delay = int(value)
-    except (TypeError, ValueError) as exc:
-        raise ManifestError(f"{path}: must be an integer") from exc
-    if delay < 0 or delay > MAX_BOOT_DELAY_MINUTES:
-        raise ManifestError(f"{path}: must be in the range 0..{MAX_BOOT_DELAY_MINUTES}")
-    return delay
+    return _normalize_integer(value, path, 0, MAX_BOOT_DELAY_MINUTES)
+
+
+def _cron_number(value: str, minimum: int, maximum: int, path: str) -> int:
+    if not value.isdecimal():
+        raise ManifestError(f"{path}: must be a numeric Linux cron value")
+    number = int(value)
+    if number < minimum or number > maximum:
+        raise ManifestError(f"{path}: must be in the range {minimum}..{maximum}")
+    return number
+
+
+def _validate_cron_base(value: str, minimum: int, maximum: int, path: str) -> None:
+    if value == "*":
+        return
+    if "-" not in value:
+        _cron_number(value, minimum, maximum, path)
+        return
+    if value.count("-") != 1:
+        raise ManifestError(f"{path}: malformed cron range")
+    start, end = value.split("-", 1)
+    start_number = _cron_number(start, minimum, maximum, path)
+    end_number = _cron_number(end, minimum, maximum, path)
+    if start_number > end_number:
+        raise ManifestError(f"{path}: cron range start must not exceed end")
+
+
+def _validate_cron_field(value: str, minimum: int, maximum: int, path: str) -> None:
+    if not value or not CRON_FIELD_CHARS_RE.fullmatch(value):
+        raise ManifestError(f"{path}: contains unsupported cron characters")
+    for item in value.split(","):
+        if not item:
+            raise ManifestError(f"{path}: contains an empty cron list item")
+        base, separator, step_value = item.partition("/")
+        if separator:
+            if "/" in step_value:
+                raise ManifestError(f"{path}: malformed cron step")
+            _cron_number(step_value, 1, maximum - minimum + 1, path)
+        _validate_cron_base(base, minimum, maximum, path)
 
 
 def validate_schedule(value: Any, path: str) -> str:
@@ -177,11 +211,10 @@ def validate_schedule(value: Any, path: str) -> str:
     fields = schedule.split(" ")
     if len(fields) != 5:
         raise ManifestError(f"{path}: expected 5 cron fields, got {len(fields)}")
-    for index, field in enumerate(fields, start=1):
+    for index, (field, (minimum, maximum)) in enumerate(zip(fields, CRON_FIELD_RANGES, strict=True), start=1):
         if len(field) > 64:
             raise ManifestError(f"{path}: field {index} exceeds 64 characters")
-        if not CRON_FIELD_RE.fullmatch(field):
-            raise ManifestError(f"{path}: field {index} contains unsupported cron characters")
+        _validate_cron_field(field, minimum, maximum, f"{path}: field {index}")
     return schedule
 
 
@@ -231,12 +264,9 @@ def validate_manifest(data: dict[str, Any]) -> dict[str, Any]:
                 trigger = validate_identifier(raw_task.get("trigger"), f"{path}.trigger", MAX_TRIGGER_LEN)
                 if normalized_triggers and trigger not in normalized_triggers:
                     raise ManifestError(f"{path}.trigger: unknown trigger {trigger!r}")
-                try:
-                    sequence_order = int(raw_task.get("sequence_order", 0))
-                except (TypeError, ValueError) as exc:
-                    raise ManifestError(f"{path}.sequence_order: must be an integer") from exc
-                if sequence_order < 0:
-                    raise ManifestError(f"{path}.sequence_order: must be greater than or equal to 0")
+                if "sequence_order" not in raw_task:
+                    raise ManifestError(f"{path}.sequence_order: is required")
+                sequence_order = normalize_sequence_order(raw_task["sequence_order"], f"{path}.sequence_order")
                 enabled = raw_task.get("enabled", True)
                 if not isinstance(enabled, bool):
                     raise ManifestError(f"{path}.enabled: must be a boolean")

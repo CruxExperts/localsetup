@@ -7,8 +7,7 @@ required_skills:
   - ls-tdd-guide
   - ls-pr-reviewer
 required_tools: []
-required_docs:
-  - ls/docs/WORKFLOW_QUICK_REF.md
+required_docs: []
 gates:
   - id: feedback_gate
     rule: Confirm actionable comments before implementation.
@@ -24,8 +23,8 @@ validation:
 outputs:
   - PR feedback closure summary
 smoke:
-  - id: quick_ref_present
-    check: ls/docs/WORKFLOW_QUICK_REF.md exists
+  - id: receiving_review_skill_present
+    check: ls/skills/ls-receiving-code-review/SKILL.md exists
 migration:
   source: ls/docs/WORKFLOW_QUICK_REF.md
   note: Details delegated to the underlying skills.

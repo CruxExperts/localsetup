@@ -6,4 +6,4 @@ metadata:
 ---
 
 Use this workflow package for one-kickoff, multi-phase runs.
-Primary references: `ls/docs/AGENTIC_UMBRELLA_WORKFLOWS.md` and `ls/docs/WORKFLOW_REGISTRY.md`.
+Canonical procedure: [AGENTIC_UMBRELLA_WORKFLOWS.md](../../docs/AGENTIC_UMBRELLA_WORKFLOWS.md).

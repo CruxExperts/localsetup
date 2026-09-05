@@ -144,4 +144,5 @@ def test_standalone_copied_skill_resolves_current_adapter_and_creates_sandbox(
     assert completed.returncode == 0, completed.stderr
     copied_skill = Path(completed.stdout.strip())
     assert copied_skill.parent.parent == sandbox_base
+    assert (copied_skill.parent / ".localsetup-sandbox.json").is_file()
     assert (copied_skill / "SKILL.md").read_text(encoding="utf-8").startswith("---\nname: ls-demo")

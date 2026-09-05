@@ -12,6 +12,7 @@ from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, str(Path(__file__).parent))
 import npm_api
+import npm_api_support
 from npm_api_test_helpers import make_conf
 
 
@@ -338,6 +339,96 @@ class TestHTTPErrorHandling(unittest.TestCase):
             with patch.object(client._session, "request", return_value=mock_resp):
                 result = client._raw_request("DELETE", "/nginx/proxy-hosts/1", auth_token="faketoken")
                 self.assertEqual(result, {})
+
+
+class TestDebugDiagnostics(unittest.TestCase):
+
+    def _make_client(self, tmp: Path) -> npm_api.NPMClient:
+        conf = make_conf(
+            tmp,
+            API_USER="debug-user-sentinel",
+            API_PASS="debug-password-sentinel",
+        )
+        return npm_api.NPMClient(npm_api.Config(conf))
+
+    def test_request_debug_is_useful_without_logging_sensitive_values(self):
+        with tempfile.TemporaryDirectory() as td:
+            client = self._make_client(Path(td))
+            response_body = "debug-response-body-sentinel"
+            request_body = {
+                "identity": "debug-user-sentinel",
+                "secret": "debug-password-sentinel",
+                "payload": "debug-request-body-sentinel",
+            }
+            bearer_token = "debug-bearer-token-sentinel"
+            mock_resp = MagicMock()
+            mock_resp.raise_for_status.return_value = None
+            mock_resp.content = response_body.encode()
+            mock_resp.text = response_body
+            mock_resp.json.return_value = {"result": response_body}
+            stderr = StringIO()
+
+            with (
+                patch.object(client._session, "request", return_value=mock_resp) as request,
+                patch.object(npm_api_support, "DEBUG", True),
+                patch("sys.stderr", stderr),
+            ):
+                client._raw_request(
+                    "POST",
+                    "/tokens?expiry=24h",
+                    request_body,
+                    auth_token=bearer_token,
+                )
+
+            debug_output = stderr.getvalue()
+            self.assertIn("[npm_api DEBUG] POST http://127.0.0.1:81/api/tokens?expiry=24h", debug_output)
+            for sensitive in (
+                "debug-user-sentinel",
+                "debug-password-sentinel",
+                "debug-request-body-sentinel",
+                response_body,
+                bearer_token,
+                "Authorization",
+                "Bearer",
+            ):
+                self.assertNotIn(sensitive, debug_output)
+
+            _, _, kwargs = request.mock_calls[0]
+            self.assertEqual(kwargs["json"], request_body)
+            self.assertEqual(kwargs["headers"], {"Authorization": f"Bearer {bearer_token}"})
+
+    def test_token_refresh_debug_omits_credentials_and_token_values(self):
+        with tempfile.TemporaryDirectory() as td:
+            client = self._make_client(Path(td))
+            short_token = "debug-short-token-sentinel"
+            long_token = "debug-long-token-sentinel"
+            expiry = "2030-01-01T00:00:00Z"
+            stderr = StringIO()
+
+            with (
+                patch.object(
+                    client,
+                    "_raw_request",
+                    side_effect=[
+                        {"token": short_token},
+                        {"token": long_token, "expires": expiry},
+                    ],
+                ),
+                patch.object(npm_api_support, "DEBUG", True),
+                patch("sys.stderr", stderr),
+            ):
+                client._refresh_token()
+
+            debug_output = stderr.getvalue()
+            self.assertIn("[npm_api DEBUG] Requesting new API token", debug_output)
+            self.assertIn(f"[npm_api DEBUG] Token cached; expires {expiry}", debug_output)
+            for sensitive in (
+                "debug-user-sentinel",
+                "debug-password-sentinel",
+                short_token,
+                long_token,
+            ):
+                self.assertNotIn(sensitive, debug_output)
 
 
 class TestHelp(unittest.TestCase):

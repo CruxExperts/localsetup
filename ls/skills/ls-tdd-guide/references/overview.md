@@ -3,7 +3,7 @@
 This reference is the concise map for `ls-tdd-guide`. The authoritative entry point is `SKILL.md`; deeper guidance lives in the focused references:
 
 - `how-to-use.md` for prompt patterns and workflow examples.
-- `framework-guide.md` for Jest, Vitest, Pytest, JUnit, and Mocha conventions.
+- `framework-guide.md` for framework conventions and the authoritative compatibility matrix.
 - `ci-integration.md` for coverage gates and CI examples.
 - `tdd-best-practices.md` for red-green-refactor habits and quality checks.
 
@@ -32,13 +32,13 @@ Outputs JSON with detected content type, language, framework, and report format.
 
 ### Generate Tests
 
-Create a requirements JSON file with keys such as `user_stories`, `acceptance_criteria`, or `api_specs`, then run:
+Create a requirements JSON file with keys such as `user_stories`, `acceptance_criteria`, or `api_specs`, then choose a scope:
 
 ```bash
-python scripts/test_generator.py --input requirements.json --framework pytest --module auth
+python scripts/test_generator.py --input requirements.json --framework pytest --language python --test-type integration --module auth
 ```
 
-Without `--module`, the tool emits JSON test-case specs. With `--module`, it emits a framework-specific test file scaffold.
+Without `--module`, the tool emits JSON test-case specs. With `--module`, it emits a framework-specific scaffold. `unit`, `integration`, and `e2e` select different scenarios, execution scopes, and setup guidance.
 
 ### Analyze Coverage
 
@@ -46,12 +46,12 @@ Without `--module`, the tool emits JSON test-case specs. With `--module`, it emi
 python scripts/coverage_analyzer.py --report coverage/lcov.info --threshold 80
 ```
 
-The analyzer supports LCOV, Istanbul-style JSON, and Cobertura-style XML. Invalid JSON and XML inputs fail with explicit errors instead of being ignored.
+The analyzer supports LCOV, Istanbul JSON, Cobertura XML, and JaCoCo XML. Branchless files report branch coverage as `null` (not applicable), and invalid or unsupported report shapes fail explicitly.
 
 ### Validate A TDD Phase
 
 ```bash
-python scripts/tdd_workflow.py --phase red --test-code-file tests/test_auth.py --test-result-json '{"status":"failed"}'
+python scripts/tdd_workflow.py --phase red --test-code-file tests/test_auth.py --test-result-json '{"status":"failed","failure_kind":"assertion","failure_message":"expected 200, got 401"}'
 ```
 
 Use `--phase green` with implementation code and a passing test result, or `--phase refactor` with original/refactored code plus test results.

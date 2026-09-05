@@ -45,6 +45,13 @@ def test_plugin_pack_manifest_loads_and_resolves_source_packs() -> None:
     }
     assert payload["count"] == len(configs) == 12
     assert any(item["id"] == "localsetup-bootstrap" and "ls-context" in item["skills"] for item in payload["plugin_packs"])
+    assert any(
+        item["id"] == "localsetup-harness" and "ls-context-index" in item["skills"]
+        for item in payload["plugin_packs"]
+    )
+    dev = next(item for item in payload["plugin_packs"] if item["id"] == "localsetup-dev")
+    assert "ls-skill-discovery" in dev["skills"]
+    assert "ls-workflow-skills-index-refresh" not in dev["workflows"]
 
 
 def test_plugin_pack_manifest_rejects_unknown_source_pack(tmp_path: Path) -> None:
@@ -122,7 +129,8 @@ def test_codex_plugin_generator_emits_marketplace_manifest_and_context(tmp_path:
     assert manifest["name"] == "localsetup-bootstrap"
     assert manifest["interface"] == "v1"
     assert "ls-context" in manifest["skills"]
-    assert "ls-workflow-audit-framework" in manifest["skills"]
+    assert "ls-framework-audit" in manifest["skills"]
+    assert "ls-workflow-audit-framework" not in manifest["skills"]
     assert "ls-plugin-bootstrap-context" in manifest["skills"]
     assert (plugin_root / "skills" / "ls-plugin-bootstrap-context" / "SKILL.md").is_file()
     assert (plugin_root / "skills" / "ls-context" / REFERENCE_BUNDLE_PATH).is_file()
