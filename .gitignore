@@ -1,4 +1,4 @@
-# Localsetup framework source repo
+# LocalSetup framework source repo
 *.backup
 *.local
 .DS_Store
@@ -58,7 +58,7 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
-# Localsetup install output (machine-local runtime state; never publish)
+# LocalSetup install output (machine-local runtime state; never publish)
 .localsetup/
 localsetup.lock.json
 .codex/skills
@@ -87,7 +87,7 @@ ls/.kilo/
 # Codex CLI context: track the repo guide; generated skills adapter is install output.
 !AGENTS.md
 
-# Localsetup maintainer-private state
+# LocalSetup maintainer-private state
 state/
 .localsetup-maint/boundary.yaml
 .localsetup-maint/config/

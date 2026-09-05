@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest a Localsetup capability, workflow, docs, or platform improvement.
+description: Suggest a LocalSetup capability, workflow, docs, or platform improvement.
 title: "feat: "
 labels:
   - status/needs-triage
@@ -36,7 +36,7 @@ body:
     id: proposed
     attributes:
       label: Proposed behavior
-      description: What should Localsetup do after this change?
+      description: What should LocalSetup do after this change?
     validations:
       required: true
   - type: textarea

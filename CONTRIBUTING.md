@@ -1,10 +1,10 @@
-# Contributing to Localsetup
+# Contributing to LocalSetup
 
-Thanks for helping improve Localsetup. This project is built for people who want agent workflows to be portable, reviewable, and safe enough to use on real repositories.
+Thanks for helping improve LocalSetup. This project is built for people who want agent workflows to be portable, reviewable, and safe enough to use on real repositories.
 
 ## Best ways to contribute
 
-- **Report bugs:** Open a GitHub Issue with the Localsetup version, install command, platform ID, OS/WSL2 context, expected behavior, actual behavior, validation output, and relevant short logs.
+- **Report bugs:** Open a GitHub Issue with the LocalSetup version, install command, platform ID, OS/WSL2 context, expected behavior, actual behavior, validation output, and relevant short logs.
 - **Suggest features:** Open a feature request with the workflow you are trying to improve, the affected skill/workflow/platform/docs area, and why it belongs in the framework.
 - **Report maintenance problems:** Use the maintenance issue form for version-sync failures, generated-doc drift, publish workflow failures, or package-artifact issues.
 - **Improve docs:** Keep changes focused, practical, and linked to the source docs they clarify.
@@ -36,7 +36,7 @@ uv run --locked pytest -n "$workers" ls/tests -q
 git diff --check
 ```
 
-Run focused tests and Localsetup validators for the code you changed before the full Python suite. Treat the full Python suite as final consolidation for broad framework changes, release/publish work, dependency changes, or explicit maintainer review requests. Resolve the permitted worker count with `localsetup test-workers`; the [command reference](ls/docs/COMMAND_REFERENCE.md) owns its formula and aggregate-budget rule.
+Run focused tests and LocalSetup validators for the code you changed before the full Python suite. Treat the full Python suite as final consolidation for broad framework changes, release/publish work, dependency changes, or explicit maintainer review requests. Resolve the permitted worker count with `localsetup test-workers`; the [command reference](ls/docs/COMMAND_REFERENCE.md) owns its formula and aggregate-budget rule.
 
 ## Repository layout
 
