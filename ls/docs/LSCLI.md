@@ -261,3 +261,36 @@ The Python 3.12/Linux installed candidate passed the same deterministic fixtures
 outside the checkout, including a model name that triggers upstream inference:
 system roles remain explicit and no inferred context-window claim survives.
 Installed payload origins and the runtime inventory were verified afterward.
+
+## Bounded worker supervision
+
+The internal `probe_runtime` supervisor holds the selected runtime's shared lease
+through worker teardown. It starts installed Python with `-I -B`, a minimal
+environment, private umask and a new POSIX process group. Schema-1 stdin currently
+accepts only `{"schema_version":1,"operation":"probe"}` followed by EOF. The worker
+emits a `ready` event and one qualification `result`, each with schema version,
+zero-based sequence, type and object data. Generic agent/tool dispatch is not
+available through this protocol yet.
+
+The supervisor concurrently handles pipes with bounded storage: requests up to
+4096 bytes, stdout up to 1 MiB, and diagnostics up to 64 KiB. It owns the monotonic
+execution deadline, polls cancellation during process supervision, closes stdin
+after the request, and kills the process group on exit, timeout, cancellation or
+failure. Pipe-holding descendants are terminated when their worker exits. Raw
+worker diagnostics are discarded rather than included in terminal results.
+
+Internal terminal states are `completed`, `failed`, `protocol_error`,
+`output_limit`, `timed_out`, and `cancelled`. Completion requires both the exact
+ready/result protocol and process exit zero; neither alone is success. A result
+is not controller acceptance of any repository task. Preflight/lease errors
+remain exceptions. Cancellation during lease acquisition or synchronous inventory
+verification is not yet interruptible; remaining deadline is checked before
+spawn. Process groups do not contain descendants that deliberately create new
+sessions; sandbox containment remains a separate required gate. Steering,
+approvals, durable operation recovery and agent dispatch remain pending.
+
+The Python 3.12/Linux installed candidate completed this supervised probe outside
+the checkout, with private SDK origins and unchanged runtime inventory. Focused
+subprocess fixtures cover malformed/duplicate events, nonzero exit despite a valid
+result, output limits, active/pre-start cancellation, deadlines and pipe-holding
+children. These checks qualify the probe lifecycle only.
