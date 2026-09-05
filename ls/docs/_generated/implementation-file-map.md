@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: bb8b32c3ffb3f942acb922d4f6f1b1d31b0ae41952179888a9d0a9685e12a335
+  source_provenance_hash: 6f3d3a38ba4eb8a0e3ba362d3f81e779b66586f0b5a18d81d24db21eaa1ad023
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 9357886599f3253ab59a89f24588c859ae971600
-artifact_sha256: 536a8515f6a7b09f03e4abdbc10740e9a97d3b74f8dc1a0b70f061c4fab1846e
+source_commit: 900bfa6649fbf3e8553a082af2812606cf82d6e6
+artifact_sha256: f12526d3a86c78de3259d3bc06b018bb474dd911b159e9cf1d32fdebc7549a76
 ---
 # Implementation File Map
 
@@ -122,6 +122,7 @@ artifact_sha256: 536a8515f6a7b09f03e4abdbc10740e9a97d3b74f8dc1a0b70f061c4fab1846
 | `refactor` | `ls/core/agent/sdk_imports.py` |
 | `refactor` | `ls/core/agent/sdk_models.py` |
 | `refactor` | `ls/core/agent/sdk_worker.py` |
+| `refactor` | `ls/core/agent/snapshot.py` |
 | `refactor` | `ls/core/agent/supervisor.py` |
 | `refactor` | `ls/core/agent/worker_protocol.py` |
 | `refactor` | `ls/core/aliases.py` |
@@ -924,6 +925,7 @@ artifact_sha256: 536a8515f6a7b09f03e4abdbc10740e9a97d3b74f8dc1a0b70f061c4fab1846
 | `keep` | `ls/tests/test_agent_routing.py` |
 | `keep` | `ls/tests/test_agent_routing_package_install.py` |
 | `keep` | `ls/tests/test_agent_sandbox.py` |
+| `keep` | `ls/tests/test_agent_snapshot.py` |
 | `keep` | `ls/tests/test_agent_supervisor.py` |
 | `keep` | `ls/tests/test_artifact_freshness.py` |
 | `keep` | `ls/tests/test_branding.py` |
