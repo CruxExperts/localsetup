@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: bc629533a962736aa1584e4a736e3c9fc3b29d5064bb2118e7ccab29e8356832
+  source_provenance_hash: 989adf8cbb000130db8e515ef00a45cbad078a1c305af957660cae787b97f3e0
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 15c722e959c9b439fde9499436b80f4555607d9b
-artifact_sha256: 46b4d55ae948fb614de2abcc53927115acd07a398f90737d935ff2d053118871
+source_commit: efd3849fbc069b480d99aabd01160ddec75c282e
+artifact_sha256: 1b2fda6617e9a8f2eafeffd76212f8501df64ea16ec22e43f0050e9dfc49e8b9
 ---
 # Implementation File Map
 
@@ -107,6 +107,7 @@ artifact_sha256: 46b4d55ae948fb614de2abcc53927115acd07a398f90737d935ff2d05311887
 | `refactor` | `ls/core/adapter_markers.py` |
 | `refactor` | `ls/core/adapters.py` |
 | `refactor` | `ls/core/agent/__init__.py` |
+| `refactor` | `ls/core/agent/broker_rpc.py` |
 | `refactor` | `ls/core/agent/checkpoint_store.py` |
 | `refactor` | `ls/core/agent/cli.py` |
 | `refactor` | `ls/core/agent/diagnostics.py` |
@@ -935,6 +936,7 @@ artifact_sha256: 46b4d55ae948fb614de2abcc53927115acd07a398f90737d935ff2d05311887
 | `keep` | `ls/tests/test_agent_supervisor.py` |
 | `keep` | `ls/tests/test_artifact_freshness.py` |
 | `keep` | `ls/tests/test_branding.py` |
+| `keep` | `ls/tests/test_broker_rpc.py` |
 | `keep` | `ls/tests/test_candidate_skill_cli.py` |
 | `keep` | `ls/tests/test_checkpoint_store.py` |
 | `keep` | `ls/tests/test_cli_version.py` |
