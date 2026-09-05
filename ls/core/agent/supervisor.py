@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import selectors
 import signal
+import socket
 import subprocess
 import time
 
@@ -22,6 +23,16 @@ class Outcome:
     data: dict | None = None
 
 
+class _BrokerCancellation:
+    def __init__(self, original, current):
+        self.original,self.current=original,current
+        self.worker=None
+
+    def is_set(self):
+        return (self.original.is_set() or (self.current is not None and self.current.is_set())
+                or (self.worker is not None and self.worker.poll() is not None))
+
+
 def _kill(process) -> None:
     try:
         os.killpg(process.pid, signal.SIGKILL)
@@ -29,7 +40,7 @@ def _kill(process) -> None:
         pass
 
 
-def supervise(command: list[str], request: bytes, *, cwd: Path, environment: dict[str, str], timeout: float, cancel=None, capture: bool = False, pass_fds: tuple[int, ...] = ()) -> Outcome:
+def supervise(command: list[str], request: bytes, *, cwd: Path, environment: dict[str, str], timeout: float, cancel=None, capture: bool = False, pass_fds: tuple[int, ...] = (), broker=None) -> Outcome:
     if os.name != 'posix':
         raise RuntimeError('Worker supervision requires qualified POSIX process groups')
     if not math.isfinite(timeout) or timeout <= 0 or len(request) > MAX_REQUEST:
@@ -40,12 +51,24 @@ def supervise(command: list[str], request: bytes, *, cwd: Path, environment: dic
             or len(set(pass_fds)) != len(pass_fds) or len(pass_fds) > 8):
         raise ValueError('Invalid explicit worker descriptors')
     deadline = time.monotonic() + timeout
+    if broker is not None:
+        from .broker_rpc import Channel
+        if (not isinstance(broker,tuple) or len(broker)!=3 or not isinstance(broker[0],Channel)
+                or not callable(broker[1]) or not callable(broker[2])):
+            raise ValueError('Broker supervision requires a channel, handler and authority check')
+        broker[0]._check()
+        broker[0].expires=min(broker[0].expires,deadline)
+        broker[0].cancelled=_BrokerCancellation(broker[0].cancelled,cancel)
     process = subprocess.Popen(command, cwd=cwd, env=environment, stdin=subprocess.PIPE,
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True, umask=0o077, pass_fds=pass_fds)
+    if broker is not None:
+        broker[0].cancelled.worker=process
     output, diagnostics = bytearray(), bytearray()
     status, offset = None, 0
     try:
         with selectors.DefaultSelector() as selector:
+            if broker is not None:
+                selector.register(broker[0].connection,selectors.EVENT_READ,'broker')
             for stream, kind, events in ((process.stdin, 'input', selectors.EVENT_WRITE),
                     (process.stdout, 'output', selectors.EVENT_READ), (process.stderr, 'diagnostics', selectors.EVENT_READ)):
                 os.set_blocking(stream.fileno(), False)
@@ -61,8 +84,22 @@ def supervise(command: list[str], request: bytes, *, cwd: Path, environment: dic
                 if process.poll() is not None:
                     # Descendants cannot retain pipes after the owning worker exits.
                     _kill(process)
+                    if broker is not None:
+                        try:selector.unregister(broker[0].connection)
+                        except KeyError:pass
                 for key, _ in selector.select(min(remaining, 0.05)):
                     stream = key.fileobj
+                    if key.data == 'broker':
+                        channel,handler,check=broker
+                        if channel.connection.recv(1, socket.MSG_PEEK)==b'':
+                            selector.unregister(stream)
+                        else:
+                            def active_broker():
+                                if process.poll() is not None:
+                                    raise ConnectionError('Worker exited; new broker dispatch is refused')
+                                check()
+                            channel.serve_once(handler,check=active_broker)
+                        continue
                     if key.data == 'input':
                         try:
                             offset += os.write(stream.fileno(), request[offset:])
@@ -99,6 +136,13 @@ def supervise(command: list[str], request: bytes, *, cwd: Path, environment: dic
                         process.wait(timeout=min(0.05, max(0.001, deadline-time.monotonic())))
                     except subprocess.TimeoutExpired:
                         pass
+    except (ConnectionError, TimeoutError):
+        if cancel is not None and cancel.is_set():
+            status = 'cancelled'
+        elif time.monotonic() >= deadline:
+            status = 'timed_out'
+        else:
+            raise
     except KeyboardInterrupt:
         status = 'cancelled'
     finally:

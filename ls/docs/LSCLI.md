@@ -991,3 +991,27 @@ separate and every process still recreates and verifies its limited group.
 This establishes an internal preflight boundary. Public supervisor dispatch must
 still be wired through it, and complete installed SDK coding/recovery acceptance
 remains required before public agent execution is enabled.
+
+## Broker service in the worker supervisor
+
+`supervise(..., broker=(channel, handler, check))` services an inherited `Channel`
+inside the existing main-thread selector loop alongside bounded worker stdout
+and stderr. The broker handler and authority callback execute on that thread,
+so session ownership does not move to a background thread. The channel's I/O
+deadline is capped to the supervisor deadline and its cancellation includes the
+supervisor cancellation source and worker liveness. Worker exit interrupts
+partial frames even if another peer descriptor remains open. Cancellation or expiry while reading a partial
+frame stops supervision and discards output.
+
+Clean channel EOF unregisters its descriptor. Worker exit also disables broker
+service, including when the controller still holds a duplicate peer descriptor.
+Each dispatch checks that the worker is still alive and invokes the current
+authority callback. Other protocol/handler failures propagate after worker
+teardown; they do not fabricate a successful terminal outcome. The caller owns
+channel closure and evaluates the durable operation journal after uncertainty.
+
+Handlers remain trusted synchronous code: bind their operation deadlines and
+revocation to the same task limits before calling the supervisor. Channel I/O
+bounds cannot interrupt an arbitrary blocking handler. The SDK tool handlers use
+the separately bounded file/process brokers. Public coding dispatch still needs
+to combine this service with preflight, session authority and terminal validation.
