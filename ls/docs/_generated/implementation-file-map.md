@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: a35a0faabd8bf11e65269c754f7b2825b80b91ddfc559d024e82402d65c2b46a
+  source_provenance_hash: a08c496fa3c06a3b4baa4dd9e2010bcf7eb61151ce61d9f99c45eb85595c97c6
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: c1f912a40fda6a1183c9b6dcbf517c0978afd057
-artifact_sha256: 801efa9e14b3ab0cec23438b55b9ff42b44928fc75434b4ba03c570b3aea7693
+source_commit: b34b45c46c241f3cf5ea07bda51e21301c1152df
+artifact_sha256: 856dd37f72256d43058d6e1eb7c799973acf37dd65d3a14c4bcda25e54395968
 ---
 # Implementation File Map
 
@@ -115,6 +115,10 @@ artifact_sha256: 801efa9e14b3ab0cec23438b55b9ff42b44928fc75434b4ba03c570b3aea769
 | `refactor` | `ls/core/agent/coding_protocol.py` |
 | `refactor` | `ls/core/agent/coding_run.py` |
 | `refactor` | `ls/core/agent/coding_worker.py` |
+| `refactor` | `ls/core/agent/compact_cli.py` |
+| `refactor` | `ls/core/agent/compaction_content.py` |
+| `refactor` | `ls/core/agent/compaction_run.py` |
+| `refactor` | `ls/core/agent/compaction_worker.py` |
 | `refactor` | `ls/core/agent/context_files.py` |
 | `refactor` | `ls/core/agent/diagnostics.py` |
 | `refactor` | `ls/core/agent/file_broker.py` |
@@ -995,6 +999,7 @@ artifact_sha256: 801efa9e14b3ab0cec23438b55b9ff42b44928fc75434b4ba03c570b3aea769
 | `keep` | `ls/tests/test_codex_heartbeat_harness.py` |
 | `keep` | `ls/tests/test_coding_protocol.py` |
 | `keep` | `ls/tests/test_coding_run.py` |
+| `keep` | `ls/tests/test_compaction_run.py` |
 | `keep` | `ls/tests/test_context_files.py` |
 | `keep` | `ls/tests/test_context_index.py` |
 | `keep` | `ls/tests/test_dependency_ledger.py` |
