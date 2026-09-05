@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 70663468887ea28d362f71bed7ecbdc1ef59823a050a48e6cac83fe063701c8a
+  source_provenance_hash: 6b9fb63eb4763296fdc7a8b6c9cc459209385aa5a42f086e592bfa304016f7d7
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: c335f45420f4354ef39b2226f6d54c6371686a9c
-artifact_sha256: fe5a1d60674c46f2ee8b36f267151a113ce4c76e0c8de379a89943b9964bdd2f
+source_commit: 77139fa76d43e09acddcb8ca0b49a8f26d4af48d
+artifact_sha256: 4282c83faa22f43aaf2c7823c059f8efd7c844ba3a9ed758740ef482a8f49e26
 ---
 # Implementation File Map
 
@@ -150,6 +150,7 @@ artifact_sha256: fe5a1d60674c46f2ee8b36f267151a113ce4c76e0c8de379a89943b9964bdd2
 | `refactor` | `ls/core/agent/session_index.py` |
 | `refactor` | `ls/core/agent/session_owner.py` |
 | `refactor` | `ls/core/agent/snapshot.py` |
+| `refactor` | `ls/core/agent/steering.py` |
 | `refactor` | `ls/core/agent/supervisor.py` |
 | `refactor` | `ls/core/agent/tool_preflight.py` |
 | `refactor` | `ls/core/agent/tool_results.py` |
@@ -1066,6 +1067,7 @@ artifact_sha256: fe5a1d60674c46f2ee8b36f267151a113ce4c76e0c8de379a89943b9964bdd2
 | `keep` | `ls/tests/test_session_index.py` |
 | `keep` | `ls/tests/test_session_owner.py` |
 | `keep` | `ls/tests/test_skill_sandbox_tester.py` |
+| `keep` | `ls/tests/test_steering.py` |
 | `keep` | `ls/tests/test_supervisor_broker.py` |
 | `keep` | `ls/tests/test_tmux_ops.py` |
 | `keep` | `ls/tests/test_tmux_terminal_mode.py` |
