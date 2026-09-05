@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 4f80d49d952437ecac369b2d74f4d8cbbfbfc06806f8f087e5fb1412d71b90e6
+  source_provenance_hash: 9d3bbd6e9a9cbb74c329d8c941539cb367967993bdf9bb383a8f4e86e4be3ec5
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 0717423de645211ff5d6891ce05af2af0e7bc8c3
-artifact_sha256: 289ae67e57f616c79fbcb6e6aed047dc3a420fb0689bdd73afd94b45c35fb091
+source_commit: 1f8c7834715493500cb2ac65f05c91237d0161f5
+artifact_sha256: 675e5ad281729e271d8634e251f6fc56341de4eb41eebe5a66405fc5ec4c0ead
 ---
 # Implementation File Map
 
@@ -110,6 +110,7 @@ artifact_sha256: 289ae67e57f616c79fbcb6e6aed047dc3a420fb0689bdd73afd94b45c35fb09
 | `refactor` | `ls/core/agent/cli.py` |
 | `refactor` | `ls/core/agent/diagnostics.py` |
 | `refactor` | `ls/core/agent/runtime_install.py` |
+| `refactor` | `ls/core/agent/runtime_integrity.py` |
 | `refactor` | `ls/core/agent/runtime_lock.py` |
 | `refactor` | `ls/core/aliases.py` |
 | `refactor` | `ls/core/apply.py` |
@@ -978,6 +979,7 @@ artifact_sha256: 289ae67e57f616c79fbcb6e6aed047dc3a420fb0689bdd73afd94b45c35fb09
 | `keep` | `ls/tests/test_repo_finalizer.py` |
 | `keep` | `ls/tests/test_repo_profile_universal_agent_repo.py` |
 | `keep` | `ls/tests/test_runtime_install.py` |
+| `keep` | `ls/tests/test_runtime_integrity.py` |
 | `keep` | `ls/tests/test_runtime_use_lock.py` |
 | `keep` | `ls/tests/test_scrapling_helper.py` |
 | `keep` | `ls/tests/test_scrapling_jobs.py` |
