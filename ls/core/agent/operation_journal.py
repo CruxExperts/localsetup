@@ -193,3 +193,36 @@ class Journal:
                                                'count': len(records), 'head': previous})).hexdigest()
             finally:
                 os.close(directory)
+
+
+    def after(self, frontier: str, *, timeout: float = 30) -> dict:
+        """Prove an exact settled prefix and return its subsequent operations."""
+        if not isinstance(frontier, str) or not DIGEST.fullmatch(frontier):
+            raise ValueError('Invalid journal frontier')
+        with runtime_use(self.root, timeout=timeout):
+            directory = _directory(self.root)
+            try:
+                if os.fstat(directory).st_mode & 0o077:
+                    raise ValueError('Journal root must be private')
+                records, previous, _ = self._load(directory)
+                def fingerprint(count, head):
+                    return hashlib.sha256(_encode({'task': self.task, 'session': self.session,
+                                                   'count': count, 'head': head})).hexdigest()
+                position = None
+                head = None
+                for count in range(len(records)+1):
+                    if fingerprint(count, head) == frontier:
+                        position = count
+                        break
+                    if count < len(records):
+                        head = hashlib.sha256(_encode(records[count])).hexdigest()
+                if position is None:
+                    raise PermissionError('Checkpoint frontier is not in this journal')
+                if any(value['outcome'] == 'uncertain' for value in self._states(records[:position]).values()):
+                    raise PermissionError('Recovery checkpoint prefix contains uncertain operations')
+                states = self._states(records)
+                return {'frontier': fingerprint(len(records), previous),
+                        'operations': {key: value for key, value in states.items()
+                                       if value['intent']['sequence'] >= position}}
+            finally:
+                os.close(directory)

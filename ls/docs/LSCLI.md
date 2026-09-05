@@ -1118,8 +1118,8 @@ fails recovery. A crash after journal settlement but before receipt persistence
 can leave a settled operation with no recoverable output; the operation must not
 be repeated to recreate that output. A receipt alone does not make the interrupted
 pre-tool checkpoint resumable: existing frontier and complete-history checks
-remain enforced. Supervisor-integrated history recovery and the public recovery
-interface remain pending. Saved data carries no grants, approvals or authority.
+remain enforced. Public recovery and crash-injection qualification remain
+pending. Saved data carries no grants, approvals or authority.
 
 ### Native history reconstruction boundary
 
@@ -1140,3 +1140,27 @@ or bypass the current frontier check. Supervisor recovery must first join the
 original checkpoint to journal history and receipts, then validate and save a new
 checkpoint under current session authority. Any subsequent provider disclosure
 requires a new explicit grant covering the resulting history.
+
+### Supervisor recovery acceptance
+
+`recovery.recover_checkpoint(owner, runtimes, checkpoint, profile=..., recipes=...)`
+requires a fresh live session owner. The journal proves that the interrupted
+checkpoint's frontier is an exact settled prefix of its current hash chain.
+Every subsequent operation must be settled and have a recoverable receipt for
+the same profile and run. Foreign prefixes, prior uncertainty, missing receipts
+and unrelated subsequent operations fail before reconstruction.
+
+The controller holds the selected installed runtime lease while an isolated local
+worker reconstructs native history. The exchange binds an exact input digest;
+the controller verifies unchanged original messages and exactly the recorded tool
+returns, with no added instructions or authority-bearing metadata. It requires a
+successful worker process and matching completion receipt, then rechecks the
+journal frontier before saving a new complete checkpoint. The original checkpoint
+and operation journal remain unchanged. Current deadline/revocation checks apply
+through dispatch, receipt validation and checkpoint acceptance.
+
+This provider-free recovery does not execute tools, rerun processes, synthesize
+missing output or restore saved permissions. The returned checkpoint may be read
+through the existing resume API. A coding continuation must separately authorize
+its exact recovered history through a fresh disclosure grant and qualify current
+tool access. The public recovery command remains pending.

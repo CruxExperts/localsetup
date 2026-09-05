@@ -169,3 +169,21 @@ def test_intent_reserves_capacity_for_terminal_evidence(log, monkeypatch):
         log.finish(operation,'uncertain',evidence_sha256=H)
     log.finish(operation,'not_applied',evidence_sha256=H)
     assert log.inspect()[operation]['outcome']=='not_applied'
+
+
+def test_recovery_suffix_requires_exact_settled_prefix(log):
+    empty = log.frontier()
+    first = log.begin('file_replace', REQUEST)
+    uncertain = log.frontier()
+    log.finish(first, 'applied', evidence_sha256=H)
+    settled = log.frontier()
+    second = log.begin('file_replace', REQUEST)
+    log.finish(second, 'not_applied', evidence_sha256=H)
+    assert list(log.after(empty)['operations']) == [first, second]
+    assert list(log.after(settled)['operations']) == [second]
+    assert log.after(settled)['frontier'] == log.frontier()
+    assert log.after(log.frontier())['operations'] == {}
+    with pytest.raises(PermissionError, match='uncertain'):
+        log.after(uncertain)
+    with pytest.raises(PermissionError, match='not in this journal'):
+        log.after('f'*64)
