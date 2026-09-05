@@ -15,6 +15,11 @@ if _spec is None or _spec.loader is None:
 _integrity = module_from_spec(_spec)
 _spec.loader.exec_module(_integrity)
 verify = _integrity.verify
+_sbom_spec = spec_from_file_location("_localsetup_sdk_build_sbom", Path(__file__).with_name("sbom.py"))
+if _sbom_spec is None or _sbom_spec.loader is None:
+    raise RuntimeError("Cannot load SDK SBOM builder")
+_sbom = module_from_spec(_sbom_spec)
+_sbom_spec.loader.exec_module(_sbom)
 
 
 class BuildSDK(build_py):
@@ -43,6 +48,10 @@ class BuildSDK(build_py):
             shutil.copyfile(source / name, target)
         if verify(destination) != manifest:
             raise ValueError("SDK build payload changed during copying")
+        sbom_path = build_root / _sbom.SBOM_PATH
+        if sbom_path.is_symlink() or (sbom_path.exists() and not sbom_path.is_file()):
+            raise ValueError("SDK SBOM destination must be a regular file")
+        sbom_path.write_bytes(_sbom.encode(manifest))
 
     def get_outputs(self, include_bytecode: bool = True) -> list[str]:
         outputs = super().get_outputs(include_bytecode=include_bytecode)
@@ -50,4 +59,5 @@ class BuildSDK(build_py):
         if destination.is_dir():
             manifest = verify(destination)
             outputs.extend(str(destination / name) for name in ["manifest.json", *manifest["files"]])
+            outputs.append(str(Path(self.build_lib) / _sbom.SBOM_PATH))
         return outputs

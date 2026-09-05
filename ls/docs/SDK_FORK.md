@@ -124,3 +124,36 @@ the payload from outside the checkout without importing the SDK. These checks
 qualify the packaging boundary; runtime external dependencies, supported provider
 interfaces, protected worker execution, and other environments remain separate
 qualification gates.
+
+## Vendored-component SBOM verification
+
+Ordinary wheels contain an SDK-only CycloneDX 1.6 document at
+`ls/sdk-sbom.cdx.json`, outside the exact private payload tree. The build derives
+its three components from the verified manifest. Records retain upstream names
+and versions, MIT licenses, immutable source references, the source archive
+hash, a digest of the component's retained file inventory, and each local patch
+hash. The package URL identifies the upstream baseline; vendored and patch
+properties identify the local fork. This document does not claim to enumerate
+external runtime dependencies.
+
+The existing source/public-archive SBOM includes these same vendored records
+alongside the framework lock's external components. Public artifact metadata
+binds the SDK manifest digest when a payload is present. Verification checks
+actual archived SDK files before comparing the full vendored records; changing
+licenses, provenance, patches, or inventory metadata cannot pass merely because
+a component name and version still match. Historical artifacts without an SDK
+remain supported by the existing release verifier.
+
+```bash
+uv run --locked python ls/tools/validate_sdk_payload.py --artifact dist/<wheel>.whl
+uv run --locked python ls/tools/validate_sdk_payload.py --artifact dist/<source-distribution>.tar.gz
+```
+
+Use the exact artifact filenames. The artifact check requires an SDK payload;
+wheels also require their embedded SDK SBOM. It rejects ambiguous roots,
+unexpected files, duplicate SDK paths, path traversal, links, payload changes,
+and malformed or stale embedded SBOMs. It materializes only bounded regular SDK
+files in a temporary directory and never imports their code. Limits are 16 MiB
+per file, 64 MiB of SDK payload, and 10,000 SDK files. Artifact checksums
+and trusted release provenance still provide the outer authenticity boundary.
+Full runtime dependency and released-artifact acceptance remain separate gates.

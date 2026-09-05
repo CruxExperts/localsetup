@@ -3690,14 +3690,6 @@
       "reason": "Canonical SDK filesystem path in source inclusion, validation, or command documentation; directory spelling is a technical identifier."
     },
     {
-      "path": "ls/core/sdk_payload/cli.py",
-      "line_sha256": "8051c1739b747189ae753eaf4e38afa3739dded9a1aef2a67320e946148886af",
-      "token": "lscli",
-      "count": 1,
-      "kind": "compatibility_identifier",
-      "reason": "Canonical SDK filesystem path in source inclusion, validation, or command documentation; directory spelling is a technical identifier."
-    },
-    {
       "path": "ls/docs/SDK_FORK.md",
       "line_sha256": "4d4e49328bc837b8866bb4dbdee3ed0e265e4895f020db115a38c15032cfd0f0",
       "token": "lscli",
@@ -3832,6 +3824,70 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Canonical SDK source directory segment in wheel build mapping or its exact-payload regression check."
+    },
+    {
+      "path": "ls/core/package.py",
+      "line_sha256": "8c1cb8032ac7e27c681081d665acfd3916f013c6f4ca362341e93c6d616730e9",
+      "token": "lscli",
+      "count": 2,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical SDK filesystem path or directory segment used to locate source payloads and validate archive layout."
+    },
+    {
+      "path": "ls/core/sdk_payload/artifacts.py",
+      "line_sha256": "198251ec3497eb6d8f725c8ec929d44a3630558a8f61a1839b27e6b311bf60d2",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical SDK filesystem path or directory segment used to locate source payloads and validate archive layout."
+    },
+    {
+      "path": "ls/core/sdk_payload/artifacts.py",
+      "line_sha256": "bcdd7702ed3c08228911f9305d2ff871f746289451f778ffa87acab8ddad753c",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical SDK filesystem path or directory segment used to locate source payloads and validate archive layout."
+    },
+    {
+      "path": "ls/tests/test_sdk_artifacts.py",
+      "line_sha256": "ac815cf730a2128eb35cec8b0af99a97091af95997c36b930be0974c4421688e",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical SDK filesystem path or directory segment used to locate source payloads and validate archive layout."
+    },
+    {
+      "path": "ls/tests/test_sdk_artifacts.py",
+      "line_sha256": "58d8a32c59f811d4314e5e48203f88f61d0d12f79da2c4093bc31b4a596b1a9d",
+      "token": "lscli",
+      "count": 2,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical SDK filesystem path or directory segment used to locate source payloads and validate archive layout."
+    },
+    {
+      "path": "ls/tests/test_sdk_artifacts.py",
+      "line_sha256": "b601f2fdd3f8ce358bbec4bf60f1180bd7448a2de13f7c0944c58b0f0b8b062b",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Archive regression fixture preserves the canonical SDK path or established persisted pack identifier."
+    },
+    {
+      "path": "ls/tests/test_sdk_artifacts.py",
+      "line_sha256": "75face3a613f416c5b33b1b19ddad80565321415a72cc55134b44d04d83f3993",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Archive regression fixture preserves the canonical SDK path or established persisted pack identifier."
+    },
+    {
+      "path": "ls/tests/test_sdk_artifacts.py",
+      "line_sha256": "6d4ace573fe9ef4fb7e5a68f4060f5b049cfd0a6337ea2261e59400ce0833a53",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Archive regression fixture preserves the canonical SDK path or established persisted pack identifier."
     }
   ],
   "visual_reviews": [
