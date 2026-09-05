@@ -4,7 +4,7 @@ version: 4.4
 owner_skill: ls-documentation-alignment
 ---
 
-# Document lifecycle (Localsetup)
+# Document lifecycle (LocalSetup)
 
 **Purpose:** Framework docs in `ls/docs/` must have a defined status. Check status before assuming a feature is implemented.
 

@@ -6,24 +6,24 @@ owner_skill: ls-task-skill-matcher
 
 # Frontend Web App Skill Routing
 
-**Purpose:** Canonical Localsetup routing for frontend web-app tasks that overlap
+**Purpose:** Canonical LocalSetup routing for frontend web-app tasks that overlap
 with the cached Codex Build Web Apps plugin. Use this document to choose native
-Localsetup skills without creating duplicate triggers or copying plugin corpora.
+LocalSetup skills without creating duplicate triggers or copying plugin corpora.
 
 ## Routing Principle
 
-Localsetup keeps source skills canonical. Plugin-covered concepts are retained
-only as concise, Localsetup-authored routing and workflow summaries inside
+LocalSetup keeps source skills canonical. Plugin-covered concepts are retained
+only as concise, LocalSetup-authored routing and workflow summaries inside
 existing skills. Do not add duplicate top-level skills for the same trigger.
 
 ## Retention Matrix
 
-| Cached plugin skill | Localsetup target | Decision | Rationale |
+| Cached plugin skill | LocalSetup target | Decision | Rationale |
 |---|---|---|---|
 | `frontend-app-builder` | `ls-web-artifacts-builder`, plus `ls-frontend-design` and `ls-ui-browser-debugging` | Retain selected concept-to-implementation workflow | Native artifact guidance now covers image-assisted concepting, accepted-design specs, design-system extraction, faithful implementation, and browser screenshot comparison. |
-| `frontend-testing-debugging` | `ls-ui-browser-debugging` | Do not import | Browser QA, Chrome DevTools MCP, Playwright, evidence capture, and regression-test routing already live in the canonical Localsetup skill. |
+| `frontend-testing-debugging` | `ls-ui-browser-debugging` | Do not import | Browser QA, Chrome DevTools MCP, Playwright, evidence capture, and regression-test routing already live in the canonical LocalSetup skill. |
 | `react-best-practices` | `ls-vercel-react-best-practices` | Summarize, do not import rule corpus | Native React guidance now emphasizes version/router inspection, server/client split, caching, render boundaries, hydration, bundle pressure, hot paths, and validation. |
-| `shadcn` | `ls-shadcn-ui` | Do not import | Localsetup already ships a stronger shadcn/ui skill with project-aware setup, CLI, registry, theming, forms, update, and troubleshooting coverage. |
+| `shadcn` | `ls-shadcn-ui` | Do not import | LocalSetup already ships a stronger shadcn/ui skill with project-aware setup, CLI, registry, theming, forms, update, and troubleshooting coverage. |
 | `stripe-best-practices` | `ls-stripe-payments` | Retain routing and source-check guidance | Native Stripe guidance now routes Checkout, Payment Element, Billing, Connect, and Treasury work while preserving secrets, webhooks, idempotency, and API-version verification. |
 | `supabase-postgres-best-practices` | `ls-supabase` | Retain Postgres performance review prompts | Native Supabase guidance now covers query plans, indexes, RLS performance, query statistics, pooling, locks, transactions, and migration review. |
 
@@ -32,16 +32,16 @@ existing skills. Do not add duplicate top-level skills for the same trigger.
 This routing review evaluated a cached OpenAI-curated Build Web Apps plugin
 snapshot identified as plugin id `build-web-apps`, version `0.1.2`, snapshot
 `3fdeeb49`. Its manifest indicates MIT licensing, but the reviewed cache did
-not include the full license text. Localsetup therefore does not bulk-copy
+not include the full license text. LocalSetup therefore does not bulk-copy
 plugin skill bodies, rule files, assets, examples, or long passages. The
-retained guidance is original Localsetup-authored summary text backed by primary
+retained guidance is original LocalSetup-authored summary text backed by primary
 documentation links.
 
 ## Adapter Exposure Guidance
 
 Source/package availability is distinct from Codex global adapter exposure. If a
 skill exists in `ls/skills/` but is not exposed by a particular Codex
-profile, treat that as a deploy or profile selection issue. Use Localsetup-native
+profile, treat that as a deploy or profile selection issue. Use LocalSetup-native
 attach, apply, install, or package tooling to expose the existing skill. Do not
 create duplicate skills to work around adapter gaps.
 

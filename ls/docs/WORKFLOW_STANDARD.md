@@ -17,7 +17,7 @@ For the user-facing model, see [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md). Thi
 - Claude Code subagents: subagents are isolated task assistants, not package manifests.
 - MCP prompts: prompts standardize reusable prompt templates, not a full workflow object.
 
-Localsetup therefore keeps capability skills under `ls/skills/` and defines workflow packages under `ls/workflows/`. A workflow package remains executable as an Agent Skills package through `SKILL.md`, while `workflow.yaml` adds Localsetup-specific orchestration metadata.
+LocalSetup therefore keeps capability skills under `ls/skills/` and defines workflow packages under `ls/workflows/`. A workflow package remains executable as an Agent Skills package through `SKILL.md`, while `workflow.yaml` adds LocalSetup-specific orchestration metadata.
 
 ## Skill vs workflow boundary
 

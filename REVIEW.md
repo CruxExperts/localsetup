@@ -1,8 +1,8 @@
-# Localsetup review instructions
+# LocalSetup review instructions
 
 ## Purpose and review standard
 
-Localsetup is a cross-platform framework for agent context, skills, templates,
+LocalSetup is a cross-platform framework for agent context, skills, templates,
 and install workflows. Review the proposed diff and the directly relevant
 surrounding code. Report only concrete, actionable regressions introduced by the
 pull request; do not use the review to redesign unrelated code or enforce purely
@@ -46,7 +46,7 @@ instead of presenting it as a defect.
   Flag changes that delete, move, rename, or make that content exclusive without
   an explicit preservation plan.
 - Generated documentation and catalogs are outputs, not hand-edited sources.
-  When a change affects their source inputs, ensure the appropriate Localsetup
+  When a change affects their source inputs, ensure the appropriate LocalSetup
   generator and validation are included or evidenced. Do not demand unrelated
   generated-file churn.
 - For changes to installation, discovery, path resolution, parsing, deployment,

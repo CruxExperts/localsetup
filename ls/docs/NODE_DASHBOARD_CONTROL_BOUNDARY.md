@@ -8,16 +8,16 @@ owner_skill: ls-system-design
 
 ## Decision
 
-A future Node dashboard is an optional human-facing control plane, not a Localsetup executor, terminal emulator, queue worker, or agent router. It renders bounded telemetry and submits explicit capability requests to one authenticated, node-local target helper. The browser never connects directly to Herdr sockets, tmux, WezTerm, SSH, queue storage, Agent Q/A2A endpoints, or OmniRoute credentials.
+A future Node dashboard is an optional human-facing control plane, not a LocalSetup executor, terminal emulator, queue worker, or agent router. It renders bounded telemetry and submits explicit capability requests to one authenticated, node-local target helper. The browser never connects directly to Herdr sockets, tmux, WezTerm, SSH, queue storage, Agent Q/A2A endpoints, or OmniRoute credentials.
 
-The target helper is the sole translation boundary between browser-safe requests and approved Localsetup/Herdr-facing operations. It must use existing source-owned command surfaces and authenticated target configuration; it must not scrape terminals, rely on undocumented internal sockets, or create a second remote-control protocol.
+The target helper is the sole translation boundary between browser-safe requests and approved LocalSetup/Herdr-facing operations. It must use existing source-owned command surfaces and authenticated target configuration; it must not scrape terminals, rely on undocumented internal sockets, or create a second remote-control protocol.
 
 ## Trust and deployment boundary
 
 ```text
 Browser ── same-origin HTTPS ──> Node dashboard ── typed local IPC/HTTPS ──> target helper
                                                                     │
-                                                                    ├─ bounded Localsetup status/plan APIs
+                                                                    ├─ bounded LocalSetup status/plan APIs
                                                                     └─ approved Herdr remote attach integration
 ```
 

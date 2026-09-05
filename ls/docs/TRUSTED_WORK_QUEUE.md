@@ -74,7 +74,7 @@ job_id_for_metadata(*, format_version, source_root_name, archive_sha256,
 
 ## Future harness-owned boundary
 
-This release stops after phase 2. The Localsetup filesystem package does not materialize candidates, isolate or execute repository copies, dispatch agents or models, validate returned results, delete claims, or contact network endpoints. Any future deterministic materialization, candidate isolation, execution, or returned-result handling must be specified and implemented by an explicitly separate harness-owned contract. That contract is not a Localsetup command, import, export, packet-schema extension, or promise that `replication_count` creates candidates.
+This release stops after phase 2. The LocalSetup filesystem package does not materialize candidates, isolate or execute repository copies, dispatch agents or models, validate returned results, delete claims, or contact network endpoints. Any future deterministic materialization, candidate isolation, execution, or returned-result handling must be specified and implemented by an explicitly separate harness-owned contract. That contract is not a LocalSetup command, import, export, packet-schema extension, or promise that `replication_count` creates candidates.
 
 ## Phase 2: shared-folder packet transport
 
@@ -109,7 +109,7 @@ Deposits and claims use cooperative same-job serialization through the persisten
 
 ## Intended fixture coverage
 
-`ls/tests/test_trusted_work_queue_snapshot.py` contains standard-library `unittest` fixtures collected by the normal Localsetup pytest suite and intended to cover:
+`ls/tests/test_trusted_work_queue_snapshot.py` contains standard-library `unittest` fixtures collected by the normal LocalSetup pytest suite and intended to cover:
 
 - hidden files and `.git` inclusion;
 - symbolic-link and hard-link rejection plus permission-bit retention;

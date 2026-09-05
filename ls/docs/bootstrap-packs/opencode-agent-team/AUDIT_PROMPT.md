@@ -6,7 +6,7 @@ owner_skill: ls-framework-compliance
 
 # OpenCode Plan-Mode Prompt: Agent-Team Bootstrap Audit
 
-Use this prompt when the current repository is Localsetup and the goal is to audit, adapt, or prepare an OpenCode-native agent-team bootstrap pack.
+Use this prompt when the current repository is LocalSetup and the goal is to audit, adapt, or prepare an OpenCode-native agent-team bootstrap pack.
 
 ## Mission
 

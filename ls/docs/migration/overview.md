@@ -4,9 +4,9 @@ version: 4.4
 owner_skill: ls-framework-compliance
 ---
 
-# Localsetup Overview
+# LocalSetup Overview
 
-Localsetup installs one global package library for skills and workflow packages, then attaches repositories to it.
+LocalSetup installs one global package library for skills and workflow packages, then attaches repositories to it.
 
 ## Global Library
 

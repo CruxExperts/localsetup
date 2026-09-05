@@ -6,13 +6,13 @@ owner_skill: ls-framework-compliance
 
 # Bootstrap Packs
 
-Bootstrap packs are small, versioned bundles of Localsetup skills, workflow packages, prompts, and metadata for standing up or auditing agent operating modes.
+Bootstrap packs are small, versioned bundles of LocalSetup skills, workflow packages, prompts, and metadata for standing up or auditing agent operating modes.
 
 The initial bootstrap pack targeted OpenAI Codex CLI first. OpenCode now has a sibling pack that adapts the same controller/subagent workflow to OpenCode-native config, permissions, and model-slot surfaces.
 
 ## Pack Index
 
-| ID | Primary platform | Localsetup pack | Status | Metadata | Prompt |
+| ID | Primary platform | LocalSetup pack | Status | Metadata | Prompt |
 |---|---|---|---|---|---|
 | `codex-agent-team` | `codex` | `bootstrap` | audit-ready | [metadata.yaml](codex-agent-team/metadata.yaml) | [AUDIT_PROMPT.md](codex-agent-team/AUDIT_PROMPT.md) |
 | `opencode-agent-team` | `opencode` | `bootstrap` | audit-ready | [metadata.yaml](opencode-agent-team/metadata.yaml) | [AUDIT_PROMPT.md](opencode-agent-team/AUDIT_PROMPT.md) |

@@ -77,4 +77,4 @@ These are corpus-specific upstream estimates, not a general performance guarante
 
 This skill does not provide a regeneration command. If `.agentlens/` appears stale, first verify the claim against source files. Regenerate only when the target repository or an external AgentLens installation documents the exact command to run.
 
-Localsetup does not include an `agentlens` executable, and this skill should not imply that one is available from the repo or `PATH`.
+LocalSetup does not include an `agentlens` executable, and this skill should not imply that one is available from the repo or `PATH`.

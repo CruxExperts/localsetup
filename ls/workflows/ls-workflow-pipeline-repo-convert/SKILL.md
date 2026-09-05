@@ -1,11 +1,11 @@
 ---
 name: ls-workflow-pipeline-repo-convert
-description: Use when converting an existing repo to the current Localsetup framework with backup, blocker, install, and verification gates.
+description: Use when converting an existing repo to the current LocalSetup framework with backup, blocker, install, and verification gates.
 metadata:
   version: "1.0"
 ---
 
-Use this workflow when onboarding a repository that may already contain old Localsetup files, adapter paths, lockfiles, or framework source.
+Use this workflow when onboarding a repository that may already contain old LocalSetup files, adapter paths, lockfiles, or framework source.
 
 Every conversion starts with a report-only run. Use one shell session so the report and apply steps share the exact target and backup paths. Do not add `--yes` to this first command:
 
@@ -18,7 +18,7 @@ localsetup convert --target-directory "$target_root" --backup-dir "$backup_dir" 
 Record the report output and stop unless it provides all of this evidence:
 
 - blockers are empty; unmanaged or ambiguous content is a blocker
-- the reported Localsetup source checkout and target repository root are the intended roots
+- the reported LocalSetup source checkout and target repository root are the intended roots
 - the report names the same timestamped `backup_dir` and its `conversion-report.json` path
 
 Only after that evidence is explicit may you run the applying command with the unchanged variables:

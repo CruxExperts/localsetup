@@ -6,7 +6,7 @@
 - Inventoried `SKILL.md` files: `46`
 - Inventory hash: `036b2241f8c6f28265fa744299392bc44df19b86e14ddd96f6ca87738a6ec823`
 
-This wrapper intentionally does not expose every upstream subskill as a Localsetup skill.
+This wrapper intentionally does not expose every upstream subskill as a LocalSetup skill.
 Select one upstream path at a time for future import, then run importer, vetter, normalizer, and sandbox validation.
 
 ## Representative Paths

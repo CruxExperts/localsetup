@@ -6,7 +6,7 @@ owner_skill: ls-framework-compliance
 
 # OpenCode Agent Team Bootstrap Pack
 
-This pack captures a reusable OpenCode-native controller/subagent workflow for Localsetup. It mirrors the Codex agent-team intent while using OpenCode surfaces and schema names instead of Codex-specific config.
+This pack captures a reusable OpenCode-native controller/subagent workflow for LocalSetup. It mirrors the Codex agent-team intent while using OpenCode surfaces and schema names instead of Codex-specific config.
 
 It is intentionally native to OpenCode:
 
@@ -49,7 +49,7 @@ Use generic model slots. Replace `<provider>` with the provider id configured in
     "controller": {
       "mode": "primary",
       "model": "<provider>/Agent-Main",
-      "description": "Primary controller for non-trivial Localsetup work.",
+      "description": "Primary controller for non-trivial LocalSetup work.",
       "permission": {
         "task": {
           "*": "deny",
@@ -170,7 +170,7 @@ This is a provider shape, not a recommendation for a specific vendor. Use enviro
 
 ## Ledger Expectations
 
-For non-trivial repo work, keep the same Localsetup controller ledger pattern used by Codex:
+For non-trivial repo work, keep the same LocalSetup controller ledger pattern used by Codex:
 
 - objective and acceptance criteria
 - current phase

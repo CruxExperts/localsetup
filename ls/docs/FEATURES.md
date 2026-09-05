@@ -6,7 +6,7 @@ owner_skill: ls-docs-organization
 
 # Features
 
-This is the full public capability catalog for Localsetup. The [root README](../../README.md) explains the pitch; this page lists what the framework actually provides.
+This is the full public capability catalog for LocalSetup. The [root README](../../README.md) explains the pitch; this page lists what the framework actually provides.
 
 ## Generated Facts
 
@@ -25,7 +25,7 @@ The [4.4.0 release guide](releases/4.4.0.md) describes the current context and p
 | Capability | What it gives you |
 |---|---|
 | Global framework source | The registered source checkout carries `ls/`; consuming repos keep `.localsetup/` state and selected adapters, not copied framework source. |
-| Python-first Localsetup installer | Bash bootstrap delegates planning, dependency handling, install, verify, and rollback to `ls/tools/localsetup.py`. |
+| Python-first LocalSetup installer | Bash bootstrap delegates planning, dependency handling, install, verify, and rollback to `ls/tools/localsetup.py`. |
 | Explicit multi-platform adapters | One install can attach selected Cursor, Claude Code, Codex CLI, OpenClaw, Kilo, and OpenCode adapter paths to the same managed package library. |
 | Managed home library | Skills and workflow packages install to `~/.local/share/localsetup/packages`; explicitly selected adapters point there by symlink or use portable copies. |
 | Lock and rollback metadata | `.localsetup/lock.json` and managed-path reports make installs inspectable and reversible. |
@@ -48,7 +48,7 @@ The [4.4.0 release guide](releases/4.4.0.md) describes the current context and p
 | Capability | What it gives you |
 |---|---|
 | Workflow registry | Named workflows, aliases, and impact expectations for repeatable agent behavior. |
-| First-class workflow packages | Workflow sources live under `ls/workflows/ls-workflow-*`, include executable `SKILL.md` files, and carry Localsetup `workflow.yaml` metadata for dependencies, gates, phases, validation, and generated catalogs. |
+| First-class workflow packages | Workflow sources live under `ls/workflows/ls-workflow-*`, include executable `SKILL.md` files, and carry LocalSetup `workflow.yaml` metadata for dependencies, gates, phases, validation, and generated catalogs. |
 | Opt-in harness automation | The `harness` pack installs Codex heartbeat capability only; target config, cron entries, and runtime state are created only by explicit `localsetup harness codex-heartbeat ...` activation commands. |
 | Decision tree workflow | A reverse-prompt planning loop that asks one focused question at a time. |
 | PRD batch workflow | Queue-driven spec execution with status updates and outcome records. |

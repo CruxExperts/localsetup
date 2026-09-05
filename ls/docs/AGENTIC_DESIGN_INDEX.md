@@ -4,7 +4,7 @@ version: 4.4
 owner_skill: ls-docs-organization
 ---
 
-# Agentic design index (Localsetup)
+# Agentic design index (LocalSetup)
 
 **Purpose:** Index of agentic-design documentation. Paths are relative to ls/docs/ (repo-local). Audience: humans and AI agents.
 
@@ -37,10 +37,10 @@ Released under the MIT License. See the repository root [LICENSE](../../LICENSE)
 | [ENVMAN_INTEGRATION_CONTRACT.md](ENVMAN_INTEGRATION_CONTRACT.md) | Opt-in, read-only external EnvMan discovery and inherited-environment boundary |
 | [GIT_TRACEABILITY.md](GIT_TRACEABILITY.md) | Attach git hash when referencing PRDs, specs, outcomes |
 | [SKILLS_AND_RULES.md](SKILLS_AND_RULES.md) | How master rule and skills interact; when to load which skill |
-| [FRONTEND_WEB_APP_SKILL_ROUTING.md](FRONTEND_WEB_APP_SKILL_ROUTING.md) | Canonical Localsetup routing for frontend web-app skills that overlap with the cached Build Web Apps plugin |
+| [FRONTEND_WEB_APP_SKILL_ROUTING.md](FRONTEND_WEB_APP_SKILL_ROUTING.md) | Canonical LocalSetup routing for frontend web-app skills that overlap with the cached Build Web Apps plugin |
 | [MULTI_PLATFORM_INSTALL.md](MULTI_PLATFORM_INSTALL.md) | Install for supported platforms |
 | [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md) | **Canonical list of supported AI agent platforms**; context and skills paths; skill registration file list |
-| [ADAPTER_OWNERSHIP.md](ADAPTER_OWNERSHIP.md) | Shared adapter-directory ownership boundary; Localsetup owns managed entries, not whole adapter paths |
+| [ADAPTER_OWNERSHIP.md](ADAPTER_OWNERSHIP.md) | Shared adapter-directory ownership boundary; LocalSetup owns managed entries, not whole adapter paths |
 | [AGENT_SKILLS_COMPLIANCE.md](AGENT_SKILLS_COMPLIANCE.md) | Agent Skills spec compliance; skill document versioning (metadata.version); auto-bump on commit |
 | [SKILL_INTEROPERABILITY.md](SKILL_INTEROPERABILITY.md) | Import external skills (e.g. Anthropic); export our skills; full interchange with spec-compliant hosts |
 | [SKILL_IMPORTING.md](SKILL_IMPORTING.md) | Import from URL or path; discover, validate, security-screen, summarize; user selects which skills to import; normalization (Phase 1 + Phase 2) mandatory |

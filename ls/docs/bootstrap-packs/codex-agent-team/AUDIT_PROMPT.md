@@ -6,7 +6,7 @@ owner_skill: ls-framework-compliance
 
 # Codex Plan-Mode Prompt: Bootstrap-Pack Audit
 
-Use this prompt when the current repository is Localsetup and the goal is to audit or refresh the generic global Codex agent-team bootstrap.
+Use this prompt when the current repository is LocalSetup and the goal is to audit or refresh the generic global Codex agent-team bootstrap.
 
 ## Mission
 
@@ -18,10 +18,10 @@ Answer these questions:
 2. Are there discrepancies, conflicts, omissions, unsafe assumptions, or quality issues?
 3. Are the Codex global instructions, custom agents, runbook, and config coherent with current Codex CLI behavior?
 4. Do the instructions favor subagent-first routing for non-trivial work, small verifiable task units, low main-context growth, direct mode only for trivial or constrained cases, and bounded delegation rather than specialist proliferation?
-5. Is there a reusable bootstrap-pack structure in Localsetup?
+5. Is there a reusable bootstrap-pack structure in LocalSetup?
 6. Does that structure target OpenAI Codex CLI first while leaving room for other frameworks later?
 7. Is there a deterministic remediation plan for anything missing?
-8. Is there a safe workflow for identifying and replacing old or legacy Localsetup skills, prompts, and configs without destructive changes?
+8. Is there a safe workflow for identifying and replacing old or legacy LocalSetup skills, prompts, and configs without destructive changes?
 9. Are documentation artifacts organized, indexed, and updated rather than duplicated?
 
 ## Operating Constraints
@@ -44,7 +44,7 @@ Use narrow native Codex subagents whenever they can materially improve throughpu
 - `reviewer`: audit `$CODEX_HOME` or `~/.codex` bootstrap files for risk, conflicts, scope, and evidence.
 - `explorer`: map repo pack, workflow, docs, template, index, and validation surfaces.
 - `researcher`: verify current or version-matched Codex CLI behavior from local help, official docs, or source-backed evidence.
-- `explorer`: inventory legacy Localsetup skills, prompts, and configs without changing them.
+- `explorer`: inventory legacy LocalSetup skills, prompts, and configs without changing them.
 - `reviewer`: final read-only review of artifacts and validation evidence.
 
 Subagents must not spawn subagents.

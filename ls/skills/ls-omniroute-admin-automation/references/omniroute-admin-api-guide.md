@@ -30,7 +30,7 @@ Important behavior:
 - Use environment variables only.
 - Never embed secrets in files, scripts, or commit history.
 - Rotate keys through `/api/keys` workflows.
-- Run `python3 scripts/omniroute_admin.py preflight --required-access read` from inside the installed package directory before admin automation. From a Localsetup repo root, resolve the helper with `python3 ls/tools/localsetup.py --source-root . path package ls-omniroute-admin-automation scripts/omniroute_admin.py`. Use `write` or `admin` for workflows that need stronger endpoint access.
+- Run `python3 scripts/omniroute_admin.py preflight --required-access read` from inside the installed package directory before admin automation. From a LocalSetup repo root, resolve the helper with `python3 ls/tools/localsetup.py --source-root . path package ls-omniroute-admin-automation scripts/omniroute_admin.py`. Use `write` or `admin` for workflows that need stronger endpoint access.
 
 ## 3. Endpoint Inventory (high-level)
 

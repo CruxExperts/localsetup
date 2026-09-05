@@ -6,12 +6,12 @@ owner_skill: ls-docs-organization
 
 # Workflow packages
 
-Localsetup separates reusable agent capability from reusable agent orchestration.
+LocalSetup separates reusable agent capability from reusable agent orchestration.
 
 - A **skill** is a portable capability package under `ls/skills/ls-*`.
 - A **workflow package** is a named orchestration package under `ls/workflows/ls-workflow-*`.
 - Both install into the managed package library because both include a valid Agent Skills `SKILL.md`.
-- Workflow packages also include `workflow.yaml`, which is Localsetup-specific metadata for aliases, required skills, gates, phases, validation, outputs, and migration notes.
+- Workflow packages also include `workflow.yaml`, which is LocalSetup-specific metadata for aliases, required skills, gates, phases, validation, outputs, and migration notes.
 
 The practical rule is simple: use a skill when the agent needs a capability, and use a workflow package when the agent needs a repeatable task flow with known gates and evidence.
 
@@ -20,9 +20,9 @@ The practical rule is simple: use a skill when the agent needs a capability, and
 | Source root | Package pattern | Required files | Purpose |
 |---|---|---|---|
 | `ls/skills/` | `ls-*` | `SKILL.md` | Portable capability packages. |
-| `ls/workflows/` | `ls-workflow-*` | `SKILL.md`, `workflow.yaml` | Executable workflow packages with Localsetup orchestration metadata. |
+| `ls/workflows/` | `ls-workflow-*` | `SKILL.md`, `workflow.yaml` | Executable workflow packages with LocalSetup orchestration metadata. |
 
-The `SKILL.md` file keeps the workflow executable by agent hosts that understand Agent Skills. The `workflow.yaml` file lets Localsetup validate and generate framework-specific registry data.
+The `SKILL.md` file keeps the workflow executable by agent hosts that understand Agent Skills. The `workflow.yaml` file lets LocalSetup validate and generate framework-specific registry data.
 
 ## Install behavior
 
@@ -38,7 +38,7 @@ Workflow pack selection also pulls in required capability skills. For example, a
 
 Installed workflow packages are materialized outputs, not the canonical source tree. Runtime-facing Markdown references to public framework docs are rewritten into `references/localsetup/docs/...`, and copied public docs are bundled under that package-local reference root. Each emitted package includes `references/localsetup/.localsetup-reference-bundle.json` with the copied references, rewrites, source-only metadata, exclusions, and validation status.
 
-`workflow.yaml.required_docs` stays source-repo validation metadata. Localsetup validates those paths against the source checkout and records them in the transform manifest as source-only metadata, but does not rewrite the YAML values for runtime hosts. Private, blocked, or traversal-style `required_docs` entries are rejected before an emitted package is written.
+`workflow.yaml.required_docs` stays source-repo validation metadata. LocalSetup validates those paths against the source checkout and records them in the transform manifest as source-only metadata, but does not rewrite the YAML values for runtime hosts. Private, blocked, or traversal-style `required_docs` entries are rejected before an emitted package is written.
 
 ## Generated docs
 
@@ -78,7 +78,7 @@ agentskills validate ls/workflows/ls-workflow-spec-clarify-reverse
 
 1. Create or edit `ls/workflows/ls-workflow-<id>/`.
 2. Keep `SKILL.md` concise and Agent Skills compliant.
-3. Put Localsetup orchestration metadata in `workflow.yaml`.
+3. Put LocalSetup orchestration metadata in `workflow.yaml`.
 4. Reference existing docs and tools instead of pasting large procedures.
 5. Add or update tests for new validator, installer, generation, or package behavior.
 6. Regenerate docs and run validation.

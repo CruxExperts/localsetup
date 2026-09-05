@@ -3,7 +3,7 @@ name: ls-documentation-alignment
 description: "Run automated repo documentation alignment: discover source truth, audit public/internal docs, refresh generated artifacts, coordinate subagent research, and verify docs in one pass."
 metadata:
   version: "1.0"
-compatibility: "Python 3.12+, PyYAML, Localsetup docs_alignment.py adapter. Generic workflow with Localsetup source-truth defaults."
+compatibility: "Python 3.12+, PyYAML, LocalSetup docs_alignment.py adapter. Generic workflow with LocalSetup source-truth defaults."
 ---
 
 # Documentation alignment
@@ -24,7 +24,7 @@ Use this skill when a repo needs documentation brought back into alignment with 
 
 1. Create or resume a run ledger under `.agents/state/<task-slug>/ledger.md`; the controller assigns one Git-bound task slug for every agent and tool to reuse.
 2. Inventory the repo: public docs, internal docs, generated docs, skills/workflows, assets, CLI commands, CI, and lifecycle metadata.
-3. Map truth sources. For Localsetup, defaults are `VERSION`, `pyproject.toml`, `ls/config/*.yaml`, `ls/skills/*/SKILL.md`, `ls/workflows/*/workflow.yaml`, generated facts, assets, and CI workflows.
+3. Map truth sources. For LocalSetup, defaults are `VERSION`, `pyproject.toml`, `ls/config/*.yaml`, `ls/skills/*/SKILL.md`, `ls/workflows/*/workflow.yaml`, generated facts, assets, and CI workflows.
 4. Delegate scouts when scope is broad:
    - code truth and generator ownership
    - public docs and stale claims
@@ -81,7 +81,7 @@ CI/read-only check:
 uv run --locked python ls/tools/docs_alignment.py --repo-root . check --ci
 ```
 
-Localsetup wrapper:
+LocalSetup wrapper:
 
 ```bash
 uv run --locked python ls/tools/localsetup.py --source-root . docs-align check --ci

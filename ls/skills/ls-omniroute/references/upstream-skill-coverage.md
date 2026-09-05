@@ -1,6 +1,6 @@
 # OmniRoute Upstream Skill Coverage
 
-Localsetup consolidates OmniRoute v3.8.48 into four native skills:
+LocalSetup consolidates OmniRoute v3.8.48 into four native skills:
 
 - `ls-omniroute`: first routing, issue triage, env/auth preflight, generic deterministic API CLI, Codex and agent-client onboarding.
 - `ls-omniroute-proxy`: all read-only model/provider, context, observability, integration, client and endpoint discovery, plus sanitized normalized model observations.
@@ -18,11 +18,11 @@ Source pin:
 - Commit date: `2026-07-13T21:18:54Z`
 - Upstream skill count: `44`
 
-Rows listing both proxy and admin have a mixed read/write surface: proxy owns discovery and admin owns mutation. `omni-github-skills` discovery is read-only; any import is handed to Localsetup vetting/import/sandbox policy before admin mutation.
+Rows listing both proxy and admin have a mixed read/write surface: proxy owns discovery and admin owns mutation. `omni-github-skills` discovery is read-only; any import is handed to LocalSetup vetting/import/sandbox policy before admin mutation.
 
 ## Coverage Map
 
-| Upstream skill | Localsetup coverage |
+| Upstream skill | LocalSetup coverage |
 |---|---|
 | `cli-a2a` | `ls-omniroute-proxy`, `ls-omniroute-admin-automation` |
 | `cli-backup-sync` | `ls-omniroute-admin-automation` |

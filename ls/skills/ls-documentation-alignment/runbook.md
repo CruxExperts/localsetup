@@ -11,7 +11,7 @@
 9. Run repo validation gates.
 10. Inspect the diff and ask for a final read-only review.
 
-For Localsetup, the minimum validation is:
+For LocalSetup, the minimum validation is:
 
 ```bash
 uv run --locked python ls/tools/generate_docs_artifacts.py --repo-root .

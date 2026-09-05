@@ -15,14 +15,14 @@ Purpose: define project-wide tooling language and dependency rules.
   - install bootstrap (`install`)
   - minimal wrappers/delegation for host compatibility
   - environment orchestration outside framework runtime
-- Native PowerShell wrappers are not active Localsetup surfaces; use WSL2 plus Bash on Windows.
+- Native PowerShell wrappers are not active LocalSetup surfaces; use WSL2 plus Bash on Windows.
 
 Python architecture: new and substantially refactored Python tooling follows ls/docs/PYTHON_ARCHITECTURE_STANDARD.md; keep entrypoints thin, package responsibilities explicit, and existing debt baseline-managed.
 
 ## Python runtime target
 
 - Minimum supported version: Python 3.12.
-- Baseline rationale: Localsetup uses the Python 3.12 standard library as the supported floor while staying forward-compatible with newer LTS runtimes.
+- Baseline rationale: LocalSetup uses the Python 3.12 standard library as the supported floor while staying forward-compatible with newer LTS runtimes.
 
 ## Dependency policy
 
@@ -37,9 +37,9 @@ Python architecture: new and substantially refactored Python tooling follows ls/
 - Keep `uv.lock` as the committed dependency lock. Automation must run `uv lock --check` and frozen or locked `uv sync` / `uv run` commands.
 - Dependency-update PRs must update `pyproject.toml` and `uv.lock` together when dependency intent changes.
 - Keep framework dependency installs isolated. The default dependency mode is `prompt-only`; explicit `--dependency-mode uv-sync` or root `--sync-env` creates or updates the source checkout `.venv` with uv and does not mutate system Python.
-- Treat `~/.local/share/localsetup/venv` and target `.localsetup/venv` as legacy Localsetup runtime state. Diagnostics may warn about corrupt legacy environments in `prompt-only` mode, but current dependency setup must not execute them or depend on them.
-- Explicit sync paths may quarantine corrupt Localsetup-owned environments by rename before uv rebuilds. Eligible paths are source checkout `.venv`, legacy global `~/.local/share/localsetup/venv`, and legacy target-local `.localsetup/venv`. A target project's own `.venv` is application-owned and must never be modified by Localsetup repair.
-- Use `pipx` for app-style CLI tools and future wheel-based Localsetup command installs. Do not use `pipx` as the mechanism for libraries imported by framework Python modules; those belong in the uv project environment.
+- Treat `~/.local/share/localsetup/venv` and target `.localsetup/venv` as legacy LocalSetup runtime state. Diagnostics may warn about corrupt legacy environments in `prompt-only` mode, but current dependency setup must not execute them or depend on them.
+- Explicit sync paths may quarantine corrupt LocalSetup-owned environments by rename before uv rebuilds. Eligible paths are source checkout `.venv`, legacy global `~/.local/share/localsetup/venv`, and legacy target-local `.localsetup/venv`. A target project's own `.venv` is application-owned and must never be modified by LocalSetup repair.
+- Use `pipx` for app-style CLI tools and future wheel-based LocalSetup command installs. Do not use `pipx` as the mechanism for libraries imported by framework Python modules; those belong in the uv project environment.
 - Treat old `managed-venv` and `user-pip` dependency-mode values as migration aliases only. `managed-venv` maps to `uv-sync`; `user-pip` maps to `prompt-only`. New configuration should use `uv-sync` or `prompt-only`.
 
 For CLI-based skills that depend on external binaries (for example, Scrapling), see also the CLI skills environment policy in `CLI_SKILLS_ENV.md` for user-first `pipx` installs, PATH handling, and health checks.
@@ -72,7 +72,7 @@ These libraries are pre-approved, listed in `pyproject.toml`, locked in `uv.lock
 | python-frontmatter | `frontmatter` | `python-frontmatter>=1.1` | Parse YAML front matter from skill and PRD markdown files. Never split frontmatter by hand. |
 | cryptography | `cryptography` | `cryptography>=50.0.0` | Framework cryptographic primitives (AES-GCM, HKDF, PBKDF2, secure random). Use for encryption/decryption and key derivation. |
 | PGPy | `pgpy` | `PGPy>=0.6.0` | Pure-Python OpenPGP encryption and decryption in framework tooling. |
-| jsonschema | `jsonschema` | `jsonschema>=4.0` | Draft 2020-12 validation for Localsetup manifests and Agent Q payloads. |
+| jsonschema | `jsonschema` | `jsonschema>=4.0` | Draft 2020-12 validation for LocalSetup manifests and Agent Q payloads. |
 
 The managed environment resolves `cryptography==50.0.1` in `uv.lock`; the
 distribution requirement remains `cryptography>=50.0.0`. Dependency update

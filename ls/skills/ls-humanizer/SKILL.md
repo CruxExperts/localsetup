@@ -421,4 +421,4 @@ See [references/overview.md](references/overview.md) only when you need suppleme
 
 ## Import Wave Refresh Note
 
-Classification: retain this existing Wikipedia-pattern-based Localsetup skill. Do not import policy-sensitive duplicate humanizer skills from public bundles without a separate content and safety review.
+Classification: retain this existing Wikipedia-pattern-based LocalSetup skill. Do not import policy-sensitive duplicate humanizer skills from public bundles without a separate content and safety review.

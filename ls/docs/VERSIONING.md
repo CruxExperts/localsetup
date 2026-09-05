@@ -4,9 +4,9 @@ version: 4.4
 owner_skill: ls-automatic-versioning
 ---
 
-# Localsetup Versioning
+# LocalSetup Versioning
 
-Localsetup uses the root `VERSION` file as the source of truth for the framework version. README files, generated facts, and release artifacts should display the same normalized semantic version.
+LocalSetup uses the root `VERSION` file as the source of truth for the framework version. README files, generated facts, and release artifacts should display the same normalized semantic version.
 
 ## Current Version
 

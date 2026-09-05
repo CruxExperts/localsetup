@@ -6,10 +6,10 @@ owner_skill: ls-docs-organization
 
 # Framework Docs Index
 
-This is the public documentation map for Localsetup. Start here when you want the install path, platform behavior, shipped skills, workflow model, or release/verification rules.
+This is the public documentation map for LocalSetup. Start here when you want the install path, platform behavior, shipped skills, workflow model, or release/verification rules.
 
 <p align="center">
-  <img src="../../assets/localsetup-architecture.png" alt="Localsetup architecture: repo source, config resolver, managed home library, adapters, and rollback metadata" width="960">
+  <img src="../../assets/localsetup-architecture.png" alt="LocalSetup architecture: repo source, config resolver, managed home library, adapters, and rollback metadata" width="960">
 </p>
 
 ## Generated Facts
@@ -26,7 +26,7 @@ This is the public documentation map for Localsetup. Start here when you want th
 
 | Page | What it answers |
 |---|---|
-| [Project README](../../README.md) | Why Localsetup exists and why people should use it. |
+| [Project README](../../README.md) | Why LocalSetup exists and why people should use it. |
 | [Quickstart](QUICKSTART.md) | How to install, select platforms, verify, and update. |
 | [4.4.0 release guide](releases/4.4.0.md) | Context consolidation, workflow ownership, package cleanup, and update verification. |
 | [Command reference](COMMAND_REFERENCE.md) | Copy-paste installer, managed CLI, validation, and maintainer commands. |
@@ -44,7 +44,7 @@ This is the public documentation map for Localsetup. Start here when you want th
 
 ## Skills And Workflow Packages At A Glance
 
-Localsetup installs both capability skills and workflow packages into the managed package library. Keep [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) as the canonical reference for:
+LocalSetup installs both capability skills and workflow packages into the managed package library. Keep [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) as the canonical reference for:
 
 - source layout and runtime shape
 - installer behavior and dependency pull-in
@@ -67,10 +67,10 @@ Localsetup installs both capability skills and workflow packages into the manage
 | Page | What it covers |
 |---|---|
 | [Skills and rules](SKILLS_AND_RULES.md) | How always-loaded context, skills, and adapters fit together. |
-| [Agent Skills compliance](AGENT_SKILLS_COMPLIANCE.md) | How Localsetup implements the Agent Skills spec. |
+| [Agent Skills compliance](AGENT_SKILLS_COMPLIANCE.md) | How LocalSetup implements the Agent Skills spec. |
 | [Skill importing](SKILL_IMPORTING.md) | Import skills from URLs or local paths with validation and screening. |
 | [Skill discovery](SKILL_DISCOVERY.md) | Public skill registry/index workflow and recommendations. |
-| [Skill interoperability](SKILL_INTEROPERABILITY.md) | How skills move between Localsetup and spec-compatible hosts. |
+| [Skill interoperability](SKILL_INTEROPERABILITY.md) | How skills move between LocalSetup and spec-compatible hosts. |
 | [Skill normalization](SKILL_NORMALIZATION.md) | How imported or in-tree skills are cleaned up and standardized. |
 | [Task skill matching](TASK_SKILL_MATCHING.md) | How agents choose the right skill for a task. |
 
@@ -82,7 +82,7 @@ Registered capability highlights:
 - `ls-typescript-code-quality`: TypeScript/TSX code quality, tsconfig, typed ESLint or Biome config, Node TypeScript scripts, and TypeScript-heavy framework code.
 - `ls-ui-browser-debugging`: UI review and browser-driven debugging workflow for Chrome DevTools MCP, Playwright MCP/CLI, browser ownership, evidence capture, minimal fixes, and durable UI regression tests.
 - `ls-requesting-code-review`: Use when requesting code review before merge or after substantial changes; provide focused requirements, diff range, and severity-calibrated review instructions.
-- `ls-omniroute-update`: OmniRoute update reporting for upstream skill discovery, Localsetup comparison, provenance metadata, and report-first import/update/removal planning.
+- `ls-omniroute-update`: OmniRoute update reporting for upstream skill discovery, LocalSetup comparison, provenance metadata, and report-first import/update/removal planning.
 
 ## Agent Q Transport
 

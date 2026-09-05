@@ -3,7 +3,7 @@ name: ls-codex-heartbeat
 description: "Opt-in agent heartbeat harness for target repositories: initialize config, run transaction-safe checks, preserve artifacts, and wire cron only after explicit activation."
 metadata:
   version: "1.0"
-compatibility: "Python 3.12+, PyYAML, Localsetup.4 harness CLI."
+compatibility: "Python 3.12+, PyYAML, LocalSetup.4 harness CLI."
 ---
 
 # Agent Heartbeat

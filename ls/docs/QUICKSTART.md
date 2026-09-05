@@ -6,7 +6,7 @@ owner_skill: ls-framework-compliance
 
 # Quickstart
 
-Use this page to install Localsetup, choose agent platforms, verify the install, and update later. For copy-paste command tables, see [Command reference](COMMAND_REFERENCE.md). For the product pitch, see the [root README](../../README.md).
+Use this page to install LocalSetup, choose agent platforms, verify the install, and update later. For copy-paste command tables, see [Command reference](COMMAND_REFERENCE.md). For the product pitch, see the [root README](../../README.md).
 
 ## Requirements
 
@@ -16,7 +16,7 @@ Use this page to install Localsetup, choose agent platforms, verify the install,
 - Required for dependency sync: `uv`, with dependency intent in `pyproject.toml` and the committed `uv.lock`.
 - Recommended: `rg`; GitHub/network access is needed for raw bootstrap unless installing from a local clone.
 
-Windows is WSL2-only in Localsetup. Native PowerShell install is intentionally not supported; run the Bash installer inside WSL2.
+Windows is WSL2-only in LocalSetup. Native PowerShell install is intentionally not supported; run the Bash installer inside WSL2.
 
 ## Install In One Command
 
@@ -65,7 +65,7 @@ curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install 
 
 Automation mode keeps machine-readable output. Without a terminal and without `--non-interactive --yes`, the installer exits with a short message explaining both choices.
 
-Localsetup CLI commands emit JSON by default unless a command has an explicit human-readable mode such as `context --markdown`. The `--json` config flag remains available when scripts want to make that output contract explicit.
+LocalSetup CLI commands emit JSON by default unless a command has an explicit human-readable mode such as `context --markdown`. The `--json` config flag remains available when scripts want to make that output contract explicit.
 
 From a local checkout:
 
@@ -75,13 +75,13 @@ From a local checkout:
 
 The local checkout command uses that checkout as the registered source. Like the raw global bootstrap, it installs the default `normal` baseline into the managed library, registers `~/.local/bin/localsetup`, and does not create repo adapter paths unless you pass `--tools` or `--platforms`. If `~/.local/bin` is not on `PATH`, the installer warns and the command becomes available after you add that directory to your shell path.
 
-After registration, run Localsetup from any project:
+After registration, run LocalSetup from any project:
 
 ```bash
 localsetup install --tools codex --yes
 ```
 
-The global command uses the registered Localsetup checkout as source. For repo-scoped commands, it targets the nearest Git worktree root from your current directory, or the exact current directory outside Git. Override that with `--target-directory`.
+The global command uses the registered LocalSetup checkout as source. For repo-scoped commands, it targets the nearest Git worktree root from your current directory, or the exact current directory outside Git. Override that with `--target-directory`.
 
 Attach selected agent hosts explicitly:
 
@@ -109,9 +109,9 @@ If Python dependencies are missing or you want the uv project environment prepar
 ./install --directory . --sync-env
 ```
 
-Localsetup does not mutate system Python. Framework libraries sync into the source checkout `.venv` with uv, while app-style CLI tools should use `pipx` when they are distributed as commands.
+LocalSetup does not mutate system Python. Framework libraries sync into the source checkout `.venv` with uv, while app-style CLI tools should use `pipx` when they are distributed as commands.
 
-The default `prompt-only` dependency mode is non-mutating: it reports missing uv, stale locks, and corrupt legacy Localsetup environments with a repair command. Explicit sync paths such as `./install --sync-env` and `--dependency-mode uv-sync` may quarantine only Localsetup-owned corrupt environments, including source checkout `.venv`, `~/.local/share/localsetup/venv`, and target `.localsetup/venv`, then let uv rebuild the source checkout `.venv`. A target project's own `.venv` is application-owned and is never changed.
+The default `prompt-only` dependency mode is non-mutating: it reports missing uv, stale locks, and corrupt legacy LocalSetup environments with a repair command. Explicit sync paths such as `./install --sync-env` and `--dependency-mode uv-sync` may quarantine only LocalSetup-owned corrupt environments, including source checkout `.venv`, `~/.local/share/localsetup/venv`, and target `.localsetup/venv`, then let uv rebuild the source checkout `.venv`. A target project's own `.venv` is application-owned and is never changed.
 
 ## Platform IDs
 
@@ -146,21 +146,21 @@ Attach an adapter to another repo or directory while using this checkout as the 
 ./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor
 ```
 
-Convert a repo that may already contain old Localsetup files:
+Convert a repo that may already contain old LocalSetup files:
 
 ```bash
 localsetup convert --tools codex --packs core
 localsetup convert --tools codex --packs core --yes
 ```
 
-The first command is a dry report. Apply mode writes a timestamped backup and `conversion-report.json`, archives known managed or legacy Localsetup artifacts, backs up and removes stale target `ls/` folders, blocks ambiguous unmanaged content, installs selected adapters, and verifies the result.
+The first command is a dry report. Apply mode writes a timestamped backup and `conversion-report.json`, archives known managed or legacy LocalSetup artifacts, backs up and removes stale target `ls/` folders, blocks ambiguous unmanaged content, installs selected adapters, and verifies the result.
 
 ## What Gets Installed
 
 - A registered framework source checkout under `~/.local/share/localsetup/source` or the checkout passed with `--directory`
 - Managed skills under `~/.local/share/localsetup/packages`
 - Managed workflow packages under the same library; their source remains `ls/workflows/ls-workflow-*`
-- Explicitly selected Localsetup-managed entries inside platform adapter paths such as `.agents/skills` or `.kilo/skills`
+- Explicitly selected LocalSetup-managed entries inside platform adapter paths such as `.agents/skills` or `.kilo/skills`
 - `.localsetup/lock.json` and reports that support verification and rollback
 - Transaction journals under `.localsetup/install-journal/` for applied installs
 
@@ -172,7 +172,7 @@ Selected adapters use symlink mode by default. Use portable mode when symlinks a
 ./install --directory . --tools codex --mode portable
 ```
 
-Symlink mode creates a scoped marker and managed package entries inside the selected adapter directory rather than a monolithic link to the whole global library. The adapter contains `.localsetup-adapter.json` and one symlink per selected repo-visible package, so the repo sees only the selected Localsetup skills and workflow packages even when the global library contains a broader baseline. The adapter directory itself remains a shared agent surface; custom skills, files, and non-Localsetup symlinks may live beside the managed entries and are preserved. Portable mode uses the same marker and scoped package list, but copies selected managed packages into the adapter.
+Symlink mode creates a scoped marker and managed package entries inside the selected adapter directory rather than a monolithic link to the whole global library. The adapter contains `.localsetup-adapter.json` and one symlink per selected repo-visible package, so the repo sees only the selected LocalSetup skills and workflow packages even when the global library contains a broader baseline. The adapter directory itself remains a shared agent surface; custom skills, files, and non-LocalSetup symlinks may live beside the managed entries and are preserved. Portable mode uses the same marker and scoped package list, but copies selected managed packages into the adapter.
 
 ## Verify
 
@@ -183,14 +183,14 @@ localsetup verify --tools codex
 localsetup doctor --tools codex
 ```
 
-For the Localsetup source checkout itself, maintainers can also run source checks:
+For the LocalSetup source checkout itself, maintainers can also run source checks:
 
 ```bash
 uv run --locked python ls/tools/localsetup.py --source-root . validate-catalog
 uv run --locked python ls/tools/localsetup.py --source-root . audit-global-first
 ```
 
-After using `--sync-env`, `doctor` reports uv path/version, lock status, the source checkout `.venv` interpreter when present, and any repair metadata from dependency sync. Old global or target-local Localsetup venvs from earlier releases are reported as ignored legacy state in prompt-only mode and quarantined only when explicit sync is requested.
+After using `--sync-env`, `doctor` reports uv path/version, lock status, the source checkout `.venv` interpreter when present, and any repair metadata from dependency sync. Old global or target-local LocalSetup venvs from earlier releases are reported as ignored legacy state in prompt-only mode and quarantined only when explicit sync is requested.
 
 Agent-readable install context:
 
@@ -246,7 +246,7 @@ Refresh the framework source before applying a newer release. Managed bootstrap 
 ./install --directory . --tools codex,kilo
 ```
 
-The installer refreshes managed skills, selected Localsetup-managed adapter links or portable copies, lock metadata, and reports. A global-only re-run refreshes the managed library and records an empty platform list. The wizard reloads prior global baseline selectors from the registry and repo-visible selections, including explicit workflow selectors, from `.localsetup/lock.json`; choosing no repo setup on a prior target removes managed adapter entries and metadata while keeping custom adapter content and the shared package library intact.
+The installer refreshes managed skills, selected LocalSetup-managed adapter links or portable copies, lock metadata, and reports. A global-only re-run refreshes the managed library and records an empty platform list. The wizard reloads prior global baseline selectors from the registry and repo-visible selections, including explicit workflow selectors, from `.localsetup/lock.json`; choosing no repo setup on a prior target removes managed adapter entries and metadata while keeping custom adapter content and the shared package library intact.
 
 Selected workflow packs also refresh their workflow packages and required capability skill dependencies. See [Workflow packages](WORKFLOW_PACKAGES.md) for canonical source/runtime and install details.
 
@@ -260,7 +260,7 @@ Non-interactive strict policy blocks high-risk skill metadata unless the operato
 localsetup install --tools codex --policy-mode strict --yes
 ```
 
-Use `detach` when you only want to remove selected Localsetup-managed adapter entries while preserving custom adapter content, shared managed packages, and registry references:
+Use `detach` when you only want to remove selected LocalSetup-managed adapter entries while preserving custom adapter content, shared managed packages, and registry references:
 
 ```bash
 localsetup detach --tools codex --target-directory .
@@ -272,7 +272,7 @@ localsetup detach --tools codex --target-directory .
 uv run --locked python ls/tools/localsetup.py --source-root . rollback
 ```
 
-Rollback only acts on managed paths recorded by Localsetup metadata.
+Rollback only acts on managed paths recorded by LocalSetup metadata.
 
 ## Next Steps
 

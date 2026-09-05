@@ -6,7 +6,7 @@ owner_skill: ls-codex-heartbeat
 
 # Harness automation
 
-Localsetup's harness pack provides opt-in automation scaffolding for target repositories. The shipped harness profiles are Codex heartbeat and repo-finalizer.
+LocalSetup's harness pack provides opt-in automation scaffolding for target repositories. The shipped harness profiles are Codex heartbeat and repo-finalizer.
 
 The important boundary is simple: selecting or installing the `harness` pack only installs the capability. It does not create `HEARTBEAT.md`, write `config/codex_heartbeat.yaml`, edit `cron/manifest.yaml`, create `.localsetup/state/codex-heartbeat/`, or schedule autonomous work. A target repo is activated only through explicit harness commands.
 
@@ -16,7 +16,7 @@ The important boundary is simple: selecting or installing the `harness` pack onl
 localsetup install --packs harness --tools codex --yes
 ```
 
-This installs `ls-codex-heartbeat`, `ls-cron-orchestrator`, and `ls-workflow-repo-finalizer` into the managed Localsetup package library. Normal Localsetup install behavior remains user-initiated.
+This installs `ls-codex-heartbeat`, `ls-cron-orchestrator`, and `ls-workflow-repo-finalizer` into the managed LocalSetup package library. Normal LocalSetup install behavior remains user-initiated.
 
 ## Activate a target repo
 
@@ -147,7 +147,7 @@ Agent execution is additionally constrained by the configured agent profile, lau
 
 ## Cron launcher
 
-Cron entries use the registered Localsetup source checkout through the Localsetup Python launcher, for example:
+Cron entries use the registered LocalSetup source checkout through the LocalSetup Python launcher, for example:
 
 ```text
 python3 /path/to/localsetup/ls/tools/localsetup.py --source-root /path/to/localsetup --target-directory /path/to/target harness codex-heartbeat run --no-agent

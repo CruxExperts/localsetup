@@ -35,7 +35,7 @@ uv run --locked ./ls/tests/automated_test.sh
 git diff --check
 ```
 
-For daily maintenance and ordinary framework edits, run focused tests and matching Localsetup validators first. Use the full Python suite above as final consolidation for broad automation changes, release or publish readiness, dependency changes, or explicit maintainer requests. Resolve the permitted worker count with `localsetup test-workers`; [COMMAND_REFERENCE.md](COMMAND_REFERENCE.md) owns its formula and aggregate-budget rule.
+For daily maintenance and ordinary framework edits, run focused tests and matching LocalSetup validators first. Use the full Python suite above as final consolidation for broad automation changes, release or publish readiness, dependency changes, or explicit maintainer requests. Resolve the permitted worker count with `localsetup test-workers`; [COMMAND_REFERENCE.md](COMMAND_REFERENCE.md) owns its formula and aggregate-budget rule.
 
 ## Unit-Test Concurrency Policy
 
@@ -49,11 +49,11 @@ Run this after changing shipped skills, workflow packages, platform adapters, or
 uv run --locked python ls/tools/localsetup.py --source-root . self-refresh --dependency-mode prompt-only
 ```
 
-The command installs every configured pack from this checkout into the managed Localsetup library and refreshes only adapter paths that are already attached in the target repo. It is maintenance tooling for local machine state, not a release or publish step.
+The command installs every configured pack from this checkout into the managed LocalSetup library and refreshes only adapter paths that are already attached in the target repo. It is maintenance tooling for local machine state, not a release or publish step.
 
 ## Maintainer Codex Adapter Reconciliation
 
-This source checkout may expose every public Localsetup skill and workflow package through its repo-local `.agents/skills` adapter while keeping the global/default skill stance curated. Use this only for the Localsetup maintainer repo, not as a normal consumer-repo default.
+This source checkout may expose every public LocalSetup skill and workflow package through its repo-local `.agents/skills` adapter while keeping the global/default skill stance curated. Use this only for the LocalSetup maintainer repo, not as a normal consumer-repo default.
 
 Dry-run first:
 
@@ -67,7 +67,7 @@ Apply the same plan only after the dry-run has no warnings; the apply-time prefl
 UV_CACHE_DIR=/tmp/localsetup-uv-cache uv run --locked python ls/tools/localsetup.py --source-root . install --target-directory . --platforms codex --global-packs bootstrap core dev frontend architecture ops publishing omniroute --global-skills ls-firecrawl ls-cloudflare-dns --global-exclude-skills ls-superpowers --repo-preset all --mode symlink --apply --json
 ```
 
-Same-name selected package collisions still block before mutation. If a repo-local adapter entry intentionally shadows a selected Localsetup package, resolve that one entry deliberately before rerunning the native installer; do not clear the adapter directory or broaden the global Codex adapter to make the apply pass.
+Same-name selected package collisions still block before mutation. If a repo-local adapter entry intentionally shadows a selected LocalSetup package, resolve that one entry deliberately before rerunning the native installer; do not clear the adapter directory or broaden the global Codex adapter to make the apply pass.
 
 Verify the reconciled shape:
 

@@ -1,6 +1,6 @@
 # OmniRoute Automation Runbook
 
-This runbook provides practical step-by-step operations using `scripts/omniroute_admin.py` from inside the installed `ls-omniroute-admin-automation` package directory. From a Localsetup repo root, resolve the helper first with `python3 ls/tools/localsetup.py --source-root . path package ls-omniroute-admin-automation scripts/omniroute_admin.py`.
+This runbook provides practical step-by-step operations using `scripts/omniroute_admin.py` from inside the installed `ls-omniroute-admin-automation` package directory. From a LocalSetup repo root, resolve the helper first with `python3 ls/tools/localsetup.py --source-root . path package ls-omniroute-admin-automation scripts/omniroute_admin.py`.
 
 ## 1) Health check
 
