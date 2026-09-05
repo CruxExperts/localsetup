@@ -6,7 +6,6 @@ required_skills: []
 required_tools: []
 required_docs:
   - ls/docs/AGENTIC_UMBRELLA_WORKFLOWS.md
-  - ls/docs/WORKFLOW_REGISTRY.md
 gates:
   - id: phc
     rule: Require pre-human-confirmation for high-impact phases.

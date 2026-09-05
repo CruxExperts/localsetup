@@ -46,12 +46,12 @@
       "emitter": "generate-docs",
       "framework_version": "4.3.9",
       "schema_version": 1,
-      "source_commit": "85a76e6d2fc60370a7b405e6ef3a8b634b0259e6",
+      "source_commit": "1f6330f9600e92282396e0a22d699b50a947acaa",
       "source_dirty": true,
-      "source_provenance_hash": "6192e56d53f7ad47346a46cd550ccc6695903dd826258257319ee7e2d45c7ddb",
-      "source_root_id": "8abf0a627ebbd47eb0eed21e342f33f5281561b273b0037299414d2be50dba19",
+      "source_provenance_hash": "bde7518259bf63e3f11d12df205c71f0d0f060d0d3eae097101847ff55a4bc7e",
+      "source_root_id": "1b401e49ef19d2ce6813ac16f361d4d35547e37fc6b4c25e96f998c832a1f1ac",
       "source_tag": null,
-      "source_tree_sha": "17ef6a5374bf4ce41958563494399d31b9538300"
+      "source_tree_sha": "4f6c435ca01253e33253861bf2f76b130b4e95d6"
     },
     "skill_count": 103,
     "skills": [
@@ -1900,12 +1900,12 @@
       "emitter": "generate-docs",
       "framework_version": "4.3.9",
       "schema_version": 1,
-      "source_commit": "85a76e6d2fc60370a7b405e6ef3a8b634b0259e6",
+      "source_commit": "1f6330f9600e92282396e0a22d699b50a947acaa",
       "source_dirty": true,
-      "source_provenance_hash": "6192e56d53f7ad47346a46cd550ccc6695903dd826258257319ee7e2d45c7ddb",
-      "source_root_id": "8abf0a627ebbd47eb0eed21e342f33f5281561b273b0037299414d2be50dba19",
+      "source_provenance_hash": "bde7518259bf63e3f11d12df205c71f0d0f060d0d3eae097101847ff55a4bc7e",
+      "source_root_id": "1b401e49ef19d2ce6813ac16f361d4d35547e37fc6b4c25e96f998c832a1f1ac",
       "source_tag": null,
-      "source_tree_sha": "17ef6a5374bf4ce41958563494399d31b9538300"
+      "source_tree_sha": "4f6c435ca01253e33253861bf2f76b130b4e95d6"
     },
     "schema_version": 1,
     "skills": [
@@ -3409,16 +3409,16 @@
   },
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "4323adbbe04956965e9181a176361119d00846d89665aebdfd995c1192206203",
+    "artifact_sha256": "5aa47809a373e63b3204cd6b772b421fce767246ed9bc0ac3c5a8f1f19384050",
     "emitter": "docs-align",
     "framework_version": "4.3.9",
     "schema_version": 1,
-    "source_commit": "85a76e6d2fc60370a7b405e6ef3a8b634b0259e6",
+    "source_commit": "1f6330f9600e92282396e0a22d699b50a947acaa",
     "source_dirty": true,
-    "source_provenance_hash": "6192e56d53f7ad47346a46cd550ccc6695903dd826258257319ee7e2d45c7ddb",
-    "source_root_id": "8abf0a627ebbd47eb0eed21e342f33f5281561b273b0037299414d2be50dba19",
+    "source_provenance_hash": "bde7518259bf63e3f11d12df205c71f0d0f060d0d3eae097101847ff55a4bc7e",
+    "source_root_id": "1b401e49ef19d2ce6813ac16f361d4d35547e37fc6b4c25e96f998c832a1f1ac",
     "source_tag": null,
-    "source_tree_sha": "17ef6a5374bf4ce41958563494399d31b9538300"
+    "source_tree_sha": "4f6c435ca01253e33253861bf2f76b130b4e95d6"
   },
   "schema_version": "1.0",
   "truths": {
@@ -5827,8 +5827,7 @@
             ],
             "path": "ls/workflows/ls-workflow-umbrella-run",
             "required_docs": [
-              "ls/docs/AGENTIC_UMBRELLA_WORKFLOWS.md",
-              "ls/docs/WORKFLOW_REGISTRY.md"
+              "ls/docs/AGENTIC_UMBRELLA_WORKFLOWS.md"
             ],
             "required_skills": [],
             "required_tools": [],
