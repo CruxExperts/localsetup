@@ -81,26 +81,78 @@ class SessionOwner:
         return FileBroker(replace(grant, expires=min(grant.expires, self.expires),
                                   revoked=_Revocation(grant.revoked, self.revoked)), broker.lease_root)
 
-    def write(self, broker, name, data, *, expected_before):
+    def write(self, broker, name, data, *, expected_before, checkpoint=None):
         with self._operation():
+            if checkpoint is not None:
+                self._checkpoint(checkpoint)
             bound = self._broker(broker)
             return bound.write_recorded(self._journal.task, self._journal.session, name, data,
-                                        expected_before=expected_before, journal=self._journal)
+                                        expected_before=expected_before, journal=self._journal, checkpoint=checkpoint)
 
     def reconcile_file(self, broker, operation):
         with self._operation(recovery=True):
             return reconcile(self._broker(broker), self._journal, operation,
                              task=self._journal.task, session=self._journal.session)
 
-    def run(self, runtimes, grant, *, snapshot_sha256, provider=False, cancel=None):
+    def run(self, runtimes, grant, *, snapshot_sha256, provider=False, cancel=None, checkpoint=None):
         with self._operation():
+            if checkpoint is not None:
+                self._checkpoint(checkpoint)
             for boundary in (runtimes, grant.staging, Path('/usr')):
                 _separate(self.root.parent, boundary)
             bound = replace(grant, expires=min(grant.expires, self.expires),
                             revoked=_Revocation(grant.revoked, self.revoked))
             return run_recorded(runtimes, bound, self._journal, snapshot_sha256=snapshot_sha256,
                                 task=self._journal.task, session=self._journal.session,
-                                provider=provider, cancel=cancel)
+                                provider=provider, cancel=cancel, checkpoint=checkpoint)
+
+
+    def _checkpoints(self):
+        from .checkpoint_store import Checkpoints
+        root = self.root/'checkpoints'
+        fd = _private(self.root)
+        try:
+            try:
+                os.mkdir('checkpoints', mode=0o700, dir_fd=fd)
+            except FileExistsError:
+                pass
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+        return Checkpoints(root)
+
+    def _checkpoint(self, digest):
+        value = self._checkpoints().load(digest, timeout=max(0, self.expires-time.monotonic()))
+        if (value['task'], value['session']) != (self._journal.task, self._journal.session):
+            raise PermissionError('Checkpoint identity differs from session')
+        if value['frontier'] != self._journal.frontier(timeout=max(0, self.expires-time.monotonic())):
+            raise PermissionError('Checkpoint is stale relative to operation evidence')
+        self._check()
+        return value
+
+    def save_checkpoint(self, messages, *, profile, run_id, step, state):
+        with self._operation(recovery=True) as operations:
+            if state == 'complete' and any(value['outcome'] == 'uncertain' for value in operations.values()):
+                raise PermissionError('Uncertain operations cannot produce a complete checkpoint')
+            from .checkpoint_store import MAX_MESSAGES
+            if not isinstance(messages, bytes) or len(messages) > MAX_MESSAGES:
+                raise ValueError('Checkpoint messages must be bounded serialized SDK bytes')
+            value = {'schema_version': 1, 'task': self._journal.task, 'session': self._journal.session,
+                     'profile': profile, 'run_id': run_id, 'step': step, 'state': state,
+                     'frontier': self._journal.frontier(timeout=max(0, self.expires-time.monotonic())),
+                     'messages': messages.decode('utf-8')}
+            result = self._checkpoints().save(value, timeout=max(0, self.expires-time.monotonic()))
+            self._check()
+            return result
+
+    def resume_checkpoint(self, digest, *, profile):
+        with self._operation():
+            value = self._checkpoint(digest)
+            if value['state'] != 'complete' or value['profile'] != profile:
+                raise PermissionError('Checkpoint requires settled history and a compatible profile')
+            result = value['messages'].encode('utf-8')
+            self._check()
+            return result
 
 
 @contextmanager
@@ -120,9 +172,9 @@ def lease(state: Path, *, task: str, session: str, workspace: Path, expires: flo
     try:
         try:
             os.mkdir(name, mode=0o700, dir_fd=fd)
-            os.fsync(fd)
         except FileExistsError:
             pass
+        os.fsync(fd)
     finally:
         os.close(fd)
     root = state / name
@@ -150,9 +202,9 @@ def lease(state: Path, *, task: str, session: str, workspace: Path, expires: flo
                 _write_json(record, identity)
             try:
                 os.mkdir('journal', mode=0o700, dir_fd=fd)
-                os.fsync(fd)
             except FileExistsError:
                 pass
+            os.fsync(fd)
         finally:
             os.close(fd)
         owner = SessionOwner(root, Journal(root/'journal', task=task, session=session), identity, expires, revoked)

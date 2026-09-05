@@ -47,7 +47,7 @@ def run(runtimes: Path, grant: ProcessGrant, *, task: str, session: str, provide
 
 
 def run_recorded(runtimes: Path, grant: ProcessGrant, journal, *, snapshot_sha256: str,
-                 task: str, session: str, provider: bool = False, cancel=None) -> Outcome:
+                 task: str, session: str, provider: bool = False, cancel=None, checkpoint: str | None = None) -> Outcome:
     """Persist intent before dispatch and evidence after teardown; never retry."""
     grant.check(task, session)
     if journal.task != task or journal.session != session:
@@ -61,7 +61,7 @@ def run_recorded(runtimes: Path, grant: ProcessGrant, journal, *, snapshot_sha25
         return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
     operation = journal.begin('process', {'argv_sha256': digest(grant.command),
                                          'snapshot_sha256': snapshot_sha256},
-                              timeout=max(0, grant.expires-time.monotonic()))
+                              checkpoint=checkpoint, timeout=max(0, grant.expires-time.monotonic()))
     try:
         outcome = run(runtimes, grant, task=task, session=session, provider=provider, cancel=cancel)
     except BaseException as exc:

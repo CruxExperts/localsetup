@@ -680,3 +680,46 @@ must mean the intended persistence acknowledgement. The current deterministic
 qualification uses the SDK's in-memory store and proves iteration/streaming,
 message round trips and tool-effect capture, not crash durability. Durable store
 transport, checkpoint-to-operation joining and public resume remain required.
+
+## Durable checkpoint evidence and journal joins
+
+`SessionOwner.save_checkpoint` stores serialized SDK message bytes with explicit
+profile digest, run ID, step and complete/interrupted state. The immutable
+content-addressed envelope also binds task/session and a fingerprint of the
+entire validated operation journal, including terminal reconciliation records.
+The trusted supervisor supplies the profile digest from its compatibility
+contract; a model cannot select that identity. No credentials, grants or deadline
+are restored from a checkpoint. Conversation content may itself be sensitive and
+stays in protected private session state.
+
+Each checkpoint is limited to 8 MiB of message JSON and a 16 MiB envelope. The
+store limits records plus retained interrupted writes to 1,000 files and 256 MiB.
+It writes a private temporary file, flushes it, renames it to its SHA-256 filename,
+and flushes the directory before returning that digest. Re-saving identical
+evidence validates the existing bytes and flushes the directory before
+acknowledgement. Failed writes remain for inspection; the store never deletes
+old conversation evidence to make room. Corrupt, linked, unsafe or over-limit
+records refuse access. The envelope checks a JSON message array; SDK-specific
+message validation remains the isolated worker's responsibility.
+
+`resume_checkpoint(digest, profile=...)` requires a live owner, no uncertain
+operation, a complete snapshot, matching profile identity and an unchanged
+journal fingerprint. Any later intent, outcome or reconciliation makes an older
+checkpoint stale. This deliberately refuses replay from an older complete
+snapshot whose messages omit newer tool effects. Interrupted snapshots remain
+available as evidence but never pass automatic resume. Recovery must first
+reconcile effects and construct a new consistent SDK history; this store does
+not synthesize tool results or silently branch across providers.
+
+Internal `write(..., checkpoint=...)` and `run(..., checkpoint=...)` validate a
+session checkpoint against the current journal before dispatch and place its
+digest in the durable operation intent. An interrupted pre-tool snapshot may be
+referenced for evidence, but cannot be resumed. Existing low-level callers may
+omit this optional argument; the future public worker bridge must require the
+checkpoint/operation join. Saving complete evidence while an operation is
+uncertain is refused. A lost checkpoint acknowledgement does not imply a tool
+operation should be retried; inspect retained immutable evidence instead.
+
+This establishes protected local checkpoint durability and stale-history gates.
+The Harness StepStore acknowledgement transport, full tool-call/result mapping,
+public resume protocol and installed coding proof remain required.

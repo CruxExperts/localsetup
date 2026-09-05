@@ -170,3 +170,16 @@ class Journal:
                 return self._states(records)
             finally:
                 os.close(directory)
+
+    def frontier(self, *, timeout: float = 30) -> str:
+        """Fingerprint exact validated history, including terminal reconciliation."""
+        with runtime_use(self.root, timeout=timeout):
+            directory = _directory(self.root)
+            try:
+                if os.fstat(directory).st_mode & 0o077:
+                    raise ValueError('Journal root must be private')
+                records, previous, _ = self._load(directory)
+                return hashlib.sha256(_encode({'task': self.task, 'session': self.session,
+                                               'count': len(records), 'head': previous})).hexdigest()
+            finally:
+                os.close(directory)
