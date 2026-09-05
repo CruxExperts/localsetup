@@ -5,9 +5,10 @@ import pytest
 from ls.core.agent.sdk_compaction import compact
 
 
-def test_compaction_native_primitive_and_actual_transport_identity():
+@pytest.mark.parametrize('api',['chat_completions','responses'])
+def test_compaction_native_primitive_and_actual_transport_identity(api):
     root=Path(__file__).resolve().parents[2]
-    result=subprocess.run([sys.executable,'-I','-B',str(root/'ls/tests/sdk_compaction_fixture.py'),str(root)],capture_output=True,text=True,timeout=15)
+    result=subprocess.run([sys.executable,'-I','-B',str(root/'ls/tests/sdk_compaction_fixture.py'),str(root),api],capture_output=True,text=True,timeout=15)
     assert result.returncode==0,result.stderr
     report=json.loads(result.stdout)
     assert report['requests']==1 and report['user_agent'].startswith('LocalSetup/')

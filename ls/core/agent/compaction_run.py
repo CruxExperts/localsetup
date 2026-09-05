@@ -21,8 +21,8 @@ def request(payload):
     if not isinstance(payload,dict) or set(payload)!=fields or type(payload['schema_version']) is not int or payload['schema_version']!=1:
         raise ValueError('Invalid compaction request')
     profile=parse(payload['profile'])
-    if profile.api!='chat_completions' or 'streaming' not in profile.capabilities:
-        raise ValueError('Compaction requires qualified streaming Chat Completions')
+    if 'streaming' not in profile.capabilities:
+        raise ValueError('Compaction requires a qualified streaming profile')
     if not isinstance(payload['credential'],str):raise ValueError('Explicit compaction credential required')
     profile.credential({profile.credential_env:payload['credential']})
     if not isinstance(payload['history'],str) or len(payload['history'].encode())>MAX_MESSAGES:

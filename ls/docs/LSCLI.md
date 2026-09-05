@@ -1687,7 +1687,7 @@ the generated summary to historical user context with no authority. It refuses
 an empty summary, unsupported media/reasoning in the summarized prefix, no
 compactable prefix, or a result that does not reduce serialized history. Input
 and output histories are each capped at 8 MiB. Original bytes are not mutated.
-This foundation has deterministic Chat Completions transport qualification;
+This foundation has deterministic Chat Completions and Responses qualification;
 the protected command and durable supervisor acceptance below complete its
 explicit checkpoint workflow.
 
@@ -1705,7 +1705,7 @@ checkpoint must be complete, current with the operation journal, and compatible
 with the profile. Uncertain operations block compaction before provider dispatch.
 History and summary text supply no file access, tool permissions or approvals.
 The command is tool-free and requires no process sandbox; it uses the protected
-runtime and qualified streaming Chat Completions transport. Credentials arrive
+runtime and qualified streaming Chat Completions or Responses transport. Credentials arrive
 in the isolated worker over the inherited owner socket, not command arguments.
 
 The default deadline is 120 seconds (`--timeout`, at most 3600); keep 0–256 tail
@@ -1754,8 +1754,8 @@ requires an explicit portable branch, and prior evidence remains immutable.
 Responses server-side background jobs, continuation polling, hosted tools, remote
 media fetches and provider-managed conversation discovery are not qualified. The
 existing transport rejects alternate methods/endpoints, and no fallback request
-is enabled. Compaction still requires its separately qualified Chat Completions
-interface. Installed Responses fault injection covers the same three process
+is enabled. Compaction supports the qualified Chat Completions and Responses
+interfaces. Installed Responses fault injection covers the same three process
 recovery windows described above: after the saved tool receipt, before that
 receipt, and before a durable process outcome. Native `call_id` values match
 exactly once across recovered function outputs; the settled case continues with
@@ -1768,3 +1768,11 @@ The Responses stream guard wraps the pinned SDK's private `_response` event sour
 and preserves its `.source` close path. SDK upgrades must requalify that adapter
 contract, malformed terminal ordering, tool dispatch, images and native-history
 continuation before enabling the interface in a new runtime.
+
+Responses compaction is also checked through the installed protected command:
+a valid summary creates a new checkpoint and receipt, preserving the original.
+Failed, incomplete, missing-terminal and contradictory streams each make one
+request and create no checkpoint. Cancellation and deadlines stop acceptance;
+no-op histories and uncertain journals refuse before a provider request. Every
+captured request carries the framework runtime user agent. These deterministic
+checks qualify the selected protocol path, not every provider endpoint.
