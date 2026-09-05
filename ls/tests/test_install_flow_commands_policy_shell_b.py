@@ -151,6 +151,30 @@ def test_target_directory_without_selector_is_global_only(tmp_path: Path) -> Non
     assert any("no platforms were selected" in warning for warning in doctor["warnings"])
 
 
+def test_doctor_without_platform_selector_uses_recorded_target_adapters(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "other-repo"
+    target.mkdir()
+
+    plan = build_install_plan(
+        root,
+        home=home,
+        global_packs=["core"],
+        repo_preset="custom",
+        repo_skills=["ls-context"],
+        platform_ids=["codex"],
+        target_root=target,
+    )
+    apply_plan(root, plan, home=home, target_root=target)
+
+    doctor = run_doctor(root, home=home, platform_ids=None, target_root=target)
+
+    assert doctor["ok"] is True
+    assert doctor["adapter_collisions"] == []
+    assert not any("no platforms were selected" in warning for warning in doctor["warnings"])
+
+
 def test_install_migrates_legacy_root_lockfile(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
