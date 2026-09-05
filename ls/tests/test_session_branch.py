@@ -53,3 +53,18 @@ def test_new_lease_refuses_existing_empty_directory_and_invalid_modes(state,brok
     assert list(target.iterdir())==[]
     with pytest.raises(ValueError):
         with lease(state,task='fork-task',session='fork',workspace=broker.grant.root,expires=time.monotonic()+5,new=True,create=False):pass
+
+
+def test_portable_conversion_failure_or_revocation_creates_no_destination(state,broker,monkeypatch):
+    from ls.core.agent import portable_history
+    with own(state,broker) as owner:digest=save(owner)
+    def failed(*args,**kwargs):raise RuntimeError('conversion failed')
+    monkeypatch.setattr(portable_history,'convert',failed)
+    with pytest.raises(RuntimeError):call(state,broker,digest,portable=True,runtimes=state.parent/'runtimes',profile='b'*64)
+    assert not (state/hashlib.sha256(b'fork').hexdigest()).exists()
+    def revoked(owner,*args,**kwargs):
+        owner._closed.set()
+        return b'[]'
+    monkeypatch.setattr(portable_history,'convert',revoked)
+    with pytest.raises(PermissionError):call(state,broker,digest,portable=True,runtimes=state.parent/'runtimes',profile='b'*64)
+    assert not (state/hashlib.sha256(b'fork').hexdigest()).exists()

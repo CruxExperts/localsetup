@@ -1614,7 +1614,7 @@ The destination session must never have existed, including as an empty directory
 The source must have no uncertain operations and its checkpoint must match the
 current journal frontier. The normalized profile must match exactly; changing
 provider, model, API, capabilities, credential-variable name or timeout is refused.
-Portable branches for incompatible profiles remain unavailable in this command.
+Use explicit `--portable` for supported history when changing profiles, as described below.
 
 A successful command returns a schema-1 JSON receipt with `mode: "native"`,
 source task/session/checkpoint, destination task/session/checkpoint, and profile
@@ -1633,3 +1633,39 @@ A failed or interrupted command can leave destination evidence, including a save
 checkpoint. Inspect that evidence before another attempt; an existing destination
 is never overwritten or automatically retried. Output failure does not roll back
 a completed branch. Unknown source state is not created.
+
+
+## Portable branches and model changes
+
+Add `--portable` to `lscli branch` and choose the destination `--profile NAME`
+to change model/provider configuration. `--runtime-root` selects the protected
+runtime used for local conversion (default: the standard LSCli runtime location).
+No credentials are resolved and no provider is contacted during conversion.
+The original checkpoint's profile is read from its verified evidence; the new
+checkpoint binds the selected target profile. The receipt identifies both
+`source_profile` and destination `profile`, with `mode: "portable"`.
+
+The isolated SDK worker validates native messages and serializes one new user
+context containing an ordered JSON transcript. User and assistant text, historical
+system text, tool-call names/arguments/IDs, tool results/outcomes, and retry text
+remain historical data. Tool calls are not executable messages and historical
+system text is not installed as system instructions. Message/provider metadata,
+request instructions, timestamps and provider response identifiers are not copied.
+The original checkpoint retains that native evidence. No conversion infers grants,
+replays operations, changes files, or copies the source operation journal.
+
+PNG/JPEG binary attachments retain their bytes with transcript references and
+hashes; at most four images of 512 KiB each are accepted, and the target profile
+must declare `images`. URLs, audio/video/documents, reasoning parts, and other
+unsupported message/content types cause conversion to fail before destination
+creation. There is no silent truncation or fallback. Both native input and
+converted history are capped at 8 MiB; JSON escaping can make conversion exceed
+the limit even if its input fits. The worker's acknowledgement and successful
+process outcome must agree before a destination checkpoint is accepted.
+
+Resume the returned destination checkpoint with a fresh `run --profile NAME`
+grant. That explicit run authorizes disclosure of its complete history to the
+selected provider; historical permissions are never restored. API qualification
+still applies: portable conversion does not qualify an endpoint, and the public
+coding command currently requires Chat Completions. Compaction is separate from
+this loss-aware format conversion.

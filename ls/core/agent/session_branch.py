@@ -12,28 +12,39 @@ from .session_owner import lease
 
 
 def branch(state, *, source_task, source_session, checkpoint, task, session,
-           workspace, profile, expires, revoked=None):
+           workspace, profile, expires, revoked=None, portable=False, runtimes=None, images=False):
+    if type(portable) is not bool or type(images) is not bool or (portable and runtimes is None):
+        raise ValueError('Portable conversion requires explicit runtime and capability')
     if source_session == session:
         raise ValueError('Branch requires a different destination session')
     with lease(state, task=source_task, session=source_session, workspace=workspace,
                expires=expires, revoked=revoked, create=False) as source:
-        messages = source.resume_checkpoint(checkpoint, profile=profile)
+        source_profile = profile
+        if portable:
+            with source._operation():
+                source_profile = source._checkpoint(checkpoint)['profile']
+        messages = source.resume_checkpoint(checkpoint, profile=source_profile)
+        if portable:
+            from .portable_history import convert
+            messages = convert(source, runtimes, messages, images=images)
+            source.resume_checkpoint(checkpoint, profile=source_profile)
         # Existing targets are refused before locking. A raced lock acquisition
         # fails immediately, so nested source/destination leases cannot deadlock.
         with lease(state, task=task, session=session, workspace=workspace,
                    expires=expires, revoked=revoked, new=True) as destination:
             if destination.inspect():
                 raise PermissionError('Branch destination must have no operations')
-            source.resume_checkpoint(checkpoint, profile=profile)
+            source.resume_checkpoint(checkpoint, profile=source_profile)
             result = destination.save_checkpoint(messages, profile=profile,
                 run_id=uuid.uuid4().hex, step=0, state='complete')
-            receipt = {'schema_version': 1, 'mode': 'native',
+            receipt = {'schema_version': 1, 'mode': 'portable' if portable else 'native',
+                'source_profile': source_profile,
                 'source_task': source_task, 'source_session': source_session,
                 'source_checkpoint': checkpoint, 'task': task, 'session': session,
                 'checkpoint': result, 'profile': profile}
             from .runtime_install import _write_json
             _write_json(destination.root/'branch.json', receipt)
-            source.resume_checkpoint(checkpoint, profile=profile)
+            source.resume_checkpoint(checkpoint, profile=source_profile)
             if destination.resume_checkpoint(result, profile=profile) != messages:
                 raise ValueError('Branched history differs from source')
             return receipt
@@ -45,6 +56,8 @@ def arguments(parser):
     parser.add_argument('--workspace', type=Path, default=Path.cwd())
     parser.add_argument('--state-root', type=Path)
     parser.add_argument('--profiles', type=Path)
+    parser.add_argument('--portable', action='store_true', help='Convert supported history to inert context for a different profile')
+    parser.add_argument('--runtime-root', type=Path)
     parser.add_argument('--timeout', type=float, default=30)
 
 
@@ -63,7 +76,9 @@ def main(args):
         result = branch(state/'sessions', source_task=args.source_task,
             source_session=args.source_session, checkpoint=args.checkpoint,
             task=args.task, session=args.session, workspace=args.workspace.absolute(),
-            profile=profile_digest(wire(profile)), expires=time.monotonic()+args.timeout)
+            profile=profile_digest(wire(profile)), expires=time.monotonic()+args.timeout,
+            portable=args.portable, images='images' in profile.capabilities,
+            runtimes=(args.runtime_root or Path(defaults['runtimes'])).absolute())
         Streams(time.monotonic()+1, threading.Event()).write(json.dumps(result, ensure_ascii=True)+'\n')
         return 0
     except KeyboardInterrupt:
