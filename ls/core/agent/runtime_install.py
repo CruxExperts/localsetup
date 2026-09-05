@@ -139,6 +139,8 @@ def _populate(release: Path, wheel: Path, wheelhouse: Path, uv: str, deadline: f
     ]
     for command in commands:
         _run(command, directory=release, deadline=deadline, environment=environment)
+    _run([str(python), '-I', '-B', '-m', 'ls.core.agent.sdk_worker', '--probe'],
+         directory=release, deadline=deadline, environment=environment)
     # uv's environment lock may explicitly use a shared mode despite the umask.
     environment_lock = release / 'venv/.lock'
     if environment_lock.exists():

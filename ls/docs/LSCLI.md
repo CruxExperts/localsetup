@@ -167,3 +167,26 @@ an inherited checkout `PYTHONPATH`, explicit re-selection, and rejection of a
 tampered installed file while preserving the selection pointer. This qualifies
 candidate integrity and recovery behavior only; it is not released-artifact or
 sandbox qualification.
+
+## Isolated SDK import qualification
+
+Managed installation runs a separate installed Python process with `-I -B` to
+qualify SDK imports before sealing or selecting the runtime. Its private
+`ls.core.agent.sdk_worker --probe` module verifies the bundled manifest, refuses
+preloaded SDK namespaces, and installs a manifest-backed importer for the three
+upstream namespaces. It compiles verified source bytes directly, bypassing cached
+bytecode. Missing SDK modules cannot fall through to an ambient installation;
+loaded module origins must match the private payload. Package resources remain
+available through the package loader. The supervisor/bootstrap process does not
+import SDK code.
+
+This probe makes no provider request and enables no tools. It establishes import
+qualification, not sandbox isolation or agent readiness. The owning caller must
+hold the runtime lease and protect the installed tree for worker lifetime;
+provider transport, broker authority, and supervisor dispatch remain pending.
+
+The Python 3.12/Linux installed candidate verified its loaded SDK origins with
+inert substitute packages beside the installed distribution and an ambient SDK
+path. All loaded SDK modules came from the private payload; removing the fixture
+restored the exact runtime inventory. This checks namespace substitution, not
+compatibility with every separately installed upstream SDK distribution.
