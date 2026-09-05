@@ -103,3 +103,22 @@ reviews. Repository-wide branding compliance remains unproven until the text,
 generated output, installed runtime, compatibility, transport, artifact and visual
 checks all pass. The validator supports that evidence; it does not substitute
 for installed-artifact and visual acceptance.
+
+## Generated display text
+
+Plugin names and descriptions originate in `ls/config/plugin-packs.yaml`; plugin
+payload metadata and orientation text are emitted by `ls/core/plugin_packs.py`.
+Workflow registry headings originate in `ls/core/docs_artifacts/writers.py`.
+Repository-profile guidance is emitted by `ls/core/repo_profiles.py`. Correct
+these inputs before running the documentation generators; editing a generated
+heading alone will not survive regeneration. Schema titles are display text,
+while schema keys, plugin identifiers and emitted filenames remain compatibility
+identifiers.
+
+Run both owning generators after committing source changes, preserving the
+separate generated-document receipt required by the publishing workflow:
+
+```bash
+uv run --locked python ls/tools/generate_docs_artifacts.py --repo-root .
+uv run --locked python ls/tools/localsetup.py --source-root . generate-docs
+```

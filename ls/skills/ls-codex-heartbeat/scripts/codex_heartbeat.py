@@ -23,7 +23,7 @@ for parent in Path(__file__).resolve().parents:
 try:
     import yaml
 except ImportError as exc:  # pragma: no cover - environment guidance
-    raise SystemExit("Missing dependency: PyYAML. Run `uv sync --locked --no-dev` from the Localsetup source checkout.") from exc
+    raise SystemExit("Missing dependency: PyYAML. Run `uv sync --locked --no-dev` from the LocalSetup source checkout.") from exc
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from codex_heartbeat_support import ACTIVE_NAME

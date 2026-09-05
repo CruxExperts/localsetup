@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://localsetup.dev/schemas/install.schema.json",
-  "title": "Localsetup install config",
+  "title": "LocalSetup install config",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -135,7 +135,7 @@
     "data_root": {
       "type": "string",
       "minLength": 1,
-      "description": "Optional root for managed runtime state. Dependency environments are uv project environments under the Localsetup source checkout."
+      "description": "Optional root for managed runtime state. Dependency environments are uv project environments under the LocalSetup source checkout."
     },
     "dependency_mode": {
       "type": "string",

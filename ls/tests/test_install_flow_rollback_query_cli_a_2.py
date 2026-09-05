@@ -64,7 +64,7 @@ def test_cli_dispatches_stubbed_branches_without_heavy_side_effects(
         lambda *args, **kwargs: [
             SimpleNamespace(
                 plugin_id="localsetup-bootstrap",
-                display_name="Localsetup Bootstrap",
+                display_name="LocalSetup Bootstrap",
                 description="Bootstrap plugin pack.",
                 category="bootstrap",
                 source_pack="bootstrap",

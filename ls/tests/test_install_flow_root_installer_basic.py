@@ -176,7 +176,7 @@ def test_root_installer_help_mentions_target_directory_and_global_only_defaults(
 
     assert completed.returncode == 0
     assert "--target-directory PATH" in completed.stdout
-    assert "Localsetup auto mode" in completed.stdout
+    assert "LocalSetup auto mode" in completed.stdout
     assert "Explicit values override auto mode" in completed.stdout
     assert "--non-interactive" in completed.stdout
     assert "Automation mode" in completed.stdout
@@ -290,5 +290,5 @@ def test_root_installer_sync_env_rejects_old_uv_before_sync(tmp_path: Path) -> N
     )
 
     assert completed.returncode != 0
-    assert "uv 0.4.26 is too old; Localsetup requires uv >= 0.4.27" in completed.stderr
+    assert "uv 0.4.26 is too old; LocalSetup requires uv >= 0.4.27" in completed.stderr
     assert not sync_marker.exists()

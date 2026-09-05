@@ -23,7 +23,7 @@ def test_root_installer_offline_release_lookup_without_managed_source_fails_acti
     )
 
     assert completed.returncode != 0
-    assert "failed to discover the latest Localsetup release and no managed source exists" in completed.stderr
+    assert "failed to discover the latest LocalSetup release and no managed source exists" in completed.stderr
     assert "LOCALSETUP_BOOTSTRAP_REF" in completed.stderr
     assert not managed_source.exists()
 
@@ -136,7 +136,7 @@ def test_root_installer_unrelated_clean_git_managed_source_fails_without_mutatio
         check=True,
     ).stdout.strip()
     assert completed.returncode != 0
-    assert "managed bootstrap source exists but is not a Localsetup checkout" in completed.stderr
+    assert "managed bootstrap source exists but is not a LocalSetup checkout" in completed.stderr
     assert before_head == after_head
     assert (managed_source / "README.md").read_text(encoding="utf-8") == "# Unrelated\n"
     assert not (managed_source / "ls").exists()
@@ -192,7 +192,7 @@ def test_root_installer_ignored_legacy_marker_in_unrelated_git_source_fails_with
         check=True,
     ).stdout.strip()
     assert completed.returncode != 0
-    assert "managed bootstrap source exists but is not a Localsetup checkout" in completed.stderr
+    assert "managed bootstrap source exists but is not a LocalSetup checkout" in completed.stderr
     assert before_head == after_head
     assert (managed_source / "_localsetup/tools/localsetup.py").read_text(encoding="utf-8") == "# ignored unrelated marker\n"
 
@@ -252,7 +252,7 @@ def test_root_installer_tracked_legacy_marker_from_other_origin_fails_without_mu
         check=True,
     ).stdout.strip()
     assert completed.returncode != 0
-    assert "managed bootstrap source exists but is not a Localsetup checkout" in completed.stderr
+    assert "managed bootstrap source exists but is not a LocalSetup checkout" in completed.stderr
     assert before_head == after_head
     assert (managed_source / "_localsetup/tools/localsetup.py").read_text(encoding="utf-8") == "# tracked unrelated marker\n"
 

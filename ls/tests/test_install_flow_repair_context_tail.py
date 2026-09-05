@@ -174,7 +174,7 @@ def test_doctor_repair_emits_agent_prompt(tmp_path: Path, capsys: pytest.Capture
     assert status == 1
     assert payload["agent_prompt"]["path"] == str(prompt_path.resolve())
     text = prompt_path.read_text(encoding="utf-8")
-    assert "Localsetup Repair Handoff" in text
+    assert "LocalSetup Repair Handoff" in text
     assert "custom_framework_content" in text
     assert "notes.txt" not in text
 

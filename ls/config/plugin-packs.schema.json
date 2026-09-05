@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://localsetup.dev/schemas/plugin-packs.schema.json",
-  "title": "Localsetup plugin pack manifest",
+  "title": "LocalSetup plugin pack manifest",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "plugin_packs"],

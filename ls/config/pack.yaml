@@ -28,7 +28,7 @@ optional_packs:
 - experimental
 selection_profiles:
   normal:
-    description: Standard fresh global baseline for everyday Localsetup agent work.
+    description: Standard fresh global baseline for everyday LocalSetup agent work.
     packs:
     - bootstrap
     - core

@@ -57,7 +57,7 @@ def test_agent_context_and_markdown_report(tmp_path: Path) -> None:
     assert {"environment", "selected_platforms", "dependencies", "migration", "actions", "blockers", "warnings", "commands", "rollback", "verification"} <= set(context)
     assert context["selected_platforms"] == ["codex"]
     assert context["selected_packs"] == ["core"]
-    assert "# Localsetup Install Context" in markdown
+    assert "# LocalSetup Install Context" in markdown
     assert "localsetup verify --platforms codex" in markdown
     assert "python3 ls/tools/localsetup.py verify" not in markdown
 

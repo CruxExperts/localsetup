@@ -6,7 +6,7 @@
       "id": "client-state-artifacts-size",
       "metric": "lines",
       "notes": "The shared-folder review queue added 13 lines to an existing 982-line compatibility module; a responsibility split remains planned.",
-      "owner": "Localsetup maintainers",
+      "owner": "LocalSetup maintainers",
       "path": "ls/core/client_state/artifacts.py",
       "reason": "Bounded compatibility debt while client-state artifact formats remain co-located.",
       "threshold": 700
@@ -17,7 +17,7 @@
       "id": "reference-materializer-size",
       "metric": "lines",
       "notes": "Existing legacy-reference compatibility surface; no behavioral change is included in this release.",
-      "owner": "Localsetup maintainers",
+      "owner": "LocalSetup maintainers",
       "path": "ls/core/reference_materializer.py",
       "reason": "Bounded compatibility debt pending a responsibility split of legacy materialization paths.",
       "threshold": 700

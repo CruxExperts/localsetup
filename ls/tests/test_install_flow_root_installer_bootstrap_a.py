@@ -543,6 +543,6 @@ def test_root_installer_offline_release_lookup_reuses_existing_managed_source(tm
         check=True,
     ).stdout.strip()
     assert completed.returncode == 0, completed.stderr
-    assert "failed to discover the latest Localsetup release; using existing managed source" in completed.stderr
+    assert "failed to discover the latest LocalSetup release; using existing managed source" in completed.stderr
     assert after == before
     assert (home / ".local/share/localsetup/packages/ls-context").is_dir()

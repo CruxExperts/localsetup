@@ -89,7 +89,7 @@ SUPPORTED_SUFFIX_WILDCARD_CLAIMS = {
 }
 MISSING_PYYAML_MESSAGE = (
     "Missing dependency: PyYAML. Run `uv sync --locked --no-dev` from the "
-    "Localsetup source checkout."
+    "LocalSetup source checkout."
 )
 
 # Every exception is explicit, immutable-source-backed, and checked for a real

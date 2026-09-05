@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://localsetup.dev/schemas/skill-frontmatter.schema.json",
-  "title": "Localsetup skill SKILL.md frontmatter",
+  "title": "LocalSetup skill SKILL.md frontmatter",
   "type": "object",
   "additionalProperties": false,
   "required": ["name", "description"],

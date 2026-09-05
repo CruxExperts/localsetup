@@ -22,7 +22,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-# Localsetup shared dependency guard (approved pattern)
+# LocalSetup shared dependency guard (approved pattern)
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
 from deps import require_deps  # type: ignore  # noqa: E402
 
