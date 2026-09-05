@@ -294,7 +294,7 @@
       "owner_skill": "ls-agentq-transport",
       "path": "ls/docs/AGENTIC_AGENT_Q_PATTERN.md",
       "status": "ACTIVE",
-      "version": "4.4"
+      "version": "4.3"
     },
     {
       "class": "framework",
@@ -354,7 +354,7 @@
       "owner_skill": "ls-skill-creator",
       "path": "ls/docs/AGENT_SKILLS_COMPLIANCE.md",
       "status": "ACTIVE",
-      "version": "4.4"
+      "version": "4.3"
     },
     {
       "class": "framework",
@@ -556,7 +556,7 @@
       "owner_skill": "ls-agentq-transport",
       "path": "ls/docs/PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md",
       "status": "ACTIVE",
-      "version": "4.4"
+      "version": "4.3"
     },
     {
       "class": "framework",
@@ -658,7 +658,7 @@
       "owner_skill": "ls-skill-importer",
       "path": "ls/docs/SKILL_IMPORTING.md",
       "status": "ACTIVE",
-      "version": "4.4"
+      "version": "4.3"
     },
     {
       "class": "framework",
@@ -668,7 +668,7 @@
       "owner_skill": "ls-skill-creator",
       "path": "ls/docs/SKILL_INTEROPERABILITY.md",
       "status": "ACTIVE",
-      "version": "4.4"
+      "version": "4.3"
     },
     {
       "class": "framework",
@@ -688,7 +688,7 @@
       "owner_skill": "ls-skill-vetter",
       "path": "ls/docs/SKILL_VALIDATION_PATTERNS.md",
       "status": "ACTIVE",
-      "version": "4.4"
+      "version": "4.3"
     },
     {
       "class": "framework",
@@ -4402,16 +4402,16 @@
   ],
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "e83770939b57557f2546d7410402aae73880be4482bcc361f9540c8ccbdf6b94",
+    "artifact_sha256": "cf08da9494c36b9b491803e0b241a7d08bf6d245df05a268591a0576369f96c1",
     "emitter": "docs-align",
     "framework_version": "4.3.9",
     "schema_version": 1,
-    "source_commit": "9a0a82ca5f0565b087b3f44b07f78768aeb029a7",
-    "source_dirty": false,
-    "source_provenance_hash": "ccc6e218e01da5fe80d4cfa8dbd12e9bb20edc5f9186d70c5f5048b323465352",
-    "source_root_id": "2288c46dab7f9613db324544115fa61a9368503398df4ff0451b7b6bf85db9bc",
+    "source_commit": "8920479bdfce6806889bf411bdf707faacbd9920",
+    "source_dirty": true,
+    "source_provenance_hash": "0244f0192b4eb11a1c332783a7319c2f4999b46edd6f7b19e755d92c576f1ee9",
+    "source_root_id": "30c6fe855f045d2520756e400b2624ab93f249924092ca3996add1e065e2cd21",
     "source_tag": null,
-    "source_tree_sha": "a972c1a53414ce94dcad9e238f2403b058b4f946"
+    "source_tree_sha": "fd9014a954f81c8a2bd9ef55e47eb4586550904c"
   },
   "repo": ".",
   "schema_version": "1.0",
