@@ -172,3 +172,22 @@ Legacy skill aliases are recognized from regular inventoried
 aliases inside quotes or backticks are compatibility identifiers, including in
 generated migration maps. A symlink source, unknown alias, plain-prose occurrence
 or adjacent incorrect display reference does not receive that classification.
+
+## Enforced repository checks
+
+PR validation, documentation synchronization, documentation drift checks and the
+release workflow run `validate_branding.py --repo-root . --strict`. Release
+validation checks branding before building public artifacts. Run the same command
+locally after source changes and again after regeneration. Keep the policy's
+exact compatibility and test-fixture records aligned with the reviewed source;
+do not regenerate exceptions merely to clear a failure.
+
+The existing inventory includes synthetic legacy installer inputs and deliberate
+branding-negative tests. These are test cases, not historical audit evidence.
+Ordinary fixture prose uses current product spelling. Hook labels and version
+presentation use LocalSetup; the executable remains `localsetup`.
+
+A clean repository scan proves the inventoried text classifications and asset
+review hashes. It does not prove installed SDK behavior, provider wire headers,
+or the contents of a published artifact. Those require the installed and
+exact-release checks described above.

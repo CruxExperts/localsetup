@@ -76,7 +76,7 @@ localsetup update --target-directory .
 
 `--tools` is a compatibility alias for the current `--platforms` selector.
 
-Full local setup for the Codex, Kilo, and OpenCode adapters:
+Full local installation for the Codex, Kilo, and OpenCode adapters:
 
 ```bash
 ./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,frontend,architecture,ops,integrations,publishing,harness,skill-lifecycle,growth-content,specialized --sync-env

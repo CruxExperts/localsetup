@@ -31,7 +31,7 @@ if blocked:
     for plan in blocked:
         for commit in plan.get("release_type_required_commits", []):
             print(
-                "[localsetup] version plan blocked: "
+                "[LocalSetup] version plan blocked: "
                 f"{commit.get('sha', '')[:12]} {commit.get('subject', '')} requires "
                 "Release-Type: major|minor|patch|none",
                 file=sys.stderr,
@@ -42,20 +42,20 @@ if not actionable:
     raise SystemExit(1)
 targets = {p["target_version"] for p in actionable}
 if len(targets) != 1:
-    print("[localsetup] multiple pushed refs require different release versions; use release-push per ref.", file=sys.stderr)
+    print("[LocalSetup] multiple pushed refs require different release versions; use release-push per ref.", file=sys.stderr)
     raise SystemExit(2)
 target = actionable[0]["target_version"]
 sync_version_files(repo_root, target)
 commit_sha = commit_version_sync(repo_root, target)
 if commit_sha:
-    print(f"[localsetup] created version-sync commit {commit_sha[:12]} for {target}", file=sys.stderr)
+    print(f"[LocalSetup] created version-sync commit {commit_sha[:12]} for {target}", file=sys.stderr)
 else:
-    print(f"[localsetup] version files already sync to {target}, but pushed ref is stale", file=sys.stderr)
+    print(f"[LocalSetup] version files already sync to {target}, but pushed ref is stale", file=sys.stderr)
 PY
 
 cat >&2 <<'EOF'
-[localsetup] push stopped after preparing the version-sync commit.
-[localsetup] Run the push again, or use:
-[localsetup]   python3 ls/tools/localsetup.py release-push
+[LocalSetup] push stopped after preparing the version-sync commit.
+[LocalSetup] Run the push again, or use:
+[LocalSetup]   python3 ls/tools/localsetup.py release-push
 EOF
 exit 1

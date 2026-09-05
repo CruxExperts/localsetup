@@ -97,7 +97,7 @@ localsetup install --tools codex --preset suggested --skill-classes development 
 
 The selector flags are additive except for `--exclude-skills`. Presets are `core`, `normal`, `suggested`, `all`, and `custom`; fresh selector-free installs default the managed global baseline to `normal`. `core` is the compact baseline, `normal` includes bootstrap, core, dev, frontend, architecture, ops, and publishing packs, `suggested` starts with `core` plus repo-detected additions, and `custom` lets the named packs, classes, tags, skills, and workflows define the footprint. Exclusions do not remove skills required by a selected workflow. The legacy selector flags apply to both the managed global baseline and repo-visible adapter selection for compatibility. Use `--global-packs` / `--global-preset` / `--global-workflows` and `--repo-packs` / `--repo-preset` / `--repo-workflows` when you want the managed library to contain a broader baseline than a target repo exposes.
 
-For a full local setup with all shipped skill and workflow packs attached to Codex, Kilo, and OpenCode:
+For a full local installation with all shipped skill and workflow packs attached to Codex, Kilo, and OpenCode:
 
 ```bash
 ./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,frontend,architecture,ops,integrations,publishing,harness,skill-lifecycle,growth-content,specialized --sync-env

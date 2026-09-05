@@ -107,7 +107,7 @@ def classify_reference(value: str, *, private_paths: list[str] | None = None) ->
         if kind in {"doc", "tool"}:
             token_path = _normalize_resolver_doc_remainder(remainder) if kind == "doc" else remainder
             try:
-                validate_repo_relative_path(token_path, f"localsetup token {kind}")
+                validate_repo_relative_path(token_path, f"LocalSetup token {kind}")
             except PathValidationError:
                 return ClassifiedReference(raw, raw, "blocked_escape", "unsafe resolver token path")
             if kind == "doc":
@@ -116,9 +116,9 @@ def classify_reference(value: str, *, private_paths: list[str] | None = None) ->
             return ClassifiedReference(raw, raw, "runtime_resolved", "resolver token")
         package, _package_sep, package_rel = remainder.partition("/")
         try:
-            validate_repo_relative_path(package, "localsetup token package")
+            validate_repo_relative_path(package, "LocalSetup token package")
             if package_rel:
-                validate_repo_relative_path(package_rel, "localsetup token package path")
+                validate_repo_relative_path(package_rel, "LocalSetup token package path")
         except PathValidationError:
             return ClassifiedReference(raw, raw, "blocked_escape", "unsafe resolver token path")
         return ClassifiedReference(raw, raw, "runtime_resolved", "resolver token")

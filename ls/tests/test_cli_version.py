@@ -26,7 +26,7 @@ def test_cli_version_flags_print_canonical_version(flag: str) -> None:
     )
 
     assert result.returncode == 0
-    assert result.stdout == f"localsetup {expected}\n"
+    assert result.stdout == f"LocalSetup {expected}\n"
     assert result.stderr == ""
 
 

@@ -18,9 +18,9 @@ if [[ "${LOCALSETUP_ALLOW_PRIVATE_STAGE:-0}" != "1" ]]; then
   done < <(git diff --cached --name-only -z)
 
   if ((${#private_staged[@]})); then
-    echo "[localsetup] refusing to commit private/local maintenance paths:"
+    echo "[LocalSetup] refusing to commit private/local maintenance paths:"
     printf '  %s\n' "${private_staged[@]}"
-    echo "[localsetup] move private work to ignored state, or set LOCALSETUP_ALLOW_PRIVATE_STAGE=1 only after an explicit public-boundary review."
+    echo "[LocalSetup] move private work to ignored state, or set LOCALSETUP_ALLOW_PRIVATE_STAGE=1 only after an explicit public-boundary review."
     exit 1
   fi
 fi
@@ -37,7 +37,7 @@ PY
 then
   :
 else
-  echo "[localsetup] private path leak detected in package output"
+  echo "[LocalSetup] private path leak detected in package output"
   exit 1
 fi
 
@@ -60,7 +60,7 @@ generated_paths=(
 
 if ! git diff --quiet -- "${generated_paths[@]}"; then
   if [[ "${LOCALSETUP_HOOK_NO_STAGE:-0}" == "1" ]]; then
-    echo "[localsetup] generated docs changed"
+    echo "[LocalSetup] generated docs changed"
     exit 1
   fi
   git add "${generated_paths[@]}"

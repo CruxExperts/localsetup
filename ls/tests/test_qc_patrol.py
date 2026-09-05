@@ -125,7 +125,7 @@ def test_drift_packets_detect_changed_manifests() -> None:
 
 def test_markdown_version_packets_ignore_historical_contexts(tmp_path: Path) -> None:
     current = tmp_path / "README.md"
-    current.write_text("Install Localsetup 1.2.3 today.\n", encoding="utf-8")
+    current.write_text("Install LocalSetup 1.2.3 today.\n", encoding="utf-8")
     changelog = tmp_path / "CHANGELOG.md"
     changelog.write_text("Released 1.2.3 historically.\n", encoding="utf-8")
     inventory = {
@@ -145,7 +145,7 @@ def test_markdown_version_packets_ignore_historical_contexts(tmp_path: Path) -> 
 def test_ai_adjudication_schema_accepts_packet_result() -> None:
     payload = {
         "packet_id": "markdown.version_reference_drift:abc",
-        "finding": "README has stale Localsetup version",
+        "finding": "README has stale LocalSetup version",
         "confidence": 0.9,
         "category": "docs",
         "severity": "high",

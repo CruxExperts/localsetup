@@ -140,7 +140,7 @@ def make_bootstrap_git_repo(tmp_path: Path) -> Path:
     subprocess.run(["git", "init", "-b", "main"], cwd=repo, text=True, capture_output=True, check=True)
     subprocess.run(["git", "add", "."], cwd=repo, text=True, capture_output=True, check=True)
     subprocess.run(
-        ["git", "-c", "user.name=Localsetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "init"],
+        ["git", "-c", "user.name=LocalSetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "init"],
         cwd=repo,
         text=True,
         capture_output=True,
@@ -161,7 +161,7 @@ def make_bootstrap_git_repo_with_legacy_commit(tmp_path: Path) -> tuple[Path, st
     subprocess.run(["git", "init", "-b", "main"], cwd=repo, text=True, capture_output=True, check=True)
     subprocess.run(["git", "add", "."], cwd=repo, text=True, capture_output=True, check=True)
     subprocess.run(
-        ["git", "-c", "user.name=Localsetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "legacy"],
+        ["git", "-c", "user.name=LocalSetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "legacy"],
         cwd=repo,
         text=True,
         capture_output=True,
@@ -179,7 +179,7 @@ def make_bootstrap_git_repo_with_legacy_commit(tmp_path: Path) -> tuple[Path, st
     shutil.copytree(source / "ls", repo / "ls", ignore=shutil.ignore_patterns("__pycache__", ".cache"))
     subprocess.run(["git", "add", "."], cwd=repo, text=True, capture_output=True, check=True)
     subprocess.run(
-        ["git", "-c", "user.name=Localsetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "current"],
+        ["git", "-c", "user.name=LocalSetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "current"],
         cwd=repo,
         text=True,
         capture_output=True,
@@ -201,7 +201,7 @@ def make_bootstrap_git_repo_with_release_tags(tmp_path: Path) -> tuple[Path, str
     (repo / "README.md").write_text("# Localsetup\n\nrelease refresh\n", encoding="utf-8")
     subprocess.run(["git", "add", "README.md"], cwd=repo, text=True, capture_output=True, check=True)
     subprocess.run(
-        ["git", "-c", "user.name=Localsetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "release"],
+        ["git", "-c", "user.name=LocalSetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "release"],
         cwd=repo,
         text=True,
         capture_output=True,

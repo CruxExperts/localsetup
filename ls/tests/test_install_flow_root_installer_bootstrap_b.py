@@ -99,7 +99,7 @@ def test_root_installer_unrelated_clean_git_managed_source_fails_without_mutatio
     subprocess.run(["git", "init", "-b", "main"], cwd=managed_source, text=True, capture_output=True, check=True)
     subprocess.run(["git", "add", "."], cwd=managed_source, text=True, capture_output=True, check=True)
     subprocess.run(
-        ["git", "-c", "user.name=Localsetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "unrelated"],
+        ["git", "-c", "user.name=LocalSetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "unrelated"],
         cwd=managed_source,
         text=True,
         capture_output=True,
@@ -155,7 +155,7 @@ def test_root_installer_ignored_legacy_marker_in_unrelated_git_source_fails_with
     subprocess.run(["git", "init", "-b", "main"], cwd=managed_source, text=True, capture_output=True, check=True)
     subprocess.run(["git", "add", "."], cwd=managed_source, text=True, capture_output=True, check=True)
     subprocess.run(
-        ["git", "-c", "user.name=Localsetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "unrelated"],
+        ["git", "-c", "user.name=LocalSetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "unrelated"],
         cwd=managed_source,
         text=True,
         capture_output=True,
@@ -208,7 +208,7 @@ def test_root_installer_tracked_legacy_marker_from_other_origin_fails_without_mu
     subprocess.run(["git", "init", "-b", "main"], cwd=managed_source, text=True, capture_output=True, check=True)
     subprocess.run(["git", "add", "."], cwd=managed_source, text=True, capture_output=True, check=True)
     subprocess.run(
-        ["git", "-c", "user.name=Localsetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "unrelated"],
+        ["git", "-c", "user.name=LocalSetup Test", "-c", "user.email=test@example.invalid", "commit", "-m", "unrelated"],
         cwd=managed_source,
         text=True,
         capture_output=True,
