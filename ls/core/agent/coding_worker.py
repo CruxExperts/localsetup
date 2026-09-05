@@ -28,12 +28,17 @@ async def run(channel,finder):
         ack=await channel.request_async('stream.event',{'event':json.loads(raw)})
         if ack!={'accepted':events} or type(ack.get('accepted')) is not int:
             raise ValueError('Invalid coding stream acknowledgement')
+    async def steering():
+        value=await channel.request_async('run.steering',{})
+        if not isinstance(value,dict) or set(value)!={'messages'}:
+            raise ValueError('Invalid steering response')
+        return value['messages']
     async with model(profile,{profile.credential_env:payload['credential']},finder) as adapter:
         result=await iterate(adapter,finder,prompt=payload['prompt'],instructions=payload['instructions'],
             tools=(*file_tools(finder,channel),process_tool(finder,channel)),store=store,on_event=emit,check=channel._check,
             expires=channel.expires,run_id=payload['run_id'],conversation_id=channel.session,
             history=None if payload['history'] is None else payload['history'].encode(),
-            request_limit=payload['request_limit'],tool_limit=payload['tool_limit'],token_limit=payload['token_limit'])
+            request_limit=payload['request_limit'],tool_limit=payload['tool_limit'],token_limit=payload['token_limit'],steering=steering)
     checkpoint=store.last_checkpoint
     ack=await channel.request_async('run.finish',{'output':result['output'],'checkpoint':checkpoint,'usage':result['usage']})
     if ack!={'checkpoint':checkpoint}:

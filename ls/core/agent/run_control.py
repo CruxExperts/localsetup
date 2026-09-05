@@ -25,18 +25,21 @@ def validate(fd):
 
 
 class Control:
-    def __init__(self, fd, cancelled, expires):
+    def __init__(self, fd, cancelled, expires, steering=None):
         validate(fd)
         self.channel = socket.socket(fileno=os.dup(fd))
         os.set_inheritable(fd, False)
         os.close(fd)
         self.cancelled, self.expires = cancelled, expires
+        self.steering = steering
         self.stop = threading.Event()
         self.thread = threading.Thread(target=self._serve, name='agent-control', daemon=True)
 
-    def _reply(self, identifier):
+    def _reply(self, identifier, accepted=False):
         import json
         status = 'cancellation_requested' if self.cancelled.is_set() else 'active'
+        if accepted:
+            status = 'queued'
         pending = json.dumps({'schema_version': 1, 'id': identifier, 'status': status}, separators=(',', ':')).encode()+b'\n'
         deadline = min(self.expires, time.monotonic()+0.25)
         while pending:
@@ -76,15 +79,21 @@ class Control:
                     if len(line) > 16384:
                         raise ValueError('Control frame budget')
                     value = _decode(line)
-                    if (not isinstance(value, dict) or set(value) != {'schema_version', 'id', 'method'}
+                    if (not isinstance(value, dict) or not {'schema_version', 'id', 'method'} <= set(value)
                             or type(value['schema_version']) is not int or value['schema_version'] != 1
                             or type(value['id']) is not int or value['id'] != previous+1
-                            or value['id'] > 1024 or value['method'] not in ('status', 'cancel')):
+                            or value['id'] > 1024 or value['method'] not in ('status', 'cancel', 'steer')):
                         raise ValueError('Invalid control request')
+                    if value['method'] == 'steer':
+                        if self.steering is None:
+                            raise ValueError('Steering is unavailable')
+                        self.steering.accept(value)
+                    elif set(value) != {'schema_version', 'id', 'method'}:
+                        raise ValueError('Invalid control fields')
                     previous = value['id']
                     if value['method'] == 'cancel':
                         self.cancelled.set()
-                    self._reply(previous)
+                    self._reply(previous, value['method'] == 'steer')
                 if len(buffer) > 16384:
                     raise ValueError('Control frame budget')
         except (OSError, ValueError, TypeError, RecursionError):
@@ -100,11 +109,11 @@ class Control:
 
 
 @contextmanager
-def listen(fd, cancelled, expires):
+def listen(fd, cancelled, expires, steering=None):
     if fd is None:
         yield
         return
-    control = Control(fd, cancelled, expires)
+    control = Control(fd, cancelled, expires, steering)
     control.thread.start()
     try:
         yield

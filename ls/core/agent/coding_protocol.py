@@ -10,7 +10,7 @@ from .operation_journal import DIGEST, IDENTIFIER
 from .profiles import parse
 from .process_rpc import METHODS as TOOL_METHODS
 
-METHODS=TOOL_METHODS|{'run.start','stream.event','run.finish'}
+METHODS=TOOL_METHODS|{'run.start','stream.event','run.finish','run.steering'}
 MAX_STREAM=1024*1024
 
 
@@ -45,7 +45,7 @@ def profile_digest(value):
 
 class CodingHandler:
     """Trusted controller supplies context authority, preflight and event sink."""
-    def __init__(self, tools, payload, on_event, check):
+    def __init__(self, tools, payload, on_event, check, steering=None):
         request(payload)
         if tools.profile!=profile_digest(payload['profile']) or tools.run_id!=payload['run_id']:
             raise PermissionError('Coding request and broker profile/run must match')
@@ -53,6 +53,7 @@ class CodingHandler:
             raise ValueError('Coding handler requires explicit event and authority callbacks')
         self.tools,self.payload=tools,json.loads(_encode(payload))
         self.on_event,self.check=on_event,check
+        self.steering = steering
         self.started,self.finished=False,None
         self.bytes,self.events=0,0
 
@@ -67,6 +68,16 @@ class CodingHandler:
             return self.payload
         if not self.started:
             raise ValueError('Coding worker must start before dispatch')
+        if method=='run.steering':
+            if data != {}:
+                raise ValueError('Invalid steering poll')
+            messages = [] if self.steering is None else self.steering()
+            if (not isinstance(messages,list) or len(messages)>32
+                    or any(not isinstance(x,str) or not x or len(x.encode())>8192 for x in messages)
+                    or len(_encode(messages))>256*1024):
+                raise ValueError('Invalid steering payload')
+            self.check()
+            return {'messages':messages}
         if method=='stream.event':
             if not isinstance(data,dict) or set(data)!={'event'} or not isinstance(data['event'],dict):
                 raise ValueError('Invalid coding stream event')

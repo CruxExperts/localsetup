@@ -32,7 +32,12 @@ async def main():
     common = dict(finder=finder, prompt='Use fixture then answer', instructions='Use only granted tools.',
                   tools=(tool,), store=store, on_event=emit, check=check, expires=time.monotonic()+10,
                   run_id='fixture-run', conversation_id='fixture-conversation')
-    result = await iterate(TestModel(custom_output_text='finished'), **common)
+    polls=[]
+    async def steering():
+        polls.append(1)
+        return ['Owner steering fixture'] if len(polls)==1 else []
+    result = await iterate(TestModel(custom_output_text='finished'), **common, steering=steering)
+    assert b'Owner steering fixture' in result['messages'] and len(polls)==2
     assert result['output'] == 'finished' and len(calls) == 1 and events
     snapshot = await store.latest_snapshot(run_id='fixture-run')
     assert snapshot is not None and snapshot.state == 'complete'

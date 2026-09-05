@@ -63,7 +63,7 @@ class RunPaths:
 
 
 def run_coding(paths: RunPaths, payload: dict, authority: CodingGrant, files, recipes: dict,
-               *, limits: Limits, on_event, resume=None, cancel=None, expected_release=None) -> Outcome:
+               *, limits: Limits, on_event, resume=None, cancel=None, expected_release=None, steering=None) -> Outcome:
     """Caller authorizes exact context; saved messages never restore authority."""
     payload=json.loads(_encode(payload))
     digest=disclosure_digest(payload)
@@ -99,7 +99,7 @@ def run_coding(paths: RunPaths, payload: dict, authority: CodingGrant, files, re
                     resource_parent=paths.resource_parent,limits=limits)
                 def check():
                     current();qualification.check(authority.task,authority.session);owner._check()
-                handler=CodingHandler(tools,payload,on_event,check)
+                handler=CodingHandler(tools,payload,on_event,check,steering=steering)
                 left,right=socket.socketpair()
                 channel=None
                 try:

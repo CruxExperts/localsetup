@@ -71,3 +71,15 @@ def test_reply_backpressure_preserves_run_deadline(seconds, revoked):
     with owner,listen(child.detach(),cancelled,time.monotonic()+seconds):
         owner.sendall(b'{"schema_version":1,"id":1,"method":"status"}\n')
         assert cancelled.wait(0.4) is revoked
+
+
+def test_steering_socket_queues_only_explicit_disclosure():
+    from ls.core.agent.steering import Steering
+    owner,child=socket.socketpair();cancelled=threading.Event();expires=time.monotonic()+2
+    queue=Steering(cancelled,expires);queue.bind('task','session','profile')
+    with owner,listen(child.detach(),cancelled,expires,queue):
+        owner.settimeout(1)
+        value={'schema_version':1,'id':1,'method':'steer','task':'task','session':'session','profile':'profile','text':'new direction','disclose':True}
+        owner.sendall(json.dumps(value).encode()+b'\n')
+        assert json.loads(owner.recv(4096))['status']=='queued'
+        assert queue.take()==['new direction']

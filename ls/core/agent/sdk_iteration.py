@@ -13,7 +13,7 @@ MAX_EVENTS = 1024 * 1024
 
 async def iterate(adapter, finder, *, prompt, instructions, tools, store, on_event, check,
                   expires, run_id, conversation_id, history=None, request_limit=8,
-                  tool_limit=16, token_limit=32768):
+                  tool_limit=16, token_limit=32768, steering=None):
     """Use SDK node streaming and StepPersistence with explicit caller boundaries.
 
     `check` is synchronous current supervisor authority, not saved conversation
@@ -25,7 +25,7 @@ async def iterate(adapter, finder, *, prompt, instructions, tools, store, on_eve
     finder.verify_origins()
     from pydantic import TypeAdapter
     from pydantic_ai import Agent
-    from pydantic_ai.messages import ModelMessagesTypeAdapter
+    from pydantic_ai.messages import ModelMessagesTypeAdapter, UserPromptPart
     from pydantic_ai.models import Model
     from pydantic_ai.tools import Tool
     from pydantic_ai.usage import UsageLimits
@@ -61,6 +61,13 @@ async def iterate(adapter, finder, *, prompt, instructions, tools, store, on_eve
                                   conversation_id=conversation_id, usage_limits=limits) as run:
                 async for node in run:
                     active()
+                    if Agent.is_model_request_node(node) and steering is not None:
+                        additions = await steering()
+                        active()
+                        if (not isinstance(additions,list) or len(additions)>32
+                                or any(not isinstance(x,str) or not x or len(x.encode())>8192 for x in additions)):
+                            raise ValueError('Invalid steering messages')
+                        node.request.parts.extend(UserPromptPart(text) for text in additions)
                     if Agent.is_model_request_node(node) or Agent.is_call_tools_node(node):
                         async with node.stream(run.ctx) as stream:
                             async for event in stream:

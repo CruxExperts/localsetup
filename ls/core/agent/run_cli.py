@@ -101,7 +101,7 @@ def _state(root):
     finally:os.close(fd)
 
 
-def execute(args, streams, cancelled):
+def execute(args, streams, cancelled, steering=None):
     from .coding_protocol import request, profile_digest
     from .coding_run import CodingGrant,RunPaths,run_coding,disclosure_digest
     from .file_grants import FileGrant
@@ -124,6 +124,8 @@ def execute(args, streams, cancelled):
     paths.validate(args.workspace)
     _separate(args.state_root,args.workspace)
     _separate(args.state_root,args.runtime_root)
+    if steering is not None:
+        steering.bind(task,session,args.profile)
     prompt = streams.prompt()
     raw_profile = {'base_url':profile.base_url,'api':profile.api,'model':profile.model,'credential_env':profile.credential_env,
         'timeout_seconds':profile.timeout_seconds,'capabilities':sorted(profile.capabilities),'allow_loopback_http':profile.base_url.startswith('http://')}
@@ -157,7 +159,8 @@ def execute(args, streams, cancelled):
         elif event.get('event_kind')=='part_start' and event.get('part',{}).get('part_kind')=='tool-call':
             streams.write('Tool: '+safe(event['part'].get('tool_name',''))+'\n')
     outcome = run_coding(paths,payload,authority,files,recipes,limits=Limits(),on_event=progress,
-                         cancel=cancelled,expected_release=Path(sys.prefix).parent,resume=resume)
+                         cancel=cancelled,expected_release=Path(sys.prefix).parent,resume=resume,
+                         steering=None if steering is None else steering.take)
     codes = {'completed':0,'cancelled':130,'timed_out':124,'output_limit':5,'failed':1}
     result = {'status':outcome.status,'task':task,'session':session}
     if outcome.data is not None:
@@ -197,8 +200,10 @@ def main(argv=None):
         return failure(args.format,streams.sequence,status,code,diagnostic)
     try:
         from .run_control import listen
-        with listen(args.control_fd,cancelled,streams.expires):
-            return execute(args,streams,cancelled)
+        from .steering import Steering
+        steering=Steering(cancelled,streams.expires)
+        with listen(args.control_fd,cancelled,streams.expires,steering):
+            return execute(args,streams,cancelled,steering)
     except (InterruptedError,KeyboardInterrupt):
         return failed('cancelled',130,'run cancelled.')
     except TimeoutError:

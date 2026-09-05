@@ -83,7 +83,7 @@ def test_retained_request_and_session_then_runtime_order(inputs,monkeypatch):
         assert order==['session_enter'];order.append('runtime_enter')
         try:yield SimpleNamespace(release=paths.runtimes/'release')
         finally:order.append('runtime_exit')
-    def handler(tools,packet,*args):
+    def handler(tools,packet,*args,**kwargs):
         assert packet['prompt']=='Edit fixture' and value['prompt']=='changed by caller'
         raise Stop()
     monkeypatch.setattr(coding,'lease',owner);monkeypatch.setattr(coding,'qualified_tools',qualified)

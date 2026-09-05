@@ -11,7 +11,7 @@ existing framework command and Python distribution remain `localsetup`.
 The CLI provides help, version output, read-only diagnostics, offline setup and
 explicit headless coding runs. A verified SDK payload alone does not establish
 per-run sandbox, resource, provider or task-authority readiness. Interactive
-input and control-channel steering are still pending.
+input and dynamic approvals are still pending.
 
 ```bash
 lscli --help
@@ -1339,8 +1339,8 @@ IDs start at 1 and increase by one. Responses retain the ID and schema version:
 `active` means the cancellation flag is unset; it is not a readiness or progress
 claim. Cancellation acknowledgement is not a terminal result. Read the normal
 result event and process exit code to determine the actual outcome. Requests
-never grant file access, provider disclosure, or shell execution. Steering and
-approval methods are not implemented yet and are rejected.
+never grant file access, provider disclosure, or shell execution. The approval method is not implemented yet and is rejected. Steering accepts
+only the explicit text-disclosure contract below.
 
 Each request is at most 16 KiB before its newline, with at most 1,024 requests
 and 1 MiB total input per run. Replies have a 250 ms deadline capped by the run
@@ -1350,3 +1350,29 @@ an owner-liveness contract: closing it stops new dispatch through the shared
 cancellation state. Keep reading replies to avoid cancellation on backpressure.
 The run deadline retains timeout classification. A run without `--control-fd`
 continues to use its normal signal and deadline controls.
+
+### Task-bound steering
+
+After the run's `start` event, the owner may send:
+
+```json
+{"schema_version":1,"id":3,"method":"steer","task":"TASK","session":"SESSION","profile":"PROFILE","text":"Please also explain the test result.","disclose":true}
+```
+
+Use the next consecutive control ID and the exact task, session and selected
+profile name from the start event. `disclose: true` authorizes sending this text
+to that run's provider; it grants no additional workspace reads, writes or shell
+recipes. The reply status `queued` acknowledges receipt, not provider delivery.
+The supervisor checks current authority when the SDK polls immediately before a
+model request. It drains messages in order into native user-prompt parts, which
+are included in subsequent SDK checkpoints. An in-flight model request or tool
+operation is not interrupted by steering; use cancellation to stop work.
+
+Text is limited to 8 KiB per message, 32 messages and 128 KiB cumulative per run,
+in addition to control-frame and run usage limits. Unbound or mismatched identity,
+missing disclosure consent and exceeded bounds invalidate the control channel
+and request cancellation. Queued messages are memory-only until incorporated
+into checkpointed history. Messages arriving after the last poll may remain
+undelivered; failed or cancelled runs do not automatically replay them. Inspect
+session history before explicitly resubmitting uncertain input. Steering text in
+a resumed conversation remains context and never restores its former authority.
