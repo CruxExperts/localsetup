@@ -412,6 +412,47 @@ def test_skill_allowed_tools_frontmatter_is_space_separated() -> None:
         assert allowed_tools.split(), skill_md
 
 
+def test_skill_normalization_has_one_normative_owner_and_blocking_conflict_rule() -> None:
+    root = Path(__file__).resolve().parents[2]
+    normalizer = (root / "ls/skills/ls-skill-normalizer/SKILL.md").read_text(encoding="utf-8")
+    public_mirror = (root / "ls/docs/SKILL_NORMALIZATION.md").read_text(encoding="utf-8")
+    importer = (root / "ls/skills/ls-skill-importer/SKILL.md").read_text(encoding="utf-8")
+    importing_doc = (root / "ls/docs/SKILL_IMPORTING.md").read_text(encoding="utf-8")
+
+    assert normalizer.count("normative normalization execution contract") == 1
+    assert "owner_skill: ls-skill-normalizer" in public_mirror
+    assert "synchronized public mirror and detailed reference" in public_mirror
+    for text in (normalizer, public_mirror):
+        assert "the skill controls" in text
+        assert "stop before any affected write" in text
+        assert "higher-level user, repository, and safety policy" in text
+
+    for text in (normalizer, public_mirror, importer, importing_doc):
+        assert "single source of truth" not in text.lower()
+        assert "normalization source of truth" not in text.lower()
+    for text in (importer, importing_doc):
+        assert "`ls-skill-normalizer` as the normative normalization contract" in text
+        assert "synchronized public checklist and examples" in text
+
+    assert "keep as is" in public_mirror
+    assert "keep platform-specific but normalized" in public_mirror
+    assert "fully normalize" in public_mirror
+    assert "documents first" in normalizer
+    assert "tooling second" in normalizer
+    assert "present them for approval, then write" in normalizer
+    assert "If approved" in normalizer
+    assert "TOOLING_POLICY.md" in normalizer
+    assert "INPUT_HARDENING_STANDARD.md" in normalizer
+    assert "keep-original-tooling exception" in importing_doc
+    assert "Replicate behavior" in public_mirror
+    assert "Update all documents" in public_mirror
+    assert "Pass full vetting" in importer
+    assert "Validate the frozen bytes" in importer
+    assert "Copy, register, and confirm" in importer
+    assert "the normalization gate remains unpassed" in public_mirror
+    assert "copy as-is and warn" not in public_mirror
+
+
 def test_old_workflow_skill_references_are_cut_over() -> None:
     root = Path(__file__).resolve().parents[2]
     stale = [

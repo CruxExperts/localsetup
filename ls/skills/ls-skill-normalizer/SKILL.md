@@ -18,7 +18,7 @@ metadata:
 ## Workflow (agent steps)
 
 1. **Identify target(s)**  - User specifies one skill (e.g. by name or path) or "all" (all skills under `ls/skills/`). Resolve to a list of skill directories; each must contain SKILL.md.
-2. **Load rules**  - This skill owns the normalization workflow. Read `ls/docs/SKILL_NORMALIZATION.md` as the public reference for examples, platform-specific choices, and references to `TOOLING_POLICY.md` and `INPUT_HARDENING_STANDARD.md`; if a rule conflicts, update this skill and the public reference together.
+2. **Load rules**  - This `SKILL.md` is the normative normalization execution contract, subject to higher-level user, repository, and safety policy. Read `ls/docs/SKILL_NORMALIZATION.md` as its synchronized public mirror and detailed reference for checklists, examples, platform-specific choices, and links to `TOOLING_POLICY.md` and `INPUT_HARDENING_STANDARD.md`. If the two surfaces conflict, the skill controls: do not apply the conflicting public instruction, stop before any affected write, report the mismatch, and synchronize both surfaces in one authorized change before resuming that normalization step.
 3. **Inventory the skill**  - List the files that normalization may need to touch:
    - `SKILL.md` and any other skill documentation, including `references/`, README-style files, playbook notes, and usage examples.
    - Tooling assets such as `scripts/`, executable entrypoints, helper libraries, tests, playbooks, templates, and files that the skill relies on for behavior.
@@ -44,11 +44,11 @@ metadata:
 - Normalize documents before tooling so references, examples, and command descriptions do not drift.
 - Apply input hardening and tooling policy when scripts are added or changed.
 - Keep platform-specific intent only with an explicit user choice.
-- Mirror normalization implications into public references after behavior changes, but do not make those docs the only execution source.
+- Keep the public normalization mirror synchronized whenever this normative workflow changes. The mirror may provide additional examples and detailed checklists, but it does not override this skill.
 
 ## Reference
 
-- `ls/docs/SKILL_NORMALIZATION.md`  - Single source of truth for the two-phase document/tooling workflow, platform-specific choices, approval flow, and validation expectations.
+- `ls/docs/SKILL_NORMALIZATION.md`  - Synchronized public mirror and detailed checklist for this skill's normative two-phase workflow.
 - `ls/docs/SKILL_IMPORTING.md`  - Import workflow that invokes the same normalization rules after security and content safety are verified.
 - `ls/docs/TOOLING_POLICY.md`  - Framework tooling language and dependency rules.
 - `ls/docs/INPUT_HARDENING_STANDARD.md`  - Input validation, error handling, and observability requirements for normalized tooling.
