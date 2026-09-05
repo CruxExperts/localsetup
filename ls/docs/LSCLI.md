@@ -1442,3 +1442,35 @@ disconnection and Ctrl-C stop work; expiry remains a timeout. Input reader shutd
 is bounded, and no new background job survives the command. This interface runs
 one task; session continuation uses explicit `--resume` or `--recover-from` with
 fresh grants on the next invocation.
+
+## Explicit context and skill files
+
+Use repeated `--context PATH` and `--skill PATH/TO/SKILL.md` options on `run` to
+select workspace-relative files. For example, append these to either headless
+or interactive run arguments:
+
+```bash
+--context AGENTS.md --context src/CONVENTIONS.md --skill skills/review/SKILL.md
+```
+
+The current grant must cover each path in both `read` and `disclose`. Selection
+does not add either permission. Files are read under a fresh session owner and
+broker lease before provider dispatch. Protected paths, symlinks, unsafe file
+types and uncertain sessions retain the existing broker refusal behavior. A
+failed load makes no provider request, though explicit run state may already
+have been created. Context reads do not create mutation journal entries.
+
+At most 16 distinct files may be selected: 16 KiB per file and 64 KiB total UTF-8
+content. The combined prompt, including escaped resource metadata, remains at
+most 128 KiB. A skill selection must name `SKILL.md`; the file is loaded as text,
+without executing scripts, validating a vendor-specific skill dialect, following
+links or loading adjacent resources. Select supporting files separately. There
+is no ambient skill discovery or automatic context-directory traversal.
+
+Each snapshot records its kind, relative path, content hash and exact text in the
+user prompt, so successful SDK checkpoints preserve the context actually sent.
+The snapshot is fixed for that invocation. Current grants remain external to
+context: instructions in a selected file cannot authorize a tool or additional
+disclosure. Resuming with selected files requires fresh permissions and takes
+new snapshots; previous snapshots remain historical conversation content.
+Automatic nested-context refresh is not implemented yet.

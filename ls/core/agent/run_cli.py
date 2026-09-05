@@ -114,6 +114,8 @@ def execute(args, streams, cancelled, steering=None, approvals=None):
         raise ValueError('Public coding currently requires the qualified Chat Completions interface')
     _separate(args.profiles,args.workspace)
     grant, recipes = _grant(args.grant,args.workspace)
+    from .context_files import selection, include
+    selected_context=selection(args.context,args.skill)
     if (args.resume or args.recover_from) and (not args.task or not args.session):
         raise ValueError('History requires explicit recorded task and session')
     task, session = args.task or uuid.uuid4().hex, args.session or uuid.uuid4().hex
@@ -149,6 +151,12 @@ def execute(args, streams, cancelled, steering=None, approvals=None):
             payload['history']=owner.resume_checkpoint(resume,profile=profile_digest(raw_profile)).decode()
     else:
         _state(args.state_root)
+    if selected_context:
+        from .file_broker import FileBroker
+        from .session_owner import lease
+        with lease(paths.sessions,task=task,session=session,workspace=args.workspace,
+                   expires=streams.expires,revoked=cancelled,create=not bool(resume)) as owner:
+            payload['prompt']=include(prompt,selected_context,owner,FileBroker(files,paths.target_leases))
     authority = CodingGrant(task,session,disclosure_digest(payload),streams.expires,revoked=cancelled)
     sequence = 0
     def emit(kind,data):
