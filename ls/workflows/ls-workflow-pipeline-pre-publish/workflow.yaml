@@ -9,7 +9,8 @@ required_skills:
 required_tools: []
 required_docs:
   - ls/docs/VERSIONING.md
-  - ls/docs/WORKFLOW_QUICK_REF.md
+  - ls/skills/ls-github-publishing-workflow/SKILL.md
+  - ls/skills/ls-framework-audit/SKILL.md
 gates:
   - id: release_gate
     rule: Confirm publish target and release type assumptions.
