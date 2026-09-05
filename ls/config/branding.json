@@ -3672,6 +3672,70 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Exact executable command, code variable or resource-path component at this reviewed source location; not framework display prose."
+    },
+    {
+      "path": "MANIFEST.in",
+      "line_sha256": "9b2c0cb8a52d106eb4ee4f22a6378c22a954ef2064eef91a987fa8326116d0fb",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical SDK filesystem path in source inclusion, validation, or command documentation; directory spelling is a technical identifier."
+    },
+    {
+      "path": "ls/config/pack.yaml",
+      "line_sha256": "00edfda0e6ab653b244797c0b6e2d67d9c4eff919ce50a3b688f0a69dd7a667a",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical SDK filesystem path in source inclusion, validation, or command documentation; directory spelling is a technical identifier."
+    },
+    {
+      "path": "ls/core/sdk_payload/cli.py",
+      "line_sha256": "8051c1739b747189ae753eaf4e38afa3739dded9a1aef2a67320e946148886af",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical SDK filesystem path in source inclusion, validation, or command documentation; directory spelling is a technical identifier."
+    },
+    {
+      "path": "ls/docs/SDK_FORK.md",
+      "line_sha256": "4d4e49328bc837b8866bb4dbdee3ed0e265e4895f020db115a38c15032cfd0f0",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical SDK filesystem path in source inclusion, validation, or command documentation; directory spelling is a technical identifier."
+    },
+    {
+      "path": "ls/docs/SDK_FORK.md",
+      "line_sha256": "c4369f20b12184bae644962a86b741a7c1ccc2528b8daab2b0d5e00a69066df7",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical SDK filesystem path in source inclusion, validation, or command documentation; directory spelling is a technical identifier."
+    },
+    {
+      "path": "ls/tests/test_sdk_payload.py",
+      "line_sha256": "e9055c49d8d6f0f2a81d7c20726c2548e16e8720ba1bf92c97af418bc5f6018d",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical SDK filesystem path in source inclusion, validation, or command documentation; directory spelling is a technical identifier."
+    },
+    {
+      "path": ".gitignore",
+      "line_sha256": "7f1229dd9981e1d8182af350a99d7fbd114a1ded9117368c7e372e30af25037c",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact ignore-rule path retaining upstream SDK runtime modules; directory spelling is a technical identifier."
+    },
+    {
+      "path": ".gitignore",
+      "line_sha256": "2ca7ecf5ca16dfa388d007702d0c148fc3d23a780cab9db89513f0c3ab646f12",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact ignore-rule path retaining upstream SDK runtime modules; directory spelling is a technical identifier."
     }
   ],
   "visual_reviews": [

@@ -1,0 +1,1111 @@
+"""Code mode toolset that runs LLM-generated Python in a Monty sandbox."""
+
+from __future__ import annotations
+
+import inspect
+import keyword
+import re
+import warnings
+from collections.abc import Callable, Coroutine, Sequence
+from contextlib import ExitStack
+from dataclasses import dataclass, field, replace
+from itertools import islice
+from typing import Annotated, Any, Literal, Protocol, runtime_checkable
+
+from pydantic import Field, TypeAdapter
+from pydantic_ai import AbstractToolset, RunContext, ToolDefinition, WrapperToolset
+from pydantic_ai.exceptions import ApprovalRequired, CallDeferred, ModelRetry, UserError
+from pydantic_ai.function_signature import FunctionSignature
+from pydantic_ai.messages import (
+    InstructionPart,
+    ToolCallPart,
+    ToolReturn,
+    ToolReturnContent,
+    ToolReturnPart,
+    is_multi_modal_content,
+)
+from pydantic_ai.tool_manager import ParallelExecutionMode, ToolManager
+from pydantic_ai.tools import AgentDepsT, ToolDenied, ToolSelector, matches_tool_selector
+from pydantic_ai.toolsets.abstract import SchemaValidatorProt, ToolsetTool
+from typing_extensions import NotRequired, Self, TypedDict
+
+try:
+    from pydantic_ai.toolsets._tool_search import _SEARCH_TOOLS_NAME  # pyright: ignore[reportPrivateUsage]
+except ImportError:  # pragma: no cover
+    _SEARCH_TOOLS_NAME = 'search_tools'  # pyright: ignore[reportConstantRedefinition]
+
+try:
+    from pydantic_monty import (
+        AbstractOS,
+        Monty,
+        MontyCrashedError,
+        MontyRuntimeError,
+        MontySession,
+        MontySyntaxError,
+        MontyTypingError,
+        MountDir,
+        OsFunction,
+        ResourceLimits,
+    )
+except ImportError as _import_error:  # pragma: no cover
+    raise ImportError(
+        'pydantic-monty is required for CodeMode. Install it with: pip install "pydantic-ai-harness[code-mode]"'
+    ) from _import_error
+from pydantic_ai_harness._monty_exec import MontyExecutor, PrintCapture, is_sandbox_panic
+
+# A raw OS callback. Return `pydantic_monty.NOT_HANDLED` to defer the call to the
+# sandbox's default, which leaves it unavailable.
+CodeModeOSCallback = Callable[[OsFunction, tuple[object, ...], dict[str, object]], object]
+# Accepted by `CodeMode.os_access`: a ready-made OS implementation or a raw callback.
+CodeModeOS = AbstractOS | CodeModeOSCallback
+# Accepted by `CodeMode.mount`: one or more host-directory mounts.
+CodeModeMount = MountDir | list[MountDir]
+
+
+# Bounds for the nested-call summary appended to a budget-exhaustion retry. Monty caps printed
+# output at 10 MiB by raising, which suits a stream the model asked for but not a summary the
+# host adds to an error, so these are separate and much smaller: the summary exists to identify
+# calls, not to redeliver their payloads.
+_RETRY_VALUE_PREVIEW_CHARS = 120
+_RETRY_PREVIEW_ITEMS = 5
+_RETRY_SUMMARY_MAX_CHARS = 2000
+
+
+# One entry per limit `CodeModeResourceLimits` exposes, mapped to the wording Monty reports when
+# it trips. Monty offers no typed marker for either, so its phrasing is load-bearing here and
+# nowhere else. `test_every_resource_limit_reports_started_calls_when_exhausted` exhausts each
+# option the type declares and checks the summary survives, so a limit added without an entry here
+# fails there rather than silently losing its summary, and a Monty reword fails it rather than
+# quietly disabling recognition.
+_SANDBOX_LIMIT_MARKERS = {
+    'max_duration_secs': 'time limit exceeded',
+    'max_memory': 'memory limit exceeded',
+}
+
+
+@runtime_checkable
+class _TemporalDurability(Protocol):
+    """The part of Temporal's public durability capability CodeMode needs."""
+
+    in_durable_context: bool
+
+
+def _in_temporal_workflow(ctx: RunContext[object]) -> bool:
+    """Whether this tool call runs in a Temporal workflow without importing its optional extra."""
+    return any(
+        any(base.__module__.startswith('pydantic_ai.durable_exec.temporal') for base in type(capability).__mro__)
+        and isinstance(capability, _TemporalDurability)
+        and capability.in_durable_context
+        for capability in ctx.capabilities.values()
+    )
+
+
+def _exhausted_sandbox_limit(error: MontyRuntimeError) -> str | None:
+    """Which `CodeModeResourceLimits` limit this runtime error reports, or `None` for anything else.
+
+    Derived from `_SANDBOX_LIMIT_MARKERS` rather than from a check per limit, so recognising a new
+    limit is a table entry and forgetting one is a test failure.
+
+    This gates the started-call summary, so it deliberately errs toward inclusion and matches on
+    Monty's wording alone. A nested tool that fails with one of these phrases in its own message is
+    misread, and that costs nothing: the summary only states which calls really started, which is
+    true regardless of why the snippet ended. The restart guidance cannot afford the same
+    looseness and uses `_is_duration_exhausted` instead.
+    """
+    message = error.display(format='msg')
+    for limit, marker in _SANDBOX_LIMIT_MARKERS.items():
+        if marker in message:
+            return limit
+    return None
+
+
+def _is_duration_exhausted(error: MontyRuntimeError) -> bool:
+    """Whether this runtime error is Monty's spent `max_duration_secs` allowance.
+
+    Stricter than `_exhausted_sandbox_limit` because it gates advice to restart, and a wrong
+    restart discards REPL state the session could still use. A missed one only costs the hint.
+
+    The empty traceback is the structural signal: the duration limit interrupts execution rather
+    than failing at a particular operation, and Monty attaches no frame to it, measured at top
+    level and three calls deep alike. Failures that happen at a sandbox site carry at least the
+    module frame, including an exception a nested tool raised that Monty re-raised at the call
+    site, which keeps the tool's own message. Wording alone would therefore misread a tool that
+    failed with `'time limit exceeded'` in its message.
+
+    Exceeding `max_memory` is excluded by either signal, since it reports different wording and
+    carries a frame from the allocation that tripped it. Keeping both means neither has to be
+    sound alone.
+
+    Callers must read `False` as "add nothing", not as "not a timeout". A miss leaves the ordinary
+    runtime-error message intact, which is the behaviour that shipped before the hint existed.
+    """
+    return not error.traceback() and _exhausted_sandbox_limit(error) == 'max_duration_secs'
+
+
+def _elided(count: int, shown: int, unit: str) -> str:
+    """Note how much a preview left out, or nothing when it left out nothing."""
+    return f' ... ({count} {unit} total)' if count > shown else ''
+
+
+def _preview(value: Any, *, nested: bool = False) -> str:
+    """Render a value for an error message, cutting it before rendering rather than after.
+
+    Rendering first and slicing after would copy the whole payload to produce 120 characters: a
+    20 MB tool result cost 40 MB of allocation that way, spent while the host is already handling
+    a resource failure. So each shape is cut at the source instead.
+
+    Only the shapes a tool result or argument can take are rendered: text, bytes, and containers
+    of those, one level deep. A nested container is reported by size rather than expanded, which
+    bounds the work without recursing to arbitrary depth. Anything else is named by type, since
+    calling `repr` on it is the unbounded allocation this exists to avoid -- a `BinaryContent`
+    result would otherwise render its entire payload.
+    """
+    limit = _RETRY_VALUE_PREVIEW_CHARS
+    items = _RETRY_PREVIEW_ITEMS
+    # `isinstance` on a bare `list`/`dict` narrows to an unparameterized generic, which reads as
+    # partially unknown under strict typing. Keeping an unnarrowed alias lets the checks stay
+    # `isinstance`, so subclasses still match, while the element access stays typed.
+    raw: Any = value
+    if isinstance(value, str):
+        return repr(value[:limit]) + _elided(len(value), limit, 'chars')
+    if isinstance(value, (bytes, bytearray)):
+        return repr(bytes(value[:limit])) + _elided(len(value), limit, 'bytes')
+    if isinstance(value, (list, tuple)):
+        if nested:
+            return f'[{len(raw)} items]'
+        rendered = ', '.join(_preview(item, nested=True) for item in raw[:items])
+        return f'[{rendered}]' + _elided(len(raw), items, 'items')
+    if isinstance(value, dict):
+        if nested:
+            return f'{{{len(raw)} items}}'
+        rendered = ', '.join(
+            f'{_preview(key, nested=True)}: {_preview(item, nested=True)}' for key, item in islice(raw.items(), items)
+        )
+        return '{' + rendered + '}' + _elided(len(raw), items, 'items')
+    if value is None or isinstance(value, (int, float)):
+        return repr(value)
+    return f'<{type(value).__name__}>'
+
+
+def _describe_started_calls(calls: dict[str, ToolCallPart], returns: dict[str, ToolReturnPart]) -> str:
+    """Report how many nested calls started, with per-call detail inside a size cap.
+
+    Keyed off `calls` rather than `returns` because a call that raised has no recorded return, and
+    a tool can commit a side effect before raising. Those are the calls most likely to have left
+    partial state, so omitting them by kind would hide exactly what the model needs to check.
+
+    The per-call lines are bounded, so a long run drops the tail and says how many it dropped. The
+    total is always exact: it is the part that survives truncation, and it is what tells the model
+    the list it can see is incomplete.
+    """
+    lines: list[str] = []
+    used = 0
+    for call_id, call in calls.items():
+        result = returns.get(call_id)
+        # `ToolReturnPart.outcome` also allows 'failed' and 'interrupted', but this function only
+        # ever sees parts built above, which set 'denied' or leave the default 'success'. Record
+        # any further outcome here rather than letting it fall through and read as a return.
+        if result is None:
+            outcome = 'raised, so it may have applied a partial change'
+        elif result.outcome == 'denied':
+            outcome = 'was denied and did not run'
+        else:
+            outcome = f'returned {_preview(result.content)}'
+        line = f'- {call.tool_name}({_preview(call.args)}) {outcome}'
+        if used + len(line) > _RETRY_SUMMARY_MAX_CHARS:
+            lines.append(f'- ... and {len(calls) - len(lines)} more not shown')
+            break
+        lines.append(line)
+        used += len(line)
+    return (
+        f'{len(calls)} nested tool calls started before the limit was reached:\n'
+        + '\n'.join(lines)
+        + f'\nAccount for all {len(calls)} before retrying; repeating a call repeats whatever it already did.'
+    )
+
+
+class CodeModeResourceLimits(TypedDict, total=False):
+    """Caps on the sandbox code executed by `run_code`.
+
+    Monty enforces these per session. Consecutive `run_code` calls therefore share one duration
+    allowance, and anything that resets the session starts a fresh one, so the bound that holds
+    throughout is per snippet: no single snippet runs longer than `max_duration_secs`.
+    """
+
+    max_duration_secs: float
+    max_memory: int
+
+
+def _resolve_resource_limits(
+    limits: CodeModeResourceLimits | Literal['unlimited'] | None, *, in_temporal_workflow: bool = False
+) -> ResourceLimits:
+    """Merge caller overrides onto the `run_code` backstop."""
+    if limits == 'unlimited':
+        return {}
+    if limits is not None:
+        unknown = set(limits) - set(CodeModeResourceLimits.__annotations__)
+        if unknown:
+            raise UserError(
+                f'Unknown `resource_limits` key(s): {sorted(unknown)}. '
+                f'Valid keys are {sorted(CodeModeResourceLimits.__annotations__)}.'
+            )
+    max_duration_secs = 30 if limits is None else limits.get('max_duration_secs', 30)
+    max_memory = 256 * 1024 * 1024 if limits is None else limits.get('max_memory', 256 * 1024 * 1024)
+    if in_temporal_workflow:
+        # `run_code` executes in workflow code and Temporal replays it. An elapsed timer may
+        # make the original run and replay take different branches, which Temporal cannot record.
+        max_duration_secs = None
+    return {'max_duration_secs': max_duration_secs, 'max_memory': max_memory}
+
+
+@dataclass
+class _MontyRunState:
+    """Monty resources shared by every toolset view created during one agent run."""
+
+    pool: Monty | None = None
+    session: MontySession | None = None
+    has_executed_feed: bool = False
+    _pool_stack: ExitStack = field(default_factory=ExitStack, repr=False)
+    _session_stack: ExitStack = field(default_factory=ExitStack, repr=False)
+
+    def get_session(self, *, type_check: bool, type_check_stubs: str | None, limits: ResourceLimits) -> MontySession:
+        """Return the run's live REPL session, creating its pool on first use."""
+        if self.pool is None:
+            self.pool = self._pool_stack.enter_context(Monty())
+        if self.session is None:
+            self.session = self._session_stack.enter_context(
+                self.pool.checkout(limits=limits, type_check=type_check, type_check_stubs=type_check_stubs)
+            )
+        return self.session
+
+    def reset(self) -> None:
+        """Return the current worker and make the next call start a fresh REPL."""
+        self._session_stack.close()
+        self._session_stack = ExitStack()
+        self.session = None
+        self.has_executed_feed = False
+
+    def close(self) -> None:
+        """Return the checked-out worker and close the owning pool."""
+        self.reset()
+        self._pool_stack.close()
+        self._pool_stack = ExitStack()
+        self.pool = None
+
+
+class _RunCodeArguments(TypedDict):
+    code: Annotated[str, Field(description='The Python code to execute in the sandbox.')]
+    restart: NotRequired[
+        Annotated[
+            bool,
+            Field(
+                description='Set to true to reset REPL state. When false (default), state is preserved between calls.'
+            ),
+        ]
+    ]
+
+
+_RUN_CODE_TOOL_NAME = 'run_code'
+_RUN_CODE_ADAPTER = TypeAdapter(_RunCodeArguments)
+_RUN_CODE_JSON_SCHEMA = _RUN_CODE_ADAPTER.json_schema()
+_RUN_CODE_ARGS_VALIDATOR: SchemaValidatorProt = _RUN_CODE_ADAPTER.validator  # pyright: ignore[reportAssignmentType]
+# Used to serialize tool return values before sending into Monty (dump_python)
+# and to reconstruct multimodal types (e.g. BinaryContent) from Monty results (validate_python).
+_TOOL_RETURN_CONTENT_TA: TypeAdapter[Any] = TypeAdapter(ToolReturnContent)
+
+_RUN_CODE_DESCRIPTION_HEAD = """\
+Write and run Python code in a sandboxed environment.
+
+The sandbox uses Monty, a subset of Python. Key restrictions:
+- **No third-party libraries**: only the standard library modules listed below can be used
+- **Importable standard library modules**: `sys`, `typing`, `asyncio`, `math`, `json`, `re`, `unicodedata`, `datetime`, `os`, `pathlib`. These must be imported before use, just like in regular Python."""
+
+# Timing/OS restriction line, swapped depending on what host access the agent
+# configured. Three states, because `mount` and `os` enable different things:
+# a `mount` only exposes filesystem paths, while environment and clock calls
+# require an `os` handler.
+_NO_OS_RESTRICTION = (
+    '- **No filesystem, environment, or timing primitives**: `pathlib.Path` I/O, '
+    '`os.getenv`/`os.environ`, `datetime.datetime.now()`, `datetime.date.today()`, `asyncio.sleep`, '
+    'and the `time` module are unavailable here (no filesystem mount or OS handler is configured). '
+    '`os` and `pathlib` import successfully, but their I/O operations are not supported in this '
+    'configuration.'
+)
+_MOUNT_ONLY_NOTE = (
+    '- **Mounted filesystem access**: `pathlib.Path` operations under the configured mount '
+    'point(s) are routed to the host. `os.getenv`/`os.environ`, `datetime.datetime.now()`, '
+    '`datetime.date.today()`, `asyncio.sleep`, and the `time` module remain unavailable.'
+)
+_OS_ENABLED_NOTE = (
+    '- **Configured OS access**: `pathlib.Path` operations, `os.getenv`/`os.environ`, '
+    '`datetime.datetime.now()`, and `datetime.date.today()` are routed to the OS handler '
+    'configured for this agent (availability depends on that configuration). `asyncio.sleep` and '
+    'the `time` module remain unavailable.'
+)
+_MOUNT_LIFETIME_NOTE = (
+    "- **Mount write lifetime**: writes through a `mode='overlay'` mount last only for the current "
+    "`run_code` call. Use `mode='read-write'` when later calls need to read those writes."
+)
+
+_RUN_CODE_DESCRIPTION_TAIL = """\
+- **No `import *`**: wildcard imports are not supported
+
+State is preserved between calls (REPL-style). Set `restart: true` to reset state.
+
+The last expression's value is automatically captured as the return value -- you do **not** need to \
+`print()` it. End the snippet with the value to return as a bare expression. A final assignment stores \
+the value but does not return it. A final expression that evaluates to `None` is treated as no result. \
+Without a non-`None` final expression or print output, `run_code` returns `{}`. For example:
+
+```python
+result = some_expression
+result
+```
+
+Avoid `print()` for return values as it produces Python string representations, not structured data. \
+Use `print()` only for supplementary logging or debug output.
+
+Returns a non-`None` last expression's value directly when nothing is printed. With `print()` output \
+and no non-`None` final expression, returns `{"output": "<printed text>"}`. With `print()` output and a \
+plain, non-`None` final expression, returns \
+`{"output": "<printed text>", "result": <last expression>}`. With `print()` output and a multimodal \
+final expression, returns a list with the printed text followed by the native content.\
+"""
+
+
+def _base_description(*, has_os: bool, has_mount: bool) -> str:
+    """Assemble the `run_code` base description with the right OS-access restriction line.
+
+    `os` routes environment, clock, and filesystem calls; a `mount` alone only
+    exposes filesystem paths, so a mount-only sandbox must not advertise env or
+    clock access (the model would generate calls that fail and burn retries).
+    """
+    if has_os:
+        restriction = _OS_ENABLED_NOTE
+    elif has_mount:
+        restriction = _MOUNT_ONLY_NOTE
+    else:
+        restriction = _NO_OS_RESTRICTION
+    if has_mount:
+        restriction = f'{restriction}\n{_MOUNT_LIFETIME_NOTE}'
+    return f'{_RUN_CODE_DESCRIPTION_HEAD}\n{restriction}\n{_RUN_CODE_DESCRIPTION_TAIL}'
+
+
+def _functions_header(*, has_sync: bool, has_async: bool) -> str:
+    """Build the functions-header paragraph for the `run_code` tool description."""
+    base = (
+        '\nThe following functions are available inside the sandbox. Call them directly '
+        '(do **not** redefine or import them). All parameters are keyword-only.'
+    )
+    if has_async and not has_sync:
+        return base + (
+            ' All tool functions are async: invoke them with `await`,'
+            ' e.g. `await tool_name(arg=value)`.'
+            ' Calling without `await` returns an unresolved future, not the value.'
+            ' For concurrency, use `await asyncio.gather(...)` with positional awaitables.'
+            ' Monty does not support `asyncio.gather` keyword arguments or other task creation'
+            ' and wait APIs.'
+        )
+    if has_sync and not has_async:
+        return base + (' All tool functions are synchronous: call them directly, e.g. `tool_name(arg=value)`.')
+    return base + (
+        ' Async functions (`async def`) must be invoked with `await`,'
+        ' e.g. `await tool_name(arg=value)`.'
+        ' Sync functions (`def`) are called directly, e.g. `tool_name(arg=value)`.'
+        ' For concurrent async calls, use `await asyncio.gather(...)` with positional awaitables.'
+        ' Monty does not support `asyncio.gather` keyword arguments or other task creation'
+        ' and wait APIs.'
+    )
+
+
+_SEARCH_TOOLS_MODIFIER = (
+    ' Note: discovered tools become callable as functions inside the run_code sandbox in subsequent invocations.'
+)
+
+_TOOL_SEARCH_ADDENDUM = (
+    f'\n\nNot all functions may be available initially.'
+    f' Use the `{_SEARCH_TOOLS_NAME}` tool to discover additional functions'
+    f' that will become callable in subsequent `run_code` invocations.'
+)
+
+_INVALID_IDENT_CHARS = re.compile(r'[^a-zA-Z0-9_]')
+
+
+def _is_code_execution_tool(tool_def: ToolDefinition) -> bool:
+    """Whether a tool executes its string argument as a program when called.
+
+    Such tools carry `code_arg_name` metadata -- the same marker instrumentation reads to render
+    the argument as code. It covers script sandboxes (this `run_code`, DynamicWorkflow's
+    `run_workflow`), shell surfaces that hand the argument to a shell (`Shell`'s
+    `run_command`/`start_command`, ModalSandbox's `run_command`), and tools that import the
+    argument as Python (`CapabilityCreation`'s `author_capability`). They must not be folded
+    into `run_code`: nesting one code surface inside another would make the model write a script
+    that passes a second script as a string literal. They stay native so the two code surfaces
+    sit side by side. Tools whose string argument is data (file contents, an argv-style command
+    parsed with `shlex`) are folded as usual.
+    """
+    return bool(tool_def.metadata and 'code_arg_name' in tool_def.metadata)
+
+
+def _sanitize_tool_name(name: str) -> str:
+    """Turn a tool name into a valid Python identifier.
+
+    Replaces hyphens, dots, and other non-identifier characters with underscores,
+    prepends `_` if the result starts with a digit, appends `_` if it is a Python keyword.
+    """
+    sanitized = _INVALID_IDENT_CHARS.sub('_', name)
+    if sanitized and sanitized[0].isdigit():
+        sanitized = f'_{sanitized}'
+    if keyword.iskeyword(sanitized):
+        sanitized = f'{sanitized}_'
+    return sanitized or '_'
+
+
+def _global_mode_is_sequential(get_mode: Callable[..., ParallelExecutionMode]) -> bool:
+    """Whether the run-scoped execution mode forces sandbox tool calls to run sequentially.
+
+    pydantic-ai v1's `get_parallel_execution_mode` took the pending calls list
+    and folded per-tool `sequential` flags into the result; v2 dropped the
+    argument and returns only the run-scoped context-var mode. Passing `[]` in
+    v1 isolated that context var from per-tool flags, which is exactly what the
+    no-arg v2 call returns, so the two are equivalent.
+
+    Inspect the arity rather than catch `TypeError` so a genuine `TypeError`
+    raised inside the method is not swallowed. The `Callable[...]` parameter
+    type erases the bound signature so both call shapes typecheck whichever
+    major's stubs pyright resolves.
+    """
+    if inspect.signature(get_mode).parameters:
+        return get_mode([]) != 'parallel'
+    return get_mode() != 'parallel'
+
+
+@dataclass(kw_only=True)
+class _RunCodeTool(ToolsetTool[AgentDepsT]):
+    """ToolsetTool subclass that caches data computed during `get_tools`.
+
+    Avoids a redundant `get_tools` call in `call_tool` by storing the
+    callable tool definitions and name mapping on the tool instance itself.
+    Follows the same pattern as `_SearchTool` in pydantic-ai's
+    `ToolSearchToolset`.
+    """
+
+    callable_defs: dict[str, ToolDefinition]
+    """Tool definitions callable from inside the sandbox, keyed by (possibly sanitized) name."""
+
+    sanitized_to_original: dict[str, str]
+    """Maps sanitized Python-safe names back to original tool names (only for renamed tools)."""
+
+    wrapped_tools: dict[str, ToolsetTool[AgentDepsT]]
+    """The wrapped toolset's tools, keyed by original name."""
+
+
+@dataclass
+class CodeModeToolset(WrapperToolset[AgentDepsT]):
+    """Implementation toolset for the `CodeMode` capability.
+
+    Exposes a single `run_code` tool alongside any native (non-sandboxed) tools.
+    Tools selected by `tool_selector` are presented to the model as Python
+    function signatures inside the `run_code` tool description and become
+    callable from the sandbox at runtime. Non-selected tools remain visible
+    to the model as normal tool calls.
+
+    Some tools always stay native rather than being sandboxed:
+
+    - Framework control tools (`tool_kind` set: tool search, capability loading).
+    - `defer_loading=True` tools, until tool search or capability loading reveals them.
+    - `unless_native` tools, so `Model.prepare_request` can drop them when the
+      provider supports the native tool.
+
+    To keep a Tool Search corpus native even after discovery (e.g. for prompt-cache
+    stability), pass a `tool_selector` that excludes tools with `with_native` set.
+    """
+
+    tool_selector: ToolSelector[AgentDepsT] = 'all'
+    """Which wrapped tools to sandbox inside `run_code`. Non-matching tools
+    are exposed as native tools."""
+
+    max_retries: int = 3
+    """Maximum number of retries for the `run_code` tool (syntax errors count as retries)."""
+
+    # Keyword-only: `os_access`, `mount`, and `dynamic_catalog` shipped as positional parameters,
+    # so inserting these into the positional sequence would silently rebind existing callers'
+    # arguments (an `OSAccess` passed fourth would land in `max_tool_calls`).
+    max_tool_calls: int = field(default=100, kw_only=True)
+    """Maximum nested tool calls dispatched by one `run_code` invocation.
+
+    Budget is reserved before each call is scheduled, so a snippet cannot allocate host tasks
+    beyond this many. Calls past the budget are refused at the sandbox call site.
+    """
+
+    resource_limits: CodeModeResourceLimits | Literal['unlimited'] | None = field(default=None, kw_only=True)
+    """Sandbox execution limits, applied per Monty session.
+
+    `None` applies a 30-second execution and 256 MiB heap backstop. The guarantee is per snippet:
+    no single `run_code` snippet runs longer than `max_duration_secs`. It is not a run-wide budget,
+    since consecutive calls share one session allowance and any reset of the session (`restart:
+    true`, a crash, a type error, a host-side failure) starts a fresh one. `'unlimited'` removes
+    both caps.
+    """
+
+    os_access: CodeModeOS | None = None
+    """Give sandboxed code environment variables, the clock, and file I/O through a handler you provide; unset, they are unavailable."""
+
+    mount: CodeModeMount | None = None
+    """Host directories to expose to sandboxed `pathlib` code; each mount's `mode` controls whether writes reach the host."""
+
+    dynamic_catalog: bool = False
+    """Move the sandboxed-tool catalog out of `run_code.description` and into instructions.
+
+    When `False` (default), every sandboxed tool's signature is rendered into the
+    `run_code` description, which lives in the prompt-cache-keyed tool-definitions block.
+    When `True`, the description keeps only the static base prose and the catalog is
+    surfaced as a dynamic [`InstructionPart`][pydantic_ai.messages.InstructionPart] via
+    [`get_instructions`][pydantic_ai_harness.code_mode.CodeModeToolset.get_instructions],
+    so Tool Search discoveries don't bust the tool-definitions cache prefix.
+    """
+
+    # Shared by `for_run_step` copies so they use the same REPL session and the original entered
+    # instance can close it. `for_run` leaves this unset, giving concurrent runs isolated state.
+    _run_state: _MontyRunState | None = field(default=None, init=False, repr=False, compare=False)
+
+    # Catalog string stashed during `get_tools` (when `dynamic_catalog`) and read back by
+    # `get_instructions` in the same step. Empty when there's nothing to surface.
+    _last_catalog: str = field(default='', init=False, repr=False)
+
+    # Tracks deferred-tool names we've already warned about so we don't spam the
+    # logs every step. Reset on `for_run` because each run gets a fresh instance.
+    _warned_deferred: set[str] = field(default_factory=set[str], init=False, repr=False)
+
+    async def for_run(self, ctx: RunContext[AgentDepsT]) -> AbstractToolset[AgentDepsT]:
+        """Return a fresh toolset instance with isolated REPL state for this agent run."""
+        wrapped = await self.wrapped.for_run(ctx)
+        return replace(self, wrapped=wrapped)
+
+    async def for_run_step(self, ctx: RunContext[AgentDepsT]) -> AbstractToolset[AgentDepsT]:
+        """Update the wrapped toolset for this step while preserving REPL state."""
+        new_wrapped = await self.wrapped.for_run_step(ctx)
+        if new_wrapped is self.wrapped:
+            return self
+        new_self = replace(self, wrapped=new_wrapped)
+        new_self._run_state = self._run_state
+        new_self._warned_deferred = self._warned_deferred
+        new_self._last_catalog = self._last_catalog
+        return new_self
+
+    async def __aenter__(self) -> Self:
+        """Enter the wrapped toolset and prepare lazy Monty resources for this run."""
+        # Reject misconfiguration when the run starts rather than at the first `run_code` call,
+        # which may be many model steps later. The resolved value is recomputed at checkout.
+        _resolve_resource_limits(self.resource_limits)
+        if self.max_tool_calls < 1:
+            raise UserError('`max_tool_calls` must be at least 1')
+        run_state = _MontyRunState()
+        await self.wrapped.__aenter__()
+        self._run_state = run_state
+        return self
+
+    async def __aexit__(self, *args: Any) -> bool | None:
+        """Exit the wrapped toolset, then tear down the worker pool."""
+        run_state = self._run_state
+        assert run_state is not None
+        self._run_state = None
+        try:
+            return await self.wrapped.__aexit__(*args)
+        finally:
+            run_state.close()
+
+    async def get_instructions(
+        self, ctx: RunContext[AgentDepsT]
+    ) -> str | InstructionPart | Sequence[str | InstructionPart] | None:
+        """Surface the tool catalog as a dynamic instruction when `dynamic_catalog` is set.
+
+        The catalog is stashed by `get_tools` earlier in the same step. `dynamic=True` so
+        providers that split static/dynamic instructions (Anthropic, Bedrock) place a cache
+        breakpoint *before* the catalog -- discoveries change it but leave the static prefix
+        cache intact. When `dynamic_catalog` is off (or there are no sandboxed tools) the
+        stash is empty and we defer entirely to the wrapped toolset.
+        """
+        upstream = await self.wrapped.get_instructions(ctx)
+        if not self._last_catalog:
+            return upstream
+        catalog_part = InstructionPart(content=self._last_catalog, dynamic=True)
+        if upstream is None:
+            return catalog_part
+        if isinstance(upstream, (str, InstructionPart)):
+            return [upstream, catalog_part]
+        return [*upstream, catalog_part]
+
+    async def get_tools(self, ctx: RunContext[AgentDepsT]) -> dict[str, ToolsetTool[AgentDepsT]]:
+        """Return the `run_code` tool plus any native (non-sandboxed) tools."""
+        wrapped_tools = await self.wrapped.get_tools(ctx)
+
+        # Split tools into sandboxed vs native based on the selector.
+        sandboxed_tools: dict[str, ToolsetTool[AgentDepsT]] = {}
+        native_tools: dict[str, ToolsetTool[AgentDepsT]] = {}
+        for name, tool in wrapped_tools.items():
+            # Framework control tools (tool search, capability loading) stay native to
+            # drive protocol-level flows. `tool_kind` is the framework's discriminator
+            # for them; pydantic-ai has set it on `search_tools` since 1.95.0.
+            if tool.tool_def.tool_kind is not None:
+                native_tools[name] = tool
+            elif not ctx.is_tool_available(tool.tool_def):
+                # Use the run's public availability predicate so Tool Search and deferred
+                # capability reveals share the same wire-side semantics. Hidden tools stay native
+                # until revealed, then fall through to the checks below and become sandboxed.
+                native_tools[name] = tool
+            elif tool.tool_def.unless_native:
+                # Keep the local fallback native so `Model.prepare_request` can drop it
+                # when the provider supports the native tool.
+                native_tools[name] = tool
+            elif _is_code_execution_tool(tool.tool_def):
+                # A tool that is itself a code-execution sandbox (e.g. DynamicWorkflow's
+                # `run_workflow`) is a peer of `run_code`, not something to fold inside it.
+                native_tools[name] = tool
+            elif await matches_tool_selector(self.tool_selector, ctx, tool.tool_def):
+                sandboxed_tools[name] = tool
+            else:
+                native_tools[name] = tool
+
+        callable_defs, sanitized_to_original = self._partition_callable_tools(sandboxed_tools)
+
+        # `dynamic_catalog` keeps the catalog out of `run_code.description` (cache-stable
+        # tool-defs block) and surfaces it via `get_instructions` instead. Stash it for the
+        # `get_instructions` call later this step; empty string means "nothing to surface".
+        # The base prose stays host-aware in both modes -- its OS/mount restriction line is
+        # static (it doesn't change per discovery), so it belongs in the cached description.
+        has_os = self.os_access is not None
+        has_mount = self.mount is not None
+        if self.dynamic_catalog:
+            description = _base_description(has_os=has_os, has_mount=has_mount)
+            self._last_catalog = self._render_catalog(callable_defs)
+        else:
+            description = self._build_description(callable_defs, has_os=has_os, has_mount=has_mount)
+            self._last_catalog = ''
+
+        if _RUN_CODE_TOOL_NAME in native_tools:
+            raise UserError(
+                f"Tool name '{_RUN_CODE_TOOL_NAME}' is reserved for code mode. Rename your tool to avoid conflicts."
+            )
+
+        # When search_tools is present, append context about run_code to its
+        # description and add a discovery note to the run_code description.
+        has_search_tools = _SEARCH_TOOLS_NAME in native_tools
+        if has_search_tools:
+            search_tool = native_tools[_SEARCH_TOOLS_NAME]
+            native_tools[_SEARCH_TOOLS_NAME] = replace(
+                search_tool,
+                tool_def=replace(
+                    search_tool.tool_def,
+                    description=(search_tool.tool_def.description or '') + _SEARCH_TOOLS_MODIFIER,
+                ),
+            )
+            description += _TOOL_SEARCH_ADDENDUM
+
+        result: dict[str, ToolsetTool[AgentDepsT]] = dict(native_tools)
+        result[_RUN_CODE_TOOL_NAME] = _RunCodeTool(
+            toolset=self,
+            tool_def=ToolDefinition(
+                name=_RUN_CODE_TOOL_NAME,
+                description=description,
+                parameters_json_schema=_RUN_CODE_JSON_SCHEMA,
+                metadata={'code_arg_name': 'code', 'code_arg_language': 'python'},
+                sequential=True,
+            ),
+            max_retries=self.max_retries,
+            args_validator=_RUN_CODE_ARGS_VALIDATOR,
+            callable_defs=callable_defs,
+            sanitized_to_original=sanitized_to_original,
+            wrapped_tools=wrapped_tools,
+        )
+        return result
+
+    async def call_tool(  # noqa: C901
+        self, name: str, tool_args: dict[str, Any], ctx: RunContext[AgentDepsT], tool: ToolsetTool[AgentDepsT]
+    ) -> Any:
+        """Execute Python code in the sandbox, or pass through to a native tool."""
+        if not isinstance(tool, _RunCodeTool):
+            # Native (non-sandboxed) tool -- pass through to the wrapped toolset.
+            return await self.wrapped.call_tool(name, tool_args, ctx, tool)
+
+        code = tool_args['code']
+        restart = tool_args.get('restart', False)
+
+        run_state = self._run_state
+        assert run_state is not None, '`CodeModeToolset` must be entered before calling `run_code`'
+
+        if restart:
+            run_state.reset()
+
+        fresh_repl = not run_state.has_executed_feed
+
+        callable_defs = tool.callable_defs
+        sanitized_to_original = tool.sanitized_to_original
+
+        # Build a ToolManager for the sandbox's inner tools so that sandboxed
+        # tool calls go through the standard validation/execution path. We
+        # inherit `root_capability` from the agent's ToolManager (for capability
+        # hooks) but use the *wrapped* toolset and its tools.
+        # See https://github.com/pydantic/pydantic-ai/pull/4307
+        parent_tm = ctx.tool_manager
+        assert parent_tm is not None, 'CodeModeToolset requires ctx.tool_manager to be set'
+        tool_manager = ToolManager(
+            toolset=self.wrapped,
+            root_capability=parent_tm.root_capability,
+            ctx=ctx,
+            tools=tool.wrapped_tools,
+        )
+
+        # Determine execution mode for sandbox tool calls:
+        # - global_sequential: selected through the parallel execution mode context var.
+        #   Checked with empty calls to isolate the context var from per-tool flags.
+        # - sequential_tools: per-tool `sequential` flags on ToolDefinition.
+        #   These tools are rendered as `def` (sync) and resolved inline.
+        global_sequential = _global_mode_is_sequential(tool_manager.get_parallel_execution_mode)
+        sequential_tools = {name for name, td in callable_defs.items() if td.sequential}
+
+        # Collect nested tool calls and returns keyed by tool_call_id so they
+        # can be attached as metadata on the run_code ToolReturnPart.
+        nested_calls: dict[str, ToolCallPart] = {}
+        nested_returns: dict[str, ToolReturnPart] = {}
+        call_counter = 0
+        budget_exhausted = False
+
+        def dispatch_tool_call(sandbox_name: str, kwargs: dict[str, Any]) -> Coroutine[Any, Any, Any]:
+            """Reserve nested-call budget, then build the coroutine that runs the call.
+
+            The reservation is synchronous because the executor turns each deferred call into an
+            `asyncio.Task` as soon as this returns, without yielding to the event loop in between.
+            Counting inside the coroutine would let one `asyncio.gather` over many calls allocate a
+            host task per call before the first check ran, which is the cost the budget bounds.
+            Refusing here means no task is created; the executor hands the error to the sandbox at
+            the call site, so calls that already completed keep their recorded results.
+            """
+            nonlocal call_counter, budget_exhausted
+            if call_counter >= self.max_tool_calls:
+                # Recorded so the retry can name the calls that already ran if the snippet does
+                # not catch this. Reaching the budget is not itself the failure: a snippet that
+                # handles the error still returns normally, carrying its metadata.
+                budget_exhausted = True
+                raise RuntimeError(
+                    f'Code mode allows {self.max_tool_calls} nested tool calls per `run_code` call '
+                    'and this snippet asked for more. Call fewer tools, for example by filtering '
+                    'the inputs first, or split the work across several `run_code` calls.'
+                )
+            call_counter += 1
+            parent_id = ctx.tool_call_id or 'pyd_ai_code_mode'
+            original_name = sanitized_to_original.get(sandbox_name, sandbox_name)
+            return run_tool_call(original_name, f'{parent_id}__{call_counter}', kwargs)
+
+        async def run_tool_call(original_name: str, tool_call_id: str, kwargs: dict[str, Any]) -> Any:
+            """Run a single tool call dispatched from inside the sandbox.
+
+            Returns the serialized tool result on success. On failure, the
+            exception propagates -- the execution loop passes it back into
+            Monty via `ExternalException` so the sandbox sees it at the
+            `await` site.
+            """
+            call_part = ToolCallPart(tool_name=original_name, args=kwargs, tool_call_id=tool_call_id)
+            nested_calls[tool_call_id] = call_part
+
+            try:
+                result = await tool_manager.handle_call(call_part, wrap_validation_errors=False)
+            except (CallDeferred, ApprovalRequired) as e:
+                # No handler resolved the deferral. The sandbox can't round-trip to the
+                # caller, so we convert it to a UserError that propagates through
+                # Monty → MontyRuntimeError → ModelRetry.
+                raise UserError(
+                    f'Tool {original_name!r} raised {type(e).__name__} inside code mode, '
+                    'but no `HandleDeferredToolCalls` capability resolved it. Add a handler '
+                    'capability on the agent so deferred and approval-required calls can '
+                    'be resolved inline.'
+                ) from e
+
+            if isinstance(result, ToolDenied):
+                # Handler denied the call. Record the denial with outcome='denied' so
+                # message history reflects it, then raise inside the sandbox: surfacing
+                # `ToolDenied` to the user's script would let it masquerade as a string
+                # tool result, and the script has no way to introspect the marker class
+                # since `ToolDenied` isn't exposed inside Monty.
+                nested_returns[tool_call_id] = ToolReturnPart(
+                    tool_name=original_name,
+                    content=result.message,
+                    tool_call_id=tool_call_id,
+                    outcome='denied',
+                )
+                raise RuntimeError(f'Tool {original_name!r} call denied: {result.message}')
+
+            # Unwrap ToolReturn to get the plain value for the sandbox,
+            # preserving the full ToolReturn metadata on the return part.
+            return_metadata: Any = None
+            if isinstance(result, ToolReturn):
+                return_metadata = result.metadata
+                result = result.return_value
+
+            nested_returns[tool_call_id] = ToolReturnPart(
+                tool_name=original_name,
+                content=result,
+                tool_call_id=tool_call_id,
+                metadata=return_metadata,
+            )
+
+            # Serialize to JSON-compatible form so Monty receives only plain data.
+            return _TOOL_RETURN_CONTENT_TA.dump_python(result)
+
+        # Type-check only the first executed snippet. Monty's checker can reject valid later
+        # snippets that reuse imports or pass a runtime-validated dict to a TypedDict parameter.
+        type_check = fresh_repl and bool(callable_defs)
+        type_check_stubs = self._build_type_check_stubs(callable_defs) if type_check else None
+
+        capture = PrintCapture()
+
+        try:
+            session = run_state.get_session(
+                type_check=type_check,
+                type_check_stubs=type_check_stubs,
+                limits=_resolve_resource_limits(self.resource_limits, in_temporal_workflow=_in_temporal_workflow(ctx)),
+            )
+            try:
+                monty_state = session.feed_start(
+                    code,
+                    print_callback=capture.callback,
+                    os=self.os_access,
+                    mount=self.mount,
+                    skip_type_check=not type_check,
+                )
+                completed = await MontyExecutor(
+                    dispatch=dispatch_tool_call,
+                    valid_names=callable_defs,
+                    sequential_names=sequential_tools,
+                    global_sequential=global_sequential,
+                ).run(monty_state)
+            except MontyRuntimeError:
+                # The session is idle again and keeps assignments made before the failing line.
+                run_state.has_executed_feed = True
+                raise
+            run_state.has_executed_feed = True
+        except MontySyntaxError as e:
+            if fresh_repl:
+                # No code ran, so discard the checkout-time type stubs. A later step may expose
+                # a different tool catalog (for example after Tool Search discovers a tool).
+                run_state.reset()
+            raise ModelRetry(f'Syntax error in code:\n{capture.prepend_to(e.display())}') from e
+        except MontyTypingError as e:
+            # Typing errors can only come from the fresh-feed check above.
+            run_state.reset()
+            raise ModelRetry(f'Type error in code:\n{capture.prepend_to(e.display())}') from e
+        except MontyRuntimeError as e:
+            # Exceptions raised inside dispatch_tool_call (e.g. UserError from
+            # ApprovalRequired, or ModelRetry from a wrapped tool) are passed
+            # back into Monty via ExternalException. Monty re-raises them at the
+            # await site; if the sandbox code doesn't catch them, they bubble up
+            # as MontyRuntimeError. The original exception message is preserved
+            # in the display string, so the model sees a useful error. This means
+            # ModelRetry from a wrapped tool gets double-wrapped
+            # (ModelRetry → MontyRuntimeError → ModelRetry), but the retry
+            # semantics are the same -- the model gets another chance.
+            message = f'Runtime error:\n{capture.prepend_to(e.display())}'
+            duration_spent = _is_duration_exhausted(e)
+            if nested_calls and (budget_exhausted or _exhausted_sandbox_limit(e) is not None):
+                # A retry is the only record the model gets of an uncaught failure, and these
+                # calls already started. Without them the model reruns their side effects when
+                # it retries. Asking which limit tripped, rather than testing one flag per limit,
+                # is what keeps a newly added limit from quietly losing this. It matters most on
+                # the duration path, where the advice is to restart, which discards the REPL state
+                # the model would otherwise reconstruct from.
+                message += f'\n\n{_describe_started_calls(nested_calls, nested_returns)}'
+            if duration_spent:
+                # This error keeps the session, so every later call fails on arrival too. Left
+                # alone it reads like an ordinary runtime error, which points the model at
+                # rewriting the snippet -- the one move that cannot work.
+                message += (
+                    '\n\nThe sandbox session has spent its whole `max_duration_secs` allowance, '
+                    'which every `run_code` call in the session shares, so later calls fail on '
+                    'arrival too and revising this code will not help. Pass `restart: true` to '
+                    'start a fresh session; that discards REPL state, so recreate anything you '
+                    'still need.'
+                )
+            raise ModelRetry(message) from e
+        except MontyCrashedError as e:
+            # The worker died mid-feed (e.g. the code exhausted its memory or hit the
+            # request timeout) and the REPL state died with it; the pool replaces the
+            # worker transparently. Reset so the retry starts from a fresh,
+            # type-checked session.
+            run_state.reset()
+            raise ModelRetry(
+                'The code crashed the sandbox worker and the session was reset. Revise the code and try again.'
+            ) from e
+        except Exception as e:
+            # The session may have been invalidated by a host-side binding or protocol failure.
+            # Make the reset visible so the model can rebuild state on its next attempt. Include
+            # the error text: there is no Monty `display()` for host-side failures, and the cause
+            # chain is dropped once the retry becomes a prompt part, so this message is the only
+            # record of what failed for both the model and the transcript.
+            run_state.reset()
+            error_text = f'{type(e).__name__}: {e}'
+            raise ModelRetry(
+                'Code execution failed and the session was reset. Re-run any imports, recreate '
+                f'any state you need, and try again.\n{capture.prepend_to(error_text)}'
+            ) from e
+        except BaseException as e:
+            # Convert a sandbox panic to a retry (see `is_sandbox_panic`);
+            # interruptions re-raise unchanged after dropping the suspended session.
+            if not is_sandbox_panic(e):
+                run_state.reset()
+                raise
+            # The panic aborts the VM mid-execution, so the REPL's accumulated state cannot
+            # be trusted; drop it so the retry starts from a fresh, type-checked session.
+            run_state.reset()
+            raise ModelRetry(
+                'The code aborted inside the sandbox and the session was reset. Revise the code and try again.'
+            ) from e
+
+        result = completed.output
+        printed = capture.joined
+
+        # Validate result to reconstruct multimodal types (e.g. BinaryContent from
+        # serialized dicts) so they flow through to the model natively.
+        if result is not None:
+            result = _TOOL_RETURN_CONTENT_TA.validate_python(result)
+
+        # Build return value:
+        # - No print → return result directly (multimodal content stays top-level
+        #   so _split_content can extract it for native model delivery)
+        # - Print + multimodal result → list format so _split_content can extract files
+        # - Print + plain result → dict with output/result keys
+        if not printed:
+            return_value: Any = result if result is not None else {}
+        elif result is None:
+            return_value = {'output': printed}
+        elif _contains_multimodal(result):
+            # Flatten lists so _split_content can find each multimodal item at top level.
+            return_value = [printed, *result] if isinstance(result, list) else [printed, result]
+        else:
+            return_value = {'output': printed, 'result': result}
+
+        return ToolReturn(
+            return_value=return_value,
+            metadata={'code_mode': True, 'tool_calls': nested_calls, 'tool_returns': nested_returns},
+        )
+
+    def _partition_callable_tools(
+        self, wrapped_tools: dict[str, ToolsetTool[AgentDepsT]]
+    ) -> tuple[dict[str, ToolDefinition], dict[str, str]]:
+        """Return tool definitions that can be called from inside the sandbox.
+
+        Tool names that are not valid Python identifiers (e.g. MCP tools with
+        hyphens or dots like `get-weather`, `api.call`) are sanitized to
+        underscored forms and mapped back to their original names for dispatch.
+
+        Returns:
+            A tuple of `(callable_defs, sanitized_to_original)`.
+        """
+        callable_defs: dict[str, ToolDefinition] = {}
+        sanitized_to_original: dict[str, str] = {}
+        for name, tool in wrapped_tools.items():
+            td = tool.tool_def
+
+            safe_name = _sanitize_tool_name(name)
+            if safe_name == _RUN_CODE_TOOL_NAME:
+                raise UserError(
+                    f"Tool name '{name}' (sanitized to '{safe_name}') conflicts with the code mode "
+                    f'meta-tool. Rename your tool to avoid conflicts.'
+                )
+            if safe_name in callable_defs:
+                existing = sanitized_to_original.get(safe_name, safe_name)
+                warnings.warn(
+                    f'CodeMode: tool {name!r} (sanitized to {safe_name!r}) collides '
+                    f'with {existing!r}; {name!r} will be hidden from the sandbox.',
+                    UserWarning,
+                    stacklevel=2,
+                )
+                continue
+            # Warn when a sandboxed tool has no return schema -- the generated
+            # signature will show `-> Any`, giving the model no type information
+            # about the return shape, which limits code mode effectiveness.
+            if td.return_schema is None and name not in self._warned_deferred:
+                self._warned_deferred.add(name)
+                warnings.warn(
+                    f'CodeMode: tool {name!r} has no return schema; '
+                    f'its signature will show `-> Any`, which may reduce code mode effectiveness.',
+                    UserWarning,
+                    stacklevel=2,
+                )
+
+            if safe_name != name:
+                sanitized_to_original[safe_name] = name
+                td = replace(td, name=safe_name)
+
+            callable_defs[safe_name] = td
+        return callable_defs, sanitized_to_original
+
+    @staticmethod
+    def _build_description(callable_defs: dict[str, ToolDefinition], *, has_os: bool, has_mount: bool) -> str:
+        """Render the `run_code` description: base prose + TypedDicts + function signatures."""
+        base = _base_description(has_os=has_os, has_mount=has_mount)
+        catalog = CodeModeToolset._render_catalog(callable_defs)
+        if not catalog:
+            return base
+        return base + '\n\n' + catalog
+
+    @staticmethod
+    def _render_catalog(callable_defs: dict[str, ToolDefinition]) -> str:
+        """Render the functions-header + TypedDict + function-signature blocks, or `''` if no defs.
+
+        Excludes the `run_code` base prose; the catalog is the discovery-driven portion that's
+        cache-hostile when carried in `run_code.description`. Used by `_build_description`
+        (default static-description path) and by `get_instructions` (the `dynamic_catalog`
+        path, which moves it into instructions instead).
+        """
+        if not callable_defs:
+            return ''
+
+        sigs, conflicting = _get_sigs_and_conflicting(callable_defs)
+        type_blocks = FunctionSignature.render_type_definitions(sigs, conflicting)
+        function_blocks = [
+            td.render_signature('...', is_async=not td.sequential, conflicting_type_names=conflicting)
+            for td in callable_defs.values()
+        ]
+
+        has_sync = any(td.sequential for td in callable_defs.values())
+        has_async = any(not td.sequential for td in callable_defs.values())
+        sections = [_functions_header(has_sync=has_sync, has_async=has_async)]
+        if type_blocks:
+            sections.append('```python\n' + '\n\n'.join(type_blocks) + '\n```')
+        sections.append('```python\n' + '\n\n'.join(function_blocks) + '\n```')
+        return '\n\n'.join(sections)
+
+    @staticmethod
+    def _build_type_check_stubs(callable_defs: dict[str, ToolDefinition]) -> str:
+        """Build Python stubs for Monty's static type checker."""
+        sigs, conflicting = _get_sigs_and_conflicting(callable_defs)
+        parts = ['import asyncio\nfrom typing import Any, TypedDict, NotRequired, Literal']
+        type_blocks = FunctionSignature.render_type_definitions(sigs, conflicting)
+        parts.extend(type_blocks)
+        parts.extend(
+            td.render_signature(
+                'raise NotImplementedError()', is_async=not td.sequential, conflicting_type_names=conflicting
+            )
+            for td in callable_defs.values()
+        )
+        return '\n\n'.join(parts)
+
+
+def _get_sigs_and_conflicting(
+    callable_defs: dict[str, ToolDefinition],
+) -> tuple[list[FunctionSignature], frozenset[str]]:
+    """Extract FunctionSignatures and conflicting type names from tool definitions."""
+    sigs: list[FunctionSignature] = []
+    for td in callable_defs.values():
+        assert td.function_signature is not None, f'function_signature missing for tool {td.name!r}'
+        sigs.append(td.function_signature)
+    return sigs, FunctionSignature.get_conflicting_type_names(sigs)
+
+
+def _contains_multimodal(value: Any) -> bool:
+    """Check if a value is or directly contains multimodal content (images, audio, etc.)."""
+    if is_multi_modal_content(value):
+        return True
+    if isinstance(value, list):
+        return any(is_multi_modal_content(item) for item in value)  # pyright: ignore[reportUnknownVariableType]
+    return False

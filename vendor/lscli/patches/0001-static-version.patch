@@ -1,0 +1,14 @@
+--- a/pydantic_ai/__init__.py
++++ b/pydantic_ai/__init__.py
+@@ -1,5 +1,3 @@
+-from importlib.metadata import version as _metadata_version
+-
+ from ._cancel import CancellationToken
+ from .agent import (
+     Agent,
+@@ -391,4 +389,4 @@
+     'AgentRunResult',
+     'AgentRunResultEvent',
+ )
+-__version__ = _metadata_version('pydantic_ai_slim')
++__version__ = '2.38.0'  # LocalSetup vendored version; no upstream distribution metadata required.

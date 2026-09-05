@@ -1,0 +1,2296 @@
+from __future__ import annotations as _annotations
+
+import asyncio
+import inspect
+from abc import ABC, abstractmethod
+from collections.abc import (
+    AsyncGenerator,
+    AsyncIterable,
+    AsyncIterator,
+    Awaitable,
+    Callable,
+    Generator,
+    Sequence,
+)
+from concurrent.futures import Executor
+from contextlib import AbstractAsyncContextManager, asynccontextmanager, contextmanager
+from dataclasses import dataclass
+from types import FrameType, TracebackType
+from typing import TYPE_CHECKING, Any, Generic, TypeAlias, cast, overload
+
+import anyio
+from anyio.streams.memory import MemoryObjectReceiveStream
+from pydantic import TypeAdapter
+from typing_extensions import Self, TypedDict, TypeIs, TypeVar
+
+from pydantic_graph import End
+
+from .. import (
+    _agent_graph,
+    _instructions,
+    _utils,
+    exceptions,
+    messages as _messages,
+    models,
+    result,
+    tool_manager,
+    usage as _usage,
+)
+from .._cancel import CancellationToken, RunBinding, provide_run_binding
+from .._json_schema import JsonSchema
+from .._output import types_from_output_spec
+from ..capabilities import AgentCapability
+from ..exceptions import RunCancelled
+from ..output import OutputDataT, OutputSpec
+from ..result import AgentStream, FinalResult, StreamedRunResult
+from ..run import AgentRun, AgentRunResult, AgentRunResultEvent
+from ..settings import ModelSettings
+from ..template import TemplateStr
+from ..tool_manager import ToolManager
+from ..tools import (
+    AgentDepsT,
+    AgentNativeTool,
+    DeferredToolResults,
+    RunContext,
+    Tool,
+    ToolFuncEither,
+)
+from ..toolsets import AbstractToolset
+
+if TYPE_CHECKING:
+    from pydantic_ai.agent.spec import AgentSpec
+    from pydantic_ai.capabilities import CombinedCapability
+    from pydantic_ai.models.instrumented import InstrumentationSettings
+    from pydantic_ai.realtime import (
+        AudioRetention,
+        KnownRealtimeModelName,
+        RealtimeClientSecret,
+        RealtimeModel,
+        RealtimeModelProfile,
+        RealtimeModelSettings,
+        RealtimeProviderSession,
+        RealtimeSession,
+        WebRTCAnswer,
+    )
+
+
+T = TypeVar('T')
+S = TypeVar('S')
+NoneType = type(None)
+RunOutputDataT = TypeVar('RunOutputDataT')
+"""Type variable for the result data of a run where `output_type` was customized on the run call."""
+
+EventStreamHandler: TypeAlias = Callable[
+    [RunContext[AgentDepsT], 'AsyncIterable[_messages.AgentStreamEvent]'], Awaitable[None]
+]
+"""A function that receives agent [`RunContext`][pydantic_ai.tools.RunContext] and an async iterable of events from the model's streaming response and the agent's execution of tools."""
+
+EventStreamProcessor: TypeAlias = Callable[
+    [RunContext[AgentDepsT], 'AsyncIterable[_messages.AgentStreamEvent]'],
+    'AsyncIterator[_messages.AgentStreamEvent]',
+]
+"""An async generator that receives agent [`RunContext`][pydantic_ai.tools.RunContext] and an async iterable of events and yields a potentially modified stream.
+
+Used with the [`ProcessEventStream`][pydantic_ai.capabilities.ProcessEventStream] capability to modify, drop, or add events visible to the rest of the capability chain."""
+
+
+AgentMetadata = dict[str, Any] | Callable[[RunContext[AgentDepsT]], dict[str, Any]]
+
+AgentInstructions = _instructions.AgentInstructions
+"""Type alias for agent instructions — a string, `TemplateStr`, callable, or sequence thereof."""
+
+Instructions = AgentInstructions  # TODO(v3): remove the `Instructions` alias
+"""Deprecated: use `AgentInstructions` instead."""
+
+AgentModelSettings = ModelSettings | Callable[[RunContext[AgentDepsT]], ModelSettings]
+"""Type alias for agent model settings — a static `ModelSettings` dict, or a callable receiving `RunContext` that returns one dynamically per request."""
+
+
+class AgentRetries(TypedDict, total=False):
+    """Per-category retry budgets for an [`Agent`][pydantic_ai.agent.Agent].
+
+    Pass to `Agent(retries=...)` as a dict to set different budgets per category.
+
+    A bare `int` is shorthand for setting both `tools` and `output` to that value — the same at
+    every call site (`Agent(retries=N)`, `run()`, `iter()`, `override()`, and a run-time `spec`).
+    To set only one budget, pass a dict, e.g. `retries={'tools': ...}` or `retries={'output': ...}`.
+
+    Keys:
+        tools: Default number of retries for tool calls before raising an error. Applies to function
+            tools, output tools, and MCP tools, unless a more specific per-tool or per-toolset limit
+            is set.
+        output: Maximum number of retries for output validation. On the text path
+            this is a global per-run budget; on the tool path it is the default
+            per-tool `max_retries` for each output tool, overridable via
+            [`ToolOutput(max_retries=...)`][pydantic_ai.output.ToolOutput.max_retries].
+    """
+
+    tools: int
+    output: int
+
+
+_RunStreamEventsRunner: TypeAlias = Callable[[EventStreamHandler[Any]], Awaitable[AgentRunResult[OutputDataT]]]
+"""Starts the background agent run with the internal event-forwarding handler and returns its result."""
+
+
+class AgentRunEvents(
+    Generic[OutputDataT], AsyncIterator[_messages.AgentStreamEvent | AgentRunResultEvent[OutputDataT]]
+):
+    """The event iterator returned by [`run_stream_events()`][pydantic_ai.agent.AbstractAgent.run_stream_events].
+
+    Lazily starts a background `run()` task on the first `__anext__()` and forwards its events over a memory
+    object stream, ending with a single trailing `AgentRunResultEvent` that carries the run's result. Entering
+    the context manager without iterating therefore never starts a run (https://github.com/pydantic/pydantic-ai/issues/6162).
+
+    This is a hand-written iterator class rather than an `async def` generator on purpose: generator cleanup
+    runs by throwing `GeneratorExit` into the suspended frame during finalization, which on Python 3.10/3.11
+    can resume the frame under a different `Context` and raise the `pydantic_ai.current_run_context` token
+    error (https://github.com/pydantic/pydantic-ai/issues/5132). Driving cleanup explicitly through `aclose()` keeps teardown in the caller's task and
+    context.
+
+    The handle can cancel the whole run and exposes its live messages and usage after iteration has
+    started. After successful completion, `result` contains the final run result.
+
+    `cancel()` and the state accessors (`all_messages()`, `new_messages()`, `usage`) require the run
+    to be driven through the standard [`Agent.iter()`][pydantic_ai.agent.Agent.iter] path, which binds
+    the run to this handle. The built-in `Agent` and the durable wrapper agents do this; a custom
+    [`AbstractAgent`][pydantic_ai.agent.AbstractAgent] subclass whose `run()`/`iter()` chain doesn't
+    consume that binding gets a `cancel()` that silently no-ops and state accessors that raise
+    `UserError`, even after iteration has started.
+    """
+
+    def __init__(self, run_agent: _RunStreamEventsRunner[OutputDataT]) -> None:
+        self._run_agent = run_agent
+        self._binding = RunBinding()
+        self._receive_stream: (
+            MemoryObjectReceiveStream[_messages.AgentStreamEvent | AgentRunResultEvent[OutputDataT]] | None
+        ) = None
+        self._task: asyncio.Task[AgentRunResult[OutputDataT]] | None = None
+        # Set once the trailing `AgentRunResultEvent` has been produced, so further `__anext__()` calls stop.
+        self._result_yielded = False
+        self._closed = False
+
+    def __aiter__(self) -> AsyncIterator[_messages.AgentStreamEvent | AgentRunResultEvent[OutputDataT]]:
+        return self
+
+    async def __anext__(self) -> _messages.AgentStreamEvent | AgentRunResultEvent[OutputDataT]:
+        if self._closed or self._result_yielded:
+            raise StopAsyncIteration
+
+        if self._task is None and self._binding.cancellation.cancel_requested:
+            raise RunCancelled('The agent run was cancelled.')
+
+        await self._ensure_started()
+        assert self._receive_stream is not None
+        assert self._task is not None
+
+        try:
+            return await self._receive_stream.receive()
+        except anyio.EndOfStream:
+            # The run closed its send stream, so all events have been delivered: surface the run result as a
+            # final event. Awaiting the task here also re-raises any error it failed with, to the consumer.
+            await self._receive_stream.aclose()
+            self._result_yielded = True
+            result = await self._task
+            return AgentRunResultEvent(result)
+
+    def cancel(self) -> None:
+        """Request cancellation of the whole run.
+
+        This method is idempotent, is a no-op after completion, and is safe to call from another
+        task (e.g. a TUI's key handler) or thread — the underlying controller marshals onto the
+        run's event loop, just like [`CancellationToken.cancel()`][pydantic_ai.CancellationToken.cancel].
+        It does not affect external cancellation of the consumer task. If iteration continues, cancellation surfaces as
+        [`RunCancelled`][pydantic_ai.exceptions.RunCancelled]; leaving the context instead performs
+        quiet teardown. Cancelling before the first iteration prevents the run from starting at
+        all; iterating afterwards raises `RunCancelled` with empty `messages`.
+        """
+        self._binding.cancellation.cancel()
+
+    def all_messages(self) -> list[_messages.ModelMessage]:
+        """Return all messages from the run, including messages supplied as history.
+
+        Raises `UserError` if accessed before the first iteration has started the run.
+        """
+        return self._agent_run().all_messages()
+
+    def new_messages(self) -> list[_messages.ModelMessage]:
+        """Return only messages created by the run.
+
+        Raises `UserError` if accessed before the first iteration has started the run.
+        """
+        return self._agent_run().new_messages()
+
+    @property
+    def usage(self) -> _usage.RunUsage:
+        """Return the run's current usage.
+
+        Raises `UserError` if accessed before the first iteration has started the run.
+        """
+        return self._agent_run().usage
+
+    @property
+    def result(self) -> AgentRunResult[OutputDataT] | None:
+        """Return the successful run result once complete, otherwise `None`."""
+        task = self._task
+        if task is not None and task.done() and not task.cancelled() and task.exception() is None:
+            return task.result()
+        return None
+
+    def _agent_run(self) -> AgentRun[Any, OutputDataT]:
+        agent_run = self._binding.agent_run
+        if agent_run is None:
+            raise exceptions.UserError('The run has not started; iterate the events first.')
+        return agent_run
+
+    def _attach_run_state(self, exc: BaseException) -> None:
+        """Attach the run's state to an external cancellation of the consumer task.
+
+        The background run's own `CancelledError` (carrying the state attached by the translation
+        funnel) is consumed by `aclose()`'s drain, so the state is rebuilt from the live run and
+        attached to the consumer's propagating exception for `RunCancelled.from_cancellation()`.
+        No-op if the run never started.
+        """
+        agent_run = self._binding.agent_run
+        if agent_run is None:
+            return
+        _agent_graph.run_cancelled_snapshot(
+            'The agent run was cancelled by an external asyncio cancellation.',
+            agent_run.ctx.state,
+            agent_run.ctx.deps,
+        )._attach_to(exc)  # pyright: ignore[reportPrivateUsage]
+
+    async def aclose(self) -> None:
+        """Cancel the background run (if started) and close the receive stream, idempotently."""
+        if self._closed:
+            return
+
+        self._closed = True
+        # Cancel the run first so it tears down via its own cancellation, unblocking a run that's
+        # parked pushing an event into the zero-buffer stream. But if the run *absorbs* that
+        # cancellation (e.g. a durable step under Temporal's cooperative cancellation) it can resume
+        # and block again on `send`, so close the receive end before draining: the blocked `send` then
+        # fails with `BrokenResourceError` and the drain can complete instead of deadlocking. A run
+        # that unwound normally is unaffected. If iteration was never started, `_task` is `None`.
+        if self._task is not None:
+            self._task.cancel()
+        if self._receive_stream is not None:
+            await self._receive_stream.aclose()
+        if self._task is not None:
+            await _utils.cancel_and_drain(self._task)
+
+    async def _ensure_started(self) -> None:
+        if self._task is not None:
+            return
+
+        # Zero-buffer stream: the run blocks on `send` until this iterator pulls, giving natural backpressure
+        # and keeping the run no more than one event ahead of the consumer.
+        send_stream, receive_stream = anyio.create_memory_object_stream[
+            _messages.AgentStreamEvent | AgentRunResultEvent[OutputDataT]
+        ]()
+        self._receive_stream = receive_stream
+
+        async def event_stream_handler(_: RunContext[Any], events: AsyncIterable[_messages.AgentStreamEvent]) -> None:
+            async for event in events:
+                await send_stream.send(event)
+
+        async def run_agent() -> AgentRunResult[OutputDataT]:
+            # Closing the send stream on exit is what surfaces `EndOfStream` to the consumer once the run ends.
+            async with send_stream:
+                with provide_run_binding(self._binding):
+                    result = await self._run_agent(event_stream_handler)
+                # This background task owns the run: if a step absorbed an external cancellation
+                # of this task, re-assert it here so a cancelled run never yields a normal
+                # `AgentRunResultEvent` to the consumer.
+                _utils.raise_if_cancelling()
+                return result
+
+        self._task = asyncio.create_task(run_agent())
+
+
+class _RunStreamEventsContext(Generic[OutputDataT], AbstractAsyncContextManager[AgentRunEvents[OutputDataT]]):
+    """The async context manager returned by [`run_stream_events()`][pydantic_ai.agent.AbstractAgent.run_stream_events].
+
+    Hands out a single `AgentRunEvents` on entry and closes it on exit, so an early `break` out of
+    the event loop still cancels and drains the background run.
+    """
+
+    def __init__(self, run_agent: _RunStreamEventsRunner[OutputDataT]) -> None:
+        self._run_agent = run_agent
+        self._iterator: AgentRunEvents[OutputDataT] | None = None
+
+    async def __aenter__(self) -> AgentRunEvents[OutputDataT]:
+        # Single-entry: re-entering would orphan a first iterator that had already started (and leak its
+        # background task), so fail loudly instead of silently. `__aexit__` still cleans up the one live
+        # iterator.
+        if self._iterator is not None:
+            raise RuntimeError('`run_stream_events()` context manager cannot be entered more than once')
+        self._iterator = AgentRunEvents(self._run_agent)
+        return self._iterator
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        if self._iterator is not None:
+            await self._iterator.aclose()
+            # An external cancellation of the consumer task keeps propagating as `CancelledError`;
+            # ride the run state along on it, mirroring the translation funnel's behavior for
+            # `run()`/`iter()`. Attached after `aclose()` so teardown-committed history is included.
+            if isinstance(exc_value, asyncio.CancelledError):
+                self._iterator._attach_run_state(exc_value)  # pyright: ignore[reportPrivateUsage]
+
+
+class AbstractAgent(Generic[AgentDepsT, OutputDataT], ABC):
+    """Abstract superclass for [`Agent`][pydantic_ai.agent.Agent], [`WrapperAgent`][pydantic_ai.agent.WrapperAgent], and your own custom agent implementations."""
+
+    @property
+    @abstractmethod
+    def model(self) -> models.Model | models.KnownModelName | str | None:
+        """The default model configured for this agent."""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def name(self) -> str | None:
+        """The name of the agent, used for logging.
+
+        If `None`, we try to infer the agent name from the call frame when the agent is first run.
+        """
+        raise NotImplementedError
+
+    @name.setter
+    @abstractmethod
+    def name(self, value: str | None) -> None:
+        """Set the name of the agent, used for logging."""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def description(self) -> str | None:
+        """A human-readable description of the agent."""
+        raise NotImplementedError
+
+    @description.setter
+    @abstractmethod
+    def description(self, value: TemplateStr[AgentDepsT] | str | None) -> None:
+        """Set the description of the agent."""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def deps_type(self) -> type:
+        """The type of dependencies used by the agent."""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def output_type(self) -> OutputSpec[OutputDataT]:
+        """The type of data output by agent runs, used to validate the data returned by the model, defaults to `str`."""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def event_stream_handler(self) -> EventStreamHandler[AgentDepsT] | None:
+        """Optional handler for events from the model's streaming response and the agent's execution of tools."""
+        raise NotImplementedError
+
+    @property
+    def root_capability(self) -> CombinedCapability[AgentDepsT]:
+        """The root capability of the agent, containing all registered capabilities."""
+        raise NotImplementedError
+
+    def _get_validation_context(self) -> Any | Callable[[RunContext[AgentDepsT]], Any]:
+        """Return the agent's private validation-context specification."""
+        return None
+
+    @property
+    @abstractmethod
+    def toolsets(self) -> Sequence[AbstractToolset[AgentDepsT]]:
+        """All toolsets registered on the agent.
+
+        Output tools are not included.
+        """
+        raise NotImplementedError
+
+    async def system_prompt_parts(
+        self,
+        *,
+        deps: AgentDepsT = None,
+        model: models.Model | models.KnownModelName | str | None = None,
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+        prompt: str | Sequence[_messages.UserContent] | None = None,
+        usage: _usage.RunUsage | None = None,
+        model_settings: ModelSettings | None = None,
+    ) -> list[_messages.SystemPromptPart]:
+        """Resolve the agent's configured system prompts into `SystemPromptPart`s.
+
+        Returns a list suitable for prepending to a `ModelRequest`. Static strings and
+        runners decorated with [`@agent.system_prompt`][pydantic_ai.agent.Agent.system_prompt]
+        are evaluated using a minimal `RunContext` built from the provided kwargs — useful
+        when reconstructing a `message_history` that should carry the agent's configured
+        system prompt (e.g. in UI adapters or after history compaction).
+
+        Dynamic runners produce parts with `dynamic_ref` set so they can continue to be
+        re-evaluated by the standard agent graph path on subsequent turns.
+
+        Args:
+            deps: Optional dependencies for dynamic system prompt functions.
+            model: Optional model to use for `RunContext.model`. Falls back to the
+                agent's configured model; required only if the agent has no model set.
+            message_history: Optional message history to expose as `RunContext.messages`.
+            prompt: Optional user prompt to expose as `RunContext.prompt`.
+            usage: Optional usage to expose as `RunContext.usage`.
+            model_settings: Optional settings to expose as `RunContext.model_settings`.
+        """
+        # Concrete subclasses override this.
+        return []
+
+    def output_json_schema(self, output_type: OutputSpec[OutputDataT | RunOutputDataT] | None = None) -> JsonSchema:
+        """The output return JSON schema."""
+        if output_type is None:
+            output_type = self.output_type
+
+        return_types = types_from_output_spec(output_spec=output_type)
+
+        json_schemas: list[JsonSchema] = []
+        for return_type in return_types:
+            json_schema = TypeAdapter(return_type).json_schema(mode='serialization')
+            if json_schema not in json_schemas:
+                json_schemas.append(json_schema)
+
+        if len(json_schemas) == 1:
+            return json_schemas[0]
+        else:
+            json_schemas, all_defs = _utils.merge_json_schema_defs(json_schemas)
+            json_schema: JsonSchema = {'anyOf': json_schemas}
+            if all_defs:
+                json_schema['$defs'] = all_defs
+            return json_schema
+
+    @overload
+    async def run(
+        self,
+        user_prompt: str | Sequence[_messages.UserContent] | None = None,
+        *,
+        output_type: None = None,
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+        deferred_tool_results: DeferredToolResults | None = None,
+        conversation_id: str | None = None,
+        run_id: str | None = None,
+        model: models.Model | models.KnownModelName | str | None = None,
+        instructions: _instructions.AgentInstructions[AgentDepsT] = None,
+        deps: AgentDepsT = None,
+        model_settings: AgentModelSettings[AgentDepsT] | None = None,
+        usage_limits: _usage.UsageLimits | None = None,
+        cancellation_token: CancellationToken | None = None,
+        usage: _usage.RunUsage | None = None,
+        metadata: AgentMetadata[AgentDepsT] | None = None,
+        retries: int | AgentRetries | None = None,
+        infer_name: bool = True,
+        toolsets: Sequence[AbstractToolset[AgentDepsT]] | None = None,
+        event_stream_handler: EventStreamHandler[AgentDepsT] | None = None,
+        capabilities: Sequence[AgentCapability[AgentDepsT]] | None = None,
+        spec: dict[str, Any] | AgentSpec | None = None,
+    ) -> AgentRunResult[OutputDataT]: ...
+
+    @overload
+    async def run(
+        self,
+        user_prompt: str | Sequence[_messages.UserContent] | None = None,
+        *,
+        output_type: OutputSpec[RunOutputDataT],
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+        deferred_tool_results: DeferredToolResults | None = None,
+        conversation_id: str | None = None,
+        run_id: str | None = None,
+        model: models.Model | models.KnownModelName | str | None = None,
+        instructions: _instructions.AgentInstructions[AgentDepsT] = None,
+        deps: AgentDepsT = None,
+        model_settings: AgentModelSettings[AgentDepsT] | None = None,
+        usage_limits: _usage.UsageLimits | None = None,
+        cancellation_token: CancellationToken | None = None,
+        usage: _usage.RunUsage | None = None,
+        metadata: AgentMetadata[AgentDepsT] | None = None,
+        retries: int | AgentRetries | None = None,
+        infer_name: bool = True,
+        toolsets: Sequence[AbstractToolset[AgentDepsT]] | None = None,
+        event_stream_handler: EventStreamHandler[AgentDepsT] | None = None,
+        capabilities: Sequence[AgentCapability[AgentDepsT]] | None = None,
+        spec: dict[str, Any] | AgentSpec | None = None,
+    ) -> AgentRunResult[RunOutputDataT]: ...
+
+    async def run(
+        self,
+        user_prompt: str | Sequence[_messages.UserContent] | None = None,
+        *,
+        output_type: OutputSpec[RunOutputDataT] | None = None,
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+        deferred_tool_results: DeferredToolResults | None = None,
+        conversation_id: str | None = None,
+        run_id: str | None = None,
+        model: models.Model | models.KnownModelName | str | None = None,
+        instructions: _instructions.AgentInstructions[AgentDepsT] = None,
+        deps: AgentDepsT = None,
+        model_settings: AgentModelSettings[AgentDepsT] | None = None,
+        usage_limits: _usage.UsageLimits | None = None,
+        cancellation_token: CancellationToken | None = None,
+        usage: _usage.RunUsage | None = None,
+        metadata: AgentMetadata[AgentDepsT] | None = None,
+        retries: int | AgentRetries | None = None,
+        infer_name: bool = True,
+        toolsets: Sequence[AbstractToolset[AgentDepsT]] | None = None,
+        event_stream_handler: EventStreamHandler[AgentDepsT] | None = None,
+        capabilities: Sequence[AgentCapability[AgentDepsT]] | None = None,
+        spec: dict[str, Any] | AgentSpec | None = None,
+    ) -> AgentRunResult[Any]:
+        """Run the agent with a user prompt in async mode.
+
+        This method builds an internal agent graph (using system prompts, tools and output schemas) and then
+        runs the graph to completion. The result of the run is returned.
+
+        Example:
+        ```python
+        from pydantic_ai import Agent
+
+        agent = Agent('openai:gpt-5.2')
+
+        async def main():
+            agent_run = await agent.run('What is the capital of France?')
+            print(agent_run.output)
+            #> The capital of France is Paris.
+        ```
+
+        Args:
+            user_prompt: User input to start/continue the conversation.
+            output_type: Custom output type to use for this run, `output_type` may only be used if the agent has no
+                output validators since output validators would expect an argument that matches the agent's output type.
+            message_history: History of the conversation so far.
+            deferred_tool_results: Optional results for deferred tool calls in the message history.
+            conversation_id: ID of the conversation this run belongs to. Pass `'new'` to start a fresh conversation, ignoring any `conversation_id` already on `message_history`. If omitted, falls back to the most recent `conversation_id` on `message_history` or a freshly generated UUID7.
+            run_id: Optional ID for this agent run. Unlike `conversation_id`, never inherited from `message_history`. Passing an empty string, or a value that already appears on `message_history`, raises `UserError` because both break `new_messages()`; use `conversation_id` to correlate across turns or deferred-tool resume. If omitted, a fresh UUID7 is generated.
+            model: Optional model to use for this run, required if `model` was not set when creating the agent.
+            instructions: Optional additional instructions to use for this run.
+            deps: Optional dependencies to use for this run.
+            model_settings: Optional settings to use for this model's request, or a callable
+                that receives [`RunContext`][pydantic_ai.tools.RunContext] and returns settings.
+                Callables are called before each model request, allowing dynamic per-step settings.
+            usage_limits: Optional limits on model request count or token usage.
+            cancellation_token: Token used to cancel this run from another task or thread. Single-use:
+                mint a fresh token per run, as a reused (already-cancelled) token prevents the run from starting.
+            usage: Optional usage to start with, useful for resuming a conversation or agents used in tools.
+            metadata: Optional metadata to attach to this run. Accepts a dictionary or a callable taking
+                [`RunContext`][pydantic_ai.tools.RunContext]; merged with the agent's configured metadata.
+            retries: Override the agent-level retry budgets for this run. Pass an `int` to override both
+                the tool-retry and output budgets, or an [`AgentRetries`][pydantic_ai.AgentRetries] dict to
+                override just one (e.g. `retries={'tools': 3}`). See
+                [`Agent.__init__`][pydantic_ai.agent.Agent.__init__] for semantics of the two enforcement paths.
+            infer_name: Whether to try to infer the agent name from the call frame if it's not set.
+            toolsets: Optional additional toolsets for this run.
+            event_stream_handler: Optional handler for events from the model's streaming response and the agent's execution of tools to use for this run. Under a durability capability, this per-run handler runs workflow-side; model events are replayed after each model request completes. For handler I/O inside the durable boundary, pass `event_stream_handler=` to the durability capability.
+            capabilities: Optional additional [capabilities](https://pydantic.dev/docs/ai/capabilities/overview/) for this run, merged with the agent's configured capabilities.
+            spec: Optional agent spec to apply for this run. At run time, spec values are additive.
+
+        Returns:
+            The result of the run.
+        """
+        if infer_name and self.name is None:
+            self._infer_name(inspect.currentframe())
+
+        event_stream_handler = event_stream_handler or self.event_stream_handler
+
+        async with self.iter(
+            user_prompt=user_prompt,
+            output_type=output_type,
+            message_history=message_history,
+            deferred_tool_results=deferred_tool_results,
+            conversation_id=conversation_id,
+            run_id=run_id,
+            model=model,
+            instructions=instructions,
+            deps=deps,
+            model_settings=model_settings,
+            usage_limits=usage_limits,
+            cancellation_token=cancellation_token,
+            usage=usage,
+            metadata=metadata,
+            retries=retries,
+            toolsets=toolsets,
+            capabilities=capabilities,
+            spec=spec,
+        ) as agent_run:
+            # Drive via next() so capability hooks fire for each node. `next()` already streams a
+            # node when a capability's `wrap_run_event_stream` needs its events; a `run()`-level
+            # `event_stream_handler` needs the stream handed to it as well, which takes a custom
+            # step function. Either way, streaming happens AFTER before_node_run (which may
+            # replace the node) and INSIDE wrap_node_run.
+            _stream_step: (
+                Callable[
+                    [_agent_graph.AgentNode[AgentDepsT, Any]],
+                    Awaitable[_agent_graph.AgentNode[AgentDepsT, Any] | End[FinalResult[Any]]],
+                ]
+                | None
+            ) = None
+            if (_handler := event_stream_handler) is not None:
+
+                async def _stream_and_advance(
+                    n: _agent_graph.AgentNode[AgentDepsT, Any],
+                ) -> _agent_graph.AgentNode[AgentDepsT, Any] | End[FinalResult[Any]]:
+                    if self.is_model_request_node(n) or self.is_call_tools_node(n):
+                        # `node.stream()` applies the capability chain, so the handler sees the same
+                        # events a capability's `wrap_run_event_stream` yields.
+                        async with n.stream(agent_run.ctx) as stream:
+                            run_ctx = _agent_graph.build_run_context(agent_run.ctx)
+                            await _handler(run_ctx, stream)
+                            # If the handler returns normally, drain whatever it left unconsumed so the
+                            # node can finish through any stream wrappers. Cancellation paths interrupt
+                            # the handler and do not reach this drain.
+                            async for _ in stream:
+                                pass
+                    return await agent_run._advance_graph(n)  # pyright: ignore[reportPrivateUsage]
+
+                _stream_step = _stream_and_advance
+
+            node = agent_run.next_node
+            while not isinstance(node, End):
+                # Handle wrap_run short-circuit: result is already available, skip the graph.
+                if agent_run.result is not None:
+                    break
+                if _stream_step is not None:
+                    node = await agent_run._run_node_with_hooks(node, _stream_step)  # pyright: ignore[reportPrivateUsage]
+                else:
+                    node = await agent_run.next(node)  # pyright: ignore[reportArgumentType]
+
+        assert agent_run.result is not None, 'The graph run did not finish properly'
+        return agent_run.result
+
+    @overload
+    def run_sync(
+        self,
+        user_prompt: str | Sequence[_messages.UserContent] | None = None,
+        *,
+        output_type: None = None,
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+        deferred_tool_results: DeferredToolResults | None = None,
+        conversation_id: str | None = None,
+        run_id: str | None = None,
+        model: models.Model | models.KnownModelName | str | None = None,
+        instructions: _instructions.AgentInstructions[AgentDepsT] = None,
+        deps: AgentDepsT = None,
+        model_settings: AgentModelSettings[AgentDepsT] | None = None,
+        usage_limits: _usage.UsageLimits | None = None,
+        cancellation_token: CancellationToken | None = None,
+        usage: _usage.RunUsage | None = None,
+        metadata: AgentMetadata[AgentDepsT] | None = None,
+        retries: int | AgentRetries | None = None,
+        infer_name: bool = True,
+        toolsets: Sequence[AbstractToolset[AgentDepsT]] | None = None,
+        event_stream_handler: EventStreamHandler[AgentDepsT] | None = None,
+        capabilities: Sequence[AgentCapability[AgentDepsT]] | None = None,
+        spec: dict[str, Any] | AgentSpec | None = None,
+    ) -> AgentRunResult[OutputDataT]: ...
+
+    @overload
+    def run_sync(
+        self,
+        user_prompt: str | Sequence[_messages.UserContent] | None = None,
+        *,
+        output_type: OutputSpec[RunOutputDataT],
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+        deferred_tool_results: DeferredToolResults | None = None,
+        conversation_id: str | None = None,
+        run_id: str | None = None,
+        model: models.Model | models.KnownModelName | str | None = None,
+        instructions: _instructions.AgentInstructions[AgentDepsT] = None,
+        deps: AgentDepsT = None,
+        model_settings: AgentModelSettings[AgentDepsT] | None = None,
+        usage_limits: _usage.UsageLimits | None = None,
+        cancellation_token: CancellationToken | None = None,
+        usage: _usage.RunUsage | None = None,
+        metadata: AgentMetadata[AgentDepsT] | None = None,
+        retries: int | AgentRetries | None = None,
+        infer_name: bool = True,
+        toolsets: Sequence[AbstractToolset[AgentDepsT]] | None = None,
+        event_stream_handler: EventStreamHandler[AgentDepsT] | None = None,
+        capabilities: Sequence[AgentCapability[AgentDepsT]] | None = None,
+        spec: dict[str, Any] | AgentSpec | None = None,
+    ) -> AgentRunResult[RunOutputDataT]: ...
+
+    def run_sync(
+        self,
+        user_prompt: str | Sequence[_messages.UserContent] | None = None,
+        *,
+        output_type: OutputSpec[RunOutputDataT] | None = None,
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+        deferred_tool_results: DeferredToolResults | None = None,
+        conversation_id: str | None = None,
+        run_id: str | None = None,
+        model: models.Model | models.KnownModelName | str | None = None,
+        instructions: _instructions.AgentInstructions[AgentDepsT] = None,
+        deps: AgentDepsT = None,
+        model_settings: AgentModelSettings[AgentDepsT] | None = None,
+        usage_limits: _usage.UsageLimits | None = None,
+        cancellation_token: CancellationToken | None = None,
+        usage: _usage.RunUsage | None = None,
+        metadata: AgentMetadata[AgentDepsT] | None = None,
+        retries: int | AgentRetries | None = None,
+        infer_name: bool = True,
+        toolsets: Sequence[AbstractToolset[AgentDepsT]] | None = None,
+        event_stream_handler: EventStreamHandler[AgentDepsT] | None = None,
+        capabilities: Sequence[AgentCapability[AgentDepsT]] | None = None,
+        spec: dict[str, Any] | AgentSpec | None = None,
+    ) -> AgentRunResult[Any]:
+        """Synchronously run the agent with a user prompt.
+
+        This is a convenience method that wraps [`self.run`][pydantic_ai.agent.AbstractAgent.run] with `loop.run_until_complete(...)`.
+        You therefore can't use this method inside async code or if there's an active event loop.
+
+        This method cannot be used inside a synchronous tool, output function, or other function called
+        during an agent run. To delegate to another agent, make the function `async def` and
+        `await` [`self.run`][pydantic_ai.agent.AbstractAgent.run] instead. See
+        [Agent delegation](../multi-agent-applications.md#agent-delegation).
+
+        Example:
+        ```python
+        from pydantic_ai import Agent
+
+        agent = Agent('openai:gpt-5.2')
+
+        result_sync = agent.run_sync('What is the capital of Italy?')
+        print(result_sync.output)
+        #> The capital of Italy is Rome.
+        ```
+
+        Args:
+            user_prompt: User input to start/continue the conversation.
+            output_type: Custom output type to use for this run, `output_type` may only be used if the agent has no
+                output validators since output validators would expect an argument that matches the agent's output type.
+            message_history: History of the conversation so far.
+            deferred_tool_results: Optional results for deferred tool calls in the message history.
+            conversation_id: ID of the conversation this run belongs to. Pass `'new'` to start a fresh conversation, ignoring any `conversation_id` already on `message_history`. If omitted, falls back to the most recent `conversation_id` on `message_history` or a freshly generated UUID7.
+            run_id: Optional ID for this agent run. Unlike `conversation_id`, never inherited from `message_history`. Passing an empty string, or a value that already appears on `message_history`, raises `UserError` because both break `new_messages()`; use `conversation_id` to correlate across turns or deferred-tool resume. If omitted, a fresh UUID7 is generated.
+            model: Optional model to use for this run, required if `model` was not set when creating the agent.
+            instructions: Optional additional instructions to use for this run.
+            deps: Optional dependencies to use for this run.
+            model_settings: Optional settings to use for this model's request, or a callable
+                that receives [`RunContext`][pydantic_ai.tools.RunContext] and returns settings.
+                Callables are called before each model request, allowing dynamic per-step settings.
+            usage_limits: Optional limits on model request count or token usage.
+            cancellation_token: Token used to cancel this run from another task or thread. Single-use:
+                mint a fresh token per run, as a reused (already-cancelled) token prevents the run from starting.
+            usage: Optional usage to start with, useful for resuming a conversation or agents used in tools.
+            metadata: Optional metadata to attach to this run. Accepts a dictionary or a callable taking
+                [`RunContext`][pydantic_ai.tools.RunContext]; merged with the agent's configured metadata.
+            retries: Override the agent-level retry budgets for this run. Pass an `int` to override both
+                the tool-retry and output budgets, or an [`AgentRetries`][pydantic_ai.AgentRetries] dict to
+                override just one (e.g. `retries={'tools': 3}`). See
+                [`Agent.__init__`][pydantic_ai.agent.Agent.__init__] for semantics of the two enforcement paths.
+            infer_name: Whether to try to infer the agent name from the call frame if it's not set.
+            toolsets: Optional additional toolsets for this run.
+            event_stream_handler: Optional handler for events from the model's streaming response and the agent's execution of tools to use for this run. Under a durability capability, this per-run handler runs workflow-side; model events are replayed after each model request completes. For handler I/O inside the durable boundary, pass `event_stream_handler=` to the durability capability.
+            capabilities: Optional additional [capabilities](https://pydantic.dev/docs/ai/capabilities/overview/) for this run, merged with the agent's configured capabilities.
+            spec: Optional agent spec to apply for this run. At run time, spec values are additive.
+
+        Returns:
+            The result of the run.
+        """
+        _utils.check_no_nested_sync_run()
+
+        if infer_name and self.name is None:
+            self._infer_name(inspect.currentframe())
+
+        return _utils.run_until_complete(
+            self.run(
+                user_prompt,
+                output_type=output_type,
+                message_history=message_history,
+                deferred_tool_results=deferred_tool_results,
+                conversation_id=conversation_id,
+                run_id=run_id,
+                model=model,
+                instructions=instructions,
+                deps=deps,
+                model_settings=model_settings,
+                usage_limits=usage_limits,
+                cancellation_token=cancellation_token,
+                usage=usage,
+                metadata=metadata,
+                retries=retries,
+                infer_name=False,
+                toolsets=toolsets,
+                event_stream_handler=event_stream_handler,
+                capabilities=capabilities,
+                spec=spec,
+            )
+        )
+
+    @overload
+    def run_stream(
+        self,
+        user_prompt: str | Sequence[_messages.UserContent] | None = None,
+        *,
+        output_type: None = None,
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+        deferred_tool_results: DeferredToolResults | None = None,
+        conversation_id: str | None = None,
+        run_id: str | None = None,
+        model: models.Model | models.KnownModelName | str | None = None,
+        instructions: _instructions.AgentInstructions[AgentDepsT] = None,
+        deps: AgentDepsT = None,
+        model_settings: AgentModelSettings[AgentDepsT] | None = None,
+        usage_limits: _usage.UsageLimits | None = None,
+        cancellation_token: CancellationToken | None = None,
+        usage: _usage.RunUsage | None = None,
+        metadata: AgentMetadata[AgentDepsT] | None = None,
+        retries: int | AgentRetries | None = None,
+        infer_name: bool = True,
+        toolsets: Sequence[AbstractToolset[AgentDepsT]] | None = None,
+        event_stream_handler: EventStreamHandler[AgentDepsT] | None = None,
+        capabilities: Sequence[AgentCapability[AgentDepsT]] | None = None,
+        spec: dict[str, Any] | AgentSpec | None = None,
+    ) -> AbstractAsyncContextManager[result.StreamedRunResult[AgentDepsT, OutputDataT]]: ...
+
+    @overload
+    def run_stream(
+        self,
+        user_prompt: str | Sequence[_messages.UserContent] | None = None,
+        *,
+        output_type: OutputSpec[RunOutputDataT],
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+        deferred_tool_results: DeferredToolResults | None = None,
+        conversation_id: str | None = None,
+        run_id: str | None = None,
+        model: models.Model | models.KnownModelName | str | None = None,
+        instructions: _instructions.AgentInstructions[AgentDepsT] = None,
+        deps: AgentDepsT = None,
+        model_settings: AgentModelSettings[AgentDepsT] | None = None,
+        usage_limits: _usage.UsageLimits | None = None,
+        cancellation_token: CancellationToken | None = None,
+        usage: _usage.RunUsage | None = None,
+        metadata: AgentMetadata[AgentDepsT] | None = None,
+        retries: int | AgentRetries | None = None,
+        infer_name: bool = True,
+        toolsets: Sequence[AbstractToolset[AgentDepsT]] | None = None,
+        event_stream_handler: EventStreamHandler[AgentDepsT] | None = None,
+        capabilities: Sequence[AgentCapability[AgentDepsT]] | None = None,
+        spec: dict[str, Any] | AgentSpec | None = None,
+    ) -> AbstractAsyncContextManager[result.StreamedRunResult[AgentDepsT, RunOutputDataT]]: ...
+
+    @asynccontextmanager
+    async def run_stream(  # noqa: C901
+        self,
+        user_prompt: str | Sequence[_messages.UserContent] | None = None,
+        *,
+        output_type: OutputSpec[RunOutputDataT] | None = None,
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+        deferred_tool_results: DeferredToolResults | None = None,
+        conversation_id: str | None = None,
+        run_id: str | None = None,
+        model: models.Model | models.KnownModelName | str | None = None,
+        instructions: _instructions.AgentInstructions[AgentDepsT] = None,
+        deps: AgentDepsT = None,
+        model_settings: AgentModelSettings[AgentDepsT] | None = None,
+        usage_limits: _usage.UsageLimits | None = None,
+        cancellation_token: CancellationToken | None = None,
+        usage: _usage.RunUsage | None = None,
+        metadata: AgentMetadata[AgentDepsT] | None = None,
+        retries: int | AgentRetries | None = None,
+        infer_name: bool = True,
+        toolsets: Sequence[AbstractToolset[AgentDepsT]] | None = None,
+        event_stream_handler: EventStreamHandler[AgentDepsT] | None = None,
+        capabilities: Sequence[AgentCapability[AgentDepsT]] | None = None,
+        spec: dict[str, Any] | AgentSpec | None = None,
+    ) -> AsyncGenerator[result.StreamedRunResult[AgentDepsT, Any]]:
+        """Run the agent with a user prompt in async streaming mode.
+
+        This method builds an internal agent graph (using system prompts, tools and output schemas) and then
+        runs the graph until the model produces output matching the `output_type`, for example text or structured data.
+        At this point, a streaming run result object is yielded from which you can stream the output as it comes in,
+        and -- once this output has completed streaming -- get the complete output, message history, and usage.
+
+        As this method will consider the first output matching the `output_type` to be the final output,
+        it will stop running the agent graph and will not execute any tool calls made by the model after this "final" output.
+        If you want to always run the agent graph to completion and stream events and output at the same time,
+        use [`agent.run()`][pydantic_ai.agent.AbstractAgent.run] with an `event_stream_handler` or [`agent.iter()`][pydantic_ai.agent.AbstractAgent.iter] instead.
+
+        Example:
+        ```python
+        from pydantic_ai import Agent
+
+        agent = Agent('openai:gpt-5.2')
+
+        async def main():
+            async with agent.run_stream('What is the capital of the UK?') as response:
+                print(await response.get_output())
+                #> The capital of the UK is London.
+        ```
+
+        Args:
+            user_prompt: User input to start/continue the conversation.
+            output_type: Custom output type to use for this run, `output_type` may only be used if the agent has no
+                output validators since output validators would expect an argument that matches the agent's output type.
+            message_history: History of the conversation so far.
+            deferred_tool_results: Optional results for deferred tool calls in the message history.
+            conversation_id: ID of the conversation this run belongs to. Pass `'new'` to start a fresh conversation, ignoring any `conversation_id` already on `message_history`. If omitted, falls back to the most recent `conversation_id` on `message_history` or a freshly generated UUID7.
+            run_id: Optional ID for this agent run. Unlike `conversation_id`, never inherited from `message_history`. Passing an empty string, or a value that already appears on `message_history`, raises `UserError` because both break `new_messages()`; use `conversation_id` to correlate across turns or deferred-tool resume. If omitted, a fresh UUID7 is generated.
+            model: Optional model to use for this run, required if `model` was not set when creating the agent.
+            instructions: Optional additional instructions to use for this run.
+            deps: Optional dependencies to use for this run.
+            model_settings: Optional settings to use for this model's request, or a callable
+                that receives [`RunContext`][pydantic_ai.tools.RunContext] and returns settings.
+                Callables are called before each model request, allowing dynamic per-step settings.
+            usage_limits: Optional limits on model request count or token usage.
+            cancellation_token: Token used to cancel this run from another task or thread. Single-use:
+                mint a fresh token per run, as a reused (already-cancelled) token prevents the run from starting.
+            usage: Optional usage to start with, useful for resuming a conversation or agents used in tools.
+            metadata: Optional metadata to attach to this run. Accepts a dictionary or a callable taking
+                [`RunContext`][pydantic_ai.tools.RunContext]; merged with the agent's configured metadata.
+            retries: Override the agent-level retry budgets for this run. Pass an `int` to override both
+                the tool-retry and output budgets, or an [`AgentRetries`][pydantic_ai.AgentRetries] dict to
+                override just one (e.g. `retries={'tools': 3}`). See
+                [`Agent.__init__`][pydantic_ai.agent.Agent.__init__] for semantics of the two enforcement paths.
+            infer_name: Whether to try to infer the agent name from the call frame if it's not set.
+            toolsets: Optional additional toolsets for this run.
+            event_stream_handler: Optional handler for events from the model's streaming response and the agent's execution of tools to use for this run. Under a durability capability, this per-run handler runs workflow-side; model events are replayed after each model request completes. For handler I/O inside the durable boundary, pass `event_stream_handler=` to the durability capability.
+                It will receive all the events up until the final result is found, which you can then read or stream from inside the context manager.
+                Note that it does _not_ receive any events after the final result is found.
+            capabilities: Optional additional [capabilities](https://pydantic.dev/docs/ai/capabilities/overview/) for this run, merged with the agent's configured capabilities.
+            spec: Optional agent spec to apply for this run. At run time, spec values are additive.
+
+        Returns:
+            The result of the run.
+        """
+        if infer_name and self.name is None:
+            # f_back because `asynccontextmanager` adds one frame
+            if frame := inspect.currentframe():  # pragma: no branch
+                self._infer_name(frame.f_back)
+
+        event_stream_handler = event_stream_handler or self.event_stream_handler
+
+        yielded = False
+        async with self.iter(
+            user_prompt,
+            output_type=output_type,
+            message_history=message_history,
+            deferred_tool_results=deferred_tool_results,
+            conversation_id=conversation_id,
+            run_id=run_id,
+            model=model,
+            deps=deps,
+            instructions=instructions,
+            model_settings=model_settings,
+            usage_limits=usage_limits,
+            cancellation_token=cancellation_token,
+            usage=usage,
+            metadata=metadata,
+            retries=retries,
+            infer_name=False,
+            toolsets=toolsets,
+            capabilities=capabilities,
+            spec=spec,
+        ) as agent_run:
+            # Handle wrap_run short-circuit: result is already available
+            if agent_run.result is not None:
+                graph_ctx = agent_run.ctx
+                yield StreamedRunResult(
+                    graph_ctx.state.message_history,
+                    graph_ctx.deps.new_message_index,
+                    run_result=agent_run.result,
+                )
+                yielded = True
+
+            first_node = agent_run.next_node  # start with the first node
+            assert isinstance(first_node, _agent_graph.UserPromptNode)  # the first node should be a user prompt node
+            node: _agent_graph.AgentNode[Any, Any] = first_node
+            while not yielded:
+                graph_ctx = agent_run.ctx
+                # Fire before_node_run BEFORE streaming so that node replacement
+                # happens before any model call, avoiding double execution.
+                run_ctx = _agent_graph.build_run_context(graph_ctx)
+                cap = graph_ctx.deps.root_capability
+                node = await cap.before_node_run(run_ctx, node=node)
+
+                if self.is_model_request_node(node):
+                    async with node.stream(graph_ctx) as stream:
+                        final_result_event = None
+
+                        async def stream_to_final(
+                            stream: AgentStream,
+                        ) -> AsyncIterator[_messages.AgentStreamEvent]:
+                            nonlocal final_result_event
+                            async for event in stream:
+                                yield event
+                                if isinstance(event, _messages.FinalResultEvent):
+                                    final_result_event = event
+                                    break
+
+                        # `node.stream()` applies the capability chain, so `stream_to_final` truncates
+                        # the handler's view at the final result without hiding later events from
+                        # capabilities: the rest of the stream still flows through them as it's consumed.
+                        truncated = stream_to_final(stream)
+                        if event_stream_handler is not None:
+                            await event_stream_handler(run_ctx, truncated)
+                        # Drain after the handler (same as the `run()` path) so the response is fully
+                        # built; cancellation/`break` interrupt the handler and don't reach here.
+                        async for _ in truncated:
+                            pass
+
+                        if final_result_event is not None:
+                            final_result = FinalResult(
+                                None, final_result_event.tool_name, final_result_event.tool_call_id
+                            )
+                            yielded = True
+
+                            messages = graph_ctx.state.message_history.copy()
+
+                            async def on_complete() -> None:
+                                """Called when the stream has completed.
+
+                                The model response will have been added to messages by now
+                                by `StreamedRunResult._marked_completed`.
+                                """
+                                nonlocal final_result
+                                final_result = FinalResult(
+                                    await stream.get_output(), final_result.tool_name, final_result.tool_call_id
+                                )
+
+                                # When we get here, the `ModelRequestNode` has completed streaming after the final result was found.
+                                # When running an agent with `agent.run`, we'd then move to `CallToolsNode` to execute the tool calls and
+                                # find the final result.
+                                # We also want to execute tool calls (in case `agent.end_strategy` is not `'early'`) here, but
+                                # we don't want to run the `CallToolsNode` logic to determine the final output, as it would be
+                                # wasteful and could produce a different result (e.g. when text output is followed by tool calls).
+                                # So we call `process_tool_calls` directly and then end the run with the found final result.
+
+                                parts: list[_messages.ModelRequestPart] = []
+                                async for _event in _agent_graph.process_tool_calls(
+                                    tool_manager=graph_ctx.deps.tool_manager,
+                                    tool_calls=stream.response.tool_calls,
+                                    tool_call_results=None,
+                                    tool_call_metadata=None,
+                                    final_result=final_result,
+                                    ctx=graph_ctx,
+                                    output_parts=parts,
+                                ):
+                                    pass
+
+                                # To allow this message history to be used in a future run without dangling tool calls,
+                                # append a new ModelRequest using the tool returns and retries
+                                if parts:
+                                    messages.append(
+                                        _messages.ModelRequest(
+                                            parts,
+                                            run_id=graph_ctx.state.run_id,
+                                            conversation_id=graph_ctx.state.conversation_id,
+                                            timestamp=_utils.now_utc(),
+                                        )
+                                    )
+
+                                await agent_run.next(_agent_graph.SetFinalResult(final_result))
+
+                            yield StreamedRunResult(
+                                messages,
+                                graph_ctx.deps.new_message_index,
+                                stream,
+                                on_complete,
+                            )
+                            # Note: wrap_node_run/after_node_run are intentionally skipped here.
+                            # before_node_run fired above; on_complete() later calls
+                            # agent_run.next(SetFinalResult(...)) which fires the full lifecycle
+                            # for SetFinalResult, but not for this ModelRequestNode.
+                            break
+                elif self.is_call_tools_node(node):
+                    async with node.stream(agent_run.ctx) as stream:
+                        if event_stream_handler is not None:
+                            await event_stream_handler(run_ctx, stream)
+                        # Drain after the handler, same as the `ModelRequestNode` branch above, so the
+                        # capability chain `node.stream()` wrapped around the node's events finalizes here.
+                        async for _ in stream:
+                            pass
+
+                # Advance graph with remaining hooks (before_node_run already fired above).
+                # Rebuild run_ctx after streaming so hooks see post-streaming state (e.g. run_step).
+                run_ctx = _agent_graph.build_run_context(graph_ctx)
+                next_node = await agent_run._wrap_and_advance(run_ctx, node, agent_run._advance_graph)  # pyright: ignore[reportPrivateUsage]
+                if isinstance(next_node, End) and agent_run.result is not None:
+                    # A final output could have been produced by the CallToolsNode rather than the ModelRequestNode,
+                    # if a tool function raised CallDeferred or ApprovalRequired.
+                    # In this case there's no response to stream, but we still let the user access the output etc as normal.
+                    yield StreamedRunResult(
+                        graph_ctx.state.message_history,
+                        graph_ctx.deps.new_message_index,
+                        run_result=agent_run.result,
+                    )
+                    yielded = True
+                    break
+                if not isinstance(next_node, _agent_graph.AgentNode):
+                    raise exceptions.AgentRunError(  # pragma: lax no cover
+                        'Should have produced a StreamedRunResult before getting here'
+                    )
+                node = cast(_agent_graph.AgentNode[Any, Any], next_node)
+
+        if not yielded:
+            raise exceptions.AgentRunError('Agent run finished without producing a final result')  # pragma: no cover
+
+    @overload
+    def run_stream_sync(
+        self,
+        user_prompt: str | Sequence[_messages.UserContent] | None = None,
+        *,
+        output_type: None = None,
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+        deferred_tool_results: DeferredToolResults | None = None,
+        conversation_id: str | None = None,
+        run_id: str | None = None,
+        model: models.Model | models.KnownModelName | str | None = None,
+        deps: AgentDepsT = None,
+        model_settings: AgentModelSettings[AgentDepsT] | None = None,
+        usage_limits: _usage.UsageLimits | None = None,
+        cancellation_token: CancellationToken | None = None,
+        usage: _usage.RunUsage | None = None,
+        metadata: AgentMetadata[AgentDepsT] | None = None,
+        retries: int | AgentRetries | None = None,
+        infer_name: bool = True,
+        toolsets: Sequence[AbstractToolset[AgentDepsT]] | None = None,
+        event_stream_handler: EventStreamHandler[AgentDepsT] | None = None,
+        capabilities: Sequence[AgentCapability[AgentDepsT]] | None = None,
+        spec: dict[str, Any] | AgentSpec | None = None,
+    ) -> result.StreamedRunResultSync[AgentDepsT, OutputDataT]: ...
+
+    @overload
+    def run_stream_sync(
+        self,
+        user_prompt: str | Sequence[_messages.UserContent] | None = None,
+        *,
+        output_type: OutputSpec[RunOutputDataT],
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+        deferred_tool_results: DeferredToolResults | None = None,
+        conversation_id: str | None = None,
+        run_id: str | None = None,
+        model: models.Model | models.KnownModelName | str | None = None,
+        deps: AgentDepsT = None,
+        model_settings: AgentModelSettings[AgentDepsT] | None = None,
+        usage_limits: _usage.UsageLimits | None = None,
+        cancellation_token: CancellationToken | None = None,
+        usage: _usage.RunUsage | None = None,
+        metadata: AgentMetadata[AgentDepsT] | None = None,
+        retries: int | AgentRetries | None = None,
+        infer_name: bool = True,
+        toolsets: Sequence[AbstractToolset[AgentDepsT]] | None = None,
+        event_stream_handler: EventStreamHandler[AgentDepsT] | None = None,
+        capabilities: Sequence[AgentCapability[AgentDepsT]] | None = None,
+        spec: dict[str, Any] | AgentSpec | None = None,
+    ) -> result.StreamedRunResultSync[AgentDepsT, RunOutputDataT]: ...
+
+    def run_stream_sync(
+        self,
+        user_prompt: str | Sequence[_messages.UserContent] | None = None,
+        *,
+        output_type: OutputSpec[RunOutputDataT] | None = None,
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+        deferred_tool_results: DeferredToolResults | None = None,
+        conversation_id: str | None = None,
+        run_id: str | None = None,
+        model: models.Model | models.KnownModelName | str | None = None,
+        deps: AgentDepsT = None,
+        model_settings: AgentModelSettings[AgentDepsT] | None = None,
+        usage_limits: _usage.UsageLimits | None = None,
+        cancellation_token: CancellationToken | None = None,
+        usage: _usage.RunUsage | None = None,
+        metadata: AgentMetadata[AgentDepsT] | None = None,
+        retries: int | AgentRetries | None = None,
+        infer_name: bool = True,
+        toolsets: Sequence[AbstractToolset[AgentDepsT]] | None = None,
+        event_stream_handler: EventStreamHandler[AgentDepsT] | None = None,
+        capabilities: Sequence[AgentCapability[AgentDepsT]] | None = None,
+        spec: dict[str, Any] | AgentSpec | None = None,
+    ) -> result.StreamedRunResultSync[AgentDepsT, Any]:
+        """Run the agent with a user prompt in sync streaming mode.
+
+        This is a convenience method that wraps [`run_stream()`][pydantic_ai.agent.AbstractAgent.run_stream],
+        running all of the agent's async work on the caller's event loop while keeping context-manager and
+        iterator lifecycles in stable tasks.
+        You therefore can't use this method inside async code or if there's an active event loop.
+
+        Like [`run_sync()`][pydantic_ai.agent.AbstractAgent.run_sync], this method cannot be used inside a
+        synchronous tool, output function, or other function called during an agent run. See
+        [Agent delegation](../multi-agent-applications.md#agent-delegation).
+
+        The returned [`StreamedRunResultSync`][pydantic_ai.result.StreamedRunResultSync] is a synchronous
+        context manager and should be used and closed on the thread where it was created. Use a `with` block
+        so the stream is cleaned up when you're done.
+
+        This method builds an internal agent graph (using system prompts, tools and output schemas) and then
+        runs the graph until the model produces output matching the `output_type`, for example text or structured data.
+        At this point, a streaming run result object is yielded from which you can stream the output as it comes in,
+        and -- once this output has completed streaming -- get the complete output, message history, and usage.
+
+        As this method will consider the first output matching the `output_type` to be the final output,
+        it will stop running the agent graph and will not execute any tool calls made by the model after this "final" output.
+        If you want to always run the agent graph to completion and stream events and output at the same time,
+        use [`agent.run()`][pydantic_ai.agent.AbstractAgent.run] with an `event_stream_handler` or [`agent.iter()`][pydantic_ai.agent.AbstractAgent.iter] instead.
+
+        Example:
+        ```python
+        from pydantic_ai import Agent
+
+        agent = Agent('openai:gpt-5.2')
+
+        def main():
+            with agent.run_stream_sync('What is the capital of the UK?') as response:
+                print(response.get_output())
+                #> The capital of the UK is London.
+        ```
+
+        Args:
+            user_prompt: User input to start/continue the conversation.
+            output_type: Custom output type to use for this run, `output_type` may only be used if the agent has no
+                output validators since output validators would expect an argument that matches the agent's output type.
+            message_history: History of the conversation so far.
+            deferred_tool_results: Optional results for deferred tool calls in the message history.
+            conversation_id: ID of the conversation this run belongs to. Pass `'new'` to start a fresh conversation, ignoring any `conversation_id` already on `message_history`. If omitted, falls back to the most recent `conversation_id` on `message_history` or a freshly generated UUID7.
+            run_id: Optional ID for this agent run. Unlike `conversation_id`, never inherited from `message_history`. Passing an empty string, or a value that already appears on `message_history`, raises `UserError` because both break `new_messages()`; use `conversation_id` to correlate across turns or deferred-tool resume. If omitted, a fresh UUID7 is generated.
+            model: Optional model to use for this run, required if `model` was not set when creating the agent.
+            deps: Optional dependencies to use for this run.
+            model_settings: Optional settings to use for this model's request, or a callable
+                that receives [`RunContext`][pydantic_ai.tools.RunContext] and returns settings.
+                Callables are called before each model request, allowing dynamic per-step settings.
+            usage_limits: Optional limits on model request count or token usage.
+            cancellation_token: Token used to cancel this run from another task or thread. Single-use:
+                mint a fresh token per run, as a reused (already-cancelled) token prevents the run from starting.
+            usage: Optional usage to start with, useful for resuming a conversation or agents used in tools.
+            metadata: Optional metadata to attach to this run. Accepts a dictionary or a callable taking
+                [`RunContext`][pydantic_ai.tools.RunContext]; merged with the agent's configured metadata.
+            retries: Override the agent-level retry budgets for this run. Pass an `int` to override both
+                the tool-retry and output budgets, or an [`AgentRetries`][pydantic_ai.AgentRetries] dict to
+                override just one (e.g. `retries={'tools': 3}`). See
+                [`Agent.__init__`][pydantic_ai.agent.Agent.__init__] for semantics of the two enforcement paths.
+            infer_name: Whether to try to infer the agent name from the call frame if it's not set.
+            toolsets: Optional additional toolsets for this run.
+            event_stream_handler: Optional handler for events from the model's streaming response and the agent's execution of tools to use for this run. Under a durability capability, this per-run handler runs workflow-side; model events are replayed after each model request completes. For handler I/O inside the durable boundary, pass `event_stream_handler=` to the durability capability.
+                It will receive all the events up until the final result is found, which you can then read or stream from inside the context manager.
+                Note that it does _not_ receive any events after the final result is found.
+            capabilities: Optional additional [capabilities](https://pydantic.dev/docs/ai/capabilities/overview/) for this run, merged with the agent's configured capabilities.
+            spec: Optional agent spec to apply for this run. At run time, spec values are additive.
+
+        Returns:
+            The result of the run.
+        """
+        _utils.check_no_nested_sync_run()
+
+        if infer_name and self.name is None:
+            self._infer_name(inspect.currentframe())
+
+        return result.StreamedRunResultSync(
+            self.run_stream(
+                user_prompt,
+                output_type=output_type,
+                message_history=message_history,
+                deferred_tool_results=deferred_tool_results,
+                conversation_id=conversation_id,
+                run_id=run_id,
+                model=model,
+                deps=deps,
+                model_settings=model_settings,
+                usage_limits=usage_limits,
+                cancellation_token=cancellation_token,
+                usage=usage,
+                metadata=metadata,
+                retries=retries,
+                infer_name=False,
+                toolsets=toolsets,
+                event_stream_handler=event_stream_handler,
+                capabilities=capabilities,
+                spec=spec,
+            )
+        )
+
+    @overload
+    def run_stream_events(
+        self,
+        user_prompt: str | Sequence[_messages.UserContent] | None = None,
+        *,
+        output_type: None = None,
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+        deferred_tool_results: DeferredToolResults | None = None,
+        conversation_id: str | None = None,
+        run_id: str | None = None,
+        model: models.Model | models.KnownModelName | str | None = None,
+        instructions: _instructions.AgentInstructions[AgentDepsT] = None,
+        deps: AgentDepsT = None,
+        model_settings: AgentModelSettings[AgentDepsT] | None = None,
+        usage_limits: _usage.UsageLimits | None = None,
+        cancellation_token: CancellationToken | None = None,
+        usage: _usage.RunUsage | None = None,
+        metadata: AgentMetadata[AgentDepsT] | None = None,
+        retries: int | AgentRetries | None = None,
+        infer_name: bool = True,
+        toolsets: Sequence[AbstractToolset[AgentDepsT]] | None = None,
+        capabilities: Sequence[AgentCapability[AgentDepsT]] | None = None,
+        spec: dict[str, Any] | AgentSpec | None = None,
+    ) -> AbstractAsyncContextManager[AgentRunEvents[OutputDataT]]: ...
+
+    @overload
+    def run_stream_events(
+        self,
+        user_prompt: str | Sequence[_messages.UserContent] | None = None,
+        *,
+        output_type: OutputSpec[RunOutputDataT],
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+        deferred_tool_results: DeferredToolResults | None = None,
+        conversation_id: str | None = None,
+        run_id: str | None = None,
+        model: models.Model | models.KnownModelName | str | None = None,
+        instructions: _instructions.AgentInstructions[AgentDepsT] = None,
+        deps: AgentDepsT = None,
+        model_settings: AgentModelSettings[AgentDepsT] | None = None,
+        usage_limits: _usage.UsageLimits | None = None,
+        cancellation_token: CancellationToken | None = None,
+        usage: _usage.RunUsage | None = None,
+        metadata: AgentMetadata[AgentDepsT] | None = None,
+        retries: int | AgentRetries | None = None,
+        infer_name: bool = True,
+        toolsets: Sequence[AbstractToolset[AgentDepsT]] | None = None,
+        capabilities: Sequence[AgentCapability[AgentDepsT]] | None = None,
+        spec: dict[str, Any] | AgentSpec | None = None,
+    ) -> AbstractAsyncContextManager[AgentRunEvents[RunOutputDataT]]: ...
+
+    def run_stream_events(
+        self,
+        user_prompt: str | Sequence[_messages.UserContent] | None = None,
+        *,
+        output_type: OutputSpec[RunOutputDataT] | None = None,
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+        deferred_tool_results: DeferredToolResults | None = None,
+        conversation_id: str | None = None,
+        run_id: str | None = None,
+        model: models.Model | models.KnownModelName | str | None = None,
+        instructions: _instructions.AgentInstructions[AgentDepsT] = None,
+        deps: AgentDepsT = None,
+        model_settings: AgentModelSettings[AgentDepsT] | None = None,
+        usage_limits: _usage.UsageLimits | None = None,
+        cancellation_token: CancellationToken | None = None,
+        usage: _usage.RunUsage | None = None,
+        metadata: AgentMetadata[AgentDepsT] | None = None,
+        retries: int | AgentRetries | None = None,
+        infer_name: bool = True,
+        toolsets: Sequence[AbstractToolset[AgentDepsT]] | None = None,
+        capabilities: Sequence[AgentCapability[AgentDepsT]] | None = None,
+        spec: dict[str, Any] | AgentSpec | None = None,
+    ) -> AbstractAsyncContextManager[AgentRunEvents[Any]]:
+        """Run the agent with a user prompt in async mode and stream events from the run.
+
+        This is a convenience method that wraps [`self.run`][pydantic_ai.agent.AbstractAgent.run] and
+        uses the `event_stream_handler` kwarg to get a stream of events from the run.
+
+        The background run starts on the first iteration of the event handle, not on entering the
+        context manager, so entering and exiting without iterating never calls the model.
+
+        The handle can cancel the whole run and access its messages, usage, and completed result.
+
+        Must be used as an async context manager so the background run task is deterministically
+        cleaned up when the consumer stops iterating early.
+
+        Example:
+        ```python
+        from pydantic_ai import Agent, AgentRunResultEvent, AgentStreamEvent
+
+        agent = Agent('openai:gpt-5.2')
+
+        async def main():
+            collected: list[AgentStreamEvent | AgentRunResultEvent] = []
+            async with agent.run_stream_events('What is the capital of France?') as events:
+                async for event in events:
+                    collected.append(event)
+            print(collected)
+            '''
+            [
+                PartStartEvent(index=0, part=TextPart(content='The capital of ')),
+                FinalResultEvent(tool_name=None, tool_call_id=None),
+                PartDeltaEvent(index=0, delta=TextPartDelta(content_delta='France is Paris. ')),
+                PartEndEvent(
+                    index=0, part=TextPart(content='The capital of France is Paris. ')
+                ),
+                AgentRunResultEvent(
+                    result=AgentRunResult(output='The capital of France is Paris. ')
+                ),
+            ]
+            '''
+        ```
+
+        Arguments are the same as for [`self.run`][pydantic_ai.agent.AbstractAgent.run],
+        except that `event_stream_handler` is now allowed.
+
+        Args:
+            user_prompt: User input to start/continue the conversation.
+            output_type: Custom output type to use for this run, `output_type` may only be used if the agent has no
+                output validators since output validators would expect an argument that matches the agent's output type.
+            message_history: History of the conversation so far.
+            deferred_tool_results: Optional results for deferred tool calls in the message history.
+            conversation_id: ID of the conversation this run belongs to. Pass `'new'` to start a fresh conversation, ignoring any `conversation_id` already on `message_history`. If omitted, falls back to the most recent `conversation_id` on `message_history` or a freshly generated UUID7.
+            run_id: Optional ID for this agent run. Unlike `conversation_id`, never inherited from `message_history`. Passing an empty string, or a value that already appears on `message_history`, raises `UserError` because both break `new_messages()`; use `conversation_id` to correlate across turns or deferred-tool resume. If omitted, a fresh UUID7 is generated.
+            model: Optional model to use for this run, required if `model` was not set when creating the agent.
+            instructions: Optional additional instructions to use for this run.
+            deps: Optional dependencies to use for this run.
+            model_settings: Optional settings to use for this model's request, or a callable
+                that receives [`RunContext`][pydantic_ai.tools.RunContext] and returns settings.
+                Callables are called before each model request, allowing dynamic per-step settings.
+            usage_limits: Optional limits on model request count or token usage.
+            cancellation_token: Token used to cancel this run from another task or thread. Single-use:
+                mint a fresh token per run, as a reused (already-cancelled) token prevents the run from starting.
+            usage: Optional usage to start with, useful for resuming a conversation or agents used in tools.
+            metadata: Optional metadata to attach to this run. Accepts a dictionary or a callable taking
+                [`RunContext`][pydantic_ai.tools.RunContext]; merged with the agent's configured metadata.
+            retries: Override the agent-level retry budgets for this run. Pass an `int` to override both
+                the tool-retry and output budgets, or an [`AgentRetries`][pydantic_ai.AgentRetries] dict to
+                override just one (e.g. `retries={'tools': 3}`). See
+                [`Agent.__init__`][pydantic_ai.agent.Agent.__init__] for semantics of the two enforcement paths.
+            infer_name: Whether to try to infer the agent name from the call frame if it's not set.
+            toolsets: Optional additional toolsets for this run.
+            capabilities: Optional additional [capabilities](https://pydantic.dev/docs/ai/capabilities/overview/) for this run, merged with the agent's configured capabilities.
+            spec: Optional agent spec to apply for this run. At run time, spec values are additive.
+
+        Returns:
+            An async context manager that yields an [`AgentRunEvents`][pydantic_ai.agent.AgentRunEvents]
+            handle over `AgentStreamEvent`s ending with a final `AgentRunResultEvent` carrying the run result.
+        """
+        if infer_name and self.name is None:
+            self._infer_name(inspect.currentframe())
+
+        async def run_agent(event_stream_handler: EventStreamHandler[AgentDepsT]) -> AgentRunResult[Any]:
+            return await self.run(
+                user_prompt,
+                output_type=output_type,
+                message_history=message_history,
+                deferred_tool_results=deferred_tool_results,
+                conversation_id=conversation_id,
+                run_id=run_id,
+                model=model,
+                instructions=instructions,
+                deps=deps,
+                model_settings=model_settings,
+                usage_limits=usage_limits,
+                cancellation_token=cancellation_token,
+                usage=usage,
+                metadata=metadata,
+                retries=retries,
+                infer_name=False,
+                toolsets=toolsets,
+                event_stream_handler=event_stream_handler,
+                capabilities=capabilities,
+                spec=spec,
+            )
+
+        return _RunStreamEventsContext(run_agent)
+
+    @overload
+    def iter(
+        self,
+        user_prompt: str | Sequence[_messages.UserContent] | None = None,
+        *,
+        output_type: None = None,
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+        deferred_tool_results: DeferredToolResults | None = None,
+        conversation_id: str | None = None,
+        run_id: str | None = None,
+        model: models.Model | models.KnownModelName | str | None = None,
+        instructions: _instructions.AgentInstructions[AgentDepsT] = None,
+        deps: AgentDepsT = None,
+        model_settings: AgentModelSettings[AgentDepsT] | None = None,
+        usage_limits: _usage.UsageLimits | None = None,
+        cancellation_token: CancellationToken | None = None,
+        usage: _usage.RunUsage | None = None,
+        metadata: AgentMetadata[AgentDepsT] | None = None,
+        retries: int | AgentRetries | None = None,
+        infer_name: bool = True,
+        toolsets: Sequence[AbstractToolset[AgentDepsT]] | None = None,
+        capabilities: Sequence[AgentCapability[AgentDepsT]] | None = None,
+        spec: dict[str, Any] | AgentSpec | None = None,
+    ) -> AbstractAsyncContextManager[AgentRun[AgentDepsT, OutputDataT]]: ...
+
+    @overload
+    def iter(
+        self,
+        user_prompt: str | Sequence[_messages.UserContent] | None = None,
+        *,
+        output_type: OutputSpec[RunOutputDataT],
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+        deferred_tool_results: DeferredToolResults | None = None,
+        conversation_id: str | None = None,
+        run_id: str | None = None,
+        model: models.Model | models.KnownModelName | str | None = None,
+        instructions: _instructions.AgentInstructions[AgentDepsT] = None,
+        deps: AgentDepsT = None,
+        model_settings: AgentModelSettings[AgentDepsT] | None = None,
+        usage_limits: _usage.UsageLimits | None = None,
+        cancellation_token: CancellationToken | None = None,
+        usage: _usage.RunUsage | None = None,
+        metadata: AgentMetadata[AgentDepsT] | None = None,
+        retries: int | AgentRetries | None = None,
+        infer_name: bool = True,
+        toolsets: Sequence[AbstractToolset[AgentDepsT]] | None = None,
+        capabilities: Sequence[AgentCapability[AgentDepsT]] | None = None,
+        spec: dict[str, Any] | AgentSpec | None = None,
+    ) -> AbstractAsyncContextManager[AgentRun[AgentDepsT, RunOutputDataT]]: ...
+
+    @asynccontextmanager
+    @abstractmethod
+    async def iter(
+        self,
+        user_prompt: str | Sequence[_messages.UserContent] | None = None,
+        *,
+        output_type: OutputSpec[RunOutputDataT] | None = None,
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+        deferred_tool_results: DeferredToolResults | None = None,
+        conversation_id: str | None = None,
+        run_id: str | None = None,
+        model: models.Model | models.KnownModelName | str | None = None,
+        instructions: _instructions.AgentInstructions[AgentDepsT] = None,
+        deps: AgentDepsT = None,
+        model_settings: AgentModelSettings[AgentDepsT] | None = None,
+        usage_limits: _usage.UsageLimits | None = None,
+        cancellation_token: CancellationToken | None = None,
+        usage: _usage.RunUsage | None = None,
+        metadata: AgentMetadata[AgentDepsT] | None = None,
+        retries: int | AgentRetries | None = None,
+        infer_name: bool = True,
+        toolsets: Sequence[AbstractToolset[AgentDepsT]] | None = None,
+        capabilities: Sequence[AgentCapability[AgentDepsT]] | None = None,
+        spec: dict[str, Any] | AgentSpec | None = None,
+    ) -> AsyncGenerator[AgentRun[AgentDepsT, Any]]:
+        """A contextmanager which can be used to iterate over the agent graph's nodes as they are executed.
+
+        This method builds an internal agent graph (using system prompts, tools and output schemas) and then returns an
+        `AgentRun` object. The `AgentRun` can be used to async-iterate over the nodes of the graph as they are
+        executed. This is the API to use if you want to consume the outputs coming from each LLM model response, or the
+        stream of events coming from the execution of tools.
+
+        The `AgentRun` also provides methods to access the full message history, new messages, and usage statistics,
+        and the final result of the run once it has completed.
+
+        For more details, see the documentation of `AgentRun`.
+
+        Example:
+        ```python
+        from pydantic_ai import Agent
+
+        agent = Agent('openai:gpt-5.2')
+
+        async def main():
+            nodes = []
+            async with agent.iter('What is the capital of France?') as agent_run:
+                async for node in agent_run:
+                    nodes.append(node)
+            print(nodes)
+            '''
+            [
+                UserPromptNode(
+                    user_prompt='What is the capital of France?',
+                    instructions_functions=[],
+                    system_prompts=(),
+                    system_prompt_functions=[],
+                    system_prompt_dynamic_functions={},
+                ),
+                ModelRequestNode(
+                    request=ModelRequest(
+                        parts=[
+                            UserPromptPart(
+                                content='What is the capital of France?',
+                                timestamp=datetime.datetime(...),
+                            )
+                        ],
+                        timestamp=datetime.datetime(...),
+                        run_id='...',
+                        conversation_id='...',
+                    )
+                ),
+                CallToolsNode(
+                    model_response=ModelResponse(
+                        parts=[TextPart(content='The capital of France is Paris.')],
+                        usage=RequestUsage(
+                            cost=Decimal('0.000196'), input_tokens=56, output_tokens=7
+                        ),
+                        model_name='gpt-5.2',
+                        timestamp=datetime.datetime(...),
+                        run_id='...',
+                        conversation_id='...',
+                    )
+                ),
+                End(data=FinalResult(output='The capital of France is Paris.')),
+            ]
+            '''
+            print(agent_run.result.output)
+            #> The capital of France is Paris.
+        ```
+
+        Args:
+            user_prompt: User input to start/continue the conversation.
+            output_type: Custom output type to use for this run, `output_type` may only be used if the agent has no
+                output validators since output validators would expect an argument that matches the agent's output type.
+            message_history: History of the conversation so far.
+            deferred_tool_results: Optional results for deferred tool calls in the message history.
+            conversation_id: ID of the conversation this run belongs to. Pass `'new'` to start a fresh conversation, ignoring any `conversation_id` already on `message_history`. If omitted, falls back to the most recent `conversation_id` on `message_history` or a freshly generated UUID7.
+            run_id: Optional ID for this agent run. Unlike `conversation_id`, never inherited from `message_history`. Passing an empty string, or a value that already appears on `message_history`, raises `UserError` because both break `new_messages()`; use `conversation_id` to correlate across turns or deferred-tool resume. If omitted, a fresh UUID7 is generated.
+            model: Optional model to use for this run, required if `model` was not set when creating the agent.
+            instructions: Optional additional instructions to use for this run.
+            deps: Optional dependencies to use for this run.
+            model_settings: Optional settings to use for this model's request, or a callable
+                that receives [`RunContext`][pydantic_ai.tools.RunContext] and returns settings.
+                Callables are called before each model request, allowing dynamic per-step settings.
+            usage_limits: Optional limits on model request count or token usage.
+            cancellation_token: Token used to cancel this run from another task or thread. Single-use:
+                mint a fresh token per run, as a reused (already-cancelled) token prevents the run from starting.
+            usage: Optional usage to start with, useful for resuming a conversation or agents used in tools.
+            metadata: Optional metadata to attach to this run. Accepts a dictionary or a callable taking
+                [`RunContext`][pydantic_ai.tools.RunContext]; merged with the agent's configured metadata.
+            retries: Override the agent-level retry budgets for this run. Pass an `int` to override both
+                the tool-retry and output budgets, or an [`AgentRetries`][pydantic_ai.AgentRetries] dict to
+                override just one (e.g. `retries={'tools': 3}`). See
+                [`Agent.__init__`][pydantic_ai.agent.Agent.__init__] for semantics of the two enforcement paths.
+            infer_name: Whether to try to infer the agent name from the call frame if it's not set.
+            toolsets: Optional additional toolsets for this run.
+            capabilities: Optional additional [capabilities](https://pydantic.dev/docs/ai/capabilities/overview/) for this run, merged with the agent's configured capabilities.
+            spec: Optional agent spec to apply for this run. At run time, spec values are additive.
+
+        Returns:
+            The result of the run.
+        """
+        raise NotImplementedError
+        yield
+
+    @contextmanager
+    @abstractmethod
+    def override(
+        self,
+        *,
+        name: str | _utils.Unset = _utils.UNSET,
+        deps: AgentDepsT | _utils.Unset = _utils.UNSET,
+        model: models.Model | models.KnownModelName | str | _utils.Unset = _utils.UNSET,
+        toolsets: Sequence[AbstractToolset[AgentDepsT]] | _utils.Unset = _utils.UNSET,
+        tools: Sequence[Tool[AgentDepsT] | ToolFuncEither[AgentDepsT, ...]] | _utils.Unset = _utils.UNSET,
+        native_tools: Sequence[AgentNativeTool[AgentDepsT]] | _utils.Unset = _utils.UNSET,
+        instructions: _instructions.AgentInstructions[AgentDepsT] | _utils.Unset = _utils.UNSET,
+        metadata: AgentMetadata[AgentDepsT] | _utils.Unset = _utils.UNSET,
+        model_settings: AgentModelSettings[AgentDepsT] | _utils.Unset = _utils.UNSET,
+        retries: int | AgentRetries | _utils.Unset = _utils.UNSET,
+        spec: dict[str, Any] | AgentSpec | None = None,
+    ) -> Generator[None]:
+        """Context manager to temporarily override agent configuration.
+
+        This is particularly useful when testing.
+        You can find an example of this [here](../testing.md#overriding-model-via-pytest-fixtures).
+
+        Args:
+            name: The name to use instead of the name passed to the agent constructor and agent run.
+            deps: The dependencies to use instead of the dependencies passed to the agent run.
+            model: The model to use instead of the model passed to the agent run.
+            toolsets: The toolsets to use instead of the toolsets passed to the agent constructor and agent run.
+            tools: The tools to use instead of the tools registered with the agent.
+            native_tools: The native tools to use instead of the agent's configured native tools.
+            instructions: The instructions to use instead of the instructions registered with the agent.
+            metadata: The metadata to use instead of the metadata passed to the agent constructor. When set, any
+                per-run `metadata` argument is ignored.
+            model_settings: The model settings to use instead of the model settings passed to the agent constructor.
+                When set, any per-run `model_settings` argument is ignored.
+            retries: The retry budgets to use instead of the agent-level configuration. Pass an `int` to
+                override both the tool-retry and output budgets, or an [`AgentRetries`][pydantic_ai.AgentRetries]
+                dict to override just one (e.g. `retries={'tools': 3}`).
+                When set, any per-run `retries` argument is ignored.
+            spec: Optional agent spec providing defaults for override.
+        """
+        raise NotImplementedError
+        yield
+
+    def realtime(
+        self,
+        model: RealtimeModel | KnownRealtimeModelName | str,
+        *,
+        deps: AgentDepsT = None,
+        model_settings: RealtimeModelSettings | None = None,
+        instructions: _instructions.AgentInstructions[AgentDepsT] = None,
+        toolsets: Sequence[AbstractToolset[AgentDepsT]] | None = None,
+        capabilities: Sequence[AgentCapability[AgentDepsT]] | None = None,
+        usage: _usage.RunUsage | None = None,
+        usage_limits: _usage.UsageLimits | None = None,
+        metadata: AgentMetadata[AgentDepsT] | None = None,
+        conversation_id: str | None = None,
+        run_id: str | None = None,
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+    ) -> AgentRealtime[AgentDepsT]:
+        """Bind this agent's configuration to a realtime `model`, returning an accessor for realtime operations.
+
+        The returned [`AgentRealtime`][pydantic_ai.agent.AgentRealtime] carries the agent's realtime
+        configuration so that opening a session with [`session()`][pydantic_ai.agent.AgentRealtime.session]
+        reuses the same instructions, tools, capabilities, and run context without re-passing them.
+
+        These parameters mirror [`iter`][pydantic_ai.agent.AbstractAgent.iter]. Parameters specific to the
+        request-response graph — `output_type`, `retries`, `event_stream_handler`, `deferred_tool_results` —
+        do not apply; structured output should be delegated to a normal [`Agent`][pydantic_ai.Agent] (see the
+        realtime docs). Capabilities run `for_run` once when the session connects; their instructions,
+        toolsets, and native tools are applied. Tool hooks (`prepare_tools` and `before`/`after`/`wrap`/
+        `on_error` for `tool_validate` and `tool_execute`) run for each tool call. Run-, graph-,
+        model-request-, event-stream-, and output-stage hooks do not run.
+
+        ```python
+        from pydantic_ai import Agent
+        from pydantic_ai.realtime.openai import OpenAIRealtimeModel
+
+        agent = Agent(instructions='You are a helpful voice assistant.')
+
+        @agent.tool_plain
+        def get_weather(city: str) -> str:
+            return f'Sunny in {city}'
+
+        async def main():
+            model = OpenAIRealtimeModel('gpt-realtime')
+            async with agent.realtime(model).session() as session:
+                await session.send_audio(b'...')
+                async for _event in session:
+                    pass
+        ```
+
+        Args:
+            model: The realtime model to connect to.
+            deps: Dependencies passed to tool functions.
+            model_settings: Optional realtime settings overriding the model's defaults for the session.
+            instructions: Additional instructions for the session, combined with the agent's instructions.
+                Dynamic instruction functions (`@agent.instructions`) are evaluated once at connect time
+                (there is no per-request rebuild in a realtime session).
+            toolsets: Optional additional toolsets for the session, on top of the agent's.
+            capabilities: Optional additional capabilities for the session. Their `for_run`, setup
+                contributions, and tool-lifecycle hooks apply; run, model-request, graph, event-stream,
+                and output hooks are not invoked.
+            usage: Optional [`RunUsage`][pydantic_ai.usage.RunUsage] to accumulate token usage into;
+                exposed as `session.usage`. A fresh one is used when omitted.
+            usage_limits: Optional [`UsageLimits`][pydantic_ai.usage.UsageLimits]. Request, token, and
+                tool-call limits are enforced as usage accrues; a breach raises
+                [`UsageLimitExceeded`][pydantic_ai.exceptions.UsageLimitExceeded] from the session's
+                event iterator, matching how `run` / `iter` surface a usage limit.
+            metadata: Optional metadata set on the [`RunContext`][pydantic_ai.tools.RunContext] available
+                to tools and capabilities, and on the realtime session telemetry span.
+            conversation_id: Optional conversation id, set on the run context and the telemetry span so a
+                realtime session can be correlated with other runs. Session-built messages are stamped
+                with it as well, allowing a later standard run to resume the same conversation; seeded
+                messages are left unchanged.
+            run_id: Optional ID for this realtime session, which is one long-lived run covering every
+                exchange. Never inherited from `message_history`; passing an empty or previously used ID
+                raises `UserError`. If omitted, a fresh UUID7 is generated and stamped on session-built
+                messages, while seeded messages are left unchanged.
+            message_history: Prior conversation to seed the session with. Replayable text, transcripts,
+                thinking, tool rounds, images, and supported retained user audio are projected to the
+                provider's initial conversation items; unrepresentable content raises `UserError`. The
+                history is included in [`session.all_messages()`][pydantic_ai.realtime.RealtimeSession.all_messages]
+                (but not `new_messages()`). Hand off from a prior session or a standard
+                [`Agent.run`][pydantic_ai.agent.AbstractAgent.run] by passing its messages here.
+        """
+        # Infer the agent name from the calling frame like `run`/`iter` do, so an unnamed agent's
+        # realtime session span is labelled with the variable name (e.g. `agent`) rather than a
+        # generic fallback — the name is what backends use to tell agent runs apart.
+        if self.name is None:
+            self._infer_name(inspect.currentframe())
+        return AgentRealtime(
+            _agent=self,
+            _model=model,
+            _deps=deps,
+            _model_settings=model_settings,
+            _instructions=instructions,
+            _toolsets=toolsets,
+            _capabilities=capabilities,
+            _usage=usage,
+            _usage_limits=usage_limits,
+            _metadata=metadata,
+            _conversation_id=conversation_id,
+            _run_id=run_id,
+            _message_history=message_history,
+        )
+
+    @asynccontextmanager
+    async def _resolve_realtime_session(
+        self,
+        model: RealtimeModel | KnownRealtimeModelName | str,
+        *,
+        deps: AgentDepsT = None,
+        model_settings: RealtimeModelSettings | None = None,
+        instructions: _instructions.AgentInstructions[AgentDepsT] = None,
+        toolsets: Sequence[AbstractToolset[AgentDepsT]] | None = None,
+        capabilities: Sequence[AgentCapability[AgentDepsT]] | None = None,
+        usage: _usage.RunUsage | None = None,
+        usage_limits: _usage.UsageLimits | None = None,
+        metadata: AgentMetadata[AgentDepsT] | None = None,
+        conversation_id: str | None = None,
+        run_id: str | None = None,
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+        run_lifecycle: bool = False,
+    ) -> AsyncGenerator[_RealtimeSessionResolution[AgentDepsT]]:
+        """Resolve the agent configuration shared by realtime sessions and WebRTC signaling.
+
+        With `run_lifecycle`, the run-lifecycle hooks are dispatched around the resolved configuration
+        so they wrap the toolset — and the session the caller opens inside them — exactly as `iter`
+        does. Only `_open_realtime_session` asks for that: signaling only reads back the instructions
+        and tools a session would advertise, and is not itself a run.
+        """
+        raise NotImplementedError
+        yield
+
+    @asynccontextmanager
+    async def _open_realtime_session(
+        self,
+        model: RealtimeModel | KnownRealtimeModelName | str,
+        *,
+        deps: AgentDepsT = None,
+        model_settings: RealtimeModelSettings | None = None,
+        instructions: _instructions.AgentInstructions[AgentDepsT] = None,
+        toolsets: Sequence[AbstractToolset[AgentDepsT]] | None = None,
+        capabilities: Sequence[AgentCapability[AgentDepsT]] | None = None,
+        usage: _usage.RunUsage | None = None,
+        usage_limits: _usage.UsageLimits | None = None,
+        metadata: AgentMetadata[AgentDepsT] | None = None,
+        conversation_id: str | None = None,
+        run_id: str | None = None,
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+        audio_retention: AudioRetention = 'transcript_only',
+        retain_images_every_n: int = 1,
+        retain_images_max: int | None = 100,
+        provider_session: RealtimeProviderSession | None = None,
+    ) -> AsyncGenerator[RealtimeSession]:
+        """Worker behind [`AgentRealtime.session`][pydantic_ai.agent.AgentRealtime.session].
+
+        Implementations open the realtime session; not all agent implementations support realtime
+        sessions. Users go through [`realtime()`][pydantic_ai.agent.AbstractAgent.realtime].
+        """
+        raise NotImplementedError
+        yield  # pragma: no cover
+
+    def _infer_name(self, function_frame: FrameType | None) -> None:
+        """Infer the agent name from the call frame.
+
+        RunUsage should be `self._infer_name(inspect.currentframe())`.
+        """
+        assert self.name is None, 'Name already set'
+        if function_frame is not None:  # pragma: no branch
+            if parent_frame := function_frame.f_back:  # pragma: no branch
+                for name, item in parent_frame.f_locals.items():
+                    if item is self:
+                        self.name = name
+                        return
+                if parent_frame.f_locals != parent_frame.f_globals:  # pragma: no branch
+                    # if we couldn't find the agent in locals and globals are a different dict, try globals
+                    for name, item in parent_frame.f_globals.items():
+                        if item is self:
+                            self.name = name
+                            return
+
+    @staticmethod
+    @contextmanager
+    def parallel_tool_call_execution_mode(mode: tool_manager.ParallelExecutionMode = 'parallel') -> Generator[None]:
+        """Set the parallel execution mode during the context.
+
+        Args:
+            mode: The execution mode for tool calls:
+                - 'parallel': Run tool calls in parallel, yielding events as they complete (default).
+                - 'sequential': Run tool calls one at a time in order.
+                - 'parallel_ordered_events': Run tool calls in parallel, but events are emitted in order, after all calls complete.
+        """
+        with ToolManager.parallel_execution_mode(mode):
+            yield
+
+    @staticmethod
+    @contextmanager
+    def using_thread_executor(executor: Executor) -> Generator[None]:
+        """Use a custom executor for running sync functions in threads during the context.
+
+        By default, sync tool functions and other sync callbacks are run in threads using
+        [`anyio.to_thread.run_sync`][anyio.to_thread.run_sync], which creates ephemeral threads.
+        In long-running servers (e.g. FastAPI), this can lead to thread accumulation under sustained load.
+
+        This context manager lets you provide a bounded
+        [`ThreadPoolExecutor`][concurrent.futures.ThreadPoolExecutor] (or any
+        [`Executor`][concurrent.futures.Executor]) to control thread lifecycle:
+
+        ```python {test="skip" lint="skip"}
+        from concurrent.futures import ThreadPoolExecutor
+        from contextlib import asynccontextmanager
+
+        from pydantic_ai import Agent
+
+        @asynccontextmanager
+        async def lifespan(app):
+            executor = ThreadPoolExecutor(max_workers=16)
+            with Agent.using_thread_executor(executor):
+                yield
+            executor.shutdown(wait=True)
+        ```
+
+        For per-agent configuration, use the
+        [`UseThreadExecutor`][pydantic_ai.capabilities.UseThreadExecutor] capability instead.
+
+        Args:
+            executor: The executor to use for running sync functions.
+        """
+        with _utils.using_thread_executor(executor):
+            yield
+
+    @staticmethod
+    @contextmanager
+    def using_sleep(sleep_func: _agent_graph.AgentGraphSleepFunc) -> Generator[None]:
+        """Use a custom async sleep function for agent-graph delays during the context.
+
+        By default the agent graph uses `asyncio.sleep` when it needs to wait during a run (e.g. between
+        polls of a suspended/background model response). Durable execution frameworks (Temporal, Prefect,
+        DBOS, ...) register their own durable sleep here so delays survive workflow replays and don't
+        waste activity time.
+        """
+        with _agent_graph.set_agent_graph_sleep(sleep_func):
+            yield
+
+    @staticmethod
+    def is_model_request_node(
+        node: _agent_graph.AgentNode[T, S] | End[result.FinalResult[S]],
+    ) -> TypeIs[_agent_graph.ModelRequestNode[T, S]]:
+        """Check if the node is a `ModelRequestNode`, narrowing the type if it is.
+
+        This method preserves the generic parameters while narrowing the type, unlike a direct call to `isinstance`.
+        """
+        return isinstance(node, _agent_graph.ModelRequestNode)
+
+    @staticmethod
+    def is_call_tools_node(
+        node: _agent_graph.AgentNode[T, S] | End[result.FinalResult[S]],
+    ) -> TypeIs[_agent_graph.CallToolsNode[T, S]]:
+        """Check if the node is a `CallToolsNode`, narrowing the type if it is.
+
+        This method preserves the generic parameters while narrowing the type, unlike a direct call to `isinstance`.
+        """
+        return isinstance(node, _agent_graph.CallToolsNode)
+
+    @staticmethod
+    def is_user_prompt_node(
+        node: _agent_graph.AgentNode[T, S] | End[result.FinalResult[S]],
+    ) -> TypeIs[_agent_graph.UserPromptNode[T, S]]:
+        """Check if the node is a `UserPromptNode`, narrowing the type if it is.
+
+        This method preserves the generic parameters while narrowing the type, unlike a direct call to `isinstance`.
+        """
+        return isinstance(node, _agent_graph.UserPromptNode)
+
+    @staticmethod
+    def is_end_node(
+        node: _agent_graph.AgentNode[T, S] | End[result.FinalResult[S]],
+    ) -> TypeIs[End[result.FinalResult[S]]]:
+        """Check if the node is a `End`, narrowing the type if it is.
+
+        This method preserves the generic parameters while narrowing the type, unlike a direct call to `isinstance`.
+        """
+        return isinstance(node, End)
+
+    @abstractmethod
+    async def __aenter__(self) -> AbstractAgent[AgentDepsT, OutputDataT]:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def __aexit__(self, *args: Any) -> bool | None:
+        raise NotImplementedError
+
+    async def to_cli(
+        self: Self,
+        deps: AgentDepsT = None,
+        prog_name: str = 'pydantic-ai',
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+        model_settings: ModelSettings | None = None,
+        usage_limits: _usage.UsageLimits | None = None,
+        model: models.Model | models.KnownModelName | str | None = None,
+    ) -> None:
+        """Run the agent in a CLI chat interface.
+
+        Args:
+            deps: The dependencies to pass to the agent.
+            prog_name: The name of the program to use for the CLI. Defaults to 'pydantic-ai'.
+            message_history: History of the conversation so far.
+            model_settings: Optional settings to use for this model's request.
+            usage_limits: Optional limits on model request count or token usage.
+            model: Optional model to use for the agent run.
+
+        Example:
+        ```python {title="agent_to_cli.py" test="skip"}
+        from pydantic_ai import Agent
+
+        agent = Agent('openai:gpt-5.2', instructions='You always respond in Italian.')
+
+        async def main():
+            await agent.to_cli()
+        ```
+        """
+        from rich.console import Console
+
+        from pydantic_ai._cli import run_chat
+
+        await run_chat(
+            stream=True,
+            agent=self,
+            deps=deps,
+            console=Console(),
+            code_theme='monokai',
+            prog_name=prog_name,
+            message_history=message_history,
+            model=model,
+            model_settings=model_settings,
+            usage_limits=usage_limits,
+        )
+
+    def to_cli_sync(
+        self: Self,
+        deps: AgentDepsT = None,
+        prog_name: str = 'pydantic-ai',
+        message_history: Sequence[_messages.ModelMessage] | None = None,
+        model_settings: ModelSettings | None = None,
+        usage_limits: _usage.UsageLimits | None = None,
+        model: models.Model | models.KnownModelName | str | None = None,
+    ) -> None:
+        """Run the agent in a CLI chat interface with the non-async interface.
+
+        Args:
+            deps: The dependencies to pass to the agent.
+            prog_name: The name of the program to use for the CLI. Defaults to 'pydantic-ai'.
+            message_history: History of the conversation so far.
+            model_settings: Optional settings to use for this model's request.
+            usage_limits: Optional limits on model request count or token usage.
+            model: Optional model to use for the agent run.
+
+        ```python {title="agent_to_cli_sync.py" test="skip"}
+        from pydantic_ai import Agent
+
+        agent = Agent('openai:gpt-5.2', instructions='You always respond in Italian.')
+        agent.to_cli_sync()
+        agent.to_cli_sync(prog_name='assistant')
+        ```
+        """
+        return _utils.run_until_complete(
+            self.to_cli(
+                deps=deps,
+                prog_name=prog_name,
+                message_history=message_history,
+                model=model,
+                model_settings=model_settings,
+                usage_limits=usage_limits,
+            )
+        )
+
+
+@dataclass
+class _RealtimeSessionLifecycle:
+    """Hand-off between the run-lifecycle hooks entered during resolution and the session they wrap.
+
+    The hooks are entered before the session exists — and a `wrap_run` that short-circuits means it
+    never will — so the session, and the result returned in its place, are handed back through this
+    mutable holder once `_open_realtime_session` has built them.
+    """
+
+    session: RealtimeSession | None = None
+    short_result: AgentRunResult[Any] | None = None
+
+
+@dataclass
+class _RealtimeSessionResolution(Generic[AgentDepsT]):
+    """The resolved inputs shared by `AgentRealtime.session()` and its WebRTC signaling methods."""
+
+    model: RealtimeModel
+    run_context: RunContext[AgentDepsT]
+    tool_manager: ToolManager[AgentDepsT]
+    model_request_parameters: models.ModelRequestParameters
+    model_settings: RealtimeModelSettings | None
+    instructions: str | None
+    """Kept as its own field because `ModelRequestParameters` carries no instructions (they live on the
+    request `ModelRequest`); the advertised tools, by contrast, are read straight off
+    `model_request_parameters.function_tools`."""
+    request_messages: list[_messages.ModelMessage]
+    model_profile: RealtimeModelProfile
+    instrumentation_settings: InstrumentationSettings | None
+    conversation_id: str
+    run_id: str
+    wrap_event_stream: (
+        Callable[[AsyncIterable[_messages.AgentStreamEvent]], AsyncIterable[_messages.AgentStreamEvent]] | None
+    ) = None
+    lifecycle: _RealtimeSessionLifecycle | None = None
+    """Set only when the caller asked for run-lifecycle hooks, i.e. by `_open_realtime_session`."""
+    short_circuited: bool = False
+    """A `wrap_run` hook returned a result without opening the session; nothing below was resolved."""
+
+
+class AgentRealtime(Generic[AgentDepsT]):
+    """An agent bound to a realtime model, returned by [`AbstractAgent.realtime`][pydantic_ai.agent.AbstractAgent.realtime].
+
+    Carries the agent's realtime configuration (mirroring the parameters of
+    [`iter`][pydantic_ai.agent.AbstractAgent.iter]) so that opening a session reuses the same
+    instructions, tools, capabilities, and run context without re-passing them. Construct it via
+    [`agent.realtime(model, ...)`][pydantic_ai.agent.AbstractAgent.realtime],
+    then open a session with [`session()`][pydantic_ai.agent.AgentRealtime.session].
+    """
+
+    def __init__(
+        self,
+        *,
+        _agent: AbstractAgent[AgentDepsT, Any],
+        _model: RealtimeModel | KnownRealtimeModelName | str,
+        _deps: AgentDepsT = None,
+        _model_settings: RealtimeModelSettings | None = None,
+        _instructions: _instructions.AgentInstructions[AgentDepsT] = None,
+        _toolsets: Sequence[AbstractToolset[AgentDepsT]] | None = None,
+        _capabilities: Sequence[AgentCapability[AgentDepsT]] | None = None,
+        _usage: _usage.RunUsage | None = None,
+        _usage_limits: _usage.UsageLimits | None = None,
+        _metadata: AgentMetadata[AgentDepsT] | None = None,
+        _conversation_id: str | None = None,
+        _run_id: str | None = None,
+        _message_history: Sequence[_messages.ModelMessage] | None = None,
+    ) -> None:
+        self._agent = _agent
+        self._model = _model
+        self._deps = _deps
+        self._model_settings = _model_settings
+        self._instructions = _instructions
+        self._toolsets = _toolsets
+        self._capabilities = _capabilities
+        self._usage = _usage
+        self._usage_limits = _usage_limits
+        self._metadata = _metadata
+        self._conversation_id = _conversation_id
+        self._run_id = _run_id
+        self._message_history = _message_history
+
+    async def answer_webrtc_offer(self, sdp_offer: str) -> WebRTCAnswer:
+        """Resolve this agent's realtime configuration and relay a browser WebRTC SDP offer.
+
+        The resolved instructions and tool definitions are baked into the call, so the provider session
+        is fully configured before (or without) a server sideband attaching. If a sideband later attaches
+        with [`session(provider_session=...)`][pydantic_ai.agent.AgentRealtime.session], it resolves and
+        pushes the same configuration over the control channel again.
+
+        Resolution uses the same machinery as opening a session: dynamic `@agent.instructions` functions
+        and capability `for_run` hooks run, and toolsets are set up (including starting MCP servers) to list
+        their tools, then torn down. Bound `message_history` is not baked into the offer; a sideband session
+        seeds it when it attaches.
+
+        This delegates to
+        [`answer_webrtc_offer`][pydantic_ai.realtime.RealtimeModel.answer_webrtc_offer], which is implemented
+        by the OpenAI and Azure OpenAI realtime models. Other models raise
+        [`UserError`][pydantic_ai.exceptions.UserError]; branch on
+        [`supports_webrtc`][pydantic_ai.realtime.RealtimeModelProfile.supports_webrtc] to check up front.
+        """
+        async with self._agent._resolve_realtime_session(  # pyright: ignore[reportPrivateUsage]
+            self._model,
+            deps=self._deps,
+            model_settings=self._model_settings,
+            instructions=self._instructions,
+            toolsets=self._toolsets,
+            capabilities=self._capabilities,
+            usage=self._usage,
+            usage_limits=self._usage_limits,
+            metadata=self._metadata,
+            conversation_id=self._conversation_id,
+            run_id=self._run_id,
+            message_history=self._message_history,
+        ) as resolved:
+            return await resolved.model.answer_webrtc_offer(
+                sdp_offer,
+                instructions=resolved.instructions,
+                tools=resolved.model_request_parameters.function_tools,
+                model_settings=resolved.model_settings,
+            )
+
+    async def create_client_secret(self, *, expires_after_seconds: int | None = None) -> RealtimeClientSecret:
+        """Resolve this agent's realtime configuration and mint a browser client secret.
+
+        The resolved instructions and tool definitions are baked into the secret, so the provider session
+        is fully configured before (or without) a server sideband attaching. If a sideband later attaches
+        with [`session(provider_session=...)`][pydantic_ai.agent.AgentRealtime.session], it resolves and
+        pushes the same configuration over the control channel again.
+
+        Resolution uses the same machinery as opening a session: dynamic `@agent.instructions` functions
+        and capability `for_run` hooks run, and toolsets are set up (including starting MCP servers) to list
+        their tools, then torn down. Bound `message_history` is not baked into the secret; a sideband session
+        seeds it when it attaches.
+
+        This delegates to [`create_client_secret`][pydantic_ai.realtime.RealtimeModel.create_client_secret],
+        which is implemented by the OpenAI and Azure OpenAI realtime models. Other models raise
+        [`UserError`][pydantic_ai.exceptions.UserError]; branch on
+        [`supports_webrtc`][pydantic_ai.realtime.RealtimeModelProfile.supports_webrtc] to check up front.
+
+        Args:
+            expires_after_seconds: Requested lifetime of the client secret in seconds. The provider may
+                constrain the accepted value.
+        """
+        async with self._agent._resolve_realtime_session(  # pyright: ignore[reportPrivateUsage]
+            self._model,
+            deps=self._deps,
+            model_settings=self._model_settings,
+            instructions=self._instructions,
+            toolsets=self._toolsets,
+            capabilities=self._capabilities,
+            usage=self._usage,
+            usage_limits=self._usage_limits,
+            metadata=self._metadata,
+            conversation_id=self._conversation_id,
+            run_id=self._run_id,
+            message_history=self._message_history,
+        ) as resolved:
+            return await resolved.model.create_client_secret(
+                instructions=resolved.instructions,
+                tools=resolved.model_request_parameters.function_tools,
+                model_settings=resolved.model_settings,
+                expires_after_seconds=expires_after_seconds,
+            )
+
+    @asynccontextmanager
+    async def session(
+        self,
+        *,
+        audio_retention: AudioRetention = 'transcript_only',
+        retain_images_every_n: int = 1,
+        retain_images_max: int | None = 100,
+        provider_session: RealtimeProviderSession | None = None,
+    ) -> AsyncGenerator[RealtimeSession]:
+        """Open a realtime speech-to-speech session backed by the agent's tools.
+
+        The session connects to the bound realtime model and automatically executes tool calls using the
+        agent's registered tools, sending the results back to the model. See
+        [`Agent.realtime`][pydantic_ai.agent.Agent.realtime] for how `run`/`iter` features map to a
+        duplex session.
+
+        Args:
+            audio_retention: How much spoken audio the session retains in its history, on top of
+                transcripts. Defaults to `'transcript_only'` (drop audio bytes); see
+                [`AudioRetention`][pydantic_ai.realtime.AudioRetention].
+            retain_images_every_n: Keep one of every `N` images sent during the session in message
+                history. Defaults to `1` (keep every image); increase for high-rate camera/screen streams.
+            retain_images_max: Bound on how many images stay in message history; once exceeded, the
+                oldest retained image is evicted. Defaults to `100` so a long-running frame stream
+                can't grow memory without limit; `0` retains no images, `None` removes the bound.
+            provider_session: A [`RealtimeProviderSession`][pydantic_ai.realtime.RealtimeProviderSession] to attach a **sideband**
+                control session to, from
+                [`answer_webrtc_offer`][pydantic_ai.realtime.RealtimeModel.answer_webrtc_offer]. When set,
+                the browser exchanges audio with the provider directly over WebRTC and this session runs
+                only the control plane (instructions, tools, transcripts, history) — the audio methods
+                (`send_audio`/`commit_audio`/`clear_audio`) are unavailable and `audio_retention` must be
+                left at `'transcript_only'`. See the realtime docs for the full browser/WebRTC flow.
+        """
+        async with self._agent._open_realtime_session(  # pyright: ignore[reportPrivateUsage]
+            self._model,
+            deps=self._deps,
+            model_settings=self._model_settings,
+            instructions=self._instructions,
+            toolsets=self._toolsets,
+            capabilities=self._capabilities,
+            usage=self._usage,
+            usage_limits=self._usage_limits,
+            metadata=self._metadata,
+            conversation_id=self._conversation_id,
+            run_id=self._run_id,
+            message_history=self._message_history,
+            audio_retention=audio_retention,
+            retain_images_every_n=retain_images_every_n,
+            retain_images_max=retain_images_max,
+            provider_session=provider_session,
+        ) as session:
+            yield session

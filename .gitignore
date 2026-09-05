@@ -99,3 +99,7 @@ state/
 .localsetup-maint/ui-browser-artifacts/
 .localsetup-maint/ui-browser-profiles/
 .localsetup-maint/ui-browser-sessions/
+
+# Upstream runtime modules named docs are part of the canonical SDK payload.
+!vendor/lscli/pydantic_ai_harness/docs/
+!vendor/lscli/pydantic_ai_harness/experimental/docs/

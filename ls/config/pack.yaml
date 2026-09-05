@@ -986,6 +986,7 @@ public_private:
   - AGENTS.md
   - REVIEW.md
   - assets
+  - vendor/lscli
   - config/localsetup_finalizer.yaml
   - install
   - .github
