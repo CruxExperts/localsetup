@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 4ca1a053c55aeffd6078466562b0a37051762bac592fbb748edb76aca8bf54f0
+  source_provenance_hash: 591f279c634381ecd184c4b82d53497254681ebfb5549ee6741c5ea28b3550da
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 53d260d878517588ce87838329fa24c17427ef8b
-artifact_sha256: a9450ae39edc0802a3dc287b8f7c5d1007ca9372212f249bbe947203c18a4be4
+source_commit: bb2c8529454076dbcf7620d71348e7c1d24daf2d
+artifact_sha256: 2bbea92d14ad935f9502a4c452c6e0e9aff7868186509510ecef961459a8f21a
 ---
 # Implementation File Map
 
@@ -940,6 +940,7 @@ artifact_sha256: a9450ae39edc0802a3dc287b8f7c5d1007ca9372212f249bbe947203c18a4be
 | `keep` | `ls/tests/fixtures/omniroute/model-catalog.json` |
 | `keep` | `ls/tests/fixtures/omniroute/openai-models.json` |
 | `keep` | `ls/tests/fixtures/omniroute/task-owner-cases.json` |
+| `keep` | `ls/tests/installed_recovery_fixture.py` |
 | `keep` | `ls/tests/manifest_test_helpers.py` |
 | `keep` | `ls/tests/sdk_file_fixture.py` |
 | `keep` | `ls/tests/sdk_iteration_fixture.py` |
