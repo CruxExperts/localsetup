@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 63ed750f9b865fb766e21a67dfe80aa9fce422496d54ce403c730a4081b1f6a4
+  source_provenance_hash: f8bdfe01296abff5df912d6f710dde8dfcd63ee6868ee5b7a9222645254f33a3
   emitter: generate-docs
 framework_version: 4.4.0
-source_commit: e8b7971a5b63885f157a2bdfaed90c276f77b72f
-artifact_sha256: d38662227de69e8d6c1bd713649b0d1566c72dbc4d91832ce815f45b39645b7a
+source_commit: 7a39bfd9ffdca4543796e355240f7cb0f241a1d0
+artifact_sha256: f62a9511066dcb12753f4096595b460530f170ae030baa5ac1510b04a10f0311
 ---
 # Implementation File Map
 
@@ -293,6 +293,7 @@ artifact_sha256: d38662227de69e8d6c1bd713649b0d1566c72dbc4d91832ce815f45b39645b7
 | `keep` | `ls/docs/HARNESS_AUTOMATION.md` |
 | `keep` | `ls/docs/INPUT_HARDENING_STANDARD.md` |
 | `keep` | `ls/docs/MULTI_PLATFORM_INSTALL.md` |
+| `keep` | `ls/docs/NATIVE_LLM_BACKGROUND_PROPOSAL.md` |
 | `keep` | `ls/docs/NODE_DASHBOARD_CONTROL_BOUNDARY.md` |
 | `keep` | `ls/docs/OUTPUT_AND_DOC_GENERATION.md` |
 | `keep` | `ls/docs/PLATFORM_REGISTRY.md` |

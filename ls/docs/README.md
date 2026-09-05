@@ -100,6 +100,7 @@ Agent Q is the bidirectional handoff layer for PRD/spec exchange over file_drop 
 |---|---|
 | [Versioning](VERSIONING.md) | VERSION source of truth, Conventional Commits, and release sync. |
 | [Documentation alignment summary](_generated/docs-alignment-summary.md) | Generated inventory, truth map, asset manifest, and docs-alignment audit results. |
+| [Native LLM background proposal](NATIVE_LLM_BACKGROUND_PROPOSAL.md) | Proposed installed completion interface and maintenance acceptance fixtures. |
 | [Harness automation](HARNESS_AUTOMATION.md) | Explicit activation rules for autonomous harness capabilities. |
 | [Repository maintenance](REPO_MAINTENANCE.md) | GitHub rulesets, required checks, labels, triage, security settings, and release-maintenance gates. |
 | [Document lifecycle](DOCUMENT_LIFECYCLE_MANAGEMENT.md) | ACTIVE, DRAFT, PROPOSAL, and deprecation rules. |
