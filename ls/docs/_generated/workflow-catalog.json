@@ -2,16 +2,16 @@
   "count": 16,
   "provenance": {
     "artifact_path": "ls/docs/_generated/workflow-catalog.json",
-    "artifact_sha256": "34d845f08c0f7d8de51fc2d48a2d9f60daea0ba8e474eec35d3c3a7179c0e87e",
+    "artifact_sha256": "f2817f6656376eae5f2505d0733d2e2181fa1fb3a2b7b9fcf49415185de52423",
     "emitter": "generate-docs",
     "framework_version": "4.4.1",
     "schema_version": 1,
-    "source_commit": "84ed74e8e69826a9e96a97ec45650f14956bc257",
+    "source_commit": "ea4db466d0fed2ccbf059dcb1e85682f3e6a0283",
     "source_dirty": false,
-    "source_provenance_hash": "5d4b004dc309568a68c3a8ed466bd2ca14781cff960d6cd317bbcdce8548c361",
-    "source_root_id": "c4166944ec0d126f11362db941895b41692093445ecb969893b49dead55af106",
+    "source_provenance_hash": "d126bffd2e6d4af7f7b7e26bdd95719685e752da972955c9f12ef102b10d903f",
+    "source_root_id": "f4137dab9522e0fbaf10edaa696f2e965f4ee9e52f448e1f82d88eaad86c8870",
     "source_tag": null,
-    "source_tree_sha": "58c77b01306024e6e4d0ce36ace5fb542d880716"
+    "source_tree_sha": "0221bf02a7047f3b7437ba0c56fcfa2044112395"
   },
   "workflows": [
     {
@@ -179,7 +179,7 @@
         "convert repo",
         "localsetup convert"
       ],
-      "description": "Use when converting an existing repo to the current Localsetup framework with backup, blocker, install, and verification gates.",
+      "description": "Use when converting an existing repo to the current LocalSetup framework with backup, blocker, install, and verification gates.",
       "display_name": "Pipeline Repo Convert",
       "package": "ls-workflow-pipeline-repo-convert",
       "packs": [
