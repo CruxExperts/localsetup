@@ -1551,3 +1551,33 @@ scripts, or load sibling resources. Older snapshots remain historical messages.
 The agent should refresh before acting in a newly selected directory and after
 learning that its instruction files changed. LocalSetup does not infer new
 provider-disclosure authority from the presence of an instruction file.
+
+## Local image attachments
+
+Repeat `--image PATH` on `run` to attach explicitly selected workspace-relative
+PNG or JPEG files to the initial user prompt. Both headless and interactive input
+support attachments. The profile must declare `images` in its capabilities, and
+the grant must permit reading and disclosing every selected image. Selecting an
+image does not grant either permission or enable a provider capability.
+
+At most four distinct files may be attached, each at most 512 KiB, for 2 MiB
+total. The broker reads owned, regular, single-link files through anchored paths;
+protected paths, symlinks, uncertainty and expired authority retain their normal
+refusals. File bytes, relative path, media type and SHA-256 are bound into the
+explicit coding request. The isolated worker passes decoded bytes as native SDK
+binary content, and message checkpoints retain the actual image data.
+
+Validation checks the transport envelope, byte bounds, hash, and PNG/JPEG
+signatures. It does not decode pixels or prove codec validity; malformed content
+may still be rejected by the provider. No remote image URLs, downloads, format
+conversion, local image viewer or image-generation service are involved. Provider
+support is explicit configuration and must be qualified for the selected endpoint.
+Deterministic Chat Completions fixtures qualify binary request serialization;
+they do not establish visual understanding by a live model.
+
+Explicit attachments are owner-selected initial context, separate from model
+requested tool reads and their optional approval prompts. A missing image grant
+or capability fails before any provider request. Resume retains historical images
+and may add newly selected attachments under fresh authority; changing to an
+incompatible profile still requires a portable branch rather than altering the
+original session history.

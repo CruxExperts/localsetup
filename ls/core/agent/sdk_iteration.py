@@ -13,7 +13,7 @@ MAX_EVENTS = 1024 * 1024
 
 async def iterate(adapter, finder, *, prompt, instructions, tools, store, on_event, check,
                   expires, run_id, conversation_id, history=None, request_limit=8,
-                  tool_limit=16, token_limit=32768, steering=None):
+                  tool_limit=16, token_limit=32768, steering=None, images=()):
     """Use SDK node streaming and StepPersistence with explicit caller boundaries.
 
     `check` is synchronous current supervisor authority, not saved conversation
@@ -25,7 +25,7 @@ async def iterate(adapter, finder, *, prompt, instructions, tools, store, on_eve
     finder.verify_origins()
     from pydantic import TypeAdapter
     from pydantic_ai import Agent
-    from pydantic_ai.messages import ModelMessagesTypeAdapter, UserPromptPart
+    from pydantic_ai.messages import ModelMessagesTypeAdapter, UserPromptPart, BinaryContent
     from pydantic_ai.models import Model
     from pydantic_ai.tools import Tool
     from pydantic_ai.usage import UsageLimits
@@ -44,6 +44,8 @@ async def iterate(adapter, finder, *, prompt, instructions, tools, store, on_eve
         raise ValueError('Iteration requires bounded explicit prompt, instructions and identities')
     if history is not None and (not isinstance(history, bytes) or len(history) > MAX_HISTORY):
         raise ValueError('SDK history exceeds its byte limit')
+    if not isinstance(images,tuple) or len(images)>4 or any(not isinstance(image,BinaryContent) for image in images):
+        raise ValueError('SDK images require bounded native binary content')
     def active():
         check()
         if time.monotonic() >= expires:
@@ -57,7 +59,7 @@ async def iterate(adapter, finder, *, prompt, instructions, tools, store, on_eve
     emitted = 0
     try:
         async with asyncio.timeout(max(0, expires-time.monotonic())):
-            async with agent.iter(prompt, message_history=messages, run_id=run_id,
+            async with agent.iter([prompt,*images] if images else prompt, message_history=messages, run_id=run_id,
                                   conversation_id=conversation_id, usage_limits=limits) as run:
                 async for node in run:
                     active()

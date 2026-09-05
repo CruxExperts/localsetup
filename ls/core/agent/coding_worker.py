@@ -33,12 +33,15 @@ async def run(channel,finder):
         if not isinstance(value,dict) or set(value)!={'messages'}:
             raise ValueError('Invalid steering response')
         return value['messages']
+    from .image_inputs import validate as image_bytes
+    from pydantic_ai.messages import BinaryContent
+    images=tuple(BinaryContent(data=data,media_type=mime) for data,mime in image_bytes(payload.get('images',[])))
     async with model(profile,{profile.credential_env:payload['credential']},finder) as adapter:
         result=await iterate(adapter,finder,prompt=payload['prompt'],instructions=payload['instructions'],
             tools=(*file_tools(finder,channel),process_tool(finder,channel)),store=store,on_event=emit,check=channel._check,
             expires=channel.expires,run_id=payload['run_id'],conversation_id=channel.session,
             history=None if payload['history'] is None else payload['history'].encode(),
-            request_limit=payload['request_limit'],tool_limit=payload['tool_limit'],token_limit=payload['token_limit'],steering=steering)
+            request_limit=payload['request_limit'],tool_limit=payload['tool_limit'],token_limit=payload['token_limit'],steering=steering,images=images)
     checkpoint=store.last_checkpoint
     ack=await channel.request_async('run.finish',{'output':result['output'],'checkpoint':checkpoint,'usage':result['usage']})
     if ack!={'checkpoint':checkpoint}:

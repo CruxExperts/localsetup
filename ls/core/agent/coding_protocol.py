@@ -16,7 +16,7 @@ MAX_STREAM=1024*1024
 
 def request(value):
     keys={'schema_version','run_id','profile','credential','prompt','instructions','history','request_limit','tool_limit','token_limit'}
-    if not isinstance(value,dict) or set(value)!=keys or type(value['schema_version']) is not int or value['schema_version']!=1:
+    if not isinstance(value,dict) or set(value) not in (keys,keys|{'images'}) or type(value['schema_version']) is not int or value['schema_version']!=1:
         raise ValueError('Unsupported coding request schema')
     if not isinstance(value['run_id'],str) or not IDENTIFIER.fullmatch(value['run_id']):
         raise ValueError('Coding request requires a bounded run identity')
@@ -29,6 +29,11 @@ def request(value):
         if type(value[name]) is not int or not low<=value[name]<=high:
             raise ValueError('Coding usage limits require bounded integers')
     profile=parse(value['profile'])
+    if 'images' in value:
+        from .image_inputs import validate
+        validate(value['images'])
+        if value['images'] and 'images' not in profile.capabilities:
+            raise ValueError('Coding profile does not declare image support')
     if not {'tools','streaming'}<=profile.capabilities:
         raise ValueError('Coding profile requires explicit tool and streaming capabilities')
     if not isinstance(value['credential'],str) or len(value['credential'])>4096:
