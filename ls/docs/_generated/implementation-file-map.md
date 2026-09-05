@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: b0f1388f51aa672a76acf73c3d03ce9075a5b733ec556c253580b3ae4022e920
+  source_provenance_hash: 3bdf827e462c8b733469228c7961c5db22d729654222f10f91e2771ff6a5a938
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 7baeba3a77a32e858592864da3f62b221e4a0815
-artifact_sha256: b8f96a31b2ea82d5fcd002eb158e9c65ef0263b661eba7faef7fcd6f599a9216
+source_commit: ab384f35de223f5379efc6e924f608f2efb7272d
+artifact_sha256: 6fcc248e1e6fcba4d2e09e180409dd89e736a03f89a0045cae0d812d51a49e70
 ---
 # Implementation File Map
 
@@ -119,6 +119,7 @@ artifact_sha256: b8f96a31b2ea82d5fcd002eb158e9c65ef0263b661eba7faef7fcd6f599a921
 | `refactor` | `ls/core/agent/native_bundle.py` |
 | `refactor` | `ls/core/agent/operation_journal.py` |
 | `refactor` | `ls/core/agent/process_broker.py` |
+| `refactor` | `ls/core/agent/process_rpc.py` |
 | `refactor` | `ls/core/agent/profiles.py` |
 | `refactor` | `ls/core/agent/provider_client.py` |
 | `refactor` | `ls/core/agent/runtime_install.py` |
@@ -130,6 +131,8 @@ artifact_sha256: b8f96a31b2ea82d5fcd002eb158e9c65ef0263b661eba7faef7fcd6f599a921
 | `refactor` | `ls/core/agent/sdk_iteration.py` |
 | `refactor` | `ls/core/agent/sdk_models.py` |
 | `refactor` | `ls/core/agent/sdk_persistence.py` |
+| `refactor` | `ls/core/agent/sdk_process_tool.py` |
+| `refactor` | `ls/core/agent/sdk_tool_checkpoint.py` |
 | `refactor` | `ls/core/agent/sdk_worker.py` |
 | `refactor` | `ls/core/agent/session_owner.py` |
 | `refactor` | `ls/core/agent/snapshot.py` |
@@ -931,6 +934,7 @@ artifact_sha256: b8f96a31b2ea82d5fcd002eb158e9c65ef0263b661eba7faef7fcd6f599a921
 | `keep` | `ls/tests/sdk_iteration_fixture.py` |
 | `keep` | `ls/tests/sdk_model_fixture.py` |
 | `keep` | `ls/tests/sdk_persistence_fixture.py` |
+| `keep` | `ls/tests/sdk_process_fixture.py` |
 | `keep` | `ls/tests/skill_smoke_commands.yaml` |
 | `keep` | `ls/tests/test_adapter_parser.py` |
 | `keep` | `ls/tests/test_agent_file_broker.py` |
@@ -1009,6 +1013,7 @@ artifact_sha256: b8f96a31b2ea82d5fcd002eb158e9c65ef0263b661eba7faef7fcd6f599a921
 | `keep` | `ls/tests/test_path_contract.py` |
 | `keep` | `ls/tests/test_plugin_packs.py` |
 | `keep` | `ls/tests/test_process_broker.py` |
+| `keep` | `ls/tests/test_process_rpc.py` |
 | `keep` | `ls/tests/test_provenance.py` |
 | `keep` | `ls/tests/test_python_architecture_check.py` |
 | `keep` | `ls/tests/test_python_runtime_contract.py` |
