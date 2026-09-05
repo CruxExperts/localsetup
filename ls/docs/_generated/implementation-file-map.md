@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: b762ac4731d645e0c101187615f9105f649d4984ab6d697d0b00930eb8cdb50c
+  source_provenance_hash: 70663468887ea28d362f71bed7ecbdc1ef59823a050a48e6cac83fe063701c8a
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: bdc4ce1f36b159007092dc28d6248b70134d2af3
-artifact_sha256: c5290a8f109eb278b8fa7fc9b420be8cf75c092022a03d359914e8158580f9b5
+source_commit: c335f45420f4354ef39b2226f6d54c6371686a9c
+artifact_sha256: fe5a1d60674c46f2ee8b36f267151a113ce4c76e0c8de379a89943b9964bdd2f
 ---
 # Implementation File Map
 
@@ -130,6 +130,7 @@ artifact_sha256: c5290a8f109eb278b8fa7fc9b420be8cf75c092022a03d359914e8158580f9b
 | `refactor` | `ls/core/agent/resource_exec.py` |
 | `refactor` | `ls/core/agent/resource_group.py` |
 | `refactor` | `ls/core/agent/run_cli.py` |
+| `refactor` | `ls/core/agent/run_control.py` |
 | `refactor` | `ls/core/agent/run_io.py` |
 | `refactor` | `ls/core/agent/run_options.py` |
 | `refactor` | `ls/core/agent/runtime_install.py` |
@@ -1046,6 +1047,7 @@ artifact_sha256: c5290a8f109eb278b8fa7fc9b420be8cf75c092022a03d359914e8158580f9b
 | `keep` | `ls/tests/test_resource_exec.py` |
 | `keep` | `ls/tests/test_resource_group.py` |
 | `keep` | `ls/tests/test_run_cli.py` |
+| `keep` | `ls/tests/test_run_control.py` |
 | `keep` | `ls/tests/test_runtime_install.py` |
 | `keep` | `ls/tests/test_runtime_integrity.py` |
 | `keep` | `ls/tests/test_runtime_use_lock.py` |
