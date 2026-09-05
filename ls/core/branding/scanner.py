@@ -79,6 +79,22 @@ def repository_paths(root: Path) -> list[str]:
     return paths
 
 
+def _policy_token_lines(name: str, text: str, policy: dict) -> set[int]:
+    # Only the owning, validated, canonically serialized policy has metadata
+    # tokens. Arbitrary JSON token fields and every human rationale stay scanned.
+    if name != "ls/config/branding.json" or text != json.dumps(policy, indent=2) + "\n":
+        return set()
+    inside, result = False, set()
+    for number, line in enumerate(text.splitlines(), 1):
+        if line == '  "exceptions": [':
+            inside = True
+        elif inside and line == '  ],':
+            inside = False
+        elif inside and line.startswith('      "token": '):
+            result.add(number)
+    return result
+
+
 def scan(root: Path, policy: dict, *, paths: list[str] | None = None) -> dict:
     inventory, rows, findings = [], [], []
     for name in repository_paths(root) if paths is None else sorted(set(paths)):
@@ -104,7 +120,12 @@ def scan(root: Path, policy: dict, *, paths: list[str] | None = None) -> dict:
         inventory.append({"path": name, "surface": surface, "sha256": digest,
                           "ownership": "generated" if "/_generated/" in name else "repository"})
         if text is not None:
-            rows.extend(references(name, text))
+            file_rows = references(name, text)
+            metadata_lines = _policy_token_lines(name, text, policy)
+            for row in file_rows:
+                if row["line"] in metadata_lines:
+                    row["classification"] = "policy_metadata"
+            rows.extend(file_rows)
     unresolved = Counter((r["path"], r["line_sha256"], r["token"]) for r in rows if r["classification"] == "unclassified")
     accepted = {}
     for exception in policy["exceptions"]:

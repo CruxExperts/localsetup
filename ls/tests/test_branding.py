@@ -137,3 +137,23 @@ def test_shell_literal_bodies_and_console_output_remain_unclassified() -> None:
         assert references("guide.md", "```bash\n" + body + "\n```")[0]["classification"] == "unclassified"
     rows = references("guide.md", "```console\n$ localsetup doctor\nlocalsetup display\n```")
     assert [r["classification"] for r in rows] == ["technical", "unclassified"]
+
+
+def test_policy_metadata_does_not_exempt_rationale_or_arbitrary_token_fields(tmp_path: Path) -> None:
+    settings = policy()
+    line = "Localsetup dated evidence"
+    settings["exceptions"] = [{"path": "history.md", "line_sha256": line_hash(line), "token": "Localsetup", "count": 1, "kind": "historical_evidence", "reason": "Dated source spelling."}]
+    (tmp_path / "history.md").write_text(line)
+    owner = tmp_path / "ls/config/branding.json"
+    owner.parent.mkdir(parents=True)
+    owner.write_text(json.dumps(settings, indent=2) + "\n")
+    paths = ["history.md", "ls/config/branding.json"]
+    assert scan(tmp_path, settings, paths=paths)["ok"]
+    settings["exceptions"][0]["reason"] = "Localsetup display rationale"
+    owner.write_text(json.dumps(settings, indent=2) + "\n")
+    result = scan(tmp_path, settings, paths=paths)
+    assert len(result["findings"]) == 1
+    assert result["findings"][0]["path"] == "ls/config/branding.json"
+    other = tmp_path / "other.json"
+    other.write_text(json.dumps({"token": "Localsetup"}, indent=2))
+    assert scan(tmp_path, policy(), paths=["other.json"])["findings"]

@@ -1,6 +1,279 @@
 {
   "schema_version": 1,
-  "exceptions": [],
+  "exceptions": [
+    {
+      "path": "ls/docs/audits/codex-bootstrap-pack/AUDIT_REPORT.md",
+      "line_sha256": "1786f56ea18fd183fadacf3579728b1c5b239be1e009ac7e94d43cc7c6b7b69d",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/docs/audits/codex-bootstrap-pack/agent-reports/legacy-inventory.md",
+      "line_sha256": "6268809219946427e618c67f2dac4c71a7605936e26cdae94e8357255eddae1a",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/docs/audits/codex-bootstrap-pack/agent-reports/legacy-inventory.md",
+      "line_sha256": "68934abf4c4fe52a355d6cd339bd776977f86a710c7e276f31456aa7cb38ebd6",
+      "token": "Localsetup",
+      "count": 2,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/docs/audits/codex-bootstrap-pack/agent-reports/legacy-inventory.md",
+      "line_sha256": "d18864888ccb988417ffeae4d5a7fd0af487157f0da184f3f5c5fbcd7f10c806",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/docs/audits/codex-bootstrap-pack/agent-reports/repo-bootstrap-pack-explorer.md",
+      "line_sha256": "cbc2312b51a7a729482b6ff1c55eef8f9727f71f955a0bdceb0046642a52cc68",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/docs/releases/4.4.0.md",
+      "line_sha256": "5a210a24e4d010161349c4f5ee7386a51970d59bd390b1604f793d3b2f2549eb",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/docs/releases/4.4.0.md",
+      "line_sha256": "c7abb61827ec3ae8723ea6fd2bad8c0e4ca0f1f03e5010935d1c850b0e4d83d9",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/docs/releases/4.4.0.md",
+      "line_sha256": "93573e1ced0f63f112bb7fabd3e4698b8cfad72e32810b1c2243a365b0db49b3",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/skills/ls-context-index/docs/source-ledger.md",
+      "line_sha256": "8c22b5fa0168f0d9d3a04eba86957b65a98c911d4bc6fae2a3f1e2affb640bc0",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/skills/ls-context-index/docs/source-ledger.md",
+      "line_sha256": "761f6729e7fbec0f0d9e217112831d78b77d99167ba283613194604731319df2",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/skills/ls-context-index/docs/source-ledger.md",
+      "line_sha256": "ba2dea1eb031052561bcb471fa442cceb0e5292450a471dd2f3312e3a05c2f18",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/skills/ls-omniroute-update/references/source-ledger.md",
+      "line_sha256": "e72365a8270d5c12b94bb7530e83306d8722d64476d7a8fdd28660caecbc107d",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/skills/ls-omniroute-update/references/source-ledger.md",
+      "line_sha256": "06d2ab0c6985daa4599c7b0eb2a56a8eb9edb6978c3e3b2219cbb54c860e363a",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/skills/ls-omniroute-update/references/source-ledger.md",
+      "line_sha256": "b347a70d8a88e7c0996b1aef0d88ed7d3000e50d994a1c5d3554e10aac28b5fe",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/skills/ls-omniroute-update/references/source-ledger.md",
+      "line_sha256": "9ab181434799a36b0fd5e1ae8e01d9bef04315ae3d43bd24638a6c8e3967d5c6",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/skills/ls-omniroute-update/references/source-ledger.md",
+      "line_sha256": "8d919ebadaae8e4fae9c3e051ac603b0c221927f45a4e1f4920eac39b43221fd",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/skills/ls-omniroute-update/references/source-ledger.md",
+      "line_sha256": "903c854100a982c01233a4961ec240ad254da273cdb9cffce44babe10cf145c0",
+      "token": "Localsetup",
+      "count": 2,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/skills/ls-omniroute-update/references/source-ledger.md",
+      "line_sha256": "1769ed76e3f39c01a1074fda01220e4a3f12dd78a615d880cd0be0093ace5f27",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/skills/ls-superpowers/references/upstream/manifest.yaml",
+      "line_sha256": "03dab103ff2f911790cdc8152f6cee6759eaf6b11df3d39a0caaeaec72a77e94",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/skills/ls-superpowers/references/upstream/manifest.yaml",
+      "line_sha256": "b0791e74f9b6b0dcb19738c98a1b4e358406c7e4762afa171918921761aefb1d",
+      "token": "Localsetup",
+      "count": 2,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/skills/ls-superpowers/references/upstream/manifest.yaml",
+      "line_sha256": "c3f638d83dfb601bd274c324b14263677e18243f3675ebbe823ef428bfbc58a0",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/skills/ls-superpowers/references/upstream/manifest.yaml",
+      "line_sha256": "8bd4f0c60134624cfbd8a4f834b49173199917ae67c0f00f061ef618d5ca0541",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/skills/ls-superpowers/references/upstream/manifest.yaml",
+      "line_sha256": "1080160a9b2979276b791131b3515c13e244fb4a4cc3a32d35ed6dcc837efb2a",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/skills/ls-superpowers/references/upstream/manifest.yaml",
+      "line_sha256": "ebd8c2440c0b92f1dd7c40b8eb87262621874853297fecde25624bfa6e188225",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/skills/ls-superpowers/references/upstream/manifest.yaml",
+      "line_sha256": "c5b1d4cfa59cf89aff8d07625b8f66728e66e4c99cf089834925e2ec4c61de31",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/skills/ls-superpowers/references/upstream/manifest.yaml",
+      "line_sha256": "34642c6aaabdda941501ce213d86bb626c1fda217b657e0d69afdec381e2ed60",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/skills/ls-superpowers/references/upstream/manifest.yaml",
+      "line_sha256": "56fde99eb3de2379717adc060c971b73739dc2c8bbc59523c9d30ded49741045",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/skills/ls-superpowers/references/upstream/manifest.yaml",
+      "line_sha256": "8115e1036bd3a93a9968a6bf2b07f060b74ffd9566991869762fe77e41ab12c4",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/skills/ls-superpowers/references/upstream/manifest.yaml",
+      "line_sha256": "acb7bccd078d2c65d398155e1b2f4382b51e90c8d68aa7e3790f39d2328547ac",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/skills/ls-superpowers/references/upstream/manifest.yaml",
+      "line_sha256": "0ae2f325eb5d2687b5a10dd57ae76b215ba629a48a817a900f8593f7b7d56bab",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "historical_evidence",
+      "reason": "Exact product spelling retained in a dated public audit, release, or source provenance record; current guidance is maintained separately."
+    },
+    {
+      "path": "ls/skills/ls-mail-protocol-control/references/ENCRYPTION_MODEL.md",
+      "line_sha256": "e628036bc618ae43a7ad66472db78d665253398e6b971896a1a397dcd1fd8035",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Established mail header or non-model HTTP user-agent identifier retained for protocol compatibility; model request identity uses the framework branding helper."
+    },
+    {
+      "path": "ls/skills/ls-mail-protocol-control/scripts/mail_protocol_support.py",
+      "line_sha256": "4cdfb9c09fb3c107fd26dc8ca178cb1739e91f2abed6d3ccd028b9c53489c895",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Established mail header or non-model HTTP user-agent identifier retained for protocol compatibility; model request identity uses the framework branding helper."
+    },
+    {
+      "path": "ls/tools/refresh_public_skill_index.py",
+      "line_sha256": "8380b8c46a5145e3fcfa1efa03cc8b025300b322bc3ffbced7e9103bcbd08ca5",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Established mail header or non-model HTTP user-agent identifier retained for protocol compatibility; model request identity uses the framework branding helper."
+    },
+    {
+      "path": "ls/tools/skill_validation_scan.py",
+      "line_sha256": "6c13427a097ce919bf8df528994ecb6e1d79e73794a16a17366303c7ffdba542",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Established mail header or non-model HTTP user-agent identifier retained for protocol compatibility; model request identity uses the framework branding helper."
+    }
+  ],
   "visual_reviews": [
     {
       "path": "assets/localsetup-readme-hero.png",

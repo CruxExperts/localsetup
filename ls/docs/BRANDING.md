@@ -152,3 +152,17 @@ console transcripts require a prompt prefix for automatic command recognition.
 This does not exempt the
 rest of the line or block: comments, echoed prose, unlabelled prose and display
 separators still require canonical branding or an exact reviewed exception.
+
+## Historical and protocol records
+
+The policy retains exact spelling in dated public audit and release records,
+source provenance ledgers, and established mail-header and non-model HTTP
+user-agent identifiers. Each exception binds the original line hash, token and
+occurrence count. A changed record or an additional occurrence requires review;
+these entries do not exempt a directory or future files.
+
+Exception `token` values are metadata, not display prose. The scanner recognizes
+that distinction only in the validated owning `ls/config/branding.json`, serialized
+with `json.dumps(policy, indent=2)` and a final newline. It still checks every
+rationale and visual-review description. Arbitrary JSON token fields receive no
+such exemption; noncanonical policy formatting is scanned conservatively.
