@@ -30,6 +30,8 @@ class ProcessGrant:
 
     resource_parent: Path | None = None
     limits: Limits = field(default_factory=Limits)
+    work_bytes: int = 512 * 1024 * 1024
+    temporary_bytes: int = 64 * 1024 * 1024
 
     def __post_init__(self):
         if (not isinstance(self.task, str) or not self.task or not isinstance(self.session, str) or not self.session
@@ -43,6 +45,9 @@ class ProcessGrant:
         if not isinstance(self.limits, Limits) or (self.resource_parent is not None and
                 (not isinstance(self.resource_parent, Path) or not self.resource_parent.is_absolute())):
             raise ValueError('Process resource delegation requires an absolute path and limits')
+        for size in (self.work_bytes,self.temporary_bytes):
+            if type(size) is not int or not 16*1024*1024 <= size <= 1024*1024*1024:
+                raise ValueError('Sandbox writable storage requires bounded integer sizes')
         executable = Path(self.command[0])
         if executable.parent != Path('/usr/bin') or str(executable) != self.command[0]:
             raise ValueError('Process executable must be an explicit system tool under /usr/bin')
@@ -110,15 +115,23 @@ def invocation(runtimes: Path, grant: ProcessGrant, *, task: str, session: str):
         binary = release / 'venv' / 'lscli-native' / 'bwrap'
         if not binary.is_file() or binary.is_symlink() or not os.access(binary, os.X_OK):
             raise RuntimeError('Selected runtime has no sealed executable sandbox bundle')
+        copies=list(release.glob('venv/lib/python*/site-packages/ls/core/agent/sandbox_copy.py'))
+        if len(copies)!=1 or not copies[0].is_file() or copies[0].is_symlink():
+            raise RuntimeError('Selected runtime has no sealed sandbox copy bootstrap')
         _snapshot(grant.staging, runtimes)
         grant.check(task, session)
         command = [str(binary), '--unshare-all', '--unshare-user', '--disable-userns', '--die-with-parent', '--new-session',
                    '--cap-drop', 'ALL', '--ro-bind', '/usr', '/usr', '--symlink', 'usr/bin', '/bin',
                    '--symlink', 'usr/lib', '/lib', '--symlink', 'usr/lib64', '/lib64',
-                   '--proc', '/proc', '--dev', '/dev', '--tmpfs', '/tmp',
-                   '--bind', str(grant.staging), '/work', '--chdir', '/work', '--clearenv',
+                   '--proc', '/proc', '--dev', '/dev',
+                   '--size', str(grant.temporary_bytes), '--tmpfs', '/tmp',
+                   '--ro-bind', str(grant.staging), '/inputs',
+                   '--ro-bind', str(copies[0]), '/lscli-copy.py',
+                   '--size', str(grant.work_bytes), '--tmpfs', '/work',
+                   '--remount-ro', '/', '--chdir', '/work', '--clearenv',
                    '--setenv', 'PATH', '/usr/bin:/bin', '--setenv', 'HOME', '/tmp',
-                   '--setenv', 'LANG', 'C.UTF-8', '--', *grant.command]
+                   '--setenv', 'LANG', 'C.UTF-8', '--',
+                   '/usr/bin/python3', '-I', '-B', '/lscli-copy.py', *grant.command]
         with ExitStack() as stack:
             descriptors = ()
             if grant.resource_parent is not None:

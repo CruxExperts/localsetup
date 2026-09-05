@@ -14,6 +14,7 @@ from .file_rpc import FileHandler, METHODS as FILE_METHODS
 from .operation_journal import IDENTIFIER
 from .process_broker import run_recorded
 from .sandbox import ProcessGrant
+from .resource_group import Limits
 from .session_owner import _separate
 from .snapshot import create
 
@@ -37,12 +38,16 @@ class Recipe:
 
 
 class ProcessHandler(FileHandler):
-    def __init__(self, owner, broker, *, profile, run_id, runtimes, snapshots, recipes):
+    def __init__(self, owner, broker, *, profile, run_id, runtimes, snapshots, recipes, resource_parent=None, limits=None):
         super().__init__(owner,broker,profile=profile,run_id=run_id)
         if not isinstance(recipes,dict) or not recipes or len(recipes)>64 or any(
             not isinstance(name,str) or not IDENTIFIER.fullmatch(name) or not isinstance(value,Recipe)
             for name,value in recipes.items()):
             raise ValueError('Process handler requires bounded explicit named recipes')
+        if limits is not None and not isinstance(limits,Limits):
+            raise ValueError('Process handler requires explicit resource limits')
+        self.resource_parent=resource_parent
+        self.limits=limits if limits is not None else Limits()
         self.recipes=MappingProxyType(dict(recipes))
         self.runtimes,self.snapshots=Path(runtimes).absolute(),Path(snapshots).absolute()
 
@@ -75,7 +80,8 @@ class ProcessHandler(FileHandler):
             broker=type(broker)(replace(broker.grant,expires=expires),broker.lease_root)
             snapshot=create(broker,self.snapshots,recipe.files,task=owner._journal.task,
                             session=owner._journal.session,for_provider=True)
-            grant=snapshot.process(recipe.command,expires=expires)
+            grant=replace(snapshot.process(recipe.command,expires=expires),
+                          resource_parent=self.resource_parent,limits=self.limits)
             manifest=hashlib.sha256(snapshot.manifest.read_bytes()).hexdigest()
             arguments={'name':data['name'],'command':recipe.command,'files':recipe.files,'seconds':recipe.seconds}
             call={'run_id':self.run_id,'call_id':data['call_id'],'name':'run_command',

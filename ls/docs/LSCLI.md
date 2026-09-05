@@ -393,7 +393,8 @@ protected launcher working directory, and an immutable minimal launcher
 environment. The caller must use all three when starting bubblewrap; inheriting
 host loader settings such as LD_PRELOAD would run code before namespace setup.
 The Linux namespace layout exposes `/usr` read-only, a synthetic
-`/dev`, private `/proc` and `/tmp`, and the staging directory writable at `/work`.
+`/dev`, private `/proc`, bounded tmpfs `/tmp` and `/work`, and read-only staging
+at `/inputs`. A sealed copy helper prepares `/work` before the granted command.
 It clears the inherited environment and sets only PATH, HOME and LANG. All
 supported namespaces are isolated, further user namespaces are disabled, Linux
 capabilities are dropped, and parent death terminates the sandbox. The original
@@ -899,7 +900,7 @@ These interfaces follow the [kernel cgroup v2 contract](https://docs.kernel.org/
 
 This module supplies resource ownership and lifecycle. The sealed launcher uses
 the pre-exec membership integration described below. Writable sandbox storage
-must still be bounded before the complete resource gate can pass. Availability
+is bounded as described below; complete preflight remains required. Availability
 of controller names alone does not qualify a host or enable public execution.
 
 Bounded Linux kernel qualification exercised a 64 MiB memory group that killed a
@@ -928,5 +929,34 @@ permission repair, parent-controller change or automatic service is performed.
 
 Omitting `resource_parent` preserves the existing internal namespace qualification
 path; it is not a fully resource-qualified public run. Public dispatch must
-require the final resource preflight. Writable snapshot storage is still a host
-bind mount in this slice and must be bounded before that gate passes.
+require the final resource preflight. The disposable filesystem integration below removes writable host snapshot
+mounts; complete preflight remains required before that gate passes.
+
+## Bounded disposable command storage
+
+Every sandbox invocation mounts its broker-prepared host snapshot read-only at
+`/inputs`. The selected sealed release supplies a standard-library-only bootstrap,
+run with isolated system Python, which copies regular files and directories into
+`/work` before executing the exact granted command. Copying rejects symlinks,
+hardlinks, special files, scan failures and changed file identities, with the
+existing 30,000-entry and 256 MiB input limits. Owner execute permission survives;
+copy errors prevent command execution.
+
+`/work` is a 512 MiB tmpfs by default; `/tmp` is a separate 64 MiB tmpfs. Trusted
+`ProcessGrant.work_bytes` and `temporary_bytes` can each select an integer size
+from 16 MiB through 1 GiB. Filling a filesystem fails the write instead of growing
+host snapshot storage. The sandbox root is remounted read-only. Command edits
+and generated files disappear with the namespace; edits to the original workspace
+still go through the file broker. There is no process-result file writeback.
+
+These filesystem capacities do not replace aggregate memory, CPU and task limits.
+`ProcessHandler` accepts supervisor-owned `resource_parent` and `Limits` and forwards
+them to the snapshot process grant; model requests cannot override them. A complete
+public preflight still must qualify the selected native payload, namespace,
+delegation and pre-exec membership before any provider request. Internal calls
+without a resource parent remain ineligible for a fully qualified public run.
+
+Installed qualification used 16 MiB filesystems and verified `ENOSPC` for both,
+read-only refusal for `/inputs` and the namespace root, and unchanged host input
+after editing `/work`. The same artifact passed normal execution, a memory-limit
+failure and cancellation with suppressed output under a delegated resource group.

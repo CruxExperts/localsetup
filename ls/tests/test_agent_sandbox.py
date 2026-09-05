@@ -16,6 +16,8 @@ def invocation(tmp_path, monkeypatch):
     binary.parent.mkdir(parents=True)
     binary.write_text('fixture')
     binary.chmod(0o700)
+    helper=release/'venv/lib/python3.12/site-packages/ls/core/agent/sandbox_copy.py'
+    helper.parent.mkdir(parents=True);helper.write_text('fixture')
     stage = tmp_path / 'snapshot'
     stage.mkdir(mode=0o700)
     held = []
@@ -43,12 +45,12 @@ def test_invocation_keeps_lease_and_exact_authorized_command(invocation):
             launch.environment['LD_PRELOAD'] = 'untrusted'
         assert held
         assert command[0] == str(binary)
-        assert command[command.index('--')+1:] == list(grant.command)
+        assert command[command.index('--')+1:] == ['/usr/bin/python3','-I','-B','/lscli-copy.py',*grant.command]
         assert all(x in command for x in ('--unshare-all', '--unshare-user', '--disable-userns'))
         assert '--clearenv' in command
-        assert command.count('--bind') == 1
-        assert command[command.index('--bind')+1:command.index('--bind')+3] == [str(grant.staging), '/work']
-        assert str(root) not in command[1:]
+        assert '--bind' not in command
+        assert command[command.index(str(grant.staging))+1]=='/inputs'
+        assert command.count('--size')==2 and '--remount-ro' in command
         assert not grant.disclose_output
     assert not held
 

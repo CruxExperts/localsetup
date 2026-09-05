@@ -6,6 +6,7 @@ from dataclasses import replace
 from ls.core.agent import process_rpc
 from ls.core.agent.file_broker import FileBroker
 from ls.core.agent.process_rpc import ProcessHandler,Recipe
+from ls.core.agent.resource_group import Limits
 from ls.core.agent.supervisor import Outcome
 from ls.tests.test_session_owner import state,own,broker
 
@@ -25,9 +26,12 @@ def test_recipe_projection_identity_and_replay_gate(state,broker,monkeypatch):
     allowed=FileBroker(replace(broker.grant,disclose=('src',)),broker.lease_root)
     with own(state,broker) as owner:
         dispatch=handler(owner,allowed)
+        dispatch.resource_parent=Path('/sys/fs/cgroup/explicit')
+        dispatch.limits=Limits(tasks=8)
         seen=[]
         def run(runtimes,grant,journal,**kwargs):
             assert grant.command==('/usr/bin/true',) and grant.disclose_output
+            assert grant.resource_parent==dispatch.resource_parent and grant.limits==dispatch.limits
             assert (grant.staging/'src/a.txt').read_bytes()==b'original'
             assert grant.expires<=owner.expires
             operation=journal.begin('process',{'argv_sha256':'b'*64,'snapshot_sha256':kwargs['snapshot_sha256']},
