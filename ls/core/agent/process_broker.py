@@ -36,14 +36,14 @@ def run(runtimes: Path, grant: ProcessGrant, *, task: str, session: str, provide
             return Outcome('timed_out', None)
         outcome = supervise(list(launch.command), b'', cwd=launch.cwd,
                             environment=launch.environment, timeout=remaining,
-                            cancel=cancellation, capture=True)
-        # Authority can expire while the process exits or its final pipes drain.
-        if cancellation.is_set():
-            return Outcome('cancelled', outcome.returncode)
-        if time.monotonic() >= grant.expires:
-            return Outcome('timed_out', outcome.returncode)
-        grant.check(task, session)
-        return outcome
+                            cancel=cancellation, capture=True, pass_fds=launch.pass_fds)
+    # Authority can expire during pipe drainage or resource-group teardown.
+    if cancellation.is_set():
+        return Outcome('cancelled', outcome.returncode)
+    if time.monotonic() >= grant.expires:
+        return Outcome('timed_out', outcome.returncode)
+    grant.check(task, session)
+    return outcome
 
 
 def run_recorded(runtimes: Path, grant: ProcessGrant, journal, *, snapshot_sha256: str,

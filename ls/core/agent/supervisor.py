@@ -29,16 +29,19 @@ def _kill(process) -> None:
         pass
 
 
-def supervise(command: list[str], request: bytes, *, cwd: Path, environment: dict[str, str], timeout: float, cancel=None, capture: bool = False) -> Outcome:
+def supervise(command: list[str], request: bytes, *, cwd: Path, environment: dict[str, str], timeout: float, cancel=None, capture: bool = False, pass_fds: tuple[int, ...] = ()) -> Outcome:
     if os.name != 'posix':
         raise RuntimeError('Worker supervision requires qualified POSIX process groups')
     if not math.isfinite(timeout) or timeout <= 0 or len(request) > MAX_REQUEST:
         raise ValueError('Invalid worker deadline or request size')
     if cancel is not None and cancel.is_set():
         return Outcome('cancelled', None)
+    if (not isinstance(pass_fds, tuple) or any(type(fd) is not int or fd < 3 for fd in pass_fds)
+            or len(set(pass_fds)) != len(pass_fds) or len(pass_fds) > 8):
+        raise ValueError('Invalid explicit worker descriptors')
     deadline = time.monotonic() + timeout
     process = subprocess.Popen(command, cwd=cwd, env=environment, stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True, umask=0o077)
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True, umask=0o077, pass_fds=pass_fds)
     output, diagnostics = bytearray(), bytearray()
     status, offset = None, 0
     try:

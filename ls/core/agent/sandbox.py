@@ -1,7 +1,7 @@
 """Task-bound Linux sandbox invocations over private, broker-prepared snapshots."""
 from __future__ import annotations
 
-from contextlib import contextmanager
+from contextlib import contextmanager, ExitStack
 from dataclasses import dataclass, field
 import math
 import os
@@ -15,6 +15,7 @@ from typing import Mapping
 from .file_grants import PROTECTED
 from .native_bundle import _platform
 from .runtime_install import selected
+from .resource_group import Limits, resource_group
 
 
 @dataclass(frozen=True)
@@ -27,6 +28,9 @@ class ProcessGrant:
     disclose_output: bool = False
     revoked: threading.Event = field(default_factory=threading.Event, compare=False, repr=False)
 
+    resource_parent: Path | None = None
+    limits: Limits = field(default_factory=Limits)
+
     def __post_init__(self):
         if (not isinstance(self.task, str) or not self.task or not isinstance(self.session, str) or not self.session
                 or not self.staging.is_absolute() or '..' in self.staging.parts or not math.isfinite(self.expires)
@@ -36,6 +40,9 @@ class ProcessGrant:
                 or any(not isinstance(x, str) or '\x00' in x for x in self.command)
                 or sum(len(x.encode()) for x in self.command) > 16384):
             raise ValueError('Process command must be a bounded immutable argument tuple')
+        if not isinstance(self.limits, Limits) or (self.resource_parent is not None and
+                (not isinstance(self.resource_parent, Path) or not self.resource_parent.is_absolute())):
+            raise ValueError('Process resource delegation requires an absolute path and limits')
         executable = Path(self.command[0])
         if executable.parent != Path('/usr/bin') or str(executable) != self.command[0]:
             raise ValueError('Process executable must be an explicit system tool under /usr/bin')
@@ -50,6 +57,7 @@ class Invocation:
     command: tuple[str, ...]
     cwd: Path
     environment: Mapping[str, str]
+    pass_fds: tuple[int, ...] = ()
 
 
 def _system_boundary(runtimes: Path) -> None:
@@ -111,4 +119,14 @@ def invocation(runtimes: Path, grant: ProcessGrant, *, task: str, session: str):
                    '--bind', str(grant.staging), '/work', '--chdir', '/work', '--clearenv',
                    '--setenv', 'PATH', '/usr/bin:/bin', '--setenv', 'HOME', '/tmp',
                    '--setenv', 'LANG', 'C.UTF-8', '--', *grant.command]
-        yield Invocation(tuple(command), release, MappingProxyType({'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8'}))
+        with ExitStack() as stack:
+            descriptors = ()
+            if grant.resource_parent is not None:
+                group = stack.enter_context(resource_group(grant.resource_parent, grant.limits))
+                fd = stack.enter_context(group.membership())
+                descriptors = (fd,)
+                command = [str(release/'venv/bin/python'), '-I', '-B', '-m',
+                           'ls.core.agent.resource_exec', str(fd), '--', *command]
+            grant.check(task, session)
+            yield Invocation(tuple(command), release,
+                             MappingProxyType({'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8'}), descriptors)

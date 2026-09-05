@@ -897,9 +897,9 @@ teardown is an error and retains the group for reconciliation; it is not a
 successful cancellation claim. Failed setup never yields a membership handle.
 These interfaces follow the [kernel cgroup v2 contract](https://docs.kernel.org/admin-guide/cgroup-v2.html).
 
-This module supplies resource ownership and lifecycle only. The sealed process
-launcher must still integrate race-free pre-exec membership, and writable sandbox
-storage must be bounded before the complete resource gate can pass. Availability
+This module supplies resource ownership and lifecycle. The sealed launcher uses
+the pre-exec membership integration described below. Writable sandbox storage
+must still be bounded before the complete resource gate can pass. Availability
 of controller names alone does not qualify a host or enable public execution.
 
 Bounded Linux kernel qualification exercised a 64 MiB memory group that killed a
@@ -908,3 +908,25 @@ of live descendants which had created separate sessions. CPU quota was verified
 by control-file readback; CPU throttling behavior was not measured in this test.
 These results qualify this lifecycle on the tested host, not every Linux host
 or an installed public agent command.
+
+## Resource membership before sandbox dispatch
+
+An internal `ProcessGrant` can supply an explicit `resource_parent` and `Limits`.
+The sandbox invocation creates the limited group while holding the selected
+runtime lease, then runs that release's isolated Python `resource_exec` module.
+The supervisor inherits only the explicit membership descriptor. The trusted
+child writes its own PID before executing the sealed sandbox binary and closes
+the descriptor first. Failed membership prevents sandbox or payload execution;
+there is no race with a parent moving an already-running payload into a group.
+
+Resource-group teardown encloses process supervision. The broker checks deadline,
+revocation and output authority again after teardown, so cleanup cannot turn an
+expired grant into disclosed output. Group cleanup failure propagates as failure;
+recorded execution retains uncertainty rather than returning a success result.
+The calling process needs migration authority in the delegated hierarchy. No
+permission repair, parent-controller change or automatic service is performed.
+
+Omitting `resource_parent` preserves the existing internal namespace qualification
+path; it is not a fully resource-qualified public run. Public dispatch must
+require the final resource preflight. Writable snapshot storage is still a host
+bind mount in this slice and must be bounded before that gate passes.
