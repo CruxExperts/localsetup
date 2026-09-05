@@ -91,3 +91,11 @@ def load(path: Path, name: str) -> Profile:
     if name not in profiles:
         raise ValueError('Named provider profile does not exist')
     return parse(profiles[name])
+
+
+def wire(profile: Profile) -> dict:
+    """Canonical explicit profile representation used for history compatibility."""
+    return {'base_url': profile.base_url, 'api': profile.api, 'model': profile.model,
+            'credential_env': profile.credential_env, 'timeout_seconds': profile.timeout_seconds,
+            'capabilities': sorted(profile.capabilities),
+            'allow_loopback_http': profile.base_url.startswith('http://')}

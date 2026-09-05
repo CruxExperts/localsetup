@@ -33,6 +33,9 @@ def main(argv: list[str] | None = None) -> int:
     sessions=commands.add_parser('sessions',help='List local session metadata without provider access')
     sessions.add_argument('--state-root',type=Path)
     sessions.add_argument('--format',choices=('text','json'),default='text')
+    branch = commands.add_parser('branch', help='Copy settled compatible history into a fresh session')
+    from .session_branch import arguments as branch_arguments
+    branch_arguments(branch)
     profiles = commands.add_parser('profiles', help='List configured models without provider access')
     profiles.add_argument('--profiles', type=Path)
     profiles.add_argument('--format', choices=('text', 'json'), default='text')
@@ -40,6 +43,9 @@ def main(argv: list[str] | None = None) -> int:
     from .run_options import arguments
     arguments(run)
     args = parser.parse_args(argv)
+    if args.command == 'branch':
+        from .session_branch import main as branch_main
+        return branch_main(args)
     if args.command == 'profiles':
         from .profile_inventory import main as profile_inventory
         return profile_inventory(args.profiles, args.format)

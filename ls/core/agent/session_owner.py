@@ -166,8 +166,10 @@ class SessionOwner:
 
 
 @contextmanager
-def lease(state: Path, *, task: str, session: str, workspace: Path, expires: float, revoked=None, create=True):
+def lease(state: Path, *, task: str, session: str, workspace: Path, expires: float, revoked=None, create=True, new=False):
     """Own a canonical session until context exit; acquire before child leases."""
+    if type(new) is not bool or (new and not create):
+        raise ValueError('New session requires explicit creation mode')
     if type(create) is not bool:
         raise ValueError('Session creation mode must be explicit boolean')
     if any(not isinstance(value, str) or not IDENTIFIER.fullmatch(value) for value in (task, session)):
@@ -186,20 +188,23 @@ def lease(state: Path, *, task: str, session: str, workspace: Path, expires: flo
             try:
                 os.mkdir(name, mode=0o700, dir_fd=fd)
             except FileExistsError:
-                pass
+                if new:
+                    raise FileExistsError('Branch destination session already exists')
             os.fsync(fd)
     finally:
         os.close(fd)
     root = state / name
     identity = {'schema_version': 1, 'task': task, 'session': session,
                 'workspace_sha256': root_digest(workspace)}
-    with runtime_use(root, exclusive=True, timeout=max(0, expires-time.monotonic())):
+    with runtime_use(root, exclusive=True, timeout=0 if new else max(0, expires-time.monotonic())):
         fd = _private(root)
         try:
             if revoked.is_set() or time.monotonic() >= expires:
                 raise PermissionError('Session authority ended while acquiring its lease')
             record = root / 'identity.json'
             if record.exists() or record.is_symlink():
+                if new:
+                    raise FileExistsError('New session identity was created concurrently')
                 record_fd = os.open('identity.json', os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=fd)
                 try:
                     import stat

@@ -14,7 +14,7 @@ import uuid
 
 from ..branding import CLI_COMMAND, CLI_NAME
 from .broker_rpc import _decode
-from .profiles import load
+from .profiles import load, wire
 from .run_options import arguments, defaults
 from .runtime_lock import _directory
 
@@ -135,8 +135,7 @@ def execute(args, streams, cancelled, steering=None, approvals=None):
     if approvals is not None:
         approvals.bind(task,session,args.profile)
     prompt = streams.prompt()
-    raw_profile = {'base_url':profile.base_url,'api':profile.api,'model':profile.model,'credential_env':profile.credential_env,
-        'timeout_seconds':profile.timeout_seconds,'capabilities':sorted(profile.capabilities),'allow_loopback_http':profile.base_url.startswith('http://')}
+    raw_profile = wire(profile)
     payload = {'schema_version':1,'run_id':uuid.uuid4().hex,'profile':raw_profile,
         'credential':profile.credential({profile.credential_env:os.environ.get(_CREDENTIAL,'')}),
         'prompt':prompt,'instructions':'Follow the user task within the explicitly granted tools.','history':None,

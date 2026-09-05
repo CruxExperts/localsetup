@@ -1601,3 +1601,35 @@ or capability fails before any provider request. Resume retains historical image
 and may add newly selected attachments under fresh authority; changing to an
 incompatible profile still requires a portable branch rather than altering the
 original session history.
+
+## Native session branches
+
+Copy a settled checkpoint into a new session without a provider call:
+
+```bash
+lscli branch --source-task TASK --source-session SESSION --checkpoint SHA256 --task NEW_TASK --session NEW_SESSION --profile example --profiles /path/to/profiles.json --workspace /path/to/project --state-root /path/to/private/state
+```
+
+The destination session must never have existed, including as an empty directory.
+The source must have no uncertain operations and its checkpoint must match the
+current journal frontier. The normalized profile must match exactly; changing
+provider, model, API, capabilities, credential-variable name or timeout is refused.
+Portable branches for incompatible profiles remain unavailable in this command.
+
+A successful command returns a schema-1 JSON receipt with `mode: "native"`,
+source task/session/checkpoint, destination task/session/checkpoint, and profile
+digest. The same receipt is retained as private `branch.json` in the destination.
+SDK history bytes are preserved exactly; the new checkpoint binds them to the
+new session and its empty operation journal. Original history is unchanged.
+No file grants, approvals, credentials or operation journal are copied. Resume
+with the returned checkpoint, destination identities and a fresh `run` grant.
+Saved conversation text and historical tool results confer no authority.
+
+Branching uses the source lease and an exclusively reserved destination; target
+lock acquisition never waits while holding the source lease. The default deadline
+is 30 seconds (`--timeout`, maximum 300). Invalid input, incompatible/stale history,
+existing destinations or failed writes return exit 2; cancellation returns 130.
+A failed or interrupted command can leave destination evidence, including a saved
+checkpoint. Inspect that evidence before another attempt; an existing destination
+is never overwritten or automatically retried. Output failure does not roll back
+a completed branch. Unknown source state is not created.
