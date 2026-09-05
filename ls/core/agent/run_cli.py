@@ -161,7 +161,8 @@ def execute(args, streams, cancelled, steering=None, approvals=None):
         elif event.get('event_kind')=='part_start' and event.get('part',{}).get('part_kind')=='tool-call':
             streams.write('Tool: '+safe(event['part'].get('tool_name',''))+'\n')
     def approve(method,data,recipes,check):
-        return approvals.require(method,data,recipes,lambda value:emit('approval_request',value),check)
+        sink=streams.approval if args.interactive else lambda value:emit('approval_request',value)
+        return approvals.require(method,data,recipes,sink,check)
     outcome = run_coding(paths,payload,authority,files,recipes,limits=Limits(),on_event=progress,
                          cancel=cancelled,expected_release=Path(sys.prefix).parent,resume=resume,
                          steering=None if steering is None else steering.take,
@@ -170,6 +171,7 @@ def execute(args, streams, cancelled, steering=None, approvals=None):
     result = {'status':outcome.status,'task':task,'session':session}
     if outcome.data is not None:
         result.update(output=outcome.data['output'],checkpoint=outcome.data['checkpoint'])
+    finish_input(streams)
     # Use a small bounded terminal-delivery window after cancellation/deadline.
     from .run_io import Streams
     terminal = Streams(time.monotonic()+1,threading.Event())
@@ -177,6 +179,11 @@ def execute(args, streams, cancelled, steering=None, approvals=None):
     elif outcome.data is not None:terminal.write(safe(outcome.data['output'])+'\n')
     else:terminal.write('Run '+outcome.status+'\n')
     return codes.get(outcome.status,1)
+
+
+def finish_input(streams):
+    if hasattr(streams,'close'):
+        streams.close()
 
 
 def failure(format, sequence, status, code, diagnostic, *, output_fd=1, diagnostic_fd=2):
@@ -197,20 +204,27 @@ def main(argv=None):
         print(f'{CLI_NAME} run requires its protected installed runtime.',file=sys.stderr);return 3
     if not math.isfinite(args.timeout) or not 0<args.timeout<=3600:
         parser.error('--timeout must be within 0..3600 seconds')
-    if args.approve_tools and (args.control_fd is None or args.format != 'jsonl'):
+    if args.interactive and (args.control_fd is not None or args.format != 'text'):
+        parser.error('--interactive requires text output and excludes --control-fd')
+    if args.approve_tools and not args.interactive and (args.control_fd is None or args.format != 'jsonl'):
         parser.error('--approve-tools requires --control-fd and --format jsonl')
     cancelled=threading.Event()
     previous={sig:signal.signal(sig,lambda *_:cancelled.set()) for sig in (signal.SIGINT,signal.SIGTERM)}
     from .run_io import Streams
     streams=Streams(time.monotonic()+args.timeout,cancelled)
     def failed(status, code, diagnostic):
+        finish_input(streams)
         return failure(args.format,streams.sequence,status,code,diagnostic)
     try:
         from .run_control import listen
         from .steering import Steering
         steering=Steering(cancelled,streams.expires)
         from .approvals import Approvals
-        approvals=Approvals() if args.approve_tools else None
+        approvals=Approvals() if args.approve_tools or args.interactive else None
+        if args.interactive:
+            from .interactive import Terminal
+            streams=Terminal(streams.expires,cancelled)
+            streams.steering,streams.approvals=steering,approvals
         with listen(args.control_fd,cancelled,streams.expires,steering,approvals):
             return execute(args,streams,cancelled,steering,approvals)
     except (InterruptedError,KeyboardInterrupt):
@@ -222,6 +236,8 @@ def main(argv=None):
     except (OSError,ValueError,TypeError,RuntimeError,RecursionError):
         return failed('failed',2,'run failed; verify explicit profiles, grants, runtime readiness and session evidence.')
     finally:
+        if args.interactive and hasattr(streams,'close'):
+            streams.close()
         for sig,handler in previous.items():signal.signal(sig,handler)
 
 

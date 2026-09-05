@@ -11,7 +11,7 @@ existing framework command and Python distribution remain `localsetup`.
 The CLI provides help, version output, read-only diagnostics, offline setup and
 explicit headless coding runs. A verified SDK payload alone does not establish
 per-run sandbox, resource, provider or task-authority readiness. Interactive
-input is still pending; optional per-tool approvals are available through the owner channel.
+terminal input and per-tool approvals use the same protected execution boundary.
 
 ```bash
 lscli --help
@@ -1408,3 +1408,37 @@ are checked while waiting and again before dispatch. No response waits beyond
 the run deadline; owner EOF cancels the wait. Read the normal terminal event and
 process exit status for the actual outcome. Approval requests are local owner
 output, not additional instructions sent to the model.
+
+## Interactive terminal input
+
+Use `lscli run --interactive` instead of `--prompt-stdin`, retaining the same
+explicit profile, grant, workspace and resource-parent options. Both standard
+input and output must be terminals. Interactive mode uses text output, excludes
+an external control descriptor, and always requires per-tool approval. It does
+not discover credentials, load ambient context or broaden the grant file.
+
+Enter multiple lines, then type `/send` on a separate line to submit. A line
+containing `/cancel` aborts entry. During execution:
+
+| Input | Effect |
+| --- | --- |
+| `/steer TEXT` | Explicitly disclose additional text to this run's provider at its next request boundary. |
+| `/approve CHALLENGE` | Approve the exact pending tool request with that displayed challenge. |
+| `/deny CHALLENGE` | Deny that pending request and fail the run before executing it. |
+| `/cancel` | Request cancellation of active work. |
+
+Tool requests appear as complete escaped JSON data followed by their approval
+and denial commands. Inspect the request before choosing; a response merely
+records the decision, and current grants still govern execution. Unknown commands
+or nonmatching challenges do not approve anything. There is no implicit approval
+on Enter. Output escapes terminal control characters in model text and request
+data. Terminal input retains the terminal's normal line-editing behavior.
+
+The initial prompt retains its 128 KiB limit. Terminal input is bounded to
+256 KiB for the whole run and 16 KiB in its line buffer; the host terminal may
+impose a smaller line limit. Steering and approval limits remain as documented
+above. The run deadline includes time spent typing and approving. EOF, terminal
+disconnection and Ctrl-C stop work; expiry remains a timeout. Input reader shutdown
+is bounded, and no new background job survives the command. This interface runs
+one task; session continuation uses explicit `--resume` or `--recover-from` with
+fresh grants on the next invocation.
