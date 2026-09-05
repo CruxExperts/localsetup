@@ -4,8 +4,8 @@
     {
       "category": "bootstrap",
       "context_skill": "ls-plugin-bootstrap-context",
-      "description": "Essential context, safety, git, testing, and review skills for starting work in a Localsetup-aware repository.",
-      "display_name": "Localsetup Bootstrap",
+      "description": "Essential context, safety, git, testing, and review skills for starting work in a LocalSetup-aware repository.",
+      "display_name": "LocalSetup Bootstrap",
       "id": "localsetup-bootstrap",
       "platforms": [
         "codex"
@@ -34,8 +34,8 @@
     {
       "category": "core",
       "context_skill": "ls-plugin-core-context",
-      "description": "Core Localsetup context, indexing, doctor, safety, testing, and TDD capabilities.",
-      "display_name": "Localsetup Core",
+      "description": "Core LocalSetup context, indexing, doctor, safety, testing, and TDD capabilities.",
+      "display_name": "LocalSetup Core",
       "id": "localsetup-core",
       "platforms": [
         "codex"
@@ -61,7 +61,7 @@
       "category": "development",
       "context_skill": "ls-plugin-dev-context",
       "description": "Development, debugging, documentation, audit, Git, review, UI, TypeScript, architecture, release-readiness, and runtime-pattern skills.",
-      "display_name": "Localsetup Dev",
+      "display_name": "LocalSetup Dev",
       "id": "localsetup-dev",
       "platforms": [
         "codex"
@@ -132,7 +132,7 @@
       "category": "frontend",
       "context_skill": "ls-plugin-frontend-context",
       "description": "Frontend, UI, design, accessibility, React, Next.js, Tailwind, browser-debugging, and rich web artifact skills.",
-      "display_name": "Localsetup Frontend",
+      "display_name": "LocalSetup Frontend",
       "id": "localsetup-frontend",
       "platforms": [
         "codex"
@@ -157,7 +157,7 @@
       "category": "architecture",
       "context_skill": "ls-plugin-architecture-context",
       "description": "Architecture, system design, deployment readiness, incident response, diagrams, and technical-debt planning skills.",
-      "display_name": "Localsetup Architecture",
+      "display_name": "LocalSetup Architecture",
       "id": "localsetup-architecture",
       "platforms": [
         "codex"
@@ -177,7 +177,7 @@
       "category": "operations",
       "context_skill": "ls-plugin-ops-context",
       "description": "Operations skills for servers, cron, patching, triage, system inspection, infrastructure automation, Docker, deploy checks, and incident response.",
-      "display_name": "Localsetup Ops",
+      "display_name": "LocalSetup Ops",
       "id": "localsetup-ops",
       "platforms": [
         "codex"
@@ -205,7 +205,7 @@
       "category": "integrations",
       "context_skill": "ls-plugin-integrations-context",
       "description": "Integration skills for provider APIs, transport, DNS, secrets, mail, MCP, proxy management, OmniRoute, data stores, payments, observability, and web extraction.",
-      "display_name": "Localsetup Integrations",
+      "display_name": "LocalSetup Integrations",
       "id": "localsetup-integrations",
       "platforms": [
         "codex"
@@ -252,7 +252,7 @@
       "category": "publishing",
       "context_skill": "ls-plugin-publishing-context",
       "description": "Publishing, release, documentation alignment, PR review, and public repository identity skills.",
-      "display_name": "Localsetup Publishing",
+      "display_name": "LocalSetup Publishing",
       "id": "localsetup-publishing",
       "platforms": [
         "codex"
@@ -286,7 +286,7 @@
       "category": "harness",
       "context_skill": "ls-plugin-harness-context",
       "description": "Automation harness skills for Codex heartbeat, context-index maintenance, cron, and repo finalization.",
-      "display_name": "Localsetup Harness",
+      "display_name": "LocalSetup Harness",
       "id": "localsetup-harness",
       "platforms": [
         "codex"
@@ -307,7 +307,7 @@
       "category": "skill-lifecycle",
       "context_skill": "ls-plugin-skill-lifecycle-context",
       "description": "Skill authoring, discovery, import, normalization, vetting, sandbox testing, and upstream bundle inventory wrappers.",
-      "display_name": "Localsetup Skill Lifecycle",
+      "display_name": "LocalSetup Skill Lifecycle",
       "id": "localsetup-skill-lifecycle",
       "platforms": [
         "codex"
@@ -336,7 +336,7 @@
       "category": "growth-content",
       "context_skill": "ls-plugin-growth-content-context",
       "description": "Marketing, CRO, SEO/GEO, lifecycle email, deliverability, and writing/editing support skills.",
-      "display_name": "Localsetup Growth Content",
+      "display_name": "LocalSetup Growth Content",
       "id": "localsetup-growth-content",
       "platforms": [
         "codex"
@@ -357,7 +357,7 @@
       "category": "specialized",
       "context_skill": "ls-plugin-specialized-context",
       "description": "Specialized human-review, writing, Kilo orchestration, Kilo output, and umbrella workflow skills.",
-      "display_name": "Localsetup Specialized",
+      "display_name": "LocalSetup Specialized",
       "id": "localsetup-specialized",
       "platforms": [
         "codex"
@@ -376,16 +376,16 @@
   ],
   "provenance": {
     "artifact_path": "ls/docs/_generated/plugin-packs.json",
-    "artifact_sha256": "80c5acda7b20d78b0dc0a541351eab3ace385c5f6dba37e565515515f1ba595b",
+    "artifact_sha256": "b69f214b8950772a6d88915da5bb3c844c6d823f00a75b63c1e6084fb0bd08e3",
     "emitter": "generate-docs",
     "framework_version": "4.4.1",
     "schema_version": 1,
-    "source_commit": "ea4db466d0fed2ccbf059dcb1e85682f3e6a0283",
+    "source_commit": "1046ed478226dfae6012c6d7e64de4d9a2831d1f",
     "source_dirty": false,
-    "source_provenance_hash": "d126bffd2e6d4af7f7b7e26bdd95719685e752da972955c9f12ef102b10d903f",
-    "source_root_id": "f4137dab9522e0fbaf10edaa696f2e965f4ee9e52f448e1f82d88eaad86c8870",
+    "source_provenance_hash": "93791cbcc21bc168df9701a29233f5620e9d2038a11aa18542c4f875e0aaec06",
+    "source_root_id": "41e527d1c026b79bb99579d37007f37a919375ae4a2cfba0268a03bb6e3d0158",
     "source_tag": null,
-    "source_tree_sha": "0221bf02a7047f3b7437ba0c56fcfa2044112395"
+    "source_tree_sha": "552ac6c29c20324202c929437623e259313b9904"
   },
   "schema_version": 1
 }

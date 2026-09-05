@@ -4,13 +4,13 @@ version: 4.4
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: d126bffd2e6d4af7f7b7e26bdd95719685e752da972955c9f12ef102b10d903f
+  source_provenance_hash: 93791cbcc21bc168df9701a29233f5620e9d2038a11aa18542c4f875e0aaec06
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: ea4db466d0fed2ccbf059dcb1e85682f3e6a0283
-artifact_sha256: 5ce72e8cd074ca73c973c2b203654f7ef592be10ba59f5f1e11d99bb09555cf9
+source_commit: 1046ed478226dfae6012c6d7e64de4d9a2831d1f
+artifact_sha256: 8289695c8e9c7722b160e2ca5c5b216022abfb0c31d96f5ae7671fc92367a05a
 ---
-# Workflow and module registry (Localsetup)
+# Workflow and module registry (LocalSetup)
 
 This page is generated from `ls/workflows/*/workflow.yaml`.
 
