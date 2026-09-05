@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: d1826cce90b144f6e33c673517a52de387d359eb80624f51f034901538fe8ef4
+  source_provenance_hash: b0f1388f51aa672a76acf73c3d03ce9075a5b733ec556c253580b3ae4022e920
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 21e2b1b2d96f764447f247a8a4117fcab5ccef0b
-artifact_sha256: c61a9064df36e4d50c351189520e05278e8d5dc3ada039360a7bde49870e86ce
+source_commit: 7baeba3a77a32e858592864da3f62b221e4a0815
+artifact_sha256: b8f96a31b2ea82d5fcd002eb158e9c65ef0263b661eba7faef7fcd6f599a9216
 ---
 # Implementation File Map
 
@@ -115,6 +115,7 @@ artifact_sha256: c61a9064df36e4d50c351189520e05278e8d5dc3ada039360a7bde49870e86c
 | `refactor` | `ls/core/agent/file_broker.py` |
 | `refactor` | `ls/core/agent/file_grants.py` |
 | `refactor` | `ls/core/agent/file_recovery.py` |
+| `refactor` | `ls/core/agent/file_rpc.py` |
 | `refactor` | `ls/core/agent/native_bundle.py` |
 | `refactor` | `ls/core/agent/operation_journal.py` |
 | `refactor` | `ls/core/agent/process_broker.py` |
@@ -124,6 +125,7 @@ artifact_sha256: c61a9064df36e4d50c351189520e05278e8d5dc3ada039360a7bde49870e86c
 | `refactor` | `ls/core/agent/runtime_integrity.py` |
 | `refactor` | `ls/core/agent/runtime_lock.py` |
 | `refactor` | `ls/core/agent/sandbox.py` |
+| `refactor` | `ls/core/agent/sdk_file_tools.py` |
 | `refactor` | `ls/core/agent/sdk_imports.py` |
 | `refactor` | `ls/core/agent/sdk_iteration.py` |
 | `refactor` | `ls/core/agent/sdk_models.py` |
@@ -925,6 +927,7 @@ artifact_sha256: c61a9064df36e4d50c351189520e05278e8d5dc3ada039360a7bde49870e86c
 | `keep` | `ls/tests/fixtures/omniroute/openai-models.json` |
 | `keep` | `ls/tests/fixtures/omniroute/task-owner-cases.json` |
 | `keep` | `ls/tests/manifest_test_helpers.py` |
+| `keep` | `ls/tests/sdk_file_fixture.py` |
 | `keep` | `ls/tests/sdk_iteration_fixture.py` |
 | `keep` | `ls/tests/sdk_model_fixture.py` |
 | `keep` | `ls/tests/sdk_persistence_fixture.py` |
@@ -953,6 +956,7 @@ artifact_sha256: c61a9064df36e4d50c351189520e05278e8d5dc3ada039360a7bde49870e86c
 | `keep` | `ls/tests/test_dependency_ledger.py` |
 | `keep` | `ls/tests/test_docs_alignment.py` |
 | `keep` | `ls/tests/test_domain_shapes.py` |
+| `keep` | `ls/tests/test_file_rpc.py` |
 | `keep` | `ls/tests/test_github_starredrepos_skill.py` |
 | `keep` | `ls/tests/test_install_flow.py` |
 | `keep` | `ls/tests/test_install_flow_auto_convert_apply_a.py` |
