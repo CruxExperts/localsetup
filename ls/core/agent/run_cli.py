@@ -110,8 +110,6 @@ def execute(args, streams, cancelled, steering=None, approvals=None):
     from .session_owner import _separate
     from .run_io import safe
     profile = load(args.profiles,args.profile)
-    if profile.api != 'chat_completions':
-        raise ValueError('Public coding currently requires the qualified Chat Completions interface')
     _separate(args.profiles,args.workspace)
     grant, recipes = _grant(args.grant,args.workspace)
     from .context_files import selection, include

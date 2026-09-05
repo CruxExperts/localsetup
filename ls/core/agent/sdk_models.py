@@ -26,7 +26,8 @@ async def model(profile: Profile, environment: dict[str, str], finder: PayloadFi
     }
     async with client(profile, environment, transport=transport) as sdk:
         provider = OpenAIProvider(openai_client=sdk)
-        adapter = OpenAIChatModel if profile.api == 'chat_completions' else OpenAIResponsesModel
+        from .sdk_response_stream import guarded_type
+        adapter = OpenAIChatModel if profile.api == 'chat_completions' else guarded_type(OpenAIResponsesModel)
         instance = adapter(profile.model, provider=provider, profile=lambda inferred: {**DEFAULT_PROFILE, **capabilities})
         finder.verify_origins()
         try:

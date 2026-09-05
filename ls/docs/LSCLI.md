@@ -1082,8 +1082,8 @@ Public command dispatch remains gated until those requirements are integrated.
 Installed deterministic qualification exercised four streamed Chat Completions
 requests: read, conditional edit, sandbox test and final answer. All captured
 requests carried the framework-resolved user-agent, and the final checkpoint was
-read by a fresh owner. This coding sequence does not yet qualify the Responses
-interface or constitute the complete public coding/recovery acceptance suite.
+read by a fresh owner. The Responses qualification below covers that interface
+separately. Neither fixture alone establishes the complete coding/recovery suite.
 
 ## Supervisor-owned coding controller
 
@@ -1226,7 +1226,7 @@ It checks the original checkpoint and journal, unchanged workspace content after
 recovery/continuation, exact operation counts, worker exit, revoked-owner refusal
 and every captured request's runtime-resolved user-agent. This qualifies the
 selected Chat Completions path and these crash windows; power-loss durability,
-Responses coding and broader interactive acceptance remain separate checks.
+Responses crash recovery and broader interactive acceptance remain separate checks.
 
 
 ## Explicit headless coding runs
@@ -1241,7 +1241,7 @@ The profile uses the [explicit provider schema](#explicit-provider-profiles-and-
 Only the selected credential value is passed to sealed Python through a fixed
 internal environment key. The configured source variable name is never forwarded
 as a loader or interpreter option. There is no credential search or provider fallback. Public coding currently
-requires the qualified Chat Completions interface. Prompt input itself authorizes
+supports the qualified Chat Completions and Responses interfaces. Prompt input itself authorizes
 disclosure of that prompt to the selected profile. No workspace context is loaded
 automatically. File reads, writes and provider disclosure remain distinct grants.
 
@@ -1667,7 +1667,7 @@ Resume the returned destination checkpoint with a fresh `run --profile NAME`
 grant. That explicit run authorizes disclosure of its complete history to the
 selected provider; historical permissions are never restored. API qualification
 still applies: portable conversion does not qualify an endpoint, and the public
-coding command currently requires Chat Completions. Compaction is separate from
+coding command supports qualified Chat Completions and Responses. Compaction is separate from
 this loss-aware format conversion.
 
 ## Compaction worker foundation
@@ -1729,3 +1729,36 @@ Exit codes are 0 for accepted compaction, 2 for validation/operation failure,
 cancellation. Diagnostics are bounded and exclude history and credentials. Help
 and argument validation do not initialize providers. Compaction is explicit;
 no automatic schedule or background provider request is enabled.
+
+
+## Responses coding qualification
+
+A profile with `api: "responses"` and explicit `tools`/`streaming` capabilities
+can use `lscli run`. The shared transport sends only the selected `/responses`
+POST endpoint and the framework runtime user agent. Qualification covers streamed
+function calls and outputs, native-history continuation, and bounded local binary
+image serialization in deterministic fixtures; it makes no claim about every
+Responses-compatible endpoint or live visual understanding.
+
+The pinned SDK can expose tool-call parts from a failed or unfinished response.
+LSCli therefore checks each Responses result before tool dispatch or final-output
+acceptance: it must be a completed foreground response with the expected terminal
+status. The raw event stream must have one creation event, increasing sequence
+numbers and exactly one successful terminal event with no subsequent events.
+Failed, incomplete, missing-terminal, contradictory, refused or background results are
+rejected; streamed partial arguments alone never authorize a tool. SDK-native
+response/item/call identifiers remain in compatible history. Changing the profile
+requires an explicit portable branch, and prior evidence remains immutable.
+
+Responses server-side background jobs, continuation polling, hosted tools, remote
+media fetches and provider-managed conversation discovery are not qualified. The
+existing transport rejects alternate methods/endpoints, and no fallback request
+is enabled. Compaction still requires its separately qualified Chat Completions
+interface. Responses crash-recovery windows remain separately unqualified until
+installed fault-injection checks establish their result-ID reconciliation.
+
+
+The Responses stream guard wraps the pinned SDK's private `_response` event source
+and preserves its `.source` close path. SDK upgrades must requalify that adapter
+contract, malformed terminal ordering, tool dispatch, images and native-history
+continuation before enabling the interface in a new runtime.

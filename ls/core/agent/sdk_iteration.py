@@ -27,6 +27,7 @@ async def iterate(adapter, finder, *, prompt, instructions, tools, store, on_eve
     from pydantic_ai import Agent
     from pydantic_ai.messages import ModelMessagesTypeAdapter, UserPromptPart, BinaryContent
     from pydantic_ai.models import Model
+    from pydantic_ai.models.openai import OpenAIResponsesModel
     from pydantic_ai.tools import Tool
     from pydantic_ai.usage import UsageLimits
     from pydantic_ai_harness.step_persistence import StepPersistence
@@ -63,6 +64,12 @@ async def iterate(adapter, finder, *, prompt, instructions, tools, store, on_eve
                                   conversation_id=conversation_id, usage_limits=limits) as run:
                 async for node in run:
                     active()
+                    if Agent.is_call_tools_node(node) and isinstance(adapter, OpenAIResponsesModel):
+                        response = node.model_response
+                        if (response.state != 'complete' or response.finish_reason != 'stop'
+                                or (response.provider_details or {}).get('finish_reason') != 'completed'
+                                or (response.provider_details or {}).get('background')):
+                            raise ValueError('Responses coding requires a completed foreground response before dispatch')
                     if Agent.is_model_request_node(node) and steering is not None:
                         additions = await steering()
                         active()
