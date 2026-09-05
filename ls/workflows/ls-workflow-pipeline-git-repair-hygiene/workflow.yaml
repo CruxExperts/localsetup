@@ -8,7 +8,6 @@ required_skills:
   - ls-framework-compliance
 required_tools: []
 required_docs:
-  - ls/docs/WORKFLOW_QUICK_REF.md
   - ls/docs/GIT_TRACEABILITY.md
 gates:
   - id: safety_gate
