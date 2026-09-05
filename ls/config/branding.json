@@ -4072,6 +4072,22 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Framework wheel metadata fixture preserves the Python distribution identifier."
+    },
+    {
+      "path": "ls/core/agent/sandbox.py",
+      "line_sha256": "0f7ff4fca8711a3fb944bf5801d5c846e4a5bc38e4a2c3d2247b702082dd6049",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Sealed native payload directory is an installed technical path."
+    },
+    {
+      "path": "ls/tests/test_agent_sandbox.py",
+      "line_sha256": "12f2488f191a7ade2e626524b4eb0fac25c9358d1c2afce849cf23b8bf333c8c",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Sealed native payload directory is an installed technical path."
     }
   ],
   "visual_reviews": [

@@ -375,3 +375,49 @@ binary is private and executable; other entries are private regular files.
 A bundle-less runtime remains usable for provider-free diagnostics. Neither
 bundle delivery nor its platform checks enables tool execution: argument
 construction, containment qualification and broker integration remain required.
+
+## Process sandbox invocation foundation
+
+The internal `ProcessGrant` binds an exact immutable argument tuple to a task,
+session, private staging directory and monotonic deadline, with explicit
+revocation and a separate `disclose_output` flag (false by default). Commands
+start with an explicit executable under `/usr/bin`; there is no shell expansion
+unless the granted command itself invokes a shell. Arguments are limited to 256
+entries and 16 KiB of UTF-8 bytes. A grant is supervisor-owned authority, never
+constructed from saved conversation text or a model-generated request alone.
+
+`invocation` holds the selected, verified runtime lease through the caller's
+process teardown. It refuses a missing native payload; it cannot fall back to a
+host executable. The invocation result includes the exact command tuple, a
+protected launcher working directory, and an immutable minimal launcher
+environment. The caller must use all three when starting bubblewrap; inheriting
+host loader settings such as LD_PRELOAD would run code before namespace setup.
+The Linux namespace layout exposes `/usr` read-only, a synthetic
+`/dev`, private `/proc` and `/tmp`, and the staging directory writable at `/work`.
+It clears the inherited environment and sets only PATH, HOME and LANG. All
+supported namespaces are isolated, further user namespaces are disabled, Linux
+capabilities are dropped, and parent death terminates the sandbox. The original
+workspace, runtime tree, broker state, user home and host network are not mounted
+or shared. The host system toolchain remains a trusted platform prerequisite. Runtime roots
+overlapping `/usr` are rejected. The caller must ensure this exposed system tree
+does not contain other protected workspace, broker state or private material;
+such a host layout is not qualified by this backend.
+
+Staging must be a dedicated, exclusively owned broker-prepared snapshot, separate
+from runtime and system trees. Its root is private; contents must be owned
+regular files or directories, with no symlinks, hardlinked files, special modes,
+shared writes, protected context or private-state entries. Inventory is limited
+to 30,000 entries and 256 MiB before invocation. These are input limits, not disk,
+memory or process-count limits on a running command. A caller must not mutate or
+rename staging while it is being checked or used. Do not pass the original
+workspace as staging. Snapshot creation must copy only content authorized for
+process access and omit policy/private material; commands can create disposable
+files in their private snapshot but cannot write those files back themselves.
+
+This foundation constructs invocations; it does not dispatch public tools.
+The owning broker must still prepare snapshots from file grants, supervise total
+deadlines and revocation during execution, bound output and runtime resources,
+authorize provider disclosure of that output, and journal any accepted workspace
+writeback through the file broker. Holding a runtime lease alone supplies none
+of those authorities. Current context loading happens outside this sandbox;
+`AGENTS.md` and protected private directories are not copied into tool snapshots.
