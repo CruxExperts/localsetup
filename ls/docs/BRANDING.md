@@ -98,8 +98,8 @@ nonvisual binary may have an exact `binary_reviews` entry with `path`, `sha256`
 and a nonempty classification `reason`. Changing or removing that binary makes
 the review stale. Do not classify rendered images as nonvisual binary data.
 
-The initial policy intentionally contains no accepted exceptions or visual
-reviews. Repository-wide branding compliance remains unproven until the text,
+The policy records hash-bound visual reviews of the current asset inventory.
+Repository-wide branding compliance remains unproven until the text,
 generated output, installed runtime, compatibility, transport, artifact and visual
 checks all pass. The validator supports that evidence; it does not substitute
 for installed-artifact and visual acceptance.
@@ -122,3 +122,21 @@ separate generated-document receipt required by the publishing workflow:
 uv run --locked python ls/tools/generate_docs_artifacts.py --repo-root .
 uv run --locked python ls/tools/localsetup.py --source-root . generate-docs
 ```
+
+## Current visual assets
+
+The four PNG files in `assets/` are the maintained raster sources; this checkout
+contains no editable vector or layered originals. `assets/README.md` is a derived
+inventory maintained by the documentation alignment tools. The acceptance hashes
+and accessibility evidence live in `ls/config/branding.json`.
+
+| Asset | Embedded product text | Current use |
+|---|---|---|
+| `localsetup-readme-hero.png` | LocalSetup | README introduction |
+| `localsetup-architecture.png` | LocalSetup CLI | README and framework architecture guidance |
+| `localsetup-install-lifecycle.png` | None | Installation and rollback guidance |
+| `localsetup-logo.png` | None | Historical release mark |
+
+Keep asset filenames stable. Review a changed raster in full, including small
+labels, and check each current consumer's alt text. The historical release note
+remains immutable; its descriptive alt text is retained with the release record.

@@ -1,6 +1,39 @@
 {
   "schema_version": 1,
   "exceptions": [],
-  "visual_reviews": [],
+  "visual_reviews": [
+    {
+      "path": "assets/localsetup-readme-hero.png",
+      "sha256": "867d9ca7c124ac03842b6f41f5fc75a42f3b1aad97a3466a91ce8a43c05e5af7",
+      "reviewed_text": "LocalSetup; Portable skills. Deliberate workflows.",
+      "accessibility_evidence": "README.md hero alt names LocalSetup and describes one package library serving selected agent hosts.",
+      "reviewer": "Repository visual review",
+      "reviewed_at": "2026-09-05"
+    },
+    {
+      "path": "assets/localsetup-architecture.png",
+      "sha256": "641e7303fe10d45161cbbeafa4df9d948f91eec78daadba0bb8f7cc39a8b14af",
+      "reviewed_text": "One source. Selected packages.; Keep framework source separate from project adapters.; Source checkout; LocalSetup CLI; Managed library; Project adapters; remaining labels describe selection, dependencies, ownership and verification.",
+      "accessibility_evidence": "README.md, ls/README.md and ls/docs/README.md alt text describe the source-to-library-to-adapters flow and metadata; README.md also states custom skills stay in place.",
+      "reviewer": "Repository visual review",
+      "reviewed_at": "2026-09-05"
+    },
+    {
+      "path": "assets/localsetup-install-lifecycle.png",
+      "sha256": "b515e7ad386c4ed0188f86c7ce016d3fdfe81ba2b0b2fd2467da268a94f0378f",
+      "reviewed_text": "Inspect. Plan. Apply. Verify.; A deliberate install, with a path back.; Confirm scope; Rollback; Restore recorded managed paths; Updates use the same ownership boundaries. No product-name spelling in image.",
+      "accessibility_evidence": "README.md, ls/README.md and ls/docs/MULTI_PLATFORM_INSTALL.md alt text describe inspect, plan, confirm, apply, verify and rollback.",
+      "reviewer": "Repository visual review",
+      "reviewed_at": "2026-09-05"
+    },
+    {
+      "path": "assets/localsetup-logo.png",
+      "sha256": "d7368d6aba29706d5cfc7a0ed0d1198aa3090b654017d501833abf15337437f3",
+      "reviewed_text": "No text. Package and terminal mark.",
+      "accessibility_evidence": "Only image consumer is immutable ls/docs/releases/4.4.0.md; its historical alt text describes the package and terminal mark. Historical product spelling is preserved as release evidence.",
+      "reviewer": "Repository visual review",
+      "reviewed_at": "2026-09-05"
+    }
+  ],
   "binary_reviews": []
 }
