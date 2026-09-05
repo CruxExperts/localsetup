@@ -874,3 +874,37 @@ This is an internal recipe capability, not unrestricted shell permission or
 public approval UI. Hard resource qualification, recovery of lost tool results,
 public supervision/control integration and complete installed coding acceptance
 remain required before public execution is enabled.
+
+## Delegated resource-group lifecycle
+
+`resource_group(parent, Limits(...))` creates one random child under an explicit
+owned cgroup v2 delegation. The parent must already enable `cpu`, `memory` and
+`pids`; this API does not configure the host, change parent controls, or reuse an
+existing group. It refuses other filesystem paths and symlinked parents.
+
+Defaults are 512 MiB memory, zero swap, 64 tasks and 100 percent of one CPU.
+Memory is configurable from 16 MiB through 16 GiB, tasks from 4 through 512,
+and CPU quota from 1 through 800 percent. All limits are integers; CPU uses a
+100 ms quota period. Settings include group OOM termination and are read back
+before a membership descriptor is exposed. The trusted launcher must join through
+that descriptor before starting any untrusted payload, close it before exec,
+and keep cgroup controls inaccessible to the payload. A changed limit refuses
+new membership handles.
+
+Context exit marks the handle expired, writes `cgroup.kill`, waits up to five
+seconds for an empty group, then removes only the newly created child. Failed
+teardown is an error and retains the group for reconciliation; it is not a
+successful cancellation claim. Failed setup never yields a membership handle.
+These interfaces follow the [kernel cgroup v2 contract](https://docs.kernel.org/admin-guide/cgroup-v2.html).
+
+This module supplies resource ownership and lifecycle only. The sealed process
+launcher must still integrate race-free pre-exec membership, and writable sandbox
+storage must be bounded before the complete resource gate can pass. Availability
+of controller names alone does not qualify a host or enable public execution.
+
+Bounded Linux kernel qualification exercised a 64 MiB memory group that killed a
+128 MiB allocation, an eight-task group that refused another fork, and teardown
+of live descendants which had created separate sessions. CPU quota was verified
+by control-file readback; CPU throttling behavior was not measured in this test.
+These results qualify this lifecycle on the tested host, not every Linux host
+or an installed public agent command.
