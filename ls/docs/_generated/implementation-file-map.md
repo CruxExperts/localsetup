@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: b9e38a5c19d24d4aad9269ce970cec8076fa628108e8213c95635a952d2146f4
+  source_provenance_hash: 410c20801ab7b34a6cda4f2e80a315b529e5f1d890f37719518db3cce246ff6e
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 9ad06f236fa1f3039f1c81400474643e5d31ca10
-artifact_sha256: bdeb612683d85664477a126f1df539c2da32e3d402b3207a47727c9eeaa8ac2e
+source_commit: 6a00c957e7b91e1b94be46c1eda869b471960a58
+artifact_sha256: d479e15f4f3fe285eef59dc432b90953fdcb476b20c815d25c51813117aaab52
 ---
 # Implementation File Map
 
@@ -98,6 +98,8 @@ artifact_sha256: bdeb612683d85664477a126f1df539c2da32e3d402b3207a47727c9eeaa8ac2
 | `keep` | `ls/config/plugin-packs.yaml` |
 | `keep` | `ls/config/python-architecture-baseline.json` |
 | `keep` | `ls/config/reference-bundle.schema.json` |
+| `keep` | `ls/config/sdk-build.lock` |
+| `keep` | `ls/config/sdk-runtime.lock` |
 | `keep` | `ls/config/skill-frontmatter.schema.json` |
 | `keep` | `ls/config/workflow.schema.json` |
 | `refactor` | `ls/core/__init__.py` |
@@ -231,6 +233,7 @@ artifact_sha256: bdeb612683d85664477a126f1df539c2da32e3d402b3207a47727c9eeaa8ac2
 | `refactor` | `ls/core/sdk_payload/artifacts.py` |
 | `refactor` | `ls/core/sdk_payload/build.py` |
 | `refactor` | `ls/core/sdk_payload/cli.py` |
+| `refactor` | `ls/core/sdk_payload/dependencies.py` |
 | `refactor` | `ls/core/sdk_payload/integrity.py` |
 | `refactor` | `ls/core/sdk_payload/ownership.py` |
 | `refactor` | `ls/core/sdk_payload/sbom.py` |
@@ -969,6 +972,7 @@ artifact_sha256: bdeb612683d85664477a126f1df539c2da32e3d402b3207a47727c9eeaa8ac2
 | `keep` | `ls/tests/test_scrapling_jobs.py` |
 | `keep` | `ls/tests/test_sdk_artifacts.py` |
 | `keep` | `ls/tests/test_sdk_build.py` |
+| `keep` | `ls/tests/test_sdk_dependencies.py` |
 | `keep` | `ls/tests/test_sdk_payload.py` |
 | `keep` | `ls/tests/test_skill_sandbox_tester.py` |
 | `keep` | `ls/tests/test_tmux_ops.py` |
@@ -1018,6 +1022,7 @@ artifact_sha256: bdeb612683d85664477a126f1df539c2da32e3d402b3207a47727c9eeaa8ac2
 | `keep` | `ls/tools/context_mcp_server.py` |
 | `keep` | `ls/tools/docs_alignment.py` |
 | `keep` | `ls/tools/generate_docs_artifacts.py` |
+| `keep` | `ls/tools/generate_sdk_dependency_locks.py` |
 | `refactor` | `ls/tools/localsetup.py` |
 | `keep` | `ls/tools/python_architecture_check.py` |
 | `keep` | `ls/tools/refresh_public_skill_index.py` |
