@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: c62536e148976c733ef9ca8816f93bfd455a7af996b5b3e1e298ff94795c6159
+  source_provenance_hash: cab7ce6a5e09284a693abcf36e5b382c1ef8817f9ee14c09e7a73c10a2711dcb
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 0fdcf09fe211d4bd54ba3e0d66267fa12e51049c
-artifact_sha256: b86caf40be181dcc8802585eb8c29fdcf09c51afd25a6bfada07cfa03034688a
+source_commit: 484c95958938bb5ac5b4a08a02e24027db6cd5a4
+artifact_sha256: 37df0c5bcd28acb2cace6e3d67d3460acc8dbea347bd717c1fedd0e1db78d659
 ---
 # Implementation File Map
 
@@ -106,6 +106,9 @@ artifact_sha256: b86caf40be181dcc8802585eb8c29fdcf09c51afd25a6bfada07cfa03034688
 | `refactor` | `ls/core/__init__.py` |
 | `refactor` | `ls/core/adapter_markers.py` |
 | `refactor` | `ls/core/adapters.py` |
+| `refactor` | `ls/core/agent/__init__.py` |
+| `refactor` | `ls/core/agent/cli.py` |
+| `refactor` | `ls/core/agent/diagnostics.py` |
 | `refactor` | `ls/core/aliases.py` |
 | `refactor` | `ls/core/apply.py` |
 | `refactor` | `ls/core/apply_journal.py` |
@@ -310,6 +313,7 @@ artifact_sha256: b86caf40be181dcc8802585eb8c29fdcf09c51afd25a6bfada07cfa03034688
 | `keep` | `ls/docs/GLOBAL_HANDOFF_LEDGER.md` |
 | `keep` | `ls/docs/HARNESS_AUTOMATION.md` |
 | `keep` | `ls/docs/INPUT_HARDENING_STANDARD.md` |
+| `keep` | `ls/docs/LSCLI.md` |
 | `keep` | `ls/docs/MULTI_PLATFORM_INSTALL.md` |
 | `keep` | `ls/docs/NODE_DASHBOARD_CONTROL_BOUNDARY.md` |
 | `keep` | `ls/docs/OUTPUT_AND_DOC_GENERATION.md` |
@@ -951,6 +955,7 @@ artifact_sha256: b86caf40be181dcc8802585eb8c29fdcf09c51afd25a6bfada07cfa03034688
 | `keep` | `ls/tests/test_ls_cron_orchestrator_run_trigger.py` |
 | `keep` | `ls/tests/test_ls_kilo_boss_orchestrator_runner.py` |
 | `keep` | `ls/tests/test_ls_linux_patcher_patch_cli.py` |
+| `keep` | `ls/tests/test_lscli_bootstrap.py` |
 | `keep` | `ls/tests/test_manifests.py` |
 | `keep` | `ls/tests/test_mcp_builder_connections.py` |
 | `keep` | `ls/tests/test_omniroute_api_cli.py` |
