@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 412cfe102be963c145b471f864779fcb32f741099388485d845555df4a03793b
+  source_provenance_hash: 4ca1a053c55aeffd6078466562b0a37051762bac592fbb748edb76aca8bf54f0
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: ed785c851062fd6ddfbed28d5e47fa8b2dab1dd1
-artifact_sha256: e370e145a0368827cba9509d4a43d66f44402467d3a5eaad14c3ebab161252d5
+source_commit: 53d260d878517588ce87838329fa24c17427ef8b
+artifact_sha256: a9450ae39edc0802a3dc287b8f7c5d1007ca9372212f249bbe947203c18a4be4
 ---
 # Implementation File Map
 
@@ -125,6 +125,8 @@ artifact_sha256: e370e145a0368827cba9509d4a43d66f44402467d3a5eaad14c3ebab161252d
 | `refactor` | `ls/core/agent/process_rpc.py` |
 | `refactor` | `ls/core/agent/profiles.py` |
 | `refactor` | `ls/core/agent/provider_client.py` |
+| `refactor` | `ls/core/agent/recovery.py` |
+| `refactor` | `ls/core/agent/recovery_worker.py` |
 | `refactor` | `ls/core/agent/resource_exec.py` |
 | `refactor` | `ls/core/agent/resource_group.py` |
 | `refactor` | `ls/core/agent/runtime_install.py` |
@@ -1031,6 +1033,7 @@ artifact_sha256: e370e145a0368827cba9509d4a43d66f44402467d3a5eaad14c3ebab161252d
 | `keep` | `ls/tests/test_python_runtime_contract.py` |
 | `keep` | `ls/tests/test_qc_patrol.py` |
 | `keep` | `ls/tests/test_recorded_file_operations.py` |
+| `keep` | `ls/tests/test_recovery.py` |
 | `keep` | `ls/tests/test_reference_materializer.py` |
 | `keep` | `ls/tests/test_repo_finalizer.py` |
 | `keep` | `ls/tests/test_repo_profile_universal_agent_repo.py` |
