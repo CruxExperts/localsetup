@@ -33,6 +33,9 @@ def main(argv: list[str] | None = None) -> int:
     sessions=commands.add_parser('sessions',help='List local session metadata without provider access')
     sessions.add_argument('--state-root',type=Path)
     sessions.add_argument('--format',choices=('text','json'),default='text')
+    compact = commands.add_parser('compact', help='Compact an explicitly disclosed checkpoint in the protected runtime')
+    from .compact_cli import arguments as compact_arguments
+    compact_arguments(compact)
     branch = commands.add_parser('branch', help='Copy settled compatible history into a fresh session')
     from .session_branch import arguments as branch_arguments
     branch_arguments(branch)
@@ -43,6 +46,13 @@ def main(argv: list[str] | None = None) -> int:
     from .run_options import arguments
     arguments(run)
     args = parser.parse_args(argv)
+    if args.command == 'compact':
+        from .compact_cli import launch as launch_compact
+        from .run_cli import failure
+        try:
+            launch_compact((sys.argv[1:] if argv is None else argv)[1:], args)
+        except (OSError, ValueError, TypeError, RuntimeError):
+            return failure('text', 0, 'failed', 3, 'compaction could not start; verify profile, credential and runtime.')
     if args.command == 'branch':
         from .session_branch import main as branch_main
         return branch_main(args)

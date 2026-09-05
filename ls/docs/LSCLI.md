@@ -1687,5 +1687,45 @@ an empty summary, unsupported media/reasoning in the summarized prefix, no
 compactable prefix, or a result that does not reduce serialized history. Input
 and output histories are each capped at 8 MiB. Original bytes are not mutated.
 This foundation has deterministic Chat Completions transport qualification;
-public compaction commands and durable supervisor acceptance remain unavailable
-until their separate integration gates pass.
+the protected command and durable supervisor acceptance below complete its
+explicit checkpoint workflow.
+
+
+## Compact a checkpoint
+
+```bash
+lscli compact --profile example --checkpoint SHA256 --task TASK --session SESSION --disclose-history --profiles /path/to/profiles.json --workspace /path/to/project --state-root /path/to/private/state --runtime-root /path/to/runtimes --keep-messages 8 --token-limit 32768
+```
+
+`--disclose-history` explicitly authorizes the selected checkpoint's history for
+this profile's provider. The supervisor binds the exact history, normalized
+profile, retained-tail count and token budget to a live task/session grant. The
+checkpoint must be complete, current with the operation journal, and compatible
+with the profile. Uncertain operations block compaction before provider dispatch.
+History and summary text supply no file access, tool permissions or approvals.
+The command is tool-free and requires no process sandbox; it uses the protected
+runtime and qualified streaming Chat Completions transport. Credentials arrive
+in the isolated worker over the inherited owner socket, not command arguments.
+
+The default deadline is 120 seconds (`--timeout`, at most 3600); keep 0–256 tail
+messages and set a total token limit of 1–1,000,000. The SDK can retain additional
+messages to avoid splitting tool pairs. The supervisor verifies the returned
+summary as user context, original leading system parts, an unchanged sufficient
+native tail, bounded reported usage, exact request identity, acknowledgement and
+successful worker exit. It rejects unsupported result shapes rather than relaxing
+these checks; SDK pinned-message rearrangements are not qualified here.
+
+Success returns schema-1 JSON with `source_checkpoint`, new `checkpoint`, profile
+digest and usage (`requests`, `tool_calls`, `input_tokens`, `output_tokens`). The
+new checkpoint and matching private compaction receipt are durable; the original
+checkpoint remains unchanged. Resume the new digest explicitly with `run --resume`
+and a fresh run grant. Failed, cancelled or timed-out workers do not promote their
+results. Interrupted checkpoint/receipt writes or final output delivery can leave
+new evidence without a success response: inspect it before retrying, and never
+infer that a provider request was not billed from a missing acknowledgement.
+
+Exit codes are 0 for accepted compaction, 2 for validation/operation failure,
+3 for protected-runtime bootstrap failure, 124 for deadline expiry and 130 for
+cancellation. Diagnostics are bounded and exclude history and credentials. Help
+and argument validation do not initialize providers. Compaction is explicit;
+no automatic schedule or background provider request is enabled.
