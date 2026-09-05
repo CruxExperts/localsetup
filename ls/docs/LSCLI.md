@@ -723,3 +723,40 @@ operation should be retried; inspect retained immutable evidence instead.
 This establishes protected local checkpoint durability and stale-history gates.
 The Harness StepStore acknowledgement transport, full tool-call/result mapping,
 public resume protocol and installed coding proof remain required.
+
+## Inherited worker acknowledgement channel
+
+`broker_rpc.Channel` uses an already connected, inherited Unix stream socket.
+It never listens on a network address or discovers a peer. The supervisor chooses
+the socket pair, task/session identity, immutable method allowlist, deadline and
+cancellation event, then passes only the intended descriptor to its isolated
+worker. Owning launch code must close unused copies in both processes. Socket
+possession is a transport boundary, not a grant to read, mutate or disclose data.
+
+Frames carry schema version 1, task/session, contiguous sequence, request/result
+type and an object payload; requests also name an allowed method. A four-byte
+network-order length precedes JSON. Duplicate keys, non-finite JSON numbers,
+wrong identities/types/sequences, unknown methods and partial frames refuse
+before handler dispatch. Limits are 16 MiB per frame, 64 MiB combined inbound
+and outbound traffic per endpoint, and 10,000 exchanges. One exchange may be
+outstanding. Nonblocking I/O polls deadline/cancellation at most every 50 ms.
+
+The supervisor calls `serve_once(handler, check=...)` on its owning thread. It
+checks current authority immediately before the handler and before sending the
+result. The handler must validate its method-specific schema, obtain current
+broker grants and finish the intended durable write before returning an
+acknowledgement payload. Exceptions close the channel; exception text is not sent
+to the peer. A handler may already have committed an effect when an error, lost
+connection, revoked authority or output limit prevents acknowledgement.
+
+The worker uses `request` or `request_async`; the async wrapper moves socket
+waiting to a thread and closes the socket on cancellation. Any failed exchange
+closes the channel, and no method retries, reconnects or replays it. Reconcile
+pending effects through the session journal. These transport checks do not bound
+synchronous handler execution; session deadlines and process supervision still
+apply. Result payloads remain untrusted and need disclosure and rendering checks.
+
+Installed qualification currently connects a worker request to the supervisor's
+durable checkpoint method through this channel. Full SDK StepStore adaptation,
+all broker methods, tool-call/result mapping and the public control protocol
+remain required before enabling public agent execution.
