@@ -1,6 +1,6 @@
 ---
 status: PROPOSAL
-version: "1.0"
+version: 4.4
 ---
 
 # Native LLM completion interface for background consumers
