@@ -1669,3 +1669,23 @@ selected provider; historical permissions are never restored. API qualification
 still applies: portable conversion does not qualify an endpoint, and the public
 coding command currently requires Chat Completions. Compaction is separate from
 this loss-aware format conversion.
+
+## Compaction worker foundation
+
+The worker-only `sdk_compaction.compact` adapter uses the pinned Harness
+`SummarizingCompaction` cutoff and `compact_now` primitive. Its summary request
+uses the shared explicit model transport, streaming text with no tools, zero
+retries, one request, caller token/deadline limits, and a 64 KiB summary bound.
+Reported summary usage is returned to the supervisor for accounting. Output tokens
+are requested at `min(token_limit, 4096)`; the total token limit is checked against
+provider-reported usage and cannot guarantee a provider's billing or tokenizer.
+
+The SDK chooses a tail boundary that does not split tool calls from results.
+The adapter preserves that native tail and original system context, but demotes
+the generated summary to historical user context with no authority. It refuses
+an empty summary, unsupported media/reasoning in the summarized prefix, no
+compactable prefix, or a result that does not reduce serialized history. Input
+and output histories are each capped at 8 MiB. Original bytes are not mutated.
+This foundation has deterministic Chat Completions transport qualification;
+public compaction commands and durable supervisor acceptance remain unavailable
+until their separate integration gates pass.
