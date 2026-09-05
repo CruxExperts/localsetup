@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 396e5b52e1727b253888dc8226001f0d0e9bb3856a68a1ca39567427c78f56dc
+  source_provenance_hash: 6db1b174489811cd94e3d6bcc5ff92c532b5c3f323b930dc9783a3a1ae260bc8
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 2a3ab643a0a27bcad69584d37436d2a7f3b9b0a9
-artifact_sha256: bdeb826cb257ca7647e61f8b5e7f1e55d577c3f3bb0d43d79cf366ffe95d775f
+source_commit: 4923d4f24c79808ffcce3651e1bc8b41a2f2c3f3
+artifact_sha256: 247f9e27b8f0479aae22a65a52085293bb7ae55b0fa67252a2ca1544d554446f
 ---
 # Workflow and module registry (Localsetup)
 
@@ -37,7 +37,7 @@ For the framework rules, see [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md).
 | `pipeline-pr-feedback-loop` | `ls-workflow-pipeline-pr-feedback-loop` | Pipeline PR Feedback Loop | Use when turning pull request feedback into fixes, tests, and follow-up review. | pr feedback pipeline | `ls-receiving-code-review`; `ls-tdd-guide`; `ls-pr-reviewer` | n/a |
 | `pipeline-pre-publish` | `ls-workflow-pipeline-pre-publish` | Pipeline Pre Publish | Use when running pre-publish checks, version sync, and framework audit before release actions. | pre publish pipeline | `ls-github-publishing-workflow`; `ls-automatic-versioning`; `ls-framework-audit` | [VERSIONING.md](VERSIONING.md); [SKILL.md](../../ls/skills/ls-github-publishing-workflow/SKILL.md); [SKILL.md](../../ls/skills/ls-framework-audit/SKILL.md) |
 | `pipeline-repo-convert` | `ls-workflow-pipeline-repo-convert` | Pipeline Repo Convert | Use when converting an existing repo to the current Localsetup framework with backup, blocker, install, and verification gates. | repo convert pipeline; convert repo; localsetup convert | `ls-framework-compliance`; `ls-safety-and-backup`; `ls-git-workflows`; `ls-test-runner` | [REPO_CONVERSION.md](REPO_CONVERSION.md); [MULTI_PLATFORM_INSTALL.md](MULTI_PLATFORM_INSTALL.md); `git` |
-| `pipeline-repo-polish` | `ls-workflow-pipeline-repo-polish` | Pipeline Repo Polish | Use when polishing repository docs and scripts for sharing readiness. | repo polish pipeline | `ls-script-and-docs-quality`; `ls-humanizer`; `ls-github-publishing-workflow` | [WORKFLOW_QUICK_REF.md](WORKFLOW_QUICK_REF.md); [README.md](README.md) |
+| `pipeline-repo-polish` | `ls-workflow-pipeline-repo-polish` | Pipeline Repo Polish | Use when polishing repository docs and scripts for sharing readiness. | repo polish pipeline | `ls-script-and-docs-quality`; `ls-humanizer`; `ls-github-publishing-workflow` | [README.md](README.md); [SKILL.md](../../ls/skills/ls-script-and-docs-quality/SKILL.md); [SKILL.md](../../ls/skills/ls-humanizer/SKILL.md); [SKILL.md](../../ls/skills/ls-github-publishing-workflow/SKILL.md) |
 | `pipeline-server-triage-patch` | `ls-workflow-pipeline-server-triage-patch` | Pipeline Server Triage Patch | Use when capturing a Linux server baseline, diagnosing service issues from read-only evidence, and producing a patch plan without executing changes. | server triage patch pipeline | `ls-system-info`; `ls-linux-service-triage`; `ls-linux-patcher` | [WORKFLOW_QUICK_REF.md](WORKFLOW_QUICK_REF.md) |
 | `pipeline-skill-onboard` | `ls-workflow-pipeline-skill-onboard` | Pipeline Skill Onboard | Use when running the skill onboarding pipeline from vetting through sandbox testing. | skill onboarding pipeline | `ls-skill-vetter`; `ls-skill-importer`; `ls-skill-normalizer`; `ls-skill-sandbox-tester` | [WORKFLOW_QUICK_REF.md](WORKFLOW_QUICK_REF.md); [SKILL_IMPORTING.md](SKILL_IMPORTING.md) |
 | `planning-critic-loop` | `ls-workflow-planning-critic-loop` | Planning Critic Loop | Use when creating decision-complete plans through grounding, capped clarification, subagent delegation, and critic iteration. | planning critic loop; planning agent critic; critic reviewed plan | n/a | [DECISION_TREE_WORKFLOW.md](DECISION_TREE_WORKFLOW.md); [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md); [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md); [SKILLS_AND_RULES.md](SKILLS_AND_RULES.md) |
