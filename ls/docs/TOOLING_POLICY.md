@@ -74,6 +74,13 @@ These libraries are pre-approved, listed in `pyproject.toml`, locked in `uv.lock
 | PGPy | `pgpy` | `PGPy>=0.6.0` | Pure-Python OpenPGP encryption and decryption in framework tooling. |
 | jsonschema | `jsonschema` | `jsonschema>=4.0` | Draft 2020-12 validation for Localsetup manifests and Agent Q payloads. |
 
+The managed environment resolves `cryptography==50.0.1` in `uv.lock`; the
+distribution requirement remains `cryptography>=50.0.0`. Dependency update
+validation includes the mail protocol crypto tests and
+`ls/tools/agentq_transport_client/tests/test_agentq_pipeline.py`, which lives
+outside the central `ls/tests/` suite. A passing central suite alone does not
+cover those consumers.
+
 **Shared dependency helper:** Import `lib.deps` at the top of every tool and call `require_deps()` before using any approved library. This gives users an actionable error message instead of a bare `ImportError` if the library is missing.
 
 ```python
