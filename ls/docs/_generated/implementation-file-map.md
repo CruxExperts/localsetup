@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: b24924faa6f83929219f1d3df751d23efcbb8c81e3e3bce7e6884129710f7247
+  source_provenance_hash: 9d35e40adb9e2d41ac4f1d86bc76dd4ce6c96154c76ffaa6e359393093b4682a
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 3c07e8689399acc61d6736f8bb3ff36b8559da46
-artifact_sha256: a0afa8ccf1c8129d8a1b3aef7a2dadec3b68af9f0e356634185196d97b2070c6
+source_commit: 095963b1822bcac1e8b0202ca9b838e4770c43bf
+artifact_sha256: 08b83cd2f79bde60d670a96d610545eb9cfe3dccde3ece21c6d9c8d800fdd8d0
 ---
 # Implementation File Map
 
@@ -111,6 +111,7 @@ artifact_sha256: a0afa8ccf1c8129d8a1b3aef7a2dadec3b68af9f0e356634185196d97b2070c
 | `refactor` | `ls/core/agent/diagnostics.py` |
 | `refactor` | `ls/core/agent/file_broker.py` |
 | `refactor` | `ls/core/agent/file_grants.py` |
+| `refactor` | `ls/core/agent/file_recovery.py` |
 | `refactor` | `ls/core/agent/native_bundle.py` |
 | `refactor` | `ls/core/agent/operation_journal.py` |
 | `refactor` | `ls/core/agent/process_broker.py` |
@@ -998,6 +999,7 @@ artifact_sha256: a0afa8ccf1c8129d8a1b3aef7a2dadec3b68af9f0e356634185196d97b2070c
 | `keep` | `ls/tests/test_python_architecture_check.py` |
 | `keep` | `ls/tests/test_python_runtime_contract.py` |
 | `keep` | `ls/tests/test_qc_patrol.py` |
+| `keep` | `ls/tests/test_recorded_file_operations.py` |
 | `keep` | `ls/tests/test_reference_materializer.py` |
 | `keep` | `ls/tests/test_repo_finalizer.py` |
 | `keep` | `ls/tests/test_repo_profile_universal_agent_repo.py` |
