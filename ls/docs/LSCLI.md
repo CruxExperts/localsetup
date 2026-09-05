@@ -834,6 +834,43 @@ mutation intents; their message/result history is captured by Harness snapshots.
 
 The installed deterministic fixture exercises SDK read → hash-conditional write
 → journal/tool-call/checkpoint linkage → settled history, all across the inherited
-worker channel. This does not yet supply process tools, recovery synthesis for
-lost tool results, public approvals or the complete installed coding proof.
+worker channel. Process recipes are qualified separately below. Recovery synthesis for lost
+tool results, public approvals and the complete installed coding proof remain pending.
 Public agent execution remains disabled until those runtime gates pass.
+
+## SDK process recipes and isolated test commands
+
+`ProcessHandler` extends file/checkpoint dispatch with `process.run`. The trusted
+supervisor supplies up to 64 named immutable `Recipe` values, each binding exact
+argument tuple, explicit input-file tuple and positive time limit. The worker
+can select a recipe name and provide its checkpoint/call ID; it cannot override
+arguments, input files, runtime paths or authority in that request. Commands use
+an explicit `/usr/bin` executable. A shell is available only if its exact argv
+was separately granted in the recipe.
+
+Within one owned session operation, the handler checks checkpoint run/profile
+and journal freshness, rejects already-recorded SDK call IDs, and verifies state
+separation. It caps the recipe deadline to the session and fresh file grant before
+projecting inputs. Every selected file requires read and provider-disclosure
+authority. The private snapshot producer preserves the original workspace;
+process changes affect only that disposable snapshot and are not written back.
+The process intent binds checkpoint, tool-call identity, approved recipe/argv/
+input/time digest and actual snapshot-manifest digest before dispatch.
+
+The existing sealed-runtime sandbox launcher and bounded process supervisor run
+the recipe, capture its process outcome and finish the journal after teardown.
+The handler returns operation ID, status, return code and bounded output, with
+current output-grant and session checks before returning content. Cancellation,
+timeout and output-limit outcomes retain the broker's suppression of partial
+output. Failures after intent remain subject to reconciliation; the SDK bridge
+never retries an uncertain call.
+
+The isolated `sdk_process_tool.process_tool` exposes sequential zero-retry
+`run_command(name)`. It shares native pre-tool checkpoint acknowledgement with the
+file tools. Installed deterministic qualification performs read → conditional
+write → named test command in the actual qualified namespace → settled SDK
+checkpoint. The test runs against a freshly projected copy of the updated file.
+This is an internal recipe capability, not unrestricted shell permission or
+public approval UI. Hard resource qualification, recovery of lost tool results,
+public supervision/control integration and complete installed coding acceptance
+remain required before public execution is enabled.
