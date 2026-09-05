@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 967aa442758781613ba8fff52b4316790e027f816a51726d2ec7e7fdb5bed39a
+  source_provenance_hash: 7f019ad248b3aab693a858b6eb85f829f34616c0e1698a76b238586a2c6f4ca9
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 6e188b7eb752e296fab2c41ab73a2b056f956f42
-artifact_sha256: a7ecc133074ebf758c346887692fe0b97e9a0def738f605e1c62d5af6ab9b4ac
+source_commit: 33aebf9179e0d4db61b21be4d2a77a5017af7c6f
+artifact_sha256: bdeb612683d85664477a126f1df539c2da32e3d402b3207a47727c9eeaa8ac2e
 ---
 # Implementation File Map
 
@@ -228,10 +228,12 @@ artifact_sha256: a7ecc133074ebf758c346887692fe0b97e9a0def738f605e1c62d5af6ab9b4a
 | `refactor` | `ls/core/rollback.py` |
 | `refactor` | `ls/core/schema.py` |
 | `refactor` | `ls/core/sdk_payload/__init__.py` |
+| `refactor` | `ls/core/sdk_payload/artifacts.py` |
 | `refactor` | `ls/core/sdk_payload/build.py` |
 | `refactor` | `ls/core/sdk_payload/cli.py` |
 | `refactor` | `ls/core/sdk_payload/integrity.py` |
 | `refactor` | `ls/core/sdk_payload/ownership.py` |
+| `refactor` | `ls/core/sdk_payload/sbom.py` |
 | `refactor` | `ls/core/selection.py` |
 | `refactor` | `ls/core/shell.py` |
 | `refactor` | `ls/core/skill_index_scrub/__init__.py` |
@@ -965,6 +967,7 @@ artifact_sha256: a7ecc133074ebf758c346887692fe0b97e9a0def738f605e1c62d5af6ab9b4a
 | `keep` | `ls/tests/test_repo_profile_universal_agent_repo.py` |
 | `keep` | `ls/tests/test_scrapling_helper.py` |
 | `keep` | `ls/tests/test_scrapling_jobs.py` |
+| `keep` | `ls/tests/test_sdk_artifacts.py` |
 | `keep` | `ls/tests/test_sdk_build.py` |
 | `keep` | `ls/tests/test_sdk_payload.py` |
 | `keep` | `ls/tests/test_skill_sandbox_tester.py` |
