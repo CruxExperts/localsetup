@@ -1776,3 +1776,52 @@ request and create no checkpoint. Cancellation and deadlines stop acceptance;
 no-op histories and uncertain journals refuse before a provider request. Every
 captured request carries the framework runtime user agent. These deterministic
 checks qualify the selected protocol path, not every provider endpoint.
+
+## Direct completion contract foundation
+
+The provider-free `completion_contract` module defines version-one requests for
+future `localsetup llm complete` integration. The command, isolated completion
+worker and QC compatibility wrapper are not yet available from this foundation.
+A request is at most 1 MiB, rejects duplicate keys and unknown fields, and binds
+its model to the selected explicit profile. Example:
+
+```json
+{
+  "interface_version": 1,
+  "model": "fixture-model",
+  "deadline_seconds": 120,
+  "max_attempts": 1,
+  "max_output_tokens": 8192,
+  "input": {"evidence_id": "fixture", "facts": []},
+  "output_schema": {
+    "type": "object",
+    "properties": {"ok": {"type": "boolean"}},
+    "required": ["ok"],
+    "additionalProperties": false
+  }
+}
+```
+
+`schema_mode` defaults to `native`, which requires the profile's `native_schema`
+capability; explicit `validate_only` requests local validation without claiming
+provider-side enforcement. Both modes validate returned JSON locally. Schemas
+use Draft 2020-12, at most 64 nested containers, and local JSON Pointer references
+only; external references, schema identifiers and unresolved targets refuse.
+The canonical Draft 2020-12 `$schema` declaration is allowed. Schema format names
+are annotations, not additional format checks. JSON output is limited to 1 MiB;
+malformed/duplicate-key output and schema rejection remain distinct outcomes.
+
+The deadline must be positive and at most 3600 seconds; output tokens are limited
+to 1–1,000,000. `max_attempts` must be exactly 1: this delivery does not implement
+the proposal's optional retry loop. Optional `reasoning_effort` accepts `none`,
+`minimal`, `low`, `medium`, `high` or `xhigh`; syntax acceptance does not qualify a
+model's support. Provider parameter qualification remains part of integration.
+
+The result envelope contains `interface_version`, `status`, `data`, `model`,
+`usage`, `request_id`, `attempts` and a stable `reason` code equal to its status.
+Failure data is always null. Exit codes are: succeeded 0, invalid_request 2,
+unavailable 3, refused 4, incomplete 5, malformed 6, schema_rejected 7,
+rate_limited 8, transport_failed 9, uncertain 10, provider_error 11,
+output_limit 12, deadline 124 and cancelled 130. Provider messages, prompts and
+credentials must not become reason strings. Worker dispatch, bounded transport,
+status normalization and installed execution remain required integration gates.
