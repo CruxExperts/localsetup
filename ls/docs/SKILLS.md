@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 79d5c0b453c2088c51bad6deaa55cf1d0b8e2666888f9561347ac11423f6c92f
+  source_provenance_hash: 8554f1f20b430026fb949717ea0b85c5d65d400dbf77342498c6da949f2c130b
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: aa22a9125b697b6759bb3b9f2ae73f47039f4819
-artifact_sha256: 993bb9138d8d557088ccef2877c2058e0f6232fefab3b34e7e87f656555963fa
+source_commit: 806e9770863aa3a9da235bb98c7f7da0f84313c3
+artifact_sha256: ef8a0638272fe3988637bfc63f606e50d6885cb8b2ed9bc16b428c524723896e
 ---
 # Shipped skills catalog
 
@@ -108,7 +108,7 @@ Total shipped skills: 103
 | `ls-tailwind-best-practices` | `development` | 60 | `dev`, `frontend` | `frontend`, `design` | `ls-tailwind-best-practices` | `1.0` | Guide Tailwind CSS best practices. Use for utility-class architecture, responsive design, theming, component styling, and CSS cleanup. |
 | `ls-tech-debt` | `development` | 60 | `architecture`, `dev` | `workflow`, `guidance` | `ls-tech-debt` | `1.0` | Guide technical-debt audits and backlog shaping. Use to identify, rank, scope, and plan debt work without opportunistic rewrites. |
 | `ls-trail-of-bits` | `skill-lifecycle` | 60 | `skill-lifecycle` | `skills`, `inventory` | `ls-trail-of-bits` | `1.0` | Attribution-preserving wrapper for Trail of Bits security skills. Use when evaluating security review, audit, fuzzing, and vulnerability-analysis workflows. |
-| `ls-twilio` | `integrations` | 60 | `integrations` | `external-service`, `integration` | `ls-twilio` | `1.0` | Inventory wrapper for Twilio AI skills and MCP surfaces. Use when planning Twilio messaging, voice, Verify, SendGrid, or communications integrations. |
+| `ls-twilio` | `integrations` | 60 | `integrations` | `external-service`, `integration` | `ls-twilio` | `1.0` | Inventory wrapper for Twilio AI skill paths. Use when planning Twilio messaging, voice, Verify, SendGrid, or communications integrations. |
 | `ls-valyu` | `integrations` | 60 | `integrations` | `external-service`, `integration` | `ls-valyu` | `1.0` | Guide Valyu search integration. Use for Valyu-powered deep search, retrieval workflows, source grounding, and API-key handling. |
 | `ls-vercel-react-best-practices` | `development` | 60 | `dev`, `frontend` | `workflow`, `guidance` | `ls-vercel-react-best-practices` | `1.0` | Guide React and Next.js best practices. Use for component boundaries, data fetching, rendering performance, server/client split, and Vercel-oriented React work. |
 | `ls-vercel-web-design-guidelines` | `development` | 60 | `dev`, `frontend` | `frontend`, `design` | `ls-vercel-web-design-guidelines` | `1.0` | Guide polished web-interface design using Vercel-style product sensibilities. Use for web UI quality, layout, hierarchy, and interaction polish. |
