@@ -190,3 +190,54 @@ inert substitute packages beside the installed distribution and an ambient SDK
 path. All loaded SDK modules came from the private payload; removing the fixture
 restored the exact runtime inventory. This checks namespace substitution, not
 compatibility with every separately installed upstream SDK distribution.
+
+## Explicit provider profiles and transport
+
+The provider foundation reads a named profile from an explicit JSON file without
+creating state or looking for other credentials. Schema version 1 uses this shape:
+
+```json
+{
+  "schema_version": 1,
+  "profiles": {
+    "example": {
+      "base_url": "https://provider.example/v1/",
+      "api": "chat_completions",
+      "model": "MODEL_ID",
+      "credential_env": "LSCLI_EXAMPLE_KEY",
+      "timeout_seconds": 60,
+      "capabilities": ["streaming"],
+      "allow_loopback_http": false
+    }
+  }
+}
+```
+
+Replace the illustrative endpoint and model with an explicitly qualified service.
+`api` is `chat_completions` or `responses`. Capabilities are an explicit subset of
+`streaming`, `tools`, `images`, and `native_schema`; declarations do not establish
+endpoint qualification or grant tool/disclosure authority. The named credential
+variable is resolved only from the environment supplied by the owner. Credential
+values are not stored in profile JSON. Missing credentials fail before transport
+construction. Unknown profile fields, duplicate JSON keys, invalid capabilities,
+and nonpositive/nonfinite timeouts are rejected. Configuration is limited to 1 MiB;
+timeouts are limited to 3600 seconds.
+
+HTTPS uses the locked certifi trust store. HTTP requires explicit opt-in and a
+literal loopback IP. URLs cannot carry credentials, query strings, fragments,
+escaped paths, or traversal segments. The client disables ambient proxy/CA
+settings, implicit SDK credential and organization/project discovery, redirects,
+and SDK/transport retries. The adapter clears the pinned SDK's merged custom-header
+field before body serialization; dependency updates must retain the ambient-header
+regressions because this uses an SDK implementation detail. The final transport permits only POST to the selected
+API endpoint and rebuilds its six wire headers (Host, authorization, user agent,
+content type, accept, and content length) after SDK request construction. Serialized
+JSON requests are limited to 16 MiB; ambient custom headers cannot pass through. Identity is exactly `LocalSetup/<framework_version()>`; SDK
+telemetry-identification headers are removed. There is no fallback endpoint.
+
+Deterministic transport fixtures cover both APIs, final headers, a single attempt
+on rate limiting, and redirect refusal. No live provider compatibility is implied.
+The configured timeout is an HTTP operation timeout; supervisor wall-clock budgets,
+stream/output bounds, cancellation, and task-bound disclosure grants remain
+required before dispatch is enabled. The shared client is not yet connected to
+public agent/completion commands or the existing QC wrapper.
