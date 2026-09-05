@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 1dca19bbb54c75f1c90f791865ab3274f616040ea5ae73de869055e7dce3bdac
+  source_provenance_hash: 02f0e962ca68bc72a8acaba64860a898d4a36e36b0e582497c02e258b0405eb8
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 410e8b56afbf0b4d8c8094db140a7dc4b2eb4485
-artifact_sha256: 56d7518e27228872e1865a0b04c21037ac7d153589137b29761eaf061a377706
+source_commit: ad5895647b2ad595cf50962cf3ed94eba9bfc638
+artifact_sha256: 4c1dab15031f89d9389476096a27a9b8dd6c76994ca106c10039ec28bccf2e41
 ---
 # Implementation File Map
 
@@ -120,6 +120,7 @@ artifact_sha256: 56d7518e27228872e1865a0b04c21037ac7d153589137b29761eaf061a37770
 | `refactor` | `ls/core/agent/file_grants.py` |
 | `refactor` | `ls/core/agent/file_recovery.py` |
 | `refactor` | `ls/core/agent/file_rpc.py` |
+| `refactor` | `ls/core/agent/interactive.py` |
 | `refactor` | `ls/core/agent/native_bundle.py` |
 | `refactor` | `ls/core/agent/operation_journal.py` |
 | `refactor` | `ls/core/agent/process_broker.py` |
@@ -1012,6 +1013,7 @@ artifact_sha256: 56d7518e27228872e1865a0b04c21037ac7d153589137b29761eaf061a37770
 | `keep` | `ls/tests/test_install_flow_wizard_config_edges_2.py` |
 | `keep` | `ls/tests/test_install_flow_wizard_controls.py` |
 | `keep` | `ls/tests/test_install_flow_wizard_flow.py` |
+| `keep` | `ls/tests/test_interactive.py` |
 | `keep` | `ls/tests/test_keepass_secrets_cli_json.py` |
 | `keep` | `ls/tests/test_keepass_secrets_config_resolution.py` |
 | `keep` | `ls/tests/test_keepass_secrets_fake_backend.py` |
