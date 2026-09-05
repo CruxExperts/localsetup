@@ -76,12 +76,13 @@
   ],
   "cli_commands": [],
   "counts": {
-    "docs": 428,
-    "framework_docs": 74,
+    "docs": 493,
+    "framework_docs": 75,
     "generated_docs": 5,
     "platforms": 6,
     "public_docs": 6,
     "skills": 103,
+    "upstream_docs": 64,
     "workflow_packs": 23,
     "workflows": 16
   },
@@ -619,6 +620,16 @@
       "owner_package": "",
       "owner_skill": "ls-framework-compliance",
       "path": "ls/docs/REPO_MAINTENANCE.md",
+      "status": "ACTIVE",
+      "version": "4.4"
+    },
+    {
+      "class": "framework",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "ls-architecture",
+      "path": "ls/docs/SDK_FORK.md",
       "status": "ACTIVE",
       "version": "4.4"
     },
@@ -4371,6 +4382,966 @@
       "path": "ls/workflows/ls-workflow-umbrella-run/SKILL.md",
       "status": "",
       "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/.agents/skills/building-pydantic-ai-agents/SKILL.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/.agents/skills/building-pydantic-ai-agents/SKILL.md",
+        "upstream_sha256": "fc373a55e4e7077ce9fc1b01ac121f465128f74d525f8eca3c495df73c1a510e"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/AGENTS-CORE.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/AGENTS-CORE.md",
+        "upstream_sha256": "978742cce17d0795a1cbe75fa0db6a921bcaa6b3852e43addacbd9920edf6faa"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/ARCHITECTURE.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/ARCHITECTURE.md",
+        "upstream_sha256": "acff72c96a664c824ce128ae1564d46e502d96697e970b2a8d2a8ab18917c00d"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/CAPABILITIES-AND-HOOKS.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/CAPABILITIES-AND-HOOKS.md",
+        "upstream_sha256": "97e06a3c850cbabfa45e75b69ad1825258de932d800bb890522c156f3062f18f"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/COMMON-TASKS.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/COMMON-TASKS.md",
+        "upstream_sha256": "ae43c13ddede7149c6c01dd66d4eb6b196faa24db8bac7bc6d07b8f92f3b5e5f"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/INPUT-AND-HISTORY.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/INPUT-AND-HISTORY.md",
+        "upstream_sha256": "f42cb49c0823a434d8b633993909c3e8e58fc98fa8a561b8edebe8fc1bdf5abd"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/NATIVE-TOOLS.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/NATIVE-TOOLS.md",
+        "upstream_sha256": "bb159103bf3be1f42933d2989edabf10b1d7811dac5b28c5134ccaa03eaa4872"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/ON-DEMAND-CAPABILITIES.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/ON-DEMAND-CAPABILITIES.md",
+        "upstream_sha256": "9b84b9f903337fff6dd32fea40e505a08e2b367f7efe4fafa2331af7f67f9d70"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/ORCHESTRATION-AND-INTEGRATIONS.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/ORCHESTRATION-AND-INTEGRATIONS.md",
+        "upstream_sha256": "0a3ac2bda6a0f25e64141339c5580c91e905ffe8ba2175974fe183e53b07d651"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/TESTING-AND-DEBUGGING.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/TESTING-AND-DEBUGGING.md",
+        "upstream_sha256": "a3b8bfc6e7b3776d99837840b88197d3a73e3df29cd54d223b76b831ad0391f0"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/TOOLS-ADVANCED.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/TOOLS-ADVANCED.md",
+        "upstream_sha256": "7df183e873d9e0e476d03203721d2fcb986200387abae92b9c3aca9dfcc4316c"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/TOOLS-CORE.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/TOOLS-CORE.md",
+        "upstream_sha256": "abf849c0457e18b3cd3c0bd3b5292a3a61c665360d653b4c2a30923692a66987"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/.agents/skills/migrating-langchain-to-pydantic-ai/SKILL.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/.agents/skills/migrating-langchain-to-pydantic-ai/SKILL.md",
+        "upstream_sha256": "637f8625327281482ca15eb0122b29865d1c0f18adcdf2521a41a6821a74ed8b"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/.agents/skills/migrating-langchain-to-pydantic-ai/references/CONCEPT-MAPPING.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/.agents/skills/migrating-langchain-to-pydantic-ai/references/CONCEPT-MAPPING.md",
+        "upstream_sha256": "f3806cec8f719989f4c9994b03b69a2978aa7ac7635dceccfbbdb90ff711081c"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/.agents/skills/migrating-langchain-to-pydantic-ai/references/LOGFIRE-VERIFICATION.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/.agents/skills/migrating-langchain-to-pydantic-ai/references/LOGFIRE-VERIFICATION.md",
+        "upstream_sha256": "3bcd766b0129343b6a92dee72d9714969d22d8fe1bd589b12503b3d1ade21ba5"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/.agents/skills/migrating-langchain-to-pydantic-ai/references/SEMANTIC-GAPS.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/.agents/skills/migrating-langchain-to-pydantic-ai/references/SEMANTIC-GAPS.md",
+        "upstream_sha256": "d216716e07c585c11a5e351f283c6dba264b60c35017d664cf6e2723ae26b628"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/.agents/skills/migrating-langchain-to-pydantic-ai/references/VERIFICATION-AND-CUTOVER.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/.agents/skills/migrating-langchain-to-pydantic-ai/references/VERIFICATION-AND-CUTOVER.md",
+        "upstream_sha256": "fe901c3d5c5c24b23c1f07140058eff026b2b1bbf76d91ca9bfd9c94218db55b"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/.agents/skills/migrating-langchain-to-pydantic-ai/references/WORKAROUND-RECIPES.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/.agents/skills/migrating-langchain-to-pydantic-ai/references/WORKAROUND-RECIPES.md",
+        "upstream_sha256": "4cbd0d4337a938f7bf358e27a3cbf881e8922e31d478a3bb81465d1ff8e79956"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/AGENTS.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/AGENTS.md",
+        "upstream_sha256": "2129060101a52c3081bbd12b788b4153ff5fe1ff9052993fea5134375cf22f31"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/capabilities/AGENTS.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/capabilities/AGENTS.md",
+        "upstream_sha256": "2b3ee0dee69c996fead985aacf4671cf0c4ef88819007dc54f2c9170d9453e03"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/durable_exec/AGENTS.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/durable_exec/AGENTS.md",
+        "upstream_sha256": "f901c38bd4754bdf65817cdb1fd6d9b0d712a4316c76404730dcd685170ca611"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/models/AGENTS.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/models/AGENTS.md",
+        "upstream_sha256": "d12b263700b3f93b2bf883042ecfd3f0d5d98c2eaac1d0bdd19a4c13204b91a0"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/native_tools/AGENTS.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/native_tools/AGENTS.md",
+        "upstream_sha256": "096d45eacdbd1194fc79a542cf6dd8636556c48b1b76cd075bf112cc02cb9689"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/profiles/AGENTS.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/profiles/AGENTS.md",
+        "upstream_sha256": "a4f9edfd88b0e5bfddab4b245bb70be3b83d76bebeaf9e19422892b0cd1c36a7"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/providers/AGENTS.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/providers/AGENTS.md",
+        "upstream_sha256": "9716b4c8823d0d92e877fce5117b52fe4da3029fda5405f54b8b1abbff9580e4"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/realtime/AGENTS.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/realtime/AGENTS.md",
+        "upstream_sha256": "b4da4e8f9eb373e981130deb2b6e62f1fded2a5a1a29f1fc3f0062f20789a4d2"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/toolsets/AGENTS.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/toolsets/AGENTS.md",
+        "upstream_sha256": "7c8ca74b327d743679523662e6db24a7c27622ee08b1f8654094fee8b4ef7812"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai/ui/AGENTS.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-slim",
+        "source_url": "https://github.com/pydantic/pydantic-ai/blob/7bde4d2a215ebf26b9790aca5985046dcf227a19/pydantic_ai_slim/pydantic_ai/ui/AGENTS.md",
+        "upstream_sha256": "3deb6ef175bc5f5a226d7d14d9c1c2d30e9d4de92f640ed9782abcb085438410"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/.agents/skills/pydantic-ai-harness/SKILL.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/.agents/skills/pydantic-ai-harness/SKILL.md",
+        "upstream_sha256": "1492bbc887d264d6e93dd8ad514c3c5ae1f4e5fac41d8e1267287900d8877e61"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/.agents/skills/pydantic-ai-harness/references/CODE-MODE.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/.agents/skills/pydantic-ai-harness/references/CODE-MODE.md",
+        "upstream_sha256": "561eaf1de58d8f373eb33c019b08f0a8298854c7e92e2af44055127bb8c60a16"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/advisor/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/advisor/README.md",
+        "upstream_sha256": "0a933ae22b350326fef1ec125848c1bc1e05e517172f404bf3be729ef2e7762d"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/browser_use/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/browser_use/README.md",
+        "upstream_sha256": "3f875bcc91a12b463121637e8f1ab834e58749915c792e665cd2e3507efb4657"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/capability_creation/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/capability_creation/README.md",
+        "upstream_sha256": "f21d5029cc2d20efac653b3edd6d30e123af46a6d0bc6ec07a58b62ad316fb30"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/code_mode/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/code_mode/README.md",
+        "upstream_sha256": "6453df369df28fc50b9b2bc38b5f16398917ee7798a40fe1d6f49aaccf39898e"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/coder/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/coder/README.md",
+        "upstream_sha256": "ebdc8d6d49a5a30320200f24e804a1b6d9811261e6578a02ecc4f33f57fdde2c"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/compaction/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/compaction/README.md",
+        "upstream_sha256": "9f5c0e6e04b5662b0b6986ec26de702059c7b93e8f6e7f39b4065c43e4510a4d"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/conversation_search/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/conversation_search/README.md",
+        "upstream_sha256": "1630febdc1dd784fcc1560e90e55f9c6c50e56998f4b60d195758622b522f2f1"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/dynamic_workflow/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/dynamic_workflow/README.md",
+        "upstream_sha256": "12f9eb6447053b122755183534a8365705406c49c5bbd33c7db702cc4f31273e"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/exa/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/exa/README.md",
+        "upstream_sha256": "17d42691da6ead77705a654c2957d07eda820cc1dcfbaf6f558870322359c3bd"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/experimental/acp/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/experimental/acp/README.md",
+        "upstream_sha256": "065bf14432d5964800abba94294f341653afb99ed4cd216055da3987c4d8dc0a"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/filesystem/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/filesystem/README.md",
+        "upstream_sha256": "77c882be8cfa65f1273a06f685170e14c6e00efeffcb5dfe7ff8902e17468e74"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/guardrails/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/guardrails/README.md",
+        "upstream_sha256": "6c440eb0afdf22aa3c9da70150ec66b8c55ee31dae7a50458f12bb4867531e9f"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/localstack/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/localstack/README.md",
+        "upstream_sha256": "0c0e206f65897f065b2fb31c64d42004deee327dcd7c2be361c5b80765125268"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/logfire/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/logfire/README.md",
+        "upstream_sha256": "c84384ebee135aca888fe122f1f0cde6b96f9eba879be0b7135083d35532e98c"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/macroscope/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/macroscope/README.md",
+        "upstream_sha256": "8ffe4af86eaa5e24cbf88aeb68a689968c2c4480625ae58c0c4ba2a4495d6f33"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/media/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/media/README.md",
+        "upstream_sha256": "6034e8467b550ce821ae2b021874aee3d6047f3fed1ebabbd1b7fcbffc8f371e"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/memory/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/memory/README.md",
+        "upstream_sha256": "7a03625f3c3a343b8683f852b282948db4a4f56be677a4d9e559aa062f45e28d"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/modal_sandbox/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/modal_sandbox/README.md",
+        "upstream_sha256": "c83e2bb14859e94e951e250e63c9cf2f91c18bc597d9f42d2b282a2dea112879"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/planning/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/planning/README.md",
+        "upstream_sha256": "a51027c4c3ab64f690dd90e3a1fdf2956bbc4015d30f97eb6e0911599a518037"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/playwright/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/playwright/README.md",
+        "upstream_sha256": "7e595729f569785507f4c84434285cd958a678d883b6ae829b2b01166a4dfd47"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/prompt_injection_defender/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/prompt_injection_defender/README.md",
+        "upstream_sha256": "02b284f9a7167373a85e99dfa8059685696a44780a51d5e2654d5dc25e834bb3"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/pydantic_ai_docs/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/pydantic_ai_docs/README.md",
+        "upstream_sha256": "3f5f50c68621275239fea07fb8bc91ea3ccdb49cbca5d1d40e45f32823397bb2"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/repo_context/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/repo_context/README.md",
+        "upstream_sha256": "dae94d3a9f0782b5aaf9b14d8dc0d5305512467e5613fe8629b88fcfa528a03b"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/researcher/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/researcher/README.md",
+        "upstream_sha256": "87a2226eb98da14418e1a11d0d11f22b4f304515fad881f2db4f34776927ed6e"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/shell/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/shell/README.md",
+        "upstream_sha256": "6160d6ba5dd81de6ddf02945324d889c8e10dfe51c1a3ff316ee4a92b835383a"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/skills/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/skills/README.md",
+        "upstream_sha256": "7e1c8a0f4ce40f27d27b56d2a43cd6bb9a43bb60f4da72a53ae7ba3d07650ee5"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/spend/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/spend/README.md",
+        "upstream_sha256": "4bbcb0ae512c18ac3fe813e48052d048d4c56e66a18991766c8d84b8945bcac2"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/stackone/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/stackone/README.md",
+        "upstream_sha256": "2098998f7362fd1548ce5f74ae05445406455a91809ad85979f214cf03b17d5b"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/step_persistence/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/step_persistence/README.md",
+        "upstream_sha256": "66bbd00b33adb7038a00fd040fdee9cced4e3babd029e530096f0a3111978c14"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/subagents/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/subagents/README.md",
+        "upstream_sha256": "2be7597df076711fc108490473f7ec9c20e12430212ca005a83e8124e33799ed"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/system_reminders/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/system_reminders/README.md",
+        "upstream_sha256": "aa17cb8bf702d0b6f3547ddbbe116f5f1c16e4ec83c2d113ada791652ea87890"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/tool_output_limits/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/tool_output_limits/README.md",
+        "upstream_sha256": "fd6d938c39449ea10143fa7156cb91e2f234c58e4e3c64fa369fd347389d42fb"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/warn_on_cache_busts/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/warn_on_cache_busts/README.md",
+        "upstream_sha256": "6b95bc91c915b8498f0915c35179ec0d48b23634ffa274f43e44425e528dd999"
+      },
+      "version": ""
+    },
+    {
+      "class": "upstream",
+      "has_frontmatter": false,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "",
+      "path": "vendor/lscli/pydantic_ai_harness/youdotcom/README.md",
+      "status": "",
+      "upstream": {
+        "owner": "pydantic-ai-harness",
+        "source_url": "https://github.com/pydantic/pydantic-ai-harness/blob/4d08f21dde29b02097e7893e12c009b9d62b3c82/pydantic_ai_harness/youdotcom/README.md",
+        "upstream_sha256": "390a07424eabde6c17b1977710ab2a2a1668e4c1f81d7b1a574b15a1961974c4"
+      },
+      "version": ""
     }
   ],
   "platforms": [
@@ -4414,16 +5385,16 @@
   ],
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "06ff8ce82477ca3ee5ffa4af098d6c0955a616817698dd55fc0b94b1d4307268",
+    "artifact_sha256": "928f80c659ba5d13f4513c51bebbb72e7f8de9b6369fe0e0504f287c8821ff68",
     "emitter": "docs-align",
     "framework_version": "4.4.1",
     "schema_version": 1,
-    "source_commit": "f8dd10da7fc34de845b93bea5d1eb929716262d3",
+    "source_commit": "c54f6b5d72c471e9ac23d974732a1094e29c2a93",
     "source_dirty": false,
-    "source_provenance_hash": "cb9e0edb1c9750ead80c0596395831771b51a7c7f5159e9d55e3b0d9d97a2bcb",
-    "source_root_id": "fab2936dd4647a013fc15374da408c98ce865cb5143eca6052aa16e1c60c6c8b",
+    "source_provenance_hash": "514d3ad487cf302e5dfacfa158493c66ae6f84eafba149015bb1d6d955594927",
+    "source_root_id": "3239708718375462a56e21a302efb8273265dd3a0bda73bcef44edfa5d2c4783",
     "source_tag": null,
-    "source_tree_sha": "d29b36888a49d034da5e48a1e8654b5c5d2ee70c"
+    "source_tree_sha": "43626bc82a704d8ec733a0829b6e973c916c5b93"
   },
   "repo": ".",
   "schema_version": "1.0",
