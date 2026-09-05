@@ -1,6 +1,6 @@
 """Explicit installed-runtime crash qualification; run only with a qualified delegation.
 
-Invoke with installed Python -I -B, this file, RUNTIME_ROOT, CGROUP_PARENT.
+Invoke with installed Python -I -B, this file, RUNTIME_ROOT, CGROUP_PARENT [chat_completions|responses].
 The fixture creates private temporary projects and only calls its loopback provider.
 """
 from __future__ import annotations
@@ -25,8 +25,8 @@ from ls.core.agent.session_owner import lease
 from ls.core.branding import user_agent
 
 
-def configuration(base, runtimes, parent, port):
-    profile = {'base_url':f'http://127.0.0.1:{port}/v1/', 'api':'chat_completions', 'model':'fixture',
+def configuration(base, runtimes, parent, port, api="chat_completions"):
+    profile = {'base_url':f'http://127.0.0.1:{port}/v1/', 'api':api, 'model':'fixture',
                'credential_env':'FIXTURE_KEY','timeout_seconds':10,'capabilities':['tools','streaming'],'allow_loopback_http':True}
     payload = {'schema_version':1,'run_id':'run','profile':profile,'credential':'fixture-not-a-secret',
         'prompt':'Read, edit and test the fixture.','instructions':'Use only granted tools.','history':None,
@@ -38,9 +38,9 @@ def configuration(base, runtimes, parent, port):
     return payload, paths, files, recipes
 
 
-def crash_child(base, runtimes, parent, port, window):
+def crash_child(base, runtimes, parent, port, window, api="chat_completions"):
     from ls.core.agent import supervisor, tool_results, process_broker
-    payload, paths, files, recipes = configuration(base,runtimes,parent,port)
+    payload, paths, files, recipes = configuration(base,runtimes,parent,port,api)
     worker = None
     popen = supervisor.subprocess.Popen
     def spawn(command, *args, **kwargs):
@@ -74,7 +74,9 @@ def crash_child(base, runtimes, parent, port, window):
     raise AssertionError('Crash injection was not reached')
 
 
-def qualify(runtimes, parent):
+def qualify(runtimes, parent, api="chat_completions"):
+    if api not in ("chat_completions", "responses"):
+        raise ValueError("Unsupported qualification interface")
     captured = []
     class Provider(BaseHTTPRequestHandler):
         def log_message(self,*args):
@@ -83,17 +85,25 @@ def qualify(runtimes, parent):
             body = json.loads(self.rfile.read(int(self.headers['Content-Length'])))
             captured.append(self.headers['User-Agent'])
             turn = len(captured)
+            assert self.path == ('/v1/responses' if api == 'responses' else '/v1/chat/completions')
+            if api == 'responses':
+                assert not body.get('previous_response_id')
+                returns = [m for m in body['input'] if m.get('type') == 'function_call_output']
+                results = [m['output'] for m in returns]
+                assert [m['call_id'] for m in returns] == [f'call_{n}' for n in range(1, turn)]
+            else:
+                results = [m['content'] for m in body['messages'] if m['role'] == 'tool']
             if turn == 1:
                 name,args,call = 'read_file',{'path':'src/a.txt'},'read'
             elif turn == 2:
-                result = json.loads([m for m in body['messages'] if m['role']=='tool'][-1]['content'])
+                result = json.loads(results[-1])
                 assert result['content']=='original'
                 name,args,call = 'write_file',{'path':'src/a.txt','content':'changed','expected_before':result['sha256']},'write'
             elif turn == 3:
                 name,args,call = 'run_command',{'name':'test'},'test'
             else:
                 assert turn == 4, 'Unexpected repeated model request'
-                result = json.loads([m for m in body['messages'] if m['role']=='tool'][-1]['content'])
+                result = json.loads(results[-1])
                 assert result['status']=='completed' and result['output']['stdout']=='fixture passed\n'
             delta = {'content':'recovered without replay'} if turn==4 else {'tool_calls':[
                 {'index':0,'id':call,'type':'function','function':{'name':name,'arguments':json.dumps(args)}}]}
@@ -101,6 +111,9 @@ def qualify(runtimes, parent):
                 'choices':[{'index':0,'delta':piece,'finish_reason':finish}]} for piece,finish in
                 ((delta,None),({},'stop' if turn==4 else 'tool_calls'))]
             raw = (''.join('data: '+json.dumps(x)+'\n\n' for x in chunks)+'data: [DONE]\n\n').encode()
+            if api == 'responses':
+                from ls.tests.responses_stream_fixture import stream
+                raw = stream(turn,text='recovered without replay') if turn == 4 else stream(turn,name=name,arguments=args)
             self.send_response(200);self.send_header('Content-Type','text/event-stream')
             self.send_header('Content-Length',str(len(raw)));self.end_headers();self.wfile.write(raw)
     http = ThreadingHTTPServer(('127.0.0.1',0),Provider)
@@ -114,7 +127,7 @@ def qualify(runtimes, parent):
                 (base/name).mkdir(mode=0o700)
             (base/'workspace/src').mkdir();(base/'workspace/src/a.txt').write_text('original')
             child = subprocess.run([sys.executable,'-I','-B',str(Path(__file__).resolve()),'--crash',str(base),
-                str(runtimes),str(parent),str(http.server_port),window],capture_output=True,text=True,timeout=40)
+                str(runtimes),str(parent),str(http.server_port),window,api],capture_output=True,text=True,timeout=40)
             assert child.returncode==73,child.stderr
             marker = json.loads((base/'crash.json').read_text());assert isinstance(marker['worker'],int)
             deadline = time.monotonic()+3
@@ -125,7 +138,7 @@ def qualify(runtimes, parent):
                 assert time.monotonic()<deadline,'Orphan SDK worker retained execution'
                 time.sleep(0.02)
             assert len(captured)==3 and all(x==user_agent() for x in captured)
-            payload, paths, files, recipes = configuration(base,runtimes,parent,http.server_port)
+            payload, paths, files, recipes = configuration(base,runtimes,parent,http.server_port,api)
             with lease(paths.sessions,task='task',session='session',workspace=files.root,expires=files.expires) as owner:
                 operations = owner.inspect();assert len(operations)==2
                 process = next(v for v in operations.values() if v['intent']['kind']=='process')
@@ -169,7 +182,7 @@ def qualify(runtimes, parent):
                             'continued':window=='after-receipt','fixture':str(base)})
     finally:
         http.shutdown();http.server_close();thread.join()
-    print(json.dumps({'cases':reports,'user_agent':user_agent()}))
+    print(json.dumps({'api':api,'cases':reports,'user_agent':user_agent()}))
 
 
 if __name__ == '__main__':
@@ -177,6 +190,6 @@ if __name__ == '__main__':
     if not sys.flags.isolated or not sys.dont_write_bytecode:
         raise RuntimeError('Use installed isolated Python for this explicit qualification')
     if sys.argv[1]=='--crash':
-        crash_child(Path(sys.argv[2]),Path(sys.argv[3]),Path(sys.argv[4]),int(sys.argv[5]),sys.argv[6])
+        crash_child(Path(sys.argv[2]),Path(sys.argv[3]),Path(sys.argv[4]),int(sys.argv[5]),sys.argv[6],sys.argv[7] if len(sys.argv)>7 else 'chat_completions')
     else:
-        qualify(Path(sys.argv[1]),Path(sys.argv[2]))
+        qualify(Path(sys.argv[1]),Path(sys.argv[2]),sys.argv[3] if len(sys.argv)>3 else 'chat_completions')

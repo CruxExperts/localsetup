@@ -1207,6 +1207,7 @@ projects and uses only its local HTTP provider.
 
 ```bash
 "$RUNTIME_PYTHON" -I -B ls/tests/installed_recovery_fixture.py "$RUNTIME_ROOT" "$CGROUP_PARENT"
+"$RUNTIME_PYTHON" -I -B ls/tests/installed_recovery_fixture.py "$RUNTIME_ROOT" "$CGROUP_PARENT" responses
 ```
 
 All three paths must identify the already-qualified installation and delegation;
@@ -1225,8 +1226,8 @@ The fixture exercises controller termination in three process-result windows:
 It checks the original checkpoint and journal, unchanged workspace content after
 recovery/continuation, exact operation counts, worker exit, revoked-owner refusal
 and every captured request's runtime-resolved user-agent. This qualifies the
-selected Chat Completions path and these crash windows; power-loss durability,
-Responses crash recovery and broader interactive acceptance remain separate checks.
+selected Chat Completions and Responses paths for these crash windows; power-loss
+durability and broader interactive acceptance remain separate checks.
 
 
 ## Explicit headless coding runs
@@ -1754,8 +1755,13 @@ Responses server-side background jobs, continuation polling, hosted tools, remot
 media fetches and provider-managed conversation discovery are not qualified. The
 existing transport rejects alternate methods/endpoints, and no fallback request
 is enabled. Compaction still requires its separately qualified Chat Completions
-interface. Responses crash-recovery windows remain separately unqualified until
-installed fault-injection checks establish their result-ID reconciliation.
+interface. Installed Responses fault injection covers the same three process
+recovery windows described above: after the saved tool receipt, before that
+receipt, and before a durable process outcome. Native `call_id` values match
+exactly once across recovered function outputs; the settled case continues with
+no additional operation, while missing receipts and uncertain outcomes refuse
+continuation. These checks use deterministic loopback responses and do not
+establish power-loss durability or every compatible endpoint.
 
 
 The Responses stream guard wraps the pinned SDK's private `_response` event source
