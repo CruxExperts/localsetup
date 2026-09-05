@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 87a1da4b429cc261f641a74ae5c4b078a2497e2c22c1e07cc8e275083a872a68
+  source_provenance_hash: bb8b32c3ffb3f942acb922d4f6f1b1d31b0ae41952179888a9d0a9685e12a335
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 00d210e757cb6859a1bd0fba3e1f1c8d9ea0b63f
-artifact_sha256: 772c7822e2e867b6268bf6adc0bdd955bde9bfd05f7216a5c59fdd7ce74c4b36
+source_commit: 9357886599f3253ab59a89f24588c859ae971600
+artifact_sha256: 536a8515f6a7b09f03e4abdbc10740e9a97d3b74f8dc1a0b70f061c4fab1846e
 ---
 # Implementation File Map
 
@@ -112,6 +112,7 @@ artifact_sha256: 772c7822e2e867b6268bf6adc0bdd955bde9bfd05f7216a5c59fdd7ce74c4b3
 | `refactor` | `ls/core/agent/file_broker.py` |
 | `refactor` | `ls/core/agent/file_grants.py` |
 | `refactor` | `ls/core/agent/native_bundle.py` |
+| `refactor` | `ls/core/agent/process_broker.py` |
 | `refactor` | `ls/core/agent/profiles.py` |
 | `refactor` | `ls/core/agent/provider_client.py` |
 | `refactor` | `ls/core/agent/runtime_install.py` |
@@ -988,6 +989,7 @@ artifact_sha256: 772c7822e2e867b6268bf6adc0bdd955bde9bfd05f7216a5c59fdd7ce74c4b3
 | `keep` | `ls/tests/test_omniroute_update.py` |
 | `keep` | `ls/tests/test_path_contract.py` |
 | `keep` | `ls/tests/test_plugin_packs.py` |
+| `keep` | `ls/tests/test_process_broker.py` |
 | `keep` | `ls/tests/test_provenance.py` |
 | `keep` | `ls/tests/test_python_architecture_check.py` |
 | `keep` | `ls/tests/test_python_runtime_contract.py` |
