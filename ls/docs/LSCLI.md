@@ -62,3 +62,27 @@ The check used a nonexistent temporary user home and confirmed that no home or
 state directories were created. A separate isolated Python invocation confirmed
 the installed module origin and absence of SDK, provider, HTTP, and YAML imports.
 This evidence qualifies the provider-free bootstrap only.
+
+## Runtime lease foundation
+
+The internal `runtime_use` context manager provides shared use leases and
+exclusive upgrade leases over one persistent lock inode in the managed runtime
+root. Shared leases coexist; an exclusive lease waits for all users. Waits use a
+finite, nonnegative monotonic timeout and raise `TimeoutError` on contention.
+Process exit and exceptions release the lease. The lock file is never unlinked
+or replaced during normal use, preventing separate lock generations.
+
+The runtime root must already exist, be owned by the current user, and deny
+writes to other users. Descriptor-relative traversal rejects symlink components;
+the lock must be a private regular file with one hard link. The implementation
+requires a qualified POSIX `flock` backend. It does not create runtime directories
+or change their permissions. This advisory lock coordinates cooperating callers;
+the sandbox must separately prevent untrusted same-user processes from writing
+the runtime or replacing its root. Do not rename the root while it is leased.
+
+When an operation also needs the existing framework package-root lock, acquire
+that lock first, then the runtime lease. Do not convert a shared lease to an
+exclusive lease in place. Runtime installation, upgrade integration, worker
+lifetime supervision, and platform qualification still need to consume this
+foundation before execution can be enabled; doctor continues to report that
+execution is unavailable.

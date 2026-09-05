@@ -3944,6 +3944,38 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Canonical command or persisted filesystem segment for the integrated CLI; preserves the existing framework home identifier."
+    },
+    {
+      "path": "ls/docs/LSCLI.md",
+      "line_sha256": "80eb3a91cf98e2f086ff31675e3e8885fa8ce4906f0610c2ffea19dd193cd6a3",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical global runtime/state directory segments in the documented CLI location table."
+    },
+    {
+      "path": "ls/docs/LSCLI.md",
+      "line_sha256": "80eb3a91cf98e2f086ff31675e3e8885fa8ce4906f0610c2ffea19dd193cd6a3",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical global runtime/state directory segments in the documented CLI location table."
+    },
+    {
+      "path": "ls/docs/LSCLI.md",
+      "line_sha256": "a35a8cf301f4f9b2d1d7b271b8db7ed02a1fb936162b2cf16d1f080559e82e25",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical global runtime/state directory segments in the documented CLI location table."
+    },
+    {
+      "path": "ls/docs/LSCLI.md",
+      "line_sha256": "a35a8cf301f4f9b2d1d7b271b8db7ed02a1fb936162b2cf16d1f080559e82e25",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical global runtime/state directory segments in the documented CLI location table."
     }
   ],
   "visual_reviews": [
