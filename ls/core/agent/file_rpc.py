@@ -8,7 +8,7 @@ from .checkpoint_rpc import CheckpointHandler, METHOD
 from .file_broker import MAX_FILE
 from .operation_journal import IDENTIFIER
 
-METHODS = frozenset({METHOD, 'file.read', 'file.write', 'file.search', 'file.list'})
+METHODS = frozenset({METHOD, 'file.read', 'file.write', 'file.search', 'file.list', 'context.refresh'})
 
 
 class FileHandler(CheckpointHandler):
@@ -19,6 +19,11 @@ class FileHandler(CheckpointHandler):
     def __call__(self, method, data):
         if method == METHOD:
             return super().__call__(method, data)
+        if method == 'context.refresh':
+            if not isinstance(data,dict) or set(data)!={'directory'}:
+                raise ValueError('Invalid context refresh schema')
+            from .nested_context import refresh
+            return refresh(self.owner,self.broker,data['directory'])
         if method == 'file.list':
             if not isinstance(data,dict) or set(data)!={'path'}:
                 raise ValueError('Invalid listing schema')

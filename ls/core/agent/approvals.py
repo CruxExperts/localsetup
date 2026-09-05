@@ -33,7 +33,14 @@ class Approvals:
     def require(self, method, data, recipes, emit, check):
         check()
         retained = json.loads(_encode(data))
+        if not isinstance(retained,dict):
+            raise ValueError('Approval request arguments must be an object')
         preview = {'method':method,'arguments':retained}
+        if method == 'context.refresh':
+            if set(retained)!={'directory'}:
+                raise ValueError('Invalid context refresh approval schema')
+            from .nested_context import candidates
+            preview['context_paths']=candidates(retained['directory'])
         if method == 'process.run':
             recipe = recipes.get(retained.get('name'))
             if recipe is None:

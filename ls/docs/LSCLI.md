@@ -1380,7 +1380,7 @@ a resumed conversation remains context and never restores its former authority.
 ### One-use tool approvals
 
 Add `--approve-tools --format jsonl --control-fd FD` to require owner confirmation
-before each file read, listing, search, replacement or process recipe request. This mode
+before each file read, listing, search, context refresh, replacement or process recipe request. This mode
 narrows existing grants; approving an otherwise forbidden request does not make
 it executable. Without this flag, explicit grant-file authority remains the
 normal tool policy. Approval mode requires JSONL output and a control socket.
@@ -1473,7 +1473,8 @@ The snapshot is fixed for that invocation. Current grants remain external to
 context: instructions in a selected file cannot authorize a tool or additional
 disclosure. Resuming with selected files requires fresh permissions and takes
 new snapshots; previous snapshots remain historical conversation content.
-Automatic nested-context refresh is not implemented yet.
+Use `refresh_context(directory)` during a run to reload nested instructions as
+described below; initial selections remain fixed snapshots.
 
 ## Broker text search
 
@@ -1523,3 +1524,30 @@ read/disclosure and session authority are checked before returning either a full
 or truncated result. Approval mode shows the exact selected directory before
 listing. The operation consumes a tool call and creates no mutation journal
 entry. Returned names do not grant permission to read or execute those entries.
+
+## Refreshing nested instructions
+
+The agent can call `refresh_context(directory)` when entering a directory or
+when repository instructions may have changed. Use a canonical workspace-relative
+directory, or `.` for the workspace root. The tool examines `AGENTS.md` at the
+root and at each successive directory level through the selected directory,
+returning present files in root-to-leaf order. The response contains `directory`,
+`resources` (path, content and SHA-256), and `missing` candidate paths.
+
+Every candidate path, including one whose file is absent, requires current read
+and disclosure permission. This prevents existence checks from bypassing grants.
+The tool accepts at most 16 instruction levels, 16 KiB per present file, 64 KiB
+total content and 256 KiB encoded output. Missing files are reported; symlinks,
+unsafe types, invalid UTF-8, permission failures or uncertain session operations
+refuse the result. All candidate permissions are checked again before delivery.
+Individual files are coherent snapshots; the collection is not a filesystem-wide
+atomic snapshot.
+
+Refresh is an explicit tool call, not a filesystem watcher. It reads current
+bytes each time and consumes a tool call. Approval mode displays the complete
+candidate path list before access. Returned instructions enter the model's normal
+conversation and checkpoints; they cannot modify grants or install hooks, run
+scripts, or load sibling resources. Older snapshots remain historical messages.
+The agent should refresh before acting in a newly selected directory and after
+learning that its instruction files changed. LocalSetup does not infer new
+provider-disclosure authority from the presence of an instruction file.

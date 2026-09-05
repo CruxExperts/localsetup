@@ -16,6 +16,10 @@ def file_tools(finder, channel):
         """Read granted UTF-8 text and its SHA-256 digest."""
         return await channel.request_async('file.read', {'path':path})
 
+    async def refresh_context(directory: str) -> dict:
+        """Refresh root-to-directory AGENTS.md instructions under explicit read/disclosure grants."""
+        return await channel.request_async('context.refresh', {'directory':directory})
+
     async def list_files(path: str) -> dict:
         """List granted direct child files/directories; use a dot for the granted workspace root."""
         return await channel.request_async('file.list', {'path':path})
@@ -34,6 +38,7 @@ def file_tools(finder, channel):
     tools = (Tool(read_file, sequential=True, max_retries=0),
              Tool(write_file, takes_ctx=True, sequential=True, max_retries=0),
              Tool(search_files, sequential=True, max_retries=0),
-             Tool(list_files, sequential=True, max_retries=0))
+             Tool(list_files, sequential=True, max_retries=0),
+             Tool(refresh_context, sequential=True, max_retries=0))
     finder.verify_origins()
     return tools

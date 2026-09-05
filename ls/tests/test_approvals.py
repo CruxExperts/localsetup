@@ -78,3 +78,10 @@ time.sleep(.15)
         assert time.monotonic()-started<1 and requests and not effects
         with pytest.raises(PermissionError):value.decide(decision(requests[0]))
     finally:channel.close();right.close()
+
+
+@pytest.mark.parametrize('data',[{},[],{'directory':'.','extra':True}])
+def test_malformed_context_approval_refuses_before_preview(data):
+    value=gate();seen=[]
+    with pytest.raises(ValueError):value.require('context.refresh',data,{},seen.append,lambda:None)
+    assert seen==[] and value.pending is None
