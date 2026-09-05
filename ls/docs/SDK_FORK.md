@@ -246,3 +246,7 @@ changing external dependency exports. Other project or lock changes invalidate
 the receipt. The receipt is consistency evidence, not an independent signature:
 coordinated replacement of source, locks, and receipt can replace that evidence.
 Release provenance and protected installed-runtime checks remain separate gates.
+
+The provider-free [LSCli bootstrap](LSCLI.md) reports installed payload integrity
+and current execution readiness. It never imports the SDK while diagnosing a
+missing or invalid payload.

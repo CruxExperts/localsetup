@@ -42,6 +42,7 @@ dev = [
 
 [project.scripts]
 localsetup = "ls.core.cli:main"
+lscli = "ls.core.agent.cli:main"
 
 [tool.setuptools]
 include-package-data = false

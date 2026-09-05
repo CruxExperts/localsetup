@@ -3896,6 +3896,54 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Existing Python distribution identifier excluded from external dependency exports."
+    },
+    {
+      "path": "ls/core/agent/diagnostics.py",
+      "line_sha256": "e576f6cab991760501d0ce21c9b4e0df18cd77ea5a571bf5abab26dec9d21291",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical command or persisted filesystem segment for the integrated CLI; preserves the existing framework home identifier."
+    },
+    {
+      "path": "ls/core/agent/diagnostics.py",
+      "line_sha256": "ecbc47097121fd65cc557c1895e9f18d78105af012d248f0edfc7b1010305c05",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical command or persisted filesystem segment for the integrated CLI; preserves the existing framework home identifier."
+    },
+    {
+      "path": "ls/core/agent/diagnostics.py",
+      "line_sha256": "35d9076135f089ef9be104555e067de08971d1df7e2dd664a3a690a5bb278586",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical command or persisted filesystem segment for the integrated CLI; preserves the existing framework home identifier."
+    },
+    {
+      "path": "ls/core/agent/diagnostics.py",
+      "line_sha256": "9a14b66e34f110a072bd7f59e15cbcddb97a89aa63eece7c91eef46496afc707",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical command or persisted filesystem segment for the integrated CLI; preserves the existing framework home identifier."
+    },
+    {
+      "path": "ls/tests/test_lscli_bootstrap.py",
+      "line_sha256": "dd7e492859642823c360868420ea2f955d961297330cb6ac539c1f5841c87d03",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical command or persisted filesystem segment for the integrated CLI; preserves the existing framework home identifier."
+    },
+    {
+      "path": "pyproject.toml",
+      "line_sha256": "f529dbd21a9b4f29e94170f5365a85fdfa337b72725a5bcdc743b86cf8815291",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical command or persisted filesystem segment for the integrated CLI; preserves the existing framework home identifier."
     }
   ],
   "visual_reviews": [
