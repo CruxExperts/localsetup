@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 9d35e40adb9e2d41ac4f1d86bc76dd4ce6c96154c76ffaa6e359393093b4682a
+  source_provenance_hash: 02cb4a549e1da0b74798a6fd66e05ab210e0bbcc34644fd73067eb061c0085cc
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 095963b1822bcac1e8b0202ca9b838e4770c43bf
-artifact_sha256: 08b83cd2f79bde60d670a96d610545eb9cfe3dccde3ece21c6d9c8d800fdd8d0
+source_commit: 2824f23152f95b3aaee13b23f4b3fd202bec8aec
+artifact_sha256: 7c68b6239f3e434a726dc09654a1e3d83375390a1b3eabe66d8da943c227782a
 ---
 # Implementation File Map
 
@@ -124,6 +124,7 @@ artifact_sha256: 08b83cd2f79bde60d670a96d610545eb9cfe3dccde3ece21c6d9c8d800fdd8d
 | `refactor` | `ls/core/agent/sdk_imports.py` |
 | `refactor` | `ls/core/agent/sdk_models.py` |
 | `refactor` | `ls/core/agent/sdk_worker.py` |
+| `refactor` | `ls/core/agent/session_owner.py` |
 | `refactor` | `ls/core/agent/snapshot.py` |
 | `refactor` | `ls/core/agent/supervisor.py` |
 | `refactor` | `ls/core/agent/worker_protocol.py` |
@@ -1014,6 +1015,7 @@ artifact_sha256: 08b83cd2f79bde60d670a96d610545eb9cfe3dccde3ece21c6d9c8d800fdd8d
 | `keep` | `ls/tests/test_sdk_models.py` |
 | `keep` | `ls/tests/test_sdk_payload.py` |
 | `keep` | `ls/tests/test_sdk_worker_imports.py` |
+| `keep` | `ls/tests/test_session_owner.py` |
 | `keep` | `ls/tests/test_skill_sandbox_tester.py` |
 | `keep` | `ls/tests/test_tmux_ops.py` |
 | `keep` | `ls/tests/test_tmux_terminal_mode.py` |
