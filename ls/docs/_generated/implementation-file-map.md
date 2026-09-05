@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 613e56b9c7c5e2508f691b0ce73f369d8fea7efd4bb194903f6ff7e12964b578
+  source_provenance_hash: a35a0faabd8bf11e65269c754f7b2825b80b91ddfc559d024e82402d65c2b46a
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 50f6061dce7013bd776f91042c90dd70a7380039
-artifact_sha256: 93b1f090be718249af23fc8f0d2d6a5177456568563b86d80da665a0803b18b2
+source_commit: c1f912a40fda6a1183c9b6dcbf517c0978afd057
+artifact_sha256: 801efa9e14b3ab0cec23438b55b9ff42b44928fc75434b4ba03c570b3aea7693
 ---
 # Implementation File Map
 
@@ -149,6 +149,7 @@ artifact_sha256: 93b1f090be718249af23fc8f0d2d6a5177456568563b86d80da665a0803b18b
 | `refactor` | `ls/core/agent/runtime_lock.py` |
 | `refactor` | `ls/core/agent/sandbox.py` |
 | `refactor` | `ls/core/agent/sandbox_copy.py` |
+| `refactor` | `ls/core/agent/sdk_compaction.py` |
 | `refactor` | `ls/core/agent/sdk_file_tools.py` |
 | `refactor` | `ls/core/agent/sdk_imports.py` |
 | `refactor` | `ls/core/agent/sdk_iteration.py` |
@@ -961,6 +962,7 @@ artifact_sha256: 93b1f090be718249af23fc8f0d2d6a5177456568563b86d80da665a0803b18b
 | `keep` | `ls/tests/fixtures/omniroute/task-owner-cases.json` |
 | `keep` | `ls/tests/installed_recovery_fixture.py` |
 | `keep` | `ls/tests/manifest_test_helpers.py` |
+| `keep` | `ls/tests/sdk_compaction_fixture.py` |
 | `keep` | `ls/tests/sdk_file_fixture.py` |
 | `keep` | `ls/tests/sdk_iteration_fixture.py` |
 | `keep` | `ls/tests/sdk_model_fixture.py` |
@@ -1080,6 +1082,7 @@ artifact_sha256: 93b1f090be718249af23fc8f0d2d6a5177456568563b86d80da665a0803b18b
 | `keep` | `ls/tests/test_scrapling_jobs.py` |
 | `keep` | `ls/tests/test_sdk_artifacts.py` |
 | `keep` | `ls/tests/test_sdk_build.py` |
+| `keep` | `ls/tests/test_sdk_compaction.py` |
 | `keep` | `ls/tests/test_sdk_dependencies.py` |
 | `keep` | `ls/tests/test_sdk_iteration.py` |
 | `keep` | `ls/tests/test_sdk_models.py` |
