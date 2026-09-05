@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: d9d243f8e6fdf631bda0f9eeb460b9dc4b3d28671ebc55a5647a9656fe2d9e3a
+  source_provenance_hash: 1ef82390a75ee9b89c14a1896149ffef86575d8e57a6a5f9babf46eb460ac4d9
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: f922ed851a0fdce19790df61c5b4f2bfe12e761d
-artifact_sha256: dbc477da3e461cd16c5ab01bd314a29e113a46102eda35426bcc3e3bfc468d72
+source_commit: c6db958ef279e0907f0b182b71fb576d4273f431
+artifact_sha256: ac3673d350c5ae1b3c5165a3a3b40e25e3ba2c2ab7ced3f1e94555bc673dc280
 ---
 # Implementation File Map
 
@@ -144,6 +144,7 @@ artifact_sha256: dbc477da3e461cd16c5ab01bd314a29e113a46102eda35426bcc3e3bfc468d7
 | `refactor` | `ls/core/agent/snapshot.py` |
 | `refactor` | `ls/core/agent/supervisor.py` |
 | `refactor` | `ls/core/agent/tool_preflight.py` |
+| `refactor` | `ls/core/agent/tool_results.py` |
 | `refactor` | `ls/core/agent/worker_protocol.py` |
 | `refactor` | `ls/core/aliases.py` |
 | `refactor` | `ls/core/apply.py` |
@@ -1053,6 +1054,7 @@ artifact_sha256: dbc477da3e461cd16c5ab01bd314a29e113a46102eda35426bcc3e3bfc468d7
 | `keep` | `ls/tests/test_tmux_ops.py` |
 | `keep` | `ls/tests/test_tmux_terminal_mode.py` |
 | `keep` | `ls/tests/test_tool_preflight.py` |
+| `keep` | `ls/tests/test_tool_results.py` |
 | `keep` | `ls/tests/test_trusted_work_queue_shared_folder.py` |
 | `keep` | `ls/tests/test_trusted_work_queue_snapshot.py` |
 | `keep` | `ls/tests/test_ui_browser_debugging_skill.py` |
