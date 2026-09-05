@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.3
+version: 4.4
 owner_skill: ls-docs-organization
 ---
 
@@ -15,7 +15,7 @@ This is the public documentation map for Localsetup. Start here when you want th
 ## Generated Facts
 
 <!-- facts-block:start -->
-- Current version: `4.3.9`
+- Current version: `4.4.0`
 - Supported platforms: `codex, claude-code, cursor, kilo, opencode, openclaw`
 - Shipped skills: `103`
 - Workflow packages: `16`
