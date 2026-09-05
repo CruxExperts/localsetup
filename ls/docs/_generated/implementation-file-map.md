@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 8a21d468fe5e664a9ba8759210e6b195d88d334554806bc0d2e05f8eb8cdf802
+  source_provenance_hash: 7f94ecc0f4b82c487086fb49a6ad01bdd4aba20adc358e970aa83cde3f633d30
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 06faab21441344f461bf9c4e3c8ba9d4c743cbbb
-artifact_sha256: a6bfc89e90b062418067a44883e546470295bd91c6223724d3f69fc0960ebe99
+source_commit: e8132237a3b53be3039077b4bd9b16db34a24258
+artifact_sha256: 5f4a6e6530b86585d983e5409073b83169917304ba9132bc949ac34036b4056b
 ---
 # Implementation File Map
 
@@ -123,6 +123,7 @@ artifact_sha256: a6bfc89e90b062418067a44883e546470295bd91c6223724d3f69fc0960ebe9
 | `refactor` | `ls/core/agent/file_recovery.py` |
 | `refactor` | `ls/core/agent/file_rpc.py` |
 | `refactor` | `ls/core/agent/file_search.py` |
+| `refactor` | `ls/core/agent/image_inputs.py` |
 | `refactor` | `ls/core/agent/interactive.py` |
 | `refactor` | `ls/core/agent/native_bundle.py` |
 | `refactor` | `ls/core/agent/nested_context.py` |
@@ -994,6 +995,7 @@ artifact_sha256: a6bfc89e90b062418067a44883e546470295bd91c6223724d3f69fc0960ebe9
 | `keep` | `ls/tests/test_file_rpc.py` |
 | `keep` | `ls/tests/test_file_search.py` |
 | `keep` | `ls/tests/test_github_starredrepos_skill.py` |
+| `keep` | `ls/tests/test_image_inputs.py` |
 | `keep` | `ls/tests/test_install_flow.py` |
 | `keep` | `ls/tests/test_install_flow_auto_convert_apply_a.py` |
 | `keep` | `ls/tests/test_install_flow_commands_policy_shell_a.py` |
