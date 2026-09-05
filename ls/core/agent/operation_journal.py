@@ -57,10 +57,12 @@ class Journal:
         self.root, self.task, self.session = root.absolute(), task, session
         self._issued = set()
 
-    def _load(self, directory):
+    def _load(self, directory, *, check=None):
         names = sorted(os.listdir(directory))
         records, previous, total = [], None, 0
         for name in names:
+            if check is not None:
+                check()
             if name == LOCK_NAME or re.fullmatch(r'\.pending-[0-9a-f]{32}', name):
                 continue
             if name != f'{len(records):08d}.json' or len(records) >= MAX_RECORDS:

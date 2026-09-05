@@ -166,8 +166,10 @@ class SessionOwner:
 
 
 @contextmanager
-def lease(state: Path, *, task: str, session: str, workspace: Path, expires: float, revoked=None):
+def lease(state: Path, *, task: str, session: str, workspace: Path, expires: float, revoked=None, create=True):
     """Own a canonical session until context exit; acquire before child leases."""
+    if type(create) is not bool:
+        raise ValueError('Session creation mode must be explicit boolean')
     if any(not isinstance(value, str) or not IDENTIFIER.fullmatch(value) for value in (task, session)):
         raise ValueError('Session requires bounded task and session identifiers')
     if not math.isfinite(expires) or expires <= time.monotonic():
@@ -180,11 +182,12 @@ def lease(state: Path, *, task: str, session: str, workspace: Path, expires: flo
     name = hashlib.sha256(session.encode()).hexdigest()
     fd = _private(state)
     try:
-        try:
-            os.mkdir(name, mode=0o700, dir_fd=fd)
-        except FileExistsError:
-            pass
-        os.fsync(fd)
+        if create:
+            try:
+                os.mkdir(name, mode=0o700, dir_fd=fd)
+            except FileExistsError:
+                pass
+            os.fsync(fd)
     finally:
         os.close(fd)
     root = state / name
@@ -209,12 +212,15 @@ def lease(state: Path, *, task: str, session: str, workspace: Path, expires: flo
                 finally:
                     os.close(record_fd)
             else:
+                if not create:
+                    raise FileNotFoundError('Existing session identity is missing')
                 _write_json(record, identity)
-            try:
-                os.mkdir('journal', mode=0o700, dir_fd=fd)
-            except FileExistsError:
-                pass
-            os.fsync(fd)
+            if create:
+                try:
+                    os.mkdir('journal', mode=0o700, dir_fd=fd)
+                except FileExistsError:
+                    pass
+                os.fsync(fd)
         finally:
             os.close(fd)
         owner = SessionOwner(root, Journal(root/'journal', task=task, session=session), identity, expires, revoked)

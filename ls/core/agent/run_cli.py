@@ -92,7 +92,7 @@ def _state(root):
 
 
 def execute(args, streams, cancelled):
-    from .coding_protocol import request
+    from .coding_protocol import request, profile_digest
     from .coding_run import CodingGrant,RunPaths,run_coding,disclosure_digest
     from .file_grants import FileGrant
     from .operation_journal import IDENTIFIER
@@ -104,6 +104,8 @@ def execute(args, streams, cancelled):
         raise ValueError('Public coding currently requires the qualified Chat Completions interface')
     _separate(args.profiles,args.workspace)
     grant, recipes = _grant(args.grant,args.workspace)
+    if (args.resume or args.recover_from) and (not args.task or not args.session):
+        raise ValueError('History requires explicit recorded task and session')
     task, session = args.task or uuid.uuid4().hex, args.session or uuid.uuid4().hex
     if not IDENTIFIER.fullmatch(task) or not IDENTIFIER.fullmatch(session):
         raise ValueError('Invalid task/session identity')
@@ -121,8 +123,19 @@ def execute(args, streams, cancelled):
         'request_limit':args.request_limit,'tool_limit':args.tool_limit,'token_limit':args.token_limit}
     request(payload)
     files = FileGrant(task,session,args.workspace,tuple(grant['read']),tuple(grant['write']),tuple(grant['disclose']),streams.expires,revoked=cancelled)
+    resume=args.resume
+    if resume or args.recover_from:
+        from .session_owner import lease
+        with lease(paths.sessions,task=task,session=session,workspace=args.workspace,
+                   expires=streams.expires,revoked=cancelled,create=False) as owner:
+            if args.recover_from:
+                from .recovery import recover_checkpoint
+                resume=recover_checkpoint(owner,args.runtime_root,args.recover_from,
+                                          profile=profile_digest(raw_profile),recipes=recipes)
+            payload['history']=owner.resume_checkpoint(resume,profile=profile_digest(raw_profile)).decode()
+    else:
+        _state(args.state_root)
     authority = CodingGrant(task,session,disclosure_digest(payload),streams.expires,revoked=cancelled)
-    _state(args.state_root)
     sequence = 0
     def emit(kind,data):
         nonlocal sequence
@@ -134,7 +147,7 @@ def execute(args, streams, cancelled):
         elif event.get('event_kind')=='part_start' and event.get('part',{}).get('part_kind')=='tool-call':
             streams.write('Tool: '+safe(event['part'].get('tool_name',''))+'\n')
     outcome = run_coding(paths,payload,authority,files,recipes,limits=Limits(),on_event=progress,
-                         cancel=cancelled,expected_release=Path(sys.prefix).parent)
+                         cancel=cancelled,expected_release=Path(sys.prefix).parent,resume=resume)
     codes = {'completed':0,'cancelled':130,'timed_out':124,'output_limit':5,'failed':1}
     result = {'status':outcome.status,'task':task,'session':session}
     if outcome.data is not None:

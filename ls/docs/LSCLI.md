@@ -11,7 +11,7 @@ existing framework command and Python distribution remain `localsetup`.
 The CLI provides help, version output, read-only diagnostics, offline setup and
 explicit headless coding runs. A verified SDK payload alone does not establish
 per-run sandbox, resource, provider or task-authority readiness. Interactive
-input, control-channel steering and public session recovery are still pending.
+input and control-channel steering are still pending.
 
 ```bash
 lscli --help
@@ -1120,7 +1120,7 @@ fails recovery. A crash after journal settlement but before receipt persistence
 can leave a settled operation with no recoverable output; the operation must not
 be repeated to recreate that output. A receipt alone does not make the interrupted
 pre-tool checkpoint resumable: existing frontier and complete-history checks
-remain enforced. The public recovery interface remains pending. Saved data carries
+remain enforced. Public recovery requires explicit task/session selection. Saved data carries
 no grants, approvals or authority.
 
 ### Native history reconstruction boundary
@@ -1165,7 +1165,7 @@ This provider-free recovery does not execute tools, rerun processes, synthesize
 missing output or restore saved permissions. The returned checkpoint may be read
 through the existing resume API. A coding continuation must separately authorize
 its exact recovered history through a fresh disclosure grant and qualify current
-tool access. The public recovery command remains pending.
+tool access. The public run command exposes this through `--recover-from`.
 
 ### Installed controller crash qualification
 
@@ -1269,5 +1269,36 @@ Successful runs exit 0; cancellation exits 130, deadline 124, process failure 1,
 output-limit 5, validation/runtime failure 2, and bootstrap readiness failure 3.
 Argument errors use argparse's status 2. Each coding run still performs actual
 sandbox/resource preflight before contacting a provider. Interactive approvals,
-steering/control descriptors, context loading and public resume/recovery commands
-remain subsequent interfaces; the explicit grant is the current approval surface.
+steering/control descriptors and context loading remain subsequent interfaces; the explicit grant is the current approval surface.
+
+### Session listing and explicit continuation
+
+`lscli sessions --format json` lists metadata under the default state root;
+`--state-root` selects another explicit root. Listing does not initialize a
+provider, read credentials, return conversation content or create missing state.
+It reports `settled`, `uncertain`, `busy` or `invalid` entries, with task/session
+and operation counts when a consistent private identity can be read. Busy entries
+are identified by their storage digest. Custom non-session entries are counted
+and preserved. Inventory is capped at 1,000 entries and uses a five-second
+inspection/output budget with deadline checks between journal records.
+
+To continue a compatible complete checkpoint, add `--task`, `--session` and
+`--resume CHECKPOINT` to the explicit headless run command. Use the recorded task,
+session and original workspace. The flag authorizes disclosure of that exact
+history, together with the new stdin prompt, to the selected compatible profile.
+It does not restore old file grants or command permissions: the current grant
+file and current limits still govern every new tool operation. Changed profiles
+are refused; portable branching is a separate interface.
+
+`--recover-from CHECKPOINT` is mutually exclusive with `--resume`. It first
+reconstructs the interrupted checkpoint locally using settled journal evidence
+and durable tool receipts, then continues with a fresh grant covering the
+recovered history and new prompt. Missing output, uncertain operations and
+incompatible evidence refuse continuation rather than replaying a tool.
+Unknown sessions fail without creating a new session. No checkpoint or journal
+is overwritten. The successful terminal result carries the new checkpoint.
+
+Both continuation forms require explicit recorded task and session identifiers;
+a supplied session name alone does not select history. Session listing does not
+choose a checkpoint automatically. Public branching, checkpoint selection UI and
+compaction remain pending.

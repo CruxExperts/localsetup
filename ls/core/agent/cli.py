@@ -30,10 +30,31 @@ def main(argv: list[str] | None = None) -> int:
     setup.add_argument("--sandbox-sha256")
     setup.add_argument("--runtime-root", type=Path)
     setup.add_argument("--timeout", type=float, default=300)
+    sessions=commands.add_parser('sessions',help='List local session metadata without provider access')
+    sessions.add_argument('--state-root',type=Path)
+    sessions.add_argument('--format',choices=('text','json'),default='text')
     run = commands.add_parser('run', help='Run with an explicit profile and task grant in the protected runtime')
     from .run_options import arguments
     arguments(run)
     args = parser.parse_args(argv)
+    if args.command == 'sessions':
+        from .diagnostics import locations
+        from .session_index import scan
+        from .run_io import Streams, safe
+        import threading
+        import time
+        try:
+            root=args.state_root or Path(locations(Path.home())['state'])
+            expires=time.monotonic()+5
+            report=scan(root/'sessions',expires=expires)
+            text=json.dumps(report,ensure_ascii=True)+'\n' if args.format=='json' else ''.join(
+                safe(f"{item.get('session',item['storage_id'])}: {item['status']}")+'\n' for item in report['sessions'])
+            Streams(expires,threading.Event()).write(text)
+            return 0
+        except KeyboardInterrupt:return 130
+        except (OSError,ValueError,TypeError,RecursionError):
+            from .run_cli import failure
+            return failure('text',0,'failed',2,'session inventory failed; verify private state integrity.')
     if args.command == 'run':
         from .run_cli import launch
         try:

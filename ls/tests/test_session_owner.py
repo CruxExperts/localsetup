@@ -138,3 +138,13 @@ def test_process_dispatch_caps_authority_and_rejects_reentry(state, broker, monk
             return 'fixture'
         monkeypatch.setattr(session_owner, 'run_recorded', run)
         assert owner.run(Path('/tmp/runtime-fixture'), grant, snapshot_sha256='a'*64) == 'fixture'
+
+
+def test_existing_only_session_refuses_unknown_without_creating(state,broker):
+    before=set(state.iterdir())
+    with pytest.raises(FileNotFoundError):
+        with own(state,broker,create=False):pass
+    assert set(state.iterdir())==before
+    with own(state,broker):pass
+    with own(state,broker,create=False) as owner:
+        assert owner.inspect()=={}
