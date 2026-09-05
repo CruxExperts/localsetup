@@ -1053,3 +1053,41 @@ requests: read, conditional edit, sandbox test and final answer. All captured
 requests carried the framework-resolved user-agent, and the final checkpoint was
 read by a fresh owner. This coding sequence does not yet qualify the Responses
 interface or constitute the complete public coding/recovery acceptance suite.
+
+## Supervisor-owned coding controller
+
+`run_coding(paths, payload, authority, files, recipes, limits=..., on_event=...)`
+combines the internal components. `CodingGrant` is an explicit task/session grant
+for the digest of the complete noncredential request: profile, context, restored
+history and usage limits. Credential rotation does not change that digest. This
+grant authorizes disclosure of the supplied context; it does not authorize
+reading files to assemble context. File access and file-content disclosure still
+require the separate `FileGrant`. Neither grant is reconstructed from saved text.
+
+`RunPaths` identifies runtime, sessions, target leases, snapshots, scratch and
+resource delegation. Those paths must be absolute and separate from each other,
+the workspace and exposed system tree. The controller checks the disclosure
+digest of its retained request copy and file task/session first. It acquires
+session ownership, refuses uncertain operations, then qualifies and retains the
+runtime before starting the worker. Supplied history requires an explicit `resume` checkpoint and must exactly
+match its currently resumable bytes and profile; there is no implicit replay.
+
+Context, file and caller cancellation are combined, and the earliest grant expiry
+bounds preflight, session, channel, worker and tool operations. The controller
+checks current authority around stream delivery and dispatch. Success requires
+successful worker exit, matching acknowledged receipt, and another current
+checkpoint validation. Non-success process outcomes return no captured data;
+revocation and expiry also suppress data. Other failures propagate for the caller
+to classify and reconcile, without automatic retries.
+
+The event sink is trusted synchronous controller code and must remain bounded.
+This API does not itself provide an interactive renderer, approvals, steering or
+synthesize missing tool results after a crash. Public CLI dispatch remains gated
+until those runtime and recovery requirements are qualified.
+
+Installed controller qualification completed the deterministic read/edit/test
+flow and verified the framework user-agent on all four Chat Completions requests.
+An altered context was refused without another request. Cancellation at the first
+stream event stopped a second run after one request, returned no result data,
+and left the workspace unchanged. These are bounded internal controller checks;
+interactive and crash-recovery acceptance remain separate requirements.
