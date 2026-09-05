@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 617be184115fc188ce0961da712a8e144e539f153ffcbc0d2ca354ebd9934136
+  source_provenance_hash: b762ac4731d645e0c101187615f9105f649d4984ab6d697d0b00930eb8cdb50c
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 0b083948ae6b6a7baa77a205a300333c8172c8c2
-artifact_sha256: e3893af5f40f4703cbc8875febc43e5097758d6c2a035646e910443edc1aedcf
+source_commit: bdc4ce1f36b159007092dc28d6248b70134d2af3
+artifact_sha256: c5290a8f109eb278b8fa7fc9b420be8cf75c092022a03d359914e8158580f9b5
 ---
 # Implementation File Map
 
@@ -954,6 +954,7 @@ artifact_sha256: e3893af5f40f4703cbc8875febc43e5097758d6c2a035646e910443edc1aedc
 | `keep` | `ls/tests/sdk_recovery_fixture.py` |
 | `keep` | `ls/tests/skill_smoke_commands.yaml` |
 | `keep` | `ls/tests/test_adapter_parser.py` |
+| `keep` | `ls/tests/test_agent_entrypoint.py` |
 | `keep` | `ls/tests/test_agent_file_broker.py` |
 | `keep` | `ls/tests/test_agent_provider.py` |
 | `keep` | `ls/tests/test_agent_routing.py` |
