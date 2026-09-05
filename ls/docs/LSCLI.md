@@ -329,3 +329,49 @@ shared target/session ownership, prompt-bound approval flow, and durable mutatio
 journaling remain required before tool-enabled execution. Grant expiry/revocation
 is checked before and after lease waits and before returning data or replacing a
 file; it does not interrupt a blocked filesystem syscall.
+
+## Optional native sandbox artifact delivery
+
+Offline setup accepts `--sandbox-bundle /path/to/native.zip` together with
+`--sandbox-sha256 TRUSTED_SHA256` on both `--plan` and `--apply`. These inputs
+cannot accompany `--reselect`. The expected outer digest must come from the
+trusted artifact publisher. Setup does not discover or substitute a host
+`bwrap`, download native code, or execute the bundle during planning.
+
+The schema-1 ZIP contains exactly four regular, nonempty entries: `bwrap`,
+`bubblewrap-COPYING`, `libcap-copyright`, and `manifest.json`. Compressed and
+expanded content are each limited to 16 MiB; the manifest is limited to 16 KiB.
+Duplicate keys, extra entries, symlink entries, mismatched hashes and unsupported
+component identities are rejected. The manifest has exactly these fields:
+
+- `schema_version`: integer `1`.
+- `target`: `{"os":"linux","machine":"x86_64","libc":"glibc","minimum_libc":"2.39"}`.
+- `components`: exact bubblewrap and static libcap version/input-digest records
+  defined by `ls/core/agent/native_bundle.py`.
+- `files`: SHA-256 values for the three payload entries, keyed by their exact names.
+
+This delivery contract accepts bubblewrap 0.12.0 and the specified patched Ubuntu
+libcap build input. It requires Linux x86_64 with glibc 2.39 or newer; those checks
+are installation prerequisites, not a claim that every such host is functionally
+qualified. The authenticated bundle supplies the executable's provenance;
+manifest strings and an ELF header alone do not establish trustworthy code.
+Native release production must retain corresponding source, licenses, build
+provenance and SBOM evidence and satisfy redistribution requirements before
+publication. No native release artifact is published by this setup operation.
+
+With a bundle, the runtime slot identity is the SHA-256 of the UTF-8 string
+`lscli-runtime-v1\nWHEEL_SHA256\nBUNDLE_SHA256\n` with placeholders replaced by
+lowercase digests and `\n` represented by newline bytes. Plan and installation
+records expose this identity as `sha256`, retain the framework digest separately
+as `wheel_sha256`, and record `sandbox_sha256`. Without a bundle, existing
+wheel-digest slot identities and records remain compatible. Re-selection takes
+the runtime slot identity, so two native variants never overwrite one another.
+
+Apply rechecks and holds the authenticated bytes in memory, writes the payload
+under `venv/lscli-native`, and seals binary, manifest and license content and
+permissions with the environment inventory before activation. Changed native
+files invalidate selection and recovery just like changed Python files. The
+binary is private and executable; other entries are private regular files.
+A bundle-less runtime remains usable for provider-free diagnostics. Neither
+bundle delivery nor its platform checks enables tool execution: argument
+construction, containment qualification and broker integration remain required.

@@ -21,6 +21,7 @@ import zipfile
 from ..sdk_payload.artifacts import inspect_artifact
 from ..sdk_payload.dependency_integrity import regular_bytes
 from ..versioning_models import SemVer
+from . import native_bundle
 from .runtime_lock import runtime_use
 from .runtime_integrity import seal, verify as verify_runtime
 
@@ -49,7 +50,7 @@ def workspace_root(path: Path) -> Path:
     return result
 
 
-def plan(root: Path, wheel: Path, digest: str, wheelhouse: Path, workspace: Path) -> dict:
+def plan(root: Path, wheel: Path, digest: str, wheelhouse: Path, workspace: Path, *, sandbox_bundle: Path | None = None, sandbox_sha256: str | None = None) -> dict:
     if not DIGEST.fullmatch(digest):
         raise ValueError("Expected a lowercase SHA-256 digest from a trusted artifact source")
     root, workspace = root.absolute(), workspace_root(workspace)
@@ -70,9 +71,18 @@ def plan(root: Path, wheel: Path, digest: str, wheelhouse: Path, workspace: Path
         version = str(SemVer.parse(identity.get('Version', '')))
     if not wheelhouse.is_dir() or wheelhouse.is_symlink():
         raise ValueError("An existing local dependency artifact directory is required")
+    native = {}
+    release_digest = digest
+    if sandbox_bundle is not None or sandbox_sha256 is not None:
+        if sandbox_bundle is None or sandbox_sha256 is None:
+            raise ValueError("Native bundle path and trusted digest must be supplied together")
+        native_bundle.read(sandbox_bundle, sandbox_sha256)
+        release_digest = native_bundle.identity(digest, sandbox_sha256)
+        native = {'sandbox_bundle': str(sandbox_bundle.absolute()), 'sandbox_sha256': sandbox_sha256,
+                  'wheel_sha256': digest}
     return {"schema_version": 1, "version": version, "workspace": str(workspace), "root": str(root), "wheel": str(wheel.absolute()),
-            "sha256": digest, "wheelhouse": str(wheelhouse.absolute()),
-            "release": str(root / digest), "offline": True}
+            "sha256": release_digest, "wheelhouse": str(wheelhouse.absolute()),
+            "release": str(root / release_digest), "offline": True, **native}
 
 
 def _ensure_root(root: Path) -> None:
@@ -154,10 +164,16 @@ def _populate(release: Path, wheel: Path, wheelhouse: Path, uv: str, deadline: f
     launcher.chmod(0o700)
 
 
-def install(root: Path, wheel: Path, digest: str, wheelhouse: Path, workspace: Path, *, timeout: float = 300) -> dict:
+def install(root: Path, wheel: Path, digest: str, wheelhouse: Path, workspace: Path, *, timeout: float = 300,
+            sandbox_bundle: Path | None = None, sandbox_sha256: str | None = None) -> dict:
     if not math.isfinite(timeout) or timeout <= 0:
         raise ValueError("Installation timeout must be finite and positive")
-    specification = plan(root, wheel, digest, wheelhouse, workspace)
+    native_inputs = {} if sandbox_bundle is None and sandbox_sha256 is None else {
+        'sandbox_bundle': sandbox_bundle, 'sandbox_sha256': sandbox_sha256}
+    specification = plan(root, wheel, digest, wheelhouse, workspace, **native_inputs)
+    release_digest = specification['sha256']
+    native_record = ({'wheel_sha256': digest, 'sandbox_sha256': sandbox_sha256}
+                     if sandbox_bundle is not None else {})
     root = Path(specification['root'])
     uv = shutil.which('uv')
     if uv is None:
@@ -165,23 +181,26 @@ def install(root: Path, wheel: Path, digest: str, wheelhouse: Path, workspace: P
     deadline = time.monotonic() + timeout
     _ensure_root(root)
     with runtime_use(root, exclusive=True, timeout=max(0, deadline - time.monotonic())):
-        release = root / digest
+        release = root / release_digest
         if release.exists() or release.is_symlink():
             raise ValueError("Release slot already exists; inspect retained state instead of replaying installation")
         previous = _selection(root)
         release.mkdir(mode=0o700)
-        _write_json(release / 'status.json', {'schema_version': 1, 'status': 'incomplete', 'sha256': digest})
+        _write_json(release / 'status.json', {'schema_version': 1, 'status': 'incomplete', 'sha256': release_digest, **native_record})
         local_wheel = release / wheel.name
         local_wheel.write_bytes(_wheel_bytes(wheel))
         if hashlib.sha256(local_wheel.read_bytes()).hexdigest() != digest:
             raise ValueError("Framework artifact changed during installation")
+        native_contents = native_bundle.read(sandbox_bundle, sandbox_sha256) if sandbox_bundle is not None else None
         _populate(release, local_wheel, Path(specification['wheelhouse']), uv, deadline)
         if time.monotonic() > deadline:
             raise TimeoutError("Runtime installation deadline expired before activation")
+        if native_contents is not None:
+            native_bundle.materialize(release, native_contents)
         inventory_digest = seal(release)
         if time.monotonic() > deadline:
             raise TimeoutError('Runtime installation deadline expired during integrity qualification')
-        result = {'schema_version': 1, 'status': 'installed', 'sha256': digest, 'inventory_sha256': inventory_digest,
+        result = {'schema_version': 1, 'status': 'installed', 'sha256': release_digest, 'inventory_sha256': inventory_digest, **native_record,
                   'previous': previous.get('sha256') if previous else None}
         _write_json(release / 'status.json', result)
         _write_json(root / 'current.json', result)

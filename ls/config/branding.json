@@ -4008,6 +4008,70 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Canonical vendor directory used by isolated source qualification fixtures."
+    },
+    {
+      "path": "ls/core/agent/native_bundle.py",
+      "line_sha256": "c215ff192f87d0e68a2f7700d72984336f3dddda35805089952c1cec0ce1e1b9",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Native payload directory or runtime identity domain separator is a persisted technical identifier."
+    },
+    {
+      "path": "ls/core/agent/native_bundle.py",
+      "line_sha256": "da19b790a3fbd6b39dd894f1b4b3212a83f38442a6250802719a394dabcd5a75",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Native payload directory or runtime identity domain separator is a persisted technical identifier."
+    },
+    {
+      "path": "ls/docs/LSCLI.md",
+      "line_sha256": "6c145b9d36953689da3388a308f5cd62fdfb1be3da66e6b57f7c4285daee841f",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Native payload directory or runtime identity domain separator is a persisted technical identifier."
+    },
+    {
+      "path": "ls/docs/LSCLI.md",
+      "line_sha256": "229e268d2a8767b107c3fe24712c9b67e245f0ea7543abd50986aee304771af9",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Native payload directory or runtime identity domain separator is a persisted technical identifier."
+    },
+    {
+      "path": "ls/tests/test_native_bundle.py",
+      "line_sha256": "afbb180cfe33d882bf8388cbea78838a5a8043f52c2b9d19330a2d7cc5fa93da",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Native payload directory or runtime identity domain separator is a persisted technical identifier."
+    },
+    {
+      "path": "ls/tests/test_native_bundle.py",
+      "line_sha256": "0a8904e66e3f8fcb52774b0806fab6bb9a8945b1435c4fff94a2e2eadfbc4d34",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Native payload directory or runtime identity domain separator is a persisted technical identifier."
+    },
+    {
+      "path": "ls/tests/test_native_bundle.py",
+      "line_sha256": "7e6cc9b4a6689a505ddb6c4069f7cd5f1858f279591cd954869bcef105c685f1",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Native payload directory or runtime identity domain separator is a persisted technical identifier."
+    },
+    {
+      "path": "ls/tests/test_native_bundle.py",
+      "line_sha256": "c782f5722029259b460ce002b5226b5de6dcef73f76c06cdfb2c072f84f40618",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Framework wheel metadata fixture preserves the Python distribution identifier."
     }
   ],
   "visual_reviews": [

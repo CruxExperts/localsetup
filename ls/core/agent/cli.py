@@ -26,6 +26,8 @@ def main(argv: list[str] | None = None) -> int:
     setup.add_argument("--wheel", type=Path)
     setup.add_argument("--sha256")
     setup.add_argument("--wheelhouse", type=Path)
+    setup.add_argument("--sandbox-bundle", type=Path)
+    setup.add_argument("--sandbox-sha256")
     setup.add_argument("--runtime-root", type=Path)
     setup.add_argument("--timeout", type=float, default=300)
     args = parser.parse_args(argv)
@@ -33,16 +35,20 @@ def main(argv: list[str] | None = None) -> int:
         from .diagnostics import locations
         from .runtime_install import install, plan, reselect
         root = args.runtime_root or Path(locations(Path.home())["runtimes"])
-        if args.reselect and any((args.wheel, args.sha256, args.wheelhouse)):
+        if args.reselect and any((args.wheel, args.sha256, args.wheelhouse, args.sandbox_bundle, args.sandbox_sha256)):
             setup.error("--reselect cannot be combined with installation inputs")
         if not args.reselect and not all((args.wheel, args.sha256, args.wheelhouse)):
             setup.error("--plan and --apply require --wheel, --sha256 and --wheelhouse")
+        if (args.sandbox_bundle is None) != (args.sandbox_sha256 is None):
+            setup.error("--sandbox-bundle and --sandbox-sha256 must be supplied together")
+        native_inputs = {} if args.sandbox_bundle is None else {
+            'sandbox_bundle': args.sandbox_bundle, 'sandbox_sha256': args.sandbox_sha256}
         inputs = (root, args.wheel, args.sha256, args.wheelhouse, Path.cwd())
         try:
             if args.reselect:
                 result = reselect(root, args.reselect, timeout=args.timeout)
             else:
-                result = install(*inputs, timeout=args.timeout) if args.apply else plan(*inputs)
+                result = install(*inputs, timeout=args.timeout, **native_inputs) if args.apply else plan(*inputs, **native_inputs)
         except KeyboardInterrupt:
             print(f"{CLI_NAME} setup cancelled; inspect retained installation state.", file=sys.stderr)
             return 130
