@@ -29,7 +29,7 @@ def _kill(process) -> None:
         pass
 
 
-def supervise(command: list[str], request: bytes, *, cwd: Path, environment: dict[str, str], timeout: float, cancel=None) -> Outcome:
+def supervise(command: list[str], request: bytes, *, cwd: Path, environment: dict[str, str], timeout: float, cancel=None, capture: bool = False) -> Outcome:
     if os.name != 'posix':
         raise RuntimeError('Worker supervision requires qualified POSIX process groups')
     if not math.isfinite(timeout) or timeout <= 0 or len(request) > MAX_REQUEST:
@@ -106,6 +106,10 @@ def supervise(command: list[str], request: bytes, *, cwd: Path, environment: dic
                 stream.close()
     if status is not None:
         return Outcome(status, process.returncode)
+    if capture:
+        data = {'stdout': bytes(output).decode('utf-8', errors='replace'),
+                'stderr': bytes(diagnostics).decode('utf-8', errors='replace')}
+        return Outcome('completed' if process.returncode == 0 else 'failed', process.returncode, data)
     if process.returncode != 0:
         return Outcome('failed', process.returncode)
     try:

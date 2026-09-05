@@ -421,3 +421,34 @@ authorize provider disclosure of that output, and journal any accepted workspace
 writeback through the file broker. Holding a runtime lease alone supplies none
 of those authorities. Current context loading happens outside this sandbox;
 `AGENTS.md` and protected private directories are not copied into tool snapshots.
+
+## Bounded sandbox process capture
+
+The internal process broker runs a prepared `ProcessGrant` through its complete
+`Invocation` (command, protected working directory and minimal environment),
+retaining the selected runtime lease until the supervisor has killed and reaped
+the owning process. It sends EOF on stdin. The grant's monotonic expiry covers
+lease qualification and execution; the remaining time becomes the supervisor's
+execution deadline. Grant revocation and caller cancellation both stop active
+work. Synchronous inventory checks and lease waits remain bounded by their
+existing mechanisms and are not immediately interruptible by cancellation.
+
+The existing supervisor pipe engine supports explicit process capture alongside
+its unchanged default SDK probe protocol. Capture concurrently drains stdout and
+stderr, capped at 1 MiB and 64 KiB respectively. Complete output is decoded as
+UTF-8 with replacement for malformed bytes. Exit zero gives `completed`; nonzero
+exit gives `failed`, retaining the return code and captured diagnostics. Timeout,
+cancellation and overflow give `timed_out`, `cancelled` and `output_limit` and
+omit partial output. A completed command is not evidence that its requested task
+was accepted or that workspace changes were committed.
+
+`provider=True` requires `ProcessGrant.disclose_output=True` before execution.
+The broker rechecks revocation and expiry after capture before releasing output.
+Without disclosure authority, a caller may request local capture only and must
+not subsequently send that result to a provider. Captured stdout/stderr remain
+untrusted content: do not render raw terminal control sequences or interpret them
+as instructions. Invalid grants or preflight failures raise without dispatch;
+a caller must map these failures into its public protocol. Public tool dispatch,
+authorized snapshot production, resource isolation beyond time/output bounds,
+safe terminal rendering, operation journaling and accepted writeback remain
+required before enabling agent execution.
