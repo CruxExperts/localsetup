@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 314172865e55f30f2456827dacbfef13e767e050f6fbc85e3aa395d2c030c56e
+  source_provenance_hash: 4f80d49d952437ecac369b2d74f4d8cbbfbfc06806f8f087e5fb1412d71b90e6
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 2f0a777bdcb32ead352ad490e651e083fcfaa469
-artifact_sha256: bbfdb42a80ccf91f5d3f9046be1d02a281b653fe8b46162aa03952e56d84da7d
+source_commit: 0717423de645211ff5d6891ce05af2af0e7bc8c3
+artifact_sha256: 289ae67e57f616c79fbcb6e6aed047dc3a420fb0689bdd73afd94b45c35fb091
 ---
 # Implementation File Map
 
@@ -109,6 +109,7 @@ artifact_sha256: bbfdb42a80ccf91f5d3f9046be1d02a281b653fe8b46162aa03952e56d84da7
 | `refactor` | `ls/core/agent/__init__.py` |
 | `refactor` | `ls/core/agent/cli.py` |
 | `refactor` | `ls/core/agent/diagnostics.py` |
+| `refactor` | `ls/core/agent/runtime_install.py` |
 | `refactor` | `ls/core/agent/runtime_lock.py` |
 | `refactor` | `ls/core/aliases.py` |
 | `refactor` | `ls/core/apply.py` |
@@ -976,6 +977,7 @@ artifact_sha256: bbfdb42a80ccf91f5d3f9046be1d02a281b653fe8b46162aa03952e56d84da7
 | `keep` | `ls/tests/test_reference_materializer.py` |
 | `keep` | `ls/tests/test_repo_finalizer.py` |
 | `keep` | `ls/tests/test_repo_profile_universal_agent_repo.py` |
+| `keep` | `ls/tests/test_runtime_install.py` |
 | `keep` | `ls/tests/test_runtime_use_lock.py` |
 | `keep` | `ls/tests/test_scrapling_helper.py` |
 | `keep` | `ls/tests/test_scrapling_jobs.py` |
