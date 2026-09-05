@@ -32,7 +32,7 @@ def inspect(*, package_root: Path | None = None, home: Path | None = None) -> di
     except (OSError, ValueError, TypeError, RecursionError):
         state = "invalid"
         issues.append("SDK payload integrity failed; reinstall from a verified framework artifact.")
-    issues.append("Agent execution is unavailable until protected runtime and supervisor gates are implemented.")
+    issues.append("Coding runs require an explicit profile, task grant and successful per-run sandbox/resource preflight.")
     return {
         "schema_version": 1,
         "product": PRODUCT_NAME,
@@ -41,6 +41,7 @@ def inspect(*, package_root: Path | None = None, home: Path | None = None) -> di
         "status": "not_ready",
         "sdk_payload": state,
         "execution_available": False,
+        "execution_implemented": True,
         "locations": locations(home if home is not None else Path.home()),
         "issues": issues,
     }

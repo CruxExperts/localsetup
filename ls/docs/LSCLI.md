@@ -8,9 +8,10 @@ owner_skill: ls-architecture
 
 LSCli is the integrated CLI for LocalSetup (LS). Its command is `lscli`; the
 existing framework command and Python distribution remain `localsetup`.
-The current bootstrap provides help, version output, and read-only diagnostics.
-Agent execution is not yet available. A verified SDK payload alone does not
-establish protected runtime, sandbox, provider, or supervisor readiness.
+The CLI provides help, version output, read-only diagnostics, offline setup and
+explicit headless coding runs. A verified SDK payload alone does not establish
+per-run sandbox, resource, provider or task-authority readiness. Interactive
+input, control-channel steering and public session recovery are still pending.
 
 ```bash
 lscli --help
@@ -19,8 +20,8 @@ lscli doctor
 lscli doctor --format json
 ```
 
-Help and version return 0. Doctor currently returns 3 because execution gates
-remain unavailable; payload verification is reported independently. Calling
+Help and version return 0. Doctor returns 3 because it does not qualify a specific
+run grant or resource delegation; payload verification is reported independently. Calling
 `lscli` without a subcommand returns 3 with diagnostic guidance on standard error.
 Invalid arguments return argparse's status 2. Doctor text or JSON goes to standard
 output. None of these commands loads provider/SDK modules, discovers credentials,
@@ -28,7 +29,7 @@ makes provider calls, or creates configuration or state directories.
 
 The JSON diagnostic is versioned with `schema_version: 1`. It includes `product`,
 `application`, `framework_version`, `status`, `sdk_payload`,
-`execution_available`, `locations`, and `issues`. Payload status is `verified`,
+`execution_available`, `execution_implemented`, `locations`, and `issues`. Payload status is `verified`,
 `missing`, or `invalid`. Verification inspects the installed private payload's
 manifest and files without importing them. Source/editable development has no
 installed private payload and never falls back to the canonical vendor tree.
@@ -41,14 +42,14 @@ The new CLI follows the existing global framework home under the user's home:
 
 | Purpose | Path relative to the user home |
 | --- | --- |
-| Durable CLI state and future sessions | `.local/share/localsetup/state/lscli` |
+| Durable CLI state and sessions | `.local/share/localsetup/state/lscli` |
 | Explicit provider profile configuration | `.local/share/localsetup/config/lscli/profiles.json` |
 | Managed release runtimes | `.local/share/localsetup/runtimes/lscli` |
 
-Diagnostics only reports these locations. Offline setup and runtime-use leases
-are implemented as described below. Profile creation, session persistence,
-sandbox protection, worker supervision, PATH collision handling, and agent
-dispatch remain subsequent gates. A reported location does not enable them.
+Diagnostics only reports these locations. Offline setup, session persistence,
+sandbox protection and supervised headless dispatch are implemented as described
+below. Profile creation and PATH collision handling remain subsequent setup work.
+A reported location does not qualify a run or authorize file/provider access.
 Existing framework state, adapter ownership, and stored heartbeat identifiers
 are unchanged. See [SDK source and dependency maintenance](SDK_FORK.md) for the
 private payload, dependency lock, build, and artifact boundaries.
@@ -1196,3 +1197,77 @@ recovery/continuation, exact operation counts, worker exit, revoked-owner refusa
 and every captured request's runtime-resolved user-agent. This qualifies the
 selected Chat Completions path and these crash windows; power-loss durability,
 Responses coding and broader interactive acceptance remain separate checks.
+
+
+## Explicit headless coding runs
+
+```bash
+lscli run --profile coding --profiles /private/config/profiles.json \
+  --grant /private/config/task-grant.json --resource-parent "$CGROUP_PARENT" \
+  --workspace "$PROJECT" --format jsonl --prompt-stdin < prompt.txt
+```
+
+The profile uses the [explicit provider schema](#explicit-provider-profiles-and-transport).
+Only the selected credential value is passed to sealed Python through a fixed
+internal environment key. The configured source variable name is never forwarded
+as a loader or interpreter option. There is no credential search or provider fallback. Public coding currently
+requires the qualified Chat Completions interface. Prompt input itself authorizes
+disclosure of that prompt to the selected profile. No workspace context is loaded
+automatically. File reads, writes and provider disclosure remain distinct grants.
+
+The grant is an explicit private, owned, regular JSON file outside the workspace:
+
+```json
+{
+  "schema_version": 1,
+  "read": ["src", "tests"],
+  "write": ["src"],
+  "disclose": ["src", "tests"],
+  "recipes": {
+    "test": {
+      "command": ["/usr/bin/python3", "-I", "-B", "-m", "unittest", "discover", "-s", "tests"],
+      "files": ["src/main.py", "tests/test_main.py"],
+      "seconds": 30
+    }
+  }
+}
+```
+
+Scopes are canonical relative paths; `.` explicitly covers the workspace subject
+to protected-path restrictions. Recipe input files are exact snapshot paths, and
+commands use canonical `/usr/bin` executables. Process writes are disposable;
+workspace edits use the file broker. Empty recipe inventories permit file-only
+work; an ungranted command request is refused. Configurations and credentials are
+not included in saved task authority.
+
+`--runtime-root`, `--state-root` and `--profiles` override the documented default
+locations. `--resource-parent` must identify an already-qualified delegation;
+there is no implicit host repair. New run state creates private sessions, leases,
+snapshots and scratch directories. Run configuration must stay outside the
+workspace, and runtime/state trees must be separate. The bootstrap replaces itself
+with the selected sealed interpreter; a changed runtime selection is refused
+before provider dispatch. No SDK installation or download occurs during a run.
+
+`--task` and `--session` optionally provide bounded identifiers; omitted values
+are generated. These identify a new run's durable evidence, not permission to
+resume old history. `--timeout` bounds input and execution (default 300 seconds,
+maximum 3,600); request/tool/token caps default to 8/16/32,768 and may be lowered or
+explicitly changed with their corresponding limit flags. Stdin must reach EOF and
+contain at most 128 KiB of UTF-8 prompt text. SIGINT/SIGTERM cancel current work.
+
+Text mode emits tool progress and safely rendered final text. JSONL emits ordered
+schema-version-1 `start`, `progress` and terminal `result` records with a monotonic
+`sequence` and `data` object. Progress contains native SDK events; consumers must
+treat their contents as untrusted data. JSON escapes terminal controls. Results
+include status, task/session and, on success, output and a checkpoint reference.
+Standard error carries bounded generic diagnostics without credentials or provider
+exception text. Slow/closed output is bounded and stops the run; absence of a
+terminal record is not success. Cancellation/deadline terminal delivery has a
+separate one-second window and may fail if the consumer is unavailable.
+
+Successful runs exit 0; cancellation exits 130, deadline 124, process failure 1,
+output-limit 5, validation/runtime failure 2, and bootstrap readiness failure 3.
+Argument errors use argparse's status 2. Each coding run still performs actual
+sandbox/resource preflight before contacting a provider. Interactive approvals,
+steering/control descriptors, context loading and public resume/recovery commands
+remain subsequent interfaces; the explicit grant is the current approval surface.

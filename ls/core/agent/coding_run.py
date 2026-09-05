@@ -63,7 +63,7 @@ class RunPaths:
 
 
 def run_coding(paths: RunPaths, payload: dict, authority: CodingGrant, files, recipes: dict,
-               *, limits: Limits, on_event, resume=None, cancel=None) -> Outcome:
+               *, limits: Limits, on_event, resume=None, cancel=None, expected_release=None) -> Outcome:
     """Caller authorizes exact context; saved messages never restore authority."""
     payload=json.loads(_encode(payload))
     digest=disclosure_digest(payload)
@@ -91,6 +91,8 @@ def run_coding(paths: RunPaths, payload: dict, authority: CodingGrant, files, re
                     raise PermissionError('Restored history differs from the current checkpoint')
             with qualified_tools(paths.runtimes,paths.scratch,paths.resource_parent,task=authority.task,
                     session=authority.session,expires=expires,limits=limits,revoked=revoked) as qualification:
+                if expected_release is not None and qualification.release != expected_release:
+                    raise PermissionError('Selected runtime changed; restart the protected command')
                 broker=FileBroker(replace(files,expires=expires,revoked=revoked),paths.target_leases)
                 tools=ProcessHandler(owner,broker,profile=profile_digest(payload['profile']),run_id=payload['run_id'],
                     runtimes=paths.runtimes,snapshots=paths.snapshots,recipes=recipes,

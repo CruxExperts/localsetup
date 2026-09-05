@@ -92,3 +92,16 @@ def test_retained_request_and_session_then_runtime_order(inputs,monkeypatch):
     with pytest.raises(Stop):
         coding.run_coding(paths,value,wrapper,files,{'test':Recipe(('/usr/bin/true',),('src/a',),1)},limits=Limits(),on_event=lambda x:None)
     assert order==['session_enter','runtime_enter','runtime_exit','session_exit']
+
+
+def test_reselected_runtime_cannot_dispatch_protected_cli_worker(inputs,monkeypatch):
+    from contextlib import contextmanager
+    from types import SimpleNamespace
+    paths,files,value,authority=inputs
+    @contextmanager
+    def qualified(*args,**kwargs):yield SimpleNamespace(release=paths.runtimes/'new-release')
+    monkeypatch.setattr(coding,'qualified_tools',qualified)
+    monkeypatch.setattr(coding,'supervise',lambda *args,**kwargs:pytest.fail('must not launch worker'))
+    with pytest.raises(PermissionError,match='Selected runtime changed'):
+        coding.run_coding(paths,value,authority,files,{},limits=Limits(),on_event=lambda event:None,
+                          expected_release=paths.runtimes/'old-release')

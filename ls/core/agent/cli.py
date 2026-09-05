@@ -30,7 +30,17 @@ def main(argv: list[str] | None = None) -> int:
     setup.add_argument("--sandbox-sha256")
     setup.add_argument("--runtime-root", type=Path)
     setup.add_argument("--timeout", type=float, default=300)
+    run = commands.add_parser('run', help='Run with an explicit profile and task grant in the protected runtime')
+    from .run_options import arguments
+    arguments(run)
     args = parser.parse_args(argv)
+    if args.command == 'run':
+        from .run_cli import launch
+        try:
+            launch((sys.argv[1:] if argv is None else argv)[1:],args)
+        except (OSError,ValueError,TypeError,RuntimeError):
+            print(f"{CLI_NAME} run could not start; verify the selected profile, credential and installed runtime.",file=sys.stderr)
+            return 3
     if args.command == "setup":
         from .diagnostics import locations
         from .runtime_install import install, plan, reselect
@@ -58,14 +68,14 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(result, sort_keys=True))
         return 0
     if args.command is None:
-        print(f"{CLI_NAME}: agent execution is not available yet; run '{CLI_COMMAND} doctor' for readiness details.", file=sys.stderr)
+        print(f"{CLI_NAME}: use '{CLI_COMMAND} run --help' for explicit coding grants or '{CLI_COMMAND} doctor' for readiness.", file=sys.stderr)
         return 3
     report = inspect()
     if args.format == "json":
         print(json.dumps(report, sort_keys=True))
     else:
         print(f"{CLI_NAME} ({PRODUCT_NAME}) {report['framework_version']}")
-        print(f"SDK payload: {report['sdk_payload']}; execution: unavailable")
+        print(f"SDK payload: {report['sdk_payload']}; execution: requires run preflight")
         for issue in report["issues"]:
             print(f"- {issue}")
         for name, path in report["locations"].items():

@@ -40,7 +40,7 @@ class Recipe:
 class ProcessHandler(FileHandler):
     def __init__(self, owner, broker, *, profile, run_id, runtimes, snapshots, recipes, resource_parent=None, limits=None):
         super().__init__(owner,broker,profile=profile,run_id=run_id)
-        if not isinstance(recipes,dict) or not recipes or len(recipes)>64 or any(
+        if not isinstance(recipes,dict) or len(recipes)>64 or any(
             not isinstance(name,str) or not IDENTIFIER.fullmatch(name) or not isinstance(value,Recipe)
             for name,value in recipes.items()):
             raise ValueError('Process handler requires bounded explicit named recipes')

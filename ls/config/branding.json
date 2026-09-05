@@ -3947,7 +3947,7 @@
     },
     {
       "path": "ls/docs/LSCLI.md",
-      "line_sha256": "80eb3a91cf98e2f086ff31675e3e8885fa8ce4906f0610c2ffea19dd193cd6a3",
+      "line_sha256": "1592bb9b3836e28094143404bc933b1b1ba66fad4d1a1913f611b2d63ffd1c3d",
       "token": "localsetup",
       "count": 1,
       "kind": "compatibility_identifier",
@@ -3955,7 +3955,7 @@
     },
     {
       "path": "ls/docs/LSCLI.md",
-      "line_sha256": "80eb3a91cf98e2f086ff31675e3e8885fa8ce4906f0610c2ffea19dd193cd6a3",
+      "line_sha256": "1592bb9b3836e28094143404bc933b1b1ba66fad4d1a1913f611b2d63ffd1c3d",
       "token": "lscli",
       "count": 1,
       "kind": "compatibility_identifier",
@@ -4144,6 +4144,14 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Canonical vendor directory used by isolated source qualification fixtures."
+    },
+    {
+      "path": "ls/docs/LSCLI.md",
+      "line_sha256": "b33d85f812d9c004363cf0ff58eaf6f2cde0ede63f94ac5afc6c90a141e4a064",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Documented integrated CLI command; preserve the established executable spelling."
     }
   ],
   "visual_reviews": [
