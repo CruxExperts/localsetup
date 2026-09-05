@@ -294,3 +294,38 @@ the checkout, with private SDK origins and unchanged runtime inventory. Focused
 subprocess fixtures cover malformed/duplicate events, nonzero exit despite a valid
 result, output limits, active/pre-start cancellation, deadlines and pipe-holding
 children. These checks qualify the probe lifecycle only.
+
+## Task-bound file broker
+
+The internal file broker accepts a supervisor-owned immutable grant bound to a
+task, session, absolute workspace root, monotonic expiry and revocation event.
+Read, write and provider-disclosure scopes are separate canonical relative paths;
+`.` covers the granted tree subject to protected-path rules. Reading for provider
+use requires both read and disclosure authority. Grants must never be reconstructed
+from model responses, compacted summaries or stored conversations.
+
+Broker reads/writes use one existing private lease root shared by all cooperating
+sessions, separate from the workspace. Reads take shared leases and replacements
+exclusive leases. Descriptor-relative traversal refuses symlinks; regular files
+must be owned by the current user, have one hard link, and lack special modes.
+Operations are limited to 8 MiB. Reads reject observed concurrent file changes;
+writes use exclusive temporary files, preserve existing mode/owner/group and
+extended attributes, flush file data, recheck authority and target identity, then
+atomically replace and flush the directory. Failed preparation leaves the original
+file in place and removes the temporary file. Missing parent directories are not
+created. A directory flush failure after replacement is an uncertain mutation,
+which future operation-journal reconciliation must resolve before retry.
+
+Private/control path segments `.git`, `.agents`, `.codex`, `.claude`, `.ssh`,
+`.env` and `.env.*` are refused; writes to `AGENTS.md` are also refused. This
+preserves governing context and mixed adapter content. These defaults do not
+identify every possible secret: the supervisor must issue appropriate scope and
+protected runtime/state boundaries before dispatch.
+
+The broker is internal and not yet exposed as SDK tools. A cooperating lease and
+pre-replacement identity check do not stop an untrusted same-user process from
+renaming directories or racing the final replacement. Sandbox containment,
+shared target/session ownership, prompt-bound approval flow, and durable mutation
+journaling remain required before tool-enabled execution. Grant expiry/revocation
+is checked before and after lease waits and before returning data or replacing a
+file; it does not interrupt a blocked filesystem syscall.
