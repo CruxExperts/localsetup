@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 90dcc64dfd1b64670f771733b6a8a0e6b006a1395014c254bcb74f49a52ebab4
+  source_provenance_hash: 6423e9f692e1d569a4fb3945b1ef103a77877638f6f289c567c09709052cd73c
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: fe525ea0ccad85636707921aa45ad8778492c79d
-artifact_sha256: d7289076e9e43d6a739a08685aa0e251bc21cd7f631c69794094a7a08fdb430b
+source_commit: a35a0177a3ff76749175030c0b8f4e944bd4ad1d
+artifact_sha256: 817d145fac4d4ff5eddbadc9b0dd0a3f52f805fc69c44b6d52a4f90007dd2c5d
 ---
 # Implementation File Map
 
@@ -119,6 +119,7 @@ artifact_sha256: d7289076e9e43d6a739a08685aa0e251bc21cd7f631c69794094a7a08fdb430
 | `refactor` | `ls/core/agent/diagnostics.py` |
 | `refactor` | `ls/core/agent/file_broker.py` |
 | `refactor` | `ls/core/agent/file_grants.py` |
+| `refactor` | `ls/core/agent/file_listing.py` |
 | `refactor` | `ls/core/agent/file_recovery.py` |
 | `refactor` | `ls/core/agent/file_rpc.py` |
 | `refactor` | `ls/core/agent/file_search.py` |
@@ -988,6 +989,7 @@ artifact_sha256: d7289076e9e43d6a739a08685aa0e251bc21cd7f631c69794094a7a08fdb430
 | `keep` | `ls/tests/test_dependency_ledger.py` |
 | `keep` | `ls/tests/test_docs_alignment.py` |
 | `keep` | `ls/tests/test_domain_shapes.py` |
+| `keep` | `ls/tests/test_file_listing.py` |
 | `keep` | `ls/tests/test_file_rpc.py` |
 | `keep` | `ls/tests/test_file_search.py` |
 | `keep` | `ls/tests/test_github_starredrepos_skill.py` |
