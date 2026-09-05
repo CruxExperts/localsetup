@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 19819ee3fe24991c4149d23ba5821aa56cf34aa00d85a902f960acbeaa46cf86
+  source_provenance_hash: cad64563bdb766b2c80c1976f9cd3ecd4e73370f7640a004779d87ee3f7f8c3f
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: d321fd56fed58e2271547da72119c59773e2b5b9
-artifact_sha256: 1b25f86a841835f136f1126512ecccf0f0f97c954a41ea903db8cccf3ee5de1b
+source_commit: fd55c9660b538db465c50676275ef87725d85140
+artifact_sha256: f3b5ca668ad48add37088fb1839d7688cf5b35f4bfbeee4e273e71d4fc835eea
 ---
 # Implementation File Map
 
@@ -120,6 +120,7 @@ artifact_sha256: 1b25f86a841835f136f1126512ecccf0f0f97c954a41ea903db8cccf3ee5de1
 | `refactor` | `ls/core/agent/compaction_run.py` |
 | `refactor` | `ls/core/agent/compaction_worker.py` |
 | `refactor` | `ls/core/agent/completion_contract.py` |
+| `refactor` | `ls/core/agent/completion_response.py` |
 | `refactor` | `ls/core/agent/context_files.py` |
 | `refactor` | `ls/core/agent/diagnostics.py` |
 | `refactor` | `ls/core/agent/file_broker.py` |
@@ -155,6 +156,7 @@ artifact_sha256: 1b25f86a841835f136f1126512ecccf0f0f97c954a41ea903db8cccf3ee5de1
 | `refactor` | `ls/core/agent/sandbox.py` |
 | `refactor` | `ls/core/agent/sandbox_copy.py` |
 | `refactor` | `ls/core/agent/sdk_compaction.py` |
+| `refactor` | `ls/core/agent/sdk_completion.py` |
 | `refactor` | `ls/core/agent/sdk_file_tools.py` |
 | `refactor` | `ls/core/agent/sdk_imports.py` |
 | `refactor` | `ls/core/agent/sdk_iteration.py` |
@@ -970,6 +972,7 @@ artifact_sha256: 1b25f86a841835f136f1126512ecccf0f0f97c954a41ea903db8cccf3ee5de1
 | `keep` | `ls/tests/manifest_test_helpers.py` |
 | `keep` | `ls/tests/responses_stream_fixture.py` |
 | `keep` | `ls/tests/sdk_compaction_fixture.py` |
+| `keep` | `ls/tests/sdk_completion_fixture.py` |
 | `keep` | `ls/tests/sdk_file_fixture.py` |
 | `keep` | `ls/tests/sdk_iteration_fixture.py` |
 | `keep` | `ls/tests/sdk_model_fixture.py` |
@@ -1093,6 +1096,7 @@ artifact_sha256: 1b25f86a841835f136f1126512ecccf0f0f97c954a41ea903db8cccf3ee5de1
 | `keep` | `ls/tests/test_sdk_artifacts.py` |
 | `keep` | `ls/tests/test_sdk_build.py` |
 | `keep` | `ls/tests/test_sdk_compaction.py` |
+| `keep` | `ls/tests/test_sdk_completion.py` |
 | `keep` | `ls/tests/test_sdk_dependencies.py` |
 | `keep` | `ls/tests/test_sdk_iteration.py` |
 | `keep` | `ls/tests/test_sdk_models.py` |
