@@ -8,7 +8,7 @@ from .checkpoint_rpc import CheckpointHandler, METHOD
 from .file_broker import MAX_FILE
 from .operation_journal import IDENTIFIER
 
-METHODS = frozenset({METHOD, 'file.read', 'file.write', 'file.search'})
+METHODS = frozenset({METHOD, 'file.read', 'file.write', 'file.search', 'file.list'})
 
 
 class FileHandler(CheckpointHandler):
@@ -19,6 +19,11 @@ class FileHandler(CheckpointHandler):
     def __call__(self, method, data):
         if method == METHOD:
             return super().__call__(method, data)
+        if method == 'file.list':
+            if not isinstance(data,dict) or set(data)!={'path'}:
+                raise ValueError('Invalid listing schema')
+            from .file_listing import listing
+            return listing(self.owner,self.broker,data['path'])
         if method == 'file.search':
             from .file_search import search
             return search(self.owner,self.broker,data)

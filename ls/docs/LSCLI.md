@@ -1380,7 +1380,7 @@ a resumed conversation remains context and never restores its former authority.
 ### One-use tool approvals
 
 Add `--approve-tools --format jsonl --control-fd FD` to require owner confirmation
-before each file read, file search, file replacement or process recipe request. This mode
+before each file read, listing, search, replacement or process recipe request. This mode
 narrows existing grants; approving an otherwise forbidden request does not make
 it executable. Without this flag, explicit grant-file authority remains the
 normal tool policy. Approval mode requires JSONL output and a control socket.
@@ -1499,3 +1499,27 @@ from those snapshots, not from the whole project. Search results are snapshots;
 normal file preconditions still govern subsequent writes. Search uses the same
 per-tool approval gate when enabled and consumes a tool call, but creates no
 mutation journal entries. Directory discovery is not provided by this tool.
+
+## Directory discovery
+
+The agent can call `list_files(path)` for direct children of an explicitly
+readable and disclosable directory. Use `.` for the workspace root only when
+both grants cover `.`. Permission for an individual file does not permit listing
+its parent. The tool does not recurse: select a returned directory explicitly
+for another listing or pass returned file paths to `search_files`.
+
+Results contain `path`, sorted `entries` with each child's relative `path` and
+`kind` (`file` or `directory`), and `truncated`. The broker scans at most 4,096
+entries and returns at most 256 KiB. If either limit is reached, `truncated` is
+true; the partial selection follows filesystem enumeration order before sorting.
+Protected paths, symlinks, hard-linked files, special files, entries owned by
+another user, and entries with special permission bits are omitted. No omitted
+names or counts are returned. Such omissions mean an empty result is not proof
+that the physical directory is empty.
+
+Listing uses an anchored directory descriptor and the existing read lease. A
+change to directory metadata during enumeration refuses the result. Current
+read/disclosure and session authority are checked before returning either a full
+or truncated result. Approval mode shows the exact selected directory before
+listing. The operation consumes a tool call and creates no mutation journal
+entry. Returned names do not grant permission to read or execute those entries.

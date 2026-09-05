@@ -45,12 +45,12 @@ class FileGrant:
     def check(self, task: str, session: str, operation: str, name: str, *, provider: bool = False) -> tuple[str, ...]:
         if task != self.task or session != self.session or self.revoked.is_set() or time.monotonic() >= self.expires:
             raise PermissionError('Task grant is mismatched, revoked or expired')
-        parts = relative(name)
+        parts = () if operation == 'list' and name == '.' else relative(name)
         if any(p in PROTECTED or p.startswith('.env.') for p in parts) or (operation == 'write' and 'AGENTS.md' in parts):
             raise PermissionError('Broker target is protected policy or private state')
         def covered(scopes):
             return any(s == '.' or parts[:len(PurePosixPath(s).parts)] == PurePosixPath(s).parts for s in scopes)
-        if operation not in ('read', 'write') or not covered(self.read if operation == 'read' else self.write):
+        if operation not in ('read', 'write', 'list') or not covered(self.write if operation == 'write' else self.read):
             raise PermissionError('Operation is outside the task grant')
         if provider and not covered(self.disclose):
             raise PermissionError('Provider disclosure requires separate authority')

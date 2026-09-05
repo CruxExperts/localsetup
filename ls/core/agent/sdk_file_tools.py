@@ -16,6 +16,10 @@ def file_tools(finder, channel):
         """Read granted UTF-8 text and its SHA-256 digest."""
         return await channel.request_async('file.read', {'path':path})
 
+    async def list_files(path: str) -> dict:
+        """List granted direct child files/directories; use a dot for the granted workspace root."""
+        return await channel.request_async('file.list', {'path':path})
+
     async def search_files(paths: list[str], text: str) -> dict:
         """Find literal case-sensitive text in explicit granted UTF-8 files; results are bounded."""
         return await channel.request_async('file.search', {'paths':paths,'text':text})
@@ -29,6 +33,7 @@ def file_tools(finder, channel):
     # Explicit takes_ctx avoids resolving a local-scope annotation through globals.
     tools = (Tool(read_file, sequential=True, max_retries=0),
              Tool(write_file, takes_ctx=True, sequential=True, max_retries=0),
-             Tool(search_files, sequential=True, max_retries=0))
+             Tool(search_files, sequential=True, max_retries=0),
+             Tool(list_files, sequential=True, max_retries=0))
     finder.verify_origins()
     return tools
