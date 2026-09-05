@@ -18,7 +18,17 @@ lscli --help
 lscli --version
 lscli doctor
 lscli doctor --format json
+localsetup agent --help
 ```
+
+The framework entry point `localsetup agent` forwards its remaining arguments
+to LSCli. For example, `localsetup agent run --help` and `lscli run --help`
+show the same run contract; `localsetup agent sessions --format json` lists
+local session metadata. Runs use the same protected runtime, grants, input,
+events and exit codes. Place `agent` immediately after `localsetup`; framework
+global options before it are rejected. Use LSCli options such as `--workspace`,
+`--state-root` and `--runtime-root` on the relevant subcommand. The forwarding
+entry point does not translate framework installation selectors into agent authority.
 
 Help and version return 0. Doctor returns 3 because it does not qualify a specific
 run grant or resource delegation; payload verification is reported independently. Calling

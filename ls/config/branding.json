@@ -4152,6 +4152,30 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Documented integrated CLI command; preserve the established executable spelling."
+    },
+    {
+      "path": "ls/core/cli.py",
+      "line_sha256": "97a7ad6ea289738a754f7fbcdbe328c84ce28c8235c0b6d1641b93395724587d",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact framework command identifier in forwarding help, argument diagnostics or executable argv fixture; not product display text."
+    },
+    {
+      "path": "ls/core/cli_parser.py",
+      "line_sha256": "72b7ebb9c8dc0b46baef8882692a0f003963d6e948c22f0540882ad9d2298e44",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact framework command identifier in forwarding help, argument diagnostics or executable argv fixture; not product display text."
+    },
+    {
+      "path": "ls/tests/test_agent_entrypoint.py",
+      "line_sha256": "2d265535c6740851a3138b1f3e5694ad475f0f2b83027e993c3fdc5397534117",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact framework command identifier in forwarding help, argument diagnostics or executable argv fixture; not product display text."
     }
   ],
   "visual_reviews": [

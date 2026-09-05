@@ -410,6 +410,8 @@ def _main(argv: list[str] | None = None) -> int:
     if args.cmd is None:
         _print_no_command_help()
         return 2
+    if args.cmd == "agent":
+        parser.error("place agent immediately after localsetup; use agent options for workspace, state and runtime selection")
     _inject_global_target(args)
     root = Path(args.source_root or args.repo or str(_repo_root())).resolve()
     home = Path(args.home or Path.home()).expanduser().resolve()
@@ -425,8 +427,12 @@ def _main(argv: list[str] | None = None) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    if arguments[:1] == ["agent"]:
+        from .agent.cli import main as agent_main
+        return agent_main(arguments[1:])
     try:
-        return _main(argv)
+        return _main(arguments)
     except Exception as exc:
         print(f"localsetup: {exc}", file=sys.stderr)
         return 2
