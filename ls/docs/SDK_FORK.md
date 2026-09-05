@@ -157,3 +157,39 @@ files in a temporary directory and never imports their code. Limits are 16 MiB
 per file, 64 MiB of SDK payload, and 10,000 SDK files. Artifact checksums
 and trusted release provenance still provide the outer authenticity boundary.
 Full runtime dependency and released-artifact acceptance remain separate gates.
+
+## External dependency boundary
+
+The framework's `pyproject.toml` declares the external requirements selected from
+Slim's base and OpenAI extra, Graph's base, and Harness's base metadata. The
+stronger shared `genai-prices` minimum is retained. The three vendored SDK
+distributions are excluded: installing the framework wheel must not install
+another copy of them. Optional upstream provider and integration extras are not
+selected. The ordinary wheel uses dependency ranges; `uv.lock` records the exact
+combined framework and SDK external resolution for repository workflows.
+
+PGPy, an existing framework dependency, supplies only a source distribution at
+version 0.6.0. Its verified static build metadata requires setuptools and wheel;
+wheel also requires packaging. The project's uv build constraints pin this
+build closure separately from runtime dependencies. These constraints govern uv
+project operations; ordinary wheel installers do not inherit project uv settings.
+A managed installation must use its release's locked runtime and build artifacts.
+That installation path and its exported hash locks remain a separate delivery gate.
+
+The combined resolution was checked against OSV, GitHub Advisory Database, and
+deps.dev/PyPI on 2026-09-05. All 42 selected runtime/build versions returned no
+reported advisories and were not yanked. Artifact hashes in the changed framework
+lock records matched the registry. This includes the Emscripten-only
+`httpx2-jsfetch` marker dependency for inventory completeness; it does not qualify
+Emscripten execution. Dependency advisory results are dated evidence, not a
+security guarantee or a claim of support for every environment represented by a
+universal lock.
+
+A Python 3.12/Linux candidate wheel was installed into a fresh environment from
+outside the checkout with the audited version constraints and build constraints.
+All 38 external runtime versions matched the candidate inventory, the installer
+reported compatible installed dependencies, the private payload verified, and
+`localsetup --version` returned the framework display name and version. No
+original SDK distribution was installed and no SDK module was imported by this
+check. This qualifies that exact constrained candidate; it does not establish
+SDK execution or compatibility with every version allowed by the wheel's ranges.
