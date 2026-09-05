@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: d7bfd82d4a0e0b87ca51e70c745a2fa99a8ec332ef2df22ddaec81bf4b11ecf8
+  source_provenance_hash: 0cde3462728b82fd9aa1beb3948252ddb6f46d4829d94ac2dda322926d6e42a3
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: bd3259a186a473c76ed6bd1c542cd09f3184d6df
-artifact_sha256: e0e3a996b8290d1aa32a845a2f650e25ef715f22675db23fa9d703096ed57575
+source_commit: 0993640949085f8774037c664e8f0fea55e64218
+artifact_sha256: b07f23d8230d41c99ede092b817412567ad3a4e9acb7da945560a98793519825
 ---
 # Workflow and module registry (Localsetup)
 
@@ -34,7 +34,7 @@ For the framework rules, see [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md).
 | `ops-guarded` | `ls-workflow-ops-guarded` | Ops Guarded | Use when risky operations need approval checkpoints, impact review, or guarded execution; hand off sudo, elevated, PTY, or interactive password execution to ls-workflow-ops-tmux-session. | lazy admin; manual execution | `ls-framework-compliance`; `ls-safety-and-backup` | [SKILL.md](../../ls/skills/ls-safety-and-backup/SKILL.md); [SKILL.md](../../ls/workflows/ls-workflow-ops-tmux-session/SKILL.md) |
 | `ops-tmux-session` | `ls-workflow-ops-tmux-session` | Ops Tmux Session | Use when commands need sudo, root/admin elevation, require_escalated, pseudo-terminal/PTY handling, interactive sudo or elevated terminal password prompts, or managed tmux run tracking. | tmux shared session; sudo tmux; elevated permissions; interactive sudo prompt; sudo password prompt handoff; require_escalated; pseudo-terminal ops; managed tmux ops | `ls-safety-and-backup` | [tmux-ops-managed.md](ops/tmux-ops-managed.md); [tmux-ops-remote.md](ops/tmux-ops-remote.md); `ls/tools/tmux_ops` |
 | `pipeline-git-repair-hygiene` | `ls-workflow-pipeline-git-repair-hygiene` | Pipeline Git Repair Hygiene | Use when recovering broken Git state and enforcing follow-up workflow hygiene checks. | git repair pipeline | `ls-unfuck-my-git-state`; `ls-git-workflows`; `ls-framework-compliance` | [GIT_TRACEABILITY.md](GIT_TRACEABILITY.md) |
-| `pipeline-pr-feedback-loop` | `ls-workflow-pipeline-pr-feedback-loop` | Pipeline PR Feedback Loop | Use when turning pull request feedback into fixes, tests, and follow-up review. | pr feedback pipeline | `ls-receiving-code-review`; `ls-tdd-guide`; `ls-pr-reviewer` | [WORKFLOW_QUICK_REF.md](WORKFLOW_QUICK_REF.md) |
+| `pipeline-pr-feedback-loop` | `ls-workflow-pipeline-pr-feedback-loop` | Pipeline PR Feedback Loop | Use when turning pull request feedback into fixes, tests, and follow-up review. | pr feedback pipeline | `ls-receiving-code-review`; `ls-tdd-guide`; `ls-pr-reviewer` | n/a |
 | `pipeline-pre-publish` | `ls-workflow-pipeline-pre-publish` | Pipeline Pre Publish | Use when running pre-publish checks, version sync, and framework audit before release actions. | pre publish pipeline | `ls-github-publishing-workflow`; `ls-automatic-versioning`; `ls-framework-audit` | [VERSIONING.md](VERSIONING.md); [WORKFLOW_QUICK_REF.md](WORKFLOW_QUICK_REF.md) |
 | `pipeline-repo-convert` | `ls-workflow-pipeline-repo-convert` | Pipeline Repo Convert | Use when converting an existing repo to the current Localsetup framework with backup, blocker, install, and verification gates. | repo convert pipeline; convert repo; localsetup convert | `ls-framework-compliance`; `ls-safety-and-backup`; `ls-git-workflows`; `ls-test-runner` | [REPO_CONVERSION.md](REPO_CONVERSION.md); [MULTI_PLATFORM_INSTALL.md](MULTI_PLATFORM_INSTALL.md); `git` |
 | `pipeline-repo-polish` | `ls-workflow-pipeline-repo-polish` | Pipeline Repo Polish | Use when polishing repository docs and scripts for sharing readiness. | repo polish pipeline | `ls-script-and-docs-quality`; `ls-humanizer`; `ls-github-publishing-workflow` | [WORKFLOW_QUICK_REF.md](WORKFLOW_QUICK_REF.md); [README.md](README.md) |

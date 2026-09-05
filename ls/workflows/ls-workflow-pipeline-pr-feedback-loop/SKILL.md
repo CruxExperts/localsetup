@@ -6,4 +6,13 @@ metadata:
 ---
 
 Use this pipeline package for structured PR feedback loops.
-Primary reference: `ls/docs/WORKFLOW_QUICK_REF.md`.
+Follow the owning skills in sequence:
+
+1. [ls-receiving-code-review](../../skills/ls-receiving-code-review/SKILL.md)
+   for technical triage and verification of actionable feedback.
+2. [ls-tdd-guide](../../skills/ls-tdd-guide/SKILL.md) for implementing accepted
+   fixes with test evidence.
+3. [ls-pr-reviewer](../../skills/ls-pr-reviewer/SKILL.md) for follow-up automated
+   review.
+
+These skills own the procedures; this package composes their phases.
