@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.4
+version: 4.3
 owner_skill: ls-skill-importer
 ---
 
