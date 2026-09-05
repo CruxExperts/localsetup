@@ -12,8 +12,11 @@ MIT license texts. These are private implementation dependencies for LSCli.
 Never add this tree to the supervisor's import path. Only the isolated SDK worker
 may import it after the installed runtime's integrity and authority gates pass.
 
-The source inventory is established; wheel payload generation, protected runtime
-bootstrap, and agent execution are not yet available. Optional upstream modules
+Ordinary wheel builds verify the source and generate private SDK data under
+`ls/_sdk_payload`. The build does not install upstream namespaces at the wheel
+root or depend on installed upstream SDK distributions. Editable framework development remains available, but supplies no private SDK
+payload and cannot qualify LSCli execution.
+Protected runtime bootstrap and agent execution are not yet available. Optional upstream modules
 remain in the source for attribution and fork maintenance. Their presence does
 not qualify providers, MCP, browser tools, subagents, or other integrations.
 
@@ -83,3 +86,41 @@ For a refresh:
    in the required separate receipt. Keep machine evidence and private audit
    records outside public source and artifacts. Retain compatible prior release
    artifacts for recovery; never rewrite stored sessions during a source refresh.
+
+## Wheel build boundary
+
+The setuptools `BuildSDK` command owns the mapping from canonical source to wheel
+data. It validates before copying, includes every listed runtime resource,
+license, patch, and manifest, and verifies the resulting tree. Extra files,
+symlinks, or a different retained manifest in a reused build directory stop the
+build; use a fresh build output directory after changing the SDK source.
+
+The build command loads its sibling verifier directly because setuptools loads
+custom commands before the source package is importable. The core package also
+resolves its `main` compatibility export lazily. The build helper imports only
+the standard library and setuptools. No framework
+runtime dependencies, provider credentials, or SDK imports are needed to build
+the payload. Build from the source archive with the pinned setuptools backend;
+source distributions retain the canonical vendor input through `MANIFEST.in`.
+The installed worker's import-origin and runtime-protection checks are separate
+requirements; a successful wheel build does not authorize agent execution.
+
+Build and inspect candidates using the repository's pinned backend:
+
+```bash
+uv sync --locked --all-groups
+uv run --locked pytest ls/tests/test_sdk_build.py ls/tests/test_sdk_payload.py -q
+uv build --wheel --no-sources --out-dir dist
+uv build --sdist --no-sources --out-dir dist
+uv build --wheel dist/<source-distribution>.tar.gz --out-dir dist/from-sdist
+```
+
+Replace the source-distribution placeholder with the exact artifact just built.
+The development group includes the same pinned setuptools version as the build
+backend so the build-command regressions run in the normal project environment.
+Python 3.12/Linux candidate checks established exact payload bytes for a source
+wheel, sdist, and sdist-built wheel. A dependency-free installation also verified
+the payload from outside the checkout without importing the SDK. These checks
+qualify the packaging boundary; runtime external dependencies, supported provider
+interfaces, protected worker execution, and other environments remain separate
+qualification gates.

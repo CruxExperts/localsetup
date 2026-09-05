@@ -3816,6 +3816,22 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Exact SDK filesystem path or path segment in verified ownership lookup, its regression assertion, or the generated source file inventory."
+    },
+    {
+      "path": "ls/core/sdk_payload/build.py",
+      "line_sha256": "156ff5998bf343b1f94fae949d364b194c04b61db10ca5b3284a6793aadf7bb9",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical SDK source directory segment in wheel build mapping or its exact-payload regression check."
+    },
+    {
+      "path": "ls/tests/test_sdk_build.py",
+      "line_sha256": "27463947fafa851751753112909f32f9f3f6987011f07f934de14548e8637834",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical SDK source directory segment in wheel build mapping or its exact-payload regression check."
     }
   ],
   "visual_reviews": [
