@@ -490,3 +490,54 @@ mint that flag through this API. Saved manifests cannot reconstruct grants;
 resuming requires current authorization and reconciliation. Snapshot changes are
 disposable until the broker validates and journals an explicit writeback. No
 workspace writeback or automatic snapshot cleanup is implemented by this producer.
+
+## Durable operation evidence and reconciliation
+
+A `Journal` binds a dedicated existing private directory to bounded task/session
+identifiers. It serializes appends through a persistent lock and writes canonical
+schema-1 JSON records by flushing a private temporary file, renaming it into the
+next sequence slot and flushing the directory. Record names are contiguous
+zero-based eight-digit sequence numbers with `.json` suffixes. Each record binds
+the preceding record's SHA-256. Limits are 16 KiB per record, 10,000 records and
+64 MiB total. Intents and uncertain outcomes reserve one maximum-sized record
+for terminal evidence; known capacity exhaustion refuses dispatch. Malformed schemas, foreign identities, gaps, unsafe record files,
+noncanonical JSON and inconsistent links refuse recovery and new appends.
+Recognized `.pending-<uuid>` files are retained interrupted preparations, never
+interpreted as committed intents. This is protected local evidence, not a signed
+log or protection against an actor allowed to rewrite its entire directory.
+
+An intent records an operation ID, kind, request and optional checkpoint digest.
+A `file_replace` request contains a canonical relative `path`, `before` SHA-256
+(or null for an absent file) and expected `after` SHA-256. A `process` request
+contains `argv_sha256` and `snapshot_sha256`. The checkpoint field reserves a
+content-digest reference; SDK checkpoint persistence and joining remain pending.
+Requests do not store command text, credentials, file contents or tool output.
+
+An intent without a terminal outcome, or with an explicit `uncertain` outcome,
+blocks the next intent. The same live journal instance may finish an operation
+it successfully began. A recovered operation, or one already marked uncertain,
+requires an explicit reconciled outcome and an evidence digest. Terminal outcomes
+cannot be replaced. File outcomes are `applied`, `not_applied` or `uncertain`;
+process outcomes additionally distinguish completion, failure, cancellation,
+timeout and output overflow. A reconciled file outcome describes observed state,
+not proof of which process produced it. Saved journal fields never grant access,
+confirm that permissions remain current, or authorize replay.
+
+`run_recorded` joins process capture to this journal: identities and disclosure
+are checked before intent, the intent is durable before dispatch, and a bounded
+outcome digest is appended after teardown. Authority is checked again after that
+append; late revocation, cancellation or expiry suppresses returned output while
+preserving the recorded process outcome. Raw diagnostics and captured output
+are not journaled. An exception after intent records uncertainty when possible
+and is propagated; any journal failure stops the call. Outcome recording uses
+the remaining grant time for lock acquisition, including an immediate attempt
+when the execution deadline has expired. Filesystem flushes retain the existing
+synchronous I/O limitation. The journal must be separate from staging, runtime
+and exposed system trees. The caller still owns session exclusivity, current
+authority, snapshot-digest provenance and read-only reconciliation evidence.
+
+No journal method re-executes an operation. Recovery must inspect target state,
+reconcile unfinished effects and reassess permissions before further dispatch.
+Session leases, broker-managed file mutation preconditions, SDK checkpoint joins
+and automatic recovery orchestration remain required; the journal alone does not
+make workspace writeback or public agent execution available.

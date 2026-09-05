@@ -1,6 +1,8 @@
 """Bounded sandbox execution with separate authority to disclose captured output."""
 from __future__ import annotations
 
+import hashlib
+import json
 from pathlib import Path
 import time
 
@@ -42,3 +44,36 @@ def run(runtimes: Path, grant: ProcessGrant, *, task: str, session: str, provide
             return Outcome('timed_out', outcome.returncode)
         grant.check(task, session)
         return outcome
+
+
+def run_recorded(runtimes: Path, grant: ProcessGrant, journal, *, snapshot_sha256: str,
+                 task: str, session: str, provider: bool = False, cancel=None) -> Outcome:
+    """Persist intent before dispatch and evidence after teardown; never retry."""
+    grant.check(task, session)
+    if journal.task != task or journal.session != session:
+        raise PermissionError('Journal and process identities must match')
+    if type(provider) is not bool or (provider and not grant.disclose_output):
+        raise PermissionError('Provider disclosure of process output requires explicit authority')
+    for exposed in (Path('/usr'), grant.staging.resolve(), runtimes.resolve()):
+        if journal.root.resolve().is_relative_to(exposed) or exposed.is_relative_to(journal.root.resolve()):
+            raise ValueError('Journal must be separate from staging, runtime and system trees')
+    def digest(value):
+        return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+    operation = journal.begin('process', {'argv_sha256': digest(grant.command),
+                                         'snapshot_sha256': snapshot_sha256},
+                              timeout=max(0, grant.expires-time.monotonic()))
+    try:
+        outcome = run(runtimes, grant, task=task, session=session, provider=provider, cancel=cancel)
+    except BaseException as exc:
+        journal.finish(operation, 'uncertain', evidence_sha256=digest({'exception_type': type(exc).__name__}),
+                       timeout=max(0, grant.expires-time.monotonic()))
+        raise
+    journal.finish(operation, outcome.status, evidence_sha256=digest({
+        'status': outcome.status, 'returncode': outcome.returncode, 'data': outcome.data}),
+                   timeout=max(0, grant.expires-time.monotonic()))
+    if _Cancellation(grant.revoked, cancel).is_set():
+        return Outcome('cancelled', outcome.returncode)
+    if time.monotonic() >= grant.expires:
+        return Outcome('timed_out', outcome.returncode)
+    grant.check(task, session)
+    return outcome
