@@ -30,6 +30,23 @@ This skill owns heartbeat harness behavior. `HARNESS_AUTOMATION.md` is the publi
 - Cron activation is delegated to explicit harness commands and should be coordinated with `ls-cron-orchestrator` when broader scheduling is involved.
 - Runtime evidence stays in ignored target state, not public framework docs.
 
+## Activation and evidence workflow
+
+Use `ls-framework-compliance` for repository checks and `ls-cron-orchestrator`
+for scheduling coordination. Preserve the explicit activation gates throughout
+this lifecycle:
+
+1. Inspect the target paths, configuration, cron manifest, and launcher with `plan`.
+2. Use `init` to create `HEARTBEAT.md` and configuration with heartbeat disabled.
+3. Use `enable` to update the heartbeat configuration and cron manifest while
+   preserving unrelated tasks; retain the live-crontab confirmation gate above.
+4. Validate a run with `--no-agent` when appropriate. Success requires validated
+   staged artifacts and atomic promotion, as defined in `references/transactions.md`.
+5. Inspect configuration, cron, lock, latest pointer, and run evidence with `status`.
+6. Use `disable` to stop future heartbeat runs without deleting historical artifacts.
+
+Record activation, validation, and artifact locations in the run ledger.
+
 ## Commands
 
 ```bash

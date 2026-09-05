@@ -237,7 +237,6 @@ workflow_packs:
   - ls-workflow-documentation-alignment
   - ls-workflow-pipeline-pre-publish
   harness:
-  - ls-workflow-codex-heartbeat
   - ls-workflow-repo-finalizer
   skill-lifecycle:
   - ls-workflow-pipeline-skill-onboard

@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 69ca7bc50999ab1d5c116b081bd3f419a3bbf6b468b234969839ff6a19ebd331
+  source_provenance_hash: d6c394bfb0597cdac0afa050e75481423e9915644e4fb266db46c8265c9d8e47
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 74bb3c50a1d451c577aa7ecbc3a27f6947e66036
-artifact_sha256: 95cd472f5701db19fdca3172bed84e7b344bcb473cbb31ed7aad73bea8ac73af
+source_commit: b0f7cfb95155b8a356001e77adc42a13e5090f5a
+artifact_sha256: 9ea4b346bebea9d8d6eb332d99313765dea0e327ca0b6ed57f8b71558de87773
 ---
 # Workflow quick reference
 
@@ -19,7 +19,6 @@ This page is generated from `ls/workflows/*/workflow.yaml`.
 | Workflow ID | Name | Aliases | Package | Required skills |
 |------------|------|---------|---------|-----------------|
 | `codex-github-issue-goal-loop` | Codex GitHub Issue Goal Loop | codex github issue goal loop; github issue goal loop; slash goal issue sweep; github maintenance goal | `ls-workflow-codex-github-issue-goal-loop` | `ls-framework-compliance`; `ls-git-workflows`; `ls-safety-and-backup`; `ls-test-runner`; `ls-tdd-guide`; `ls-receiving-code-review`; `ls-pr-reviewer`; `ls-github-publishing-workflow`; `ls-automatic-versioning`; `ls-framework-audit` |
-| `codex-heartbeat` | Codex Heartbeat | codex heartbeat; heartbeat harness; harness heartbeat | `ls-workflow-codex-heartbeat` | `ls-codex-heartbeat`; `ls-cron-orchestrator`; `ls-framework-compliance` |
 | `documentation-alignment` | Documentation Alignment | docs alignment; documentation sync; repo docs audit | `ls-workflow-documentation-alignment` | `ls-documentation-alignment`; `ls-docs-organization`; `ls-markdown-reference-validator`; `ls-script-and-docs-quality`; `ls-test-runner` |
 | `ops-guarded` | Ops Guarded | lazy admin; manual execution | `ls-workflow-ops-guarded` | `ls-framework-compliance`; `ls-safety-and-backup` |
 | `ops-tmux-session` | Ops Tmux Session | tmux shared session; sudo tmux; elevated permissions; interactive sudo prompt; sudo password prompt handoff; require_escalated; pseudo-terminal ops; managed tmux ops | `ls-workflow-ops-tmux-session` | `ls-safety-and-backup` |
@@ -44,9 +43,6 @@ This page is generated from `ls/workflows/*/workflow.yaml`.
 - "github issue goal loop" -> `codex-github-issue-goal-loop`
 - "slash goal issue sweep" -> `codex-github-issue-goal-loop`
 - "github maintenance goal" -> `codex-github-issue-goal-loop`
-- "codex heartbeat" -> `codex-heartbeat`
-- "heartbeat harness" -> `codex-heartbeat`
-- "harness heartbeat" -> `codex-heartbeat`
 - "docs alignment" -> `documentation-alignment`
 - "documentation sync" -> `documentation-alignment`
 - "repo docs audit" -> `documentation-alignment`

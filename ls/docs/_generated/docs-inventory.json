@@ -74,14 +74,14 @@
   ],
   "cli_commands": [],
   "counts": {
-    "docs": 430,
+    "docs": 429,
     "framework_docs": 72,
     "generated_docs": 5,
     "platforms": 6,
     "public_docs": 6,
     "skills": 103,
-    "workflow_packs": 27,
-    "workflows": 19
+    "workflow_packs": 26,
+    "workflows": 18
   },
   "docs": [
     {
@@ -4216,16 +4216,6 @@
       "managed_blocks": [],
       "owner_package": "",
       "owner_skill": "",
-      "path": "ls/workflows/ls-workflow-codex-heartbeat/SKILL.md",
-      "status": "",
-      "version": ""
-    },
-    {
-      "class": "skill",
-      "has_frontmatter": true,
-      "managed_blocks": [],
-      "owner_package": "",
-      "owner_skill": "",
       "path": "ls/workflows/ls-workflow-documentation-alignment/SKILL.md",
       "status": "",
       "version": ""
@@ -4432,16 +4422,16 @@
   ],
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "efbf9a08bea3f77c3d2c98cffa3c15cca1f928a3c73e395472c0895d2e83e17d",
+    "artifact_sha256": "ae7c32bafb9659b96ed5094d6b884e868de503e5dbb8d55e3d4909e6e5ed8059",
     "emitter": "docs-align",
     "framework_version": "4.3.9",
     "schema_version": 1,
-    "source_commit": "74bb3c50a1d451c577aa7ecbc3a27f6947e66036",
+    "source_commit": "b0f7cfb95155b8a356001e77adc42a13e5090f5a",
     "source_dirty": true,
-    "source_provenance_hash": "69ca7bc50999ab1d5c116b081bd3f419a3bbf6b468b234969839ff6a19ebd331",
-    "source_root_id": "e0619b5999ab8ae975e440cf9bbf1cc5ec00e2ea0006aed22de308869b733362",
+    "source_provenance_hash": "d6c394bfb0597cdac0afa050e75481423e9915644e4fb266db46c8265c9d8e47",
+    "source_root_id": "f854681a8f35cac8eba4d008314741d070ea7e99d1dee917467d6439508e687c",
     "source_tag": null,
-    "source_tree_sha": "ccd43cd59635259dce5da19c2e45ea3a9aaed4bc"
+    "source_tree_sha": "52aed411a29875e2fd7af5b14587ffa16bee4c0b"
   },
   "repo": ".",
   "schema_version": "1.0",
@@ -5952,14 +5942,6 @@
       ],
       "path": "ls/workflows/ls-workflow-codex-github-issue-goal-loop",
       "workflow_id": "codex-github-issue-goal-loop"
-    },
-    {
-      "package": "ls-workflow-codex-heartbeat",
-      "packs": [
-        "harness"
-      ],
-      "path": "ls/workflows/ls-workflow-codex-heartbeat",
-      "workflow_id": "codex-heartbeat"
     },
     {
       "package": "ls-workflow-documentation-alignment",

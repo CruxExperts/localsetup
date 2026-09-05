@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 69ca7bc50999ab1d5c116b081bd3f419a3bbf6b468b234969839ff6a19ebd331
+  source_provenance_hash: d6c394bfb0597cdac0afa050e75481423e9915644e4fb266db46c8265c9d8e47
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 74bb3c50a1d451c577aa7ecbc3a27f6947e66036
-artifact_sha256: 90deeac568afee12ab8ab5526c3b42ecebb4294dc5f499daed43cd7b2a157d70
+source_commit: b0f7cfb95155b8a356001e77adc42a13e5090f5a
+artifact_sha256: 4edc28b055557c4a918ea0a448c0c9a2e005d5efc394a6c9eb6dc6e91c88641f
 ---
 # Workflow and module registry (Localsetup)
 
@@ -28,7 +28,6 @@ For the framework rules, see [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md).
 | Workflow ID | Package | Name | Description | Aliases | Required skills | Primary docs/tools |
 |-------------|---------|------|-------------|---------|-----------------|--------------------|
 | `codex-github-issue-goal-loop` | `ls-workflow-codex-github-issue-goal-loop` | Codex GitHub Issue Goal Loop | Use when running a bounded Codex goal loop over GitHub issues, PRs, and maintenance alerts with explicit approval gates. | codex github issue goal loop; github issue goal loop; slash goal issue sweep; github maintenance goal | `ls-framework-compliance`; `ls-git-workflows`; `ls-safety-and-backup`; `ls-test-runner`; `ls-tdd-guide`; `ls-receiving-code-review`; `ls-pr-reviewer`; `ls-github-publishing-workflow`; `ls-automatic-versioning`; `ls-framework-audit` | [CODEX_GITHUB_ISSUE_GOAL_LOOP.md](CODEX_GITHUB_ISSUE_GOAL_LOOP.md); [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md); `git`; `gh` |
-| `codex-heartbeat` | `ls-workflow-codex-heartbeat` | Codex Heartbeat | Use when initializing, activating, running, inspecting, or disabling the opt-in Codex heartbeat harness with transaction evidence and cron manifest validation. | codex heartbeat; heartbeat harness; harness heartbeat | `ls-codex-heartbeat`; `ls-cron-orchestrator`; `ls-framework-compliance` | [HARNESS_AUTOMATION.md](HARNESS_AUTOMATION.md); [SKILL.md](../../ls/skills/ls-codex-heartbeat/SKILL.md); [transactions.md](../../ls/skills/ls-codex-heartbeat/references/transactions.md); `ls/skills/ls-codex-heartbeat/scripts/codex_heartbeat.py`; `ls/skills/ls-cron-orchestrator/scripts/cron_ctl.py` |
 | `documentation-alignment` | `ls-workflow-documentation-alignment` | Documentation Alignment | Use when running automated repo documentation alignment with source-truth scouting, current-doc research, generated artifacts, CI checks, and final review. | docs alignment; documentation sync; repo docs audit | `ls-documentation-alignment`; `ls-docs-organization`; `ls-markdown-reference-validator`; `ls-script-and-docs-quality`; `ls-test-runner` | [SKILL.md](../../ls/skills/ls-documentation-alignment/SKILL.md); [OUTPUT_AND_DOC_GENERATION.md](OUTPUT_AND_DOC_GENERATION.md); [DOCUMENT_LIFECYCLE_MANAGEMENT.md](DOCUMENT_LIFECYCLE_MANAGEMENT.md); `ls/tools/docs_alignment.py`; `ls/tools/generate_docs_artifacts.py` |
 | `ops-guarded` | `ls-workflow-ops-guarded` | Ops Guarded | Use when risky operations need approval checkpoints, impact review, or guarded execution; hand off sudo, elevated, PTY, or interactive password execution to ls-workflow-ops-tmux-session. | lazy admin; manual execution | `ls-framework-compliance`; `ls-safety-and-backup` | [SKILL.md](../../ls/skills/ls-safety-and-backup/SKILL.md); [SKILL.md](../../ls/workflows/ls-workflow-ops-tmux-session/SKILL.md) |
 | `ops-tmux-session` | `ls-workflow-ops-tmux-session` | Ops Tmux Session | Use when commands need sudo, root/admin elevation, require_escalated, pseudo-terminal/PTY handling, interactive sudo or elevated terminal password prompts, or managed tmux run tracking. | tmux shared session; sudo tmux; elevated permissions; interactive sudo prompt; sudo password prompt handoff; require_escalated; pseudo-terminal ops; managed tmux ops | `ls-safety-and-backup` | [tmux-ops-managed.md](ops/tmux-ops-managed.md); [tmux-ops-remote.md](ops/tmux-ops-remote.md); `ls/tools/tmux_ops` |

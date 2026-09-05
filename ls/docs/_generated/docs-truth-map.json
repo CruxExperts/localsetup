@@ -42,16 +42,16 @@
     ],
     "provenance": {
       "artifact_path": "ls/docs/_generated/facts.json",
-      "artifact_sha256": "2ef1a876c1993a1c7e65f3f03683c7532fe78e47822445c1b1ec973b60d98fa7",
+      "artifact_sha256": "357220de69391b64b44f0dd83ca3d2013baddd780dd28bc564c0fa56305e6de1",
       "emitter": "generate-docs",
       "framework_version": "4.3.9",
       "schema_version": 1,
-      "source_commit": "74bb3c50a1d451c577aa7ecbc3a27f6947e66036",
+      "source_commit": "b0f7cfb95155b8a356001e77adc42a13e5090f5a",
       "source_dirty": true,
-      "source_provenance_hash": "69ca7bc50999ab1d5c116b081bd3f419a3bbf6b468b234969839ff6a19ebd331",
-      "source_root_id": "e0619b5999ab8ae975e440cf9bbf1cc5ec00e2ea0006aed22de308869b733362",
+      "source_provenance_hash": "d6c394bfb0597cdac0afa050e75481423e9915644e4fb266db46c8265c9d8e47",
+      "source_root_id": "f854681a8f35cac8eba4d008314741d070ea7e99d1dee917467d6439508e687c",
       "source_tag": null,
-      "source_tree_sha": "ccd43cd59635259dce5da19c2e45ea3a9aaed4bc"
+      "source_tree_sha": "52aed411a29875e2fd7af5b14587ffa16bee4c0b"
     },
     "skill_count": 103,
     "skills": [
@@ -1759,19 +1759,13 @@
       }
     ],
     "version": "4.3.9",
-    "workflow_count": 19,
+    "workflow_count": 18,
     "workflows": [
       {
         "id": "codex-github-issue-goal-loop",
         "name": "Codex GitHub Issue Goal Loop",
         "package": "ls-workflow-codex-github-issue-goal-loop",
         "path": "ls/workflows/ls-workflow-codex-github-issue-goal-loop/SKILL.md"
-      },
-      {
-        "id": "codex-heartbeat",
-        "name": "Codex Heartbeat",
-        "package": "ls-workflow-codex-heartbeat",
-        "path": "ls/workflows/ls-workflow-codex-heartbeat/SKILL.md"
       },
       {
         "id": "documentation-alignment",
@@ -1894,12 +1888,12 @@
       "emitter": "generate-docs",
       "framework_version": "4.3.9",
       "schema_version": 1,
-      "source_commit": "74bb3c50a1d451c577aa7ecbc3a27f6947e66036",
+      "source_commit": "b0f7cfb95155b8a356001e77adc42a13e5090f5a",
       "source_dirty": true,
-      "source_provenance_hash": "69ca7bc50999ab1d5c116b081bd3f419a3bbf6b468b234969839ff6a19ebd331",
-      "source_root_id": "e0619b5999ab8ae975e440cf9bbf1cc5ec00e2ea0006aed22de308869b733362",
+      "source_provenance_hash": "d6c394bfb0597cdac0afa050e75481423e9915644e4fb266db46c8265c9d8e47",
+      "source_root_id": "f854681a8f35cac8eba4d008314741d070ea7e99d1dee917467d6439508e687c",
       "source_tag": null,
-      "source_tree_sha": "ccd43cd59635259dce5da19c2e45ea3a9aaed4bc"
+      "source_tree_sha": "52aed411a29875e2fd7af5b14587ffa16bee4c0b"
     },
     "schema_version": 1,
     "skills": [
@@ -3403,16 +3397,16 @@
   },
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "6ba032ac30beba9b1862e23d654431c0af9aef947c70b6c25ff3af6e829566eb",
+    "artifact_sha256": "7cefe69b52bd5283d998f14b1b55eff3e87df1a7b1ffcdeefc8a4e2d2168805f",
     "emitter": "docs-align",
     "framework_version": "4.3.9",
     "schema_version": 1,
-    "source_commit": "74bb3c50a1d451c577aa7ecbc3a27f6947e66036",
+    "source_commit": "b0f7cfb95155b8a356001e77adc42a13e5090f5a",
     "source_dirty": true,
-    "source_provenance_hash": "69ca7bc50999ab1d5c116b081bd3f419a3bbf6b468b234969839ff6a19ebd331",
-    "source_root_id": "e0619b5999ab8ae975e440cf9bbf1cc5ec00e2ea0006aed22de308869b733362",
+    "source_provenance_hash": "d6c394bfb0597cdac0afa050e75481423e9915644e4fb266db46c8265c9d8e47",
+    "source_root_id": "f854681a8f35cac8eba4d008314741d070ea7e99d1dee917467d6439508e687c",
     "source_tag": null,
-    "source_tree_sha": "ccd43cd59635259dce5da19c2e45ea3a9aaed4bc"
+    "source_tree_sha": "52aed411a29875e2fd7af5b14587ffa16bee4c0b"
   },
   "schema_version": "1.0",
   "truths": {
@@ -5324,7 +5318,7 @@
         "ls/workflows/*/workflow.yaml"
       ],
       "value": {
-        "count": 19,
+        "count": 18,
         "workflows": [
           {
             "aliases": [
@@ -5362,35 +5356,6 @@
               "gh"
             ],
             "workflow_id": "codex-github-issue-goal-loop"
-          },
-          {
-            "aliases": [
-              "codex heartbeat",
-              "heartbeat harness",
-              "harness heartbeat"
-            ],
-            "description": "Use when initializing, activating, running, inspecting, or disabling the opt-in Codex heartbeat harness with transaction evidence and cron manifest validation.",
-            "display_name": "Codex Heartbeat",
-            "package": "ls-workflow-codex-heartbeat",
-            "packs": [
-              "harness"
-            ],
-            "path": "ls/workflows/ls-workflow-codex-heartbeat",
-            "required_docs": [
-              "ls/docs/HARNESS_AUTOMATION.md",
-              "ls/skills/ls-codex-heartbeat/SKILL.md",
-              "ls/skills/ls-codex-heartbeat/references/transactions.md"
-            ],
-            "required_skills": [
-              "ls-codex-heartbeat",
-              "ls-cron-orchestrator",
-              "ls-framework-compliance"
-            ],
-            "required_tools": [
-              "ls/skills/ls-codex-heartbeat/scripts/codex_heartbeat.py",
-              "ls/skills/ls-cron-orchestrator/scripts/cron_ctl.py"
-            ],
-            "workflow_id": "codex-heartbeat"
           },
           {
             "aliases": [
@@ -5810,7 +5775,7 @@
       "sources": [
         "ls/workflows/ls-workflow-*/workflow.yaml"
       ],
-      "value": 19
+      "value": 18
     }
   }
 }

@@ -15,7 +15,6 @@ import yaml
 
 
 HEARTBEAT_SKILL = "ls-codex-heartbeat"
-HEARTBEAT_WORKFLOW = "ls-workflow-codex-heartbeat"
 HEARTBEAT_TRIGGER_ID = "codex-heartbeat"
 HEARTBEAT_TASK_ID = "codex-heartbeat-run"
 HEARTBEAT_DOC = "HEARTBEAT.md"
