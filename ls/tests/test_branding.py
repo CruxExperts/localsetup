@@ -157,3 +157,17 @@ def test_policy_metadata_does_not_exempt_rationale_or_arbitrary_token_fields(tmp
     other = tmp_path / "other.json"
     other.write_text(json.dumps({"token": "Localsetup"}, indent=2))
     assert scan(tmp_path, policy(), paths=["other.json"])["findings"]
+
+
+def test_catalog_aliases_require_real_source_and_identifier_context(tmp_path: Path) -> None:
+    source = tmp_path / "ls/skills/ls-example/SKILL.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("Example skill")
+    guide = tmp_path / "guide.md"
+    guide.write_text('`localsetup-example` "localsetup-example" localsetup-example prose; Localsetup display; `localsetup-unknown`')
+    paths = ["ls/skills/ls-example/SKILL.md", "guide.md"]
+    rows = scan(tmp_path, policy(), paths=paths)["references"]
+    assert [r["classification"] for r in rows] == ["technical", "technical", "unclassified", "unclassified", "unclassified"]
+    source.unlink()
+    source.symlink_to(guide)
+    assert scan(tmp_path, policy(), paths=paths)["references"][0]["classification"] == "unclassified"

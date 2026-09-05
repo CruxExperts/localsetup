@@ -166,3 +166,9 @@ that distinction only in the validated owning `ls/config/branding.json`, seriali
 with `json.dumps(policy, indent=2)` and a final newline. It still checks every
 rationale and visual-review description. Arbitrary JSON token fields receive no
 such exemption; noncanonical policy formatting is scanned conservatively.
+
+Legacy skill aliases are recognized from regular inventoried
+`ls/skills/ls-*/SKILL.md` sources through the framework's alias mapping. Exact
+aliases inside quotes or backticks are compatibility identifiers, including in
+generated migration maps. A symlink source, unknown alias, plain-prose occurrence
+or adjacent incorrect display reference does not receive that classification.

@@ -8,6 +8,7 @@ import json
 from pathlib import Path, PurePosixPath
 import subprocess
 
+from ..aliases import legacy_skill_name
 from .rules import EXCEPTION_KINDS, references
 
 
@@ -97,7 +98,18 @@ def _policy_token_lines(name: str, text: str, policy: dict) -> set[int]:
 
 def scan(root: Path, policy: dict, *, paths: list[str] | None = None) -> dict:
     inventory, rows, findings = [], [], []
-    for name in repository_paths(root) if paths is None else sorted(set(paths)):
+    names = repository_paths(root) if paths is None else sorted(set(paths))
+    if not all(_safe_path(name) for name in names):
+        raise ValueError("unsafe scan path")
+    aliases = set()
+    for name in names:
+        parts = PurePosixPath(name).parts
+        if len(parts) == 4 and parts[:2] == ("ls", "skills") and parts[2].startswith("ls-") and parts[3] == "SKILL.md":
+            source = root / name
+            if not any(p.is_symlink() for p in (source, source.parent, source.parent.parent, source.parent.parent.parent)) and source.is_file():
+                aliases.add(legacy_skill_name(parts[2]))
+    identifiers = frozenset(aliases)
+    for name in names:
         if not _safe_path(name):
             raise ValueError("unsafe scan path")
         path = root / name
@@ -120,7 +132,7 @@ def scan(root: Path, policy: dict, *, paths: list[str] | None = None) -> dict:
         inventory.append({"path": name, "surface": surface, "sha256": digest,
                           "ownership": "generated" if "/_generated/" in name else "repository"})
         if text is not None:
-            file_rows = references(name, text)
+            file_rows = references(name, text, identifiers=identifiers)
             metadata_lines = _policy_token_lines(name, text, policy)
             for row in file_rows:
                 if row["line"] in metadata_lines:

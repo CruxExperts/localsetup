@@ -15,12 +15,16 @@ def line_hash(line: str) -> str:
     return hashlib.sha256(line.encode("utf-8")).hexdigest()
 
 
-def classify(line: str, start: int, end: int) -> str:
+def classify(line: str, start: int, end: int, *, identifiers: frozenset[str] = frozenset()) -> str:
     token = line[start:end]
     before, after = line[:start], line[end:]
     left = re.search(r"[A-Za-z0-9_./:@~+-]*$", before).group()
     right = re.match(r"[A-Za-z0-9_./:@~+-]*", after).group()
     word = left + token + right
+    if word in identifiers:
+        prefix, suffix = line[:start - len(left)], line[end + len(right):]
+        if prefix[-1:] in {"`", chr(34), chr(39)} and suffix[:1] == prefix[-1:]:
+            return "technical"
     # Obvious URLs, filenames, and qualified paths. A display separator alone
     # (Product/CLI) and Markdown emphasis are deliberately ambiguous.
     if "://" in word or word.startswith(("/", "~/", "./", "../")):
@@ -80,13 +84,13 @@ def _shell_command_lines(lines: list[str]) -> set[int]:
     return allowed
 
 
-def references(path: str, text: str) -> list[dict]:
+def references(path: str, text: str, *, identifiers: frozenset[str] = frozenset()) -> list[dict]:
     rows = []
     lines = text.splitlines()
     shell_lines = _shell_command_lines(lines)
     for number, line in enumerate(lines, 1):
         for match in REFERENCE.finditer(line):
-            classification = classify(line, match.start(), match.end())
+            classification = classify(line, match.start(), match.end(), identifiers=identifiers)
             if (number in shell_lines and match.group() in {"localsetup", "lscli"}
                     and re.fullmatch(r"\s*(?:[$>]\s+)?", line[:match.start()])
                     and (not line[match.end():] or line[match.end()].isspace())):
