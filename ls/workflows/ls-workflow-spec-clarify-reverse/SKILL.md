@@ -6,4 +6,4 @@ metadata:
 ---
 
 Use this workflow package when a request needs structured clarification before implementation.
-Primary references: `ls/docs/DECISION_TREE_WORKFLOW.md` and `ls/docs/WORKFLOW_REGISTRY.md`.
+Canonical procedure: [DECISION_TREE_WORKFLOW.md](../../docs/DECISION_TREE_WORKFLOW.md).
