@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: bde7518259bf63e3f11d12df205c71f0d0f060d0d3eae097101847ff55a4bc7e
+  source_provenance_hash: 69ca7bc50999ab1d5c116b081bd3f419a3bbf6b468b234969839ff6a19ebd331
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 1f6330f9600e92282396e0a22d699b50a947acaa
-artifact_sha256: 05b3c55beee53b43c8c8b01e33b6315915fba496c37140f05d6006709c8ddf84
+source_commit: 74bb3c50a1d451c577aa7ecbc3a27f6947e66036
+artifact_sha256: 95cd472f5701db19fdca3172bed84e7b344bcb473cbb31ed7aad73bea8ac73af
 ---
 # Workflow quick reference
 
@@ -18,7 +18,6 @@ This page is generated from `ls/workflows/*/workflow.yaml`.
 
 | Workflow ID | Name | Aliases | Package | Required skills |
 |------------|------|---------|---------|-----------------|
-| `audit-markdown-references` | Audit Markdown References | reference audit; link integrity audit | `ls-workflow-audit-markdown-references` | `ls-markdown-reference-validator` |
 | `codex-github-issue-goal-loop` | Codex GitHub Issue Goal Loop | codex github issue goal loop; github issue goal loop; slash goal issue sweep; github maintenance goal | `ls-workflow-codex-github-issue-goal-loop` | `ls-framework-compliance`; `ls-git-workflows`; `ls-safety-and-backup`; `ls-test-runner`; `ls-tdd-guide`; `ls-receiving-code-review`; `ls-pr-reviewer`; `ls-github-publishing-workflow`; `ls-automatic-versioning`; `ls-framework-audit` |
 | `codex-heartbeat` | Codex Heartbeat | codex heartbeat; heartbeat harness; harness heartbeat | `ls-workflow-codex-heartbeat` | `ls-codex-heartbeat`; `ls-cron-orchestrator`; `ls-framework-compliance` |
 | `documentation-alignment` | Documentation Alignment | docs alignment; documentation sync; repo docs audit | `ls-workflow-documentation-alignment` | `ls-documentation-alignment`; `ls-docs-organization`; `ls-markdown-reference-validator`; `ls-script-and-docs-quality`; `ls-test-runner` |
@@ -41,8 +40,6 @@ This page is generated from `ls/workflows/*/workflow.yaml`.
 
 ## Common Phrases
 
-- "reference audit" -> `audit-markdown-references`
-- "link integrity audit" -> `audit-markdown-references`
 - "codex github issue goal loop" -> `codex-github-issue-goal-loop`
 - "github issue goal loop" -> `codex-github-issue-goal-loop`
 - "slash goal issue sweep" -> `codex-github-issue-goal-loop`

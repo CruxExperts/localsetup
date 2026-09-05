@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: bde7518259bf63e3f11d12df205c71f0d0f060d0d3eae097101847ff55a4bc7e
+  source_provenance_hash: 69ca7bc50999ab1d5c116b081bd3f419a3bbf6b468b234969839ff6a19ebd331
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 1f6330f9600e92282396e0a22d699b50a947acaa
-artifact_sha256: 9838894c0aac0a712b8b7d4aaa762ff15b3d75e1dd0146a6f5ca6c701da0ca4e
+source_commit: 74bb3c50a1d451c577aa7ecbc3a27f6947e66036
+artifact_sha256: 0c97156b43af7ce97894a5a0e4bab78bca7ffd44a46734264e0964897e449044
 ---
 # Implementation File Map
 
@@ -1030,8 +1030,6 @@ artifact_sha256: 9838894c0aac0a712b8b7d4aaa762ff15b3d75e1dd0146a6f5ca6c701da0ca4
 | `keep` | `ls/tools/verify_context.py` |
 | `keep` | `ls/tools/verify_rules` |
 | `keep` | `ls/tools/verify_rules.py` |
-| `keep` | `ls/workflows/ls-workflow-audit-markdown-references/SKILL.md` |
-| `keep` | `ls/workflows/ls-workflow-audit-markdown-references/workflow.yaml` |
 | `keep` | `ls/workflows/ls-workflow-codex-github-issue-goal-loop/SKILL.md` |
 | `keep` | `ls/workflows/ls-workflow-codex-github-issue-goal-loop/workflow.yaml` |
 | `keep` | `ls/workflows/ls-workflow-codex-heartbeat/SKILL.md` |

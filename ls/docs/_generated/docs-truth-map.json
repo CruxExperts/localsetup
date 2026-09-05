@@ -42,16 +42,16 @@
     ],
     "provenance": {
       "artifact_path": "ls/docs/_generated/facts.json",
-      "artifact_sha256": "3704b54b19521a411b8155dad541df96219fcbe4561afbce0347d83e42199d3d",
+      "artifact_sha256": "2ef1a876c1993a1c7e65f3f03683c7532fe78e47822445c1b1ec973b60d98fa7",
       "emitter": "generate-docs",
       "framework_version": "4.3.9",
       "schema_version": 1,
-      "source_commit": "1f6330f9600e92282396e0a22d699b50a947acaa",
+      "source_commit": "74bb3c50a1d451c577aa7ecbc3a27f6947e66036",
       "source_dirty": true,
-      "source_provenance_hash": "bde7518259bf63e3f11d12df205c71f0d0f060d0d3eae097101847ff55a4bc7e",
-      "source_root_id": "1b401e49ef19d2ce6813ac16f361d4d35547e37fc6b4c25e96f998c832a1f1ac",
+      "source_provenance_hash": "69ca7bc50999ab1d5c116b081bd3f419a3bbf6b468b234969839ff6a19ebd331",
+      "source_root_id": "e0619b5999ab8ae975e440cf9bbf1cc5ec00e2ea0006aed22de308869b733362",
       "source_tag": null,
-      "source_tree_sha": "4f6c435ca01253e33253861bf2f76b130b4e95d6"
+      "source_tree_sha": "ccd43cd59635259dce5da19c2e45ea3a9aaed4bc"
     },
     "skill_count": 103,
     "skills": [
@@ -1759,14 +1759,8 @@
       }
     ],
     "version": "4.3.9",
-    "workflow_count": 20,
+    "workflow_count": 19,
     "workflows": [
-      {
-        "id": "audit-markdown-references",
-        "name": "Audit Markdown References",
-        "package": "ls-workflow-audit-markdown-references",
-        "path": "ls/workflows/ls-workflow-audit-markdown-references/SKILL.md"
-      },
       {
         "id": "codex-github-issue-goal-loop",
         "name": "Codex GitHub Issue Goal Loop",
@@ -1900,12 +1894,12 @@
       "emitter": "generate-docs",
       "framework_version": "4.3.9",
       "schema_version": 1,
-      "source_commit": "1f6330f9600e92282396e0a22d699b50a947acaa",
+      "source_commit": "74bb3c50a1d451c577aa7ecbc3a27f6947e66036",
       "source_dirty": true,
-      "source_provenance_hash": "bde7518259bf63e3f11d12df205c71f0d0f060d0d3eae097101847ff55a4bc7e",
-      "source_root_id": "1b401e49ef19d2ce6813ac16f361d4d35547e37fc6b4c25e96f998c832a1f1ac",
+      "source_provenance_hash": "69ca7bc50999ab1d5c116b081bd3f419a3bbf6b468b234969839ff6a19ebd331",
+      "source_root_id": "e0619b5999ab8ae975e440cf9bbf1cc5ec00e2ea0006aed22de308869b733362",
       "source_tag": null,
-      "source_tree_sha": "4f6c435ca01253e33253861bf2f76b130b4e95d6"
+      "source_tree_sha": "ccd43cd59635259dce5da19c2e45ea3a9aaed4bc"
     },
     "schema_version": 1,
     "skills": [
@@ -3409,16 +3403,16 @@
   },
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "5aa47809a373e63b3204cd6b772b421fce767246ed9bc0ac3c5a8f1f19384050",
+    "artifact_sha256": "6ba032ac30beba9b1862e23d654431c0af9aef947c70b6c25ff3af6e829566eb",
     "emitter": "docs-align",
     "framework_version": "4.3.9",
     "schema_version": 1,
-    "source_commit": "1f6330f9600e92282396e0a22d699b50a947acaa",
+    "source_commit": "74bb3c50a1d451c577aa7ecbc3a27f6947e66036",
     "source_dirty": true,
-    "source_provenance_hash": "bde7518259bf63e3f11d12df205c71f0d0f060d0d3eae097101847ff55a4bc7e",
-    "source_root_id": "1b401e49ef19d2ce6813ac16f361d4d35547e37fc6b4c25e96f998c832a1f1ac",
+    "source_provenance_hash": "69ca7bc50999ab1d5c116b081bd3f419a3bbf6b468b234969839ff6a19ebd331",
+    "source_root_id": "e0619b5999ab8ae975e440cf9bbf1cc5ec00e2ea0006aed22de308869b733362",
     "source_tag": null,
-    "source_tree_sha": "4f6c435ca01253e33253861bf2f76b130b4e95d6"
+    "source_tree_sha": "ccd43cd59635259dce5da19c2e45ea3a9aaed4bc"
   },
   "schema_version": "1.0",
   "truths": {
@@ -5330,32 +5324,8 @@
         "ls/workflows/*/workflow.yaml"
       ],
       "value": {
-        "count": 20,
+        "count": 19,
         "workflows": [
-          {
-            "aliases": [
-              "reference audit",
-              "link integrity audit"
-            ],
-            "description": "Use when validating markdown references and anchors across configured documentation targets.",
-            "display_name": "Audit Markdown References",
-            "package": "ls-workflow-audit-markdown-references",
-            "packs": [
-              "dev"
-            ],
-            "path": "ls/workflows/ls-workflow-audit-markdown-references",
-            "required_docs": [
-              "ls/docs/WORKFLOW_REGISTRY.md",
-              "ls/docs/SKILL_VALIDATION_PATTERNS.md"
-            ],
-            "required_skills": [
-              "ls-markdown-reference-validator"
-            ],
-            "required_tools": [
-              "ls/skills/ls-markdown-reference-validator/scripts/markdown_reference_audit.py"
-            ],
-            "workflow_id": "audit-markdown-references"
-          },
           {
             "aliases": [
               "codex github issue goal loop",
@@ -5840,7 +5810,7 @@
       "sources": [
         "ls/workflows/ls-workflow-*/workflow.yaml"
       ],
-      "value": 20
+      "value": 19
     }
   }
 }

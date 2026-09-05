@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: bde7518259bf63e3f11d12df205c71f0d0f060d0d3eae097101847ff55a4bc7e
+  source_provenance_hash: 69ca7bc50999ab1d5c116b081bd3f419a3bbf6b468b234969839ff6a19ebd331
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 1f6330f9600e92282396e0a22d699b50a947acaa
-artifact_sha256: 26e6848aa1b388040af4d49036530f6a72a3cc9129bfad6ae8ea89805ec1ffc8
+source_commit: 74bb3c50a1d451c577aa7ecbc3a27f6947e66036
+artifact_sha256: bd8017cc1e3a035072f801f102de221ff98261a47bb9443119719c289e598e01
 ---
 # Skill And Workflow Packs
 
@@ -114,7 +114,6 @@ artifact_sha256: 26e6848aa1b388040af4d49036530f6a72a3cc9129bfad6ae8ea89805ec1ffc
 | `growth-content, specialized` | `skill` | `ls-humanizer` | `specialized` | 70 | `writing, editing` | `localsetup-humanizer` |
 | `specialized` | `skill` | `ls-kilo-boss-orchestrator` | `specialized` | 70 | `kilo, orchestration` | `localsetup-kilo-boss-orchestrator` |
 | `specialized` | `skill` | `ls-kilo-visual-output` | `specialized` | 70 | `kilo, output` | `localsetup-kilo-visual-output` |
-| `dev` | `workflow` | `ls-workflow-audit-markdown-references` | n/a | n/a | n/a | `n/a` |
 | `dev, publishing` | `workflow` | `ls-workflow-codex-github-issue-goal-loop` | n/a | n/a | n/a | `n/a` |
 | `harness` | `workflow` | `ls-workflow-codex-heartbeat` | n/a | n/a | n/a | `n/a` |
 | `dev, publishing` | `workflow` | `ls-workflow-documentation-alignment` | n/a | n/a | n/a | `n/a` |

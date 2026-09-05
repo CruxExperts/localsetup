@@ -32,6 +32,14 @@ Framework and ops docs evolve quickly. Broken references waste agent cycles and 
 - **Default report:** .localsetup/state/markdown-reference/default.md (ignored local state)
 - **Default run-state marker:** .localsetup/state/markdown-reference/default-last-run-epoch (ignored local state)
 
+## Run and report
+
+1. Confirm the target YAML configuration before a scheduled or bulk audit,
+   including scan scope, report destination, and interval settings.
+2. Run the configured scanner using the commands below.
+3. Review the report's pass or failure counts and summarize broken paths and
+   anchors. Record the report location and remaining findings in the audit summary.
+
 ## Typical commands
 
 Run once manually:

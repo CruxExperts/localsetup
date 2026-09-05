@@ -212,7 +212,6 @@ workflow_packs:
   - ls-workflow-ops-tmux-session
   - ls-workflow-tmux-terminal-mode
   dev:
-  - ls-workflow-audit-markdown-references
   - ls-workflow-codex-github-issue-goal-loop
   - ls-workflow-documentation-alignment
   - ls-workflow-ops-guarded
