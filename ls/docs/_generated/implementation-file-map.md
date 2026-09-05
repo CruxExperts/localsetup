@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: ca7742eeb358175e4d7c9c0a90382a2042b6c6b4d07f0e006e90551d69f37fa9
+  source_provenance_hash: 2f07beeefb814d128108fc3b0d253004ec04719368aa54a4c513a295ab5ae68d
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 81681680121d29816b8f3f6cc51a46a7c599aa09
-artifact_sha256: cc587c90835b5415dfee06a68da98551986bb1a23eb4233b9f7b99c9d98e5613
+source_commit: f9f4cafa89c2582951589b177cb15fb25024ccfc
+artifact_sha256: 39c5ef8e620f6338fa1afa779992a392b3a2bc970177d0c821b1f8b46119dbad
 ---
 # Implementation File Map
 
@@ -115,6 +115,7 @@ artifact_sha256: cc587c90835b5415dfee06a68da98551986bb1a23eb4233b9f7b99c9d98e561
 | `refactor` | `ls/core/agent/runtime_integrity.py` |
 | `refactor` | `ls/core/agent/runtime_lock.py` |
 | `refactor` | `ls/core/agent/sdk_imports.py` |
+| `refactor` | `ls/core/agent/sdk_models.py` |
 | `refactor` | `ls/core/agent/sdk_worker.py` |
 | `refactor` | `ls/core/aliases.py` |
 | `refactor` | `ls/core/apply.py` |
@@ -908,6 +909,7 @@ artifact_sha256: cc587c90835b5415dfee06a68da98551986bb1a23eb4233b9f7b99c9d98e561
 | `keep` | `ls/tests/fixtures/omniroute/openai-models.json` |
 | `keep` | `ls/tests/fixtures/omniroute/task-owner-cases.json` |
 | `keep` | `ls/tests/manifest_test_helpers.py` |
+| `keep` | `ls/tests/sdk_model_fixture.py` |
 | `keep` | `ls/tests/skill_smoke_commands.yaml` |
 | `keep` | `ls/tests/test_adapter_parser.py` |
 | `keep` | `ls/tests/test_agent_provider.py` |
@@ -991,6 +993,7 @@ artifact_sha256: cc587c90835b5415dfee06a68da98551986bb1a23eb4233b9f7b99c9d98e561
 | `keep` | `ls/tests/test_sdk_artifacts.py` |
 | `keep` | `ls/tests/test_sdk_build.py` |
 | `keep` | `ls/tests/test_sdk_dependencies.py` |
+| `keep` | `ls/tests/test_sdk_models.py` |
 | `keep` | `ls/tests/test_sdk_payload.py` |
 | `keep` | `ls/tests/test_sdk_worker_imports.py` |
 | `keep` | `ls/tests/test_skill_sandbox_tester.py` |
