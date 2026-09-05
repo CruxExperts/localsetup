@@ -3992,6 +3992,22 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Established framework distribution name or managed CLI executable path used during runtime installation."
+    },
+    {
+      "path": "ls/tests/sdk_model_fixture.py",
+      "line_sha256": "4592fd63828028b6b199263c5098ad377b913b417206afe9e5f2c2a19e286160",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical vendor directory used by isolated source qualification fixtures."
+    },
+    {
+      "path": "ls/tests/test_sdk_models.py",
+      "line_sha256": "daea241792e41ed33757b4fd8841f67104096c2cbd9670cdfbea64ed66b570ef",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical vendor directory used by isolated source qualification fixtures."
     }
   ],
   "visual_reviews": [

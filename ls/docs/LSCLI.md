@@ -241,3 +241,23 @@ The configured timeout is an HTTP operation timeout; supervisor wall-clock budge
 stream/output bounds, cancellation, and task-bound disclosure grants remain
 required before dispatch is enabled. The shared client is not yet connected to
 public agent/completion commands or the existing QC wrapper.
+
+## SDK model adapter
+
+The isolated worker's model factory connects Chat Completions or Responses to
+the shared client. It requires the active private importer and checks SDK origins
+before model construction and after use. It passes the selected model explicitly
+and replaces inferred model profiles with conservative SDK defaults plus declared
+tool/schema capabilities; native provider
+tools and inferred JSON-object output are disabled. These declarations remain
+separate from broker grants and endpoint qualification.
+
+Deterministic fixtures exercise both adapters through the SDK direct-request API,
+verify tool-free request bodies and final identity, and deserialize successful
+responses. The factory does not expose public dispatch or bypass pending request
+budgets, supervisor outcomes, broker permissions, sandbox, or session recovery.
+
+The Python 3.12/Linux installed candidate passed the same deterministic fixtures
+outside the checkout, including a model name that triggers upstream inference:
+system roles remain explicit and no inferred context-window claim survives.
+Installed payload origins and the runtime inventory were verified afterward.
