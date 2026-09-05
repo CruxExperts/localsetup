@@ -30,11 +30,18 @@ def _encode(value):
 def _request(kind, value):
     if not isinstance(value, dict):
         raise ValueError('Invalid operation request')
-    if kind == 'file_replace' and set(value) == {'path', 'before', 'after'}:
+    if kind == 'file_replace' and set(value) in ({'path', 'before', 'after'}, {'path', 'before', 'after', 'root_sha256'},
+            {'path', 'before', 'after', 'root_sha256', 'before_properties', 'after_properties'}):
         relative(value['path'])
         if len(value['path'].encode()) > 4096:
             raise ValueError('Operation path is oversized')
         hashes = [value['after']] + ([] if value['before'] is None else [value['before']])
+        if 'root_sha256' in value:
+            hashes.append(value['root_sha256'])
+        if 'after_properties' in value:
+            if (value['before'] is None) != (value['before_properties'] is None):
+                raise ValueError('Inconsistent file property precondition')
+            hashes += [value['after_properties']] + ([] if value['before_properties'] is None else [value['before_properties']])
     elif kind == 'process' and set(value) == {'argv_sha256', 'snapshot_sha256'}:
         hashes = list(value.values())
     else:

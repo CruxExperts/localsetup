@@ -538,6 +538,55 @@ authority, snapshot-digest provenance and read-only reconciliation evidence.
 
 No journal method re-executes an operation. Recovery must inspect target state,
 reconcile unfinished effects and reassess permissions before further dispatch.
-Session leases, broker-managed file mutation preconditions, SDK checkpoint joins
-and automatic recovery orchestration remain required; the journal alone does not
+Session leases, SDK checkpoint joins and automatic recovery orchestration remain
+required; the journal alone does not
 make workspace writeback or public agent execution available.
+
+## Recorded file replacement and read-only reconciliation
+
+`FileBroker.write_recorded` requires current read and write authority, an explicit
+expected content SHA-256 (or null for absence), and a matching task/session
+journal outside both workspace and target-lease trees. One exclusive target
+lease covers inspection, temporary-file preparation, durable intent, replacement
+and outcome recording. It does not recursively acquire an exclusive lease.
+A mismatched precondition refuses before intent or replacement. Recorded existing
+files are bounded to 8 MiB, matching broker reads.
+
+New file intents also bind `root_sha256`, `before_properties` and
+`after_properties`. Root identity hashes the canonical path, device and inode.
+Property digests bind mode, owner, group and extended-attribute values; timestamps
+are excluded. The producer records properties of the prepared replacement and
+retains the existing target's properties. Temporary inherited attributes absent
+from an existing target are removed before copying its attributes; unsupported
+attribute changes fail before replacement. New files retain their prepared
+private mode and applicable inherited attributes. The journal stores these
+hashes, never the underlying attribute values.
+
+The broker rechecks grant, root, parent-directory and target identity after intent
+is durable and immediately before replacement. It flushes the target directory
+before recording `applied`. Failure after intent leaves an unfinished operation,
+including failures after replacement or while recording its outcome. Inspect the
+journal and target rather than retrying the write. As with other broker calls,
+leases coordinate cooperating writers; they do not make unrelated external
+filesystem mutation transactional.
+
+`file_recovery.reconcile` requires fresh read authority for the recorded path and
+the same root identity. Under the target's shared lease it compares current
+content and properties with both recorded states. Matching the desired state
+records reconciled `applied`; matching the original state records reconciled
+`not_applied`. A missing file can match recorded absence. A conflict, unsafe file,
+changed root or missing authority preserves the unfinished record and requires
+manual reconciliation. This function never replaces, removes or recreates the
+target. Its result describes the observed state, not proof of which process
+produced that state. It is a local recovery result, not permission to disclose
+file contents to a provider.
+
+Earlier journal file requests without root/property bindings remain readable as
+historical evidence, but cannot drive this automatic comparison. Session
+exclusivity, SDK checkpoint integration and a public recovery protocol remain
+required before unattended dispatch or public agent execution is enabled.
+
+Reconciliation rechecks the workspace root, parent directory and current leaf
+identity after hashing, immediately before recording its observation. A displaced
+path leaves the intent unfinished. These checks detect observed external races;
+they cannot eliminate the final race with writers outside the shared lease.
