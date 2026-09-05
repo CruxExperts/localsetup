@@ -22,6 +22,7 @@ from ..sdk_payload.artifacts import inspect_artifact
 from ..sdk_payload.dependency_integrity import regular_bytes
 from ..versioning_models import SemVer
 from .runtime_lock import runtime_use
+from .runtime_integrity import seal, verify as verify_runtime
 
 MAX_WHEEL_BYTES = 256 * 1024 * 1024
 DIGEST = re.compile(r"[0-9a-f]{64}\Z")
@@ -106,7 +107,7 @@ def _run(command: list[str], *, directory: Path, deadline: float, environment: d
     if remaining <= 0:
         raise TimeoutError("Runtime installation deadline expired")
     process = subprocess.Popen(command, cwd=directory, env=environment, stdin=subprocess.DEVNULL,
-                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True, umask=0o077)
     try:
         if process.wait(timeout=remaining):
             raise RuntimeError("Runtime installation command failed; incomplete release retained")
@@ -128,21 +129,26 @@ def _populate(release: Path, wheel: Path, wheelhouse: Path, uv: str, deadline: f
     python = release / 'venv/bin/python'
     commands = [
         [uv, '--no-config', 'venv', '--offline', '--python', sys.executable, str(release / 'venv')],
-        [uv, '--no-config', 'pip', 'install', '--python', str(python), '--offline', '--no-index',
+        [uv, '--no-config', 'pip', 'install', '--link-mode', 'copy', '--python', str(python), '--offline', '--no-index',
          '--find-links', str(wheelhouse), '--require-hashes', '--only-binary', ':all:', '-r', str(release / 'sdk-build.lock')],
-        [uv, '--no-config', 'pip', 'install', '--python', str(python), '--offline', '--no-index',
+        [uv, '--no-config', 'pip', 'install', '--link-mode', 'copy', '--python', str(python), '--offline', '--no-index',
          '--find-links', str(wheelhouse), '--require-hashes', '--no-build-isolation', '-r', str(release / 'sdk-runtime.lock')],
-        [uv, '--no-config', 'pip', 'install', '--python', str(python), '--offline', '--no-deps', str(wheel)],
+        [uv, '--no-config', 'pip', 'install', '--link-mode', 'copy', '--python', str(python), '--offline', '--no-deps', str(wheel)],
         [uv, '--no-config', 'pip', 'check', '--python', str(python)],
-        [str(python), '-I', '-c', "from ls.core.agent.diagnostics import inspect; assert inspect()['sdk_payload'] == 'verified'"],
+        [str(python), '-I', '-B', '-c', "from ls.core.agent.diagnostics import inspect; assert inspect()['sdk_payload'] == 'verified'"],
     ]
     for command in commands:
         _run(command, directory=release, deadline=deadline, environment=environment)
+    # uv's environment lock may explicitly use a shared mode despite the umask.
+    environment_lock = release / 'venv/.lock'
+    if environment_lock.exists():
+        regular_bytes(environment_lock)
+        environment_lock.chmod(0o600)
     # Managed entry points must not honor workspace PYTHONPATH or user site hooks.
     launcher = release / 'venv/bin/lscli'
     if launcher.is_symlink() or not launcher.is_file():
         raise ValueError("Managed CLI launcher must be a regular file")
-    launcher.write_text('#!/bin/sh\nexec ' + shlex.quote(str(python)) + ' -I -m ls.core.agent.cli "$@"\n')
+    launcher.write_text('#!/bin/sh\nexec ' + shlex.quote(str(python)) + ' -I -B -m ls.core.agent.cli "$@"\n')
     launcher.chmod(0o700)
 
 
@@ -170,7 +176,10 @@ def install(root: Path, wheel: Path, digest: str, wheelhouse: Path, workspace: P
         _populate(release, local_wheel, Path(specification['wheelhouse']), uv, deadline)
         if time.monotonic() > deadline:
             raise TimeoutError("Runtime installation deadline expired before activation")
-        result = {'schema_version': 1, 'status': 'installed', 'sha256': digest,
+        inventory_digest = seal(release)
+        if time.monotonic() > deadline:
+            raise TimeoutError('Runtime installation deadline expired during integrity qualification')
+        result = {'schema_version': 1, 'status': 'installed', 'sha256': digest, 'inventory_sha256': inventory_digest,
                   'previous': previous.get('sha256') if previous else None}
         _write_json(release / 'status.json', result)
         _write_json(root / 'current.json', result)
@@ -197,4 +206,25 @@ def selected(root: Path, *, timeout: float = 30):
         release = root / selection['sha256']
         if json.loads(regular_bytes(release / 'status.json')) != selection:
             raise ValueError("Selected release does not match its completed installation record")
+        verify_runtime(release, selection.get('inventory_sha256', ''))
         yield release
+
+
+def reselect(root: Path, digest: str, *, timeout: float = 30) -> dict:
+    """Explicitly select a completed, intact release without replaying installation."""
+    if not DIGEST.fullmatch(digest):
+        raise ValueError("Expected a release SHA-256 digest")
+    if not math.isfinite(timeout) or timeout < 0:
+        raise ValueError('Recovery timeout must be finite and nonnegative')
+    deadline = time.monotonic() + timeout
+    root = root.absolute()
+    with runtime_use(root, exclusive=True, timeout=max(0, deadline - time.monotonic())):
+        release = root / digest
+        record = json.loads(regular_bytes(release / 'status.json'))
+        if not isinstance(record, dict) or record.get('schema_version') != 1 or record.get('status') != 'installed' or record.get('sha256') != digest:
+            raise ValueError("Recovery requires a completed matching release record")
+        verify_runtime(release, record.get('inventory_sha256', ''))
+        if time.monotonic() > deadline:
+            raise TimeoutError('Recovery deadline expired before activation')
+        _write_json(root / 'current.json', record)
+        return record

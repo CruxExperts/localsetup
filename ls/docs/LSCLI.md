@@ -119,7 +119,7 @@ come from the wheel's hashed exports and local artifacts only. Build tools are
 preloaded; build isolation is disabled so no implicit build dependencies are
 resolved. The framework wheel installs without dependency resolution. Dependency
 compatibility and installed SDK payload checks must pass before activation.
-The managed CLI launcher invokes the absolute installed Python with `-I`,
+The managed CLI launcher invokes the absolute installed Python with `-I -B`,
 preventing inherited Python path settings, the working directory, or user site
 hooks from selecting checkout code at startup. This rewrites only the framework
 CLI launcher; the isolated SDK worker and sandbox still require separate checks.
@@ -132,13 +132,38 @@ process groups on completion or interruption. A failed command reports failure
 and retains the incomplete slot for inspection; it does not replay or remove it.
 If the process stops near activation, inspect `current.json` and the slot's
 `status.json` before deciding what happened. Existing slots are refused, including
-completed slots: re-selection/repair and recovery policy remain subsequent gates.
-Do not manually edit selection records to bypass validation.
+completed slots. Use explicit verified re-selection to recover a prior slot:
+
+```bash
+lscli setup --reselect RELEASE_SHA256 --runtime-root /path/to/runtimes
+```
+
+Re-selection holds an exclusive lease, verifies the completed record and installed
+inventory, and atomically changes selection without replaying installation. It
+refuses incomplete, unsealed, or altered slots and preserves the current pointer
+on validation failure. Do not manually edit records to bypass validation.
+
+Installation copies dependencies without cache hardlinks and runs build commands
+with a private umask. Before activation it seals the environment's exact paths,
+file hashes, modes, allowed interpreter aliases, and host interpreter bytes.
+Selection verifies this inventory under the shared lease; added files, changed
+content, unsafe permissions, and unexpected symlinks or hardlinks are refused.
+The managed launcher disables bytecode writes to keep the inventory stable.
+A host interpreter update invalidates that qualification and requires a new
+verified runtime installation. This integrity check detects drift; it does not
+provide artifact authentication or prevent a same-user writer from racing it.
 
 The internal `selected` context holds a shared lease and checks the selected
 completion record for the entire caller-owned operation. Runtime installation
-and selection are now implemented, but worker supervision, immutable installed
-file enforcement, and sandbox protection still need integration. Successful setup
+and integrity-checked selection are implemented, but worker supervision and
+sandbox protection still need integration. Successful setup
 does not enable agent execution or change doctor's unavailable-execution result.
 The installer assumes the caller trusts the uv executable and supplied release
 digest; artifact authenticity and platform qualification remain external gates.
+
+The Python 3.12/Linux candidate also passed offline installation outside the
+checkout, inventory verification before and after managed doctor execution with
+an inherited checkout `PYTHONPATH`, explicit re-selection, and rejection of a
+tampered installed file while preserving the selection pointer. This qualifies
+candidate integrity and recovery behavior only; it is not released-artifact or
+sandbox qualification.

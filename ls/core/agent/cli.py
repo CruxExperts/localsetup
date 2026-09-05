@@ -22,19 +22,27 @@ def main(argv: list[str] | None = None) -> int:
     mode = setup.add_mutually_exclusive_group(required=True)
     mode.add_argument("--plan", action="store_true")
     mode.add_argument("--apply", action="store_true")
-    setup.add_argument("--wheel", type=Path, required=True)
-    setup.add_argument("--sha256", required=True)
-    setup.add_argument("--wheelhouse", type=Path, required=True)
+    mode.add_argument("--reselect", metavar="SHA256")
+    setup.add_argument("--wheel", type=Path)
+    setup.add_argument("--sha256")
+    setup.add_argument("--wheelhouse", type=Path)
     setup.add_argument("--runtime-root", type=Path)
     setup.add_argument("--timeout", type=float, default=300)
     args = parser.parse_args(argv)
     if args.command == "setup":
         from .diagnostics import locations
-        from .runtime_install import install, plan
+        from .runtime_install import install, plan, reselect
         root = args.runtime_root or Path(locations(Path.home())["runtimes"])
+        if args.reselect and any((args.wheel, args.sha256, args.wheelhouse)):
+            setup.error("--reselect cannot be combined with installation inputs")
+        if not args.reselect and not all((args.wheel, args.sha256, args.wheelhouse)):
+            setup.error("--plan and --apply require --wheel, --sha256 and --wheelhouse")
         inputs = (root, args.wheel, args.sha256, args.wheelhouse, Path.cwd())
         try:
-            result = install(*inputs, timeout=args.timeout) if args.apply else plan(*inputs)
+            if args.reselect:
+                result = reselect(root, args.reselect, timeout=args.timeout)
+            else:
+                result = install(*inputs, timeout=args.timeout) if args.apply else plan(*inputs)
         except KeyboardInterrupt:
             print(f"{CLI_NAME} setup cancelled; inspect retained installation state.", file=sys.stderr)
             return 130

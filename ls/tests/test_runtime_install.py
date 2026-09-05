@@ -21,7 +21,11 @@ def installation(tmp_path, monkeypatch):
         return dict(root=str(root), wheel=str(wheel), sha256=digest, wheelhouse=str(wheelhouse), version="1.0.0")
     monkeypatch.setattr(runtime, 'plan', plan)
     monkeypatch.setattr(runtime.shutil, 'which', lambda name: '/trusted/uv')
-    monkeypatch.setattr(runtime, '_populate', lambda *args: None)
+    def populate(release, *args):
+        (release / 'venv').mkdir(mode=0o700)
+        (release / 'venv' / 'fixture').write_text('installed')
+        (release / 'venv' / 'fixture').chmod(0o600)
+    monkeypatch.setattr(runtime, '_populate', populate)
     return root, wheel, digest, wheelhouse, workspace
 
 
@@ -130,3 +134,56 @@ def test_setup_cancellation_returns_terminal_status(tmp_path, monkeypatch, capsy
     assert main(['setup', '--apply', '--wheel', str(tmp_path / 'x.whl'), '--sha256', '0' * 64, '--wheelhouse', str(tmp_path)]) == 130
     result = capsys.readouterr()
     assert not result.out and 'cancelled' in result.err
+
+
+def test_reselect_checks_integrity_before_replacing_pointer(installation):
+    first = runtime.install(*installation)
+    root, wheel, _, wheelhouse, workspace = installation
+    wheel.write_bytes(b'next candidate')
+    digest = hashlib.sha256(wheel.read_bytes()).hexdigest()
+    runtime.install(root, wheel, digest, wheelhouse, workspace)
+    runtime.reselect(root, first['sha256'])
+    before = (root / 'current.json').read_bytes()
+    (root / digest / 'venv' / 'fixture').write_text('altered')
+    with pytest.raises(ValueError, match='changed'):
+        runtime.reselect(root, digest)
+    assert (root / 'current.json').read_bytes() == before
+    with runtime.selected(root) as release:
+        assert release.name == first['sha256']
+
+
+def test_setup_reselect_without_artifact_inputs(installation, capsys):
+    from ls.core.agent.cli import main
+    result = runtime.install(*installation)
+    assert main(['setup', '--reselect', result['sha256'], '--runtime-root', str(installation[0])]) == 0
+    assert json.loads(capsys.readouterr().out) == result
+
+
+def test_reselect_expired_verification_preserves_pointer(installation, monkeypatch):
+    runtime.install(*installation)
+    root, _, digest, _, _ = installation
+    before = (root / 'current.json').read_bytes()
+    now = [100.0]
+    monkeypatch.setattr(runtime.time, 'monotonic', lambda: now[0])
+    def expire(*args):
+        now[0] += 2
+    monkeypatch.setattr(runtime, 'verify_runtime', expire)
+    with pytest.raises(TimeoutError, match='before activation'):
+        runtime.reselect(root, digest, timeout=1)
+    assert (root / 'current.json').read_bytes() == before
+
+
+@pytest.mark.parametrize('damage', ['incomplete', 'unsealed'])
+def test_reselect_refuses_unqualified_slot(installation, damage):
+    runtime.install(*installation)
+    root, _, digest, _, _ = installation
+    pointer = (root / 'current.json').read_bytes()
+    if damage == 'incomplete':
+        record = json.loads((root / digest / 'status.json').read_text())
+        record['status'] = 'incomplete'
+        (root / digest / 'status.json').write_text(json.dumps(record))
+    else:
+        (root / digest / 'inventory.json').unlink()
+    with pytest.raises(ValueError):
+        runtime.reselect(root, digest)
+    assert (root / 'current.json').read_bytes() == pointer
