@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 7f94ecc0f4b82c487086fb49a6ad01bdd4aba20adc358e970aa83cde3f633d30
+  source_provenance_hash: f0fe17632fbee765885d1decdc07e5366af699b33e6e411c25421f20822133ac
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: e8132237a3b53be3039077b4bd9b16db34a24258
-artifact_sha256: 5f4a6e6530b86585d983e5409073b83169917304ba9132bc949ac34036b4056b
+source_commit: 8277778d1e20450d3cb08f0019c0c85269bbcc24
+artifact_sha256: cf93aa783017ae577f7f266ed45c94fc9e8a5363571baca621cf58a5ed46b1da
 ---
 # Implementation File Map
 
@@ -130,6 +130,7 @@ artifact_sha256: 5f4a6e6530b86585d983e5409073b83169917304ba9132bc949ac34036b4056
 | `refactor` | `ls/core/agent/operation_journal.py` |
 | `refactor` | `ls/core/agent/process_broker.py` |
 | `refactor` | `ls/core/agent/process_rpc.py` |
+| `refactor` | `ls/core/agent/profile_inventory.py` |
 | `refactor` | `ls/core/agent/profiles.py` |
 | `refactor` | `ls/core/agent/provider_client.py` |
 | `refactor` | `ls/core/agent/recovery.py` |
@@ -1050,6 +1051,7 @@ artifact_sha256: 5f4a6e6530b86585d983e5409073b83169917304ba9132bc949ac34036b4056
 | `keep` | `ls/tests/test_plugin_packs.py` |
 | `keep` | `ls/tests/test_process_broker.py` |
 | `keep` | `ls/tests/test_process_rpc.py` |
+| `keep` | `ls/tests/test_profile_inventory.py` |
 | `keep` | `ls/tests/test_provenance.py` |
 | `keep` | `ls/tests/test_python_architecture_check.py` |
 | `keep` | `ls/tests/test_python_runtime_contract.py` |
