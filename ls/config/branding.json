@@ -4136,6 +4136,14 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Private cgroup names use the integrated CLI technical identifier as a unique resource prefix."
+    },
+    {
+      "path": "ls/tests/sdk_recovery_fixture.py",
+      "line_sha256": "f09cec293ec325c56199578cd0cd85db5f7ef38239acca7458caa6b15fbd7675",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical vendor directory used by isolated source qualification fixtures."
     }
   ],
   "visual_reviews": [

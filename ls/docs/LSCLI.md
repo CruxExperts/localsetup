@@ -1118,5 +1118,25 @@ fails recovery. A crash after journal settlement but before receipt persistence
 can leave a settled operation with no recoverable output; the operation must not
 be repeated to recreate that output. A receipt alone does not make the interrupted
 pre-tool checkpoint resumable: existing frontier and complete-history checks
-remain enforced. SDK history reconstruction and the public recovery interface
-remain pending. Saved data carries no grants, approvals or authority.
+remain enforced. Supervisor-integrated history recovery and the public recovery
+interface remain pending. Saved data carries no grants, approvals or authority.
+
+### Native history reconstruction boundary
+
+The isolated SDK worker's `sdk_recovery.reconstruct` accepts bounded serialized
+history and supervisor-verified receipts. It matches unresolved tool-call IDs and
+names, verifies file arguments or the original named process recipe's digest,
+and appends native SDK tool-return parts in call order. Existing messages remain
+in the new history; the original checkpoint is never overwritten. Missing,
+duplicate, extra or mismatched receipts, changed recipes, ambiguous call IDs and
+unsupported pending tools fail without dispatch. Both input and reconstructed
+history are limited to 8 MiB; at most 256 receipts are accepted.
+
+A deterministic SDK continuation test consumes the reconstructed file-write and
+process results and produces a final answer without registering or executing any
+tools. This qualifies message reconstruction only. The helper does not verify a
+journal on its own, restore permission, contact a provider, persist a checkpoint
+or bypass the current frontier check. Supervisor recovery must first join the
+original checkpoint to journal history and receipts, then validate and save a new
+checkpoint under current session authority. Any subsequent provider disclosure
+requires a new explicit grant covering the resulting history.
