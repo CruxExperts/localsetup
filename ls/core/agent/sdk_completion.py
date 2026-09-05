@@ -17,9 +17,9 @@ async def complete(profile,environment,finder,raw,*,expires,check,transport=None
     if not math.isfinite(expires):raise ValueError('Invalid completion deadline')
     request=parse(raw,profile)
     expires=min(expires,started+request.deadline_seconds)
-    # Optional effort needs a separate qualified model-parameter contract.
+    settings={'max_tokens':request.max_output_tokens}
     if request.reasoning_effort is not None:
-        raise ValueError('Reasoning effort is not yet qualified for direct completion')
+        settings['openai_reasoning_effort']=request.reasoning_effort
     attempts=0;usage=None
     def active():
         check()
@@ -41,7 +41,7 @@ async def complete(profile,environment,finder,raw,*,expires,check,transport=None
             async with model(profile,environment,finder,transport=transport,response_guard=capture) as adapter:
                 active();attempts=1
                 result=await adapter.request([ModelRequest(parts=[UserPromptPart(prompt)])],
-                    {'max_tokens':request.max_output_tokens},parameters)
+                    settings,parameters)
         active();finder.verify_origins()
         usage={'input_tokens':result.usage.input_tokens,'output_tokens':result.usage.output_tokens}
         status,data=validate_output(capture.text,request)

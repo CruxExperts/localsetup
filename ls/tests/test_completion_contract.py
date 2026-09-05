@@ -54,3 +54,16 @@ def test_completion_percent_encoded_local_pointer_resolution():
     assert validate_output('true',request)==('succeeded',True)
     value['output_schema']={'$defs':{'a%20b':{}},'$ref':'#/$defs/a%20b'}
     with pytest.raises(ValueError):parse(json.dumps(value).encode(),profile)
+
+
+def test_explicit_reasoning_capabilities_round_trip():
+    from ls.core.agent.profiles import REASONING_EFFORTS,wire
+    profile,value=fixture()
+    for effort in REASONING_EFFORTS:
+        raw=wire(profile);raw['capabilities'].append('reasoning:'+effort)
+        qualified=profile_parse(raw)
+        assert wire(qualified)==raw
+        request=parse(json.dumps(value|{'reasoning_effort':effort}).encode(),qualified)
+        assert request.reasoning_effort==effort
+    raw=wire(profile);raw['capabilities'].append('reasoning:unknown')
+    with pytest.raises(ValueError):profile_parse(raw)

@@ -226,7 +226,8 @@ creating state or looking for other credentials. Schema version 1 uses this shap
 
 Replace the illustrative endpoint and model with an explicitly qualified service.
 `api` is `chat_completions` or `responses`. Capabilities are an explicit subset of
-`streaming`, `tools`, `images`, and `native_schema`; declarations do not establish
+`streaming`, `tools`, `images`, `native_schema`, and per-value `reasoning:VALUE`
+capabilities described below; declarations do not establish
 endpoint qualification or grant tool/disclosure authority. The named credential
 variable is resolved only from the environment supplied by the owner. Credential
 values are not stored in profile JSON. Missing credentials fail before transport
@@ -1814,8 +1815,10 @@ malformed/duplicate-key output and schema rejection remain distinct outcomes.
 The deadline must be positive and at most 3600 seconds; output tokens are limited
 to 1–1,000,000. `max_attempts` must be exactly 1: this delivery does not implement
 the proposal's optional retry loop. Optional `reasoning_effort` accepts `none`,
-`minimal`, `low`, `medium`, `high` or `xhigh`; syntax acceptance does not qualify a
-model's support. Provider parameter qualification remains part of integration.
+`minimal`, `low`, `medium`, `high` or `xhigh`; each requested value requires a
+matching `reasoning:VALUE` capability in the selected profile. For example, `reasoning:high` permits `high` but not `low`.
+Declarations record operator-qualified endpoint/model support; they do not prove
+live compatibility. Omitted effort remains omitted from provider requests.
 
 The result envelope contains `interface_version`, `status`, `data`, `model`,
 `usage`, `request_id`, `attempts` and a stable `reason` code equal to its status.
@@ -1832,9 +1835,10 @@ status normalization and installed execution remain required integration gates.
 isolated importer, with empty function/native/output tool lists, one attempt and
 no Agent loop. It uses the shared explicit transport and native schema output
 when requested; validate-only output still passes local schema validation.
-Optional reasoning effort currently refuses before dispatch until model-parameter
-qualification is integrated. This adapter does not yet expose the public command
-or replace the QC wrapper.
+Optional reasoning effort requires its exact per-value profile capability before
+dispatch. The SDK sends `reasoning_effort` for Chat Completions and
+`reasoning.effort` for Responses, without adding temperature or other options.
+This adapter does not yet expose the public command or replace the QC wrapper.
 
 Before SDK response normalization, a completion-only transport guard caps the
 identity-encoded body at 1 MiB plus 64 KiB of protocol overhead. It requests
@@ -1855,3 +1859,9 @@ Deterministic fixtures cover both APIs, success/schema/refusal/incomplete/malfor
 results, rate limits, missing credentials, connection/read failures, oversized
 responses, revocation and deadline expiry during validation. This qualifies the
 adapter path only; public command and installed-consumer acceptance remain pending.
+
+Deterministic direct-completion fixtures qualify serialization of all six declared
+reasoning values on both APIs. Every undeclared value refuses before HTTP, and
+requests without an effort omit the parameter. Existing profile fields and
+capability defaults remain unchanged; adding a capability changes the profile's
+identity, so existing history requires the usual explicit compatibility branch.

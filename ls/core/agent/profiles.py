@@ -10,6 +10,9 @@ import re
 from urllib.parse import urlsplit
 
 
+REASONING_EFFORTS = frozenset({'none', 'minimal', 'low', 'medium', 'high', 'xhigh'})
+CAPABILITIES = {'streaming', 'tools', 'images', 'native_schema'} | {'reasoning:' + effort for effort in REASONING_EFFORTS}
+
 @dataclass(frozen=True)
 class Profile:
     base_url: str
@@ -61,7 +64,7 @@ def parse(value: object) -> Profile:
     if type(timeout) not in (int, float) or not math.isfinite(timeout) or not 0 < timeout <= 3600:
         raise ValueError('Provider timeout must be finite and within 3600 seconds')
     capabilities = value['capabilities']
-    if not isinstance(capabilities, list) or any(not isinstance(c, str) for c in capabilities) or len(set(capabilities)) != len(capabilities) or not set(capabilities) <= {'streaming', 'tools', 'images', 'native_schema'}:
+    if not isinstance(capabilities, list) or any(not isinstance(c, str) for c in capabilities) or len(set(capabilities)) != len(capabilities) or not set(capabilities) <= CAPABILITIES:
         raise ValueError('Invalid explicit provider capabilities')
     return Profile(base.rstrip('/') + '/', value['api'], model, credential, float(timeout), frozenset(capabilities))
 

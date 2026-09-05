@@ -4,6 +4,7 @@ import math
 from urllib.parse import unquote
 
 from .broker_rpc import _decode, _encode
+from .profiles import REASONING_EFFORTS
 
 MAX_REQUEST = 1024 * 1024
 MAX_OUTPUT = 1024 * 1024
@@ -79,8 +80,10 @@ def parse(raw: bytes, profile) -> Request:
     if type(tokens) is not int or not 1 <= tokens <= 1000000:
         raise ValueError('Invalid completion token limit')
     effort = value.get('reasoning_effort')
-    if effort is not None and effort not in ('none', 'minimal', 'low', 'medium', 'high', 'xhigh'):
+    if effort is not None and (not isinstance(effort,str) or effort not in REASONING_EFFORTS):
         raise ValueError('Invalid reasoning effort')
+    if effort is not None and 'reasoning:' + effort not in profile.capabilities:
+        raise ValueError('Selected profile does not qualify this reasoning effort')
     mode = value.get('schema_mode', 'native')
     if mode not in ('native', 'validate_only'):
         raise ValueError('Invalid schema mode')
