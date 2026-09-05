@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: ea0e54d9616fae6b1145c960d91cabb359bf413910864800af7b2b1a60c69bf5
+  source_provenance_hash: ef3dcf80c946943f2c61d3fb20d414a44a58251669cd36db5eb9c5780a2c6602
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 748448b2a701ccdf536f27bf83550c28747fd45e
-artifact_sha256: 2cc21b9207f91dd4359be188132449e0435dd03fc197afbc295d0b1f1c4ef514
+source_commit: 6b85160ef24a10581f847124063a3ddf7dc54426
+artifact_sha256: 8798687abe35ab08700a9c4392c9273db35322fac2134b7939fea5438da5fe77
 ---
 # Implementation File Map
 
@@ -1060,8 +1060,6 @@ artifact_sha256: 2cc21b9207f91dd4359be188132449e0435dd03fc197afbc295d0b1f1c4ef51
 | `keep` | `ls/workflows/ls-workflow-spec-clarify-reverse/workflow.yaml` |
 | `keep` | `ls/workflows/ls-workflow-tmux-terminal-mode/SKILL.md` |
 | `keep` | `ls/workflows/ls-workflow-tmux-terminal-mode/workflow.yaml` |
-| `keep` | `ls/workflows/ls-workflow-transport-handoff/SKILL.md` |
-| `keep` | `ls/workflows/ls-workflow-transport-handoff/workflow.yaml` |
 | `keep` | `ls/workflows/ls-workflow-umbrella-run/SKILL.md` |
 | `keep` | `ls/workflows/ls-workflow-umbrella-run/workflow.yaml` |
 | `keep` | `pyproject.toml` |

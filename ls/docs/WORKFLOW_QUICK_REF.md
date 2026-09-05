@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: ea0e54d9616fae6b1145c960d91cabb359bf413910864800af7b2b1a60c69bf5
+  source_provenance_hash: ef3dcf80c946943f2c61d3fb20d414a44a58251669cd36db5eb9c5780a2c6602
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 748448b2a701ccdf536f27bf83550c28747fd45e
-artifact_sha256: 7464a9d1b9660226d6c97dc6b130fbac577c2afa765bc1c9ac4d798b27bdd9f0
+source_commit: 6b85160ef24a10581f847124063a3ddf7dc54426
+artifact_sha256: 3f7d9bc11ca3cb9406ec56645353f24af46ba128e5cd647b4a7defb22c0f907d
 ---
 # Workflow quick reference
 
@@ -33,7 +33,6 @@ This page is generated from `ls/workflows/*/workflow.yaml`.
 | `repo-finalizer` | Repo Finalizer | repo finalizer; finalizer harness; finalization checkpoint | `ls-workflow-repo-finalizer` | `ls-framework-compliance`; `ls-git-workflows` |
 | `spec-clarify-reverse` | Reverse Prompt Spec Clarify | decision tree; reverse prompt | `ls-workflow-spec-clarify-reverse` | n/a |
 | `tmux-terminal-mode` | Tmux Terminal Mode | tmux terminal mode; always-on tmux | `ls-workflow-tmux-terminal-mode` | n/a |
-| `transport-handoff` | Transport Handoff | Agent Q bidirectional | `ls-workflow-transport-handoff` | `ls-agentq-transport`; `ls-mail-protocol-control` |
 | `umbrella-run` | Umbrella Run | umbrella workflow | `ls-workflow-umbrella-run` | n/a |
 
 ## Common Phrases
@@ -73,5 +72,4 @@ This page is generated from `ls/workflows/*/workflow.yaml`.
 - "reverse prompt" -> `spec-clarify-reverse`
 - "tmux terminal mode" -> `tmux-terminal-mode`
 - "always-on tmux" -> `tmux-terminal-mode`
-- "Agent Q bidirectional" -> `transport-handoff`
 - "umbrella workflow" -> `umbrella-run`

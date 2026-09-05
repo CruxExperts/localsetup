@@ -4,11 +4,11 @@ version: 4.3
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: ea0e54d9616fae6b1145c960d91cabb359bf413910864800af7b2b1a60c69bf5
+  source_provenance_hash: ef3dcf80c946943f2c61d3fb20d414a44a58251669cd36db5eb9c5780a2c6602
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 748448b2a701ccdf536f27bf83550c28747fd45e
-artifact_sha256: f11fe0e08b7cee1aef9967ff5a3cc11fc4078f61bfd0b496d0ebfcffc0971cdb
+source_commit: 6b85160ef24a10581f847124063a3ddf7dc54426
+artifact_sha256: 54a5fe95f511ae0b0b238315ade735d916734baaedabfcb791e3aaa18fd5a183
 ---
 # Workflow and module registry (Localsetup)
 
@@ -42,7 +42,6 @@ For the framework rules, see [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md).
 | `repo-finalizer` | `ls-workflow-repo-finalizer` | Repo Finalizer | Use when safely inspecting repo dirty state and optionally checkpointing allowlisted managed outputs without destructive git operations. | repo finalizer; finalizer harness; finalization checkpoint | `ls-framework-compliance`; `ls-git-workflows` | [HARNESS_AUTOMATION.md](HARNESS_AUTOMATION.md); [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md); `ls/tools/localsetup.py` |
 | `spec-clarify-reverse` | `ls-workflow-spec-clarify-reverse` | Reverse Prompt Spec Clarify | Use when running reverse-prompt spec clarification with one question per turn and bounded choices. | decision tree; reverse prompt | n/a | [DECISION_TREE_WORKFLOW.md](DECISION_TREE_WORKFLOW.md) |
 | `tmux-terminal-mode` | `ls-workflow-tmux-terminal-mode` | Tmux Terminal Mode | Use when enabling, disabling, defaulting, or checking tmux terminal mode; do not use for one-off sudo or interactive password handoff. | tmux terminal mode; always-on tmux | n/a | [TMUX_TERMINAL_MODE.md](TMUX_TERMINAL_MODE.md); `ls/tools/tmux_terminal_mode` |
-| `transport-handoff` | `ls-workflow-transport-handoff` | Transport Handoff | Use when handling sealed Agent Q handoff payload transport over file_drop or mail adapters. | Agent Q bidirectional | `ls-agentq-transport`; `ls-mail-protocol-control` | [AGENTIC_AGENT_TO_AGENT_PROTOCOL.md](AGENTIC_AGENT_TO_AGENT_PROTOCOL.md); [AGENTIC_AGENT_Q_SCENARIOS.md](AGENTIC_AGENT_Q_SCENARIOS.md); [AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md](AGENTIC_AGENT_Q_BIDIRECTIONAL_BUILD_SPEC.md); `ls/tools/agentq_transport_client/agentq_cli.py` |
 | `umbrella-run` | `ls-workflow-umbrella-run` | Umbrella Run | Use when executing a named multi-phase umbrella workflow with explicit pre-human-confirmation gates. | umbrella workflow | n/a | [AGENTIC_UMBRELLA_WORKFLOWS.md](AGENTIC_UMBRELLA_WORKFLOWS.md) |
 
 ## Usage

@@ -32,8 +32,17 @@ Pre-ship checks accept argv-only `pytest` or `uv run --locked pytest` commands a
 
 ## Related packages
 
-- **ls-mail-protocol-control** - mail adapter backend; `preencrypted_openpgp_armored` for ship-mail-strict.
+- **ls-mail-protocol-control** - load only for the mail adapter; `preencrypted_openpgp_armored` for ship-mail-strict. File-drop handoffs do not require mail configuration.
 - **ls-workflow-queue-batch-implement** - batch reads `in/` only; version mismatch and structured queue.
+
+## Handoff flow
+
+1. Choose the authorized file-drop or mail adapter, then pull and verify the inbound sealed payload using the CLI and registry policy.
+2. Process the verified payload within its authorized scope and record the outcome.
+3. Before shipping an acknowledgement or artifact, validate the envelope, manifest, and destination. Send only when the applicable authorization and transport checks pass.
+4. Record the manifest and destination checks with a handoff result summary.
+
+Keep adapter mechanics in the protocol references below and CLI help. Use the smoke command to verify the CLI entrypoint before operating the selected adapter.
 
 ## Docs
 

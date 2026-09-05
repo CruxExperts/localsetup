@@ -231,8 +231,7 @@ workflow_packs:
   - ls-workflow-ops-tmux-session
   - ls-workflow-pipeline-server-triage-patch
   - ls-workflow-tmux-terminal-mode
-  integrations:
-  - ls-workflow-transport-handoff
+  integrations: []
   omniroute: []
   publishing:
   - ls-workflow-codex-github-issue-goal-loop

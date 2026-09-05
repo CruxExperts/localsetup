@@ -74,14 +74,14 @@
   ],
   "cli_commands": [],
   "counts": {
-    "docs": 428,
+    "docs": 427,
     "framework_docs": 72,
     "generated_docs": 5,
     "platforms": 6,
     "public_docs": 6,
     "skills": 103,
-    "workflow_packs": 24,
-    "workflows": 17
+    "workflow_packs": 23,
+    "workflows": 16
   },
   "docs": [
     {
@@ -4356,16 +4356,6 @@
       "managed_blocks": [],
       "owner_package": "",
       "owner_skill": "",
-      "path": "ls/workflows/ls-workflow-transport-handoff/SKILL.md",
-      "status": "",
-      "version": ""
-    },
-    {
-      "class": "skill",
-      "has_frontmatter": true,
-      "managed_blocks": [],
-      "owner_package": "",
-      "owner_skill": "",
       "path": "ls/workflows/ls-workflow-umbrella-run/SKILL.md",
       "status": "",
       "version": ""
@@ -4412,16 +4402,16 @@
   ],
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "86e60c072294fba7f0cbc1793a5f5b50d809a1ad1fd4f4539e23af798e7842b3",
+    "artifact_sha256": "e83770939b57557f2546d7410402aae73880be4482bcc361f9540c8ccbdf6b94",
     "emitter": "docs-align",
     "framework_version": "4.3.9",
     "schema_version": 1,
-    "source_commit": "748448b2a701ccdf536f27bf83550c28747fd45e",
+    "source_commit": "6b85160ef24a10581f847124063a3ddf7dc54426",
     "source_dirty": true,
-    "source_provenance_hash": "ea0e54d9616fae6b1145c960d91cabb359bf413910864800af7b2b1a60c69bf5",
-    "source_root_id": "f53f4fad8e1b5d4c0a1d3969df39bcf18b40173d7d2bed0e5d925f782914494f",
+    "source_provenance_hash": "ef3dcf80c946943f2c61d3fb20d414a44a58251669cd36db5eb9c5780a2c6602",
+    "source_root_id": "3491c54c4c399e340b063b9d0f22c536491ea19eae4b0d03a168001e8a8ed627",
     "source_tag": null,
-    "source_tree_sha": "e54858f8546ecf1ee721df11da4beade0d850761"
+    "source_tree_sha": "d33c69e9e9303d54b8dd5d9c7c273f5a4157691f"
   },
   "repo": ".",
   "schema_version": "1.0",
@@ -6053,14 +6043,6 @@
       ],
       "path": "ls/workflows/ls-workflow-tmux-terminal-mode",
       "workflow_id": "tmux-terminal-mode"
-    },
-    {
-      "package": "ls-workflow-transport-handoff",
-      "packs": [
-        "integrations"
-      ],
-      "path": "ls/workflows/ls-workflow-transport-handoff",
-      "workflow_id": "transport-handoff"
     },
     {
       "package": "ls-workflow-umbrella-run",

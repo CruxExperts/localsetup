@@ -59,7 +59,7 @@ Released under the MIT License. See the repository root [LICENSE](../../LICENSE)
 
 - **Run decision tree:** Load workflow package `ls-workflow-spec-clarify-reverse`; see [DECISION_TREE_WORKFLOW.md](DECISION_TREE_WORKFLOW.md).
 - **Process queue / PRDs:** Load `ls-workflow-queue-batch-implement`; see [PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md](PRD_SCHEMA_EXTERNAL_AGENT_GUIDE.md), [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md).
-- **Agent Q ship/ingest (file_drop or mail):** Load `ls-workflow-transport-handoff` for the orchestration flow and `ls-agentq-transport` for the transport capability; see [AGENTIC_AGENT_Q_SCENARIOS.md](AGENTIC_AGENT_Q_SCENARIOS.md), `ls/tools/agentq_transport_client/docs/USER_GUIDE.md`; mail strict path uses `ls-mail-protocol-control` with `preencrypted_openpgp_armored`.
+- **Agent Q ship/ingest (file_drop or mail):** Load `ls-agentq-transport` for the handoff flow and transport capability; see [AGENTIC_AGENT_Q_SCENARIOS.md](AGENTIC_AGENT_Q_SCENARIOS.md), `ls/tools/agentq_transport_client/docs/USER_GUIDE.md`; mail strict path uses `ls-mail-protocol-control` with `preencrypted_openpgp_armored`.
 - **Umbrella workflow:** Load `ls-workflow-umbrella-run`; see [WORKFLOW_REGISTRY.md](WORKFLOW_REGISTRY.md).
 - **Create a new skill:** Load `ls-skill-creator`; see [SKILL_INTEROPERABILITY.md](SKILL_INTEROPERABILITY.md).
 - **Create or update a workflow package:** Follow [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) and [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md); edit `ls/workflows/<package>/workflow.yaml`, then regenerate docs.

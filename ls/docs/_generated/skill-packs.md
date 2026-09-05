@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: ea0e54d9616fae6b1145c960d91cabb359bf413910864800af7b2b1a60c69bf5
+  source_provenance_hash: ef3dcf80c946943f2c61d3fb20d414a44a58251669cd36db5eb9c5780a2c6602
   emitter: generate-docs
 framework_version: 4.3.9
-source_commit: 748448b2a701ccdf536f27bf83550c28747fd45e
-artifact_sha256: d63d1508b507db8011577a138d5926fe4f5d51b94ee93e8fe388bf758ed35d81
+source_commit: 6b85160ef24a10581f847124063a3ddf7dc54426
+artifact_sha256: 9c19a1db48f8405359c9bb51e65bc1b3286bae53bc9862f67a747577577485d3
 ---
 # Skill And Workflow Packs
 
@@ -129,5 +129,4 @@ artifact_sha256: d63d1508b507db8011577a138d5926fe4f5d51b94ee93e8fe388bf758ed35d8
 | `harness` | `workflow` | `ls-workflow-repo-finalizer` | n/a | n/a | n/a | `n/a` |
 | `dev` | `workflow` | `ls-workflow-spec-clarify-reverse` | n/a | n/a | n/a | `n/a` |
 | `core, ops` | `workflow` | `ls-workflow-tmux-terminal-mode` | n/a | n/a | n/a | `n/a` |
-| `integrations` | `workflow` | `ls-workflow-transport-handoff` | n/a | n/a | n/a | `n/a` |
 | `specialized` | `workflow` | `ls-workflow-umbrella-run` | n/a | n/a | n/a | `n/a` |
