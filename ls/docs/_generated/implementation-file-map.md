@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 1a1c3506e47341739831fb36f6ccd0e74a57c2e6e2c4ae00ddc7f9c246acfa8f
+  source_provenance_hash: 90dcc64dfd1b64670f771733b6a8a0e6b006a1395014c254bcb74f49a52ebab4
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 91d2fe46eb569951675887bf53f56d3df702eec3
-artifact_sha256: eb49bd66c75fccf354de584ae934bcd12b161acf57cb803af8a3a4f7d6105a08
+source_commit: fe525ea0ccad85636707921aa45ad8778492c79d
+artifact_sha256: d7289076e9e43d6a739a08685aa0e251bc21cd7f631c69794094a7a08fdb430b
 ---
 # Implementation File Map
 
@@ -121,6 +121,7 @@ artifact_sha256: eb49bd66c75fccf354de584ae934bcd12b161acf57cb803af8a3a4f7d6105a0
 | `refactor` | `ls/core/agent/file_grants.py` |
 | `refactor` | `ls/core/agent/file_recovery.py` |
 | `refactor` | `ls/core/agent/file_rpc.py` |
+| `refactor` | `ls/core/agent/file_search.py` |
 | `refactor` | `ls/core/agent/interactive.py` |
 | `refactor` | `ls/core/agent/native_bundle.py` |
 | `refactor` | `ls/core/agent/operation_journal.py` |
@@ -988,6 +989,7 @@ artifact_sha256: eb49bd66c75fccf354de584ae934bcd12b161acf57cb803af8a3a4f7d6105a0
 | `keep` | `ls/tests/test_docs_alignment.py` |
 | `keep` | `ls/tests/test_domain_shapes.py` |
 | `keep` | `ls/tests/test_file_rpc.py` |
+| `keep` | `ls/tests/test_file_search.py` |
 | `keep` | `ls/tests/test_github_starredrepos_skill.py` |
 | `keep` | `ls/tests/test_install_flow.py` |
 | `keep` | `ls/tests/test_install_flow_auto_convert_apply_a.py` |
