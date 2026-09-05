@@ -174,7 +174,7 @@ wheel also requires packaging. The project's uv build constraints pin this
 build closure separately from runtime dependencies. These constraints govern uv
 project operations; ordinary wheel installers do not inherit project uv settings.
 A managed installation must use its release's locked runtime and build artifacts.
-That installation path and its exported hash locks remain a separate delivery gate.
+The protected installation path remains a separate delivery gate.
 
 The combined resolution was checked against OSV, GitHub Advisory Database, and
 deps.dev/PyPI on 2026-09-05. All 42 selected runtime/build versions returned no
@@ -193,3 +193,37 @@ reported compatible installed dependencies, the private payload verified, and
 original SDK distribution was installed and no SDK module was imported by this
 check. This qualifies that exact constrained candidate; it does not establish
 SDK execution or compatibility with every version allowed by the wheel's ranges.
+
+
+## Managed dependency lock exports
+
+`uv.lock` is the canonical external resolution. The `sdk-build` dependency group
+pins the audited build tools; it is separate from the runtime graph and the
+development group. The owning exporter produces `ls/config/sdk-runtime.lock`
+and `ls/config/sdk-build.lock`, both shipped as wheel data. Runtime export retains
+platform markers and artifact hashes, excludes development/build-only tools, and
+omits the framework itself and all three vendored SDK distributions.
+
+```bash
+uv run --locked python ls/tools/generate_sdk_dependency_locks.py --repo-root .
+uv run --locked python ls/tools/generate_sdk_dependency_locks.py --repo-root . --check
+```
+
+Both operations call `uv export --locked --offline`; they never update the
+resolution or install dependencies. Check mode returns 1 for missing or different
+output, 2 for export/validation errors, and 0 for exact agreement. Regenerate after
+an accepted dependency change, review both exports, and commit them with that
+source slice. Generation requires a stable source tree and a compatible uv CLI.
+The ordinary wheel build only packages these files and does not run uv.
+
+For an isolated candidate environment, install build dependencies with
+`uv pip install --python <candidate-python> --require-hashes --only-binary :all: -r ls/config/sdk-build.lock`,
+then install runtime dependencies with
+`uv pip install --python <candidate-python> --require-hashes --no-build-isolation -r ls/config/sdk-runtime.lock`.
+Use a new, task-owned environment and the exact files from the candidate artifact.
+Preloading the hashed build closure and disabling build isolation prevents an
+implicit download of unpinned PGPy build dependencies. The framework wheel is
+installed separately after its artifact verification. This is a qualification
+procedure, not the protected installer or an instruction to alter an existing
+user environment. Python 3.12/Linux candidate installation passed with these
+options; other marker branches remain separate qualification requirements.

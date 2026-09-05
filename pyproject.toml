@@ -29,6 +29,11 @@ dependencies = [
 ]
 
 [dependency-groups]
+sdk-build = [
+  "setuptools==84.0.0",
+  "wheel==0.48.0",
+  "packaging==26.3",
+]
 dev = [
   "pytest>=9.1.1",
   "pytest-xdist>=3.6",
@@ -50,6 +55,7 @@ include = ["ls*"]
 [tool.setuptools.package-data]
 "ls" = [
   "config/*.json",
+  "config/*.lock",
   "config/*.yaml",
   "docs/*.md",
   "docs/*.yaml",

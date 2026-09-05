@@ -3888,6 +3888,14 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Archive regression fixture preserves the canonical SDK path or established persisted pack identifier."
+    },
+    {
+      "path": "ls/core/sdk_payload/dependencies.py",
+      "line_sha256": "3e3feed7d151bcbc9f24feb21332550e177db3b2dda5cffbbfccba4a5a3543d2",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Existing Python distribution identifier excluded from external dependency exports."
     }
   ],
   "visual_reviews": [
