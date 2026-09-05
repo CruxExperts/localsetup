@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 6423e9f692e1d569a4fb3945b1ef103a77877638f6f289c567c09709052cd73c
+  source_provenance_hash: 8a21d468fe5e664a9ba8759210e6b195d88d334554806bc0d2e05f8eb8cdf802
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: a35a0177a3ff76749175030c0b8f4e944bd4ad1d
-artifact_sha256: 817d145fac4d4ff5eddbadc9b0dd0a3f52f805fc69c44b6d52a4f90007dd2c5d
+source_commit: 06faab21441344f461bf9c4e3c8ba9d4c743cbbb
+artifact_sha256: a6bfc89e90b062418067a44883e546470295bd91c6223724d3f69fc0960ebe99
 ---
 # Implementation File Map
 
@@ -125,6 +125,7 @@ artifact_sha256: 817d145fac4d4ff5eddbadc9b0dd0a3f52f805fc69c44b6d52a4f90007dd2c5
 | `refactor` | `ls/core/agent/file_search.py` |
 | `refactor` | `ls/core/agent/interactive.py` |
 | `refactor` | `ls/core/agent/native_bundle.py` |
+| `refactor` | `ls/core/agent/nested_context.py` |
 | `refactor` | `ls/core/agent/operation_journal.py` |
 | `refactor` | `ls/core/agent/process_broker.py` |
 | `refactor` | `ls/core/agent/process_rpc.py` |
@@ -1033,6 +1034,7 @@ artifact_sha256: 817d145fac4d4ff5eddbadc9b0dd0a3f52f805fc69c44b6d52a4f90007dd2c5
 | `keep` | `ls/tests/test_manifests.py` |
 | `keep` | `ls/tests/test_mcp_builder_connections.py` |
 | `keep` | `ls/tests/test_native_bundle.py` |
+| `keep` | `ls/tests/test_nested_context.py` |
 | `keep` | `ls/tests/test_omniroute_api_cli.py` |
 | `keep` | `ls/tests/test_omniroute_consolidation_migration.py` |
 | `keep` | `ls/tests/test_omniroute_immutable_inventory.py` |
