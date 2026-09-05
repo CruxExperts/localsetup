@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 1e2308e58a6a074e2953106f095fb0efd0a4f7cadb411dc08ca9bfe8204cd64c
+  source_provenance_hash: 617be184115fc188ce0961da712a8e144e539f153ffcbc0d2ca354ebd9934136
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 38d0499885faf339d2244f00ecc75087adfb2d51
-artifact_sha256: 8ddde16d7ad5362157a5dcfca229113f5a74536027d911ec320cb17e906102e4
+source_commit: 0b083948ae6b6a7baa77a205a300333c8172c8c2
+artifact_sha256: e3893af5f40f4703cbc8875febc43e5097758d6c2a035646e910443edc1aedcf
 ---
 # Implementation File Map
 
@@ -146,6 +146,7 @@ artifact_sha256: 8ddde16d7ad5362157a5dcfca229113f5a74536027d911ec320cb17e906102e
 | `refactor` | `ls/core/agent/sdk_recovery.py` |
 | `refactor` | `ls/core/agent/sdk_tool_checkpoint.py` |
 | `refactor` | `ls/core/agent/sdk_worker.py` |
+| `refactor` | `ls/core/agent/session_index.py` |
 | `refactor` | `ls/core/agent/session_owner.py` |
 | `refactor` | `ls/core/agent/snapshot.py` |
 | `refactor` | `ls/core/agent/supervisor.py` |
@@ -1059,6 +1060,7 @@ artifact_sha256: 8ddde16d7ad5362157a5dcfca229113f5a74536027d911ec320cb17e906102e
 | `keep` | `ls/tests/test_sdk_persistence.py` |
 | `keep` | `ls/tests/test_sdk_recovery.py` |
 | `keep` | `ls/tests/test_sdk_worker_imports.py` |
+| `keep` | `ls/tests/test_session_index.py` |
 | `keep` | `ls/tests/test_session_owner.py` |
 | `keep` | `ls/tests/test_skill_sandbox_tester.py` |
 | `keep` | `ls/tests/test_supervisor_broker.py` |
