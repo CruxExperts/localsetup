@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 591f279c634381ecd184c4b82d53497254681ebfb5549ee6741c5ea28b3550da
+  source_provenance_hash: 1e2308e58a6a074e2953106f095fb0efd0a4f7cadb411dc08ca9bfe8204cd64c
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: bb2c8529454076dbcf7620d71348e7c1d24daf2d
-artifact_sha256: 2bbea92d14ad935f9502a4c452c6e0e9aff7868186509510ecef961459a8f21a
+source_commit: 38d0499885faf339d2244f00ecc75087adfb2d51
+artifact_sha256: 8ddde16d7ad5362157a5dcfca229113f5a74536027d911ec320cb17e906102e4
 ---
 # Implementation File Map
 
@@ -129,6 +129,9 @@ artifact_sha256: 2bbea92d14ad935f9502a4c452c6e0e9aff7868186509510ecef961459a8f21
 | `refactor` | `ls/core/agent/recovery_worker.py` |
 | `refactor` | `ls/core/agent/resource_exec.py` |
 | `refactor` | `ls/core/agent/resource_group.py` |
+| `refactor` | `ls/core/agent/run_cli.py` |
+| `refactor` | `ls/core/agent/run_io.py` |
+| `refactor` | `ls/core/agent/run_options.py` |
 | `refactor` | `ls/core/agent/runtime_install.py` |
 | `refactor` | `ls/core/agent/runtime_integrity.py` |
 | `refactor` | `ls/core/agent/runtime_lock.py` |
@@ -1040,6 +1043,7 @@ artifact_sha256: 2bbea92d14ad935f9502a4c452c6e0e9aff7868186509510ecef961459a8f21
 | `keep` | `ls/tests/test_repo_profile_universal_agent_repo.py` |
 | `keep` | `ls/tests/test_resource_exec.py` |
 | `keep` | `ls/tests/test_resource_group.py` |
+| `keep` | `ls/tests/test_run_cli.py` |
 | `keep` | `ls/tests/test_runtime_install.py` |
 | `keep` | `ls/tests/test_runtime_integrity.py` |
 | `keep` | `ls/tests/test_runtime_use_lock.py` |
