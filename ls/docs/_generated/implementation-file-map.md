@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 32138bc45073f1605e8730f28d11b08ceb24c0579a6d47589dad6933c49966fd
+  source_provenance_hash: 5f42e41358d8c8d2ce8d6d8f40849be4820f1a78ae50c158b1ac21be50ce0595
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: f33464ecc2b913a261ada49c0fdfd009c5fb2868
-artifact_sha256: d38662227de69e8d6c1bd713649b0d1566c72dbc4d91832ce815f45b39645b7a
+source_commit: cd233f7c961d327a13a8496eb8505921d9a5c02f
+artifact_sha256: 14e15b4281b87d104559ebf108f29f63cd1a79d2ed619406046875b789253aa0
 ---
 # Implementation File Map
 
@@ -78,6 +78,7 @@ artifact_sha256: d38662227de69e8d6c1bd713649b0d1566c72dbc4d91832ce815f45b39645b7
 | `keep` | `ls/config/agent_queue.example.yaml` |
 | `keep` | `ls/config/agent_trust_registry.example.yaml` |
 | `keep` | `ls/config/artifact-freshness.schema.json` |
+| `keep` | `ls/config/branding.json` |
 | `keep` | `ls/config/client-state-artifact.schema.json` |
 | `refactor` | `ls/config/clients.schema.json` |
 | `refactor` | `ls/config/clients.yaml` |
@@ -113,6 +114,10 @@ artifact_sha256: d38662227de69e8d6c1bd713649b0d1566c72dbc4d91832ce815f45b39645b7
 | `refactor` | `ls/core/artifact_freshness/rules.py` |
 | `refactor` | `ls/core/baseline.py` |
 | `refactor` | `ls/core/boundary.py` |
+| `refactor` | `ls/core/branding/__init__.py` |
+| `refactor` | `ls/core/branding/cli.py` |
+| `refactor` | `ls/core/branding/rules.py` |
+| `refactor` | `ls/core/branding/scanner.py` |
 | `refactor` | `ls/core/cli.py` |
 | `refactor` | `ls/core/cli_client_state_commands.py` |
 | `refactor` | `ls/core/cli_handler_sync.py` |
@@ -278,6 +283,7 @@ artifact_sha256: d38662227de69e8d6c1bd713649b0d1566c72dbc4d91832ce815f45b39645b7
 | `keep` | `ls/docs/AGENTIC_UMBRELLA_WORKFLOWS.md` |
 | `keep` | `ls/docs/AGENT_CONTEXT_AND_MCP_CONTRACT.md` |
 | `keep` | `ls/docs/AGENT_SKILLS_COMPLIANCE.md` |
+| `keep` | `ls/docs/BRANDING.md` |
 | `keep` | `ls/docs/CLIENT_STATE.md` |
 | `keep` | `ls/docs/CLI_SKILLS_ENV.md` |
 | `keep` | `ls/docs/CODEX_GITHUB_ISSUE_GOAL_LOOP.md` |
@@ -883,6 +889,7 @@ artifact_sha256: d38662227de69e8d6c1bd713649b0d1566c72dbc4d91832ce815f45b39645b7
 | `keep` | `ls/tests/test_agent_routing.py` |
 | `keep` | `ls/tests/test_agent_routing_package_install.py` |
 | `keep` | `ls/tests/test_artifact_freshness.py` |
+| `keep` | `ls/tests/test_branding.py` |
 | `keep` | `ls/tests/test_candidate_skill_cli.py` |
 | `keep` | `ls/tests/test_cli_version.py` |
 | `keep` | `ls/tests/test_client_registry.py` |
@@ -1028,6 +1035,7 @@ artifact_sha256: d38662227de69e8d6c1bd713649b0d1566c72dbc4d91832ce815f45b39645b7
 | `keep` | `ls/tools/trusted_work_queue/cli.py` |
 | `keep` | `ls/tools/trusted_work_queue/shared_folder.py` |
 | `keep` | `ls/tools/trusted_work_queue/snapshot.py` |
+| `keep` | `ls/tools/validate_branding.py` |
 | `keep` | `ls/tools/validate_output_contract.py` |
 | `keep` | `ls/tools/verify_context` |
 | `keep` | `ls/tools/verify_context.py` |

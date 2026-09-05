@@ -76,8 +76,8 @@
   ],
   "cli_commands": [],
   "counts": {
-    "docs": 427,
-    "framework_docs": 73,
+    "docs": 428,
+    "framework_docs": 74,
     "generated_docs": 5,
     "platforms": 6,
     "public_docs": 6,
@@ -345,6 +345,16 @@
       "owner_package": "",
       "owner_skill": "ls-skill-creator",
       "path": "ls/docs/AGENT_SKILLS_COMPLIANCE.md",
+      "status": "ACTIVE",
+      "version": "4.4"
+    },
+    {
+      "class": "framework",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "ls-script-and-docs-quality",
+      "path": "ls/docs/BRANDING.md",
       "status": "ACTIVE",
       "version": "4.4"
     },
@@ -4404,16 +4414,16 @@
   ],
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "004d5003fb32ff91c6c5f58c908fb04556636421e9b81bdd962477bb8eba0f8b",
+    "artifact_sha256": "06ff8ce82477ca3ee5ffa4af098d6c0955a616817698dd55fc0b94b1d4307268",
     "emitter": "docs-align",
     "framework_version": "4.4.1",
     "schema_version": 1,
-    "source_commit": "f33464ecc2b913a261ada49c0fdfd009c5fb2868",
+    "source_commit": "cd233f7c961d327a13a8496eb8505921d9a5c02f",
     "source_dirty": false,
-    "source_provenance_hash": "32138bc45073f1605e8730f28d11b08ceb24c0579a6d47589dad6933c49966fd",
-    "source_root_id": "f2bbc22121b91aefe75be5ccf3fe6e8dee7d6c2f80d40f57c273fb8355d60c41",
+    "source_provenance_hash": "5f42e41358d8c8d2ce8d6d8f40849be4820f1a78ae50c158b1ac21be50ce0595",
+    "source_root_id": "0a1e95c2380b09153fe60c1e69d00378ead26a79838ff283b8660b8215783e0d",
     "source_tag": null,
-    "source_tree_sha": "b9c6ebe6251296e7f774b140d79a532ee5b9c5ac"
+    "source_tree_sha": "de4b8d463869b6d1d2fcb868c3010a05d8104894"
   },
   "repo": ".",
   "schema_version": "1.0",
