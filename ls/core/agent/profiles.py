@@ -66,7 +66,7 @@ def parse(value: object) -> Profile:
     return Profile(base.rstrip('/') + '/', value['api'], model, credential, float(timeout), frozenset(capabilities))
 
 
-def load(path: Path, name: str) -> Profile:
+def document(path: Path) -> dict:
     if path.is_symlink() or not path.is_file():
         raise ValueError('Provider profiles must be an explicit regular file')
     with path.open('rb') as stream:
@@ -83,6 +83,11 @@ def load(path: Path, name: str) -> Profile:
     document = json.loads(raw, object_pairs_hook=unique)
     if not isinstance(document, dict) or set(document) != {'schema_version', 'profiles'} or type(document['schema_version']) is not int or document['schema_version'] != 1 or not isinstance(document['profiles'], dict):
         raise ValueError('Unsupported provider configuration schema')
-    if name not in document['profiles']:
+    return document['profiles']
+
+
+def load(path: Path, name: str) -> Profile:
+    profiles = document(path)
+    if name not in profiles:
         raise ValueError('Named provider profile does not exist')
-    return parse(document['profiles'][name])
+    return parse(profiles[name])

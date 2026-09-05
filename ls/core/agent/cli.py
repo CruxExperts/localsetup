@@ -33,10 +33,16 @@ def main(argv: list[str] | None = None) -> int:
     sessions=commands.add_parser('sessions',help='List local session metadata without provider access')
     sessions.add_argument('--state-root',type=Path)
     sessions.add_argument('--format',choices=('text','json'),default='text')
+    profiles = commands.add_parser('profiles', help='List configured models without provider access')
+    profiles.add_argument('--profiles', type=Path)
+    profiles.add_argument('--format', choices=('text', 'json'), default='text')
     run = commands.add_parser('run', help='Run with an explicit profile and task grant in the protected runtime')
     from .run_options import arguments
     arguments(run)
     args = parser.parse_args(argv)
+    if args.command == 'profiles':
+        from .profile_inventory import main as profile_inventory
+        return profile_inventory(args.profiles, args.format)
     if args.command == 'sessions':
         from .diagnostics import locations
         from .session_index import scan

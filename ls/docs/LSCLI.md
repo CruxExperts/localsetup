@@ -234,6 +234,26 @@ construction. Unknown profile fields, duplicate JSON keys, invalid capabilities,
 and nonpositive/nonfinite timeouts are rejected. Configuration is limited to 1 MiB;
 timeouts are limited to 3600 seconds.
 
+Inspect configured choices without credentials, SDK initialization, network access,
+or configuration/state creation:
+
+```bash
+lscli profiles --profiles /path/to/profiles.json --format json
+lscli run --help
+```
+
+Omit `--profiles` to inspect the default profile configuration path shown by
+`lscli doctor`. Inventory validates every profile and lists only its name, model,
+API, and sorted declared capabilities; it omits endpoint URLs and credential
+variable names/values. JSON uses `schema_version: 1` and a `profiles` array sorted
+by name. Text output quotes names/models and escapes terminal controls. Inventory is capped at 256
+profiles, 256 characters per name, and 1 MiB serialized output. Invalid or missing
+configuration returns exit 2 with a sanitized diagnostic and no partial inventory.
+No credential-presence or endpoint-readiness claim is made. Select a configured
+model with `run --profile NAME` and the required task-grant/runtime options below;
+there is no implicit default selection or model override. Incompatible history
+still requires an explicit branch; this inventory does not change sessions.
+
 HTTPS uses the locked certifi trust store. HTTP requires explicit opt-in and a
 literal loopback IP. URLs cannot carry credentials, query strings, fragments,
 escaped paths, or traversal segments. The client disables ambient proxy/CA
