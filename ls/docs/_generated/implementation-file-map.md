@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 02cb4a549e1da0b74798a6fd66e05ab210e0bbcc34644fd73067eb061c0085cc
+  source_provenance_hash: 558f9ae45ef21f7ffca8a71d31b0fb62051b5ac346f7b69103171cf90159de74
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 2824f23152f95b3aaee13b23f4b3fd202bec8aec
-artifact_sha256: 7c68b6239f3e434a726dc09654a1e3d83375390a1b3eabe66d8da943c227782a
+source_commit: fba70486a7ff0348b8cac69106e464c0a204c9fc
+artifact_sha256: 0c36336bafb631a0e19f1ff0a750477f518c25b9d6b71acecb840fc4bbac9a52
 ---
 # Implementation File Map
 
@@ -122,6 +122,7 @@ artifact_sha256: 7c68b6239f3e434a726dc09654a1e3d83375390a1b3eabe66d8da943c227782
 | `refactor` | `ls/core/agent/runtime_lock.py` |
 | `refactor` | `ls/core/agent/sandbox.py` |
 | `refactor` | `ls/core/agent/sdk_imports.py` |
+| `refactor` | `ls/core/agent/sdk_iteration.py` |
 | `refactor` | `ls/core/agent/sdk_models.py` |
 | `refactor` | `ls/core/agent/sdk_worker.py` |
 | `refactor` | `ls/core/agent/session_owner.py` |
@@ -920,6 +921,7 @@ artifact_sha256: 7c68b6239f3e434a726dc09654a1e3d83375390a1b3eabe66d8da943c227782
 | `keep` | `ls/tests/fixtures/omniroute/openai-models.json` |
 | `keep` | `ls/tests/fixtures/omniroute/task-owner-cases.json` |
 | `keep` | `ls/tests/manifest_test_helpers.py` |
+| `keep` | `ls/tests/sdk_iteration_fixture.py` |
 | `keep` | `ls/tests/sdk_model_fixture.py` |
 | `keep` | `ls/tests/skill_smoke_commands.yaml` |
 | `keep` | `ls/tests/test_adapter_parser.py` |
@@ -1012,6 +1014,7 @@ artifact_sha256: 7c68b6239f3e434a726dc09654a1e3d83375390a1b3eabe66d8da943c227782
 | `keep` | `ls/tests/test_sdk_artifacts.py` |
 | `keep` | `ls/tests/test_sdk_build.py` |
 | `keep` | `ls/tests/test_sdk_dependencies.py` |
+| `keep` | `ls/tests/test_sdk_iteration.py` |
 | `keep` | `ls/tests/test_sdk_models.py` |
 | `keep` | `ls/tests/test_sdk_payload.py` |
 | `keep` | `ls/tests/test_sdk_worker_imports.py` |
