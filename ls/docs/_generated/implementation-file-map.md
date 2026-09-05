@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 989adf8cbb000130db8e515ef00a45cbad078a1c305af957660cae787b97f3e0
+  source_provenance_hash: d1826cce90b144f6e33c673517a52de387d359eb80624f51f034901538fe8ef4
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: efd3849fbc069b480d99aabd01160ddec75c282e
-artifact_sha256: 1b2fda6617e9a8f2eafeffd76212f8501df64ea16ec22e43f0050e9dfc49e8b9
+source_commit: 21e2b1b2d96f764447f247a8a4117fcab5ccef0b
+artifact_sha256: c61a9064df36e4d50c351189520e05278e8d5dc3ada039360a7bde49870e86ce
 ---
 # Implementation File Map
 
@@ -108,6 +108,7 @@ artifact_sha256: 1b2fda6617e9a8f2eafeffd76212f8501df64ea16ec22e43f0050e9dfc49e8b
 | `refactor` | `ls/core/adapters.py` |
 | `refactor` | `ls/core/agent/__init__.py` |
 | `refactor` | `ls/core/agent/broker_rpc.py` |
+| `refactor` | `ls/core/agent/checkpoint_rpc.py` |
 | `refactor` | `ls/core/agent/checkpoint_store.py` |
 | `refactor` | `ls/core/agent/cli.py` |
 | `refactor` | `ls/core/agent/diagnostics.py` |
@@ -126,6 +127,7 @@ artifact_sha256: 1b2fda6617e9a8f2eafeffd76212f8501df64ea16ec22e43f0050e9dfc49e8b
 | `refactor` | `ls/core/agent/sdk_imports.py` |
 | `refactor` | `ls/core/agent/sdk_iteration.py` |
 | `refactor` | `ls/core/agent/sdk_models.py` |
+| `refactor` | `ls/core/agent/sdk_persistence.py` |
 | `refactor` | `ls/core/agent/sdk_worker.py` |
 | `refactor` | `ls/core/agent/session_owner.py` |
 | `refactor` | `ls/core/agent/snapshot.py` |
@@ -925,6 +927,7 @@ artifact_sha256: 1b2fda6617e9a8f2eafeffd76212f8501df64ea16ec22e43f0050e9dfc49e8b
 | `keep` | `ls/tests/manifest_test_helpers.py` |
 | `keep` | `ls/tests/sdk_iteration_fixture.py` |
 | `keep` | `ls/tests/sdk_model_fixture.py` |
+| `keep` | `ls/tests/sdk_persistence_fixture.py` |
 | `keep` | `ls/tests/skill_smoke_commands.yaml` |
 | `keep` | `ls/tests/test_adapter_parser.py` |
 | `keep` | `ls/tests/test_agent_file_broker.py` |
@@ -1021,6 +1024,7 @@ artifact_sha256: 1b2fda6617e9a8f2eafeffd76212f8501df64ea16ec22e43f0050e9dfc49e8b
 | `keep` | `ls/tests/test_sdk_iteration.py` |
 | `keep` | `ls/tests/test_sdk_models.py` |
 | `keep` | `ls/tests/test_sdk_payload.py` |
+| `keep` | `ls/tests/test_sdk_persistence.py` |
 | `keep` | `ls/tests/test_sdk_worker_imports.py` |
 | `keep` | `ls/tests/test_session_owner.py` |
 | `keep` | `ls/tests/test_skill_sandbox_tester.py` |
