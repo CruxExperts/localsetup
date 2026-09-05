@@ -45,7 +45,7 @@ def profile_digest(value):
 
 class CodingHandler:
     """Trusted controller supplies context authority, preflight and event sink."""
-    def __init__(self, tools, payload, on_event, check, steering=None):
+    def __init__(self, tools, payload, on_event, check, steering=None, approve=None):
         request(payload)
         if tools.profile!=profile_digest(payload['profile']) or tools.run_id!=payload['run_id']:
             raise PermissionError('Coding request and broker profile/run must match')
@@ -54,6 +54,7 @@ class CodingHandler:
         self.tools,self.payload=tools,json.loads(_encode(payload))
         self.on_event,self.check=on_event,check
         self.steering = steering
+        self.approve = approve
         self.started,self.finished=False,None
         self.bytes,self.events=0,0
 
@@ -102,6 +103,9 @@ class CodingHandler:
             self.check()
             self.finished=json.loads(_encode(data))
             return {'checkpoint':data['checkpoint']}
+        if self.approve is not None and method in ('file.read','file.write','process.run'):
+            data=self.approve(method,data,self.tools.recipes,self.check)
+            self.check()
         return self.tools(method,data)
 
 

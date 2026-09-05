@@ -11,7 +11,7 @@ existing framework command and Python distribution remain `localsetup`.
 The CLI provides help, version output, read-only diagnostics, offline setup and
 explicit headless coding runs. A verified SDK payload alone does not establish
 per-run sandbox, resource, provider or task-authority readiness. Interactive
-input and dynamic approvals are still pending.
+input is still pending; optional per-tool approvals are available through the owner channel.
 
 ```bash
 lscli --help
@@ -1339,8 +1339,8 @@ IDs start at 1 and increase by one. Responses retain the ID and schema version:
 `active` means the cancellation flag is unset; it is not a readiness or progress
 claim. Cancellation acknowledgement is not a terminal result. Read the normal
 result event and process exit code to determine the actual outcome. Requests
-never grant file access, provider disclosure, or shell execution. The approval method is not implemented yet and is rejected. Steering accepts
-only the explicit text-disclosure contract below.
+never grant file access, provider disclosure, or shell execution. Approval decisions require the opt-in per-tool gate described below. Steering
+accepts only the explicit text-disclosure contract below.
 
 Each request is at most 16 KiB before its newline, with at most 1,024 requests
 and 1 MiB total input per run. Replies have a 250 ms deadline capped by the run
@@ -1376,3 +1376,35 @@ into checkpointed history. Messages arriving after the last poll may remain
 undelivered; failed or cancelled runs do not automatically replay them. Inspect
 session history before explicitly resubmitting uncertain input. Steering text in
 a resumed conversation remains context and never restores its former authority.
+
+### One-use tool approvals
+
+Add `--approve-tools --format jsonl --control-fd FD` to require owner confirmation
+before each file read, file replacement or process recipe request. This mode
+narrows existing grants; approving an otherwise forbidden request does not make
+it executable. Without this flag, explicit grant-file authority remains the
+normal tool policy. Approval mode requires JSONL output and a control socket.
+
+An `approval_request` event contains the task, session, profile, a fresh
+`challenge`, a `sha256`, and a complete `request` object. The request includes the
+broker method and arguments. Process requests also include the named recipe's
+exact command, input files and time limit. File replacements include their full
+new content and expected previous hash. The preview is limited to 128 KiB;
+larger requests fail before execution rather than asking for approval of a
+truncated preview. Normal output and run limits still apply.
+
+Inspect that concrete request, then send the next consecutive control ID:
+
+```json
+{"schema_version":1,"id":4,"method":"approve","task":"TASK","session":"SESSION","profile":"PROFILE","challenge":"CHALLENGE","sha256":"SHA256","allow":true}
+```
+
+Use `allow: false` to deny it. The response status `decision_recorded` confirms
+receipt, not execution. A denial fails the run without dispatching that tool.
+Unknown, repeated or mismatched decisions invalidate the channel and request
+cancellation. Approval is consumed once; it cannot authorize a later request,
+session or resumed run. Current grants, lease state, cancellation and deadline
+are checked while waiting and again before dispatch. No response waits beyond
+the run deadline; owner EOF cancels the wait. Read the normal terminal event and
+process exit status for the actual outcome. Approval requests are local owner
+output, not additional instructions sent to the model.

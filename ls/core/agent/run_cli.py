@@ -101,7 +101,7 @@ def _state(root):
     finally:os.close(fd)
 
 
-def execute(args, streams, cancelled, steering=None):
+def execute(args, streams, cancelled, steering=None, approvals=None):
     from .coding_protocol import request, profile_digest
     from .coding_run import CodingGrant,RunPaths,run_coding,disclosure_digest
     from .file_grants import FileGrant
@@ -126,6 +126,8 @@ def execute(args, streams, cancelled, steering=None):
     _separate(args.state_root,args.runtime_root)
     if steering is not None:
         steering.bind(task,session,args.profile)
+    if approvals is not None:
+        approvals.bind(task,session,args.profile)
     prompt = streams.prompt()
     raw_profile = {'base_url':profile.base_url,'api':profile.api,'model':profile.model,'credential_env':profile.credential_env,
         'timeout_seconds':profile.timeout_seconds,'capabilities':sorted(profile.capabilities),'allow_loopback_http':profile.base_url.startswith('http://')}
@@ -158,9 +160,12 @@ def execute(args, streams, cancelled, steering=None):
         if args.format=='jsonl':emit('progress',event)
         elif event.get('event_kind')=='part_start' and event.get('part',{}).get('part_kind')=='tool-call':
             streams.write('Tool: '+safe(event['part'].get('tool_name',''))+'\n')
+    def approve(method,data,recipes,check):
+        return approvals.require(method,data,recipes,lambda value:emit('approval_request',value),check)
     outcome = run_coding(paths,payload,authority,files,recipes,limits=Limits(),on_event=progress,
                          cancel=cancelled,expected_release=Path(sys.prefix).parent,resume=resume,
-                         steering=None if steering is None else steering.take)
+                         steering=None if steering is None else steering.take,
+                         approve=None if approvals is None else approve)
     codes = {'completed':0,'cancelled':130,'timed_out':124,'output_limit':5,'failed':1}
     result = {'status':outcome.status,'task':task,'session':session}
     if outcome.data is not None:
@@ -192,6 +197,8 @@ def main(argv=None):
         print(f'{CLI_NAME} run requires its protected installed runtime.',file=sys.stderr);return 3
     if not math.isfinite(args.timeout) or not 0<args.timeout<=3600:
         parser.error('--timeout must be within 0..3600 seconds')
+    if args.approve_tools and (args.control_fd is None or args.format != 'jsonl'):
+        parser.error('--approve-tools requires --control-fd and --format jsonl')
     cancelled=threading.Event()
     previous={sig:signal.signal(sig,lambda *_:cancelled.set()) for sig in (signal.SIGINT,signal.SIGTERM)}
     from .run_io import Streams
@@ -202,8 +209,10 @@ def main(argv=None):
         from .run_control import listen
         from .steering import Steering
         steering=Steering(cancelled,streams.expires)
-        with listen(args.control_fd,cancelled,streams.expires,steering):
-            return execute(args,streams,cancelled,steering)
+        from .approvals import Approvals
+        approvals=Approvals() if args.approve_tools else None
+        with listen(args.control_fd,cancelled,streams.expires,steering,approvals):
+            return execute(args,streams,cancelled,steering,approvals)
     except (InterruptedError,KeyboardInterrupt):
         return failed('cancelled',130,'run cancelled.')
     except TimeoutError:

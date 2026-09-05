@@ -12,6 +12,7 @@ def arguments(parser):
     parser.add_argument('--runtime-root', type=Path)
     parser.add_argument('--state-root', type=Path)
     parser.add_argument('--resource-parent', type=Path, required=True)
+    parser.add_argument('--approve-tools', action='store_true', help='Require one-use owner approval for each tool request (control FD and JSONL required)')
     parser.add_argument('--control-fd', type=int, help='Inherited local stream socket for schema-1 status/cancel messages')
     parser.add_argument('--task')
     parser.add_argument('--session')
