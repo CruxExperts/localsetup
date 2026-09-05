@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: a08c496fa3c06a3b4baa4dd9e2010bcf7eb61151ce61d9f99c45eb85595c97c6
+  source_provenance_hash: 3690a27d92ec754ec797e3694c73f0c374d1fcaf09ed4c54c390ea14b12845fa
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: b34b45c46c241f3cf5ea07bda51e21301c1152df
-artifact_sha256: 856dd37f72256d43058d6e1eb7c799973acf37dd65d3a14c4bcda25e54395968
+source_commit: 5f8df0aad28d1690f3b47d19fe2eaefe4f3817bd
+artifact_sha256: 1618ba0f12752fb2564bff4b1316a051a516855cd106155bb7bcaa5c4f3bfcca
 ---
 # Implementation File Map
 
@@ -162,6 +162,7 @@ artifact_sha256: 856dd37f72256d43058d6e1eb7c799973acf37dd65d3a14c4bcda25e5439596
 | `refactor` | `ls/core/agent/sdk_portable.py` |
 | `refactor` | `ls/core/agent/sdk_process_tool.py` |
 | `refactor` | `ls/core/agent/sdk_recovery.py` |
+| `refactor` | `ls/core/agent/sdk_response_stream.py` |
 | `refactor` | `ls/core/agent/sdk_tool_checkpoint.py` |
 | `refactor` | `ls/core/agent/sdk_worker.py` |
 | `refactor` | `ls/core/agent/session_branch.py` |
@@ -966,6 +967,7 @@ artifact_sha256: 856dd37f72256d43058d6e1eb7c799973acf37dd65d3a14c4bcda25e5439596
 | `keep` | `ls/tests/fixtures/omniroute/task-owner-cases.json` |
 | `keep` | `ls/tests/installed_recovery_fixture.py` |
 | `keep` | `ls/tests/manifest_test_helpers.py` |
+| `keep` | `ls/tests/responses_stream_fixture.py` |
 | `keep` | `ls/tests/sdk_compaction_fixture.py` |
 | `keep` | `ls/tests/sdk_file_fixture.py` |
 | `keep` | `ls/tests/sdk_iteration_fixture.py` |
@@ -974,6 +976,7 @@ artifact_sha256: 856dd37f72256d43058d6e1eb7c799973acf37dd65d3a14c4bcda25e5439596
 | `keep` | `ls/tests/sdk_portable_fixture.py` |
 | `keep` | `ls/tests/sdk_process_fixture.py` |
 | `keep` | `ls/tests/sdk_recovery_fixture.py` |
+| `keep` | `ls/tests/sdk_responses_fixture.py` |
 | `keep` | `ls/tests/skill_smoke_commands.yaml` |
 | `keep` | `ls/tests/test_adapter_parser.py` |
 | `keep` | `ls/tests/test_agent_entrypoint.py` |
@@ -1094,6 +1097,7 @@ artifact_sha256: 856dd37f72256d43058d6e1eb7c799973acf37dd65d3a14c4bcda25e5439596
 | `keep` | `ls/tests/test_sdk_payload.py` |
 | `keep` | `ls/tests/test_sdk_persistence.py` |
 | `keep` | `ls/tests/test_sdk_recovery.py` |
+| `keep` | `ls/tests/test_sdk_responses.py` |
 | `keep` | `ls/tests/test_sdk_worker_imports.py` |
 | `keep` | `ls/tests/test_session_branch.py` |
 | `keep` | `ls/tests/test_session_index.py` |
