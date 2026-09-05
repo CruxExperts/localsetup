@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 2f7426d36f306b36bb3213ccca64e44103a88a0e72039f6badd68a6cb341c006
+  source_provenance_hash: b0a04f524e149928e755fdba1bf72e7bd93e2c81f9930ecfee971f06c81b7b1d
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 152a7e8637bcac17e253263dceb4684d92ef2f3d
-artifact_sha256: 7d622d2287bfae271ac65ed5107f14c40401ffd8ec376160a5aa774fcf5cab29
+source_commit: c2201bd5fe4c86ff17e5c0cda2ad124a27a62da3
+artifact_sha256: 28fbedb628c2caa98bcf00d01fac506e899fe13c12e1656fd7dd3811a9a67cf6
 ---
 # Implementation File Map
 
@@ -122,6 +122,7 @@ artifact_sha256: 7d622d2287bfae271ac65ed5107f14c40401ffd8ec376160a5aa774fcf5cab2
 | `refactor` | `ls/core/agent/process_rpc.py` |
 | `refactor` | `ls/core/agent/profiles.py` |
 | `refactor` | `ls/core/agent/provider_client.py` |
+| `refactor` | `ls/core/agent/resource_exec.py` |
 | `refactor` | `ls/core/agent/resource_group.py` |
 | `refactor` | `ls/core/agent/runtime_install.py` |
 | `refactor` | `ls/core/agent/runtime_integrity.py` |
@@ -1023,6 +1024,7 @@ artifact_sha256: 7d622d2287bfae271ac65ed5107f14c40401ffd8ec376160a5aa774fcf5cab2
 | `keep` | `ls/tests/test_reference_materializer.py` |
 | `keep` | `ls/tests/test_repo_finalizer.py` |
 | `keep` | `ls/tests/test_repo_profile_universal_agent_repo.py` |
+| `keep` | `ls/tests/test_resource_exec.py` |
 | `keep` | `ls/tests/test_resource_group.py` |
 | `keep` | `ls/tests/test_runtime_install.py` |
 | `keep` | `ls/tests/test_runtime_integrity.py` |
