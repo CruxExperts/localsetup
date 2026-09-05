@@ -1380,7 +1380,7 @@ a resumed conversation remains context and never restores its former authority.
 ### One-use tool approvals
 
 Add `--approve-tools --format jsonl --control-fd FD` to require owner confirmation
-before each file read, file replacement or process recipe request. This mode
+before each file read, file search, file replacement or process recipe request. This mode
 narrows existing grants; approving an otherwise forbidden request does not make
 it executable. Without this flag, explicit grant-file authority remains the
 normal tool policy. Approval mode requires JSONL output and a control socket.
@@ -1474,3 +1474,28 @@ context: instructions in a selected file cannot authorize a tool or additional
 disclosure. Resuming with selected files requires fresh permissions and takes
 new snapshots; previous snapshots remain historical conversation content.
 Automatic nested-context refresh is not implemented yet.
+
+## Broker text search
+
+The coding agent can call `search_files(paths, text)` to search an explicit list
+of workspace-relative UTF-8 files. Matching is literal and case-sensitive, without
+regular expressions, shell execution, glob expansion or implicit directory
+traversal. The current grant must cover every selected path for both reading and
+provider disclosure. Existing symlink, protected-path, ownership and uncertain
+session restrictions apply; a rejected search supplies no partial result.
+
+The tool accepts 1–32 distinct paths and a nonempty single-line query of at most
+1 KiB. Total searched content is at most 4 MiB. Its result contains:
+
+- `files`: selected paths and the SHA-256 of each content snapshot.
+- `matches`: path, one-based line number, up to 512 characters of line text, and
+  `text_truncated` for longer lines.
+- `truncated`: whether the match count or output budget omitted further matches.
+
+At most 100 matches and 256 KiB of encoded result are returned. A truncated line
+may omit the matching portion; use a separately granted read to inspect the full
+file. An empty match list with `truncated: false` means the literal text was absent
+from those snapshots, not from the whole project. Search results are snapshots;
+normal file preconditions still govern subsequent writes. Search uses the same
+per-tool approval gate when enabled and consumes a tool call, but creates no
+mutation journal entries. Directory discovery is not provided by this tool.

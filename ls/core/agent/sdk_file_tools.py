@@ -16,6 +16,10 @@ def file_tools(finder, channel):
         """Read granted UTF-8 text and its SHA-256 digest."""
         return await channel.request_async('file.read', {'path':path})
 
+    async def search_files(paths: list[str], text: str) -> dict:
+        """Find literal case-sensitive text in explicit granted UTF-8 files; results are bounded."""
+        return await channel.request_async('file.search', {'paths':paths,'text':text})
+
     async def write_file(ctx, path: str, content: str, expected_before: str | None) -> dict:
         """Replace granted UTF-8 text only when its digest matches; null requires absence."""
         checkpoint = await pretool_checkpoint(finder,channel,ctx)
@@ -24,6 +28,7 @@ def file_tools(finder, channel):
 
     # Explicit takes_ctx avoids resolving a local-scope annotation through globals.
     tools = (Tool(read_file, sequential=True, max_retries=0),
-             Tool(write_file, takes_ctx=True, sequential=True, max_retries=0))
+             Tool(write_file, takes_ctx=True, sequential=True, max_retries=0),
+             Tool(search_files, sequential=True, max_retries=0))
     finder.verify_origins()
     return tools

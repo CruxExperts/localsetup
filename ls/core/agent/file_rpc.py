@@ -8,7 +8,7 @@ from .checkpoint_rpc import CheckpointHandler, METHOD
 from .file_broker import MAX_FILE
 from .operation_journal import IDENTIFIER
 
-METHODS = frozenset({METHOD, 'file.read', 'file.write'})
+METHODS = frozenset({METHOD, 'file.read', 'file.write', 'file.search'})
 
 
 class FileHandler(CheckpointHandler):
@@ -19,6 +19,9 @@ class FileHandler(CheckpointHandler):
     def __call__(self, method, data):
         if method == METHOD:
             return super().__call__(method, data)
+        if method == 'file.search':
+            from .file_search import search
+            return search(self.owner,self.broker,data)
         if method == 'file.read' and isinstance(data, dict) and set(data) == {'path'}:
             return self.owner.read_text(self.broker, data['path'], for_provider=True)
         required = {'path','content','expected_before','checkpoint','call_id'}

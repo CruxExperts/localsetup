@@ -103,7 +103,7 @@ class CodingHandler:
             self.check()
             self.finished=json.loads(_encode(data))
             return {'checkpoint':data['checkpoint']}
-        if self.approve is not None and method in ('file.read','file.write','process.run'):
+        if self.approve is not None and method in ('file.read','file.write','file.search','process.run'):
             data=self.approve(method,data,self.tools.recipes,self.check)
             self.check()
         return self.tools(method,data)
