@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 9d3bbd6e9a9cbb74c329d8c941539cb367967993bdf9bb383a8f4e86e4be3ec5
+  source_provenance_hash: e54023a57ff0a2414d5dda6279c04b7db57f2f53c6a2682525724e3430b5c61c
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 1f8c7834715493500cb2ac65f05c91237d0161f5
-artifact_sha256: 675e5ad281729e271d8634e251f6fc56341de4eb41eebe5a66405fc5ec4c0ead
+source_commit: dba56a980301a58b4f8b49a54edb3b72640d899f
+artifact_sha256: e2891694231ba6d8431283ead18db64062d6ca40907c7cd13e54e4c130db3b2b
 ---
 # Implementation File Map
 
@@ -112,6 +112,8 @@ artifact_sha256: 675e5ad281729e271d8634e251f6fc56341de4eb41eebe5a66405fc5ec4c0ea
 | `refactor` | `ls/core/agent/runtime_install.py` |
 | `refactor` | `ls/core/agent/runtime_integrity.py` |
 | `refactor` | `ls/core/agent/runtime_lock.py` |
+| `refactor` | `ls/core/agent/sdk_imports.py` |
+| `refactor` | `ls/core/agent/sdk_worker.py` |
 | `refactor` | `ls/core/aliases.py` |
 | `refactor` | `ls/core/apply.py` |
 | `refactor` | `ls/core/apply_journal.py` |
@@ -987,6 +989,7 @@ artifact_sha256: 675e5ad281729e271d8634e251f6fc56341de4eb41eebe5a66405fc5ec4c0ea
 | `keep` | `ls/tests/test_sdk_build.py` |
 | `keep` | `ls/tests/test_sdk_dependencies.py` |
 | `keep` | `ls/tests/test_sdk_payload.py` |
+| `keep` | `ls/tests/test_sdk_worker_imports.py` |
 | `keep` | `ls/tests/test_skill_sandbox_tester.py` |
 | `keep` | `ls/tests/test_tmux_ops.py` |
 | `keep` | `ls/tests/test_tmux_terminal_mode.py` |
