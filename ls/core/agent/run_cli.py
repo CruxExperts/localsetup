@@ -30,7 +30,17 @@ def launch(argv, args):
     with selected(args.runtime_root,timeout=5) as release:
         executable = release/'venv/bin/python'
     environment = {'PATH':'/usr/bin:/bin','LANG':'C.UTF-8',_CREDENTIAL:credential}
-    os.execve(executable,[str(executable),'-I','-B','-m','ls.core.agent.run_cli',*argv],environment)
+    inherited = None
+    if args.control_fd is not None:
+        from .run_control import validate
+        validate(args.control_fd)
+        inherited = os.get_inheritable(args.control_fd)
+        os.set_inheritable(args.control_fd, True)
+    try:
+        os.execve(executable,[str(executable),'-I','-B','-m','ls.core.agent.run_cli',*argv],environment)
+    finally:
+        if inherited is not None:
+            os.set_inheritable(args.control_fd, inherited)
 
 
 def _grant(path, workspace):
@@ -186,7 +196,9 @@ def main(argv=None):
     def failed(status, code, diagnostic):
         return failure(args.format,streams.sequence,status,code,diagnostic)
     try:
-        return execute(args,streams,cancelled)
+        from .run_control import listen
+        with listen(args.control_fd,cancelled,streams.expires):
+            return execute(args,streams,cancelled)
     except (InterruptedError,KeyboardInterrupt):
         return failed('cancelled',130,'run cancelled.')
     except TimeoutError:

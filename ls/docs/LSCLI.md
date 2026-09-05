@@ -1312,3 +1312,41 @@ Both continuation forms require explicit recorded task and session identifiers;
 a supplied session name alone does not select history. Session listing does not
 choose a checkpoint automatically. Public branching, checkpoint selection UI and
 compaction remain pending.
+
+## Inherited owner control socket
+
+`lscli run --control-fd FD` accepts an explicitly inherited, connected Unix
+stream socket with descriptor number at least 3. A parent creates a socket pair,
+passes one end through its process launcher (for Python, `pass_fds=(fd,)`), then
+closes its copy of that end. Standard input still supplies the initial prompt;
+standard output still carries run results/events. The protected supervisor
+consumes the descriptor and prevents inheritance by its worker/tool children.
+
+Send UTF-8 JSON objects, one per newline, with exactly these fields:
+
+```json
+{"schema_version":1,"id":1,"method":"status"}
+{"schema_version":1,"id":2,"method":"cancel"}
+```
+
+IDs start at 1 and increase by one. Responses retain the ID and schema version:
+
+```json
+{"schema_version":1,"id":1,"status":"active"}
+{"schema_version":1,"id":2,"status":"cancellation_requested"}
+```
+
+`active` means the cancellation flag is unset; it is not a readiness or progress
+claim. Cancellation acknowledgement is not a terminal result. Read the normal
+result event and process exit code to determine the actual outcome. Requests
+never grant file access, provider disclosure, or shell execution. Steering and
+approval methods are not implemented yet and are rejected.
+
+Each request is at most 16 KiB before its newline, with at most 1,024 requests
+and 1 MiB total input per run. Replies have a 250 ms deadline capped by the run
+deadline. Invalid schema, duplicate keys, skipped/repeated IDs, oversized input,
+broken replies, and EOF request cancellation. The supplied control channel is
+an owner-liveness contract: closing it stops new dispatch through the shared
+cancellation state. Keep reading replies to avoid cancellation on backpressure.
+The run deadline retains timeout classification. A run without `--control-fd`
+continues to use its normal signal and deadline controls.

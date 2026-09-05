@@ -12,6 +12,7 @@ def arguments(parser):
     parser.add_argument('--runtime-root', type=Path)
     parser.add_argument('--state-root', type=Path)
     parser.add_argument('--resource-parent', type=Path, required=True)
+    parser.add_argument('--control-fd', type=int, help='Inherited local stream socket for schema-1 status/cancel messages')
     parser.add_argument('--task')
     parser.add_argument('--session')
     history=parser.add_mutually_exclusive_group()
