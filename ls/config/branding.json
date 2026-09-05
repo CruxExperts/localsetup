@@ -4104,6 +4104,14 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Canonical vendor directory used by isolated source qualification fixtures."
+    },
+    {
+      "path": "ls/tests/sdk_persistence_fixture.py",
+      "line_sha256": "c2b6e4fef4fdaa2a53a057a67b327cbabd8b2e0f409332394a201e01920abb48",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical vendor directory used by isolated source qualification fixtures."
     }
   ],
   "visual_reviews": [

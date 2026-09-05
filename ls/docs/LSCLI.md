@@ -676,10 +676,10 @@ full graph-state checkpoint. Completed snapshots can seed a later SDK run using
 its message serializer; interrupted snapshots may contain unsettled tool calls.
 The supervisor must reconcile operation evidence before supplying restored
 history, including when selecting an older completed snapshot. A store's return
-must mean the intended persistence acknowledgement. The current deterministic
-qualification uses the SDK's in-memory store and proves iteration/streaming,
-message round trips and tool-effect capture, not crash durability. Durable store
-transport, checkpoint-to-operation joining and public resume remain required.
+must mean the intended persistence acknowledgement. The isolated iteration fixture uses the SDK's in-memory store and proves
+iteration/streaming, message round trips and tool-effect capture. The acknowledged
+snapshot adapter below supplies durable checkpoint transport. Full tool-effect
+mapping and public resume remain required.
 
 ## Durable checkpoint evidence and journal joins
 
@@ -721,8 +721,9 @@ uncertain is refused. A lost checkpoint acknowledgement does not imply a tool
 operation should be retried; inspect retained immutable evidence instead.
 
 This establishes protected local checkpoint durability and stale-history gates.
-The Harness StepStore acknowledgement transport, full tool-call/result mapping,
-public resume protocol and installed coding proof remain required.
+The acknowledged Harness snapshot adapter below connects this store to the worker.
+Full tool-call/result mapping, public resume protocol and installed coding proof
+remain required.
 
 ## Inherited worker acknowledgement channel
 
@@ -760,3 +761,40 @@ Installed qualification currently connects a worker request to the supervisor's
 durable checkpoint method through this channel. Full SDK StepStore adaptation,
 all broker methods, tool-call/result mapping and the public control protocol
 remain required before enabling public agent execution.
+
+## Acknowledged Harness snapshot adapter
+
+The isolated worker creates `sdk_persistence.checkpoint_store(finder, channel,
+run_id=...)` for one explicit SDK run. It reuses Harness's in-memory StepStore
+for SDK run/events/tool-effect bookkeeping and retention. Snapshot saving first stages the pinned SDK acceptance/retention decision without
+changing the live view. Ignored idempotent saves send no RPC. An accepted save
+serializes messages with `ModelMessagesTypeAdapter`, then awaits a
+`checkpoint.save` RPC result containing one validated SHA-256 digest. Only after
+that acknowledgement does it promote the snapshot into the SDK's local view.
+Missing or malformed acknowledgements fail the save; malformed responses also
+close the channel. No adapter method retries the request.
+
+The supervisor's `CheckpointHandler` binds the run ID and profile digest at
+construction. Worker requests supply only message JSON, step and state; attempts
+to override profile, run, task or session in the payload are refused. The handler
+uses the current `SessionOwner.save_checkpoint`, including its journal-frontier,
+uncertainty, size, durability and authority checks. Use it only through the
+inherited channel's owning-thread dispatch and current-authority callback.
+
+The adapter keeps two recent snapshots per run, plus Harness's required newest
+complete/interrupted retention entries. `last_checkpoint` identifies the newest
+accepted local snapshot; a superseded idempotent SDK save cannot replace that
+handle. Staging relies on Harness’s private `_snapshots` and
+`_snapshot_key_high_water` structures; fork upgrades must requalify that boundary
+against same-object duplicates, older keys, retention and failed acknowledgements.
+Saves are serialized within the adapter. The supervisor retains immutable checkpoint records independently of
+worker memory. Instantiate a new adapter for a new run; a mismatched run ID is
+refused at registration and snapshot saving.
+
+Installed qualification uses a deterministic tool-free SDK run, persists its
+actual serialized history through a separate worker process, and verifies the
+same bytes through a fresh session owner. A failed acknowledgement does not
+promote the local snapshot or checkpoint handle. This adapter durably saves
+conversation snapshots; SDK run/event/tool-effect metadata remains process-local.
+Durable broker tool-call/result mapping and recovery history reconstruction are
+still required before public coding or automatic resume is enabled.
