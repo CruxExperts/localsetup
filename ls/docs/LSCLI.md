@@ -1090,7 +1090,8 @@ flow and verified the framework user-agent on all four Chat Completions requests
 An altered context was refused without another request. Cancellation at the first
 stream event stopped a second run after one request, returned no result data,
 and left the workspace unchanged. These are bounded internal controller checks;
-interactive and crash-recovery acceptance remain separate requirements.
+interactive acceptance and crash windows beyond those qualified below remain
+separate requirements.
 
 
 ## Durable tool results for local recovery
@@ -1118,8 +1119,8 @@ fails recovery. A crash after journal settlement but before receipt persistence
 can leave a settled operation with no recoverable output; the operation must not
 be repeated to recreate that output. A receipt alone does not make the interrupted
 pre-tool checkpoint resumable: existing frontier and complete-history checks
-remain enforced. Public recovery and crash-injection qualification remain
-pending. Saved data carries no grants, approvals or authority.
+remain enforced. The public recovery interface remains pending. Saved data carries
+no grants, approvals or authority.
 
 ### Native history reconstruction boundary
 
@@ -1164,3 +1165,34 @@ missing output or restore saved permissions. The returned checkpoint may be read
 through the existing resume API. A coding continuation must separately authorize
 its exact recovered history through a fresh disclosure grant and qualify current
 tool access. The public recovery command remains pending.
+
+### Installed controller crash qualification
+
+`ls/tests/installed_recovery_fixture.py` is an explicit integration fixture for a
+sealed installed runtime and qualified cgroup delegation. Run it with that
+runtime's isolated Python, the runtime root and delegation path; it is not a
+provider credential or host-configuration setup tool. It creates private temporary
+projects and uses only its local HTTP provider.
+
+```bash
+"$RUNTIME_PYTHON" -I -B ls/tests/installed_recovery_fixture.py "$RUNTIME_ROOT" "$CGROUP_PARENT"
+```
+
+All three paths must identify the already-qualified installation and delegation;
+the fixture does not select or repair them.
+
+The fixture exercises controller termination in three process-result windows:
+
+- After durable receipt persistence but before SDK acknowledgement: the orphaned
+  SDK worker exits, a fresh owner reconstructs history, and a newly authorized
+  coding continuation consumes the recovered result without another operation.
+- After journal settlement but before receipt persistence: missing output refuses
+  recovery; the process is not repeated to reconstruct it.
+- After process return but before journal settlement: uncertainty refuses recovery
+  and prevents new dispatch.
+
+It checks the original checkpoint and journal, unchanged workspace content after
+recovery/continuation, exact operation counts, worker exit, revoked-owner refusal
+and every captured request's runtime-resolved user-agent. This qualifies the
+selected Chat Completions path and these crash windows; power-loss durability,
+Responses coding and broader interactive acceptance remain separate checks.
