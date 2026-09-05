@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: af44a7d7ed253b61c74c73c32d6d71b0ca6fc0226959f50ab9b29559f8ab9ded
+  source_provenance_hash: d9d243f8e6fdf631bda0f9eeb460b9dc4b3d28671ebc55a5647a9656fe2d9e3a
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 636ee961b9110f0223ccbe6aec79ce7bda22e6b3
-artifact_sha256: c358f001a6fbec0855376fbb773fc409f3ec245cb08452a4a7b3578032dd238b
+source_commit: f922ed851a0fdce19790df61c5b4f2bfe12e761d
+artifact_sha256: dbc477da3e461cd16c5ab01bd314a29e113a46102eda35426bcc3e3bfc468d72
 ---
 # Implementation File Map
 
@@ -112,6 +112,7 @@ artifact_sha256: c358f001a6fbec0855376fbb773fc409f3ec245cb08452a4a7b3578032dd238
 | `refactor` | `ls/core/agent/checkpoint_store.py` |
 | `refactor` | `ls/core/agent/cli.py` |
 | `refactor` | `ls/core/agent/coding_protocol.py` |
+| `refactor` | `ls/core/agent/coding_run.py` |
 | `refactor` | `ls/core/agent/coding_worker.py` |
 | `refactor` | `ls/core/agent/diagnostics.py` |
 | `refactor` | `ls/core/agent/file_broker.py` |
@@ -963,6 +964,7 @@ artifact_sha256: c358f001a6fbec0855376fbb773fc409f3ec245cb08452a4a7b3578032dd238
 | `keep` | `ls/tests/test_codex_heartbeat.py` |
 | `keep` | `ls/tests/test_codex_heartbeat_harness.py` |
 | `keep` | `ls/tests/test_coding_protocol.py` |
+| `keep` | `ls/tests/test_coding_run.py` |
 | `keep` | `ls/tests/test_context_index.py` |
 | `keep` | `ls/tests/test_dependency_ledger.py` |
 | `keep` | `ls/tests/test_docs_alignment.py` |
