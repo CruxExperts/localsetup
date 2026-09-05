@@ -4088,6 +4088,22 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Sealed native payload directory is an installed technical path."
+    },
+    {
+      "path": "ls/tests/sdk_iteration_fixture.py",
+      "line_sha256": "27e6954c94378070f2d46ad3b05763475f5e98b772c0468f3a3c2106b850237b",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical vendor directory used by isolated source qualification fixtures."
+    },
+    {
+      "path": "ls/tests/test_sdk_iteration.py",
+      "line_sha256": "18b6927c889feb7184cfc67b3ac8265665f9278e36f5dbfe279e2027c6631393",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Canonical vendor directory used by isolated source qualification fixtures."
     }
   ],
   "visual_reviews": [

@@ -642,3 +642,41 @@ with lease(state, task=broker.grant.task, session=broker.grant.session,
 
 The example requires an existing granted `src` write/read scope and an absent
 `src/new.py`; it does not widen either scope or overwrite an existing file.
+
+## SDK iteration and continuable snapshots
+
+The worker-only `sdk_iteration.iterate` drives the bundled SDK's `Agent.iter`
+and node streams. It requires the active isolated payload importer, a concrete
+model from the explicit provider adapter, an immutable inventory of sequential
+zero-retry tools, a supplied Harness `StepStore`, and current-authority/event
+callbacks. It disables agent instrumentation and agent retries. Tool functions
+must be supervisor broker bridges; this internal helper does not issue grants or
+make arbitrary SDK tools safe.
+
+The caller supplies run and conversation identities, instructions, prompt and a
+monotonic deadline. Defaults bound a run to eight model requests, sixteen
+successful tool calls and 32,768 reported total tokens. Token accounting follows
+SDK/provider reports and may detect excess only after a response. The outer async
+deadline covers SDK calls and awaited callbacks; synchronous blocking code still
+requires process-level supervision. External task cancellation propagates through
+the SDK's context cleanup. Current authority is checked at entry, node/event
+boundaries and before returning results; the supervisor must also interrupt
+active work on cancellation or revocation.
+
+Serialized stream events have a combined 1 MiB limit; final text is limited to
+1 MiB and serialized input/output history to 8 MiB each. These are serialized
+size checks, not a process-memory guarantee. Event bytes are SDK data for the
+internal bridge, not the versioned public CLI event protocol or safe terminal
+text. Tool arguments, results and conversation history require appropriate
+disclosure authority before delivery to a provider or another recipient.
+
+Harness `StepPersistence` emits run/step events, tool-effect records and
+`ContinuableSnapshot` message histories through the supplied store. It is not a
+full graph-state checkpoint. Completed snapshots can seed a later SDK run using
+its message serializer; interrupted snapshots may contain unsettled tool calls.
+The supervisor must reconcile operation evidence before supplying restored
+history, including when selecting an older completed snapshot. A store's return
+must mean the intended persistence acknowledgement. The current deterministic
+qualification uses the SDK's in-memory store and proves iteration/streaming,
+message round trips and tool-effect capture, not crash durability. Durable store
+transport, checkpoint-to-operation joining and public resume remain required.
