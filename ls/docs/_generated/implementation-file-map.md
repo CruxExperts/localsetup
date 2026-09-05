@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 54ec892c0ef8145b24fb1566304a9ab8320a450d084b5cdde69db5b96dadd7bb
+  source_provenance_hash: 613e56b9c7c5e2508f691b0ce73f369d8fea7efd4bb194903f6ff7e12964b578
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 01dbd8d07a5421017766e20df34d694e71476291
-artifact_sha256: 34d78b6b86215beeb567510312e4cdbb1cf95c29a51499e1015f2a2fef9bb64d
+source_commit: 50f6061dce7013bd776f91042c90dd70a7380039
+artifact_sha256: 93b1f090be718249af23fc8f0d2d6a5177456568563b86d80da665a0803b18b2
 ---
 # Implementation File Map
 
@@ -128,6 +128,9 @@ artifact_sha256: 34d78b6b86215beeb567510312e4cdbb1cf95c29a51499e1015f2a2fef9bb64
 | `refactor` | `ls/core/agent/native_bundle.py` |
 | `refactor` | `ls/core/agent/nested_context.py` |
 | `refactor` | `ls/core/agent/operation_journal.py` |
+| `refactor` | `ls/core/agent/portable_content.py` |
+| `refactor` | `ls/core/agent/portable_history.py` |
+| `refactor` | `ls/core/agent/portable_worker.py` |
 | `refactor` | `ls/core/agent/process_broker.py` |
 | `refactor` | `ls/core/agent/process_rpc.py` |
 | `refactor` | `ls/core/agent/profile_inventory.py` |
@@ -151,6 +154,7 @@ artifact_sha256: 34d78b6b86215beeb567510312e4cdbb1cf95c29a51499e1015f2a2fef9bb64
 | `refactor` | `ls/core/agent/sdk_iteration.py` |
 | `refactor` | `ls/core/agent/sdk_models.py` |
 | `refactor` | `ls/core/agent/sdk_persistence.py` |
+| `refactor` | `ls/core/agent/sdk_portable.py` |
 | `refactor` | `ls/core/agent/sdk_process_tool.py` |
 | `refactor` | `ls/core/agent/sdk_recovery.py` |
 | `refactor` | `ls/core/agent/sdk_tool_checkpoint.py` |
@@ -961,6 +965,7 @@ artifact_sha256: 34d78b6b86215beeb567510312e4cdbb1cf95c29a51499e1015f2a2fef9bb64
 | `keep` | `ls/tests/sdk_iteration_fixture.py` |
 | `keep` | `ls/tests/sdk_model_fixture.py` |
 | `keep` | `ls/tests/sdk_persistence_fixture.py` |
+| `keep` | `ls/tests/sdk_portable_fixture.py` |
 | `keep` | `ls/tests/sdk_process_fixture.py` |
 | `keep` | `ls/tests/sdk_recovery_fixture.py` |
 | `keep` | `ls/tests/skill_smoke_commands.yaml` |
@@ -1050,6 +1055,7 @@ artifact_sha256: 34d78b6b86215beeb567510312e4cdbb1cf95c29a51499e1015f2a2fef9bb64
 | `keep` | `ls/tests/test_operation_journal.py` |
 | `keep` | `ls/tests/test_path_contract.py` |
 | `keep` | `ls/tests/test_plugin_packs.py` |
+| `keep` | `ls/tests/test_portable_history.py` |
 | `keep` | `ls/tests/test_process_broker.py` |
 | `keep` | `ls/tests/test_process_rpc.py` |
 | `keep` | `ls/tests/test_profile_inventory.py` |
