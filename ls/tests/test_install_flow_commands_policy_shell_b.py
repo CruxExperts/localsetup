@@ -175,6 +175,58 @@ def test_doctor_without_platform_selector_uses_recorded_target_adapters(tmp_path
     assert not any("no platforms were selected" in warning for warning in doctor["warnings"])
 
 
+@pytest.mark.parametrize("legacy", [False, True])
+@pytest.mark.parametrize("selected", [None, ["codex"]])
+def test_doctor_missing_recorded_adapter_blocks_without_touching_neighbors(
+    tmp_path: Path, legacy: bool, selected: list[str] | None,
+) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    target.mkdir()
+    plan = build_install_plan(
+        root, home=home, packs=["core"], platform_ids=["codex"], target_root=target,
+    )
+    apply_plan(root, plan, home=home, target_root=target)
+    lock_path = target / ".localsetup" / "lock.json"
+    lock = load_json(lock_path)
+    adapter = Path(lock["adapter_state"][0])
+    # Move the fixture's managed adapter aside to model an absent recorded path.
+    adapter.rename(adapter.with_name("saved-skills"))
+    neighbor = adapter.parent / "custom.txt"
+    neighbor.write_text("owned by the repository\n", encoding="utf-8")
+    if legacy:
+        lock.pop("adapter_targets", None)
+        lock_path.write_text(json.dumps(lock), encoding="utf-8")
+    before = lock_path.read_bytes()
+
+    doctor = run_doctor(root, home=home, platform_ids=selected, target_root=target)
+
+    assert doctor["ok"] is False
+    assert any(f"recorded adapter is missing: {adapter}" in item for item in doctor["blockers"])
+    assert not any("no platforms were selected" in item for item in doctor["warnings"])
+    assert neighbor.read_text(encoding="utf-8") == "owned by the repository\n"
+    assert lock_path.read_bytes() == before
+    assert not adapter.exists()
+
+
+@pytest.mark.parametrize("selected", [["codex"], []])
+def test_doctor_fresh_target_does_not_require_planned_adapters(
+    tmp_path: Path, selected: list[str],
+) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    home.mkdir()
+    target = tmp_path / "target"
+    target.mkdir()
+
+    doctor = run_doctor(root, home=home, platform_ids=selected, target_root=target)
+
+    assert not any("recorded adapter is missing" in item for item in doctor["blockers"])
+    assert any("no platforms were selected" in item for item in doctor["warnings"]) == (selected == [])
+    assert not (target / ".localsetup" / "lock.json").exists()
+
+
 def test_install_migrates_legacy_root_lockfile(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"

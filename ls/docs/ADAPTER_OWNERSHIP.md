@@ -57,6 +57,17 @@ Custom skills, benign files, repo-local symlinks, and same-directory mixed conte
 
 ## Repair Planning
 
+`localsetup doctor --target-directory <repo>` without a platform selector checks
+the adapters recorded in that target's lockfile, including legacy adapter-state
+records. A missing recorded adapter is a blocker; run `verify` and review a repair
+plan. Diagnosis does not recreate adapters or change neighboring custom content.
+The global-only warning applies when no adapters are recorded or selected.
+
+An explicit platform selector checks those planned targets. An absent path is
+allowed for a fresh target, but a selected path already recorded in the lockfile
+must exist. An explicitly empty platform list checks no adapters and retains the
+global-only warning when a target directory was provided.
+
 Repair plans must describe the managed entries they intend to change. A plan that targets an entire adapter directory is safe only when every entry in that directory is proven Localsetup-owned or the operator explicitly approved a full-directory migration.
 
 When ownership is unclear or unsafe, the safe repair output is a migration or preservation prompt. Benign repo-owned adapter content does not require a prompt; the default repair path is to leave that content where it is and refresh only the Localsetup-managed entries around it.
