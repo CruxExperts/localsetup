@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 948d0b606e92a774ef5cee79665b89e6da520df3d29757e887855f6d539161c7
+  source_provenance_hash: 6658065f0645b5a27d6f48f52595d2874c587e6de6e59bba51ae450ee03e897b
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 0aa25a0da42f92118bba279f0e1472a57747bfa9
-artifact_sha256: 62acf8ca6bcafad22b8b840587853a8969be4810bca8fee6625e8969cf766ece
+source_commit: 40d5781d11d3dd8f31d7f21c129478c675d72ee5
+artifact_sha256: 49add444a5e5e24de80e29c8a2718bdc07f01e702eb57fe45b733630387f8546
 ---
 # Implementation File Map
 
@@ -111,6 +111,7 @@ artifact_sha256: 62acf8ca6bcafad22b8b840587853a8969be4810bca8fee6625e8969cf766ec
 | `refactor` | `ls/core/agent/diagnostics.py` |
 | `refactor` | `ls/core/agent/file_broker.py` |
 | `refactor` | `ls/core/agent/file_grants.py` |
+| `refactor` | `ls/core/agent/native_bundle.py` |
 | `refactor` | `ls/core/agent/profiles.py` |
 | `refactor` | `ls/core/agent/provider_client.py` |
 | `refactor` | `ls/core/agent/runtime_install.py` |
@@ -974,6 +975,7 @@ artifact_sha256: 62acf8ca6bcafad22b8b840587853a8969be4810bca8fee6625e8969cf766ec
 | `keep` | `ls/tests/test_lscli_bootstrap.py` |
 | `keep` | `ls/tests/test_manifests.py` |
 | `keep` | `ls/tests/test_mcp_builder_connections.py` |
+| `keep` | `ls/tests/test_native_bundle.py` |
 | `keep` | `ls/tests/test_omniroute_api_cli.py` |
 | `keep` | `ls/tests/test_omniroute_consolidation_migration.py` |
 | `keep` | `ls/tests/test_omniroute_immutable_inventory.py` |
