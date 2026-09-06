@@ -43,15 +43,19 @@ def test_personal_shared_owners_and_failed_write_preserve_neighbors(tmp_path, mo
     assert not (root / ".agents/skills").exists()
 
 
-@pytest.mark.parametrize("unsafe", ["ancestor", "collision", "portable"])
+@pytest.mark.parametrize("unsafe", ["ancestor", "collision", "marker"])
 def test_personal_preflight_refuses_unsafe_targets(tmp_path, unsafe):
     root = make_temp_repo(tmp_path);home = tmp_path / "home";home.mkdir()
     plan = build_install_plan(root, home, skills=["ls-context"], platform_ids=["cursor"], skill_scope="personal",
-                              attach_mode="portable" if unsafe == "portable" else "symlink")
+                              attach_mode="symlink")
     if unsafe == "ancestor":
         outside = tmp_path / "outside";outside.mkdir();(home / ".agents").symlink_to(outside, target_is_directory=True)
     elif unsafe == "collision":
         custom = home / ".agents/skills/ls-context";custom.mkdir(parents=True);(custom / "SKILL.md").write_text("custom")
+    elif unsafe == "marker":
+        adapter = home / ".agents/skills";adapter.mkdir(parents=True)
+        outside = tmp_path / "marker.json";outside.write_text("{}")
+        (adapter / ".localsetup-adapter.json").symlink_to(outside)
     result = preflight_install_plan(root, plan, home, target_root=root)
     assert not result["ok"] and any(b["status_code"] == "personal_adapter_unsafe" for b in result["blockers"])
     assert not (root / ".localsetup/lock.json").exists()
@@ -88,3 +92,35 @@ def test_personal_apply_preserves_overlapping_legacy_repository_owner(tmp_path):
         apply_plan(root, repo_plan, home, target_root=home)
     assert registry_path.read_bytes() == before
     assert (shared / "ls-context").is_symlink() and (shared / "ls-git-workflows").is_symlink()
+
+
+def test_personal_portable_recovery_mode_transition_and_conflict(tmp_path, monkeypatch):
+    import ls.core.personal_adapter as writer
+    root = make_temp_repo(tmp_path);home = tmp_path / "home"
+    def plan(mode, client="cursor"):
+        return build_install_plan(root, home, skills=["ls-context"], platform_ids=[client], skill_scope="personal", attach_mode=mode)
+    apply_plan(root, plan("portable"), home)
+    adapter = home / ".agents/skills";package = adapter / "ls-context"
+    assert package.is_dir() and not package.is_symlink()
+    (package / "retained.txt").write_text("original owned copy")
+    (adapter / "custom.txt").write_text("neighbor")
+    copytree = writer.shutil.copytree
+    def fail(source, target, *args, **kwargs):
+        if Path(target) == package:
+            package.mkdir();(package / "partial").write_text("incomplete")
+            raise RuntimeError("injected portable copy failure")
+        return copytree(source, target, *args, **kwargs)
+    monkeypatch.setattr(writer.shutil, "copytree", fail)
+    with pytest.raises(RuntimeError, match="portable copy failure"):
+        apply_plan(root, plan("portable"), home)
+    assert (package / "retained.txt").read_text() == "original owned copy"
+    assert not (package / "partial").exists()
+    assert (adapter / "custom.txt").read_text() == "neighbor"
+    monkeypatch.setattr(writer.shutil, "copytree", copytree)
+    apply_plan(root, plan("symlink"), home)
+    assert package.is_symlink()
+    apply_plan(root, plan("portable"), home)
+    assert package.is_dir() and not package.is_symlink()
+    assert (adapter / "custom.txt").read_text() == "neighbor"
+    conflict = preflight_install_plan(root, plan("symlink", "openclaw"), home, target_root=root)
+    assert not conflict["ok"] and any("another owner" in b["reason"] for b in conflict["blockers"])

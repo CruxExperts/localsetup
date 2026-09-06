@@ -18,7 +18,12 @@ def record_personal_owners(registry: dict, adapters: list[dict], available: set[
             if owner.scope != "personal":
                 continue
             key = owner_key(owner)
-            record = selected.setdefault(key, {"owner": owner.wire(), "packages": set(), "paths": set()})
+            mode = adapter.get("mode", "symlink")
+            if mode not in {"symlink", "portable"}:
+                raise ValueError("Invalid personal adapter mode")
+            record = selected.setdefault(key, {"owner": owner.wire(), "packages": set(), "paths": set(), "mode": mode})
+            if record["mode"] != mode:
+                raise ValueError("Conflicting personal owner modes")
             names = set(adapter.get("packages", []))
             if not names <= available:
                 raise ValueError("Personal owner references unavailable packages")
@@ -35,7 +40,7 @@ def record_personal_owners(registry: dict, adapters: list[dict], available: set[
             if name in names:
                 refs.add(key)
             package["refs"] = sorted(refs)
-        owners[key] = {"owner": record["owner"], "packages": sorted(names), "paths": sorted(record["paths"])}
+        owners[key] = {"owner": record["owner"], "packages": sorted(names), "paths": sorted(record["paths"]), "mode": record["mode"]}
 
 
 def refuse_personal_overlap(registry: dict, paths: list[str]) -> None:

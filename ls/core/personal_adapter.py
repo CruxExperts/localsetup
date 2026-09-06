@@ -1,9 +1,11 @@
-"""Personal symlink adapters preserve neighbors and independent installation owners."""
+"""Personal adapters preserve neighbors and independent installation owners."""
 import os
+import shutil
 from pathlib import Path
 from .adapter_markers import ADAPTER_MARKER_JSON, adapter_marker_packages, adapter_marker_state, is_safe_adapter_package_name
 from .adapters import adapter_path_state
-from .apply_journal import record_file_state
+from .apply_journal import record_file_state, record_node_state, remove_path
+from .provenance import is_managed_package
 from .installation_ownership import InstallationOwner
 from .lockfile import save_json
 from .manifests import load_pack_config
@@ -27,13 +29,14 @@ def check_path(path: Path, home: Path) -> None:
 
 def selection(repo_root: Path, home: Path, action) -> list[str]:
     check_path(action.path, home)
-    if action.details.get("mode", "symlink") != "symlink":
-        raise ValueError("Personal portable adapters are not yet qualified")
+    mode = action.details.get("mode", "symlink")
+    if mode not in {"symlink", "portable"}:
+        raise ValueError("Invalid personal adapter mode")
     marker = action.path / ADAPTER_MARKER_JSON
     if marker.is_symlink() or (marker.exists() and not marker.is_file()):
         raise ValueError("Unsafe personal adapter marker")
     state = adapter_marker_state(action.path)
-    if state["error"] or state["mode"] == "portable":
+    if state["error"]:
         raise ValueError("Personal adapter marker requires preservation review")
     owners = [InstallationOwner(**raw) for raw in action.details["owners"]]
     if not owners or any(owner.scope != "personal" or owner.root != str(home.resolve()) for owner in owners):
@@ -43,6 +46,8 @@ def selection(repo_root: Path, home: Path, action) -> list[str]:
     registry = load_registry(expand_user_path(load_pack_config(repo_root).global_registry, home))
     for key, record in registry.get("personal_owners", {}).items():
         if key not in selected and str(action.path) in record.get("paths", []):
+            if record.get("mode", "symlink") != mode:
+                raise ValueError("Personal adapter mode conflicts with another owner")
             names.update(record.get("packages", []))
     for target in registry.get("targets", {}).values():
         for adapter in target.get("adapters", []):
@@ -50,6 +55,8 @@ def selection(repo_root: Path, home: Path, action) -> list[str]:
             if "owners" not in adapter:
                 repository_owned = bool(adapter.get("platforms") or adapter.get("platform"))
             if adapter.get("path") == str(action.path) and repository_owned:
+                if adapter.get("mode", "symlink") != mode:
+                    raise ValueError("Personal adapter mode conflicts with a repository owner")
                 names.update(adapter.get("packages", []))
     if any(not isinstance(name, str) or not is_safe_adapter_package_name(name) for name in names):
         raise ValueError("Invalid personal adapter package name")
@@ -60,9 +67,15 @@ def selection(repo_root: Path, home: Path, action) -> list[str]:
     for name in names:
         entry = action.path / name
         if entry.exists() or entry.is_symlink():
-            if not entry.is_symlink() or entry.resolve(strict=False) != (global_root / name).resolve(strict=False):
+            if not managed_entry(entry, global_root, adapter_marker_state(action.path)["mode"]):
                 raise ValueError("Personal adapter has a custom package name collision")
     return sorted(names)
+
+
+def managed_entry(entry: Path, global_root: Path, mode: str | None) -> bool:
+    if entry.is_symlink():
+        return entry.resolve(strict=False) == (global_root / entry.name).resolve(strict=False)
+    return mode == "portable" and entry.is_dir() and is_managed_package(entry)
 
 
 def write(repo_root: Path, home: Path, action, journal: dict, journal_path: Path) -> None:
@@ -72,16 +85,20 @@ def write(repo_root: Path, home: Path, action, journal: dict, journal_path: Path
         raise ValueError("Personal adapter package is missing from the managed library")
     action.path.mkdir(parents=True, exist_ok=True)
     old = adapter_marker_packages(action.path) or set()
+    old_mode = adapter_marker_state(action.path)["mode"]
+    mode = action.details.get("mode", "symlink")
     for name in sorted(old | set(names)):
         check_path(action.path, home)
         entry = action.path / name
-        managed = entry.is_symlink() and entry.resolve(strict=False) == (global_root / name).resolve(strict=False)
+        managed = managed_entry(entry, global_root, old_mode)
         if name not in names and not managed:continue
-        record_file_state(journal, journal_path, entry, os.replace)
-        if managed:entry.unlink()
-        if name in names:entry.symlink_to(global_root / name, target_is_directory=True)
+        record_node_state(journal, journal_path, entry, os.replace)
+        if managed:remove_path(entry)
+        if name in names:
+            if mode == "portable":shutil.copytree(global_root / name, entry, symlinks=True)
+            else:entry.symlink_to(global_root / name, target_is_directory=True)
     check_path(action.path, home)
     marker = action.path / ADAPTER_MARKER_JSON
     record_file_state(journal, journal_path, marker, os.replace)
-    save_json(marker, {"version": 1, "managed_by": "localsetup", "mode": "symlink",
+    save_json(marker, {"version": 1, "managed_by": "localsetup", "mode": mode,
                        "global_root": str(global_root), "packages": names})

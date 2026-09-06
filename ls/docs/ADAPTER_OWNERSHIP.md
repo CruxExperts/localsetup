@@ -106,8 +106,8 @@ selection creates no adapter actions in any scope.
 Personal plans enumerate the selected clients' manifest `global_paths`, retain
 all typed logical owners on shared paths, and use the selected adapter packages.
 These discovery paths are distinct from the shared canonical package library.
-Planning creates no configuration or adapters. Internal personal symlink actions
-use the preservation path below; portable personal actions fail preflight. The
+Planning creates no configuration or adapters. Internal personal symlink and portable actions
+use the preservation path below. The
 public `--skill-scope` option remains pending full lifecycle integration.
 Repository installations persist the effective scope in the existing lock.
 
@@ -126,20 +126,20 @@ packages participate in the existing other-owner and pruning checks. Records may
 reference only packages supplied by the installation. Registry updates use the
 existing caller-held package-root lock and atomic registry save.
 
-Personal symlink application uses these retention records. Explicit personal
+Personal application uses these retention records. Explicit personal
 detach and complete inventory, verify, and repair integration remain pending.
 
-## Personal symlink application
+## Personal adapter application
 
 Internal personal plans apply under the existing package-root lock. The writer
 rejects paths outside the supplied home, symlink or non-directory ancestors,
-unsafe markers, existing portable adapters, and custom entries colliding with
+unsafe markers and custom entries colliding with
 selected package names. Other files, skills, and neighboring vendor state remain
-in place. Personal portable mode is not yet qualified.
+in place. Symlink and portable modes are supported internally.
 
 At a shared path, the visible package set includes the current selection and
 packages retained by other recorded owners. The registry records each owner's
-requested selection independently. The writer journals individual managed links
+requested selection independently. The writer journals individual managed links or portable package directories
 and the marker before changing them. Failure recovery restores those entries;
 it does not replace the whole adapter directory or remove unrelated neighbors
 created during the operation. Empty directories created during a failed attempt
@@ -154,3 +154,11 @@ install also refuses repository and personal actions targeting the same path.
 They do not implicitly remove personal adapters.
 Explicit personal detach remains pending, as do public scope selection and
 complete personal inventory, verification, and repair qualification.
+
+Portable packages are copied with their provenance and internal symlinks intact.
+Recovery backs up only the managed package node, so a failed copy restores its
+prior contents without replacing the shared parent directory. A selected owner
+can change between symlink and portable mode. At a shared path, a mode change
+that conflicts with an unselected personal or repository owner fails preflight.
+Personal registry records retain the mode; older personal records default to
+symlink, the only mode available before this field was introduced.

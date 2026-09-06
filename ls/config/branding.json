@@ -4179,7 +4179,7 @@
     },
     {
       "path": "ls/core/personal_adapter.py",
-      "line_sha256": "cc0fcac94e1548f16026a84cf22088044a0048c73ce6f6cccea31621fee5e9c1",
+      "line_sha256": "4f91173c094e7f895c7790d1b498874450e2877853e83aa732c88815c1d1d245",
       "token": "localsetup",
       "count": 1,
       "kind": "compatibility_identifier",
