@@ -2,6 +2,14 @@
   "schema_version": 1,
   "exceptions": [
     {
+      "path": "ls/skills/ls-codex-heartbeat/references/command-logging.md",
+      "line_sha256": "a279574c5eefab22b5709b8d413e65159ff7e41488684915153365eccf9d9601",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact lowercase Markdown fragment for the LSCli receipt-validation heading; display text retains canonical capitalization."
+    },
+    {
       "path": "README.md",
       "line_sha256": "7c5a813fdd083055fcc618af3aca2767a3793c09f17a92a6f19dca226fae8bfc",
       "token": "lscli",

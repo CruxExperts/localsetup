@@ -161,7 +161,13 @@ LocalSetup does not own an entire adapter directory merely because the path matc
 
 Workflow packages are sourced from `ls/workflows/ls-workflow-*`. They install beside skills because every workflow package includes a valid `SKILL.md`, while its LocalSetup-specific `workflow.yaml` stays in source for validation and generated docs.
 
-If `--tools` or `--platforms` is omitted, no repo adapter is attached. This is the safe default for refreshing the managed library without touching project-owned `.codex`, `.cursor`, `.kilo`, `.claude`, `.opencode`, or `.openclaw` configuration.
+A fresh global-only invocation without platform or target selection and without
+a recorded target refreshes the managed library without attaching repo adapters.
+Omitting `--tools` or `--platforms` is not a no-adapter-change guarantee for an
+existing target: selector-free updates retain its recorded scope, clients and
+adapter paths. Inspect the plan and follow
+[updates using the default target](ADAPTER_OWNERSHIP.md#updates-using-the-default-target).
+Custom neighboring agent configuration remains protected by the ownership rules.
 
 To remove a install, run:
 
@@ -211,7 +217,14 @@ Without `--sync-env`, the root wrapper runs doctor in `prompt-only` mode and app
 
 When explicit sync is requested, LocalSetup may quarantine corrupt LocalSetup-owned environments by rename, never deletion. Eligible paths are the source checkout `.venv`, legacy global `~/.local/share/localsetup/venv`, and legacy target-local `.localsetup/venv`. Each quarantine writes a JSON record under LocalSetup state with the original path, reason, mode, timestamp, and uv error text when applicable. A target project's own `.venv` is not LocalSetup-owned and is never modified.
 
-Do not alter system Python to satisfy LocalSetup framework dependencies. Install uv or set `LOCALSETUP_UV_BIN` to a preinstalled uv binary; use `pipx` for standalone CLI tools, including future wheel-based LocalSetup command installs, and use the uv project environment for libraries imported by LocalSetup framework modules.
+Do not alter system Python to satisfy LocalSetup framework dependencies. Install
+uv or set `LOCALSETUP_UV_BIN` to a preinstalled uv binary. Use `pipx` for ordinary
+standalone CLI tools and the uv project environment for libraries imported by
+source-checkout framework modules. LSCli already supports
+[explicit offline wheel/runtime setup](LSCLI.md#explicit-offline-runtime-setup) and
+[owned command registration](LSCLI.md#public-fresh-command-registration). Ordinary
+CLI installation alone does not establish protected coding readiness; use those
+contracts for artifact verification, runtime ownership and per-run qualification.
 
 ## Reinstall behavior
 

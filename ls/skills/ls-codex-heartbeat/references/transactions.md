@@ -5,7 +5,7 @@ version: 3.4
 
 # Transactions
 
-The heartbeat harness uses a file transaction:
+The ordinary heartbeat run uses this file transaction:
 
 1. Acquire `heartbeat.lock`, or return current owner evidence without touching state.
 2. Recover abandoned staged runs only while holding the lock.
@@ -16,4 +16,15 @@ The heartbeat harness uses a file transaction:
 7. Validate the staged artifact graph.
 8. Atomically promote to `runs/<run-id>`, update `latest.json`, and remove `active.json`.
 
-If validation fails, the staged run is not promoted as successful. Future lock-owning runs preserve abandoned staged work as recovered failure evidence.
+If validation fails, the staged run is not promoted as successful. Future ordinary
+lock-owning runs preserve abandoned staged work as recovered failure evidence.
+
+[Reserved actions](config.md#running-a-reserved-action) use the same overlap lock
+with separate protected reservation/result accounting. They do not run hooks or
+perform the staged transaction above; reserved `--no-agent` skips before lock
+acquisition. Follow [reserved execution](process-control.md#reserved-execution-owner)
+and [result reconciliation](recovery.md#reserved-result-acknowledgement-recovery)
+for that route. Ordinary recovery preserves failure evidence but does not block
+subsequent configured runs pending effect reconciliation. Operators must reconcile
+uncertain effects before repeating a command; reserved execution enforces its
+separate reconciliation gate.
