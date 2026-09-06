@@ -2094,3 +2094,36 @@ absent from PATH yields `ready: false`, not an effective registration claim.
 Empty or relative PATH entries retain their current-directory meaning; the tool
 does not edit PATH or shell startup files. This prerequisite has no public
 registration apply command yet and does not grant runtime execution authority.
+
+
+### Receipt-backed fresh registration owner
+
+The internal `registration_owner` adds create-only publication to the planner.
+Its plan binds the complete specification with `plan_sha256`; apply requires
+that digest, an effective PATH position, and unchanged runtime selection. It
+takes the runtime shared lease before the bin directory exclusive lease, then
+rechecks the plan. Existing commands and registration metadata are conflicts;
+managed-looking text does not establish ownership.
+
+Publication writes a private pending intent first, then a mode-700 launcher and
+mode-600 receipt. Each fully written, fsynced temporary file is linked into place
+without replacing an existing target. Successful completion removes the pending
+intent. An interruption can leave directories, the coordination lock, temporary
+files, or an incomplete publication. A pending intent blocks fresh replay even
+when a launcher or final receipt exists. Inspect retained evidence before recovery;
+this primitive does not automatically replay or remove uncertain writes.
+
+Read-only status reports missing, unmanaged, incomplete, modified, registered,
+or stale state under an existing shared bin lease. An existing directory without
+that lock reports `coordination_unavailable` and creates nothing. Unsafe files,
+malformed receipts, busy locks, and invalid runtimes raise errors rather than
+asserting readiness. The bin lease ends before inspecting the runtime, avoiding
+inverted lock order. Registered status checks receipt/content and selected release
+at inspection time; it does not requalify current PATH precedence or authorize
+execution. Receipt hashes detect inconsistency, not malicious same-user forgery.
+
+Focused filesystem fixtures qualify fresh publication, modified-command
+preservation, interrupted writes, plan changes, and bin lease exclusion. They
+mock runtime selection and do not establish installed launcher behavior. Public
+registration commands, owned refresh/recovery, and installed qualification remain
+separate required work.
