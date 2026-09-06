@@ -99,15 +99,18 @@ def _plan(source, home, clients):
     return payload, list(actions.values()), registry_path, updated, receipts
 
 
-def detach_personal(source: Path, home: Path, clients: list[str], *, apply: bool = False) -> dict:
-    payload, actions, registry_path, updated, receipts = _plan(source, home, clients)
-    if not apply or not payload['ok'] or not actions:return payload
+def _execute(source, home, planner, *, apply=False, operation="personal-detach", require_unchanged=False):
+    payload, actions, registry_path, updated, receipts = planner()
+    if not apply or not payload['ok'] or (not actions and not receipts):return payload
+    initial = payload
     state = global_layout(home).localsetup_home
     with package_root_lock(state):
-        payload, actions, registry_path, updated, receipts = _plan(source, home, clients)
-        if not payload['ok'] or not actions:return payload
-        path = state / 'state/personal-detach' / (uuid.uuid4().hex + '.json')
-        journal = {'version': 1, 'operation': 'personal-detach', 'status': 'started', 'touched': []}
+        payload, actions, registry_path, updated, receipts = planner()
+        if not payload['ok'] or (not actions and not receipts):return payload
+        if require_unchanged and payload != initial:
+            return payload | {'ok': False, 'blockers': ['stale_scope_retirement: recorded ownership changed']}
+        path = state / 'state' / operation / (uuid.uuid4().hex + '.json')
+        journal = {'version': 1, 'operation': operation, 'status': 'started', 'touched': []}
         try:
             for receipt in [registry_path, *receipts]:record_file_state(journal, path, receipt, os.replace)
             for action in actions:write(source, home, action, journal, path)
@@ -125,3 +128,7 @@ def detach_personal(source: Path, home: Path, clients: list[str], *, apply: bool
         try:cleanup_backups(journal)
         except OSError as exc:warnings.append(f'personal detach committed; backup cleanup failed: {exc}')
         return payload | {'applied': True, 'journal': str(path), 'warnings': warnings}
+
+
+def detach_personal(source: Path, home: Path, clients: list[str], *, apply: bool = False) -> dict:
+    return _execute(source, home, lambda: _plan(source, home, clients), apply=apply)

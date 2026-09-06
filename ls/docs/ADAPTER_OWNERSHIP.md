@@ -287,7 +287,7 @@ directories could otherwise trigger automatic discovery. Omission retains the
 recorded scope; repeating that scope with no selectors keeps automatic recorded
 updates. To change personal package selections, name clients explicitly.
 Adding the missing scope and retiring repository scope use the flows below.
-Personal-scope retirement and direct scope conversion remain guarded. Same-plan repository/personal actions on one path
+Direct scope conversion remains guarded. Same-plan repository/personal actions on one path
 require matching modes and package libraries.
 
 ## Repository updates on personal adapter paths
@@ -556,8 +556,8 @@ The result reports `auto_mode: additive_scope`. `plan` and `install` without
 `--apply` only preview; `update` applies immediately. An explicit `--mode` (or
 config `attach_mode`) changes adapter mode through the recorded-mode preflight;
 omission retains recorded modes. A migration combined with client or package
-reselection is rejected before writes. Personal-scope retirement and direct
-`repo`/`personal` conversion still require coordinated retirement qualification.
+reselection is rejected before writes. Direct `repo`/`personal` conversion still
+requires coordinated migration qualification.
 
 
 ## Retiring repository scope
@@ -587,3 +587,31 @@ and custom neighboring content stays in place. Historical transition evidence
 is retained. Every repository adapter must have recorded ownership, and the
 receipt must retain personal targets; ambiguous or unhealthy state requires
 reconciliation before retirement. The resulting scope is `personal`.
+
+
+## Retiring personal scope
+
+For a healthy `both` installation, retain repository ownership with:
+
+```bash
+localsetup plan --target-directory PROJECT --skill-scope repo
+localsetup install --target-directory PROJECT --skill-scope repo --apply
+```
+
+The response uses `auto_mode: retire_personal_scope`. It lists
+`detached_associations`, globally removed `owners`, and `retained_owners` still
+referenced by other targets. Another target's recorded reference keeps that
+personal owner and its exposure intact; retirement does not rewrite the other
+target's receipt. When the retiring target is the only recorded reference, its
+personal owner is removed. Physical writes retain repository requests and other
+personal owners on shared paths. Packages and custom neighbors are preserved.
+
+Planning is read-only; `install --apply` and `update` apply. Reselection and mode
+changes must be separate operations. Receipt and registry hashes detect stale
+plans, and application revalidates under the package-root lock. One per-entry
+transaction updates the target receipt, registry, and affected personal paths,
+including the case where only association metadata changes. Failed writes
+restore receipts and managed entries without replacing adapter parent
+directories. The resulting target scope is `repo`; its repository adapters and
+historical transition evidence remain unchanged. Direct `repo` to `personal`
+or `personal` to `repo` conversion is not yet exposed.

@@ -13,17 +13,20 @@ def handle(cli, args, root, home) -> int | None:
         attachment_root = target_root or root
         from .installation_ownership import validate_scope_request, resolve_skill_scope
         recorded = validate_scope_request(attachment_root, None)
-        if (recorded and config.skill_scope == "personal"
+        if (recorded and config.skill_scope in {"repo", "personal"}
                 and resolve_skill_scope(attachment_root, None) == "both"):
             from .recorded_mode import requested_mode
             if not _selector_free(config) or requested_mode(args) is not None:
                 raise ValueError("Retire recorded scope separately from reselection or mode changes")
-            from .scope_retirement import retire_repository_scope
-            payload = retire_repository_scope(root, home, attachment_root,
+            if config.skill_scope == "personal":
+                from .scope_retirement import retire_repository_scope as retire_scope
+            else:
+                from .personal_scope_retirement import retire_personal_scope as retire_scope
+            payload = retire_scope(root, home, attachment_root,
                 apply=args.cmd == "update" or (args.cmd == "install" and args.apply))
             _write_report(config.output.report, payload)
             _print_payload(payload)
-            return 0
+            return 0 if payload["ok"] else 2
         additive = (recorded and config.skill_scope == "both"
                     and resolve_skill_scope(attachment_root, None) in {"repo", "personal"})
         if additive:

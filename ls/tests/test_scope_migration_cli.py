@@ -32,10 +32,9 @@ def test_cli_previews_and_applies_additive_scope(tmp_path, capsys, scope):
     assert result['platforms'] == ['cursor']
     assert all(row['mode'] == 'portable' for key in ('adapter_targets', 'personal_adapter_targets') for row in result[key])
     assert verify_install(root, home, target_root=root)['ok']
-    before = receipt.read_bytes(), registry.read_bytes()
-    assert cli.main(prefix + ['update', '--target-directory', str(root), '--skill-scope', 'repo']) == 2
-    capsys.readouterr()
-    assert before == (receipt.read_bytes(), registry.read_bytes())
+    assert cli.main(prefix + ['update', '--target-directory', str(root), '--skill-scope', 'repo']) == 0
+    assert json.loads(capsys.readouterr().out)['auto_mode'] == 'retire_personal_scope'
+    assert json.loads(receipt.read_text())['skill_scope'] == 'repo'
 
 
 def test_cli_rejects_scope_migration_with_reselection(tmp_path, capsys):
