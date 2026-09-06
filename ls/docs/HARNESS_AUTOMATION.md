@@ -45,7 +45,8 @@ Enable the target heartbeat and upsert the cron manifest:
 localsetup harness codex-heartbeat enable
 ```
 
-`enable` flips `heartbeat.enabled` to `true`, creates or updates `cron/manifest.yaml`, preserves unrelated triggers and tasks, and validates the manifest through the cron orchestrator.
+`enable` first validates a faithfully representable integer cron interval (minute
+divisors of 60, or whole-hour divisors of 24), then flips `heartbeat.enabled` to `true`, creates or updates `cron/manifest.yaml`, preserves unrelated triggers and tasks, and validates the manifest through the cron orchestrator.
 
 Installing the live crontab is a separate explicit step:
 
@@ -83,7 +84,10 @@ Disable without removing history:
 localsetup harness codex-heartbeat disable
 ```
 
-`disable` flips config back to disabled and disables the heartbeat cron task. It does not delete historical artifacts.
+`disable` flips config back to disabled and disables the heartbeat cron task,
+preserving its stored trigger schedule and historical artifacts. Cron is a
+wall-clock schedule in the daemon’s configured timezone, not an elapsed timer;
+see the [cadence contract](../skills/ls-codex-heartbeat/references/config.md#cadence-and-stored-schedules).
 
 ## Repo finalizer profile
 

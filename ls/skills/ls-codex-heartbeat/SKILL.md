@@ -27,6 +27,10 @@ Use this skill when a repository needs an explicit, auditable heartbeat harness 
 This skill owns heartbeat harness behavior. `HARNESS_AUTOMATION.md` is the public reference for the same guardrails; changes to activation, artifacts, transaction handling, or cron wiring belong here first.
 
 - Heartbeat is opt-in per target repo.
+- New cron cadence must be faithfully representable: integer minute divisors of
+  60, or whole-hour divisors of 24. Enabling rejects other intervals before
+  changing configuration. Disabling preserves an existing trigger schedule.
+  See the timezone and wall-clock limits in [configuration](references/config.md).
 - Cron activation is delegated to explicit harness commands and should be coordinated with `ls-cron-orchestrator` when broader scheduling is involved.
 - Runtime evidence stays in ignored target state, not public framework docs.
 
