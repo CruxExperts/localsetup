@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 6065076c435b29c5ed5efa70a2a7552f6844d6a3bcc2e392ed94ab2ea4ee6d38
+  source_provenance_hash: c79e347352c19fc7583b91073ec04889c204eb07bee00d66fcec0a3688f26ca5
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: df4e09293aee842fd0a438a777e74bf63fcdc995
-artifact_sha256: a3168914a93f8cd337136cb766b2d25db559e128b353a41a091ae05f2a419070
+source_commit: 421b6aee281d49398dfe62104af70e9d59be5c17
+artifact_sha256: da72b1444cd552dda1de17cfc744a4d61f6ae7478f97b2d9358a8fa812f1a067
 ---
 # Implementation File Map
 
@@ -265,6 +265,7 @@ artifact_sha256: a3168914a93f8cd337136cb766b2d25db559e128b353a41a091ae05f2a41907
 | `refactor` | `ls/core/domain_shapes/compiler.py` |
 | `refactor` | `ls/core/domain_shapes/config.py` |
 | `refactor` | `ls/core/domain_shapes/models.py` |
+| `refactor` | `ls/core/factory_preflight.py` |
 | `refactor` | `ls/core/framework_version.py` |
 | `refactor` | `ls/core/git_state.py` |
 | `refactor` | `ls/core/git_subprocess.py` |
@@ -1058,6 +1059,7 @@ artifact_sha256: a3168914a93f8cd337136cb766b2d25db559e128b353a41a091ae05f2a41907
 | `keep` | `ls/tests/test_detach_recorded_paths.py` |
 | `keep` | `ls/tests/test_docs_alignment.py` |
 | `keep` | `ls/tests/test_domain_shapes.py` |
+| `keep` | `ls/tests/test_factory_preflight.py` |
 | `keep` | `ls/tests/test_file_listing.py` |
 | `keep` | `ls/tests/test_file_rpc.py` |
 | `keep` | `ls/tests/test_file_search.py` |

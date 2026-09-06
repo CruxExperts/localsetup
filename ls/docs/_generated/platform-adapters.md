@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 6065076c435b29c5ed5efa70a2a7552f6844d6a3bcc2e392ed94ab2ea4ee6d38
+  source_provenance_hash: c79e347352c19fc7583b91073ec04889c204eb07bee00d66fcec0a3688f26ca5
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: df4e09293aee842fd0a438a777e74bf63fcdc995
-artifact_sha256: 287b1facbf933de00072ef06bc28ef7a285797d2527c8f25b19c3389f7f81ee5
+source_commit: 421b6aee281d49398dfe62104af70e9d59be5c17
+artifact_sha256: 67eacdb4ccb4489d1be5cd7ae778238bcc766ec2097fe405a34e2b345c391d68
 ---
 # Platform Adapters
 
@@ -29,3 +29,4 @@ Repo adapter paths are attached only when selected with `--tools` or `--platform
 | `hermes-agent` | `.hermes/skills` | `skills_visible, namespace_ls` |
 | `qwen-code-cli` | `.agents/skills` | `skills_visible, namespace_ls` |
 | `kimi-cli` | `.agents/skills` | `skills_visible, namespace_ls` |
+| `factory-droid` | `.agents/skills` | `skills_visible, namespace_ls` |
