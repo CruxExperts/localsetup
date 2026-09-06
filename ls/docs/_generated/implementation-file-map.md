@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 8463b48224dd9bbd4432dfddf8cd8692fa9a6faf4382a5d8978f2e67401c2abe
+  source_provenance_hash: 2ab0d1c9a4e0eff7cf724e928f5e18737ac1fe375a0459e9bd4902ac6e91aa9c
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 8ca28c8dcf656684dda0145ddcb9904efd68b851
-artifact_sha256: f703f87e0ad39a6a334feba1a3a5aea681f6e27e500afff44ae794a15c0216be
+source_commit: 50e92f9c885a50feb5f77fbec673a4762765395b
+artifact_sha256: 65ddb105a7dd442c7aa7c96fe2e6ed97183b9a75fe1fb9788c4011091308bbec
 ---
 # Implementation File Map
 
@@ -1084,6 +1084,7 @@ artifact_sha256: f703f87e0ad39a6a334feba1a3a5aea681f6e27e500afff44ae794a15c0216b
 | `keep` | `ls/tests/test_personal_adapter.py` |
 | `keep` | `ls/tests/test_personal_doctor_route.py` |
 | `keep` | `ls/tests/test_personal_inventory.py` |
+| `keep` | `ls/tests/test_personal_owner_selections.py` |
 | `keep` | `ls/tests/test_personal_registry.py` |
 | `keep` | `ls/tests/test_personal_repair.py` |
 | `keep` | `ls/tests/test_plugin_packs.py` |
