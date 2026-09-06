@@ -408,3 +408,14 @@ including its existing immediate application. Installation configuration does
 not implicitly change detach scope. Repository `--plan` currently fails before
 mutation; combined `both` detach is not yet exposed. Client selection remains
 required through `--platforms` (alias `--tools`).
+
+## Adapter entry writer boundary
+
+The internal `personal_adapter.write_entries` primitive journals individual
+managed entries and marker changes beneath a caller-supplied root. It rejects
+paths outside that root, symlinked ancestors, and unsafe package names before
+writing. The caller must validate ownership, modes, selected package sources,
+and collisions and hold the package-root lock. Personal operations continue to
+run their existing selection checks and pass the home directory as that root.
+This shared primitive prepares repository repair reuse; combined doctor repair
+remains blocked until its ownership-aware planner and transaction are qualified.

@@ -85,6 +85,14 @@ def write(repo_root: Path, home: Path, action, journal: dict, journal_path: Path
           repository_target: Path | None = None, repository_packages: list[str] | None = None) -> None:
     names = selection(repo_root, home, action, repository_target=repository_target,
                       repository_packages=repository_packages)
+    write_entries(home, action, names, journal, journal_path)
+
+
+def write_entries(boundary: Path, action, names: list[str], journal: dict, journal_path: Path) -> None:
+    """Write a validated physical selection; caller owns selection authority and locking."""
+    check_path(action.path, boundary)
+    if any(not isinstance(name, str) or not is_safe_adapter_package_name(name) for name in names):
+        raise ValueError("Invalid adapter package name")
     global_root = Path(action.details["global_root"])
     if any(not (global_root / name).is_dir() for name in names):
         raise ValueError("Personal adapter package is missing from the managed library")
@@ -93,7 +101,7 @@ def write(repo_root: Path, home: Path, action, journal: dict, journal_path: Path
     old_mode = adapter_marker_state(action.path)["mode"]
     mode = action.details.get("mode", "symlink")
     for name in sorted(old | set(names)):
-        check_path(action.path, home)
+        check_path(action.path, boundary)
         entry = action.path / name
         managed = managed_entry(entry, global_root, old_mode)
         if name not in names and not managed:continue
@@ -102,7 +110,7 @@ def write(repo_root: Path, home: Path, action, journal: dict, journal_path: Path
         if name in names:
             if mode == "portable":shutil.copytree(global_root / name, entry, symlinks=True)
             else:entry.symlink_to(global_root / name, target_is_directory=True)
-    check_path(action.path, home)
+    check_path(action.path, boundary)
     marker = action.path / ADAPTER_MARKER_JSON
     record_file_state(journal, journal_path, marker, os.replace)
     save_json(marker, {"version": 1, "managed_by": "localsetup", "mode": mode,
