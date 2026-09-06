@@ -49,7 +49,7 @@ def _remove_unreferenced_managed_packages(global_root: Path, registry_payload: d
 
 
 def _remove_managed_shared_runtime_helper(repo_root: Path, global_root: Path, registry_payload: dict) -> list[str]:
-    if registry_payload.get("targets") or registry_payload.get("packages"):
+    if registry_payload.get("targets") or registry_payload.get("packages") or registry_payload.get("personal_owners"):
         return []
     source = repo_root / "ls" / "lib" / "deps.py"
     target = global_root.parent / "lib" / "deps.py"

@@ -110,3 +110,21 @@ Planning creates no configuration or adapters. Personal actions currently fail
 apply preflight with `personal_apply_unavailable`; the public `--skill-scope`
 option remains pending personal write, preservation, and rollback qualification.
 Repository installations persist the effective scope in the existing lock.
+
+## Personal package retention records
+
+The registry records explicit personal adapter owners in `personal_owners`, keyed
+by a deterministic `personal:` reference derived from their typed root/client
+identity. Each record contains the owner, selected package names, and adapter
+paths. Package references retain that identity independently of repository target
+references. Multiple clients sharing a path remain separate logical owners.
+
+Updating an explicit personal owner replaces its package selection; a
+repository-only update or repository removal preserves that personal owner.
+An empty personal selection still retains an ownership record. Referenced
+packages participate in the existing other-owner and pruning checks. Records may
+reference only packages supplied by the installation. Registry updates use the
+existing caller-held package-root lock and atomic registry save.
+
+This retention foundation does not enable personal adapter writes or personal
+detach; their preservation, rollback, and lifecycle qualification remain pending.

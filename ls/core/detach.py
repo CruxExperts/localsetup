@@ -180,7 +180,7 @@ def _detach_platforms_locked(repo_root: Path, home: Path, target_root: Path, pla
                 )
             if lock:
                 save_json(lock_path, updated_lock)
-            if updated_registry.get("targets") or updated_registry.get("packages"):
+            if updated_registry.get("targets") or updated_registry.get("packages") or updated_registry.get("personal_owners"):
                 save_json(registry_path, updated_registry)
             elif registry_path.exists():
                 _unlink_registry(registry_path)
