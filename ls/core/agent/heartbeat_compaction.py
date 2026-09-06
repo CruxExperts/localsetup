@@ -1,5 +1,6 @@
 """Bounded compaction process receipts and owner-verified continuation evidence."""
 import os
+import time
 
 from .broker_rpc import _decode
 from .compaction_content import usage
@@ -56,7 +57,7 @@ class Receipt:
         return {'completed': returncode == 0, 'receipt': value}
 
 
-def verify(owner, value, *, source, profile, token_limit):
+def _record(owner, value, *, source, profile, token_limit):
     """Caller holds the exact task/session lease; receipt text never creates authority."""
     owner._check()
     validate(value, source=source, profile=profile, token_limit=token_limit)
@@ -78,7 +79,28 @@ def verify(owner, value, *, source, profile, token_limit):
     recorded = validate(_decode(raw), source=source, profile=profile, token_limit=token_limit)
     if recorded != value:
         raise ValueError('Compaction process receipt differs from owner evidence')
+
+
+def verify(owner, value, *, source, profile, token_limit):
+    _record(owner, value, source=source, profile=profile, token_limit=token_limit)
     owner.resume_checkpoint(source, profile=profile)
     owner.resume_checkpoint(value['checkpoint'], profile=profile)
     owner._check()
     return value['checkpoint']
+
+
+def verify_history(owner, value, *, source, profile, token_limit):
+    """Verify historical compaction only; do not return messages or resume authority."""
+    from .checkpoint_store import Checkpoints
+    _record(owner, value, source=source, profile=profile, token_limit=token_limit)
+    checkpoints = Checkpoints(owner.root/'checkpoints')
+    history = [checkpoints.load(digest, timeout=max(0, owner.expires-time.monotonic()))
+               for digest in (source, value['checkpoint'])]
+    for item in history:
+        if ((item['task'], item['session']) != (owner._journal.task, owner._journal.session) or
+                item['profile'] != profile or item['state'] != 'complete'):
+            raise ValueError('Historical compaction checkpoint identity/state mismatch')
+    if history[0]['frontier'] != history[1]['frontier']:
+        raise ValueError('Compaction changed the operation frontier')
+    owner._journal.after(history[0]['frontier'], timeout=max(0, owner.expires-time.monotonic()))
+    owner._check()

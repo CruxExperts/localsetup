@@ -96,7 +96,7 @@ def initialize(root: Path, workspace: Path, document: dict, expected_sha256: str
     return inspect(root, workspace)
 
 
-def inspect(root: Path, workspace: Path) -> dict:
+def inspect(root: Path, workspace: Path, *, operation: str | None = None) -> dict:
     root, workspace = _paths(root, workspace)
     fd = _parent(root / POLICY, create=False)
     if fd is None:
@@ -104,8 +104,13 @@ def inspect(root: Path, workspace: Path) -> dict:
     try:
         with runtime_use(root, timeout=5, create=False):
             document, records, head, summary = _load(fd, workspace)
-            return {"head": head, "policy": document["policy"], "summary": summary,
-                    "record_count": len(records)}
+            result = {"head": head, "policy": document["policy"], "summary": summary,
+                      "record_count": len(records)}
+            if operation is not None:
+                budget._identity(operation, budget.IDENTIFIER)
+                grants, _ = authority.replay(document, records)
+                result["authorization"] = grants.get(operation)
+            return result
     finally:
         os.close(fd)
 

@@ -17,3 +17,43 @@ An existing lock stays authoritative unless all of these hold: its JSON has a cr
 4. If ownership cannot be established, leave the lock in place and investigate.
 
 Corrupt or unsafe pointers also stop the run instead of being silently trusted.
+
+## Reserved result acknowledgement recovery
+
+A reserved action can finish and preserve its private result while accounting
+still reports reconciliation_required. Inspect accounting and the retained
+state-root/heartbeat/action-binding/result.json before taking further action.
+If that exact result exists, review its SHA-256 and use the original private
+action input to join it to the pending reservation:
+
+~~~bash
+localsetup --target-directory /work/project harness codex-heartbeat accounting reconcile --accounting-root /private/task-control --input /private/action.json --expected-binding ORIGINAL_ACTION_BINDING --expected-head CURRENT_ACCOUNTING_HEAD --result-sha256 REVIEWED_RESULT_SHA256
+~~~
+
+The command revalidates the action and its original protected registration,
+checks its frozen profile/grant bytes and private result file, and requires the
+same pending operation, authorization and current accounting head. Completed
+results additionally require successful process/protocol evidence and the exact
+settled profile-bound session checkpoint; compound completion also requires the
+matching private compaction receipt and source/destination checkpoints at the
+same settled historical journal prefix. Historical checkpoints confer no new
+resume authority; the final coding checkpoint must remain current. It appends
+only the missing result record,
+retains every charged allocation, and returns awaiting_controller_review. Record
+a separate controller progress disposition afterward. Execution completion does
+not accept an issue or authorize another attempt.
+
+No agent phase or provider request is dispatched. If the result was already
+recorded, inspect the new head and review that recorded result instead. Missing,
+changed, unsafe or unverifiable evidence leaves the reservation unresolved; do
+not replay work, reset accounting or manufacture a replacement result. A failed
+retained outcome is recorded as failure, without claiming a settled session;
+any later resume still requires the session owner's uncertainty checks.
+
+The original action inputs and runtime registration must still produce the
+original binding. After an upgrade or input change, recover the exact compatible
+prior selection or preserved input through its owning recovery procedure before
+retrying reconciliation. This command does not migrate bindings or choose a
+replacement runtime. It follows the accounting command's private-file, generic
+error and exit 0/2/130 contract. Existing heartbeat overlap locks and ordinary
+transaction recovery remain separate from this accounting operation.

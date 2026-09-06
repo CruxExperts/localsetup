@@ -15,7 +15,7 @@ from .run_io import Streams
 def arguments(parent, target_flags):
     parser = parent.add_parser("accounting")
     sub = parser.add_subparsers(dest="accounting_action", required=True)
-    for action in ("init", "inspect", "review", "action-plan", "authorize"):
+    for action in ("init", "inspect", "review", "action-plan", "authorize", "reconcile"):
         item = sub.add_parser(action)
         target_flags(item)
         item.add_argument("--accounting-root", type=Path, required=True)
@@ -26,8 +26,11 @@ def arguments(parent, target_flags):
             mode.add_argument("--plan", action="store_true")
             mode.add_argument("--apply", action="store_true")
             item.add_argument("--policy-sha256")
-        elif action in ("review", "authorize"):
+        elif action in ("review", "authorize", "reconcile"):
             item.add_argument("--expected-head", required=True)
+        if action == "reconcile":
+            item.add_argument("--expected-binding", required=True)
+            item.add_argument("--result-sha256", required=True)
 
 
 def _input(path, workspace):
@@ -64,6 +67,10 @@ def execute(args, workspace):
     if args.accounting_action == "action-plan":
         from .heartbeat_action import plan
         return plan(args.input, workspace, args.accounting_root)
+    if args.accounting_action == "reconcile":
+        from .heartbeat_reconciliation import reconcile
+        return reconcile(args.input, workspace, args.accounting_root, expected_head=args.expected_head,
+                         expected_binding=args.expected_binding, expected_result=args.result_sha256)
     value = _input(args.input, workspace)
     if args.accounting_action in ("review", "authorize"):
         fields = ({"operation", "result", "decision", "evidence", "rationale"}
