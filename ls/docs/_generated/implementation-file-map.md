@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: dffc00f3c70ab64e25a6cd5fcf709322ec03f8f618382044ac74e747205f0322
+  source_provenance_hash: 5b4698c83a1fdb8e26c1b35b8184608a41b939ce0ca0e2bdcccd97e1043a4dc2
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 2583efe32fa55a93d8af7a370b4a7dc0d225a24f
-artifact_sha256: aaceb38c0bef8ae7b1bc4f47bfeb12f9b04415e60e04a83c0968464998f9b97b
+source_commit: bc981c45b21650b7c114ce098e50b4842608e0ab
+artifact_sha256: 67eeee6ab9605d6b2f35f12f66e8502ce12b06643aa26f2c999f0af50b60cb68
 ---
 # Implementation File Map
 
@@ -302,6 +302,7 @@ artifact_sha256: aaceb38c0bef8ae7b1bc4f47bfeb12f9b04415e60e04a83c0968464998f9b97
 | `refactor` | `ls/core/python_architecture/rules.py` |
 | `refactor` | `ls/core/python_architecture/scanner.py` |
 | `refactor` | `ls/core/query.py` |
+| `refactor` | `ls/core/recorded_mode.py` |
 | `refactor` | `ls/core/reference_materializer.py` |
 | `refactor` | `ls/core/registry.py` |
 | `refactor` | `ls/core/repair.py` |
@@ -1112,6 +1113,7 @@ artifact_sha256: aaceb38c0bef8ae7b1bc4f47bfeb12f9b04415e60e04a83c0968464998f9b97
 | `keep` | `ls/tests/test_python_runtime_contract.py` |
 | `keep` | `ls/tests/test_qc_patrol.py` |
 | `keep` | `ls/tests/test_recorded_file_operations.py` |
+| `keep` | `ls/tests/test_recorded_mode.py` |
 | `keep` | `ls/tests/test_recovery.py` |
 | `keep` | `ls/tests/test_reference_materializer.py` |
 | `keep` | `ls/tests/test_repo_finalizer.py` |
