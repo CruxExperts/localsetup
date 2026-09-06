@@ -149,8 +149,9 @@ Repository detach and rollback preserve independent personal installations and
 their package references. If a removal path overlaps a recorded personal adapter,
 they refuse before mutation until shared-path removal is qualified. Repository
 updates on a personal adapter preserve its owners through the shared writer
-below; conflicting modes still fail preflight. A single
-install also refuses repository and personal actions targeting the same path.
+below; conflicting modes still fail preflight. A single install coalesces
+repository and personal actions targeting the same path when their modes and
+package library agree.
 They do not implicitly remove personal adapters.
 Explicit personal detach and coordinated shared-path removal remain pending.
 Personal repair is qualified through the recorded-owner route below.
@@ -288,7 +289,7 @@ recorded scope; repeating that scope with no selectors keeps automatic recorded
 updates. To change personal package selections, name clients explicitly.
 Changing a recorded scope currently fails before installation: coordinated
 ownership migration is not yet qualified. Same-plan repository/personal actions on one path
-continue to fail preflight as documented above.
+require matching modes and package libraries.
 
 ## Repository updates on personal adapter paths
 
@@ -302,8 +303,21 @@ receipts retain their existing client-membership interpretation.
 These shared writes use the home-bound path checks and per-entry journal used
 by personal adapters. A failed write restores managed entries while preserving
 custom neighbors, including files created during the failed operation. Mode
-changes that conflict with a personal owner fail before mutation. Same-plan
-repository/personal coalescing and shared-path detach/rollback remain pending.
+changes that conflict with a personal owner fail before mutation. Shared-path detach/rollback remain pending.
 
 Repository filesystem verification checks the full recorded owner union on a
 shared path and reports the repository request separately from that union.
+
+## Coalescing both scopes in one plan
+
+When a `both` plan contains repository and personal actions for the same path,
+preflight pairs them only if their modes and package-library paths agree.
+Duplicate actions within one scope are rejected. Apply writes the directory
+once through the personal entry journal, using the union of both requested
+sets and retained owners. It excludes the updating repository's old selection.
+
+The repository and personal actions remain separate in the plan and receipts;
+coalescing physical writes does not merge their logical ownership or selections.
+Filesystem verification checks the visible union. Conflicting modes or library
+paths fail before writes, and the home-bound path and custom-content protections
+remain effective.

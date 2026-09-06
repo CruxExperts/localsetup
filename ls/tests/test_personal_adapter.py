@@ -86,7 +86,7 @@ def test_personal_apply_preserves_overlapping_legacy_repository_owner(tmp_path):
         assert (shared / "ls-context").is_symlink() and (shared / "ls-git-workflows").is_symlink()
     both = build_install_plan(root, home, skills=["ls-context"], platform_ids=["cursor"], target_root=home, skill_scope="both")
     result = preflight_install_plan(root, both, home, target_root=home)
-    assert any(b["status_code"] == "overlapping_scope_actions" for b in result["blockers"])
+    assert result["ok"], result["blockers"]
 
     personal_before = load_registry(registry_path)["personal_owners"]
     apply_plan(root, repo_plan, home, target_root=home)

@@ -409,7 +409,8 @@ def adapter_path_state(
     is_portable_copy = (
         repo_path.is_dir()
         and not is_symlink
-        and (repo_path / ".localsetup-portable").exists()
+        and (adapter_marker_state(repo_path)["mode"] == "portable"
+             or (repo_path / ".localsetup-portable").exists())
     )
     is_unmanaged_directory = (
         repo_path.is_dir()

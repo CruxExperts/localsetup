@@ -43,15 +43,18 @@ def preflight_install_plan(repo_root: Path, plan, home: Path, *, target_root: Pa
     except ValueError as exc:
         blockers.append({"path": str(target_root or repo_root),
                          "status_code": "personal_selection_conflict", "reason": str(exc)})
-    repo_paths = {action.path for action in plan.actions if action.kind == "attach_repo_path"}
-    personal_paths = {action.path for action in plan.actions if action.kind == "attach_personal_path"}
-    for path in sorted(repo_paths & personal_paths):
-        blockers.append({"path": str(path), "status_code": "overlapping_scope_actions",
-                         "reason": "one install cannot write the same adapter through both scopes"})
+    from .adapter_coalescing import paired_repository_actions
+    try:pairs = paired_repository_actions(plan)
+    except ValueError as exc:
+        return {"ok": False, "blockers": [*blockers, {"path": str(target_root or repo_root),
+                "status_code": "overlapping_scope_actions", "reason": str(exc)}]}
     for action in plan.actions:
         if action.kind == "attach_personal_path":
             from .personal_adapter import selection
-            try:selection(repo_root, home, action)
+            pair = pairs.get(action.path)
+            try:selection(repo_root, home, action,
+                          repository_target=(target_root or repo_root) if pair else None,
+                          repository_packages=pair.details.get("packages", []) if pair else None)
             except (ValueError, OSError) as exc:
                 blockers.append({"path": str(action.path), "status_code": "personal_adapter_unsafe", "reason": str(exc)})
             continue
@@ -113,6 +116,7 @@ def preflight_install_plan(repo_root: Path, plan, home: Path, *, target_root: Pa
                         }
                     )
         elif action.kind == "attach_repo_path":
+            if action.path in pairs:continue
             from .repository_overlap import check_overlap
             try:
                 if check_overlap(repo_root, home, target_root or repo_root, action):continue

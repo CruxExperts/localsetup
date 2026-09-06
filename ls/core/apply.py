@@ -352,6 +352,8 @@ def _apply_plan_unlocked(
     preflight = preflight_install_plan(repo_root, plan, home, target_root=attachment_root)
     if not preflight["ok"]:
         raise RuntimeError(f"install preflight failed: {preflight['blockers']}")
+    from .adapter_coalescing import paired_repository_actions
+    pairs = paired_repository_actions(plan)
     txid = uuid.uuid4().hex
     journal_path = _journal_path(attachment_root, txid)
     journal = {
@@ -424,9 +426,15 @@ def _apply_plan_unlocked(
             elif action.kind == "attach_personal_path":
                 if not dry_run:
                     from .personal_adapter import write
-                    write(repo_root, home, action, journal, journal_path)
+                    pair = pairs.get(action.path)
+                    write(repo_root, home, action, journal, journal_path,
+                          repository_target=attachment_root if pair else None,
+                          repository_packages=pair.details.get("packages", []) if pair else None)
                 executed.append(f"attach_personal_path:{action.path}")
             elif action.kind == "attach_repo_path":
+                if action.path in pairs:
+                    executed.append(f"attach_repo_path:{action.path}")
+                    continue
                 if not dry_run:
                     from .repository_overlap import write_overlap
                     if write_overlap(repo_root, home, attachment_root, action, journal, journal_path):
