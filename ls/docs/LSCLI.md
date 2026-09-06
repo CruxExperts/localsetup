@@ -2092,8 +2092,8 @@ PATH inspection is limited to 256 entries and 64 KiB. It refuses an executable
 with the same command name before the intended bin directory. A bin directory
 absent from PATH yields `ready: false`, not an effective registration claim.
 Empty or relative PATH entries retain their current-directory meaning; the tool
-does not edit PATH or shell startup files. This prerequisite has no public
-registration apply command yet and does not grant runtime execution authority.
+does not edit PATH or shell startup files. The public setup interface below uses this prerequisite without granting runtime
+execution authority.
 
 
 ### Receipt-backed fresh registration owner
@@ -2124,6 +2124,38 @@ execution. Receipt hashes detect inconsistency, not malicious same-user forgery.
 
 Focused filesystem fixtures qualify fresh publication, modified-command
 preservation, interrupted writes, plan changes, and bin lease exclusion. They
-mock runtime selection and do not establish installed launcher behavior. Public
-registration commands, owned refresh/recovery, and installed qualification remain
-separate required work.
+mock runtime selection and do not establish installed launcher behavior. Owned refresh/recovery and installed qualification remain separate required work.
+
+
+### Public fresh command registration
+
+Use an explicit private bin directory already present in PATH. The command does
+not edit shell startup files or adopt an existing command. Review the JSON plan
+and use its `plan_sha256` unchanged for application:
+
+```bash
+lscli setup --plan --bin-dir /path/to/private/bin --runtime-root /path/to/runtimes
+lscli setup --apply --bin-dir /path/to/private/bin --runtime-root /path/to/runtimes --registration-sha256 PLAN_SHA256
+lscli setup --registration-status --bin-dir /path/to/private/bin
+```
+
+Plan and apply use the established default runtime root when omitted, or the
+registered dispatcher's bound root. Status uses the receipt's root and rejects a
+runtime override. All registration modes require an explicit `--bin-dir`; they
+cannot mix profile creation, runtime artifact inputs, reselection, or custom
+timeouts. Application requires the reviewed digest. Plan and status create no
+configuration or command state. A plan can report `path.ready: false`; inspect
+this field before applying, which refuses an ineffective PATH position.
+
+Output is one JSON object. Successful plan/apply returns 0; status returns 0 only
+for `registered`, or 3 for other reported states. Errors return 2 with a generic
+diagnostic, and cancellation returns 130. Output writes have a five-second bound;
+existing owner lease bounds apply, with no overall inventory-hashing deadline
+claim. A failed output write after application can leave a successful registration:
+inspect status and retained records before attempting recovery. Status checks
+registration integrity and release selection, not current PATH precedence.
+
+The public fixture checks call the real CLI and filesystem owner with a mocked
+runtime selection. Installed dispatcher qualification and explicit owned
+refresh/recovery remain required; an existing or stale launcher is never replaced
+by this fresh registration command.
