@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 730dcafaadfcf238d54d9521ee0316e5c2326591e3626adf93aa975f1f3de092
+  source_provenance_hash: 27df6c31e07f5f6160e18098e76320c18f4d9d5c705b37ddac6d948aa60a3d50
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 0dae5c430aae571029e5e8992af6fa909b2ad314
-artifact_sha256: 959759d6fc64cf13e95fb446d8974591ed8f3e92e51243448bf76262da88521f
+source_commit: 053744f927efcf793ee1fcdb7b5d3be5b359eb65
+artifact_sha256: af01b4a85404dced226fa91da40d93f0a00d1e97fa854107e09611017f627040
 ---
 # Implementation File Map
 
@@ -269,6 +269,7 @@ artifact_sha256: 959759d6fc64cf13e95fb446d8974591ed8f3e92e51243448bf76262da88521
 | `refactor` | `ls/core/git_state.py` |
 | `refactor` | `ls/core/git_subprocess.py` |
 | `refactor` | `ls/core/global_first_audit.py` |
+| `refactor` | `ls/core/goose_prerequisite.py` |
 | `refactor` | `ls/core/handoff.py` |
 | `refactor` | `ls/core/harness.py` |
 | `refactor` | `ls/core/health.py` |
@@ -1056,6 +1057,7 @@ artifact_sha256: 959759d6fc64cf13e95fb446d8974591ed8f3e92e51243448bf76262da88521
 | `keep` | `ls/tests/test_file_rpc.py` |
 | `keep` | `ls/tests/test_file_search.py` |
 | `keep` | `ls/tests/test_github_starredrepos_skill.py` |
+| `keep` | `ls/tests/test_goose_prerequisite.py` |
 | `keep` | `ls/tests/test_historical_personal_ownership.py` |
 | `keep` | `ls/tests/test_image_inputs.py` |
 | `keep` | `ls/tests/test_install_flow.py` |
