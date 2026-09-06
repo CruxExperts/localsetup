@@ -155,3 +155,58 @@ credentials, sessions, databases, settings, plugins, hooks, and custom rules.
 [Instruction discovery](https://docs.cline.bot/customization/cline-rules),
 including `AGENTS.md`, is separate from skill discovery; policy insertion and
 personal instruction management remain unqualified.
+
+## Windsurf / Cascade retention
+
+The `windsurf` family records the audited `windsurf-cascade` IDE identity.
+LocalSetup treats it as **retained-only** while upstream availability guidance
+conflicts. This is an installation policy, not a declaration that Cascade has
+been retired. No fresh-install platform projection is emitted, so
+`--tools windsurf-cascade` is rejected for fresh selection. Existing receipts
+retain their client identity and recorded paths for verification, package
+updates, and detach. Symlink and portable fixtures exercise that lifecycle
+using a synthetic historical catalog; they do not certify a desktop build.
+
+[The Cascade skills guide](https://docs.devin.ai/desktop/cascade/skills) confirms
+repository `.agents/skills` and personal `~/.agents/skills`, alongside native
+`.windsurf/skills` and `~/.codeium/windsurf/skills`. Retain existing native content;
+do not duplicate projections or infer cross-root collision precedence.
+[AGENTS.md discovery](https://docs.devin.ai/desktop/cascade/agents-md) supports
+root and nested instructions, but this profile does not manage policy insertion.
+[Rules and memories](https://docs.devin.ai/desktop/cascade/memories) are separate
+from skills and do not establish a durable scheduler.
+
+The [transition FAQ](https://docs.devin.ai/desktop/devin-desktop-faq) says Cascade
+remains available through July after the June 2026 desktop rename, while
+[current agent-selection guidance](https://docs.devin.ai/desktop/devin-local)
+still describes Cascade selection and fallback. Neither definitive removal nor
+universal availability is established by those conflicting statements.
+Qualification is blocked pending an exact build and account where Cascade can
+be selected, with its effective settings and harmless skill discovery checked.
+Do not authenticate, change agent settings, or install an old build merely to
+resolve this uncertainty without target-specific authority.
+
+[Current downloads](https://devin.ai/download) supply Devin Desktop. The
+`devin-desktop`, `surf`, and `windsurf` launcher candidates establish desktop
+presence only. They do not prove Cascade availability. Devin Local and
+JetBrains are outside this profile; never substitute their discovery contracts.
+Native settings, MCP configuration, memories, sessions, workspaces, enterprise
+policy, custom rules, and skills remain vendor/user-owned.
+
+For a healthy existing receipt, retain scope and client selection by omitting
+selectors during the recorded update:
+
+```bash
+localsetup verify --target-directory PROJECT
+localsetup plan --target-directory PROJECT
+localsetup update --target-directory PROJECT
+```
+
+`plan` is read-only; `update` applies the recorded package refresh. This does
+not upgrade the desktop application or prove host compatibility. Automatic repository-only doctor repair is not qualified for this retained
+profile: it returns a preservation blocker before client inference, even when
+application is requested. Preserve the receipt and custom content and use a
+verified backup or reviewed recorded-path recovery under the
+[ownership guidance](ADAPTER_OWNERSHIP.md). Personal and combined repair retain
+their recorded ownership routes. Do not replace an unhealthy receipt with fresh
+profile selection.

@@ -881,3 +881,133 @@ families:
         verification: {classification: filesystem}
         rollback: {classification: managed-entry-removal}
         compatibility: {platform_id: opencode, order: 50, native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
+
+  - id: windsurf
+    display_name: Windsurf / Cascade
+    variants:
+    - id: windsurf-cascade
+      display_name: Windsurf / Cascade
+      kind: ide
+      support_status: experimental
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_docs
+          url: https://docs.devin.ai/desktop/cascade/skills
+        - kind: official_docs
+          url: https://docs.devin.ai/desktop/cascade/agents-md
+        - kind: official_docs
+          url: https://docs.devin.ai/desktop/cascade/memories
+        - kind: official_docs
+          url: https://docs.devin.ai/desktop/devin-desktop-faq
+        - kind: official_docs
+          url: https://docs.devin.ai/desktop/devin-local
+        - kind: official_docs
+          url: https://devin.ai/download
+      executables:
+      - devin-desktop
+      - surf
+      - windsurf
+      policy:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - AGENTS.md
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: retained-only
+        installation:
+          method: manual
+          instructions: Retain existing Cascade adapters. Qualify exact desktop build and account access to Cascade before considering fresh installation; current downloads do not prove Cascade availability.
+        qualification:
+          catalog: bounded
+          filesystem: verified
+          host: blocked
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_windsurf_retention.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Retained-only is LocalSetup policy while dated availability and current agent-selector documentation conflict; it is not a claim of definitive upstream retirement.
+        - No fresh-install projection is emitted; existing recorded adapters remain maintainable without substituting Devin Local.
+        - Filesystem evidence covers synthetic historical receipt lifecycle only, not host installation or Cascade discovery.
+        - Automatic repository-only repair is blocked before inference; unhealthy retained adapters require reviewed recorded-path recovery.
+        - Desktop launcher presence does not establish Cascade availability; exact build, account access, settings, and duplicate-root precedence require qualification.
+        - Native skill directories, memories, rules, settings, MCP configuration, sessions, and enterprise policy remain unmanaged.

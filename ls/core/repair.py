@@ -58,6 +58,13 @@ def run_repair(
             clients=platform_ids, apply=apply, mode=repair_mode, allowed=allowed,
             warnings=warnings, blockers=blockers,
         )
+    from .retained_update import retained_repository_clients
+    recorded_lock = modern_lock if modern_lock_path.exists() else legacy_lock
+    if retained_repository_clients(source, recorded_lock):
+        return {"ok": False, "applied": False, "skill_scope": "repo", "actions": [],
+                "warnings": warnings, "decisions": [], "repair_mode": repair_mode,
+                "inferred": {"platforms": recorded_lock.get("platforms", [])},
+                "blockers": [*blockers, "Retained repository adapters require recorded-path manual recovery; automatic repair is not qualified. Preserve the receipt and adapter content; do not infer replacement clients."]}
     protected_reasons = _protected_target_reasons(source, home, target)
     inferred_platforms, platform_reasons = _infer_platforms(source, target, modern_lock, legacy_lock, platform_ids)
     attach_mode, attach_reason = _infer_attach_mode(modern_lock)

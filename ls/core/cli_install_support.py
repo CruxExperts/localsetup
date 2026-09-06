@@ -299,6 +299,10 @@ def _apply_install_plan(
 
 def _auto_default_context(root: Path, home: Path, config: InstallConfig, target_root: Path) -> dict:
     _ensure_synced()
+    from .retained_update import retained_repository_plan
+    retained_plan = retained_repository_plan(root, home, target_root)
+    if retained_plan is not None:
+        return {"mode": "recorded_repo", "repair": {"ok": True, "actions": []}, "plan": retained_plan}
     repair = run_repair(
         root,
         home=home,
