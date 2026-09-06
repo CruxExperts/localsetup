@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 34824db388c84fb806c9bb35caa2ca1f96a4f6aac905be8888c6738e09ffb0e9
+  source_provenance_hash: dfdf31eda7635b44f822266766672ca5add4688c247adee70d129bf68273d22e
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 5dfb0339bf34015c4521011c143dc65ac799b6d3
-artifact_sha256: c89f9422a7403eabc6b1b5a795a8c7b760d1fed5750cf35711ea6bb968e97343
+source_commit: 345605a741b2fa68ae43067c0eceec2f9fb49b01
+artifact_sha256: 00a58877120c86b16fe3250c24127c6d5035616b31a78a5c1ae57ef04f0915b9
 ---
 # Platform Adapters
 
@@ -32,3 +32,4 @@ Repo adapter paths are attached only when selected with `--tools` or `--platform
 | `factory-droid` | `.agents/skills` | `skills_visible, namespace_ls` |
 | `antigravity-app` | `.agents/skills` | `skills_visible, namespace_ls` |
 | `gemini-cli` | `.agents/skills` | `skills_visible, namespace_ls` |
+| `omp-cli` | `.agents/skills` | `skills_visible, namespace_ls` |
