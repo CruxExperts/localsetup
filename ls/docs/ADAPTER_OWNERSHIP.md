@@ -474,3 +474,18 @@ before writes; it is not silently converted. Normal journaled application remain
 apply to recorded personal and combined plans; inferred repository plans retain
 their existing preflight checks. Repository-only updates retain the existing inferred selection while applying
 the explicit mode; personal and combined updates retain recorded selections.
+
+## Recorded repository detach authority
+
+Repository detach uses `adapter_targets` paths and typed repository owners from
+the installation receipt. Legacy rows without `owners` use their recorded
+`platforms` or `platform` membership. Explicit-empty owners or client lists remain
+empty; current catalog paths never supply missing mutation authority.
+
+All recorded paths and owner roots are validated before removal. Duplicate or
+out-of-target records block detach. A catalog path change therefore does not
+redirect removal: the old recorded exposure is detached, while a newly catalogued
+path remains untouched. Unselected owners and custom neighbors remain in place.
+When no recorded owner matches, detach is a no-op. Receipts lacking client/path
+ownership require reconciliation before removal; discovery alone cannot authorize
+cleanup. Normal partial-owner receipt updates and package retention still apply.

@@ -9,7 +9,7 @@ import uuid
 
 from .installation_ownership import repository_owners
 
-from .adapters import adapter_targets, legacy_global_roots, remove_managed_adapter_entries
+from .adapters import legacy_global_roots, remove_managed_adapter_entries
 from .lockfile import load_json, save_json, save_text
 from .locking import package_root_lock
 from .manifests import load_pack_config
@@ -116,21 +116,13 @@ def _detach_platforms_locked(repo_root: Path, home: Path, target_root: Path, pla
     registry_path = expand_user_path(pack.global_registry, home)
     lock = load_json(lock_path)
     registry = load_registry(registry_path)
-    recorded_by_path = {
-        str(item.get("path")): item
-        for item in lock.get("adapter_targets", [])
-        if isinstance(item, dict) and item.get("path")
-    }
-    physical_targets = adapter_targets(repo_root, home, platform_ids=platform_ids, target_root=target_root)
-    remove_targets: list[dict] = []
-    for target in physical_targets:
-        recorded = recorded_by_path.get(str(target["repo_path"]), {})
-        owners = set(
-            recorded.get("platforms")
-            or ([recorded.get("platform")] if recorded.get("platform") else target["platforms"])
-        )
-        if not owners - requested:
-            remove_targets.append(target)
+    from .detach_records import recorded_detach_rows
+    rows = recorded_detach_rows(lock, target_root)
+    if not any(owners & requested for _, _, owners in rows):
+        return {"removed": [], "packages_preserved": True, "warnings": []}
+    recorded_by_path = {str(path): row for path, row, _ in rows}
+    remove_targets = [{"repo_path": path, "platforms": sorted(owners)}
+                      for path, _, owners in rows if owners & requested and not owners - requested]
 
     from .shared_detach import shared_detach_actions
     from .repository_overlap import write_overlap
@@ -145,11 +137,10 @@ def _detach_platforms_locked(repo_root: Path, home: Path, target_root: Path, pla
     updated_lock["platforms"] = sorted(set(lock.get("platforms", [])) - requested)
     updated_targets: list = []
     removed_paths = {str(target["repo_path"]) for target in remove_targets}
-    for item in lock.get("adapter_targets", []):
-        if not isinstance(item, dict):
+    for _, item, owners in rows:
+        if not owners & requested:
             updated_targets.append(item)
             continue
-        owners = set(item.get("platforms") or ([item.get("platform")] if item.get("platform") else []))
         remaining_owners = sorted(owners - requested)
         if not remaining_owners:
             continue
@@ -160,7 +151,8 @@ def _detach_platforms_locked(repo_root: Path, home: Path, target_root: Path, pla
         updated_targets.append(updated)
     updated_lock["adapter_targets"] = updated_targets
     updated_lock["adapter_state"] = [
-        path for path in lock.get("adapter_state", []) if str(path) not in removed_paths
+        path for path in lock.get("adapter_state", [])
+        if str(Path(path) if Path(path).is_absolute() else target_root / path) not in removed_paths
     ]
     personal_targets = lock.get("personal_adapter_targets", [])
     personal_clients = {owner["client"] for item in personal_targets for owner in item.get("owners", [])}
