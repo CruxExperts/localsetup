@@ -1948,3 +1948,15 @@ message returns `incomplete`, and a non-assistant message returns `malformed`.
 Deterministic native adapter fixtures verify ordered text across multiple parts
 and messages after reasoning output, and verify that `validate_only` omits native
 schema parameters while still rejecting output that fails local validation.
+
+
+### Read-only runtime lease primitive
+
+Runtime diagnostics can acquire an existing shared runtime lease with
+`runtime_use(root, create=False)`. This internal mode opens the established lock
+read-only and never creates a root or lock. A missing lock reports incomplete
+setup; it does not repair the installation. Exclusive upgrades still exclude
+these readers, and existing ownership, link, permission and inode checks apply.
+The noncreating mode cannot take an exclusive lease. Existing execution and
+installation callers retain their current lock-creation behavior. This primitive
+alone does not qualify runtime readiness or change the doctor result.

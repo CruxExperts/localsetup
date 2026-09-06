@@ -101,3 +101,51 @@ with runtime_use(Path(sys.argv[2]), exclusive=True):
         child.wait(timeout=5)
         child.stdin.close()
         child.stdout.close()
+
+
+def test_noncreating_lease_preserves_missing_and_existing_lock(tmp_path):
+    lock = tmp_path / LOCK_NAME
+    with pytest.raises(FileNotFoundError):
+        with runtime_use(tmp_path, create=False, timeout=0):
+            pytest.fail('missing lock accepted')
+    assert list(tmp_path.iterdir()) == []
+    with runtime_use(tmp_path, timeout=0):
+        before = lock.stat()
+        with runtime_use(tmp_path, create=False, timeout=0):
+            with pytest.raises(TimeoutError):
+                with runtime_use(tmp_path, exclusive=True, timeout=0):
+                    pytest.fail('writer bypassed diagnostic reader')
+    after = lock.stat()
+    assert (before.st_ino, before.st_mtime_ns, before.st_size, before.st_mode) == (
+        after.st_ino, after.st_mtime_ns, after.st_size, after.st_mode)
+    with runtime_use(tmp_path, exclusive=True, timeout=0):
+        with pytest.raises(TimeoutError):
+            with runtime_use(tmp_path, create=False, timeout=0):
+                pytest.fail('diagnostic reader bypassed writer')
+
+
+def test_noncreating_exclusive_lease_is_rejected_without_state(tmp_path):
+    with pytest.raises(ValueError, match='must be shared'):
+        with runtime_use(tmp_path, create=False, exclusive=True):
+            pytest.fail('exclusive diagnostic lease accepted')
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_noncreating_fifo_lock_is_rejected_before_open_can_block(tmp_path):
+    import subprocess
+    import sys
+    os.mkfifo(tmp_path / LOCK_NAME, 0o600)
+    code = """import sys
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+from ls.core.agent.runtime_lock import runtime_use
+try:
+    with runtime_use(Path(sys.argv[2]), create=False, timeout=0):
+        raise AssertionError('FIFO accepted')
+except ValueError as exc:
+    assert 'regular file' in str(exc)
+"""
+    subprocess.run([sys.executable, '-I', '-c', code,
+                    str(Path(__file__).resolve().parents[2]), str(tmp_path)],
+                   check=True, timeout=5, capture_output=True)
+    assert (tmp_path / LOCK_NAME).is_fifo()

@@ -34,12 +34,17 @@ def _directory(path: Path) -> int:
 
 
 @contextmanager
-def runtime_use(root: Path, *, exclusive: bool = False, timeout: float = 30.0) -> Iterator[None]:
+def runtime_use(root: Path, *, exclusive: bool = False, timeout: float = 30.0, create: bool = True) -> Iterator[None]:
     """Lease an existing runtime root; never delete or replace its lock inode.
+
+    With create=False, take a shared lease on an existing lock without creating
+    filesystem state. Missing locks fail for callers to report incomplete setup.
 
     Callers protect the directory against untrusted same-user processes through
     the sandbox. Acquire the package-root lock first when both are needed.
     """
+    if not isinstance(create, bool) or (exclusive and not create):
+        raise ValueError("Noncreating runtime leases must be shared")
     if not math.isfinite(timeout) or timeout < 0:
         raise ValueError("Runtime lock timeout must be finite and nonnegative")
     if os.name != "posix":
@@ -50,7 +55,8 @@ def runtime_use(root: Path, *, exclusive: bool = False, timeout: float = 30.0) -
     directory = _directory(root)
     fd = None
     try:
-        fd = os.open(LOCK_NAME, os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600, dir_fd=directory)
+        flags = (os.O_RDWR | os.O_CREAT) if create else os.O_RDONLY
+        fd = os.open(LOCK_NAME, flags | os.O_NOFOLLOW | os.O_CLOEXEC | os.O_NONBLOCK, 0o600, dir_fd=directory)
         info = os.fstat(fd)
         if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_uid != os.getuid() or info.st_mode & 0o077:
             raise ValueError("Runtime lock must be a private user-owned regular file with one link")
