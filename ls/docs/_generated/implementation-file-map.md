@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 2ab0d1c9a4e0eff7cf724e928f5e18737ac1fe375a0459e9bd4902ac6e91aa9c
+  source_provenance_hash: 7845d80359441629488a1d2818280a1d75f0b6bed8730e9f9dc3f9b8f20969c1
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 50e92f9c885a50feb5f77fbec673a4762765395b
-artifact_sha256: 65ddb105a7dd442c7aa7c96fe2e6ed97183b9a75fe1fb9788c4011091308bbec
+source_commit: 40b77ad1282f2d7cfca048ee1b9a3e4ee3766865
+artifact_sha256: c8fb61021132132253dc9250de5d916daff1b4e84b1ec9ae211e22f9937858eb
 ---
 # Implementation File Map
 
@@ -286,6 +286,7 @@ artifact_sha256: 65ddb105a7dd442c7aa7c96fe2e6ed97183b9a75fe1fb9788c4011091308bbe
 | `refactor` | `ls/core/personal_inventory.py` |
 | `refactor` | `ls/core/personal_registry.py` |
 | `refactor` | `ls/core/personal_repair.py` |
+| `refactor` | `ls/core/personal_update.py` |
 | `refactor` | `ls/core/plan.py` |
 | `refactor` | `ls/core/plugin_packs.py` |
 | `refactor` | `ls/core/provenance.py` |
@@ -1087,6 +1088,7 @@ artifact_sha256: 65ddb105a7dd442c7aa7c96fe2e6ed97183b9a75fe1fb9788c4011091308bbe
 | `keep` | `ls/tests/test_personal_owner_selections.py` |
 | `keep` | `ls/tests/test_personal_registry.py` |
 | `keep` | `ls/tests/test_personal_repair.py` |
+| `keep` | `ls/tests/test_personal_update.py` |
 | `keep` | `ls/tests/test_plugin_packs.py` |
 | `keep` | `ls/tests/test_portable_history.py` |
 | `keep` | `ls/tests/test_process_broker.py` |
