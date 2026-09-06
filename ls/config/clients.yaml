@@ -1303,10 +1303,10 @@ families:
         kind: cli
         support_status: supported
         research:
-          status: verified
-          checked_on: '2026-07-15'
+          status: partial
+          checked_on: '2026-09-06'
           sources:
-            - {kind: official_release, url: 'https://github.com/google-gemini/gemini-cli/releases/tag/v0.50.0', version: '0.50.0'}
+            - {kind: official_release, url: 'https://github.com/google-gemini/gemini-cli/releases/tag/v0.58.0', version: '0.58.0'}
             - {kind: official_docs, url: 'https://geminicli.com/docs/cli/skills/'}
             - {kind: official_docs, url: 'https://geminicli.com/docs/cli/gemini-md/'}
         executables: [gemini]
@@ -1317,8 +1317,8 @@ families:
           repo: {status: supported, resolution: single, paths: ['.gemini/settings.json'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
           global: {status: supported, resolution: single, paths: ['~/.gemini/settings.json'], precedence_status: verified, ownership: client-native, collision: manual}
         skills:
-          repo: {status: supported, resolution: first-existing, paths: ['.agents/skills', '.gemini/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: first-existing, paths: ['~/.agents/skills', '~/.gemini/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          repo: {status: supported, resolution: aggregate, paths: ['.agents/skills', '.gemini/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: aggregate, paths: ['~/.agents/skills', '~/.gemini/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
         goal: {status: unverified, kind: unverified, commands: [], limits: {status: unverified}}
         permissions: {status: supported, controls: ['settings permissions']}
         state:
@@ -1327,8 +1327,25 @@ families:
         insertion:
           repo: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
           global: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
-        verification: {classification: host}
+        verification: {classification: filesystem}
         rollback: {classification: owned-block-removal}
+        compatibility: {platform_id: gemini-cli, order: 190, repo_write_paths: ['.agents/skills'], global_write_paths: ['~/.agents/skills'], native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
+        integration:
+          lifecycle: active
+          installation:
+            method: manual
+            instructions: Use official Gemini CLI installation guidance with a verified selected artifact. Adapter operations do not install, start or authenticate Gemini CLI.
+          qualification:
+            catalog: implemented
+            filesystem: verified
+            host: not-run
+            evidence:
+            - {kind: filesystem, reference: ls/tests/test_gemini_adapters.py}
+          limitations:
+          - GEMINI_CLI_HOME relocates both native and common personal roots. Personal writes require the qualified supplied home; no automatic relocation occurs.
+          - Workspace discovery requires native trust; user or administrative settings can disable skills. Filesystem installation does not activate a skill or grant tools.
+          - Exact-name merging favors workspace over user and common over native. Native custom content remains preserved but may be shadowed.
+          - Native settings, context, extensions, trust, credentials and sessions are preserved. Host activation and resource execution remain unqualified.
 
   - id: github-copilot
     display_name: GitHub Copilot

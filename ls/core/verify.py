@@ -115,6 +115,11 @@ def verify_install(
         prerequisite = claude_personal_root(home)
         rule_results.append(prerequisite)
         if not prerequisite["ok"]:issues.append(prerequisite["reason"])
+    if scope in {"personal", "both"} and any(row["owner"]["client"] == "gemini-cli" for row in personal["owners"]):
+        from .gemini_prerequisite import gemini_personal_root
+        prerequisite = gemini_personal_root(home)
+        rule_results.append(prerequisite)
+        if not prerequisite["ok"]:issues.append(prerequisite["reason"])
     if scope in {"personal", "both"} and any(row["owner"]["client"] == "kimi-cli" for row in personal["owners"]):
         from .kimi_prerequisite import kimi_personal_root
         prerequisite = kimi_personal_root(home)

@@ -52,6 +52,7 @@ def test_registry_distinguishes_families_variants_and_projection() -> None:
         "kimi-cli",
         "factory-droid",
         "antigravity-app",
+        "gemini-cli",
     ]
 
 

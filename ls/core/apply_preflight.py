@@ -36,6 +36,8 @@ def preflight_install_plan(repo_root: Path, plan, home: Path, *, target_root: Pa
     blockers.extend(hermes_adapter_blockers(repo_root, plan.actions, home, target_root or repo_root))
     from .claude_prerequisite import claude_prerequisite_blockers
     blockers.extend(claude_prerequisite_blockers(repo_root, plan.actions, home, target_root or repo_root))
+    from .gemini_prerequisite import gemini_prerequisite_blockers
+    blockers.extend(gemini_prerequisite_blockers(repo_root, plan.actions, home, target_root or repo_root))
     from .kimi_prerequisite import kimi_prerequisite_blockers
     blockers.extend(kimi_prerequisite_blockers(repo_root, plan.actions, home, target_root or repo_root))
     from .factory_preflight import factory_skill_blockers

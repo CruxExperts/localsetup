@@ -1039,3 +1039,64 @@ Review the plan's targets and existing ownership before applying through the
 normal installer. Host qualification must separately verify selected artifact
 identity, the effective skill list, resource access and duplicate behavior for
 the actual CLI or IDE version; filesystem success does not certify these.
+
+## Google Gemini CLI
+
+Selector `gemini-cli` installs common repository and personal skill adapters at
+`.agents/skills` and `~/.agents/skills`, using symlink or portable mode. It
+identifies Google Gemini CLI (`gemini`, package `@google/gemini-cli`), separately
+from Antigravity and Gemini Code Assist. Installation and lifecycle tests
+qualify filesystem behavior; native listing, activation and resource execution
+remain host-not-run. Adapter operations do not install or start Gemini CLI,
+authenticate, change trust or grant tool permissions.
+
+The [v0.58.0 skill manager](https://github.com/google-gemini/gemini-cli/blob/ac9431c9e2290d68af31a77614ff2fddb2391ca3/packages/core/src/skills/skillManager.ts)
+aggregates built-in, extension, user and trusted-workspace sources. Workspace
+overrides user; within either scope common `.agents/skills` overrides native
+`.gemini/skills` for an exact matching name. This is per-name merging, not
+first-existing-directory fallback. Lookup and disabled-name checks are
+case-insensitive while merge keys are exact-case; avoid case-variant identities.
+A preserved native skill can be shadowed by a common skill of the same name.
+Preserving its bytes does not prove it remains effective.
+
+The [loader](https://github.com/google-gemini/gemini-cli/blob/ac9431c9e2290d68af31a77614ff2fddb2391ca3/packages/core/src/skills/skillLoader.ts)
+scans a root skill and one level of package directories, not arbitrary nested
+category trees. External package directory symlinks are also an intended native
+linking workflow. These source contracts do not certify resource execution or
+host sandbox behavior. Native `skills install`, `link` and `uninstall` target
+`.gemini/skills`; do not use them to manage shared LocalSetup entries.
+
+`GEMINI_CLI_HOME` is a home-prefix override, not a direct `.gemini` path.
+[Native path resolution](https://github.com/google-gemini/gemini-cli/blob/ac9431c9e2290d68af31a77614ff2fddb2391ca3/packages/core/src/utils/paths.ts)
+places **both** personal `.agents` and `.gemini` below that prefix. Unset or
+empty values use the native default. LocalSetup accepts an unset/empty override
+or an absolute override resolving to the supplied home; relative or different
+homes fail before personal writes. Diagnostics do not disclose the override
+value. Repository-only placement remains available. A package refresh selected
+through another client also checks recorded Gemini personal ownership. Verify
+reports an incompatible home; personal/combined repair refuses affected writes.
+Detach remains available and does not relocate native configuration or sessions.
+
+Default context is `GEMINI.md`; `context.fileName` can explicitly select other
+filenames. Do not assume automatic `AGENTS.md` loading. Preserve native context,
+`.gemini/settings.json`, trust, credentials, history, extensions and hooks.
+System settings/defaults and trust-file overrides are separate native settings;
+the home check does not implement their resolver or authorize changing them.
+
+[Skill configuration](https://geminicli.com/docs/cli/skills/) can disable skills,
+and untrusted workspaces do not participate in workspace discovery. Copying
+packages neither activates them nor satisfies native consent. A later authorized
+host qualification should inspect `gemini skills list --all`, confirm
+common/native and workspace/user precedence, and separately exercise harmless
+activation and resource loading. No standalone native goal/budget contract is
+claimed.
+
+Example plan for an already selected CLI installation:
+
+```bash
+localsetup plan --tools gemini-cli --skill-scope both
+```
+
+Review planned ownership and the effective native home before applying through
+the normal installer. Local personal placement does not establish availability
+in a remote process, container or cloud environment.
