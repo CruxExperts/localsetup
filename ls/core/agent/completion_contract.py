@@ -76,7 +76,7 @@ def parse(raw: bytes, profile) -> Request:
     if type(value['max_attempts']) is not int or value['max_attempts'] != 1:
         raise ValueError('Completion permits exactly one attempt')
     deadline = value['deadline_seconds']
-    if type(deadline) not in (int, float) or not math.isfinite(deadline) or not 0 < deadline <= 3600:
+    if type(deadline) not in (int, float) or not 0 < deadline <= 3600 or not math.isfinite(deadline):
         raise ValueError('Invalid completion deadline')
     tokens = value['max_output_tokens']
     if type(tokens) is not int or not 1 <= tokens <= 1000000:
@@ -92,7 +92,7 @@ def parse(raw: bytes, profile) -> Request:
     if mode == 'native' and 'native_schema' not in profile.capabilities:
         raise ValueError('Selected profile does not qualify native schema enforcement')
     temperature=value.get('temperature')
-    if temperature is not None and (type(temperature) not in (int,float) or not math.isfinite(temperature) or not 0<=temperature<=2 or 'temperature' not in profile.capabilities):
+    if temperature is not None and (type(temperature) not in (int,float) or not 0<=temperature<=2 or not math.isfinite(temperature) or 'temperature' not in profile.capabilities):
         raise ValueError('Unqualified or invalid completion temperature')
     import re
     name=value.get('schema_name','completion')

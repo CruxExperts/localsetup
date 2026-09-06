@@ -22,7 +22,7 @@ async def main():
     for api in ('chat_completions','responses'):
         profile=parse({'base_url':'https://fixture.invalid/v1/','api':api,'model':'fixture','credential_env':'KEY','timeout_seconds':5,'capabilities':['native_schema'],'allow_loopback_http':False})
         request=json.dumps({'interface_version':1,'model':'fixture','deadline_seconds':3,'max_attempts':1,'max_output_tokens':100,'input':{'facts':[]},'output_schema':{'type':'object','properties':{'ok':{'type':'boolean'}},'required':['ok'],'additionalProperties':False}}).encode()
-        for mode,expected in [('success','succeeded'),('refusal','refused'),('incomplete','incomplete'),('malformed','malformed'),('schema','schema_rejected'),('rate','rate_limited'),('error','provider_error'),('missing','unavailable'),('connect','transport_failed'),('read','uncertain'),('large','output_limit'),('revoke','cancelled'),('deadline','deadline'),('options','succeeded')]+[(effort,'succeeded') for effort in sorted(REASONING_EFFORTS)]:
+        for mode,expected in [('success','succeeded'),('refusal','refused'),('incomplete','incomplete'),('malformed','malformed'),('schema','schema_rejected'),('rate','rate_limited'),('error','provider_error'),('missing','unavailable'),('connect','transport_failed'),('read','uncertain'),('large','output_limit'),('revoke','cancelled'),('deadline','deadline'),('options','succeeded'),('validate_only','succeeded'),('validate_only_schema','schema_rejected')]+([('split_text','succeeded'),('item_incomplete','incomplete'),('wrong_role','malformed')] if api=='responses' else [])+[(effort,'succeeded') for effort in sorted(REASONING_EFFORTS)]:
             calls=[];revoked=False
             def current():
                 if revoked:raise PermissionError('revoked')
@@ -34,6 +34,9 @@ async def main():
                 return result
             completion.validate_output=validate
             actual_request=request;actual_profile=profile
+            if mode.startswith('validate_only'):
+                value=json.loads(request);value['schema_mode']='validate_only'
+                actual_request=json.dumps(value).encode();actual_profile=replace(profile,capabilities=frozenset())
             if mode=='options':
                 value=json.loads(request);value.update(temperature=0.25,schema_name='qc_fixture')
                 actual_request=json.dumps(value).encode()
@@ -61,20 +64,29 @@ async def main():
                 if mode=='read':raise httpx.ReadError('private read')
                 if mode=='large':return httpx.Response(200,content=b'x'*(1048576+65537))
                 if mode in ('rate','error'):return httpx.Response(429 if mode=='rate' else 500,json={'error':{'message':'private diagnostic'}})
-                text='{' if mode=='malformed' else '{"ok":"yes"}' if mode=='schema' else '{"ok":true}'
+                text='{' if mode=='malformed' else '{"ok":"yes"}' if mode in ('schema','validate_only_schema') else '{"ok":true}'
                 if api=='chat_completions':
                     value={'id':'fixture','created':1,'object':'chat.completion','model':'fixture','choices':[{'index':0,'finish_reason':'length' if mode=='incomplete' else 'stop','message':{'role':'assistant','content':text,'refusal':'private refusal' if mode=='refusal' else None}}],'usage':{'prompt_tokens':7,'completion_tokens':3,'total_tokens':10}}
-                    assert body['response_format']['type']=='json_schema'
-                    assert body['response_format']['json_schema']['name']==('qc_fixture' if mode=='options' else 'completion')
+                    if mode.startswith('validate_only'):assert 'response_format' not in body
+                    else:
+                        assert body['response_format']['type']=='json_schema'
+                        assert body['response_format']['json_schema']['name']==('qc_fixture' if mode=='options' else 'completion')
                 else:
                     value={'id':'resp_fixture','created_at':1,'object':'response','model':'fixture','status':'incomplete' if mode=='incomplete' else 'completed','output':[{'type':'reasoning','id':'rs_fixture','summary':[]},{'type':'message','id':'msg_fixture','role':'assistant','status':'completed','content':[{'type':'refusal','refusal':'private refusal'}] if mode=='refusal' else [{'type':'output_text','text':text,'annotations':[]}]}],'usage':{'input_tokens':7,'output_tokens':3,'total_tokens':10}}
-                    assert body['text']['format']['type']=='json_schema'
-                    assert body['text']['format']['name']==('qc_fixture' if mode=='options' else 'completion')
+                    if mode=='item_incomplete':value['output'][1]['status']='incomplete'
+                    if mode=='wrong_role':value['output'][1]['role']='user'
+                    if mode=='split_text':
+                        value['output'][1]['content']=[{'type':'output_text','text':'{"ok":','annotations':[]},{'type':'output_text','text':'tr','annotations':[]}]
+                        value['output'].append({'type':'message','id':'msg_second','role':'assistant','status':'completed','content':[{'type':'output_text','text':'ue}','annotations':[]}]})
+                    if mode.startswith('validate_only'):assert not body.get('text',{}).get('format')
+                    else:
+                        assert body['text']['format']['type']=='json_schema'
+                        assert body['text']['format']['name']==('qc_fixture' if mode=='options' else 'completion')
                 return httpx.Response(200,json=value,headers={'x-request-id':'fixture-request'})
             result=await complete(actual_profile,{} if mode=='missing' else {'KEY':'fixture'},finder,actual_request,expires=time.monotonic()+5,check=current,transport=httpx.MockTransport(receive))
             assert result['status']==expected,(api,mode,result)
             assert len(calls)==(0 if mode=='missing' else 1)
-            if mode=='success':assert result['data']=={'ok':True} and result['request_id']=='fixture-request' and result['usage']=={'input_tokens':7,'output_tokens':3}
+            if mode in ('success','validate_only','split_text'):assert result['data']=={'ok':True} and result['request_id']=='fixture-request' and result['usage']=={'input_tokens':7,'output_tokens':3}
             assert 'private' not in json.dumps(result)
             reports.append([api,mode,result['status']])
     print(json.dumps(reports))

@@ -64,7 +64,7 @@ def run(runtimes,payload,authority,*,expected_release=None):
     started=time.monotonic();payload=_decode(_encode(payload));digest=identity(payload);expires=authority.expires
     try:
         value=_decode(payload['request'].encode());seconds=value.get('deadline_seconds') if isinstance(value,dict) else None
-        if type(seconds) in (int,float) and math.isfinite(seconds) and 0<seconds<=3600:
+        if type(seconds) in (int,float) and 0<seconds<=3600 and math.isfinite(seconds):
             expires=min(expires,started+seconds)
     except (ValueError,RecursionError):pass
     def current():

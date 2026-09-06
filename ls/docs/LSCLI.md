@@ -1940,3 +1940,11 @@ installs a runtime or retries a possibly delivered request. See the
 [QC configuration and compatibility guide](https://github.com/CruxExperts/localsetup/blob/main/.ai/qc/README.md#protected-completion-compatibility)
 for runtime selection, optional parameter declarations, retained legacy settings
 and sanitized failure behavior.
+
+Completion qualification also covers oversized JSON numeric parameters returning
+`invalid_request` without a traceback or provider call. Responses output must
+contain completed assistant messages; a completed response with an incomplete
+message returns `incomplete`, and a non-assistant message returns `malformed`.
+Deterministic native adapter fixtures verify ordered text across multiple parts
+and messages after reasoning output, and verify that `validate_only` omits native
+schema parameters while still rejecting output that fails local validation.

@@ -24,6 +24,7 @@ def test_completion_request_and_output_contract():
 
 
 @pytest.mark.parametrize('change',[
+    {'deadline_seconds':10**400},{'temperature':10**400},{'temperature':-(10**400)},
     {'interface_version':True},{'max_attempts':2},{'deadline_seconds':False},
     {'model':'other'},{'max_output_tokens':0},{'unexpected':1},
     {'output_schema':{'$ref':'https://fixture.invalid/schema'}},

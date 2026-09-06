@@ -6,7 +6,7 @@ def test_direct_sdk_completion_both_interfaces():
     root=Path(__file__).resolve().parents[2]
     result=subprocess.run([sys.executable,'-I','-B',str(root/'ls/tests/sdk_completion_fixture.py'),str(root)],capture_output=True,text=True,timeout=20)
     assert result.returncode==0,result.stderr
-    assert len(json.loads(result.stdout))==40
+    assert len(json.loads(result.stdout))==47
 
 
 def test_compressed_completion_refused_before_read():

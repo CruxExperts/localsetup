@@ -66,7 +66,8 @@ def extract(value,api):
         chunks=[]
         for item in output:
             if item['type']=='reasoning':continue
-            if item['type']!='message':raise Rejected('malformed')
+            if item['type']!='message' or item.get('role')!='assistant':raise Rejected('malformed')
+            if item.get('status')!='completed':raise Rejected('incomplete')
             for part in item['content']:
                 if part['type']!='output_text' or not isinstance(part.get('text'),str):raise Rejected('malformed')
                 chunks.append(part['text'])
