@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 8472263326eb0634e5f5268dbfed583124deb0d8d363b81ff051281e45b8c42f
+  source_provenance_hash: 7ab0fcf687ff6f63f613c728c64a5aac39cf80b457316c40128e9bdae1749915
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 2f731b563b4822919c8cee590cb8ab7cc1189961
-artifact_sha256: ac53a096dd9edb833dfb3699849110f872416c72b8acfdded65a5db282bb06e9
+source_commit: e1b29876b63dcafbf383e251b78c60ffc13585f5
+artifact_sha256: 7ef55ef564eb2ba89ebf2f0c5a901f79c3798ff5668d7d959cc7184b78730dfa
 ---
 # Implementation File Map
 
@@ -104,6 +104,7 @@ artifact_sha256: ac53a096dd9edb833dfb3699849110f872416c72b8acfdded65a5db282bb06e
 | `keep` | `ls/config/skill-frontmatter.schema.json` |
 | `keep` | `ls/config/workflow.schema.json` |
 | `refactor` | `ls/core/__init__.py` |
+| `refactor` | `ls/core/adapter_coalescing.py` |
 | `refactor` | `ls/core/adapter_markers.py` |
 | `refactor` | `ls/core/adapters.py` |
 | `refactor` | `ls/core/agent/__init__.py` |
@@ -993,6 +994,7 @@ artifact_sha256: ac53a096dd9edb833dfb3699849110f872416c72b8acfdded65a5db282bb06e
 | `keep` | `ls/tests/sdk_recovery_fixture.py` |
 | `keep` | `ls/tests/sdk_responses_fixture.py` |
 | `keep` | `ls/tests/skill_smoke_commands.yaml` |
+| `keep` | `ls/tests/test_adapter_coalescing.py` |
 | `keep` | `ls/tests/test_adapter_parser.py` |
 | `keep` | `ls/tests/test_agent_entrypoint.py` |
 | `keep` | `ls/tests/test_agent_file_broker.py` |
