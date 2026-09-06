@@ -30,6 +30,7 @@ This is the public documentation map for LocalSetup. Start here when you want th
 | [Quickstart](QUICKSTART.md) | How to install, select platforms, verify, and update. |
 | [4.4.0 release guide](releases/4.4.0.md) | Context consolidation, workflow ownership, package cleanup, and update verification. |
 | [Command reference](COMMAND_REFERENCE.md) | Copy-paste installer, managed CLI, validation, and maintainer commands. |
+| [Client integration metadata](CLIENT_INTEGRATION_METADATA.md) | Distinguish lifecycle, installation guidance, catalog support, and qualification evidence. |
 | [Deterministic client state](CLIENT_STATE.md) | Resolve client state, allocate private artifacts, and verify restart bindings. |
 | [Features](FEATURES.md) | Full capability catalog grouped by practical use. |
 | [Shipped skills catalog](SKILLS.md) | All shipped skills with IDs, versions, and descriptions. |

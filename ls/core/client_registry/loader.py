@@ -10,6 +10,7 @@ import yaml
 from ..paths import PathValidationError, validate_home_scoped_path, validate_repo_relative_path
 from ..schema import validate_json_schema
 from .models import ClientFamily, ClientRegistry, ClientVariant, freeze
+from .qualification import integration_issues
 
 
 MAX_REGISTRY_BYTES = 512 * 1024
@@ -192,6 +193,7 @@ def _semantic_issues(payload: dict[str, Any]) -> list[str]:
         for variant in variants:
             variant_id = str(variant["id"])
             field = f"{family_id}/{variant_id}"
+            issues.extend(integration_issues(variant, field=field))
             research = variant["research"]
             if research["status"] in {"verified", "partial"} and not research["sources"]:
                 issues.append(f"{field}.research: verified or partial research requires official sources")

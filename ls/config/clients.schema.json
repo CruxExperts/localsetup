@@ -37,7 +37,7 @@
       "properties": {
         "id": {"$ref": "#/$defs/id"},
         "display_name": {"type": "string", "minLength": 1},
-        "kind": {"enum": ["cli", "ide"]},
+        "kind": {"enum": ["cli", "ide", "application"]},
         "support_status": {"enum": ["supported", "experimental", "unsupported"]},
         "research": {"$ref": "#/$defs/research"},
         "executables": {
@@ -54,7 +54,117 @@
         "insertion": {"$ref": "#/$defs/scopedInsertion"},
         "verification": {"$ref": "#/$defs/verification"},
         "rollback": {"$ref": "#/$defs/rollback"},
+        "integration": {"$ref": "#/$defs/integration"},
         "compatibility": {"$ref": "#/$defs/compatibility"}
+      }
+    },
+    "integration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lifecycle",
+        "installation",
+        "qualification",
+        "limitations"
+      ],
+      "properties": {
+        "lifecycle": {
+          "enum": [
+            "active",
+            "retained-only",
+            "unsupported"
+          ]
+        },
+        "installation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "method",
+            "instructions"
+          ],
+          "properties": {
+            "method": {
+              "enum": [
+                "managed-release",
+                "vendor-installer",
+                "package-manager",
+                "editor-extension",
+                "application",
+                "manual",
+                "unavailable"
+              ]
+            },
+            "instructions": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "qualification": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "catalog",
+            "filesystem",
+            "host",
+            "evidence"
+          ],
+          "properties": {
+            "catalog": {
+              "enum": [
+                "implemented",
+                "bounded"
+              ]
+            },
+            "filesystem": {
+              "enum": [
+                "verified",
+                "not-run",
+                "not-applicable"
+              ]
+            },
+            "host": {
+              "enum": [
+                "verified",
+                "not-run",
+                "blocked",
+                "not-applicable"
+              ]
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "reference"
+                ],
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "filesystem",
+                      "host",
+                      "documentation"
+                    ]
+                  },
+                  "reference": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
       }
     },
     "research": {
