@@ -308,6 +308,10 @@ def _auto_default_context(root: Path, home: Path, config: InstallConfig, target_
         dependency_mode=config.dependency_mode,
         apply=False,
     )
+    if repair.get("skill_scope") == "personal" and repair.get("ok") and not repair.get("actions"):
+        from .personal_update import build_recorded_personal_plan
+        return {"mode": "recorded_personal", "repair": repair,
+                "plan": build_recorded_personal_plan(root, home, target_root)}
     if repair.get("skill_scope") in {"personal", "both"}:
         return {"mode": "repair_required", "repair": repair, "plan": None}
     if repair.get("blockers") or repair.get("decisions"):

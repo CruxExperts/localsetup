@@ -46,7 +46,8 @@ def test_doctor_repairs_recorded_personal_target_without_repo_inference(tmp_path
     assert before == (receipt.read_bytes(), registry.read_bytes())
     assert (home / '.agents/skills/custom.txt').read_text() == 'preserve'
     context = _auto_default_context(root, home, InstallConfig(target_directory=str(root)), root)
-    assert context['plan'] is None and context['repair']['skill_scope'] == 'personal'
+    assert context['plan'] is not None and context['mode'] == 'recorded_personal'
+    assert context['repair']['skill_scope'] == 'personal'
     assert not context['repair']['actions']
     lock = json.loads(receipt.read_text());lock['skill_scope'] = 'both'
     receipt.write_text(json.dumps(lock))

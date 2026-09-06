@@ -226,11 +226,12 @@ The existing `--repair-mode safe-repair --yes` application flow uses per-entry
 transactional recovery and verifies personal adapter contents. Resolver issues
 are reported separately; this route repairs personal adapters only.
 
-Automatic selector-free install/update currently routes these targets to repair
-without rebuilding package selections. It does not yet update their managed
-library packages. Combined `both`-scope doctor repair refuses before repository
-pre-actions until coordinated owner-aware repair is qualified. These remaining
-update and combined-scope operations are not implied by personal repair support.
+Automatic selector-free plan/install/update uses recorded personal update
+planning when adapters are healthy. If adapters need repair, the command reports
+or applies that repair first; rerun update to refresh packages afterward.
+Combined `both`-scope doctor repair refuses before repository pre-actions until
+coordinated owner-aware repair is qualified. Combined-scope operations are not
+implied by personal repair support.
 
 ### Distinct selections on a shared personal path
 
@@ -260,6 +261,14 @@ unhealthy personal adapters before planning an update.
 The normal apply transaction refreshes source packages and adapters. Receipt and
 registry byte hashes are checked under its package-root lock before mutations;
 if ownership changes after planning, rebuild the plan. Custom adapter neighbors
-remain in place. This is an internal API; automatic CLI update routing remains
-pending. Qualification covers selected clients with shared paths in symlink and
-portable modes; it does not establish host application behavior.
+remain in place. Automatic selector-free CLI routing uses this planner for
+healthy recorded personal targets. Qualification covers selected clients with
+shared paths in symlink and portable modes; it does not establish host application behavior.
+
+For an existing personal target, preview with
+`localsetup plan --target-directory PROJECT`, then refresh with
+`localsetup update --target-directory PROJECT`. Omit client/package selectors
+to retain recorded selections; `auto_mode: recorded_personal` identifies this
+route in JSON output. Preview does not change the receipt or registry. A
+`repair_required` result handles adapter drift before package refresh. Explicit
+public scope selection remains pending; these commands retain an existing scope.
