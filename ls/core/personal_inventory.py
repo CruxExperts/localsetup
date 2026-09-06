@@ -66,7 +66,7 @@ def _inventory(repo_root: Path, home: Path, platform_ids: list[str] | None = Non
                 raise ValueError("adapter marker identity differs from managed library")
             if len(modes) != 1 or value.get("mode") not in modes:raise ValueError("adapter mode differs from owners")
             if set(value.get("packages", [])) != expected_names:raise ValueError("adapter marker differs from owner union")
-            visible = {entry.name for entry in path.iterdir() if managed_entry(entry, global_root, value["mode"])}
+            visible = {entry.name for entry in path.iterdir() if not entry.name.startswith(".") and managed_entry(entry, global_root, value["mode"])}
             if visible != expected_names:raise ValueError("visible managed packages differ from owner union")
             for name in sorted(expected_names):
                 if not isinstance(name, str) or not is_safe_adapter_package_name(name):raise ValueError("invalid retained package")

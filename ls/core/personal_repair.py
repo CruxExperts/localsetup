@@ -1,0 +1,71 @@
+"""Repair recorded personal exposure without changing installation ownership."""
+import os
+import time
+import uuid
+from pathlib import Path
+from .apply_journal import write_journal, restore_failed_mutations, cleanup_backups
+from .locking import package_root_lock
+from .manifests import load_pack_config
+from .models import PlanAction
+from .paths import expand_user_path, global_layout
+from .personal_adapter import selection, write
+from .personal_inventory import personal_inventory
+from .provenance import is_managed_package
+
+
+def _plan(repo_root: Path, home: Path, clients: list[str] | None):
+    inventory = personal_inventory(repo_root, home, clients)
+    blockers = [issue for issue in inventory["issues"] if issue.startswith("invalid personal")]
+    owners = inventory["owners"]
+    if clients is not None:
+        recorded = {row["owner"]["client"] for row in owners}
+        blockers.extend(f"no recorded personal owner: {client}" for client in sorted(set(clients) - recorded))
+    global_root = expand_user_path(load_pack_config(repo_root).global_root, home)
+    broken = {row["path"] for row in inventory["adapters"] if not row["ok"]}
+    actions = {}
+    for row in owners:
+        for path in row["paths"]:
+            if path not in broken:continue
+            action = actions.setdefault(path, PlanAction("attach_personal_path", Path(path), {
+                "owners": [], "platforms": [], "packages": [], "mode": row["mode"], "global_root": str(global_root)}))
+            if action.details["mode"] != row["mode"]:blockers.append(f"conflicting recorded modes: {path}")
+            action.details["owners"].append(row["owner"])
+            action.details["platforms"].append(row["owner"]["client"])
+            action.details["packages"] = sorted(set(action.details["packages"]) | set(row["packages"]))
+    for action in actions.values():
+        try:
+            for name in selection(repo_root, home, action):
+                package = global_root / name
+                if not package.is_dir() or not is_managed_package(package):
+                    raise ValueError(f"reinstall missing managed library package: {name}")
+        except (ValueError, OSError) as exc:blockers.append(str(exc))
+    payload = {"schema_version": 1, "ok": not blockers, "applied": False,
+               "actions": [{"kind": a.kind, "path": str(a.path), "details": a.details} for a in actions.values()],
+               "blockers": blockers, "verification": inventory}
+    return payload, list(actions.values())
+
+
+def repair_personal(repo_root: Path, home: Path, clients: list[str] | None = None, *, apply: bool = False) -> dict:
+    payload, actions = _plan(repo_root, home, clients)
+    if not apply or not payload["ok"] or not actions:return payload
+    state_root = global_layout(home).localsetup_home
+    with package_root_lock(state_root):
+        payload, actions = _plan(repo_root, home, clients)
+        if not payload["ok"] or not actions:return payload
+        path = state_root / "state/personal-repair" / f"{int(time.time())}-{uuid.uuid4().hex}.json"
+        journal = {"version": 1, "status": "started", "touched": []}
+        write_journal(path, journal)
+        try:
+            for action in actions:write(repo_root, home, action, journal, path)
+            verified = personal_inventory(repo_root, home, clients)
+            if not verified["ok"]:raise ValueError("personal repair verification failed")
+            journal["status"] = "committed";write_journal(path, journal)
+        except Exception as exc:
+            journal["status"] = "failed"
+            try:restore_failed_mutations(journal, os.replace)
+            except Exception as recovery:journal["rollback_error"] = str(recovery)
+            write_journal(path, journal)
+            return payload | {"ok": False, "blockers": [str(exc)], "journal": str(path),
+                              "recovery_ok": "rollback_error" not in journal}
+        cleanup_backups(journal)
+        return payload | {"ok": True, "applied": True, "verification": verified, "journal": str(path)}

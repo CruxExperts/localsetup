@@ -178,3 +178,22 @@ Missing expected owner records, unsafe recorded paths, missing links, and change
 portable contents fail verification. Personal-only checks do not invent repository
 adapters or historical repository transitions. These are read-only filesystem
 checks; they do not claim that an external client discovered or loaded a skill.
+
+## Recorded personal repair API
+
+`repair_personal(source_root, home, clients=None, apply=False)` plans repairs for
+recorded personal owners. Omission considers recorded owners; an explicit empty
+list performs no repair, and a named client without a personal record fails
+without installing it. Plans do not write configuration, journals, or locks.
+
+Repair reuses the recorded package selections and modes. It repairs missing
+managed links and drifted portable copies from the managed library. Unsafe
+paths, ambiguous/custom collisions, invalid ownership metadata, and missing
+library packages produce blockers; reinstall the missing library before retrying.
+The API does not change registry ownership or repository lock records.
+
+Apply rebuilds the plan under the package-root lock, journals individual managed
+nodes, and verifies the result before accepting it. Failure restores prior nodes
+and reports whether recovery succeeded; unrelated neighbors remain in place.
+Repair journals are stored under the managed home state directory. Standard
+doctor routing and public scope selection remain pending lifecycle integration.
