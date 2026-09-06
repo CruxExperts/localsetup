@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 381584da327f5dde849e7dd8d68ec91fef542bb396e26248a62763e82140370c
+  source_provenance_hash: fd54bc281034df8fef5c1ff862248969c3ca430a0c351b7ebdd93211da07d2e9
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 3385e470a223b002db1cb1cbfce4f98dd419908e
-artifact_sha256: a2b80b93dd6221cb4da1355de6ba18dd0f3bb5233e04e753f05cafdda7fd22f3
+source_commit: e0f0c55775594a3a34acc608349d495fc558d45f
+artifact_sha256: e5eadae6686373f01ef953f4bae7bd771237857725bec2ddb168ae8fb9fac5d5
 ---
 # Implementation File Map
 
@@ -1050,6 +1050,7 @@ artifact_sha256: a2b80b93dd6221cb4da1355de6ba18dd0f3bb5233e04e753f05cafdda7fd22f
 | `keep` | `ls/tests/test_install_flow_wizard_config_edges_2.py` |
 | `keep` | `ls/tests/test_install_flow_wizard_controls.py` |
 | `keep` | `ls/tests/test_install_flow_wizard_flow.py` |
+| `keep` | `ls/tests/test_installation_scope.py` |
 | `keep` | `ls/tests/test_interactive.py` |
 | `keep` | `ls/tests/test_keepass_secrets_cli_json.py` |
 | `keep` | `ls/tests/test_keepass_secrets_config_resolution.py` |
