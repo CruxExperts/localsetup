@@ -2284,3 +2284,25 @@ prevent static success for tool-free setup; tool-enabled runs still require thei
 qualified backend and resource preflight. Text output shows both check statuses
 and actionable guidance. Existing lease and output bounds remain unchanged;
 doctor makes no overall inventory-hashing deadline claim.
+
+
+### Framework commands invoked from a wheel
+
+The framework's installed `localsetup` entrypoint keeps wheel resources as its
+source and defaults repository-targeting commands to the caller's Git root, or
+the current directory outside Git. It identifies a wheel invocation by matching
+the running CLI module to the distribution's recorded file, rather than treating
+an installed package directory as a source checkout. Editable/source-checkout
+invocations retain their existing source-root default.
+
+An explicit `--target-directory` takes precedence. For wheel invocations, a
+target in an explicit configuration file is retained as well. This behavior
+applies to the existing target-aware plan, install, update, verify, rollback,
+adapter, doctor, migration, context, conversion, harness, context-index,
+provenance, and health commands. Other commands retain their existing behavior.
+
+Use `localsetup plan --preset core --platforms codex` from the intended project
+and inspect the reported attachment root before application. Planning must not
+propose repository adapter writes into the installed package tree merely because
+that tree supplies the framework resources. This target default does not change
+the separate LSCli runtime, profile, session, or registration location contracts.

@@ -175,12 +175,18 @@ def _target_directory_value(args: argparse.Namespace) -> str | None:
 
 
 def _inject_global_target(args: argparse.Namespace) -> None:
-    if not _is_global_shim_invocation():
+    from .installed_source import wheel_module
+    shim = _is_global_shim_invocation()
+    if not shim and not wheel_module(Path(__file__)):
         return
     if args.cmd not in {"plan", "install", "update", "verify", "rollback", "adapters", "doctor", "migrate", "context", "convert", "harness", "context-index", "provenance", "health"}:
         return
     if _target_directory_value(args):
         return
+    if not shim and getattr(args, "config", None):
+        configured = load_install_config(Path(args.config).resolve())
+        if configured.target_directory:
+            return
     setattr(args, "target_directory", str(detect_invocation_target()))
     setattr(args, "detected_target_directory", True)
 
