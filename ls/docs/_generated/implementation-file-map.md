@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: b269cf8d76bbb1432a8c947d23058b67dabb6d377a3bf928ae12cd1a2163210b
+  source_provenance_hash: 0ab83020d7ac16fa4d6a95901f6cf7ce82a96bc47c9cded702a60aef39a4a502
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 44839c9557dde33888b341d881cd2dda78114efd
-artifact_sha256: 736c6e6c3599de795edba57fb7e847b2e647353971b55f2a61787e1306552c11
+source_commit: 4eb766621401efaaf5a5979b61d67ebc81c41aee
+artifact_sha256: 6e4ee39d253dd0d1fc3256e391f0102ebfac1bbbc9d61bdd0ccbc4c749d9dc35
 ---
 # Implementation File Map
 
@@ -282,6 +282,7 @@ artifact_sha256: 736c6e6c3599de795edba57fb7e847b2e647353971b55f2a61787e1306552c1
 | `refactor` | `ls/core/manifests.py` |
 | `refactor` | `ls/core/migration.py` |
 | `refactor` | `ls/core/models.py` |
+| `refactor` | `ls/core/mutable_adapters.py` |
 | `refactor` | `ls/core/mutable_packages.py` |
 | `refactor` | `ls/core/package.py` |
 | `refactor` | `ls/core/package_cleanup.py` |
@@ -1101,6 +1102,7 @@ artifact_sha256: 736c6e6c3599de795edba57fb7e847b2e647353971b55f2a61787e1306552c1
 | `keep` | `ls/tests/test_lscli_bootstrap.py` |
 | `keep` | `ls/tests/test_manifests.py` |
 | `keep` | `ls/tests/test_mcp_builder_connections.py` |
+| `keep` | `ls/tests/test_mutable_adapter_writes.py` |
 | `keep` | `ls/tests/test_mutable_packages.py` |
 | `keep` | `ls/tests/test_native_bundle.py` |
 | `keep` | `ls/tests/test_nested_context.py` |
