@@ -1,4 +1,4 @@
-"""Retained desktop receipts, without qualifying fresh host installations."""
+"""Retained client receipts, without qualifying fresh host installations."""
 import json
 from pathlib import Path
 
@@ -15,6 +15,17 @@ from ls.core.verify import verify_install
 from ls.tests.test_install_flow import make_temp_repo
 
 
+def retained_roots(client):
+    return ('.continue/skills', '~/.continue/skills') if client == 'continue-cli-legacy' else ('.agents/skills', '~/.agents/skills')
+
+
+def historical_row(data, client):
+    prior = dict(next(p for p in data['platforms'] if p['id'] == 'github-copilot-cli'))
+    repo, personal = retained_roots(client)
+    prior.update(id=client, repo_paths=[repo], global_paths=[personal], rollback_targets=[repo])
+    return prior
+
+
 def test_cascade_is_retained_without_fresh_projection():
     root = Path(__file__).resolve().parents[2]
     registry = load_client_registry(root)
@@ -26,26 +37,29 @@ def test_cascade_is_retained_without_fresh_projection():
         build_install_plan(root, root / 'unused-home', platform_ids=['windsurf-cascade'])
 
 
-@pytest.mark.parametrize('client', ['windsurf-cascade', 'roo-code-legacy'])
+@pytest.mark.parametrize('client', ['windsurf-cascade', 'roo-code-legacy', 'continue-cli-legacy'])
 @pytest.mark.parametrize('mode', ['symlink', 'portable'])
 def test_historical_receipt_survives_catalog_retention(tmp_path, mode, client):
     root = make_temp_repo(tmp_path);home = tmp_path / 'home'
     catalog = root / 'ls/config/platforms.yaml';current = catalog.read_bytes()
     # Synthetic historical catalog supplies a real receipt; this is not host evidence.
     data = yaml.safe_load(current)
-    prior = dict(next(p for p in data['platforms'] if p['id'] == 'github-copilot-cli'))
-    prior['id'] = client;data['platforms'].append(prior)
+    data['platforms'].append(historical_row(data, client))
     catalog.write_text(yaml.safe_dump(data))
     preserved = [base / rel for base in (root, home) for rel in (
         '.roo/skills/custom/SKILL.md', '.roo/skills-code/custom/SKILL.md',
-        '.agents/skills-code/custom/SKILL.md', '.roo/rules/custom.md')]
+        '.agents/skills-code/custom/SKILL.md', '.roo/rules/custom.md',
+        '.continue/config.yaml', '.continue/sessions/fixture.json',
+        '.claude/skills/custom/SKILL.md', '.agents/skills/unmanaged/SKILL.md')]
     preserved.append(home / '.codeium/windsurf/skills/custom/SKILL.md')
     for native in preserved:
         native.parent.mkdir(parents=True, exist_ok=True);native.write_text('native fixture')
     apply_plan(root, build_install_plan(root, home, skills=['ls-context'],
         platform_ids=[client], skill_scope='both', attach_mode=mode), home)
     catalog.write_bytes(current)
-    for base in (root, home):(base / '.agents/skills/custom.txt').write_text('keep')
+    repo_path, personal_path = retained_roots(client)
+    adapters = (root / repo_path, home / personal_path.removeprefix('~/'))
+    for adapter in adapters:(adapter / 'custom.txt').write_text('keep')
     assert verify_install(root, home, target_root=root)['ok']
     apply_plan(root, build_recorded_both_plan(root, home, root), home)
     assert verify_install(root, home, target_root=root)['ok']
@@ -54,13 +68,13 @@ def test_historical_receipt_survives_catalog_retention(tmp_path, mode, client):
     assert lock['skill_scope'] == 'both'
     detach_platforms(root, home, root, [client])
     assert detach_personal(root, home, [client], apply=True)['applied']
-    for base in (root, home):
-        assert (base / '.agents/skills/custom.txt').read_text() == 'keep'
-        assert not (base / '.agents/skills/ls-context').exists()
+    for adapter in adapters:
+        assert (adapter / 'custom.txt').read_text() == 'keep'
+        assert not (adapter / 'ls-context').exists()
     assert all(native.read_text() == 'native fixture' for native in preserved)
 
 
-@pytest.mark.parametrize('client', ['windsurf-cascade', 'roo-code-legacy'])
+@pytest.mark.parametrize('client', ['windsurf-cascade', 'roo-code-legacy', 'continue-cli-legacy'])
 @pytest.mark.parametrize('scope', ['repo', 'personal'])
 def test_retained_cli_update_preserves_recorded_client(tmp_path, monkeypatch, capsys, scope, client):
     from ls.core import cli
@@ -68,8 +82,7 @@ def test_retained_cli_update_preserves_recorded_client(tmp_path, monkeypatch, ca
     monkeypatch.setattr(cli, '_is_global_shim_invocation', lambda: False)
     catalog = root / 'ls/config/platforms.yaml';current = catalog.read_bytes()
     data = yaml.safe_load(current)
-    prior = dict(next(p for p in data['platforms'] if p['id'] == 'github-copilot-cli'))
-    prior['id'] = client;data['platforms'].append(prior)
+    data['platforms'].append(historical_row(data, client))
     catalog.write_text(yaml.safe_dump(data))
     apply_plan(root, build_install_plan(root, home, skills=['ls-context'],
         platform_ids=[client], skill_scope=scope, attach_mode='portable'), home)
@@ -93,7 +106,7 @@ def test_retained_cli_update_preserves_recorded_client(tmp_path, monkeypatch, ca
     assert verify_install(root, home, target_root=root)['ok']
 
 
-@pytest.mark.parametrize('client', ['windsurf-cascade', 'roo-code-legacy'])
+@pytest.mark.parametrize('client', ['windsurf-cascade', 'roo-code-legacy', 'continue-cli-legacy'])
 def test_retained_repository_doctor_refuses_inference_and_preserves_receipt(tmp_path, client):
     from ls.core.repair import run_repair
     root = make_temp_repo(tmp_path);home = tmp_path / 'home'
@@ -128,3 +141,17 @@ def test_roo_is_retained_without_fresh_projection():
     assert 'roo-code-legacy' not in {p['id'] for p in platform_rows(registry)}
     with pytest.raises(ValueError, match='unknown platform selector'):
         build_install_plan(root, root / 'unused-home', platform_ids=['roo-code-legacy'])
+
+
+def test_continue_cli_is_retained_native_without_fresh_projection():
+    root = Path(__file__).resolve().parents[2]
+    registry = load_client_registry(root)
+    row = registry.variant('continue', 'continue-cli-legacy').data
+    assert row['kind'] == 'cli'
+    assert row['integration']['lifecycle'] == 'retained-only'
+    assert row['integration']['qualification']['host'] == 'not-run'
+    assert row['skills']['repo']['paths'] == ('.continue/skills',)
+    assert row['skills']['global']['paths'] == ('~/.continue/skills',)
+    assert 'continue-cli-legacy' not in {p['id'] for p in platform_rows(registry)}
+    with pytest.raises(ValueError, match='unknown platform selector'):
+        build_install_plan(root, root / 'unused-home', platform_ids=['continue-cli-legacy'])

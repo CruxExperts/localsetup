@@ -769,6 +769,133 @@ families:
         rollback: {classification: managed-entry-removal}
         compatibility: {platform_id: codex, order: 10, native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
 
+  - id: continue
+    display_name: Continue
+    variants:
+    - id: continue-cli-legacy
+      display_name: Continue CLI legacy
+      kind: cli
+      support_status: experimental
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_docs
+          url: https://github.com/continuedev/continue/blob/5522c6f44ca0ac3528b37244818fbfa39b5af470/README.md
+        - kind: official_docs
+          url: https://github.com/continuedev/continue/blob/5522c6f44ca0ac3528b37244818fbfa39b5af470/extensions/cli/src/util/loadMarkdownSkills.ts
+        - kind: official_docs
+          url: https://github.com/continuedev/continue/blob/5522c6f44ca0ac3528b37244818fbfa39b5af470/extensions/cli/src/env.ts
+      executables:
+      - cn
+      policy:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .continue/skills
+          precedence_status: unverified
+          ownership: client-native
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.continue/skills
+          precedence_status: unverified
+          ownership: client-native
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: retained-only
+        installation:
+          method: manual
+          instructions: Retain recorded Continue CLI native adapters only. No fresh projection or IDE qualification;
+            inspect the exact retained build and resolved Continue home before host acceptance.
+        qualification:
+          catalog: bounded
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_windsurf_retention.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Upstream states it is no longer actively maintained. This record covers the cn CLI, not historical IDE extensions.
+        - No fresh-install projection is emitted. Synthetic receipts qualify recorded filesystem lifecycle only; host
+          loading is not-run.
+        - The inspected loader scans project .continue/skills, project .claude/skills and resolved Continue home/skills,
+          not common .agents roots.
+        - Per-package directory links are skipped and the resource walker disables link following. Native physical
+          packages require exact-build host qualification; existing receipt mode is preserved without automatic conversion.
+        - CONTINUE_GLOBAL_DIR and dotenv may change the native home. Recorded filesystem operations do not resolve
+          the effective CLI environment or prove that cn loads the recorded path.
+        - Automatic repository-only repair refuses inference. Preserve native configuration, sessions, credentials,
+          slash commands and custom skills; no native initializer or migration is invoked.
+
   - id: cursor
     display_name: Cursor
     variants:

@@ -671,3 +671,51 @@ insert policy. Native `.roo/rules` and mode-specific rules retain their own
 loading contract. Host acceptance still requires an
 explicit target and exact retained build, harmless discovery checks, effective
 mode priority and link-name validation; no host installation was performed.
+
+## Continue CLI legacy
+
+The `continue/continue-cli-legacy` record covers the `cn` executable from
+`@continuedev/cli`, not historical Continue IDE extensions. The
+[pinned upstream maintenance notice](https://github.com/continuedev/continue/blob/5522c6f44ca0ac3528b37244818fbfa39b5af470/README.md)
+states that the repository is no longer actively maintained. LocalSetup keeps
+this profile retained-only and emits no fresh-install projection; fresh
+`--tools continue-cli-legacy` selection fails. The inspected source tree is
+not proof of the contents of a released binary.
+
+The [pinned CLI loader](https://github.com/continuedev/continue/blob/5522c6f44ca0ac3528b37244818fbfa39b5af470/extensions/cli/src/util/loadMarkdownSkills.ts)
+scans project `.continue/skills`, project `.claude/skills`,
+and `<continue-home>/skills`. It does not scan `.agents/skills`. Continue home
+is `CONTINUE_GLOBAL_DIR` when supplied, otherwise `~/.continue`; dotenv loading
+precedes that resolution. LocalSetup records the default native path as
+metadata and retains existing receipt paths during lifecycle operations. It
+does not load dotenv, initialize Continue configuration or infer a relocation
+from the current shell environment. A successful filesystem check therefore
+does not establish the effective `cn` home or discovery scope.
+
+The loader checks immediate child directory entries and skips per-package
+directory symlinks. Its resource walker disables link following. A physical
+native package is the candidate shape for retained-host qualification; the
+existing symlink adapter shape is not qualified for CLI loading. Recorded
+updates preserve the receipt's mode and paths without converting or moving
+user content. Do not replace a symlink merely to make a filesystem check pass;
+any conversion needs exact-build qualification and reviewed ownership recovery.
+
+For a healthy recorded installation, use the scope-preserving commands:
+
+```bash
+localsetup verify --target-directory PROJECT
+localsetup plan --target-directory PROJECT
+localsetup update --target-directory PROJECT
+```
+
+Synthetic receipts exercise native adapter paths in both stored modes,
+recorded scope, updates and detach. This establishes filesystem preservation,
+not skill activation; no Continue host was installed or invoked. Automatic
+repository-only repair refuses inference, and missing or unhealthy receipts
+need [recorded-path recovery](ADAPTER_OWNERSHIP.md). Preserve native settings,
+credentials, sessions, custom skills, `.claude` compatibility content and
+common-root neighbors. Duplicate skill selection has no established stable
+priority; do not infer precedence from root enumeration order. Generated
+slash-command names remain a CLI-specific surface. Explicit `--config` and
+repeatable `--rule` inputs have their own native contract; policy insertion,
+universal `AGENTS.md` loading and effective context loading are unqualified.
