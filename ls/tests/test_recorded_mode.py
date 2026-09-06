@@ -55,3 +55,29 @@ def test_recorded_mode_refuses_conflicting_unselected_personal_owner(tmp_path, c
     assert 'conflicts with another owner' in capsys.readouterr().err
     assert before == (receipt.read_bytes(), registry.read_bytes())
     assert (home / '.agents/skills/ls-context').is_symlink()
+
+
+def test_inferred_repository_update_honors_mode_without_changing_selection(tmp_path, capsys):
+    root = make_temp_repo(tmp_path);home = tmp_path / 'home'
+    apply_plan(root, build_install_plan(root, home, skills=['ls-context'], platform_ids=['cursor']), home)
+    receipt = root / '.localsetup/lock.json';original = json.loads(receipt.read_text())
+    adapter = root / '.cursor/skills';(adapter / 'custom.txt').write_text('keep')
+    args = ['--source-root', str(root), '--home', str(home), 'plan', '--target-directory', str(root)]
+    before = receipt.read_bytes()
+    assert cli.main(args + ['--mode', 'portable']) == 0
+    planned = json.loads(capsys.readouterr().out)
+    assert planned['auto_mode'] == 'inferred_existing'
+    assert all(a['details']['mode'] == 'portable' for a in planned['actions'] if a['kind'] == 'attach_repo_path')
+    assert receipt.read_bytes() == before
+    args[4] = 'update'
+    assert cli.main(args + ['--mode', 'portable']) == 0
+    capsys.readouterr()
+    assert not (adapter / 'ls-context').is_symlink()
+    assert (adapter / 'ls-context/SKILL.md').exists()
+    assert cli.main(args) == 0
+    capsys.readouterr()
+    final = json.loads(receipt.read_text())
+    assert final['attach_mode'] == 'portable'
+    assert final['repo_packages'] == original['repo_packages']
+    assert final['platforms'] == original['platforms']
+    assert (adapter / 'custom.txt').read_text() == 'keep'

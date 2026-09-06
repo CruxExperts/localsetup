@@ -457,7 +457,8 @@ replayed. This route does not migrate scope. Explicit mode requests follow the r
 
 ## Explicit modes on recorded updates
 
-For selector-free recorded `personal` and `both` plans, an explicit `--mode`
+For selector-free recorded `personal` and `both` plans and healthy inferred
+repository updates, an explicit `--mode`
 changes adapter mode while retaining recorded paths, clients, and package
 selections. An explicitly present config `attach_mode` also requests a change;
 `--mode` takes precedence. Omitting both retains each recorded mode.
@@ -469,6 +470,7 @@ localsetup update --target-directory /path/to/project --mode portable
 
 Preview and apply both preflight the requested mode against retained shared
 owners. A conflicting unselected personal or repository owner blocks the change
-before writes; it is not silently converted. Normal journaled application and
-stale-receipt checks remain effective. This behavior is specific to the recorded
-personal/combined routes; inferred repository-only mode handling is separate.
+before writes; it is not silently converted. Normal journaled application remains effective. Receipt/registry hash checks
+apply to recorded personal and combined plans; inferred repository plans retain
+their existing preflight checks. Repository-only updates retain the existing inferred selection while applying
+the explicit mode; personal and combined updates retain recorded selections.
