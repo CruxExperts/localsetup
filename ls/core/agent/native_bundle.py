@@ -39,8 +39,8 @@ def _platform() -> None:
         raise ValueError('Native sandbox bundle requires Linux x86_64 with glibc >= 2.39')
 
 
-def read(path: Path, digest: str) -> dict[str, bytes]:
-    """Validate bytes without executing the payload or creating persistent state."""
+def read_static(path: Path, digest: str) -> dict[str, bytes]:
+    """Authenticate and validate payload bytes independently of the inspecting host."""
     if not isinstance(digest, str) or not DIGEST.fullmatch(digest):
         raise ValueError('Expected a trusted native bundle SHA-256 digest')
     if any(p.is_symlink() for p in (path, *path.parents)) or not path.is_file():
@@ -71,6 +71,12 @@ def read(path: Path, digest: str) -> dict[str, bytes]:
         raise ValueError('Unsupported native manifest or content digest mismatch')
     if not contents['bwrap'].startswith(b'\x7fELF\x02\x01'):
         raise ValueError('Native sandbox executable must be a 64-bit little-endian ELF')
+    return contents
+
+
+def read(path: Path, digest: str) -> dict[str, bytes]:
+    """Validate bytes and require the supported runtime platform by default."""
+    contents = read_static(path, digest)
     _platform()
     return contents
 

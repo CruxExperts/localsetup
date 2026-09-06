@@ -127,6 +127,10 @@ qualification gates.
 
 ## Vendored-component SBOM verification
 
+The optional native sandbox ZIP has a separate [external SBOM producer and
+verifier](LSCLI.md#optional-native-sandbox-artifact-delivery). SDK and framework
+SBOM checks do not establish native ZIP or native build-provenance coverage.
+
 Ordinary wheels contain an SDK-only CycloneDX 1.6 document at
 `ls/sdk-sbom.cdx.json`, outside the exact private payload tree. The build derives
 its three components from the verified manifest. Records retain upstream names

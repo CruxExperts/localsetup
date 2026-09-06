@@ -389,6 +389,35 @@ Native release production must retain corresponding source, licenses, build
 provenance and SBOM evidence and satisfy redistribution requirements before
 publication. No native release artifact is published by this setup operation.
 
+Produce the external CycloneDX 1.6 sidecar from an independently trusted ZIP
+without executing it or requiring the inspecting host to support the runtime:
+
+```bash
+uv run --locked python ls/tools/native_sbom.py emit --bundle native.zip --sha256 TRUSTED_SHA256 --out native.cdx.json
+uv run --locked python ls/tools/native_sbom.py verify --bundle native.zip --sha256 TRUSTED_SHA256 --sbom native.cdx.json
+```
+
+Emission validates the complete bundle before creating a new output file and
+refuses to overwrite an existing file. Verification revalidates the ZIP and
+compares the complete component, hash, license, target and dependency records;
+extra or missing records fail. The deterministic sidecar binds the outer ZIP
+and all four entry hashes. It stays outside the ZIP, preserving its schema and
+runtime identity. Runtime installation still enforces the host platform guard.
+
+Bubblewrap and statically incorporated libcap are separate components. The
+supported source and notice baseline supplies the license expressions; both
+notice hashes are pinned by the SBOM owner. Source-archive and distro `.deb`
+input digests are identified separately from executable output hashes. The
+libcap `.deb` digest is not corresponding source, the linked static archive hash,
+or an output-library hash. Linux, architecture and minimum host glibc are
+requirements, not components claimed to ship in the ZIP.
+
+This verifies inventory and supported input declarations, not the actual build
+process, complete toolchain closure, independent reproducibility, advisory
+status or redistribution compliance. Public source and build provenance evidence
+and qualification of the exact released bytes remain separate release gates.
+The framework/SDK SBOM does not cover this optional native ZIP.
+
 With a bundle, the runtime slot identity is the SHA-256 of the UTF-8 string
 `lscli-runtime-v1\nWHEEL_SHA256\nBUNDLE_SHA256\n` with placeholders replaced by
 lowercase digests and `\n` represented by newline bytes. Plan and installation
