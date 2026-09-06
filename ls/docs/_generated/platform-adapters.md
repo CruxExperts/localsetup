@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 4736e215f0aceaae05cffaa54da68cc5844fcd59482cc01d36861aa60632d054
+  source_provenance_hash: 34824db388c84fb806c9bb35caa2ca1f96a4f6aac905be8888c6738e09ffb0e9
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: d4d4ec5556d8f526eaaa2b78bf7604120da7c8d9
-artifact_sha256: 586b0b9e849fe7b410897ec2e945938573be9a9ae9608550d9a0ae22905732eb
+source_commit: 5dfb0339bf34015c4521011c143dc65ac799b6d3
+artifact_sha256: c89f9422a7403eabc6b1b5a795a8c7b760d1fed5750cf35711ea6bb968e97343
 ---
 # Platform Adapters
 
@@ -16,7 +16,7 @@ Repo adapter paths are attached only when selected with `--tools` or `--platform
 | `codex` | `.agents/skills` | `skills_visible, namespace_ls` |
 | `claude-code` | `.claude/skills` | `skills_visible, namespace_ls` |
 | `cursor` | `.agents/skills` | `skills_visible, namespace_ls` |
-| `kilo` | `.kilo/skills` | `skills_visible, namespace_ls` |
+| `kilo` | `.agents/skills` | `skills_visible, namespace_ls` |
 | `opencode` | `.opencode/skills` | `skills_visible, namespace_ls` |
 | `openclaw` | `.agents/skills` | `skills_visible, namespace_ls` |
 | `github-copilot-cli` | `.agents/skills` | `skills_visible, namespace_ls` |

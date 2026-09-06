@@ -21,10 +21,10 @@
       "skills_path": ".agents/skills"
     },
     {
-      "context_loader": "AGENTS.md",
+      "context_loader": "AGENTS.md, CLAUDE.md, CONTEXT.md",
       "display_name": "Kilo Code CLI",
       "id": "kilo",
-      "skills_path": ".kilo/skills"
+      "skills_path": ".agents/skills"
     },
     {
       "context_loader": "AGENTS.md",
@@ -119,16 +119,16 @@
   ],
   "provenance": {
     "artifact_path": "ls/docs/_generated/facts.json",
-    "artifact_sha256": "4b696896239ade32e28d4b705ae9ece242a6cdb2be891ccfa2e28ed229c29f79",
+    "artifact_sha256": "93b044f602230eda03bbf0fee70dd378226a63e41f96121d89a32054209194cd",
     "emitter": "generate-docs",
     "framework_version": "4.4.1",
     "schema_version": 1,
-    "source_commit": "d4d4ec5556d8f526eaaa2b78bf7604120da7c8d9",
+    "source_commit": "5dfb0339bf34015c4521011c143dc65ac799b6d3",
     "source_dirty": false,
-    "source_provenance_hash": "4736e215f0aceaae05cffaa54da68cc5844fcd59482cc01d36861aa60632d054",
-    "source_root_id": "a212a35e3a77f103c5f2f0ced1e3fba6f09292b4645c3914b48256be511caae6",
+    "source_provenance_hash": "34824db388c84fb806c9bb35caa2ca1f96a4f6aac905be8888c6738e09ffb0e9",
+    "source_root_id": "c6ac56610deef48dc0e5ba9019580f398c84f42cfb817a40d323c02524ad49c6",
     "source_tag": null,
-    "source_tree_sha": "91d90c04459c80e5c774a478aa5118a5d5fb0d56"
+    "source_tree_sha": "6c90f902afd5d26b1958b1a1c97ed4726fe26bab"
   },
   "skill_count": 103,
   "skills": [
