@@ -2071,3 +2071,26 @@ and reaches forwarded worker arguments. Explicit user overrides remain explicit;
 profile-only setup, sessions, profiles, and help receive no extraneous runtime
 flag. This introduces no ambient environment-based runtime selection and grants
 no workspace, provider, or process authority.
+
+
+### Fresh registration plan primitive
+
+The internal `registration_plan.plan` builds a deterministic fresh-command
+specification without creating a bin directory, command, receipt, or runtime
+lock. It verifies the selected installed inventory and requires its dispatcher
+bytes to match the current planner's qualified dispatcher. A different dispatcher
+must use its corresponding planner; inspection does not execute candidate code.
+
+The specification binds the absolute target, runtime root, release digest, and
+SHA-256 of the fully quoted `/bin/sh` launcher. That launcher invokes only the
+protected release Python with `-I -B` and the release-bound dispatcher. Targets
+inside the protected runtime tree are refused. Existing command files and links
+are conflicts even if they contain a managed-looking marker; adoption and refresh
+require the separate ownership writer.
+
+PATH inspection is limited to 256 entries and 64 KiB. It refuses an executable
+with the same command name before the intended bin directory. A bin directory
+absent from PATH yields `ready: false`, not an effective registration claim.
+Empty or relative PATH entries retain their current-directory meaning; the tool
+does not edit PATH or shell startup files. This prerequisite has no public
+registration apply command yet and does not grant runtime execution authority.

@@ -4296,6 +4296,22 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Exact CLI executable and catalog family/variant identifiers; preserve their technical spelling."
+    },
+    {
+      "path": "ls/tests/test_registration_plan.py",
+      "line_sha256": "fbdf32b5130272a8d485613faca2e11edcd6572c71ad184466875cf28356d037",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact CLI executable filename in PATH collision regression fixtures; preserve the command identifier."
+    },
+    {
+      "path": "ls/tests/test_registration_plan.py",
+      "line_sha256": "a73f721ecf0ff36917f53c28014ae2743dc22cbe300532d13ed669985cad0099",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact CLI executable filename in PATH collision regression fixtures; preserve the command identifier."
     }
   ],
   "visual_reviews": [
