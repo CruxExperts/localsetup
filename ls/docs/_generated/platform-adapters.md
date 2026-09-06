@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 1c596d232e5f9e80916d932e4d3f58db674970322b9f05d29d7ed12357b2c373
+  source_provenance_hash: 730dcafaadfcf238d54d9521ee0316e5c2326591e3626adf93aa975f1f3de092
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 31aea1a264b5f9e8f64b5012f794473037ab05ad
-artifact_sha256: a25db20b13e2d91cd6ba12382b664e2cd7c0ef548930214d0008128abbe2268d
+source_commit: 0dae5c430aae571029e5e8992af6fa909b2ad314
+artifact_sha256: 62eb3c81d7eb506ccece5a2f1afacdafc424bbcf71fea316bc7ec4b221c54a8b
 ---
 # Platform Adapters
 
@@ -23,3 +23,4 @@ Repo adapter paths are attached only when selected with `--tools` or `--platform
 | `github-copilot-vscode` | `.agents/skills` | `skills_visible, namespace_ls` |
 | `cline-cli` | `.cline/skills` | `skills_visible, namespace_ls` |
 | `cline-vscode` | `.cline/skills` | `skills_visible, namespace_ls` |
+| `amp-cli` | `.agents/skills` | `skills_visible, namespace_ls` |

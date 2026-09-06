@@ -1,6 +1,6 @@
 {
   "major_minor": "4.4",
-  "platform_count": 10,
+  "platform_count": 11,
   "platforms": [
     {
       "context_loader": "AGENTS.override.md, AGENTS.md",
@@ -61,20 +61,26 @@
       "display_name": "Cline for VS Code",
       "id": "cline-vscode",
       "skills_path": ".cline/skills"
+    },
+    {
+      "context_loader": "AGENTS.md",
+      "display_name": "Amp CLI",
+      "id": "amp-cli",
+      "skills_path": ".agents/skills"
     }
   ],
   "provenance": {
     "artifact_path": "ls/docs/_generated/facts.json",
-    "artifact_sha256": "51b0aac78c58b5f3149b7c8f758cd120f381b1942ea95f0de8557a89dc3980a6",
+    "artifact_sha256": "6dcaedab617c942b4219a7a6b1ba62abc19ae7511708afad6d2ab7e3d73454d3",
     "emitter": "generate-docs",
     "framework_version": "4.4.1",
     "schema_version": 1,
-    "source_commit": "31aea1a264b5f9e8f64b5012f794473037ab05ad",
+    "source_commit": "0dae5c430aae571029e5e8992af6fa909b2ad314",
     "source_dirty": false,
-    "source_provenance_hash": "1c596d232e5f9e80916d932e4d3f58db674970322b9f05d29d7ed12357b2c373",
-    "source_root_id": "521af5482a10b179a5053f36dc0647fb9f580b97ed506148754ed6ae155fa798",
+    "source_provenance_hash": "730dcafaadfcf238d54d9521ee0316e5c2326591e3626adf93aa975f1f3de092",
+    "source_root_id": "08d0c81ed5371bc7d1c1ec60a42d269dfb12099275dac66913ccc92e7884b835",
     "source_tag": null,
-    "source_tree_sha": "425fea0cca644c479e5cf4602d2135f062c98df4"
+    "source_tree_sha": "049558b4e53373bb5674025903b7f21bc18e6e9b"
   },
   "skill_count": 103,
   "skills": [
