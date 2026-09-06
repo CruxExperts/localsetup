@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: dcbd324e9094db88d1564e568b6ba75dfe65b942dc5d4e4d41df36064e755353
+  source_provenance_hash: 858f2a06700a9b176de239c1a6b20d96a22dfeae9acbd1ff74eeca1f6d41d381
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 1071da338cbb9c99474a81371337c7e0d15f8509
-artifact_sha256: 46f5e0fc9407cad34c3c8e7d452e8f7c35ad2a5c6d2f22b5485f3c1d8a1c4fea
+source_commit: 4fd567691128965f34753d870265dc52ea373f12
+artifact_sha256: 60170f21f67704e68004e26e6808d244f2af1aa150791954fee928f186bf4ddf
 ---
 # Implementation File Map
 
@@ -1117,6 +1117,7 @@ artifact_sha256: 46f5e0fc9407cad34c3c8e7d452e8f7c35ad2a5c6d2f22b5485f3c1d8a1c4fe
 | `keep` | `ls/tests/test_python_runtime_contract.py` |
 | `keep` | `ls/tests/test_qc_patrol.py` |
 | `keep` | `ls/tests/test_recorded_file_operations.py` |
+| `keep` | `ls/tests/test_recorded_inventory.py` |
 | `keep` | `ls/tests/test_recorded_mode.py` |
 | `keep` | `ls/tests/test_recovery.py` |
 | `keep` | `ls/tests/test_reference_materializer.py` |
