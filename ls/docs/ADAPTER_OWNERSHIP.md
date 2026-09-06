@@ -366,3 +366,25 @@ Backup cleanup follows commit; cleanup failure reports a warning and journal
 path without reverting committed ownership. This transaction applies to rollback
 with personal overlap; the nonshared rollback path retains its existing behavior.
 Explicit personal-owner removal is not implied by repository rollback.
+
+## Personal detach engine
+
+`ls.core.personal_detach.detach_personal(source, home, clients, apply=False)`
+plans removal for explicit recorded personal clients. An empty client list is a
+no-op; unknown clients are blockers. The engine uses recorded paths, preserves
+other personal and repository selections, and leaves the package library intact.
+Public CLI routing is not yet available.
+
+Plan output lists affected owner IDs, adapter paths, and current target receipts;
+it does not create state. Missing or unsafe affected receipts block the operation
+before writes. Apply replans under the package-root lock and journals managed
+entries, affected receipts, and registry together. It removes selected personal
+references, updates remaining receipt clients and personal selections, and keeps
+repository ownership. Removing the last personal selection from a `both` receipt
+changes its scope to `repo`. A personal-only receipt retains its scope with an
+empty client list after its last owner is detached.
+
+Failure recovery preserves custom neighbors and restores managed entries and
+receipts. Post-commit backup cleanup errors return warnings without reverting
+committed ownership. This engine detaches exposure; it does not uninstall host
+applications, remove vendor state, or prune the canonical library.
