@@ -31,6 +31,7 @@ def test_profile_loading_rejects_duplicate_keys_and_creates_nothing(tmp_path):
     with pytest.raises(ValueError):load(path,'test')
     assert not path.exists()
     path.write_text('{"schema_version":1,"schema_version":1,"profiles":{}}')
+    path.chmod(0o644)
     with pytest.raises(ValueError,match='Duplicate'):load(path,'test')
     path.write_text(json.dumps({'schema_version':1,'profiles':{'test':config()}}))
     assert load(path,'test').model=='fixture'

@@ -174,7 +174,16 @@ Replace the illustrative endpoint and model with an explicitly qualified service
 capabilities in the [completion contract](LSCLI_RUNTIME.md#direct-completion-contract-foundation); declarations do not establish
 endpoint qualification or grant tool/disclosure authority. The named credential
 variable is resolved only from the environment supplied by the owner. Credential
-values are not stored in profile JSON. Missing credentials fail before transport
+values are not stored in profile JSON. Credential-bearing loads require a POSIX
+path with no symlink components, owned by the current user or root, with no
+group/other write permission on the opened regular file or its ancestors.
+Root-owned sticky temporary directories are permitted when their selected
+children retain trusted ownership. Readable nonsecret files such as mode 0644
+are supported. The reader checks the actual opened inode before resolving a
+credential; unsupported platforms refuse the load. An unsafe profile requires
+owner review of its contents and location before use; the CLI does not change
+permissions automatically. Profile inventory and reviewed setup input perform
+schema validation without granting runtime trust. Missing credentials fail before transport
 construction. Unknown profile fields, duplicate JSON keys, invalid capabilities,
 and nonpositive/nonfinite timeouts are rejected. Configuration is limited to 1 MiB;
 timeouts are limited to 3600 seconds.

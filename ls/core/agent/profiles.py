@@ -77,11 +77,18 @@ def parse(value: object) -> Profile:
     return Profile(base.rstrip('/') + '/', value['api'], model, credential, float(timeout), frozenset(capabilities),**metadata)
 
 
-def document(path: Path) -> dict:
-    if path.is_symlink() or not path.is_file():
-        raise ValueError('Provider profiles must be an explicit regular file')
-    with path.open('rb') as stream:
-        raw = stream.read(1024 * 1024 + 1)
+def document(path: Path, *, trusted: bool = False) -> dict:
+    if trusted:
+        from .trusted_profile import read
+        try:
+            raw = read(path)
+        except OSError as exc:
+            raise ValueError('Provider configuration cannot be read through a trusted regular path') from exc
+    else:
+        if path.is_symlink() or not path.is_file():
+            raise ValueError('Provider profiles must be an explicit regular file')
+        with path.open('rb') as stream:
+            raw = stream.read(1024 * 1024 + 1)
     if len(raw) > 1024 * 1024:
         raise ValueError('Provider configuration exceeds 1 MiB')
     def unique(pairs):
@@ -98,7 +105,7 @@ def document(path: Path) -> dict:
 
 
 def load(path: Path, name: str) -> Profile:
-    profiles = document(path)
+    profiles = document(path, trusted=True)
     if name not in profiles:
         raise ValueError('Named provider profile does not exist')
     return parse(profiles[name])
