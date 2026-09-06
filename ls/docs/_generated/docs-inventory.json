@@ -79,7 +79,7 @@
     "docs": 495,
     "framework_docs": 77,
     "generated_docs": 5,
-    "platforms": 15,
+    "platforms": 16,
     "public_docs": 6,
     "skills": 103,
     "upstream_docs": 64,
@@ -5455,20 +5455,26 @@
       "repo_paths": [
         ".agents/skills"
       ]
+    },
+    {
+      "id": "kimi-cli",
+      "repo_paths": [
+        ".agents/skills"
+      ]
     }
   ],
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "1d03b067016607ff708dd81b1c77ab529c7f745b764393671cadec445a8d2afa",
+    "artifact_sha256": "0661616f9344d4bf643ab57c15d0aa5e861df382ee46b77ce14a02d0e713939b",
     "emitter": "docs-align",
     "framework_version": "4.4.1",
     "schema_version": 1,
-    "source_commit": "1c8e7476e990c51470298fd853ab266f4ef13bb0",
+    "source_commit": "df4e09293aee842fd0a438a777e74bf63fcdc995",
     "source_dirty": false,
-    "source_provenance_hash": "f0efcb31df4fdd276796dfb2512ad81cd7f4737264edabb4b00829c90f2c8171",
-    "source_root_id": "5000522623c942d7dd197fd1ba72d8a52d89e7bf01e1ee8213a1a59861fa021e",
+    "source_provenance_hash": "6065076c435b29c5ed5efa70a2a7552f6844d6a3bcc2e392ed94ab2ea4ee6d38",
+    "source_root_id": "3c346a2e77941e7fb1a96233c63b6df8447f690bfe098c1caa033109fb6464b1",
     "source_tag": null,
-    "source_tree_sha": "c24eb5c0dd0283c4f7cf1d1d3922c8d4c03ba865"
+    "source_tree_sha": "8ae8b378dcbc77fe5dc5171b78738ed47ab1b8ff"
   },
   "repo": ".",
   "schema_version": "1.0",

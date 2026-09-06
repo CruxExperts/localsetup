@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: f0efcb31df4fdd276796dfb2512ad81cd7f4737264edabb4b00829c90f2c8171
+  source_provenance_hash: 6065076c435b29c5ed5efa70a2a7552f6844d6a3bcc2e392ed94ab2ea4ee6d38
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 1c8e7476e990c51470298fd853ab266f4ef13bb0
-artifact_sha256: fa813fc9a67a9eccbd4f7e039d7ff790993b5cf2afcdcdfc8737b887597661fd
+source_commit: df4e09293aee842fd0a438a777e74bf63fcdc995
+artifact_sha256: a3168914a93f8cd337136cb766b2d25db559e128b353a41a091ae05f2a419070
 ---
 # Implementation File Map
 
@@ -278,6 +278,7 @@ artifact_sha256: fa813fc9a67a9eccbd4f7e039d7ff790993b5cf2afcdcdfc8737b887597661f
 | `refactor` | `ls/core/hooks.py` |
 | `refactor` | `ls/core/installation_ownership.py` |
 | `refactor` | `ls/core/inventory.py` |
+| `refactor` | `ls/core/kimi_prerequisite.py` |
 | `refactor` | `ls/core/lockfile.py` |
 | `refactor` | `ls/core/locking.py` |
 | `refactor` | `ls/core/manifests.py` |
@@ -1100,6 +1101,7 @@ artifact_sha256: fa813fc9a67a9eccbd4f7e039d7ff790993b5cf2afcdcdfc8737b887597661f
 | `keep` | `ls/tests/test_keepass_secrets_mapping_validation.py` |
 | `keep` | `ls/tests/test_keepass_secrets_redaction.py` |
 | `keep` | `ls/tests/test_keepass_secrets_references.py` |
+| `keep` | `ls/tests/test_kimi_prerequisite.py` |
 | `keep` | `ls/tests/test_ls_cron_orchestrator_run_trigger.py` |
 | `keep` | `ls/tests/test_ls_kilo_boss_orchestrator_runner.py` |
 | `keep` | `ls/tests/test_ls_linux_patcher_patch_cli.py` |

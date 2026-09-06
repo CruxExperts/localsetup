@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: f0efcb31df4fdd276796dfb2512ad81cd7f4737264edabb4b00829c90f2c8171
+  source_provenance_hash: 6065076c435b29c5ed5efa70a2a7552f6844d6a3bcc2e392ed94ab2ea4ee6d38
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 1c8e7476e990c51470298fd853ab266f4ef13bb0
-artifact_sha256: 4fa77910721e341f34098d8e9e13f626a1b9556765b8b39a35d9b4324b328228
+source_commit: df4e09293aee842fd0a438a777e74bf63fcdc995
+artifact_sha256: 287b1facbf933de00072ef06bc28ef7a285797d2527c8f25b19c3389f7f81ee5
 ---
 # Platform Adapters
 
@@ -28,3 +28,4 @@ Repo adapter paths are attached only when selected with `--tools` or `--platform
 | `pi-cli` | `.agents/skills` | `skills_visible, namespace_ls` |
 | `hermes-agent` | `.hermes/skills` | `skills_visible, namespace_ls` |
 | `qwen-code-cli` | `.agents/skills` | `skills_visible, namespace_ls` |
+| `kimi-cli` | `.agents/skills` | `skills_visible, namespace_ls` |

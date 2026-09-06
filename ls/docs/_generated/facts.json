@@ -1,6 +1,6 @@
 {
   "major_minor": "4.4",
-  "platform_count": 15,
+  "platform_count": 16,
   "platforms": [
     {
       "context_loader": "AGENTS.override.md, AGENTS.md",
@@ -91,20 +91,26 @@
       "display_name": "Qwen Code CLI",
       "id": "qwen-code-cli",
       "skills_path": ".agents/skills"
+    },
+    {
+      "context_loader": "AGENTS.md",
+      "display_name": "Kimi CLI",
+      "id": "kimi-cli",
+      "skills_path": ".agents/skills"
     }
   ],
   "provenance": {
     "artifact_path": "ls/docs/_generated/facts.json",
-    "artifact_sha256": "6cad45c0be57398ea474dd3badb498095a32e25fc6b9d1688f582bfcf2585cd1",
+    "artifact_sha256": "82fdf4f0013c37afc871d62c025f6f3b5388bbdfeb19e7b588856dbaa1b4d257",
     "emitter": "generate-docs",
     "framework_version": "4.4.1",
     "schema_version": 1,
-    "source_commit": "1c8e7476e990c51470298fd853ab266f4ef13bb0",
+    "source_commit": "df4e09293aee842fd0a438a777e74bf63fcdc995",
     "source_dirty": false,
-    "source_provenance_hash": "f0efcb31df4fdd276796dfb2512ad81cd7f4737264edabb4b00829c90f2c8171",
-    "source_root_id": "5000522623c942d7dd197fd1ba72d8a52d89e7bf01e1ee8213a1a59861fa021e",
+    "source_provenance_hash": "6065076c435b29c5ed5efa70a2a7552f6844d6a3bcc2e392ed94ab2ea4ee6d38",
+    "source_root_id": "3c346a2e77941e7fb1a96233c63b6df8447f690bfe098c1caa033109fb6464b1",
     "source_tag": null,
-    "source_tree_sha": "c24eb5c0dd0283c4f7cf1d1d3922c8d4c03ba865"
+    "source_tree_sha": "8ae8b378dcbc77fe5dc5171b78738ed47ab1b8ff"
   },
   "skill_count": 103,
   "skills": [
