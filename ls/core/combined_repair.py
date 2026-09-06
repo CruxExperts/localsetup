@@ -61,6 +61,12 @@ def _plan(source, home, target, clients):
     blockers = list(personal['blockers'])
     blockers.extend(f'No recorded repair client: {c}' for c in sorted(requested - set(lock.get('platforms', []))))
     actions = {}
+    from .mutable_ownership import require_owned_copies
+    try:
+        require_owned_copies(source, home,
+            [row['path'] for row in lock.get('adapter_targets', []) if requested.intersection(_clients(row))],
+            target=target)
+    except ValueError as exc:blockers.append(str(exc))
     try:
         for action in personal_actions:
             names = selection(source, home, action)

@@ -96,6 +96,8 @@ def _rollback_locked(
     package_paths = [Path(value) for value in [*lock.get("installed_skills", []), *lock.get("installed_workflows", [])]]
     adapter_paths = [Path(value) if Path(value).is_absolute() else attachment_root / value
                      for value in lock.get("adapter_state", [])]
+    from .mutable_ownership import require_owned_copies
+    require_owned_copies(repo_root, home, adapter_paths, target=attachment_root)
     for path in package_paths:_require_under_global_root(path, global_root)
     for path in adapter_paths:_require_adapter_under_target_root(path, attachment_root)
     from .shared_rollback import shared_rollback

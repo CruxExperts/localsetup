@@ -99,13 +99,23 @@ def _plan(source, home, clients):
     return payload, list(actions.values()), registry_path, updated, receipts
 
 
+def _mutable_preflight(source, home, payload, actions):
+    from .mutable_ownership import require_owned_copies
+    try:require_owned_copies(source, home, [a.path for a in actions])
+    except ValueError as exc:
+        return payload | {'ok': False, 'blockers': [*payload.get('blockers', []), str(exc)]}
+    return payload
+
+
 def _execute(source, home, planner, *, apply=False, operation="personal-detach", require_unchanged=False):
     payload, actions, registry_path, updated, receipts = planner()
+    payload = _mutable_preflight(source, home, payload, actions)
     if not apply or not payload['ok'] or (not actions and not receipts):return payload
     initial = payload
     state = global_layout(home).localsetup_home
     with package_root_lock(state):
         payload, actions, registry_path, updated, receipts = planner()
+        payload = _mutable_preflight(source, home, payload, actions)
         if not payload['ok'] or (not actions and not receipts):return payload
         if require_unchanged and payload != initial:
             return payload | {'ok': False, 'blockers': ['stale_scope_retirement: recorded ownership changed']}
@@ -114,6 +124,8 @@ def _execute(source, home, planner, *, apply=False, operation="personal-detach",
         try:
             for receipt in [registry_path, *receipts]:record_file_state(journal, path, receipt, os.replace)
             for action in actions:write(source, home, action, journal, path)
+            from .mutable_ownership import retire_empty_baselines
+            retire_empty_baselines([action.path for action in actions], updated)
             for receipt, lock in receipts.items():save_json(receipt, lock)
             save_json(registry_path, updated)
             journal['status'] = 'committed';write_journal(path, journal)

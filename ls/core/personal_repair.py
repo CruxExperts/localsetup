@@ -17,6 +17,9 @@ def _plan(repo_root: Path, home: Path, clients: list[str] | None):
     inventory = personal_inventory(repo_root, home, clients)
     blockers = [issue for issue in inventory["issues"] if issue.startswith("invalid personal")]
     owners = inventory["owners"]
+    from .mutable_ownership import require_owned_copies
+    try:require_owned_copies(repo_root, home, [p for row in owners for p in row["paths"]])
+    except ValueError as exc:blockers.append(str(exc))
     if clients is not None:
         recorded = {row["owner"]["client"] for row in owners}
         blockers.extend(f"no recorded personal owner: {client}" for client in sorted(set(clients) - recorded))

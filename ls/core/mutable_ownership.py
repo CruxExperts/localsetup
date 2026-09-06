@@ -45,10 +45,10 @@ def _records(registry, lock):
     return rows
 
 
-def require_owned_copies(source: Path, home: Path, paths, *, target: Path | None = None) -> None:
+def require_owned_copies(source: Path, home: Path, paths, *, target: Path | None = None) -> set[str]:
     """Validate selected physical paths; unrelated recorded adapters do not block work."""
     selected = {str(Path(p).absolute()) for p in paths}
-    if not selected:return
+    if not selected:return set()
     try:
         registry = load_registry(expand_user_path(load_pack_config(source).global_registry, home))
         lock = {}
@@ -74,5 +74,24 @@ def require_owned_copies(source: Path, home: Path, paths, *, target: Path | None
             baseline = check_existing(path, required=True)
             if set(baseline) != expected[raw]:
                 raise MutablePackageError('Mutable baseline differs from recorded physical package ownership')
+        return mutable
     except (OSError, ValueError, TypeError, KeyError, AttributeError, RuntimeError) as exc:
         raise MutablePackageError('Recorded mutable copies require preservation review before this operation') from exc
+
+
+def retire_empty_baselines(paths, registry: dict) -> None:
+    """Retire empty receipts only after the last mutable owner leaves.
+
+    Caller holds the package lock and has journaled each adapter marker before
+    writing its final package selection. The supplied registry is the pending
+    authoritative ownership state, not historical target receipts.
+    """
+    from .adapter_markers import ADAPTER_MARKER_JSON
+    from .lockfile import save_json
+    retained = {row.get('path') for row in _records(registry, {}) if row.get('mutable_copy')}
+    for path in paths:
+        if str(path) in retained or check_existing(path) != {}:continue
+        marker = path / ADAPTER_MARKER_JSON
+        payload = load_json(marker)
+        payload.pop('mutable_packages')
+        save_json(marker, payload)

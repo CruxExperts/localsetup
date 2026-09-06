@@ -124,6 +124,9 @@ def _detach_platforms_locked(repo_root: Path, home: Path, target_root: Path, pla
     remove_targets = [{"repo_path": path, "platforms": sorted(owners)}
                       for path, _, owners in rows if owners & requested and not owners - requested]
 
+    from .mutable_ownership import require_owned_copies
+    require_owned_copies(repo_root, home, [row["repo_path"] for row in remove_targets], target=target_root)
+
     from .shared_detach import shared_detach_actions
     from .repository_overlap import write_overlap
     from .adapter_markers import adapter_marker_packages

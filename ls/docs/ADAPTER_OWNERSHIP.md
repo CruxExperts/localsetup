@@ -778,6 +778,35 @@ over the legacy lock.
 
 Receipt annotation happens inside apply's existing finalization transaction;
 recovery covers both filesystem and ownership records. Plans remain provider-free
-and do not invoke native clients. This apply integration does not yet establish
-equivalent preflight for every standalone repair, retirement, detach or rollback
-entry point; those routes remain prerequisites for enabling a mutable client.
+and do not invoke native clients. Standalone repair, retirement, detach and rollback enforcement is described
+below; client registration and host qualification remain separate requirements.
+
+### Standalone lifecycle preflight
+
+Personal and combined repair check selected recorded copies before restoring
+exposure. Personal detach (including its scope-retirement executor) checks before
+reporting readiness and repeats the check under its package lock. Repository
+detach checks paths it will physically remove. Repository rollback checks its
+adapter paths before canonical package cleanup or shared rollback. Missing
+markers, removed baselines, edited content and deleted files require preservation
+review; they do not become fresh-install or automatic-repair candidates.
+
+Applying repository repair acquires the package-root lock, then rebuilds and
+checks the plan under that lock before its first mutation. It retains the lock
+through apply using the internal unlocked executor. If the recorded scope changed
+while waiting for the lock, repair stops with a retry diagnostic. A missing target
+lock does not justify converting recorded mutable copies into symlinks: portable
+mode is retained when surviving evidence agrees, and conflicting modes block.
+Read-only repair reports do not acquire a mutation lock.
+
+Historical retirement within apply uses its preflight over action paths before
+mutations. These checks still require native writers to be quiescent; LocalSetup's
+lock coordinates LocalSetup operations. They neither change native trust nor
+establish a sandbox boundary. Hermes profile registration and installed-host
+qualification remain separate delivery requirements.
+
+After personal detach or scope retirement, an empty mutable baseline is removed
+only when the pending registry has no remaining mutable owner at that physical
+path. This permits a fresh installation in another supported mode while retaining
+protection for shared owners, including owners with an empty selection. Marker
+cleanup participates in the same journal as package and ownership changes.
