@@ -789,3 +789,82 @@ projection is not applicable, and host loading has not been tested. Exact
 installed-build qualification must verify the effective read set from the
 intended launch directory without inferring it from another configuration
 scope. No paid model call or Aider installation was performed for this record.
+
+## Claude Code CLI
+
+`claude-code/claude-code-cli` retains the `claude-code` installer selector and
+`claude` executable. The [skills guide](https://code.claude.com/docs/en/skills)
+establishes project `.claude/skills` and personal `~/.claude/skills`, including
+ordinary directory links to external targets. Identical physical targets load
+once. Enterprise skills precede personal, then project skills; plugin names
+are scoped, and skills win over same-name legacy commands. This does not
+establish common `.agents/skills` discovery, plugin behavior or Cowork support.
+The filesystem fixtures cover ordinary packages and resources in symlink and
+portable modes while preserving custom content. No native host was invoked.
+
+The [directory reference](https://code.claude.com/docs/en/claude-directory)
+defines `CLAUDE_CONFIG_DIR` as a relocation of personal native paths. This
+adapter qualifies the default personal root. Nondefault, empty or relative
+values require separate qualification: apply, affected package refresh and
+personal repair refuse default personal writes before mutation, and selected
+verification reports the mismatch. The check reads the environment without
+loading native settings or credentials. Recorded detach remains available;
+no root is moved or converted. An absolute override resolving to the same
+default root is accepted. Repository-only operations remain available unless
+they also refresh packages belonging to a recorded personal Claude owner.
+
+For default personal scope and a qualified project, ordinary installation is:
+
+```bash
+localsetup plan --tools claude-code --skill-scope both --mode portable
+localsetup install --tools claude-code --skill-scope both --mode portable --yes
+```
+
+Inspect the plan before application. A personal-root diagnostic means resolve
+the native selection and recorded ownership explicitly; it does not authorize
+moving files or clearing the environment to conceal a real configured root.
+[Ownership recovery](ADAPTER_OWNERSHIP.md) preserves existing records and custom
+neighbors. LocalSetup framework state is separate from native Claude state.
+
+[Memory discovery](https://code.claude.com/docs/en/memory) includes `CLAUDE.md`,
+`.claude/CLAUDE.md`, `CLAUDE.local.md` and modular `.claude/rules`. Imports or a
+symlink can reuse `AGENTS.md`; automatic loading of `AGENTS.md` itself is not
+established. Preserve existing instruction content, imports and native rules.
+Additional-directory skill discovery does not imply the same memory loading:
+that memory behavior has a separate native setting. Context is model guidance,
+not enforced permissions.
+
+[Settings](https://code.claude.com/docs/en/settings) use separate rules. Shared
+`.claude/settings.json` follows the primary working directory. From v2.1.211,
+local settings normally use the Git root or the main checkout root for a
+worktree, with non-Git, home-root, Windows and ownership exceptions. Older
+starting-directory local files may also load; root values win and permission
+rules combine. Settings re-resolution after `/cd` requires v2.1.246 or later.
+Relative sandbox/permission paths still anchor to primary cwd. These are
+vendor-documented version boundaries, not tested host guarantees; SDK settings
+resolution does not qualify the CLI. Skill operations preserve settings,
+approvals, global excludes, credentials and sessions.
+
+The documented [goal command](https://code.claude.com/docs/en/goal) supports
+`/goal`, `/goal clear` and print-mode use. It requires workspace trust and
+enabled hooks, and uses a model to evaluate transcript evidence between turns.
+Evaluation incurs provider usage and does not independently inspect the files
+or execute validation. Completion is native session outcome, not external
+controller acceptance. No goal is activated by LocalSetup installation.
+
+The [v2.1.139 release](https://github.com/anthropics/claude-code/releases/tag/v2.1.139)
+introduced goals. Current documentation limits the condition to 4,000
+characters; no byte limit or Unicode counting algorithm is established here.
+Active conditions restore on resume, but turn count, elapsed timer and token
+baseline reset. Achieved or cleared goals do not restore. The resume-picker
+route requires v2.1.239 or later for goal restoration. An impossible verdict
+can clear the goal as failed; a no-progress pause can leave it active. These
+outcomes must not be reported as successful external acceptance.
+
+A time or turn clause in goal prose is not a hard limit. Separate print-mode
+[CLI limits](https://code.claude.com/docs/en/cli-reference) have their own rules:
+queued stream-json messages can start turns with new turn limits, and reliable
+subagent spend/teardown accounting has a v2.1.217 boundary. The metadata leaves
+universal payload-byte and iteration enforcement unverified. Qualify exact
+build, trust, hooks, effective settings and provider behavior before claiming
+native goal recovery or bounded execution; no live call was made here.
