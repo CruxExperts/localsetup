@@ -2335,3 +2335,21 @@ shared session schema, not arbitrary cross-version compatibility or permission
 to replay saved operations. It does not replace current-permission checks on
 resume, the separate uncertain-operation recovery tests, or exact-release
 verification after publication.
+
+### Supervised registration binding
+
+Internal supervised callers resolve an owned registration into its canonical
+protected Python dispatcher argv. Resolution checks the private canonical
+receipt, unchanged launcher, absence of pending registration work, explicit
+runtime-root match, current selected release, and qualified dispatcher bytes.
+It uses existing noncreating leases and performs no repair or selection changes.
+
+The caller executes the resolved dispatcher rather than rereading the mutable
+registration shell script. An intervening edit cannot substitute that script as
+the command. The dispatcher rechecks selection at launch and refuses a stale
+release. Parent-side resolution releases its leases before child dispatch; it
+does not reserve selection indefinitely or establish task permissions. The
+coding runtime still owns its execution lease and sandbox/provider preflight.
+
+This internal binding is a prerequisite for typed heartbeat profiles; it does
+not activate a heartbeat, provide credentials, or grant workspace disclosure.

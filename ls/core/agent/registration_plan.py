@@ -11,10 +11,21 @@ from .profile_setup import _absent, _parent, _target
 from .runtime_install import selected
 
 
-def launcher(root: Path, digest: str) -> bytes:
+def command(root: Path, digest: str) -> list[str]:
+    """Canonical protected dispatcher argv; callers qualify the selected release."""
     executable = root / digest / 'venv/bin/python'
-    command = [str(executable), '-I', '-B', '-m', 'ls.core.agent.registered_cli', str(root), digest]
-    return ('#!/bin/sh\nexec ' + ' '.join(shlex.quote(part) for part in command) + ' "$@"\n').encode()
+    return [str(executable), '-I', '-B', '-m', 'ls.core.agent.registered_cli', str(root), digest]
+
+
+def launcher(root: Path, digest: str) -> bytes:
+    return ('#!/bin/sh\nexec ' + ' '.join(shlex.quote(part) for part in command(root, digest)) + ' "$@"\n').encode()
+
+
+def qualify_dispatcher(release: Path) -> None:
+    module = release / 'venv/lib' / f'python{sys.version_info.major}.{sys.version_info.minor}' / 'site-packages/ls/core/agent/registered_cli.py'
+    expected = Path(__file__).with_name('registered_cli.py').read_bytes()
+    if module.is_symlink() or not module.is_file() or module.stat().st_size != len(expected) or module.read_bytes() != expected:
+        raise ValueError('Selected release does not contain the qualified registration dispatcher')
 
 
 def path_check(bin_dir: Path, path_env: str) -> dict:
@@ -55,12 +66,7 @@ def specification(root: Path, target: Path, *, path_env: str | None = None) -> d
         raise ValueError('Invalid registration target')
     location = path_check(target.parent, os.environ.get('PATH', '') if path_env is None else path_env)
     with selected(root, timeout=5, create=False) as release:
-        module = release / 'venv/lib' / f'python{sys.version_info.major}.{sys.version_info.minor}' / 'site-packages/ls/core/agent/registered_cli.py'
-        # The current planner qualifies precisely its installed dispatcher contract.
-        # A different release must use its own planner; never execute it to inspect it.
-        expected = Path(__file__).with_name('registered_cli.py').read_bytes()
-        if module.is_symlink() or not module.is_file() or module.stat().st_size != len(expected) or module.read_bytes() != expected:
-            raise ValueError('Selected release does not contain the qualified registration dispatcher')
+        qualify_dispatcher(release)
         content = launcher(root, release.name)
         return {'schema_version': 1, 'operation': 'register_command', 'command': CLI_COMMAND,
                 'target': str(target), 'runtime_root': str(root), 'release': release.name,
