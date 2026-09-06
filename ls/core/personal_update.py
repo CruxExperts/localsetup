@@ -19,7 +19,7 @@ def _build_recorded_plan(source: Path, home: Path, target: Path, scope: str):
         lock_path = target / 'localsetup.lock.json'
     lock_bytes = lock_path.read_bytes()
     lock = json.loads(lock_bytes)
-    if not isinstance(lock, dict) or lock.get('skill_scope') != scope:
+    if not isinstance(lock, dict) or lock.get('skill_scope', 'repo') != scope:
         raise ValueError(f'A recorded {scope} installation is required')
     clients = lock.get('platforms')
     if not isinstance(clients, list) or any(not isinstance(c, str) or not c for c in clients):
@@ -33,6 +33,10 @@ def _build_recorded_plan(source: Path, home: Path, target: Path, scope: str):
         repair = repair_combined(source, home, target)
         if not repair['ok'] or repair['actions']:
             raise ValueError('Repair combined adapters before updating')
+    if scope == 'repo':
+        from .verify import verify_install
+        if not verify_install(source, home, target_root=target)['ok']:
+            raise ValueError('Repair repository adapters before migrating')
     inventory = personal_inventory(source, home, personal_clients, expected=lock.get('personal_adapter_targets', []))
     if not inventory['ok']:
         raise ValueError('Repair personal adapters before updating: ' + '; '.join(inventory['issues']))
@@ -43,8 +47,8 @@ def _build_recorded_plan(source: Path, home: Path, target: Path, scope: str):
     baseline = lock.get('global_baseline_packages', [])
     if not isinstance(baseline, list) or any(not isinstance(n, str) for n in baseline):
         raise ValueError('Invalid recorded global package baseline')
-    repository = lock.get('adapter_targets', []) if scope == 'both' else []
-    repo_requested = {name for row in repository for name in row.get('packages', lock.get('repo_packages', []))} if scope == 'both' else requested
+    repository = lock.get('adapter_targets', []) if scope != 'personal' else []
+    repo_requested = {name for row in repository for name in row.get('packages', lock.get('repo_packages', []))} if scope != 'personal' else requested
     packages = requested | repo_requested | set(baseline)
     skills = {skill.name for skill in load_skill_catalog(source)}
     workflows = {p.name for p in (source / 'ls/workflows').iterdir() if p.is_dir()}
@@ -67,9 +71,11 @@ def _build_recorded_plan(source: Path, home: Path, target: Path, scope: str):
                     repo_packages=sorted(repo_requested), repo_skills=sorted(repo_requested & skills),
                     repo_workflows=sorted(repo_requested & workflows), adapter_packages=sorted(repo_requested),
                     recorded_state_hashes=snapshots)
-    if scope == 'both':
+    metadata['recorded_adapter_transitions'] = lock.get('adapter_transitions', [])
+    if scope != 'personal':
+        from .detach_records import recorded_detach_rows
+        recorded_detach_rows(lock, target)
         metadata['repo_links'] = []
-        metadata['recorded_adapter_transitions'] = lock.get('adapter_transitions', [])
         for key in ('repo_selectors', 'repo_packs'):
             if key in lock:metadata[key] = lock[key]
         for row in repository:

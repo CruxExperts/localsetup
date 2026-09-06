@@ -527,3 +527,23 @@ Legacy receipts lacking that field can use their recorded adapter-state paths
 and target-level client membership. Relative recorded paths resolve against the
 installation target. Catalog changes do not move installed-state checks to new
 paths; current discovery remains a separate view.
+
+## Additive migration engine
+
+The internal `build_additive_scope_plan` planner can add the missing scope to a
+healthy recorded `repo` or `personal` installation. It preserves existing paths,
+package requests, modes, and historical receipts, and discovers paths only for
+the added scope. It does not infer additional clients. Receipt and registry
+hashes reject stale application; the existing locked installation transaction
+writes the combined receipt and ownership registry.
+
+A client with differing requests or modes across recorded paths requires
+reconciliation. A new shared repository path requires identical selections and
+modes for its owners, since repository receipts do not encode per-owner package
+selections. An already registered personal owner also requires reconciliation;
+adding scope cannot silently replace that owner's request. Custom collisions and
+retained-owner mode conflicts fail preflight. Planning performs no writes.
+
+This engine is not yet connected to the public scope-change route. Public CLI
+scope changes remain guarded pending integration. Scope reductions and direct
+`repo`/`personal` conversion still require coordinated retirement qualification.
