@@ -2411,3 +2411,33 @@ Completions interface for these reserved-action flows. It does not establish
 live-provider behavior, every endpoint, recurring activation, financial accuracy,
 or acceptance of the eventual exact published release. The public action and
 controller commands are documented in the [heartbeat configuration reference](../skills/ls-codex-heartbeat/references/config.md#running-a-reserved-action).
+
+### Installed continuation authorization and result recovery
+
+A subsequent installed Linux native-sandbox fixture qualified the public
+accounting authorize and reconcile commands with actual protected SDK children
+and deterministic loopback Chat Completions. Its initial policy authorized only
+the first coding action. After that action created a checkpoint, the controller
+recorded progress, planned a compound continuation from the new checkpoint, and
+added its authorization to the same accounting chain. No preparatory provider
+request or replacement policy was needed.
+
+The compound action compacted that history, then ran a sandboxed test recipe.
+That recorded operation advanced the journal beyond the compaction checkpoints.
+The fixture inserted an unexpected accounting inventory entry after reservation
+to make result recording fail, then removed only that injected entry. The public
+reconcile command verified the retained completion and recorded its digest with
+zero additional provider requests. The historical source remained non-resumable;
+recovery required the current final checkpoint and historical compaction evidence.
+
+The two actions charged two attempts, seven requests, four tool calls, 28000
+tokens, 160 seconds and one compaction. Reconciliation preserved those charges,
+the original policy and source checkpoint bytes; a subsequent explicit controller
+no-progress disposition stopped further work. The twelve relevant installed
+module files matched the wheel and source, the runtime inventory and SDK payload
+checks passed, and prior qualification profiles and session files were preserved.
+Every captured request had the exact framework user-agent identity. This proves
+the stated installed fixture behavior; live providers, other host environments,
+recurring activation and the final published release remain separate qualification
+surfaces. See [heartbeat recovery](../skills/ls-codex-heartbeat/references/recovery.md)
+for original-input requirements and missing-evidence handling.
