@@ -96,6 +96,9 @@ def write_entries(boundary: Path, action, names: list[str], journal: dict, journ
     global_root = Path(action.details["global_root"])
     if any(not (global_root / name).is_dir() for name in names):
         raise ValueError("Personal adapter package is missing from the managed library")
+    from .mutable_adapters import prepare_write, receipt_fields
+    expected = prepare_write(action.path, global_root, names, action.details.get("mode", "symlink"),
+                             mutable=action.details.get("mutable_copy", False))
     action.path.mkdir(parents=True, exist_ok=True)
     old = adapter_marker_packages(action.path) or set()
     old_mode = adapter_marker_state(action.path)["mode"]
@@ -114,4 +117,5 @@ def write_entries(boundary: Path, action, names: list[str], journal: dict, journ
     marker = action.path / ADAPTER_MARKER_JSON
     record_file_state(journal, journal_path, marker, os.replace)
     save_json(marker, {"version": 1, "managed_by": "localsetup", "mode": mode,
-                       "global_root": str(global_root), "packages": names})
+                       "global_root": str(global_root), "packages": names,
+                       **receipt_fields(action.path, expected)})

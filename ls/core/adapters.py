@@ -476,6 +476,8 @@ def remove_managed_adapter_entries(
     recorded_packages: list[str] | None = None,
     preserve_directory: bool = False,
 ) -> list[str]:
+    from .mutable_adapters import check_existing
+    check_existing(repo_path)
     removed: list[str] = []
     state = adapter_path_state(repo_path, global_root, known_global_roots=known_global_roots)
     if not (repo_path.exists() or repo_path.is_symlink()):

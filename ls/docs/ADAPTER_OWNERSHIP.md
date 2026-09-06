@@ -732,3 +732,30 @@ change into overwrite permission, refresh the baseline to hide drift, or claim
 that same-user file modes establish isolation. Link-free materialized copies
 protect the canonical library from edits through the projection; the copies
 remain independently writable.
+
+### Writer and removal integration
+
+The repository writer accepts the internal `mutable=True` option; the personal
+writer accepts action detail `mutable_copy: true`. These are internal integration
+interfaces, not new command-line options or supported client profiles.
+`ls.core.mutable_adapters` records the package baseline in `mutable_packages` in
+the existing adapter transaction marker, outside the package directories. Once
+present, both writers retain this mode on later writes even if the caller omits
+the option. They require portable copies, reject linked source resources, check
+prior drift before mutation and compare completed copies with the prepared
+payload before committing the marker. Existing transaction snapshots cover the
+marker and package entries together.
+
+The shared adapter removal function checks opted-in baselines before removing
+packages or their marker. Changed or deleted package contents block removal and
+leave the receipt in place. An upstream library update alone does not block a
+copy whose saved baseline still matches. Custom neighboring entries are outside
+the recorded package selection.
+
+Higher-level integration must retain the mutable-owner designation separately
+in installation ownership records and call `check_existing(required=True)` for
+established copies. Otherwise removing an entire adapter marker could erase the
+opt-in indication. It must also preflight every affected mutable target before
+any transaction mutation, including repair pre-actions, historical/scope
+retirement and rollback. Low-level checks alone do not establish those complete
+lifecycle guarantees. No Hermes profile is enabled by this writer integration.

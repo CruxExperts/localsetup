@@ -261,7 +261,9 @@ def _prune_unreferenced_managed_packages(
     return removed
 
 
-def _write_scoped_adapter(adapter_path: Path, global_root: Path, package_names: list[str], *, mode: str) -> None:
+def _write_scoped_adapter(adapter_path: Path, global_root: Path, package_names: list[str], *, mode: str, mutable: bool = False) -> None:
+    from .mutable_adapters import prepare_write, receipt_fields
+    expected = prepare_write(adapter_path, global_root, package_names, mode, mutable=mutable)
     if adapter_path.is_symlink() and adapter_path.exists() and adapter_path.is_dir():
         pass
     else:
@@ -284,16 +286,6 @@ def _write_scoped_adapter(adapter_path: Path, global_root: Path, package_names: 
         stale_path = adapter_path / stale_package
         if _is_current_managed_adapter_entry(stale_path, global_root, mode):
             _remove_path(stale_path)
-    save_json(
-        adapter_path / ADAPTER_MARKER_JSON,
-        {
-            "version": 1,
-            "managed_by": "localsetup",
-            "mode": mode,
-            "global_root": str(global_root),
-            "packages": sorted(set(package_names)),
-        },
-    )
     for package_name in sorted(set(package_names)):
         source = global_root / package_name
         if not source.is_dir():
@@ -305,6 +297,17 @@ def _write_scoped_adapter(adapter_path: Path, global_root: Path, package_names: 
             shutil.copytree(source, target)
         else:
             target.symlink_to(source, target_is_directory=True)
+    save_json(
+        adapter_path / ADAPTER_MARKER_JSON,
+        {
+            "version": 1,
+            "managed_by": "localsetup",
+            "mode": mode,
+            "global_root": str(global_root),
+            "packages": sorted(set(package_names)),
+            **receipt_fields(adapter_path, expected),
+        },
+    )
     if mode == "portable":
         (adapter_path / ".localsetup-portable").write_text("managed_by=localsetup\n", encoding="utf-8")
 
