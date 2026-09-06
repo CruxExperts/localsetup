@@ -2159,3 +2159,43 @@ The public fixture checks call the real CLI and filesystem owner with a mocked
 runtime selection. Installed dispatcher qualification and explicit owned
 refresh/recovery remain required; an existing or stale launcher is never replaced
 by this fresh registration command.
+
+
+### Owned refresh and explicit reconciliation primitives
+
+The internal `registration_refresh` owner refreshes an intact receipt-backed
+launcher to the selected qualified release within its recorded runtime root.
+The receipt must retain its original canonical bytes; even whitespace edits are
+refused before mutation so recovery never loses the accepted before state.
+Its read-only plan binds the before/after receipts and hashes of observed command,
+receipt and pending state. Apply requires that plan digest and rechecks under
+runtime-then-bin leases. Modified launchers, unknown receipts, ineffective PATH
+placement, or an existing pending operation prevent refresh.
+
+Before replacement, the owner retains the old mode-600 receipt in a
+content-addressed previous-receipt file and records the before/after intent.
+The receipt includes the old launcher bytes and release identity. Replacement
+uses fully written private temporary regular files and atomic rename, preserving
+the required launcher/receipt modes. It never modifies runtime artifacts,
+profiles, sessions, or unrelated bin contents. These leases coordinate LocalSetup
+writers; the protected-directory and same-user trust assumptions still apply.
+
+An interrupted operation remains pending. Fresh registration and refresh refuse
+to replay it. Explicit `recovery_plan` reads and classifies the observed files:
+each must match the recorded before or after state (or absence for an interrupted
+fresh registration). Unknown edits stop reconciliation. The intended release must
+still be selected and qualified. `recover` requires the newly reviewed recovery
+plan digest, rechecks the observations under leases, and finishes only the known
+remaining replacements before removing the pending intent. Repeated interruptions
+require another observation and reviewed plan. This is an explicit new recovery
+operation, not automatic replay.
+
+These internal primitives also reconcile an interrupted fresh registration.
+They do not select an older runtime or discard modified files. If selection has
+changed again, inspect the records and use the existing explicit runtime recovery
+procedure to select the intended verified release before reconciling. Old receipt
+backups remain available after success. Fixture tests cover refreshed ownership,
+retained backup bytes, interrupted launcher/receipt replacement, fresh pending
+publication, digest mismatch, and custom edits after recovery planning. Runtime
+selection is mocked; public refresh/recovery flags and installed qualification
+are the next integration steps.

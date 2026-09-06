@@ -45,6 +45,14 @@ def plan(root: Path, bin_dir: Path, *, path_env: str | None = None) -> dict:
             _absent(parent, target.name)
         finally:
             os.close(parent)
+    return specification(root, target, path_env=path_env)
+
+
+def specification(root: Path, target: Path, *, path_env: str | None = None) -> dict:
+    """Describe qualified launcher content; caller owns target-state validation."""
+    root, target = _target(root), _target(target)
+    if target.name != CLI_COMMAND or target.is_relative_to(root):
+        raise ValueError('Invalid registration target')
     location = path_check(target.parent, os.environ.get('PATH', '') if path_env is None else path_env)
     with selected(root, timeout=5, create=False) as release:
         module = release / 'venv/lib' / f'python{sys.version_info.major}.{sys.version_info.minor}' / 'site-packages/ls/core/agent/registered_cli.py'
