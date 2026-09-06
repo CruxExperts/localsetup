@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 23179a5d5799ed3fe8f89be7b30782280446184da11770c1626c1517c9cdd4d2
+  source_provenance_hash: cef7e5dba06c0d65160a1570768674717564138dac61ee7c7275738cc7af50e8
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: a325625a551012bc2ce317ee4d5bb30054b8996a
-artifact_sha256: bd265fbd810c188c7e358b80b9be7c8f715805f91218f040cc99c11bc44e5b15
+source_commit: 64e392829cf9e47c38d36b27fc97ed2f561ddfa3
+artifact_sha256: d726b677f9512f3e3c3eb486a141a715eb8fe6d716277d24337d7cffb4279a9c
 ---
 # Implementation File Map
 
@@ -149,6 +149,7 @@ artifact_sha256: bd265fbd810c188c7e358b80b9be7c8f715805f91218f040cc99c11bc44e5b1
 | `refactor` | `ls/core/agent/installed_capabilities.py` |
 | `refactor` | `ls/core/agent/interactive.py` |
 | `refactor` | `ls/core/agent/native_bundle.py` |
+| `refactor` | `ls/core/agent/native_sbom.py` |
 | `refactor` | `ls/core/agent/nested_context.py` |
 | `refactor` | `ls/core/agent/operation_journal.py` |
 | `refactor` | `ls/core/agent/portable_content.py` |
@@ -1176,6 +1177,7 @@ artifact_sha256: bd265fbd810c188c7e358b80b9be7c8f715805f91218f040cc99c11bc44e5b1
 | `keep` | `ls/tests/test_mutable_ownership.py` |
 | `keep` | `ls/tests/test_mutable_packages.py` |
 | `keep` | `ls/tests/test_native_bundle.py` |
+| `keep` | `ls/tests/test_native_sbom.py` |
 | `keep` | `ls/tests/test_nested_context.py` |
 | `keep` | `ls/tests/test_omniroute_api_cli.py` |
 | `keep` | `ls/tests/test_omniroute_consolidation_migration.py` |
@@ -1324,6 +1326,7 @@ artifact_sha256: bd265fbd810c188c7e358b80b9be7c8f715805f91218f040cc99c11bc44e5b1
 | `keep` | `ls/tools/generate_docs_artifacts.py` |
 | `keep` | `ls/tools/generate_sdk_dependency_locks.py` |
 | `refactor` | `ls/tools/localsetup.py` |
+| `keep` | `ls/tools/native_sbom.py` |
 | `keep` | `ls/tools/python_architecture_check.py` |
 | `keep` | `ls/tools/refresh_public_skill_index.py` |
 | `keep` | `ls/tools/scrapling_helper/__init__.py` |
