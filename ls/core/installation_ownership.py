@@ -27,3 +27,23 @@ def repository_owners(root: Path, clients: list[str]) -> list[dict[str, str]]:
     owner_root = str(root.resolve(strict=False))
     return [InstallationOwner("repo", owner_root, client).wire()
             for client in sorted(set(clients))]
+
+
+def resolve_skill_scope(target_root: Path, requested: str | None) -> str:
+    """Omission retains a recorded scope; an old or fresh install defaults to repo."""
+    from .lockfile import load_json
+    from .paths import target_lockfile_path, legacy_target_lockfile_path
+    scope = requested
+    if scope is None:
+        for path in (target_lockfile_path(target_root), legacy_target_lockfile_path(target_root)):
+            if path.exists():
+                record = load_json(path)
+                if not isinstance(record, dict):
+                    raise ValueError("Invalid installation lock")
+                scope = record.get("skill_scope", "repo")
+                break
+        else:
+            scope = "repo"
+    if not isinstance(scope, str) or scope not in {"repo", "personal", "both"}:
+        raise ValueError("Invalid skill scope")
+    return scope

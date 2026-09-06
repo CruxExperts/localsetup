@@ -29,6 +29,10 @@ def codex_agent_source(repo_root: Path, agent_name: str) -> Path:
 def preflight_install_plan(repo_root: Path, plan, home: Path, *, target_root: Path | None = None) -> dict:
     blockers: list[dict] = []
     for action in plan.actions:
+        if action.kind == "attach_personal_path":
+            blockers.append({"path": str(action.path), "status_code": "personal_apply_unavailable",
+                             "reason": "personal adapter application is not yet qualified"})
+            continue
         if action.kind in {"install_skills", "install_workflows"}:
             source_subdir = "skills" if action.kind == "install_skills" else "workflows"
             names = action.details.get("skills", action.details.get("workflows", []))

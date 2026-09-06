@@ -568,3 +568,20 @@ def recorded_adapter_status(lock: dict, global_root: Path) -> list[dict]:
             }
         )
     return statuses
+
+
+def personal_adapter_targets(repo_root: Path, home: Path, platform_ids: list[str] | None) -> list[dict]:
+    """Plan personal discovery paths without inferring any client selection."""
+    from .installation_ownership import InstallationOwner
+    selected = set(validate_platform_selectors(repo_root, platform_ids))
+    targets: dict[Path, dict] = {}
+    for platform in load_platforms(repo_root):
+        if platform.platform_id not in selected:
+            continue
+        for value in platform.global_paths:
+            path = expand_user_path(value, home)
+            target = targets.setdefault(path, {"path": path, "platforms": [], "owners": []})
+            if platform.platform_id not in target["platforms"]:
+                target["platforms"].append(platform.platform_id)
+                target["owners"].append(InstallationOwner("personal", str(home.resolve(strict=False)), platform.platform_id).wire())
+    return sorted(targets.values(), key=lambda target: str(target["path"]))

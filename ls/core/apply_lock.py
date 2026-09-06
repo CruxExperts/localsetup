@@ -23,6 +23,7 @@ def build_lock_payload(
     transition_actions = [action for action in plan.actions if action.kind == "retire_historical_adapter"]
     return {
         "version": 2,
+        "skill_scope": plan.rollback_metadata.get("skill_scope", "repo"),
         "pack": pack.pack_id,
         "namespace": pack.namespace,
         "source_commit": source_commit(repo_root),

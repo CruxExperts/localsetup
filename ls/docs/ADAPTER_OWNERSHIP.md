@@ -92,3 +92,21 @@ This metadata describes managed installation membership, not ownership of the
 entire adapter directory or permission to modify vendor configuration/state.
 The typed owner model also distinguishes `personal` roots; personal attachment
 and `--skill-scope` selection are not yet exposed by this metadata change.
+
+## Scope planning boundary
+
+The internal `build_install_plan(..., skill_scope=...)` API accepts `repo`,
+`personal`, or `both`. Omission retains `skill_scope` from the current target
+lock, falling back to the legacy lock only when the current lock is absent.
+An older lock without the field and a fresh target default to `repo`; invalid
+recorded scopes fail instead of silently changing intent. Explicit scope
+replaces the recorded value. Scope does not select clients: an empty client
+selection creates no adapter actions in any scope.
+
+Personal plans enumerate the selected clients' manifest `global_paths`, retain
+all typed logical owners on shared paths, and use the selected adapter packages.
+These discovery paths are distinct from the shared canonical package library.
+Planning creates no configuration or adapters. Personal actions currently fail
+apply preflight with `personal_apply_unavailable`; the public `--skill-scope`
+option remains pending personal write, preservation, and rollback qualification.
+Repository installations persist the effective scope in the existing lock.
