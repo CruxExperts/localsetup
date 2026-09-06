@@ -102,3 +102,14 @@ def test_full_stderr_does_not_block_terminal_failure():
         assert json.loads(os.read(out_read,4096))['data']['status']=='timed_out'
     finally:
         for fd in (read,write,out_read,out_write):os.close(fd)
+
+
+def test_atomic_fresh_mode_excludes_history_options():
+    import argparse
+    from ls.core.agent.run_options import arguments
+    parser = argparse.ArgumentParser()
+    arguments(parser)
+    base = ['--profile', 'fixture', '--grant', '/private/grant', '--resource-parent', '/private/resource', '--prompt-stdin']
+    assert parser.parse_args(base+['--require-new-session']).require_new_session is True
+    for option in ('--resume', '--recover-from'):
+        with pytest.raises(SystemExit): parser.parse_args(base+['--require-new-session', option, 'a'*64])

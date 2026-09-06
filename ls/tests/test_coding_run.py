@@ -105,3 +105,21 @@ def test_reselected_runtime_cannot_dispatch_protected_cli_worker(inputs,monkeypa
     with pytest.raises(PermissionError,match='Selected runtime changed'):
         coding.run_coding(paths,value,authority,files,{},limits=Limits(),on_event=lambda event:None,
                           expected_release=paths.runtimes/'old-release')
+
+
+def test_atomic_fresh_session_refuses_concurrent_creator_at_child_lease(inputs, monkeypatch):
+    paths, files, value, authority = inputs
+    real_lease = coding.lease
+    from contextlib import contextmanager
+    @contextmanager
+    def raced(*args, **kwargs):
+        assert kwargs['new'] is True
+        with real_lease(paths.sessions, task=files.task, session=files.session,
+                        workspace=files.root, expires=files.expires) as owner:
+            owner.save_checkpoint(b'[]', profile='a'*64, run_id='other', step=0, state='complete')
+        with real_lease(*args, **kwargs) as owner:
+            yield owner
+    monkeypatch.setattr(coding, 'lease', raced)
+    monkeypatch.setattr(coding, 'qualified_tools', lambda *a, **k: pytest.fail('must refuse before provider qualification'))
+    with pytest.raises(FileExistsError):
+        coding.run_coding(paths, value, authority, files, {}, limits=Limits(), on_event=lambda _: None, new_session=True)

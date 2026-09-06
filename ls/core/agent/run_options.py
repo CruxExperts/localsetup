@@ -22,6 +22,7 @@ def arguments(parser):
     parser.add_argument('--task')
     parser.add_argument('--session')
     history=parser.add_mutually_exclusive_group()
+    history.add_argument('--require-new-session', action='store_true', help='Atomically require an absent session; excludes explicit context, skills and images')
     history.add_argument('--resume',metavar='CHECKPOINT')
     history.add_argument('--recover-from',metavar='CHECKPOINT')
     parser.add_argument('--timeout', type=float, default=300)

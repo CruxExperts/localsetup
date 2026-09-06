@@ -116,6 +116,9 @@ def execute(args, streams, cancelled, steering=None, approvals=None):
     selected_context=selection(args.context,args.skill)
     from .image_inputs import paths as image_paths, load as load_images
     selected_images=image_paths(args.image)
+    new_session = getattr(args, 'require_new_session', False)
+    if new_session and (selected_context or selected_images):
+        raise ValueError('Atomic fresh session mode excludes explicit context, skills and images')
     if selected_images and 'images' not in profile.capabilities:
         raise ValueError('Selected profile must explicitly support images')
     if (args.resume or args.recover_from) and (not args.task or not args.session):
@@ -176,7 +179,7 @@ def execute(args, streams, cancelled, steering=None, approvals=None):
         sink=streams.approval if args.interactive else lambda value:emit('approval_request',value)
         return approvals.require(method,data,recipes,sink,check)
     outcome = run_coding(paths,payload,authority,files,recipes,limits=Limits(),on_event=progress,
-                         cancel=cancelled,expected_release=Path(sys.prefix).parent,resume=resume,
+                         cancel=cancelled,expected_release=Path(sys.prefix).parent,resume=resume,new_session=new_session,
                          steering=None if steering is None else steering.take,
                          approve=None if approvals is None else approve)
     codes = {'completed':0,'cancelled':130,'timed_out':124,'output_limit':5,'failed':1}

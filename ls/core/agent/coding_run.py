@@ -63,8 +63,10 @@ class RunPaths:
 
 
 def run_coding(paths: RunPaths, payload: dict, authority: CodingGrant, files, recipes: dict,
-               *, limits: Limits, on_event, resume=None, cancel=None, expected_release=None, steering=None, approve=None) -> Outcome:
+               *, limits: Limits, on_event, resume=None, cancel=None, expected_release=None, steering=None, approve=None, new_session=False) -> Outcome:
     """Caller authorizes exact context; saved messages never restore authority."""
+    if type(new_session) is not bool or (new_session and (resume is not None or payload.get('history') is not None)):
+        raise ValueError('Atomic new session requires fresh history')
     payload=json.loads(_encode(payload))
     digest=disclosure_digest(payload)
     authority.check(digest)
@@ -80,7 +82,7 @@ def run_coding(paths: RunPaths, payload: dict, authority: CodingGrant, files, re
     try:
         current()
         with lease(paths.sessions,task=authority.task,session=authority.session,workspace=files.root,
-                   expires=expires,revoked=revoked) as owner:
+                   expires=expires,revoked=revoked,new=new_session) as owner:
             with owner._operation():pass
             if resume is None:
                 if payload['history'] is not None:

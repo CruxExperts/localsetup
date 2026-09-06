@@ -76,3 +76,50 @@ only the verified destination digest and preserves the source history.
 This adapter and verifier prepare compound execution. They do not yet select or
 dispatch heartbeat phases, reserve a budget, or authorize a provider call. Those
 steps must bind the explicit action and allocation before invoking either phase.
+
+## Reserved execution owner
+
+The internal execution owner consumes the action planner's exact validated
+inputs and an explicit expected binding and accounting head. It checks the
+policy task, selected runtime and requested history before reserving the full
+run/compaction envelope. Fresh sessions must be absent; the coding child also
+enforces atomic creation with --require-new-session, so a concurrent creator
+cannot turn a fresh action into reuse of a settled session. This new run option
+is mutually exclusive with resume/recover-from and rejects explicit context,
+skills and images; ordinary run modes retain their existing loading behavior.
+Existing history must
+have safe coordination locks before the session lease is acquired; missing
+coordination evidence remains missing rather than being repaired implicitly.
+Exhaustion, pending review, uncertain reservations and reused operations block
+dispatch through the accounting state machine.
+
+After reservation, the owner creates private attempt storage at
+state_root/heartbeat/binding. Grant and provider documents are copied from the
+same bytes used to compute the binding. Commands use those copies, so later
+changes to the original files cannot change a running compound action. Storage
+is create-only; collisions and interrupted creation require reconciliation.
+It holds the selected runtime's shared use lease through both phases. Framework
+controller code must remain outside the editable workspace, as must the planned
+control and execution state. This owner executes no workspace hooks or queue
+commands.
+
+A compound attempt invokes the protected compact CLI first. Continuation uses
+only the destination verified against the session owner's receipt and settled
+history. Any failed process, invalid receipt, expired deadline, or failed
+continuation check skips the coding phase. Coding uses explicit task/session,
+current grants, bounded requests/tools/tokens, and the coding JSONL receipt.
+Each phase has an outer deadline; one second is reserved for process teardown
+within its allocation, and both phases share the original overall deadline.
+The phase CLI timeout excludes the allocated 20-second startup/cleanup allowance.
+
+A bounded private result.json records phase process/protocol outcomes, final
+checkpoint and elapsed time, without raw output tails or model text. Its exact
+SHA-256 becomes the accounting result. Successful coding is
+execution_completed and still awaits controller review; it cannot mark a task
+accepted or close an issue. Failures retain the whole reserved allocation. If
+storage or result acknowledgement is uncertain, the existing reservation blocks
+replay; inspect retained attempt and session evidence before reconciliation.
+
+Public heartbeat action selection and installed qualification remain integration
+gates. This internal owner does not add a scheduler, activate configuration, or
+change the legacy no-agent and generic-profile paths.

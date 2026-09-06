@@ -61,7 +61,7 @@ def _grant(value, workspace, task, session):
         Recipe(tuple(recipe['command']), tuple(recipe['files']), recipe['seconds'])
 
 
-def plan(source: Path, workspace: Path, accounting_root: Path) -> dict:
+def prepare(source: Path, workspace: Path, accounting_root: Path) -> tuple:
     source, workspace, accounting_root = map(lambda item: path(str(item)), (source, workspace, accounting_root))
     _, value = read(source, workspace)
     budget._keys(value, {'schema_version', 'operation', 'task', 'session', 'checkpoint', 'profile',
@@ -117,8 +117,14 @@ def plan(source: Path, workspace: Path, accounting_root: Path) -> dict:
                 'action': value, 'launcher': command, 'grant_sha256': hashlib.sha256(grant_raw).hexdigest(),
                 'profiles_sha256': hashlib.sha256(profile_raw).hexdigest()}
     binding = hashlib.sha256(files.encode(material)).hexdigest()
-    return {'schema_version': 1, 'operation': value['operation'], 'binding': binding,
+    result = {'schema_version': 1, 'operation': value['operation'], 'binding': binding,
             'authorization': {'binding': binding, 'run': value['run'], 'compact': allocation},
             'envelope': envelope, 'profile_sha256': profile_digest(wire(profile)),
             'action': 'run' if compact is None else 'compact_then_run',
             'checkpoint': value['checkpoint'], 'task': value['task'], 'session': value['session']}
+
+    return result, value, command, profile_raw, grant_raw
+
+
+def plan(source: Path, workspace: Path, accounting_root: Path) -> dict:
+    return prepare(source, workspace, accounting_root)[0]
