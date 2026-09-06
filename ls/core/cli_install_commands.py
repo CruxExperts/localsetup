@@ -26,6 +26,9 @@ def handle(cli, args, root, home) -> int | None:
             repair = auto_context["repair"]
             plan = auto_context["plan"]
             if plan is not None:
+                if mode in {"recorded_personal", "recorded_both"}:
+                    from .recorded_mode import requested_mode, set_recorded_mode
+                    set_recorded_mode(root, home, attachment_root, plan, requested_mode(args))
                 policy = _policy_findings(root, plan.rollback_metadata.get("skills", []), getattr(args, "policy_mode", "standard"))
                 if args.cmd == "plan" or (args.cmd == "install" and not args.apply):
                     payload = _auto_plan_payload(root, home, config, attachment_root, plan, policy, mode=mode, repair=repair)

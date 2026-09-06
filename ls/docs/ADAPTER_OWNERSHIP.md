@@ -453,4 +453,22 @@ The first command previews without writes; `update` applies immediately. Existin
 be repaired before package refresh. Apply checks receipt and registry hashes
 under the package-root lock; changed ownership invalidates the prepared plan.
 Historical adapter-transition receipts survive refresh as evidence and are not
-replayed. This route does not migrate scope or implement explicit mode changes.
+replayed. This route does not migrate scope. Explicit mode requests follow the rules below.
+
+## Explicit modes on recorded updates
+
+For selector-free recorded `personal` and `both` plans, an explicit `--mode`
+changes adapter mode while retaining recorded paths, clients, and package
+selections. An explicitly present config `attach_mode` also requests a change;
+`--mode` takes precedence. Omitting both retains each recorded mode.
+
+```bash
+localsetup plan --target-directory /path/to/project --mode portable
+localsetup update --target-directory /path/to/project --mode portable
+```
+
+Preview and apply both preflight the requested mode against retained shared
+owners. A conflicting unselected personal or repository owner blocks the change
+before writes; it is not silently converted. Normal journaled application and
+stale-receipt checks remain effective. This behavior is specific to the recorded
+personal/combined routes; inferred repository-only mode handling is separate.
