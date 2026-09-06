@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 4e80bc3427c03ae049a92b343f94548a86cdb6249851ba62ce5d8b606f75bf64
+  source_provenance_hash: aed766d677e7498d303ca462f6b4be35183d0f344b881aebe67dec758d98451f
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: ae6fcca39f9a771d8fa455b675a65b21a2b259fe
-artifact_sha256: f83dfb6dfa99cbe415a29a4a40838933c246872ff9c300f600254feec5172183
+source_commit: 1cef49492c233e2899eb388e567514f4374df4f7
+artifact_sha256: 7f7ae4c9e41dbb28474bebfab4e1210c023cca94ec1a8fb203df3860355297cb
 ---
 # Implementation File Map
 
@@ -154,6 +154,7 @@ artifact_sha256: f83dfb6dfa99cbe415a29a4a40838933c246872ff9c300f600254feec517218
 | `refactor` | `ls/core/agent/recovery_worker.py` |
 | `refactor` | `ls/core/agent/registered_cli.py` |
 | `refactor` | `ls/core/agent/registration_cli.py` |
+| `refactor` | `ls/core/agent/registration_dispatch.py` |
 | `refactor` | `ls/core/agent/registration_owner.py` |
 | `refactor` | `ls/core/agent/registration_plan.py` |
 | `refactor` | `ls/core/agent/registration_refresh.py` |
@@ -1194,6 +1195,7 @@ artifact_sha256: f83dfb6dfa99cbe415a29a4a40838933c246872ff9c300f600254feec517218
 | `keep` | `ls/tests/test_reference_materializer.py` |
 | `keep` | `ls/tests/test_registered_cli.py` |
 | `keep` | `ls/tests/test_registration_cli.py` |
+| `keep` | `ls/tests/test_registration_dispatch.py` |
 | `keep` | `ls/tests/test_registration_owner.py` |
 | `keep` | `ls/tests/test_registration_plan.py` |
 | `keep` | `ls/tests/test_registration_refresh.py` |
