@@ -1,10 +1,10 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: e40fee170d90db2de189cf4965017db7e6f4bb6adc2f0a7b77553a777ccc8f34
+  source_provenance_hash: 2c5ccd00eec975f92eae531daea39bf488f009d3e6e56e6a1d23bd00bb847485
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: fd1df4d6c90e0eae493beaea38e67baa7fbecd46
+source_commit: cc8d32c7100ef79dd95f8281187820daa5268df6
 artifact_sha256: acfe104824c47aaee8fff991950c69cfcd83a49b5a9020889cf3c770aee5a6b0
 ---
 # Platform Adapters
