@@ -36,18 +36,18 @@ def test_missing_and_invalid_payload_inspection_never_creates_user_state(tmp_pat
     assert not home.exists()
 
 
-def test_cli_version_json_and_default_outcomes(capsys, monkeypatch, tmp_path):
+def test_cli_version_json_and_default_outcomes(capfd, monkeypatch, tmp_path):
     import pytest
     with pytest.raises(SystemExit) as e:
         cli.main(['--version'])
     assert e.value.code == 0
-    assert 'LSCli (LocalSetup)' in capsys.readouterr().out
+    assert 'LSCli (LocalSetup)' in capfd.readouterr().out
     monkeypatch.setattr(cli, 'inspect', lambda: diagnostics.inspect(package_root=tmp_path, home=tmp_path / 'home'))
     assert cli.main(['doctor', '--format', 'json']) == 3
-    output = capsys.readouterr()
+    output = capfd.readouterr()
     assert not output.err and json.loads(output.out)['status'] == 'not_ready'
     assert cli.main([]) == 3
-    output = capsys.readouterr()
+    output = capfd.readouterr()
     assert not output.out and 'lscli doctor' in output.err
 
 

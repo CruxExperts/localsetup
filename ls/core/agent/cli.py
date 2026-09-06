@@ -18,6 +18,8 @@ def main(argv: list[str] | None = None) -> int:
     commands = parser.add_subparsers(dest="command")
     doctor = commands.add_parser("doctor", help="Inspect installed payload and execution readiness without provider access")
     doctor.add_argument("--format", choices=("text", "json"), default="text")
+    doctor.add_argument("--runtime-root", type=Path)
+    doctor.add_argument("--profiles", type=Path)
     setup = commands.add_parser("setup", help="Plan or apply an explicit offline runtime installation")
     mode = setup.add_mutually_exclusive_group(required=True)
     mode.add_argument("--plan", action="store_true")
@@ -113,17 +115,21 @@ def main(argv: list[str] | None = None) -> int:
     if args.command is None:
         print(f"{CLI_NAME}: use '{CLI_COMMAND} run --help' for explicit coding grants or '{CLI_COMMAND} doctor' for readiness.", file=sys.stderr)
         return 3
-    report = inspect()
-    if args.format == "json":
-        print(json.dumps(report, sort_keys=True))
-    else:
-        print(f"{CLI_NAME} ({PRODUCT_NAME}) {report['framework_version']}")
-        print(f"SDK payload: {report['sdk_payload']}; execution: requires run preflight")
-        for issue in report["issues"]:
-            print(f"- {issue}")
-        for name, path in report["locations"].items():
-            print(f"{name}: {json.dumps(path)}")
-    return 3 if not report["execution_available"] else 0
+    from .doctor_output import emit
+    try:
+        options = {}
+        if args.runtime_root is not None:
+            options['runtime_root'] = args.runtime_root
+        if args.profiles is not None:
+            options['profiles_path'] = args.profiles
+        report = inspect(**options)
+        emit(report, args.format)
+        return 0 if report['status'] == 'static_verified' else 3
+    except KeyboardInterrupt:
+        return 130
+    except (OSError, ValueError, TypeError, RuntimeError, RecursionError):
+        return 2
+
 
 
 if __name__ == "__main__":

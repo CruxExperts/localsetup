@@ -18,7 +18,7 @@ def locations(home: Path) -> dict[str, str]:
     }
 
 
-def inspect(*, package_root: Path | None = None, home: Path | None = None) -> dict:
+def inspect(*, package_root: Path | None = None, home: Path | None = None, runtime_root: Path | None = None, profiles_path: Path | None = None) -> dict:
     root = package_root if package_root is not None else Path(__file__).resolve().parents[2]
     payload = root / "_sdk_payload"
     state = "missing"
@@ -33,15 +33,30 @@ def inspect(*, package_root: Path | None = None, home: Path | None = None) -> di
         state = "invalid"
         issues.append("SDK payload integrity failed; reinstall from a verified framework artifact.")
     issues.append("Coding runs require an explicit profile, task grant and successful per-run sandbox/resource preflight.")
+    from . import runtime_diagnostics
+    paths = locations(home if home is not None else Path.home())
+    if runtime_root is not None:
+        paths['runtimes'] = str(runtime_root)
+    if profiles_path is not None:
+        paths['profiles'] = str(profiles_path)
+    runtime = runtime_diagnostics.runtime(Path(paths['runtimes']))
+    profiles = runtime_diagnostics.profiles(Path(paths['profiles']))
+    if runtime['status'] != 'verified':
+        issues.append('Runtime inspection is ' + runtime['status'] + '; inspect setup records and use verified-artifact setup or explicit recovery. Busy upgrades must finish before inspection.')
+    if profiles['status'] != 'verified':
+        issues.append('Profile configuration is ' + profiles['status'] + '; provide a valid explicit profile document. Credentials are not checked.')
+    ready = state == 'verified' and runtime['status'] == 'verified' and profiles['status'] == 'verified'
     return {
         "schema_version": 1,
         "product": PRODUCT_NAME,
         "application": CLI_NAME,
         "framework_version": framework_version(),
-        "status": "not_ready",
+        "status": "static_verified" if ready else "not_ready",
+        "runtime": runtime,
+        "profiles": profiles,
         "sdk_payload": state,
         "execution_available": False,
         "execution_implemented": True,
-        "locations": locations(home if home is not None else Path.home()),
+        "locations": paths,
         "issues": issues,
     }

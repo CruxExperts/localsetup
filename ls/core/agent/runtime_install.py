@@ -12,6 +12,7 @@ import re
 import shutil
 import shlex
 import signal
+import stat
 import subprocess
 import sys
 import time
@@ -209,25 +210,46 @@ def install(root: Path, wheel: Path, digest: str, wheelhouse: Path, workspace: P
         return result
 
 
+
+def _record_bytes(path: Path) -> bytes:
+    """Read bounded regular installation metadata without blocking on a FIFO."""
+    if any(parent.is_symlink() for parent in path.parents):
+        raise ValueError('Runtime record parents must not be symlinks')
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_CLOEXEC)
+    try:
+        info = os.fstat(fd)
+        if not stat.S_ISREG(info.st_mode) or info.st_size > 64 * 1024:
+            raise ValueError('Runtime record must be a regular file of at most 64 KiB')
+        with os.fdopen(fd, 'rb', closefd=False) as stream:
+            data = stream.read(64 * 1024 + 1)
+        if len(data) > 64 * 1024:
+            raise ValueError('Runtime record exceeds 64 KiB')
+        return data
+    finally:
+        os.close(fd)
+
+
 def _selection(root: Path) -> dict | None:
     pointer = root / 'current.json'
     if not pointer.exists() and not pointer.is_symlink():
         return None
-    result = json.loads(regular_bytes(pointer))
+    result = json.loads(_record_bytes(pointer))
     if not isinstance(result, dict) or result.get('schema_version') != 1 or result.get('status') != 'installed' or not isinstance(result.get('sha256'), str) or not DIGEST.fullmatch(result['sha256']):
         raise ValueError("Invalid runtime selection")
     return result
 
 
 @contextmanager
-def selected(root: Path, *, timeout: float = 30):
+def selected(root: Path, *, timeout: float = 30, create: bool = True):
     """Keep the shared lease for the entire caller-owned worker lifetime."""
-    with runtime_use(root, timeout=timeout):
+    with runtime_use(root, timeout=timeout, create=create):
         selection = _selection(root)
         if selection is None:
+            if not create:
+                raise FileNotFoundError("No installed runtime selected")
             raise ValueError("No installed runtime selected")
         release = root / selection['sha256']
-        if json.loads(regular_bytes(release / 'status.json')) != selection:
+        if json.loads(_record_bytes(release / 'status.json')) != selection:
             raise ValueError("Selected release does not match its completed installation record")
         verify_runtime(release, selection.get('inventory_sha256', ''))
         yield release
@@ -243,7 +265,7 @@ def reselect(root: Path, digest: str, *, timeout: float = 30) -> dict:
     root = root.absolute()
     with runtime_use(root, exclusive=True, timeout=max(0, deadline - time.monotonic())):
         release = root / digest
-        record = json.loads(regular_bytes(release / 'status.json'))
+        record = json.loads(_record_bytes(release / 'status.json'))
         if not isinstance(record, dict) or record.get('schema_version') != 1 or record.get('status') != 'installed' or record.get('sha256') != digest:
             raise ValueError("Recovery requires a completed matching release record")
         verify_runtime(release, record.get('inventory_sha256', ''))

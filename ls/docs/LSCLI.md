@@ -30,8 +30,10 @@ global options before it are rejected. Use LSCli options such as `--workspace`,
 `--state-root` and `--runtime-root` on the relevant subcommand. The forwarding
 entry point does not translate framework installation selectors into agent authority.
 
-Help and version return 0. Doctor returns 3 because it does not qualify a specific
-run grant or resource delegation; payload verification is reported independently. Calling
+Help and version return 0. Doctor returns 0 when static payload, selected runtime
+inventory, and nonempty profile configuration checks pass; otherwise it returns 3.
+Static success does not qualify a run grant, credentials, or resource delegation.
+Output failures return 2 and cancellation returns 130. Calling
 `lscli` without a subcommand returns 3 with diagnostic guidance on standard error.
 Invalid arguments return argparse's status 2. Doctor text or JSON goes to standard
 output. None of these commands loads provider/SDK modules, discovers credentials,
@@ -39,12 +41,34 @@ makes provider calls, or creates configuration or state directories.
 
 The JSON diagnostic is versioned with `schema_version: 1`. It includes `product`,
 `application`, `framework_version`, `status`, `sdk_payload`,
-`execution_available`, `execution_implemented`, `locations`, and `issues`. Payload status is `verified`,
+`execution_available`, `execution_implemented`, `runtime`, `profiles`, `locations`, and `issues`. Payload status is `verified`,
 `missing`, or `invalid`. Verification inspects the installed private payload's
 manifest and files without importing them. Source/editable development has no
 installed private payload and never falls back to the canonical vendor tree.
 A missing or damaged payload calls for a verified framework wheel installation.
 Diagnostic integrity evidence is not artifact authentication.
+
+
+Doctor accepts `--runtime-root /path/to/runtimes` and
+`--profiles /path/to/profiles.json`, independently of the invoking package.
+`status` is `static_verified` or `not_ready`; `execution_available` remains false
+because doctor authorizes no run. `runtime.status` is `missing`, `incomplete`,
+`busy`, `invalid`, or `verified`. Missing roots are absent installations; missing
+locks, selection pointers, or completion records are incomplete installations. Invalid records, unsafe
+paths/permissions, or changed installed bytes are invalid. Use explicit setup
+from verified artifacts or inspect retained recovery records; doctor never
+repairs or reselects a runtime. A busy upgrade requires a later inspection.
+`profiles` reports only `status` (`missing`, `invalid`, `empty`, `verified`) and
+`count`, without names, endpoints, credential references, or credential lookup.
+
+Runtime inspection takes an existing shared lease with a one-second acquisition
+limit; it never creates a lock or verifies through an active exclusive upgrade.
+This is a contention timeout, not an overall inspection deadline: installed
+inventory hashing retains its existing entry/byte bounds and filesystem I/O
+latency. Selection and completion JSON records are limited to 64 KiB each. Output has a separate five-second write deadline. No worker, provider,
+native sandbox probe, or authentication starts during doctor. Functional
+sandbox, dependency compatibility, and exact-release qualification remain
+separate gates; static integrity alone is not evidence of them.
 
 ## State locations
 
@@ -56,7 +80,7 @@ The new CLI follows the existing global framework home under the user's home:
 | Explicit provider profile configuration | `.local/share/localsetup/config/lscli/profiles.json` |
 | Managed release runtimes | `.local/share/localsetup/runtimes/lscli` |
 
-Diagnostics only reports these locations. Offline setup, session persistence,
+Diagnostics reads these locations without creating them. Offline setup, session persistence,
 sandbox protection and supervised headless dispatch are implemented as described
 below. Profile creation and PATH collision handling remain subsequent setup work.
 A reported location does not qualify a run or authorize file/provider access.
@@ -93,10 +117,9 @@ the runtime or replacing its root. Do not rename the root while it is leased.
 
 When an operation also needs the existing framework package-root lock, acquire
 that lock first, then the runtime lease. Do not convert a shared lease to an
-exclusive lease in place. Installation and selection now consume this foundation. Worker lifetime
-supervision and platform qualification remain required before execution can be
-enabled; doctor continues to report that
-execution is unavailable.
+exclusive lease in place. Installation, selection, and supervised worker lifetimes consume this foundation.
+Doctor reports static integrity independently of the per-run authority and
+platform checks required for execution.
 
 
 ## Explicit offline runtime setup
@@ -165,10 +188,9 @@ verified runtime installation. This integrity check detects drift; it does not
 provide artifact authentication or prevent a same-user writer from racing it.
 
 The internal `selected` context holds a shared lease and checks the selected
-completion record for the entire caller-owned operation. Runtime installation
-and integrity-checked selection are implemented, but worker supervision and
-sandbox protection still need integration. Successful setup
-does not enable agent execution or change doctor's unavailable-execution result.
+completion record for the entire caller-owned operation. Runtime installation, integrity-checked selection, worker supervision, and
+sandbox protection are integrated. Successful setup does not supply task grants,
+validate credentials, or establish per-run sandbox/resource readiness.
 The installer assumes the caller trusts the uv executable and supplied release
 digest; artifact authenticity and platform qualification remain external gates.
 
