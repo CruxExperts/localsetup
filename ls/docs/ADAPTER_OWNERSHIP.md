@@ -699,3 +699,36 @@ personal inventory; custom content remains in place. Unreferenced managed
 packages may be pruned under the normal rollback rules. Use explicit personal
 detach when the intended operation is removal of named global personal owners,
 and review its affected receipts first.
+
+## Mutable package baseline component
+
+`ls.core.mutable_packages` supplies baseline checks for future isolated mutable
+agent projections. It does not enable a client, change existing portable-adapter
+behavior, or provide a read-only sandbox. A caller must complete lifecycle
+integration before advertising mutable-copy support.
+
+`capture_baselines(adapter, names)` returns a package-name to SHA-256 mapping;
+store that mapping in the owning transaction/installation receipt outside the
+mutable packages. `require_unchanged(adapter, baseline)` checks the recorded
+copies before replacement or removal. Compare with the saved baseline, not with
+the current canonical library: an upstream update must not make an unchanged
+older copy look like a user edit. Missing packages also require preservation
+review so that intentional deletions are not automatically undone.
+
+The fingerprint includes every relative name, empty directory, permission mode,
+file byte and package metadata file. It rejects symbolic links, multiply linked
+files, special nodes, unreadable content and observed concurrent changes. Reads
+use directory descriptors and no-follow opens on Linux/WSL and macOS. Limits are
+10,000 entries and 512 MiB of file content per package. Hashing excludes timestamps
+from the fingerprint but checks modification/change times while inspecting.
+Custom neighboring packages outside the recorded name set remain untouched.
+
+The caller owns path-boundary validation (including adapter ancestors), regular
+copy creation, receipt authenticity, operation journals, target locks and
+coordination with native writers. These checks detect drift; they cannot stop an
+uncooperative same-user process from writing after inspection. Native writers
+must be quiescent for an update/removal transaction. Never convert a detected
+change into overwrite permission, refresh the baseline to hide drift, or claim
+that same-user file modes establish isolation. Link-free materialized copies
+protect the canonical library from edits through the projection; the copies
+remain independently writable.
