@@ -228,8 +228,7 @@ are reported separately; this route repairs personal adapters only.
 Automatic selector-free plan/install/update uses recorded personal update
 planning when adapters are healthy. If adapters need repair, the command reports
 or applies that repair first; rerun update to refresh packages afterward.
-Combined `both`-scope doctor repair refuses before repository pre-actions until
-coordinated owner-aware repair is qualified. Combined-scope operations are not
+Combined `both`-scope doctor repair uses the recorded transaction below. Combined-scope operations are not
 implied by personal repair support.
 
 ### Distinct selections on a shared personal path
@@ -417,5 +416,22 @@ paths outside that root, symlinked ancestors, and unsafe package names before
 writing. The caller must validate ownership, modes, selected package sources,
 and collisions and hold the package-root lock. Personal operations continue to
 run their existing selection checks and pass the home directory as that root.
-This shared primitive prepares repository repair reuse; combined doctor repair
-remains blocked until its ownership-aware planner and transaction are qualified.
+Combined doctor repair uses this primitive with the recorded repository root
+or home boundary, as appropriate.
+
+## Repairing both ownership scopes
+
+Doctor repairs a current `both` receipt from its recorded adapter paths, modes,
+and package selections. It preserves other recorded owners sharing each path,
+coalesces physical writes, and leaves receipts and registry selections unchanged.
+Client filters apply to recorded membership; omitted filters use recorded clients.
+Unknown clients block repair. A read-only report lists the selected repairs.
+
+Apply replans under the package-root lock, writes managed entries through one
+journal, and verifies that the selected adapters no longer need repair before
+commit. Failure restores prior entries across both scopes while preserving
+custom neighbors. Cleanup failures after commit return warnings in the combined
+result. Missing library packages, unsafe paths or markers, conflicting owner
+modes, and custom selected-name collisions require resolution before repair.
+This route repairs exposure; it does not refresh the library, migrate ownership,
+or certify host application loading. Resolver diagnostics remain separate.

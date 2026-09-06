@@ -52,5 +52,5 @@ def test_doctor_repairs_recorded_personal_target_without_repo_inference(tmp_path
     lock = json.loads(receipt.read_text());lock['skill_scope'] = 'both'
     receipt.write_text(json.dumps(lock))
     both = run_repair(root, home=home, apply=True)
-    assert not both['ok'] and not both['applied']
-    assert any('not yet qualified' in item for item in both['blockers'])
+    assert both['ok'] and not both['applied']
+    assert not both['actions']

@@ -16,8 +16,10 @@ def personal_repair_route(
         blockers.append('invalid recorded personal client selection')
         selected = []
     if scope == 'both':
-        blockers.append('Combined repository and personal repair is not yet qualified')
-    personal = repair_personal(source, home, selected, apply=apply and not blockers)
+        from .combined_repair import repair_combined
+        personal = repair_combined(source, home, target, selected, apply=apply and not blockers)
+    else:
+        personal = repair_personal(source, home, selected, apply=apply and not blockers)
     blockers = [*blockers, *personal['blockers']]
     resolver_issues = paths_manifest_issues(source, home)
     return {
