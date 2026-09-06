@@ -169,3 +169,26 @@ agent SDK or provider through that skipped agent path. Configured hooks remain
 explicit commands and still follow direct-command policy. A normal agent run
 continues to validate its selected profile; a disabled heartbeat skips command
 planning unless explicitly forced.
+
+### Shared execution accounting foundation
+
+The internal heartbeat accounting owner folds ordered reservation, result, and
+controller-review events against a task revision and acceptance criterion.
+It charges full allocated request, tool, token, runtime, attempt, and compaction
+limits. A compound compaction-and-coding reservation includes one compaction
+request, zero compaction tools, and both phases' token/runtime allocations
+before either phase can dispatch. Failed or uncertain attempts receive no refund.
+
+An unresolved reservation requires reconciliation, never automatic replay.
+A recorded result waits for a controller disposition bound to its digest and
+evidence. Only reviewed progress resets the consecutive no-progress counter;
+it never refunds total allocations. Repeated no-progress dispositions stop new
+attempts even if operation/session identities change or compaction is requested.
+Acceptance stops the task, separately from any authorized external issue closure.
+
+These are internal state-transition rules. Their protected durable storage,
+controller command, and execution-policy integration are separate required
+gates; legacy queue reports and fresh-profile runs do not yet enforce task-wide
+accounting. Streaming activity and model claims cannot create a controller
+disposition. Allocated tokens are enforceable resource reservations, not proof
+of provider billing; any financial projection must be labeled an estimate.
