@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: c38f3605e85fb0c27a68608233747759f96961a62ac936d6ec466d848e6877c6
+  source_provenance_hash: e08c06be5acb8b5ed21ef0464e06fe6d8566334a4365e0ef6092acdbf8dcf11d
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 4dd5461e1afd4ff881c1d03a26f967d804c7ba4e
-artifact_sha256: 283c0ea5f9395575c726a13937bf175070b5428953a0bf6d200e51c06e3d2621
+source_commit: ee696502a0c6ea4f0f8c529ab00f8a72d72deee1
+artifact_sha256: 9d12aae128bca60e54be7a47fa3e6e148d711309db0a66709713e317556964ce
 ---
 # Implementation File Map
 
@@ -273,6 +273,7 @@ artifact_sha256: 283c0ea5f9395575c726a13937bf175070b5428953a0bf6d200e51c06e3d262
 | `refactor` | `ls/core/handoff.py` |
 | `refactor` | `ls/core/harness.py` |
 | `refactor` | `ls/core/health.py` |
+| `refactor` | `ls/core/hermes_adapter.py` |
 | `refactor` | `ls/core/historical_ownership.py` |
 | `refactor` | `ls/core/hooks.py` |
 | `refactor` | `ls/core/installation_ownership.py` |
@@ -1061,6 +1062,7 @@ artifact_sha256: 283c0ea5f9395575c726a13937bf175070b5428953a0bf6d200e51c06e3d262
 | `keep` | `ls/tests/test_file_search.py` |
 | `keep` | `ls/tests/test_github_starredrepos_skill.py` |
 | `keep` | `ls/tests/test_goose_prerequisite.py` |
+| `keep` | `ls/tests/test_hermes_preflight.py` |
 | `keep` | `ls/tests/test_historical_personal_ownership.py` |
 | `keep` | `ls/tests/test_image_inputs.py` |
 | `keep` | `ls/tests/test_install_flow.py` |
