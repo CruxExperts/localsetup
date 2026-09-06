@@ -95,3 +95,11 @@ platforms:
     smoke_test_level: filesystem
     verify_rules: ["skills_visible", "namespace_ls", "goose_skills_configured"]
     rollback_targets: [".agents/skills"]
+
+  - id: pi-cli
+    repo_paths: [".agents/skills"]
+    global_paths: ["~/.agents/skills"]
+    native_config: symlink_or_reference
+    smoke_test_level: filesystem
+    verify_rules: ["skills_visible", "namespace_ls"]
+    rollback_targets: [".agents/skills"]

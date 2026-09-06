@@ -333,3 +333,53 @@ require the effective configuration to be established separately. Use the
 [official installation guidance](https://goose-docs.ai/docs/getting-started/installation/)
 with a verified selected artifact; installing adapters does not install Goose,
 authenticate, configure providers, or authorize network calls.
+
+## Pi coding agent
+
+The `pi` family provides `pi-cli`, with executable candidate `pi`, repository
+`.agents/skills` and personal `~/.agents/skills`. LocalSetup projects directory
+packages containing `SKILL.md` and supporting resources. Filesystem fixtures
+cover both projection modes, shared owners, detach, and preservation of custom
+skills and native state. Installed Pi qualification remains `not-run`.
+
+```bash
+localsetup plan --target-directory PROJECT --tools pi-cli --skill-scope both --skills ls-context
+localsetup install --target-directory PROJECT --tools pi-cli --skill-scope both --skills ls-context --apply
+localsetup verify --target-directory PROJECT
+```
+
+These commands manage filesystem ownership. Successful verification does not
+establish that Pi trusts the project or has loaded its skills. Pi's
+[skills documentation](https://github.com/earendil-works/pi/blob/9767ba275f3e9a5ee0f5c5342249b629ab1b2282/packages/coding-agent/docs/skills.md)
+describes common and native roots, with project/ancestor discovery conditional
+on trust. Native `.pi/skills` and `~/.pi/agent/skills` can accept loose Markdown
+skills; LocalSetup does not relocate or convert them into common packages.
+Duplicate frontmatter names retain the first discovery with a warning. Exact
+source precedence, settings filters, explicit `--skill` paths and installed
+runtime discovery need separate qualification; `--no-skills` does not suppress
+all explicitly supplied skills.
+
+[Pi trust and settings](https://github.com/earendil-works/pi/blob/9767ba275f3e9a5ee0f5c5342249b629ab1b2282/packages/coding-agent/docs/settings.md)
+are user-owned. Trust may allow project settings, missing package installation,
+and extension execution. LocalSetup never approves trust, changes
+`~/.pi/agent/trust.json`, supplies approval flags, or invokes Pi to validate an
+adapter. Noninteractive Pi modes do not prompt for trust; effective saved,
+parent, default and command-line decisions determine loading. Review those
+controls in the intended host session rather than treating adapter installation
+as consent. Settings at `.pi/settings.json` and `~/.pi/agent/settings.json`,
+resource filters, packages and extensions remain unchanged.
+
+The [CLI guide](https://github.com/earendil-works/pi/blob/9767ba275f3e9a5ee0f5c5342249b629ab1b2282/packages/coding-agent/README.md)
+documents context discovery and `AGENTS.override.md` replacement within a
+directory; do not overwrite overrides or equate context and skill trust rules.
+Automatic policy insertion is unqualified. `PI_CODING_AGENT_DIR` and
+`PI_CODING_AGENT_SESSION_DIR` can redirect native state. Auth, models, sessions,
+trust records and system-prompt overrides remain outside adapter ownership.
+
+Use the current official installation guide with a verified selected artifact.
+The cited source uses `@earendil-works/pi-coding-agent`; historical package names
+require release/registry reconciliation before installation. Source metadata is
+not proof of package availability. Startup network behavior and authentication
+also require separate target qualification; no Pi command is invoked here.
+Pi, OMP and LSCli are distinct runtimes. Common skill-package shape does not
+establish extension, provider, permission, session, MCP or sandbox compatibility.

@@ -1155,6 +1155,146 @@ families:
         rollback: {classification: managed-entry-removal}
         compatibility: {platform_id: opencode, order: 50, native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
 
+  - id: pi
+    display_name: Pi
+    variants:
+    - id: pi-cli
+      display_name: Pi coding agent
+      kind: cli
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_source
+          url: https://github.com/earendil-works/pi/blob/9767ba275f3e9a5ee0f5c5342249b629ab1b2282/packages/coding-agent/docs/skills.md
+        - kind: official_source
+          url: https://github.com/earendil-works/pi/blob/9767ba275f3e9a5ee0f5c5342249b629ab1b2282/packages/coding-agent/docs/settings.md
+        - kind: official_source
+          url: https://github.com/earendil-works/pi/blob/9767ba275f3e9a5ee0f5c5342249b629ab1b2282/packages/coding-agent/README.md
+        - kind: official_source
+          url: https://github.com/earendil-works/pi/blob/9767ba275f3e9a5ee0f5c5342249b629ab1b2282/packages/coding-agent/package.json
+      executables:
+      - pi
+      policy:
+        repo:
+          status: supported
+          resolution: hierarchy
+          paths:
+          - AGENTS.md
+          - AGENTS.override.md
+          - CLAUDE.md
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .pi/settings.json
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.pi/agent/settings.json
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: active
+        installation:
+          method: package-manager
+          instructions: Use the current official Pi installation guide with a verified selected package or artifact; reconcile
+            historical package names before installation. No installation or startup is performed by this adapter.
+        qualification:
+          catalog: implemented
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_pi_adapters.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Project and ancestor skill discovery is conditional on native Pi trust; LocalSetup does not approve trust or change
+          saved decisions.
+        - Trust can enable project settings, package installation and extension execution; skill projection does not authorize
+          those operations.
+        - Native loose Markdown skills are not converted into common directory packages; custom native resources remain in place.
+        - Resource settings, explicit paths, CLI flags, overrides and duplicate-name precedence can change effective loading;
+          installed host discovery remains unverified.
+        - Pi is distinct from OMP and LSCli; no extension, provider, permission, MCP or session compatibility is implied.
+        - Native settings, trust records, auth, sessions, packages, extensions and system prompt overrides remain unmanaged.
+      compatibility:
+        platform_id: pi-cli
+        order: 130
+        native_config: symlink_or_reference
+        smoke_test_level: filesystem
+        verify_rules:
+        - skills_visible
+        - namespace_ls
+        rollback_class: managed-entry-removal
   - id: windsurf
     display_name: Windsurf / Cascade
     variants:

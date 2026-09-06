@@ -29,8 +29,8 @@ def _copy_config(tmp_path: Path) -> Path:
 def test_registry_distinguishes_families_variants_and_projection() -> None:
     registry = load_client_registry(ROOT)
 
-    assert len(registry.families) == 14
-    assert len(registry.variants()) == 17
+    assert len(registry.families) == 15
+    assert len(registry.variants()) == 18
     assert registry.variant("cursor", "cursor-agent-cli").data["kind"] == "cli"
     assert registry.variant("cursor", "cursor-ide").data["kind"] == "ide"
     assert [row["id"] for row in platform_rows(registry)] == [
@@ -46,6 +46,7 @@ def test_registry_distinguishes_families_variants_and_projection() -> None:
         "cline-vscode",
         "amp-cli",
         "goose-cli",
+        "pi-cli",
     ]
 
 
