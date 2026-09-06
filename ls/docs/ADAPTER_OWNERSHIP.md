@@ -75,3 +75,20 @@ When ownership is unclear or unsafe, the safe repair output is a migration or pr
 ## Documentation Rule
 
 Framework docs should say "managed adapter entries", "selected adapter links", or "LocalSetup-managed entries inside the adapter" when describing LocalSetup-owned content. Avoid wording that implies `.agents/skills`, historical `.codex/skills`, `.cursor/skills`, or any other adapter directory is exclusive to LocalSetup.
+
+## Recorded installation owners
+
+New installation lock adapter records include `owners`, a list of objects with
+`scope`, `root`, and `client`. Repository attachments record `scope: repo`, the
+absolute resolved target root, and each selected client ID. A shared physical
+adapter retains every logical client owner. Partial detach updates this list in
+both the target lock and registry receipt while preserving remaining clients
+and custom neighboring content.
+
+The existing version-2 `platform`, `platforms`, `path`, and package fields remain
+compatible. Older records without `owners` remain readable; partial detach
+records the remaining repository owners from their existing client membership.
+This metadata describes managed installation membership, not ownership of the
+entire adapter directory or permission to modify vendor configuration/state.
+The typed owner model also distinguishes `personal` roots; personal attachment
+and `--skill-scope` selection are not yet exposed by this metadata change.

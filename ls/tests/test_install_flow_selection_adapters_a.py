@@ -86,6 +86,7 @@ def test_shared_agents_adapter_is_coalesced_across_platforms(tmp_path: Path) -> 
     shared_locks = [item for item in lock["adapter_targets"] if item["path"] == str(shared["repo_path"])]
     assert len(shared_locks) == 1
     assert shared_locks[0]["platforms"] == selected
+    assert shared_locks[0]["owners"] == [{"scope": "repo", "root": str(root.resolve()), "client": client} for client in selected]
     assert lock["adapter_state"].count(str(shared["repo_path"])) == 1
 
     verified = verify_install(root, home, platform_ids=selected)

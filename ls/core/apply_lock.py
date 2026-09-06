@@ -4,6 +4,7 @@ from pathlib import Path
 
 from .provenance import load_package_marker, marker_public_snapshot
 from .source import source_commit
+from .installation_ownership import repository_owners
 
 
 def build_lock_payload(
@@ -48,6 +49,7 @@ def build_lock_payload(
                 "platform": action.details.get("platform"),
                 "platforms": action.details.get("platforms", [action.details.get("platform")]),
                 "path": str(action.path),
+                "owners": repository_owners(attachment_root, action.details.get("platforms", [action.details.get("platform")])),
                 "mode": action.details.get("mode", "symlink"),
                 "global_root": action.details.get("global_root"),
                 "packages": action.details.get("packages", []),

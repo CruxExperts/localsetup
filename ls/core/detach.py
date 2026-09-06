@@ -5,6 +5,8 @@ from pathlib import Path
 import shutil
 import tempfile
 
+from .installation_ownership import repository_owners
+
 from .adapters import adapter_targets, legacy_global_roots, remove_managed_adapter_entries
 from .lockfile import load_json, save_json, save_text
 from .locking import package_root_lock
@@ -142,6 +144,7 @@ def _detach_platforms_locked(repo_root: Path, home: Path, target_root: Path, pla
             continue
         updated = dict(item)
         updated["platforms"] = remaining_owners
+        updated["owners"] = repository_owners(target_root, remaining_owners)
         updated["platform"] = remaining_owners[0]
         updated_targets.append(updated)
     updated_lock["adapter_targets"] = updated_targets
