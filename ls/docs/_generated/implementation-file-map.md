@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 8c9d8a7cd96a1276d806dcfe6d8cd9ce7b914dbd6d5b03d4729389638a3cbe7c
+  source_provenance_hash: 06459f7d42f0156b375be4f31ca5b53e63622be59d23b1c953e997a0ea8ab3a6
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 456c501222a439c5d74887ad9d501dcb55108c94
-artifact_sha256: 9dec3d972816830f732f1121ea0c657e9783fdaa4264150ec3f1f1828df48998
+source_commit: 51bf7eaba6afc93f74b2f85ba11a7e415b2c1e5e
+artifact_sha256: 34ea63b10a97f2c6d3b8a063fcb284dd52bd5f910ffdd0971ceb84c4dbf34797
 ---
 # Implementation File Map
 
@@ -119,6 +119,7 @@ artifact_sha256: 9dec3d972816830f732f1121ea0c657e9783fdaa4264150ec3f1f1828df4899
 | `refactor` | `ls/core/agent/compaction_content.py` |
 | `refactor` | `ls/core/agent/compaction_run.py` |
 | `refactor` | `ls/core/agent/compaction_worker.py` |
+| `refactor` | `ls/core/agent/completion_cli.py` |
 | `refactor` | `ls/core/agent/completion_contract.py` |
 | `refactor` | `ls/core/agent/completion_response.py` |
 | `refactor` | `ls/core/agent/completion_run.py` |
@@ -1009,6 +1010,7 @@ artifact_sha256: 9dec3d972816830f732f1121ea0c657e9783fdaa4264150ec3f1f1828df4899
 | `keep` | `ls/tests/test_coding_protocol.py` |
 | `keep` | `ls/tests/test_coding_run.py` |
 | `keep` | `ls/tests/test_compaction_run.py` |
+| `keep` | `ls/tests/test_completion_cli.py` |
 | `keep` | `ls/tests/test_completion_contract.py` |
 | `keep` | `ls/tests/test_completion_run.py` |
 | `keep` | `ls/tests/test_context_files.py` |
