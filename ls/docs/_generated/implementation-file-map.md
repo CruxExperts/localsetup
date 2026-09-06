@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 8071e34d25e053e5cabb4f78b7bd21d02aa310d064a2fc12e13e3f278db863bf
+  source_provenance_hash: 25e3811d97b6ec9d62ede56a320b2721863d83dddfda0890cfc93fdbca06350b
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 762cff6aa8dd11dc0d1cc5c34f22580b8cfc9a9a
-artifact_sha256: 093850cc9deba2b1a103a6d0fc922ea5a2573d29113fb9f0bd56aa0231233903
+source_commit: 20a16fa24201fd3dee0d6faf2440007aa34e5946
+artifact_sha256: ce0df3089dba12b0efab475f0c9a5c95f4ec807802bd5cee149f0c9bb6783922
 ---
 # Implementation File Map
 
@@ -444,6 +444,8 @@ artifact_sha256: 093850cc9deba2b1a103a6d0fc922ea5a2573d29113fb9f0bd56aa023123390
 | `keep` | `ls/docs/HARNESS_AUTOMATION.md` |
 | `keep` | `ls/docs/INPUT_HARDENING_STANDARD.md` |
 | `keep` | `ls/docs/LSCLI.md` |
+| `keep` | `ls/docs/LSCLI_QUALIFICATION.md` |
+| `keep` | `ls/docs/LSCLI_RUNTIME.md` |
 | `keep` | `ls/docs/MULTI_PLATFORM_INSTALL.md` |
 | `keep` | `ls/docs/NODE_DASHBOARD_CONTROL_BOUNDARY.md` |
 | `keep` | `ls/docs/OUTPUT_AND_DOC_GENERATION.md` |

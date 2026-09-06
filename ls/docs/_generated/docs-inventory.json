@@ -128,8 +128,8 @@
     "workflow"
   ],
   "counts": {
-    "docs": 495,
-    "framework_docs": 77,
+    "docs": 497,
+    "framework_docs": 79,
     "generated_docs": 5,
     "platforms": 20,
     "public_docs": 6,
@@ -570,6 +570,26 @@
       "owner_package": "",
       "owner_skill": "ls-architecture",
       "path": "ls/docs/LSCLI.md",
+      "status": "ACTIVE",
+      "version": "4.4"
+    },
+    {
+      "class": "framework",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "ls-architecture",
+      "path": "ls/docs/LSCLI_QUALIFICATION.md",
+      "status": "ACTIVE",
+      "version": "4.4"
+    },
+    {
+      "class": "framework",
+      "has_frontmatter": true,
+      "managed_blocks": [],
+      "owner_package": "",
+      "owner_skill": "ls-architecture",
+      "path": "ls/docs/LSCLI_RUNTIME.md",
       "status": "ACTIVE",
       "version": "4.4"
     },
@@ -5540,16 +5560,16 @@
   ],
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-inventory.json",
-    "artifact_sha256": "999aec05399b564ce9d2d296030eff39d997e80a0500faca8c40c93dc19d6311",
+    "artifact_sha256": "90ca2e21411985f67ea751bbdd455e94c08e0782025221885da90ecfc6a4088b",
     "emitter": "docs-align",
     "framework_version": "4.4.1",
     "schema_version": 1,
-    "source_commit": "762cff6aa8dd11dc0d1cc5c34f22580b8cfc9a9a",
+    "source_commit": "20a16fa24201fd3dee0d6faf2440007aa34e5946",
     "source_dirty": false,
-    "source_provenance_hash": "8071e34d25e053e5cabb4f78b7bd21d02aa310d064a2fc12e13e3f278db863bf",
-    "source_root_id": "945a7ab329182e59a82e6cb887fba1d9bba8107bbd8601e0cae944f6d6425e5c",
+    "source_provenance_hash": "25e3811d97b6ec9d62ede56a320b2721863d83dddfda0890cfc93fdbca06350b",
+    "source_root_id": "d716c661b29565049ac4195114a020e46b356c8c40c23c74d6d7870ecc20b3d0",
     "source_tag": null,
-    "source_tree_sha": "d0a028eeba3e2663612a827d6ee493c4982a441b"
+    "source_tree_sha": "80d8e436a6daae9d148027ba8fb5ca2dc775ec5c"
   },
   "repo": ".",
   "schema_version": "1.0",
