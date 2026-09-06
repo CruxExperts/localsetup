@@ -61,7 +61,7 @@ def test_inferred_repository_update_honors_mode_without_changing_selection(tmp_p
     root = make_temp_repo(tmp_path);home = tmp_path / 'home'
     apply_plan(root, build_install_plan(root, home, skills=['ls-context'], platform_ids=['cursor']), home)
     receipt = root / '.localsetup/lock.json';original = json.loads(receipt.read_text())
-    adapter = root / '.cursor/skills';(adapter / 'custom.txt').write_text('keep')
+    adapter = root / '.agents/skills';(adapter / 'custom.txt').write_text('keep')
     args = ['--source-root', str(root), '--home', str(home), 'plan', '--target-directory', str(root)]
     before = receipt.read_bytes()
     assert cli.main(args + ['--mode', 'portable']) == 0

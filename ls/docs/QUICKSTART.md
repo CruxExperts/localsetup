@@ -117,7 +117,7 @@ The default `prompt-only` dependency mode is non-mutating: it reports missing uv
 
 | ID | Agent host | Adapter path | Managed package library |
 |---|---|---|---|
-| `cursor` | Cursor | `.agents/skills`, `.cursor/skills` | `~/.local/share/localsetup/packages` |
+| `cursor` | Cursor | `.agents/skills` | `~/.local/share/localsetup/packages` |
 | `claude-code` | Claude Code | `.claude/skills` | `~/.local/share/localsetup/packages` |
 | `codex` | OpenAI Codex CLI | `.agents/skills` | `~/.local/share/localsetup/packages` |
 | `openclaw` | OpenClaw | `.agents/skills` | `~/.local/share/localsetup/packages` |

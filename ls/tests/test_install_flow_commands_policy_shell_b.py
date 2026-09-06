@@ -294,7 +294,7 @@ def test_preserves_existing_platform_config_when_attaching_skills(tmp_path: Path
     plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["cursor"])
     apply_plan(root, plan, home=home)
 
-    assert_scoped_adapter(root / ".cursor" / "skills", "ls-context")
+    assert_scoped_adapter(root / ".agents" / "skills", "ls-context")
     assert (rules / "project.mdc").read_text(encoding="utf-8") == "keep me\n"
 
 
@@ -302,7 +302,7 @@ def test_preserves_existing_platform_config_when_attaching_skills(tmp_path: Path
 def test_refuses_unmanaged_adapter_collisions(tmp_path: Path, collision_kind: str) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
-    adapter = root / ".cursor" / "skills"
+    adapter = root / ".agents" / "skills"
     adapter.parent.mkdir(parents=True)
     if collision_kind == "directory":
         adapter.mkdir()
@@ -344,7 +344,7 @@ def test_rerun_with_correct_managed_symlink_is_idempotent(tmp_path: Path) -> Non
 def test_doctor_reports_selected_adapter_collisions_only(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
-    collision = root / ".cursor" / "skills"
+    collision = root / ".agents" / "skills"
     collision.parent.mkdir(parents=True)
     collision.write_text("not a directory\n", encoding="utf-8")
 

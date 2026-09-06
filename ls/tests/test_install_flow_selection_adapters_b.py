@@ -385,8 +385,9 @@ def test_external_target_directory_attaches_selected_adapter(tmp_path: Path) -> 
     lock = load_json(target / ".localsetup/lock.json")
 
     assert result["dry_run"] is False
-    assert_scoped_adapter(target / ".cursor" / "skills", "ls-context")
+    assert_scoped_adapter(target / ".agents" / "skills", "ls-context")
     assert not (root / ".cursor" / "skills").exists()
+    assert not (root / ".agents" / "skills").exists()
     assert verify["ok"] is True
     assert {adapter["platform"] for adapter in verify["adapters"]} == {"cursor"}
     assert lock["target_root"] == str(target)

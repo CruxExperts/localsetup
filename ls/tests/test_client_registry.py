@@ -62,7 +62,7 @@ def test_projection_uses_corrected_codex_and_opencode_paths() -> None:
     assert rows["codex"]["global_paths"] == ["~/.agents/skills"]
     assert rows["opencode"]["repo_paths"] == [".opencode/skills"]
     assert rows["opencode"]["global_paths"] == ["~/.config/opencode/skills"]
-    assert rows["cursor"]["repo_paths"] == [".agents/skills", ".cursor/skills"]
+    assert rows["cursor"]["repo_paths"] == [".agents/skills"]
     assert rows["openclaw"]["repo_paths"] == [".agents/skills"]
 
 
@@ -172,7 +172,7 @@ def test_registry_preserves_exact_researched_rows_and_is_deeply_immutable() -> N
     )
     assert codex.data["config"]["global"]["paths"] == ("$CODEX_HOME/config.toml",)
     assert antigravity.data["policy"]["repo"]["paths"] == (".agents/rules", ".agent/rules")
-    assert cursor_agent.data["skills"]["global"]["paths"] == ("~/.agents/skills", "~/.cursor/skills")
+    assert cursor_agent.data["skills"]["global"]["paths"] == ("~/.agents/skills", "~/.cursor/skills", "~/.claude/skills", "~/.codex/skills")
     assert kilo.data["config"]["global"]["paths"] == (
         "~/.config/kilo/kilo.json",
         "~/.config/kilo/kilo.jsonc",
@@ -282,7 +282,7 @@ def test_preferred_write_paths_keep_full_discovery_inventory(tmp_path):
     _cursor_preferred_paths(root, [".agents/skills"], ["~/.agents/skills"])
     registry = load_client_registry(root)
     variant = registry.variant("cursor", "cursor-ide").data
-    assert variant["skills"]["repo"]["paths"] == (".agents/skills", ".cursor/skills")
+    assert variant["skills"]["repo"]["paths"] == (".agents/skills", ".cursor/skills", ".claude/skills", ".codex/skills")
     assert variant["skills"]["repo"]["resolution"] == "aggregate"
     row = next(r for r in platform_rows(registry) if r["id"] == "cursor")
     assert row["repo_paths"] == row["rollback_targets"] == [".agents/skills"]

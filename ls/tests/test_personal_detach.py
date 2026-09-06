@@ -14,6 +14,9 @@ from ls.tests.test_install_flow import make_temp_repo
 def test_personal_detach_reconciles_receipts_and_recovers_failure(tmp_path, mode, monkeypatch):
     import ls.core.personal_detach as engine
     root = make_temp_repo(tmp_path);home = tmp_path / 'home'
+    # Preserve historical shared plus exclusive physical-target coverage.
+    from ls.tests.test_preferred_path_retention import prefer_common
+    prefer_common(root, historical=True)
     apply_plan(root, build_install_plan(root, home, skills=['ls-context'],
         platform_ids=['cursor', 'openclaw'], skill_scope='personal', attach_mode=mode), home)
     receipt = root / '.localsetup/lock.json'
@@ -84,4 +87,4 @@ def test_personal_detach_preserves_legacy_repository_membership(tmp_path):
     updated = json.loads(receipt.read_text())
     assert updated['skill_scope'] == 'repo' and updated['platforms'] == ['cursor']
     assert updated['adapter_targets'] == lock['adapter_targets']
-    assert (root / '.cursor/skills/ls-context/SKILL.md').exists()
+    assert (root / '.agents/skills/ls-context/SKILL.md').exists()

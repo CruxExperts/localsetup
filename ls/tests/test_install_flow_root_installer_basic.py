@@ -62,10 +62,11 @@ def test_root_installer_supports_target_directory(tmp_path: Path) -> None:
 
     assert completed.returncode == 0, completed.stderr
     assert (home / ".local/share/localsetup/packages/ls-context").is_dir()
-    assert_scoped_adapter(target / ".cursor" / "skills", "ls-context")
+    assert_scoped_adapter(target / ".agents" / "skills", "ls-context")
     assert (target / ".localsetup/lock.json").is_file()
     assert (home / ".local" / "bin" / "localsetup").is_file()
     assert not (root / ".cursor" / "skills").exists()
+    assert not (root / ".agents" / "skills").exists()
 
 
 def test_root_installer_target_directory_without_platforms_uses_auto_mode(tmp_path: Path) -> None:

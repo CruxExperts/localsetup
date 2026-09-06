@@ -36,6 +36,7 @@ def test_public_personal_install_config_override_and_retained_update(tmp_path, c
     assert json.loads(receipt.read_text())['skill_scope'] == 'personal'
     assert (home / '.agents/skills/ls-context').exists()
     assert not (target / '.cursor/skills').exists()
+    assert not (target / '.agents/skills').exists()
     assert cli.main(base + ['update', '--target-directory', str(target)]) == 0
     assert json.loads(capsys.readouterr().out)['auto_mode'] == 'recorded_personal'
     before = receipt.read_bytes()

@@ -27,7 +27,7 @@ def test_personal_retirement_preserves_other_references_and_recovers(tmp_path, m
     old = json.loads(receipt.read_text());registry = Path(old['registry_path'])
     other_before = (other / '.localsetup/lock.json').read_bytes() if other_reference else None
     before = receipt.read_bytes(), registry.read_bytes()
-    custom = home / '.cursor/skills/custom.txt';custom.write_text('keep')
+    custom = home / '.agents/skills/custom.txt';custom.write_text('keep')
     preview = retire_personal_scope(source, home, target)
     assert bool(preview['retained_owners']) == other_reference
     assert before == (receipt.read_bytes(), registry.read_bytes())
@@ -77,6 +77,9 @@ def test_personal_retirement_cli_and_stale_guard(tmp_path, capsys):
 
 def test_retirement_mixes_retained_and_exclusive_owners(tmp_path):
     root = make_temp_repo(tmp_path);home = tmp_path / 'home'
+    # Preserve historical shared plus exclusive physical-target coverage.
+    from ls.tests.test_preferred_path_retention import prefer_common
+    prefer_common(root, historical=True)
     other = tmp_path / 'other';other.mkdir()
     apply_plan(root, build_install_plan(root, home, platform_ids=['cursor', 'codex'],
         skills=['ls-context'], skill_scope='both'), home)

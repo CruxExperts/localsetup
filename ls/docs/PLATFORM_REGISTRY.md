@@ -8,7 +8,7 @@ owner_skill: ls-framework-compliance
 
 **Purpose:** Human-readable summary of the AI client variants LocalSetup supports and the canonical registration sources for skills and workflow packages.
 
-**Manifest source:** `ls/config/clients.yaml` is canonical. It records client families and distinct CLI/IDE variants, their researched native surfaces, LocalSetup state contracts, and compatibility projection eligibility. `ls/config/platforms.yaml` is generated from the six compatible variants for existing installer consumers; do not edit it directly. The root `--tools` flag remains a compatibility alias for current `--platforms`.
+**Manifest source:** `ls/config/clients.yaml` is canonical. It records client families and distinct CLI/IDE variants, their researched native surfaces, LocalSetup state contracts, and compatibility projection eligibility. `ls/config/platforms.yaml` is generated from eligible compatible variants for installer consumers; do not edit it directly. The root `--tools` flag remains a compatibility alias for current `--platforms`.
 
 ## Supported platforms
 
@@ -16,7 +16,7 @@ owner_skill: ls-framework-compliance
 |----|--------------|-------------------|-----------------------|
 | codex | OpenAI Codex CLI | .agents/skills | ~/.local/share/localsetup/packages |
 | claude-code | Claude Code CLI | .claude/skills | ~/.local/share/localsetup/packages |
-| cursor | Cursor IDE | .agents/skills, .cursor/skills | ~/.local/share/localsetup/packages |
+| cursor | Cursor IDE | .agents/skills | ~/.local/share/localsetup/packages |
 | kilo | Kilo CLI | .kilo/skills | ~/.local/share/localsetup/packages |
 | opencode | OpenCode CLI | .opencode/skills | ~/.local/share/localsetup/packages |
 | openclaw | OpenClaw CLI | .agents/skills | ~/.local/share/localsetup/packages |

@@ -29,9 +29,10 @@ def test_root_installer_interactive_preserves_explicit_target_and_no_register_sh
     )
 
     assert completed.returncode == 0, completed.stderr + completed.stdout
-    assert_scoped_adapter(target / ".cursor" / "skills", "ls-context")
+    assert_scoped_adapter(target / ".agents" / "skills", "ls-context")
     assert (target / ".localsetup/lock.json").is_file()
     assert not (root / ".cursor" / "skills").exists()
+    assert not (root / ".agents" / "skills").exists()
     assert not (home / ".local" / "bin" / "localsetup").exists()
 
 

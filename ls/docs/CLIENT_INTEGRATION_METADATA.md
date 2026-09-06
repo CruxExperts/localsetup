@@ -974,3 +974,68 @@ not expand sandbox, disclosure or unattended-operation authority; native status
 is not external controller acceptance. Exact release availability, persistence
 across owner exit and accounting require separate qualification. This profile
 does not change the current session's goal, global policy or skill projections.
+
+## Cursor CLI and IDE
+
+Cursor IDE retains platform selector `cursor`; fresh repository and personal
+installations write only `.agents/skills` and `~/.agents/skills`. The registry
+also inventories native `.cursor/skills` and compatibility `.claude/skills` and
+`.codex/skills` roots in both scopes. Discovery is aggregate, not first-existing
+fallback. Filesystem tests cover both attachment modes, mixed Claude ownership,
+native custom neighbors and detach. Historical recorded common/native dual
+layouts use the recorded-path preservation rules above; this change does not
+remove or relocate an existing adapter.
+
+Cursor Agent CLI remains a separate, non-exported catalog profile. Its command
+candidates are `agent` and the distribution's `cursor-agent` alias. The generic
+name `agent` alone does not identify a vendor: verify the resolved executable
+and selected distribution before use. No CLI install selector or effective host
+qualification is inferred from the IDE selector. Native client startup,
+authentication, configuration repair and updates are outside adapter operations.
+
+[Cursor skills documentation](https://cursor.com/docs/skills) describes native,
+common and compatibility discovery roots, nested skill directories and skill
+metadata. An inspected CLI distribution statically follows external directory
+symlinks and coalesces some equivalent lexical paths across root conventions.
+That observation is neither an IDE guarantee nor a portable duplicate-name or
+same-realpath deduplication contract. Frontmatter identity, resource loading,
+nested discovery and the final effective list need selected-host evidence.
+
+Before qualifying a host, inventory each existing project and personal discovery
+root above. Record each package's relative path, declared name, physical target
+and logical installation owners; include nested packages and custom entries.
+Group repeated identities, distinguishing old Cursor aliases, another client's
+native projection and custom content. Report unresolved groups in the host
+qualification evidence. Do not infer safety from equal bytes or shared targets,
+and do not delete, relocate or suppress another owner's adapter to resolve a
+report. Mixed-client filesystem installation remains supported; unresolved
+duplicates leave effective Cursor catalog selection unqualified. Cursor's own
+fresh writer creates no additional native alias. This boundary avoids imposing
+a universal duplicate rejection rule on otherwise valid mixed-client layouts.
+
+[CLI configuration](https://cursor.com/docs/cli/reference/configuration) separates
+project `.cursor/cli.json` permissions from global `~/.cursor/cli-config.json`.
+The project file is not a general settings overlay. Documented
+`CURSOR_CONFIG_DIR` and XDG configuration overrides are not established skill-root
+overrides; simultaneous override precedence remains unqualified. Preserve
+native configuration, credentials, sessions and databases. CLI permissions
+include Shell, Read and Write controls with deny precedence; do not transfer
+those assumptions to IDE settings or LocalSetup authority.
+
+[Rules](https://cursor.com/docs/rules) use `.cursor/rules/*.mdc`; a plain Markdown
+file there is not an equivalent rule. IDE User Rules remain a manual settings
+surface. CLI `AGENTS.md`, `CLAUDE.md` and rules are multiple context sources;
+their inventory does not establish exclusive fallback or skill precedence.
+Local personal skills do not imply availability in SSH workspaces, cloud agents
+or remote workers. Neither variant has a qualified native goal/budget contract.
+
+Example of an explicit filesystem plan, using an already selected installation:
+
+```bash
+localsetup plan --tools cursor --skill-scope both
+```
+
+Review the plan's targets and existing ownership before applying through the
+normal installer. Host qualification must separately verify selected artifact
+identity, the effective skill list, resource access and duplicate behavior for
+the actual CLI or IDE version; filesystem success does not certify these.

@@ -27,7 +27,7 @@ def test_recorded_both_update_retains_selections_and_rejects_stale_plan(tmp_path
     owners = json.loads(registry.read_text())['personal_owners']
     source = root / 'ls/skills/ls-context/SKILL.md'
     source.write_text(source.read_text() + '\nCombined update fixture.\n')
-    (root / '.cursor/skills/custom.txt').write_text('keep')
+    (root / '.agents/skills/custom.txt').write_text('keep')
     args = ['--source-root', str(root), '--home', str(home), 'plan', '--target-directory', str(root)]
     assert cli.main(args) == 0
     report = json.loads(capsys.readouterr().out)
@@ -44,10 +44,10 @@ def test_recorded_both_update_retains_selections_and_rejects_stale_plan(tmp_path
     assert refreshed['adapter_state'] == lock['adapter_state']
     assert refreshed['adapter_transitions'] == lock['adapter_transitions']
     assert json.loads(registry.read_text())['personal_owners'] == owners
-    assert 'Combined update fixture.' in (root / '.cursor/skills/ls-context/SKILL.md').read_text()
+    assert 'Combined update fixture.' in (root / '.agents/skills/ls-context/SKILL.md').read_text()
     assert 'Combined update fixture.' in (home / '.agents/skills/ls-context/SKILL.md').read_text()
     assert not (home / '.agents/skills/ls-git-workflows').exists()
-    assert (root / '.cursor/skills/custom.txt').read_text() == 'keep'
+    assert (root / '.agents/skills/custom.txt').read_text() == 'keep'
     stale = build_recorded_both_plan(root, home, root)
     registry.write_text(registry.read_text() + '\n')
     before = receipt.read_bytes()

@@ -21,7 +21,7 @@ def test_retirement_preserves_personal_state_and_recovers_failure(tmp_path, monk
     receipt = target / '.localsetup/lock.json'
     old = json.loads(receipt.read_text());registry = Path(old['registry_path'])
     owners = json.loads(registry.read_text())['personal_owners']
-    custom = target / '.cursor/skills/custom.txt';custom.write_text('keep')
+    custom = target / '.agents/skills/custom.txt';custom.write_text('keep')
     before = receipt.read_bytes(), registry.read_bytes()
     preview = retire_repository_scope(source, home, target)
     assert not preview['applied']

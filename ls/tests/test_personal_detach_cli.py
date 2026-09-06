@@ -37,8 +37,8 @@ def test_repository_detach_default_ignores_personal_install_scope(tmp_path, caps
     base = ['--source-root', str(root), '--home', str(home), 'detach', '--platforms', 'cursor', '--config', str(config)]
     assert cli.main(base + ['--plan']) == 2
     assert 'no changes made' in capsys.readouterr().err
-    assert (root / '.cursor/skills/ls-context').exists()
+    assert (root / '.agents/skills/ls-context').exists()
     assert cli.main(base) == 0
     capsys.readouterr()
-    assert not (root / '.cursor/skills/ls-context').exists()
+    assert not (root / '.agents/skills/ls-context').exists()
     assert (home / '.agents/skills/ls-context').exists()

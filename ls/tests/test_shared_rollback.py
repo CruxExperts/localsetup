@@ -14,6 +14,9 @@ from ls.tests.test_install_flow import make_temp_repo
 def test_shared_rollback_restores_failed_transaction_and_retains_personal(tmp_path, mode, monkeypatch):
     import ls.core.shared_rollback as transaction
     root = make_temp_repo(tmp_path);home = tmp_path / 'home'
+    # Preserve historical shared plus exclusive physical-target coverage.
+    from ls.tests.test_preferred_path_retention import prefer_common
+    prefer_common(root, historical=True)
     repository = build_install_plan(root, home, skills=['ls-git-workflows'], platform_ids=['cursor'],
                                     target_root=home, attach_mode=mode)
     apply_plan(root, repository, home)

@@ -15,12 +15,12 @@ from ls.core.repair import run_repair
 from ls.tests.test_install_flow import make_temp_repo
 
 
-def prefer_common(root):
+def prefer_common(root, *, historical=False):
     path = root / 'ls/config/clients.yaml';data = yaml.safe_load(path.read_text())
     family = next(f for f in data['families'] if f['id'] == 'cursor')
     row = next(v for v in family['variants'] if v['id'] == 'cursor-ide')
-    row['compatibility']['repo_write_paths'] = ['.agents/skills']
-    row['compatibility']['global_write_paths'] = ['~/.agents/skills']
+    row['compatibility']['repo_write_paths'] = ['.agents/skills', '.cursor/skills'] if historical else ['.agents/skills']
+    row['compatibility']['global_write_paths'] = ['~/.agents/skills', '~/.cursor/skills'] if historical else ['~/.agents/skills']
     path.write_text(yaml.safe_dump(data, sort_keys=False))
     write_platforms_projection(root, load_client_registry(root))
 
@@ -29,6 +29,7 @@ def prefer_common(root):
 @pytest.mark.parametrize('mode', ['symlink', 'portable'])
 def test_preferred_subset_preserves_recorded_dual_adapters(tmp_path, monkeypatch, capsys, scope, mode):
     root = make_temp_repo(tmp_path);home = tmp_path / 'home'
+    prefer_common(root, historical=True)
     monkeypatch.setattr(cli, '_is_global_shim_invocation', lambda: False)
     apply_plan(root, build_install_plan(root, home, skills=['ls-context'],
         platform_ids=['cursor'], skill_scope=scope, attach_mode=mode), home)

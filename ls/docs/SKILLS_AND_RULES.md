@@ -38,7 +38,7 @@ Use [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) as the canonical definition of:
 
 | Platform | Context loader | Skills |
 |----------|----------------|--------|
-| Cursor | .cursor/rules/ls-context.mdc | .agents/skills, .cursor/skills -> managed library |
+| Cursor | .cursor/rules/ls-context.mdc | .agents/skills -> managed library |
 | Claude Code | .claude/CLAUDE.md | .claude/skills -> managed library |
 | Codex | AGENTS.md (repo root) | .agents/skills -> managed library |
 | OpenClaw | platform template | .agents/skills -> managed library |

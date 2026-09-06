@@ -14,7 +14,10 @@ from ls.tests.test_install_flow import make_temp_repo
 @pytest.mark.parametrize('shared', [False, True])
 def test_combined_doctor_repairs_once_and_recovers_both_scopes(tmp_path, monkeypatch, mode, shared):
     import ls.core.combined_repair as engine
-    root = make_temp_repo(tmp_path);home = tmp_path / 'home';target = home if shared else root
+    root = make_temp_repo(tmp_path);home = tmp_path / 'home'
+    # Preserve historical shared plus exclusive physical-target coverage.
+    from ls.tests.test_preferred_path_retention import prefer_common
+    prefer_common(root, historical=True);target = home if shared else root
     apply_plan(root, build_install_plan(root, home, skills=['ls-context'], platform_ids=['cursor'],
         skill_scope='both', attach_mode=mode, target_root=target), home)
     receipt = target / '.localsetup/lock.json'
@@ -55,7 +58,7 @@ def test_combined_repair_detects_unrecorded_entries_and_portable_links(tmp_path)
     root = make_temp_repo(tmp_path);home = tmp_path / 'home'
     apply_plan(root, build_install_plan(root, home, skills=['ls-context'], platform_ids=['cursor'],
         skill_scope='both', attach_mode='portable'), home)
-    path = root / '.cursor/skills'
+    path = root / '.agents/skills'
     package = path / 'ls-context'
     (package / 'unrecorded-link').symlink_to('SKILL.md')
     report = run_repair(root, home=home)

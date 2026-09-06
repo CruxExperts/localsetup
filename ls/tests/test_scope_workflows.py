@@ -19,7 +19,7 @@ def test_two_step_scope_conversion_round_trip(tmp_path, capsys, mode):
         skill_scope='repo', attach_mode=mode), home)
     receipt = root / '.localsetup/lock.json'
     old = json.loads(receipt.read_text());registry = Path(old['registry_path'])
-    (root / '.cursor/skills/custom.txt').write_text('keep')
+    (root / '.agents/skills/custom.txt').write_text('keep')
     prefix = ['--source-root', str(root), '--home', str(home)]
     for scope in ['both', 'personal', 'both', 'repo']:
         options = ['--target-directory', str(root), '--skill-scope', scope]
@@ -34,7 +34,7 @@ def test_two_step_scope_conversion_round_trip(tmp_path, capsys, mode):
         assert current['platforms'] == ['cursor']
         assert current['attach_mode'] == mode
         assert verify_install(root, home, target_root=root)['ok']
-        assert (root / '.cursor/skills/custom.txt').read_text() == 'keep'
+        assert (root / '.agents/skills/custom.txt').read_text() == 'keep'
         assert set(current['repo_packages']) == set(old['repo_packages'])
     assert json.loads(receipt.read_text())['adapter_targets'] == old['adapter_targets']
 
@@ -45,7 +45,7 @@ def test_personal_only_repository_rollback_retains_independent_owner(tmp_path):
                                        skill_scope='personal'), home)
     receipt = root / '.localsetup/lock.json';lock = json.loads(receipt.read_text())
     registry = Path(lock['registry_path']);before = json.loads(registry.read_text())
-    custom = home / '.cursor/skills/custom.txt';custom.write_text('keep')
+    custom = home / '.agents/skills/custom.txt';custom.write_text('keep')
     rollback(root, home, target_root=root)
     assert not receipt.exists()
     current = json.loads(registry.read_text())
@@ -53,4 +53,4 @@ def test_personal_only_repository_rollback_retains_independent_owner(tmp_path):
     assert current['personal_owners'] == before['personal_owners']
     assert personal_inventory(root, home, ['cursor'])['ok']
     assert custom.read_text() == 'keep'
-    assert (home / '.cursor/skills/ls-context/SKILL.md').is_file()
+    assert (home / '.agents/skills/ls-context/SKILL.md').is_file()

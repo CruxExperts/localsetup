@@ -17,12 +17,12 @@ platforms:
     rollback_targets: [".claude/skills"]
 
   - id: cursor
-    repo_paths: [".agents/skills", ".cursor/skills"]
-    global_paths: ["~/.agents/skills", "~/.cursor/skills"]
+    repo_paths: [".agents/skills"]
+    global_paths: ["~/.agents/skills"]
     native_config: symlink_or_reference
     smoke_test_level: filesystem
     verify_rules: ["skills_visible", "namespace_ls"]
-    rollback_targets: [".agents/skills", ".cursor/skills"]
+    rollback_targets: [".agents/skills"]
 
   - id: kilo
     repo_paths: [".kilo/skills"]

@@ -11,11 +11,17 @@ from ls.tests.test_install_flow import make_temp_repo
 
 def test_installed_views_keep_recorded_paths_after_catalog_change(tmp_path):
     root = make_temp_repo(tmp_path);home = tmp_path / 'home'
+    # Preserve historical shared plus exclusive physical-target coverage.
+    from ls.tests.test_preferred_path_retention import prefer_common
+    prefer_common(root, historical=True)
     apply_plan(root, build_install_plan(root, home, skills=['ls-context'], platform_ids=['cursor']), home)
     receipt = root / '.localsetup/lock.json';lock = json.loads(receipt.read_text())
     paths = {row['path'] for row in lock['adapter_targets']}
     catalog = root / 'ls/config/platforms.yaml'
-    catalog.write_text(catalog.read_text().replace('.cursor/skills', '.new-cursor/skills'))
+    before_catalog = catalog.read_text()
+    assert '.cursor/skills' in before_catalog
+    catalog.write_text(before_catalog.replace('.cursor/skills', '.new-cursor/skills'))
+    assert catalog.read_text() != before_catalog
     for clients in [None, ['cursor']]:
         inventory = install_inventory(root, home=home, platform_ids=clients)
         assert inventory['adapter_source'] == 'recorded'
