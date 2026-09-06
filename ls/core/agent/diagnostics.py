@@ -44,7 +44,7 @@ def inspect(*, package_root: Path | None = None, home: Path | None = None, runti
     if runtime['status'] != 'verified':
         issues.append('Runtime inspection is ' + runtime['status'] + '; inspect setup records and use verified-artifact setup or explicit recovery. Busy upgrades must finish before inspection.')
     if profiles['status'] != 'verified':
-        issues.append('Profile configuration is ' + profiles['status'] + '; provide a valid explicit profile document. Credentials are not checked.')
+        issues.append('Profile configuration is ' + profiles['status'] + '; verify the explicit document, trusted ownership and file/ancestor write permissions. Credentials are not checked.')
     dependencies = runtime.get('dependencies', {'status': 'unavailable'})
     native = runtime.get('native_sandbox', {'status': 'unavailable'})
     if dependencies['status'] != 'verified':

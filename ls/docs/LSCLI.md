@@ -89,6 +89,11 @@ from verified artifacts or inspect retained recovery records; doctor never
 repairs or reselects a runtime. A busy upgrade requires a later inspection.
 `profiles` reports only `status` (`missing`, `invalid`, `empty`, `verified`) and
 `count`, without names, endpoints, credential references, or credential lookup.
+Doctor validates the captured profile document through the same trusted path
+reader used for runtime loading. Unsafe file or ancestor ownership/write
+permissions therefore report `invalid`, even when schema-only profile inventory
+can display the document. Safe readable profiles remain valid. Inspect contents
+and filesystem ownership before repairing permissions; doctor changes neither.
 
 Runtime inspection takes an existing shared lease with a one-second acquisition
 limit; it never creates a lock or verifies through an active exclusive upgrade.

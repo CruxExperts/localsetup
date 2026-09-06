@@ -22,6 +22,7 @@ def configuration(tmp_path):
 
 def test_inventory_no_credentials_or_state_and_load_compatibility(tmp_path):
     path, _ = configuration(tmp_path)
+    path.chmod(0o644)
     before = path.read_bytes()
     report = inventory(path)
     assert report == {'schema_version': 1, 'profiles': [{'name': 'selected', 'model': 'test-model',

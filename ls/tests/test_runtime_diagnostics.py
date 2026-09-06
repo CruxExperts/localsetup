@@ -78,7 +78,21 @@ def test_profiles_are_validated_without_credentials_or_value_disclosure(tmp_path
                 'model': 'fixture', 'credential_env': 'MISSING_FIXTURE_CREDENTIAL',
                 'timeout_seconds': 5, 'capabilities': [], 'allow_loopback_http': False}
     path.write_text(json.dumps({'schema_version': 1, 'profiles': {'private-name': valid()}}))
+    path.chmod(0o644)
     assert diagnostics.profiles(path) == {'status': 'verified', 'count': 1}
+    from ls.core.agent.profile_inventory import inventory
+    before = path.read_bytes()
+    for unsafe in ('file', 'ancestor'):
+        target = path if unsafe == 'file' else tmp_path
+        original = target.stat().st_mode & 0o7777
+        target.chmod(0o666 if unsafe == 'file' else 0o777)
+        try:
+            assert diagnostics.profiles(path) == {'status': 'invalid', 'count': 0}
+            assert len(inventory(path)['profiles']) == 1
+            assert path.read_bytes() == before
+            assert target.stat().st_mode & 0o7777 == (0o666 if unsafe == 'file' else 0o777)
+        finally:
+            target.chmod(original)
 
 
 def test_doctor_static_success_is_separate_from_execution(runtime, tmp_path, monkeypatch):

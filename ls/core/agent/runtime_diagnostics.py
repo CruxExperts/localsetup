@@ -1,7 +1,8 @@
 """Static installed-state checks without initializing runtime or provider state."""
 from pathlib import Path
 
-from .profile_inventory import inventory
+from .profile_inventory import validate
+from .profiles import document
 from .runtime_install import selected
 
 
@@ -34,7 +35,7 @@ def profiles(path: Path) -> dict:
     except OSError:
         return {'status': 'invalid', 'count': 0}
     try:
-        count = len(inventory(path)['profiles'])
+        count = len(validate(document(path, trusted=True))['profiles'])
         return {'status': 'verified' if count else 'empty', 'count': count}
     except (OSError, ValueError, TypeError, RuntimeError, RecursionError):
         return {'status': 'invalid', 'count': 0}
