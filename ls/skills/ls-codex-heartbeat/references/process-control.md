@@ -32,3 +32,23 @@ execution and restores the prior handlers afterward.
 
 These process outcomes alone do not validate an agent's structured completion
 protocol or establish controller acceptance of a task or issue.
+
+## LSCli receipt validation foundation
+
+The internal LSCli process adapter accepts success only when a zero process exit
+agrees with a complete schema-version-1 JSONL receipt: contiguous sequence
+numbers, one start, matching task/session identifiers, and one completed result
+with a checkpoint digest. Missing, truncated, duplicated, unknown, or trailing
+events fail validation. A completion string in ordinary output is insufficient.
+Unexpected approval requests fail because this adapter has no approval channel.
+
+Protocol mode discards raw stdout and stderr after bounded validation; its
+metadata contains identities, status, sequence, and checkpoint, not result text.
+Its optional activity deadline advances only on complete valid start/progress
+frames. Stderr noise and partial frames do not reset it. This bounds protocol
+inactivity, not semantic progress or repeated unproductive tasks. Neither a
+receipt nor its saved metadata grants authority or closes an issue.
+
+This is an internal foundation. Public typed LSCli profile selection, protected
+launcher binding, and run/compaction budget integration require their remaining
+integration gates; generic profiles still use their existing process contract.

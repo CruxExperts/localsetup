@@ -33,7 +33,8 @@ def _cleanup(proc: subprocess.Popen) -> bool:
 
 
 def execute(argv: list[str], *, cwd: Path, timeout: float,
-            stdin_text: str | None = None, output_limit: int = OUTPUT_LIMIT) -> dict:
+            stdin_text: str | None = None, output_limit: int = OUTPUT_LIMIT,
+            receipt=None, idle_timeout: float | None = None) -> dict:
     """Bound output before accumulation; include pipe delivery in the deadline."""
     if stdin_text is not None and len(stdin_text) > INPUT_LIMIT:
         raise ValueError("heartbeat prompt exceeds input limit")
@@ -52,6 +53,7 @@ def execute(argv: list[str], *, cwd: Path, timeout: float,
     reason = None
     reaped = False
     deadline = time.monotonic() + timeout
+    activity = time.monotonic()
     try:
         proc = subprocess.Popen(argv, cwd=cwd, shell=False, stdin=subprocess.PIPE if prompt is not None
                                 else subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -70,6 +72,9 @@ def execute(argv: list[str], *, cwd: Path, timeout: float,
         while streams.get_map() or proc.poll() is None:
             if cancelled:
                 reason = "cancelled"
+                break
+            if idle_timeout is not None and time.monotonic() - activity >= idle_timeout:
+                reason = "no_progress_timeout"
                 break
             remaining = deadline - time.monotonic()
             if remaining <= 0:
@@ -95,9 +100,26 @@ def execute(argv: list[str], *, cwd: Path, timeout: float,
                 if total > output_limit:
                     reason = "output_limit"
                     break
-                tails[name] = (tails[name] + data)[-48000:]
+                if receipt is not None:
+                    if name == "stdout":
+                        try:
+                            if receipt.feed(data):
+                                activity = time.monotonic()
+                        except ValueError:
+                            reason = "protocol_error"
+                            break
+                else:
+                    tails[name] = (tails[name] + data)[-48000:]
             if reason:
                 break
+        protocol = None
+        if receipt is not None and reason is None:
+            try:
+                protocol = receipt.finish(proc.returncode)
+                if not protocol["completed"]:
+                    reason = "protocol_failed"
+            except ValueError:
+                reason = "protocol_error"
         if reason:
             reaped = _cleanup(proc)
         else:
@@ -109,6 +131,8 @@ def execute(argv: list[str], *, cwd: Path, timeout: float,
                   "output_bytes_observed": total, "output_limit_bytes": output_limit,
                   "returncode": actual if reason is None else
                   (124 if reason == "timeout" else 128 + cancelled[0] if cancelled else 1)}
+        if receipt is not None:
+            result["protocol"] = protocol
         result.update({name + "_tail": data.decode("utf-8", errors="replace")[-12000:]
                        for name, data in tails.items()})
         return result
