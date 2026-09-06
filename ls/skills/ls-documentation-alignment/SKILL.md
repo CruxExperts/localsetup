@@ -138,3 +138,17 @@ The controller verifies each report and records checkpoints in the ledger.
 ## Documentation Skill Refresh Note
 
 Classification: route docs drift, generated artifact sync, and public documentation alignment here rather than creating a duplicate generic documentation skill.
+
+### Command inventory boundary
+
+The generated inventory's cli_commands lists root `localsetup` command families
+from the canonical ls/core/cli_parser.py builder. Collection parses declarations
+without importing or executing the target source. Missing, malformed, empty or
+nonliteral root declarations fail collection and require an owner update; they
+must not silently produce an empty command inventory. A regression check compares
+the collected names with the actual argparse root choices.
+
+This field does not enumerate nested subcommands, options, delegated LSCli
+commands or their behavior. Audit those against their owning parsers and command
+references during comprehensive documentation alignment. A zero-finding report
+is not proof that every command contract or current documentation claim is covered.

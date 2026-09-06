@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import json
 import re
 from pathlib import Path
@@ -13,6 +14,26 @@ from ls.core.workflows import load_workflow_catalog, workflow_catalog_payload
 from .assets import collect_asset_manifest
 from .constants import GENERATED_DIR, SCHEMA_VERSION
 from .io import _classify_doc, _frontmatter, _managed_blocks, _markdown_files, _read_text, _rel
+
+def _cli_commands(repo_root: Path) -> list[str]:
+    """Inventory root command declarations without importing the target repository."""
+    source = repo_root / "ls/core/cli_parser.py"
+    tree = ast.parse(source.read_text(encoding="utf-8"), filename=str(source))
+    builders = [node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "build_parser"]
+    if len(builders) != 1:
+        raise ValueError("CLI inventory requires the canonical parser builder")
+    commands = set()
+    for node in ast.walk(builders[0]):
+        if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                and isinstance(node.func.value, ast.Name) and node.func.value.id == "sub"
+                and node.func.attr == "add_parser"):
+            if not node.args or not isinstance(node.args[0], ast.Constant) or not isinstance(node.args[0].value, str):
+                raise ValueError("CLI inventory requires literal root command names")
+            commands.add(node.args[0].value)
+    if not commands:
+        raise ValueError("CLI inventory found no root commands; review parser ownership")
+    return sorted(commands)
+
 
 def collect_inventory(repo_root: Path) -> dict[str, Any]:
     docs = []
@@ -38,7 +59,7 @@ def collect_inventory(repo_root: Path) -> dict[str, Any]:
     platforms = load_platforms(repo_root)
     skills = load_skill_catalog(repo_root)
     workflows = load_workflow_catalog(repo_root)
-    commands = sorted(set(re.findall(r'sub\.add_parser\("([^"]+)"', _read_text(repo_root / "ls/core/cli.py"))))
+    commands = _cli_commands(repo_root)
     ci = sorted(_rel(repo_root, path) for path in (repo_root / ".github/workflows").glob("*.yml"))
     ci.extend(sorted(_rel(repo_root, path) for path in (repo_root / ".github/workflows").glob("*.yaml")))
 
