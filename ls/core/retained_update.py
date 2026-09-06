@@ -50,8 +50,17 @@ def recorded_preferred_path_clients(source: Path, lock: dict, target: Path) -> l
         paths = compatibility.get('repo_write_paths')
         client = compatibility.get('platform_id')
         discovered = variant.data['skills']['repo']['paths']
-        legacy_match = any('/' + path.strip('/') + '/' in '/' + value.strip('/') + '/'
-                           for value in legacy_paths for path in discovered)
+        relative_legacy = []
+        for value in legacy_paths:
+            candidate = Path(value)
+            try:
+                relative = candidate.relative_to(target) if candidate.is_absolute() else candidate
+            except ValueError:
+                continue
+            if '..' not in relative.parts:
+                relative_legacy.append(relative.as_posix().strip('/'))
+        legacy_match = any(value == path.strip('/') or value.startswith(path.strip('/') + '/')
+                           for value in relative_legacy for path in discovered)
         if paths is not None and (client in clients or legacy_match):
             preferred[client] = {str((target / path).absolute()) for path in paths}
     if not preferred:return []

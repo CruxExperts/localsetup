@@ -50,7 +50,11 @@ paths remains eligible for ordinary repair. Detach removes only recorded
 managed entries and preserves custom neighbors. For a profile declaring preferred
 repository paths, legacy selectors or path hints without modern ownership
 records require manual recovery before repository update or repair. Explicit-empty
-modern records do not fall back to legacy fields. Changing metadata alone never
+modern records do not fall back to legacy fields. Path-only hints are matched
+from the recorded target root, including descendants of a declared discovery
+root; a generic `skills` entry does not match another client's nested
+`.cursor/skills` directory. Absolute hints outside the target and traversal
+hints do not establish a client identity. Changing metadata alone never
 authorizes deleting an old native adapter.
 
 An optional `integration` object records lifecycle, installation guidance, and
@@ -1357,3 +1361,49 @@ realpath deduplication or a deterministic lexical origin. Unmanaged copies with
 identical bytes remain distinct conflicting origins. Current preferred paths
 are unchanged by this check; changing defaults and qualifying historical-path
 updates are separate profile operations.
+
+### OpenCode preferred paths and native boundaries
+
+Selector `opencode` now prefers `.agents/skills` and `~/.agents/skills` for new
+installations. Omitted-selector updates preserve recorded native repository
+`.opencode/skills` and personal `~/.config/opencode/skills` paths and modes;
+custom content stays in place. Repository repair of a nonpreferred historical
+layout follows the recorded-path preservation procedure above. Changing the
+fresh default does not authorize migration of existing directories.
+
+```bash
+localsetup plan --tools opencode --skill-scope both --skills ls-context
+localsetup install --tools opencode --skill-scope both --skills ls-context --apply
+localsetup verify
+```
+
+Both symlink and portable package layouts have filesystem lifecycle coverage.
+The pinned stable source follows directory symlinks and reads Markdown without
+Kilo's project-source containment guard. That difference is source evidence,
+not proof of installed resource activation or permissions. Keep package
+references and assets together; the native skill tool controls content access.
+Native singular/plural skill roots under project `.opencode`, home `.opencode`
+and XDG configuration remain discovery inventory. Preferred common roots do not
+imply deterministic duplicate-name priority; the bounded collision checks above
+apply before affected mutations.
+
+[Configuration](https://github.com/anomalyco/opencode/blob/16747470f976aca3d362ad730bcd3fe82ecc2c9a/packages/opencode/src/config/config.ts)
+merges layers and supports JSONC. Preserve project/global settings, explicit
+configuration, plugins, managed settings and separate TUI configuration. Do not
+generate a replacement config file merely to add skill discovery. Native state,
+auth, sessions and databases remain separate from LocalSetup bookkeeping.
+
+[Instructions](https://github.com/anomalyco/opencode/blob/16747470f976aca3d362ad730bcd3fe82ecc2c9a/packages/opencode/src/session/instruction.ts)
+use conditional filename fallback: project `AGENTS.md`, compatible `CLAUDE.md`,
+then deprecated `CONTEXT.md`, stopping at the first filename family with ancestor
+matches. Global context first selects the effective config directory's
+`AGENTS.md`, then compatible personal Claude context. Native flags and explicit
+instruction paths can alter this behavior. This does not make skills or config
+files first-existing systems. Keep the `AGENTS.md` bridge and all custom native
+policy content intact.
+
+Use official stable-v1 installation guidance with a verified selected artifact.
+No native installation, startup, authentication or provider call occurs during
+adapter operations. OpenCode V2 beta uses a separate executable and is outside
+this profile. No native `/goal` lifecycle is certified, and filesystem support
+is not a claim of native host loading, activation or sandbox qualification.

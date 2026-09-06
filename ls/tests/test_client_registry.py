@@ -62,8 +62,8 @@ def test_projection_uses_corrected_codex_and_opencode_paths() -> None:
 
     assert rows["codex"]["repo_paths"] == [".agents/skills"]
     assert rows["codex"]["global_paths"] == ["~/.agents/skills"]
-    assert rows["opencode"]["repo_paths"] == [".opencode/skills"]
-    assert rows["opencode"]["global_paths"] == ["~/.config/opencode/skills"]
+    assert rows["opencode"]["repo_paths"] == [".agents/skills"]
+    assert rows["opencode"]["global_paths"] == ["~/.agents/skills"]
     assert rows["cursor"]["repo_paths"] == [".agents/skills"]
     assert rows["openclaw"]["repo_paths"] == [".agents/skills"]
 

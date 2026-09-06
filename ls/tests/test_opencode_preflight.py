@@ -27,7 +27,7 @@ def test_distinct_collision_blocks_shared_refresh_and_repair(tmp_path, mode):
     plan = build_install_plan(root, home, skills=['ls-context'], platform_ids=['codex'])
     with pytest.raises(RuntimeError, match='opencode_skill_inventory'):
         apply_plan(root, plan, home)
-    damaged = home / '.config/opencode/skills/ls-context'
+    damaged = home / '.agents/skills/ls-context'
     if damaged.is_symlink():damaged.unlink()
     else:
         import shutil

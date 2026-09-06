@@ -18,15 +18,16 @@ from ls.tests.test_install_flow import make_temp_repo
 def prefer_common(root, *, historical=False, client="cursor"):
     path = root / 'ls/config/clients.yaml';data = yaml.safe_load(path.read_text())
     family = next(f for f in data['families'] if f['id'] == client)
-    row = next(v for v in family['variants'] if v['id'] == ('cursor-ide' if client == 'cursor' else 'kilo-cli'))
-    native = ['.agents/skills', '.cursor/skills'] if client == 'cursor' else ['.kilo/skills']
+    row = next(v for v in family['variants'] if v['id'] == ('cursor-ide' if client == 'cursor' else client + '-cli'))
+    native = ['.agents/skills', '.cursor/skills'] if client == 'cursor' else [f'.{client}/skills']
     row['compatibility']['repo_write_paths'] = native if historical else ['.agents/skills']
-    row['compatibility']['global_write_paths'] = ['~/' + path for path in native] if historical else ['~/.agents/skills']
+    personal = ['~/.config/opencode/skills'] if client == 'opencode' else ['~/' + path for path in native]
+    row['compatibility']['global_write_paths'] = personal if historical else ['~/.agents/skills']
     path.write_text(yaml.safe_dump(data, sort_keys=False))
     write_platforms_projection(root, load_client_registry(root))
 
 
-@pytest.mark.parametrize('client', ['cursor', 'kilo'])
+@pytest.mark.parametrize('client', ['cursor', 'kilo', 'opencode'])
 @pytest.mark.parametrize('scope', ['repo', 'personal', 'both'])
 @pytest.mark.parametrize('mode', ['symlink', 'portable'])
 def test_preferred_subset_preserves_recorded_dual_adapters(tmp_path, monkeypatch, capsys, scope, mode, client):
@@ -36,8 +37,12 @@ def test_preferred_subset_preserves_recorded_dual_adapters(tmp_path, monkeypatch
     apply_plan(root, build_install_plan(root, home, skills=['ls-context'],
         platform_ids=[client], skill_scope=scope, attach_mode=mode), home)
     receipt = root / '.localsetup/lock.json';before = json.loads(receipt.read_text())
-    adapters = [base / rel for base in ((root,) if scope == 'repo' else (home,) if scope == 'personal' else (root, home))
-                for rel in (('.agents/skills', '.cursor/skills') if client == 'cursor' else ('.kilo/skills',))]
+    bases = (root,) if scope == 'repo' else (home,) if scope == 'personal' else (root, home)
+    adapters = []
+    for base in bases:
+        paths = ('.agents/skills', '.cursor/skills') if client == 'cursor' else (
+            '.config/opencode/skills' if client == 'opencode' and base == home else f'.{client}/skills',)
+        adapters.extend(base / rel for rel in paths)
     for adapter in adapters:(adapter / 'custom.txt').write_text('keep')
     prefer_common(root, client=client)
     prefix = ['--source-root', str(root), '--home', str(home)]
@@ -110,3 +115,12 @@ def test_explicit_empty_modern_ownership_does_not_fall_back_to_legacy(tmp_path):
 
     legacy = {'adapter_paths': [str(root / '.cursor/skills/ls-context') + '/']}
     assert recorded_preferred_path_clients(root, legacy, root) == ['cursor']
+
+
+def test_generic_discovery_root_is_anchored_to_recorded_target(tmp_path):
+    from ls.core.retained_update import recorded_preferred_path_clients
+    root = make_temp_repo(tmp_path)
+    assert recorded_preferred_path_clients(root, {'adapter_paths': ['skills/ls-context']}, root) == ['openclaw']
+    assert 'openclaw' not in recorded_preferred_path_clients(root, {'adapter_paths': ['.cursor/skills/ls-context']}, root)
+    assert recorded_preferred_path_clients(root, {'adapter_paths': [str(tmp_path / 'outside/skills/ls-context')]}, root) == []
+    assert recorded_preferred_path_clients(root, {'adapter_paths': ['../skills/ls-context']}, root) == []

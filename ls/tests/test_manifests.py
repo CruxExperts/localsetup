@@ -231,7 +231,7 @@ def test_platform_manifest_has_supported_client_projections() -> None:
     by_id = {platform.platform_id: platform for platform in platforms}
     assert by_id["codex"].repo_paths == [".agents/skills"]
     assert by_id["codex"].global_paths == ["~/.agents/skills"]
-    assert by_id["opencode"].global_paths == ["~/.config/opencode/skills"]
+    assert by_id["opencode"].global_paths == ["~/.agents/skills"]
 
 
 def test_manifest_schemas_reject_unknown_pack_and_platform_fields(tmp_path: Path) -> None:

@@ -33,12 +33,12 @@ platforms:
     rollback_targets: [".agents/skills"]
 
   - id: opencode
-    repo_paths: [".opencode/skills"]
-    global_paths: ["~/.config/opencode/skills"]
+    repo_paths: [".agents/skills"]
+    global_paths: ["~/.agents/skills"]
     native_config: symlink_or_reference
     smoke_test_level: filesystem
     verify_rules: ["skills_visible", "namespace_ls"]
-    rollback_targets: [".opencode/skills"]
+    rollback_targets: [".agents/skills"]
 
   - id: openclaw
     repo_paths: [".agents/skills"]

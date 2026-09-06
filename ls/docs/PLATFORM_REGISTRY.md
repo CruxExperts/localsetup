@@ -18,7 +18,7 @@ owner_skill: ls-framework-compliance
 | claude-code | Claude Code CLI | .claude/skills | ~/.local/share/localsetup/packages |
 | cursor | Cursor IDE | .agents/skills | ~/.local/share/localsetup/packages |
 | kilo | Kilo CLI | .agents/skills | ~/.local/share/localsetup/packages |
-| opencode | OpenCode CLI | .opencode/skills | ~/.local/share/localsetup/packages |
+| opencode | OpenCode CLI | .agents/skills | ~/.local/share/localsetup/packages |
 | openclaw | OpenClaw CLI | .agents/skills | ~/.local/share/localsetup/packages |
 
 The canonical registry also tracks researched variants that are not projected into the compatibility manifest. Update `clients.yaml`, its research evidence, and the "Skill registration (new skills)" section when adding one.
