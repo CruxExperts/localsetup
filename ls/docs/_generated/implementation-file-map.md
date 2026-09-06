@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: caff03d83226511865bf650e5f16745a941101976a7c9bed18c3702937d41870
+  source_provenance_hash: c6f58de893c3edaba9d1ee0289d57a0027a4d6f850108908259939641ea9ad6f
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 2fb54520617dc897824477ea47b86896354792b9
-artifact_sha256: f8a2026373639f237979571783e128f32b0ef1eb82a3d746a09b814ed0a7b8b2
+source_commit: a607e7b60ba1253683b3e9a598f64facff9e3e35
+artifact_sha256: 8ff1ee940b4f3bb8d604afee14ab9e47a22cb6a0d6700e1a8e88fdc01da191e7
 ---
 # Implementation File Map
 
@@ -282,6 +282,7 @@ artifact_sha256: f8a2026373639f237979571783e128f32b0ef1eb82a3d746a09b814ed0a7b8b
 | `refactor` | `ls/core/path_contract.py` |
 | `refactor` | `ls/core/path_reprocessor.py` |
 | `refactor` | `ls/core/paths.py` |
+| `refactor` | `ls/core/personal_adapter.py` |
 | `refactor` | `ls/core/personal_registry.py` |
 | `refactor` | `ls/core/plan.py` |
 | `refactor` | `ls/core/plugin_packs.py` |
@@ -1077,6 +1078,7 @@ artifact_sha256: f8a2026373639f237979571783e128f32b0ef1eb82a3d746a09b814ed0a7b8b
 | `keep` | `ls/tests/test_omniroute_update.py` |
 | `keep` | `ls/tests/test_operation_journal.py` |
 | `keep` | `ls/tests/test_path_contract.py` |
+| `keep` | `ls/tests/test_personal_adapter.py` |
 | `keep` | `ls/tests/test_personal_registry.py` |
 | `keep` | `ls/tests/test_plugin_packs.py` |
 | `keep` | `ls/tests/test_portable_history.py` |
