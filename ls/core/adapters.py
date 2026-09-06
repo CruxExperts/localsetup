@@ -545,27 +545,32 @@ def adapter_status(
     return status
 
 
-def recorded_adapter_status(lock: dict, global_root: Path) -> list[dict]:
+def recorded_adapter_status(lock: dict, global_root: Path, platform_ids: list[str] | None = None, *, target_root: Path | None = None) -> list[dict]:
     if not isinstance(lock, dict):
         lock = {}
     recorded = lock.get("adapter_targets") if isinstance(lock, dict) else None
-    if not recorded:
+    if "adapter_targets" not in lock:
         recorded = [
-            {"platform": None, "path": path, "mode": lock.get("attach_mode", "symlink"), "global_root": str(global_root)}
+            {"platform": None, "platforms": lock.get("platforms", []), "path": path, "mode": lock.get("attach_mode", "symlink"), "global_root": str(global_root)}
             for path in lock.get("adapter_state", [])
         ]
     statuses: list[dict] = []
     for item in recorded:
+        clients = ([owner['client'] for owner in item['owners'] if owner.get('scope') == 'repo']
+                   if 'owners' in item else item.get('platforms', [item['platform']] if item.get('platform') else []))
+        if platform_ids is not None and not set(clients).intersection(platform_ids):continue
         path = Path(str(item["path"]))
+        root = target_root or (Path(lock['target_root']) if lock.get('target_root') else None)
+        if not path.is_absolute() and root is not None:path = root / path
         expected_global = Path(str(item.get("global_root") or global_root))
         statuses.append(
             {
                 "platform": item.get("platform"),
-                "platforms": item.get("platforms", [item.get("platform")] if item.get("platform") else []),
+                "platforms": clients,
                 "repo_path": str(path),
                 "expected_mode": item.get("mode", lock.get("attach_mode", "symlink")),
                 "expected_packages": item.get("packages", lock.get("repo_packages", lock.get("adapter_packages", []))),
-                **adapter_path_state(path, expected_global, target_root=Path(str(lock.get("target_root"))).resolve(strict=False) if lock.get("target_root") else None),
+                **adapter_path_state(path, expected_global, target_root=root),
                 "verify_rules": item.get("verify_rules", []),
             }
         )

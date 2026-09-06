@@ -78,9 +78,9 @@ def verify_install(
 
     scope = lock.get("skill_scope", "repo")
     adapters = [] if scope == "personal" else (
-        adapter_status(repo_root, home, global_root, platform_ids=platform_ids, target_root=attachment_root)
-        if platform_ids is not None
-        else recorded_adapter_status(lock, global_root)
+        recorded_adapter_status(lock, global_root, platform_ids, target_root=attachment_root)
+        if lock or platform_ids is None
+        else adapter_status(repo_root, home, global_root, platform_ids=platform_ids, target_root=attachment_root)
     )
     personal = personal_inventory(repo_root, home, platform_ids, expected=lock.get("personal_adapter_targets", [])) if scope in {"personal", "both"} else {"ok": True, "owners": [], "adapters": [], "issues": []}
     issues.extend(personal["issues"])

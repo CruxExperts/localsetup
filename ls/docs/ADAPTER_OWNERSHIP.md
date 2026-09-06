@@ -510,3 +510,20 @@ Verification permits historical-path exposure only when the visible package set
 matches the retained owner union and the current personal adapter verifies.
 Unowned residual repository exposure still fails the historical check. These
 rules do not rename historical identifiers or remove their evidence receipts.
+
+## Installed adapter views and discovery
+
+Inventory uses recorded repository adapter paths when an installation receipt
+exists and labels that view `adapter_source: recorded`. Without a receipt it
+retains catalog discovery and labels the view `discovery`. Personal ownership
+continues to come from its registry records.
+
+Filtered and unfiltered installed verification use the same recorded paths.
+Client filters select rows by typed repository owners, or recorded legacy client
+membership when typed owners are absent. Empty filters select no adapters;
+explicit-empty ownership never falls back to the catalog. An explicit empty
+`adapter_targets` list also suppresses fallback to historical `adapter_state`.
+Legacy receipts lacking that field can use their recorded adapter-state paths
+and target-level client membership. Relative recorded paths resolve against the
+installation target. Catalog changes do not move installed-state checks to new
+paths; current discovery remains a separate view.

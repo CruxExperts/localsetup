@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from .adapters import adapter_status, legacy_global_roots
+from .adapters import adapter_status, legacy_global_roots, recorded_adapter_status
 from .lockfile import load_json
 from .personal_inventory import personal_inventory
 from .manifests import load_pack_config
@@ -43,7 +43,9 @@ def install_inventory(
     legacy_roots = legacy_global_roots(home)
     lock_path = target_lockfile_path(attachment_root)
     lock = load_json(lock_path)
-    adapters = [] if lock.get("skill_scope") == "personal" else adapter_status(repo_root, home, global_root, platform_ids=platform_ids, target_root=attachment_root)
+    adapters = [] if lock.get("skill_scope") == "personal" else (
+        recorded_adapter_status(lock, global_root, platform_ids, target_root=attachment_root) if lock else
+        adapter_status(repo_root, home, global_root, platform_ids=platform_ids, target_root=attachment_root))
     return {
         "target_root": str(attachment_root),
         "lockfile": {
@@ -70,5 +72,6 @@ def install_inventory(
             *[row for root in legacy_roots for row in _package_rows(root, scope="legacy-global")],
         ],
         "adapters": adapters,
+        "adapter_source": "recorded" if lock else "discovery",
         "personal": personal_inventory(repo_root, home, platform_ids),
     }
