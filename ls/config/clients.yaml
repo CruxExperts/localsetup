@@ -886,22 +886,23 @@ families:
         support_status: supported
         research:
           status: verified
-          checked_on: '2026-07-15'
+          checked_on: '2026-09-06'
           sources:
-            - {kind: official_release, url: 'https://github.com/openai/codex/releases/tag/rust-v0.144.4', version: '0.144.4'}
             - {kind: official_docs, url: 'https://learn.chatgpt.com/docs/build-skills'}
+            - {kind: official_docs, url: 'https://developers.openai.com/codex/guides/agents-md'}
+            - {kind: official_docs, url: 'https://developers.openai.com/codex/config-basic'}
             - {kind: official_docs, url: 'https://developers.openai.com/codex/use-cases/follow-goals'}
         executables: [codex]
         policy:
           repo: {status: supported, resolution: hierarchy, paths: ['AGENTS.override.md', 'AGENTS.md'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: first-existing, paths: ['$CODEX_HOME/AGENTS.override.md', '$CODEX_HOME/AGENTS.md'], precedence_status: verified, ownership: client-native, collision: owned-block-only}
+          global: {status: supported, resolution: first-nonempty, paths: ['$CODEX_HOME/AGENTS.override.md', '$CODEX_HOME/AGENTS.md'], precedence_status: verified, ownership: client-native, collision: owned-block-only}
         config:
-          repo: {status: supported, resolution: single, paths: ['.codex/config.toml'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          repo: {status: supported, resolution: hierarchy, paths: ['.codex/config.toml'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
           global: {status: supported, resolution: single, paths: ['$CODEX_HOME/config.toml'], precedence_status: verified, ownership: client-native, collision: manual}
         skills:
-          repo: {status: supported, resolution: single, paths: ['.agents/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: single, paths: ['~/.agents/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-        goal: {status: supported, kind: slash-command, commands: ['/goal'], limits: {status: unverified}}
+          repo: {status: supported, resolution: hierarchy, paths: ['.agents/skills'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: single, paths: ['~/.agents/skills'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
+        goal: {status: supported, kind: slash-command, commands: ['/goal', '/goal edit', '/goal pause', '/goal resume', '/goal clear'], limits: {status: unverified}}
         permissions: {status: supported, controls: ['approval policy', 'sandbox policy']}
         state:
           repo: {status: supported, path: '.codex/state', ownership: localsetup-managed, collision: fail}
@@ -912,6 +913,25 @@ families:
         verification: {classification: filesystem}
         rollback: {classification: managed-entry-removal}
         compatibility: {platform_id: codex, order: 10, native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
+
+        integration:
+          lifecycle: active
+          installation:
+            method: manual
+            instructions: Retain the common skills adapter; qualify the exact Codex CLI build independently. CODEX_HOME selects native profile context, not the OS user common skills root.
+          qualification:
+            catalog: implemented
+            filesystem: verified
+            host: not-run
+            evidence:
+              - {kind: filesystem, reference: ls/tests/test_codex_adapters.py}
+              - {kind: documentation, reference: ls/docs/CLIENT_INTEGRATION_METADATA.md}
+          limitations:
+            - Repository skill discovery aggregates working-directory ancestors toward repository root. LocalSetup writes the selected target only and preserves nested custom packages.
+            - Same-name native skills can coexist; no universal repository-over-personal winner is asserted. Physical write deduplication does not imply native name deduplication.
+            - Personal common skills remain under the OS home independently of CODEX_HOME; alternate native profiles are not a disclosure isolation boundary.
+            - Project instruction override/base/fallback selection and trusted native configuration remain separate from skill discovery and framework state.
+            - Native goals and effective settings require exact-build qualification. No global policy, hooks, current goals, credentials, sessions or native configuration are modified by this profile correction.
 
   - id: continue
     display_name: Continue

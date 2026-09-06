@@ -817,7 +817,7 @@ For default personal scope and a qualified project, ordinary installation is:
 
 ```bash
 localsetup plan --tools claude-code --skill-scope both --mode portable
-localsetup install --tools claude-code --skill-scope both --mode portable --yes
+localsetup install --tools claude-code --skill-scope both --mode portable --apply
 ```
 
 Inspect the plan before application. A personal-root diagnostic means resolve
@@ -868,3 +868,70 @@ subagent spend/teardown accounting has a v2.1.217 boundary. The metadata leaves
 universal payload-byte and iteration enforcement unverified. Qualify exact
 build, trust, hooks, effective settings and provider behavior before claiming
 native goal recovery or bounded execution; no live call was made here.
+
+## OpenAI Codex CLI
+
+`codex/codex-cli` retains the `codex` executable and installer selector.
+The [official skills guide](https://learn.chatgpt.com/docs/build-skills)
+describes `.agents/skills` discovery along working-directory ancestors toward
+the repository root, plus `$HOME/.agents/skills` and additional administrative
+and bundled scopes. Repository resolution is therefore an ancestor aggregate,
+not a single directory. LocalSetup still writes only its selected target's
+recorded adapter; it does not populate or normalize every ancestor or child.
+
+Symlinked skill folders are supported by the documented loader. Same-name
+skills are not necessarily collapsed into one winner: multiple entries can
+remain available. Do not infer repository-over-user priority or relocate a
+custom duplicate to force uniqueness. LocalSetup's shared-owner physical
+write deduplication is a separate ownership rule. Optional package-local
+`agents/openai.yaml` supplies Codex-specific display, invocation or dependency
+metadata; it is not mandatory portable metadata for other hosts.
+
+`CODEX_HOME` selects native Codex configuration and context, while personal
+common skills remain under the OS user's home. Changing `CODEX_HOME` does not
+isolate those common skills or authorize their disclosure. The filesystem
+fixtures use an alternate native profile and verify that both adapter modes
+write common roots, preserve profile config/instructions/sessions and nested
+custom skills, and retain another client's shared package after Codex detach.
+Those fixtures do not launch Codex or prove its effective skill catalog.
+
+```bash
+localsetup plan --tools codex --skill-scope both --mode portable
+localsetup install --tools codex --skill-scope both --mode portable --apply
+```
+
+Inspect the plan before application. Native files under `.codex` or
+`CODEX_HOME`, including existing policy, hooks, approvals, authentication,
+current goals and sessions, remain outside this skill adapter's ownership.
+Framework state locations in the registry are distinct from native runtime
+state. Do not add a second `.codex/skills` copy merely for product naming.
+
+The [AGENTS.md guide](https://developers.openai.com/codex/guides/agents-md)
+selects the first nonempty `AGENTS.override.md` or `AGENTS.md` at Codex home
+(the registry calls this `first-nonempty`). Empty files are skipped. Project discovery
+selects at most one override, base or configured fallback file per directory,
+then accumulates instructions from project root toward cwd. This does not
+establish `.agents/AGENTS.md` as another universal root. Preserve overrides,
+fallback choices, existing authored content and managed ownership boundaries.
+The dedicated guide describes a default combined 32 KiB instruction budget;
+other configuration wording describes a per-file limit. That wording difference
+requires exact-build qualification before asserting precise truncation behavior.
+No instruction file is reduced or rewritten to fit an assumed limit here.
+
+[Native configuration](https://developers.openai.com/codex/config-basic)
+keeps user and project TOML settings separate from portable skill metadata.
+Project TOML layers resolve from root toward cwd, with closer values taking
+priority, and relative paths resolve against their containing `.codex` directory.
+Project trust affects whether project configuration is honored. Model, MCP,
+approval and sandbox choices remain native authority; context text does not
+replace enforcement. Current documentation is evidence about the product,
+not proof of a locally installed build or all Codex application variants.
+
+The [native slash-command reference](https://learn.chatgpt.com/docs/cli/slash-commands)
+documents `/goal` to view or set an objective, with edit, pause, resume and clear
+controls. Objectives are nonempty and limited to 4,000 characters in that
+reference. This is not a verified byte or token budget. Goal continuation does
+not expand sandbox, disclosure or unattended-operation authority; native status
+is not external controller acceptance. Exact release availability, persistence
+across owner exit and accounting require separate qualification. This profile
+does not change the current session's goal, global policy or skill projections.

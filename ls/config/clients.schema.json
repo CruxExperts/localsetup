@@ -204,7 +204,7 @@
       "required": ["status", "resolution", "paths", "precedence_status", "ownership", "collision"],
       "properties": {
         "status": {"$ref": "#/$defs/status"},
-        "resolution": {"enum": ["single", "first-existing", "hierarchy", "configured-workspaces", "settings", "unsupported", "unverified"]},
+        "resolution": {"enum": ["single", "first-existing", "first-nonempty", "hierarchy", "configured-workspaces", "settings", "unsupported", "unverified"]},
         "paths": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
         "precedence_status": {"enum": ["verified", "unverified", "unsupported"]},
         "ownership": {"enum": ["client-native", "localsetup-managed", "shared"]},
