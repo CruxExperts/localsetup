@@ -9,6 +9,7 @@ from .paths import expand_user_path, legacy_target_lockfile_path, repo_path, tar
 from .provenance import is_managed_package, package_digest, provenance_report
 from .reference_materializer import validate_materialized_package
 from .registry import load_registry
+from .personal_inventory import personal_inventory
 from .repair_safety import _protected_target_reasons
 from .terminal_mode_health import terminal_mode_health
 from .workflows import validate_workflow_catalog
@@ -75,11 +76,14 @@ def verify_install(
             if not package_validation["ok"]:
                 issues.extend(f"managed workflow package invalid: {workflow_path}: {issue}" for issue in package_validation["issues"])
 
-    adapters = (
+    scope = lock.get("skill_scope", "repo")
+    adapters = [] if scope == "personal" else (
         adapter_status(repo_root, home, global_root, platform_ids=platform_ids, target_root=attachment_root)
         if platform_ids is not None
         else recorded_adapter_status(lock, global_root)
     )
+    personal = personal_inventory(repo_root, home, platform_ids, expected=lock.get("personal_adapter_targets", [])) if scope in {"personal", "both"} else {"ok": True, "owners": [], "adapters": [], "issues": []}
+    issues.extend(personal["issues"])
     expected_by_path = {
         str(item.get("path")): item.get("packages", lock.get("repo_packages", lock.get("adapter_packages", [])))
         for item in lock.get("adapter_targets", [])
@@ -213,7 +217,7 @@ def verify_install(
 
     historical_transitions: dict[str, list[dict]] = {}
     requested_platforms = set(platform_ids) if platform_ids is not None else None
-    installed_platforms = set(lock.get("platforms", []))
+    installed_platforms = set(lock.get("platforms", [])) if scope != "personal" else set()
     for platform_id, transitions in HISTORICAL_ADAPTERS.items():
         rows: list[dict] = []
         for transition in transitions:
@@ -272,6 +276,7 @@ def verify_install(
         "tmux_terminal_mode_warnings": tmux_terminal_mode["warnings"],
         "tmux_terminal_mode_repair_hints": tmux_terminal_mode["repair_hints"],
         "adapters": adapters,
+        "personal": personal,
         "level": level,
         "rules": rule_results,
         "legacy_codex_transition": legacy_codex_transition,

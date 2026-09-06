@@ -127,7 +127,7 @@ reference only packages supplied by the installation. Registry updates use the
 existing caller-held package-root lock and atomic registry save.
 
 Personal application uses these retention records. Explicit personal
-detach and complete inventory, verify, and repair integration remain pending.
+detach and repair integration remain pending.
 
 ## Personal adapter application
 
@@ -153,7 +153,7 @@ updates targeting an existing personal adapter also refuse at preflight. A singl
 install also refuses repository and personal actions targeting the same path.
 They do not implicitly remove personal adapters.
 Explicit personal detach remains pending, as do public scope selection and
-complete personal inventory, verification, and repair qualification.
+personal repair qualification.
 
 Portable packages are copied with their provenance and internal symlinks intact.
 Recovery backs up only the managed package node, so a failed copy restores its
@@ -162,3 +162,19 @@ can change between symlink and portable mode. At a shared path, a mode change
 that conflicts with an unselected personal or repository owner fails preflight.
 Personal registry records retain the mode; older personal records default to
 symlink, the only mode available before this field was introduced.
+
+## Personal inventory and filesystem verification
+
+Inventory includes a `personal` section from current registry ownership records.
+It reports logical owners, their requested packages, and the expected visible
+package union at each physical path. Client filtering limits requested owners;
+other owners' packages remain part of the shared-path verification expectation.
+An explicit empty client list inspects no personal adapter paths.
+
+Verification for recorded `personal` or `both` installations checks the adapter
+marker, owner mode agreement, complete visible package union, managed library
+packages, exact symlink targets, and portable content including symlink targets.
+Missing expected owner records, unsafe recorded paths, missing links, and changed
+portable contents fail verification. Personal-only checks do not invent repository
+adapters or historical repository transitions. These are read-only filesystem
+checks; they do not claim that an external client discovered or loaded a skill.

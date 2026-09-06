@@ -4184,6 +4184,14 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Persisted adapter marker managed_by identifier retains established lowercase protocol spelling."
+    },
+    {
+      "path": "ls/core/personal_inventory.py",
+      "line_sha256": "801bc9372641733e09d30ed5ef9aab16f2e7d56fbe21f2196ee65b09b344039c",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Validate the established lowercase managed_by adapter marker identity without migrating persisted state."
     }
   ],
   "visual_reviews": [
