@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 7ab0fcf687ff6f63f613c728c64a5aac39cf80b457316c40128e9bdae1749915
+  source_provenance_hash: 4ae379babf98b57f0af46b1748b45c421e52b1003c592316e28f72ce8baa3cf2
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: e1b29876b63dcafbf383e251b78c60ffc13585f5
-artifact_sha256: 7ef55ef564eb2ba89ebf2f0c5a901f79c3798ff5668d7d959cc7184b78730dfa
+source_commit: cba34065e3fea59bba2a4920820629fd0e72dd3d
+artifact_sha256: 8d1d719d618e33acfe3489aab27075641860cbe4986eb073a9693c430f700cc4
 ---
 # Implementation File Map
 
@@ -323,6 +323,7 @@ artifact_sha256: 7ef55ef564eb2ba89ebf2f0c5a901f79c3798ff5668d7d959cc7184b78730df
 | `refactor` | `ls/core/sdk_payload/ownership.py` |
 | `refactor` | `ls/core/sdk_payload/sbom.py` |
 | `refactor` | `ls/core/selection.py` |
+| `refactor` | `ls/core/shared_detach.py` |
 | `refactor` | `ls/core/shell.py` |
 | `refactor` | `ls/core/skill_index_scrub/__init__.py` |
 | `refactor` | `ls/core/skill_index_scrub/audit.py` |
@@ -1133,6 +1134,7 @@ artifact_sha256: 7ef55ef564eb2ba89ebf2f0c5a901f79c3798ff5668d7d959cc7184b78730df
 | `keep` | `ls/tests/test_session_branch.py` |
 | `keep` | `ls/tests/test_session_index.py` |
 | `keep` | `ls/tests/test_session_owner.py` |
+| `keep` | `ls/tests/test_shared_repository_detach.py` |
 | `keep` | `ls/tests/test_skill_sandbox_tester.py` |
 | `keep` | `ls/tests/test_skill_scope_cli.py` |
 | `keep` | `ls/tests/test_skill_scope_config.py` |
