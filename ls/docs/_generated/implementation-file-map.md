@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 37db2da68be0d03ada09a2c4fef5c1f89ed5c9a69e1589eee1336d8e908f164a
+  source_provenance_hash: c38f3605e85fb0c27a68608233747759f96961a62ac936d6ec466d848e6877c6
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: b53dfa3399270443035e76b565c83f17eb2c4f70
-artifact_sha256: 9d39ea8bf74cd9ffb301b68af29a38ff8f912cf32cd8643671209684cc0e46f3
+source_commit: 4dd5461e1afd4ff881c1d03a26f967d804c7ba4e
+artifact_sha256: 283c0ea5f9395575c726a13937bf175070b5428953a0bf6d200e51c06e3d2621
 ---
 # Implementation File Map
 
@@ -1104,6 +1104,7 @@ artifact_sha256: 9d39ea8bf74cd9ffb301b68af29a38ff8f912cf32cd8643671209684cc0e46f
 | `keep` | `ls/tests/test_manifests.py` |
 | `keep` | `ls/tests/test_mcp_builder_connections.py` |
 | `keep` | `ls/tests/test_mutable_adapter_writes.py` |
+| `keep` | `ls/tests/test_mutable_lifecycle.py` |
 | `keep` | `ls/tests/test_mutable_ownership.py` |
 | `keep` | `ls/tests/test_mutable_packages.py` |
 | `keep` | `ls/tests/test_native_bundle.py` |
