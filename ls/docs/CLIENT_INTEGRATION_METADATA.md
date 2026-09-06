@@ -14,6 +14,31 @@ CLI, IDE, and application variants remain separate records even when they share
 skill directories. The existing `verification.classification` selects a check
 method; it is not evidence that a host check succeeded.
 
+Discovery inventory and installation targets are separate. A skill surface with
+`resolution: aggregate` describes multiple discovery roots; `hierarchy`
+describes ancestor discovery, while `first-existing` and `first-nonempty`
+describe fallback selection. None of these values establishes duplicate-name
+precedence without separate evidence.
+
+Optional `compatibility.repo_write_paths` and `global_write_paths` select
+preferred fresh-write targets from the corresponding skill discovery paths.
+Each must be a nonempty, duplicate-free subset of that scope's declared paths.
+When omitted, the projection retains all declared paths for compatibility.
+For example, a profile may inventory both common and native roots but select:
+
+```yaml
+repo_write_paths: [.agents/skills]
+global_write_paths: [~/.agents/skills]
+```
+
+These fields belong inside that profile's `compatibility` object. Generated
+platform write paths and fresh rollback targets use the selected subset;
+the registry retains the full discovery inventory. They do not define a
+migration or authorize removing previously recorded adapters. Before changing
+an existing profile's targets, qualify its recorded update, repair and detach
+routes and preserve custom content. The metadata mechanism alone does not
+qualify host discovery, collision handling or a historical-path migration.
+
 An optional `integration` object records lifecycle, installation guidance, and
 qualification results separately. Existing records without it retain their
 current behavior until their owning profile is reverified. A missing object

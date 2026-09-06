@@ -204,7 +204,7 @@
       "required": ["status", "resolution", "paths", "precedence_status", "ownership", "collision"],
       "properties": {
         "status": {"$ref": "#/$defs/status"},
-        "resolution": {"enum": ["single", "first-existing", "first-nonempty", "hierarchy", "configured-workspaces", "settings", "unsupported", "unverified"]},
+        "resolution": {"enum": ["single", "first-existing", "first-nonempty", "aggregate", "hierarchy", "configured-workspaces", "settings", "unsupported", "unverified"]},
         "paths": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
         "precedence_status": {"enum": ["verified", "unverified", "unsupported"]},
         "ownership": {"enum": ["client-native", "localsetup-managed", "shared"]},
@@ -306,6 +306,8 @@
       "required": ["platform_id", "order", "native_config", "smoke_test_level", "verify_rules", "rollback_class"],
       "properties": {
         "platform_id": {"$ref": "#/$defs/id"},
+        "repo_write_paths": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "global_write_paths": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
         "order": {"type": "integer", "minimum": 0},
         "native_config": {"enum": ["symlink_or_reference"]},
         "smoke_test_level": {"enum": ["filesystem", "host", "smoke"]},

@@ -247,6 +247,10 @@ def _semantic_issues(payload: dict[str, Any]) -> list[str]:
             compatibility = variant.get("compatibility")
             if compatibility is None:
                 continue
+            for scope in ("repo", "global"):
+                write_paths = compatibility.get(f"{scope}_write_paths")
+                if write_paths is not None and not set(write_paths).issubset(variant["skills"][scope]["paths"]):
+                    issues.append(f"{field}.compatibility.{scope}_write_paths: must be a subset of declared skill discovery paths")
             platform_ids.append(str(compatibility["platform_id"]))
             projection_orders.append(int(compatibility["order"]))
             if variant["support_status"] != "supported":
