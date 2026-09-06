@@ -2373,3 +2373,41 @@ validation also passed.
 This qualifies installed planning, registration binding, and agent-free
 transactions. It does not qualify a coding provider call, native sandbox
 execution, compaction, a recurring job, or the eventual exact published release.
+
+### Installed reserved heartbeat qualification
+
+An installed candidate built from the public reserved-action implementation was
+qualified outside the checkout with the audited offline dependency set and the
+bundled native sandbox. The controller and coding/compaction children ran from
+the installed artifact. A deterministic loopback Chat Completions fixture
+provided all model responses; no paid provider or authentication was used.
+
+The public harness read and edited a fixture project, then ran its test in the
+resource-constrained native sandbox. A second authorized action compacted an
+explicit settled checkpoint and continued from the owner-verified destination.
+The original checkpoint remained byte-identical. Both actions shared accounting:
+the recorded charge was two attempts, six requests, three tool calls, 27000
+allocated tokens, 160 allocated seconds and one compaction. An earlier standalone
+request prepared the explicit history and was recorded separately from that
+accounting policy.
+
+Controller progress review permitted the compound action. A subsequent deliberate
+no-progress test disposition stopped another authorized attempt without a model
+request. No-agent, disabled and overlapping runs also made no model requests.
+These are checks of disposition enforcement; they do not establish an automatic
+semantic evaluator or acceptance of an external issue.
+
+Additional installed checks verified cancellation, refusal to replay the
+cancelled attempt, malformed compaction output skipping continuation while
+retaining both phase allocations, and uncertain session history refusing work
+before reservation or provider dispatch. All captured coding and compaction
+requests carried the exact runtime framework user-agent. Private evidence
+excluded model output, and existing saved profile/session files outside the
+fixtures remained byte-identical. Runtime inventory, ten implementation-file
+source/wheel/installed hashes, SDK payload and embedded SBOM checks passed.
+
+This evidence qualifies the tested Linux native sandbox and local Chat
+Completions interface for these reserved-action flows. It does not establish
+live-provider behavior, every endpoint, recurring activation, financial accuracy,
+or acceptance of the eventual exact published release. The public action and
+controller commands are documented in the [heartbeat configuration reference](../skills/ls-codex-heartbeat/references/config.md#running-a-reserved-action).
