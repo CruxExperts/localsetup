@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 27df6c31e07f5f6160e18098e76320c18f4d9d5c705b37ddac6d948aa60a3d50
+  source_provenance_hash: 909eacb125195bd0d44636f10c0c1638f92352ab5f740e97e9426207986fc814
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 053744f927efcf793ee1fcdb7b5d3be5b359eb65
-artifact_sha256: 6c4386404f9dce64c3ef62a86a37f46434731dd767d8abd6426cc2b0564ab3f2
+source_commit: c3e7d3098544091e56d510720112eab5e6e13dd5
+artifact_sha256: 870d70ce5ac847df19f130265c2c4ea5982215c51387e158dc7f5fdf3086357e
 ---
 # Platform Adapters
 
@@ -25,3 +25,4 @@ Repo adapter paths are attached only when selected with `--tools` or `--platform
 | `cline-vscode` | `.cline/skills` | `skills_visible, namespace_ls` |
 | `amp-cli` | `.agents/skills` | `skills_visible, namespace_ls` |
 | `goose-cli` | `.agents/skills` | `skills_visible, namespace_ls, goose_skills_configured` |
+| `pi-cli` | `.agents/skills` | `skills_visible, namespace_ls` |
