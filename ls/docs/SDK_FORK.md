@@ -16,9 +16,14 @@ Ordinary wheel builds verify the source and generate private SDK data under
 `ls/_sdk_payload`. The build does not install upstream namespaces at the wheel
 root or depend on installed upstream SDK distributions. Editable framework development remains available, but supplies no private SDK
 payload and cannot qualify LSCli execution.
-Protected runtime bootstrap and agent execution are not yet available. Optional upstream modules
-remain in the source for attribution and fork maintenance. Their presence does
-not qualify providers, MCP, browser tools, subagents, or other integrations.
+Protected runtime bootstrap, coding and tool-free completion are implemented
+through the [LSCli public commands](LSCLI.md) and their
+[runtime authority contracts](LSCLI_RUNTIME.md). Installed checks retain the
+bounded [candidate qualification](LSCLI_QUALIFICATION.md) scope; source or payload
+integrity alone does not qualify an arbitrary wheel environment or public release.
+Optional upstream modules remain in the source for attribution and fork
+maintenance. Their presence does not qualify providers, MCP, browser tools,
+subagents, or other integrations.
 
 ## Provenance and changes
 

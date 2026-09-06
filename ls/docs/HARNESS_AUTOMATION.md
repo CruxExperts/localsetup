@@ -186,12 +186,14 @@ it never refunds total allocations. Repeated no-progress dispositions stop new
 attempts even if operation/session identities change or compaction is requested.
 Acceptance stops the task, separately from any authorized external issue closure.
 
-These are internal state-transition rules. Their protected durable storage,
-controller command, and execution-policy integration are separate required
-gates; legacy queue reports and fresh-profile runs do not yet enforce task-wide
-accounting. Streaming activity and model claims cannot create a controller
-disposition. Allocated tokens are enforceable resource reservations, not proof
-of provider billing; any financial projection must be labeled an estimate.
+These state-transition rules are integrated with protected durable storage,
+[controller accounting commands](../skills/ls-codex-heartbeat/references/config.md#controller-accounting-commands),
+and [reserved execution](../skills/ls-codex-heartbeat/references/config.md#running-a-reserved-action).
+Ordinary fresh-profile runs without a reserved action and legacy queue reports
+do not enforce this task-wide accounting policy. Streaming activity and model
+claims cannot create a controller disposition. Allocated tokens are enforceable
+resource reservations, not proof of provider billing; any financial projection
+must be labeled an estimate.
 
 ### Protected accounting records
 
@@ -211,6 +213,16 @@ overwritten to recover budget.
 If publication succeeds but its acknowledgement fails, inspection still finds
 the charged reservation. It remains reconciliation-required; another dispatch
 is not authorized by retrying the write. Controller review records bind the
-result and evidence and never refund allocations. The storage owner is an
-internal interface; protected action construction, controller commands, and
-heartbeat dispatch enforcement remain integration gates.
+result and evidence and never refund allocations. The storage owner remains an
+internal interface composed by the public action planner, controller commands
+and reserved dispatcher.
+
+Use [action-plan](../skills/ls-codex-heartbeat/references/config.md#preparing-an-action-authorization)
+to derive the exact binding, then initialize the reviewed policy and dispatch
+one explicit reserved action. A later checkpoint continuation requires
+[adding authorization to the same chain](../skills/ls-codex-heartbeat/references/config.md#authorizing-a-later-continuation);
+compaction does not reset budgets or restore saved permissions.
+[Result acknowledgement recovery](../skills/ls-codex-heartbeat/references/recovery.md#reserved-result-acknowledgement-recovery)
+verifies retained evidence without rerunning the action. Missing or uncertain
+evidence remains a blocker. These interfaces neither activate recurring work
+nor establish provider, host, or exact-release qualification.

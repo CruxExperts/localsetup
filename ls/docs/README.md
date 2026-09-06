@@ -30,6 +30,10 @@ This is the public documentation map for LocalSetup. Start here when you want th
 | [Quickstart](QUICKSTART.md) | How to install, select platforms, verify, and update. |
 | [4.4.0 release guide](releases/4.4.0.md) | Context consolidation, workflow ownership, package cleanup, and update verification. |
 | [Command reference](COMMAND_REFERENCE.md) | Copy-paste installer, managed CLI, validation, and maintainer commands. |
+| [LSCli operations](LSCLI.md) | Explicit profiles, offline runtime/command setup, protected coding, sessions, recovery, branches, compaction and tool-free completion. |
+| [LSCli runtime contracts](LSCLI_RUNTIME.md) | Grants, disclosure, sandbox resources, broker protocols, durable evidence and completion schemas. |
+| [LSCli candidate qualification](LSCLI_QUALIFICATION.md) | Historical installed-artifact scenarios and their host/provider limits, separate from final published-release acceptance. |
+| [SDK source ownership](SDK_FORK.md) | Private SDK payload, upstream provenance, dependency locks and artifact/SBOM verification. |
 | [Client integration metadata](CLIENT_INTEGRATION_METADATA.md) | Distinguish lifecycle, installation guidance, catalog support, and qualification evidence. |
 | [Deterministic client state](CLIENT_STATE.md) | Resolve client state, allocate private artifacts, and verify restart bindings. |
 | [Features](FEATURES.md) | Full capability catalog grouped by practical use. |
@@ -41,7 +45,7 @@ This is the public documentation map for LocalSetup. Start here when you want th
 | [Adapter ownership](ADAPTER_OWNERSHIP.md) | Shared adapter-directory ownership rules for install, repair, verify, detach, rollback, and migration planning. |
 | [Product naming and branding](BRANDING.md) | Display names, preserved technical identifiers, exact exceptions, and visual review evidence. |
 | [Multi-platform install](MULTI_PLATFORM_INSTALL.md) | Detailed install behavior and options. |
-| [Harness automation](HARNESS_AUTOMATION.md) | Opt-in Codex heartbeat activation, runtime artifacts, cron gating, and command-policy boundaries. |
+| [Harness automation](HARNESS_AUTOMATION.md) | Opt-in heartbeat activation, typed LSCli profiles, reserved actions/controller accounting, runtime artifacts, cron gating and command-policy boundaries. |
 
 ## Skills And Workflow Packages At A Glance
 

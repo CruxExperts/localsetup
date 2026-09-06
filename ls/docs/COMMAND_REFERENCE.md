@@ -133,7 +133,7 @@ migrate, context, convert, catalog, diff, skill, workflow, why, graph,
 candidate-skill, adopt, detach, sbom, scan-migration, audit-global-first,
 validate-catalog, generate-docs, provenance, harness, docs-align, context-index, hook-gate,
 version-plan, version-sync, release-push, self-refresh, install-hooks,
-register-shell, wizard, package, verify-release
+register-shell, wizard, package, verify-release, agent, llm
 ```
 
 `candidate-skill validate --candidate <path> --json` and `candidate-skill proposal --candidate <path> --output -` inspect repo-scoped candidate skills without promoting them into managed packages or adapter directories.
@@ -143,6 +143,58 @@ register-shell, wizard, package, verify-release
 Most commands emit JSON by default. Commands with explicit human-readable modes, such as `context --markdown`, document that mode in their own help.
 
 `localsetup adapters` preserves the legacy adapter status list output. Use `localsetup adapters check --tools codex` for a structured, report-only adapter compatibility payload with `ok`, `adapters`, `issues`, `warnings`, `repair_hints`, `summary`, and suggested existing commands. It exits `0` when the adapter check is OK and `1` when verifier issues are present.
+
+## LSCli And Tool-Free Completion
+
+`localsetup agent` forwards to `lscli`. Place `agent` immediately after
+`localsetup`; use LSCli subcommand options for workspace, runtime and state
+selection. The entry point does not translate framework installation selectors
+into task authority.
+
+```bash
+lscli --help
+lscli doctor --format json
+lscli profiles --profiles /private/config/profiles.json --format json
+localsetup agent run --help
+localsetup llm complete --help
+```
+
+[LSCli operations](LSCLI.md) owns full setup/registration, run, control, context,
+session, branch, recovery and compaction syntax, including stdin/JSONL formats,
+exit codes and limits. Help and diagnostic/inventory commands do not initialize
+providers or create missing configuration. Coding uses explicit grants and a
+qualified protected runtime with actual sandbox/resource preflight; completion
+has no tools or workspace access grants.
+
+```bash
+localsetup llm complete --profile example --request request.json --profiles /private/config/profiles.json --runtime-root /private/runtimes
+```
+
+Replace the paths/profile with reviewed inputs. Supplying the request explicitly
+authorizes its disclosure to that selected provider. The
+[request/result schema](LSCLI_RUNTIME.md#direct-completion-contract-foundation)
+and [completion command](LSCLI.md#tool-free-completion-command) define the one-attempt
+contract, declared capabilities, local validation and uncertainty/exit handling.
+
+## Typed Heartbeat And Controller Accounting
+
+```bash
+localsetup harness codex-heartbeat plan
+localsetup harness codex-heartbeat budget
+localsetup harness codex-heartbeat accounting --help
+```
+
+[Harness automation](HARNESS_AUTOMATION.md) owns activation and transaction
+behavior. The [typed LSCli profile](../skills/ls-codex-heartbeat/references/config.md#typed-lscli-profile)
+uses an owned registration, explicit private profile/grants and protected coding
+limits. Installation does not activate it, and generated cron commands remain
+agent-free. [Controller accounting commands](../skills/ls-codex-heartbeat/references/config.md#controller-accounting-commands)
+cover init/inspect/review, action-plan, later authorization and result reconciliation;
+[reserved run syntax](../skills/ls-codex-heartbeat/references/config.md#running-a-reserved-action)
+requires all four explicit controller options. Ordinary fresh-profile runs and
+legacy queue budget reports do not implicitly enforce reserved task accounting.
+A completed execution still needs controller disposition, and uncertain effects
+require evidence-backed reconciliation rather than replay.
 
 ## Install Command Options
 

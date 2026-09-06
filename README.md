@@ -184,7 +184,16 @@ Windows support is WSL2-only in the current framework. Open WSL2, change to the 
 Full install docs: [ls/docs/QUICKSTART.md](ls/docs/QUICKSTART.md) and [ls/docs/MULTI_PLATFORM_INSTALL.md](ls/docs/MULTI_PLATFORM_INSTALL.md).
 Copy-paste command reference: [ls/docs/COMMAND_REFERENCE.md](ls/docs/COMMAND_REFERENCE.md).
 
-Opt-in harness automation is documented separately because normal installs never schedule autonomous work. See [ls/docs/HARNESS_AUTOMATION.md](ls/docs/HARNESS_AUTOMATION.md) for `localsetup harness codex-heartbeat plan/init/enable/status/budget/run/disable`.
+Opt-in harness automation is documented separately because normal installs never schedule autonomous work. See [ls/docs/HARNESS_AUTOMATION.md](ls/docs/HARNESS_AUTOMATION.md) for `localsetup harness codex-heartbeat plan/init/enable/status/budget/run/disable` and the [typed LSCli profile and controller accounting](ls/skills/ls-codex-heartbeat/references/config.md#typed-lscli-profile).
+
+[LSCli](ls/docs/LSCLI.md) is the integrated CLI for LocalSetup (LS), invoked as
+`lscli` or `localsetup agent`. It provides explicit offline setup, protected coding
+runs, session continuation/recovery, branches and compaction;
+`localsetup llm complete` provides tool-free structured completion. Profiles and
+authority are explicit, and coding requires a qualified sandbox/resource backend.
+The [command reference](ls/docs/COMMAND_REFERENCE.md#lscli-and-tool-free-completion)
+links the full contracts. Installed candidate evidence does not qualify every
+provider, host or eventual published artifact.
 
 ## 10 reasons to use LocalSetup
 
@@ -296,6 +305,8 @@ The default dependency mode is report-only. It can warn about corrupt legacy Loc
 - [Framework docs index](ls/docs/README.md)
 - [Framework README](ls/README.md)
 - [Feature catalog](ls/docs/FEATURES.md)
+- [LSCli commands and runtime setup](ls/docs/LSCLI.md)
+- [SDK source, dependency and artifact ownership](ls/docs/SDK_FORK.md)
 - [Platform registry](ls/docs/PLATFORM_REGISTRY.md)
 - [Harness automation](ls/docs/HARNESS_AUTOMATION.md)
 - [Workflow packages](ls/docs/WORKFLOW_PACKAGES.md)

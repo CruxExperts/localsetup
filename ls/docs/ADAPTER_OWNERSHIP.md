@@ -125,8 +125,10 @@ packages participate in the existing other-owner and pruning checks. Records may
 reference only packages supplied by the installation. Registry updates use the
 existing caller-held package-root lock and atomic registry save.
 
-Personal application uses these retention records. Explicit personal
-detach and repair integration remain pending.
+Personal application, [explicit personal detach](#personal-detach-command), and
+[recorded personal repair](#recorded-personal-repair-api) use these retention
+records. [Combined-scope repair](#repairing-both-ownership-scopes) preserves shared
+owners; detach still selects `repo` or `personal`, without a combined `both` mode.
 
 ## Personal adapter application
 
@@ -702,10 +704,14 @@ and review its affected receipts first.
 
 ## Mutable package baseline component
 
-`ls.core.mutable_packages` supplies baseline checks for future isolated mutable
-agent projections. It does not enable a client, change existing portable-adapter
-behavior, or provide a read-only sandbox. A caller must complete lifecycle
-integration before advertising mutable-copy support.
+`ls.core.mutable_packages` supplies baseline checks for isolated mutable agent
+projections. The component itself does not enable a client or provide a read-only
+sandbox. [Writer and removal integration](#writer-and-removal-integration) and
+[lifecycle preflight](#standalone-lifecycle-preflight) apply those checks; the
+registered [Hermes adapter](#hermes-adapter-preflight-boundary) supplies the
+mutable-copy designation. Other callers must complete their own lifecycle
+integration before advertising support. This does not qualify a running host
+or change ordinary portable-adapter behavior.
 
 `capture_baselines(adapter, names)` returns a package-name to SHA-256 mapping;
 store that mapping in the owning transaction/installation receipt outside the

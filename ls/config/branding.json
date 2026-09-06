@@ -2,6 +2,14 @@
   "schema_version": 1,
   "exceptions": [
     {
+      "path": "README.md",
+      "line_sha256": "7c5a813fdd083055fcc618af3aca2767a3793c09f17a92a6f19dca226fae8bfc",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact Markdown fragment for the LSCli command-reference heading; heading slugs are lowercase identifiers."
+    },
+    {
       "path": "ls/tests/test_branding.py",
       "line_sha256": "c1038d83d157e538e642e7c207e732249716d784a6a9cac83e6b3cf74b59b295",
       "token": "lscli",
