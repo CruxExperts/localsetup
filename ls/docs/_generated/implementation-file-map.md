@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 1b8282e15f72f90ca7f4daf0e82edbb89fbe7c071f0b819ac35de712e19f2108
+  source_provenance_hash: 8fa48b9100df2aaee656cdcc6663e49476fc81a2a982f056a3d88f4da5b25e9b
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: bcdb93e29a4fe0c8a1d46d8793177fcdbada420e
-artifact_sha256: e724211019082d9e217eb07b3ef0d183366684f51e55831dab020a0915ac1ee9
+source_commit: 77637d01f9810f45e0f894df7d3e5f82c9763b6d
+artifact_sha256: 8a0e0894bb7eff58fb34911284e6066ee999675870b5c400f82e7caf38157de7
 ---
 # Implementation File Map
 
@@ -1124,6 +1124,7 @@ artifact_sha256: e724211019082d9e217eb07b3ef0d183366684f51e55831dab020a0915ac1ee
 | `keep` | `ls/tests/test_session_index.py` |
 | `keep` | `ls/tests/test_session_owner.py` |
 | `keep` | `ls/tests/test_skill_sandbox_tester.py` |
+| `keep` | `ls/tests/test_skill_scope_config.py` |
 | `keep` | `ls/tests/test_steering.py` |
 | `keep` | `ls/tests/test_supervisor_broker.py` |
 | `keep` | `ls/tests/test_tmux_ops.py` |
