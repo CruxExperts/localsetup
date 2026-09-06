@@ -1,5 +1,127 @@
 schema_version: 1
 families:
+  - id: aider
+    display_name: Aider
+    variants:
+    - id: aider
+      display_name: Aider
+      kind: cli
+      support_status: experimental
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_docs
+          url: https://aider.chat/docs/usage/conventions.html
+        - kind: official_docs
+          url: https://aider.chat/docs/config/aider_conf.html
+      executables:
+      - aider
+      policy:
+        repo:
+          status: settings-only
+          resolution: settings
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+          setting_label: Explicit --read file arguments or read list in selected Aider configuration
+        global:
+          status: settings-only
+          resolution: settings
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+          setting_label: Explicit --read file arguments or read list in selected Aider configuration
+      config:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: settings-only
+          collision: manual
+          rollback: manual-settings
+        global:
+          status: settings-only
+          collision: manual
+          rollback: manual-settings
+      verification:
+        classification: unsupported
+      rollback:
+        classification: manual-settings
+      integration:
+        lifecycle: active
+        installation:
+          method: manual
+          instructions: Use an already qualified Aider installation with an explicitly reviewed instruction file via
+            --read. No skill projection or automatic configuration insertion is provided.
+        qualification:
+          catalog: bounded
+          filesystem: not-applicable
+          host: not-run
+          evidence:
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Explicit instruction-file integration only. Native Agent Skills discovery, common-root scanning and automatic
+          AGENTS.md loading are not established.
+        - No fresh skill-platform projection is emitted; pass a reviewed regular file explicitly to Aider instead
+          of selecting it as an installer skill target.
+        - Relative read values resolve against launch cwd, not the YAML file directory. Directory arguments can recursively
+          include unrelated files; use an explicit file path.
+        - Preserve existing read entries, configuration precedence, comments, native settings and sessions. Automatic
+          YAML mutation and eager concatenation of skills are outside this integration.
+        - Instruction text is context, not tool permission enforcement. Aider startup and provider disclosure require
+          the owning session authority; no host or model call was made.
+
   - id: amp
     display_name: Amp
     variants:

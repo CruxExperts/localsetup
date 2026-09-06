@@ -29,8 +29,8 @@ def _copy_config(tmp_path: Path) -> Path:
 def test_registry_distinguishes_families_variants_and_projection() -> None:
     registry = load_client_registry(ROOT)
 
-    assert len(registry.families) == 21
-    assert len(registry.variants()) == 26
+    assert len(registry.families) == 22
+    assert len(registry.variants()) == 27
     assert registry.variant("cursor", "cursor-agent-cli").data["kind"] == "cli"
     assert registry.variant("cursor", "cursor-ide").data["kind"] == "ide"
     assert [row["id"] for row in platform_rows(registry)] == [
@@ -246,3 +246,20 @@ def test_projection_rejects_symlinked_config_parent_escape(tmp_path: Path) -> No
     with pytest.raises(ValueError, match="must not contain symlinks"):
         write_platforms_projection(root, registry)
     assert not destination.exists()
+
+
+def test_aider_instruction_only_profile_does_not_project_skills(tmp_path):
+    from ls.core.plan import build_install_plan
+    registry = load_client_registry(ROOT)
+    row = registry.variant('aider', 'aider').data
+    assert row['executables'] == ('aider',)
+    assert row['integration']['qualification']['host'] == 'not-run'
+    for scope in ('repo', 'global'):
+        assert row['policy'][scope]['status'] == 'settings-only'
+        assert row['insertion'][scope]['collision'] == 'manual'
+        assert row['skills'][scope]['status'] == 'unverified'
+        assert not row['skills'][scope]['paths']
+    assert 'aider' not in {p['id'] for p in platform_rows(registry)}
+    with pytest.raises(ValueError, match='unknown platform selector'):
+        build_install_plan(ROOT, tmp_path / 'home', platform_ids=['aider'])
+    assert not (tmp_path / 'home').exists()

@@ -719,3 +719,73 @@ priority; do not infer precedence from root enumeration order. Generated
 slash-command names remain a CLI-specific surface. Explicit `--config` and
 repeatable `--rule` inputs have their own native contract; policy insertion,
 universal `AGENTS.md` loading and effective context loading are unqualified.
+
+## Aider explicit instruction files
+
+The `aider/aider` CLI profile provides a manual instruction-file integration.
+Use a qualified `aider` executable and explicitly select a reviewed regular
+file. [Aider's conventions guide](https://aider.chat/docs/usage/conventions.html)
+documents `--read`; it does not establish automatic `AGENTS.md` discovery or a
+native Agent Skills catalog. LocalSetup emits no skill-platform projection,
+so fresh `--tools aider` selection fails. No skill directory, configuration,
+provider session or native history is created by this catalog record.
+
+For an existing repository context file, run from the intended project and
+list **every file intended as read-only context** on the command line:
+
+```bash
+aider --read /absolute/project/AGENTS.md --read /absolute/project/CONVENTIONS.md
+```
+
+Replace these example paths with reviewed files that actually exist. This is
+a native Aider invocation, not a provider-free validation command; starting it
+uses the owning session's provider and disclosure authority. Read-only context
+is still disclosed to the model. It does not grant or restrict shell/file-tool
+authority, and skill metadata or resource links do not become progressive
+skill discovery merely because the instruction file mentions them.
+
+The [pinned argument handling](https://github.com/Aider-AI/aider/blob/5dc9490bb35f9729ef2c95d00a19ccd30c26339c/aider/main.py)
+resolves relative read paths from the launch directory, not from the YAML
+configuration's location. Directory arguments can recursively include files;
+use regular file paths and avoid passing an entire skill tree. Files under
+other directories and nested context are not automatically selected by this
+procedure. Review the selected content and its size before adding it.
+
+**Read lists replace lower-priority lists; they do not merge across layers.**
+This follows the [pinned configuration parser](https://github.com/bw2/ConfigArgParse/blob/9453a69a95bd4f7fbc5ad86d16813ed489336118/configargparse.py)
+used by the inspected Aider source.
+Repeated CLI `--read` arguments accumulate within the command line, but that
+CLI list overrides environment/configuration read values. Before using the
+example, include any existing convention files you still intend to load.
+Likewise, adding a project configuration's `read` list can shadow a home list.
+The [YAML configuration guide](https://aider.chat/docs/config/aider_conf.html)
+describes home, Git-root and working-directory search order, later-file
+priority, and explicit `--config` selection. An existing file on disk is not
+proof that its list is effective for a particular invocation.
+
+For users who choose persistent configuration, edit the selected configuration
+manually, preserving its existing keys, comments and intended read entries.
+For example, an existing list containing `CONVENTIONS.md` must retain that
+entry when the reviewed instruction file is added:
+
+```yaml
+read:
+  - /absolute/project/CONVENTIONS.md
+  - /absolute/project/AGENTS.md
+```
+
+Absolute paths are machine-local; keep real local paths out of public
+configuration examples and committed portable templates. Use launch-independent
+paths when appropriate, and account for higher-priority
+configuration, environment and CLI inputs. Never replace the complete YAML
+file with this fragment. LocalSetup does not rewrite YAML, add a global read
+entry, concatenate installed skills or enable this integration by default.
+Remove only the entry you added to undo a manual configuration change; restore
+its prior value if you changed an existing entry. Preserve native settings,
+credentials, chat history, sessions and custom content.
+
+Catalog qualification is bounded to these explicit instructions. Filesystem
+projection is not applicable, and host loading has not been tested. Exact
+installed-build qualification must verify the effective read set from the
+intended launch directory without inferring it from another configuration
+scope. No paid model call or Aider installation was performed for this record.

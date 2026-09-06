@@ -29,9 +29,9 @@
       "path": "ls/config/clients.yaml",
       "line_sha256": "22455f6b1fd32f9e123dad579c91f5250f7d74c5e18beda7d504d99358af16b6",
       "token": "localsetup",
-      "count": 28,
+      "count": 30,
       "kind": "compatibility_identifier",
-      "reason": "Persisted framework-state ownership schema value in the Copilot, Cline, Cascade, Amp, Goose, Pi, Hermes, Qwen, Kimi, and Factory variants; retain the technical identifier. Roo legacy metadata preserves the same framework-state schema identifier. Continue CLI legacy uses the same identifier."
+      "reason": "Persisted framework-state ownership schema value in the Copilot, Cline, Cascade, Amp, Goose, Pi, Hermes, Qwen, Kimi, and Factory variants; retain the technical identifier. Roo legacy metadata preserves the same framework-state schema identifier. Continue CLI legacy uses the same identifier. Aider metadata retains the same framework-state identifier."
     },
     {
       "path": "ls/docs/audits/codex-bootstrap-pack/AUDIT_REPORT.md",
