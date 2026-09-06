@@ -14,6 +14,7 @@ from .repair_common import _default_backup_root, _latest_version, _read_json
 from .repair_inference import HISTORICAL_ADAPTERS, _infer_attach_mode, _infer_packages, _infer_platforms
 from .repair_safety import _classify_stale_framework, _protected_target_reasons
 from .verify import verify_install
+from .repair_personal_route import personal_repair_route
 
 def run_repair(
     source_root: Path,
@@ -50,6 +51,13 @@ def run_repair(
     legacy_lock_path = target / "localsetup.lock.json"
     modern_lock = _read_json(modern_lock_path, warnings, blockers, "modern lock")
     legacy_lock = _read_json(legacy_lock_path, warnings, blockers, "legacy lock")
+    recorded_scope = (modern_lock if modern_lock_path.exists() else legacy_lock).get("skill_scope", "repo")
+    if recorded_scope in ("personal", "both"):
+        return personal_repair_route(
+            source, home, target, modern_lock if modern_lock_path.exists() else legacy_lock,
+            clients=platform_ids, apply=apply, mode=repair_mode, allowed=allowed,
+            warnings=warnings, blockers=blockers,
+        )
     protected_reasons = _protected_target_reasons(source, home, target)
     inferred_platforms, platform_reasons = _infer_platforms(source, target, modern_lock, legacy_lock, platform_ids)
     attach_mode, attach_reason = _infer_attach_mode(modern_lock)

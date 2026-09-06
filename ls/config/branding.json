@@ -4192,6 +4192,14 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Validate the established lowercase managed_by adapter marker identity without migrating persisted state."
+    },
+    {
+      "path": "ls/core/repair_personal_route.py",
+      "line_sha256": "3e6d2917d25dc2c15c34c2b4ff2afd3755a7259e0109d6cf638ac85aa3419dad",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact executable doctor repair command in actionable output; the framework command remains lowercase."
     }
   ],
   "visual_reviews": [

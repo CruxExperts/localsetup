@@ -196,7 +196,8 @@ Apply rebuilds the plan under the package-root lock, journals individual managed
 nodes, and verifies the result before accepting it. Failure restores prior nodes
 and reports whether recovery succeeded; unrelated neighbors remain in place.
 Repair journals are stored under the managed home state directory. Standard
-doctor routing and public scope selection remain pending lifecycle integration.
+doctor repair routes personal-only target receipts through this API; public
+scope selection remains pending lifecycle integration.
 
 ## Scope configuration contract
 
@@ -212,3 +213,21 @@ client adapters.
 This config representation is preparatory: command routing and the public
 `--skill-scope` flag are not connected yet. Use the internal planner API above
 for the currently qualified scope behavior.
+
+### Doctor routing for recorded personal targets
+
+`localsetup doctor repair --target-directory PROJECT` reads the recorded scope.
+For a personal-only receipt, omitted client selectors use that receipt's clients;
+an explicit empty client list selects none. Repair retains the registry's
+per-client package selections and does not infer or migrate repository adapter
+paths. Report-only and migration-plan modes suppress application even when apply
+was requested. Invalid repair modes or unreadable lock metadata prevent writes.
+The existing `--repair-mode safe-repair --yes` application flow uses per-entry
+transactional recovery and verifies personal adapter contents. Resolver issues
+are reported separately; this route repairs personal adapters only.
+
+Automatic selector-free install/update currently routes these targets to repair
+without rebuilding package selections. It does not yet update their managed
+library packages. Combined `both`-scope doctor repair refuses before repository
+pre-actions until coordinated owner-aware repair is qualified. These remaining
+update and combined-scope operations are not implied by personal repair support.

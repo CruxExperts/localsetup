@@ -308,6 +308,8 @@ def _auto_default_context(root: Path, home: Path, config: InstallConfig, target_
         dependency_mode=config.dependency_mode,
         apply=False,
     )
+    if repair.get("skill_scope") in {"personal", "both"}:
+        return {"mode": "repair_required", "repair": repair, "plan": None}
     if repair.get("blockers") or repair.get("decisions"):
         return {"mode": "repair_required", "repair": repair, "plan": None}
     if not _repair_detected_existing_state(repair):
