@@ -68,12 +68,12 @@
     "emitter": "docs-align",
     "framework_version": "4.4.1",
     "schema_version": 1,
-    "source_commit": "77637d01f9810f45e0f894df7d3e5f82c9763b6d",
+    "source_commit": "8ca28c8dcf656684dda0145ddcb9904efd68b851",
     "source_dirty": false,
-    "source_provenance_hash": "8fa48b9100df2aaee656cdcc6663e49476fc81a2a982f056a3d88f4da5b25e9b",
-    "source_root_id": "8f8ac3682962972b4dda4af257022cd4d74262ddd718b1f8db1741f4c3397e20",
+    "source_provenance_hash": "8463b48224dd9bbd4432dfddf8cd8692fa9a6faf4382a5d8978f2e67401c2abe",
+    "source_root_id": "339e4b4b85b903ee15a2aa3b8d67af4ad1fc9596b68b2bf1d174b4b22692c79b",
     "source_tag": null,
-    "source_tree_sha": "46c69be81033970201ca43d3f5fc83209dec54bf"
+    "source_tree_sha": "2cbbef412ea472f40931ebc006ae6011782ea744"
   },
   "schema_version": "1.0"
 }

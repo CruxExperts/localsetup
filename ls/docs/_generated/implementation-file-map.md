@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 8fa48b9100df2aaee656cdcc6663e49476fc81a2a982f056a3d88f4da5b25e9b
+  source_provenance_hash: 8463b48224dd9bbd4432dfddf8cd8692fa9a6faf4382a5d8978f2e67401c2abe
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 77637d01f9810f45e0f894df7d3e5f82c9763b6d
-artifact_sha256: 8a0e0894bb7eff58fb34911284e6066ee999675870b5c400f82e7caf38157de7
+source_commit: 8ca28c8dcf656684dda0145ddcb9904efd68b851
+artifact_sha256: f703f87e0ad39a6a334feba1a3a5aea681f6e27e500afff44ae794a15c0216be
 ---
 # Implementation File Map
 
@@ -304,6 +304,7 @@ artifact_sha256: 8a0e0894bb7eff58fb34911284e6066ee999675870b5c400f82e7caf38157de
 | `refactor` | `ls/core/repair_actions.py` |
 | `refactor` | `ls/core/repair_common.py` |
 | `refactor` | `ls/core/repair_inference.py` |
+| `refactor` | `ls/core/repair_personal_route.py` |
 | `refactor` | `ls/core/repair_safety.py` |
 | `refactor` | `ls/core/repo_finalizer.py` |
 | `refactor` | `ls/core/repo_profiles.py` |
@@ -1081,6 +1082,7 @@ artifact_sha256: 8a0e0894bb7eff58fb34911284e6066ee999675870b5c400f82e7caf38157de
 | `keep` | `ls/tests/test_operation_journal.py` |
 | `keep` | `ls/tests/test_path_contract.py` |
 | `keep` | `ls/tests/test_personal_adapter.py` |
+| `keep` | `ls/tests/test_personal_doctor_route.py` |
 | `keep` | `ls/tests/test_personal_inventory.py` |
 | `keep` | `ls/tests/test_personal_registry.py` |
 | `keep` | `ls/tests/test_personal_repair.py` |
