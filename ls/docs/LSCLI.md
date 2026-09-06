@@ -2046,3 +2046,28 @@ these readers, and existing ownership, link, permission and inode checks apply.
 The noncreating mode cannot take an exclusive lease. Existing execution and
 installation callers retain their current lock-creation behavior. This primitive
 alone does not qualify runtime readiness or change the doctor result.
+
+
+### Release-bound registration dispatch primitive
+
+The internal `registered_cli` dispatcher is a prerequisite for PATH registration;
+it does not yet create a user command or registration receipt. It accepts an
+explicit absolute runtime root and release digest, verifies the current selected
+runtime through a noncreating lease, and requires its Python executable and
+module to come from that installed release. The launcher must use the protected
+Python with `-I -B`; source-checkout execution is refused.
+
+A changed selected digest makes the registration stale, including for setup or
+help. Recovery uses the verified selected release's full entrypoint path, such as
+`/path/to/runtimes/RELEASE_SHA256/venv/bin/lscli`; no shell code parses selection
+JSON or follows an unchecked path. Registration writing and refresh are separate
+work; this primitive does not claim that a PATH command exists.
+
+The selection lease ends before CLI dispatch so setup can obtain an exclusive
+upgrade/reselection lease. Each operation retains its existing leases and
+revalidation; concurrent selection changes follow those operation contracts.
+The bound root becomes the default only for commands supporting `--runtime-root`,
+and reaches forwarded worker arguments. Explicit user overrides remain explicit;
+profile-only setup, sessions, profiles, and help receive no extraneous runtime
+flag. This introduces no ambient environment-based runtime selection and grants
+no workspace, provider, or process authority.

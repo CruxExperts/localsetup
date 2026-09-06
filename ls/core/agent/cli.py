@@ -12,7 +12,7 @@ from ..framework_version import framework_version
 from .diagnostics import inspect
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: list[str] | None = None, *, default_runtime_root: Path | None = None) -> int:
     parser = argparse.ArgumentParser(prog=CLI_COMMAND, description=f"{CLI_NAME}: the integrated {PRODUCT_NAME} agent CLI")
     parser.add_argument("--version", action="version", version=f"{CLI_NAME} ({PRODUCT_NAME}) {framework_version()}")
     commands = parser.add_subparsers(dest="command")
@@ -50,12 +50,17 @@ def main(argv: list[str] | None = None) -> int:
     run = commands.add_parser('run', help='Run with an explicit profile and task grant in the protected runtime')
     from .run_options import arguments
     arguments(run)
-    args = parser.parse_args(argv)
+    effective_argv = list(sys.argv[1:] if argv is None else argv)
+    args = parser.parse_args(effective_argv)
+    profile_setup = args.command == 'setup' and args.profile_input is not None
+    if default_runtime_root is not None and hasattr(args, 'runtime_root') and args.runtime_root is None and not profile_setup:
+        effective_argv.extend(['--runtime-root', str(default_runtime_root)])
+        args = parser.parse_args(effective_argv)
     if args.command == 'compact':
         from .compact_cli import launch as launch_compact
         from .run_cli import failure
         try:
-            launch_compact((sys.argv[1:] if argv is None else argv)[1:], args)
+            launch_compact(effective_argv[1:], args)
         except (OSError, ValueError, TypeError, RuntimeError):
             return failure('text', 0, 'failed', 3, 'compaction could not start; verify profile, credential and runtime.')
     if args.command == 'branch':
@@ -85,7 +90,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == 'run':
         from .run_cli import launch
         try:
-            launch((sys.argv[1:] if argv is None else argv)[1:],args)
+            launch(effective_argv[1:],args)
         except (OSError,ValueError,TypeError,RuntimeError):
             print(f"{CLI_NAME} run could not start; verify the selected profile, credential and installed runtime.",file=sys.stderr)
             return 3
