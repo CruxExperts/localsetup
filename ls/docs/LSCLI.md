@@ -98,6 +98,28 @@ state directories were created. A separate isolated Python invocation confirmed
 the installed module origin and absence of SDK, provider, HTTP, and YAML imports.
 This evidence qualifies the provider-free bootstrap only.
 
+
+### Installed static-doctor qualification
+
+The doctor extension was checked from a wheel built at source commit
+`f9ada80a` (candidate framework version 4.4.1), installed offline into a temporary
+protected runtime outside the checkout. Both `lscli doctor` and
+`localsetup agent doctor` returned `static_verified` with exit 0 for an intact
+selected runtime and valid explicit profile file, while keeping
+`execution_available: false`. Default inspection with an absent home returned
+exit 3 without creating that home. No SDK/provider modules were imported and no
+credentials or provider calls were used. Six installed CLI/diagnostic/runtime
+modules matched both wheel bytes and source bytes; post-check runtime inventory
+verification passed.
+
+Installed checks also covered explicit missing/malformed payload fixtures,
+exclusive-upgrade contention reporting `busy`, and a full output pipe returning
+2 within its write deadline without stderr disclosure. The malformed payload
+fixtures were separate from the selected protected runtime. These are Linux,
+Python 3.12 candidate checks, not published-release acceptance, live provider
+qualification, or proof of native sandbox functionality. Repeat artifact checks
+against the actual released wheel after publication.
+
 ## Runtime lease foundation
 
 The internal `runtime_use` context manager provides shared use leases and
