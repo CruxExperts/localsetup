@@ -79,7 +79,10 @@ def test_loader_named_credential_never_becomes_exec_environment(monkeypatch,tmp_
     monkeypatch.setattr(runtime_install,'selected',selected)
     class Captured(Exception):pass
     def execute(path,argv,environment):
-        assert set(environment)=={'PATH','LANG',run_cli._CREDENTIAL}
+        assert set(environment)=={'PATH','LANG',run_cli._CREDENTIAL,run_cli._PROFILE}
+        from ls.core.agent.coding_protocol import profile_digest
+        from ls.core.agent.profiles import wire
+        assert environment[run_cli._PROFILE]==profile_digest(wire(profile))
         assert environment[run_cli._CREDENTIAL]=='fixture-not-a-library'
         assert argv[1:4]==['-I','-B','-m']
         raise Captured

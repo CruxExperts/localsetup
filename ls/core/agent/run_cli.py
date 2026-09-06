@@ -19,17 +19,20 @@ from .run_options import arguments, defaults
 from .runtime_lock import _directory
 
 _CREDENTIAL = "LOCALSETUP_RUN_CREDENTIAL"
+_PROFILE = "LOCALSETUP_RUN_PROFILE"
 
 
 def launch(argv, args):
     """Replace the bootstrap with sealed Python, forwarding only selected credentials."""
     from .runtime_install import selected
+    from .coding_protocol import profile_digest
     args = defaults(args)
     profile = load(args.profiles,args.profile)
     credential = profile.credential({profile.credential_env:os.environ.get(profile.credential_env,'')})
     with selected(args.runtime_root,timeout=5) as release:
         executable = release/'venv/bin/python'
-    environment = {'PATH':'/usr/bin:/bin','LANG':'C.UTF-8',_CREDENTIAL:credential}
+    environment = {'PATH':'/usr/bin:/bin','LANG':'C.UTF-8',_CREDENTIAL:credential,
+                   _PROFILE:profile_digest(wire(profile))}
     inherited = None
     if args.control_fd is not None:
         from .run_control import validate
@@ -110,6 +113,8 @@ def execute(args, streams, cancelled, steering=None, approvals=None):
     from .session_owner import _separate
     from .run_io import safe
     profile = load(args.profiles,args.profile)
+    if profile_digest(wire(profile)) != os.environ.get(_PROFILE):
+        raise ValueError('Provider profile changed across protected startup')
     _separate(args.profiles,args.workspace)
     grant, recipes = _grant(args.grant,args.workspace)
     from .context_files import selection, include

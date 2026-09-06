@@ -179,6 +179,14 @@ construction. Unknown profile fields, duplicate JSON keys, invalid capabilities,
 and nonpositive/nonfinite timeouts are rejected. Configuration is limited to 1 MiB;
 timeouts are limited to 3600 seconds.
 
+Coding runs and compaction bind the bootstrap credential to a digest of the
+complete selected profile before entering protected Python. The protected process
+rejects a missing or changed binding before prompt input, session creation or
+provider dispatch. If configuration changed during startup, inspect the intended
+profile and start a new invocation; the child does not rediscover credentials or
+silently use the changed endpoint. This check also covers model, credential
+selector, transport and declared-capability changes.
+
 Inspect configured choices without credentials, SDK initialization, network access,
 or configuration/state creation:
 

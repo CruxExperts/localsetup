@@ -13,6 +13,7 @@ from ..branding import CLI_COMMAND
 from .profiles import load,wire
 
 CREDENTIAL='LOCALSETUP_COMPACT_CREDENTIAL'
+PROFILE='LOCALSETUP_COMPACT_PROFILE'
 
 
 def arguments(parser):
@@ -39,11 +40,12 @@ def defaults(args):
 
 def launch(argv,args):
     from .runtime_install import selected
+    from .coding_protocol import profile_digest
     args=defaults(args);profile=load(args.profiles,args.profile)
     credential=profile.credential({profile.credential_env:os.environ.get(profile.credential_env,'')})
     with selected(args.runtime_root,timeout=5) as release:executable=release/'venv/bin/python'
     os.execve(executable,[str(executable),'-I','-B','-m','ls.core.agent.compact_cli',*argv],
-              {'PATH':'/usr/bin:/bin','LANG':'C.UTF-8',CREDENTIAL:credential})
+              {'PATH':'/usr/bin:/bin','LANG':'C.UTF-8',CREDENTIAL:credential,PROFILE:profile_digest(wire(profile))})
 
 
 def main(argv=None):
@@ -65,6 +67,8 @@ def main(argv=None):
         for path in (args.profiles,args.state_root,args.runtime_root):_separate(path,args.workspace)
         _separate(args.state_root,args.runtime_root)
         profile=load(args.profiles,args.profile);raw=wire(profile)
+        if profile_digest(raw)!=os.environ.get(PROFILE):
+            raise ValueError('Provider profile changed across protected startup')
         with lease(args.state_root/'sessions',task=args.task,session=args.session,workspace=args.workspace,expires=expires,revoked=cancelled,create=False) as owner:
             history=owner.resume_checkpoint(args.checkpoint,profile=profile_digest(raw))
             payload={'schema_version':1,'profile':raw,'credential':profile.credential({profile.credential_env:os.environ.get(CREDENTIAL,'')}),
