@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 63d4c1ce2029aacbb64986eeeec0875ab8d7557117333c04e0db35fa4b505010
+  source_provenance_hash: 6828ba28896ebe1128809e3079060d85cb39dbd2d20e4afeed6b5a1c6a421c67
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: d2f54f9d9c5ad6213f153f1f5acb4f243a48e9d3
-artifact_sha256: a3bd8a0b67583adc7e0256f9a7dc019344e0ed3c69f60a5fafc3cc1a5433bf89
+source_commit: d7fed6984cd1460f14b5fc1eaf3c72834757791a
+artifact_sha256: ea70f4f9c6fb85207e7aef8dfe171046102fc38fee8a7936fa8ebe3659ee09e6
 ---
 # Implementation File Map
 
@@ -409,6 +409,7 @@ artifact_sha256: a3bd8a0b67583adc7e0256f9a7dc019344e0ed3c69f60a5fafc3cc1a5433bf8
 | `refactor` | `ls/core/versioning.py` |
 | `refactor` | `ls/core/versioning_constants.py` |
 | `refactor` | `ls/core/versioning_models.py` |
+| `refactor` | `ls/core/versioning_sequence.py` |
 | `refactor` | `ls/core/versioning_sync.py` |
 | `refactor` | `ls/core/wizard.py` |
 | `refactor` | `ls/core/wizard_apply.py` |
@@ -1277,6 +1278,7 @@ artifact_sha256: a3bd8a0b67583adc7e0256f9a7dc019344e0ed3c69f60a5fafc3cc1a5433bf8
 | `keep` | `ls/tests/test_validation_tooling.py` |
 | `keep` | `ls/tests/test_versioning.py` |
 | `keep` | `ls/tests/test_versioning_release_push.py` |
+| `keep` | `ls/tests/test_versioning_sequence.py` |
 | `keep` | `ls/tests/test_windsurf_retention.py` |
 | `keep` | `ls/tests/test_workflow_manifests.py` |
 | `keep` | `ls/tests/versioning_test_helpers.py` |
