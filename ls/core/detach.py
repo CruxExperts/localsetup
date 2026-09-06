@@ -108,7 +108,7 @@ def _updated_registry(registry: dict, *, target_root: Path, adapter_receipts: li
     return updated
 
 
-def _detach_platforms_locked(repo_root: Path, home: Path, target_root: Path, platform_ids: list[str], *, preserve_neighbors: bool = False) -> dict:
+def _detach_platforms_locked(repo_root: Path, home: Path, target_root: Path, platform_ids: list[str], *, preserve_neighbors: bool = False, remove_empty_directories: bool = False) -> dict:
     requested = set(platform_ids)
     pack = load_pack_config(repo_root)
     global_root = expand_user_path(pack.global_root, home)
@@ -234,6 +234,17 @@ def _detach_platforms_locked(repo_root: Path, home: Path, target_root: Path, pla
             try:cleanup_backups(shared_journal)
             except OSError as exc:
                 cleanup_warnings.append(f"detach committed; backup cleanup failed: {exc}")
+    if remove_empty_directories:
+        for target in remove_targets:
+            path = target["repo_path"]
+            if path.is_symlink() or not path.is_dir():continue
+            try:
+                path.rmdir()
+                removed.append(str(path))
+            except OSError:
+                # A retained entry, backup, or concurrently created custom file
+                # keeps the parent; cleanup cannot roll back committed owners.
+                pass
     return {"removed": removed, "packages_preserved": True, "warnings": cleanup_warnings,
             **({"journal": str(shared_journal_path)} if journaled else {})}
 
@@ -244,4 +255,4 @@ def _unlink_registry(registry_path: Path) -> None:
 
 def detach_platforms(repo_root: Path, home: Path, target_root: Path, platform_ids: list[str]) -> dict:
     with package_root_lock(home / ".local" / "share" / "localsetup"):
-        return _detach_platforms_locked(repo_root, home, target_root, platform_ids)
+        return _detach_platforms_locked(repo_root, home, target_root, platform_ids, preserve_neighbors=True, remove_empty_directories=True)

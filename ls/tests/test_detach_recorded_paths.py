@@ -50,3 +50,32 @@ def test_detach_rejects_later_outside_record_before_removal(tmp_path):
     receipt.write_text(json.dumps(lock))
     with pytest.raises(ValueError, match='escapes target'):detach_platforms(root, home, root, ['cursor'])
     assert (root / '.cursor/skills/ls-context').exists()
+
+
+@pytest.mark.parametrize('mode', ['symlink', 'portable'])
+def test_public_detach_recovery_preserves_new_custom_neighbor(tmp_path, monkeypatch, mode):
+    from ls.core import detach
+    root = make_temp_repo(tmp_path);home = tmp_path / 'home'
+    apply_plan(root, build_install_plan(root, home, skills=['ls-context'],
+        platform_ids=['cursor'], attach_mode=mode), home)
+    receipt = root / '.localsetup/lock.json';lock = json.loads(receipt.read_text())
+    registry = Path(lock['registry_path']);before = receipt.read_bytes(), registry.read_bytes()
+    adapter = root / '.cursor/skills'
+    original = detach.save_json
+    def fail(path, value):
+        if path == receipt:
+            (adapter / 'new-custom.txt').write_text('created during detach')
+            raise OSError('detach receipt failure')
+        return original(path, value)
+    monkeypatch.setattr(detach, 'save_json', fail)
+    with pytest.raises(OSError, match='detach receipt failure'):
+        detach_platforms(root, home, root, ['cursor'])
+    assert before == (receipt.read_bytes(), registry.read_bytes())
+    assert (adapter / 'new-custom.txt').read_text() == 'created during detach'
+    assert (adapter / 'ls-context/SKILL.md').is_file()
+    monkeypatch.setattr(detach, 'save_json', original)
+    result = detach_platforms(root, home, root, ['cursor'])
+    assert result['journal']
+    assert (adapter / 'new-custom.txt').read_text() == 'created during detach'
+    assert not (adapter / 'ls-context').exists()
+    assert not json.loads(receipt.read_text())['adapter_targets']

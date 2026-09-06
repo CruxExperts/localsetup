@@ -626,3 +626,16 @@ not turn an existing installation into an empty client selection. Recorded
 personal/combined requests and modes are retained; repository-only updates use
 the existing inferred-selection route. Fresh-target selection behavior is
 unchanged.
+
+
+## Repository detach recovery
+
+Ordinary repository detach uses the same per-entry journal preservation as scope
+retirement, including adapters without personal overlap. It snapshots managed
+package entries and markers, then updates the receipt and registry under the
+package-root lock. Failure recovery restores those entries without replacing
+the adapter parent directory, preserving custom files created during the
+operation. Empty adapter directories are removed only after the transaction
+commits; retained entries or concurrent custom files keep their parent in place.
+The package library stays installed, and recorded ownership continues to determine
+which entries and owner memberships are removed.
