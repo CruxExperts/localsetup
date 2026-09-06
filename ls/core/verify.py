@@ -316,6 +316,9 @@ def verify_install(
         target_root=attachment_root,
     )
 
+    from .opencode_preflight import opencode_verification_blockers
+    issues.extend(row["reason"] for row in opencode_verification_blockers(
+        repo_root, home, attachment_root, scope, platform_ids))
     from .kilo_loading import kilo_loading_assessment
     native_loading = kilo_loading_assessment(attachment_root, adapters, personal)
     from .openclaw_loading import openclaw_loading_assessment

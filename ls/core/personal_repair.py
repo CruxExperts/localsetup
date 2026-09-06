@@ -56,6 +56,8 @@ def _plan(repo_root: Path, home: Path, clients: list[str] | None):
     blockers.extend(b["reason"] for b in factory_skill_blockers(repo_root, list(actions.values()), home, repo_root))
     from .amp_preflight import amp_skill_blockers
     blockers.extend(b["reason"] for b in amp_skill_blockers(repo_root, list(actions.values()), home, repo_root))
+    from .opencode_preflight import opencode_skill_blockers
+    blockers.extend(b["reason"] for b in opencode_skill_blockers(repo_root, list(actions.values()), home, repo_root))
     from .goose_prerequisite import goose_prerequisite_blockers
     blockers.extend(b["reason"] for b in goose_prerequisite_blockers(repo_root, list(actions.values()), home, repo_root))
     payload = {"schema_version": 1, "ok": not blockers, "applied": False,

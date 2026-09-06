@@ -109,6 +109,8 @@ def _plan(source, home, target, clients):
     blockers.extend(b["reason"] for b in factory_skill_blockers(source, [a for _, a, _ in actions.values()], home, target))
     from .amp_preflight import amp_skill_blockers
     blockers.extend(b['reason'] for b in amp_skill_blockers(source, [a for _, a, _ in actions.values()], home, target))
+    from .opencode_preflight import opencode_skill_blockers
+    blockers.extend(b['reason'] for b in opencode_skill_blockers(source, [a for _, a, _ in actions.values()], home, target))
     from .goose_prerequisite import goose_prerequisite_blockers
     blockers.extend(b['reason'] for b in goose_prerequisite_blockers(source, [a for _, a, _ in actions.values()], home, target))
     return {'ok': not blockers, 'applied': False, 'blockers': blockers,

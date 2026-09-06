@@ -1318,3 +1318,42 @@ Directory symlinks are traversed; no skill body is executed or sent to a
 provider. Root enumeration, installation hooks and native host qualification are
 separate integration responsibilities; this primitive alone changes no adapter
 path, install decision or native configuration.
+
+### OpenCode installation inventory checks
+
+The [stable v1.18.29 loader](https://github.com/anomalyco/opencode/blob/16747470f976aca3d362ad730bcd3fe82ecc2c9a/packages/opencode/src/skill/index.ts)
+parses matches concurrently and overwrites duplicate names. Its lexical-path
+deduplication does not establish deterministic priority for distinct sources.
+These checks apply to that stable profile, not the separate V2 beta.
+
+Installation, personal repair, combined repair and verification check selected
+OpenCode skill identities in bounded local roots. Shared package refreshes also
+check affected recorded OpenCode owners when another client initiated the
+operation. The check preserves conflicts and returns `opencode_skill_inventory`;
+it does not pick a native winner or modify the conflicting skill.
+
+Checked roots include the selected target and its Git worktree ancestors when
+available, personal common/Claude roots, native `.opencode/skill` and `skills`,
+and the default XDG OpenCode roots. An absolute `OPENCODE_CONFIG_DIR` contributes
+its singular and plural skill roots. Without Git context, a target beneath the selected home is checked up to that
+home; other targets are checked only at the target, plus personal roots; this is not a claim about discovery from
+other working directories. Native configuration can add `skills.paths` and
+`skills.urls`; these are not parsed or downloaded by the static check and need
+separate effective-host qualification.
+
+The bounded environment contract accepts an unset or literal `false`
+`OPENCODE_DISABLE_EXTERNAL_SKILLS`, the selected default home (or equal absolute
+`OPENCODE_TEST_HOME`), and default XDG configuration (or its equal absolute
+path). Other values require qualification before affected writes. This is a
+conservative LocalSetup boundary, not an emulation of native boolean parsing or
+an assertion that every rejected override is unsupported upstream. No setting
+is changed automatically. Claude-specific flags do not establish that common
+skills are disabled. Native agent permissions and filters remain authoritative.
+
+Planned destinations and canonical managed sources are explicit accepted
+identities. Already recorded portable counterparts are accepted only after
+existing ownership and package-content checks; this does not establish native
+realpath deduplication or a deterministic lexical origin. Unmanaged copies with
+identical bytes remain distinct conflicting origins. Current preferred paths
+are unchanged by this check; changing defaults and qualifying historical-path
+updates are separate profile operations.

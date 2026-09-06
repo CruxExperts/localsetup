@@ -46,6 +46,8 @@ def preflight_install_plan(repo_root: Path, plan, home: Path, *, target_root: Pa
     blockers.extend(factory_skill_blockers(repo_root, plan.actions, home, target_root or repo_root))
     from .amp_preflight import amp_skill_blockers
     blockers.extend(amp_skill_blockers(repo_root, plan.actions, home, target_root or repo_root))
+    from .opencode_preflight import opencode_skill_blockers
+    blockers.extend(opencode_skill_blockers(repo_root, plan.actions, home, target_root or repo_root))
     from .goose_prerequisite import goose_prerequisite_blockers
     blockers.extend(goose_prerequisite_blockers(repo_root, plan.actions, home, target_root or repo_root))
     import hashlib
