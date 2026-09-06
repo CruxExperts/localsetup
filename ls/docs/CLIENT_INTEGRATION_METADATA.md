@@ -1,3 +1,9 @@
+---
+status: ACTIVE
+version: 4.4
+owner_skill: ls-framework-compliance
+---
+
 # Client integration metadata
 
 `ls/config/clients.yaml` owns client families and variants.
