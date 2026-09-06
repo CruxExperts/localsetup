@@ -148,7 +148,8 @@ repository `adapter_targets` and `adapter_state`.
 Repository detach and rollback preserve independent personal installations and
 their package references. If a removal path overlaps a recorded personal adapter,
 they refuse before mutation until shared-path removal is qualified. Repository
-updates targeting an existing personal adapter also refuse at preflight. A single
+updates on a personal adapter preserve its owners through the shared writer
+below; conflicting modes still fail preflight. A single
 install also refuses repository and personal actions targeting the same path.
 They do not implicitly remove personal adapters.
 Explicit personal detach and coordinated shared-path removal remain pending.
@@ -286,5 +287,23 @@ directories could otherwise trigger automatic discovery. Omission retains the
 recorded scope; repeating that scope with no selectors keeps automatic recorded
 updates. To change personal package selections, name clients explicitly.
 Changing a recorded scope currently fails before installation: coordinated
-ownership migration is not yet qualified. Same-path repository/personal overlap
-continues to fail preflight as documented above.
+ownership migration is not yet qualified. Same-plan repository/personal actions on one path
+continue to fail preflight as documented above.
+
+## Repository updates on personal adapter paths
+
+A repository update may target a directory already exposed by personal owners.
+When modes agree, the writer combines the new repository selection with retained
+personal selections and other repository owners, excluding the updating
+repository's old selection. The original repository receipt records only its
+requested packages; personal owner records remain unchanged. Legacy repository
+receipts retain their existing client-membership interpretation.
+
+These shared writes use the home-bound path checks and per-entry journal used
+by personal adapters. A failed write restores managed entries while preserving
+custom neighbors, including files created during the failed operation. Mode
+changes that conflict with a personal owner fail before mutation. Same-plan
+repository/personal coalescing and shared-path detach/rollback remain pending.
+
+Repository filesystem verification checks the full recorded owner union on a
+shared path and reports the repository request separately from that union.

@@ -428,6 +428,10 @@ def _apply_plan_unlocked(
                 executed.append(f"attach_personal_path:{action.path}")
             elif action.kind == "attach_repo_path":
                 if not dry_run:
+                    from .repository_overlap import write_overlap
+                    if write_overlap(repo_root, home, attachment_root, action, journal, journal_path):
+                        executed.append(f"attach_repo_path:{action.path}")
+                        continue
                     ensure_dir(action.path.parent)
                     mode = action.details.get("mode", "symlink")
                     global_root = Path(action.details["global_root"])

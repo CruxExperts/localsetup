@@ -94,6 +94,20 @@ def verify_install(
             "expected_packages",
             expected_by_path.get(adapter["repo_path"], lock.get("repo_packages", lock.get("adapter_packages", []))),
         )
+    from .models import PlanAction
+    from .repository_overlap import expected_overlap
+    for adapter in adapters:
+        try:
+            visible = expected_overlap(repo_root, home, attachment_root, PlanAction(
+                "attach_repo_path", Path(adapter["repo_path"]), {
+                    "mode": adapter.get("expected_mode", attach_mode), "global_root": str(global_root),
+                    "packages": adapter["expected_packages"],
+                }))
+            if visible is not None:
+                adapter["requested_packages"] = adapter["expected_packages"]
+                adapter["expected_packages"] = visible
+        except (ValueError, OSError, TypeError, KeyError) as exc:
+            issues.append(f"invalid shared adapter ownership: {exc}")
     platform_rules = {platform.platform_id: platform.verify_rules for platform in load_platforms(repo_root)}
     rule_results: list[dict] = []
     for adapter in adapters:
@@ -141,7 +155,7 @@ def verify_install(
         ):
             issues.append(f"adapter does not point at global library: {adapter['repo_path']}")
         expected_packages = sorted(str(name) for name in adapter.get("expected_packages", []) if name)
-        if expected_packages:
+        if expected_packages or "requested_packages" in adapter:
             visible_packages = sorted(str(name) for name in adapter.get("managed_visible_packages", adapter.get("visible_packages", [])))
             ok = visible_packages == expected_packages
             rule_results.append(

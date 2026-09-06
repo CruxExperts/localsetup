@@ -27,7 +27,8 @@ def check_path(path: Path, home: Path) -> None:
             raise ValueError("Personal adapter ancestors must be regular directories")
 
 
-def selection(repo_root: Path, home: Path, action) -> list[str]:
+def selection(repo_root: Path, home: Path, action, *, repository_target: Path | None = None,
+              repository_packages: list[str] | None = None) -> list[str]:
     check_path(action.path, home)
     mode = action.details.get("mode", "symlink")
     if mode not in {"symlink", "portable"}:
@@ -49,7 +50,9 @@ def selection(repo_root: Path, home: Path, action) -> list[str]:
             if record.get("mode", "symlink") != mode:
                 raise ValueError("Personal adapter mode conflicts with another owner")
             names.update(record.get("packages", []))
-    for target in registry.get("targets", {}).values():
+    names.update(repository_packages or [])
+    for target_id, target in registry.get("targets", {}).items():
+        if repository_target is not None and target_id == str(repository_target.resolve()):continue
         for adapter in target.get("adapters", []):
             repository_owned = any(o.get("scope") == "repo" for o in adapter.get("owners", []))
             if "owners" not in adapter:
@@ -78,8 +81,10 @@ def managed_entry(entry: Path, global_root: Path, mode: str | None) -> bool:
     return mode == "portable" and entry.is_dir() and is_managed_package(entry)
 
 
-def write(repo_root: Path, home: Path, action, journal: dict, journal_path: Path) -> None:
-    names = selection(repo_root, home, action)
+def write(repo_root: Path, home: Path, action, journal: dict, journal_path: Path, *,
+          repository_target: Path | None = None, repository_packages: list[str] | None = None) -> None:
+    names = selection(repo_root, home, action, repository_target=repository_target,
+                      repository_packages=repository_packages)
     global_root = Path(action.details["global_root"])
     if any(not (global_root / name).is_dir() for name in names):
         raise ValueError("Personal adapter package is missing from the managed library")

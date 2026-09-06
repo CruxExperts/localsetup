@@ -113,13 +113,10 @@ def preflight_install_plan(repo_root: Path, plan, home: Path, *, target_root: Pa
                         }
                     )
         elif action.kind == "attach_repo_path":
-            from .personal_registry import refuse_personal_overlap
-            from .registry import load_registry
-            from .manifests import load_pack_config
-            from .paths import expand_user_path
-            registry = load_registry(expand_user_path(load_pack_config(repo_root).global_registry, home))
-            try:refuse_personal_overlap(registry, [str(action.path)])
-            except ValueError as exc:
+            from .repository_overlap import check_overlap
+            try:
+                if check_overlap(repo_root, home, target_root or repo_root, action):continue
+            except (ValueError, OSError) as exc:
                 blockers.append({"path": str(action.path), "status_code": "personal_owner_overlap", "reason": str(exc)})
                 continue
             global_root = Path(action.details["global_root"])
