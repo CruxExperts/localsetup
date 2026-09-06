@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: ab78c224814669ef703d2706b4a96a40e006b6662ccb45540670ebaac171d59e
+  source_provenance_hash: a9aa98c2c3ed23c07706129822c3cbda138734164afd5ac7d89304bae233d600
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: deaac61df19abbc9e20deefa37c325cfd0a66498
-artifact_sha256: 4c0f1992ba9878f14d27602b0ec3e004a9c8fe2e19cde3ddca793f10862c99fa
+source_commit: bf0b3f46b2add25b14d845c3a0b43a510b0e30f9
+artifact_sha256: 2a6e80d929857f73b5120e54ed7f12acc15a56fed15a9d761dfa5c1fb46ee2cd
 ---
 # Implementation File Map
 
@@ -1090,6 +1090,7 @@ artifact_sha256: 4c0f1992ba9878f14d27602b0ec3e004a9c8fe2e19cde3ddca793f10862c99f
 | `keep` | `ls/tests/test_path_contract.py` |
 | `keep` | `ls/tests/test_personal_adapter.py` |
 | `keep` | `ls/tests/test_personal_detach.py` |
+| `keep` | `ls/tests/test_personal_detach_cli.py` |
 | `keep` | `ls/tests/test_personal_doctor_route.py` |
 | `keep` | `ls/tests/test_personal_inventory.py` |
 | `keep` | `ls/tests/test_personal_owner_selections.py` |
