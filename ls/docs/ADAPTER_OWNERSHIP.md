@@ -197,3 +197,18 @@ nodes, and verifies the result before accepting it. Failure restores prior nodes
 and reports whether recovery succeeded; unrelated neighbors remain in place.
 Repair journals are stored under the managed home state directory. Standard
 doctor routing and public scope selection remain pending lifecycle integration.
+
+## Scope configuration contract
+
+The internal `InstallConfig.skill_scope` field and install configuration schema
+accept `repo`, `personal`, `both`, or `null`. Omission and `null` remain unset
+through loading and serialization; the planner resolves an unset value from the
+recorded target scope, with `repo` as the fresh-target default. Merging an omitted
+CLI value preserves the config value; an explicit scope replaces it. Scope does
+not populate `platforms` or package selectors, including an explicit empty client
+list. For example, `{"skill_scope": "personal", "platforms": []}` describes no
+client adapters.
+
+This config representation is preparatory: command routing and the public
+`--skill-scope` flag are not connected yet. Use the internal planner API above
+for the currently qualified scope behavior.

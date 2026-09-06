@@ -118,6 +118,11 @@
       "items": { "type": "string", "minLength": 1 },
       "uniqueItems": true
     },
+    "skill_scope": {
+      "type": ["string", "null"],
+      "enum": ["repo", "personal", "both", null],
+      "description": "Adapter ownership scope. Omitted or null retains recorded scope, defaulting to repo for a fresh target; this does not select clients."
+    },
     "attach_mode": {
       "type": "string",
       "enum": ["symlink", "portable"],
