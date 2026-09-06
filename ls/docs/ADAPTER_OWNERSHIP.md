@@ -146,14 +146,14 @@ may remain. Successful receipts use `personal_adapter_targets`, separate from
 repository `adapter_targets` and `adapter_state`.
 
 Repository detach and rollback preserve independent personal installations and
-their package references. If a removal path overlaps a recorded personal adapter,
-they refuse before mutation until shared-path removal is qualified. Repository
+their package references. Repository detach preserves the retained owner union
+on shared paths; repository rollback still refuses overlapping personal paths. Repository
 updates on a personal adapter preserve its owners through the shared writer
 below; conflicting modes still fail preflight. A single install coalesces
 repository and personal actions targeting the same path when their modes and
 package library agree.
 They do not implicitly remove personal adapters.
-Explicit personal detach and coordinated shared-path removal remain pending.
+Explicit personal detach and shared-path rollback remain pending.
 Personal repair is qualified through the recorded-owner route below.
 
 Portable packages are copied with their provenance and internal symlinks intact.
@@ -303,7 +303,7 @@ receipts retain their existing client-membership interpretation.
 These shared writes use the home-bound path checks and per-entry journal used
 by personal adapters. A failed write restores managed entries while preserving
 custom neighbors, including files created during the failed operation. Mode
-changes that conflict with a personal owner fail before mutation. Shared-path detach/rollback remain pending.
+changes that conflict with a personal owner fail before mutation. Shared-path rollback remains pending.
 
 Repository filesystem verification checks the full recorded owner union on a
 shared path and reports the repository request separately from that union.
@@ -321,3 +321,22 @@ coalescing physical writes does not merge their logical ownership or selections.
 Filesystem verification checks the visible union. Conflicting modes or library
 paths fail before writes, and the home-bound path and custom-content protections
 remain effective.
+
+## Detaching repository owners from shared paths
+
+Repository detach removes only repository exposure on a path retained by personal
+owners. It rewrites the managed union with an empty repository request, preserving
+personal and other repository owners. Shared directories use per-entry journal
+backups, including receipt backups, rather than whole-parent restoration. If a
+receipt write fails, recovery restores prior managed nodes and receipts while
+keeping custom neighbors, including files created during the failed operation.
+
+A `both` receipt retains its personal targets and clients. Removing its last
+repository target changes its recorded scope to `personal`; personal owner
+records and package references remain intact. Detach preserves the canonical
+package library. This does not enable explicit personal-owner removal or shared
+rollback, which remain separate lifecycle work.
+
+Backup cleanup runs after transaction commit. A cleanup failure returns a warning
+and the committed journal path; it does not restore obsolete ownership receipts
+or attempt rollback using partially deleted backups.

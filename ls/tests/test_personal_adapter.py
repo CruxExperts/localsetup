@@ -78,8 +78,7 @@ def test_personal_apply_preserves_overlapping_legacy_repository_owner(tmp_path):
     from ls.core.detach import detach_platforms
     from ls.core.rollback import rollback
     before = registry_path.read_bytes()
-    for remove in (lambda: detach_platforms(root, home, home, ["cursor"]),
-                   lambda: rollback(root, home, target_root=home)):
+    for remove in (lambda: rollback(root, home, target_root=home),):
         with pytest.raises(ValueError, match="overlaps personal"):
             remove()
         assert registry_path.read_bytes() == before
@@ -90,6 +89,8 @@ def test_personal_apply_preserves_overlapping_legacy_repository_owner(tmp_path):
 
     personal_before = load_registry(registry_path)["personal_owners"]
     apply_plan(root, repo_plan, home, target_root=home)
+    assert load_registry(registry_path)["personal_owners"] == personal_before
+    detach_platforms(root, home, home, ["cursor"])
     assert load_registry(registry_path)["personal_owners"] == personal_before
     assert (shared / "ls-context").is_symlink() and (shared / "ls-git-workflows").is_symlink()
 
