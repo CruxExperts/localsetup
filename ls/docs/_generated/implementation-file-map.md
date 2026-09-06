@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: c79e347352c19fc7583b91073ec04889c204eb07bee00d66fcec0a3688f26ca5
+  source_provenance_hash: 60e1bf59ae9cd47be89ef222fa0f5b0005eb8ab5909bfd91dd04f67820aa337b
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 421b6aee281d49398dfe62104af70e9d59be5c17
-artifact_sha256: da72b1444cd552dda1de17cfc744a4d61f6ae7478f97b2d9358a8fa812f1a067
+source_commit: 4401260bc147501effe39b1bbee2e53afcdb37d5
+artifact_sha256: 5661a30ebaca0a55e544f502a05b8e40d25191e81b300ab151aed905bcc97436
 ---
 # Implementation File Map
 
@@ -1028,6 +1028,7 @@ artifact_sha256: da72b1444cd552dda1de17cfc744a4d61f6ae7478f97b2d9358a8fa812f1a06
 | `keep` | `ls/tests/test_agent_snapshot.py` |
 | `keep` | `ls/tests/test_agent_supervisor.py` |
 | `keep` | `ls/tests/test_amp_preflight.py` |
+| `keep` | `ls/tests/test_antigravity_adapters.py` |
 | `keep` | `ls/tests/test_approvals.py` |
 | `keep` | `ls/tests/test_artifact_freshness.py` |
 | `keep` | `ls/tests/test_branding.py` |

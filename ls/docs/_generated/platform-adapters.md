@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: c79e347352c19fc7583b91073ec04889c204eb07bee00d66fcec0a3688f26ca5
+  source_provenance_hash: 60e1bf59ae9cd47be89ef222fa0f5b0005eb8ab5909bfd91dd04f67820aa337b
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 421b6aee281d49398dfe62104af70e9d59be5c17
-artifact_sha256: 67eacdb4ccb4489d1be5cd7ae778238bcc766ec2097fe405a34e2b345c391d68
+source_commit: 4401260bc147501effe39b1bbee2e53afcdb37d5
+artifact_sha256: 1aab8180c96ce432c341c1fb8e5e03608783052c8d121251c6e035b2fb523378
 ---
 # Platform Adapters
 
@@ -30,3 +30,4 @@ Repo adapter paths are attached only when selected with `--tools` or `--platform
 | `qwen-code-cli` | `.agents/skills` | `skills_visible, namespace_ls` |
 | `kimi-cli` | `.agents/skills` | `skills_visible, namespace_ls` |
 | `factory-droid` | `.agents/skills` | `skills_visible, namespace_ls` |
+| `antigravity-app` | `.agents/skills` | `skills_visible, namespace_ls` |
