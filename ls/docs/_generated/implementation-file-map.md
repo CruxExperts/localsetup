@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 8a72602118040f84770c8f33d54261bfbb7f57239cb14e36a72d7b96431ec4b7
+  source_provenance_hash: f6b9cceb5bb34a4dfc406d9efa33e1761668fd1a0b44a29f421f750d19fc8df1
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 510c5353a246fdaae4d42ff059459bdf807f2a62
-artifact_sha256: 5661a30ebaca0a55e544f502a05b8e40d25191e81b300ab151aed905bcc97436
+source_commit: c736118cc6dce99f99d0c8578f697648b08b9b7d
+artifact_sha256: 5df61049897e3e6854f89181e12ece7901bdc37e8c5434c28f24e6e24279f8d3
 ---
 # Implementation File Map
 
@@ -198,6 +198,7 @@ artifact_sha256: 5661a30ebaca0a55e544f502a05b8e40d25191e81b300ab151aed905bcc9743
 | `refactor` | `ls/core/branding/cli.py` |
 | `refactor` | `ls/core/branding/rules.py` |
 | `refactor` | `ls/core/branding/scanner.py` |
+| `refactor` | `ls/core/claude_prerequisite.py` |
 | `refactor` | `ls/core/cli.py` |
 | `refactor` | `ls/core/cli_client_state_commands.py` |
 | `refactor` | `ls/core/cli_handler_sync.py` |
@@ -1035,6 +1036,7 @@ artifact_sha256: 5661a30ebaca0a55e544f502a05b8e40d25191e81b300ab151aed905bcc9743
 | `keep` | `ls/tests/test_broker_rpc.py` |
 | `keep` | `ls/tests/test_candidate_skill_cli.py` |
 | `keep` | `ls/tests/test_checkpoint_store.py` |
+| `keep` | `ls/tests/test_claude_adapters.py` |
 | `keep` | `ls/tests/test_cli_version.py` |
 | `keep` | `ls/tests/test_client_qualification.py` |
 | `keep` | `ls/tests/test_client_registry.py` |
