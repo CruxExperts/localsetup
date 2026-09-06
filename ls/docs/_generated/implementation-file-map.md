@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 471d216b3a6b754dc0623e2539de8d9dfb24e2be4715236cf38ef98dcc914048
+  source_provenance_hash: 8071e34d25e053e5cabb4f78b7bd21d02aa310d064a2fc12e13e3f278db863bf
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: d82e2c8946c9a387a29b47bbbf4edffa0a2d4d27
-artifact_sha256: 4ad21c0bda39349b4c5007afe730ddc7f64aec740ec05541a61828167fea1e71
+source_commit: 762cff6aa8dd11dc0d1cc5c34f22580b8cfc9a9a
+artifact_sha256: 093850cc9deba2b1a103a6d0fc922ea5a2573d29113fb9f0bd56aa0231233903
 ---
 # Implementation File Map
 
@@ -1093,6 +1093,7 @@ artifact_sha256: 4ad21c0bda39349b4c5007afe730ddc7f64aec740ec05541a61828167fea1e7
 | `keep` | `ls/tests/test_dependency_ledger.py` |
 | `keep` | `ls/tests/test_detach_recorded_paths.py` |
 | `keep` | `ls/tests/test_docs_alignment.py` |
+| `keep` | `ls/tests/test_docs_cli_inventory.py` |
 | `keep` | `ls/tests/test_domain_shapes.py` |
 | `keep` | `ls/tests/test_factory_preflight.py` |
 | `keep` | `ls/tests/test_file_listing.py` |
