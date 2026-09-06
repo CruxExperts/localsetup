@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 3096b904e22c3b8edb4f26b0095478ab4f29fa0c50a8862facb55370ec4f6898
+  source_provenance_hash: 6423be16bbff45d91418d7d0c0e5021a9c634c0e6fdad9f095d43d7cce197c79
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 8a349bfc613708cdaa582ebf1fa58a6a165970d8
-artifact_sha256: 94eb2070c928d2a848d1e54b46ae685c443002564bbdcbfb5f4c0da6348fe875
+source_commit: e5e42c1c7a32bc9e5ebc710db275d413a7da90af
+artifact_sha256: f366c44b08c90ac2be985a135ee6917f856e8252271efbcfc5c9e6af6bde6b98
 ---
 # Implementation File Map
 
@@ -1058,6 +1058,7 @@ artifact_sha256: 94eb2070c928d2a848d1e54b46ae685c443002564bbdcbfb5f4c0da6348fe87
 | `keep` | `ls/tests/test_context_files.py` |
 | `keep` | `ls/tests/test_context_index.py` |
 | `keep` | `ls/tests/test_copilot_adapters.py` |
+| `keep` | `ls/tests/test_cursor_adapters.py` |
 | `keep` | `ls/tests/test_default_target_ownership.py` |
 | `keep` | `ls/tests/test_dependency_ledger.py` |
 | `keep` | `ls/tests/test_detach_recorded_paths.py` |

@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 3096b904e22c3b8edb4f26b0095478ab4f29fa0c50a8862facb55370ec4f6898
+  source_provenance_hash: 6423be16bbff45d91418d7d0c0e5021a9c634c0e6fdad9f095d43d7cce197c79
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 8a349bfc613708cdaa582ebf1fa58a6a165970d8
-artifact_sha256: 1aab8180c96ce432c341c1fb8e5e03608783052c8d121251c6e035b2fb523378
+source_commit: e5e42c1c7a32bc9e5ebc710db275d413a7da90af
+artifact_sha256: 86c0360340976def047bdaebab19fb0eff8da39cdb849d7b3c5175e53c860124
 ---
 # Platform Adapters
 
@@ -15,7 +15,7 @@ Repo adapter paths are attached only when selected with `--tools` or `--platform
 |---|---|---|
 | `codex` | `.agents/skills` | `skills_visible, namespace_ls` |
 | `claude-code` | `.claude/skills` | `skills_visible, namespace_ls` |
-| `cursor` | `.agents/skills, .cursor/skills` | `skills_visible, namespace_ls` |
+| `cursor` | `.agents/skills` | `skills_visible, namespace_ls` |
 | `kilo` | `.kilo/skills` | `skills_visible, namespace_ls` |
 | `opencode` | `.opencode/skills` | `skills_visible, namespace_ls` |
 | `openclaw` | `.agents/skills` | `skills_visible, namespace_ls` |
