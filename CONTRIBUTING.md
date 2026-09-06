@@ -38,6 +38,22 @@ git diff --check
 
 Run focused tests and LocalSetup validators for the code you changed before the full Python suite. Treat the full Python suite as final consolidation for broad framework changes, release/publish work, dependency changes, or explicit maintainer review requests. Resolve the permitted worker count with `localsetup test-workers`; the [command reference](ls/docs/COMMAND_REFERENCE.md) owns its formula and aggregate-budget rule.
 
+### Installer test fixtures
+
+A copied source fixture needs both the repository's `VERSION` and
+`pyproject.toml` to exercise source version resolution. Use
+`prepare_installer_source_metadata` from `ls/tests/test_install_flow.py` for
+installer fixtures; it copies that identity metadata and selects the current
+test environment's Python for child commands. Tests must not depend on an
+ambient system interpreter having the project's dependencies, install packages
+implicitly, or weaken runtime validators to accommodate incomplete fixtures.
+
+Mock the route the fixture exercises: a nonempty installation receipt uses
+recorded adapter status, while fresh discovery uses the current platform
+catalog. Helper tests with a fixed expected client list should supply a small
+explicit catalog, preserving ordering, shared-path and nonmatching-path cases.
+Keep integration tests against the real catalog separate from those unit cases.
+
 ## Repository layout
 
 - Root files contain the public README, install entrypoints, license, contribution guide, and security policy.

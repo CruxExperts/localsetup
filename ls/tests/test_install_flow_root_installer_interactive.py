@@ -2,13 +2,14 @@ from __future__ import annotations
 
 from ls.tests.test_install_flow import *
 
-def test_root_installer_interactive_preserves_explicit_target_and_no_register_shell(tmp_path: Path) -> None:
+def test_root_installer_interactive_preserves_explicit_target_and_no_register_shell(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     source = Path(__file__).resolve().parents[2]
     root = tmp_path / "source"
     target = tmp_path / "target-repo"
     home = tmp_path / "home"
     shutil.copytree(source / "ls", root / "ls", ignore=shutil.ignore_patterns("__pycache__", ".cache"))
     shutil.copy2(source / "install", root / "install")
+    prepare_installer_source_metadata(source, root, monkeypatch)
     target.mkdir()
 
     completed = run_installer_in_pty(
@@ -36,12 +37,13 @@ def test_root_installer_interactive_preserves_explicit_target_and_no_register_sh
     assert not (home / ".local" / "bin" / "localsetup").exists()
 
 
-def test_root_installer_interactive_visual_flags_reach_wizard(tmp_path: Path) -> None:
+def test_root_installer_interactive_visual_flags_reach_wizard(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     source = Path(__file__).resolve().parents[2]
     root = tmp_path / "source"
     home = tmp_path / "home"
     shutil.copytree(source / "ls", root / "ls", ignore=shutil.ignore_patterns("__pycache__", ".cache"))
     shutil.copy2(source / "install", root / "install")
+    prepare_installer_source_metadata(source, root, monkeypatch)
 
     completed = run_installer_in_pty(
         [
@@ -68,13 +70,14 @@ def test_root_installer_interactive_visual_flags_reach_wizard(tmp_path: Path) ->
     assert "Install canceled. No changes were applied." in combined
 
 
-def test_root_installer_interactive_explicit_target_without_platforms_stays_global_only(tmp_path: Path) -> None:
+def test_root_installer_interactive_explicit_target_without_platforms_stays_global_only(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     source = Path(__file__).resolve().parents[2]
     root = tmp_path / "source"
     target = tmp_path / "target-repo"
     home = tmp_path / "home"
     shutil.copytree(source / "ls", root / "ls", ignore=shutil.ignore_patterns("__pycache__", ".cache"))
     shutil.copy2(source / "install", root / "install")
+    prepare_installer_source_metadata(source, root, monkeypatch)
     target.mkdir()
 
     completed = run_installer_in_pty(
@@ -99,13 +102,14 @@ def test_root_installer_interactive_explicit_target_without_platforms_stays_glob
     assert not (target / ".cursor").exists()
 
 
-def test_root_installer_interactive_cancel_does_not_create_home_or_target(tmp_path: Path) -> None:
+def test_root_installer_interactive_cancel_does_not_create_home_or_target(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     source = Path(__file__).resolve().parents[2]
     root = tmp_path / "source"
     target = tmp_path / "target-repo"
     home = tmp_path / "home"
     shutil.copytree(source / "ls", root / "ls", ignore=shutil.ignore_patterns("__pycache__", ".cache"))
     shutil.copy2(source / "install", root / "install")
+    prepare_installer_source_metadata(source, root, monkeypatch)
 
     completed = run_installer_in_pty(
         [

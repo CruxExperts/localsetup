@@ -410,7 +410,7 @@ def test_verify_and_rollback_issue_branches(tmp_path: Path, monkeypatch: pytest.
             "package_integrity_failures": [{"package": "ls-context"}],
         },
     ]
-    monkeypatch.setattr("ls.core.verify.adapter_status", lambda *args, **kwargs: adapters)
+    monkeypatch.setattr("ls.core.verify.recorded_adapter_status", lambda *args, **kwargs: adapters)
     monkeypatch.setattr("ls.core.verify.validate_workflow_catalog", lambda *args, **kwargs: ["bad workflow"])
     monkeypatch.setattr(
         "ls.core.verify.provenance_report",
@@ -521,6 +521,13 @@ def test_cli_helper_and_policy_branches(tmp_path: Path, monkeypatch: pytest.Monk
     adapter = root / ".agents" / "skills"
     adapter.parent.mkdir(parents=True)
     adapter.symlink_to(global_root, target_is_directory=True)
+    # Isolate helper ordering/coalescing from additions to the real client catalog.
+    monkeypatch.setattr(cli_mod, "load_platforms", lambda *_: [
+        SimpleNamespace(platform_id="openclaw", repo_paths=[".agents/skills"]),
+        SimpleNamespace(platform_id="codex", repo_paths=[".agents/skills", ".other/skills"]),
+        SimpleNamespace(platform_id="cursor", repo_paths=[".agents/skills"]),
+        SimpleNamespace(platform_id="native-fixture", repo_paths=[".native/skills"]),
+    ])
     assert cli_mod._existing_target_platforms(root, root, home) == [
         {"platform": "codex", "mode": "symlink"},
         {"platform": "cursor", "mode": "symlink"},

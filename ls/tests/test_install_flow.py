@@ -97,6 +97,13 @@ def enable_checkbox_key_mode(monkeypatch: pytest.MonkeyPatch, stream: FakeKeyInp
     monkeypatch.setattr(wizard.tty, "setcbreak", lambda fd: None)
 
 
+def prepare_installer_source_metadata(source: Path, root: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep copied source identity and child Python aligned with the test runtime."""
+    for name in ("VERSION", "pyproject.toml"):
+        shutil.copy2(source / name, root / name)
+    monkeypatch.setenv("PATH", str(Path(sys.executable).parent) + os.pathsep + os.environ.get("PATH", ""))
+
+
 def make_temp_repo(tmp_path: Path) -> Path:
     source = Path(__file__).resolve().parents[2]
     repo = tmp_path / "repo"

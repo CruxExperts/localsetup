@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from ls.tests.test_install_flow import *
 
-def test_root_installer_forwards_custom_home(tmp_path: Path) -> None:
+def test_root_installer_forwards_custom_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     source = Path(__file__).resolve().parents[2]
     root = tmp_path / "repo"
     shutil.copytree(source / "ls", root / "ls", ignore=shutil.ignore_patterns("__pycache__", ".cache"))
     shutil.copy2(source / "install", root / "install")
+    prepare_installer_source_metadata(source, root, monkeypatch)
     home = tmp_path / "custom-home"
 
     completed = subprocess.run(
@@ -32,12 +33,13 @@ def test_root_installer_forwards_custom_home(tmp_path: Path) -> None:
     assert (home / ".local" / "bin" / "localsetup").is_file()
 
 
-def test_root_installer_supports_target_directory(tmp_path: Path) -> None:
+def test_root_installer_supports_target_directory(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     source = Path(__file__).resolve().parents[2]
     root = tmp_path / "source"
     target = tmp_path / "target-repo"
     shutil.copytree(source / "ls", root / "ls", ignore=shutil.ignore_patterns("__pycache__", ".cache"))
     shutil.copy2(source / "install", root / "install")
+    prepare_installer_source_metadata(source, root, monkeypatch)
     target.mkdir()
     home = tmp_path / "custom-home"
 
@@ -69,12 +71,13 @@ def test_root_installer_supports_target_directory(tmp_path: Path) -> None:
     assert not (root / ".agents" / "skills").exists()
 
 
-def test_root_installer_target_directory_without_platforms_uses_auto_mode(tmp_path: Path) -> None:
+def test_root_installer_target_directory_without_platforms_uses_auto_mode(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     source = Path(__file__).resolve().parents[2]
     root = tmp_path / "source"
     target = tmp_path / "target-repo"
     shutil.copytree(source / "ls", root / "ls", ignore=shutil.ignore_patterns("__pycache__", ".cache"))
     shutil.copy2(source / "install", root / "install")
+    prepare_installer_source_metadata(source, root, monkeypatch)
     target.mkdir()
     home = tmp_path / "custom-home"
 
@@ -103,11 +106,12 @@ def test_root_installer_target_directory_without_platforms_uses_auto_mode(tmp_pa
     assert "without --tools/--platforms" not in completed.stderr
 
 
-def test_root_installer_non_interactive_no_register_shell_skips_shim(tmp_path: Path) -> None:
+def test_root_installer_non_interactive_no_register_shell_skips_shim(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     source = Path(__file__).resolve().parents[2]
     root = tmp_path / "repo"
     shutil.copytree(source / "ls", root / "ls", ignore=shutil.ignore_patterns("__pycache__", ".cache"))
     shutil.copy2(source / "install", root / "install")
+    prepare_installer_source_metadata(source, root, monkeypatch)
     home = tmp_path / "custom-home"
 
     completed = subprocess.run(
@@ -131,11 +135,12 @@ def test_root_installer_non_interactive_no_register_shell_skips_shim(tmp_path: P
     assert not (home / ".local" / "bin" / "localsetup").exists()
 
 
-def test_root_installer_non_interactive_visual_flags_keep_json_stdout(tmp_path: Path) -> None:
+def test_root_installer_non_interactive_visual_flags_keep_json_stdout(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     source = Path(__file__).resolve().parents[2]
     root = tmp_path / "repo"
     shutil.copytree(source / "ls", root / "ls", ignore=shutil.ignore_patterns("__pycache__", ".cache"))
     shutil.copy2(source / "install", root / "install")
+    prepare_installer_source_metadata(source, root, monkeypatch)
     home = tmp_path / "custom-home"
 
     completed = subprocess.run(

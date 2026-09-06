@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from ls.tests.test_install_flow import *
 
-def test_custom_home_shim_invocation_uses_registered_home(tmp_path: Path) -> None:
+def test_custom_home_shim_invocation_uses_registered_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = make_temp_repo(tmp_path)
+    monkeypatch.setenv("PATH", str(Path(sys.executable).parent) + os.pathsep + os.environ.get("PATH", ""))
     home = tmp_path / "custom-home"
     target = tmp_path / "target"
     target.mkdir()
