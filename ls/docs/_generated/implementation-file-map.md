@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: a2a2bfa46a42db4cd67e909a28ac7da0f4d79132080adbf016b0dbd2162d427b
+  source_provenance_hash: ce5f8a463a89be309db0180a829a11c2a1a49cc312dd03418b4b04a488736f21
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 8efd41d48fe3bbfea3372c02bde37803417f621e
-artifact_sha256: ffe6debc48689c116b64402ad9f2e0f9366fad0eab72be1c142680da89698e27
+source_commit: 80e5cb35ff0b9bd224e6b3ba7601aab876a08447
+artifact_sha256: 2be964c3cbcc0069840036d6de29114c6cb54962b53cf427e97c716dd07a2ee6
 ---
 # Implementation File Map
 
@@ -293,6 +293,7 @@ artifact_sha256: ffe6debc48689c116b64402ad9f2e0f9366fad0eab72be1c142680da89698e2
 | `refactor` | `ls/core/mutable_packages.py` |
 | `refactor` | `ls/core/openclaw_loading.py` |
 | `refactor` | `ls/core/openclaw_prerequisite.py` |
+| `refactor` | `ls/core/opencode_collisions.py` |
 | `refactor` | `ls/core/package.py` |
 | `refactor` | `ls/core/package_cleanup.py` |
 | `refactor` | `ls/core/package_content/__init__.py` |
@@ -1138,6 +1139,7 @@ artifact_sha256: ffe6debc48689c116b64402ad9f2e0f9366fad0eab72be1c142680da89698e2
 | `keep` | `ls/tests/test_omp_adapters.py` |
 | `keep` | `ls/tests/test_openclaw_adapters.py` |
 | `keep` | `ls/tests/test_openclaw_state.py` |
+| `keep` | `ls/tests/test_opencode_collisions.py` |
 | `keep` | `ls/tests/test_operation_journal.py` |
 | `keep` | `ls/tests/test_path_contract.py` |
 | `keep` | `ls/tests/test_personal_adapter.py` |
