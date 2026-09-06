@@ -158,3 +158,14 @@ python3 /path/to/localsetup/ls/tools/localsetup.py --source-root /path/to/locals
 ```
 
 The command does not hard-code `ls/skills/...` inside the target repo.
+
+
+### Agent-free transaction checks
+
+`run --no-agent` bypasses agent profile loading and executable resolution before
+building the command plan. It can validate hooks and transaction artifacts while
+an agent profile is missing, invalid, or unavailable. It does not initialize an
+agent SDK or provider through that skipped agent path. Configured hooks remain
+explicit commands and still follow direct-command policy. A normal agent run
+continues to validate its selected profile; a disabled heartbeat skips command
+planning unless explicitly forced.

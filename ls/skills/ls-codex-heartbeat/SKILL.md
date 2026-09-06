@@ -16,7 +16,10 @@ Use this skill when a repository needs an explicit, auditable heartbeat harness 
 - Activate per target repo with `localsetup harness codex-heartbeat init` and `enable`.
 - Runtime artifacts stay under ignored target-repo `.localsetup/state/codex-heartbeat/`.
 - `enable --install-crontab` refuses to install a live crontab unless `--yes` is also passed.
-- `run --no-agent` exercises lock acquisition, recovery, command logging, staged validation, and atomic promotion without launching the configured agent.
+- `run --no-agent` skips agent profile loading and launcher resolution entirely,
+  then exercises configured hooks, lock acquisition, recovery, command logging,
+  staged validation, and atomic promotion. Broken or missing agent configuration
+  does not prevent this transaction check; normal agent runs still validate it.
 - A run acquires `heartbeat.lock` before inspecting or changing active and staged state. It reclaims only a same-host lock whose owner PID is absent and whose age meets `heartbeat.stale_after_seconds`, then unlinks that held stale pathname and retries exclusive acquisition. Ambiguous locks remain locked for manual review.
 - Direct hooks reject `git commit`, `git push`, and blocked destructive executables unless their specific policy switches are enabled; Git global options are parsed before the subcommand check.
 - Every executed or policy-blocked command receives a sidecar. Promotion validates hashes for the result, command log, and every logged sidecar.

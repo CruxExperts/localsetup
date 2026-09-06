@@ -447,9 +447,10 @@ def load_agent_command(config: dict[str, Any]) -> dict[str, Any] | None:
 def planned_commands(config: dict[str, Any], *, no_agent: bool = False) -> list[dict[str, Any]]:
     commands: list[dict[str, Any]] = []
     commands.extend(load_hooks(config, "before"))
-    agent_command = load_agent_command(config)
-    if agent_command and not no_agent:
-        commands.append(agent_command)
+    if not no_agent:
+        agent_command = load_agent_command(config)
+        if agent_command:
+            commands.append(agent_command)
     commands.extend(load_hooks(config, "after"))
     return commands
 

@@ -16,7 +16,10 @@ version: 3.4
   35, 90, and 420 are refused before enabling; strings and booleans are invalid.
 - `heartbeat.state_dir`: repo-relative runtime artifact directory. Absolute paths and parent traversal are rejected.
 - `heartbeat.stale_after_seconds`: minimum age before a same-host lock whose recorded PID is no longer live is eligible for reclamation under the [recovery contract](recovery.md). It defaults to 3600 and must be a positive integer.
-- `agent.enabled`: controls whether normal `run` may launch the configured agent profile. `run --no-agent` skips that launch.
+- `agent.enabled`: controls whether normal `run` may launch the configured agent
+  profile. `run --no-agent` skips profile loading and executable resolution as
+  well as launch. Hooks and transaction validation still run. A disabled heartbeat
+  returns before command planning unless explicitly forced.
 - `agent.profile`: profile name under `agent_profiles`; the shipped disabled default is `heartbeat`.
 - `agent.timeout_seconds`: optional override for the selected profile timeout.
 
