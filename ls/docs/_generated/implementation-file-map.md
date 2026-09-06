@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: dfdf31eda7635b44f822266766672ca5add4688c247adee70d129bf68273d22e
+  source_provenance_hash: 53c537ddfc52b7619f795ed3cf8fd621ef1756e87ec586ab66a18a23144c5f65
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 345605a741b2fa68ae43067c0eceec2f9fb49b01
-artifact_sha256: c3f6a0bbc659b5431c3e215be5db80b6369a39ded4c74f47bf6f361c7a3615b6
+source_commit: 461ebc401aea6f6f31f3fdb9be2ced4d8dc7af46
+artifact_sha256: 43bead9c8edf516269ccdfcac2966aa1b28a134cd60e504202909d6eb4273d32
 ---
 # Implementation File Map
 
@@ -1134,6 +1134,7 @@ artifact_sha256: c3f6a0bbc659b5431c3e215be5db80b6369a39ded4c74f47bf6f361c7a3615b
 | `keep` | `ls/tests/test_omniroute_task_ownership.py` |
 | `keep` | `ls/tests/test_omniroute_update.py` |
 | `keep` | `ls/tests/test_omp_adapters.py` |
+| `keep` | `ls/tests/test_openclaw_state.py` |
 | `keep` | `ls/tests/test_operation_journal.py` |
 | `keep` | `ls/tests/test_path_contract.py` |
 | `keep` | `ls/tests/test_personal_adapter.py` |
