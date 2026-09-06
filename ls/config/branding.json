@@ -2,6 +2,14 @@
   "schema_version": 1,
   "exceptions": [
     {
+      "path": "ls/config/clients.yaml",
+      "line_sha256": "22455f6b1fd32f9e123dad579c91f5250f7d74c5e18beda7d504d99358af16b6",
+      "token": "localsetup",
+      "count": 4,
+      "kind": "compatibility_identifier",
+      "reason": "Persisted ownership schema value in the two Copilot variants; retain the technical identifier."
+    },
+    {
       "path": "ls/docs/audits/codex-bootstrap-pack/AUDIT_REPORT.md",
       "line_sha256": "1786f56ea18fd183fadacf3579728b1c5b239be1e009ac7e94d43cc7c6b7b69d",
       "token": "Localsetup",

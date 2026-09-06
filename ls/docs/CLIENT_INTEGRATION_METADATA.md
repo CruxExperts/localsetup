@@ -61,3 +61,50 @@ is public. Review exact evidence and its tested version/environment before
 marking a surface verified. Machine-specific records stay private; public
 metadata references only intentionally publishable tests and documentation.
 Preserve upstream attribution and immutable historical audit evidence.
+
+## GitHub Copilot profiles
+
+The `github-copilot` family has independent `github-copilot-cli` and
+`github-copilot-vscode` selectors. Both project repository skills to
+`.agents/skills` and personal skills to `~/.agents/skills`. This is LocalSetup's
+choice among documented native discovery paths, not a claim of upstream path
+priority. Selecting both deduplicates physical writes while retaining separate
+owners. Symlink and portable filesystem fixtures cover installation, partial
+repository/personal detach, and custom-content preservation.
+
+```bash
+localsetup plan --target-directory PROJECT --tools github-copilot-cli github-copilot-vscode --skill-scope both --skills ls-context
+localsetup install --target-directory PROJECT --tools github-copilot-cli github-copilot-vscode --skill-scope both --skills ls-context --apply
+localsetup verify --target-directory PROJECT
+```
+
+These commands install LocalSetup skill adapters. They do not install or
+activate Copilot, authenticate an account, or change native settings, permissions,
+credentials, or sessions. Catalog and filesystem support are implemented; host
+qualification remains `not-run`. Exact minimum versions and duplicate skill-root
+precedence are unverified. Existing context may be discovered through `AGENTS.md`,
+but policy insertion and personal instruction/configuration management are not
+qualified by these profiles.
+
+| Profile | Discovery and installation | Context and qualification boundary |
+|---|---|---|
+| GitHub Copilot CLI | Executable candidate `copilot`; select and verify a pinned official release artifact before installation. | Applicable instructions combine without a general precedence guarantee. `COPILOT_HOME` redirects personal instructions and configuration; its effect on skill roots is not assumed. |
+| GitHub Copilot in VS Code | Executable candidate `code`, plus the intended editor profile and official Copilot activation. Command presence alone does not establish availability. | Personal, repository, and organization instructions have separate conflict priority. Effective settings, workspace, harness, trust, and remote environment affect discovery. |
+
+CLI installation and skill paths are described in the official
+[installation guide](https://docs.github.com/en/copilot/how-tos/copilot-cli/set-up-copilot-cli/install-copilot-cli)
+and [skills guide](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills).
+Its [instruction guide](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions)
+and [command reference](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference)
+own instruction combination and `COPILOT_HOME` behavior. Native startup may
+migrate legacy configuration to `settings.json`; do not start the client merely
+to treat its configuration as a read-only probe.
+
+VS Code's [Copilot setup guide](https://code.visualstudio.com/docs/setup/copilot),
+[skill guide](https://code.visualstudio.com/docs/agent-customization/agent-skills),
+and [instruction guide](https://code.visualstudio.com/docs/agent-customization/custom-instructions)
+own editor activation and discovery. Check `chat.useAgentsMdFile`, effective
+skill-location settings, and the selected harness before claiming native context
+or skill loading. These profiles do not qualify Copilot cloud agents, Visual
+Studio, JetBrains, or other application variants. Local filesystem tests do not
+prove that a remote editor host can access the same paths.

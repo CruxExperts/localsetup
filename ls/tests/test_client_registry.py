@@ -29,8 +29,8 @@ def _copy_config(tmp_path: Path) -> Path:
 def test_registry_distinguishes_families_variants_and_projection() -> None:
     registry = load_client_registry(ROOT)
 
-    assert len(registry.families) == 9
-    assert len(registry.variants()) == 10
+    assert len(registry.families) == 10
+    assert len(registry.variants()) == 12
     assert registry.variant("cursor", "cursor-agent-cli").data["kind"] == "cli"
     assert registry.variant("cursor", "cursor-ide").data["kind"] == "ide"
     assert [row["id"] for row in platform_rows(registry)] == [
@@ -40,6 +40,8 @@ def test_registry_distinguishes_families_variants_and_projection() -> None:
         "kilo",
         "opencode",
         "openclaw",
+        "github-copilot-cli",
+        "github-copilot-vscode",
     ]
 
 

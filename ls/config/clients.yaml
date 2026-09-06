@@ -205,6 +205,273 @@ families:
         verification: {classification: host}
         rollback: {classification: owned-block-removal}
 
+  - id: github-copilot
+    display_name: GitHub Copilot
+    variants:
+    - id: github-copilot-cli
+      display_name: GitHub Copilot CLI
+      kind: cli
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_docs
+          url: https://docs.github.com/en/copilot/how-tos/copilot-cli/set-up-copilot-cli/install-copilot-cli
+        - kind: official_docs
+          url: https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills
+        - kind: official_docs
+          url: https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions
+        - kind: official_docs
+          url: https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference
+      executables:
+      - copilot
+      policy:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - AGENTS.md
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: active
+        installation:
+          method: vendor-installer
+          instructions: Select and verify a pinned official copilot-cli release artifact
+            before installation; authentication and entitlement are separate.
+        qualification:
+          catalog: implemented
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_copilot_adapters.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Filesystem adapter support does not qualify application installation, authentication,
+          or functional host execution.
+        - Minimum compatible versions and duplicate skill-root precedence remain unverified.
+        - Native configuration, permissions, sessions, and personal instruction files
+          are not managed.
+        - CLI instructions combine without a general precedence guarantee; COPILOT_HOME
+          redirects personal instructions and configuration, but skill-root redirection
+          is unverified.
+      compatibility:
+        platform_id: github-copilot-cli
+        order: 70
+        native_config: symlink_or_reference
+        smoke_test_level: filesystem
+        verify_rules:
+        - skills_visible
+        - namespace_ls
+        rollback_class: managed-entry-removal
+    - id: github-copilot-vscode
+      display_name: GitHub Copilot in VS Code
+      kind: ide
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_docs
+          url: https://code.visualstudio.com/docs/setup/copilot
+        - kind: official_docs
+          url: https://code.visualstudio.com/docs/agent-customization/agent-skills
+        - kind: official_docs
+          url: https://code.visualstudio.com/docs/agent-customization/custom-instructions
+        - kind: official_docs
+          url: https://code.visualstudio.com/docs/configure/command-line
+      executables:
+      - code
+      policy:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - AGENTS.md
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: active
+        installation:
+          method: editor-extension
+          instructions: Install VS Code and activate its official Copilot capability
+            in the intended profile; authentication is separate.
+        qualification:
+          catalog: implemented
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_copilot_adapters.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Filesystem adapter support does not qualify application installation, authentication,
+          or functional host execution.
+        - Minimum compatible versions and duplicate skill-root precedence remain unverified.
+        - Native configuration, permissions, sessions, and personal instruction files
+          are not managed.
+        - VS Code instruction conflict priority is personal then repository then organization;
+          AGENTS.md and skill discovery depend on effective profile, workspace, harness,
+          and settings.
+      compatibility:
+        platform_id: github-copilot-vscode
+        order: 80
+        native_config: symlink_or_reference
+        smoke_test_level: filesystem
+        verify_rules:
+        - skills_visible
+        - namespace_ls
+        rollback_class: managed-entry-removal
   - id: kilo
     display_name: Kilo Code
     variants:
