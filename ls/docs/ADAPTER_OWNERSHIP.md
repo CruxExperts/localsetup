@@ -615,3 +615,14 @@ restore receipts and managed entries without replacing adapter parent
 directories. The resulting target scope is `repo`; its repository adapters and
 historical transition evidence remain unchanged. Direct `repo` to `personal`
 or `personal` to `repo` conversion is not yet exposed.
+
+## Updates using the default target
+
+When a receipt exists at the default attachment target, selector-free `plan`,
+`install`, and `update` use the same recorded or inferred existing-installation
+route as an explicit `--target-directory`. This also applies to direct framework
+invocations without global-shim target injection. Omitting the target flag does
+not turn an existing installation into an empty client selection. Recorded
+personal/combined requests and modes are retained; repository-only updates use
+the existing inferred-selection route. Fresh-target selection behavior is
+unchanged.

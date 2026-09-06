@@ -44,7 +44,7 @@ def handle(cli, args, root, home) -> int | None:
         else:
             auto_context = (
                 _auto_default_context(root, home, config, attachment_root)
-                if _selector_free(config) and config.target_directory and (config.skill_scope is None or recorded)
+                if _selector_free(config) and (config.target_directory or recorded) and (config.skill_scope is None or recorded)
                 else None
             )
         if auto_context is not None:
