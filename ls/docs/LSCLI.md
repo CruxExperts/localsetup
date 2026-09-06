@@ -2224,3 +2224,35 @@ profile/artifact inputs, and combining the modifiers are invalid. Apply requires
 `--registration-sha256`. JSON output, exit codes, bounded output, and uncertainty
 handling follow the fresh registration interface. Review retained evidence after
 an interrupted apply, including when the command succeeds but output fails.
+
+
+### Installed setup and registration qualification
+
+A built candidate wheel was exercised outside the checkout on Linux with
+Python 3.12. The fixture used the locked offline dependency artifacts and two
+managed runtime identities from the same framework wheel, one with the qualified
+native sandbox bundle. Runtime selection and inventory verification used the
+installed implementation, without selection mocks.
+
+The installed command evidence covers:
+
+- Profile plan without parent creation, private file creation, and refusal to
+  overwrite an existing profile document.
+- Fresh command registration, branded version output, and protected dispatch
+  despite a workspace module and ambient `PYTHONPATH`.
+- Stale-launcher refusal after installing the second identity, followed by
+  receipt-backed refresh through the selected release's full entrypoint.
+- Explicit reselection of the prior compatible identity, pending publication
+  produced by an in-memory write-boundary fault, a newly reviewed recovery plan,
+  and successful recovered dispatch.
+- Preservation of profile contents, an absent home directory, and successful
+  verification of both installed runtime inventories after all operations.
+
+Eight setup/registration module files matched the source and wheel bytes.
+The wheel's private SDK payload and embedded SBOM passed artifact verification.
+This is candidate fixture qualification, not an exact published-release audit,
+arbitrary cross-version compatibility, or proof of every interruption window.
+The fixture parent loaded no provider modules; child-process imports were not
+measured by that assertion. No provider or sandboxed tool call was requested.
+The native bundle supplied a second installed identity; this test does not
+extend its existing host qualification.
