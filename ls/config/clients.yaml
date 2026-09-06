@@ -69,6 +69,273 @@ families:
         rollback: {classification: managed-entry-removal}
         compatibility: {platform_id: claude-code, order: 20, native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
 
+  - id: cline
+    display_name: Cline
+    variants:
+    - id: cline-cli
+      display_name: Cline CLI
+      kind: cli
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_docs
+          url: https://docs.cline.bot/getting-started/installing-cline
+        - kind: official_docs
+          url: https://docs.cline.bot/customization/skills
+        - kind: official_docs
+          url: https://docs.cline.bot/getting-started/config
+        - kind: official_docs
+          url: https://docs.cline.bot/cli/cli-reference
+        - kind: official_docs
+          url: https://docs.cline.bot/customization/cline-rules
+        - kind: official_source
+          url: https://github.com/cline/cline/blob/dac3b35ba485dbab3b5a73aca239b0d07ce071cf/apps/cli/package.json
+      executables:
+      - cline
+      policy:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - AGENTS.md
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .cline/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.cline/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: active
+        installation:
+          method: package-manager
+          instructions: Follow the official CLI installation guide after reconciling the selected release package and Node requirements; documentation and current source differ.
+        qualification:
+          catalog: implemented
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_cline_adapters.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Filesystem adapter support does not qualify application installation, authentication, or functional host execution.
+        - Native paths are the selected write surfaces; minimum versions, search precedence, toggles, and custom configuration roots require host qualification.
+        - Native settings, credentials, sessions, databases, plugins, hooks, and custom rules are not managed.
+        - Current source includes common skill roots, but released behavior is unqualified; no migration from native or legacy directories is performed.
+        - CLI installation documentation and source package names and Node requirements differ; reconcile the intended release before installation.
+      compatibility:
+        platform_id: cline-cli
+        order: 90
+        native_config: symlink_or_reference
+        smoke_test_level: filesystem
+        verify_rules:
+        - skills_visible
+        - namespace_ls
+        rollback_class: managed-entry-removal
+    - id: cline-vscode
+      display_name: Cline for VS Code
+      kind: ide
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_docs
+          url: https://docs.cline.bot/getting-started/installing-cline
+        - kind: official_docs
+          url: https://docs.cline.bot/customization/skills
+        - kind: official_docs
+          url: https://docs.cline.bot/getting-started/config
+        - kind: official_docs
+          url: https://docs.cline.bot/cli/cli-reference
+        - kind: official_docs
+          url: https://docs.cline.bot/customization/cline-rules
+        - kind: official_source
+          url: https://github.com/cline/cline/blob/dac3b35ba485dbab3b5a73aca239b0d07ce071cf/apps/vscode/package.json
+      executables: []
+      policy:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - AGENTS.md
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .cline/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.cline/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: active
+        installation:
+          method: editor-extension
+          instructions: Install the official saoudrizwan.claude-dev extension in the intended VS Code profile and extension host; authentication is separate.
+        qualification:
+          catalog: implemented
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_cline_adapters.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Filesystem adapter support does not qualify application installation, authentication, or functional host execution.
+        - Native paths are the selected write surfaces; minimum versions, search precedence, toggles, and custom configuration roots require host qualification.
+        - Native settings, credentials, sessions, databases, plugins, hooks, and custom rules are not managed.
+        - Current source includes common skill roots, but released behavior is unqualified; no migration from native or legacy directories is performed.
+        - CLI installation documentation and source package names and Node requirements differ; reconcile the intended release before installation.
+      compatibility:
+        platform_id: cline-vscode
+        order: 100
+        native_config: symlink_or_reference
+        smoke_test_level: filesystem
+        verify_rules:
+        - skills_visible
+        - namespace_ls
+        rollback_class: managed-entry-removal
+
   - id: codex
     display_name: OpenAI Codex
     variants:

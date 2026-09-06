@@ -108,3 +108,50 @@ skill-location settings, and the selected harness before claiming native context
 or skill loading. These profiles do not qualify Copilot cloud agents, Visual
 Studio, JetBrains, or other application variants. Local filesystem tests do not
 prove that a remote editor host can access the same paths.
+
+## Cline profiles
+
+The `cline` family has `cline-cli` and `cline-vscode` selectors for executable
+and VS Code extension installation surfaces. Both use `.cline/skills` in the
+repository and `~/.cline/skills` for personal skills. Selecting both retains
+two logical owners while deduplicating writes. These variants share one native
+skill contract; separate identifiers do not claim different runtime behavior.
+Symlink and portable fixtures cover installation, verification, partial detach,
+and preservation of custom content and native settings/session fixtures. Host
+qualification remains `not-run`.
+
+```bash
+localsetup plan --target-directory PROJECT --tools cline-cli cline-vscode --skill-scope both --skills ls-context
+localsetup install --target-directory PROJECT --tools cline-cli cline-vscode --skill-scope both --skills ls-context --apply
+localsetup verify --target-directory PROJECT
+```
+
+The CLI discovery candidate is `cline`; the IDE identity is the official
+`saoudrizwan.claude-dev` extension in the intended VS Code profile and extension
+host. Editor executable presence alone does not establish Cline availability.
+These commands install skill adapters only. Application installation, account
+authentication, and provider selection remain separate.
+
+Use the [official installation guide](https://docs.cline.bot/getting-started/installing-cline)
+with a verified release artifact. Its CLI package and Node requirements differ
+from [the inspected CLI source](https://github.com/cline/cline/blob/dac3b35ba485dbab3b5a73aca239b0d07ce071cf/apps/cli/package.json);
+resolve that mismatch for the selected release before installation. Do not infer
+a package migration or minimum compatible version from moving source.
+
+The [skills guide](https://docs.cline.bot/customization/skills) documents the
+selected native roots. Current source also lists common skill roots in the
+[IDE loader paths](https://github.com/cline/cline/blob/dac3b35ba485dbab3b5a73aca239b0d07ce071cf/apps/vscode/src/core/storage/skill-directories.ts)
+and [SDK shared paths](https://github.com/cline/cline/blob/dac3b35ba485dbab3b5a73aca239b0d07ce071cf/sdk/packages/shared/src/storage/paths.ts).
+Those source observations do not establish released CLI wiring or installed
+host behavior. LocalSetup keeps native projections; it does not combine all
+mentioned roots into a verified search order. Duplicate names, toggles, custom
+roots, enterprise policy, and minimum versions require host qualification.
+
+The [configuration guide](https://docs.cline.bot/getting-started/config) and
+[CLI reference](https://docs.cline.bot/cli/cli-reference) differ on legacy
+settings/skill layout. Data-directory overrides do not prove that every
+customization root moves. Preserve existing legacy directories, `~/.cline/data`,
+credentials, sessions, databases, settings, plugins, hooks, and custom rules.
+[Instruction discovery](https://docs.cline.bot/customization/cline-rules),
+including `AGENTS.md`, is separate from skill discovery; policy insertion and
+personal instruction management remain unqualified.
