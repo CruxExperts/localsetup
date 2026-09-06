@@ -253,3 +253,17 @@ ordinary filesystem/process interfaces without runtime or provider mocks.
 This verifies binding across startup reads. Integrity of configuration before
 its first read is a separate trust boundary; a matching digest does not establish
 who may modify that configuration. Exact-release verification remains required.
+
+### Runtime configuration integrity
+
+The candidate with trusted profile loading repeated the seven-request installed
+coding and compaction flow and verified sixteen source/wheel/installed module
+matches, runtime inventory, SDK payload and preserved prior profiles and sessions.
+The six startup replacement cases also passed with readable mode-0644 bootstrap
+profiles. Six further cases supplied a writable profile or a replaceable parent
+directory to run, compaction and direct completion. All refused at bootstrap with
+exit code 3, without reading prompt/request input, opening a grant, creating
+session state or contacting the deterministic provider. These ordinary POSIX
+permission cases qualify the installed Linux reader; unit tests separately cover
+opened-inode substitution and simulated ownership. They do not establish support
+for foreign filesystem permission models or an exact published release.
