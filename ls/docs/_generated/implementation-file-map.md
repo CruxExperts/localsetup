@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 40af64ed69ebb016d8b4d0b82e7cb713374fb140eb80db18573eff72d804b57e
+  source_provenance_hash: a8ecbe8e09087a3aedb6674e628f7e7e015f3970e0da6df106a23915bc543c9b
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 20f42763b71e7c6b78244187be018c7f12528c94
-artifact_sha256: 2d6668a7a66a775f4a5c9c2325f5ed66fff55ee11afbf2626188638a5b8491d1
+source_commit: 415c044f83cd4080b1ed0480a714b1a07f5db2ed
+artifact_sha256: 79a460e73cd441b863a8a21b728ca54522b2b66133a7e09f97bde22bed1009e0
 ---
 # Implementation File Map
 
@@ -145,6 +145,8 @@ artifact_sha256: 2d6668a7a66a775f4a5c9c2325f5ed66fff55ee11afbf2626188638a5b8491d
 | `refactor` | `ls/core/agent/process_broker.py` |
 | `refactor` | `ls/core/agent/process_rpc.py` |
 | `refactor` | `ls/core/agent/profile_inventory.py` |
+| `refactor` | `ls/core/agent/profile_setup.py` |
+| `refactor` | `ls/core/agent/profile_setup_cli.py` |
 | `refactor` | `ls/core/agent/profiles.py` |
 | `refactor` | `ls/core/agent/provider_client.py` |
 | `refactor` | `ls/core/agent/recovery.py` |
@@ -1166,6 +1168,7 @@ artifact_sha256: 2d6668a7a66a775f4a5c9c2325f5ed66fff55ee11afbf2626188638a5b8491d
 | `keep` | `ls/tests/test_process_broker.py` |
 | `keep` | `ls/tests/test_process_rpc.py` |
 | `keep` | `ls/tests/test_profile_inventory.py` |
+| `keep` | `ls/tests/test_profile_setup.py` |
 | `keep` | `ls/tests/test_provenance.py` |
 | `keep` | `ls/tests/test_python_architecture_check.py` |
 | `keep` | `ls/tests/test_python_runtime_contract.py` |
