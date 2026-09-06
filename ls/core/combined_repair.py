@@ -99,6 +99,8 @@ def _plan(source, home, target, clients):
     blockers.extend(b["reason"] for b in hermes_adapter_blockers(source, [a for _, a, _ in actions.values()], home, target))
     from .kimi_prerequisite import kimi_prerequisite_blockers
     blockers.extend(b["reason"] for b in kimi_prerequisite_blockers(source, [a for _, a, _ in actions.values()], home, target))
+    from .factory_preflight import factory_skill_blockers
+    blockers.extend(b["reason"] for b in factory_skill_blockers(source, [a for _, a, _ in actions.values()], home, target))
     from .amp_preflight import amp_skill_blockers
     blockers.extend(b['reason'] for b in amp_skill_blockers(source, [a for _, a, _ in actions.values()], home, target))
     from .goose_prerequisite import goose_prerequisite_blockers

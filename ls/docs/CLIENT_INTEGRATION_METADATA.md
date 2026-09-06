@@ -519,3 +519,54 @@ not grant tool execution, establish flow compatibility with LocalSetup workflows
 or alter context assembly. Follow the official installation guide with a verified
 selected artifact; no Kimi installation, startup, authentication or provider call
 is performed by this adapter.
+
+## Factory Droid
+
+The `factory` family exposes `factory-droid`, with executable candidate `droid`.
+It projects common repository `.agents/skills` and personal `~/.agents/skills`
+directory packages using recorded shared ownership. Both LocalSetup projection
+modes are filesystem-tested. Portable mode avoids relying on Droid's unqualified
+handling of arbitrary external symlink targets through common roots.
+
+```bash
+localsetup plan --target-directory PROJECT --tools factory-droid --skill-scope both --skills ls-context --mode portable
+localsetup install --target-directory PROJECT --tools factory-droid --skill-scope both --skills ls-context --mode portable --apply
+localsetup verify --target-directory PROJECT
+```
+
+[Factory skills documentation](https://docs.factory.ai/harness/skills) describes
+`.factory/skills`, `.agents/skills` and `.agent/skills` at project and personal
+scopes. Duplicate sanitized identities within one folder bucket invalidate a
+skill. The exact sanitizer and same-target alias deduplication are not established
+by the available primary documentation. LocalSetup therefore accepts canonical
+lowercase alphanumeric names separated by single hyphens verbatim, and reports
+other names for native catalog review. This conservative prerequisite does not
+claim that Droid rejects those names or reproduce its unpublished normalization.
+
+The bounded static scan groups the three project roots separately from the three
+personal roots. It stops at each `SKILL.md` package and refuses duplicate desired
+identities, aliases, unknown metadata, traversal cycles, scans over 4,096 entries
+or depth over 32. A package at an adapter root cannot hide planned children.
+Apply and repair check affected recorded ownership even when another client
+changes a shared path or package. Existing custom content remains in place;
+resolve conflicting origins explicitly before retrying.
+
+Filesystem verification is not an effective Droid catalog check. In an authorized
+installed session, use `/skills` Effective and `/diagnostics` to inspect winning
+sources, invalid/disabled entries and resources. Project plugins, user plugins,
+built-ins, mission/organization/CLI overrides and dynamically activated nested
+folders remain outside static qualification. Native symlink support is documented
+in release notes; external targets through common roots remain unqualified.
+
+[Factory settings](https://docs.factory.ai/droid-cli/settings) include personal
+and project `settings.json` plus adjacent `settings.local.json` overlays.
+`disabledSkills` combines settings across scopes. LocalSetup preserves these
+controls, custom droids, plugins, credentials, sessions, hooks and permissions.
+Skill `allowed-tools` metadata does not establish a runtime sandbox. Root and
+nested [AGENTS.md guidance](https://docs.factory.ai/harness/agents-md) remains
+native; this adapter does not generate aliases or change custom prompt assembly.
+
+Use official installation guidance with a verified selected artifact. Starting
+Droid can initialize state and require sign-in; this adapter invokes no Droid
+command and performs no authentication, provider call or automatic update change.
+Installed-host behavior remains `not-run`.
