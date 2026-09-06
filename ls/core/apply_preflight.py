@@ -28,6 +28,13 @@ def codex_agent_source(repo_root: Path, agent_name: str) -> Path:
 
 def preflight_install_plan(repo_root: Path, plan, home: Path, *, target_root: Path | None = None) -> dict:
     blockers: list[dict] = []
+    import hashlib
+    for raw_path, expected in plan.rollback_metadata.get("recorded_state_hashes", {}).items():
+        try:unchanged = hashlib.sha256(Path(raw_path).read_bytes()).hexdigest() == expected
+        except OSError:unchanged = False
+        if not unchanged:
+            blockers.append({"path": raw_path, "status_code": "stale_recorded_plan",
+                             "reason": "recorded ownership changed; rebuild the update plan"})
     from .personal_registry import validate_personal_selection_consistency
     try:
         validate_personal_selection_consistency([

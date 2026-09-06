@@ -245,4 +245,21 @@ list to every selected owner.
 The adapter exposes the physical union, including retained unselected owners;
 the registry records each selected owner's own list and package references.
 This representation supports coalesced updates without broadening selections.
-Automatic managed-library update planning remains pending.
+The internal recorded-update planner below consumes this representation.
+
+### Recorded personal update planner
+
+`build_recorded_personal_plan(source, home, target)` prepares a package refresh
+for a healthy personal-only installation. It selects the clients recorded in
+the target receipt, reads their current registry selections, retains recorded
+paths and modes, and coalesces writes with distinct `owner_packages`. It retains
+the recorded global baseline and refuses packages absent from the update source.
+It does not reinterpret presets or discover new client write paths. Repair
+unhealthy personal adapters before planning an update.
+
+The normal apply transaction refreshes source packages and adapters. Receipt and
+registry byte hashes are checked under its package-root lock before mutations;
+if ownership changes after planning, rebuild the plan. Custom adapter neighbors
+remain in place. This is an internal API; automatic CLI update routing remains
+pending. Qualification covers selected clients with shared paths in symlink and
+portable modes; it does not establish host application behavior.
