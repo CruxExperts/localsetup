@@ -426,3 +426,50 @@ operations. Use the official installation guide with a verified selected artifac
 The adapter performs no Hermes installation, startup, authentication or provider
 call. Filesystem lifecycle fixtures are qualified; installed-host behavior remains
 `not-run`.
+
+## Qwen Code
+
+The `qwen-code` family exposes `qwen-code-cli`, with executable candidate `qwen`.
+Repository `.agents/skills` and personal `~/.agents/skills` support the common
+LocalSetup directory-package projection. Filesystem fixtures cover symlink and
+portable modes, resources, shared owners, detach and native-content preservation.
+Installed Qwen qualification remains `not-run`.
+
+```bash
+localsetup plan --target-directory PROJECT --tools qwen-code-cli --skill-scope both --skills ls-context
+localsetup install --target-directory PROJECT --tools qwen-code-cli --skill-scope both --skills ls-context --apply
+localsetup verify --target-directory PROJECT
+```
+
+The [v0.23.0 storage source](https://github.com/QwenLM/qwen-code/blob/98a9c964158697dd5631d15a62174684ff7bbb53/packages/core/src/config/storage.ts)
+includes both `.qwen` and `.agents` skill providers. `QWEN_HOME` relocates the
+native user root; common personal discovery remains under the user's home.
+The [release skill manager](https://github.com/QwenLM/qwen-code/blob/98a9c964158697dd5631d15a62174684ff7bbb53/packages/core/src/skills/skill-manager.ts)
+uses project, user, extension and bundled precedence, with native `.qwen` ahead
+of common `.agents` within a scope. LocalSetup preserves native same-name skills;
+putting a package in common storage does not override them. This is verified-at
+source evidence, not a claim that v0.23.0 first introduced the feature.
+
+Bare mode disables skill loading, and safe mode restricts it to bundled skills.
+Settings, enablement and project-root handling also affect the effective inventory.
+Source link validation accepts external directory targets, but successful adapter
+verification still establishes filesystem exposure, not activation, resource
+execution or a permission grant. Qualify those behaviors in the intended release
+and session before claiming host support.
+
+Native `QWEN.md`, settings, extensions, credentials, sessions, runtime overrides
+and generated AutoSkill content remain user-owned. Keep learned skills in native
+locations, separate from installed canonical packages. This adapter does not
+redirect creation, rewrite native collisions, change skill settings or invoke
+Qwen. Use official installation guidance with a verified selected artifact;
+installation, authentication and functional host qualification are separate.
+
+The [versioned skill guide](https://github.com/QwenLM/qwen-code/blob/98a9c964158697dd5631d15a62174684ff7bbb53/docs/users/features/skills.md)
+limits automatic curation to native `auto-skill-*` directories carrying the
+`source: auto-skill` marker. Ordinary projected packages are outside that
+selection; this is not protection against general agent file or shell tools.
+The [memory guide](https://github.com/QwenLM/qwen-code/blob/98a9c964158697dd5631d15a62174684ff7bbb53/docs/users/features/memory.md)
+documents `QWEN.md`, existing `AGENTS.md` and personal project
+`.qwen/QWEN.local.md`; LocalSetup does not duplicate or insert native context.
+Effective context precedence remains unqualified, and generated memory settings
+and optional synchronization remain untouched.

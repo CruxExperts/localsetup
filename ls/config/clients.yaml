@@ -1431,6 +1431,148 @@ families:
         - skills_visible
         - namespace_ls
         rollback_class: managed-entry-removal
+  - id: qwen-code
+    display_name: Qwen Code
+    variants:
+    - id: qwen-code-cli
+      display_name: Qwen Code CLI
+      kind: cli
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_source
+          url: https://github.com/QwenLM/qwen-code/blob/98a9c964158697dd5631d15a62174684ff7bbb53/packages/core/src/config/storage.ts
+        - kind: official_source
+          url: https://github.com/QwenLM/qwen-code/blob/98a9c964158697dd5631d15a62174684ff7bbb53/packages/core/src/skills/skill-manager.ts
+        - kind: official_source
+          url: https://github.com/QwenLM/qwen-code/blob/98a9c964158697dd5631d15a62174684ff7bbb53/packages/core/src/skills/symlinkScope.ts
+        - kind: official_source
+          url: https://github.com/QwenLM/qwen-code/blob/98a9c964158697dd5631d15a62174684ff7bbb53/docs/users/features/memory.md
+      executables:
+      - qwen
+      policy:
+        repo:
+          status: supported
+          resolution: hierarchy
+          paths:
+          - QWEN.md
+          - AGENTS.md
+          - .qwen/QWEN.local.md
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .qwen/settings.json
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.qwen/settings.json
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: active
+        installation:
+          method: package-manager
+          instructions: Use official Qwen Code installation guidance and a verified selected artifact. The adapter
+            does not install, start or authenticate Qwen Code.
+        qualification:
+          catalog: implemented
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_qwen_adapters.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Skill loading depends on enablement, bare/safe mode and effective native settings; filesystem exposure does
+          not establish activation or script execution.
+        - The qualified release source prefers native .qwen skills over common .agents skills within a scope; native
+          same-name content remains in place.
+        - QWEN_HOME affects the native personal root; common personal skills remain under the user home. Native settings
+          and runtime overrides remain unmanaged.
+        - AutoSkill content must remain native and separate from installed canonical packages. Native configuration,
+          sessions, extensions, credentials and generated skills remain user-owned.
+        - Host behavior is not-run; source evidence at v0.23.0 does not establish a first-supported version or certify
+          other releases.
+      compatibility:
+        platform_id: qwen-code-cli
+        order: 150
+        native_config: symlink_or_reference
+        smoke_test_level: filesystem
+        verify_rules:
+        - skills_visible
+        - namespace_ls
+        rollback_class: managed-entry-removal
+
   - id: windsurf
     display_name: Windsurf / Cascade
     variants:
