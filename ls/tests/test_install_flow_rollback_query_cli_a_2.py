@@ -93,7 +93,7 @@ def test_cli_dispatches_stubbed_branches_without_heavy_side_effects(
     monkeypatch.setattr(cli_mod, "verify_release_artifact", lambda *args, **kwargs: {"ok": True})
 
     def fake_subprocess_run(*args: object, **kwargs: object) -> SimpleNamespace:
-        return SimpleNamespace(returncode=0)
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
 
     monkeypatch.setattr(cli_mod.subprocess, "run", fake_subprocess_run)
 

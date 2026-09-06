@@ -198,10 +198,15 @@ def test_process_cancellation_is_terminal_and_does_not_start_continuation(runtim
     assert result['accounting']['summary']['charged'] == plan['envelope']
 
 
-def test_fresh_cli_rejects_explicit_context_before_prompt_or_state(runtime):
+def test_fresh_cli_rejects_explicit_context_before_prompt_or_state(runtime, monkeypatch):
     import threading
     from ls.core.agent.run_cli import execute
     workspace, root, source, value = runtime
+    from ls.core.agent.run_cli import _PROFILE
+    from ls.core.agent.coding_protocol import profile_digest
+    from ls.core.agent.profiles import load, wire
+    # Match the protected bootstrap before exercising fresh-session rejection.
+    monkeypatch.setenv(_PROFILE, profile_digest(wire(load(Path(value['profiles']), value['profile']))))
     args = SimpleNamespace(profiles=Path(value['profiles']), profile=value['profile'],
         workspace=workspace, grant=Path(value['grant']), context=['src/context.md'], skill=[], image=[],
         require_new_session=True)
