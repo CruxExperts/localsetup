@@ -473,3 +473,49 @@ documents `QWEN.md`, existing `AGENTS.md` and personal project
 `.qwen/QWEN.local.md`; LocalSetup does not duplicate or insert native context.
 Effective context precedence remains unqualified, and generated memory settings
 and optional synchronization remain untouched.
+
+## Kimi CLI
+
+The `kimi` family exposes `kimi-cli`, with executable candidate `kimi`, common
+repository `.agents/skills` and personal `~/.agents/skills`. Local filesystem
+fixtures qualify symlink and portable ownership. Installed Kimi behavior remains
+`not-run`; remote backends and custom-agent prompt assembly require separate
+qualification.
+
+```bash
+localsetup plan --target-directory PROJECT --tools kimi-cli --skill-scope both --skills ls-context
+localsetup install --target-directory PROJECT --tools kimi-cli --skill-scope both --skills ls-context --apply
+localsetup verify --target-directory PROJECT
+```
+
+The [pinned skill loader](https://github.com/MoonshotAI/kimi-cli/blob/86f136422a0aae6b217ea49e7ea1d2e8a1defcd2/src/kimi_cli/skill/__init__.py)
+selects the first existing generic personal directory: `~/.config/agents/skills`
+before `~/.agents/skills`. Even an empty preferred directory masks the latter
+root. LocalSetup refuses affected personal writes and reports the mask during
+verification. It preserves both roots; it does not move content, populate both,
+or delete an empty preferred root. A symlink alias to the same physical directory
+does not mask that directory. Repository-only operations and recorded detach
+remain available. An unknown or unreadable root requires path review.
+
+`merge_all_available_skills` controls branded roots only; enabling it cannot
+remove the generic mask. Branded `.kimi/skills`, `.claude/skills` and `.codex/skills`
+precede generic roots within their scope. Preserve native skill identities and
+check effective origins when duplicates exist; filesystem success does not prove
+which skill wins. Flat native Markdown skills remain in place. Project discovery
+uses the nearest Git root, with cwd fallback outside Git.
+
+The [source configuration](https://github.com/MoonshotAI/kimi-cli/blob/86f136422a0aae6b217ea49e7ea1d2e8a1defcd2/src/kimi_cli/config.py)
+defaults brand merging on and supports additive `extra_skill_dirs`.
+The [CLI source](https://github.com/MoonshotAI/kimi-cli/blob/86f136422a0aae6b217ea49e7ea1d2e8a1defcd2/src/kimi_cli/cli/__init__.py)
+replaces automatic user/project discovery with explicit `--skills-dir` values,
+while configured extras, plugins and built-ins remain. LocalSetup does not supply
+that flag or change native settings. `KIMI_SHARE_DIR` controls this source's native
+configuration/runtime root, not common skill locations; default configuration is
+`~/.kimi/config.toml`. Explicit configuration and run overrides remain unqualified.
+
+Native `AGENTS.md`, custom agents, MCP configuration, plugins, credentials,
+sessions, share-root state and skills remain user-owned. Skill projection does
+not grant tool execution, establish flow compatibility with LocalSetup workflows,
+or alter context assembly. Follow the official installation guide with a verified
+selected artifact; no Kimi installation, startup, authentication or provider call
+is performed by this adapter.

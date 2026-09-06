@@ -1184,6 +1184,139 @@ families:
         rollback: {classification: managed-entry-removal}
         compatibility: {platform_id: kilo, order: 40, native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
 
+  - id: kimi
+    display_name: Kimi
+    variants:
+    - id: kimi-cli
+      display_name: Kimi CLI
+      kind: cli
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_source
+          url: https://github.com/MoonshotAI/kimi-cli/blob/86f136422a0aae6b217ea49e7ea1d2e8a1defcd2/src/kimi_cli/skill/__init__.py
+        - kind: official_source
+          url: https://github.com/MoonshotAI/kimi-cli/blob/86f136422a0aae6b217ea49e7ea1d2e8a1defcd2/src/kimi_cli/config.py
+      executables:
+      - kimi
+      policy:
+        repo:
+          status: supported
+          resolution: hierarchy
+          paths:
+          - AGENTS.md
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.kimi/config.toml
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: active
+        installation:
+          method: manual
+          instructions: Use official Kimi CLI installation guidance with a verified selected artifact. Adapter installation
+            does not start or authenticate Kimi.
+        qualification:
+          catalog: implemented
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_kimi_prerequisite.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - An existing distinct ~/.config/agents/skills directory masks ~/.agents/skills even when empty. Personal
+          writes report this prerequisite without moving either root.
+        - merge_all_available_skills controls branded roots only; it does not merge the generic personal roots. Extra
+          directories and native CLI overrides require effective-session qualification.
+        - Native branded skills, configuration, sessions, credentials, custom agents, MCP configuration and share-directory
+          overrides remain unmanaged.
+        - Filesystem verification does not establish effective skill identity, activation, flow support, tool execution
+          or installed-host behavior. Host not-run.
+      compatibility:
+        platform_id: kimi-cli
+        order: 160
+        native_config: symlink_or_reference
+        smoke_test_level: filesystem
+        verify_rules:
+        - skills_visible
+        - namespace_ls
+        rollback_class: managed-entry-removal
+
   - id: omp
     display_name: Oh My Pi
     variants:

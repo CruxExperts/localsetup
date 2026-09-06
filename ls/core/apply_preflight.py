@@ -34,6 +34,8 @@ def preflight_install_plan(repo_root: Path, plan, home: Path, *, target_root: Pa
         blockers.append({"path": str(target_root or repo_root), "status_code": "mutable_copy_preservation", "reason": str(exc)})
     from .hermes_adapter import hermes_adapter_blockers
     blockers.extend(hermes_adapter_blockers(repo_root, plan.actions, home, target_root or repo_root))
+    from .kimi_prerequisite import kimi_prerequisite_blockers
+    blockers.extend(kimi_prerequisite_blockers(repo_root, plan.actions, home, target_root or repo_root))
     from .amp_preflight import amp_skill_blockers
     blockers.extend(amp_skill_blockers(repo_root, plan.actions, home, target_root or repo_root))
     from .goose_prerequisite import goose_prerequisite_blockers
