@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: feea1b0b3260b64d194ce21e79e179da695b05c55d849cd3fd9f45d05d58856d
+  source_provenance_hash: 64d85d4b73363aab67c201807ef7e0525672ec5950aa1af756ba8f56687138d7
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 4f53785bf91efac18f7b9230803368d86b194349
-artifact_sha256: 67eeee6ab9605d6b2f35f12f66e8502ce12b06643aa26f2c999f0af50b60cb68
+source_commit: 30f3abf7d7aea5fb92455c6d87f661ee1a7739a7
+artifact_sha256: 2d6819f3892d80c8703aabd7e55eadfa9ed83b66be0eaf6a1ed6d2f57c85b0d2
 ---
 # Implementation File Map
 
@@ -239,6 +239,7 @@ artifact_sha256: 67eeee6ab9605d6b2f35f12f66e8502ce12b06643aa26f2c999f0af50b60cb6
 | `refactor` | `ls/core/dependency_environments.py` |
 | `refactor` | `ls/core/dependency_ledger.py` |
 | `refactor` | `ls/core/detach.py` |
+| `refactor` | `ls/core/detach_records.py` |
 | `refactor` | `ls/core/diffing.py` |
 | `refactor` | `ls/core/docs.py` |
 | `refactor` | `ls/core/docs_alignment/__init__.py` |
@@ -1034,6 +1035,7 @@ artifact_sha256: 67eeee6ab9605d6b2f35f12f66e8502ce12b06643aa26f2c999f0af50b60cb6
 | `keep` | `ls/tests/test_context_files.py` |
 | `keep` | `ls/tests/test_context_index.py` |
 | `keep` | `ls/tests/test_dependency_ledger.py` |
+| `keep` | `ls/tests/test_detach_recorded_paths.py` |
 | `keep` | `ls/tests/test_docs_alignment.py` |
 | `keep` | `ls/tests/test_domain_shapes.py` |
 | `keep` | `ls/tests/test_file_listing.py` |
