@@ -39,6 +39,20 @@ an existing profile's targets, qualify its recorded update, repair and detach
 routes and preserve custom content. The metadata mechanism alone does not
 qualify host discovery, collision handling or a historical-path migration.
 
+When an existing repository receipt records an adapter outside a newly declared
+`repo_write_paths` subset, omitted-selector plan/update uses the validated
+recorded-path route. It retains scope, clients, paths and package ownership
+rather than applying fresh-target inference. Repository-only automatic repair
+returns a preservation blocker for that historical layout; reviewed
+recorded-path recovery is required. Personal and combined scopes keep their
+recorded ownership routes. A fresh installation already using the preferred
+paths remains eligible for ordinary repair. Detach removes only recorded
+managed entries and preserves custom neighbors. For a profile declaring preferred
+repository paths, legacy selectors or path hints without modern ownership
+records require manual recovery before repository update or repair. Explicit-empty
+modern records do not fall back to legacy fields. Changing metadata alone never
+authorizes deleting an old native adapter.
+
 An optional `integration` object records lifecycle, installation guidance, and
 qualification results separately. Existing records without it retain their
 current behavior until their owning profile is reverified. A missing object

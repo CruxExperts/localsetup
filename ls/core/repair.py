@@ -86,9 +86,10 @@ def _run_repair(
             return _run_repair(source, home=home, target_root=target, platform_ids=platform_ids,
                                backup_dir=backup_root, dependency_mode=dependency_mode, apply=apply,
                                repair_mode=repair_mode, allow=allowed, _lock_held=held_lock)
-    from .retained_update import retained_repository_clients
+    from .retained_update import retained_repository_clients, recorded_preferred_path_clients
     recorded_lock = modern_lock if modern_lock_path.exists() else legacy_lock
-    if retained_repository_clients(source, recorded_lock):
+    if (retained_repository_clients(source, recorded_lock)
+            or recorded_preferred_path_clients(source, recorded_lock, target)):
         return {"ok": False, "applied": False, "skill_scope": "repo", "actions": [],
                 "warnings": warnings, "decisions": [], "repair_mode": repair_mode,
                 "inferred": {"platforms": recorded_lock.get("platforms", [])},
