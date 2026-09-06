@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 2e044faf94ea1971e029471ac3140d15cc978d4a016eaa3a04000013863d168b
+  source_provenance_hash: 5f482f6f8fea5897df6fa1ba958608bc74fd14764b2478745b4103e37e0ae19e
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: d098270e60cb9dba8bb45dbd98173796f4fa1ae5
-artifact_sha256: fc4d431caf3335dd8f74fa81f4f76fb648541b799c3f29ba2dff867f71abc064
+source_commit: 5aae9e4cf82ccc9b197cb71135d2620bf23b1d7c
+artifact_sha256: 3f45970f60ccfd4dc51a17f7cacf48b3c6de6e295bf50a50eebec5351db4a333
 ---
 # Implementation File Map
 
@@ -138,6 +138,7 @@ artifact_sha256: fc4d431caf3335dd8f74fa81f4f76fb648541b799c3f29ba2dff867f71abc06
 | `refactor` | `ls/core/agent/heartbeat_action.py` |
 | `refactor` | `ls/core/agent/heartbeat_budget.py` |
 | `refactor` | `ls/core/agent/heartbeat_budget_store.py` |
+| `refactor` | `ls/core/agent/heartbeat_compaction.py` |
 | `refactor` | `ls/core/agent/image_inputs.py` |
 | `refactor` | `ls/core/agent/installed_capabilities.py` |
 | `refactor` | `ls/core/agent/interactive.py` |
@@ -1100,6 +1101,7 @@ artifact_sha256: fc4d431caf3335dd8f74fa81f4f76fb648541b799c3f29ba2dff867f71abc06
 | `keep` | `ls/tests/test_heartbeat_action.py` |
 | `keep` | `ls/tests/test_heartbeat_budget.py` |
 | `keep` | `ls/tests/test_heartbeat_budget_store.py` |
+| `keep` | `ls/tests/test_heartbeat_compaction.py` |
 | `keep` | `ls/tests/test_heartbeat_lscli.py` |
 | `keep` | `ls/tests/test_heartbeat_process.py` |
 | `keep` | `ls/tests/test_heartbeat_protocol.py` |
