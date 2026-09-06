@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: fd54bc281034df8fef5c1ff862248969c3ca430a0c351b7ebdd93211da07d2e9
+  source_provenance_hash: caff03d83226511865bf650e5f16745a941101976a7c9bed18c3702937d41870
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: e0f0c55775594a3a34acc608349d495fc558d45f
-artifact_sha256: e5eadae6686373f01ef953f4bae7bd771237857725bec2ddb168ae8fb9fac5d5
+source_commit: 2fb54520617dc897824477ea47b86896354792b9
+artifact_sha256: f8a2026373639f237979571783e128f32b0ef1eb82a3d746a09b814ed0a7b8b2
 ---
 # Implementation File Map
 
@@ -282,6 +282,7 @@ artifact_sha256: e5eadae6686373f01ef953f4bae7bd771237857725bec2ddb168ae8fb9fac5d
 | `refactor` | `ls/core/path_contract.py` |
 | `refactor` | `ls/core/path_reprocessor.py` |
 | `refactor` | `ls/core/paths.py` |
+| `refactor` | `ls/core/personal_registry.py` |
 | `refactor` | `ls/core/plan.py` |
 | `refactor` | `ls/core/plugin_packs.py` |
 | `refactor` | `ls/core/provenance.py` |
@@ -1076,6 +1077,7 @@ artifact_sha256: e5eadae6686373f01ef953f4bae7bd771237857725bec2ddb168ae8fb9fac5d
 | `keep` | `ls/tests/test_omniroute_update.py` |
 | `keep` | `ls/tests/test_operation_journal.py` |
 | `keep` | `ls/tests/test_path_contract.py` |
+| `keep` | `ls/tests/test_personal_registry.py` |
 | `keep` | `ls/tests/test_plugin_packs.py` |
 | `keep` | `ls/tests/test_portable_history.py` |
 | `keep` | `ls/tests/test_process_broker.py` |
