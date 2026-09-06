@@ -28,6 +28,8 @@ def codex_agent_source(repo_root: Path, agent_name: str) -> Path:
 
 def preflight_install_plan(repo_root: Path, plan, home: Path, *, target_root: Path | None = None) -> dict:
     blockers: list[dict] = []
+    from .amp_preflight import amp_skill_blockers
+    blockers.extend(amp_skill_blockers(repo_root, plan.actions, home, target_root or repo_root))
     import hashlib
     for raw_path, expected in plan.rollback_metadata.get("recorded_state_hashes", {}).items():
         try:unchanged = hashlib.sha256(Path(raw_path).read_bytes()).hexdigest() == expected

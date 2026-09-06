@@ -1,5 +1,139 @@
 schema_version: 1
 families:
+  - id: amp
+    display_name: Amp
+    variants:
+    - id: amp-cli
+      display_name: Amp CLI
+      kind: cli
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_docs
+          url: https://ampcode.com/docs/customize/skills
+        - kind: official_docs
+          url: https://ampcode.com/docs/customize/agents-md
+        - kind: official_docs
+          url: https://ampcode.com/docs/cli/settings
+        - kind: official_docs
+          url: https://ampcode.com/docs/cli
+        - kind: official_docs
+          url: https://ampcode.com/docs/customize/plugins
+      executables:
+      - amp
+      policy:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - AGENTS.md
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: active
+        installation:
+          method: vendor-installer
+          instructions: Select and verify the official Amp installer and resulting release artifact before installation; account access and background updater behavior require separate qualification.
+        qualification:
+          catalog: implemented
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_amp_preflight.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Static preflight compares frontmatter names across documented local roots before application; configured, plugin, built-in, and remote sources are not qualified.
+        - Nondefault XDG_CONFIG_HOME blocks preflight because plugin overrides do not establish loose-skill paths.
+        - Global sources can shadow project skills; conflicting origins are preserved without automatic renaming or migration.
+        - Filesystem evidence does not qualify application installation, authentication, updater behavior, MCP connections, or functional host execution.
+        - Native settings, permissions, MCP configuration, threads, and remote repositories remain unmanaged.
+      compatibility:
+        platform_id: amp-cli
+        order: 110
+        native_config: symlink_or_reference
+        smoke_test_level: filesystem
+        verify_rules:
+        - skills_visible
+        - namespace_ls
+        rollback_class: managed-entry-removal
+
   - id: antigravity
     display_name: Google Antigravity
     variants:

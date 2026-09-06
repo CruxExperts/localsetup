@@ -2,12 +2,36 @@
   "schema_version": 1,
   "exceptions": [
     {
+      "path": "ls/tests/test_amp_preflight.py",
+      "line_sha256": "49344d88830d88ca4f77cc829e49ee8f5bb592332d3dd86ed5d04939e15b5848",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Persisted managed_by schema value in malformed adapter metadata regression fixture."
+    },
+    {
+      "path": "ls/tests/test_amp_preflight.py",
+      "line_sha256": "8090c1844ea224e6ef9b18b11e5cf35870ee0b0111c98983c0a15fb1043d9140",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Persisted managed_by schema value in malformed adapter metadata regression fixture."
+    },
+    {
+      "path": "ls/core/amp_ownership.py",
+      "line_sha256": "37e787ae7dd0487e67dca62aada78ff5e5aa51b30ab380439c1d5b00376cf19e",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Persisted adapter managed_by identity comparison; retain the established schema value."
+    },
+    {
       "path": "ls/config/clients.yaml",
       "line_sha256": "22455f6b1fd32f9e123dad579c91f5250f7d74c5e18beda7d504d99358af16b6",
       "token": "localsetup",
-      "count": 10,
+      "count": 12,
       "kind": "compatibility_identifier",
-      "reason": "Persisted ownership schema value in the Copilot, Cline, and Cascade variants; retain the technical identifier."
+      "reason": "Persisted ownership schema value in the Copilot, Cline, Cascade, and Amp variants; retain the technical identifier."
     },
     {
       "path": "ls/docs/audits/codex-bootstrap-pack/AUDIT_REPORT.md",

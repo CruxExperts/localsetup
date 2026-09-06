@@ -81,7 +81,7 @@ def _plan(source, home, target, clients):
                     if repo_owned and adapter.get('path') == str(path):
                         if adapter.get('mode', 'symlink') != mode:raise ValueError('Shared adapter owner mode conflict')
                         names.update(adapter.get('packages', []))
-            action = PlanAction('repair_repo_path', path, {'mode': mode, 'packages': sorted(names), 'global_root': str(library)})
+            action = PlanAction('repair_repo_path', path, {'mode': mode, 'packages': sorted(names), 'global_root': str(library), 'platforms': sorted(_clients(row))})
             dirty = _needs_repair(target, action, names)
             previous = actions.get(str(path))
             if previous and (set(previous[2]) != names or previous[1].details['mode'] != mode):
@@ -89,6 +89,8 @@ def _plan(source, home, target, clients):
             if dirty:actions[str(path)] = (target, action, sorted(names))
         for boundary, action, names in actions.values():_needs_repair(boundary, action, names)
     except (ValueError, OSError, TypeError, KeyError) as exc:blockers.append(str(exc))
+    from .amp_preflight import amp_skill_blockers
+    blockers.extend(b['reason'] for b in amp_skill_blockers(source, [a for _, a, _ in actions.values()], home, target))
     return {'ok': not blockers, 'applied': False, 'blockers': blockers,
             'actions': [{'kind': a.kind, 'path': str(a.path), 'details': a.details} for _, a, _ in actions.values()],
             'verification': {'ok': not blockers and not actions, 'owners': personal['verification']['owners'],

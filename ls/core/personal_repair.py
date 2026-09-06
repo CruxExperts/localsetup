@@ -39,6 +39,8 @@ def _plan(repo_root: Path, home: Path, clients: list[str] | None):
                 if not package.is_dir() or not is_managed_package(package):
                     raise ValueError(f"reinstall missing managed library package: {name}")
         except (ValueError, OSError) as exc:blockers.append(str(exc))
+    from .amp_preflight import amp_skill_blockers
+    blockers.extend(b["reason"] for b in amp_skill_blockers(repo_root, list(actions.values()), home, repo_root))
     payload = {"schema_version": 1, "ok": not blockers, "applied": False,
                "actions": [{"kind": a.kind, "path": str(a.path), "details": a.details} for a in actions.values()],
                "blockers": blockers, "verification": inventory}

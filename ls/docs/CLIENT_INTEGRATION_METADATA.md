@@ -210,3 +210,64 @@ verified backup or reviewed recorded-path recovery under the
 [ownership guidance](ADAPTER_OWNERSHIP.md). Personal and combined repair retain
 their recorded ownership routes. Do not replace an unhealthy receipt with fresh
 profile selection.
+
+## Amp CLI
+
+The `amp` family provides the `amp-cli` selector, with repository
+`.agents/skills` and personal `~/.agents/skills` projections. The executable
+discovery candidate is `amp`; desktop, editor, web, and remote-agent surfaces
+are outside this qualification. Catalog and filesystem fixtures are implemented;
+installed host qualification remains `not-run`.
+
+```bash
+localsetup plan --target-directory PROJECT --tools amp-cli --skill-scope both --skills ls-context
+localsetup install --target-directory PROJECT --tools amp-cli --skill-scope both --skills ls-context --apply
+localsetup verify --target-directory PROJECT
+```
+
+`plan` describes the intended layout. Application performs a fresh static
+collision preflight before managed writes. A conflict leaves existing origins
+in place; do not rename, relocate, or delete user skills automatically. Selecting
+multiple clients that share the chosen physical paths retains their logical
+owners without duplicating writes. Personal and combined repair apply the same
+collision guard before restoring exposure.
+
+[Amp's skills documentation](https://ampcode.com/docs/customize/skills) resolves
+duplicates by frontmatter `name`, with first occurrence winning. Its documented
+local order begins with `~/.config/agents/skills`, `~/.agents/skills`, and
+`~/.config/amp/skills`, followed by project/ancestor `.agents/skills` and
+`.claude/skills`, then personal `~/.claude/skills`. Thus global content can
+shadow project content. The guard scans those roots and checks both directions:
+an existing source masking the planned skill, or a planned source masking
+existing content. Different directory basenames do not avoid a name conflict.
+Jointly planned projections and existing links to the same planned canonical
+library are allowed. An unchanged portable counterpart also requires recorded
+ownership, matching adapter/library metadata, and matching package content and
+link metadata. Ordinary ownership checks still protect custom entries. Writes
+through another client also check affected recorded Amp owners sharing the
+physical path or updated library packages; known repository targets are included.
+
+Frontmatter discovery is bounded to 4,096 directory entries and 16 KiB per
+skill; accepting an owned portable counterpart additionally compares its package
+content and link metadata with the intended payload. Unreadable or malformed metadata, unresolved entries, and symlink
+roots block qualification. Exact runtime ancestor stopping/order, configured
+paths, plugins, built-ins, remote repositories, and session reload behavior are
+not qualified by this filesystem scan. It does not prove equivalence to the
+effective Amp catalog. No automatic Amp command is invoked: skill discovery can
+connect declared MCP servers, and reload can fetch remote sources.
+
+[Plugin documentation](https://ampcode.com/docs/customize/plugins) establishes
+XDG configuration overrides for plugins, not loose skills. A nondefault
+`XDG_CONFIG_HOME` blocks this preflight until the effective loose-skill contract
+is qualified; the guard does not silently replace the documented roots.
+[Native settings](https://ampcode.com/docs/cli/settings), including configured
+skill paths, permissions, MCP configuration, and thread visibility, remain
+unmodified. [AGENTS.md guidance](https://ampcode.com/docs/customize/agents-md)
+has its own ancestor/subtree and personal-file behavior; policy insertion and
+private guidance management remain unqualified.
+
+Use the [official installation route](https://ampcode.com/docs/cli) only with a
+verified installer and selected release artifact. Authentication and upstream
+background-update behavior require separate target qualification. Installing
+LocalSetup skill adapters does not install Amp, configure its updater, or grant
+account, network, or provider authority.
