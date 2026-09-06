@@ -10,7 +10,7 @@ from .installation_ownership import InstallationOwner
 from .lockfile import save_json
 from .manifests import load_pack_config
 from .paths import expand_user_path
-from .personal_registry import owner_key
+from .personal_registry import owner_key, personal_selections
 from .registry import load_registry
 
 
@@ -42,7 +42,7 @@ def selection(repo_root: Path, home: Path, action) -> list[str]:
     if not owners or any(owner.scope != "personal" or owner.root != str(home.resolve()) for owner in owners):
         raise ValueError("Personal adapter owner does not match home")
     selected = {owner_key(owner) for owner in owners}
-    names = set(action.details.get("packages", []))
+    names = set().union(*personal_selections(action.details).values())
     registry = load_registry(expand_user_path(load_pack_config(repo_root).global_registry, home))
     for key, record in registry.get("personal_owners", {}).items():
         if key not in selected and str(action.path) in record.get("paths", []):

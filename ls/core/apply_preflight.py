@@ -28,6 +28,14 @@ def codex_agent_source(repo_root: Path, agent_name: str) -> Path:
 
 def preflight_install_plan(repo_root: Path, plan, home: Path, *, target_root: Path | None = None) -> dict:
     blockers: list[dict] = []
+    from .personal_registry import validate_personal_selection_consistency
+    try:
+        validate_personal_selection_consistency([
+            action.details for action in plan.actions if action.kind == "attach_personal_path"
+        ])
+    except ValueError as exc:
+        blockers.append({"path": str(target_root or repo_root),
+                         "status_code": "personal_selection_conflict", "reason": str(exc)})
     repo_paths = {action.path for action in plan.actions if action.kind == "attach_repo_path"}
     personal_paths = {action.path for action in plan.actions if action.kind == "attach_personal_path"}
     for path in sorted(repo_paths & personal_paths):

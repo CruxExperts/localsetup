@@ -61,7 +61,8 @@ def build_lock_payload(
         "personal_adapter_targets": [
             {"path": str(action.path), "owners": action.details["owners"],
              "platforms": action.details["platforms"], "packages": action.details["packages"],
-             "global_root": action.details["global_root"], "mode": action.details.get("mode", "symlink")}
+             "global_root": action.details["global_root"], "mode": action.details.get("mode", "symlink"),
+             **({"owner_packages": action.details["owner_packages"]} if "owner_packages" in action.details else {})}
             for action in plan.actions if action.kind == "attach_personal_path"
         ],
         "adapter_transitions": [

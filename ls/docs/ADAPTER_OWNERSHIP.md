@@ -231,3 +231,18 @@ without rebuilding package selections. It does not yet update their managed
 library packages. Combined `both`-scope doctor repair refuses before repository
 pre-actions until coordinated owner-aware repair is qualified. These remaining
 update and combined-scope operations are not implied by personal repair support.
+
+### Distinct selections on a shared personal path
+
+Internal personal actions and their lock receipts may include `owner_packages`,
+a mapping from canonical personal owner keys to requested package-name lists.
+Its keys must match the action's owners exactly, and the union of its lists must
+equal the action's `packages`. Each owner must request the same set and mode across all of its action paths.
+Validation runs before adapter writes and again when recording ownership. An empty list retains an owner with no requested
+packages. Without this field, existing actions continue to assign their package
+list to every selected owner.
+
+The adapter exposes the physical union, including retained unselected owners;
+the registry records each selected owner's own list and package references.
+This representation supports coalesced updates without broadening selections.
+Automatic managed-library update planning remains pending.
