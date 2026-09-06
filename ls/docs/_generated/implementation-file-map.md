@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: dd2ca406a3c0478b305e963f1ee6878852f9f9aa24327b8d172460f12711e8b7
+  source_provenance_hash: 3f743048bb12ce203f31d819a1ce0c8a56fd33cf1a0b7f68f8b7fc92b0dd2357
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: f41fae6a3a52a94a561be7ffb111ffa98cf382f5
-artifact_sha256: 8ff1ee940b4f3bb8d604afee14ab9e47a22cb6a0d6700e1a8e88fdc01da191e7
+source_commit: a00e50b4adab877b1b38578edc022fcad71c6550
+artifact_sha256: 327546fbfb80c2509bafb9e5cd0f8140725790bc99dbed233ba80ba1dddd454d
 ---
 # Implementation File Map
 
@@ -283,6 +283,7 @@ artifact_sha256: 8ff1ee940b4f3bb8d604afee14ab9e47a22cb6a0d6700e1a8e88fdc01da191e
 | `refactor` | `ls/core/path_reprocessor.py` |
 | `refactor` | `ls/core/paths.py` |
 | `refactor` | `ls/core/personal_adapter.py` |
+| `refactor` | `ls/core/personal_inventory.py` |
 | `refactor` | `ls/core/personal_registry.py` |
 | `refactor` | `ls/core/plan.py` |
 | `refactor` | `ls/core/plugin_packs.py` |
@@ -1079,6 +1080,7 @@ artifact_sha256: 8ff1ee940b4f3bb8d604afee14ab9e47a22cb6a0d6700e1a8e88fdc01da191e
 | `keep` | `ls/tests/test_operation_journal.py` |
 | `keep` | `ls/tests/test_path_contract.py` |
 | `keep` | `ls/tests/test_personal_adapter.py` |
+| `keep` | `ls/tests/test_personal_inventory.py` |
 | `keep` | `ls/tests/test_personal_registry.py` |
 | `keep` | `ls/tests/test_plugin_packs.py` |
 | `keep` | `ls/tests/test_portable_history.py` |
