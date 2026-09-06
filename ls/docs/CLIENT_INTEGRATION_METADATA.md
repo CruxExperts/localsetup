@@ -1297,3 +1297,24 @@ budgets are tool parameters, not a `/goal start` flag or billing cap. A resumed
 budget-limited goal starts a new accounting window. This is not authority for
 background scheduling. Delegated Codex goals retain native Codex ownership.
 Host loading, resources and delegated runtime behavior remain unverified.
+
+## OpenCode collision inventory primitive
+
+`ls.core.opencode_collisions.conflicting_sources` inventories caller-selected
+skill roots before native loading. It compares exact frontmatter names with
+explicit intended metadata-file identities; it does not predict the winning
+source in OpenCode's concurrent loader. Distinct files with identical bytes
+remain distinct origins. Directory aliases of the same resolved metadata file
+are one identity. The caller must supply the complete applicable roots and
+intended destinations, enforce its native-configuration boundary, and turn
+inventory errors into a refusal rather than accepting partial results.
+
+The recursive scan shares a 4,096-entry budget across roots and refuses cycles,
+depth beyond 32 directories, unresolved links and unreadable or malformed
+metadata. The existing safe reader accepts one string `name` in frontmatter
+bounded to 16 KiB and refuses metadata-file symlinks. These are conservative
+LocalSetup inventory limits, not claimed native OpenCode parser limits.
+Directory symlinks are traversed; no skill body is executed or sent to a
+provider. Root enumeration, installation hooks and native host qualification are
+separate integration responsibilities; this primitive alone changes no adapter
+path, install decision or native configuration.
