@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 64a5cb36f299afa08681fd9fb802874323a38a788683a28e6e6e08329defd89c
+  source_provenance_hash: 8472263326eb0634e5f5268dbfed583124deb0d8d363b81ff051281e45b8c42f
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: c1f8a7a29c706209175cd24e89e641a0ddbbff12
-artifact_sha256: 7349ea313a577d97637b8c8c4e6c37bc9ce80ba0cd26c8d858dd3be916b19b7b
+source_commit: 2f731b563b4822919c8cee590cb8ab7cc1189961
+artifact_sha256: ac53a096dd9edb833dfb3699849110f872416c72b8acfdded65a5db282bb06e9
 ---
 # Implementation File Map
 
@@ -309,6 +309,7 @@ artifact_sha256: 7349ea313a577d97637b8c8c4e6c37bc9ce80ba0cd26c8d858dd3be916b19b7
 | `refactor` | `ls/core/repair_safety.py` |
 | `refactor` | `ls/core/repo_finalizer.py` |
 | `refactor` | `ls/core/repo_profiles.py` |
+| `refactor` | `ls/core/repository_overlap.py` |
 | `refactor` | `ls/core/rollback.py` |
 | `refactor` | `ls/core/schema.py` |
 | `refactor` | `ls/core/sdk_payload/__init__.py` |
@@ -1104,6 +1105,7 @@ artifact_sha256: 7349ea313a577d97637b8c8c4e6c37bc9ce80ba0cd26c8d858dd3be916b19b7
 | `keep` | `ls/tests/test_reference_materializer.py` |
 | `keep` | `ls/tests/test_repo_finalizer.py` |
 | `keep` | `ls/tests/test_repo_profile_universal_agent_repo.py` |
+| `keep` | `ls/tests/test_repository_personal_overlap.py` |
 | `keep` | `ls/tests/test_resource_exec.py` |
 | `keep` | `ls/tests/test_resource_group.py` |
 | `keep` | `ls/tests/test_run_cli.py` |
