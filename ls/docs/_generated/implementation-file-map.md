@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 7f45c67ec4516fc8cdc9ba7a74ee1ee89df8e33ded794090cba26b11835f31df
+  source_provenance_hash: df30ce00c7cbe3eec0644066aef67d532b624fec6cb3973921db8b8d36a312ae
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 4bf2e4156c7ff462395aa53974ab2f7a0aaf632c
-artifact_sha256: cffe255ce0a604db7fc86e18bb3378a646b5f92a54448ff65a56aa8045521051
+source_commit: 79936d948a69a318e871a614c662576a6771f231
+artifact_sha256: 109914aca1a63824b54fdff4c6e2a9dca5e9263131263a1021b74c02c38909f6
 ---
 # Implementation File Map
 
@@ -1141,6 +1141,7 @@ artifact_sha256: cffe255ce0a604db7fc86e18bb3378a646b5f92a54448ff65a56aa804552105
 | `keep` | `ls/tests/test_scope_migration.py` |
 | `keep` | `ls/tests/test_scope_migration_cli.py` |
 | `keep` | `ls/tests/test_scope_retirement.py` |
+| `keep` | `ls/tests/test_scope_workflows.py` |
 | `keep` | `ls/tests/test_scrapling_helper.py` |
 | `keep` | `ls/tests/test_scrapling_jobs.py` |
 | `keep` | `ls/tests/test_sdk_artifacts.py` |
