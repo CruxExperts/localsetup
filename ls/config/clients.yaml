@@ -2076,37 +2076,157 @@ families:
   - id: omp
     display_name: Oh My Pi
     variants:
-      - id: omp-cli
-        display_name: Oh My Pi CLI
-        kind: cli
-        support_status: supported
-        research:
-          status: verified
-          checked_on: '2026-07-15'
-          sources:
-            - {kind: official_release, url: 'https://github.com/can1357/oh-my-pi/releases/tag/v16.5.2', version: '16.5.2'}
-            - {kind: official_source, url: 'https://github.com/can1357/oh-my-pi/blob/v16.5.2/docs/skills.md', version: '16.5.2'}
-            - {kind: official_source, url: 'https://github.com/can1357/oh-my-pi/blob/v16.5.2/docs/context-files.md', version: '16.5.2'}
-        executables: [omp]
-        policy:
-          repo: {status: supported, resolution: first-existing, paths: ['.omp/RULES.md', '.omp/AGENTS.md'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: first-existing, paths: ['~/.omp/agent/RULES.md', '~/.omp/agent/AGENTS.md'], precedence_status: verified, ownership: client-native, collision: owned-block-only}
-        config:
-          repo: {status: supported, resolution: single, paths: ['.omp/config.yml'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: single, paths: ['~/.omp/agent/config.yml'], precedence_status: verified, ownership: client-native, collision: manual}
-        skills:
-          repo: {status: supported, resolution: single, paths: ['.omp/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: single, paths: ['~/.omp/agent/skills'], precedence_status: verified, ownership: client-native, collision: owned-entry-only}
-        goal: {status: supported, kind: slash-command, commands: ['/goal', '/guided-goal', '/loop'], limits: {status: unverified}}
-        permissions: {status: supported, controls: ['approvalMode always-ask|write|yolo', 'per-tool allow|deny|prompt']}
-        state:
-          repo: {status: supported, path: '.omp/state', ownership: localsetup-managed, collision: fail}
-          global: {status: supported, path: '~/.omp/agent/state', ownership: localsetup-managed, collision: fail}
-        insertion:
-          repo: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
-          global: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
-        verification: {classification: host}
-        rollback: {classification: owned-block-removal}
+    - id: omp-cli
+      display_name: Oh My Pi CLI
+      kind: cli
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_release
+          url: https://github.com/can1357/oh-my-pi/releases/tag/v18.1.11
+          version: 18.1.11
+        - kind: official_source
+          url: https://github.com/can1357/oh-my-pi/blob/e3106be68f778635da3a17106835ce2e0e6992af/packages/coding-agent/src/discovery/agents.ts
+          version: 18.1.11
+      executables:
+      - omp
+      policy:
+        repo:
+          status: supported
+          resolution: aggregate
+          paths:
+          - AGENTS.md
+          - .agents/AGENTS.md
+          - .agent/AGENTS.md
+          - .omp/AGENTS.md
+          - .omp/RULES.md
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: aggregate
+          paths:
+          - ~/.omp/agent/AGENTS.md
+          - ~/.omp/agent/RULES.md
+          - ~/.agents/AGENTS.md
+          - ~/.agent/AGENTS.md
+          precedence_status: unverified
+          ownership: client-native
+          collision: owned-block-only
+      config:
+        repo:
+          status: supported
+          resolution: aggregate
+          paths:
+          - .omp/settings.json
+          - .omp/config.yml
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: first-existing
+          paths:
+          - ~/.omp/agent/config.yml
+          - ~/.omp/agent/config.yaml
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: aggregate
+          paths:
+          - .agents/skills
+          - .agent/skills
+          - .omp/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: aggregate
+          paths:
+          - ~/.agents/skills
+          - ~/.agent/skills
+          - ~/.omp/agent/skills
+          precedence_status: unverified
+          ownership: client-native
+          collision: owned-entry-only
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: supported
+        controls:
+        - approvalMode always-ask|write|yolo
+        - per-tool allow|deny|prompt
+      state:
+        repo:
+          status: supported
+          path: .omp/state
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: supported
+          path: ~/.omp/agent/state
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      compatibility:
+        platform_id: omp-cli
+        order: 200
+        repo_write_paths:
+        - .agents/skills
+        global_write_paths:
+        - ~/.agents/skills
+        native_config: symlink_or_reference
+        smoke_test_level: filesystem
+        verify_rules:
+        - skills_visible
+        - namespace_ls
+        rollback_class: managed-entry-removal
+      integration:
+        lifecycle: active
+        installation:
+          method: manual
+          instructions: Use official OMP installation guidance with a verified selected
+            artifact. Adapter operations do not install or start OMP.
+        qualification:
+          catalog: implemented
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_omp_adapters.py
+        limitations:
+        - Provider settings, native and singular-name shadowing can hide common packages;
+          no settings are changed.
+        - Native profiles relocate native roots independently of common OS-home discovery.
+          WSL may additionally discover Windows-home skills; no Windows profile writes
+          are performed.
+        - RULES and AGENTS have different native lifecycles. Native configuration, sessions,
+          credentials, MCP and hooks remain unmanaged.
+        - Goals, resource activation and effective host loading remain unqualified.
+          OMP is distinct from Pi and LSCli.
 
   - id: openclaw
     display_name: OpenClaw

@@ -1181,3 +1181,57 @@ Preserve the `AGENTS.md` bridge and top-level native `mcp` configuration.
 Embedded shell expansion, activation, permissions, resources and goal/budget
 behavior remain native and unqualified. No Kilo process, trust initializer,
 native skill-management command or provider call is part of adapter operations.
+
+## Oh My Pi (OMP)
+
+Selector `omp-cli` writes `.agents/skills` and `~/.agents/skills` directory
+packages. Both symlink and portable modes have filesystem lifecycle coverage;
+installed OMP loading and activation remain unverified. OMP, Pi and LSCli are
+separate runtimes with no implied extension, permission or session compatibility.
+
+```bash
+localsetup plan --tools omp-cli --skill-scope both --skills ls-context
+localsetup install --tools omp-cli --skill-scope both --skills ls-context --apply
+localsetup verify
+```
+
+The [pinned v18.1.11 common provider](https://github.com/can1357/oh-my-pi/blob/e3106be68f778635da3a17106835ce2e0e6992af/packages/coding-agent/src/discovery/agents.ts)
+scans one package level below `.agent/skills` and `.agents/skills`; directory
+symlinks are accepted by its loader. Keep resources inside their skill package;
+filesystem readability does not certify native `skill://` activation or tool
+permissions. Nested taxonomy is not a supported common discovery layout.
+Native `.omp` skills outrank the common provider. Within that provider, nearer
+project roots precede farther roots, project precedes personal, and singular
+`.agent` precedes plural `.agents`. Custom directories can replace default
+same-name results. Inspect winning origins before relying on a selected host;
+LocalSetup preserves custom packages and does not remove collisions.
+
+`skills.enableAgentsUser` and `skills.enableAgentsProject` independently control
+common discovery. `skills.enabled`, disabled providers/extensions, ignored names
+and include filters can suppress packages. LocalSetup does not toggle these
+settings or enable unrelated foreign providers. Native profile selection
+(`--profile`, `OMP_PROFILE`, legacy `PI_PROFILE`) and native directory overrides
+(`PI_CONFIG_DIR`, `PI_CODING_AGENT_DIR`) do not relocate the common OS-home roots.
+Their effects on native settings and state differ; do not derive all native
+locations from a single directory. WSL native discovery can additionally probe
+Windows home; this adapter only writes its explicitly selected repository and
+personal ownership targets and does not perform those probes.
+
+[Context and configuration](https://github.com/can1357/oh-my-pi/blob/e3106be68f778635da3a17106835ce2e0e6992af/docs/context-files.md)
+remain native domains: `RULES.md` is sticky rule content, while `AGENTS.md` is
+session context. They are not fallback alternatives. The nearest nonempty
+ancestor `.omp` can stop native context discovery even when the desired file is
+absent. Other context providers have separate priority and shadowing behavior;
+the registry records inventory, not a universal concatenation order.
+
+Global settings choose the first present `config.yml` or `config.yaml`, then
+combine project settings, `PI_CONFIG_FILES`, repeated `--config` overlays and
+runtime overrides. Project native settings include `settings.json` and
+`config.yml`. Preserve native profiles, config, MCP files, hooks, commands,
+plugins, credentials, sessions and databases. Startup may migrate or quarantine
+native data, so it is not used as a read-only adapter check. The native documented
+`yolo` approval default is not authority for automated probes. LocalSetup does
+not start OMP or change approvals. Earlier `/goal`, `/guided-goal` and `/loop`
+registry claims are not re-certified; command lifecycle and limits remain
+unverified. Use official installation guidance with a verified selected artifact
+before separately qualifying a host.

@@ -53,6 +53,7 @@ def test_registry_distinguishes_families_variants_and_projection() -> None:
         "factory-droid",
         "antigravity-app",
         "gemini-cli",
+        "omp-cli",
     ]
 
 
@@ -178,7 +179,7 @@ def test_registry_preserves_exact_researched_rows_and_is_deeply_immutable() -> N
         "~/.config/kilo/kilo.json",
         "~/.config/kilo/kilo.jsonc",
     )
-    assert omp.data["config"]["repo"]["paths"] == (".omp/config.yml",)
+    assert omp.data["config"]["repo"]["paths"] == (".omp/settings.json", ".omp/config.yml")
     assert omp.data["permissions"]["status"] == "supported"
     assert antigravity.data["policy"]["repo"]["status"] == "supported"
     assert antigravity.data["insertion"]["repo"]["status"] == "unverified"
