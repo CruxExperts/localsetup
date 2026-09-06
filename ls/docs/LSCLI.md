@@ -2353,3 +2353,23 @@ coding runtime still owns its execution lease and sandbox/provider preflight.
 
 This internal binding is a prerequisite for typed heartbeat profiles; it does
 not activate a heartbeat, provide credentials, or grant workspace disclosure.
+
+### Installed heartbeat planning qualification
+
+The candidate wheel was installed from the audited offline dependency set
+outside the checkout. The installed framework resolved a real owned registration
+into the selected protected dispatcher for the typed heartbeat profile. Planning
+kept the explicit target workspace, omitted prompt text, preserved configuration
+bytes, and created no missing provider, grant, state, or home paths.
+
+A changed registration launcher was refused and then restored in the temporary
+fixture. With an intentionally broken typed profile, an installed --no-agent
+transaction completed without importing the provider SDK or OpenAI client in
+that inspection process. Existing saved profile and session file bytes remained
+unchanged, and the selected runtime inventory and seven shipped implementation
+files matched the wheel and source. Artifact SDK payload and embedded SBOM
+validation also passed.
+
+This qualifies installed planning, registration binding, and agent-free
+transactions. It does not qualify a coding provider call, native sandbox
+execution, compaction, a recurring job, or the eventual exact published release.
