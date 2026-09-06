@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: c6370a360b2767441c3a73ce8900a9db56d3f05a421c89a3eb7f9941d56cc73e
+  source_provenance_hash: 8c5ed462498f0755ccf9f5727bc5c6382a328d0b5271f88c12e89e2700eceb67
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 01a2d1895f37feae759958524c70065f22c9f958
-artifact_sha256: 2a8cc27d3038d6e8f51d3a279f9a9f718ca46a42cd83a081418dc40cf6343fc5
+source_commit: 98474e094d64324f08c2970019232a43f5d4cd7f
+artifact_sha256: 2be78006f225f668d389c4654ac7bd481e88945595de817b08ed2f4cc42ba5ce
 ---
 # Implementation File Map
 
@@ -1029,6 +1029,7 @@ artifact_sha256: 2a8cc27d3038d6e8f51d3a279f9a9f718ca46a42cd83a081418dc40cf6343fc
 | `keep` | `ls/tests/test_client_registry_drift.py` |
 | `keep` | `ls/tests/test_client_state.py` |
 | `keep` | `ls/tests/test_client_state_cli.py` |
+| `keep` | `ls/tests/test_cline_adapters.py` |
 | `keep` | `ls/tests/test_codex_heartbeat.py` |
 | `keep` | `ls/tests/test_codex_heartbeat_harness.py` |
 | `keep` | `ls/tests/test_coding_protocol.py` |

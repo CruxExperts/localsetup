@@ -1,7 +1,7 @@
 {
   "generated_facts": {
     "major_minor": "4.4",
-    "platform_count": 8,
+    "platform_count": 10,
     "platforms": [
       {
         "context_loader": "AGENTS.override.md, AGENTS.md",
@@ -50,20 +50,32 @@
         "display_name": "GitHub Copilot in VS Code",
         "id": "github-copilot-vscode",
         "skills_path": ".agents/skills"
+      },
+      {
+        "context_loader": "AGENTS.md",
+        "display_name": "Cline CLI",
+        "id": "cline-cli",
+        "skills_path": ".cline/skills"
+      },
+      {
+        "context_loader": "AGENTS.md",
+        "display_name": "Cline for VS Code",
+        "id": "cline-vscode",
+        "skills_path": ".cline/skills"
       }
     ],
     "provenance": {
       "artifact_path": "ls/docs/_generated/facts.json",
-      "artifact_sha256": "d9693eb672a106a16c3a8c5b25eec1fb581e106eb755b52aa0638360bb292725",
+      "artifact_sha256": "51b0aac78c58b5f3149b7c8f758cd120f381b1942ea95f0de8557a89dc3980a6",
       "emitter": "generate-docs",
       "framework_version": "4.4.1",
       "schema_version": 1,
-      "source_commit": "01a2d1895f37feae759958524c70065f22c9f958",
+      "source_commit": "98474e094d64324f08c2970019232a43f5d4cd7f",
       "source_dirty": false,
-      "source_provenance_hash": "c6370a360b2767441c3a73ce8900a9db56d3f05a421c89a3eb7f9941d56cc73e",
-      "source_root_id": "ef52f2eced06253a750aada941e473c60feec86fafbf0ea64f476abccedf776c",
+      "source_provenance_hash": "8c5ed462498f0755ccf9f5727bc5c6382a328d0b5271f88c12e89e2700eceb67",
+      "source_root_id": "a5e45ddef09a7fdb2dbc7b5bea84a899438558218839e837d5267ee1743e915b",
       "source_tag": null,
-      "source_tree_sha": "a30b1183ffec550e3bae75cbe3cdcb01a4418ca8"
+      "source_tree_sha": "ffeb96afd85ecac63a84ec7eaa540f6be894493f"
     },
     "skill_count": 103,
     "skills": [
@@ -1891,12 +1903,12 @@
       "emitter": "generate-docs",
       "framework_version": "4.4.1",
       "schema_version": 1,
-      "source_commit": "01a2d1895f37feae759958524c70065f22c9f958",
+      "source_commit": "98474e094d64324f08c2970019232a43f5d4cd7f",
       "source_dirty": false,
-      "source_provenance_hash": "c6370a360b2767441c3a73ce8900a9db56d3f05a421c89a3eb7f9941d56cc73e",
-      "source_root_id": "ef52f2eced06253a750aada941e473c60feec86fafbf0ea64f476abccedf776c",
+      "source_provenance_hash": "8c5ed462498f0755ccf9f5727bc5c6382a328d0b5271f88c12e89e2700eceb67",
+      "source_root_id": "a5e45ddef09a7fdb2dbc7b5bea84a899438558218839e837d5267ee1743e915b",
       "source_tag": null,
-      "source_tree_sha": "a30b1183ffec550e3bae75cbe3cdcb01a4418ca8"
+      "source_tree_sha": "ffeb96afd85ecac63a84ec7eaa540f6be894493f"
     },
     "schema_version": 1,
     "skills": [
@@ -3403,16 +3415,16 @@
   },
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "c0746fd0ff5f15cec5b3227aac41472095602afd839027b006c5bc884cddeb9d",
+    "artifact_sha256": "bd1c00252f7b84a99f59f3cbcf345d11cf661427e217025e9a4a2303af5e0887",
     "emitter": "docs-align",
     "framework_version": "4.4.1",
     "schema_version": 1,
-    "source_commit": "01a2d1895f37feae759958524c70065f22c9f958",
+    "source_commit": "98474e094d64324f08c2970019232a43f5d4cd7f",
     "source_dirty": false,
-    "source_provenance_hash": "c6370a360b2767441c3a73ce8900a9db56d3f05a421c89a3eb7f9941d56cc73e",
-    "source_root_id": "ef52f2eced06253a750aada941e473c60feec86fafbf0ea64f476abccedf776c",
+    "source_provenance_hash": "8c5ed462498f0755ccf9f5727bc5c6382a328d0b5271f88c12e89e2700eceb67",
+    "source_root_id": "a5e45ddef09a7fdb2dbc7b5bea84a899438558218839e837d5267ee1743e915b",
     "source_tag": null,
-    "source_tree_sha": "a30b1183ffec550e3bae75cbe3cdcb01a4418ca8"
+    "source_tree_sha": "ffeb96afd85ecac63a84ec7eaa540f6be894493f"
   },
   "schema_version": "1.0",
   "truths": {
@@ -3808,7 +3820,7 @@
       "sources": [
         "ls/config/platforms.yaml"
       ],
-      "value": 8
+      "value": 10
     },
     "skill_count": {
       "sources": [

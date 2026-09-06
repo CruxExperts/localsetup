@@ -4,11 +4,11 @@ version: 4.4
 owner_package: docs-align
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: c6370a360b2767441c3a73ce8900a9db56d3f05a421c89a3eb7f9941d56cc73e
+  source_provenance_hash: 8c5ed462498f0755ccf9f5727bc5c6382a328d0b5271f88c12e89e2700eceb67
   emitter: docs-align
 framework_version: 4.4.1
-source_commit: 01a2d1895f37feae759958524c70065f22c9f958
-artifact_sha256: c792b0f4d97298a29900f2053e5b31ff9d6595370be63e6a18194bca751a7296
+source_commit: 98474e094d64324f08c2970019232a43f5d4cd7f
+artifact_sha256: de19ec8b9a4d0445efd69e7731d0bc40aec242d601e726058785d1d3ae1839fc
 ---
 # Documentation Alignment Summary
 
@@ -21,7 +21,7 @@ This page is generated from repository inventory, source-truth manifests, asset 
 | Immutable upstream documents | 64 |
 | Shipped skills | 103 |
 | Workflow packages | 16 |
-| Supported platforms | 8 |
+| Supported platforms | 10 |
 | Audit findings | 0 |
 | Critical findings | 0 |
 | Major findings | 0 |

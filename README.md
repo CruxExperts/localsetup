@@ -72,7 +72,7 @@ Start with the [workflow packages guide](ls/docs/WORKFLOW_PACKAGES.md) for usage
 | Fact | Value |
 |---|---|
 | Current version | `4.4.1` |
-| Supported platforms | `codex, claude-code, cursor, kilo, opencode, openclaw, github-copilot-cli, github-copilot-vscode` |
+| Supported platforms | `codex, claude-code, cursor, kilo, opencode, openclaw, github-copilot-cli, github-copilot-vscode, cline-cli, cline-vscode` |
 | Shipped skills | `103` |
 | Workflow packages | `16` |
 | Source | `ls/docs/_generated/facts.json` |
