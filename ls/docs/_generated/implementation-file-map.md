@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: c5c89bbc6b284d9eb0da004ae0975d9a39804efb6e5a28ac7a747e0ed82a464f
+  source_provenance_hash: 7fad44be56001cdd782fdc8019a60a9178c8cc842b8ff0699bdb2f0b70f74b8b
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 9496271617ec4c5fb1ec35c93a3151927bada032
-artifact_sha256: ae788bc01afe3b7208e3e3bfc2245f5db21f70768346c4bd748c77b4f28e459b
+source_commit: 3635c26552ed9e4071a3eca8fc8c7616c3894469
+artifact_sha256: c83186da7d2008a2b79e2c0d8f7bba712798e1d8d8799e66b06cb7ab252ce278
 ---
 # Implementation File Map
 
@@ -1140,6 +1140,7 @@ artifact_sha256: ae788bc01afe3b7208e3e3bfc2245f5db21f70768346c4bd748c77b4f28e459
 | `keep` | `ls/tests/test_omp_adapters.py` |
 | `keep` | `ls/tests/test_openclaw_adapters.py` |
 | `keep` | `ls/tests/test_openclaw_state.py` |
+| `keep` | `ls/tests/test_opencode_adapters.py` |
 | `keep` | `ls/tests/test_opencode_collisions.py` |
 | `keep` | `ls/tests/test_opencode_preflight.py` |
 | `keep` | `ls/tests/test_operation_journal.py` |
