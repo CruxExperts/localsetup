@@ -82,7 +82,8 @@ The new CLI follows the existing global framework home under the user's home:
 
 Diagnostics reads these locations without creating them. Offline setup, session persistence,
 sandbox protection and supervised headless dispatch are implemented as described
-below. Profile creation and PATH collision handling remain subsequent setup work.
+below. Create-only profile setup is described below; PATH collision handling
+remains subsequent setup work.
 A reported location does not qualify a run or authorize file/provider access.
 Existing framework state, adapter ownership, and stored heartbeat identifiers
 are unchanged. See [SDK source and dependency maintenance](SDK_FORK.md) for the
@@ -143,6 +144,47 @@ exclusive lease in place. Installation, selection, and supervised worker lifetim
 Doctor reports static integrity independently of the per-run authority and
 platform checks required for execution.
 
+
+
+## Explicit profile configuration setup
+
+Profile setup accepts an explicit version-1 profile document using the same
+schema as runtime profile loading. It does not infer a provider, model,
+capability, endpoint, or credential. Supply credential environment variable
+names, never credential values. The input must contain 1–256 valid profiles;
+duplicate JSON keys, unknown fields, and oversized documents fail validation.
+See the profile schema and examples below.
+
+```bash
+lscli setup --plan --profile-input ./profiles-input.json --profiles /path/to/config/profiles.json
+lscli setup --apply --profile-input ./profiles-input.json --profiles /path/to/config/profiles.json --profile-sha256 DIGEST_FROM_PLAN
+```
+
+Omitting `--profiles` uses the default profile location in the state table.
+These profile-only operations require no wheel, runtime root, credentials, or
+provider calls; combining them with runtime installation options is invalid.
+Plan emits version-1 JSON with `operation: create_profiles`, target path,
+canonical `sha256`, `profile_count`, and `expected_target: absent`. It creates
+no parent directories, configuration, backups, or lock files and emits no profile
+names or endpoint/credential-reference values. Equivalent canonical input has
+the same digest; apply validates it again against the supplied plan digest.
+
+Apply creates missing private parent directories through anchored, no-follow
+traversal. It writes a complete mode-0600 temporary file, flushes it, and publishes
+with atomic no-replace creation. An existing target—including a dangling symlink,
+FIFO, or competing writer's file—is a conflict and remains untouched. Unsafe
+parent ownership or permissions fail. The create-only operation never merges,
+updates, renames, or deletes existing profiles. Use a separate target for a new
+configuration and select it explicitly; existing configuration changes require
+an independently reviewed edit and recovery procedure.
+
+Success returns 0; validation, collision, or output failure returns 2;
+cancellation returns 130. Output writes have a five-second deadline. Failure or
+interruption after publication can leave a complete target despite a failed
+command outcome: inspect its contents before retrying. A retry will not overwrite
+it. Interrupted creation may leave newly created empty parents or a private
+`.profiles-*` temporary file; preserve and inspect these artifacts before manual
+cleanup. This does not install a runtime or register a shell command.
 
 ## Explicit offline runtime setup
 

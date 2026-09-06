@@ -11,7 +11,11 @@ from .run_io import Streams, safe
 
 
 def inventory(path: Path) -> dict:
-    profiles = document(path)
+    return validate(document(path))
+
+
+def validate(profiles: dict) -> dict:
+    """Validate an already parsed document without reading it a second time."""
     if len(profiles) > 256:
         raise ValueError('Profile inventory exceeds 256 profiles')
     rows = []

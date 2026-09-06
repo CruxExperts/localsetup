@@ -20,11 +20,14 @@ def main(argv: list[str] | None = None) -> int:
     doctor.add_argument("--format", choices=("text", "json"), default="text")
     doctor.add_argument("--runtime-root", type=Path)
     doctor.add_argument("--profiles", type=Path)
-    setup = commands.add_parser("setup", help="Plan or apply an explicit offline runtime installation")
+    setup = commands.add_parser("setup", help="Plan or apply explicit runtime or profile setup")
     mode = setup.add_mutually_exclusive_group(required=True)
     mode.add_argument("--plan", action="store_true")
     mode.add_argument("--apply", action="store_true")
     mode.add_argument("--reselect", metavar="SHA256")
+    setup.add_argument("--profile-input", type=Path)
+    setup.add_argument("--profiles", type=Path)
+    setup.add_argument("--profile-sha256")
     setup.add_argument("--wheel", type=Path)
     setup.add_argument("--sha256")
     setup.add_argument("--wheelhouse", type=Path)
@@ -86,7 +89,19 @@ def main(argv: list[str] | None = None) -> int:
         except (OSError,ValueError,TypeError,RuntimeError):
             print(f"{CLI_NAME} run could not start; verify the selected profile, credential and installed runtime.",file=sys.stderr)
             return 3
+    if args.command == "setup" and args.profile_input is not None:
+        if any((args.wheel, args.sha256, args.wheelhouse, args.sandbox_bundle,
+                args.sandbox_sha256, args.runtime_root, args.reselect)) or args.timeout != 300:
+            setup.error("Profile setup cannot be combined with runtime installation options")
+        if args.apply and not args.profile_sha256:
+            setup.error("Profile apply requires --profile-sha256 from its reviewed plan")
+        if args.plan and args.profile_sha256:
+            setup.error("--profile-sha256 applies only to profile creation")
+        from .profile_setup_cli import main as configure_profiles
+        return configure_profiles(args)
     if args.command == "setup":
+        if args.profiles is not None or args.profile_sha256 is not None:
+            setup.error("Profile options require --profile-input")
         from .diagnostics import locations
         from .runtime_install import install, plan, reselect
         root = args.runtime_root or Path(locations(Path.home())["runtimes"])
