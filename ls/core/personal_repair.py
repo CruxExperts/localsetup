@@ -48,6 +48,8 @@ def _plan(repo_root: Path, home: Path, clients: list[str] | None):
     blockers.extend(b["reason"] for b in claude_prerequisite_blockers(repo_root, list(actions.values()), home, repo_root))
     from .gemini_prerequisite import gemini_prerequisite_blockers
     blockers.extend(b["reason"] for b in gemini_prerequisite_blockers(repo_root, list(actions.values()), home, repo_root))
+    from .openclaw_prerequisite import openclaw_prerequisite_blockers
+    blockers.extend(b["reason"] for b in openclaw_prerequisite_blockers(repo_root, list(actions.values()), home, repo_root))
     from .kimi_prerequisite import kimi_prerequisite_blockers
     blockers.extend(b["reason"] for b in kimi_prerequisite_blockers(repo_root, list(actions.values()), home, repo_root))
     from .factory_preflight import factory_skill_blockers

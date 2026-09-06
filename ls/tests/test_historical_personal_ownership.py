@@ -9,10 +9,22 @@ from ls.core.verify import verify_install
 from ls.tests.test_install_flow import make_temp_repo
 
 
+def use_historical_openclaw_personal_paths(root):
+    """Exercise the old dual-path ownership contract independently of fresh defaults."""
+    import yaml
+    from ls.core.client_registry import load_client_registry, write_platforms_projection
+    path = root / 'ls/config/clients.yaml';data = yaml.safe_load(path.read_text())
+    row = next(f for f in data['families'] if f['id'] == 'openclaw')['variants'][0]
+    row['compatibility']['global_write_paths'] = ['~/.agents/skills', '~/.openclaw/skills']
+    path.write_text(yaml.safe_dump(data, sort_keys=False))
+    write_platforms_projection(root, load_client_registry(root))
+
+
 @pytest.mark.parametrize('mode', ['symlink', 'portable'])
 @pytest.mark.parametrize('existing', [False, True])
 def test_historical_openclaw_path_retains_current_personal_owner(tmp_path, mode, existing):
     root = make_temp_repo(tmp_path);home = tmp_path / 'home'
+    use_historical_openclaw_personal_paths(root)
     if existing:
         apply_plan(root, build_install_plan(root, home, skills=['ls-context'], platform_ids=['openclaw'],
             skill_scope='personal', attach_mode=mode), home)
@@ -33,6 +45,7 @@ def test_historical_openclaw_path_retains_current_personal_owner(tmp_path, mode,
 
 def test_delegated_retirement_excludes_old_repository_selection(tmp_path):
     root = make_temp_repo(tmp_path);home = tmp_path / 'home'
+    use_historical_openclaw_personal_paths(root)
     apply_plan(root, build_install_plan(root, home, skills=['ls-git-workflows'], platform_ids=['openclaw'],
         target_root=home), home)
     receipt = home / '.localsetup/lock.json';lock = json.loads(receipt.read_text())

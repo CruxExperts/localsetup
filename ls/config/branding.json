@@ -29,9 +29,9 @@
       "path": "ls/config/clients.yaml",
       "line_sha256": "22455f6b1fd32f9e123dad579c91f5250f7d74c5e18beda7d504d99358af16b6",
       "token": "localsetup",
-      "count": 30,
+      "count": 32,
       "kind": "compatibility_identifier",
-      "reason": "Persisted framework-state ownership schema value in the Copilot, Cline, Cascade, Amp, Goose, Pi, Hermes, Qwen, Kimi, and Factory variants; retain the technical identifier. Roo legacy metadata preserves the same framework-state schema identifier. Continue CLI legacy uses the same identifier. Aider metadata retains the same framework-state identifier."
+      "reason": "Persisted framework-state ownership schema value in the Copilot, Cline, Cascade, Amp, Goose, Pi, Hermes, Qwen, Kimi, and Factory variants; retain the technical identifier. Roo legacy metadata preserves the same framework-state schema identifier. Continue CLI legacy uses the same identifier. Aider metadata retains the same framework-state identifier. OMP expanded metadata preserves two additional identical ownership schema lines."
     },
     {
       "path": "ls/docs/audits/codex-bootstrap-pack/AUDIT_REPORT.md",
@@ -596,38 +596,6 @@
     {
       "path": "ls/config/clients.yaml",
       "line_sha256": "e521687536020cd670aa966e23f852285deb19c9fc261baa4441409f9eb86c4c",
-      "token": "localsetup",
-      "count": 1,
-      "kind": "compatibility_identifier",
-      "reason": "Persisted ownership marker or source-kind schema value; the exact spelling is read by installation or inventory consumers."
-    },
-    {
-      "path": "ls/config/clients.yaml",
-      "line_sha256": "b9ab6ffe9d59214408dc95ae1d53fd9eb999e4a5ff7b184765550674c3224238",
-      "token": "localsetup",
-      "count": 1,
-      "kind": "compatibility_identifier",
-      "reason": "Persisted ownership marker or source-kind schema value; the exact spelling is read by installation or inventory consumers."
-    },
-    {
-      "path": "ls/config/clients.yaml",
-      "line_sha256": "4c8d88eeca3540e98a5ed5991e60084039f8340e02f653aa73b775cc7175712f",
-      "token": "localsetup",
-      "count": 1,
-      "kind": "compatibility_identifier",
-      "reason": "Persisted ownership marker or source-kind schema value; the exact spelling is read by installation or inventory consumers."
-    },
-    {
-      "path": "ls/config/clients.yaml",
-      "line_sha256": "e6099f1bea936376d91098f2c479fb9376cf7d45da9a9fdb846feff7bda14e5c",
-      "token": "localsetup",
-      "count": 1,
-      "kind": "compatibility_identifier",
-      "reason": "Persisted ownership marker or source-kind schema value; the exact spelling is read by installation or inventory consumers."
-    },
-    {
-      "path": "ls/config/clients.yaml",
-      "line_sha256": "b8431d4c87eb4ffe82592236956094884c1b78994696c958ab400a5bedcdf0be",
       "token": "localsetup",
       "count": 1,
       "kind": "compatibility_identifier",
@@ -4240,6 +4208,30 @@
       "count": 4,
       "kind": "compatibility_identifier",
       "reason": "Persisted framework-state ownership schema value for the distinct Antigravity application and CLI metadata; retain the technical identifier."
+    },
+    {
+      "path": "ls/config/clients.yaml",
+      "line_sha256": "fddcd1785d61ca5a011bd161786b17b058c3ee207d477af2ed835bdc7874706b",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "OpenClaw framework-state path and persisted ownership value are technical identifiers; native database namespace is separately preserved."
+    },
+    {
+      "path": "ls/config/clients.yaml",
+      "line_sha256": "5045972be7a8f948a94ed3ddc843768e6f9fcb9a0798d4d0a946854134e616b4",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "OpenClaw framework-state path and persisted ownership value are technical identifiers; native database namespace is separately preserved."
+    },
+    {
+      "path": "ls/tests/test_openclaw_state.py",
+      "line_sha256": "68545fd1303e6cc1438583d8757bb174f5746727c402884aaf9a160c908a4895",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact framework state path fixture; lowercase directory spelling is a compatibility identifier, not display text."
     }
   ],
   "visual_reviews": [

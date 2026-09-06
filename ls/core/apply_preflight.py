@@ -38,6 +38,8 @@ def preflight_install_plan(repo_root: Path, plan, home: Path, *, target_root: Pa
     blockers.extend(claude_prerequisite_blockers(repo_root, plan.actions, home, target_root or repo_root))
     from .gemini_prerequisite import gemini_prerequisite_blockers
     blockers.extend(gemini_prerequisite_blockers(repo_root, plan.actions, home, target_root or repo_root))
+    from .openclaw_prerequisite import openclaw_prerequisite_blockers
+    blockers.extend(openclaw_prerequisite_blockers(repo_root, plan.actions, home, target_root or repo_root))
     from .kimi_prerequisite import kimi_prerequisite_blockers
     blockers.extend(kimi_prerequisite_blockers(repo_root, plan.actions, home, target_root or repo_root))
     from .factory_preflight import factory_skill_blockers

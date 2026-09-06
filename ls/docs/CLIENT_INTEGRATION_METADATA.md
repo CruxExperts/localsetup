@@ -1235,3 +1235,65 @@ not start OMP or change approvals. Earlier `/goal`, `/guided-goal` and `/loop`
 registry claims are not re-certified; command lifecycle and limits remain
 unverified. Use official installation guidance with a verified selected artifact
 before separately qualifying a host.
+
+## OpenClaw workspace and default-state integration
+
+Selector `openclaw` prefers `<workspace>/.agents/skills` and personal
+`~/.agents/skills`. Select the intended agent's resolved workspace explicitly;
+placing skills in a repository does not associate that repository with a gateway
+agent. Existing recorded common/native personal adapters retain their paths on
+omitted-selector updates. No automatic migration or native configuration change
+occurs. Framework state uses the separate roots in [CLIENT_STATE.md](CLIENT_STATE.md#openclaw-state-ownership-correction).
+
+```bash
+localsetup plan --target-directory WORKSPACE --tools openclaw --skill-scope both --mode portable --skills ls-context
+localsetup install --target-directory WORKSPACE --tools openclaw --skill-scope both --mode portable --skills ls-context --apply
+localsetup verify --target-directory WORKSPACE
+```
+
+The [pinned v2026.9.2 loader](https://github.com/openclaw/openclaw/blob/3928bad9badfcb6c7d140530435e806fb8092190/src/skills/loading/skill-root-discovery.ts)
+requires project skill targets inside their configured skill root unless native
+configuration explicitly allows another target. External package-store symlinks
+therefore do not satisfy the ordinary policy. LocalSetup preserves filesystem
+maintenance and reports `native_loading: unsupported-project-source`; it does
+not add `skills.load.allowSymlinkTargets` allowances. `source-contained` is only
+a path snapshot under the ordinary configured-root policy, not proof of agent
+association, effective configuration, sandbox copying or resource activation.
+Use a reviewed portable plan for contained workspace packages. Keep resources
+inside their package; personal directory symlinks have different native rules,
+including containment of `SKILL.md` within the resolved package directory.
+
+Personal common discovery is conditional on the default-state profile. The
+static write prerequisite accepts an absent/blank `OPENCLAW_STATE_DIR` or an
+absolute override resolving to the effective native home's `.openclaw` directory.
+Other or ambiguous state overrides require profile qualification before affected
+personal writes, including shared-package refresh through another client.
+Detach remains available. This deliberately bounded predicate is not a complete
+native resolver: CLI profiles, legacy paths, effective settings and OS-home
+mapping still require qualification. `OPENCLAW_HOME` affects native state home;
+it does not relocate common personal skills, which use the native OS-home
+resolver. Explicit `OPENCLAW_CONFIG_PATH` selects native configuration separately.
+LocalSetup neither edits these values nor copies skills into an isolated profile
+as a fallback.
+
+Discovery aggregates sources. Workspace `skills` overrides workspace
+`.agents/skills`, followed by personal common, managed state-directory skills,
+bundled and additional sources. Preserve higher-priority custom packages and
+inspect winning names in the selected host. Agent filters, required binaries,
+environment checks and sandbox synchronization can further limit availability.
+Filesystem verification does not certify these native conditions.
+
+Keep `AGENTS.md`, `SOUL.md`, identity/user guidance and memory in their native
+workspace roles; the workspace is not itself a sandbox. Native config,
+credentials, SQLite databases and companions, sessions and delegated harness
+state remain separately owned. No gateway startup, authentication or provider
+call is part of adapter operations.
+
+[Native goals](https://github.com/openclaw/openclaw/blob/3928bad9badfcb6c7d140530435e806fb8092190/docs/tools/goal.md)
+are durable session objectives. Documented operations include status, start,
+edit, pause, resume, complete, block and clear; a second goal requires clearing
+the existing one, and `/new` or `/reset` clears it. Optional positive token
+budgets are tool parameters, not a `/goal start` flag or billing cap. A resumed
+budget-limited goal starts a new accounting window. This is not authority for
+background scheduling. Delegated Codex goals retain native Codex ownership.
+Host loading, resources and delegated runtime behavior remain unverified.

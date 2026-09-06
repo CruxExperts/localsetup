@@ -120,6 +120,11 @@ def verify_install(
         prerequisite = gemini_personal_root(home)
         rule_results.append(prerequisite)
         if not prerequisite["ok"]:issues.append(prerequisite["reason"])
+    if scope in {"personal", "both"} and any(row["owner"]["client"] == "openclaw" for row in personal["owners"]):
+        from .openclaw_prerequisite import openclaw_personal_root
+        prerequisite = openclaw_personal_root(home)
+        rule_results.append(prerequisite)
+        if not prerequisite["ok"]:issues.append(prerequisite["reason"])
     if scope in {"personal", "both"} and any(row["owner"]["client"] == "kimi-cli" for row in personal["owners"]):
         from .kimi_prerequisite import kimi_personal_root
         prerequisite = kimi_personal_root(home)
@@ -313,6 +318,8 @@ def verify_install(
 
     from .kilo_loading import kilo_loading_assessment
     native_loading = kilo_loading_assessment(attachment_root, adapters, personal)
+    from .openclaw_loading import openclaw_loading_assessment
+    native_loading.extend(openclaw_loading_assessment(attachment_root, adapters, personal))
     native_warnings = [row["reason"] for row in native_loading
                        if row["status"] == "unsupported-project-source"]
 

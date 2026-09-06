@@ -101,6 +101,8 @@ def _plan(source, home, target, clients):
     blockers.extend(b["reason"] for b in claude_prerequisite_blockers(source, [a for _, a, _ in actions.values()], home, target))
     from .gemini_prerequisite import gemini_prerequisite_blockers
     blockers.extend(b["reason"] for b in gemini_prerequisite_blockers(source, [a for _, a, _ in actions.values()], home, target))
+    from .openclaw_prerequisite import openclaw_prerequisite_blockers
+    blockers.extend(b["reason"] for b in openclaw_prerequisite_blockers(source, [a for _, a, _ in actions.values()], home, target))
     from .kimi_prerequisite import kimi_prerequisite_blockers
     blockers.extend(b["reason"] for b in kimi_prerequisite_blockers(source, [a for _, a, _ in actions.values()], home, target))
     from .factory_preflight import factory_skill_blockers

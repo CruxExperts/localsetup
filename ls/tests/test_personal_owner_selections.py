@@ -12,6 +12,8 @@ from ls.tests.test_install_flow import make_temp_repo
 
 def test_shared_personal_action_retains_distinct_selections(tmp_path):
     root = make_temp_repo(tmp_path);home = tmp_path / 'home'
+    from ls.tests.test_historical_personal_ownership import use_historical_openclaw_personal_paths
+    use_historical_openclaw_personal_paths(root)
     plan = build_install_plan(root, home, skills=['ls-context'], platform_ids=['cursor', 'openclaw'], skill_scope='personal')
     keys = {c: owner_key(InstallationOwner('personal', str(home.resolve()), c)) for c in ['cursor', 'openclaw']}
     requested = set(plan.rollback_metadata['repo_packages'])
