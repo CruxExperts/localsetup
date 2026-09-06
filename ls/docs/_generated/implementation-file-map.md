@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 53c537ddfc52b7619f795ed3cf8fd621ef1756e87ec586ab66a18a23144c5f65
+  source_provenance_hash: a2a2bfa46a42db4cd67e909a28ac7da0f4d79132080adbf016b0dbd2162d427b
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 461ebc401aea6f6f31f3fdb9be2ced4d8dc7af46
-artifact_sha256: 43bead9c8edf516269ccdfcac2966aa1b28a134cd60e504202909d6eb4273d32
+source_commit: 8efd41d48fe3bbfea3372c02bde37803417f621e
+artifact_sha256: ffe6debc48689c116b64402ad9f2e0f9366fad0eab72be1c142680da89698e27
 ---
 # Implementation File Map
 
@@ -291,6 +291,8 @@ artifact_sha256: 43bead9c8edf516269ccdfcac2966aa1b28a134cd60e504202909d6eb4273d3
 | `refactor` | `ls/core/mutable_adapters.py` |
 | `refactor` | `ls/core/mutable_ownership.py` |
 | `refactor` | `ls/core/mutable_packages.py` |
+| `refactor` | `ls/core/openclaw_loading.py` |
+| `refactor` | `ls/core/openclaw_prerequisite.py` |
 | `refactor` | `ls/core/package.py` |
 | `refactor` | `ls/core/package_cleanup.py` |
 | `refactor` | `ls/core/package_content/__init__.py` |
@@ -1134,6 +1136,7 @@ artifact_sha256: 43bead9c8edf516269ccdfcac2966aa1b28a134cd60e504202909d6eb4273d3
 | `keep` | `ls/tests/test_omniroute_task_ownership.py` |
 | `keep` | `ls/tests/test_omniroute_update.py` |
 | `keep` | `ls/tests/test_omp_adapters.py` |
+| `keep` | `ls/tests/test_openclaw_adapters.py` |
 | `keep` | `ls/tests/test_openclaw_state.py` |
 | `keep` | `ls/tests/test_operation_journal.py` |
 | `keep` | `ls/tests/test_path_contract.py` |
