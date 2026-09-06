@@ -52,9 +52,10 @@ def preflight_install_plan(repo_root: Path, plan, home: Path, *, target_root: Pa
         if action.kind == "attach_personal_path":
             from .personal_adapter import selection
             pair = pairs.get(action.path)
+            retiring = any(a.kind == 'retire_historical_adapter' and a.path == action.path for a in plan.actions)
             try:selection(repo_root, home, action,
-                          repository_target=(target_root or repo_root) if pair else None,
-                          repository_packages=pair.details.get("packages", []) if pair else None)
+                          repository_target=(target_root or repo_root) if pair or retiring else None,
+                          repository_packages=pair.details.get("packages", []) if pair else [] if retiring else None)
             except (ValueError, OSError) as exc:
                 blockers.append({"path": str(action.path), "status_code": "personal_adapter_unsafe", "reason": str(exc)})
             continue
@@ -150,6 +151,16 @@ def preflight_install_plan(repo_root: Path, plan, home: Path, *, target_root: Pa
                     }
                 )
         elif action.kind == "retire_historical_adapter":
+            if any(a.kind == 'attach_personal_path' and a.path == action.path for a in plan.actions):
+                continue
+            from .historical_ownership import retained_historical_action
+            try:
+                retained = retained_historical_action(repo_root, home, target_root or repo_root,
+                                                      action.path, Path(action.details['global_root']))
+                if retained is not None:continue
+            except (ValueError, OSError, TypeError, KeyError) as exc:
+                blockers.append({'path': str(action.path), 'status_code': 'historical_current_owner', 'reason': str(exc)})
+                continue
             global_root = Path(action.details["global_root"])
             state = adapter_path_state(
                 action.path,

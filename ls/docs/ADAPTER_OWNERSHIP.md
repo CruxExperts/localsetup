@@ -489,3 +489,24 @@ path remains untouched. Unselected owners and custom neighbors remain in place.
 When no recorded owner matches, detach is a no-op. Receipts lacking client/path
 ownership require reconciliation before removal; discovery alone cannot authorize
 cleanup. Normal partial-owner receipt updates and package retention still apply.
+
+## Historical paths with current personal owners
+
+A path can be historical for repository exposure while remaining a current
+personal adapter. For example, when the repository target is the home directory,
+OpenClaw's historical repository path and current personal path coincide.
+Retirement distinguishes those owners before removing managed entries.
+
+If the same plan writes the personal adapter, the transition records
+`delegated-current-personal` and leaves physical work to that journaled write.
+The write excludes the updating repository’s obsolete historical selection,
+while preserving other owners and any paired current repository request.
+Otherwise, recorded personal ownership is validated and retained through the
+shared writer with an empty retiring repository request. The transition records
+`preserved-current-personal`; custom neighbors and other current owners survive.
+Preflight and application both evaluate current ownership.
+
+Verification permits historical-path exposure only when the visible package set
+matches the retained owner union and the current personal adapter verifies.
+Unowned residual repository exposure still fails the historical check. These
+rules do not rename historical identifiers or remove their evidence receipts.

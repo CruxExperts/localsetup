@@ -130,6 +130,7 @@ def _historical_recorded_packages(attachment_root: Path, historical_path: Path) 
 def _retire_historical_adapter(
     action,
     *,
+    source: Path,
     attachment_root: Path,
     home: Path,
     journal: dict,
@@ -139,6 +140,17 @@ def _retire_historical_adapter(
     if not (path.exists() or path.is_symlink()):
         return []
     global_root = Path(action.details["global_root"])
+    from .historical_ownership import retained_historical_action
+    retained = retained_historical_action(source, home, attachment_root, path, global_root)
+    if retained is not None:
+        from .repository_overlap import write_overlap
+        from .adapter_markers import adapter_marker_packages
+        replacement, expected = retained
+        old = adapter_marker_packages(path) or set()
+        write_overlap(source, home, attachment_root, replacement, journal, journal_path)
+        removed = [str(path / name) for name in sorted(old - set(expected))]
+        action.details.update(disposition='preserved-current-personal', removed=removed)
+        return removed
     known_roots = legacy_global_roots(home)
     state = adapter_path_state(path, global_root, known_global_roots=known_roots, target_root=attachment_root)
     marker = adapter_marker_state(path) if path.is_dir() and not path.is_symlink() else {"exists": False}
@@ -414,9 +426,12 @@ def _apply_plan_unlocked(
                     installed_codex_agents = _install_codex_agents(repo_root, action.path, action.details["agents"])
                 executed.append(f"install_codex_agents:{action.path}")
             elif action.kind == "retire_historical_adapter":
-                if not dry_run:
+                if any(a.kind == 'attach_personal_path' and a.path == action.path for a in plan.actions):
+                    action.details['disposition'] = 'delegated-current-personal'
+                elif not dry_run:
                     _retire_historical_adapter(
                         action,
+                        source=repo_root,
                         attachment_root=attachment_root,
                         home=home,
                         journal=journal,
@@ -427,9 +442,10 @@ def _apply_plan_unlocked(
                 if not dry_run:
                     from .personal_adapter import write
                     pair = pairs.get(action.path)
+                    retiring = any(a.kind == 'retire_historical_adapter' and a.path == action.path for a in plan.actions)
                     write(repo_root, home, action, journal, journal_path,
-                          repository_target=attachment_root if pair else None,
-                          repository_packages=pair.details.get("packages", []) if pair else None)
+                          repository_target=attachment_root if pair or retiring else None,
+                          repository_packages=pair.details.get("packages", []) if pair else [] if retiring else None)
                 executed.append(f"attach_personal_path:{action.path}")
             elif action.kind == "attach_repo_path":
                 if action.path in pairs:

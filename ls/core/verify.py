@@ -248,7 +248,18 @@ def verify_install(
                 or state.get("managed_visible_packages")
             )
             in_scope = requested_platforms is None or platform_id in requested_platforms
+            current_owned = False
             if platform_id in installed_platforms and in_scope and managed_exposure:
+                from .historical_ownership import retained_historical_action
+                try:
+                    retained = retained_historical_action(repo_root, home, attachment_root, historical_path, global_root)
+                    if retained is not None:
+                        current = personal_inventory(repo_root, home)
+                        current_owned = (set(state.get('managed_visible_packages', [])) == set(retained[1])
+                                         and any(row['path'] == str(historical_path) and row['ok'] for row in current['adapters']))
+                except (ValueError, OSError, TypeError, KeyError) as exc:
+                    issues.append(f'Invalid current ownership at historical adapter: {exc}')
+            if platform_id in installed_platforms and in_scope and managed_exposure and not current_owned:
                 display = "Codex" if platform_id == "codex" else "OpenClaw" if platform_id == "openclaw" else platform_id
                 issues.append(
                     f"legacy {display} adapter still exposes LocalSetup-managed entries: {historical_path}"
@@ -258,6 +269,7 @@ def verify_install(
                     "id": transition["id"],
                     "path": str(historical_path),
                     "managed_exposure": managed_exposure,
+                    "current_owner_exposure": current_owned,
                     "custom_entries": state.get("custom_entries", []),
                     "recorded": lock.get("adapter_transitions", []),
                 }

@@ -216,4 +216,8 @@ def build_install_plan(
         "adapter_packages": repo_selection.packages,
         "codex_agents": codex_agents,
     }
+    personal_paths = {a.path for a in actions if a.kind == 'attach_personal_path'}
+    for action in actions:
+        if action.kind == 'retire_historical_adapter' and action.path in personal_paths:
+            action.details['disposition'] = 'delegated-current-personal'
     return DeployPlan(actions=actions, rollback_metadata=rollback)
