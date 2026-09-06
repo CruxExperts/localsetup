@@ -92,3 +92,12 @@ using [the typed profile contract](references/config.md#typed-lscli-profile)
 before selecting it. Planning and `--no-agent` do not call a provider.
 Activation, credentials, delegated sandbox capability, and recurring authority
 remain explicit. Generic client profiles retain their existing launcher modes.
+
+## Controller accounting
+
+Use [controller accounting commands](references/config.md#controller-accounting-commands)
+for reviewed private policy initialization, resource inspection, and result-bound
+progress dispositions. These commands neither run an agent nor close an external
+issue. Keep accounting and controller inputs outside the writable workspace.
+Task-wide enforcement requires the execution-policy integration; ordinary fresh
+profiles do not acquire that authority from an accounting file's existence.

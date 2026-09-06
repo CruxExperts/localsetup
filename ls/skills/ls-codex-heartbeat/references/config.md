@@ -100,3 +100,74 @@ resume, compaction, and semantic no-progress policy remain separate integrations
 
 Use the owning framework's harness command. A copied standalone skill without
 the framework cannot resolve this launcher; ambient framework imports are refused.
+
+## Controller accounting commands
+
+The accounting interface initializes and inspects protected task budgets and
+records controller dispositions. It does not dispatch an agent. Supply a private
+owner-held JSON input file (mode 0600, one link, at most 64 KiB) outside the target
+workspace. Workspace-generated proposed reviews cannot be used directly as
+controller input.
+
+~~~bash
+localsetup --target-directory /work/project harness codex-heartbeat accounting init --plan --accounting-root /private/task-control --input /private/policy-input.json
+localsetup --target-directory /work/project harness codex-heartbeat accounting init --apply --accounting-root /private/task-control --input /private/policy-input.json --policy-sha256 REVIEWED_PLAN_SHA256
+localsetup --target-directory /work/project harness codex-heartbeat accounting inspect --accounting-root /private/task-control
+localsetup --target-directory /work/project harness codex-heartbeat budget --accounting-root /private/task-control
+localsetup --target-directory /work/project harness codex-heartbeat accounting review --accounting-root /private/task-control --input /private/review.json --expected-head CURRENT_HEAD_SHA256
+~~~
+
+Plan returns the canonical policy SHA-256 without creating the accounting root.
+Apply requires that digest and an empty destination. Inspection returns the
+current head, task policy, charged/remaining allocations, pending result, and
+no-progress state. The optional budget report adds execution_accounting without
+changing legacy queue accounting. No pricing input currently exists, so the
+financial estimate is explicitly unavailable, not zero spend.
+
+Policy input has exactly these fields:
+
+~~~json
+{
+  "schema_version": 1,
+  "workspace": "/work/project",
+  "policy": {
+    "schema_version": 1,
+    "task": "task-id",
+    "revision": "64-lowercase-hex-digest",
+    "criterion": "64-lowercase-hex-digest",
+    "budget": {
+      "attempts": 4, "requests": 20, "tools": 64,
+      "tokens": 131072, "seconds": 1440, "compactions": 2
+    },
+    "no_progress_limit": 2
+  },
+  "authorizations": {
+    "operation-id": {
+      "binding": "64-lowercase-hex-digest",
+      "run": {"requests": 8, "tools": 16, "tokens": 32768, "seconds": 322},
+      "compact": null
+    }
+  }
+}
+~~~
+
+Digest placeholders are illustrative, not valid input. Binding must identify the
+reviewed exact action; do not invent a digest or treat a prompt as authorization.
+The protected action planner and runtime integration remain separate gates.
+Compaction allocation, when authorized, replaces null with an object containing
+tokens and seconds and is charged together with the run.
+
+Review input has exactly operation, result, decision, evidence, and rationale.
+Result must equal the pending execution-result digest; evidence is the SHA-256
+of controller-reviewed evidence; rationale is nonempty and at most 2048
+characters. Decision is progress, no_progress, or accepted. Only progress resets
+the consecutive failure-to-progress counter; no decision refunds allocations.
+Accepted closes local task accounting, not an external issue. This interface
+cannot create a reservation or fabricate an execution result.
+
+For accounting init, inspect, and review, a stale expected head, missing result,
+changed policy, invalid private input, or unsafe record fails with exit 2 and a
+generic diagnostic. These commands emit JSON and exit 0 on success; interruption
+exits 130. The existing budget command retains framework error diagnostics.
+After uncertain writes, inspect the current state before deciding how to reconcile it. Never replay a dispatch or
+reset the directory merely because a command did not return a receipt.

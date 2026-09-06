@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 
 from .framework_version import framework_version
 from .branding import PRODUCT_NAME
@@ -220,6 +221,9 @@ def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_har
     for action_name in ("plan", "init", "status", "budget"):
         action_p = heartbeat_sub.add_parser(action_name)
         add_harness_target_flags(action_p)
+    from .agent.heartbeat_accounting_cli import arguments as accounting_arguments
+    accounting_arguments(heartbeat_sub, add_harness_target_flags)
+    heartbeat_sub.choices["budget"].add_argument("--accounting-root", type=Path)
     for action_name in ("enable", "disable"):
         action_p = heartbeat_sub.add_parser(action_name)
         add_harness_target_flags(action_p)

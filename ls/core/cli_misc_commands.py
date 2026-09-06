@@ -68,6 +68,9 @@ def handle(cli, args, root, home) -> int | None:
             print(f"localsetup: unsupported harness topic: {args.harness_topic}", file=sys.stderr)
             return 2
         target_root = _harness_target(args)
+        if args.harness_action == "accounting":
+            from .agent.heartbeat_accounting_cli import main
+            return main(args, target_root or root)
         if args.harness_action == "plan":
             payload = harness_plan(root, target_root)
         elif args.harness_action == "init":
@@ -80,6 +83,9 @@ def handle(cli, args, root, home) -> int | None:
             payload = harness_status(root, target_root)
         elif args.harness_action == "budget":
             payload = harness_budget(root, target_root)
+            if args.accounting_root is not None:
+                from .agent.heartbeat_accounting_cli import report
+                payload["execution_accounting"] = report(args.accounting_root, target_root or root)
         elif args.harness_action == "run":
             payload = harness_run(root, target_root, no_agent=args.no_agent, force=args.force)
         else:
