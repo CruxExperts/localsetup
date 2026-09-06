@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 0d10f1ff1ee8a9f1ceb5acf825e28755d6ab50296b8102b1766e1247e9d9d597
+  source_provenance_hash: 25dc107a662d41172bac70de9d98c11a761b8bbf7b5e0be4db563697eccc2a56
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 50866c8267694fe49ec4e6a6d8448158ff2f36a6
-artifact_sha256: 6fe3e04945e80bd4f02af5bd7145ba43ce1c0855082f2a5028cad65aa7892962
+source_commit: db422f6949904a431395c99d20c5b804c8d67e73
+artifact_sha256: 702ab45e42f64090d3ad1a8bbb8cc35f2124163dbf4f6b88f663fbd76284f3bc
 ---
 # Implementation File Map
 
@@ -152,6 +152,7 @@ artifact_sha256: 6fe3e04945e80bd4f02af5bd7145ba43ce1c0855082f2a5028cad65aa789296
 | `refactor` | `ls/core/agent/recovery.py` |
 | `refactor` | `ls/core/agent/recovery_worker.py` |
 | `refactor` | `ls/core/agent/registered_cli.py` |
+| `refactor` | `ls/core/agent/registration_plan.py` |
 | `refactor` | `ls/core/agent/resource_exec.py` |
 | `refactor` | `ls/core/agent/resource_group.py` |
 | `refactor` | `ls/core/agent/run_cli.py` |
@@ -1181,6 +1182,7 @@ artifact_sha256: 6fe3e04945e80bd4f02af5bd7145ba43ce1c0855082f2a5028cad65aa789296
 | `keep` | `ls/tests/test_recovery.py` |
 | `keep` | `ls/tests/test_reference_materializer.py` |
 | `keep` | `ls/tests/test_registered_cli.py` |
+| `keep` | `ls/tests/test_registration_plan.py` |
 | `keep` | `ls/tests/test_repo_finalizer.py` |
 | `keep` | `ls/tests/test_repo_profile_universal_agent_repo.py` |
 | `keep` | `ls/tests/test_repository_personal_overlap.py` |
