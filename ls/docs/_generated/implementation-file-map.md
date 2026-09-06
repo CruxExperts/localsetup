@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 7845d80359441629488a1d2818280a1d75f0b6bed8730e9f9dc3f9b8f20969c1
+  source_provenance_hash: ed83d207a733654d3687fab7c6cad2baec85034d0bb3cf6a97f1d7445cd81539
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 40b77ad1282f2d7cfca048ee1b9a3e4ee3766865
-artifact_sha256: c8fb61021132132253dc9250de5d916daff1b4e84b1ec9ae211e22f9937858eb
+source_commit: bbe76eda0dc1dabeb7c8b9235ac4be685363203e
+artifact_sha256: 03105908c15a25dc78f5e9df0980bcb3113672b4163eb202a69750646a168187
 ---
 # Implementation File Map
 
@@ -1089,6 +1089,7 @@ artifact_sha256: c8fb61021132132253dc9250de5d916daff1b4e84b1ec9ae211e22f9937858e
 | `keep` | `ls/tests/test_personal_registry.py` |
 | `keep` | `ls/tests/test_personal_repair.py` |
 | `keep` | `ls/tests/test_personal_update.py` |
+| `keep` | `ls/tests/test_personal_update_cli.py` |
 | `keep` | `ls/tests/test_plugin_packs.py` |
 | `keep` | `ls/tests/test_portable_history.py` |
 | `keep` | `ls/tests/test_process_broker.py` |
