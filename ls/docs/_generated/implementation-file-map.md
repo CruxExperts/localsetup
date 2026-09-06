@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: a9aa98c2c3ed23c07706129822c3cbda138734164afd5ac7d89304bae233d600
+  source_provenance_hash: 38ba1bede937955ed2be1cfbd85edaacae9f1186355c128e1ee60aa9cb818928
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: bf0b3f46b2add25b14d845c3a0b43a510b0e30f9
-artifact_sha256: 2a6e80d929857f73b5120e54ed7f12acc15a56fed15a9d761dfa5c1fb46ee2cd
+source_commit: 9cb07608b4f25810bd1cd2a2021a9fac44a57280
+artifact_sha256: ba3a38e64bb2c4e95381ea2a3f6da5b9e37d8a627e05e5e783467272306ad68d
 ---
 # Implementation File Map
 
@@ -998,6 +998,7 @@ artifact_sha256: 2a6e80d929857f73b5120e54ed7f12acc15a56fed15a9d761dfa5c1fb46ee2c
 | `keep` | `ls/tests/sdk_responses_fixture.py` |
 | `keep` | `ls/tests/skill_smoke_commands.yaml` |
 | `keep` | `ls/tests/test_adapter_coalescing.py` |
+| `keep` | `ls/tests/test_adapter_entry_writer.py` |
 | `keep` | `ls/tests/test_adapter_parser.py` |
 | `keep` | `ls/tests/test_agent_entrypoint.py` |
 | `keep` | `ls/tests/test_agent_file_broker.py` |
