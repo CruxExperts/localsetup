@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 38ba1bede937955ed2be1cfbd85edaacae9f1186355c128e1ee60aa9cb818928
+  source_provenance_hash: f16b8b0f96ea8e2d7f3e5be91962999fabd3cd7af880358694bc31668320a1bd
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 9cb07608b4f25810bd1cd2a2021a9fac44a57280
-artifact_sha256: ba3a38e64bb2c4e95381ea2a3f6da5b9e37d8a627e05e5e783467272306ad68d
+source_commit: 659fa65ec127e4749872ab135055a4c1b573322e
+artifact_sha256: 76968cf788e7eccc62e95756f6344b3039971a12721f834f6448872b1c942ee4
 ---
 # Implementation File Map
 
@@ -215,6 +215,7 @@ artifact_sha256: ba3a38e64bb2c4e95381ea2a3f6da5b9e37d8a627e05e5e783467272306ad68
 | `refactor` | `ls/core/client_state/git_exclude.py` |
 | `refactor` | `ls/core/client_state/locator.py` |
 | `refactor` | `ls/core/client_state/models.py` |
+| `refactor` | `ls/core/combined_repair.py` |
 | `refactor` | `ls/core/config.py` |
 | `refactor` | `ls/core/context.py` |
 | `refactor` | `ls/core/context_index/__init__.py` |
@@ -1023,6 +1024,7 @@ artifact_sha256: ba3a38e64bb2c4e95381ea2a3f6da5b9e37d8a627e05e5e783467272306ad68
 | `keep` | `ls/tests/test_codex_heartbeat_harness.py` |
 | `keep` | `ls/tests/test_coding_protocol.py` |
 | `keep` | `ls/tests/test_coding_run.py` |
+| `keep` | `ls/tests/test_combined_repair.py` |
 | `keep` | `ls/tests/test_compaction_run.py` |
 | `keep` | `ls/tests/test_completion_cli.py` |
 | `keep` | `ls/tests/test_completion_contract.py` |
