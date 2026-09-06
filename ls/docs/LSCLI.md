@@ -2306,3 +2306,32 @@ and inspect the reported attachment root before application. Planning must not
 propose repository adapter writes into the installed package tree merely because
 that tree supplies the framework resources. This target default does not change
 the separate LSCli runtime, profile, session, or registration location contracts.
+
+
+### Installed target and session continuity qualification
+
+A subsequent built candidate wheel was installed offline over the retained
+fixture runtime on Linux/Python 3.12. Its framework plan reported the caller's
+directory when the target was omitted, honored explicit CLI and configuration
+targets, and proposed no repository adapter actions beneath the installed
+release. Absent plan targets and the fixture home remained absent.
+
+The installed doctor verified all 41 applicable external runtime/build
+dependencies. It reported `missing` for a selected runtime without the native
+bundle and `present_unprobed` for the retained bundled identity, always with
+`execution_tested: false`. Six changed framework/diagnostic module files matched
+their source and wheel bytes; SDK payload and embedded SBOM verification passed.
+
+Before upgrade, an isolated installed SDK fixture serialized a two-message
+conversation into a real leased session checkpoint. After upgrade, prior-artifact
+reselection, and reselection of the new artifact, each installed SDK decoded the
+same checkpoint and the public sessions command reported it as settled. Session
+file hashes and existing profile bytes remained unchanged, and all three retained
+runtime inventories verified afterward. No selection mocks or provider requests
+were used; SDK imports occurred only in the isolated serialization fixture worker.
+
+This establishes continuity between the tested candidate artifacts with their
+shared session schema, not arbitrary cross-version compatibility or permission
+to replay saved operations. It does not replace current-permission checks on
+resume, the separate uncertain-operation recovery tests, or exact-release
+verification after publication.
