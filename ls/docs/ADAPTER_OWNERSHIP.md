@@ -153,7 +153,7 @@ below; conflicting modes still fail preflight. A single install coalesces
 repository and personal actions targeting the same path when their modes and
 package library agree.
 They do not implicitly remove personal adapters.
-Explicit personal-owner removal remains pending.
+Explicit personal detach is available through the command below.
 Personal repair is qualified through the recorded-owner route below.
 
 Portable packages are copied with their provenance and internal symlinks intact.
@@ -334,7 +334,7 @@ keeping custom neighbors, including files created during the failed operation.
 A `both` receipt retains its personal targets and clients. Removing its last
 repository target changes its recorded scope to `personal`; personal owner
 records and package references remain intact. Detach preserves the canonical
-package library. Explicit personal-owner removal remains separate lifecycle work.
+package library. Personal detach uses the explicit scope command below.
 
 Backup cleanup runs after transaction commit. A cleanup failure returns a warning
 and the committed journal path; it does not restore obsolete ownership receipts
@@ -373,7 +373,7 @@ Explicit personal-owner removal is not implied by repository rollback.
 plans removal for explicit recorded personal clients. An empty client list is a
 no-op; unknown clients are blockers. The engine uses recorded paths, preserves
 other personal and repository selections, and leaves the package library intact.
-Public CLI routing is not yet available.
+The CLI exposes this engine through explicit personal scope.
 
 Plan output lists affected owner IDs, adapter paths, and current target receipts;
 it does not create state. Missing or unsafe affected receipts block the operation
@@ -388,3 +388,23 @@ Failure recovery preserves custom neighbors and restores managed entries and
 receipts. Post-commit backup cleanup errors return warnings without reverting
 committed ownership. This engine detaches exposure; it does not uninstall host
 applications, remove vendor state, or prune the canonical library.
+
+## Personal detach command
+
+```bash
+localsetup detach --skill-scope personal --platforms cursor --plan
+localsetup detach --skill-scope personal --platforms cursor --apply
+```
+
+Personal scope defaults to a read-only plan when neither mode flag is given.
+`--plan` and `--apply` are mutually exclusive. Use `--home` before the command
+when managing an explicitly selected home. The operation reconciles every
+recorded affected target receipt; `--target-directory` does not restrict a
+personal owner's home-wide identity. Output is JSON; success exits zero and
+ownership/preflight/recovery failures exit two with their blockers.
+
+`detach` without `--skill-scope personal` retains repository detach behavior,
+including its existing immediate application. Installation configuration does
+not implicitly change detach scope. Repository `--plan` currently fails before
+mutation; combined `both` detach is not yet exposed. Client selection remains
+required through `--platforms` (alias `--tools`).

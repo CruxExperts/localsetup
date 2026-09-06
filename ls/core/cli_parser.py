@@ -139,6 +139,11 @@ def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_har
     detach_p = sub.add_parser("detach")
     add_config_flags(detach_p)
     detach_p.add_argument("--platforms", "--tools", nargs="*", dest="platforms", required=True)
+    detach_p.add_argument("--skill-scope", choices=["repo", "personal"], default="repo",
+                          help="Ownership to detach; personal scope defaults to a read-only plan")
+    detach_mode = detach_p.add_mutually_exclusive_group()
+    detach_mode.add_argument("--plan", action="store_true", help="Plan personal detach without writes")
+    detach_mode.add_argument("--apply", action="store_true", help="Apply personal detach")
     sbom_p = sub.add_parser("sbom")
     sbom_p.add_argument("--format", choices=["cyclonedx"], default="cyclonedx")
     sbom_p.add_argument("--out", required=True)

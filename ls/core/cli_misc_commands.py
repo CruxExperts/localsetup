@@ -239,6 +239,13 @@ def handle(cli, args, root, home) -> int | None:
         config = _resolved_config(args, home)
         home = Path(config.home or home).expanduser().resolve()
         target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else root
+        if args.skill_scope == "personal":
+            from .personal_detach import detach_personal
+            payload = detach_personal(root, home, list(config.platforms or []), apply=args.apply)
+            _print_payload(payload)
+            return 0 if payload["ok"] else 2
+        if args.plan:
+            raise ValueError("Repository detach planning is not yet supported; no changes made")
         from .detach import detach_platforms
         _print_payload(detach_platforms(root, home, target_root, list(config.platforms or [])))
         return 0
