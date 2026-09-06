@@ -1865,3 +1865,29 @@ reasoning values on both APIs. Every undeclared value refuses before HTTP, and
 requests without an effort omit the parameter. Existing profile fields and
 capability defaults remain unchanged; adding a capability changes the profile's
 identity, so existing history requires the usual explicit compatibility branch.
+
+### Protected completion worker
+
+`completion_run.run` supervises the direct-model adapter in the selected sealed
+runtime. It freezes the request/profile payload before checking its noncredential
+disclosure digest against a live task/session grant. Credentials cross only the
+inherited owner socket. The worker has no tools, workspace access grants or
+inherited credential environment. This internal boundary creates no sessions or
+configuration and does not yet expose `localsetup llm complete`.
+
+The parent caps worker lifetime by both the grant and request deadlines, including
+schema validation in the worker. It checks current authority at RPC boundaries
+and before final acceptance. The worker returns a versioned outcome and digest;
+the parent requires the matching RPC acknowledgement, successful process exit and
+stdout digest, then validates bounded envelope fields. Failure outcomes contain
+no data or provider diagnostic strings. A structured model failure can therefore
+be an accepted worker result; successful process exit alone never means a
+successful model completion.
+
+Schema evaluation stays inside the deadline-bound worker; the parent validates
+protocol shape and trusts the verified installed adapter's schema result.
+Revocation, worker failure, an inconsistent receipt or deadline exhaustion prevents
+acceptance. Caller integration must convert these execution failures to public
+outcomes; it must not replay a possibly delivered request automatically. Runtime
+use locks remain held through worker teardown. Public CLI and QC compatibility
+integration remain pending.
