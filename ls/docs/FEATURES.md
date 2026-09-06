@@ -12,7 +12,7 @@ This is the full public capability catalog for LocalSetup. The [root README](../
 
 <!-- facts-block:start -->
 - Current version: `4.4.1`
-- Supported platforms: `codex, claude-code, cursor, kilo, opencode, openclaw, github-copilot-cli, github-copilot-vscode, cline-cli, cline-vscode, amp-cli, goose-cli, pi-cli, hermes-agent`
+- Supported platforms: `codex, claude-code, cursor, kilo, opencode, openclaw, github-copilot-cli, github-copilot-vscode, cline-cli, cline-vscode, amp-cli, goose-cli, pi-cli, hermes-agent, qwen-code-cli`
 - Shipped skills: `103`
 - Workflow packages: `16`
 - Source: `ls/docs/_generated/facts.json`

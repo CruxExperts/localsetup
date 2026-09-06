@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 74f47d5ed280a989199024ee1bd618e032b65edcecea71a6d0b913e01c2b03e1
+  source_provenance_hash: f0efcb31df4fdd276796dfb2512ad81cd7f4737264edabb4b00829c90f2c8171
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: e8bdf167df618a23682922951c9f12af21033b88
-artifact_sha256: add9926449fcef551ec5332210b5dd62e1652b19d9244213d736f2ebbc24b1b0
+source_commit: 1c8e7476e990c51470298fd853ab266f4ef13bb0
+artifact_sha256: fa813fc9a67a9eccbd4f7e039d7ff790993b5cf2afcdcdfc8737b887597661fd
 ---
 # Implementation File Map
 
@@ -1143,6 +1143,7 @@ artifact_sha256: add9926449fcef551ec5332210b5dd62e1652b19d9244213d736f2ebbc24b1b
 | `keep` | `ls/tests/test_python_architecture_check.py` |
 | `keep` | `ls/tests/test_python_runtime_contract.py` |
 | `keep` | `ls/tests/test_qc_patrol.py` |
+| `keep` | `ls/tests/test_qwen_adapters.py` |
 | `keep` | `ls/tests/test_recorded_file_operations.py` |
 | `keep` | `ls/tests/test_recorded_inventory.py` |
 | `keep` | `ls/tests/test_recorded_mode.py` |
