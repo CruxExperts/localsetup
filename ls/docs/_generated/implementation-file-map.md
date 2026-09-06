@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: ed83d207a733654d3687fab7c6cad2baec85034d0bb3cf6a97f1d7445cd81539
+  source_provenance_hash: 64a5cb36f299afa08681fd9fb802874323a38a788683a28e6e6e08329defd89c
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: bbe76eda0dc1dabeb7c8b9235ac4be685363203e
-artifact_sha256: 03105908c15a25dc78f5e9df0980bcb3113672b4163eb202a69750646a168187
+source_commit: c1f8a7a29c706209175cd24e89e641a0ddbbff12
+artifact_sha256: 7349ea313a577d97637b8c8c4e6c37bc9ce80ba0cd26c8d858dd3be916b19b7b
 ---
 # Implementation File Map
 
@@ -1130,6 +1130,7 @@ artifact_sha256: 03105908c15a25dc78f5e9df0980bcb3113672b4163eb202a69750646a16818
 | `keep` | `ls/tests/test_session_index.py` |
 | `keep` | `ls/tests/test_session_owner.py` |
 | `keep` | `ls/tests/test_skill_sandbox_tester.py` |
+| `keep` | `ls/tests/test_skill_scope_cli.py` |
 | `keep` | `ls/tests/test_skill_scope_config.py` |
 | `keep` | `ls/tests/test_steering.py` |
 | `keep` | `ls/tests/test_supervisor_broker.py` |
