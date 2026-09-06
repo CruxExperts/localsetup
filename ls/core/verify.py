@@ -311,10 +311,16 @@ def verify_install(
         target_root=attachment_root,
     )
 
+    from .kilo_loading import kilo_loading_assessment
+    native_loading = kilo_loading_assessment(attachment_root, adapters, personal)
+    native_warnings = [row["reason"] for row in native_loading
+                       if row["status"] == "unsupported-project-source"]
+
     return {
         "ok": not issues,
         "issues": issues,
-        "warnings": tmux_terminal_mode["warnings"],
+        "warnings": [*tmux_terminal_mode["warnings"], *native_warnings],
+        "native_loading": native_loading,
         "provenance": provenance,
         "provenance_warnings": provenance["warnings"],
         "provenance_repair_hints": provenance["repair_hints"],

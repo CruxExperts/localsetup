@@ -17,7 +17,7 @@ owner_skill: ls-framework-compliance
 | codex | OpenAI Codex CLI | .agents/skills | ~/.local/share/localsetup/packages |
 | claude-code | Claude Code CLI | .claude/skills | ~/.local/share/localsetup/packages |
 | cursor | Cursor IDE | .agents/skills | ~/.local/share/localsetup/packages |
-| kilo | Kilo CLI | .kilo/skills | ~/.local/share/localsetup/packages |
+| kilo | Kilo CLI | .agents/skills | ~/.local/share/localsetup/packages |
 | opencode | OpenCode CLI | .opencode/skills | ~/.local/share/localsetup/packages |
 | openclaw | OpenClaw CLI | .agents/skills | ~/.local/share/localsetup/packages |
 

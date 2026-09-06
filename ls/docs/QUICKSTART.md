@@ -121,7 +121,7 @@ The default `prompt-only` dependency mode is non-mutating: it reports missing uv
 | `claude-code` | Claude Code | `.claude/skills` | `~/.local/share/localsetup/packages` |
 | `codex` | OpenAI Codex CLI | `.agents/skills` | `~/.local/share/localsetup/packages` |
 | `openclaw` | OpenClaw | `.agents/skills` | `~/.local/share/localsetup/packages` |
-| `kilo` | Kilo CLI | `.kilo/skills` | `~/.local/share/localsetup/packages` |
+| `kilo` | Kilo CLI | `.agents/skills` | `~/.local/share/localsetup/packages` |
 | `opencode` | OpenCode CLI | `.opencode/skills` | `~/.local/share/localsetup/packages` |
 
 Comma-separate multiple IDs:

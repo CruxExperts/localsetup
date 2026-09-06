@@ -1100,3 +1100,84 @@ localsetup plan --tools gemini-cli --skill-scope both
 Review planned ownership and the effective native home before applying through
 the normal installer. Local personal placement does not establish availability
 in a remote process, container or cloud environment.
+
+## Kilo CLI source loading and filesystem maintenance
+
+Selector `kilo` retains its existing command and default attachment mode.
+Fresh writes prefer `.agents/skills` and `~/.agents/skills`; native `.kilo`
+and Claude compatibility roots remain discovery inventory. Native configuration
+directories scan both `skill` and `skills` recursively: project/home `.kilo` and
+`.kilocode`, the XDG Kilo directory, and an explicit `KILO_CONFIG_DIR`. Project
+ancestor and primary-worktree discovery remain native behavior; default registry
+paths do not resolve these overrides. Recorded native
+adapters keep their paths and mode on omitted-selector update. No rule,
+configuration, custom skill, mode overlay, credential or session is moved.
+This profile describes the current Kilo CLI/server, not legacy IDE extensions.
+
+The [v7.5.15 loader](https://github.com/Kilo-Org/kilocode/blob/e0ef9096391ebffba8560875665a2d7249ac6dc5/packages/opencode/src/skill/index.ts)
+scans recursively and follows symlinks, but project common and ordinary native
+sources are untrusted. Its
+[source guard](https://github.com/Kilo-Org/kilocode/blob/e0ef9096391ebffba8560875665a2d7249ac6dc5/packages/opencode/src/kilocode/config/variable.ts)
+checks the opened file's resolved target against project scope. A project
+`SKILL.md` symlink resolving to an external package store is **unsupported for
+loading by this source version**, even though LocalSetup can maintain that
+filesystem entry. Returning to the native directory does not avoid the guard.
+
+`verify` preserves its filesystem result and adds `native_loading` evidence.
+An external project source produces `unsupported-project-source` and a warning
+under the recorded `ordinary-untrusted-project-root` policy basis. This does not
+resolve explicit native trust configuration; effective configuration remains
+unqualified.
+`source-contained` means the inspected source paths resolve inside the project;
+it is a snapshot, not a security boundary, host execution test or resource
+qualification. Missing or ambiguous evidence remains `unqualified`.
+Every result keeps `host_verified: false`. Native environment override names
+are reported without their values; LocalSetup does not parse effective native
+configuration or infer that an arbitrary environment string is a boolean.
+
+Portable materialization keeps package files and resources inside the project:
+
+```bash
+localsetup plan --tools kilo --mode portable --skill-scope both
+```
+
+For an existing installation, preserve recorded selection and paths while
+reviewing an explicit mode change:
+
+```bash
+localsetup plan --target-directory <repo> --mode portable
+localsetup update --target-directory <repo> --mode portable
+```
+
+The second command applies the reviewed mode change through normal ownership,
+backup and recovery controls. Do not change `KILO_CONFIG_DIR`, native trust or
+approval controls to make an external project link load. Historical symlink
+layouts remain inspectable, updateable and detachable as filesystem state;
+they are not thereby certified for native loading. Repository-only automatic
+repair of an old nonpreferred layout follows the recorded-path preservation
+rules above.
+
+Personal trust is separate: native loading considers the effective home, active
+project and actual target. A home link into a project does not confer home
+trust on project content. `KILO_TEST_HOME` is a real runtime home override
+despite its test-oriented name; XDG configuration and `KILO_CONFIG_DIR` are
+separate. `KILO_DISABLE_EXTERNAL_SKILLS` disables common and Claude discovery.
+Claude-specific disable flags affect Claude compatibility only. Keep native
+configuration and these switches unchanged; qualify the selected host layout
+before relying on loading or activation.
+
+Discovery aggregates sources with duplicate warnings and later replacement.
+Native/config directories can override common names; this is not a universal
+common-wins rule. JSON/JSONC configuration also merges in layers. Explicit
+`skills.paths` and remote URLs are additional native mechanisms, not automatic
+common-root equivalents. Default project instructions choose the first filename
+with ancestor matches among `AGENTS.md`, compatible `CLAUDE.md` and deprecated
+`CONTEXT.md`. Global context uses the explicit configuration directory when set, otherwise
+the normal XDG Kilo configuration root, then compatible Claude context. The
+override replaces the normal root; it does not add a default-XDG fallback. Flags and
+explicit instruction patterns can change that behavior.
+
+Preserve the `AGENTS.md` bridge and top-level native `mcp` configuration.
+Embedded shell expansion, activation, permissions, resources and goal/budget
+behavior remain native and unqualified. No Kilo process, trust initializer,
+native skill-management command or provider call is part of adapter operations.

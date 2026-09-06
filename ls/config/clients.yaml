@@ -1897,22 +1897,22 @@ families:
         kind: cli
         support_status: supported
         research:
-          status: verified
-          checked_on: '2026-07-15'
+          status: partial
+          checked_on: '2026-09-06'
           sources:
-            - {kind: official_release, url: 'https://github.com/Kilo-Org/kilocode/releases/tag/v7.4.7', version: '7.4.7'}
+            - {kind: official_release, url: 'https://github.com/Kilo-Org/kilocode/releases/tag/v7.5.15', version: '7.5.15'}
             - {kind: official_docs, url: 'https://kilo.ai/docs/customize/skills'}
             - {kind: official_docs, url: 'https://kilo.ai/docs/customize/custom-instructions'}
         executables: [kilo]
         policy:
-          repo: {status: supported, resolution: hierarchy, paths: ['AGENTS.md'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: single, paths: ['~/.config/kilo/AGENTS.md'], precedence_status: unverified, ownership: client-native, collision: owned-block-only}
+          repo: {status: supported, resolution: hierarchy, paths: ['AGENTS.md', 'CLAUDE.md', 'CONTEXT.md'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: first-existing, paths: ['~/.config/kilo/AGENTS.md', '~/.claude/CLAUDE.md'], precedence_status: unverified, ownership: client-native, collision: owned-block-only}
         config:
-          repo: {status: supported, resolution: first-existing, paths: ['kilo.json', 'kilo.jsonc', '.kilo/kilo.json', '.kilo/kilo.jsonc'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: first-existing, paths: ['~/.config/kilo/kilo.json', '~/.config/kilo/kilo.jsonc'], precedence_status: verified, ownership: client-native, collision: manual}
+          repo: {status: supported, resolution: aggregate, paths: ['kilo.json', 'kilo.jsonc', '.kilo/kilo.json', '.kilo/kilo.jsonc'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: aggregate, paths: ['~/.config/kilo/kilo.json', '~/.config/kilo/kilo.jsonc'], precedence_status: verified, ownership: client-native, collision: manual}
         skills:
-          repo: {status: supported, resolution: single, paths: ['.kilo/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: single, paths: ['~/.kilo/skills'], precedence_status: verified, ownership: client-native, collision: owned-entry-only}
+          repo: {status: supported, resolution: aggregate, paths: ['.agents/skills', '.kilo/skills', '.kilo/skill', '.kilocode/skills', '.kilocode/skill', '.claude/skills'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: aggregate, paths: ['~/.agents/skills', '~/.kilo/skills', '~/.kilo/skill', '~/.kilocode/skills', '~/.kilocode/skill', '~/.config/kilo/skills', '~/.config/kilo/skill', '~/.claude/skills'], precedence_status: unverified, ownership: client-native, collision: owned-entry-only}
         goal: {status: unverified, kind: unverified, commands: [], limits: {status: unverified}}
         permissions: {status: supported, controls: ['agent permissions']}
         state:
@@ -1923,7 +1923,22 @@ families:
           global: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
         verification: {classification: filesystem}
         rollback: {classification: managed-entry-removal}
-        compatibility: {platform_id: kilo, order: 40, native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
+        compatibility: {platform_id: kilo, order: 40, repo_write_paths: ['.agents/skills'], global_write_paths: ['~/.agents/skills'], native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
+        integration:
+          lifecycle: active
+          installation:
+            method: manual
+            instructions: Use official Kilo CLI installation guidance with a verified artifact. Adapter operations do not install or start Kilo, authenticate or change native trust.
+          qualification:
+            catalog: implemented
+            filesystem: verified
+            host: not-run
+            evidence:
+            - {kind: filesystem, reference: ls/tests/test_kilo_adapters.py}
+          limitations:
+          - Kilo 7.5.15 rejects external project source symlinks through its realpath guard. Use an explicit portable-mode plan for contained project packages; filesystem maintenance keeps recorded modes and paths.
+          - Personal trust depends on active project and resolved targets. Home and configuration overrides, disabled common discovery, activation and resources require native qualification.
+          - Preserve native config, rules, mode overlays, custom skills, credentials and sessions. No trust override or automatic mode conversion is performed.
 
   - id: kimi
     display_name: Kimi

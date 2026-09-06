@@ -15,29 +15,31 @@ from ls.core.repair import run_repair
 from ls.tests.test_install_flow import make_temp_repo
 
 
-def prefer_common(root, *, historical=False):
+def prefer_common(root, *, historical=False, client="cursor"):
     path = root / 'ls/config/clients.yaml';data = yaml.safe_load(path.read_text())
-    family = next(f for f in data['families'] if f['id'] == 'cursor')
-    row = next(v for v in family['variants'] if v['id'] == 'cursor-ide')
-    row['compatibility']['repo_write_paths'] = ['.agents/skills', '.cursor/skills'] if historical else ['.agents/skills']
-    row['compatibility']['global_write_paths'] = ['~/.agents/skills', '~/.cursor/skills'] if historical else ['~/.agents/skills']
+    family = next(f for f in data['families'] if f['id'] == client)
+    row = next(v for v in family['variants'] if v['id'] == ('cursor-ide' if client == 'cursor' else 'kilo-cli'))
+    native = ['.agents/skills', '.cursor/skills'] if client == 'cursor' else ['.kilo/skills']
+    row['compatibility']['repo_write_paths'] = native if historical else ['.agents/skills']
+    row['compatibility']['global_write_paths'] = ['~/' + path for path in native] if historical else ['~/.agents/skills']
     path.write_text(yaml.safe_dump(data, sort_keys=False))
     write_platforms_projection(root, load_client_registry(root))
 
 
+@pytest.mark.parametrize('client', ['cursor', 'kilo'])
 @pytest.mark.parametrize('scope', ['repo', 'personal', 'both'])
 @pytest.mark.parametrize('mode', ['symlink', 'portable'])
-def test_preferred_subset_preserves_recorded_dual_adapters(tmp_path, monkeypatch, capsys, scope, mode):
+def test_preferred_subset_preserves_recorded_dual_adapters(tmp_path, monkeypatch, capsys, scope, mode, client):
     root = make_temp_repo(tmp_path);home = tmp_path / 'home'
-    prefer_common(root, historical=True)
+    prefer_common(root, historical=True, client=client)
     monkeypatch.setattr(cli, '_is_global_shim_invocation', lambda: False)
     apply_plan(root, build_install_plan(root, home, skills=['ls-context'],
-        platform_ids=['cursor'], skill_scope=scope, attach_mode=mode), home)
+        platform_ids=[client], skill_scope=scope, attach_mode=mode), home)
     receipt = root / '.localsetup/lock.json';before = json.loads(receipt.read_text())
     adapters = [base / rel for base in ((root,) if scope == 'repo' else (home,) if scope == 'personal' else (root, home))
-                for rel in ('.agents/skills', '.cursor/skills')]
+                for rel in (('.agents/skills', '.cursor/skills') if client == 'cursor' else ('.kilo/skills',))]
     for adapter in adapters:(adapter / 'custom.txt').write_text('keep')
-    prefer_common(root)
+    prefer_common(root, client=client)
     prefix = ['--source-root', str(root), '--home', str(home)]
     assert cli.main(prefix + ['plan']) == 0
     assert json.loads(capsys.readouterr().out)['auto_mode'] == f'recorded_{scope}'
@@ -45,7 +47,7 @@ def test_preferred_subset_preserves_recorded_dual_adapters(tmp_path, monkeypatch
     assert cli.main(prefix + ['update']) == 0
     assert json.loads(capsys.readouterr().out)['auto_mode'] == f'recorded_{scope}'
     after = json.loads(receipt.read_text())
-    assert after['platforms'] == ['cursor'] and after['skill_scope'] == scope
+    assert after['platforms'] == [client] and after['skill_scope'] == scope
     assert after['adapter_targets'] == before['adapter_targets']
     for current, old in zip(after['personal_adapter_targets'], before['personal_adapter_targets']):
         assert all(current[key] == value for key, value in old.items())
@@ -55,12 +57,12 @@ def test_preferred_subset_preserves_recorded_dual_adapters(tmp_path, monkeypatch
             report = run_repair(root, home=home, target_root=root, apply=apply)
             assert not report['ok'] and not report['applied'] and not report['actions']
             assert any('recorded-path manual recovery' in b for b in report['blockers'])
-        detach_platforms(root, home, root, ['cursor'])
+        detach_platforms(root, home, root, [client])
     elif scope == 'personal':
-        assert detach_personal(root, home, ['cursor'], apply=True)['applied']
+        assert detach_personal(root, home, [client], apply=True)['applied']
     else:
-        detach_platforms(root, home, root, ['cursor'])
-        assert detach_personal(root, home, ['cursor'], apply=True)['applied']
+        detach_platforms(root, home, root, [client])
+        assert detach_personal(root, home, [client], apply=True)['applied']
     for adapter in adapters:
         assert (adapter / 'custom.txt').read_text() == 'keep'
         assert not (adapter / 'ls-context').exists()

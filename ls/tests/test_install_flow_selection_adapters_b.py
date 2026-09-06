@@ -365,10 +365,10 @@ def test_multi_platform_selector_attaches_only_requested_adapters(tmp_path: Path
     verify = verify_install(root, home)
 
     assert result["dry_run"] is False
-    assert {Path(adapter["repo_path"]).parent.name for adapter in verify["adapters"]} == {".agents", ".kilo"}
-    assert {adapter["platform"] for adapter in verify["adapters"]} == {"codex", "kilo"}
+    assert {Path(adapter["repo_path"]).parent.name for adapter in verify["adapters"]} == {".agents"}
+    assert {client for adapter in verify["adapters"] for client in adapter["platforms"]} == {"codex", "kilo"}
     assert_scoped_adapter(root / ".agents" / "skills", "ls-context")
-    assert_scoped_adapter(root / ".kilo" / "skills", "ls-context")
+    assert not (root / ".kilo" / "skills").exists()
     assert not (root / ".cursor" / "skills").exists()
 
 

@@ -43,7 +43,7 @@ Use [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) as the canonical definition of:
 | Codex | AGENTS.md (repo root) | .agents/skills -> managed library |
 | OpenClaw | platform template | .agents/skills -> managed library |
 | OpenCode | AGENTS.md (repo root) | .opencode/skills -> managed library |
-| Kilo CLI | .kilo/instructions.md | .kilo/skills -> managed library |
+| Kilo CLI | AGENTS.md | .agents/skills -> managed library |
 
 ## Format
 
