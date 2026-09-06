@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: fdf78b01c319abafaffe4b30cc7b6fa055526f61bb7880565b19dc419b166581
+  source_provenance_hash: 2e044faf94ea1971e029471ac3140d15cc978d4a016eaa3a04000013863d168b
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 759f54e1b6b5760e35b9e3f66cad89b5e002486f
-artifact_sha256: 7a8e5ae5cc72ec986b0ac4bfd29bdf8fa7c2731ed346d15f59cb111442094ac7
+source_commit: d098270e60cb9dba8bb45dbd98173796f4fa1ae5
+artifact_sha256: fc4d431caf3335dd8f74fa81f4f76fb648541b799c3f29ba2dff867f71abc064
 ---
 # Implementation File Map
 
@@ -135,6 +135,7 @@ artifact_sha256: 7a8e5ae5cc72ec986b0ac4bfd29bdf8fa7c2731ed346d15f59cb111442094ac
 | `refactor` | `ls/core/agent/file_rpc.py` |
 | `refactor` | `ls/core/agent/file_search.py` |
 | `refactor` | `ls/core/agent/heartbeat_accounting_cli.py` |
+| `refactor` | `ls/core/agent/heartbeat_action.py` |
 | `refactor` | `ls/core/agent/heartbeat_budget.py` |
 | `refactor` | `ls/core/agent/heartbeat_budget_store.py` |
 | `refactor` | `ls/core/agent/image_inputs.py` |
@@ -1096,6 +1097,7 @@ artifact_sha256: 7a8e5ae5cc72ec986b0ac4bfd29bdf8fa7c2731ed346d15f59cb111442094ac
 | `keep` | `ls/tests/test_github_starredrepos_skill.py` |
 | `keep` | `ls/tests/test_goose_prerequisite.py` |
 | `keep` | `ls/tests/test_heartbeat_accounting_cli.py` |
+| `keep` | `ls/tests/test_heartbeat_action.py` |
 | `keep` | `ls/tests/test_heartbeat_budget.py` |
 | `keep` | `ls/tests/test_heartbeat_budget_store.py` |
 | `keep` | `ls/tests/test_heartbeat_lscli.py` |
