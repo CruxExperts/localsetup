@@ -2124,7 +2124,7 @@ execution. Receipt hashes detect inconsistency, not malicious same-user forgery.
 
 Focused filesystem fixtures qualify fresh publication, modified-command
 preservation, interrupted writes, plan changes, and bin lease exclusion. They
-mock runtime selection and do not establish installed launcher behavior. Owned refresh/recovery and installed qualification remain separate required work.
+mock runtime selection and do not establish installed launcher behavior. Owned refresh/recovery is described below; installed qualification remains a separate gate.
 
 
 ### Public fresh command registration
@@ -2156,9 +2156,9 @@ inspect status and retained records before attempting recovery. Status checks
 registration integrity and release selection, not current PATH precedence.
 
 The public fixture checks call the real CLI and filesystem owner with a mocked
-runtime selection. Installed dispatcher qualification and explicit owned
-refresh/recovery remain required; an existing or stale launcher is never replaced
-by this fresh registration command.
+runtime selection. Installed dispatcher qualification remains a separate gate. Use the explicit
+owned refresh/recovery modes below for an existing or stale launcher; fresh
+registration never replaces one.
 
 
 ### Owned refresh and explicit reconciliation primitives
@@ -2197,5 +2197,30 @@ procedure to select the intended verified release before reconciling. Old receip
 backups remain available after success. Fixture tests cover refreshed ownership,
 retained backup bytes, interrupted launcher/receipt replacement, fresh pending
 publication, digest mismatch, and custom edits after recovery planning. Runtime
-selection is mocked; public refresh/recovery flags and installed qualification
-are the next integration steps.
+selection is mocked; installed qualification remains a separate gate.
+
+
+### Refreshing or recovering the registered command
+
+After installing or explicitly selecting another verified runtime, invoke that
+selected release's full entrypoint path. The stale registered launcher refuses
+dispatch. Plan the refresh first, then apply its `plan_sha256`:
+
+```bash
+/path/to/runtimes/RELEASE_SHA256/venv/bin/lscli setup --plan --refresh-registration --bin-dir /path/to/private/bin
+/path/to/runtimes/RELEASE_SHA256/venv/bin/lscli setup --apply --refresh-registration --bin-dir /path/to/private/bin --registration-sha256 PLAN_SHA256
+```
+
+For a pending fresh registration or refresh, use `--recover-registration` in
+place of `--refresh-registration` to inspect a new recovery plan, then apply
+that plan's digest. Recovery inspects the current files and refuses unknown edits;
+do not reuse the original fresh/refresh plan digest as a recovery grant. If the
+intended runtime is no longer selected, reconcile selection through the explicit
+verified-runtime recovery procedure first. These commands do not switch runtimes.
+
+Both modifiers require `--plan` or `--apply`, an explicit bin directory, and
+the receipt's recorded runtime root. Runtime overrides, registration status,
+profile/artifact inputs, and combining the modifiers are invalid. Apply requires
+`--registration-sha256`. JSON output, exit codes, bounded output, and uncertainty
+handling follow the fresh registration interface. Review retained evidence after
+an interrupted apply, including when the command succeeds but output fails.

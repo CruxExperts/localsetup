@@ -28,6 +28,9 @@ def main(argv: list[str] | None = None, *, default_runtime_root: Path | None = N
     mode.add_argument("--registration-status", action="store_true")
     setup.add_argument("--bin-dir", type=Path)
     setup.add_argument("--registration-sha256")
+    registration_mode = setup.add_mutually_exclusive_group()
+    registration_mode.add_argument("--refresh-registration", action="store_true")
+    registration_mode.add_argument("--recover-registration", action="store_true")
     setup.add_argument("--profile-input", type=Path)
     setup.add_argument("--profiles", type=Path)
     setup.add_argument("--profile-sha256")
@@ -55,7 +58,7 @@ def main(argv: list[str] | None = None, *, default_runtime_root: Path | None = N
     arguments(run)
     effective_argv = list(sys.argv[1:] if argv is None else argv)
     args = parser.parse_args(effective_argv)
-    uses_recorded_or_profile_root = args.command == 'setup' and (args.profile_input is not None or args.registration_status)
+    uses_recorded_or_profile_root = args.command == 'setup' and (args.profile_input is not None or args.registration_status or args.refresh_registration or args.recover_registration)
     if default_runtime_root is not None and hasattr(args, 'runtime_root') and args.runtime_root is None and not uses_recorded_or_profile_root:
         effective_argv.extend(['--runtime-root', str(default_runtime_root)])
         args = parser.parse_args(effective_argv)
@@ -97,15 +100,17 @@ def main(argv: list[str] | None = None, *, default_runtime_root: Path | None = N
         except (OSError,ValueError,TypeError,RuntimeError):
             print(f"{CLI_NAME} run could not start; verify the selected profile, credential and installed runtime.",file=sys.stderr)
             return 3
-    if args.command == "setup" and (args.bin_dir is not None or args.registration_status or args.registration_sha256 is not None):
+    if args.command == "setup" and (args.bin_dir is not None or args.registration_status or args.registration_sha256 is not None or args.refresh_registration or args.recover_registration):
         if args.bin_dir is None:
             setup.error("Registration options require --bin-dir")
         if any(value is not None for value in (args.profile_input, args.profiles, args.profile_sha256, args.wheel,
                 args.sha256, args.wheelhouse, args.sandbox_bundle, args.sandbox_sha256,
                 args.reselect)) or args.timeout != 300:
             setup.error("Registration cannot be combined with profile or runtime installation inputs")
-        if args.registration_status and args.runtime_root is not None:
-            setup.error("Registration status uses the recorded runtime; omit --runtime-root")
+        if (args.registration_status or args.refresh_registration or args.recover_registration) and args.runtime_root is not None:
+            setup.error("Owned registration operations use the recorded runtime; omit --runtime-root")
+        if args.registration_status and (args.refresh_registration or args.recover_registration):
+            setup.error("Registration status cannot be combined with refresh or recovery")
         if args.apply and not args.registration_sha256:
             setup.error("Registration apply requires --registration-sha256 from its reviewed plan")
         if not args.apply and args.registration_sha256 is not None:

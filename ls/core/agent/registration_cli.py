@@ -15,6 +15,12 @@ def main(args) -> int:
         if args.registration_status:
             result = {'schema_version': 1, **registration_owner.status(args.bin_dir)}
             code = 0 if result['status'] == 'registered' else 3
+        elif args.refresh_registration or args.recover_registration:
+            from . import registration_refresh
+            planner = registration_refresh.recovery_plan if args.recover_registration else registration_refresh.plan
+            apply = registration_refresh.recover if args.recover_registration else registration_refresh.apply
+            result = apply(args.bin_dir, args.registration_sha256) if args.apply else planner(args.bin_dir)
+            code = 0
         else:
             root = args.runtime_root or Path(locations(Path.home())['runtimes'])
             result = (registration_owner.apply(root, args.bin_dir, args.registration_sha256) if args.apply
