@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: bd98ebda4ccc58465e830d771455492177f295691d425924f856bfc66ce0f21d
+  source_provenance_hash: fa0529a230ef88c8dc981fde83a80cf6be6dd7972cc667fd29ddcd8189b0e42e
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: fd8f075d0c7688b8b973f4f9a84d952de223fa79
-artifact_sha256: 42c4ee3834d711938a4d54e7b4d48328f941096d3b99a932627753fced09a89d
+source_commit: dc366cb2db2e3f4c4f31315dcd9f973baf564be9
+artifact_sha256: b7ee6810d986def4d2445b87da42cdd0d60d67a985342673bc17725369487d88
 ---
 # Implementation File Map
 
@@ -290,6 +290,7 @@ artifact_sha256: 42c4ee3834d711938a4d54e7b4d48328f941096d3b99a932627753fced09a89
 | `refactor` | `ls/core/historical_ownership.py` |
 | `refactor` | `ls/core/hooks.py` |
 | `refactor` | `ls/core/installation_ownership.py` |
+| `refactor` | `ls/core/installed_source.py` |
 | `refactor` | `ls/core/inventory.py` |
 | `refactor` | `ls/core/kilo_loading.py` |
 | `refactor` | `ls/core/kimi_prerequisite.py` |
@@ -1119,6 +1120,7 @@ artifact_sha256: 42c4ee3834d711938a4d54e7b4d48328f941096d3b99a932627753fced09a89
 | `keep` | `ls/tests/test_install_flow_wizard_flow.py` |
 | `keep` | `ls/tests/test_installation_scope.py` |
 | `keep` | `ls/tests/test_installed_capabilities.py` |
+| `keep` | `ls/tests/test_installed_source.py` |
 | `keep` | `ls/tests/test_interactive.py` |
 | `keep` | `ls/tests/test_keepass_secrets_cli_json.py` |
 | `keep` | `ls/tests/test_keepass_secrets_config_resolution.py` |
