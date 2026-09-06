@@ -192,3 +192,25 @@ gates; legacy queue reports and fresh-profile runs do not yet enforce task-wide
 accounting. Streaming activity and model claims cannot create a controller
 disposition. Allocated tokens are enforceable resource reservations, not proof
 of provider billing; any financial projection must be labeled an estimate.
+
+### Protected accounting records
+
+The internal storage owner creates a reviewed policy once in an owner-controlled
+directory outside the workspace. Its immutable policy binds the workspace, task
+revision, acceptance criterion, budgets, and explicit operation authorizations.
+Each authorization binds an action digest and its exact coding/compaction
+allocations. Reservation rejects a mismatched action or allocation.
+
+Canonical private files and existing anchored path/lease helpers protect the
+policy and append-only hash chain. Writers compare the expected current head
+under an exclusive directory lease; stale callers must inspect before retrying.
+Reads create no state. Changed ownership, modes, links, unexpected files, broken
+chains, and malformed records are refused. Existing records are never reset or
+overwritten to recover budget.
+
+If publication succeeds but its acknowledgement fails, inspection still finds
+the charged reservation. It remains reconciliation-required; another dispatch
+is not authorized by retrying the write. Controller review records bind the
+result and evidence and never refund allocations. The storage owner is an
+internal interface; protected action construction, controller commands, and
+heartbeat dispatch enforcement remain integration gates.
