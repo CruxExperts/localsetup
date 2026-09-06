@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 1e722b341cb48762f8fe9bd6a9c9ffb19b904608cd61a678ad7e116dc7d9bb55
+  source_provenance_hash: 7559cc7b1cd3f0a5377eaec6061292ee4d0f8fa7589ee2cd0e401edbd4e0a996
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: f747628053ee19ac460e4c61746beb04c5802216
-artifact_sha256: 182487ad405d97a35e2e8dc234ed7b05b302f3079467ad54a850e3828923383a
+source_commit: fa6e76e6003227638a86803bb6ae6071f022938a
+artifact_sha256: cffe255ce0a604db7fc86e18bb3378a646b5f92a54448ff65a56aa8045521051
 ---
 # Implementation File Map
 
@@ -1038,6 +1038,7 @@ artifact_sha256: 182487ad405d97a35e2e8dc234ed7b05b302f3079467ad54a850e3828923383
 | `keep` | `ls/tests/test_completion_run.py` |
 | `keep` | `ls/tests/test_context_files.py` |
 | `keep` | `ls/tests/test_context_index.py` |
+| `keep` | `ls/tests/test_default_target_ownership.py` |
 | `keep` | `ls/tests/test_dependency_ledger.py` |
 | `keep` | `ls/tests/test_detach_recorded_paths.py` |
 | `keep` | `ls/tests/test_docs_alignment.py` |
