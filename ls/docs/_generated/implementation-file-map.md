@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 39fb8374ea681b37e808637162dc425a93addc2148b98795c7013ae602c77b39
+  source_provenance_hash: bd98ebda4ccc58465e830d771455492177f295691d425924f856bfc66ce0f21d
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: fe3d5663180f21984f12fda89cbc3dd5cd7435fa
-artifact_sha256: bb0bd95624c37f721224ce0ffd5586ad879b0381fed599b5a20168642a2a14b1
+source_commit: fd8f075d0c7688b8b973f4f9a84d952de223fa79
+artifact_sha256: 42c4ee3834d711938a4d54e7b4d48328f941096d3b99a932627753fced09a89d
 ---
 # Implementation File Map
 
@@ -135,6 +135,7 @@ artifact_sha256: bb0bd95624c37f721224ce0ffd5586ad879b0381fed599b5a20168642a2a14b
 | `refactor` | `ls/core/agent/file_rpc.py` |
 | `refactor` | `ls/core/agent/file_search.py` |
 | `refactor` | `ls/core/agent/image_inputs.py` |
+| `refactor` | `ls/core/agent/installed_capabilities.py` |
 | `refactor` | `ls/core/agent/interactive.py` |
 | `refactor` | `ls/core/agent/native_bundle.py` |
 | `refactor` | `ls/core/agent/nested_context.py` |
@@ -1117,6 +1118,7 @@ artifact_sha256: bb0bd95624c37f721224ce0ffd5586ad879b0381fed599b5a20168642a2a14b
 | `keep` | `ls/tests/test_install_flow_wizard_controls.py` |
 | `keep` | `ls/tests/test_install_flow_wizard_flow.py` |
 | `keep` | `ls/tests/test_installation_scope.py` |
+| `keep` | `ls/tests/test_installed_capabilities.py` |
 | `keep` | `ls/tests/test_interactive.py` |
 | `keep` | `ls/tests/test_keepass_secrets_cli_json.py` |
 | `keep` | `ls/tests/test_keepass_secrets_config_resolution.py` |
