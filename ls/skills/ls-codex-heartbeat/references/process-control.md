@@ -49,6 +49,30 @@ frames. Stderr noise and partial frames do not reset it. This bounds protocol
 inactivity, not semantic progress or repeated unproductive tasks. Neither a
 receipt nor its saved metadata grants authority or closes an issue.
 
-This is an internal foundation. Public typed LSCli profile selection, protected
-launcher binding, and run/compaction budget integration require their remaining
-integration gates; generic profiles still use their existing process contract.
+Typed LSCli profiles use the protected registered launcher and coding receipt.
+Run/compaction budget integration still requires its remaining gates; generic
+profiles retain their existing process contract.
+
+## Compound continuation evidence
+
+The internal compaction receipt adapter accepts one JSON object of at most
+16 KiB, with exactly schema_version (integer 1), source_checkpoint, checkpoint,
+profile, and usage. Digests use the existing checkpoint format. Source and
+profile must match the selected action; destination must differ from source.
+Usage retains the compaction owner's one-request, zero-tool and allocated-token
+checks. Duplicate keys, extra objects, malformed/truncated output and nonzero
+process exits cannot establish completion. Partial output does not count as
+streaming progress. The bounded process pump suppresses raw output tails when
+using this adapter.
+
+Successful process output is only candidate evidence. Before continuation, a
+caller holding the matching task/session lease must verify the private owned
+compaction receipt file, its agreement with process output, and both source and
+destination checkpoints through the existing session owner. Missing, unsafe,
+interrupted, incompatible or uncertain history fails; this verifier never
+chooses a latest checkpoint, repairs evidence or replays an operation. It returns
+only the verified destination digest and preserves the source history.
+
+This adapter and verifier prepare compound execution. They do not yet select or
+dispatch heartbeat phases, reserve a budget, or authorize a provider call. Those
+steps must bind the explicit action and allocation before invoking either phase.
