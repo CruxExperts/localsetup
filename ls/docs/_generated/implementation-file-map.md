@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 8c5ed462498f0755ccf9f5727bc5c6382a328d0b5271f88c12e89e2700eceb67
+  source_provenance_hash: 1c596d232e5f9e80916d932e4d3f58db674970322b9f05d29d7ed12357b2c373
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 98474e094d64324f08c2970019232a43f5d4cd7f
-artifact_sha256: 2be78006f225f668d389c4654ac7bd481e88945595de817b08ed2f4cc42ba5ce
+source_commit: 31aea1a264b5f9e8f64b5012f794473037ab05ad
+artifact_sha256: a5a94e47177f6ea228e278f90ac6f48ff96834bcaeecc3f0ac92537bc3e15716
 ---
 # Implementation File Map
 
@@ -318,6 +318,7 @@ artifact_sha256: 2be78006f225f668d389c4654ac7bd481e88945595de817b08ed2f4cc42ba5c
 | `refactor` | `ls/core/repo_finalizer.py` |
 | `refactor` | `ls/core/repo_profiles.py` |
 | `refactor` | `ls/core/repository_overlap.py` |
+| `refactor` | `ls/core/retained_update.py` |
 | `refactor` | `ls/core/rollback.py` |
 | `refactor` | `ls/core/schema.py` |
 | `refactor` | `ls/core/scope_migration.py` |
@@ -1182,6 +1183,7 @@ artifact_sha256: 2be78006f225f668d389c4654ac7bd481e88945595de817b08ed2f4cc42ba5c
 | `keep` | `ls/tests/test_validation_tooling.py` |
 | `keep` | `ls/tests/test_versioning.py` |
 | `keep` | `ls/tests/test_versioning_release_push.py` |
+| `keep` | `ls/tests/test_windsurf_retention.py` |
 | `keep` | `ls/tests/test_workflow_manifests.py` |
 | `keep` | `ls/tests/versioning_test_helpers.py` |
 | `keep` | `ls/tools/agentq_transport_client/README.md` |
