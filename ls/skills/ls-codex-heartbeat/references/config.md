@@ -292,3 +292,42 @@ See [reserved execution details](process-control.md#reserved-execution-owner)
 for input preservation, compound deadlines, checkpoint validation and failure
 handling. Installed qualification is tracked separately from source-level
 support; only qualified artifacts may be used for provider-backed work.
+
+### Authorizing a later continuation
+
+When a completed action supplies a new checkpoint, first record its controller
+review, then plan a new operation using that exact checkpoint. Add the returned
+authorization to the existing accounting chain; do not initialize another policy
+to regain budget. Prepare a private JSON input with exactly these fields:
+
+~~~json
+{
+  "operation": "next-attempt",
+  "policy_sha256": "INITIAL_REVIEWED_POLICY_SHA256",
+  "authorization": {
+    "binding": "NEW_ACTION_PLAN_BINDING",
+    "run": {"requests": 2, "tools": 3, "tokens": 32768, "seconds": 320},
+    "compact": null
+  }
+}
+~~~
+
+Replace the digest placeholders with the initial policy plan's SHA-256 and the
+new action-plan binding; copy the complete authorization object from that plan.
+The compound form retains its planned compact allocation. Apply it against the
+inspected current chain head:
+
+~~~bash
+localsetup --target-directory /work/project harness codex-heartbeat accounting authorize --accounting-root /private/task-control --input /private/authorization.json --expected-head CURRENT_ACCOUNTING_HEAD
+~~~
+
+This adds one immutable receipt and returns the new head for subsequent execution.
+It performs no provider call or reservation. The original policy, previous grants,
+charged budget and consecutive no-progress count remain unchanged. Existing
+operation names cannot be replaced or reused. Pending results or reviews and
+accepted/no-progress stops refuse authorization; stale heads require inspection.
+The combined initial and added grant inventory is limited to 256 operations and
+the complete chain to 3072 receipts. Added grants do not guarantee remaining
+capacity: execution still reserves its full allocation against the original budget.
+Input privacy, bounded JSON output and exit 0/2/130 follow the other accounting
+commands. Missing-result reconciliation remains a separate recovery requirement.

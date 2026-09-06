@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 
 from . import heartbeat_budget as budget
+from . import heartbeat_authorization as authority
 from . import registration_owner as files
 from .profile_setup import _absent, _parent, _target
 from .runtime_lock import LOCK_NAME, runtime_use
@@ -26,10 +27,7 @@ def _document(value, workspace):
     if not isinstance(authorizations, dict) or not 1 <= len(authorizations) <= 256:
         raise ValueError("Heartbeat authorization inventory exceeds bounds")
     for operation, authorization in authorizations.items():
-        budget._identity(operation, budget.IDENTIFIER)
-        budget._keys(authorization, {"binding", "run", "compact"})
-        budget._identity(authorization["binding"], budget.DIGEST)
-        budget.envelope(authorization["run"], authorization["compact"])
+        authority.validate(operation, authorization)
     return value
 
 
@@ -75,14 +73,9 @@ def _load(fd, workspace):
         if record["previous"] != head:
             raise ValueError("Heartbeat accounting hash chain mismatch")
         event = record["event"]
-        if isinstance(event, dict) and event.get("type") == "reserve":
-            authorization = document["authorizations"].get(event.get("operation"))
-            if authorization is None or event != {"type": "reserve", "operation": event["operation"],
-                                                  "run": authorization["run"], "compact": authorization["compact"]}:
-                raise ValueError("Heartbeat reservation differs from authorization")
         records.append(event)
         head = _hash(raw)
-    summary = budget.summarize(document["policy"], records)
+    _, summary = authority.replay(document, records)
     return document, records, head, summary
 
 
@@ -130,7 +123,8 @@ def append(root: Path, workspace: Path, event: dict, expected_head: str, *, bind
             if head != expected_head:
                 raise ValueError("Heartbeat accounting changed; inspect before retrying")
             if isinstance(event, dict) and event.get("type") == "reserve":
-                authorization = document["authorizations"].get(event.get("operation"))
+                grants, _ = authority.replay(document, records)
+                authorization = grants.get(event.get("operation"))
                 if authorization is None or authorization["binding"] != binding:
                     raise ValueError("Heartbeat action does not match controller authorization")
                 if event != {"type": "reserve", "operation": event["operation"],
@@ -138,7 +132,7 @@ def append(root: Path, workspace: Path, event: dict, expected_head: str, *, bind
                     raise ValueError("Heartbeat allocation does not match authorization")
             elif binding is not None:
                 raise ValueError("Only a reservation supplies an action binding")
-            _, summary = budget.append(document["policy"], records, event)
+            _, summary = authority.replay(document, [*records, event])
             raw = files.encode({"previous": head, "event": event})
             files._publish(fd, f"{len(records):08d}.json", raw, 0o600)
             return {"head": _hash(raw), "policy": document["policy"], "summary": summary,

@@ -15,7 +15,7 @@ from .run_io import Streams
 def arguments(parent, target_flags):
     parser = parent.add_parser("accounting")
     sub = parser.add_subparsers(dest="accounting_action", required=True)
-    for action in ("init", "inspect", "review", "action-plan"):
+    for action in ("init", "inspect", "review", "action-plan", "authorize"):
         item = sub.add_parser(action)
         target_flags(item)
         item.add_argument("--accounting-root", type=Path, required=True)
@@ -26,7 +26,7 @@ def arguments(parent, target_flags):
             mode.add_argument("--plan", action="store_true")
             mode.add_argument("--apply", action="store_true")
             item.add_argument("--policy-sha256")
-        elif action == "review":
+        elif action in ("review", "authorize"):
             item.add_argument("--expected-head", required=True)
 
 
@@ -65,9 +65,11 @@ def execute(args, workspace):
         from .heartbeat_action import plan
         return plan(args.input, workspace, args.accounting_root)
     value = _input(args.input, workspace)
-    if args.accounting_action == "review":
-        store.budget._keys(value, {"operation", "result", "decision", "evidence", "rationale"})
-        event = {"type": "review", **value}
+    if args.accounting_action in ("review", "authorize"):
+        fields = ({"operation", "result", "decision", "evidence", "rationale"}
+                  if args.accounting_action == "review" else {"operation", "authorization", "policy_sha256"})
+        store.budget._keys(value, fields)
+        event = {"type": args.accounting_action, **value}
         return {"schema_version": 1, **store.append(args.accounting_root, workspace, event, args.expected_head)}
     root, workspace = store._paths(args.accounting_root, workspace)
     raw = store.files.encode(store._document(value, workspace))
