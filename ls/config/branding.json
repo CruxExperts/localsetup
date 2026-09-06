@@ -29,9 +29,9 @@
       "path": "ls/config/clients.yaml",
       "line_sha256": "22455f6b1fd32f9e123dad579c91f5250f7d74c5e18beda7d504d99358af16b6",
       "token": "localsetup",
-      "count": 32,
+      "count": 34,
       "kind": "compatibility_identifier",
-      "reason": "Persisted framework-state ownership schema value in the Copilot, Cline, Cascade, Amp, Goose, Pi, Hermes, Qwen, Kimi, and Factory variants; retain the technical identifier. Roo legacy metadata preserves the same framework-state schema identifier. Continue CLI legacy uses the same identifier. Aider metadata retains the same framework-state identifier. OMP expanded metadata preserves two additional identical ownership schema lines."
+      "reason": "Persisted framework-state ownership schema value in the Copilot, Cline, Cascade, Amp, Goose, Pi, Hermes, Qwen, Kimi, and Factory variants; retain the technical identifier. Roo legacy metadata preserves the same framework-state schema identifier. Continue CLI legacy uses the same identifier. Aider metadata retains the same framework-state identifier. OMP expanded metadata preserves two additional identical ownership schema lines. LSCli runtime-only metadata retains two schema-required ownership values without enabling a state writer."
     },
     {
       "path": "ls/docs/audits/codex-bootstrap-pack/AUDIT_REPORT.md",
@@ -4232,6 +4232,70 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Exact framework state path fixture; lowercase directory spelling is a compatibility identifier, not display text."
+    },
+    {
+      "path": "ls/config/clients.yaml",
+      "line_sha256": "274239cc1d36f13b2cb2aa0776577c5de152c469bdf3a47c0e8a5e0b850d7c95",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact CLI executable and catalog family/variant identifiers; preserve their technical spelling."
+    },
+    {
+      "path": "ls/config/clients.yaml",
+      "line_sha256": "cb967ea58ed3ec09216a2c0967e52fb2b7fe22e0e559490a5f838969e635d979",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact CLI executable and catalog family/variant identifiers; preserve their technical spelling."
+    },
+    {
+      "path": "ls/config/clients.yaml",
+      "line_sha256": "0a7bb703a32e4c99f7fbf678de8482b496b3d982f913959db73d9f157fae7e8f",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact CLI executable and catalog family/variant identifiers; preserve their technical spelling."
+    },
+    {
+      "path": "ls/docs/CLIENT_INTEGRATION_METADATA.md",
+      "line_sha256": "8f805b80910c2183e6a2611f7a4ddab4003a41157c3819fd59fd4ca12a73c1ac",
+      "token": "lscli",
+      "count": 2,
+      "kind": "compatibility_identifier",
+      "reason": "Exact CLI executable and catalog family/variant identifiers; preserve their technical spelling."
+    },
+    {
+      "path": "ls/tests/test_lscli_client_profile.py",
+      "line_sha256": "d116bd667233d87e086aa30574f408038f12a2199b9eddf9c9f884d5b4e93138",
+      "token": "lscli",
+      "count": 2,
+      "kind": "compatibility_identifier",
+      "reason": "Exact CLI executable and catalog family/variant identifiers; preserve their technical spelling."
+    },
+    {
+      "path": "ls/tests/test_lscli_client_profile.py",
+      "line_sha256": "aea0ab03b67adc82f8ce957a557cd983db2a8f287d874b4834fbca650e1c31f4",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact CLI executable and catalog family/variant identifiers; preserve their technical spelling."
+    },
+    {
+      "path": "ls/tests/test_lscli_client_profile.py",
+      "line_sha256": "7d2df1e50a87a7b5c00fac7552407b5b6eed25f5933336e13a44002991707125",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact CLI executable and catalog family/variant identifiers; preserve their technical spelling."
+    },
+    {
+      "path": "ls/tests/test_lscli_client_profile.py",
+      "line_sha256": "4701802453c3c3a4ddf0626769917fb6d371432f2a7bec011c222d281628cc94",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Exact CLI executable and catalog family/variant identifiers; preserve their technical spelling."
     }
   ],
   "visual_reviews": [

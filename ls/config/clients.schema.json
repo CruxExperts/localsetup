@@ -177,14 +177,50 @@
         "sources": {
           "type": "array",
           "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["kind", "url"],
-            "properties": {
-              "kind": {"enum": ["official_docs", "official_release", "official_source"]},
-              "url": {"type": "string", "pattern": "^https://"},
-              "version": {"type": "string", "minLength": 1}
-            }
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "url"
+                ],
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "official_docs",
+                      "official_release",
+                      "official_source"
+                    ]
+                  },
+                  "url": {
+                    "type": "string",
+                    "pattern": "^https://"
+                  },
+                  "version": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "reference"
+                ],
+                "properties": {
+                  "kind": {
+                    "const": "repository_source"
+                  },
+                  "reference": {
+                    "type": "string",
+                    "pattern": "^(?:ls/(?:[A-Za-z0-9_-]+/)*[A-Za-z0-9_-]+\\.(?:py|md|json|yaml)|pyproject\\.toml)$"
+                  }
+                }
+              }
+            ]
           }
         }
       }

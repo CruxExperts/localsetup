@@ -1407,3 +1407,47 @@ No native installation, startup, authentication or provider call occurs during
 adapter operations. OpenCode V2 beta uses a separate executable and is outside
 this profile. No native `/goal` lifecycle is certified, and filesystem support
 is not a claim of native host loading, activation or sandbox qualification.
+
+## LSCli runtime-only catalog entry
+
+Family/variant `lscli/lscli` describes the LocalSetup-owned runtime with command
+`lscli`; `localsetup agent` dispatches the same CLI. The Python distribution
+remains `localsetup`. This entry has no automatic `--tools` adapter projection.
+It also creates no generic `localsetup state` root: LSCli already owns session,
+lease, snapshot and protected-runtime locations through its runtime APIs.
+
+LSCli loads explicit workspace-relative files through repeatable `--context`
+and `--skill` arguments. A selected skill must name `SKILL.md`; there is no
+common-directory scan, personal skill discovery or native-provider precedence.
+Use ordinary materialized workspace files, for example
+`--skill skills/example/SKILL.md`, together with the required run arguments and
+current read and separate disclosure grants in [LSCLI.md](LSCLI.md). Selection
+alone grants no resource-directory access or script execution. The broker
+protects `.agents` and other policy/private directories and refuses symlink
+traversal; common symlink adapters are therefore not a usable shortcut.
+
+Explicit nested context refresh reads `AGENTS.md` from the workspace root
+through the selected nested directory, under current read/disclosure grants.
+It is not automatic startup ancestor discovery and does not imply Claude-file
+fallback. Selected context and skill snapshots remain conversation content;
+permissions stay outside the saved text and must be re-evaluated on resume.
+
+Provider profiles default to
+`~/.local/share/localsetup/config/lscli/profiles.json`; runtime state and protected
+runtimes default to `~/.local/share/localsetup/state/lscli` and
+`~/.local/share/localsetup/runtimes/lscli`. Explicit runtime CLI overrides retain
+their documented checks. These roots do not follow native third-party client
+configuration or implicit XDG relocation. Setup manages the protected runtime;
+this catalog entry does not install providers, configure credentials, discover
+skills, or certify that a given installed release is ready to execute.
+
+There is no standalone LSCli goal command. Task/session identity, bounded runs,
+steering, approvals, cancellation, branching and compaction retain the runtime
+contracts in [LSCLI.md](LSCLI.md). Catalog registration is not additional host
+qualification or a promise of Pi/OMP extension compatibility.
+
+For repository-owned implementations, research evidence may use
+`kind: repository_source` with a public `reference` under `ls/` or
+`pyproject.toml`. External sources retain their existing HTTPS `url` contract.
+The repository source is versioned by the consuming tree; it is not an invented
+upstream release, a private maintenance pointer, or proof of installed behavior.

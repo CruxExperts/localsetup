@@ -2073,6 +2073,137 @@ families:
         - namespace_ls
         rollback_class: managed-entry-removal
 
+  - id: lscli
+    display_name: LSCli
+    variants:
+    - id: lscli
+      display_name: LSCli
+      kind: cli
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: repository_source
+          reference: ls/core/agent/cli.py
+        - kind: repository_source
+          reference: ls/core/agent/context_files.py
+        - kind: repository_source
+          reference: ls/core/agent/diagnostics.py
+      executables:
+      - lscli
+      policy:
+        repo:
+          status: settings-only
+          resolution: settings
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+          setting_label: Explicit --context workspace file selection and explicit nested
+            AGENTS.md refresh under current disclosure grants
+        global:
+          status: unsupported
+          resolution: unsupported
+          paths: []
+          precedence_status: unsupported
+          ownership: client-native
+          collision: unsupported
+      config:
+        repo:
+          status: unsupported
+          resolution: unsupported
+          paths: []
+          precedence_status: unsupported
+          ownership: client-native
+          collision: unsupported
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.local/share/localsetup/config/lscli/profiles.json
+          precedence_status: verified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: settings-only
+          resolution: settings
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+          setting_label: Explicit --skill workspace-relative SKILL.md file selection;
+            no automatic directory discovery
+        global:
+          status: unsupported
+          resolution: unsupported
+          paths: []
+          precedence_status: unsupported
+          ownership: client-native
+          collision: unsupported
+      goal:
+        status: unsupported
+        kind: unsupported
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: supported
+        controls:
+        - task-bound file grants
+        - separate provider disclosure grants
+        - qualified process sandbox
+        - session and runtime leases
+      state:
+        repo:
+          status: unsupported
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unsupported
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: settings-only
+          collision: manual
+          rollback: manual-settings
+        global:
+          status: unsupported
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: unsupported
+      integration:
+        lifecycle: active
+        installation:
+          method: manual
+          instructions: Use the LocalSetup wheel and protected LSCli setup workflow
+            with verified artifacts; runtime registration does not install third-party
+            clients.
+        qualification:
+          catalog: implemented
+          filesystem: not-applicable
+          host: not-run
+          evidence:
+          - kind: documentation
+            reference: ls/docs/LSCLI.md
+          - kind: filesystem
+            reference: ls/tests/test_context_files.py
+        limitations:
+        - Runtime-only catalog entry; no automatic skills adapter or generic client-state
+          root.
+        - Explicit ordinary workspace files require current read and disclosure grants.
+          Protected directories and symlink traversal remain refused.
+        - State, provider profiles, runtime upgrades and sessions use existing LSCli
+          runtime contracts; native catalog registration does not certify installed-release
+          behavior.
+
   - id: omp
     display_name: Oh My Pi
     variants:
