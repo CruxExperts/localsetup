@@ -32,6 +32,8 @@ def preflight_install_plan(repo_root: Path, plan, home: Path, *, target_root: Pa
     try:require_owned_copies(repo_root, home, [a.path for a in plan.actions], target=target_root or repo_root)
     except ValueError as exc:
         blockers.append({"path": str(target_root or repo_root), "status_code": "mutable_copy_preservation", "reason": str(exc)})
+    from .hermes_adapter import hermes_adapter_blockers
+    blockers.extend(hermes_adapter_blockers(repo_root, plan.actions, home, target_root or repo_root))
     from .amp_preflight import amp_skill_blockers
     blockers.extend(amp_skill_blockers(repo_root, plan.actions, home, target_root or repo_root))
     from .goose_prerequisite import goose_prerequisite_blockers

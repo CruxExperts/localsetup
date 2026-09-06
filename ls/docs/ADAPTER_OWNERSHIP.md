@@ -810,3 +810,18 @@ only when the pending registry has no remaining mutable owner at that physical
 path. This permits a fresh installation in another supported mode while retaining
 protection for shared owners, including owners with an empty selection. Marker
 cleanup participates in the same journal as package and ownership changes.
+
+### Hermes adapter preflight boundary
+
+The internal Hermes adapter preflight binds repository writes to `.hermes/skills`
+and personal writes to the explicitly selected default profile `~/.hermes/skills`.
+It requires portable independent copies and an explicit mutable-copy designation
+for fresh writes. A nondefault `HERMES_HOME` blocks default personal writes;
+this check does not resolve a running CLI or API session's selected profile.
+
+Preflight validates selected authored skill and workflow packages before the
+canonical installation can follow resource links. Symlinks, hardlinked files and
+unsupported nodes therefore fail before installation changes. Existing copies
+retain the baseline and independent ownership checks described above. No Hermes
+process, provider, trust change or native configuration write is involved.
+This internal prerequisite alone does not register the client or qualify a host.
