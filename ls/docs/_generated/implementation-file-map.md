@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 4e9de7f577bc11829cae9327337fd45ad54adbd2249edbde367d2193f57c9602
+  source_provenance_hash: 421bbbbb85680c9c6938e24605c9de568cf55d558846e07d771eded6f824ebfc
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: e3c8b92f897824f83dd63c8ce2322417649f7402
-artifact_sha256: 8c26ef145ee102d051a3f2d5619ecc75b6e914ac9a99b60615a64c039c9f7c2d
+source_commit: f6b95d66d67581abe32b8226b64215b1d86309bf
+artifact_sha256: f0cfeb7b6f3ca7e467235be55e9ac00a506438ed47c638dc5e3af8d5675f4d00
 ---
 # Implementation File Map
 
@@ -319,6 +319,7 @@ artifact_sha256: 8c26ef145ee102d051a3f2d5619ecc75b6e914ac9a99b60615a64c039c9f7c2
 | `refactor` | `ls/core/rollback.py` |
 | `refactor` | `ls/core/schema.py` |
 | `refactor` | `ls/core/scope_migration.py` |
+| `refactor` | `ls/core/scope_retirement.py` |
 | `refactor` | `ls/core/sdk_payload/__init__.py` |
 | `refactor` | `ls/core/sdk_payload/artifacts.py` |
 | `refactor` | `ls/core/sdk_payload/build.py` |
@@ -1136,6 +1137,7 @@ artifact_sha256: 8c26ef145ee102d051a3f2d5619ecc75b6e914ac9a99b60615a64c039c9f7c2
 | `keep` | `ls/tests/test_sandbox_copy.py` |
 | `keep` | `ls/tests/test_scope_migration.py` |
 | `keep` | `ls/tests/test_scope_migration_cli.py` |
+| `keep` | `ls/tests/test_scope_retirement.py` |
 | `keep` | `ls/tests/test_scrapling_helper.py` |
 | `keep` | `ls/tests/test_scrapling_jobs.py` |
 | `keep` | `ls/tests/test_sdk_artifacts.py` |
