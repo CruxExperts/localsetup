@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 52bfa4609dec06257c9a26acb09ea3463e3e2c6e6ebcb17e11fe0ab384723e55
+  source_provenance_hash: 4736e215f0aceaae05cffaa54da68cc5844fcd59482cc01d36861aa60632d054
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 66838de754bbb999964ccd4219146a42dc013252
-artifact_sha256: f366c44b08c90ac2be985a135ee6917f856e8252271efbcfc5c9e6af6bde6b98
+source_commit: d4d4ec5556d8f526eaaa2b78bf7604120da7c8d9
+artifact_sha256: 816d297f7fd50784be22c4ba6e8651ae587634baeacfc039c644c5fd046c3202
 ---
 # Implementation File Map
 
@@ -268,6 +268,7 @@ artifact_sha256: f366c44b08c90ac2be985a135ee6917f856e8252271efbcfc5c9e6af6bde6b9
 | `refactor` | `ls/core/domain_shapes/models.py` |
 | `refactor` | `ls/core/factory_preflight.py` |
 | `refactor` | `ls/core/framework_version.py` |
+| `refactor` | `ls/core/gemini_prerequisite.py` |
 | `refactor` | `ls/core/git_state.py` |
 | `refactor` | `ls/core/git_subprocess.py` |
 | `refactor` | `ls/core/global_first_audit.py` |
@@ -1068,6 +1069,7 @@ artifact_sha256: f366c44b08c90ac2be985a135ee6917f856e8252271efbcfc5c9e6af6bde6b9
 | `keep` | `ls/tests/test_file_listing.py` |
 | `keep` | `ls/tests/test_file_rpc.py` |
 | `keep` | `ls/tests/test_file_search.py` |
+| `keep` | `ls/tests/test_gemini_adapters.py` |
 | `keep` | `ls/tests/test_github_starredrepos_skill.py` |
 | `keep` | `ls/tests/test_goose_prerequisite.py` |
 | `keep` | `ls/tests/test_hermes_adapters.py` |

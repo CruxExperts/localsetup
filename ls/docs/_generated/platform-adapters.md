@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 52bfa4609dec06257c9a26acb09ea3463e3e2c6e6ebcb17e11fe0ab384723e55
+  source_provenance_hash: 4736e215f0aceaae05cffaa54da68cc5844fcd59482cc01d36861aa60632d054
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 66838de754bbb999964ccd4219146a42dc013252
-artifact_sha256: 86c0360340976def047bdaebab19fb0eff8da39cdb849d7b3c5175e53c860124
+source_commit: d4d4ec5556d8f526eaaa2b78bf7604120da7c8d9
+artifact_sha256: 586b0b9e849fe7b410897ec2e945938573be9a9ae9608550d9a0ae22905732eb
 ---
 # Platform Adapters
 
@@ -31,3 +31,4 @@ Repo adapter paths are attached only when selected with `--tools` or `--platform
 | `kimi-cli` | `.agents/skills` | `skills_visible, namespace_ls` |
 | `factory-droid` | `.agents/skills` | `skills_visible, namespace_ls` |
 | `antigravity-app` | `.agents/skills` | `skills_visible, namespace_ls` |
+| `gemini-cli` | `.agents/skills` | `skills_visible, namespace_ls` |

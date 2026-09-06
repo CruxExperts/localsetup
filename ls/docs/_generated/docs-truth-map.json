@@ -1,7 +1,7 @@
 {
   "generated_facts": {
     "major_minor": "4.4",
-    "platform_count": 18,
+    "platform_count": 19,
     "platforms": [
       {
         "context_loader": "AGENTS.override.md, AGENTS.md",
@@ -110,20 +110,26 @@
         "display_name": "Google Antigravity application",
         "id": "antigravity-app",
         "skills_path": ".agents/skills"
+      },
+      {
+        "context_loader": "GEMINI.md",
+        "display_name": "Gemini CLI",
+        "id": "gemini-cli",
+        "skills_path": ".agents/skills"
       }
     ],
     "provenance": {
       "artifact_path": "ls/docs/_generated/facts.json",
-      "artifact_sha256": "8ab94d1a301628b7b02e988f73030c04a32ba9072c75e26064b7fc229971a783",
+      "artifact_sha256": "4b696896239ade32e28d4b705ae9ece242a6cdb2be891ccfa2e28ed229c29f79",
       "emitter": "generate-docs",
       "framework_version": "4.4.1",
       "schema_version": 1,
-      "source_commit": "66838de754bbb999964ccd4219146a42dc013252",
+      "source_commit": "d4d4ec5556d8f526eaaa2b78bf7604120da7c8d9",
       "source_dirty": false,
-      "source_provenance_hash": "52bfa4609dec06257c9a26acb09ea3463e3e2c6e6ebcb17e11fe0ab384723e55",
-      "source_root_id": "9638ce9f40e17c93978fa34e1be8b6a4feb3b4a91c081c9ba9f22f5d920188da",
+      "source_provenance_hash": "4736e215f0aceaae05cffaa54da68cc5844fcd59482cc01d36861aa60632d054",
+      "source_root_id": "a212a35e3a77f103c5f2f0ced1e3fba6f09292b4645c3914b48256be511caae6",
       "source_tag": null,
-      "source_tree_sha": "26fc5fd2ecabda2757fcffae807716f4b22cd4eb"
+      "source_tree_sha": "91d90c04459c80e5c774a478aa5118a5d5fb0d56"
     },
     "skill_count": 103,
     "skills": [
@@ -1951,12 +1957,12 @@
       "emitter": "generate-docs",
       "framework_version": "4.4.1",
       "schema_version": 1,
-      "source_commit": "66838de754bbb999964ccd4219146a42dc013252",
+      "source_commit": "d4d4ec5556d8f526eaaa2b78bf7604120da7c8d9",
       "source_dirty": false,
-      "source_provenance_hash": "52bfa4609dec06257c9a26acb09ea3463e3e2c6e6ebcb17e11fe0ab384723e55",
-      "source_root_id": "9638ce9f40e17c93978fa34e1be8b6a4feb3b4a91c081c9ba9f22f5d920188da",
+      "source_provenance_hash": "4736e215f0aceaae05cffaa54da68cc5844fcd59482cc01d36861aa60632d054",
+      "source_root_id": "a212a35e3a77f103c5f2f0ced1e3fba6f09292b4645c3914b48256be511caae6",
       "source_tag": null,
-      "source_tree_sha": "26fc5fd2ecabda2757fcffae807716f4b22cd4eb"
+      "source_tree_sha": "91d90c04459c80e5c774a478aa5118a5d5fb0d56"
     },
     "schema_version": 1,
     "skills": [
@@ -3463,16 +3469,16 @@
   },
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "7bec6652339e76da4308cdd44c853b6924867aa2de9ca30a1d98c402905e1abe",
+    "artifact_sha256": "25432f4d98454310329704fc4f4a630fdd28e0754e1a71619b066d6cb27f45c3",
     "emitter": "docs-align",
     "framework_version": "4.4.1",
     "schema_version": 1,
-    "source_commit": "66838de754bbb999964ccd4219146a42dc013252",
+    "source_commit": "d4d4ec5556d8f526eaaa2b78bf7604120da7c8d9",
     "source_dirty": false,
-    "source_provenance_hash": "52bfa4609dec06257c9a26acb09ea3463e3e2c6e6ebcb17e11fe0ab384723e55",
-    "source_root_id": "9638ce9f40e17c93978fa34e1be8b6a4feb3b4a91c081c9ba9f22f5d920188da",
+    "source_provenance_hash": "4736e215f0aceaae05cffaa54da68cc5844fcd59482cc01d36861aa60632d054",
+    "source_root_id": "a212a35e3a77f103c5f2f0ced1e3fba6f09292b4645c3914b48256be511caae6",
     "source_tag": null,
-    "source_tree_sha": "26fc5fd2ecabda2757fcffae807716f4b22cd4eb"
+    "source_tree_sha": "91d90c04459c80e5c774a478aa5118a5d5fb0d56"
   },
   "schema_version": "1.0",
   "truths": {
@@ -3868,7 +3874,7 @@
       "sources": [
         "ls/config/platforms.yaml"
       ],
-      "value": 18
+      "value": 19
     },
     "skill_count": {
       "sources": [
