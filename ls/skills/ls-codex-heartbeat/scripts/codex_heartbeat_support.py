@@ -7,12 +7,12 @@ import json
 import os
 import shlex
 import shutil
-import signal
-import subprocess
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+from heartbeat_process import execute
 
 try:
     import yaml
@@ -252,45 +252,8 @@ def run_command(
     }
     if launcher_info:
         entry.update(launcher_info)
-    proc: subprocess.Popen[str] | None = None
     try:
-        proc = subprocess.Popen(
-            argv,
-            cwd=cwd,
-            shell=False,
-            text=True,
-            stdin=subprocess.PIPE if stdin_text is not None else None,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            start_new_session=True,
-        )
-        entry["pid"] = proc.pid
-        try:
-            entry["pgid"] = os.getpgid(proc.pid)
-            entry["sid"] = os.getsid(proc.pid)
-        except OSError:
-            pass
-        try:
-            stdout, stderr = proc.communicate(input=stdin_text, timeout=timeout_seconds)
-            entry["returncode"] = proc.returncode
-            entry["timed_out"] = False
-        except subprocess.TimeoutExpired:
-            entry["timed_out"] = True
-            try:
-                os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-            except OSError:
-                proc.terminate()
-            try:
-                stdout, stderr = proc.communicate(timeout=5)
-            except subprocess.TimeoutExpired:
-                try:
-                    os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-                except OSError:
-                    proc.kill()
-                stdout, stderr = proc.communicate()
-            entry["returncode"] = 124
-        entry["stdout_tail"] = _tail(stdout or "")
-        entry["stderr_tail"] = _tail(stderr or "")
+        entry.update(execute(argv, cwd=cwd, timeout=timeout_seconds, stdin_text=stdin_text))
         entry["finished_at"] = utc_now()
     except Exception as exc:
         entry.update(
