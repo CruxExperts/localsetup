@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 64d85d4b73363aab67c201807ef7e0525672ec5950aa1af756ba8f56687138d7
+  source_provenance_hash: dcbd324e9094db88d1564e568b6ba75dfe65b942dc5d4e4d41df36064e755353
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 30f3abf7d7aea5fb92455c6d87f661ee1a7739a7
-artifact_sha256: 2d6819f3892d80c8703aabd7e55eadfa9ed83b66be0eaf6a1ed6d2f57c85b0d2
+source_commit: 1071da338cbb9c99474a81371337c7e0d15f8509
+artifact_sha256: 46f5e0fc9407cad34c3c8e7d452e8f7c35ad2a5c6d2f22b5485f3c1d8a1c4fea
 ---
 # Implementation File Map
 
@@ -269,6 +269,7 @@ artifact_sha256: 2d6819f3892d80c8703aabd7e55eadfa9ed83b66be0eaf6a1ed6d2f57c85b0d
 | `refactor` | `ls/core/handoff.py` |
 | `refactor` | `ls/core/harness.py` |
 | `refactor` | `ls/core/health.py` |
+| `refactor` | `ls/core/historical_ownership.py` |
 | `refactor` | `ls/core/hooks.py` |
 | `refactor` | `ls/core/installation_ownership.py` |
 | `refactor` | `ls/core/inventory.py` |
@@ -1042,6 +1043,7 @@ artifact_sha256: 2d6819f3892d80c8703aabd7e55eadfa9ed83b66be0eaf6a1ed6d2f57c85b0d
 | `keep` | `ls/tests/test_file_rpc.py` |
 | `keep` | `ls/tests/test_file_search.py` |
 | `keep` | `ls/tests/test_github_starredrepos_skill.py` |
+| `keep` | `ls/tests/test_historical_personal_ownership.py` |
 | `keep` | `ls/tests/test_image_inputs.py` |
 | `keep` | `ls/tests/test_install_flow.py` |
 | `keep` | `ls/tests/test_install_flow_auto_convert_apply_a.py` |
