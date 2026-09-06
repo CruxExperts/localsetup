@@ -233,6 +233,8 @@ def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_har
     add_harness_target_flags(run_p)
     run_p.add_argument("--no-agent", action="store_true")
     run_p.add_argument("--force", action="store_true")
+    from .agent.heartbeat_execution_cli import arguments as execution_arguments
+    execution_arguments(run_p)
     finalizer_p = harness_sub.add_parser("repo-finalizer")
     finalizer_sub = finalizer_p.add_subparsers(dest="harness_action", required=True)
     for action_name in ("plan", "status"):

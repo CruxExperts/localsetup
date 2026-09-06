@@ -2,7 +2,7 @@
 import hashlib
 import importlib.util
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import time
 
 from . import heartbeat_action as action
@@ -84,12 +84,23 @@ def _command(launcher, value, workspace, directory, kind, checkpoint):
     return argv
 
 
-def execute(source, workspace, accounting_root, *, expected_binding, expected_head):
+def _protect(grant, workspace, control_paths):
+    scopes = action._decode(grant)['write']
+    for path in control_paths:
+        control = path.resolve().relative_to(workspace.resolve()).parts
+        for scope in scopes:
+            parts = () if scope == '.' else PurePosixPath(scope).parts
+            if parts[:len(control)] == control or control[:len(parts)] == parts:
+                raise PermissionError('Heartbeat grant can mutate control configuration or state')
+
+
+def execute(source, workspace, accounting_root, *, expected_binding, expected_head, control_paths=()):
     """Only an explicit live controller may call this; no saved queue grants authority."""
     started = time.monotonic()
     workspace = action.path(str(workspace))
     _separate(Path(__file__).resolve().parents[2], workspace)
     plan, value, launcher, profiles, grant = action.prepare(source, workspace, accounting_root)
+    _protect(grant, workspace, control_paths)
     if plan['binding'] != expected_binding:
         raise ValueError('Action changed since controller review')
     expires = started+plan['envelope']['seconds']

@@ -99,5 +99,6 @@ Use [controller accounting commands](references/config.md#controller-accounting-
 for reviewed private policy initialization, resource inspection, and result-bound
 progress dispositions. These commands neither run an agent nor close an external
 issue. Keep accounting and controller inputs outside the writable workspace.
-Task-wide enforcement requires the execution-policy integration; ordinary fresh
-profiles do not acquire that authority from an accounting file's existence.
+Use [explicit reserved actions](references/config.md#running-a-reserved-action)
+for task-wide enforcement and compound compaction. Ordinary fresh profiles do
+not acquire that authority from an accounting file's existence.

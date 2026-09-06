@@ -96,7 +96,8 @@ explicit credential configuration and a qualified delegated sandbox backend.
 Approval requests are rejected because this profile has no interactive approval
 channel. Completion requires both valid JSONL and process success; it does not
 mean the controller accepted an issue. Each run starts a new session; automatic
-resume, compaction, and semantic no-progress policy remain separate integrations.
+resume, compaction, and semantic no-progress policy use the explicit reserved
+action interface below, rather than changing this fresh-profile schema.
 
 Use the owning framework's harness command. A copied standalone skill without
 the framework cannot resolve this launcher; ambient framework imports are refused.
@@ -153,7 +154,8 @@ Policy input has exactly these fields:
 
 Digest placeholders are illustrative, not valid input. Binding must identify the
 reviewed exact action; do not invent a digest or treat a prompt as authorization.
-The protected action planner and runtime integration remain separate gates.
+Use action-plan below to compute that binding, then select the reserved run
+interface explicitly.
 Compaction allocation, when authorized, replaces null with an object containing
 tokens and seconds and is charged together with the run.
 
@@ -176,8 +178,8 @@ reset the directory merely because a command did not return a receipt.
 
 The provider-free action planner derives a binding instead of requiring the
 controller to invent one. It does not dispatch, reserve budget, create state,
-validate a saved checkpoint, or establish sandbox availability. Runtime
-reservation and compound execution integration remain separate requirements.
+validate a saved checkpoint, or establish sandbox availability. The reserved
+run interface below performs execution preflight and reservation.
 
 ~~~bash
 localsetup --target-directory /work/project harness codex-heartbeat accounting action-plan --accounting-root /private/task-control --input /private/action.json
@@ -235,7 +237,58 @@ The planner consumes explicit private configuration rather than workspace hooks
 or a model-editable queue. All selected paths remain outside the workspace;
 runtime, session and resource roots must not overlap controller inputs,
 registration, profile/grant files or accounting state. This is a planning
-boundary, not a claim that mutable inputs remain stable during future dispatch:
-execution must revalidate the binding before reservation and protect phase inputs
-through completion. Existing fresh-session profiles and no-agent behavior are
+boundary. Reserved execution revalidates the binding and copies these exact
+private input bytes for both phases; later edits to original grant/profile files
+do not change the in-flight action. Existing fresh-session profiles and no-agent behavior are
 unchanged.
+
+
+### Running a reserved action
+
+After action-plan and policy initialization, select exactly one operation with
+all four controller options. Keep the action, policy, grants and profile files
+outside the workspace; do not put authority in a model-written queue.
+
+~~~bash
+localsetup --target-directory /work/project harness codex-heartbeat run --action-input /private/action.json --accounting-root /private/task-control --expected-binding REVIEWED_ACTION_BINDING --expected-head CURRENT_ACCOUNTING_HEAD
+~~~
+
+This mode uses the existing heartbeat enabled flag, configured state directory
+and overlap lock. Missing or disabled configuration skips execution; --force
+permits an explicit one-off run without changing configuration. --no-agent
+skips before reading configuration, private inputs or accounting state. Neither
+option activates cron. Without controller options, the ordinary harness run
+retains its existing profiles, hooks and transaction artifacts.
+
+Reserved mode runs only the private action's protected phases. It does not run
+workspace pre/post hooks or derive commands from a queue. Its configuration is
+an owned regular YAML file bounded to 64 KiB, without symlinks, multiple hard
+links or group/other write permission. Existing configuration/state ancestors
+must also be owned by the user or root and not group/other writable (a root-owned
+sticky temporary ancestor is allowed). The enabled field must be a boolean;
+state_dir, if present, must be a relative string of at most 4096 characters.
+Unsafe configuration or lock state is refused and preserved. Adjust permissions
+only through an explicit owner decision; this command does not normalize them.
+
+The captured grant must not allow writes to the configuration file or anywhere
+in the configured heartbeat state directory, including through ancestor scopes
+such as a whole-workspace write grant. Narrow editing scopes to the task's source
+files. Process recipes operate on their existing isolated snapshots and cannot
+write these host control paths. The same heartbeat lock serializes ordinary and
+reserved runs using that state directory. An overlap returns locked without
+reserving or dispatching work. Custom state paths and stored schedules remain
+unchanged.
+
+Output is one JSON result. Exit 0 means execution_completed or an explicit skip;
+1 means locked or failed execution, 2 means invalid/unavailable input or evidence,
+5 means output limit, 124 means timeout, and 130 means cancellation. Errors use
+a generic diagnostic without private input contents. A successful execution
+result includes the private evidence path, its exact result digest and current
+accounting state. It still requires a controller progress disposition; inspect
+accounting before the next attempt. Never replay after an uncertain result or
+reset accounting to regain budget.
+
+See [reserved execution details](process-control.md#reserved-execution-owner)
+for input preservation, compound deadlines, checkpoint validation and failure
+handling. Installed qualification is tracked separately from source-level
+support; only qualified artifacts may be used for provider-backed work.

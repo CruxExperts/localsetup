@@ -50,8 +50,8 @@ inactivity, not semantic progress or repeated unproductive tasks. Neither a
 receipt nor its saved metadata grants authority or closes an issue.
 
 Typed LSCli profiles use the protected registered launcher and coding receipt.
-Run/compaction budget integration still requires its remaining gates; generic
-profiles retain their existing process contract.
+Explicit reserved actions add run/compaction accounting; generic profiles
+retain their existing process contract.
 
 ## Compound continuation evidence
 
@@ -73,9 +73,9 @@ interrupted, incompatible or uncertain history fails; this verifier never
 chooses a latest checkpoint, repairs evidence or replays an operation. It returns
 only the verified destination digest and preserves the source history.
 
-This adapter and verifier prepare compound execution. They do not yet select or
-dispatch heartbeat phases, reserve a budget, or authorize a provider call. Those
-steps must bind the explicit action and allocation before invoking either phase.
+The reserved execution owner below uses this adapter and verifier. Neither
+receipt text nor the verifier itself authorizes dispatch; the explicit action
+and full allocation must be bound before invoking either phase.
 
 ## Reserved execution owner
 
@@ -120,6 +120,7 @@ accepted or close an issue. Failures retain the whole reserved allocation. If
 storage or result acknowledgement is uncertain, the existing reservation blocks
 replay; inspect retained attempt and session evidence before reconciliation.
 
-Public heartbeat action selection and installed qualification remain integration
-gates. This internal owner does not add a scheduler, activate configuration, or
-change the legacy no-agent and generic-profile paths.
+The [reserved action CLI](config.md#running-a-reserved-action) supplies explicit
+selection and the existing heartbeat overlap lock. Installed qualification
+remains a separate gate. This owner does not add a scheduler, activate
+configuration, or change the legacy no-agent and generic-profile paths.

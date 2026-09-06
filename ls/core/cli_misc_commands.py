@@ -87,6 +87,9 @@ def handle(cli, args, root, home) -> int | None:
                 from .agent.heartbeat_accounting_cli import report
                 payload["execution_accounting"] = report(args.accounting_root, target_root or root)
         elif args.harness_action == "run":
+            from .agent.heartbeat_execution_cli import selected, main
+            if selected(args):
+                return main(args, target_root or root, root)
             payload = harness_run(root, target_root, no_agent=args.no_agent, force=args.force)
         else:
             print(f"localsetup: unsupported heartbeat action: {args.harness_action}", file=sys.stderr)
