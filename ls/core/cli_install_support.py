@@ -312,6 +312,10 @@ def _auto_default_context(root: Path, home: Path, config: InstallConfig, target_
         from .personal_update import build_recorded_personal_plan
         return {"mode": "recorded_personal", "repair": repair,
                 "plan": build_recorded_personal_plan(root, home, target_root)}
+    if repair.get("skill_scope") == "both" and repair.get("ok") and not repair.get("actions"):
+        from .personal_update import build_recorded_both_plan
+        return {"mode": "recorded_both", "repair": repair,
+                "plan": build_recorded_both_plan(root, home, target_root)}
     if repair.get("skill_scope") in {"personal", "both"}:
         return {"mode": "repair_required", "repair": repair, "plan": None}
     if repair.get("blockers") or repair.get("decisions"):

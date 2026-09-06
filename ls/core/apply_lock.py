@@ -75,7 +75,7 @@ def build_lock_payload(
                 "removed": action.details.get("removed", []),
             }
             for action in transition_actions
-        ],
+        ] if transition_actions else plan.rollback_metadata.get("recorded_adapter_transitions", []),
         "platforms": plan.rollback_metadata.get("platforms", []),
         "global_only": plan.rollback_metadata.get("global_only", False),
         "attach_mode": plan.rollback_metadata.get("attach_mode", "symlink"),

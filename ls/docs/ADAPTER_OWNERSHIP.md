@@ -435,3 +435,22 @@ result. Missing library packages, unsafe paths or markers, conflicting owner
 modes, and custom selected-name collisions require resolution before repair.
 This route repairs exposure; it does not refresh the library, migrate ownership,
 or certify host application loading. Resolver diagnostics remain separate.
+
+## Updating recorded combined installations
+
+A healthy `both` installation uses the `recorded_both` automatic update route.
+It retains each repository path, client set, mode, and package request, and each
+personal owner's distinct selection. The refreshed canonical library contains
+the union of these requests and the recorded global baseline. Omitted scope and
+selectors retain recorded ownership; this route does not infer fresh clients.
+
+```bash
+localsetup plan --target-directory /path/to/project
+localsetup update --target-directory /path/to/project
+```
+
+The first command previews without writes; `update` applies immediately. Existing adapter drift must
+be repaired before package refresh. Apply checks receipt and registry hashes
+under the package-root lock; changed ownership invalidates the prepared plan.
+Historical adapter-transition receipts survive refresh as evidence and are not
+replayed. This route does not migrate scope or implement explicit mode changes.
