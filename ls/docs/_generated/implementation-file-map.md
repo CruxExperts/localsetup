@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: a39c89c3805aa6751e48464331bcea04764ee1c7b38f8617b638467bc9722810
+  source_provenance_hash: b6530f69829d089c1c6339e28bd153067aeda922a4faa66b6c95d50244bfef9d
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 42523f3e385cb4731e44c46e5ac364d31f60966c
-artifact_sha256: 2df5582181bb18ad7193eb6bd4e2c5948a27e607bb8af60a657fa0618ab1c16c
+source_commit: c2762602f7901b73eaad93a94fda892f17bb2742
+artifact_sha256: 8018c88f5740b223318bbaf6dc8e44f0ecdf23a018ca08dd28e19cc9fe3babed
 ---
 # Implementation File Map
 
@@ -136,6 +136,7 @@ artifact_sha256: 2df5582181bb18ad7193eb6bd4e2c5948a27e607bb8af60a657fa0618ab1c16
 | `refactor` | `ls/core/agent/file_search.py` |
 | `refactor` | `ls/core/agent/heartbeat_accounting_cli.py` |
 | `refactor` | `ls/core/agent/heartbeat_action.py` |
+| `refactor` | `ls/core/agent/heartbeat_authorization.py` |
 | `refactor` | `ls/core/agent/heartbeat_budget.py` |
 | `refactor` | `ls/core/agent/heartbeat_budget_store.py` |
 | `refactor` | `ls/core/agent/heartbeat_compaction.py` |
@@ -1101,6 +1102,7 @@ artifact_sha256: 2df5582181bb18ad7193eb6bd4e2c5948a27e607bb8af60a657fa0618ab1c16
 | `keep` | `ls/tests/test_goose_prerequisite.py` |
 | `keep` | `ls/tests/test_heartbeat_accounting_cli.py` |
 | `keep` | `ls/tests/test_heartbeat_action.py` |
+| `keep` | `ls/tests/test_heartbeat_authorization.py` |
 | `keep` | `ls/tests/test_heartbeat_budget.py` |
 | `keep` | `ls/tests/test_heartbeat_budget_store.py` |
 | `keep` | `ls/tests/test_heartbeat_compaction.py` |
