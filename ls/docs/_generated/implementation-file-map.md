@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: df30ce00c7cbe3eec0644066aef67d532b624fec6cb3973921db8b8d36a312ae
+  source_provenance_hash: a5fb42ad5ce91899cc2bfadeb3faaac09653e7bc7ee81e3affc19f26c703d19f
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 79936d948a69a318e871a614c662576a6771f231
-artifact_sha256: 109914aca1a63824b54fdff4c6e2a9dca5e9263131263a1021b74c02c38909f6
+source_commit: 542a75c219dcf7f52f90184ecb1736ed446dee90
+artifact_sha256: 990f0b0bfc50c19c91ba531aa037272766d1147bdac84db6e90da5d55fd7dab0
 ---
 # Implementation File Map
 
@@ -210,6 +210,7 @@ artifact_sha256: 109914aca1a63824b54fdff4c6e2a9dca5e9263131263a1021b74c02c38909f
 | `refactor` | `ls/core/client_registry/loader.py` |
 | `refactor` | `ls/core/client_registry/models.py` |
 | `refactor` | `ls/core/client_registry/projection.py` |
+| `refactor` | `ls/core/client_registry/qualification.py` |
 | `refactor` | `ls/core/client_state/__init__.py` |
 | `refactor` | `ls/core/client_state/artifacts.py` |
 | `refactor` | `ls/core/client_state/git_exclude.py` |
@@ -389,6 +390,7 @@ artifact_sha256: 109914aca1a63824b54fdff4c6e2a9dca5e9263131263a1021b74c02c38909f
 | `keep` | `ls/docs/AGENT_CONTEXT_AND_MCP_CONTRACT.md` |
 | `keep` | `ls/docs/AGENT_SKILLS_COMPLIANCE.md` |
 | `keep` | `ls/docs/BRANDING.md` |
+| `keep` | `ls/docs/CLIENT_INTEGRATION_METADATA.md` |
 | `keep` | `ls/docs/CLIENT_STATE.md` |
 | `keep` | `ls/docs/CLI_SKILLS_ENV.md` |
 | `keep` | `ls/docs/CODEX_GITHUB_ISSUE_GOAL_LOOP.md` |
@@ -1022,6 +1024,7 @@ artifact_sha256: 109914aca1a63824b54fdff4c6e2a9dca5e9263131263a1021b74c02c38909f
 | `keep` | `ls/tests/test_candidate_skill_cli.py` |
 | `keep` | `ls/tests/test_checkpoint_store.py` |
 | `keep` | `ls/tests/test_cli_version.py` |
+| `keep` | `ls/tests/test_client_qualification.py` |
 | `keep` | `ls/tests/test_client_registry.py` |
 | `keep` | `ls/tests/test_client_registry_drift.py` |
 | `keep` | `ls/tests/test_client_state.py` |
