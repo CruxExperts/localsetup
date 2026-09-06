@@ -759,3 +759,25 @@ opt-in indication. It must also preflight every affected mutable target before
 any transaction mutation, including repair pre-actions, historical/scope
 retirement and rollback. Low-level checks alone do not establish those complete
 lifecycle guarantees. No Hermes profile is enabled by this writer integration.
+
+### Apply ownership preflight
+
+Successful apply records `mutable_copy: true` on opted-in adapter receipt rows
+and `mutable_paths` on affected personal owner records. These fields live in the
+repository lock and shared registry, independently of the adapter marker. Before
+apply mutates state, `ls.core.mutable_ownership.require_owned_copies` checks the
+physical action paths against recorded ownership. Established mutable copies
+require their marker and baseline, and the baseline names must equal the recorded
+physical package union. Selecting another client does not bypass this check when
+it writes the same path. Drift at unrelated paths is not inspected as an affected
+copy. Current personal owner records govern personal selections; historical
+personal rows in other target receipts do not enlarge that union after a
+cross-repository reselection. The target lock provides fallback evidence when
+authoritative personal registry records are absent, with modern-lock precedence
+over the legacy lock.
+
+Receipt annotation happens inside apply's existing finalization transaction;
+recovery covers both filesystem and ownership records. Plans remain provider-free
+and do not invoke native clients. This apply integration does not yet establish
+equivalent preflight for every standalone repair, retirement, detach or rollback
+entry point; those routes remain prerequisites for enabling a mutable client.

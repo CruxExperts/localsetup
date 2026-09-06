@@ -493,7 +493,8 @@ def _apply_plan_unlocked(
                     _write_journal(journal_path, journal)
                     if existed and not in_place:
                         _remove_path(action.path)
-                    _write_scoped_adapter(action.path, global_root, package_names, mode=mode)
+                    _write_scoped_adapter(action.path, global_root, package_names, mode=mode,
+                                          mutable=action.details.get("mutable_copy", False))
                 executed.append(f"attach_repo_path:{action.path}")
     except Exception as exc:
         if not dry_run:
@@ -531,6 +532,8 @@ def _apply_plan_unlocked(
         lock_payload["migration_origin"] = {"legacy_lockfile": str(legacy_lockfile)}
     if not dry_run:
         try:
+            from .mutable_ownership import mark_mutable_receipts
+            mark_mutable_receipts([*lock_payload["adapter_targets"], *lock_payload["personal_adapter_targets"]])
             _record_file_state(journal, journal_path, paths_manifest_path(home))
             paths_manifest = write_paths_manifest(repo_root, home)
             journal["touched"].append({"kind": "paths_manifest", "path": str(paths_manifest["manifest"])})
