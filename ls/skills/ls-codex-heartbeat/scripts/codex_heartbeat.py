@@ -445,7 +445,7 @@ def run_once(
             "recovered_before_run": recovered,
         }
         atomic_write_json(staged / "manifest.json", manifest)
-        planned = planned_commands(config, no_agent=no_agent)
+        planned = planned_commands(config, no_agent=no_agent, target_root=target_root)
 
         status = "succeeded"
         for index, command in enumerate(planned, start=1):
@@ -484,6 +484,7 @@ def run_once(
                 sidecar_path=sidecar,
                 launcher_info=command.get("launcher_info") if isinstance(command.get("launcher_info"), dict) else None,
                 stdin_text=command.get("stdin_text") if isinstance(command.get("stdin_text"), str) else None,
+                protocol_options=command.get("protocol_options"),
             )
             command_entries.append(entry)
             if entry.get("returncode") != 0:

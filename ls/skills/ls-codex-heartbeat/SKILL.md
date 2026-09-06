@@ -82,3 +82,13 @@ python3 ls/skills/ls-codex-heartbeat/scripts/codex_heartbeat.py --target-root . 
 - `references/command-logging.md`
 - `references/process-control.md`
 - `references/transactions.md`
+
+## LSCli coding runs
+
+The unselected `lscli-heartbeat` template profile uses an owned protected
+registration, explicit provider configuration and task grant, stdin prompt, and
+validated JSONL completion. Configure its absolute paths and bounded limits
+using [the typed profile contract](references/config.md#typed-lscli-profile)
+before selecting it. Planning and `--no-agent` do not call a provider.
+Activation, credentials, delegated sandbox capability, and recurring authority
+remain explicit. Generic client profiles retain their existing launcher modes.

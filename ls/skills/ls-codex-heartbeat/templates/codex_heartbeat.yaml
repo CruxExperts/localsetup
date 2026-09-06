@@ -18,6 +18,24 @@ agent_profiles:
     prompt_transport: argv
     prompt: Read HEARTBEAT.md, inspect queued heartbeat work, and produce a concise status report.
 
+  lscli-heartbeat:
+    client: lscli
+    launcher: lscli
+    executable: /explicit/bin/lscli
+    profiles: /explicit/private/profiles.json
+    profile: explicitly-selected-provider
+    grant: /explicit/private/heartbeat-grant.json
+    runtime_root: /explicit/protected/runtimes
+    state_root: /explicit/private/lscli-state
+    resource_parent: /sys/fs/cgroup/explicitly-delegated-parent
+    prompt: Read the explicitly granted heartbeat context and perform one bounded task.
+    timeout_seconds: 300
+    request_limit: 8
+    tool_limit: 16
+    token_limit: 32768
+    no_progress_seconds: 60
+    output_limit_bytes: 4194304
+
 hooks:
   before: []
   after: []

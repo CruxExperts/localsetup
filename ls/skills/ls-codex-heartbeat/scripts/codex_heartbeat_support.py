@@ -241,6 +241,7 @@ def run_command(
     sidecar_path: Path,
     launcher_info: dict[str, Any] | None = None,
     stdin_text: str | None = None,
+    protocol_options: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     started = utc_now()
     entry: dict[str, Any] = {
@@ -253,7 +254,11 @@ def run_command(
     if launcher_info:
         entry.update(launcher_info)
     try:
-        entry.update(execute(argv, cwd=cwd, timeout=timeout_seconds, stdin_text=stdin_text))
+        options = {}
+        if protocol_options is not None:
+            from heartbeat_protocol import Receipt
+            options = {**protocol_options, "receipt": Receipt()}
+        entry.update(execute(argv, cwd=cwd, timeout=timeout_seconds, stdin_text=stdin_text, **options))
         entry["finished_at"] = utc_now()
     except Exception as exc:
         entry.update(
@@ -360,7 +365,7 @@ def _shell_login_command(profile: dict[str, Any], argv: list[str]) -> tuple[list
     return [shell_path, "-lc", rendered], rendered
 
 
-def load_agent_command(config: dict[str, Any]) -> dict[str, Any] | None:
+def load_agent_command(config: dict[str, Any], *, target_root: Path | None = None) -> dict[str, Any] | None:
     if "codex" in config:
         raise HeartbeatError("codex configuration is obsolete; replace it with the agent configuration")
     agent = config.get("agent") if isinstance(config.get("agent"), dict) else {}
@@ -374,6 +379,12 @@ def load_agent_command(config: dict[str, Any]) -> dict[str, Any] | None:
     if not client:
         raise HeartbeatError("agent profile client must be a non-empty label")
     launcher = str(profile.get("launcher") or "resolved-path").strip()
+    if launcher == "lscli":
+        from heartbeat_lscli import plan
+        try:
+            return plan(profile, agent, profile_name, target_root)
+        except (OSError, ValueError, TypeError, RuntimeError) as exc:
+            raise HeartbeatError("LSCli heartbeat profile or registration is unavailable; verify explicit configuration and registration") from exc
     logical_argv, stdin_text, prompt_transport = _prompt_input(profile, _profile_command_argv(profile))
     command = logical_argv
     info: dict[str, Any] = {
@@ -407,11 +418,11 @@ def load_agent_command(config: dict[str, Any]) -> dict[str, Any] | None:
     }
 
 
-def planned_commands(config: dict[str, Any], *, no_agent: bool = False) -> list[dict[str, Any]]:
+def planned_commands(config: dict[str, Any], *, no_agent: bool = False, target_root: Path | None = None) -> list[dict[str, Any]]:
     commands: list[dict[str, Any]] = []
     commands.extend(load_hooks(config, "before"))
     if not no_agent:
-        agent_command = load_agent_command(config)
+        agent_command = load_agent_command(config, target_root=target_root)
         if agent_command:
             commands.append(agent_command)
     commands.extend(load_hooks(config, "after"))
@@ -426,7 +437,7 @@ def plan_summary(*, target_root: Path, config_path: Path | None = None, no_agent
     config = load_yaml(config_path)
     summaries: list[dict[str, Any]] = []
     try:
-        planned = planned_commands(config, no_agent=no_agent)
+        planned = planned_commands(config, no_agent=no_agent, target_root=target_root)
     except HeartbeatError as exc:
         return {"ok": False, "commands": [], "config_exists": True, "error": str(exc)}
     for command in planned:

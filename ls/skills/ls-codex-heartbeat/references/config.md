@@ -58,3 +58,45 @@ Inspection and disabling do not rewrite a stored trigger's schedule. Re-enabling
 explicitly regenerates the heartbeat trigger from the validated interval.
 Unrelated triggers/tasks and historical heartbeat identifiers remain intact.
 Existing unsupported intervals are not silently rounded or migrated.
+
+## Typed LSCli profile
+
+The shipped `lscli-heartbeat` example is unselected and disabled. Replace every
+/explicit/... path and the provider profile name with your reviewed setup,
+then deliberately select `agent.profile=lscli-heartbeat` and set
+`agent.enabled=true` for manual agent runs. Heartbeat enablement remains a
+separate switch. Generated cron commands still request `--no-agent`; changing a
+recurring job's authority requires its own explicit schedule decision.
+
+This profile uses `client=lscli` and `launcher=lscli` and requires exactly the
+fields shown in the template. Generic command, shell, PATH overrides,
+prompt-transport overrides, and allow_direct are rejected. All six paths must
+be absolute and canonical. The executable must be an owned registered command
+for the explicitly supplied runtime root. The framework validates its receipt
+and selected runtime, then invokes the protected dispatcher directly.
+
+The provider profile name accepts 1–256 characters. Prompt text must be nonempty,
+at most 128 KiB of UTF-8, and is sent only through stdin. It does not appear in
+command plans or result sidecars. Workspace is always the heartbeat target.
+The grant separately authorizes file access, writes, disclosure, and recipes;
+mentioning HEARTBEAT.md in a prompt grants none of these permissions.
+
+Limits are strict integers: timeout 1–3600 seconds, requests 1–64, tools 0–256,
+tokens 1–1048576, protocol inactivity 1–3600 seconds (at most the coding timeout),
+and combined output 1024–4194304 bytes. An explicit `agent.timeout_seconds`
+overrides the profile timeout and must satisfy the same bounds. The outer
+process deadline adds 20 seconds for protected startup and terminal delivery;
+registration qualification has separate bounded lock waits before process
+launch. Only valid protocol start/progress events reset inactivity. The coding
+runtime enforces request/tool/token limits and its existing fixed resource
+limits; the outer runner independently bounds output and process lifetime.
+
+No credentials are discovered by planning. Runs require the selected provider's
+explicit credential configuration and a qualified delegated sandbox backend.
+Approval requests are rejected because this profile has no interactive approval
+channel. Completion requires both valid JSONL and process success; it does not
+mean the controller accepted an issue. Each run starts a new session; automatic
+resume, compaction, and semantic no-progress policy remain separate integrations.
+
+Use the owning framework's harness command. A copied standalone skill without
+the framework cannot resolve this launcher; ambient framework imports are refused.
