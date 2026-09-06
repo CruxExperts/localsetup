@@ -2256,3 +2256,31 @@ The fixture parent loaded no provider modules; child-process imports were not
 measured by that assertion. No provider or sandboxed tool call was requested.
 The native bundle supplied a second installed identity; this test does not
 extend its existing host qualification.
+
+
+### Static dependency and native capability details
+
+Doctor now reports `runtime.dependencies` after verifying and leasing the
+selected runtime. It reads that runtime's sealed runtime/build dependency locks
+and distribution metadata, evaluates their environment markers, and compares
+installed versions without importing the packages. `verified` includes the
+expected dependency count; `mismatch` lists missing or mismatched package names.
+Missing, malformed, ambiguous, or oversized metadata reports `unavailable`.
+Use the matching verified wheel and locked offline dependency artifacts to repair
+the environment; doctor does not install or repair anything. Metadata is limited
+to 1 MiB per file, 256 required packages, and 512 distributions.
+
+The static overall success result additionally requires verified dependency
+metadata. This checks the selected managed runtime, not arbitrary compatibility
+of an ordinary wheel environment. It does not replace artifact authenticity,
+installed inventory, or execution qualification.
+
+`runtime.native_sandbox` distinguishes `missing`, `invalid`,
+`unsupported_platform`, and `present_unprobed`. It uses the existing bundle
+platform contract and inspects the inventoried binary's type and executable bit.
+`execution_tested` remains false: no native process, resource delegation probe,
+or provider request is launched. Absence of the optional native bundle does not
+prevent static success for tool-free setup; tool-enabled runs still require their
+qualified backend and resource preflight. Text output shows both check statuses
+and actionable guidance. Existing lease and output bounds remain unchanged;
+doctor makes no overall inventory-hashing deadline claim.

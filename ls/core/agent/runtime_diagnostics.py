@@ -15,8 +15,9 @@ def runtime(root: Path) -> dict:
     except OSError:
         return {'status': 'invalid'}
     try:
-        with selected(root.absolute(), timeout=1, create=False):
-            return {'status': 'verified'}
+        with selected(root.absolute(), timeout=1, create=False) as release:
+            from .installed_capabilities import dependencies, native
+            return {'status': 'verified', 'dependencies': dependencies(release), 'native_sandbox': native(release)}
     except TimeoutError:
         return {'status': 'busy'}
     except FileNotFoundError:

@@ -14,6 +14,8 @@ def emit(report: dict, format: str) -> None:
         rows = [f"{CLI_NAME} ({PRODUCT_NAME}) {report['framework_version']}",
                 f"Static checks: {report['status']}; SDK payload: {report['sdk_payload']}",
                 f"Runtime: {report['runtime']['status']}; profiles: {report['profiles']['status']}",
+                'Dependencies: ' + report['runtime'].get('dependencies', {}).get('status', 'unavailable'),
+                'Native sandbox: ' + report['runtime'].get('native_sandbox', {}).get('status', 'unavailable'),
                 'Execution: requires per-run preflight']
         rows.extend('- ' + issue for issue in report['issues'])
         rows.extend(name + ': ' + json.dumps(path, ensure_ascii=True)

@@ -87,6 +87,8 @@ def test_doctor_static_success_is_separate_from_execution(runtime, tmp_path, mon
     package = tmp_path / 'package'
     (package / '_sdk_payload').mkdir(parents=True)
     monkeypatch.setattr(report, 'verify', lambda path: None)
+    from ls.core.agent import installed_capabilities
+    monkeypatch.setattr(installed_capabilities, 'dependencies', lambda release: {'status': 'verified'})
     monkeypatch.setattr(diagnostics, 'profiles', lambda path: {'status': 'verified', 'count': 1})
     result = report.inspect(package_root=package, home=tmp_path / 'absent-home', runtime_root=root)
     assert result['status'] == 'static_verified'

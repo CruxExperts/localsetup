@@ -4312,6 +4312,22 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Exact CLI executable filename in PATH collision regression fixtures; preserve the command identifier."
+    },
+    {
+      "path": "ls/core/agent/installed_capabilities.py",
+      "line_sha256": "12f2488f191a7ade2e626524b4eb0fac25c9358d1c2afce849cf23b8bf333c8c",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Established native installed payload directory; preserve the filesystem identifier in inspection and fixtures."
+    },
+    {
+      "path": "ls/tests/test_installed_capabilities.py",
+      "line_sha256": "cb422ad4303608256a4836807c2baa25f98a32d49c6465fa17dedf2de5de6442",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Established native installed payload directory; preserve the filesystem identifier in inspection and fixtures."
     }
   ],
   "visual_reviews": [

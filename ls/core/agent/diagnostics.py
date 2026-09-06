@@ -45,7 +45,14 @@ def inspect(*, package_root: Path | None = None, home: Path | None = None, runti
         issues.append('Runtime inspection is ' + runtime['status'] + '; inspect setup records and use verified-artifact setup or explicit recovery. Busy upgrades must finish before inspection.')
     if profiles['status'] != 'verified':
         issues.append('Profile configuration is ' + profiles['status'] + '; provide a valid explicit profile document. Credentials are not checked.')
-    ready = state == 'verified' and runtime['status'] == 'verified' and profiles['status'] == 'verified'
+    dependencies = runtime.get('dependencies', {'status': 'unavailable'})
+    native = runtime.get('native_sandbox', {'status': 'unavailable'})
+    if dependencies['status'] != 'verified':
+        issues.append('Runtime dependency metadata is ' + dependencies['status'] + '; reinstall from verified artifacts and the matching locked offline dependency set.')
+    if native['status'] != 'present_unprobed':
+        issues.append('Native sandbox is ' + native['status'] + '; tool-enabled runs require a qualified bundled backend on a supported platform.')
+    issues.append('Native execution, resource delegation and credentials remain per-run checks; doctor does not probe or authorize them.')
+    ready = dependencies['status'] == 'verified' and state == 'verified' and runtime['status'] == 'verified' and profiles['status'] == 'verified'
     return {
         "schema_version": 1,
         "product": PRODUCT_NAME,
