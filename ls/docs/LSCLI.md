@@ -271,8 +271,8 @@ Deterministic transport fixtures cover both APIs, final headers, a single attemp
 on rate limiting, and redirect refusal. No live provider compatibility is implied.
 The configured timeout is an HTTP operation timeout; supervisor wall-clock budgets,
 stream/output bounds, cancellation, and task-bound disclosure grants remain
-required before dispatch is enabled. The shared client is not yet connected to
-public agent/completion commands or the existing QC wrapper.
+enforced by the coding and completion supervisors described below. The shared
+client serves their public commands; QC wrapper integration remains pending.
 
 ## SDK model adapter
 
@@ -1781,8 +1781,8 @@ checks qualify the selected protocol path, not every provider endpoint.
 ## Direct completion contract foundation
 
 The provider-free `completion_contract` module defines version-one requests for
-future `localsetup llm complete` integration. The command, isolated completion
-worker and QC compatibility wrapper are not yet available from this foundation.
+`localsetup llm complete`. The protected command and worker use this contract;
+QC compatibility integration remains pending.
 A request is at most 1 MiB, rejects duplicate keys and unknown fields, and binds
 its model to the selected explicit profile. Example:
 
@@ -1838,7 +1838,7 @@ when requested; validate-only output still passes local schema validation.
 Optional reasoning effort requires its exact per-value profile capability before
 dispatch. The SDK sends `reasoning_effort` for Chat Completions and
 `reasoning.effort` for Responses, without adding temperature or other options.
-This adapter does not yet expose the public command or replace the QC wrapper.
+The protected command below uses this adapter; QC wrapper integration is separate.
 
 Before SDK response normalization, a completion-only transport guard caps the
 identity-encoded body at 1 MiB plus 64 KiB of protocol overhead. It requests
@@ -1853,12 +1853,12 @@ input/output token counts are retained, without raw provider diagnostics.
 The effective deadline begins at adapter entry and includes provider processing,
 local validation and envelope construction. Authority is checked again before
 success is returned. Network connection failures are distinguished from uncertain
-transport interruptions; neither is retried. The protected supervisor still must
-bound synchronous processing and own final delivery when the command is integrated.
+transport interruptions; neither is retried. The protected supervisor bounds synchronous processing and owns final acceptance
+through the command integration below.
 Deterministic fixtures cover both APIs, success/schema/refusal/incomplete/malformed
 results, rate limits, missing credentials, connection/read failures, oversized
 responses, revocation and deadline expiry during validation. This qualifies the
-adapter path only; public command and installed-consumer acceptance remain pending.
+adapter path; public-command qualification is described below.
 
 Deterministic direct-completion fixtures qualify serialization of all six declared
 reasoning values on both APIs. Every undeclared value refuses before HTTP, and
@@ -1873,7 +1873,7 @@ runtime. It freezes the request/profile payload before checking its noncredentia
 disclosure digest against a live task/session grant. Credentials cross only the
 inherited owner socket. The worker has no tools, workspace access grants or
 inherited credential environment. This internal boundary creates no sessions or
-configuration and does not yet expose `localsetup llm complete`.
+configuration; the public command below delegates through it.
 
 The parent caps worker lifetime by both the grant and request deadlines, including
 schema validation in the worker. It checks current authority at RPC boundaries
@@ -1887,7 +1887,35 @@ successful model completion.
 Schema evaluation stays inside the deadline-bound worker; the parent validates
 protocol shape and trusts the verified installed adapter's schema result.
 Revocation, worker failure, an inconsistent receipt or deadline exhaustion prevents
-acceptance. Caller integration must convert these execution failures to public
-outcomes; it must not replay a possibly delivered request automatically. Runtime
-use locks remain held through worker teardown. Public CLI and QC compatibility
-integration remain pending.
+acceptance. The command maps execution failures to bounded public outcomes and
+never replays a possibly delivered request automatically. Runtime use locks remain
+held through worker teardown. QC compatibility integration remains pending.
+
+## Tool-free completion command
+
+```bash
+localsetup llm complete --profile example --request request.json --profiles /path/to/profiles.json --runtime-root /path/to/runtimes
+localsetup llm complete --profile example --request - < request.json
+```
+
+The command accepts the version-one request above from a regular non-symlink file
+or stdin. Supplying it authorizes disclosure of that request to the selected
+profile; no workspace files, context, sessions or tools are loaded. File input is
+limited to 1 MiB and stdin waits within the overall timeout. Defaults use the
+existing LSCli profile/runtime locations. `--timeout` caps execution at 120 seconds
+by default and accepts positive values up to 3600; the request deadline can shorten
+worker execution further. Help and argument validation initialize no provider.
+
+The bootstrap selects the protected runtime and passes only the explicit selected
+credential through a fixed internal environment key. A profile digest must match
+after protected startup; changes cannot redirect that credential to a different
+profile. Runtime selection is rechecked before worker dispatch.
+
+Stdout contains one versioned result envelope; diagnostics never contain request
+contents, credentials or raw provider errors. The exit codes listed in the contract
+apply. SIGINT/SIGTERM produce cancellation (130); parent-enforced request or overall
+timeouts produce deadline (124). A worker failure with possible dispatch returns
+uncertain (10), and never triggers a retry. Missing credentials/runtime return
+unavailable (3). Output writing is bounded to one second; a closed or blocked
+output descriptor returns transport_failed (9), and a partially written envelope
+is not a successful delivery. No configuration or sessions are created.

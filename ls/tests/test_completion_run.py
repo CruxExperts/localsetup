@@ -25,7 +25,7 @@ def test_completion_handler_rejects_injection_and_repeated_exchange():
     with pytest.raises(ValueError):handler('complete.start',{})
 
 
-@pytest.mark.parametrize('case',['success','bad_receipt','failed_process','revoke'])
+@pytest.mark.parametrize('case',['success','bad_receipt','failed_process','revoke','timeout'])
 def test_completion_requires_current_authority_and_process_receipt(tmp_path,monkeypatch,case):
     value=payload();grant=CodingGrant('task','session',run.identity(value),time.monotonic()+5)
     @contextmanager
@@ -37,9 +37,11 @@ def test_completion_requires_current_authority_and_process_receipt(tmp_path,monk
         request=handler('complete.start',{})
         ack=handler('complete.finish',{'input_sha256':request['input_sha256'],'result':result})
         if case=='revoke':grant.revoked.set()
-        return SimpleNamespace(status='failed' if case=='failed_process' else 'completed',data={'stdout':_encode({} if case=='bad_receipt' else ack).decode()})
+        return SimpleNamespace(status='timed_out' if case=='timeout' else 'failed' if case=='failed_process' else 'completed',data={'stdout':_encode({} if case=='bad_receipt' else ack).decode()})
     monkeypatch.setattr(run,'supervise',supervise)
     if case=='success':assert run.run(tmp_path,value,grant)==result
+    elif case=='timeout':
+        with pytest.raises(TimeoutError):run.run(tmp_path,value,grant)
     else:
         with pytest.raises((ValueError,RuntimeError,PermissionError)):run.run(tmp_path,value,grant)
 

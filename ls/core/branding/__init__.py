@@ -7,6 +7,7 @@ PRODUCT_NAME = "LocalSetup"
 PRODUCT_ABBREVIATION = "LS"
 CLI_NAME = "LSCli"
 CLI_COMMAND = "lscli"
+FRAMEWORK_COMMAND = "localsetup"
 
 
 def user_agent() -> str:

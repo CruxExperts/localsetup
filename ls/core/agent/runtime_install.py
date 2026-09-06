@@ -157,11 +157,13 @@ def _populate(release: Path, wheel: Path, wheelhouse: Path, uv: str, deadline: f
         regular_bytes(environment_lock)
         environment_lock.chmod(0o600)
     # Managed entry points must not honor workspace PYTHONPATH or user site hooks.
-    launcher = release / 'venv/bin/lscli'
-    if launcher.is_symlink() or not launcher.is_file():
-        raise ValueError("Managed CLI launcher must be a regular file")
-    launcher.write_text('#!/bin/sh\nexec ' + shlex.quote(str(python)) + ' -I -B -m ls.core.agent.cli "$@"\n')
-    launcher.chmod(0o700)
+    from ..branding import CLI_COMMAND, FRAMEWORK_COMMAND
+    for name,module in ((CLI_COMMAND,'ls.core.agent.cli'),(FRAMEWORK_COMMAND,'ls.core.cli')):
+        launcher = release / 'venv/bin' / name
+        if launcher.is_symlink() or not launcher.is_file():
+            raise ValueError("Managed CLI launcher must be a regular file")
+        launcher.write_text('#!/bin/sh\nexec ' + shlex.quote(str(python)) + ' -I -B -m ' + module + ' "$@"\n')
+        launcher.chmod(0o700)
 
 
 def install(root: Path, wheel: Path, digest: str, wheelhouse: Path, workspace: Path, *, timeout: float = 300,

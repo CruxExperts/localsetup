@@ -3986,14 +3986,6 @@
       "reason": "Established framework distribution name or managed CLI executable path used during runtime installation."
     },
     {
-      "path": "ls/core/agent/runtime_install.py",
-      "line_sha256": "e0ffce298e9e2f340fc9e66ebb80648aa931d3a5b27b259824ce0d521c017a69",
-      "token": "lscli",
-      "count": 1,
-      "kind": "compatibility_identifier",
-      "reason": "Established framework distribution name or managed CLI executable path used during runtime installation."
-    },
-    {
       "path": "ls/tests/sdk_model_fixture.py",
       "line_sha256": "4592fd63828028b6b199263c5098ad377b913b417206afe9e5f2c2a19e286160",
       "token": "lscli",
@@ -4176,6 +4168,14 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Exact framework command identifier in forwarding help, argument diagnostics or executable argv fixture; not product display text."
+    },
+    {
+      "path": "ls/core/branding/__init__.py",
+      "line_sha256": "1bb18fb566e2dc6b62914c65a8b1a30acd5834e4fa42d8ea22194b434108f609",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Established framework command literal; product display name remains LocalSetup."
     }
   ],
   "visual_reviews": [

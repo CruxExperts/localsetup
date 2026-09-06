@@ -428,6 +428,9 @@ def _main(argv: list[str] | None = None) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     arguments = list(sys.argv[1:] if argv is None else argv)
+    if arguments[:1] == ["llm"]:
+        from .agent.completion_cli import main as completion_main
+        return completion_main(arguments[1:])
     if arguments[:1] == ["agent"]:
         from .agent.cli import main as agent_main
         return agent_main(arguments[1:])
@@ -436,3 +439,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:
         print(f"localsetup: {exc}", file=sys.stderr)
         return 2
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

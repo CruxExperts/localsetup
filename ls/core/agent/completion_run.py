@@ -80,6 +80,8 @@ def run(runtimes,payload,authority,*,expected_release=None):
             current()
             outcome=supervise([str(release/'venv/bin/python'),'-I','-B','-m','ls.core.agent.completion_worker',str(right.fileno()),authority.task,authority.session,str(expires)],b'',cwd=release,
                 environment={'PATH':'/usr/bin:/bin','LANG':'C.UTF-8'},timeout=max(0,expires-time.monotonic()),cancel=authority.revoked,capture=True,pass_fds=(right.fileno(),),broker=(channel,handler,current))
+            if outcome.status=='timed_out':raise TimeoutError('Completion worker deadline expired')
+            if outcome.status=='cancelled':raise InterruptedError('Completion worker cancelled')
             if outcome.status!='completed' or handler.result is None:
                 raise RuntimeError('Completion worker did not complete')
             receipt={'result_sha256':hashlib.sha256(_encode(handler.result)).hexdigest()}
