@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 6828ba28896ebe1128809e3079060d85cb39dbd2d20e4afeed6b5a1c6a421c67
+  source_provenance_hash: 23179a5d5799ed3fe8f89be7b30782280446184da11770c1626c1517c9cdd4d2
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: d7fed6984cd1460f14b5fc1eaf3c72834757791a
-artifact_sha256: ea70f4f9c6fb85207e7aef8dfe171046102fc38fee8a7936fa8ebe3659ee09e6
+source_commit: a325625a551012bc2ce317ee4d5bb30054b8996a
+artifact_sha256: bd265fbd810c188c7e358b80b9be7c8f715805f91218f040cc99c11bc44e5b15
 ---
 # Implementation File Map
 
@@ -51,6 +51,7 @@ artifact_sha256: ea70f4f9c6fb85207e7aef8dfe171046102fc38fee8a7936fa8ebe3659ee09e
 | `keep` | `.github/workflows/qc-schedule-smoke.yml` |
 | `keep` | `.github/workflows/triage.yml` |
 | `keep` | `.gitignore` |
+| `keep` | `.localsetup-release.json` |
 | `keep` | `.python-version` |
 | `keep` | `AGENTS.md` |
 | `keep` | `CODE_OF_CONDUCT.md` |
@@ -98,6 +99,7 @@ artifact_sha256: ea70f4f9c6fb85207e7aef8dfe171046102fc38fee8a7936fa8ebe3659ee09e
 | `keep` | `ls/config/plugin-packs.yaml` |
 | `keep` | `ls/config/python-architecture-baseline.json` |
 | `keep` | `ls/config/reference-bundle.schema.json` |
+| `keep` | `ls/config/release-policy.schema.json` |
 | `keep` | `ls/config/sdk-build.lock` |
 | `keep` | `ls/config/sdk-dependency-receipt.json` |
 | `keep` | `ls/config/sdk-runtime.lock` |
@@ -409,6 +411,7 @@ artifact_sha256: ea70f4f9c6fb85207e7aef8dfe171046102fc38fee8a7936fa8ebe3659ee09e
 | `refactor` | `ls/core/versioning.py` |
 | `refactor` | `ls/core/versioning_constants.py` |
 | `refactor` | `ls/core/versioning_models.py` |
+| `refactor` | `ls/core/versioning_policy.py` |
 | `refactor` | `ls/core/versioning_sequence.py` |
 | `refactor` | `ls/core/versioning_sync.py` |
 | `refactor` | `ls/core/wizard.py` |
@@ -1277,6 +1280,7 @@ artifact_sha256: ea70f4f9c6fb85207e7aef8dfe171046102fc38fee8a7936fa8ebe3659ee09e
 | `keep` | `ls/tests/test_unfuck_my_git_state.py` |
 | `keep` | `ls/tests/test_validation_tooling.py` |
 | `keep` | `ls/tests/test_versioning.py` |
+| `keep` | `ls/tests/test_versioning_policy.py` |
 | `keep` | `ls/tests/test_versioning_release_push.py` |
 | `keep` | `ls/tests/test_versioning_sequence.py` |
 | `keep` | `ls/tests/test_windsurf_retention.py` |
