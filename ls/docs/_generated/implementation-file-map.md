@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 7fad44be56001cdd782fdc8019a60a9178c8cc842b8ff0699bdb2f0b70f74b8b
+  source_provenance_hash: 75d717c6524ac5c53addcd4330ed77810dcc698e51d23adaa016723dee36b6bd
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 3635c26552ed9e4071a3eca8fc8c7616c3894469
-artifact_sha256: c83186da7d2008a2b79e2c0d8f7bba712798e1d8d8799e66b06cb7ab252ce278
+source_commit: a97333fefe8147e04dd7e5a8c684a5d64357aa64
+artifact_sha256: 6c308b095717e43a22f7d8af7721f1d1d63238a6f2f4670a604580e6569fe6b7
 ---
 # Implementation File Map
 
@@ -1121,6 +1121,7 @@ artifact_sha256: c83186da7d2008a2b79e2c0d8f7bba712798e1d8d8799e66b06cb7ab252ce27
 | `keep` | `ls/tests/test_ls_kilo_boss_orchestrator_runner.py` |
 | `keep` | `ls/tests/test_ls_linux_patcher_patch_cli.py` |
 | `keep` | `ls/tests/test_lscli_bootstrap.py` |
+| `keep` | `ls/tests/test_lscli_client_profile.py` |
 | `keep` | `ls/tests/test_manifests.py` |
 | `keep` | `ls/tests/test_mcp_builder_connections.py` |
 | `keep` | `ls/tests/test_mutable_adapter_writes.py` |
