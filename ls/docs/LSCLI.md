@@ -226,7 +226,7 @@ creating state or looking for other credentials. Schema version 1 uses this shap
 
 Replace the illustrative endpoint and model with an explicitly qualified service.
 `api` is `chat_completions` or `responses`. Capabilities are an explicit subset of
-`streaming`, `tools`, `images`, `native_schema`, and per-value `reasoning:VALUE`
+`streaming`, `tools`, `images`, `native_schema`, `temperature`, and per-value `reasoning:VALUE`
 capabilities described below; declarations do not establish
 endpoint qualification or grant tool/disclosure authority. The named credential
 variable is resolved only from the environment supplied by the owner. Credential
@@ -272,7 +272,7 @@ on rate limiting, and redirect refusal. No live provider compatibility is implie
 The configured timeout is an HTTP operation timeout; supervisor wall-clock budgets,
 stream/output bounds, cancellation, and task-bound disclosure grants remain
 enforced by the coding and completion supervisors described below. The shared
-client serves their public commands; QC wrapper integration remains pending.
+client serves their public commands and the QC compatibility wrapper.
 
 ## SDK model adapter
 
@@ -1782,7 +1782,7 @@ checks qualify the selected protocol path, not every provider endpoint.
 
 The provider-free `completion_contract` module defines version-one requests for
 `localsetup llm complete`. The protected command and worker use this contract;
-QC compatibility integration remains pending.
+QC compatibility uses the same protected worker.
 A request is at most 1 MiB, rejects duplicate keys and unknown fields, and binds
 its model to the selected explicit profile. Example:
 
@@ -1837,8 +1837,8 @@ no Agent loop. It uses the shared explicit transport and native schema output
 when requested; validate-only output still passes local schema validation.
 Optional reasoning effort requires its exact per-value profile capability before
 dispatch. The SDK sends `reasoning_effort` for Chat Completions and
-`reasoning.effort` for Responses, without adding temperature or other options.
-The protected command below uses this adapter; QC wrapper integration is separate.
+`reasoning.effort` for Responses, without adding undeclared options.
+The protected command and QC wrapper use this adapter.
 
 Before SDK response normalization, a completion-only transport guard caps the
 identity-encoded body at 1 MiB plus 64 KiB of protocol overhead. It requests
@@ -1889,7 +1889,7 @@ protocol shape and trusts the verified installed adapter's schema result.
 Revocation, worker failure, an inconsistent receipt or deadline exhaustion prevents
 acceptance. The command maps execution failures to bounded public outcomes and
 never replays a possibly delivered request automatically. Runtime use locks remain
-held through worker teardown. QC compatibility integration remains pending.
+held through worker teardown. QC compatibility uses the same protected worker.
 
 ## Tool-free completion command
 
@@ -1919,3 +1919,24 @@ uncertain (10), and never triggers a retry. Missing credentials/runtime return
 unavailable (3). Output writing is bounded to one second; a closed or blocked
 output descriptor returns transport_failed (9), and a partially written envelope
 is not a successful delivery. No configuration or sessions are created.
+
+### Optional completion parameters and QC callers
+
+Profiles may include explicit `organization` and `project` strings (at most 256
+printable ASCII characters without whitespace). They are placed in final
+`OpenAI-Organization` and `OpenAI-Project` headers; ambient values remain ignored.
+Empty values are omitted from canonical profile serialization, preserving existing
+profile identities. Nonempty additions change identity like other profile changes.
+
+Requests may supply `schema_name` (1–64 ASCII letters, digits, `_` or `-`; default
+`completion`) and `temperature` (finite 0–2). Temperature requires the profile's
+`temperature` capability and is omitted when not requested. Explicit capabilities
+record endpoint/model qualification; they do not prove every provider supports
+every combination. Native fixtures verify the fields on both API formats.
+
+QC's existing string-returning client now delegates to the protected worker while
+retaining its default review schema, schema name and prompt redaction. It never
+installs a runtime or retries a possibly delivered request. See the
+[QC configuration and compatibility guide](https://github.com/CruxExperts/localsetup/blob/main/.ai/qc/README.md#protected-completion-compatibility)
+for runtime selection, optional parameter declarations, retained legacy settings
+and sanitized failure behavior.

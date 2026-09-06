@@ -20,6 +20,7 @@ async def complete(profile,environment,finder,raw,*,expires,check,transport=None
     settings={'max_tokens':request.max_output_tokens}
     if request.reasoning_effort is not None:
         settings['openai_reasoning_effort']=request.reasoning_effort
+    if request.temperature is not None:settings['temperature']=request.temperature
     attempts=0;usage=None
     def active():
         check()
@@ -35,7 +36,7 @@ async def complete(profile,environment,finder,raw,*,expires,check,transport=None
         parameters=ModelRequestParameters()
         if request.schema_mode=='native':
             parameters.output_mode='native'
-            parameters.output_object=OutputObjectDefinition(request.output_schema,name='completion',strict=True)
+            parameters.output_object=OutputObjectDefinition(request.output_schema,name=request.schema_name,strict=True)
         prompt=_encode(request.input).decode()
         async with asyncio.timeout(min(request.deadline_seconds,max(0,expires-time.monotonic()))):
             async with model(profile,environment,finder,transport=transport,response_guard=capture) as adapter:

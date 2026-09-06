@@ -23,6 +23,8 @@ class Request:
     input: object
     output_schema: dict
     schema_mode: str
+    temperature: float | None = None
+    schema_name: str = "completion"
 
 
 def validator(schema):
@@ -66,7 +68,7 @@ def parse(raw: bytes, profile) -> Request:
     value = _decode(raw)
     required = {'interface_version', 'model', 'deadline_seconds', 'max_attempts',
                 'max_output_tokens', 'input', 'output_schema'}
-    if not isinstance(value, dict) or not required <= set(value) or set(value) - required - {'reasoning_effort', 'schema_mode'}:
+    if not isinstance(value, dict) or not required <= set(value) or set(value) - required - {'reasoning_effort', 'schema_mode', 'temperature', 'schema_name'}:
         raise ValueError('Completion request fields differ from version one')
     if type(value['interface_version']) is not int or value['interface_version'] != 1:
         raise ValueError('Unsupported completion interface version')
@@ -89,8 +91,14 @@ def parse(raw: bytes, profile) -> Request:
         raise ValueError('Invalid schema mode')
     if mode == 'native' and 'native_schema' not in profile.capabilities:
         raise ValueError('Selected profile does not qualify native schema enforcement')
+    temperature=value.get('temperature')
+    if temperature is not None and (type(temperature) not in (int,float) or not math.isfinite(temperature) or not 0<=temperature<=2 or 'temperature' not in profile.capabilities):
+        raise ValueError('Unqualified or invalid completion temperature')
+    import re
+    name=value.get('schema_name','completion')
+    if not isinstance(name,str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,64}',name):raise ValueError('Invalid schema name')
     validator(value['output_schema'])
-    return Request(profile.model, effort, float(deadline), tokens, value['input'], value['output_schema'], mode)
+    return Request(profile.model, effort, float(deadline), tokens, value['input'], value['output_schema'], mode,temperature,name)
 
 
 def validate_output(text: str, request: Request):

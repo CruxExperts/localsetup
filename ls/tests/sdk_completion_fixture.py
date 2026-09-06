@@ -22,7 +22,7 @@ async def main():
     for api in ('chat_completions','responses'):
         profile=parse({'base_url':'https://fixture.invalid/v1/','api':api,'model':'fixture','credential_env':'KEY','timeout_seconds':5,'capabilities':['native_schema'],'allow_loopback_http':False})
         request=json.dumps({'interface_version':1,'model':'fixture','deadline_seconds':3,'max_attempts':1,'max_output_tokens':100,'input':{'facts':[]},'output_schema':{'type':'object','properties':{'ok':{'type':'boolean'}},'required':['ok'],'additionalProperties':False}}).encode()
-        for mode,expected in [('success','succeeded'),('refusal','refused'),('incomplete','incomplete'),('malformed','malformed'),('schema','schema_rejected'),('rate','rate_limited'),('error','provider_error'),('missing','unavailable'),('connect','transport_failed'),('read','uncertain'),('large','output_limit'),('revoke','cancelled'),('deadline','deadline')]+[(effort,'succeeded') for effort in sorted(REASONING_EFFORTS)]:
+        for mode,expected in [('success','succeeded'),('refusal','refused'),('incomplete','incomplete'),('malformed','malformed'),('schema','schema_rejected'),('rate','rate_limited'),('error','provider_error'),('missing','unavailable'),('connect','transport_failed'),('read','uncertain'),('large','output_limit'),('revoke','cancelled'),('deadline','deadline'),('options','succeeded')]+[(effort,'succeeded') for effort in sorted(REASONING_EFFORTS)]:
             calls=[];revoked=False
             def current():
                 if revoked:raise PermissionError('revoked')
@@ -34,6 +34,10 @@ async def main():
                 return result
             completion.validate_output=validate
             actual_request=request;actual_profile=profile
+            if mode=='options':
+                value=json.loads(request);value.update(temperature=0.25,schema_name='qc_fixture')
+                actual_request=json.dumps(value).encode()
+                actual_profile=replace(profile,capabilities=profile.capabilities | {'temperature'},organization='org-fixture',project='proj-fixture')
             if mode in REASONING_EFFORTS:
                 value=json.loads(request);value['reasoning_effort']=mode
                 actual_request=json.dumps(value).encode()
@@ -46,7 +50,10 @@ async def main():
                 actual_request=json.dumps(value).encode()
             def receive(wire):
                 calls.append(wire);body=json.loads(wire.content)
-                assert wire.headers['user-agent']==user_agent() and not body.get('tools') and not body.get('stream') and 'temperature' not in body
+                assert wire.headers['user-agent']==user_agent() and not body.get('tools') and not body.get('stream')
+                if mode=='options':
+                    assert body['temperature']==0.25 and wire.headers['OpenAI-Organization']=='org-fixture' and wire.headers['OpenAI-Project']=='proj-fixture'
+                else:assert 'temperature' not in body and 'OpenAI-Organization' not in wire.headers and 'OpenAI-Project' not in wire.headers
                 if mode in REASONING_EFFORTS:
                     assert (body.get('reasoning_effort') if api=='chat_completions' else body.get('reasoning',{}).get('effort'))==mode
                 else:assert 'reasoning_effort' not in body and not body.get('reasoning')
@@ -58,9 +65,11 @@ async def main():
                 if api=='chat_completions':
                     value={'id':'fixture','created':1,'object':'chat.completion','model':'fixture','choices':[{'index':0,'finish_reason':'length' if mode=='incomplete' else 'stop','message':{'role':'assistant','content':text,'refusal':'private refusal' if mode=='refusal' else None}}],'usage':{'prompt_tokens':7,'completion_tokens':3,'total_tokens':10}}
                     assert body['response_format']['type']=='json_schema'
+                    assert body['response_format']['json_schema']['name']==('qc_fixture' if mode=='options' else 'completion')
                 else:
                     value={'id':'resp_fixture','created_at':1,'object':'response','model':'fixture','status':'incomplete' if mode=='incomplete' else 'completed','output':[{'type':'reasoning','id':'rs_fixture','summary':[]},{'type':'message','id':'msg_fixture','role':'assistant','status':'completed','content':[{'type':'refusal','refusal':'private refusal'}] if mode=='refusal' else [{'type':'output_text','text':text,'annotations':[]}]}],'usage':{'input_tokens':7,'output_tokens':3,'total_tokens':10}}
                     assert body['text']['format']['type']=='json_schema'
+                    assert body['text']['format']['name']==('qc_fixture' if mode=='options' else 'completion')
                 return httpx.Response(200,json=value,headers={'x-request-id':'fixture-request'})
             result=await complete(actual_profile,{} if mode=='missing' else {'KEY':'fixture'},finder,actual_request,expires=time.monotonic()+5,check=current,transport=httpx.MockTransport(receive))
             assert result['status']==expected,(api,mode,result)

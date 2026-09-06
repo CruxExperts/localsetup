@@ -27,6 +27,8 @@ class BoundTransport(httpx.AsyncBaseTransport):
             'Authorization': 'Bearer ' + self.credential, 'Content-Type': 'application/json',
             'Accept': 'application/json', 'Content-Length': str(len(content)),
         })
+        for key,value in [('OpenAI-Organization',self.profile.organization),('OpenAI-Project',self.profile.project)]:
+            if value:request.headers[key]=value
         if self.response_guard: request.headers['Accept-Encoding'] = 'identity'
         response = await self.delegate.handle_async_request(request)
         return await self.response_guard(response) if self.response_guard else response
@@ -45,7 +47,7 @@ async def client(profile: Profile, environment: dict[str, str], *, transport=Non
     delegate = transport if transport is not None else httpx.AsyncHTTPTransport(verify=context, retries=0, trust_env=False)
     http = httpx.AsyncClient(transport=BoundTransport(profile, credential, delegate, response_guard),
                             trust_env=False, follow_redirects=False, timeout=profile.timeout_seconds)
-    sdk = AsyncOpenAI(api_key=credential, admin_api_key='', base_url=profile.base_url, organization='', project='',
+    sdk = AsyncOpenAI(api_key=credential, admin_api_key='', base_url=profile.base_url, organization=profile.organization, project=profile.project,
                       webhook_secret='', max_retries=0, timeout=profile.timeout_seconds, http_client=http)
     # The pinned SDK merges OPENAI_CUSTOM_HEADERS during construction. Clear that
     # private adapter field before serialization as well as rebuilding wire headers.

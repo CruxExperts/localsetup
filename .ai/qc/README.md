@@ -71,3 +71,29 @@ The endpoint URL and secret headers must not be written to issues. Issues may re
 The QC workflows live in `.github`, which is otherwise part of the public LocalSetup artifact. Because the QC tooling lives at root `tools/qc_patrol/` and is not shipped with the framework package, the exact `qc-*.yml` workflow paths are listed in `ls/config/pack.yaml` under `public_private.private_paths`.
 
 Runtime output belongs in `qc-out/` workflow artifacts. Do not commit local patrol ledgers, raw LLM responses, or generated runtime state.
+
+## Protected completion compatibility
+
+QC's `LLMClient.complete(...)` retains its string result, default review schema
+and prompt redaction. It uses LocalSetup's protected completion worker and shared
+provider transport. Provision a verified managed runtime before enabling QC model
+work; the wrapper never installs one automatically. `QC_LLM_RUNTIME_ROOT` selects
+an explicit root, otherwise the default LSCli runtime location is used. Missing
+credentials fail before dispatch. Model failures raise sanitized errors without
+provider bodies, endpoint URLs or credentials. Successful JSON is compactly
+serialized; formatting is not preserved byte-for-byte.
+
+Both API styles and base URLs that include the selected endpoint suffix remain
+supported. Explicit organization/project values are retained in the final request
+headers; ambient SDK settings are ignored. Optional `QC_LLM_REASONING_EFFORT` must
+be listed in comma-separated `QC_LLM_REASONING_EFFORTS`. Optional temperature is
+sent only with `QC_LLM_TEMPERATURE_SUPPORTED=true`; the legacy zero default is
+omitted otherwise, while an unsupported nonzero value refuses. The schema-name
+argument is retained. `QC_LLM_ALLOW_LOOPBACK_HTTP=true` is only for explicitly
+selected literal loopback fixtures; other endpoints require HTTPS.
+
+`QC_LLM_RETRY_COUNT` remains readable for existing configuration, but no value
+enables retries: the accepted completion policy permits one attempt. Transport
+uncertainty is not replayed. The configured timeout bounds the protected worker,
+including validation. The wrapper creates no sessions, configurations or recurring
+jobs and preserves the existing caller-owned redaction and error-artifact flow.

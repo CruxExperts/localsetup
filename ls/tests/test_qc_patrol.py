@@ -348,30 +348,35 @@ def test_pr_review_prompt_requires_strict_json() -> None:
     assert "{\"findings\":[]}" in rules
 
 
-def test_llm_client_success_and_retry(monkeypatch: pytest.MonkeyPatch) -> None:
-    config = load_config(REPO).llm
-    config = SimpleNamespace(**{**config.__dict__, "base_url": "https://example.test", "api_key": "secret", "retry_count": 1})
-    calls = {"count": 0}
+@pytest.mark.parametrize("api", ["chat_completions", "responses"])
+def test_llm_client_shared_completion_preserves_redaction(monkeypatch, api):
+    from dataclasses import replace
+    from ls.core.agent.completion_contract import envelope
+    config=replace(load_config(REPO).llm,base_url="https://example.test/v1",api_key="secret",api_style=api)
+    calls=[]
+    def complete(root,payload,authority):
+        calls.append(payload)
+        request=json.loads(payload['request'])
+        assert 'secret-value' not in request['input']
+        assert request['max_attempts']==1 and 'temperature' not in request
+        assert payload['profile']['api']==api
+        return envelope('succeeded',model=config.model,data={'findings':[]},attempts=1)
+    monkeypatch.setattr('ls.core.agent.completion_run.run',complete)
+    assert LLMClient(config).complete('api_key=secret-value')=='{"findings":[]}'
+    assert len(calls)==1
 
-    class Response:
-        content = b"{}"
 
-        def raise_for_status(self) -> None:
-            return None
-
-        def json(self) -> dict[str, object]:
-            return {"choices": [{"message": {"content": '{"findings":[]}'}}]}
-
-    def post(*args: object, **kwargs: object) -> Response:
-        calls["count"] += 1
-        if calls["count"] == 1:
-            raise TimeoutError("timeout")
-        return Response()
-
-    monkeypatch.setattr("tools.qc_patrol.llm_client.requests.post", post)
-    monkeypatch.setattr("tools.qc_patrol.llm_client.time.sleep", lambda _seconds: None)
-    assert LLMClient(config).complete("api_key=secret-value") == '{"findings":[]}'
-    assert calls["count"] == 2
+def test_llm_client_uncertain_not_retried(monkeypatch):
+    from dataclasses import replace
+    from ls.core.agent.completion_contract import envelope
+    config=replace(load_config(REPO).llm,base_url="https://example.test",api_key="secret",retry_count=4)
+    calls=[]
+    def complete(*args):
+        calls.append(1)
+        return envelope('uncertain',model=config.model,attempts=1)
+    monkeypatch.setattr('ls.core.agent.completion_run.run',complete)
+    with pytest.raises(RuntimeError,match='uncertain'):LLMClient(config).complete('prompt')
+    assert calls==[1]
 
 
 def test_llm_strict_json_invalid_response(tmp_path: Path) -> None:

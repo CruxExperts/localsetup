@@ -67,3 +67,15 @@ def test_explicit_reasoning_capabilities_round_trip():
         assert request.reasoning_effort==effort
     raw=wire(profile);raw['capabilities'].append('reasoning:unknown')
     with pytest.raises(ValueError):profile_parse(raw)
+
+
+def test_completion_optional_metadata_and_temperature():
+    from ls.core.agent.profiles import wire
+    profile,value=fixture()
+    with pytest.raises(ValueError):parse(json.dumps(value|{'temperature':0.5}).encode(),profile)
+    configured=wire(profile)|{'organization':'org-fixture','project':'proj-fixture'}
+    configured['capabilities'].append('temperature')
+    profile=profile_parse(configured)
+    assert wire(profile)==configured
+    assert parse(json.dumps(value|{'temperature':0.5,'schema_name':'qc_review'}).encode(),profile).temperature==0.5
+    with pytest.raises(ValueError):profile_parse(configured|{'organization':'org\nsecret'})

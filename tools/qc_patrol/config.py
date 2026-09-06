@@ -24,6 +24,11 @@ class LLMConfig:
     endpoint_alias: str
     organization: str
     project: str
+    runtime_root: str = ""
+    reasoning_effort: str = ""
+    reasoning_efforts: tuple[str, ...] = ()
+    temperature_supported: bool = False
+    allow_loopback_http: bool = False
 
 
 @dataclass(frozen=True)
@@ -51,6 +56,11 @@ def _env_value(name: str, data: dict[str, Any], key: str, default: Any = "") -> 
     return str(value)
 
 
+def _boolean(value: str) -> bool:
+    if value.lower() not in ('true','false','1','0'):raise ValueError('Invalid QC boolean setting')
+    return value.lower() in ('true','1')
+
+
 def load_config(repo: Path, config_path: Path | None = None) -> QCConfig:
     path = config_path or repo / DEFAULT_CONFIG_PATH
     data = _read_yaml(path)
@@ -67,11 +77,16 @@ def load_config(repo: Path, config_path: Path | None = None) -> QCConfig:
         temperature=float(_env_value("QC_LLM_TEMPERATURE", llm_data, "temperature", 0)),
         max_tokens=int(_env_value("QC_LLM_MAX_TOKENS", llm_data, "max_tokens", 2000)),
         timeout_seconds=float(_env_value("QC_LLM_TIMEOUT_SECONDS", llm_data, "timeout_seconds", 30)),
-        retry_count=int(_env_value("QC_LLM_RETRY_COUNT", llm_data, "retry_count", 1)),
+        retry_count=int(_env_value("QC_LLM_RETRY_COUNT", llm_data, "retry_count", 0)),
         api_style=_env_value("QC_LLM_API_STYLE", llm_data, "api_style", "chat_completions"),
         endpoint_alias=_env_value("QC_LLM_ENDPOINT_ALIAS", llm_data, "endpoint_alias", "configured-qc-llm"),
         organization=os.environ.get("QC_LLM_ORGANIZATION", str(llm_data.get("organization", ""))),
         project=os.environ.get("QC_LLM_PROJECT", str(llm_data.get("project", ""))),
+        runtime_root=_env_value("QC_LLM_RUNTIME_ROOT",llm_data,"runtime_root"),
+        reasoning_effort=_env_value("QC_LLM_REASONING_EFFORT",llm_data,"reasoning_effort"),
+        reasoning_efforts=tuple(x.strip() for x in _env_value("QC_LLM_REASONING_EFFORTS",llm_data,"reasoning_efforts").split(',') if x.strip()),
+        temperature_supported=_boolean(_env_value("QC_LLM_TEMPERATURE_SUPPORTED",llm_data,"temperature_supported",False)),
+        allow_loopback_http=_boolean(_env_value("QC_LLM_ALLOW_LOOPBACK_HTTP",llm_data,"allow_loopback_http",False)),
     )
     return QCConfig(
         labels=labels,

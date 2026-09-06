@@ -11,7 +11,7 @@ from urllib.parse import urlsplit
 
 
 REASONING_EFFORTS = frozenset({'none', 'minimal', 'low', 'medium', 'high', 'xhigh'})
-CAPABILITIES = {'streaming', 'tools', 'images', 'native_schema'} | {'reasoning:' + effort for effort in REASONING_EFFORTS}
+CAPABILITIES = {'streaming', 'tools', 'images', 'native_schema', 'temperature'} | {'reasoning:' + effort for effort in REASONING_EFFORTS}
 
 @dataclass(frozen=True)
 class Profile:
@@ -21,6 +21,8 @@ class Profile:
     credential_env: str
     timeout_seconds: float
     capabilities: frozenset[str]
+    organization: str = ""
+    project: str = ""
 
     @property
     def endpoint(self) -> str:
@@ -35,7 +37,7 @@ class Profile:
 
 def parse(value: object) -> Profile:
     required = {'base_url', 'api', 'model', 'credential_env', 'timeout_seconds', 'capabilities', 'allow_loopback_http'}
-    if not isinstance(value, dict) or set(value) != required:
+    if not isinstance(value, dict) or not required <= set(value) or set(value) - required - {"organization", "project"}:
         raise ValueError('Provider profile fields must match schema version 1')
     base = value['base_url']
     if not isinstance(base, str) or not base.isascii() or any(ord(c) <= 32 or ord(c) == 127 for c in base):
@@ -66,7 +68,13 @@ def parse(value: object) -> Profile:
     capabilities = value['capabilities']
     if not isinstance(capabilities, list) or any(not isinstance(c, str) for c in capabilities) or len(set(capabilities)) != len(capabilities) or not set(capabilities) <= CAPABILITIES:
         raise ValueError('Invalid explicit provider capabilities')
-    return Profile(base.rstrip('/') + '/', value['api'], model, credential, float(timeout), frozenset(capabilities))
+    metadata={}
+    for name in ('organization','project'):
+        item=value.get(name,'')
+        if not isinstance(item,str) or len(item)>256 or any(ord(c)<33 or ord(c)>126 for c in item):
+            raise ValueError('Invalid explicit provider metadata')
+        metadata[name]=item
+    return Profile(base.rstrip('/') + '/', value['api'], model, credential, float(timeout), frozenset(capabilities),**metadata)
 
 
 def document(path: Path) -> dict:
@@ -98,7 +106,11 @@ def load(path: Path, name: str) -> Profile:
 
 def wire(profile: Profile) -> dict:
     """Canonical explicit profile representation used for history compatibility."""
-    return {'base_url': profile.base_url, 'api': profile.api, 'model': profile.model,
+    result = {'base_url': profile.base_url, 'api': profile.api, 'model': profile.model,
             'credential_env': profile.credential_env, 'timeout_seconds': profile.timeout_seconds,
             'capabilities': sorted(profile.capabilities),
             'allow_loopback_http': profile.base_url.startswith('http://')}
+
+    for name in ('organization','project'):
+        if getattr(profile,name):result[name]=getattr(profile,name)
+    return result
