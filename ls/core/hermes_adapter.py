@@ -20,7 +20,7 @@ def hermes_adapter_blockers(source: Path, actions, home: Path, target: Path) -> 
         clients = set(action.details.get('platforms', []))
         clients.update(o.get('client') for o in action.details.get('owners', []))
         if action.details.get('platform'):clients.add(action.details['platform'])
-        if CLIENT not in clients or action.kind not in {'attach_repo_path', 'attach_personal_path'}:continue
+        if CLIENT not in clients or action.kind not in {'attach_repo_path', 'attach_personal_path', 'repair_repo_path'}:continue
         try:
             personal = action.kind == 'attach_personal_path'
             expected = (home if personal else target) / '.hermes/skills'

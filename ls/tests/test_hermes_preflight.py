@@ -64,3 +64,11 @@ def test_apply_rejects_authored_link_before_canonical_mutation(tmp_path, monkeyp
     with pytest.raises(RuntimeError, match='hermes_adapter_preservation'):
         apply_plan(source, plan, home)
     assert not library.exists() and not action.path.exists()
+
+
+def test_combined_repository_repair_obeys_native_binding(tmp_path):
+    source, home, target, package, action = fixture(tmp_path, personal=False)
+    action.kind = 'repair_repo_path'
+    action.path = target / '.agents/skills'
+    result = hermes_adapter_blockers(source, [action], home, target)
+    assert len(result) == 1 and 'binding' in result[0]['reason']

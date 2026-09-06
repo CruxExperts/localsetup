@@ -50,6 +50,8 @@ def build_install_plan(
     validate_platform_selectors(repo_root, platform_ids)
     selected_ids = set(platform_ids or [])
     selected_platforms = [p for p in platforms if p.platform_id in selected_ids]
+    if "hermes-agent" in selected_ids and attach_mode != "portable":
+        raise ValueError("Hermes requires independent copies; select --mode portable")
     attachment_root = target_root or repo_root
     scope = resolve_skill_scope(attachment_root, skill_scope)
     global_root = expand_user_path(pack.global_root, home)
@@ -186,6 +188,10 @@ def build_install_plan(
                 "mode": attach_mode, "global_root": str(global_root),
                 "packages": repo_selection.packages,
             }))
+
+    for action in actions:
+        if "hermes-agent" in action.details.get("platforms", []):
+            action.details["mutable_copy"] = True
 
     rollback = {
         "skill_scope": scope,

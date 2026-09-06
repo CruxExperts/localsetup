@@ -383,3 +383,46 @@ not proof of package availability. Startup network behavior and authentication
 also require separate target qualification; no Pi command is invoked here.
 Pi, OMP and LSCli are distinct runtimes. Common skill-package shape does not
 establish extension, provider, permission, session, MCP or sandbox compatibility.
+
+## Hermes Agent
+
+The `hermes` family exposes `hermes-agent`, with executable candidate `hermes`.
+It writes independent portable packages to repository `.hermes/skills` and the
+explicit default personal profile `~/.hermes/skills`. Native copies keep mutable
+skills isolated from the canonical LocalSetup library; they are not read-only.
+Saved package baselines and independent ownership receipts prevent automatic
+replacement or removal of native edits or deletions. Preserve and reconcile those
+changes before retrying update, repair, detach or rollback. Keep Hermes writers
+quiescent during maintenance; LocalSetup locks coordinate LocalSetup operations.
+
+```bash
+localsetup plan --target-directory PROJECT --tools hermes-agent --skill-scope both --skills ls-context --mode portable
+localsetup install --target-directory PROJECT --tools hermes-agent --skill-scope both --skills ls-context --mode portable --apply
+localsetup verify --target-directory PROJECT
+```
+
+Symlink mode is refused. Personal selection explicitly targets the default
+profile; a nondefault `HERMES_HOME` refuses these writes. Named profiles, sticky
+CLI selection and context-local API overrides need separate qualification. These
+commands do not determine or change a running session's selected profile.
+[Hermes profiles](https://hermes-agent.nousresearch.com/docs/user-guide/profiles/)
+keep native configuration and state separate; do not use default-profile adapter
+success as evidence that another profile has loaded its skills.
+
+[Native skill discovery](https://github.com/NousResearch/hermes-agent/blob/245e48008fa814b3251f50755eb656bd9fb86cb1/agent/skill_utils.py)
+requires a Git root and explicit project trust for project packages. Discovery
+can be disabled or content quarantined. LocalSetup does not approve trust or add
+`skills.external_dirs`. Shared-home external sources require native configuration
+and can be writable; pointing Hermes at canonical LocalSetup symlinks would not
+provide the copy isolation implemented here. Resource precedence, categorized
+name ambiguity and effective session loading require host verification.
+
+Native configuration, profiles, `SOUL.md`, sessions, databases, memory, cron,
+gateway state, plugins, vendor manifests and custom skills remain user-owned.
+Hermes-specific context and `AGENTS.override.md` can affect instruction loading;
+context discovery does not establish skill trust. `/reload-skills` or
+`/reload_skills` rescans skills; credential reload and MCP reload are separate
+operations. Use the official installation guide with a verified selected artifact.
+The adapter performs no Hermes installation, startup, authentication or provider
+call. Filesystem lifecycle fixtures are qualified; installed-host behavior remains
+`not-run`.

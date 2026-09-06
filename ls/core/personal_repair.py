@@ -42,6 +42,8 @@ def _plan(repo_root: Path, home: Path, clients: list[str] | None):
                 if not package.is_dir() or not is_managed_package(package):
                     raise ValueError(f"reinstall missing managed library package: {name}")
         except (ValueError, OSError) as exc:blockers.append(str(exc))
+    from .hermes_adapter import hermes_adapter_blockers
+    blockers.extend(b["reason"] for b in hermes_adapter_blockers(repo_root, list(actions.values()), home, repo_root))
     from .amp_preflight import amp_skill_blockers
     blockers.extend(b["reason"] for b in amp_skill_blockers(repo_root, list(actions.values()), home, repo_root))
     from .goose_prerequisite import goose_prerequisite_blockers

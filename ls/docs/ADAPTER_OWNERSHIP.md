@@ -802,8 +802,8 @@ Read-only repair reports do not acquire a mutation lock.
 Historical retirement within apply uses its preflight over action paths before
 mutations. These checks still require native writers to be quiescent; LocalSetup's
 lock coordinates LocalSetup operations. They neither change native trust nor
-establish a sandbox boundary. Hermes profile registration and installed-host
-qualification remain separate delivery requirements.
+establish a sandbox boundary. Hermes profile usage and installed-host limitations are documented in
+[client integration metadata](CLIENT_INTEGRATION_METADATA.md#hermes-agent).
 
 After personal detach or scope retirement, an empty mutable baseline is removed
 only when the pending registry has no remaining mutable owner at that physical
@@ -824,4 +824,5 @@ canonical installation can follow resource links. Symlinks, hardlinked files and
 unsupported nodes therefore fail before installation changes. Existing copies
 retain the baseline and independent ownership checks described above. No Hermes
 process, provider, trust change or native configuration write is involved.
-This internal prerequisite alone does not register the client or qualify a host.
+The registered `hermes-agent` planner supplies the mutable-copy designation;
+this preflight does not qualify a running host.

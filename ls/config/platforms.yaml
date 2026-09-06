@@ -103,3 +103,11 @@ platforms:
     smoke_test_level: filesystem
     verify_rules: ["skills_visible", "namespace_ls"]
     rollback_targets: [".agents/skills"]
+
+  - id: hermes-agent
+    repo_paths: [".hermes/skills"]
+    global_paths: ["~/.hermes/skills"]
+    native_config: symlink_or_reference
+    smoke_test_level: filesystem
+    verify_rules: ["skills_visible", "namespace_ls"]
+    rollback_targets: [".hermes/skills"]

@@ -1012,6 +1012,142 @@ families:
         - goose_skills_configured
         rollback_class: managed-entry-removal
 
+  - id: hermes
+    display_name: Hermes Agent
+    variants:
+    - id: hermes-agent
+      display_name: Hermes Agent
+      kind: cli
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_source
+          url: https://github.com/NousResearch/hermes-agent/blob/245e48008fa814b3251f50755eb656bd9fb86cb1/agent/skill_utils.py
+        - kind: official_docs
+          url: https://hermes-agent.nousresearch.com/docs/user-guide/profiles/
+      executables:
+      - hermes
+      policy:
+        repo:
+          status: supported
+          resolution: hierarchy
+          paths:
+          - AGENTS.md
+          - AGENTS.override.md
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.hermes/config.yaml
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .hermes/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.hermes/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: active
+        installation:
+          method: manual
+          instructions: Use official Hermes installation instructions with a verified selected artifact. This adapter
+            does not install or start Hermes.
+        qualification:
+          catalog: implemented
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_hermes_adapters.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Portable independent copies are required; native skill edits and deletions block automatic replacement or
+          removal until preservation review.
+        - Personal writes bind explicitly to the default ~/.hermes profile. Nondefault HERMES_HOME is refused; named,
+          sticky CLI and context-local API profile selection remain separately unqualified.
+        - Project skill discovery requires a Git root and native trust and can be disabled or quarantined. LocalSetup
+          does not approve trust or edit external_dirs.
+        - Native config, profiles, personality, sessions, databases, memory, cron, gateway, plugins, manifests and
+          custom skills remain unmanaged.
+        - Filesystem exposure does not prove effective resource precedence or running-session availability. No read-only
+          sandbox or host qualification is claimed.
+      compatibility:
+        platform_id: hermes-agent
+        order: 140
+        native_config: symlink_or_reference
+        smoke_test_level: filesystem
+        verify_rules:
+        - skills_visible
+        - namespace_ls
+        rollback_class: managed-entry-removal
+
   - id: kilo
     display_name: Kilo Code
     variants:
