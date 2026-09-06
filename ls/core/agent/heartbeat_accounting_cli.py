@@ -15,7 +15,7 @@ from .run_io import Streams
 def arguments(parent, target_flags):
     parser = parent.add_parser("accounting")
     sub = parser.add_subparsers(dest="accounting_action", required=True)
-    for action in ("init", "inspect", "review"):
+    for action in ("init", "inspect", "review", "action-plan"):
         item = sub.add_parser(action)
         target_flags(item)
         item.add_argument("--accounting-root", type=Path, required=True)
@@ -61,6 +61,9 @@ def execute(args, workspace):
     workspace = _target(workspace)
     if args.accounting_action == "inspect":
         return report(args.accounting_root, workspace)
+    if args.accounting_action == "action-plan":
+        from .heartbeat_action import plan
+        return plan(args.input, workspace, args.accounting_root)
     value = _input(args.input, workspace)
     if args.accounting_action == "review":
         store.budget._keys(value, {"operation", "result", "decision", "evidence", "rationale"})
@@ -93,7 +96,7 @@ def main(args, workspace):
         return 0
     except KeyboardInterrupt:
         return 130
-    except (OSError, ValueError, TypeError, RuntimeError, RecursionError):
+    except (OSError, ValueError, TypeError, RuntimeError, RecursionError, KeyError):
         try:
             Streams(time.monotonic()+5, threading.Event(), output_fd=2).write(
                 "Heartbeat accounting unavailable; inspect the private input, workspace, policy digest and current head.\n")

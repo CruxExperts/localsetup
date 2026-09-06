@@ -171,3 +171,71 @@ generic diagnostic. These commands emit JSON and exit 0 on success; interruption
 exits 130. The existing budget command retains framework error diagnostics.
 After uncertain writes, inspect the current state before deciding how to reconcile it. Never replay a dispatch or
 reset the directory merely because a command did not return a receipt.
+
+### Preparing an action authorization
+
+The provider-free action planner derives a binding instead of requiring the
+controller to invent one. It does not dispatch, reserve budget, create state,
+validate a saved checkpoint, or establish sandbox availability. Runtime
+reservation and compound execution integration remain separate requirements.
+
+~~~bash
+localsetup --target-directory /work/project harness codex-heartbeat accounting action-plan --accounting-root /private/task-control --input /private/action.json
+~~~
+
+Action input is a private owned regular file outside the workspace, with the
+same no-symlink, single-link and 64 KiB limits as accounting inputs. Provider
+and grant files use that same stricter 64 KiB private-file contract for this
+interface. The canonical binding material must also fit 64 KiB. No credentials
+are read. The selected provider must advertise tools and streaming. An owned,
+current PATH registration and qualified installed dispatcher are required;
+missing or stale registration fails without creating state.
+
+~~~json
+{
+  "schema_version": 1,
+  "operation": "attempt1", "task": "task", "session": "session",
+  "checkpoint": null, "profile": "coding", "prompt": "Implement the selected task",
+  "executable": "/private/bin/lscli",
+  "profiles": "/private/profiles.json", "grant": "/private/grant.json",
+  "runtime_root": "/private/runtimes", "state_root": "/private/sessions",
+  "resource_parent": "/sys/fs/cgroup/owner-delegated",
+  "run": {"requests": 2, "tools": 3, "tokens": 32768, "seconds": 320},
+  "compact": null, "idle_seconds": 120, "output_bytes": 1048576
+}
+~~~
+
+All fields shown are required; unknown fields fail. Paths are canonical absolute
+strings. Operation, task and session use the existing journal identifier syntax.
+A non-null checkpoint is an explicit 64-character lowercase hexadecimal digest;
+there is no implicit latest checkpoint or uncertain-operation recovery. Run
+request/tool/token limits retain the accounting envelope bounds. Each phase's
+seconds is an integer from 21 through 3620, allocating 20 seconds for startup
+and cleanup in addition to the intended coding/compaction timeout. Idle seconds
+is an integer from 1 through run seconds minus 20; output bytes is an integer
+from 1024 through 4194304. Prompt is nonempty UTF-8 bounded by the input and
+canonical-material file limits.
+
+For an explicit compound action, set checkpoint and replace compact with
+an object containing exactly tokens (1–1000000), seconds (21–3620),
+keep_messages (0–256), and disclose_history (true). The returned envelope charges
+both phases, one additional request, and one compaction before any future
+execution. A successful plan does not prove that the selected history can be
+compacted; the execution owner must verify that checkpoint and resulting receipt.
+
+The result includes operation, binding, authorization, envelope, profile_sha256,
+action, checkpoint, task, and session, plus schema_version. Copy authorization
+under that operation in the policy input's authorizations map, then review and
+initialize the complete policy. The digest binds the full action, workspace,
+accounting root, protected dispatcher argv and exact grant/profile file bytes.
+Changes to those inputs require a new plan. Output omits prompt and file contents.
+Action-plan uses the accounting command's exit 0/2/130 and generic-error contract.
+
+The planner consumes explicit private configuration rather than workspace hooks
+or a model-editable queue. All selected paths remain outside the workspace;
+runtime, session and resource roots must not overlap controller inputs,
+registration, profile/grant files or accounting state. This is a planning
+boundary, not a claim that mutable inputs remain stable during future dispatch:
+execution must revalidate the binding before reservation and protect phase inputs
+through completion. Existing fresh-session profiles and no-agent behavior are
+unchanged.
