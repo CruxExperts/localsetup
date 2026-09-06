@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 909eacb125195bd0d44636f10c0c1638f92352ab5f740e97e9426207986fc814
+  source_provenance_hash: b269cf8d76bbb1432a8c947d23058b67dabb6d377a3bf928ae12cd1a2163210b
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: c3e7d3098544091e56d510720112eab5e6e13dd5
-artifact_sha256: ae76da74d27f32381dfbf4f9d4bb00faacc285d70d75bfe9a1f52d7efac3cea5
+source_commit: 44839c9557dde33888b341d881cd2dda78114efd
+artifact_sha256: 736c6e6c3599de795edba57fb7e847b2e647353971b55f2a61787e1306552c11
 ---
 # Implementation File Map
 
@@ -282,6 +282,7 @@ artifact_sha256: ae76da74d27f32381dfbf4f9d4bb00faacc285d70d75bfe9a1f52d7efac3cea
 | `refactor` | `ls/core/manifests.py` |
 | `refactor` | `ls/core/migration.py` |
 | `refactor` | `ls/core/models.py` |
+| `refactor` | `ls/core/mutable_packages.py` |
 | `refactor` | `ls/core/package.py` |
 | `refactor` | `ls/core/package_cleanup.py` |
 | `refactor` | `ls/core/package_content/__init__.py` |
@@ -1100,6 +1101,7 @@ artifact_sha256: ae76da74d27f32381dfbf4f9d4bb00faacc285d70d75bfe9a1f52d7efac3cea
 | `keep` | `ls/tests/test_lscli_bootstrap.py` |
 | `keep` | `ls/tests/test_manifests.py` |
 | `keep` | `ls/tests/test_mcp_builder_connections.py` |
+| `keep` | `ls/tests/test_mutable_packages.py` |
 | `keep` | `ls/tests/test_native_bundle.py` |
 | `keep` | `ls/tests/test_nested_context.py` |
 | `keep` | `ls/tests/test_omniroute_api_cli.py` |
