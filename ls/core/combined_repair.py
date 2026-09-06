@@ -91,6 +91,8 @@ def _plan(source, home, target, clients):
     except (ValueError, OSError, TypeError, KeyError) as exc:blockers.append(str(exc))
     from .amp_preflight import amp_skill_blockers
     blockers.extend(b['reason'] for b in amp_skill_blockers(source, [a for _, a, _ in actions.values()], home, target))
+    from .goose_prerequisite import goose_prerequisite_blockers
+    blockers.extend(b['reason'] for b in goose_prerequisite_blockers(source, [a for _, a, _ in actions.values()], home, target))
     return {'ok': not blockers, 'applied': False, 'blockers': blockers,
             'actions': [{'kind': a.kind, 'path': str(a.path), 'details': a.details} for _, a, _ in actions.values()],
             'verification': {'ok': not blockers and not actions, 'owners': personal['verification']['owners'],

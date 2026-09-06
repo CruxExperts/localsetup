@@ -110,6 +110,11 @@ def verify_install(
             issues.append(f"invalid shared adapter ownership: {exc}")
     platform_rules = {platform.platform_id: platform.verify_rules for platform in load_platforms(repo_root)}
     rule_results: list[dict] = []
+    if "goose-cli" in lock.get("platforms", []) and (platform_ids is None or "goose-cli" in platform_ids):
+        from .goose_prerequisite import goose_skills_configuration
+        prerequisite = goose_skills_configuration(home)
+        rule_results.append(prerequisite)
+        if not prerequisite["ok"]:issues.append(prerequisite["reason"])
     for adapter in adapters:
         expected_mode = adapter.get("expected_mode", attach_mode)
         platform_evidence = {

@@ -271,3 +271,65 @@ verified installer and selected release artifact. Authentication and upstream
 background-update behavior require separate target qualification. Installing
 LocalSetup skill adapters does not install Amp, configure its updater, or grant
 account, network, or provider authority.
+
+## Goose CLI
+
+The `goose` family exposes `goose-cli`, using repository `.agents/skills` and
+personal `~/.agents/skills`. The discovery candidate is `goose`; Goose Desktop
+is a separate interface outside this qualification. Resource-bearing skill
+packages, repository/personal/both ownership and symlink/portable projections
+have filesystem fixtures. Installed host qualification remains `not-run`.
+
+```bash
+localsetup plan --target-directory PROJECT --tools goose-cli --skill-scope both --skills ls-context
+localsetup install --target-directory PROJECT --tools goose-cli --skill-scope both --skills ls-context --apply
+localsetup verify --target-directory PROJECT
+```
+
+The plan describes layout without creating Goose configuration. Application,
+personal/combined repair, and writes affecting recorded Goose owners require a
+fresh static configuration check before managed writes. Verification reports
+`goose_skills_configured` with `scope: static-configuration` and
+`host_verified: false`. Passing this prerequisite does not attest that a
+particular Goose build or session can load skills.
+
+On Linux/WSL and macOS, the qualified default file is
+`~/.config/goose/config.yaml`. An explicit native Skills entry has this shape:
+
+```yaml
+extensions:
+  skills:
+    enabled: true
+    type: platform
+    name: skills
+```
+
+This example describes user-owned configuration, not an instruction to overwrite
+an existing file. LocalSetup never enables extensions or runs Goose's native
+configuration loader, which may migrate and save state. Missing, malformed,
+ambiguous, oversized (over 256 KiB), aliased, or tool-restricted configuration
+returns unknown; explicit native Skills `enabled: false` returns disabled.
+Only absent or empty `available_tools` is qualified. System configuration at
+`/etc/goose/config.yaml`, `GOOSE_PATH_ROOT`, `GOOSE_ADDITIONAL_CONFIG_FILES`,
+`EXTENSIONS`, or a nondefault `XDG_CONFIG_HOME` requires separate effective-state
+qualification. The checker does not merge these layers. Session/recipe overrides
+and build availability remain outside the static predicate.
+
+The [skills guide](https://goose-docs.ai/docs/guides/context-engineering/using-skills/)
+and [Summon guide](https://goose-docs.ai/docs/mcp/summon-mcp/) describe a separate
+Skills extension, while the [Skills extension page](https://goose-docs.ai/docs/mcp/skills-mcp/)
+contains conflicting deprecation guidance. Therefore LocalSetup assumes neither
+default activation nor substitution by Summon. Qualify the selected release and
+session before relying on host behavior. Additional private-home discovery,
+plugins, root precedence and duplicate-name resolution remain unqualified.
+
+[Context files](https://goose-docs.ai/docs/guides/context-engineering/using-goosehints/)
+include `AGENTS.md` and `.goosehints`; hierarchy and
+`CONTEXT_FILE_NAMES` overrides are distinct from skill projection, and automatic
+policy insertion remains unqualified. Native settings, keyring, sessions,
+databases, recipes, plugins and custom extensions remain user-owned.
+[Environment overrides](https://goose-docs.ai/docs/guides/environment-variables/)
+require the effective configuration to be established separately. Use the
+[official installation guidance](https://goose-docs.ai/docs/getting-started/installation/)
+with a verified selected artifact; installing adapters does not install Goose,
+authenticate, configure providers, or authorize network calls.

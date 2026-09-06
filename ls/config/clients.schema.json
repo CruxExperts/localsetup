@@ -312,7 +312,7 @@
         "verify_rules": {
           "type": "array",
           "minItems": 1,
-          "items": {"enum": ["skills_visible", "namespace_ls"]},
+          "items": {"enum": ["skills_visible", "namespace_ls", "goose_skills_configured"]},
           "uniqueItems": true
         },
         "rollback_class": {"const": "managed-entry-removal"}

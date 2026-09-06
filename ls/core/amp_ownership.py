@@ -1,4 +1,4 @@
-"""Recorded ownership evidence for Amp shared projections and portable copies."""
+"""Shared recorded ownership evidence for client prerequisites and portable copies."""
 from pathlib import Path
 
 from .adapter_markers import ADAPTER_MARKER_JSON, is_safe_adapter_package_name
@@ -54,16 +54,16 @@ def records(source, home):
     return result, expand_user_path(pack.global_root, home)
 
 
-def affected_actions(actions, recorded, library):
+def affected_actions(actions, recorded, library, *, client_id='amp-cli'):
     extra = [];targets = []
     changed = {name for a in actions if a.kind in {'install_skills', 'install_workflows'} and a.path == library
                for name in a.details.get('skills', a.details.get('workflows', []))}
     for path, packages, mode, clients, target in recorded:
-        if 'amp-cli' not in clients:continue
+        if client_id not in clients:continue
         physical = [a for a in actions if a.path == path and a.kind in {'attach_repo_path', 'attach_personal_path', 'repair_repo_path'}]
         names = (packages & changed) | {n for a in physical for n in a.details.get('packages', [])}
         if not names:continue
-        extra.append(PlanAction('repair_repo_path', path, {'platforms': ['amp-cli'], 'packages': sorted(names),
+        extra.append(PlanAction('repair_repo_path', path, {'platforms': [client_id], 'packages': sorted(names),
                      'global_root': str(library), 'mode': mode, '_amp_recorded_only': True}))
         targets.append(target)
     return extra, targets
