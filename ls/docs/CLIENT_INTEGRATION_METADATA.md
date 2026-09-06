@@ -620,3 +620,54 @@ rollback; copying only `SKILL.md` is insufficient. Until that conversion is
 qualified, `antigravity-cli` is an experimental, non-exported catalog record.
 Preserve CLI settings, sessions, tokens, plugins and migration state. No Gemini
 migration, authentication, app startup or native permission change is performed.
+
+## Roo Code legacy
+
+The `roo-code/roo-code-legacy` profile records the archived Roo Code IDE
+extension. [The upstream repository](https://github.com/RooCodeInc/Roo-Code)
+is archived; LocalSetup emits no fresh-install projection, and fresh
+`--tools roo-code-legacy` selection fails. This is a retained-installation
+compatibility record, not an active bundle recommendation or a Kilo profile.
+The retained extension identity is `RooVeterinaryInc.roo-cline`; no standalone
+executable identity or current marketplace availability is asserted.
+
+The [v3.54.0 skill loader](https://github.com/RooCodeInc/Roo-Code/blob/27001b2b5aa47b65e8a6ba1914e0f4216be0ebb0/src/services/skills/SkillsManager.ts)
+scans ordinary `.agents/skills` and `.roo/skills` at project and home scopes,
+plus `skills-<mode>` directories for known modes. Project scope takes priority
+over home; native Roo entries replace common entries with the same discovery
+key (name, scope and first mode). Restricted skills beat generic skills within
+a scope; multiple mode arrays prevent a simple total ordering. This describes
+pinned source behavior; effective discovery in
+a retained host remains unverified. Mode-specific directories stay outside
+the portable common-skills contract and are preserved as native overlays.
+
+The loader follows directory links, including external targets, and requires
+the visible directory or link name to equal the skill's metadata name. Names
+must be 1–64 lowercase ASCII letters or digits with single intervening hyphens.
+Its native mode editor can write discovered `SKILL.md` files through links.
+Do not use that editor against shared canonical packages; keep native writers
+quiescent during LocalSetup lifecycle operations. This is an operational
+boundary, not filesystem isolation or proof against arbitrary native writes.
+
+The retained profile uses the ordinary common roots as metadata. Existing
+receipts remain authoritative for actual paths and scope: a missing receipt
+does not authorize inferred installation. For a healthy recorded installation:
+
+```bash
+localsetup verify --target-directory PROJECT
+localsetup plan --target-directory PROJECT
+localsetup update --target-directory PROJECT
+```
+
+These operations verify and refresh recorded framework packages, not the Roo
+extension. Synthetic historical receipts exercise both adapter modes, scope
+retention and detach while preserving custom common/native/mode content.
+Repository-only doctor repair refuses automatic inference; use reviewed
+recorded-path recovery under [adapter ownership](ADAPTER_OWNERSHIP.md).
+Native rules, custom modes, settings, credentials, sessions and skills remain
+unmanaged. Root `AGENTS.md` (with `AGENT.md` fallback) depends on the native
+`roo-cline.useAgentRules` setting; LocalSetup does not alter that setting or
+insert policy. Native `.roo/rules` and mode-specific rules retain their own
+loading contract. Host acceptance still requires an
+explicit target and exact retained build, harmless discovery checks, effective
+mode priority and link-name validation; no host installation was performed.

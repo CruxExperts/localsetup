@@ -2111,6 +2111,128 @@ families:
         - namespace_ls
         rollback_class: managed-entry-removal
 
+  - id: roo-code
+    display_name: Roo Code
+    variants:
+    - id: roo-code-legacy
+      display_name: Roo Code legacy
+      kind: ide
+      support_status: experimental
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_docs
+          url: https://github.com/RooCodeInc/Roo-Code
+        - kind: official_docs
+          url: https://github.com/RooCodeInc/Roo-Code/blob/27001b2b5aa47b65e8a6ba1914e0f4216be0ebb0/src/services/skills/SkillsManager.ts
+      executables: []
+      policy:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: retained-only
+        installation:
+          method: manual
+          instructions: Retain recorded Roo Code adapters only; archived upstream is not a fresh-install recommendation.
+            Do not substitute Kilo or invoke native mode editing against shared packages.
+        qualification:
+          catalog: bounded
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_windsurf_retention.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Upstream is archived. This profile describes the retained IDE extension, not a CLI or a successor product.
+        - No fresh-install projection is emitted. Synthetic historical receipts qualify recorded ordinary adapters,
+          not a running Roo build.
+        - Native and common mode-specific directories remain unmanaged; their discovery and effective priority require
+          exact-build host qualification.
+        - Visible link name must match skill metadata. Native mode editing may write through discovered links; keep
+          native writers quiescent during lifecycle operations and do not use them against shared canonical packages.
+        - Automatic repository-only repair refuses inference; unhealthy adapters require reviewed recorded-path recovery.
+        - Native rules, modes, settings, credentials, sessions and custom skills remain user-owned.
+
   - id: windsurf
     display_name: Windsurf / Cascade
     variants:
