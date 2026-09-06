@@ -4456,6 +4456,22 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Typed heartbeat launcher and profile selectors in configuration, dispatch comparisons, examples, and regression fixtures; preserve exact machine values."
+    },
+    {
+      "path": "ls/docs/LSCLI.md",
+      "line_sha256": "002a941901988f6f28bb7f956bfe16911ac832cf0999a6c390c89a3359e6ffed",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Preserved original Markdown anchor for the bootstrap document; this HTML identifier is not product display text."
+    },
+    {
+      "path": "ls/docs/LSCLI.md",
+      "line_sha256": "d8b7f04b16a3505116423ca88979a03081641979c55301f8ba2a4d24b620435c",
+      "token": "lscli",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Existing typed-profile Markdown fragment in the heartbeat owner link; retain the canonical target anchor."
     }
   ],
   "visual_reviews": [
