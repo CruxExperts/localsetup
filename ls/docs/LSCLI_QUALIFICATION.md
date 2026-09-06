@@ -229,3 +229,27 @@ the stated installed fixture behavior; live providers, other host environments,
 recurring activation and the final published release remain separate qualification
 surfaces. See [heartbeat recovery](../skills/ls-codex-heartbeat/references/recovery.md)
 for original-input requirements and missing-evidence handling.
+
+### Protected startup profile binding
+
+A subsequent installed Linux candidate repeated the coding, native test recipe,
+compaction and retained-result reconciliation flow above with the bootstrap
+profile binding enabled. All seven captured requests retained the exact framework
+user-agent identity; fourteen relevant installed modules matched the wheel and
+source. Runtime inventory checks passed and existing qualification profiles and
+session files were preserved.
+
+Six additional installed cases replaced the selected endpoint, model or
+credential-variable name between bootstrap and protected execution, for both
+run and compaction. Filesystem notifications confirmed the bootstrap read the
+original file and the protected child read its replacement. An exclusive runtime
+lease made the replacement deterministic. Each command exited with code 2 before
+opening its grant, consuming prompt input, changing session state or contacting
+the fixture provider. The run input pipe remained open; compaction's real session
+lease remained held until child exit, distinguishing early rejection from a
+later missing-session failure. These cases exercised installed entry points and
+ordinary filesystem/process interfaces without runtime or provider mocks.
+
+This verifies binding across startup reads. Integrity of configuration before
+its first read is a separate trust boundary; a matching digest does not establish
+who may modify that configuration. Exact-release verification remains required.
