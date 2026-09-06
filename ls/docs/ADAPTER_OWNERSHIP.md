@@ -287,7 +287,8 @@ directories could otherwise trigger automatic discovery. Omission retains the
 recorded scope; repeating that scope with no selectors keeps automatic recorded
 updates. To change personal package selections, name clients explicitly.
 Adding the missing scope and retiring repository scope use the flows below.
-Direct scope conversion remains guarded. Same-plan repository/personal actions on one path
+Conversion between repository-only and personal-only scope uses the two-step
+workflow below. Same-plan repository/personal actions on one path
 require matching modes and package libraries.
 
 ## Repository updates on personal adapter paths
@@ -556,8 +557,8 @@ The result reports `auto_mode: additive_scope`. `plan` and `install` without
 `--apply` only preview; `update` applies immediately. An explicit `--mode` (or
 config `attach_mode`) changes adapter mode through the recorded-mode preflight;
 omission retains recorded modes. A migration combined with client or package
-reselection is rejected before writes. Direct `repo`/`personal` conversion still
-requires coordinated migration qualification.
+reselection is rejected before writes. Convert between `repo` and `personal`
+through the two-step workflow below.
 
 
 ## Retiring repository scope
@@ -613,8 +614,8 @@ transaction updates the target receipt, registry, and affected personal paths,
 including the case where only association metadata changes. Failed writes
 restore receipts and managed entries without replacing adapter parent
 directories. The resulting target scope is `repo`; its repository adapters and
-historical transition evidence remain unchanged. Direct `repo` to `personal`
-or `personal` to `repo` conversion is not yet exposed.
+historical transition evidence remain unchanged. A single-command `repo` to
+`personal` or reverse conversion is not exposed; use the two-step workflow below.
 
 ## Updates using the default target
 
@@ -639,3 +640,62 @@ operation. Empty adapter directories are removed only after the transaction
 commits; retained entries or concurrent custom files keep their parent in place.
 The package library stays installed, and recorded ownership continues to determine
 which entries and owner memberships are removed.
+
+
+## Converting between repository-only and personal-only scope
+
+Conversion uses two explicit, independently committed transactions through a
+valid `both` installation. Start with a healthy recorded installation. Retain
+its client and package selection and mode during conversion; do not pass
+selectors or an explicit mode. New-scope discovery must support the recorded
+clients, and the additive preflight must pass the ownership and collision
+constraints described above. In particular, an already registered personal
+owner requires reconciliation before adding that scope; do not detach another
+target's owner merely to bypass that conflict.
+
+Repository-only to personal-only:
+
+```bash
+localsetup plan --target-directory PROJECT --skill-scope both
+localsetup install --target-directory PROJECT --skill-scope both --apply
+localsetup verify --target-directory PROJECT
+localsetup plan --target-directory PROJECT --skill-scope personal
+localsetup install --target-directory PROJECT --skill-scope personal --apply
+localsetup verify --target-directory PROJECT
+```
+
+Personal-only to repository-only:
+
+```bash
+localsetup plan --target-directory PROJECT --skill-scope both
+localsetup install --target-directory PROJECT --skill-scope both --apply
+localsetup verify --target-directory PROJECT
+localsetup plan --target-directory PROJECT --skill-scope repo
+localsetup install --target-directory PROJECT --skill-scope repo --apply
+localsetup verify --target-directory PROJECT
+```
+
+Each plan is read-only. The first apply adds the missing scope without retiring
+the original; the second retires the original scope. Both steps preserve custom
+content and historical receipts. If the second step fails and recovery succeeds,
+the first step remains committed: the target is still a valid `both`
+installation. Inspect the failure/journal and verify current ownership before
+retrying or planning retirement of the added scope to return to the starting
+scope. Do not blindly replay an operation with uncertain recovery.
+
+Retiring personal scope removes this target's association. A personal owner
+referenced by another recorded target remains installed and its other receipt
+is unchanged; thus reaching `repo` scope does not promise disappearance of all
+personal exposure on the machine. Repository retirement similarly preserves
+personal exposure on a shared physical path.
+
+## Personal ownership after repository rollback
+
+`localsetup rollback --target-directory PROJECT` removes that repository's
+receipt and target reference, including when its recorded scope was `personal`.
+It does not imply global personal-owner removal. Independent personal owner
+records, referenced packages, and personal adapters remain verifiable through
+personal inventory; custom content remains in place. Unreferenced managed
+packages may be pruned under the normal rollback rules. Use explicit personal
+detach when the intended operation is removal of named global personal owners,
+and review its affected receipts first.
