@@ -286,8 +286,8 @@ On a fresh target, scope alone selects no clients, even when existing adapter
 directories could otherwise trigger automatic discovery. Omission retains the
 recorded scope; repeating that scope with no selectors keeps automatic recorded
 updates. To change personal package selections, name clients explicitly.
-Adding the missing scope uses the additive migration flow below; reductions and
-direct scope conversion remain guarded. Same-plan repository/personal actions on one path
+Adding the missing scope and retiring repository scope use the flows below.
+Personal-scope retirement and direct scope conversion remain guarded. Same-plan repository/personal actions on one path
 require matching modes and package libraries.
 
 ## Repository updates on personal adapter paths
@@ -556,5 +556,34 @@ The result reports `auto_mode: additive_scope`. `plan` and `install` without
 `--apply` only preview; `update` applies immediately. An explicit `--mode` (or
 config `attach_mode`) changes adapter mode through the recorded-mode preflight;
 omission retains recorded modes. A migration combined with client or package
-reselection is rejected before writes. Scope reductions and direct
+reselection is rejected before writes. Personal-scope retirement and direct
 `repo`/`personal` conversion still require coordinated retirement qualification.
+
+
+## Retiring repository scope
+
+For a healthy `both` installation, retain its personal installation and retire
+all recorded repository owners with:
+
+```bash
+localsetup plan --target-directory PROJECT --skill-scope personal
+localsetup install --target-directory PROJECT --skill-scope personal --apply
+```
+
+The response uses `auto_mode: retire_repository_scope` and lists the selected
+clients, recorded paths, retained personal targets, and receipt/registry hashes.
+`plan` and unapplied `install` preview without writes; `update` applies. Scope
+retirement does not refresh the package library, discover new paths, or change
+personal requests. Combine neither package/client reselection nor explicit mode
+changes with retirement; perform those as separate operations.
+
+The package-root lock protects revalidation and the recorded detach transaction.
+A changed preview fails its state check; application failures restore affected
+receipts and individual managed entries through detach recovery. Retirement
+keeps adapter parent directories in place, so newly created custom neighbors
+survive failure recovery as well as successful retirement. Shared physical paths
+retain personal packages, other targets and personal ownership remain intact,
+and custom neighboring content stays in place. Historical transition evidence
+is retained. Every repository adapter must have recorded ownership, and the
+receipt must retain personal targets; ambiguous or unhealthy state requires
+reconciliation before retirement. The resulting scope is `personal`.

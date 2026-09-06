@@ -108,7 +108,7 @@ def _updated_registry(registry: dict, *, target_root: Path, adapter_receipts: li
     return updated
 
 
-def _detach_platforms_locked(repo_root: Path, home: Path, target_root: Path, platform_ids: list[str]) -> dict:
+def _detach_platforms_locked(repo_root: Path, home: Path, target_root: Path, platform_ids: list[str], *, preserve_neighbors: bool = False) -> dict:
     requested = set(platform_ids)
     pack = load_pack_config(repo_root)
     global_root = expand_user_path(pack.global_root, home)
@@ -130,6 +130,7 @@ def _detach_platforms_locked(repo_root: Path, home: Path, target_root: Path, pla
     from .apply_journal import journal_path, record_file_state, write_journal, restore_failed_mutations, cleanup_backups
     shared = shared_detach_actions(repo_root, home, target_root, remove_targets, recorded_by_path,
                                    global_root, lock.get("attach_mode", "symlink"))
+    journaled = bool(shared) or preserve_neighbors
     shared_journal = {"version": 1, "status": "started", "operation": "detach", "touched": []}
     shared_journal_path = journal_path(target_root, "detach-" + uuid.uuid4().hex)
 
@@ -173,12 +174,12 @@ def _detach_platforms_locked(repo_root: Path, home: Path, target_root: Path, pla
         backup_root = Path(temporary)
         node_snapshots = [
             _snapshot_node(target["repo_path"], backup_root, index)
-            for index, target in enumerate(remove_targets) if str(target["repo_path"]) not in shared
+            for index, target in enumerate(remove_targets) if str(target["repo_path"]) not in shared and not preserve_neighbors
         ]
         lock_snapshot = _snapshot_file(lock_path)
         registry_snapshot = _snapshot_file(registry_path)
         try:
-            if shared:
+            if journaled:
                 record_file_state(shared_journal, shared_journal_path, lock_path, os.replace)
                 record_file_state(shared_journal, shared_journal_path, registry_path, os.replace)
             for target in remove_targets:
@@ -188,12 +189,17 @@ def _detach_platforms_locked(repo_root: Path, home: Path, target_root: Path, pla
                     write_overlap(repo_root, home, target_root, action, shared_journal, shared_journal_path)
                     removed.extend(str(action.path / name) for name in sorted(old - set(expected)))
                     continue
+                if preserve_neighbors:
+                    from .shared_rollback import _snapshot_adapter
+                    _snapshot_adapter(target["repo_path"], global_root, shared_journal, shared_journal_path,
+                                      recorded_by_path[str(target["repo_path"])].get("packages"))
                 removed.extend(
                     remove_managed_adapter_entries(
                         target["repo_path"],
                         global_root,
                         known_global_roots=legacy_global_roots(home),
                         recorded_packages=recorded_by_path.get(str(target["repo_path"]), {}).get("packages"),
+                        preserve_directory=preserve_neighbors,
                     )
                 )
             if lock:
@@ -202,13 +208,13 @@ def _detach_platforms_locked(repo_root: Path, home: Path, target_root: Path, pla
                 save_json(registry_path, updated_registry)
             elif registry_path.exists():
                 _unlink_registry(registry_path)
-            if shared:
+            if journaled:
                 shared_journal["status"] = "committed"
                 write_journal(shared_journal_path, shared_journal)
         except Exception as exc:
             rollback_errors: list[str] = []
             for restore in (
-                *([lambda: restore_failed_mutations(shared_journal, os.replace)] if shared else []),
+                *([lambda: restore_failed_mutations(shared_journal, os.replace)] if journaled else []),
                 lambda: _restore_file(registry_snapshot),
                 lambda: _restore_file(lock_snapshot),
                 *[lambda snapshot=snapshot: _restore_node(snapshot) for snapshot in reversed(node_snapshots)],
@@ -217,19 +223,19 @@ def _detach_platforms_locked(repo_root: Path, home: Path, target_root: Path, pla
                     restore()
                 except Exception as rollback_exc:
                     rollback_errors.append(str(rollback_exc))
-            if shared:
+            if journaled:
                 shared_journal["status"] = "failed"
                 shared_journal["rollback_errors"] = rollback_errors
                 write_journal(shared_journal_path, shared_journal)
             if rollback_errors:
                 exc.add_note("detach rollback errors: " + "; ".join(rollback_errors))
             raise
-        if shared:
+        if journaled:
             try:cleanup_backups(shared_journal)
             except OSError as exc:
                 cleanup_warnings.append(f"detach committed; backup cleanup failed: {exc}")
     return {"removed": removed, "packages_preserved": True, "warnings": cleanup_warnings,
-            **({"journal": str(shared_journal_path)} if shared else {})}
+            **({"journal": str(shared_journal_path)} if journaled else {})}
 
 
 def _unlink_registry(registry_path: Path) -> None:

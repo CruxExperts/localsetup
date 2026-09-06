@@ -15,12 +15,14 @@ from .repository_overlap import write_overlap
 from .shared_detach import shared_detach_actions
 
 
-def _snapshot_adapter(path, global_root, journal, receipt):
+def _snapshot_adapter(path, global_root, journal, receipt, recorded_packages=None):
     if path.is_symlink():
         record_file_state(journal, receipt, path, os.replace)
     elif path.is_dir():
         mode = adapter_marker_state(path)['mode']
-        candidates = adapter_marker_packages(path) or set(adapter_path_state(path, global_root).get('managed_visible_packages', []))
+        from .adapter_markers import is_safe_adapter_package_name
+        candidates = (adapter_marker_packages(path) or set()) | {n for n in recorded_packages or [] if is_safe_adapter_package_name(n)}
+        if not candidates:candidates = set(adapter_path_state(path, global_root).get('managed_visible_packages', []))
         for name in sorted(candidates):
             entry = path / name
             if _child_is_managed_adapter_package(entry, global_root, mode, None):
