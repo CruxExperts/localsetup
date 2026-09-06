@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: f16b8b0f96ea8e2d7f3e5be91962999fabd3cd7af880358694bc31668320a1bd
+  source_provenance_hash: dffc00f3c70ab64e25a6cd5fcf709322ec03f8f618382044ac74e747205f0322
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 659fa65ec127e4749872ab135055a4c1b573322e
-artifact_sha256: 76968cf788e7eccc62e95756f6344b3039971a12721f834f6448872b1c942ee4
+source_commit: 2583efe32fa55a93d8af7a370b4a7dc0d225a24f
+artifact_sha256: aaceb38c0bef8ae7b1bc4f47bfeb12f9b04415e60e04a83c0968464998f9b97b
 ---
 # Implementation File Map
 
@@ -1025,6 +1025,7 @@ artifact_sha256: 76968cf788e7eccc62e95756f6344b3039971a12721f834f6448872b1c942ee
 | `keep` | `ls/tests/test_coding_protocol.py` |
 | `keep` | `ls/tests/test_coding_run.py` |
 | `keep` | `ls/tests/test_combined_repair.py` |
+| `keep` | `ls/tests/test_combined_update.py` |
 | `keep` | `ls/tests/test_compaction_run.py` |
 | `keep` | `ls/tests/test_completion_cli.py` |
 | `keep` | `ls/tests/test_completion_contract.py` |
