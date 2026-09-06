@@ -286,8 +286,8 @@ On a fresh target, scope alone selects no clients, even when existing adapter
 directories could otherwise trigger automatic discovery. Omission retains the
 recorded scope; repeating that scope with no selectors keeps automatic recorded
 updates. To change personal package selections, name clients explicitly.
-Changing a recorded scope currently fails before installation: coordinated
-ownership migration is not yet qualified. Same-plan repository/personal actions on one path
+Adding the missing scope uses the additive migration flow below; reductions and
+direct scope conversion remain guarded. Same-plan repository/personal actions on one path
 require matching modes and package libraries.
 
 ## Repository updates on personal adapter paths
@@ -544,6 +544,17 @@ selections. An already registered personal owner also requires reconciliation;
 adding scope cannot silently replace that owner's request. Custom collisions and
 retained-owner mode conflicts fail preflight. Planning performs no writes.
 
-This engine is not yet connected to the public scope-change route. Public CLI
-scope changes remain guarded pending integration. Scope reductions and direct
+For an existing repository-only or personal-only installation, add the missing
+scope with no client or package selectors:
+
+```bash
+localsetup plan --target-directory PROJECT --skill-scope both
+localsetup install --target-directory PROJECT --skill-scope both --apply
+```
+
+The result reports `auto_mode: additive_scope`. `plan` and `install` without
+`--apply` only preview; `update` applies immediately. An explicit `--mode` (or
+config `attach_mode`) changes adapter mode through the recorded-mode preflight;
+omission retains recorded modes. A migration combined with client or package
+reselection is rejected before writes. Scope reductions and direct
 `repo`/`personal` conversion still require coordinated retirement qualification.

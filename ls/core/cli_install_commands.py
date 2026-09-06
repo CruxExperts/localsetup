@@ -12,21 +12,33 @@ def handle(cli, args, root, home) -> int | None:
         target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
         attachment_root = target_root or root
         from .installation_ownership import validate_scope_request, resolve_skill_scope
-        recorded = validate_scope_request(attachment_root, config.skill_scope)
+        recorded = validate_scope_request(attachment_root, None)
+        additive = (recorded and config.skill_scope == "both"
+                    and resolve_skill_scope(attachment_root, None) in {"repo", "personal"})
+        if additive:
+            if not _selector_free(config):
+                raise ValueError("Migrate recorded scope separately from client or package reselection")
+        else:
+            validate_scope_request(attachment_root, config.skill_scope)
         if (recorded and resolve_skill_scope(attachment_root, None) == "personal"
                 and config.platforms is None and not _selector_free(config)):
             raise ValueError("Select clients explicitly when changing recorded personal package selections")
-        auto_context = (
-            _auto_default_context(root, home, config, attachment_root)
-            if _selector_free(config) and config.target_directory and (config.skill_scope is None or recorded)
-            else None
-        )
+        if additive:
+            from .scope_migration import build_additive_scope_plan
+            auto_context = {"mode": "additive_scope", "repair": {},
+                            "plan": build_additive_scope_plan(root, home, attachment_root)}
+        else:
+            auto_context = (
+                _auto_default_context(root, home, config, attachment_root)
+                if _selector_free(config) and config.target_directory and (config.skill_scope is None or recorded)
+                else None
+            )
         if auto_context is not None:
             mode = str(auto_context["mode"])
             repair = auto_context["repair"]
             plan = auto_context["plan"]
             if plan is not None:
-                if mode in {"recorded_personal", "recorded_both", "inferred_existing"}:
+                if mode in {"recorded_personal", "recorded_both", "inferred_existing", "additive_scope"}:
                     from .recorded_mode import requested_mode, set_recorded_mode
                     set_recorded_mode(root, home, attachment_root, plan, requested_mode(args))
                 policy = _policy_findings(root, plan.rollback_metadata.get("skills", []), getattr(args, "policy_mode", "standard"))
