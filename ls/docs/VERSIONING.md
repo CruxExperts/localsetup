@@ -29,6 +29,54 @@ LocalSetup uses the root `VERSION` file as the source of truth for the framework
 - Skill versions are separate from the framework version and live in each skill's `SKILL.md` frontmatter under `metadata.version`.
 - Workflow package catalog data is regenerated from `ls/workflows/*/workflow.yaml`; version-sync checks include workflow registry, quick reference, and generated workflow catalog surfaces.
 
+## Explicit sequential policy
+
+The canonical Python planner also supports
+`plan_version(..., policy="sequential-logical-slices")` for repositories whose
+accepted release contract requires sequential slices. Existing callers default
+to `patch-default`; a repository must explicitly propagate its selected policy
+through its CLI and release consumers before relying on sequential results.
+The Python planner exposes this mode; CLI release consumers retain legacy
+selection until repository policy integration selects it. Policy selection does
+not itself authorize publication or rewrite history.
+
+A `feat:` source slice defaults to MINOR and resets PATCH; other source changes
+default to PATCH, with `Release-Type: major|minor|patch|none` for explicit impact.
+`Release-Slice: lowercase-id` groups unpublished members; an unlabelled source
+uses its unique SHA. The first integrated member anchors the slice, and the
+highest classification among its final members determines its one increment.
+For example, patch foundation A, independent patch B and a later minor member
+of A yield one minor increment for A followed by one patch for B.
+
+Integration order follows first-parent history before newly introduced side
+ancestry in Git parent order; timestamps do not order releases. Actual merge
+commits and generated-only receipts do not increment the version. Receipt
+exclusion validates changed paths and restricts mixed authored files to generated
+facts blocks. A receipt-like subject alone grants no exclusion. Sync exclusions
+compare canonical version/generated content rather than exempting arbitrary docs.
+
+Breaking markers require an explicit `Release-Type: major` compatibility decision.
+Minor, patch and none cannot conceal them. Duplicate/invalid metadata, ambiguous
+reverts and partial logical-slice reverts fail for reviewed reconciliation. Exact
+native Git revert SHAs cancel fully reverted unpublished slices only after a
+single-parent raw path/blob/mode comparison proves the complete inverse. Mixed
+changes, conflict-adjusted reverts and later changes to affected files require
+explicit reconciliation; later unrelated files remain untouched. Published work
+is reverted as a new maintenance outcome.
+
+Each historical sync is checked against its own ancestor-prefix target, including
+its committed VERSION. The latest sync and HEAD must match the final target.
+Incorrect historical syncs remain explicit diagnostics. Explicit bases must be
+ancestors, and release callers must independently verify the published anchor;
+upstream/comparison refs alone do not establish publication. Historical aliases
+require reviewed mapping rather than guesses from similar subjects.
+
+Sequential output retains the existing fields and adds `logical_slices` (slice,
+anchor, source_shas, classification, before_version, after_version),
+`excluded_commits`, `version_sync_checks` and `latest_sync_matches_target`.
+`bump` is the highest applied category for compatibility; target_version is the
+ordered fold, not one application of that aggregate category.
+
 ## Local workflow
 
 Install hooks once per clone:

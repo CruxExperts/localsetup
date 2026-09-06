@@ -9,6 +9,7 @@ from typing import Iterable
 from .git_subprocess import run_git
 from . import versioning_sync as _sync
 from .provenance_source import is_generated_output_path
+from . import versioning_sequence as _sequence
 from .versioning_constants import (
     BREAKING_CHANGE_RE,
     BREAKING_SUBJECT_RE,
@@ -196,6 +197,26 @@ def list_commits(repo_root: Path, base: str, head: str) -> list[CommitInfo]:
     return commits
 
 
+
+def list_integrated_commits(repo_root: Path, base: str, head: str) -> list[CommitInfo]:
+    if base == head:
+        return []
+    raw = _run_git(repo_root, ["log", "--reverse", "--format=%H%x1f%s%x1f%b%x1e", f"{base}..{head}"]).stdout
+    commits: list[CommitInfo] = []
+    for record in raw.split("\x1e"):
+        record = record.strip("\n")
+        if not record:
+            continue
+        parts = record.split("\x1f", 2)
+        if len(parts) != 3:
+            continue
+        commits.append(CommitInfo(sha=parts[0], subject=parts[1], body=parts[2]))
+    graph = _git_text(repo_root, ["rev-list", "--parents", head, "^" + base])
+    parents = {parts[0]: parts[1:] for line in graph.splitlines() if (parts := line.split())}
+    by_sha = {commit.sha: commit for commit in commits}
+    return [by_sha[sha] for sha in _sequence.integration_order(parents, head)]
+
+
 def classify_commit(subject: str, body: str = "") -> str:
     if subject.startswith("Merge "):
         return "none"
@@ -255,6 +276,20 @@ def classify_commit_for_release(repo_root: Path, commit: CommitInfo) -> str:
     return "patch"
 
 
+def _source_classification(commit: CommitInfo) -> str:
+    override = _sequence.metadata(commit.body)[0]
+    breaking = BREAKING_SUBJECT_RE.match(commit.subject) or BREAKING_CHANGE_RE.search(commit.body)
+    if breaking:
+        if override is not None and override != "major":
+            raise ValueError(f"Breaking commit {commit.sha} requires Release-Type: major")
+        return "major"
+    if override is not None:
+        return override
+    # A published revert is a new maintenance outcome; merge-like subjects alone
+    # do not hide ordinary single-parent source changes.
+    return "minor" if re.match(r"^feat(?:\([^)]+\))?:", commit.subject) else "patch"
+
+
 def release_type_required_diagnostics(commits: Iterable[CommitInfo]) -> list[dict[str, str]]:
     diagnostics: list[dict[str, str]] = []
     for commit in commits:
@@ -286,6 +321,7 @@ def _reverted_subject(subject: str) -> str | None:
     if match:
         return match.group(1)
     return None
+
 
 
 def net_unreleased_commits(commits: list[CommitInfo]) -> tuple[list[CommitInfo], list[dict[str, str]]]:
@@ -325,7 +361,17 @@ def version_from_sync_commit(subject: str) -> SemVer | None:
         return None
 
 
-def plan_version(repo_root: Path, *, base: str | None = None, head: str | None = None, ref: str | None = None) -> dict:
+def plan_version(repo_root: Path, *, base: str | None = None, head: str | None = None,
+                 ref: str | None = None, policy: str = "patch-default") -> dict:
+    """Select an explicit release policy without changing converted-repo defaults."""
+    if policy == "patch-default":
+        return _plan_version_legacy(repo_root, base=base, head=head, ref=ref)
+    if policy == "sequential-logical-slices":
+        return _plan_version_sequential(repo_root, base=base, head=head, ref=ref)
+    raise ValueError(f"Unknown release policy: {policy}")
+
+
+def _plan_version_legacy(repo_root: Path, *, base: str | None = None, head: str | None = None, ref: str | None = None) -> dict:
     resolved_head = resolve_head(repo_root, head)
     base_payload = resolve_base_with_metadata(repo_root, base, resolved_head)
     resolved_base = str(base_payload["base"])
@@ -377,6 +423,95 @@ def plan_version(repo_root: Path, *, base: str | None = None, head: str | None =
                 "bump": classify_commit_for_release(repo_root, commit),
                 "raw_bump": classify_commit(commit.subject, commit.body),
                 "release_type_required": requires_release_type(commit),
+                "files": changed_files(repo_root, commit.sha),
+            }
+            for commit in net_commits
+        ],
+    }
+
+
+
+def _plan_version_sequential(repo_root: Path, *, base: str | None = None, head: str | None = None, ref: str | None = None) -> dict:
+    resolved_head = resolve_head(repo_root, head)
+    base_payload = resolve_base_with_metadata(repo_root, base, resolved_head)
+    resolved_base = str(base_payload["base"])
+    base_resolution = base_payload["base_resolution"]
+    if _run_git(repo_root, ["merge-base", "--is-ancestor", resolved_base, resolved_head], check=False).returncode:
+        raise ValueError("Release base must be an ancestor of the selected head")
+    commits = list_integrated_commits(repo_root, resolved_base, resolved_head)
+    exclusions = {commit.sha: reason for commit in commits if (reason := _sequence.exclusion(repo_root, commit))}
+    known = {commit.sha for commit in commits}
+    for commit in commits:
+        for reverted in _sequence.REVERT.findall(commit.body):
+            if reverted not in known and (_rev_parse(repo_root, reverted) is None or
+                    _run_git(repo_root, ["merge-base", "--is-ancestor", reverted, resolved_base], check=False).returncode):
+                raise ValueError(f"Revert {commit.sha} does not name a source in this range or published base ancestry")
+    net_commits, canceled = _sequence.cancel_reverts(commits, set(exclusions), repo_root=repo_root)
+    release_type_required = [{"sha": item.sha, "subject": item.subject,
+                              "message": "Breaking release markers require an explicit Release-Type: major compatibility decision."}
+                             for item in net_commits if item.sha not in exclusions and _sequence.requires_major_decision(item)]
+    classifications = {commit.sha: "none" if commit.sha in exclusions else _source_classification(commit) for commit in commits}
+    bump = max_bump(classifications[commit.sha] for commit in net_commits)
+    base_version = _sequence.committed_version(repo_root, resolved_base)
+    target, logical_slices = _sequence.fold(net_commits, classifications, base_version)
+    current = _sequence.committed_version(repo_root, resolved_head)
+    worktree = read_version(repo_root)
+    sync_commits = [commit for commit in commits if commit.subject.startswith(VERSION_SYNC_PREFIX)]
+    version_sync_present = bool(sync_commits)
+    sync_checks = []
+    for commit in commits:
+        if commit not in sync_commits:
+            continue
+        ancestors = [item for item in list_integrated_commits(repo_root, resolved_base, commit.sha) if item.sha != commit.sha]
+        prefix, _ = _sequence.cancel_reverts(ancestors, set(exclusions), repo_root=repo_root)
+        prefix_types = {item.sha: classifications[item.sha] for item in prefix}
+        prefix_target, _ = _sequence.fold(prefix, prefix_types, base_version)
+        sync_checks.append({"sha": commit.sha, "expected_version": str(prefix_target),
+                            "recorded_version": str(version_from_sync_commit(commit.subject)),
+                            "committed_version": str(_sequence.committed_version(repo_root, commit.sha)),
+                            "ok": (version_from_sync_commit(commit.subject) == prefix_target
+                                   and _sequence.committed_version(repo_root, commit.sha) == prefix_target)})
+    version_sync_matches_target = all(check["ok"] for check in sync_checks)
+    latest_sync_matches_target = not sync_commits or version_from_sync_commit(sync_commits[-1].subject) == target
+    head_version_matches_target = current == target
+    head_version_required = version_sync_present or bump != "none"
+    ok = (
+        (not head_version_required or head_version_matches_target)
+        and version_sync_matches_target
+        and latest_sync_matches_target
+        and not release_type_required
+    )
+    return {
+        "ok": ok,
+        "policy": "sequential-logical-slices",
+        "logical_slices": logical_slices,
+        "excluded_commits": [{"sha": sha, "reason": reason} for sha, reason in exclusions.items()],
+        "version_sync_checks": sync_checks,
+        "latest_sync_matches_target": latest_sync_matches_target,
+        "ref": ref,
+        "base": resolved_base,
+        "head": resolved_head,
+        "base_resolution": base_resolution,
+        "base_version": str(base_version),
+        "current_version": str(current),
+        "worktree_version": str(worktree),
+        "target_version": str(target),
+        "major_minor": target.major_minor,
+        "bump": bump,
+        "release_type_required": bool(release_type_required),
+        "release_type_required_commits": release_type_required,
+        "version_sync_present": version_sync_present,
+        "version_sync_matches_target": version_sync_matches_target,
+        "commit_count": len(commits),
+        "net_commit_count": len(net_commits),
+        "canceled_reverts": canceled,
+        "commits": [
+            {
+                "sha": commit.sha,
+                "subject": commit.subject,
+                "bump": classifications[commit.sha],
+                "raw_bump": classify_commit(commit.subject, commit.body),
+                "release_type_required": _sequence.requires_major_decision(commit),
                 "files": changed_files(repo_root, commit.sha),
             }
             for commit in net_commits
