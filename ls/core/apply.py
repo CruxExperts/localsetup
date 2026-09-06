@@ -421,6 +421,11 @@ def _apply_plan_unlocked(
                         journal_path=journal_path,
                     )
                 executed.append(f"retire_historical_adapter:{action.path}")
+            elif action.kind == "attach_personal_path":
+                if not dry_run:
+                    from .personal_adapter import write
+                    write(repo_root, home, action, journal, journal_path)
+                executed.append(f"attach_personal_path:{action.path}")
             elif action.kind == "attach_repo_path":
                 if not dry_run:
                     ensure_dir(action.path.parent)
@@ -506,7 +511,7 @@ def _apply_plan_unlocked(
                     target_root=attachment_root,
                     source_commit=source_commit(repo_root),
                     package_paths=[Path(path) for path in [*installed_skills, *installed_workflows]],
-                    adapter_targets=lock_payload["adapter_targets"],
+                    adapter_targets=[*lock_payload["adapter_targets"], *lock_payload["personal_adapter_targets"]],
                     global_baseline={
                         "selectors": lock_payload["global_baseline_selectors"],
                         "packs": lock_payload["global_baseline_packs"],

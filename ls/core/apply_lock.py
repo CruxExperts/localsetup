@@ -58,6 +58,12 @@ def build_lock_payload(
             }
             for action in adapter_actions
         ],
+        "personal_adapter_targets": [
+            {"path": str(action.path), "owners": action.details["owners"],
+             "platforms": action.details["platforms"], "packages": action.details["packages"],
+             "global_root": action.details["global_root"], "mode": action.details.get("mode", "symlink")}
+            for action in plan.actions if action.kind == "attach_personal_path"
+        ],
         "adapter_transitions": [
             {
                 "id": action.details.get("id"),

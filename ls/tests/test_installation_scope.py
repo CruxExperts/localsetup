@@ -36,8 +36,7 @@ def test_scope_plans_only_selected_clients(tmp_path, scope):
     assert plan.rollback_metadata["skill_scope"] == scope
     if personal:
         preflight = preflight_install_plan(root, plan, home, target_root=root)
-        assert not preflight["ok"]
-        assert any(b["status_code"] == "personal_apply_unavailable" for b in preflight["blockers"])
+        assert preflight["ok"], preflight
     empty = build_install_plan(root, home, packs=["core"], skill_scope=scope)
     assert not any(a.kind in {"attach_repo_path", "attach_personal_path"} for a in empty.actions)
     assert not home.exists() and not (root / ".localsetup" / "lock.json").exists()

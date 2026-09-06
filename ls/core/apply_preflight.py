@@ -28,10 +28,17 @@ def codex_agent_source(repo_root: Path, agent_name: str) -> Path:
 
 def preflight_install_plan(repo_root: Path, plan, home: Path, *, target_root: Path | None = None) -> dict:
     blockers: list[dict] = []
+    repo_paths = {action.path for action in plan.actions if action.kind == "attach_repo_path"}
+    personal_paths = {action.path for action in plan.actions if action.kind == "attach_personal_path"}
+    for path in sorted(repo_paths & personal_paths):
+        blockers.append({"path": str(path), "status_code": "overlapping_scope_actions",
+                         "reason": "one install cannot write the same adapter through both scopes"})
     for action in plan.actions:
         if action.kind == "attach_personal_path":
-            blockers.append({"path": str(action.path), "status_code": "personal_apply_unavailable",
-                             "reason": "personal adapter application is not yet qualified"})
+            from .personal_adapter import selection
+            try:selection(repo_root, home, action)
+            except (ValueError, OSError) as exc:
+                blockers.append({"path": str(action.path), "status_code": "personal_adapter_unsafe", "reason": str(exc)})
             continue
         if action.kind in {"install_skills", "install_workflows"}:
             source_subdir = "skills" if action.kind == "install_skills" else "workflows"
@@ -91,6 +98,15 @@ def preflight_install_plan(repo_root: Path, plan, home: Path, *, target_root: Pa
                         }
                     )
         elif action.kind == "attach_repo_path":
+            from .personal_registry import refuse_personal_overlap
+            from .registry import load_registry
+            from .manifests import load_pack_config
+            from .paths import expand_user_path
+            registry = load_registry(expand_user_path(load_pack_config(repo_root).global_registry, home))
+            try:refuse_personal_overlap(registry, [str(action.path)])
+            except ValueError as exc:
+                blockers.append({"path": str(action.path), "status_code": "personal_owner_overlap", "reason": str(exc)})
+                continue
             global_root = Path(action.details["global_root"])
             state = adapter_path_state(
                 action.path,

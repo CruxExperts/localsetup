@@ -89,6 +89,8 @@ def rollback(
 
     registry = expand_user_path(pack.global_registry, home)
     registry_payload = load_registry(registry)
+    from .personal_registry import refuse_personal_overlap
+    refuse_personal_overlap(registry_payload, [str(Path(p) if Path(p).is_absolute() else attachment_root / p) for p in lock.get("adapter_state", [])])
 
     global_root = expand_user_path(pack.global_root, home)
     for skill_path_str in [*lock.get("installed_skills", []), *lock.get("installed_workflows", [])]:

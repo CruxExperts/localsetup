@@ -4176,6 +4176,14 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Established framework command literal; product display name remains LocalSetup."
+    },
+    {
+      "path": "ls/core/personal_adapter.py",
+      "line_sha256": "cc0fcac94e1548f16026a84cf22088044a0048c73ce6f6cccea31621fee5e9c1",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Persisted adapter marker managed_by identifier retains established lowercase protocol spelling."
     }
   ],
   "visual_reviews": [

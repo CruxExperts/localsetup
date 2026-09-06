@@ -130,6 +130,9 @@ def _detach_platforms_locked(repo_root: Path, home: Path, target_root: Path, pla
         if not owners - requested:
             remove_targets.append(target)
 
+    from .personal_registry import refuse_personal_overlap
+    refuse_personal_overlap(registry, [str(target["repo_path"]) for target in remove_targets])
+
     updated_lock = dict(lock)
     updated_lock["platforms"] = sorted(set(lock.get("platforms", [])) - requested)
     updated_targets: list = []

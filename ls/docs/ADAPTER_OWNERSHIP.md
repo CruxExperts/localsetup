@@ -90,8 +90,8 @@ compatible. Older records without `owners` remain readable; partial detach
 records the remaining repository owners from their existing client membership.
 This metadata describes managed installation membership, not ownership of the
 entire adapter directory or permission to modify vendor configuration/state.
-The typed owner model also distinguishes `personal` roots; personal attachment
-and `--skill-scope` selection are not yet exposed by this metadata change.
+The typed owner model also distinguishes `personal` roots. Public
+`--skill-scope` selection remains pending full lifecycle integration.
 
 ## Scope planning boundary
 
@@ -106,9 +106,9 @@ selection creates no adapter actions in any scope.
 Personal plans enumerate the selected clients' manifest `global_paths`, retain
 all typed logical owners on shared paths, and use the selected adapter packages.
 These discovery paths are distinct from the shared canonical package library.
-Planning creates no configuration or adapters. Personal actions currently fail
-apply preflight with `personal_apply_unavailable`; the public `--skill-scope`
-option remains pending personal write, preservation, and rollback qualification.
+Planning creates no configuration or adapters. Internal personal symlink actions
+use the preservation path below; portable personal actions fail preflight. The
+public `--skill-scope` option remains pending full lifecycle integration.
 Repository installations persist the effective scope in the existing lock.
 
 ## Personal package retention records
@@ -126,5 +126,31 @@ packages participate in the existing other-owner and pruning checks. Records may
 reference only packages supplied by the installation. Registry updates use the
 existing caller-held package-root lock and atomic registry save.
 
-This retention foundation does not enable personal adapter writes or personal
-detach; their preservation, rollback, and lifecycle qualification remain pending.
+Personal symlink application uses these retention records. Explicit personal
+detach and complete inventory, verify, and repair integration remain pending.
+
+## Personal symlink application
+
+Internal personal plans apply under the existing package-root lock. The writer
+rejects paths outside the supplied home, symlink or non-directory ancestors,
+unsafe markers, existing portable adapters, and custom entries colliding with
+selected package names. Other files, skills, and neighboring vendor state remain
+in place. Personal portable mode is not yet qualified.
+
+At a shared path, the visible package set includes the current selection and
+packages retained by other recorded owners. The registry records each owner's
+requested selection independently. The writer journals individual managed links
+and the marker before changing them. Failure recovery restores those entries;
+it does not replace the whole adapter directory or remove unrelated neighbors
+created during the operation. Empty directories created during a failed attempt
+may remain. Successful receipts use `personal_adapter_targets`, separate from
+repository `adapter_targets` and `adapter_state`.
+
+Repository detach and rollback preserve independent personal installations and
+their package references. If a removal path overlaps a recorded personal adapter,
+they refuse before mutation until shared-path removal is qualified. Repository
+updates targeting an existing personal adapter also refuse at preflight. A single
+install also refuses repository and personal actions targeting the same path.
+They do not implicitly remove personal adapters.
+Explicit personal detach remains pending, as do public scope selection and
+complete personal inventory, verification, and repair qualification.
