@@ -340,3 +340,16 @@ rollback, which remain separate lifecycle work.
 Backup cleanup runs after transaction commit. A cleanup failure returns a warning
 and the committed journal path; it does not restore obsolete ownership receipts
 or attempt rollback using partially deleted backups.
+
+## Rollback serialization and path preflight
+
+Rollback holds the same package-root lock as installation and detach. Before
+removing any package or adapter, it validates every recorded package and adapter
+path. A malformed later entry therefore cannot cause partial deletion of earlier
+valid entries. Recorded package paths must resolve to direct children of the
+managed library; the library root itself is never a package removal target.
+Adapter parents must resolve beneath the attachment target. Lock contention
+follows the existing package-root timeout contract.
+
+This preflight does not enable rollback of shared personal adapter paths; that
+operation remains blocked pending owner-aware transactional removal.

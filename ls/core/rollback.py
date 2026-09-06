@@ -16,6 +16,8 @@ def _require_under_global_root(path: Path, global_root: Path) -> None:
     resolved_path = path.resolve(strict=False)
     resolved_root = global_root.resolve(strict=False)
     try:
+        if resolved_path.parent != resolved_root:
+            raise ValueError("managed packages must be direct children of the package root")
         resolved_path.relative_to(resolved_root)
     except ValueError as exc:
         raise RuntimeError(f"refusing to rollback managed package outside global root: {path}") from exc
@@ -65,7 +67,7 @@ def _remove_managed_shared_runtime_helper(repo_root: Path, global_root: Path, re
     return removed
 
 
-def rollback(
+def _rollback_locked(
     repo_root: Path,
     home: Path,
     platform_ids: list[str] | None = None,
@@ -93,6 +95,11 @@ def rollback(
     refuse_personal_overlap(registry_payload, [str(Path(p) if Path(p).is_absolute() else attachment_root / p) for p in lock.get("adapter_state", [])])
 
     global_root = expand_user_path(pack.global_root, home)
+    package_paths = [Path(value) for value in [*lock.get("installed_skills", []), *lock.get("installed_workflows", [])]]
+    adapter_paths = [Path(value) if Path(value).is_absolute() else attachment_root / value
+                     for value in lock.get("adapter_state", [])]
+    for path in package_paths:_require_under_global_root(path, global_root)
+    for path in adapter_paths:_require_adapter_under_target_root(path, attachment_root)
     for skill_path_str in [*lock.get("installed_skills", []), *lock.get("installed_workflows", [])]:
         skill_path = Path(skill_path_str)
         _require_under_global_root(skill_path, global_root)
@@ -130,3 +137,12 @@ def rollback(
         removed.append(str(legacy_lock))
 
     return {"removed": removed}
+
+
+def rollback(
+    repo_root: Path, home: Path, platform_ids: list[str] | None = None, *, target_root: Path | None = None,
+) -> dict:
+    from .locking import package_root_lock
+    from .paths import global_layout
+    with package_root_lock(global_layout(home).localsetup_home):
+        return _rollback_locked(repo_root, home, platform_ids, target_root=target_root)
