@@ -4232,6 +4232,14 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Exact executable doctor repair command in actionable output; the framework command remains lowercase."
+    },
+    {
+      "path": "ls/config/clients.yaml",
+      "line_sha256": "a8b79c6448f648bef67a734476ddc037da78e66412f90d0419c7c6014648136b",
+      "token": "localsetup",
+      "count": 4,
+      "kind": "compatibility_identifier",
+      "reason": "Persisted framework-state ownership schema value for the distinct Antigravity application and CLI metadata; retain the technical identifier."
     }
   ],
   "visual_reviews": [

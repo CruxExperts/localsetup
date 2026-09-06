@@ -137,25 +137,270 @@ families:
   - id: antigravity
     display_name: Google Antigravity
     variants:
+      - id: antigravity-app
+        display_name: Google Antigravity application
+        kind: application
+        support_status: supported
+        research:
+          status: partial
+          checked_on: '2026-09-06'
+          sources:
+          - kind: official_docs
+            url: https://antigravity.google/docs/skills/
+          - kind: official_docs
+            url: https://antigravity.google/docs/rules-workflows/
+          - kind: official_docs
+            url: https://antigravity.google/docs/getting-started/
+        executables: []
+        policy:
+          repo:
+            status: supported
+            resolution: hierarchy
+            paths:
+            - .agents/rules
+            - .agent/rules
+            precedence_status: unverified
+            ownership: shared
+            collision: preserve-unmanaged
+          global:
+            status: supported
+            resolution: single
+            paths:
+            - ~/.gemini/GEMINI.md
+            precedence_status: unverified
+            ownership: client-native
+            collision: owned-block-only
+        config:
+          repo:
+            status: unverified
+            resolution: unverified
+            paths: []
+            precedence_status: unverified
+            ownership: client-native
+            collision: manual
+          global:
+            status: unverified
+            resolution: unverified
+            paths: []
+            precedence_status: unverified
+            ownership: client-native
+            collision: manual
+        skills:
+          repo:
+            status: supported
+            resolution: single
+            paths:
+            - .agents/skills
+            precedence_status: unverified
+            ownership: shared
+            collision: preserve-unmanaged
+          global:
+            status: supported
+            resolution: single
+            paths:
+            - ~/.gemini/config/skills
+            precedence_status: unverified
+            ownership: client-native
+            collision: owned-entry-only
+        goal:
+          status: unverified
+          kind: unverified
+          commands: []
+          limits:
+            status: unverified
+        permissions:
+          status: unverified
+          controls: []
+        state:
+          repo:
+            status: unverified
+            path: null
+            ownership: localsetup-managed
+            collision: fail
+          global:
+            status: unverified
+            path: null
+            ownership: localsetup-managed
+            collision: fail
+        insertion:
+          repo:
+            status: unverified
+            collision: unsupported
+            rollback: unsupported
+          global:
+            status: unverified
+            collision: unsupported
+            rollback: unsupported
+        verification:
+          classification: filesystem
+        rollback:
+          classification: managed-entry-removal
+        integration:
+          lifecycle: active
+          installation:
+            method: application
+            instructions: Identify the Antigravity application separately from IDE and CLI; use official downloads with
+              a verified selected artifact. No application installation or startup is performed here.
+          qualification:
+            catalog: implemented
+            filesystem: verified
+            host: not-run
+            evidence:
+            - kind: filesystem
+              reference: ls/tests/test_antigravity_adapters.py
+            - kind: documentation
+              reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+          limitations:
+          - Personal skills use the application-specific ~/.gemini/config/skills root, not the IDE or CLI roots. Automatic
+            common-home discovery is unestablished.
+          - Filesystem projection does not qualify application identity, symlink loading, effective precedence, native
+            permissions or settings. Host not-run; use portable copies to avoid external-link assumptions.
+          - Singular .agent compatibility content, rules, native state and other variants remain in place. No migration
+            or automatic rule insertion is performed.
+        compatibility:
+          platform_id: antigravity-app
+          order: 180
+          native_config: symlink_or_reference
+          smoke_test_level: filesystem
+          verify_rules:
+          - skills_visible
+          - namespace_ls
+          rollback_class: managed-entry-removal
+      - id: antigravity-cli
+        display_name: Google Antigravity CLI
+        kind: cli
+        support_status: experimental
+        research:
+          status: partial
+          checked_on: '2026-09-06'
+          sources:
+          - kind: official_docs
+            url: https://antigravity.google/docs/cli/plugins/
+          - kind: official_docs
+            url: https://antigravity.google/docs/cli/install/
+        executables:
+        - agy
+        policy:
+          repo:
+            status: supported
+            resolution: hierarchy
+            paths:
+            - GEMINI.md
+            - AGENTS.md
+            precedence_status: unverified
+            ownership: shared
+            collision: preserve-unmanaged
+          global:
+            status: unverified
+            resolution: unverified
+            paths: []
+            precedence_status: unverified
+            ownership: client-native
+            collision: manual
+        config:
+          repo:
+            status: unverified
+            resolution: unverified
+            paths: []
+            precedence_status: unverified
+            ownership: client-native
+            collision: manual
+          global:
+            status: supported
+            resolution: single
+            paths:
+            - ~/.gemini/antigravity-cli/settings.json
+            precedence_status: unverified
+            ownership: client-native
+            collision: manual
+        skills:
+          repo:
+            status: unverified
+            resolution: unverified
+            paths: []
+            precedence_status: unverified
+            ownership: shared
+            collision: preserve-unmanaged
+          global:
+            status: unverified
+            resolution: unverified
+            paths: []
+            precedence_status: unverified
+            ownership: shared
+            collision: preserve-unmanaged
+        goal:
+          status: unverified
+          kind: unverified
+          commands: []
+          limits:
+            status: unverified
+        permissions:
+          status: unverified
+          controls: []
+        state:
+          repo:
+            status: unverified
+            path: null
+            ownership: localsetup-managed
+            collision: fail
+          global:
+            status: unverified
+            path: null
+            ownership: localsetup-managed
+            collision: fail
+        insertion:
+          repo:
+            status: unverified
+            collision: unsupported
+            rollback: unsupported
+          global:
+            status: unverified
+            collision: unsupported
+            rollback: unsupported
+        verification:
+          classification: filesystem
+        rollback:
+          classification: managed-entry-removal
+        integration:
+          lifecycle: active
+          installation:
+            method: manual
+            instructions: Use the official agy CLI installation guide and verified artifacts; preserve PATH and existing
+              aliases. No installer, migration or startup is invoked.
+          qualification:
+            catalog: bounded
+            filesystem: not-applicable
+            host: not-run
+            evidence:
+            - kind: documentation
+              reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+          limitations:
+          - Documented skills are flat .agents/skills/<name>.md and ~/.gemini/antigravity-cli/skills/<name>.md; directory
+            SKILL.md packages are not established.
+          - No generic-package adapter is exported. A conversion must preserve resources, references, namespacing, metadata,
+            collisions and rollback before qualification.
+          - CLI plugins, settings, sessions, credentials and migrations remain unmanaged. agy is distinct from Gemini
+            CLI and the Antigravity IDE/application; host not-run.
       - id: antigravity-ide
         display_name: Google Antigravity IDE
         kind: ide
         support_status: experimental
         research:
           status: partial
-          checked_on: '2026-07-15'
+          checked_on: '2026-09-06'
           sources:
-            - {kind: official_docs, url: 'https://codelabs.developers.google.com/getting-started-with-antigravity-skills'}
+            - {kind: official_docs, url: 'https://antigravity.google/docs/ide/skills/'}
+            - {kind: official_docs, url: 'https://antigravity.google/docs/ide/rules/'}
         executables: []
         policy:
           repo: {status: supported, resolution: hierarchy, paths: ['.agents/rules', '.agent/rules'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: single, paths: ['~/.gemini/antigravity/GEMINI.md'], precedence_status: unverified, ownership: client-native, collision: owned-block-only}
+          global: {status: supported, resolution: single, paths: ['~/.gemini/GEMINI.md'], precedence_status: unverified, ownership: client-native, collision: owned-block-only}
         config:
           repo: {status: unverified, resolution: unverified, paths: [], precedence_status: unverified, ownership: client-native, collision: manual}
           global: {status: unverified, resolution: unverified, paths: [], precedence_status: unverified, ownership: client-native, collision: manual}
         skills:
-          repo: {status: supported, resolution: single, paths: ['.agents/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: single, paths: ['~/.gemini/config/skills'], precedence_status: verified, ownership: client-native, collision: owned-entry-only}
+          repo: {status: supported, resolution: single, paths: ['.agents/skills'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: single, paths: ['~/.gemini/antigravity/skills'], precedence_status: unverified, ownership: client-native, collision: owned-entry-only}
         goal: {status: unverified, kind: unverified, commands: [], limits: {status: unverified}}
         permissions: {status: unverified, controls: []}
         state:
@@ -163,9 +408,27 @@ families:
           global: {status: supported, path: '~/.gemini/antigravity/state', ownership: localsetup-managed, collision: fail}
         insertion:
           repo: {status: unverified, collision: unsupported, rollback: unsupported}
-          global: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
+          global: {status: unverified, collision: unsupported, rollback: unsupported}
         verification: {classification: host}
         rollback: {classification: manual-settings}
+        integration:
+          lifecycle: active
+          installation:
+            method: application
+            instructions: Identify the IDE build independently and use its official download route; no installation is performed.
+          qualification:
+            catalog: bounded
+            filesystem: not-run
+            host: not-run
+            evidence:
+            - kind: documentation
+              reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+          limitations:
+          - Experimental IDE metadata only; no fresh-install adapter export until the installed variant and loader are qualified.
+          - IDE personal skills use ~/.gemini/antigravity/skills; global rules use ~/.gemini/GEMINI.md. Prior pointers are
+            not migrated or deleted.
+          - Native rule insertion and effective skill loading remain unqualified. Existing LocalSetup framework state is
+            separate from native state ownership.
 
   - id: claude-code
     display_name: Claude Code

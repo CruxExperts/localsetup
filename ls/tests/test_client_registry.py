@@ -30,7 +30,7 @@ def test_registry_distinguishes_families_variants_and_projection() -> None:
     registry = load_client_registry(ROOT)
 
     assert len(registry.families) == 19
-    assert len(registry.variants()) == 22
+    assert len(registry.variants()) == 24
     assert registry.variant("cursor", "cursor-agent-cli").data["kind"] == "cli"
     assert registry.variant("cursor", "cursor-ide").data["kind"] == "ide"
     assert [row["id"] for row in platform_rows(registry)] == [
@@ -51,6 +51,7 @@ def test_registry_distinguishes_families_variants_and_projection() -> None:
         "qwen-code-cli",
         "kimi-cli",
         "factory-droid",
+        "antigravity-app",
     ]
 
 

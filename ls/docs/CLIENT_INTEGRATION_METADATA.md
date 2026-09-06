@@ -570,3 +570,53 @@ Use official installation guidance with a verified selected artifact. Starting
 Droid can initialize state and require sign-in; this adapter invokes no Droid
 command and performs no authentication, provider call or automatic update change.
 Installed-host behavior remains `not-run`.
+
+## Google Antigravity variants
+
+Antigravity application, IDE and CLI records represent different runtime
+contracts. Select them by product identity; an executable name or a shared
+`.agents` parent does not establish compatibility between them.
+
+| Variant | Directory-package adapter | Personal skills | Qualification |
+| --- | --- | --- | --- |
+| `antigravity-app` | Common project `.agents/skills` | `~/.gemini/config/skills` | Filesystem fixtures; host not-run |
+| `antigravity-ide` | Experimental metadata; no fresh export | `~/.gemini/antigravity/skills` | Documented paths; host not-run |
+| `antigravity-cli` | No generic package export | Flat `~/.gemini/antigravity-cli/skills/<name>.md` | Format boundary; host not-run |
+
+The [application skill guide](https://antigravity.google/docs/skills/) and
+[IDE skill guide](https://antigravity.google/docs/ide/skills/) independently name
+their different personal roots. Both document `.agents/skills` with singular
+`.agent/skills` compatibility. Neither establishes automatic `~/.agents/skills`
+discovery. LocalSetup writes the selected application root, preserves the
+compatibility roots and other variants, and does not migrate existing content.
+
+```bash
+localsetup plan --target-directory PROJECT --tools antigravity-app --skill-scope both --skills ls-context --mode portable
+localsetup install --target-directory PROJECT --tools antigravity-app --skill-scope both --skills ls-context --mode portable --apply
+localsetup verify --target-directory PROJECT
+```
+
+Symlink and portable projection are filesystem-tested; native symlink loading,
+resource selection and duplicate precedence remain unqualified. The portable
+example avoids assuming external-link support. Exact application and IDE binary
+identities require explicit build identification. No automatic product replacement
+or installation is implied by adding the application adapter.
+
+[IDE rules](https://antigravity.google/docs/ide/rules/) and
+[application rules](https://antigravity.google/docs/rules-workflows/) document
+`.agents/rules`, `.agent/rules` compatibility and global `~/.gemini/GEMINI.md`.
+The IDE record corrects its prior personal skill and global rule pointers; it does
+not move or remove files at old paths. Native rule activation and file limits
+remain separate from skill loading. Experimental IDE rule insertion is unverified;
+LocalSetup does not translate arbitrary context into native rules automatically.
+Existing LocalSetup-owned framework state is distinct from upstream native state.
+
+The [CLI plugin guide](https://antigravity.google/docs/cli/plugins/) documents
+flat project `.agents/skills/<name>.md` files, not established
+`<name>/SKILL.md` packages. Its executable is `agy`. CLI plugins also have
+manifests, agents, rules, hooks and MCP components. A future conversion must retain
+supporting assets, relative references, metadata, namespaces, collisions and
+rollback; copying only `SKILL.md` is insufficient. Until that conversion is
+qualified, `antigravity-cli` is an experimental, non-exported catalog record.
+Preserve CLI settings, sessions, tokens, plugins and migration state. No Gemini
+migration, authentication, app startup or native permission change is performed.

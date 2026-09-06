@@ -14,7 +14,7 @@ def metadata():
 
 def write(root, change):
     path = root / 'ls/config/clients.yaml';data = yaml.safe_load(path.read_text())
-    row = next(f for f in data['families'] if f['id'] == 'antigravity')['variants'][0]
+    row = next(v for f in data['families'] if f['id'] == 'antigravity' for v in f['variants'] if v['id'] == 'antigravity-ide')
     row['integration'] = metadata()
     change(row, data)
     path.write_text(yaml.safe_dump(data, sort_keys=False))
