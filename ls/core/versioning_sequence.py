@@ -57,7 +57,7 @@ def integration_order(parents: dict[str, list[str]], head: str) -> list[str]:
     return result
 
 
-def cancel_reverts(commits: list[CommitInfo], excluded: set[str], *, repo_root: Path) -> tuple[list[CommitInfo], list[dict[str, str]]]:
+def cancel_reverts(commits: list[CommitInfo], excluded: set[str], *, repo_root: Path, overrides: dict | None = None) -> tuple[list[CommitInfo], list[dict[str, str]]]:
     """Cancel exact native Git reverts; partial grouped outcomes need review."""
     by_sha = {commit.sha: commit for commit in commits}
     canceled: set[str] = set()
@@ -84,21 +84,21 @@ def cancel_reverts(commits: list[CommitInfo], excluded: set[str], *, repo_root: 
     for commit in commits:
         if commit.sha not in excluded and not REVERT.search(commit.body):
             _, identity = metadata(commit.body)
-            groups.setdefault(identity or commit.sha, set()).add(commit.sha)
+            groups.setdefault((overrides or {}).get(commit.sha, {}).get("slice", identity or commit.sha), set()).add(commit.sha)
     for identity, members in groups.items():
         if members & canceled and not members <= canceled:
             raise ValueError(f"Partially reverted Release-Slice {identity} requires an explicit accepted outcome")
     return [commit for commit in commits if commit.sha not in canceled], pairs
 
 
-def fold(commits: list[CommitInfo], classifications: dict[str, str], base: SemVer) -> tuple[SemVer, list[dict]]:
+def fold(commits: list[CommitInfo], classifications: dict[str, str], base: SemVer, *, overrides: dict | None = None) -> tuple[SemVer, list[dict]]:
     groups: dict[str, dict] = {}
     for commit in commits:
         _, identity = metadata(commit.body)
         classification = classifications[commit.sha]
         if classification == "none":
             continue
-        identity = identity or commit.sha
+        identity = (overrides or {}).get(commit.sha, {}).get("slice", identity or commit.sha)
         group = groups.setdefault(identity, {"slice": identity, "anchor": commit.sha,
                                              "source_shas": [], "classification": "none"})
         group["source_shas"].append(commit.sha)

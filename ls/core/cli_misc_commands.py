@@ -332,9 +332,12 @@ def handle(cli, args, root, home) -> int | None:
     if args.cmd == "version-sync":
         plan = None
         target = args.target
+        if target:
+            from .versioning_policy import guard_target
+            guard_target(root, target)
         if not target:
             plan = plan_version(root, base=args.base, head=args.head)
-            if not plan["ok"] and plan.get("release_type_required"):
+            if not plan.get("repairable", True) or (not plan["ok"] and plan.get("release_type_required")):
                 print_json(plan)
                 return 1
             target = plan["target_version"]
@@ -363,14 +366,14 @@ def handle(cli, args, root, home) -> int | None:
 
     if args.cmd == "release-push":
         plan = plan_version(root)
-        if not plan["ok"] and plan.get("release_type_required"):
+        if not plan.get("repairable", True) or (not plan["ok"] and plan.get("release_type_required")):
             print_json(plan)
             return 1
         if plan["bump"] != "none" and not plan["ok"]:
             sync_version_files(root, plan["target_version"])
             commit_version_sync(root, plan["target_version"])
             plan = plan_version(root)
-            if not plan["ok"] and plan.get("release_type_required"):
+            if not plan.get("repairable", True) or (not plan["ok"] and plan.get("release_type_required")):
                 print_json(plan)
                 return 1
         generated_docs = publish_preflight(root, fix=True)

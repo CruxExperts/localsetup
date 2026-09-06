@@ -89,8 +89,14 @@ def references(path: str, text: str, *, identifiers: frozenset[str] = frozenset(
     lines = text.splitlines()
     shell_lines = _shell_command_lines(lines)
     for number, line in enumerate(lines, 1):
+        # Only the repository release contract's complete persisted slice field;
+        # display fields, other files and mixed lines retain normal classification.
+        slice_field = (re.fullmatch(r'\s*"slice"\s*:\s*"([a-z0-9][a-z0-9._-]{0,127})"\s*,?\s*', line)
+                       if path == ".localsetup-release.json" else None)
         for match in REFERENCE.finditer(line):
             classification = classify(line, match.start(), match.end(), identifiers=identifiers)
+            if slice_field and slice_field.start(1) <= match.start() < match.end() <= slice_field.end(1):
+                classification = "technical"
             if (number in shell_lines and match.group() in {"localsetup", "lscli"}
                     and re.fullmatch(r"\s*(?:[$>]\s+)?", line[:match.start()])
                     and (not line[match.end():] or line[match.end()].isspace())):

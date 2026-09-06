@@ -23,7 +23,7 @@ def copy_full_repo(tmp_path: Path) -> Path:
     def ignore(directory, names):
         excluded = patterns(directory, names)
         if Path(directory) == source:
-            excluded.update({".agents"} & set(names))
+            excluded.update({".agents", ".localsetup-release.json"} & set(names))
         if Path(directory) == source / ".localsetup-maint":
             excluded.update(set(names) - {"boundary.example.yaml"})
         return excluded

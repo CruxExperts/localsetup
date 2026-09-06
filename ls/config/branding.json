@@ -2,6 +2,54 @@
   "schema_version": 1,
   "exceptions": [
     {
+      "path": "ls/tests/test_branding.py",
+      "line_sha256": "c1038d83d157e538e642e7c207e732249716d784a6a9cac83e6b3cf74b59b295",
+      "token": "lscli",
+      "count": 1,
+      "kind": "negative_test",
+      "reason": "Literal release-policy branding fixture verifies persisted identifiers and rejects neighboring display text."
+    },
+    {
+      "path": "ls/tests/test_branding.py",
+      "line_sha256": "0d162fbdda31988b6b0059361dc7b9ae9498d7204c46d90572125558f2525831",
+      "token": "lscli",
+      "count": 1,
+      "kind": "negative_test",
+      "reason": "Literal release-policy branding fixture verifies persisted identifiers and rejects neighboring display text."
+    },
+    {
+      "path": "ls/tests/test_branding.py",
+      "line_sha256": "d362d79e621bbbd87d0f608e0f275c1827c08e9233cb2482e367c78c8d81f5a3",
+      "token": "lscli",
+      "count": 1,
+      "kind": "negative_test",
+      "reason": "Literal release-policy branding fixture verifies persisted identifiers and rejects neighboring display text."
+    },
+    {
+      "path": "ls/tests/test_branding.py",
+      "line_sha256": "d362d79e621bbbd87d0f608e0f275c1827c08e9233cb2482e367c78c8d81f5a3",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "negative_test",
+      "reason": "Literal release-policy branding fixture verifies persisted identifiers and rejects neighboring display text."
+    },
+    {
+      "path": "ls/tests/test_branding.py",
+      "line_sha256": "7f39aab7c922e9102c9138345d0ae96e85f0c7beced5193953281adddd977e29",
+      "token": "lscli",
+      "count": 2,
+      "kind": "negative_test",
+      "reason": "Literal release-policy branding fixture verifies persisted identifiers and rejects neighboring display text."
+    },
+    {
+      "path": "ls/tests/test_branding.py",
+      "line_sha256": "7f39aab7c922e9102c9138345d0ae96e85f0c7beced5193953281adddd977e29",
+      "token": "Localsetup",
+      "count": 1,
+      "kind": "negative_test",
+      "reason": "Literal release-policy branding fixture verifies persisted identifiers and rejects neighboring display text."
+    },
+    {
       "path": "ls/tests/test_amp_preflight.py",
       "line_sha256": "49344d88830d88ca4f77cc829e49ee8f5bb592332d3dd86ed5d04939e15b5848",
       "token": "localsetup",

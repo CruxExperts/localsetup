@@ -31,14 +31,38 @@ LocalSetup uses the root `VERSION` file as the source of truth for the framework
 
 ## Explicit sequential policy
 
-The canonical Python planner also supports
-`plan_version(..., policy="sequential-logical-slices")` for repositories whose
-accepted release contract requires sequential slices. Existing callers default
-to `patch-default`; a repository must explicitly propagate its selected policy
-through its CLI and release consumers before relying on sequential results.
-The Python planner exposes this mode; CLI release consumers retain legacy
-selection until repository policy integration selects it. Policy selection does
-not itself authorize publication or rewrite history.
+The canonical planner selects `sequential-logical-slices` automatically when the
+planned HEAD contains a valid, committed `.localsetup-release.json`. This shared
+selection applies to `version-plan`, `version-sync`, `publish-preflight`,
+`release-push`, the pre-push hook and release CI. Without that file, the existing
+`patch-default` policy remains. Python callers can also select sequential mode
+explicitly for an unconfigured repository; an explicit argument cannot override
+a conflicting committed policy. A loose, deleted or edited worktree policy does
+not replace the selected commit's contract. Selection does not authorize publication.
+
+The [release policy schema](../config/release-policy.schema.json) defines the
+strict configuration: `schema_version: 1`, `policy: "sequential-logical-slices"`,
+an `anchor` with full lowercase commit SHA, canonical `version` and matching
+`vMAJOR.MINOR.PATCH` tag, and an `overrides` array. The file must be a regular Git
+blob of at most 64 KiB. Duplicate keys, unknown fields, invalid types and duplicate
+override SHAs fail planning. The planner verifies the anchor's committed VERSION
+and ancestry locally; maintainers must independently verify that the named tag
+and commit were actually published. Planning never fetches release information.
+
+Each optional override has exactly `commit`, `slice` and `classification` fields.
+It names one full unpublished source SHA, a lowercase slice ID of at most 128
+characters, and `none|patch|minor|major`. Overrides can reconcile reviewed legacy
+classification and grouping without changing commit messages or `raw_bump`.
+They cannot name merges, generated receipts, reverts or already-published work,
+or downgrade breaking changes. They apply consistently to the final fold and
+historical sync prefixes; no subject similarity or global name deduplication is
+used. Preserve source ancestry when integrating exact-SHA mappings.
+
+The repository-only policy is excluded from release archives and must not be
+copied into converted projects. After verifying a newly published tag, advance
+the anchor to that exact published commit/version and remove overrides already
+covered by it. Review and commit that policy change as ordinary source work;
+never rewrite existing history or hand-edit generated versions to force a match.
 
 A `feat:` source slice defaults to MINOR and resets PATCH; other source changes
 default to PATCH, with `Release-Type: major|minor|patch|none` for explicit impact.
@@ -66,14 +90,18 @@ is reverted as a new maintenance outcome.
 
 Each historical sync is checked against its own ancestor-prefix target, including
 its committed VERSION. The latest sync and HEAD must match the final target.
-Incorrect historical syncs remain explicit diagnostics. Explicit bases must be
-ancestors, and release callers must independently verify the published anchor;
-upstream/comparison refs alone do not establish publication. Historical aliases
-require reviewed mapping rather than guesses from similar subjects.
+Incorrect historical syncs make the plan nonrepairable and stop mutation before
+version files change. Ordinary target drift remains repairable through canonical
+sync tooling. With committed policy, `--base` is comparison metadata and arithmetic
+always starts at the verified anchor. In explicit unconfigured sequential mode,
+the selected base must be an ancestor. Upstream refs alone do not prove publication.
 
 Sequential output retains the existing fields and adds `logical_slices` (slice,
 anchor, source_shas, classification, before_version, after_version),
-`excluded_commits`, `version_sync_checks` and `latest_sync_matches_target`.
+`excluded_commits`, `version_sync_checks`, `latest_sync_matches_target`,
+`repairable`, `anchor`, `release_overrides`, `comparison_base` and
+`comparison_base_resolution`. `base` and `base_resolution` identify the arithmetic
+anchor; comparison metadata records the caller's independently selected ref.
 `bump` is the highest applied category for compatibility; target_version is the
 ordered fold, not one application of that aggregate category.
 
@@ -123,7 +151,7 @@ Useful planning check:
 uv run --locked python ls/tools/localsetup.py --source-root . version-plan
 ```
 
-The `version-plan` output includes `policy: "patch-default"`, diagnostic `raw_bump` values from Conventional Commit parsing, the effective release `bump`, and `version_sync_matches_target` for validating in-range version-sync commits.
+The `version-plan` output includes the selected `policy`, diagnostic `raw_bump` values from Conventional Commit parsing, the effective release `bump`, and `version_sync_matches_target` for validating in-range version-sync commits.
 
 ## GitHub release workflow
 

@@ -166,7 +166,7 @@ def test_sync_cannot_hide_authored_doc_changes(repo):
 def test_fixture_copy_excludes_private_root_but_preserves_upstream_agents(tmp_path, monkeypatch):
     from ls.tests import versioning_test_helpers as helpers
     source = tmp_path / 'source'
-    for name in ('.agents/state/private', '.localsetup-maint/private', '.localsetup-maint/boundary.example.yaml', 'vendor/sdk/.agents/skills/SKILL.md'):
+    for name in ('.localsetup-release.json', '.agents/state/private', '.localsetup-maint/private', '.localsetup-maint/boundary.example.yaml', 'vendor/sdk/.agents/skills/SKILL.md'):
         path = source / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text('retained fixture')
@@ -175,6 +175,7 @@ def test_fixture_copy_excludes_private_root_but_preserves_upstream_agents(tmp_pa
     destination.mkdir()
     copied = helpers.copy_full_repo(destination)
     assert not (copied / '.agents').exists()
+    assert not (copied / '.localsetup-release.json').exists()
     assert sorted(path.name for path in (copied / '.localsetup-maint').iterdir()) == ['boundary.example.yaml']
     assert (copied / 'vendor/sdk/.agents/skills/SKILL.md').read_text() == 'retained fixture'
 

@@ -268,3 +268,11 @@ uv run --locked python ls/tools/localsetup.py --source-root . release-push
 ```
 
 For release preparation without pushing, run `publish-preflight --base origin/main --head HEAD` first from a clean worktree. It prepares the direct version-sync candidate unstaged and returns `prepared_not_ready` when the candidate needs review and a separate generated-document receipt. Add `--fix` only when the tool should prepare and commit the required version-sync/generated-document slices before the guarded push.
+
+Release commands select a valid `.localsetup-release.json` from the planned
+committed HEAD. Its verified published anchor owns sequential arithmetic;
+`--base` remains comparison metadata. An absent policy retains patch-default.
+Loose policy changes and explicit version targets cannot override the committed
+contract. Invalid configuration or historical sync prefixes stop before version
+mutation; ordinary target drift can be prepared by the existing sync flow. See
+[version policy and exact overrides](VERSIONING.md#explicit-sequential-policy).

@@ -48,9 +48,8 @@ jobs:
         run: |
           set -euo pipefail
           base_sha="$BEFORE_SHA"
-          if git log -1 --pretty=%s | grep -Eq '^(chore: sync release version |docs: refresh release version artifacts$)'; then
-            base_sha="$(git rev-parse HEAD~2)"
-          fi
+          # This is comparison metadata. The committed release policy selects
+          # the verified arithmetic anchor through the canonical planner.
           if [[ -z "$base_sha" || "$base_sha" == "0000000000000000000000000000000000000000" ]] || ! git cat-file -e "${base_sha}^{commit}" 2>/dev/null; then
             base_sha="$(git rev-parse HEAD^)"
           fi

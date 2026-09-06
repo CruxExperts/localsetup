@@ -171,3 +171,28 @@ def test_catalog_aliases_require_real_source_and_identifier_context(tmp_path: Pa
     source.unlink()
     source.symlink_to(guide)
     assert scan(tmp_path, policy(), paths=paths)["references"][0]["classification"] == "unclassified"
+
+
+def test_release_policy_slice_field_is_technical_without_archive_exception(tmp_path: Path) -> None:
+    owner = ".localsetup-release.json"
+    (tmp_path / owner).write_text(json.dumps({"overrides": [{"slice": "lscli"}]}, indent=2))
+    (tmp_path / "guide.md").write_text("LocalSetup")
+    settings = policy()
+    result = scan(tmp_path, settings, paths=[owner, "guide.md"])
+    assert result["ok"]
+    assert next(row for row in result["references"] if row["path"] == owner)["classification"] == "technical"
+    (tmp_path / owner).unlink()  # The root-only policy is absent from release archives.
+    assert scan(tmp_path, settings, paths=["guide.md"])["ok"]
+    shipped = load_policy(Path(__file__).resolve().parents[1] / "config/branding.json")
+    assert not any(row["path"] == owner for row in shipped["exceptions"])
+
+
+def test_release_slice_rule_does_not_hide_display_or_other_files() -> None:
+    owner = ".localsetup-release.json"
+    field = '  "slice": "lscli",'
+    assert references(owner, field)[0]["classification"] == "technical"
+    assert references("other.json", field)[0]["classification"] == "unclassified"
+    assert references("nested/" + owner, field)[0]["classification"] == "unclassified"
+    for text in ('"display": "lscli"', '"slice": "Localsetup"',
+                 '"slice": "lscli display"', '"slice": "lscli", "display": "Localsetup"'):
+        assert all(row["classification"] == "unclassified" for row in references(owner, text))

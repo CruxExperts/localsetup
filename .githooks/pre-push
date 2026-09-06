@@ -26,6 +26,10 @@ from ls.core.versioning import (
 repo_root = Path.cwd()
 payload_path = Path(sys.argv[1])
 plans = push_lines_to_plans(repo_root, payload_path.read_text(encoding="utf-8"))
+invalid = [p for p in plans if not p.get("repairable", True)]
+if invalid:
+    print("[LocalSetup] release history requires reconciliation; no version files changed.", file=sys.stderr)
+    raise SystemExit(1)
 blocked = [p for p in plans if p.get("release_type_required")]
 if blocked:
     for plan in blocked:
