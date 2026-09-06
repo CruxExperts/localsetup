@@ -47,3 +47,12 @@ def resolve_skill_scope(target_root: Path, requested: str | None) -> str:
     if not isinstance(scope, str) or scope not in {"repo", "personal", "both"}:
         raise ValueError("Invalid skill scope")
     return scope
+
+
+def validate_scope_request(target_root: Path, requested: str | None) -> bool:
+    """Return whether a receipt exists; scope migration requires coordinated ownership."""
+    from .paths import target_lockfile_path, legacy_target_lockfile_path
+    recorded = any(path.exists() for path in (target_lockfile_path(target_root), legacy_target_lockfile_path(target_root)))
+    if recorded and requested is not None and requested != resolve_skill_scope(target_root, None):
+        raise ValueError("Changing recorded skill scope requires ownership migration, which is not yet qualified")
+    return recorded

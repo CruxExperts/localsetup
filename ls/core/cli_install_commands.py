@@ -11,9 +11,14 @@ def handle(cli, args, root, home) -> int | None:
         home = Path(config.home or home).expanduser().resolve()
         target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
         attachment_root = target_root or root
+        from .installation_ownership import validate_scope_request, resolve_skill_scope
+        recorded = validate_scope_request(attachment_root, config.skill_scope)
+        if (recorded and resolve_skill_scope(attachment_root, None) == "personal"
+                and config.platforms is None and not _selector_free(config)):
+            raise ValueError("Select clients explicitly when changing recorded personal package selections")
         auto_context = (
             _auto_default_context(root, home, config, attachment_root)
-            if _selector_free(config) and config.target_directory
+            if _selector_free(config) and config.target_directory and (config.skill_scope is None or recorded)
             else None
         )
         if auto_context is not None:
@@ -121,6 +126,7 @@ def handle(cli, args, root, home) -> int | None:
             repo_skill_classes=config.repo_skill_classes,
             repo_skill_tags=config.repo_skill_tags,
             repo_exclude_skills=config.repo_exclude_skills,
+            skill_scope=config.skill_scope,
             attach_mode=config.attach_mode,
             platform_ids=config.platforms,
             target_root=target_root,

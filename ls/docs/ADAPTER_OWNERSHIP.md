@@ -91,7 +91,7 @@ records the remaining repository owners from their existing client membership.
 This metadata describes managed installation membership, not ownership of the
 entire adapter directory or permission to modify vendor configuration/state.
 The typed owner model also distinguishes `personal` roots. Public
-`--skill-scope` selection remains pending full lifecycle integration.
+`--skill-scope` selection is available on plan, install, and update.
 
 ## Scope planning boundary
 
@@ -107,8 +107,7 @@ Personal plans enumerate the selected clients' manifest `global_paths`, retain
 all typed logical owners on shared paths, and use the selected adapter packages.
 These discovery paths are distinct from the shared canonical package library.
 Planning creates no configuration or adapters. Internal personal symlink and portable actions
-use the preservation path below. The
-public `--skill-scope` option remains pending full lifecycle integration.
+use the preservation path below, also used by public scope selection.
 Repository installations persist the effective scope in the existing lock.
 
 ## Personal package retention records
@@ -152,8 +151,8 @@ they refuse before mutation until shared-path removal is qualified. Repository
 updates targeting an existing personal adapter also refuse at preflight. A single
 install also refuses repository and personal actions targeting the same path.
 They do not implicitly remove personal adapters.
-Explicit personal detach remains pending, as do public scope selection and
-personal repair qualification.
+Explicit personal detach and coordinated shared-path removal remain pending.
+Personal repair is qualified through the recorded-owner route below.
 
 Portable packages are copied with their provenance and internal symlinks intact.
 Recovery backs up only the managed package node, so a failed copy restores its
@@ -196,8 +195,7 @@ Apply rebuilds the plan under the package-root lock, journals individual managed
 nodes, and verifies the result before accepting it. Failure restores prior nodes
 and reports whether recovery succeeded; unrelated neighbors remain in place.
 Repair journals are stored under the managed home state directory. Standard
-doctor repair routes personal-only target receipts through this API; public
-scope selection remains pending lifecycle integration.
+doctor repair routes personal-only target receipts through this API.
 
 ## Scope configuration contract
 
@@ -210,9 +208,8 @@ not populate `platforms` or package selectors, including an explicit empty clien
 list. For example, `{"skill_scope": "personal", "platforms": []}` describes no
 client adapters.
 
-This config representation is preparatory: command routing and the public
-`--skill-scope` flag are not connected yet. Use the internal planner API above
-for the currently qualified scope behavior.
+Plan, install, and update merge `--skill-scope` over the config value and pass
+the result to the planner. Other lifecycle commands use recorded ownership.
 
 ### Doctor routing for recorded personal targets
 
@@ -270,5 +267,24 @@ For an existing personal target, preview with
 `localsetup update --target-directory PROJECT`. Omit client/package selectors
 to retain recorded selections; `auto_mode: recorded_personal` identifies this
 route in JSON output. Preview does not change the receipt or registry. A
-`repair_required` result handles adapter drift before package refresh. Explicit
-public scope selection remains pending; these commands retain an existing scope.
+`repair_required` result handles adapter drift before package refresh. These commands retain an existing scope.
+
+## Public scope selection
+
+Preview and apply a personal installation:
+
+```bash
+localsetup plan --target-directory PROJECT --tools cursor --skill-scope personal --skills ls-context
+localsetup install --target-directory PROJECT --tools cursor --skill-scope personal --skills ls-context --apply
+```
+
+Use `repo` for repository adapters or `both` for both sets of paths. These scope
+choices do not change the canonical shared package library.
+
+On a fresh target, scope alone selects no clients, even when existing adapter
+directories could otherwise trigger automatic discovery. Omission retains the
+recorded scope; repeating that scope with no selectors keeps automatic recorded
+updates. To change personal package selections, name clients explicitly.
+Changing a recorded scope currently fails before installation: coordinated
+ownership migration is not yet qualified. Same-path repository/personal overlap
+continues to fail preflight as documented above.

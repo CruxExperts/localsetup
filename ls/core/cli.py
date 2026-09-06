@@ -216,6 +216,7 @@ def _resolved_config(args: argparse.Namespace, default_home: Path) -> InstallCon
         repo_skill_tags=_split_csv(getattr(args, "repo_skill_tags", None)) if hasattr(args, "repo_skill_tags") else None,
         repo_exclude_skills=_split_csv(getattr(args, "repo_exclude_skills", None)) if hasattr(args, "repo_exclude_skills") else None,
         repo_workflows=_split_csv(getattr(args, "repo_workflows", None)) if hasattr(args, "repo_workflows") else None,
+        skill_scope=getattr(args, "skill_scope", None),
         attach_mode=getattr(args, "mode", None),
         home=cli_home,
         target_directory=getattr(args, "target_directory", None),

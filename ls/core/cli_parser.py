@@ -40,6 +40,9 @@ def build_parser(add_config_flags, add_selector_flags, add_visual_flags, add_har
     update_p = sub.add_parser("update")
     add_config_flags(update_p)
     add_selector_flags(update_p)
+    for scope_parser in (plan_p, install_p, update_p):
+        scope_parser.add_argument("--skill-scope", choices=["repo", "personal", "both"],
+                                  help="Choose adapter ownership scope; omission retains recorded scope")
 
     adapters_p = sub.add_parser("adapters")
     adapters_p.add_argument("--target-directory", default=argparse.SUPPRESS)
