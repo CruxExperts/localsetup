@@ -2255,8 +2255,8 @@ families:
         goal: {status: supported, kind: slash-command, commands: ['/goal'], limits: {status: unverified}}
         permissions: {status: supported, controls: ['tool policy', 'sandbox policy']}
         state:
-          repo: {status: supported, path: '.openclaw/state', ownership: localsetup-managed, collision: fail}
-          global: {status: supported, path: '~/.openclaw/state', ownership: localsetup-managed, collision: fail}
+          repo: {status: supported, path: '.localsetup/client-state/openclaw/state', ownership: localsetup-managed, collision: fail}
+          global: {status: supported, path: '~/.local/share/localsetup/client-state/openclaw/state', ownership: localsetup-managed, collision: fail}
         insertion:
           repo: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
           global: {status: unsupported, collision: unsupported, rollback: unsupported}
