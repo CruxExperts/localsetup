@@ -91,8 +91,6 @@ def _rollback_locked(
 
     registry = expand_user_path(pack.global_registry, home)
     registry_payload = load_registry(registry)
-    from .personal_registry import refuse_personal_overlap
-    refuse_personal_overlap(registry_payload, [str(Path(p) if Path(p).is_absolute() else attachment_root / p) for p in lock.get("adapter_state", [])])
 
     global_root = expand_user_path(pack.global_root, home)
     package_paths = [Path(value) for value in [*lock.get("installed_skills", []), *lock.get("installed_workflows", [])]]
@@ -100,6 +98,9 @@ def _rollback_locked(
                      for value in lock.get("adapter_state", [])]
     for path in package_paths:_require_under_global_root(path, global_root)
     for path in adapter_paths:_require_adapter_under_target_root(path, attachment_root)
+    from .shared_rollback import shared_rollback
+    shared_result = shared_rollback(repo_root, home, attachment_root, lock, lock_path, legacy_lock)
+    if shared_result is not None:return shared_result
     for skill_path_str in [*lock.get("installed_skills", []), *lock.get("installed_workflows", [])]:
         skill_path = Path(skill_path_str)
         _require_under_global_root(skill_path, global_root)

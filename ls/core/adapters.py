@@ -474,6 +474,7 @@ def remove_managed_adapter_entries(
     *,
     known_global_roots: list[Path] | None = None,
     recorded_packages: list[str] | None = None,
+    preserve_directory: bool = False,
 ) -> list[str]:
     removed: list[str] = []
     state = adapter_path_state(repo_path, global_root, known_global_roots=known_global_roots)
@@ -511,7 +512,7 @@ def remove_managed_adapter_entries(
             removed.append(str(metadata))
 
     try:
-        if repo_path.exists() and repo_path.is_dir() and not any(repo_path.iterdir()):
+        if not preserve_directory and repo_path.exists() and repo_path.is_dir() and not any(repo_path.iterdir()):
             repo_path.rmdir()
             removed.append(str(repo_path))
     except OSError:

@@ -76,13 +76,6 @@ def test_personal_apply_preserves_overlapping_legacy_repository_owner(tmp_path):
     assert (shared / "ls-context").is_symlink() and (shared / "ls-git-workflows").is_symlink()
 
     from ls.core.detach import detach_platforms
-    from ls.core.rollback import rollback
-    before = registry_path.read_bytes()
-    for remove in (lambda: rollback(root, home, target_root=home),):
-        with pytest.raises(ValueError, match="overlaps personal"):
-            remove()
-        assert registry_path.read_bytes() == before
-        assert (shared / "ls-context").is_symlink() and (shared / "ls-git-workflows").is_symlink()
     both = build_install_plan(root, home, skills=["ls-context"], platform_ids=["cursor"], target_root=home, skill_scope="both")
     result = preflight_install_plan(root, both, home, target_root=home)
     assert result["ok"], result["blockers"]

@@ -147,13 +147,13 @@ repository `adapter_targets` and `adapter_state`.
 
 Repository detach and rollback preserve independent personal installations and
 their package references. Repository detach preserves the retained owner union
-on shared paths; repository rollback still refuses overlapping personal paths. Repository
+on shared paths; repository rollback uses the transaction described below. Repository
 updates on a personal adapter preserve its owners through the shared writer
 below; conflicting modes still fail preflight. A single install coalesces
 repository and personal actions targeting the same path when their modes and
 package library agree.
 They do not implicitly remove personal adapters.
-Explicit personal detach and shared-path rollback remain pending.
+Explicit personal-owner removal remains pending.
 Personal repair is qualified through the recorded-owner route below.
 
 Portable packages are copied with their provenance and internal symlinks intact.
@@ -303,7 +303,7 @@ receipts retain their existing client-membership interpretation.
 These shared writes use the home-bound path checks and per-entry journal used
 by personal adapters. A failed write restores managed entries while preserving
 custom neighbors, including files created during the failed operation. Mode
-changes that conflict with a personal owner fail before mutation. Shared-path rollback remains pending.
+changes that conflict with a personal owner fail before mutation. Shared-path rollback follows the transaction below.
 
 Repository filesystem verification checks the full recorded owner union on a
 shared path and reports the repository request separately from that union.
@@ -334,8 +334,7 @@ keeping custom neighbors, including files created during the failed operation.
 A `both` receipt retains its personal targets and clients. Removing its last
 repository target changes its recorded scope to `personal`; personal owner
 records and package references remain intact. Detach preserves the canonical
-package library. This does not enable explicit personal-owner removal or shared
-rollback, which remain separate lifecycle work.
+package library. Explicit personal-owner removal remains separate lifecycle work.
 
 Backup cleanup runs after transaction commit. A cleanup failure returns a warning
 and the committed journal path; it does not restore obsolete ownership receipts
@@ -351,5 +350,19 @@ managed library; the library root itself is never a package removal target.
 Adapter parents must resolve beneath the attachment target. Lock contention
 follows the existing package-root timeout contract.
 
-This preflight does not enable rollback of shared personal adapter paths; that
-operation remains blocked pending owner-aware transactional removal.
+## Rolling back a repository with shared personal paths
+
+When recorded repository adapters overlap personal owners, rollback preflights
+retained unions and package pruning, then journals adapter entries, package
+nodes, registry, and current/legacy repository receipts as one transaction.
+Shared adapters retain personal and other repository selections. Packages with
+remaining references stay installed. The repository registry target and receipts
+are removed; independent personal ownership remains recorded and verifiable.
+
+A failure restores managed entries and receipts without replacing adapter parent
+directories, preserving custom neighbors created during the attempt. Empty
+adapter directories may remain. Recovery errors are recorded in the journal.
+Backup cleanup follows commit; cleanup failure reports a warning and journal
+path without reverting committed ownership. This transaction applies to rollback
+with personal overlap; the nonshared rollback path retains its existing behavior.
+Explicit personal-owner removal is not implied by repository rollback.
