@@ -303,6 +303,8 @@ def test_docs_do_not_show_selector_free_portable_install() -> None:
 
 def test_docs_and_package(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
+    license_bytes = (Path(__file__).resolve().parents[2] / "LICENSE").read_bytes()
+    (root / "LICENSE").write_bytes(license_bytes)
     (root / "ls" / "__pycache__").mkdir()
     (root / "ls" / "__pycache__" / "cached.pyc").write_bytes(b"bytecode")
     (root / "ls" / ".cache" / "scrapling" / "jobs").mkdir(parents=True)
@@ -365,6 +367,9 @@ def test_docs_and_package(tmp_path: Path) -> None:
     ):
         assert asset in package["files"]
     assert "assets" in package["manifest"]["public_paths"]
+    assert "LICENSE" in package["files"]
+    with tarfile.open(artifact) as archive:
+        assert archive.extractfile("LICENSE").read() == license_bytes
     assert "REVIEW.md" in package["files"]
     assert "REVIEW.md" in package["manifest"]["public_paths"]
     assert "ls/__pycache__/cached.pyc" not in package["files"]

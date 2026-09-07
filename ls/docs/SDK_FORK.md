@@ -107,6 +107,8 @@ the standard library and setuptools. No framework
 runtime dependencies, provider credentials, or SDK imports are needed to build
 the payload. Build from the source archive with the pinned setuptools backend;
 source distributions retain the canonical vendor input through `MANIFEST.in`.
+The public release archive also retains the framework root `LICENSE`, so a
+wheel built from that archive preserves the same license file and metadata.
 The installed worker's import-origin and runtime-protection checks are separate
 requirements; a successful wheel build does not authorize agent execution.
 

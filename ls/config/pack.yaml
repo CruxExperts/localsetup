@@ -979,6 +979,7 @@ distribution_channels:
 - python_cli
 public_private:
   public_paths:
+  - LICENSE
   - VERSION
   - pyproject.toml
   - uv.lock
