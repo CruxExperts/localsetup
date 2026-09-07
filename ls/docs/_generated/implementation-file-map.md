@@ -1,11 +1,11 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 815ca23b3be8686316561650fbc54c49f915ca0fa752287155f65881b5cdb526
+  source_provenance_hash: b346d93ed7105892f01fdb0804bf1ee16c15bb87d828b41efd23fc8f9c943283
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 52530c6c5a35f17e63412f9388bdc47df7bcebe1
-artifact_sha256: d726b677f9512f3e3c3eb486a141a715eb8fe6d716277d24337d7cffb4279a9c
+source_commit: 4ad6cb1080e50a23362c18ceaae53d1c68571a5d
+artifact_sha256: edf6837da2de6a1ef7ee1a8f40a2bd13853f26da55b819c789ddf91ef2206549
 ---
 # Implementation File Map
 
@@ -374,6 +374,7 @@ artifact_sha256: d726b677f9512f3e3c3eb486a141a715eb8fe6d716277d24337d7cffb4279a9
 | `refactor` | `ls/core/sdk_payload/ownership.py` |
 | `refactor` | `ls/core/sdk_payload/sbom.py` |
 | `refactor` | `ls/core/selection.py` |
+| `refactor` | `ls/core/self_refresh.py` |
 | `refactor` | `ls/core/shared_detach.py` |
 | `refactor` | `ls/core/shared_rollback.py` |
 | `refactor` | `ls/core/shell.py` |
@@ -1261,6 +1262,7 @@ artifact_sha256: d726b677f9512f3e3c3eb486a141a715eb8fe6d716277d24337d7cffb4279a9
 | `keep` | `ls/tests/test_sdk_recovery.py` |
 | `keep` | `ls/tests/test_sdk_responses.py` |
 | `keep` | `ls/tests/test_sdk_worker_imports.py` |
+| `keep` | `ls/tests/test_self_refresh_ownership.py` |
 | `keep` | `ls/tests/test_session_branch.py` |
 | `keep` | `ls/tests/test_session_index.py` |
 | `keep` | `ls/tests/test_session_owner.py` |
