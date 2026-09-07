@@ -1313,7 +1313,10 @@ are one identity. The caller must supply the complete applicable roots and
 intended destinations, enforce its native-configuration boundary, and turn
 inventory errors into a refusal rather than accepting partial results.
 
-The recursive scan shares a 4,096-entry budget across roots and refuses cycles,
+The recursive scan shares budgets of 4,096 directory entries and 65,536 total
+entries across roots, and scans each resolved directory once. Ordinary package
+documents consume only the total-entry budget. Discovery continues below a
+package's `SKILL.md` so nested conflicting identities remain visible. It refuses cycles,
 depth beyond 32 directories, unresolved links and unreadable or malformed
 metadata. The existing safe reader accepts one string `name` in frontmatter
 bounded to 16 KiB and refuses metadata-file symlinks. These are conservative

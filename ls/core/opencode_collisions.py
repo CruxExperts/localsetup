@@ -5,7 +5,7 @@ from pathlib import Path
 from .amp_preflight import _name
 
 
-def skill_sources(root: Path, budget: list[int], ancestors=()):
+def skill_sources(root: Path, budget: list[int], ancestors=(), *, scanned=None, entries_seen=None):
     """Enumerate recursive skill metadata without following traversal cycles."""
     if not root.exists() and not root.is_symlink():
         return
@@ -14,16 +14,25 @@ def skill_sources(root: Path, budget: list[int], ancestors=()):
     resolved = root.resolve(strict=True)
     if resolved in ancestors or len(ancestors) >= 32:
         raise ValueError('skill traversal cycle or depth limit')
+    scanned = set() if scanned is None else scanned
+    entries_seen = [0] if entries_seen is None else entries_seen
+    if resolved in scanned:
+        return
+    scanned.add(resolved)
     metadata = root / 'SKILL.md'
     if metadata.exists() or metadata.is_symlink():
         yield metadata, _name(metadata)
     with os.scandir(root) as entries:
         for entry in entries:
-            budget[0] += 1
-            if budget[0] > 4096:
-                raise ValueError('skill traversal exceeds 4096 entries')
+            entries_seen[0] += 1
+            if entries_seen[0] > 65536:
+                raise ValueError('skill traversal exceeds 65536 entries')
             if entry.is_dir():
-                yield from skill_sources(Path(entry.path), budget, (*ancestors, resolved))
+                budget[0] += 1
+                if budget[0] > 4096:
+                    raise ValueError('skill traversal exceeds 4096 directories')
+                yield from skill_sources(Path(entry.path), budget, (*ancestors, resolved),
+                                         scanned=scanned, entries_seen=entries_seen)
             elif entry.is_symlink() and not entry.is_file():
                 raise ValueError('unresolved skill link')
 
@@ -39,9 +48,11 @@ def conflicting_sources(roots: list[Path], intended: dict[str, set[Path]]) -> li
                 for name, paths in intended.items()}
     conflicts = []
     budget = [0]
+    scanned = set()
+    entries_seen = [0]
     seen = set()
     for root in dict.fromkeys(roots):
-        for metadata, name in skill_sources(root, budget):
+        for metadata, name in skill_sources(root, budget, scanned=scanned, entries_seen=entries_seen):
             if name not in accepted:
                 continue
             identity = metadata.resolve(strict=True)
