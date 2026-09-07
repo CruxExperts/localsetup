@@ -46,6 +46,8 @@ actual interpreter and production integrity checks. Adapter tests that assume
 default OpenCode discovery request `default_opencode_environment`; override tests
 set their inputs explicitly after that fixture. Keep production permission and
 configuration rejection checks active on every runner.
+Tool-free OmniRoute observation fixtures pass `--api-key-env ""` when they expect
+anonymous requests, so local credentials cannot enter mocked transport assertions.
 
 Unless a repository explicitly defines a stricter policy, every unit-test runner—regardless of language or framework—uses one aggregate budget: `max(1, floor(available CPU cores / 3))`. Round down before applying the minimum of one worker. Concurrent test processes share that budget rather than each claiming the full allowance.
 
