@@ -7,10 +7,7 @@ from ls.core.personal_repair import repair_personal
 from ls.tests.test_install_flow import make_temp_repo
 
 
-@pytest.fixture(autouse=True)
-def default_opencode_environment(monkeypatch):
-    for name in ('OPENCODE_TEST_HOME', 'OPENCODE_CONFIG_DIR', 'OPENCODE_DISABLE_EXTERNAL_SKILLS', 'XDG_CONFIG_HOME'):
-        monkeypatch.delenv(name, raising=False)
+pytestmark = pytest.mark.usefixtures('default_opencode_environment')
 
 
 @pytest.mark.parametrize('mode', ['symlink', 'portable'])
@@ -60,3 +57,14 @@ def test_non_git_root_inventory_stops_at_selected_home(tmp_path):
     outside = tmp_path / 'outside';outside.mkdir()
     assert outside / '.agents/skills' in discovery_roots(home, outside)
     assert tmp_path / '.agents/skills' not in discovery_roots(home, outside)
+
+
+@pytest.mark.parametrize('variable', ['OPENCODE_TEST_HOME', 'XDG_CONFIG_HOME'])
+def test_unqualified_home_override_preserves_target(tmp_path, monkeypatch, variable):
+    root = make_temp_repo(tmp_path);home = tmp_path / 'home'
+    plan = build_install_plan(root, home, skills=['ls-context'], platform_ids=['opencode'])
+    monkeypatch.setenv(variable, str(tmp_path / 'alternate'))
+    with pytest.raises(RuntimeError, match='home/configuration override'):
+        apply_plan(root, plan, home)
+    assert not (root / '.localsetup/lock.json').exists()
+    assert not (root / '.agents/skills').exists()

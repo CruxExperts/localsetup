@@ -11,14 +11,14 @@ from ls.core.agent.runtime_lock import LOCK_NAME, runtime_use
 
 
 @pytest.fixture
-def runtime(tmp_path):
+def runtime(tmp_path, synthetic_runtime_interpreter):
     root = tmp_path / 'runtimes'
     root.mkdir(mode=0o700)
     release = root / ('a' * 64)
     release.mkdir(mode=0o700)
     (release / 'venv').mkdir(mode=0o700)
     (release / 'venv/bin').mkdir(mode=0o700)
-    (release / 'venv/bin/python').symlink_to(Path(sys.executable).resolve())
+    (release / 'venv/bin/python').symlink_to(synthetic_runtime_interpreter)
     file = release / 'venv/fixture'
     file.write_bytes(b'installed')
     file.chmod(0o600)

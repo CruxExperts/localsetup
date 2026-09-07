@@ -8,7 +8,7 @@ from ls.core.agent import runtime_install as runtime
 
 
 @pytest.fixture
-def installation(tmp_path, monkeypatch):
+def installation(tmp_path, monkeypatch, synthetic_runtime_interpreter):
     root = tmp_path / 'runtimes'
     workspace = tmp_path / 'workspace'
     workspace.mkdir()

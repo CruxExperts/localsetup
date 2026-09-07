@@ -1,6 +1,4 @@
 import os
-from pathlib import Path
-import sys
 
 import pytest
 
@@ -8,11 +6,11 @@ from ls.core.agent import runtime_integrity as integrity
 
 
 @pytest.fixture
-def sealed(tmp_path):
+def sealed(tmp_path, synthetic_runtime_interpreter):
     root = tmp_path / 'venv'
     root.mkdir(mode=0o700)
     (root / 'bin').mkdir(mode=0o700)
-    (root / 'bin/python').symlink_to(Path(sys.executable).resolve())
+    (root / 'bin/python').symlink_to(synthetic_runtime_interpreter)
     (root / 'fixture').write_bytes(b'qualified')
     (root / 'fixture').chmod(0o600)
     return tmp_path, integrity.seal(tmp_path)
@@ -56,3 +54,12 @@ def test_host_interpreter_bytes_are_bound(tmp_path, monkeypatch):
     interpreter.write_bytes(b'changed host executable')
     with pytest.raises(ValueError, match='changed'):
         integrity.verify(tmp_path, digest)
+
+
+@pytest.mark.parametrize('mode', [0o720, 0o702, 0o777])
+def test_unsafe_host_interpreter_permissions_are_refused(tmp_path, synthetic_runtime_interpreter, mode):
+    (tmp_path / 'venv').mkdir(mode=0o700)
+    synthetic_runtime_interpreter.chmod(mode)
+    with pytest.raises(ValueError, match='Host interpreter'):
+        integrity.seal(tmp_path)
+    assert not (tmp_path / integrity.INVENTORY).exists()

@@ -11,6 +11,8 @@ from ls.core.plan import build_install_plan
 from ls.core.verify import verify_install
 from ls.tests.test_install_flow import make_temp_repo
 
+pytestmark = pytest.mark.usefixtures('default_opencode_environment')
+
 
 @pytest.mark.parametrize('mode', ['symlink', 'portable'])
 def test_opencode_common_packages_preserve_shared_owners_and_native_resources(tmp_path, mode):

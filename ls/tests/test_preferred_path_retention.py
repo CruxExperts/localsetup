@@ -14,6 +14,8 @@ from ls.core.plan import build_install_plan
 from ls.core.repair import run_repair
 from ls.tests.test_install_flow import make_temp_repo
 
+pytestmark = pytest.mark.usefixtures('default_opencode_environment')
+
 
 def prefer_common(root, *, historical=False, client="cursor"):
     path = root / 'ls/config/clients.yaml';data = yaml.safe_load(path.read_text())
