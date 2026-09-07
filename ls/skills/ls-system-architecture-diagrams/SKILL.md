@@ -26,4 +26,4 @@ Use this skill when working on architecture diagrams tasks.
 ## Provenance
 
 - Source classification: `localsetup-native`
-- This is a Localsetup-native skill written from project workflow requirements and public/official documentation routing.
+- This is a LocalSetup-native skill written from project workflow requirements and public/official documentation routing.

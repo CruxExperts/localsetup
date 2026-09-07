@@ -99,7 +99,7 @@ def test_immutable_inventory_yaml_load_is_actionable_without_site_packages() -> 
     assert result.stdout == ""
     assert result.stderr == (
         "Missing dependency: PyYAML. Run `uv sync --locked --no-dev` from the "
-        "Localsetup source checkout.\n"
+        "LocalSetup source checkout.\n"
     )
 
 
@@ -435,7 +435,7 @@ def test_immutable_inventory_documented_invocation_requires_retained_claim_root(
 
     assert command in UPDATE_WORKFLOW.read_text(encoding="utf-8")
     skill_text = UPDATE_SKILL.read_text(encoding="utf-8")
-    assert "Retained Localsetup claim references are a separate local input" in skill_text
+    assert "Retained LocalSetup claim references are a separate local input" in skill_text
     assert "neither the mirror root nor local claim root path is emitted" in skill_text
 
 

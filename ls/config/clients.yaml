@@ -1,27 +1,528 @@
 schema_version: 1
 families:
+  - id: aider
+    display_name: Aider
+    variants:
+    - id: aider
+      display_name: Aider
+      kind: cli
+      support_status: experimental
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_docs
+          url: https://aider.chat/docs/usage/conventions.html
+        - kind: official_docs
+          url: https://aider.chat/docs/config/aider_conf.html
+      executables:
+      - aider
+      policy:
+        repo:
+          status: settings-only
+          resolution: settings
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+          setting_label: Explicit --read file arguments or read list in selected Aider configuration
+        global:
+          status: settings-only
+          resolution: settings
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+          setting_label: Explicit --read file arguments or read list in selected Aider configuration
+      config:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: settings-only
+          collision: manual
+          rollback: manual-settings
+        global:
+          status: settings-only
+          collision: manual
+          rollback: manual-settings
+      verification:
+        classification: unsupported
+      rollback:
+        classification: manual-settings
+      integration:
+        lifecycle: active
+        installation:
+          method: manual
+          instructions: Use an already qualified Aider installation with an explicitly reviewed instruction file via
+            --read. No skill projection or automatic configuration insertion is provided.
+        qualification:
+          catalog: bounded
+          filesystem: not-applicable
+          host: not-run
+          evidence:
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Explicit instruction-file integration only. Native Agent Skills discovery, common-root scanning and automatic
+          AGENTS.md loading are not established.
+        - No fresh skill-platform projection is emitted; pass a reviewed regular file explicitly to Aider instead
+          of selecting it as an installer skill target.
+        - Relative read values resolve against launch cwd, not the YAML file directory. Directory arguments can recursively
+          include unrelated files; use an explicit file path.
+        - Preserve existing read entries, configuration precedence, comments, native settings and sessions. Automatic
+          YAML mutation and eager concatenation of skills are outside this integration.
+        - Instruction text is context, not tool permission enforcement. Aider startup and provider disclosure require
+          the owning session authority; no host or model call was made.
+
+  - id: amp
+    display_name: Amp
+    variants:
+    - id: amp-cli
+      display_name: Amp CLI
+      kind: cli
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_docs
+          url: https://ampcode.com/docs/customize/skills
+        - kind: official_docs
+          url: https://ampcode.com/docs/customize/agents-md
+        - kind: official_docs
+          url: https://ampcode.com/docs/cli/settings
+        - kind: official_docs
+          url: https://ampcode.com/docs/cli
+        - kind: official_docs
+          url: https://ampcode.com/docs/customize/plugins
+      executables:
+      - amp
+      policy:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - AGENTS.md
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: active
+        installation:
+          method: vendor-installer
+          instructions: Select and verify the official Amp installer and resulting release artifact before installation; account access and background updater behavior require separate qualification.
+        qualification:
+          catalog: implemented
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_amp_preflight.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Static preflight compares frontmatter names across documented local roots before application; configured, plugin, built-in, and remote sources are not qualified.
+        - Nondefault XDG_CONFIG_HOME blocks preflight because plugin overrides do not establish loose-skill paths.
+        - Global sources can shadow project skills; conflicting origins are preserved without automatic renaming or migration.
+        - Filesystem evidence does not qualify application installation, authentication, updater behavior, MCP connections, or functional host execution.
+        - Native settings, permissions, MCP configuration, threads, and remote repositories remain unmanaged.
+      compatibility:
+        platform_id: amp-cli
+        order: 110
+        native_config: symlink_or_reference
+        smoke_test_level: filesystem
+        verify_rules:
+        - skills_visible
+        - namespace_ls
+        rollback_class: managed-entry-removal
+
   - id: antigravity
     display_name: Google Antigravity
     variants:
+      - id: antigravity-app
+        display_name: Google Antigravity application
+        kind: application
+        support_status: supported
+        research:
+          status: partial
+          checked_on: '2026-09-06'
+          sources:
+          - kind: official_docs
+            url: https://antigravity.google/docs/skills/
+          - kind: official_docs
+            url: https://antigravity.google/docs/rules-workflows/
+          - kind: official_docs
+            url: https://antigravity.google/docs/getting-started/
+        executables: []
+        policy:
+          repo:
+            status: supported
+            resolution: hierarchy
+            paths:
+            - .agents/rules
+            - .agent/rules
+            precedence_status: unverified
+            ownership: shared
+            collision: preserve-unmanaged
+          global:
+            status: supported
+            resolution: single
+            paths:
+            - ~/.gemini/GEMINI.md
+            precedence_status: unverified
+            ownership: client-native
+            collision: owned-block-only
+        config:
+          repo:
+            status: unverified
+            resolution: unverified
+            paths: []
+            precedence_status: unverified
+            ownership: client-native
+            collision: manual
+          global:
+            status: unverified
+            resolution: unverified
+            paths: []
+            precedence_status: unverified
+            ownership: client-native
+            collision: manual
+        skills:
+          repo:
+            status: supported
+            resolution: single
+            paths:
+            - .agents/skills
+            precedence_status: unverified
+            ownership: shared
+            collision: preserve-unmanaged
+          global:
+            status: supported
+            resolution: single
+            paths:
+            - ~/.gemini/config/skills
+            precedence_status: unverified
+            ownership: client-native
+            collision: owned-entry-only
+        goal:
+          status: unverified
+          kind: unverified
+          commands: []
+          limits:
+            status: unverified
+        permissions:
+          status: unverified
+          controls: []
+        state:
+          repo:
+            status: unverified
+            path: null
+            ownership: localsetup-managed
+            collision: fail
+          global:
+            status: unverified
+            path: null
+            ownership: localsetup-managed
+            collision: fail
+        insertion:
+          repo:
+            status: unverified
+            collision: unsupported
+            rollback: unsupported
+          global:
+            status: unverified
+            collision: unsupported
+            rollback: unsupported
+        verification:
+          classification: filesystem
+        rollback:
+          classification: managed-entry-removal
+        integration:
+          lifecycle: active
+          installation:
+            method: application
+            instructions: Identify the Antigravity application separately from IDE and CLI; use official downloads with
+              a verified selected artifact. No application installation or startup is performed here.
+          qualification:
+            catalog: implemented
+            filesystem: verified
+            host: not-run
+            evidence:
+            - kind: filesystem
+              reference: ls/tests/test_antigravity_adapters.py
+            - kind: documentation
+              reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+          limitations:
+          - Personal skills use the application-specific ~/.gemini/config/skills root, not the IDE or CLI roots. Automatic
+            common-home discovery is unestablished.
+          - Filesystem projection does not qualify application identity, symlink loading, effective precedence, native
+            permissions or settings. Host not-run; use portable copies to avoid external-link assumptions.
+          - Singular .agent compatibility content, rules, native state and other variants remain in place. No migration
+            or automatic rule insertion is performed.
+        compatibility:
+          platform_id: antigravity-app
+          order: 180
+          native_config: symlink_or_reference
+          smoke_test_level: filesystem
+          verify_rules:
+          - skills_visible
+          - namespace_ls
+          rollback_class: managed-entry-removal
+      - id: antigravity-cli
+        display_name: Google Antigravity CLI
+        kind: cli
+        support_status: experimental
+        research:
+          status: partial
+          checked_on: '2026-09-06'
+          sources:
+          - kind: official_docs
+            url: https://antigravity.google/docs/cli/plugins/
+          - kind: official_docs
+            url: https://antigravity.google/docs/cli/install/
+        executables:
+        - agy
+        policy:
+          repo:
+            status: supported
+            resolution: hierarchy
+            paths:
+            - GEMINI.md
+            - AGENTS.md
+            precedence_status: unverified
+            ownership: shared
+            collision: preserve-unmanaged
+          global:
+            status: unverified
+            resolution: unverified
+            paths: []
+            precedence_status: unverified
+            ownership: client-native
+            collision: manual
+        config:
+          repo:
+            status: unverified
+            resolution: unverified
+            paths: []
+            precedence_status: unverified
+            ownership: client-native
+            collision: manual
+          global:
+            status: supported
+            resolution: single
+            paths:
+            - ~/.gemini/antigravity-cli/settings.json
+            precedence_status: unverified
+            ownership: client-native
+            collision: manual
+        skills:
+          repo:
+            status: unverified
+            resolution: unverified
+            paths: []
+            precedence_status: unverified
+            ownership: shared
+            collision: preserve-unmanaged
+          global:
+            status: unverified
+            resolution: unverified
+            paths: []
+            precedence_status: unverified
+            ownership: shared
+            collision: preserve-unmanaged
+        goal:
+          status: unverified
+          kind: unverified
+          commands: []
+          limits:
+            status: unverified
+        permissions:
+          status: unverified
+          controls: []
+        state:
+          repo:
+            status: unverified
+            path: null
+            ownership: localsetup-managed
+            collision: fail
+          global:
+            status: unverified
+            path: null
+            ownership: localsetup-managed
+            collision: fail
+        insertion:
+          repo:
+            status: unverified
+            collision: unsupported
+            rollback: unsupported
+          global:
+            status: unverified
+            collision: unsupported
+            rollback: unsupported
+        verification:
+          classification: filesystem
+        rollback:
+          classification: managed-entry-removal
+        integration:
+          lifecycle: active
+          installation:
+            method: manual
+            instructions: Use the official agy CLI installation guide and verified artifacts; preserve PATH and existing
+              aliases. No installer, migration or startup is invoked.
+          qualification:
+            catalog: bounded
+            filesystem: not-applicable
+            host: not-run
+            evidence:
+            - kind: documentation
+              reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+          limitations:
+          - Documented skills are flat .agents/skills/<name>.md and ~/.gemini/antigravity-cli/skills/<name>.md; directory
+            SKILL.md packages are not established.
+          - No generic-package adapter is exported. A conversion must preserve resources, references, namespacing, metadata,
+            collisions and rollback before qualification.
+          - CLI plugins, settings, sessions, credentials and migrations remain unmanaged. agy is distinct from Gemini
+            CLI and the Antigravity IDE/application; host not-run.
       - id: antigravity-ide
         display_name: Google Antigravity IDE
         kind: ide
         support_status: experimental
         research:
           status: partial
-          checked_on: '2026-07-15'
+          checked_on: '2026-09-06'
           sources:
-            - {kind: official_docs, url: 'https://codelabs.developers.google.com/getting-started-with-antigravity-skills'}
+            - {kind: official_docs, url: 'https://antigravity.google/docs/ide/skills/'}
+            - {kind: official_docs, url: 'https://antigravity.google/docs/ide/rules/'}
         executables: []
         policy:
           repo: {status: supported, resolution: hierarchy, paths: ['.agents/rules', '.agent/rules'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: single, paths: ['~/.gemini/antigravity/GEMINI.md'], precedence_status: unverified, ownership: client-native, collision: owned-block-only}
+          global: {status: supported, resolution: single, paths: ['~/.gemini/GEMINI.md'], precedence_status: unverified, ownership: client-native, collision: owned-block-only}
         config:
           repo: {status: unverified, resolution: unverified, paths: [], precedence_status: unverified, ownership: client-native, collision: manual}
           global: {status: unverified, resolution: unverified, paths: [], precedence_status: unverified, ownership: client-native, collision: manual}
         skills:
-          repo: {status: supported, resolution: single, paths: ['.agents/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: single, paths: ['~/.gemini/config/skills'], precedence_status: verified, ownership: client-native, collision: owned-entry-only}
+          repo: {status: supported, resolution: single, paths: ['.agents/skills'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: single, paths: ['~/.gemini/antigravity/skills'], precedence_status: unverified, ownership: client-native, collision: owned-entry-only}
         goal: {status: unverified, kind: unverified, commands: [], limits: {status: unverified}}
         permissions: {status: unverified, controls: []}
         state:
@@ -29,9 +530,27 @@ families:
           global: {status: supported, path: '~/.gemini/antigravity/state', ownership: localsetup-managed, collision: fail}
         insertion:
           repo: {status: unverified, collision: unsupported, rollback: unsupported}
-          global: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
+          global: {status: unverified, collision: unsupported, rollback: unsupported}
         verification: {classification: host}
         rollback: {classification: manual-settings}
+        integration:
+          lifecycle: active
+          installation:
+            method: application
+            instructions: Identify the IDE build independently and use its official download route; no installation is performed.
+          qualification:
+            catalog: bounded
+            filesystem: not-run
+            host: not-run
+            evidence:
+            - kind: documentation
+              reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+          limitations:
+          - Experimental IDE metadata only; no fresh-install adapter export until the installed variant and loader are qualified.
+          - IDE personal skills use ~/.gemini/antigravity/skills; global rules use ~/.gemini/GEMINI.md. Prior pointers are
+            not migrated or deleted.
+          - Native rule insertion and effective skill loading remain unqualified. Existing LocalSetup framework state is
+            separate from native state ownership.
 
   - id: claude-code
     display_name: Claude Code
@@ -42,22 +561,24 @@ families:
         support_status: supported
         research:
           status: verified
-          checked_on: '2026-07-15'
+          checked_on: '2026-09-06'
           sources:
-            - {kind: official_release, url: 'https://github.com/anthropics/claude-code/releases/tag/v2.1.210', version: '2.1.210'}
             - {kind: official_docs, url: 'https://code.claude.com/docs/en/skills.md'}
             - {kind: official_docs, url: 'https://code.claude.com/docs/en/memory.md'}
+            - {kind: official_docs, url: 'https://code.claude.com/docs/en/settings'}
+            - {kind: official_docs, url: 'https://code.claude.com/docs/en/goal'}
+            - {kind: official_docs, url: 'https://code.claude.com/docs/en/claude-directory'}
         executables: [claude]
         policy:
           repo: {status: supported, resolution: hierarchy, paths: ['CLAUDE.md', '.claude/CLAUDE.md'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
           global: {status: supported, resolution: single, paths: ['~/.claude/CLAUDE.md'], precedence_status: verified, ownership: client-native, collision: owned-block-only}
         config:
-          repo: {status: supported, resolution: hierarchy, paths: ['.claude/settings.json', '.claude/settings.local.json'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          repo: {status: supported, resolution: hierarchy, paths: ['.claude/settings.json', '.claude/settings.local.json'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
           global: {status: supported, resolution: single, paths: ['~/.claude/settings.json'], precedence_status: verified, ownership: client-native, collision: manual}
         skills:
           repo: {status: supported, resolution: single, paths: ['.claude/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
           global: {status: supported, resolution: single, paths: ['~/.claude/skills'], precedence_status: verified, ownership: client-native, collision: owned-entry-only}
-        goal: {status: unverified, kind: unverified, commands: [], limits: {status: unverified}}
+        goal: {status: supported, kind: slash-command, commands: ['/goal', '/goal clear'], limits: {status: unverified}}
         permissions: {status: supported, controls: ['managed settings', 'permission rules']}
         state:
           repo: {status: supported, path: '.claude/state', ownership: localsetup-managed, collision: fail}
@@ -69,6 +590,293 @@ families:
         rollback: {classification: managed-entry-removal}
         compatibility: {platform_id: claude-code, order: 20, native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
 
+        integration:
+          lifecycle: active
+          installation:
+            method: manual
+            instructions: Retain the native Claude skills adapter; qualify an exact CLI build before native behavior claims. Default personal paths are separate from CLAUDE_CONFIG_DIR overrides.
+          qualification:
+            catalog: implemented
+            filesystem: verified
+            host: not-run
+            evidence:
+              - {kind: filesystem, reference: ls/tests/test_claude_adapters.py}
+              - {kind: documentation, reference: ls/docs/CLIENT_INTEGRATION_METADATA.md}
+          limitations:
+            - Ordinary native skill roots support external symlinks in current documentation; no common-root auto discovery, Cowork or plugin compatibility is implied.
+            - Enterprise skills precede personal then project skills; plugin names are scoped and same-name skills precede legacy commands. Effective host discovery remains unqualified.
+            - Nondefault or ambiguous CLAUDE_CONFIG_DIR blocks default personal writes and is reported by verification; recorded removal remains available without relocation.
+            - Shared settings use primary cwd; local settings use version-dependent Git-root and worktree rules with exceptions. Metadata paths do not model a generic settings hierarchy.
+            - Native goal is documented but requires trust and enabled hooks, evaluates transcript evidence with a model, and incurs provider usage. Goal prose is not a hard runtime or token budget.
+            - Native configuration, approvals, rules, imports, custom skills and sessions remain user-owned; framework state is distinct from native state.
+
+  - id: cline
+    display_name: Cline
+    variants:
+    - id: cline-cli
+      display_name: Cline CLI
+      kind: cli
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_docs
+          url: https://docs.cline.bot/getting-started/installing-cline
+        - kind: official_docs
+          url: https://docs.cline.bot/customization/skills
+        - kind: official_docs
+          url: https://docs.cline.bot/getting-started/config
+        - kind: official_docs
+          url: https://docs.cline.bot/cli/cli-reference
+        - kind: official_docs
+          url: https://docs.cline.bot/customization/cline-rules
+        - kind: official_source
+          url: https://github.com/cline/cline/blob/dac3b35ba485dbab3b5a73aca239b0d07ce071cf/apps/cli/package.json
+      executables:
+      - cline
+      policy:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - AGENTS.md
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .cline/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.cline/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: active
+        installation:
+          method: package-manager
+          instructions: Follow the official CLI installation guide after reconciling the selected release package and Node requirements; documentation and current source differ.
+        qualification:
+          catalog: implemented
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_cline_adapters.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Filesystem adapter support does not qualify application installation, authentication, or functional host execution.
+        - Native paths are the selected write surfaces; minimum versions, search precedence, toggles, and custom configuration roots require host qualification.
+        - Native settings, credentials, sessions, databases, plugins, hooks, and custom rules are not managed.
+        - Current source includes common skill roots, but released behavior is unqualified; no migration from native or legacy directories is performed.
+        - CLI installation documentation and source package names and Node requirements differ; reconcile the intended release before installation.
+      compatibility:
+        platform_id: cline-cli
+        order: 90
+        native_config: symlink_or_reference
+        smoke_test_level: filesystem
+        verify_rules:
+        - skills_visible
+        - namespace_ls
+        rollback_class: managed-entry-removal
+    - id: cline-vscode
+      display_name: Cline for VS Code
+      kind: ide
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_docs
+          url: https://docs.cline.bot/getting-started/installing-cline
+        - kind: official_docs
+          url: https://docs.cline.bot/customization/skills
+        - kind: official_docs
+          url: https://docs.cline.bot/getting-started/config
+        - kind: official_docs
+          url: https://docs.cline.bot/cli/cli-reference
+        - kind: official_docs
+          url: https://docs.cline.bot/customization/cline-rules
+        - kind: official_source
+          url: https://github.com/cline/cline/blob/dac3b35ba485dbab3b5a73aca239b0d07ce071cf/apps/vscode/package.json
+      executables: []
+      policy:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - AGENTS.md
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .cline/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.cline/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: active
+        installation:
+          method: editor-extension
+          instructions: Install the official saoudrizwan.claude-dev extension in the intended VS Code profile and extension host; authentication is separate.
+        qualification:
+          catalog: implemented
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_cline_adapters.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Filesystem adapter support does not qualify application installation, authentication, or functional host execution.
+        - Native paths are the selected write surfaces; minimum versions, search precedence, toggles, and custom configuration roots require host qualification.
+        - Native settings, credentials, sessions, databases, plugins, hooks, and custom rules are not managed.
+        - Current source includes common skill roots, but released behavior is unqualified; no migration from native or legacy directories is performed.
+        - CLI installation documentation and source package names and Node requirements differ; reconcile the intended release before installation.
+      compatibility:
+        platform_id: cline-vscode
+        order: 100
+        native_config: symlink_or_reference
+        smoke_test_level: filesystem
+        verify_rules:
+        - skills_visible
+        - namespace_ls
+        rollback_class: managed-entry-removal
+
   - id: codex
     display_name: OpenAI Codex
     variants:
@@ -78,22 +886,23 @@ families:
         support_status: supported
         research:
           status: verified
-          checked_on: '2026-07-15'
+          checked_on: '2026-09-06'
           sources:
-            - {kind: official_release, url: 'https://github.com/openai/codex/releases/tag/rust-v0.144.4', version: '0.144.4'}
             - {kind: official_docs, url: 'https://learn.chatgpt.com/docs/build-skills'}
+            - {kind: official_docs, url: 'https://developers.openai.com/codex/guides/agents-md'}
+            - {kind: official_docs, url: 'https://developers.openai.com/codex/config-basic'}
             - {kind: official_docs, url: 'https://developers.openai.com/codex/use-cases/follow-goals'}
         executables: [codex]
         policy:
           repo: {status: supported, resolution: hierarchy, paths: ['AGENTS.override.md', 'AGENTS.md'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: first-existing, paths: ['$CODEX_HOME/AGENTS.override.md', '$CODEX_HOME/AGENTS.md'], precedence_status: verified, ownership: client-native, collision: owned-block-only}
+          global: {status: supported, resolution: first-nonempty, paths: ['$CODEX_HOME/AGENTS.override.md', '$CODEX_HOME/AGENTS.md'], precedence_status: verified, ownership: client-native, collision: owned-block-only}
         config:
-          repo: {status: supported, resolution: single, paths: ['.codex/config.toml'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          repo: {status: supported, resolution: hierarchy, paths: ['.codex/config.toml'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
           global: {status: supported, resolution: single, paths: ['$CODEX_HOME/config.toml'], precedence_status: verified, ownership: client-native, collision: manual}
         skills:
-          repo: {status: supported, resolution: single, paths: ['.agents/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: single, paths: ['~/.agents/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-        goal: {status: supported, kind: slash-command, commands: ['/goal'], limits: {status: unverified}}
+          repo: {status: supported, resolution: hierarchy, paths: ['.agents/skills'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: single, paths: ['~/.agents/skills'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
+        goal: {status: supported, kind: slash-command, commands: ['/goal', '/goal edit', '/goal pause', '/goal resume', '/goal clear'], limits: {status: unverified}}
         permissions: {status: supported, controls: ['approval policy', 'sandbox policy']}
         state:
           repo: {status: supported, path: '.codex/state', ownership: localsetup-managed, collision: fail}
@@ -105,6 +914,152 @@ families:
         rollback: {classification: managed-entry-removal}
         compatibility: {platform_id: codex, order: 10, native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
 
+        integration:
+          lifecycle: active
+          installation:
+            method: manual
+            instructions: Retain the common skills adapter; qualify the exact Codex CLI build independently. CODEX_HOME selects native profile context, not the OS user common skills root.
+          qualification:
+            catalog: implemented
+            filesystem: verified
+            host: not-run
+            evidence:
+              - {kind: filesystem, reference: ls/tests/test_codex_adapters.py}
+              - {kind: documentation, reference: ls/docs/CLIENT_INTEGRATION_METADATA.md}
+          limitations:
+            - Repository skill discovery aggregates working-directory ancestors toward repository root. LocalSetup writes the selected target only and preserves nested custom packages.
+            - Same-name native skills can coexist; no universal repository-over-personal winner is asserted. Physical write deduplication does not imply native name deduplication.
+            - Personal common skills remain under the OS home independently of CODEX_HOME; alternate native profiles are not a disclosure isolation boundary.
+            - Project instruction override/base/fallback selection and trusted native configuration remain separate from skill discovery and framework state.
+            - Native goals and effective settings require exact-build qualification. No global policy, hooks, current goals, credentials, sessions or native configuration are modified by this profile correction.
+
+  - id: continue
+    display_name: Continue
+    variants:
+    - id: continue-cli-legacy
+      display_name: Continue CLI legacy
+      kind: cli
+      support_status: experimental
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_docs
+          url: https://github.com/continuedev/continue/blob/5522c6f44ca0ac3528b37244818fbfa39b5af470/README.md
+        - kind: official_docs
+          url: https://github.com/continuedev/continue/blob/5522c6f44ca0ac3528b37244818fbfa39b5af470/extensions/cli/src/util/loadMarkdownSkills.ts
+        - kind: official_docs
+          url: https://github.com/continuedev/continue/blob/5522c6f44ca0ac3528b37244818fbfa39b5af470/extensions/cli/src/env.ts
+      executables:
+      - cn
+      policy:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .continue/skills
+          precedence_status: unverified
+          ownership: client-native
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.continue/skills
+          precedence_status: unverified
+          ownership: client-native
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: retained-only
+        installation:
+          method: manual
+          instructions: Retain recorded Continue CLI native adapters only. No fresh projection or IDE qualification;
+            inspect the exact retained build and resolved Continue home before host acceptance.
+        qualification:
+          catalog: bounded
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_windsurf_retention.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Upstream states it is no longer actively maintained. This record covers the cn CLI, not historical IDE extensions.
+        - No fresh-install projection is emitted. Synthetic receipts qualify recorded filesystem lifecycle only; host
+          loading is not-run.
+        - The inspected loader scans project .continue/skills, project .claude/skills and resolved Continue home/skills,
+          not common .agents roots.
+        - Per-package directory links are skipped and the resource walker disables link following. Native physical
+          packages require exact-build host qualification; existing receipt mode is preserved without automatic conversion.
+        - CONTINUE_GLOBAL_DIR and dotenv may change the native home. Recorded filesystem operations do not resolve
+          the effective CLI environment or prove that cn loads the recorded path.
+        - Automatic repository-only repair refuses inference. Preserve native configuration, sessions, credentials,
+          slash commands and custom skills; no native initializer or migration is invoked.
+
   - id: cursor
     display_name: Cursor
     variants:
@@ -114,20 +1069,20 @@ families:
         support_status: supported
         research:
           status: partial
-          checked_on: '2026-07-15'
+          checked_on: '2026-09-06'
           sources:
             - {kind: official_docs, url: 'https://cursor.com/docs/cli/using.md'}
             - {kind: official_docs, url: 'https://cursor.com/docs/cli/reference/configuration.md'}
-        executables: [cursor-agent]
+        executables: [agent, cursor-agent]
         policy:
-          repo: {status: supported, resolution: hierarchy, paths: ['AGENTS.md', 'CLAUDE.md', '.cursor/rules'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          repo: {status: supported, resolution: hierarchy, paths: ['AGENTS.md', 'CLAUDE.md', '.cursor/rules'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
           global: {status: unsupported, resolution: unsupported, paths: [], precedence_status: unsupported, ownership: client-native, collision: unsupported}
         config:
           repo: {status: supported, resolution: single, paths: ['.cursor/cli.json'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: single, paths: ['~/.cursor/cli-config.json'], precedence_status: verified, ownership: client-native, collision: manual}
+          global: {status: supported, resolution: single, paths: ['~/.cursor/cli-config.json'], precedence_status: unverified, ownership: client-native, collision: manual}
         skills:
-          repo: {status: supported, resolution: first-existing, paths: ['.agents/skills', '.cursor/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: first-existing, paths: ['~/.agents/skills', '~/.cursor/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          repo: {status: supported, resolution: aggregate, paths: ['.agents/skills', '.cursor/skills', '.claude/skills', '.codex/skills'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: aggregate, paths: ['~/.agents/skills', '~/.cursor/skills', '~/.claude/skills', '~/.codex/skills'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
         goal: {status: unverified, kind: unverified, commands: [], limits: {status: unverified}}
         permissions: {status: supported, controls: ['CLI configuration permissions']}
         state:
@@ -136,28 +1091,42 @@ families:
         insertion:
           repo: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
           global: {status: unsupported, collision: unsupported, rollback: unsupported}
-        verification: {classification: host}
+        verification: {classification: filesystem}
         rollback: {classification: owned-block-removal}
+        integration:
+          lifecycle: active
+          installation:
+            method: manual
+            instructions: Use official Cursor installation guidance with a verified artifact. Adapter operations do not install, start or authenticate a native client.
+          qualification:
+            catalog: bounded
+            filesystem: not-run
+            host: not-run
+            evidence:
+            - {kind: documentation, reference: ls/docs/CLIENT_INTEGRATION_METADATA.md}
+          limitations:
+          - Common and native compatibility roots aggregate; duplicate selection and effective resource loading remain unqualified.
+          - Preserve native configuration, custom adapters and historical recorded paths. Local personal skills do not imply remote or cloud availability.
       - id: cursor-ide
         display_name: Cursor IDE
         kind: ide
         support_status: supported
         research:
           status: partial
-          checked_on: '2026-07-15'
+          checked_on: '2026-09-06'
           sources:
             - {kind: official_docs, url: 'https://cursor.com/docs/skills.md'}
             - {kind: official_docs, url: 'https://cursor.com/docs/rules.md'}
         executables: [cursor]
         policy:
-          repo: {status: supported, resolution: hierarchy, paths: ['.cursor/rules', 'AGENTS.md'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          repo: {status: supported, resolution: hierarchy, paths: ['.cursor/rules', 'AGENTS.md'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
           global: {status: settings-only, resolution: settings, paths: [], precedence_status: verified, ownership: client-native, collision: manual, setting_label: 'Cursor User Rules'}
         config:
           repo: {status: unverified, resolution: unverified, paths: [], precedence_status: unverified, ownership: client-native, collision: manual}
           global: {status: settings-only, resolution: settings, paths: [], precedence_status: unverified, ownership: client-native, collision: manual, setting_label: 'Cursor Settings'}
         skills:
-          repo: {status: supported, resolution: first-existing, paths: ['.agents/skills', '.cursor/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: first-existing, paths: ['~/.agents/skills', '~/.cursor/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          repo: {status: supported, resolution: aggregate, paths: ['.agents/skills', '.cursor/skills', '.claude/skills', '.codex/skills'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: aggregate, paths: ['~/.agents/skills', '~/.cursor/skills', '~/.claude/skills', '~/.codex/skills'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
         goal: {status: unverified, kind: unverified, commands: [], limits: {status: unverified}}
         permissions: {status: unverified, controls: []}
         state:
@@ -168,7 +1137,163 @@ families:
           global: {status: settings-only, collision: manual, rollback: manual-settings}
         verification: {classification: filesystem}
         rollback: {classification: managed-entry-removal}
-        compatibility: {platform_id: cursor, order: 30, native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
+        compatibility: {platform_id: cursor, order: 30, repo_write_paths: ['.agents/skills'], global_write_paths: ['~/.agents/skills'], native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
+        integration:
+          lifecycle: active
+          installation:
+            method: manual
+            instructions: Use official Cursor installation guidance with a verified artifact. Adapter operations do not install, start or authenticate a native client.
+          qualification:
+            catalog: implemented
+            filesystem: verified
+            host: not-run
+            evidence:
+            - {kind: filesystem, reference: ls/tests/test_cursor_adapters.py}
+          limitations:
+          - Common and native compatibility roots aggregate; duplicate selection and effective resource loading remain unqualified.
+          - Preserve native configuration, custom adapters and historical recorded paths. Local personal skills do not imply remote or cloud availability.
+
+  - id: factory
+    display_name: Factory
+    variants:
+    - id: factory-droid
+      display_name: Factory Droid
+      kind: cli
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_docs
+          url: https://docs.factory.ai/harness/skills
+        - kind: official_docs
+          url: https://docs.factory.ai/harness/agents-md
+        - kind: official_docs
+          url: https://docs.factory.ai/droid-cli/settings
+        - kind: official_docs
+          url: https://docs.factory.ai/changelog/release-notes
+      executables:
+      - droid
+      policy:
+        repo:
+          status: supported
+          resolution: hierarchy
+          paths:
+          - AGENTS.md
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .factory/settings.json
+          - .factory/settings.local.json
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.factory/settings.json
+          - ~/.factory/settings.local.json
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: active
+        installation:
+          method: manual
+          instructions: Use official Factory installation guidance with a verified selected artifact. Adapter operations
+            do not install or start Droid, authenticate or enable auto-updates.
+        qualification:
+          catalog: implemented
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_factory_preflight.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - LocalSetup conservatively accepts canonical lowercase alphanumeric and hyphen skill names only; unknown
+          normalization requires native effective-catalog review.
+        - Duplicate canonical identities within a project or personal folder bucket are refused, including aliases.
+          Native custom content is preserved.
+        - Recursive static scanning stops at package roots. Dynamic nested activation, plugins, organization/mission/CLI
+          scopes and disabled settings remain effective-host qualification requirements.
+        - Common-root symlink projection is filesystem-tested only; arbitrary external target loading by Droid is
+          unqualified. Use portable mode when avoiding that dependency.
+        - Native settings and local overlays, credentials, sessions, droids, plugins and permission controls remain
+          unmanaged. Host not-run.
+      compatibility:
+        platform_id: factory-droid
+        order: 170
+        native_config: symlink_or_reference
+        smoke_test_level: filesystem
+        verify_rules:
+        - skills_visible
+        - namespace_ls
+        rollback_class: managed-entry-removal
 
   - id: gemini
     display_name: Gemini CLI
@@ -178,10 +1303,10 @@ families:
         kind: cli
         support_status: supported
         research:
-          status: verified
-          checked_on: '2026-07-15'
+          status: partial
+          checked_on: '2026-09-06'
           sources:
-            - {kind: official_release, url: 'https://github.com/google-gemini/gemini-cli/releases/tag/v0.50.0', version: '0.50.0'}
+            - {kind: official_release, url: 'https://github.com/google-gemini/gemini-cli/releases/tag/v0.58.0', version: '0.58.0'}
             - {kind: official_docs, url: 'https://geminicli.com/docs/cli/skills/'}
             - {kind: official_docs, url: 'https://geminicli.com/docs/cli/gemini-md/'}
         executables: [gemini]
@@ -192,8 +1317,8 @@ families:
           repo: {status: supported, resolution: single, paths: ['.gemini/settings.json'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
           global: {status: supported, resolution: single, paths: ['~/.gemini/settings.json'], precedence_status: verified, ownership: client-native, collision: manual}
         skills:
-          repo: {status: supported, resolution: first-existing, paths: ['.agents/skills', '.gemini/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: first-existing, paths: ['~/.agents/skills', '~/.gemini/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          repo: {status: supported, resolution: aggregate, paths: ['.agents/skills', '.gemini/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: aggregate, paths: ['~/.agents/skills', '~/.gemini/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
         goal: {status: unverified, kind: unverified, commands: [], limits: {status: unverified}}
         permissions: {status: supported, controls: ['settings permissions']}
         state:
@@ -202,8 +1327,567 @@ families:
         insertion:
           repo: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
           global: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
-        verification: {classification: host}
+        verification: {classification: filesystem}
         rollback: {classification: owned-block-removal}
+        compatibility: {platform_id: gemini-cli, order: 190, repo_write_paths: ['.agents/skills'], global_write_paths: ['~/.agents/skills'], native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
+        integration:
+          lifecycle: active
+          installation:
+            method: manual
+            instructions: Use official Gemini CLI installation guidance with a verified selected artifact. Adapter operations do not install, start or authenticate Gemini CLI.
+          qualification:
+            catalog: implemented
+            filesystem: verified
+            host: not-run
+            evidence:
+            - {kind: filesystem, reference: ls/tests/test_gemini_adapters.py}
+          limitations:
+          - GEMINI_CLI_HOME relocates both native and common personal roots. Personal writes require the qualified supplied home; no automatic relocation occurs.
+          - Workspace discovery requires native trust; user or administrative settings can disable skills. Filesystem installation does not activate a skill or grant tools.
+          - Exact-name merging favors workspace over user and common over native. Native custom content remains preserved but may be shadowed.
+          - Native settings, context, extensions, trust, credentials and sessions are preserved. Host activation and resource execution remain unqualified.
+
+  - id: github-copilot
+    display_name: GitHub Copilot
+    variants:
+    - id: github-copilot-cli
+      display_name: GitHub Copilot CLI
+      kind: cli
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_docs
+          url: https://docs.github.com/en/copilot/how-tos/copilot-cli/set-up-copilot-cli/install-copilot-cli
+        - kind: official_docs
+          url: https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills
+        - kind: official_docs
+          url: https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions
+        - kind: official_docs
+          url: https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference
+      executables:
+      - copilot
+      policy:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - AGENTS.md
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: active
+        installation:
+          method: vendor-installer
+          instructions: Select and verify a pinned official copilot-cli release artifact
+            before installation; authentication and entitlement are separate.
+        qualification:
+          catalog: implemented
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_copilot_adapters.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Filesystem adapter support does not qualify application installation, authentication,
+          or functional host execution.
+        - Minimum compatible versions and duplicate skill-root precedence remain unverified.
+        - Native configuration, permissions, sessions, and personal instruction files
+          are not managed.
+        - CLI instructions combine without a general precedence guarantee; COPILOT_HOME
+          redirects personal instructions and configuration, but skill-root redirection
+          is unverified.
+      compatibility:
+        platform_id: github-copilot-cli
+        order: 70
+        native_config: symlink_or_reference
+        smoke_test_level: filesystem
+        verify_rules:
+        - skills_visible
+        - namespace_ls
+        rollback_class: managed-entry-removal
+    - id: github-copilot-vscode
+      display_name: GitHub Copilot in VS Code
+      kind: ide
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_docs
+          url: https://code.visualstudio.com/docs/setup/copilot
+        - kind: official_docs
+          url: https://code.visualstudio.com/docs/agent-customization/agent-skills
+        - kind: official_docs
+          url: https://code.visualstudio.com/docs/agent-customization/custom-instructions
+        - kind: official_docs
+          url: https://code.visualstudio.com/docs/configure/command-line
+      executables:
+      - code
+      policy:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - AGENTS.md
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: active
+        installation:
+          method: editor-extension
+          instructions: Install VS Code and activate its official Copilot capability
+            in the intended profile; authentication is separate.
+        qualification:
+          catalog: implemented
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_copilot_adapters.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Filesystem adapter support does not qualify application installation, authentication,
+          or functional host execution.
+        - Minimum compatible versions and duplicate skill-root precedence remain unverified.
+        - Native configuration, permissions, sessions, and personal instruction files
+          are not managed.
+        - VS Code instruction conflict priority is personal then repository then organization;
+          AGENTS.md and skill discovery depend on effective profile, workspace, harness,
+          and settings.
+      compatibility:
+        platform_id: github-copilot-vscode
+        order: 80
+        native_config: symlink_or_reference
+        smoke_test_level: filesystem
+        verify_rules:
+        - skills_visible
+        - namespace_ls
+        rollback_class: managed-entry-removal
+  - id: goose
+    display_name: Goose
+    variants:
+    - id: goose-cli
+      display_name: Goose CLI
+      kind: cli
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_docs
+          url: https://goose-docs.ai/docs/guides/context-engineering/using-skills/
+        - kind: official_docs
+          url: https://goose-docs.ai/docs/mcp/skills-mcp/
+        - kind: official_docs
+          url: https://goose-docs.ai/docs/mcp/summon-mcp/
+        - kind: official_docs
+          url: https://goose-docs.ai/docs/guides/context-engineering/using-goosehints/
+        - kind: official_docs
+          url: https://goose-docs.ai/docs/getting-started/installation/
+        - kind: official_source
+          url: https://github.com/aaif-goose/goose/tree/5e90925962f05acf8e255032de44d16c4a7768a2/crates/goose/src/config
+      executables:
+      - goose
+      policy:
+        repo:
+          status: supported
+          resolution: hierarchy
+          paths:
+          - AGENTS.md
+          - .goosehints
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.config/goose/config.yaml
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: active
+        installation:
+          method: vendor-installer
+          instructions: Select and verify the official Goose CLI release artifact before installation; configuration, provider access, and desktop installation are separate.
+        qualification:
+          catalog: implemented
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_goose_prerequisite.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - The explicit native Skills entry is a static configuration prerequisite only; installed build and session availability remain unverified.
+        - Absent configuration, custom roots, system/additional/environment overlays, tool restrictions, and ambiguous YAML require separate qualification; no defaults or migrations are assumed.
+        - Current Skills and Summon documentation conflicts; Summon is not enabled as a substitute.
+        - Recipes and session extension replacements, plugin skills, native private-home roots, and duplicate precedence are outside this qualification.
+        - Native settings, keyring secrets, sessions, databases, recipes, plugins, and custom extensions remain unmanaged.
+      compatibility:
+        platform_id: goose-cli
+        order: 120
+        native_config: symlink_or_reference
+        smoke_test_level: filesystem
+        verify_rules:
+        - skills_visible
+        - namespace_ls
+        - goose_skills_configured
+        rollback_class: managed-entry-removal
+
+  - id: hermes
+    display_name: Hermes Agent
+    variants:
+    - id: hermes-agent
+      display_name: Hermes Agent
+      kind: cli
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_source
+          url: https://github.com/NousResearch/hermes-agent/blob/245e48008fa814b3251f50755eb656bd9fb86cb1/agent/skill_utils.py
+        - kind: official_docs
+          url: https://hermes-agent.nousresearch.com/docs/user-guide/profiles/
+      executables:
+      - hermes
+      policy:
+        repo:
+          status: supported
+          resolution: hierarchy
+          paths:
+          - AGENTS.md
+          - AGENTS.override.md
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.hermes/config.yaml
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .hermes/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.hermes/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: active
+        installation:
+          method: manual
+          instructions: Use official Hermes installation instructions with a verified selected artifact. This adapter
+            does not install or start Hermes.
+        qualification:
+          catalog: implemented
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_hermes_adapters.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Portable independent copies are required; native skill edits and deletions block automatic replacement or
+          removal until preservation review.
+        - Personal writes bind explicitly to the default ~/.hermes profile. Nondefault HERMES_HOME is refused; named,
+          sticky CLI and context-local API profile selection remain separately unqualified.
+        - Project skill discovery requires a Git root and native trust and can be disabled or quarantined. LocalSetup
+          does not approve trust or edit external_dirs.
+        - Native config, profiles, personality, sessions, databases, memory, cron, gateway, plugins, manifests and
+          custom skills remain unmanaged.
+        - Filesystem exposure does not prove effective resource precedence or running-session availability. No read-only
+          sandbox or host qualification is claimed.
+      compatibility:
+        platform_id: hermes-agent
+        order: 140
+        native_config: symlink_or_reference
+        smoke_test_level: filesystem
+        verify_rules:
+        - skills_visible
+        - namespace_ls
+        rollback_class: managed-entry-removal
 
   - id: kilo
     display_name: Kilo Code
@@ -213,22 +1897,22 @@ families:
         kind: cli
         support_status: supported
         research:
-          status: verified
-          checked_on: '2026-07-15'
+          status: partial
+          checked_on: '2026-09-06'
           sources:
-            - {kind: official_release, url: 'https://github.com/Kilo-Org/kilocode/releases/tag/v7.4.7', version: '7.4.7'}
+            - {kind: official_release, url: 'https://github.com/Kilo-Org/kilocode/releases/tag/v7.5.15', version: '7.5.15'}
             - {kind: official_docs, url: 'https://kilo.ai/docs/customize/skills'}
             - {kind: official_docs, url: 'https://kilo.ai/docs/customize/custom-instructions'}
         executables: [kilo]
         policy:
-          repo: {status: supported, resolution: hierarchy, paths: ['AGENTS.md'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: single, paths: ['~/.config/kilo/AGENTS.md'], precedence_status: unverified, ownership: client-native, collision: owned-block-only}
+          repo: {status: supported, resolution: hierarchy, paths: ['AGENTS.md', 'CLAUDE.md', 'CONTEXT.md'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: first-existing, paths: ['~/.config/kilo/AGENTS.md', '~/.claude/CLAUDE.md'], precedence_status: unverified, ownership: client-native, collision: owned-block-only}
         config:
-          repo: {status: supported, resolution: first-existing, paths: ['kilo.json', 'kilo.jsonc', '.kilo/kilo.json', '.kilo/kilo.jsonc'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: first-existing, paths: ['~/.config/kilo/kilo.json', '~/.config/kilo/kilo.jsonc'], precedence_status: verified, ownership: client-native, collision: manual}
+          repo: {status: supported, resolution: aggregate, paths: ['kilo.json', 'kilo.jsonc', '.kilo/kilo.json', '.kilo/kilo.jsonc'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: aggregate, paths: ['~/.config/kilo/kilo.json', '~/.config/kilo/kilo.jsonc'], precedence_status: verified, ownership: client-native, collision: manual}
         skills:
-          repo: {status: supported, resolution: single, paths: ['.kilo/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: single, paths: ['~/.kilo/skills'], precedence_status: verified, ownership: client-native, collision: owned-entry-only}
+          repo: {status: supported, resolution: aggregate, paths: ['.agents/skills', '.kilo/skills', '.kilo/skill', '.kilocode/skills', '.kilocode/skill', '.claude/skills'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: aggregate, paths: ['~/.agents/skills', '~/.kilo/skills', '~/.kilo/skill', '~/.kilocode/skills', '~/.kilocode/skill', '~/.config/kilo/skills', '~/.config/kilo/skill', '~/.claude/skills'], precedence_status: unverified, ownership: client-native, collision: owned-entry-only}
         goal: {status: unverified, kind: unverified, commands: [], limits: {status: unverified}}
         permissions: {status: supported, controls: ['agent permissions']}
         state:
@@ -239,42 +1923,441 @@ families:
           global: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
         verification: {classification: filesystem}
         rollback: {classification: managed-entry-removal}
-        compatibility: {platform_id: kilo, order: 40, native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
+        compatibility: {platform_id: kilo, order: 40, repo_write_paths: ['.agents/skills'], global_write_paths: ['~/.agents/skills'], native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
+        integration:
+          lifecycle: active
+          installation:
+            method: manual
+            instructions: Use official Kilo CLI installation guidance with a verified artifact. Adapter operations do not install or start Kilo, authenticate or change native trust.
+          qualification:
+            catalog: implemented
+            filesystem: verified
+            host: not-run
+            evidence:
+            - {kind: filesystem, reference: ls/tests/test_kilo_adapters.py}
+          limitations:
+          - Kilo 7.5.15 rejects external project source symlinks through its realpath guard. Use an explicit portable-mode plan for contained project packages; filesystem maintenance keeps recorded modes and paths.
+          - Personal trust depends on active project and resolved targets. Home and configuration overrides, disabled common discovery, activation and resources require native qualification.
+          - Preserve native config, rules, mode overlays, custom skills, credentials and sessions. No trust override or automatic mode conversion is performed.
+
+  - id: kimi
+    display_name: Kimi
+    variants:
+    - id: kimi-cli
+      display_name: Kimi CLI
+      kind: cli
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_source
+          url: https://github.com/MoonshotAI/kimi-cli/blob/86f136422a0aae6b217ea49e7ea1d2e8a1defcd2/src/kimi_cli/skill/__init__.py
+        - kind: official_source
+          url: https://github.com/MoonshotAI/kimi-cli/blob/86f136422a0aae6b217ea49e7ea1d2e8a1defcd2/src/kimi_cli/config.py
+      executables:
+      - kimi
+      policy:
+        repo:
+          status: supported
+          resolution: hierarchy
+          paths:
+          - AGENTS.md
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.kimi/config.toml
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: active
+        installation:
+          method: manual
+          instructions: Use official Kimi CLI installation guidance with a verified selected artifact. Adapter installation
+            does not start or authenticate Kimi.
+        qualification:
+          catalog: implemented
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_kimi_prerequisite.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - An existing distinct ~/.config/agents/skills directory masks ~/.agents/skills even when empty. Personal
+          writes report this prerequisite without moving either root.
+        - merge_all_available_skills controls branded roots only; it does not merge the generic personal roots. Extra
+          directories and native CLI overrides require effective-session qualification.
+        - Native branded skills, configuration, sessions, credentials, custom agents, MCP configuration and share-directory
+          overrides remain unmanaged.
+        - Filesystem verification does not establish effective skill identity, activation, flow support, tool execution
+          or installed-host behavior. Host not-run.
+      compatibility:
+        platform_id: kimi-cli
+        order: 160
+        native_config: symlink_or_reference
+        smoke_test_level: filesystem
+        verify_rules:
+        - skills_visible
+        - namespace_ls
+        rollback_class: managed-entry-removal
+
+  - id: lscli
+    display_name: LSCli
+    variants:
+    - id: lscli
+      display_name: LSCli
+      kind: cli
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: repository_source
+          reference: ls/core/agent/cli.py
+        - kind: repository_source
+          reference: ls/core/agent/context_files.py
+        - kind: repository_source
+          reference: ls/core/agent/diagnostics.py
+      executables:
+      - lscli
+      policy:
+        repo:
+          status: settings-only
+          resolution: settings
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+          setting_label: Explicit --context workspace file selection and explicit nested
+            AGENTS.md refresh under current disclosure grants
+        global:
+          status: unsupported
+          resolution: unsupported
+          paths: []
+          precedence_status: unsupported
+          ownership: client-native
+          collision: unsupported
+      config:
+        repo:
+          status: unsupported
+          resolution: unsupported
+          paths: []
+          precedence_status: unsupported
+          ownership: client-native
+          collision: unsupported
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.local/share/localsetup/config/lscli/profiles.json
+          precedence_status: verified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: settings-only
+          resolution: settings
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+          setting_label: Explicit --skill workspace-relative SKILL.md file selection;
+            no automatic directory discovery
+        global:
+          status: unsupported
+          resolution: unsupported
+          paths: []
+          precedence_status: unsupported
+          ownership: client-native
+          collision: unsupported
+      goal:
+        status: unsupported
+        kind: unsupported
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: supported
+        controls:
+        - task-bound file grants
+        - separate provider disclosure grants
+        - qualified process sandbox
+        - session and runtime leases
+      state:
+        repo:
+          status: unsupported
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unsupported
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: settings-only
+          collision: manual
+          rollback: manual-settings
+        global:
+          status: unsupported
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: unsupported
+      integration:
+        lifecycle: active
+        installation:
+          method: manual
+          instructions: Use the LocalSetup wheel and protected LSCli setup workflow
+            with verified artifacts; runtime registration does not install third-party
+            clients.
+        qualification:
+          catalog: implemented
+          filesystem: not-applicable
+          host: not-run
+          evidence:
+          - kind: documentation
+            reference: ls/docs/LSCLI.md
+          - kind: filesystem
+            reference: ls/tests/test_context_files.py
+        limitations:
+        - Runtime-only catalog entry; no automatic skills adapter or generic client-state
+          root.
+        - Explicit ordinary workspace files require current read and disclosure grants.
+          Protected directories and symlink traversal remain refused.
+        - State, provider profiles, runtime upgrades and sessions use existing LSCli
+          runtime contracts; native catalog registration does not certify installed-release
+          behavior.
 
   - id: omp
     display_name: Oh My Pi
     variants:
-      - id: omp-cli
-        display_name: Oh My Pi CLI
-        kind: cli
-        support_status: supported
-        research:
-          status: verified
-          checked_on: '2026-07-15'
-          sources:
-            - {kind: official_release, url: 'https://github.com/can1357/oh-my-pi/releases/tag/v16.5.2', version: '16.5.2'}
-            - {kind: official_source, url: 'https://github.com/can1357/oh-my-pi/blob/v16.5.2/docs/skills.md', version: '16.5.2'}
-            - {kind: official_source, url: 'https://github.com/can1357/oh-my-pi/blob/v16.5.2/docs/context-files.md', version: '16.5.2'}
-        executables: [omp]
-        policy:
-          repo: {status: supported, resolution: first-existing, paths: ['.omp/RULES.md', '.omp/AGENTS.md'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: first-existing, paths: ['~/.omp/agent/RULES.md', '~/.omp/agent/AGENTS.md'], precedence_status: verified, ownership: client-native, collision: owned-block-only}
-        config:
-          repo: {status: supported, resolution: single, paths: ['.omp/config.yml'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: single, paths: ['~/.omp/agent/config.yml'], precedence_status: verified, ownership: client-native, collision: manual}
-        skills:
-          repo: {status: supported, resolution: single, paths: ['.omp/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: single, paths: ['~/.omp/agent/skills'], precedence_status: verified, ownership: client-native, collision: owned-entry-only}
-        goal: {status: supported, kind: slash-command, commands: ['/goal', '/guided-goal', '/loop'], limits: {status: unverified}}
-        permissions: {status: supported, controls: ['approvalMode always-ask|write|yolo', 'per-tool allow|deny|prompt']}
-        state:
-          repo: {status: supported, path: '.omp/state', ownership: localsetup-managed, collision: fail}
-          global: {status: supported, path: '~/.omp/agent/state', ownership: localsetup-managed, collision: fail}
-        insertion:
-          repo: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
-          global: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
-        verification: {classification: host}
-        rollback: {classification: owned-block-removal}
+    - id: omp-cli
+      display_name: Oh My Pi CLI
+      kind: cli
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_release
+          url: https://github.com/can1357/oh-my-pi/releases/tag/v18.1.11
+          version: 18.1.11
+        - kind: official_source
+          url: https://github.com/can1357/oh-my-pi/blob/e3106be68f778635da3a17106835ce2e0e6992af/packages/coding-agent/src/discovery/agents.ts
+          version: 18.1.11
+      executables:
+      - omp
+      policy:
+        repo:
+          status: supported
+          resolution: aggregate
+          paths:
+          - AGENTS.md
+          - .agents/AGENTS.md
+          - .agent/AGENTS.md
+          - .omp/AGENTS.md
+          - .omp/RULES.md
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: aggregate
+          paths:
+          - ~/.omp/agent/AGENTS.md
+          - ~/.omp/agent/RULES.md
+          - ~/.agents/AGENTS.md
+          - ~/.agent/AGENTS.md
+          precedence_status: unverified
+          ownership: client-native
+          collision: owned-block-only
+      config:
+        repo:
+          status: supported
+          resolution: aggregate
+          paths:
+          - .omp/settings.json
+          - .omp/config.yml
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: first-existing
+          paths:
+          - ~/.omp/agent/config.yml
+          - ~/.omp/agent/config.yaml
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: aggregate
+          paths:
+          - .agents/skills
+          - .agent/skills
+          - .omp/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: aggregate
+          paths:
+          - ~/.agents/skills
+          - ~/.agent/skills
+          - ~/.omp/agent/skills
+          precedence_status: unverified
+          ownership: client-native
+          collision: owned-entry-only
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: supported
+        controls:
+        - approvalMode always-ask|write|yolo
+        - per-tool allow|deny|prompt
+      state:
+        repo:
+          status: supported
+          path: .omp/state
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: supported
+          path: ~/.omp/agent/state
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      compatibility:
+        platform_id: omp-cli
+        order: 200
+        repo_write_paths:
+        - .agents/skills
+        global_write_paths:
+        - ~/.agents/skills
+        native_config: symlink_or_reference
+        smoke_test_level: filesystem
+        verify_rules:
+        - skills_visible
+        - namespace_ls
+        rollback_class: managed-entry-removal
+      integration:
+        lifecycle: active
+        installation:
+          method: manual
+          instructions: Use official OMP installation guidance with a verified selected
+            artifact. Adapter operations do not install or start OMP.
+        qualification:
+          catalog: implemented
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_omp_adapters.py
+        limitations:
+        - Provider settings, native and singular-name shadowing can hide common packages;
+          no settings are changed.
+        - Native profiles relocate native roots independently of common OS-home discovery.
+          WSL may additionally discover Windows-home skills; no Windows profile writes
+          are performed.
+        - RULES and AGENTS have different native lifecycles. Native configuration, sessions,
+          credentials, MCP and hooks remain unmanaged.
+        - Goals, resource activation and effective host loading remain unqualified.
+          OMP is distinct from Pi and LSCli.
 
   - id: openclaw
     display_name: OpenClaw
@@ -284,10 +2367,10 @@ families:
         kind: cli
         support_status: supported
         research:
-          status: verified
-          checked_on: '2026-07-15'
+          status: partial
+          checked_on: '2026-09-06'
           sources:
-            - {kind: official_release, url: 'https://github.com/openclaw/openclaw/releases/tag/v2026.7.1', version: '2026.7.1'}
+            - {kind: official_release, url: 'https://github.com/openclaw/openclaw/releases/tag/v2026.9.2', version: '2026.9.2'}
             - {kind: official_docs, url: 'https://docs.openclaw.ai/tools/skills.md'}
             - {kind: official_docs, url: 'https://docs.openclaw.ai/tools/goal.md'}
         executables: [openclaw]
@@ -298,19 +2381,36 @@ families:
           repo: {status: unverified, resolution: unverified, paths: [], precedence_status: unverified, ownership: client-native, collision: manual}
           global: {status: supported, resolution: single, paths: ['~/.openclaw/openclaw.json'], precedence_status: verified, ownership: client-native, collision: manual}
         skills:
-          repo: {status: supported, resolution: configured-workspaces, paths: ['.agents/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: first-existing, paths: ['~/.agents/skills', '~/.openclaw/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          repo: {status: supported, resolution: configured-workspaces, paths: ['.agents/skills', 'skills'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: aggregate, paths: ['~/.agents/skills', '~/.openclaw/skills'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
         goal: {status: supported, kind: slash-command, commands: ['/goal'], limits: {status: unverified}}
         permissions: {status: supported, controls: ['tool policy', 'sandbox policy']}
         state:
-          repo: {status: supported, path: '.openclaw/state', ownership: localsetup-managed, collision: fail}
-          global: {status: supported, path: '~/.openclaw/state', ownership: localsetup-managed, collision: fail}
+          repo: {status: supported, path: '.localsetup/client-state/openclaw/state', ownership: localsetup-managed, collision: fail}
+          global: {status: supported, path: '~/.local/share/localsetup/client-state/openclaw/state', ownership: localsetup-managed, collision: fail}
         insertion:
           repo: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
           global: {status: unsupported, collision: unsupported, rollback: unsupported}
         verification: {classification: filesystem}
         rollback: {classification: managed-entry-removal}
-        compatibility: {platform_id: openclaw, order: 60, native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
+        compatibility: {platform_id: openclaw, order: 60, repo_write_paths: ['.agents/skills'], global_write_paths: ['~/.agents/skills'], native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
+
+        integration:
+          lifecycle: active
+          installation:
+            method: manual
+            instructions: Use official OpenClaw installation guidance with a verified artifact; adapter operations do not install, start or configure the gateway.
+          qualification:
+            catalog: implemented
+            filesystem: verified
+            host: not-run
+            evidence:
+            - {kind: filesystem, reference: ls/tests/test_openclaw_adapters.py}
+          limitations:
+          - The target must be the intended resolved agent workspace; filesystem placement does not associate it with a gateway agent.
+          - External project package links fail ordinary native containment; use an explicit portable plan without adding native allowances.
+          - Common personal loading is conditional on the effective default-state profile. Native settings and higher-priority workspace skills can suppress packages.
+          - Native state, databases, credentials, sessions and delegated runtime goals remain separately owned; no host or sandbox activation is qualified.
 
   - id: opencode
     display_name: OpenCode
@@ -320,22 +2420,22 @@ families:
         kind: cli
         support_status: supported
         research:
-          status: verified
-          checked_on: '2026-07-15'
+          status: partial
+          checked_on: '2026-09-06'
           sources:
-            - {kind: official_release, url: 'https://github.com/anomalyco/opencode/releases/tag/v1.18.1', version: '1.18.1'}
+            - {kind: official_release, url: 'https://github.com/anomalyco/opencode/releases/tag/v1.18.29', version: '1.18.29'}
             - {kind: official_docs, url: 'https://opencode.ai/docs/skills.md'}
             - {kind: official_docs, url: 'https://opencode.ai/docs/rules.md'}
         executables: [opencode]
         policy:
-          repo: {status: supported, resolution: hierarchy, paths: ['AGENTS.md'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: single, paths: ['~/.config/opencode/AGENTS.md'], precedence_status: verified, ownership: client-native, collision: owned-block-only}
+          repo: {status: supported, resolution: hierarchy, paths: ['AGENTS.md', 'CLAUDE.md', 'CONTEXT.md'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: first-existing, paths: ['~/.config/opencode/AGENTS.md', '~/.claude/CLAUDE.md'], precedence_status: unverified, ownership: client-native, collision: owned-block-only}
         config:
-          repo: {status: supported, resolution: first-existing, paths: ['opencode.json', '.opencode/opencode.json'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: single, paths: ['~/.config/opencode/opencode.json'], precedence_status: verified, ownership: client-native, collision: manual}
+          repo: {status: supported, resolution: aggregate, paths: ['opencode.json', 'opencode.jsonc', '.opencode/opencode.json', '.opencode/opencode.jsonc'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: aggregate, paths: ['~/.config/opencode/config.json', '~/.config/opencode/opencode.json', '~/.config/opencode/opencode.jsonc'], precedence_status: verified, ownership: client-native, collision: manual}
         skills:
-          repo: {status: supported, resolution: single, paths: ['.opencode/skills'], precedence_status: verified, ownership: shared, collision: preserve-unmanaged}
-          global: {status: supported, resolution: single, paths: ['~/.config/opencode/skills'], precedence_status: verified, ownership: client-native, collision: owned-entry-only}
+          repo: {status: supported, resolution: aggregate, paths: ['.agents/skills', '.opencode/skill', '.opencode/skills', '.claude/skills'], precedence_status: unverified, ownership: shared, collision: preserve-unmanaged}
+          global: {status: supported, resolution: aggregate, paths: ['~/.agents/skills', '~/.opencode/skill', '~/.opencode/skills', '~/.config/opencode/skill', '~/.config/opencode/skills', '~/.claude/skills'], precedence_status: unverified, ownership: client-native, collision: owned-entry-only}
         goal: {status: unverified, kind: unverified, commands: [], limits: {status: unverified}}
         permissions: {status: supported, controls: ['permission rules']}
         state:
@@ -346,4 +2446,555 @@ families:
           global: {status: supported, encoding: utf-8, bom: preserve, frontmatter: preserve-before-block, shebang: reject, native_header: none, legal_offset: after-preamble, preserve_mode: true, preserve_owner: true, collision: owned-block-only, rollback: owned-block-removal}
         verification: {classification: filesystem}
         rollback: {classification: managed-entry-removal}
-        compatibility: {platform_id: opencode, order: 50, native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
+        compatibility: {platform_id: opencode, order: 50, repo_write_paths: ['.agents/skills'], global_write_paths: ['~/.agents/skills'], native_config: symlink_or_reference, smoke_test_level: filesystem, verify_rules: [skills_visible, namespace_ls], rollback_class: managed-entry-removal}
+
+        integration:
+          lifecycle: active
+          installation:
+            method: manual
+            instructions: Use official stable OpenCode installation guidance with a verified selected artifact; this adapter does not install or start the native client.
+          qualification:
+            catalog: implemented
+            filesystem: verified
+            host: not-run
+            evidence:
+            - {kind: filesystem, reference: ls/tests/test_opencode_adapters.py}
+            - {kind: filesystem, reference: ls/tests/test_opencode_preflight.py}
+          limitations:
+          - Stable v1 profile only; V2 beta, Kilo and delegated runtimes are distinct products.
+          - Bounded local collision checks do not certify additional configured paths, URLs, alternate working directories or native permission filters.
+          - Preserve historical paths and native settings, policy, sessions, credentials and databases. No automatic migration or native configuration rewrite.
+
+  - id: pi
+    display_name: Pi
+    variants:
+    - id: pi-cli
+      display_name: Pi coding agent
+      kind: cli
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_source
+          url: https://github.com/earendil-works/pi/blob/9767ba275f3e9a5ee0f5c5342249b629ab1b2282/packages/coding-agent/docs/skills.md
+        - kind: official_source
+          url: https://github.com/earendil-works/pi/blob/9767ba275f3e9a5ee0f5c5342249b629ab1b2282/packages/coding-agent/docs/settings.md
+        - kind: official_source
+          url: https://github.com/earendil-works/pi/blob/9767ba275f3e9a5ee0f5c5342249b629ab1b2282/packages/coding-agent/README.md
+        - kind: official_source
+          url: https://github.com/earendil-works/pi/blob/9767ba275f3e9a5ee0f5c5342249b629ab1b2282/packages/coding-agent/package.json
+      executables:
+      - pi
+      policy:
+        repo:
+          status: supported
+          resolution: hierarchy
+          paths:
+          - AGENTS.md
+          - AGENTS.override.md
+          - CLAUDE.md
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .pi/settings.json
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.pi/agent/settings.json
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: active
+        installation:
+          method: package-manager
+          instructions: Use the current official Pi installation guide with a verified selected package or artifact; reconcile
+            historical package names before installation. No installation or startup is performed by this adapter.
+        qualification:
+          catalog: implemented
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_pi_adapters.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Project and ancestor skill discovery is conditional on native Pi trust; LocalSetup does not approve trust or change
+          saved decisions.
+        - Trust can enable project settings, package installation and extension execution; skill projection does not authorize
+          those operations.
+        - Native loose Markdown skills are not converted into common directory packages; custom native resources remain in place.
+        - Resource settings, explicit paths, CLI flags, overrides and duplicate-name precedence can change effective loading;
+          installed host discovery remains unverified.
+        - Pi is distinct from OMP and LSCli; no extension, provider, permission, MCP or session compatibility is implied.
+        - Native settings, trust records, auth, sessions, packages, extensions and system prompt overrides remain unmanaged.
+      compatibility:
+        platform_id: pi-cli
+        order: 130
+        native_config: symlink_or_reference
+        smoke_test_level: filesystem
+        verify_rules:
+        - skills_visible
+        - namespace_ls
+        rollback_class: managed-entry-removal
+  - id: qwen-code
+    display_name: Qwen Code
+    variants:
+    - id: qwen-code-cli
+      display_name: Qwen Code CLI
+      kind: cli
+      support_status: supported
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_source
+          url: https://github.com/QwenLM/qwen-code/blob/98a9c964158697dd5631d15a62174684ff7bbb53/packages/core/src/config/storage.ts
+        - kind: official_source
+          url: https://github.com/QwenLM/qwen-code/blob/98a9c964158697dd5631d15a62174684ff7bbb53/packages/core/src/skills/skill-manager.ts
+        - kind: official_source
+          url: https://github.com/QwenLM/qwen-code/blob/98a9c964158697dd5631d15a62174684ff7bbb53/packages/core/src/skills/symlinkScope.ts
+        - kind: official_source
+          url: https://github.com/QwenLM/qwen-code/blob/98a9c964158697dd5631d15a62174684ff7bbb53/docs/users/features/memory.md
+      executables:
+      - qwen
+      policy:
+        repo:
+          status: supported
+          resolution: hierarchy
+          paths:
+          - QWEN.md
+          - AGENTS.md
+          - .qwen/QWEN.local.md
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .qwen/settings.json
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.qwen/settings.json
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: active
+        installation:
+          method: package-manager
+          instructions: Use official Qwen Code installation guidance and a verified selected artifact. The adapter
+            does not install, start or authenticate Qwen Code.
+        qualification:
+          catalog: implemented
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_qwen_adapters.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Skill loading depends on enablement, bare/safe mode and effective native settings; filesystem exposure does
+          not establish activation or script execution.
+        - The qualified release source prefers native .qwen skills over common .agents skills within a scope; native
+          same-name content remains in place.
+        - QWEN_HOME affects the native personal root; common personal skills remain under the user home. Native settings
+          and runtime overrides remain unmanaged.
+        - AutoSkill content must remain native and separate from installed canonical packages. Native configuration,
+          sessions, extensions, credentials and generated skills remain user-owned.
+        - Host behavior is not-run; source evidence at v0.23.0 does not establish a first-supported version or certify
+          other releases.
+      compatibility:
+        platform_id: qwen-code-cli
+        order: 150
+        native_config: symlink_or_reference
+        smoke_test_level: filesystem
+        verify_rules:
+        - skills_visible
+        - namespace_ls
+        rollback_class: managed-entry-removal
+
+  - id: roo-code
+    display_name: Roo Code
+    variants:
+    - id: roo-code-legacy
+      display_name: Roo Code legacy
+      kind: ide
+      support_status: experimental
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_docs
+          url: https://github.com/RooCodeInc/Roo-Code
+        - kind: official_docs
+          url: https://github.com/RooCodeInc/Roo-Code/blob/27001b2b5aa47b65e8a6ba1914e0f4216be0ebb0/src/services/skills/SkillsManager.ts
+      executables: []
+      policy:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: retained-only
+        installation:
+          method: manual
+          instructions: Retain recorded Roo Code adapters only; archived upstream is not a fresh-install recommendation.
+            Do not substitute Kilo or invoke native mode editing against shared packages.
+        qualification:
+          catalog: bounded
+          filesystem: verified
+          host: not-run
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_windsurf_retention.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Upstream is archived. This profile describes the retained IDE extension, not a CLI or a successor product.
+        - No fresh-install projection is emitted. Synthetic historical receipts qualify recorded ordinary adapters,
+          not a running Roo build.
+        - Native and common mode-specific directories remain unmanaged; their discovery and effective priority require
+          exact-build host qualification.
+        - Visible link name must match skill metadata. Native mode editing may write through discovered links; keep
+          native writers quiescent during lifecycle operations and do not use them against shared canonical packages.
+        - Automatic repository-only repair refuses inference; unhealthy adapters require reviewed recorded-path recovery.
+        - Native rules, modes, settings, credentials, sessions and custom skills remain user-owned.
+
+  - id: windsurf
+    display_name: Windsurf / Cascade
+    variants:
+    - id: windsurf-cascade
+      display_name: Windsurf / Cascade
+      kind: ide
+      support_status: experimental
+      research:
+        status: partial
+        checked_on: '2026-09-06'
+        sources:
+        - kind: official_docs
+          url: https://docs.devin.ai/desktop/cascade/skills
+        - kind: official_docs
+          url: https://docs.devin.ai/desktop/cascade/agents-md
+        - kind: official_docs
+          url: https://docs.devin.ai/desktop/cascade/memories
+        - kind: official_docs
+          url: https://docs.devin.ai/desktop/devin-desktop-faq
+        - kind: official_docs
+          url: https://docs.devin.ai/desktop/devin-local
+        - kind: official_docs
+          url: https://devin.ai/download
+      executables:
+      - devin-desktop
+      - surf
+      - windsurf
+      policy:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - AGENTS.md
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      config:
+        repo:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+        global:
+          status: unverified
+          resolution: unverified
+          paths: []
+          precedence_status: unverified
+          ownership: client-native
+          collision: manual
+      skills:
+        repo:
+          status: supported
+          resolution: single
+          paths:
+          - .agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+        global:
+          status: supported
+          resolution: single
+          paths:
+          - ~/.agents/skills
+          precedence_status: unverified
+          ownership: shared
+          collision: preserve-unmanaged
+      goal:
+        status: unverified
+        kind: unverified
+        commands: []
+        limits:
+          status: unverified
+      permissions:
+        status: unverified
+        controls: []
+      state:
+        repo:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+        global:
+          status: unverified
+          path: null
+          ownership: localsetup-managed
+          collision: fail
+      insertion:
+        repo:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+        global:
+          status: unverified
+          collision: unsupported
+          rollback: unsupported
+      verification:
+        classification: filesystem
+      rollback:
+        classification: managed-entry-removal
+      integration:
+        lifecycle: retained-only
+        installation:
+          method: manual
+          instructions: Retain existing Cascade adapters. Qualify exact desktop build and account access to Cascade before considering fresh installation; current downloads do not prove Cascade availability.
+        qualification:
+          catalog: bounded
+          filesystem: verified
+          host: blocked
+          evidence:
+          - kind: filesystem
+            reference: ls/tests/test_windsurf_retention.py
+          - kind: documentation
+            reference: ls/docs/CLIENT_INTEGRATION_METADATA.md
+        limitations:
+        - Retained-only is LocalSetup policy while dated availability and current agent-selector documentation conflict; it is not a claim of definitive upstream retirement.
+        - No fresh-install projection is emitted; existing recorded adapters remain maintainable without substituting Devin Local.
+        - Filesystem evidence covers synthetic historical receipt lifecycle only, not host installation or Cascade discovery.
+        - Automatic repository-only repair is blocked before inference; unhealthy retained adapters require reviewed recorded-path recovery.
+        - Desktop launcher presence does not establish Cascade availability; exact build, account access, settings, and duplicate-root precedence require qualification.
+        - Native skill directories, memories, rules, settings, MCP configuration, sessions, and enterprise policy remain unmanaged.

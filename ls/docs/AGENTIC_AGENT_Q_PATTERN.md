@@ -1,10 +1,10 @@
 ---
 status: ACTIVE
-version: 4.4
+version: 4.22
 owner_skill: ls-agentq-transport
 ---
 
-# Agent Q (queue) pattern (Localsetup)
+# Agent Q (queue) pattern (LocalSetup)
 
 **Purpose:** Pattern for processing a queue of PRD/spec items: locate specs, implement per spec, update status, write outcome. Used when the user says "process PRDs" or "run batch from PRD folder".
 

@@ -94,7 +94,7 @@ def write_workflow_registry(path: Path, major_minor: str, workflows: list[dict[s
         "owner_package: generate-docs",
         "---",
         "",
-        "# Workflow and module registry (Localsetup)",
+        "# Workflow and module registry (LocalSetup)",
         "",
         "This page is generated from `ls/workflows/*/workflow.yaml`.",
         "",

@@ -14,7 +14,7 @@ from lib.path_resolution import get_project_root
 def main():
     root = get_project_root()
     skill_md = root / "ls" / "skills" / "ls-context" / "SKILL.md"
-    print("Localsetup - Context Verification")
+    print("LocalSetup - Context Verification")
     print("=====================================")
     if skill_md.is_file():
         print(

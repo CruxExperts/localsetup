@@ -1,16 +1,16 @@
 ---
 status: ACTIVE
-version: 4.4
+version: 4.22
 owner_skill: ls-task-skill-matcher
 ---
 
-# Skills And Rules (Localsetup)
+# Skills And Rules (LocalSetup)
 
 **Purpose:** How the master rule (or platform context loader) and skills interact; when to load which skill; cross-platform paths.
 
 ## Model
 
-- **Context is client-owned:** Localsetup ships optional platform context templates. The native installer installs selected packages and explicitly selected adapters; it does not adopt those templates or replace the user's context files. Check the current client registry and active workspace before assuming a template is loaded.
+- **Context is client-owned:** LocalSetup ships optional platform context templates. The native installer installs selected packages and explicitly selected adapters; it does not adopt those templates or replace the user's context files. Check the current client registry and active workspace before assuming a template is loaded.
 - **Capability skills and workflow packages:** Capability skills live in `ls/skills/`. Workflow packages live in `ls/workflows/` and also contain `SKILL.md`, so installs both package types into the managed package library.
 - **When to load a skill or workflow:** Load an available package when the task matches its description (e.g. user says "decision tree" -> ls-workflow-spec-clarify-reverse). Use current client discovery for installed availability, `ls-context` for framework orientation, and generated catalogs for the complete source inventory. Read relevant entries on demand; catalog membership does not prove installation.
 
@@ -34,24 +34,24 @@ Use [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) as the canonical definition of:
 
 ## Platform paths
 
-**Canonical list:** Supported platforms and their context and skills paths are defined in [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md). Reference that file when listing platforms or adding a new one. The skills paths below are created only when that platform adapter is explicitly selected; a global-only install does not create repo adapter paths. Context paths identify template or user-owned guidance and do not describe installer output. Verify actual loading through the current client's registry entry and configuration.
+**Canonical inventory:** [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md) links the complete generated installer inventory and owning client metadata. The examples below are not the complete selector list. Fresh adapter creation requires selection; updates of a recorded target retain its validated ownership even when selectors are omitted. A fresh global-only install does not create repo adapter paths. Context paths identify template or user-owned guidance and do not describe installer output. Verify actual loading through the current client's registry entry and configuration.
 
 | Platform | Context loader | Skills |
 |----------|----------------|--------|
-| Cursor | .cursor/rules/ls-context.mdc | .agents/skills, .cursor/skills -> managed library |
+| Cursor | .cursor/rules/ls-context.mdc | .agents/skills -> managed library |
 | Claude Code | .claude/CLAUDE.md | .claude/skills -> managed library |
 | Codex | AGENTS.md (repo root) | .agents/skills -> managed library |
 | OpenClaw | platform template | .agents/skills -> managed library |
-| OpenCode | AGENTS.md (repo root) | .opencode/skills -> managed library |
-| Kilo CLI | .kilo/instructions.md | .kilo/skills -> managed library |
+| OpenCode | AGENTS.md (repo root) | .agents/skills -> managed library |
+| Kilo CLI | AGENTS.md | .agents/skills -> managed library |
 
 ## Format
 
-- Skills follow the [Agent Skills](https://agentskills.io/specification) specification: SKILL.md with required `name` and `description` frontmatter; optional `metadata.version` for skill document versioning; body = instructions. Same files work on all platforms.
-- Workflow packages also include a spec-compatible `SKILL.md`; their Localsetup-only `workflow.yaml` is documented in [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md).
+- Skills follow the [Agent Skills](https://agentskills.io/specification) specification: SKILL.md with required `name` and `description` frontmatter; optional `metadata.version` for skill document versioning; body = instructions. This shared format does not guarantee identical loading, tools, permissions, or behavior across hosts.
+- Workflow packages also include a spec-compatible `SKILL.md`; their LocalSetup-only `workflow.yaml` is documented in [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md).
 - **Skill document versioning:** Each skill includes `metadata.version` (e.g. `"1.0"`). Skill versions are tracked separately from the framework release version; see [AGENT_SKILLS_COMPLIANCE.md](AGENT_SKILLS_COMPLIANCE.md).
 - When adding a platform or registering a new skill, use [PLATFORM_REGISTRY.md](PLATFORM_REGISTRY.md) as the source of truth.
-- **Interoperability:** Skills are [Agent Skills](https://agentskills.io/specification)-compliant and interchangeable: our skills work in any spec-compliant host; external skills (e.g. [Anthropic's](https://github.com/anthropics/skills)) can be used here with placement + registration. See [SKILL_INTEROPERABILITY.md](SKILL_INTEROPERABILITY.md).
+- **Interoperability:** Format compatibility is only the starting point. External skills (for example, [Anthropic's](https://github.com/anthropics/skills)) require vetting, normalization, and sandbox testing before canonical placement and registration. Exported skills require host-specific adaptation and a real target-host smoke scenario before claiming behavioral compatibility. Follow [SKILL_INTEROPERABILITY.md](SKILL_INTEROPERABILITY.md) for the import, export, and qualification procedures.
 
 ## Maintainer references
 

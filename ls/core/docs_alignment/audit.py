@@ -4,6 +4,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+from ls.core.sdk_payload.ownership import upstream_documents
 from ls.core.skills import load_skill_catalog, skill_taxonomy_payload
 from ls.core.workflows import load_workflow_catalog
 
@@ -41,8 +42,11 @@ def audit(repo_root: Path) -> dict[str, Any]:
         findings.append(Finding("skill_taxonomy.missing", "critical", "generated_drift", "ls/docs/_generated/skill-taxonomy.json", None, "generated skill taxonomy is missing", expected_skill_taxonomy, None, "live skill taxonomy", "generated"))
 
     count_re = re.compile(r"\b(\d+)\s+shipped(?:\s+capability)?\s+skills?\s+plus\s+(\d+)\s+(?:first-class\s+)?workflow\s+packages\b", re.IGNORECASE)
+    upstream = upstream_documents(repo_root)
     for path in _markdown_files(repo_root):
         rel = _rel(repo_root, path)
+        if rel in upstream:
+            continue
         text = _read_text(path)
         for match in count_re.finditer(text):
             actual = {"skills": int(match.group(1)), "workflows": int(match.group(2))}

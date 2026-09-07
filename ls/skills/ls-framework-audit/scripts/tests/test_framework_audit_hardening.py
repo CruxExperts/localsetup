@@ -531,3 +531,37 @@ def test_skill_matrix_stages_shared_helper_without_ambient_imports(tmp_path: Pat
         'ls-example: "python3 probe.py"\nls-skill-sandbox-tester: "N/A"\n', encoding="utf-8"
     )
     assert audit.phase_skill_matrix(tmp_path, fw) == ([], [])
+
+
+def test_source_ownership_preserves_authored_links(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from ls.core.sdk_payload import ownership
+
+    retained = "vendor/lscli/component/README.md"
+    for name in [retained, "vendor/lscli/wrapper.md", "docs/build/guide.md", "build/lib/copy.md", "dist/copy.md"]:
+        path = tmp_path / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# Retained\n[missing](missing.md)\nprivate maintainer\n", encoding="utf-8")
+    monkeypatch.setattr(ownership, "upstream_documents", lambda root: {retained: {}})
+    (tmp_path / "README.md").write_text(
+        f"[valid]({retained}#retained)\n[bad anchor]({retained}#absent)\n", encoding="utf-8"
+    )
+    errors, _ = audit.phase_link_checks(tmp_path)
+    assert len(errors) == 3
+    assert any("vendor/lscli/wrapper.md" in error for error in errors)
+    assert any("docs/build/guide.md" in error for error in errors)
+    assert any("Missing Markdown anchor README.md:2" in error for error in errors)
+    refs = audit.phase_maintainer_refs(tmp_path)
+    assert sorted(refs) == [
+        "docs/build/guide.md:3: private maintainer",
+        "vendor/lscli/wrapper.md:3: private maintainer",
+    ]
+
+
+def test_invalid_sdk_ownership_fails_without_exemptions(tmp_path: Path) -> None:
+    path = tmp_path / "vendor/lscli/README.md"
+    path.parent.mkdir(parents=True)
+    path.write_text("[missing](missing.md)\nprivate maintainer\n", encoding="utf-8")
+    errors, _ = audit.phase_link_checks(tmp_path)
+    assert any("Could not verify upstream document ownership" in error for error in errors)
+    assert any("Missing Markdown link target vendor/lscli/README.md" in error for error in errors)
+    assert audit.phase_maintainer_refs(tmp_path) == ["vendor/lscli/README.md:2: private maintainer"]

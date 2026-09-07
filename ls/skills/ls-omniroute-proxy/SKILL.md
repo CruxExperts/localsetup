@@ -34,7 +34,7 @@ Use this skill for every read-only OmniRoute surface: model/provider catalogs; c
 
 ## Runtime assumptions
 
-- The bundled probe requires Python 3.12+, `requests`, and `jsonschema` from the Localsetup uv project environment.
+- The bundled probe requires Python 3.12+, `requests`, and `jsonschema` from the LocalSetup uv project environment.
 - The host running the probe must have network reachability to the OmniRoute proxy base URL.
 - If the environment sets `HTTP_PROXY`, `HTTPS_PROXY`, or `NO_PROXY`, `requests` applies those proxy settings to the probe.
 - The probe accepts only `http` or `https` base URLs and rejects URLs with embedded credentials.
@@ -60,7 +60,7 @@ Use this skill for every read-only OmniRoute surface: model/provider catalogs; c
 
 ## Discovery workflow
 
-1. Run the preflight check before normal discovery from the Localsetup repo root:
+1. Run the preflight check before normal discovery from the LocalSetup repo root:
    - `python3 "$(python3 ls/tools/localsetup.py --source-root . path package ls-omniroute-proxy scripts/omniroute_discover.py)" --preflight --required-access runtime --markdown`
    - Use `--required-access read`, `write`, or `admin` when the requested task needs management endpoints.
    - Use `--print-env-commands` when `OMNIROUTE_BASE_URL` or the API-key env var is missing and the user needs durable user-level registration commands.
@@ -88,7 +88,7 @@ python3 scripts/omniroute_discover.py \
   --markdown
 ```
 
-From a Localsetup repo root, resolve the installed helper first:
+From a LocalSetup repo root, resolve the installed helper first:
 
 ```bash
 python3 "$(python3 ls/tools/localsetup.py --source-root . path package ls-omniroute-proxy scripts/omniroute_discover.py)" \

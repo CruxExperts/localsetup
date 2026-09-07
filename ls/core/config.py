@@ -47,6 +47,7 @@ class InstallConfig:
     repo_skill_tags: list[str] | None = None
     repo_exclude_skills: list[str] | None = None
     repo_workflows: list[str] | None = None
+    skill_scope: str | None = None
     attach_mode: str = "symlink"
     home: str | None = None
     target_directory: str | None = None
@@ -116,6 +117,7 @@ def load_install_config(path: Path | None) -> InstallConfig:
         repo_skill_tags=_as_list(data.get("repo_skill_tags"), "repo_skill_tags"),
         repo_exclude_skills=_as_list(data.get("repo_exclude_skills"), "repo_exclude_skills"),
         repo_workflows=_as_list(data.get("repo_workflows"), "repo_workflows"),
+        skill_scope=_as_str(data.get("skill_scope"), "skill_scope"),
         attach_mode=str(data.get("attach_mode", "symlink")),
         home=_as_str(data.get("home"), "home"),
         target_directory=_as_str(data.get("target_directory"), "target_directory"),
@@ -153,6 +155,10 @@ def _validate_against_schema(config_path: Path, data: dict[str, Any]) -> None:
 
 
 def validate_install_config(config: InstallConfig) -> None:
+    if config.skill_scope is not None and (
+        not isinstance(config.skill_scope, str) or config.skill_scope not in {"repo", "personal", "both"}
+    ):
+        raise ValueError(f"unsupported skill scope: {config.skill_scope}")
     if config.attach_mode not in ATTACH_MODES:
         raise ValueError(f"unsupported attach mode: {config.attach_mode}")
     if config.dependency_mode not in DEPENDENCY_MODES:
@@ -197,6 +203,7 @@ def merge_cli_config(
     repo_skill_tags: list[str] | None = None,
     repo_exclude_skills: list[str] | None = None,
     repo_workflows: list[str] | None = None,
+    skill_scope: str | None = None,
     attach_mode: str | None = None,
     home: str | None = None,
     target_directory: str | None = None,
@@ -230,6 +237,7 @@ def merge_cli_config(
         repo_skill_tags=repo_skill_tags if repo_skill_tags is not None else base.repo_skill_tags,
         repo_exclude_skills=repo_exclude_skills if repo_exclude_skills is not None else base.repo_exclude_skills,
         repo_workflows=repo_workflows if repo_workflows is not None else base.repo_workflows,
+        skill_scope=skill_scope if skill_scope is not None else base.skill_scope,
         attach_mode=attach_mode or base.attach_mode,
         home=home or base.home,
         target_directory=target_directory or base.target_directory,
@@ -272,6 +280,7 @@ def config_to_dict(config: InstallConfig) -> dict[str, Any]:
         "repo_skill_tags": config.repo_skill_tags,
         "repo_exclude_skills": config.repo_exclude_skills,
         "repo_workflows": config.repo_workflows,
+        "skill_scope": config.skill_scope,
         "attach_mode": config.attach_mode,
         "home": config.home,
         "target_directory": config.target_directory,

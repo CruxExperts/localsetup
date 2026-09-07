@@ -13,6 +13,9 @@ from .boundary import scan_tar_for_leaks
 from .manifests import load_pack_config
 from .paths import repo_path
 from .source import source_commit, source_tag
+from .sdk_payload.integrity import verify as verify_sdk
+from .sdk_payload.artifacts import inspect_artifact as inspect_sdk_artifact
+from .sdk_payload.sbom import components as sdk_components
 
 
 ARTIFACT_METADATA_PATH = "ls/artifact-metadata.json"
@@ -100,8 +103,12 @@ def _components_from_pyproject(repo_root: Path) -> list[dict[str, str]]:
     return _dependency_components_from_lines([str(item) for item in dependencies if isinstance(item, str)])
 
 
-def _components_for_sbom(repo_root: Path) -> list[dict[str, str]]:
-    return _components_from_uv_lock(repo_root) or _components_from_pyproject(repo_root)
+def _components_for_sbom(repo_root: Path) -> list[dict[str, Any]]:
+    result = _components_from_uv_lock(repo_root) or _components_from_pyproject(repo_root)
+    sdk_root = repo_root / "vendor" / "lscli"
+    if sdk_root.exists() or sdk_root.is_symlink():
+        result.extend(sdk_components(verify_sdk(sdk_root)))
+    return result
 
 
 def _expected_components_from_artifact(artifact_path: Path) -> list[dict[str, str]]:
@@ -210,6 +217,10 @@ def _artifact_metadata(repo_root: Path, output_path: Path, public_paths: list[st
         "public_paths": public_paths,
         "created_at_unix": int(time.time()),
     }
+    sdk_root = repo_root / "vendor" / "lscli"
+    if sdk_root.exists() or sdk_root.is_symlink():
+        verify_sdk(sdk_root)
+        metadata["sdk_manifest_sha256"] = sha256_file(sdk_root / "manifest.json")
     if tag:
         metadata["source_tag"] = tag
     return metadata
@@ -312,6 +323,8 @@ def verify_cyclonedx_sbom(sbom_path: Path, artifact_path: Path, metadata: dict[s
         payload = json.loads(sbom_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         return {"name": "sbom", "ok": False, "error": f"invalid SBOM JSON: {exc}"}
+    if not isinstance(payload, dict) or not isinstance(payload.get("metadata"), dict) or not isinstance(payload.get("components"), list):
+        return {"name": "sbom", "ok": False, "error": "invalid SBOM object shape"}
     properties = {
         str(item.get("name")): str(item.get("value"))
         for item in payload.get("metadata", {}).get("properties", [])
@@ -319,19 +332,28 @@ def verify_cyclonedx_sbom(sbom_path: Path, artifact_path: Path, metadata: dict[s
     }
     component = payload.get("metadata", {}).get("component", {})
     components = payload.get("components", [])
-    expected_components = _expected_components_from_artifact(artifact_path)
+    try:
+        expected_components = _expected_components_from_artifact(artifact_path)
+        sdk = inspect_sdk_artifact(artifact_path, required=False, expected_digest=metadata.get("sdk_manifest_sha256"))
+        vendored = sdk_components(sdk["manifest"]) if sdk else []
+        expected_components.extend(vendored)
+    except (OSError, ValueError, tarfile.TarError) as exc:
+        return {"name": "sbom", "ok": False, "error": str(exc)}
     actual_keys = {_component_key(item) for item in components if isinstance(item, dict)}
     expected_keys = {_component_key(item) for item in expected_components}
     missing = sorted(f"{name}=={version}" if version else name for name, version in expected_keys - actual_keys)
     unexpected = sorted(f"{name}=={version}" if version else name for name, version in actual_keys - expected_keys)
     checks = [
         payload.get("bomFormat") == "CycloneDX",
+        payload.get("specVersion") == "1.6",
         isinstance(components, list),
         component.get("name") == metadata.get("pack_id"),
         properties.get("localsetup:artifact") == artifact_path.name,
         properties.get("localsetup:source_commit") == metadata.get("source_commit"),
         not missing,
         not unexpected,
+        all(sum(item == expected for item in components) == 1 for expected in vendored),
+        len(actual_keys) == len(components),
     ]
     return {
         "name": "sbom",

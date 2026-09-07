@@ -27,7 +27,7 @@ AlignmentGenerator = Callable[[Path], dict[str, str]]
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Generate Localsetup documentation artifacts.")
+    parser = argparse.ArgumentParser(description="Generate LocalSetup documentation artifacts.")
     parser.add_argument("--repo-root", default=None, help="Repository root path.")
     parser.add_argument(
         "--internal-output",

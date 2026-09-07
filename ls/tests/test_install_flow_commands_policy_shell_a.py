@@ -190,7 +190,7 @@ def test_shell_registration_writes_managed_idempotent_shim_and_blocks_collision(
     assert 'LOCALSETUP_PROJECT_PYTHON="$LOCALSETUP_SOURCE_ROOT/.venv/bin/python"' in shim_text
     assert '"$LOCALSETUP_PROJECT_PYTHON" "$LOCALSETUP_TOOL" --help' in shim_text
     assert 'exec "$LOCALSETUP_PROJECT_PYTHON"' in shim_text
-    assert "no usable Python runtime for Localsetup" in shim_text
+    assert "no usable Python runtime for LocalSetup" in shim_text
     assert "--sync-env --non-interactive --yes" in shim_text
     assert "uv --project" not in shim_text
     assert "run --locked" not in shim_text
@@ -337,7 +337,7 @@ def test_shell_registration_reports_repair_when_no_python_runtime_works(tmp_path
     )
 
     assert completed.returncode == 2
-    assert "no usable Python runtime for Localsetup" in completed.stderr
+    assert "no usable Python runtime for LocalSetup" in completed.stderr
     assert "--sync-env --non-interactive --yes" in completed.stderr
     assert "Traceback" not in completed.stderr
 
@@ -350,7 +350,7 @@ def test_shell_registration_reports_error_and_status_edge_cases(
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
 
-    with pytest.raises(FileNotFoundError, match="missing Localsetup source checkout"):
+    with pytest.raises(FileNotFoundError, match="missing LocalSetup source checkout"):
         register_shell_command(tmp_path / "missing-source", home=home)
 
     shim = home / ".local" / "bin" / "localsetup"

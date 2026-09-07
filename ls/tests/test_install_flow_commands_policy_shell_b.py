@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from ls.tests.test_install_flow import *
 
-def test_custom_home_shim_invocation_uses_registered_home(tmp_path: Path) -> None:
+def test_custom_home_shim_invocation_uses_registered_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = make_temp_repo(tmp_path)
+    monkeypatch.setenv("PATH", str(Path(sys.executable).parent) + os.pathsep + os.environ.get("PATH", ""))
     home = tmp_path / "custom-home"
     target = tmp_path / "target"
     target.mkdir()
@@ -151,6 +152,82 @@ def test_target_directory_without_selector_is_global_only(tmp_path: Path) -> Non
     assert any("no platforms were selected" in warning for warning in doctor["warnings"])
 
 
+def test_doctor_without_platform_selector_uses_recorded_target_adapters(tmp_path: Path) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "other-repo"
+    target.mkdir()
+
+    plan = build_install_plan(
+        root,
+        home=home,
+        global_packs=["core"],
+        repo_preset="custom",
+        repo_skills=["ls-context"],
+        platform_ids=["codex"],
+        target_root=target,
+    )
+    apply_plan(root, plan, home=home, target_root=target)
+
+    doctor = run_doctor(root, home=home, platform_ids=None, target_root=target)
+
+    assert doctor["ok"] is True
+    assert doctor["adapter_collisions"] == []
+    assert not any("no platforms were selected" in warning for warning in doctor["warnings"])
+
+
+@pytest.mark.parametrize("legacy", [False, True])
+@pytest.mark.parametrize("selected", [None, ["codex"]])
+def test_doctor_missing_recorded_adapter_blocks_without_touching_neighbors(
+    tmp_path: Path, legacy: bool, selected: list[str] | None,
+) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    target = tmp_path / "target"
+    target.mkdir()
+    plan = build_install_plan(
+        root, home=home, packs=["core"], platform_ids=["codex"], target_root=target,
+    )
+    apply_plan(root, plan, home=home, target_root=target)
+    lock_path = target / ".localsetup" / "lock.json"
+    lock = load_json(lock_path)
+    adapter = Path(lock["adapter_state"][0])
+    # Move the fixture's managed adapter aside to model an absent recorded path.
+    adapter.rename(adapter.with_name("saved-skills"))
+    neighbor = adapter.parent / "custom.txt"
+    neighbor.write_text("owned by the repository\n", encoding="utf-8")
+    if legacy:
+        lock.pop("adapter_targets", None)
+        lock_path.write_text(json.dumps(lock), encoding="utf-8")
+    before = lock_path.read_bytes()
+
+    doctor = run_doctor(root, home=home, platform_ids=selected, target_root=target)
+
+    assert doctor["ok"] is False
+    assert any(f"recorded adapter is missing: {adapter}" in item for item in doctor["blockers"])
+    assert not any("no platforms were selected" in item for item in doctor["warnings"])
+    assert neighbor.read_text(encoding="utf-8") == "owned by the repository\n"
+    assert lock_path.read_bytes() == before
+    assert not adapter.exists()
+
+
+@pytest.mark.parametrize("selected", [["codex"], []])
+def test_doctor_fresh_target_does_not_require_planned_adapters(
+    tmp_path: Path, selected: list[str],
+) -> None:
+    root = make_temp_repo(tmp_path)
+    home = tmp_path / "home"
+    home.mkdir()
+    target = tmp_path / "target"
+    target.mkdir()
+
+    doctor = run_doctor(root, home=home, platform_ids=selected, target_root=target)
+
+    assert not any("recorded adapter is missing" in item for item in doctor["blockers"])
+    assert any("no platforms were selected" in item for item in doctor["warnings"]) == (selected == [])
+    assert not (target / ".localsetup" / "lock.json").exists()
+
+
 def test_install_migrates_legacy_root_lockfile(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
@@ -218,7 +295,7 @@ def test_preserves_existing_platform_config_when_attaching_skills(tmp_path: Path
     plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["cursor"])
     apply_plan(root, plan, home=home)
 
-    assert_scoped_adapter(root / ".cursor" / "skills", "ls-context")
+    assert_scoped_adapter(root / ".agents" / "skills", "ls-context")
     assert (rules / "project.mdc").read_text(encoding="utf-8") == "keep me\n"
 
 
@@ -226,12 +303,12 @@ def test_preserves_existing_platform_config_when_attaching_skills(tmp_path: Path
 def test_refuses_unmanaged_adapter_collisions(tmp_path: Path, collision_kind: str) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
-    adapter = root / ".cursor" / "skills"
+    adapter = root / ".agents" / "skills"
     adapter.parent.mkdir(parents=True)
     if collision_kind == "directory":
         adapter.mkdir()
         (adapter / "ls-context").write_text("user content\n", encoding="utf-8")
-        expected = "adapter contains custom or unknown entries with selected Localsetup package names"
+        expected = "adapter contains custom or unknown entries with selected LocalSetup package names"
     elif collision_kind == "file":
         adapter.write_text("not a directory\n", encoding="utf-8")
         expected = "regular file"
@@ -268,7 +345,7 @@ def test_rerun_with_correct_managed_symlink_is_idempotent(tmp_path: Path) -> Non
 def test_doctor_reports_selected_adapter_collisions_only(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
-    collision = root / ".cursor" / "skills"
+    collision = root / ".agents" / "skills"
     collision.parent.mkdir(parents=True)
     collision.write_text("not a directory\n", encoding="utf-8")
 

@@ -66,4 +66,4 @@ uv run --locked python ls/tools/agentq_transport_client/agentq_cli.py --help
 uv run --locked pytest ls/tools/agentq_transport_client/tests/ -q
 ```
 
-Skill directory has no bundled scripts; CLI lives under `ls/tools/agentq_transport_client/`. Full OpenPGP test coverage requires the framework Python dependencies from the Localsetup uv project environment, including `cryptography`, `PGPy`, and `jsonschema`; when PGPy is absent, OpenPGP-specific pytest cases skip with an explicit dependency reason while non-PGP tests still run.
+Skill directory has no bundled scripts; CLI lives under `ls/tools/agentq_transport_client/`. Full OpenPGP test coverage requires the framework Python dependencies from the LocalSetup uv project environment, including `cryptography`, `PGPy`, and `jsonschema`; when PGPy is absent, OpenPGP-specific pytest cases skip with an explicit dependency reason while non-PGP tests still run.

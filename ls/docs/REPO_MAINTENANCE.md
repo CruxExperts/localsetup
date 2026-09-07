@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.4
+version: 4.22
 owner_skill: ls-framework-compliance
 ---
 
@@ -35,7 +35,7 @@ uv run --locked ./ls/tests/automated_test.sh
 git diff --check
 ```
 
-For daily maintenance and ordinary framework edits, run focused tests and matching Localsetup validators first. Use the full Python suite above as final consolidation for broad automation changes, release or publish readiness, dependency changes, or explicit maintainer requests. Resolve the permitted worker count with `localsetup test-workers`; [COMMAND_REFERENCE.md](COMMAND_REFERENCE.md) owns its formula and aggregate-budget rule.
+For daily maintenance and ordinary framework edits, run focused tests and matching LocalSetup validators first. Use the full Python suite above as final consolidation for broad automation changes, release or publish readiness, dependency changes, or explicit maintainer requests. Resolve the permitted worker count with `localsetup test-workers`; [COMMAND_REFERENCE.md](COMMAND_REFERENCE.md) owns its formula and aggregate-budget rule.
 
 ## Unit-Test Concurrency Policy
 
@@ -49,11 +49,15 @@ Run this after changing shipped skills, workflow packages, platform adapters, or
 uv run --locked python ls/tools/localsetup.py --source-root . self-refresh --dependency-mode prompt-only
 ```
 
-The command installs every configured pack from this checkout into the managed Localsetup library and refreshes only adapter paths that are already attached in the target repo. It is maintenance tooling for local machine state, not a release or publish step.
+The command installs every configured pack from this checkout into the managed LocalSetup library. Adapter refresh uses validated recorded clients, paths, scopes, modes, and package exposure; new catalog clients sharing a directory do not become owners. A legacy shared path without recorded ownership requires explicit `--platforms` or ownership reconciliation before refresh. Explicit legacy selection uses the normal preservation and native prerequisite checks.
+
+For validated modern receipts, pack and global package overrides change the shared library selection while target exposure remains recorded. Changing recorded clients, target package selectors, scope, or adapter mode requires an explicit install or the owning migration command; self-refresh refuses these combinations before dependency work. It is maintenance tooling for local machine state, not a release or publish step.
+
+Without an explicit platform override, a fresh target with no recorded installation or adapter surface receives a library-only refresh; self-refresh does not select clients for it.
 
 ## Maintainer Codex Adapter Reconciliation
 
-This source checkout may expose every public Localsetup skill and workflow package through its repo-local `.agents/skills` adapter while keeping the global/default skill stance curated. Use this only for the Localsetup maintainer repo, not as a normal consumer-repo default.
+This source checkout may expose every public LocalSetup skill and workflow package through its repo-local `.agents/skills` adapter while keeping the global/default skill stance curated. Use this only for the LocalSetup maintainer repo, not as a normal consumer-repo default.
 
 Dry-run first:
 
@@ -67,7 +71,7 @@ Apply the same plan only after the dry-run has no warnings; the apply-time prefl
 UV_CACHE_DIR=/tmp/localsetup-uv-cache uv run --locked python ls/tools/localsetup.py --source-root . install --target-directory . --platforms codex --global-packs bootstrap core dev frontend architecture ops publishing omniroute --global-skills ls-firecrawl ls-cloudflare-dns --global-exclude-skills ls-superpowers --repo-preset all --mode symlink --apply --json
 ```
 
-Same-name selected package collisions still block before mutation. If a repo-local adapter entry intentionally shadows a selected Localsetup package, resolve that one entry deliberately before rerunning the native installer; do not clear the adapter directory or broaden the global Codex adapter to make the apply pass.
+Same-name selected package collisions still block before mutation. If a repo-local adapter entry intentionally shadows a selected LocalSetup package, resolve that one entry deliberately before rerunning the native installer; do not clear the adapter directory or broaden the global Codex adapter to make the apply pass.
 
 Verify the reconciled shape:
 
@@ -164,3 +168,20 @@ uv run --locked python ls/tools/localsetup.py --source-root . release-push
 ```
 
 Do not publish a release from a dirty worktree. If a tag already exists at a different commit, stop and resolve the remote release state before retrying.
+
+## Optional PR model review
+
+PR validation runs deterministic QC without a provider by default. To authorize
+the optional model review, a repository owner sets the GitHub Actions repository
+variable `QC_PR_LLM_ENABLED` to `true` (case-insensitive, following GitHub
+expression semantics) and configures the
+`QC_LLM_BASE_URL` and `QC_LLM_API_KEY` secrets. Existing secrets alone do not
+enable requests. This opt-in can incur provider charges and disclose the review
+input to that provider; apply the repository's disclosure authority first.
+
+Only same-repository pull requests using trusted base tooling receive the
+credentials when enabled. Forks, manual workflow runs and the subject-tooling
+fallback remain provider-free. Removing the variable or setting it to a value
+other than case-insensitive `true` disables model review on subsequent runs;
+it does not cancel an active request.
+Deterministic QC and the other required validation gates remain enabled.

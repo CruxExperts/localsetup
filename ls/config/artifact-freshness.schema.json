@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://localsetup.dev/schemas/artifact-freshness.schema.json",
-  "title": "Localsetup artifact freshness metadata",
+  "title": "LocalSetup artifact freshness metadata",
   "description": "Portable, source-backed freshness metadata for a managed artifact.",
   "type": "object",
   "additionalProperties": false,

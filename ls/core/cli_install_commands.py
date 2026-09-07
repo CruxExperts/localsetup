@@ -11,16 +11,50 @@ def handle(cli, args, root, home) -> int | None:
         home = Path(config.home or home).expanduser().resolve()
         target_root = Path(config.target_directory).expanduser().resolve() if config.target_directory else None
         attachment_root = target_root or root
-        auto_context = (
-            _auto_default_context(root, home, config, attachment_root)
-            if _selector_free(config) and config.target_directory
-            else None
-        )
+        from .installation_ownership import validate_scope_request, resolve_skill_scope
+        recorded = validate_scope_request(attachment_root, None)
+        if (recorded and config.skill_scope in {"repo", "personal"}
+                and resolve_skill_scope(attachment_root, None) == "both"):
+            from .recorded_mode import requested_mode
+            if not _selector_free(config) or requested_mode(args) is not None:
+                raise ValueError("Retire recorded scope separately from reselection or mode changes")
+            if config.skill_scope == "personal":
+                from .scope_retirement import retire_repository_scope as retire_scope
+            else:
+                from .personal_scope_retirement import retire_personal_scope as retire_scope
+            payload = retire_scope(root, home, attachment_root,
+                apply=args.cmd == "update" or (args.cmd == "install" and args.apply))
+            _write_report(config.output.report, payload)
+            _print_payload(payload)
+            return 0 if payload["ok"] else 2
+        additive = (recorded and config.skill_scope == "both"
+                    and resolve_skill_scope(attachment_root, None) in {"repo", "personal"})
+        if additive:
+            if not _selector_free(config):
+                raise ValueError("Migrate recorded scope separately from client or package reselection")
+        else:
+            validate_scope_request(attachment_root, config.skill_scope)
+        if (recorded and resolve_skill_scope(attachment_root, None) == "personal"
+                and config.platforms is None and not _selector_free(config)):
+            raise ValueError("Select clients explicitly when changing recorded personal package selections")
+        if additive:
+            from .scope_migration import build_additive_scope_plan
+            auto_context = {"mode": "additive_scope", "repair": {},
+                            "plan": build_additive_scope_plan(root, home, attachment_root)}
+        else:
+            auto_context = (
+                _auto_default_context(root, home, config, attachment_root)
+                if _selector_free(config) and (config.target_directory or recorded) and (config.skill_scope is None or recorded)
+                else None
+            )
         if auto_context is not None:
             mode = str(auto_context["mode"])
             repair = auto_context["repair"]
             plan = auto_context["plan"]
             if plan is not None:
+                if mode in {"recorded_repo", "recorded_personal", "recorded_both", "inferred_existing", "additive_scope"}:
+                    from .recorded_mode import requested_mode, set_recorded_mode
+                    set_recorded_mode(root, home, attachment_root, plan, requested_mode(args))
                 policy = _policy_findings(root, plan.rollback_metadata.get("skills", []), getattr(args, "policy_mode", "standard"))
                 if args.cmd == "plan" or (args.cmd == "install" and not args.apply):
                     payload = _auto_plan_payload(root, home, config, attachment_root, plan, policy, mode=mode, repair=repair)
@@ -121,6 +155,7 @@ def handle(cli, args, root, home) -> int | None:
             repo_skill_classes=config.repo_skill_classes,
             repo_skill_tags=config.repo_skill_tags,
             repo_exclude_skills=config.repo_exclude_skills,
+            skill_scope=config.skill_scope,
             attach_mode=config.attach_mode,
             platform_ids=config.platforms,
             target_root=target_root,

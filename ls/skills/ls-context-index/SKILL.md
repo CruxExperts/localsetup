@@ -1,13 +1,13 @@
 ---
 name: ls-context-index
-description: Use when building, querying, or refreshing the Localsetup context index with hybrid SQLite retrieval, deterministic freshness/worklist surfaces, and agent-preflight checks.
+description: Use when building, querying, or refreshing the LocalSetup context index with hybrid SQLite retrieval, deterministic freshness/worklist surfaces, and agent-preflight checks.
 metadata:
   version: "0.1"
 ---
 
 # Context Index
 
-Use this skill when an agent needs fast Localsetup context retrieval across repo or framework sources. The index is a retrieval cache; files remain the source of truth.
+Use this skill when an agent needs fast LocalSetup context retrieval across repo or framework sources. The index is a retrieval cache; files remain the source of truth.
 
 ## Required Agent Flow
 
@@ -45,7 +45,7 @@ Choose lifecycle actions from observed freshness and worklist state: no work mea
 ## Scope Model
 
 - `repo`: repo-local docs, code, workflows, `.agentlens`, and selected structured files in the repo DB by default.
-- `framework`: Localsetup docs, skills, workflows, and generated catalogs in the global DB.
+- `framework`: LocalSetup docs, skills, workflows, and generated catalogs in the global DB.
 
 Every table uses UUIDv7 row IDs plus context identity columns so repo DBs can later be merged into one central SQLite or PostgreSQL database without losing scope separation.
 

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Localsetup secrets command result",
+  "title": "LocalSetup secrets command result",
   "type": "object",
   "required": [
     "ok",

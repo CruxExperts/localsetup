@@ -25,7 +25,7 @@ Use this skill when working on large Claude skills bundle tasks.
 
 - Do not bulk-import this repository; it contains a very large mixed skill surface.
 - Select one candidate at a time, then run importer, vetter, normalizer, and sandbox checks before adoption.
-- Check for overlap with Localsetup-native process, engineering, compliance, marketing, and ops skills.
+- Check for overlap with LocalSetup-native process, engineering, compliance, marketing, and ops skills.
 
 ## Boundaries
 

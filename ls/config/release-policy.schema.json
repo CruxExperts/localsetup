@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Committed repository release policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "policy", "anchor", "overrides"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "policy": {"const": "sequential-logical-slices"},
+    "anchor": {
+      "type": "object", "additionalProperties": false,
+      "required": ["commit", "version", "tag"],
+      "properties": {
+        "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "version": {"type": "string", "maxLength": 64, "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+        "tag": {"type": "string", "pattern": "^v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"}
+      }
+    },
+    "overrides": {
+      "type": "array", "maxItems": 256,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["commit", "slice", "classification"],
+        "properties": {
+          "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+          "slice": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"},
+          "classification": {"enum": ["none", "patch", "minor", "major"]}
+        }
+      }
+    }
+  },
+  "$comment": "The runtime also rejects duplicate JSON keys/commit overrides, checks tag equals v plus version, validates regular committed blobs, and binds anchor/overrides to Git ancestry."
+}

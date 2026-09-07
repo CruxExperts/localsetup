@@ -64,7 +64,7 @@ def test_cli_dispatches_stubbed_branches_without_heavy_side_effects(
         lambda *args, **kwargs: [
             SimpleNamespace(
                 plugin_id="localsetup-bootstrap",
-                display_name="Localsetup Bootstrap",
+                display_name="LocalSetup Bootstrap",
                 description="Bootstrap plugin pack.",
                 category="bootstrap",
                 source_pack="bootstrap",
@@ -93,7 +93,7 @@ def test_cli_dispatches_stubbed_branches_without_heavy_side_effects(
     monkeypatch.setattr(cli_mod, "verify_release_artifact", lambda *args, **kwargs: {"ok": True})
 
     def fake_subprocess_run(*args: object, **kwargs: object) -> SimpleNamespace:
-        return SimpleNamespace(returncode=0)
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
 
     monkeypatch.setattr(cli_mod.subprocess, "run", fake_subprocess_run)
 
@@ -179,17 +179,18 @@ def test_cli_self_refresh_mixed_modes_and_success_paths(tmp_path: Path, monkeypa
             {"platform": "cursor", "mode": "portable"},
         ],
     )
-    mixed = cli_mod._run_self_refresh(root, config, home)
-    assert mixed["ok"] is False
-    assert "mixed existing adapter modes" in mixed["issues"][0]
+    # Mode discovery is limited to explicitly selected legacy clients.
+    with pytest.raises(ValueError, match="mixed adapter modes"):
+        cli_mod._run_self_refresh(root, config, home, platforms_override=["codex", "cursor"])
 
     fake_plan = SimpleNamespace(rollback_metadata={})
+    monkeypatch.setattr("ls.core.apply_preflight.preflight_install_plan", lambda *a, **kw: {"ok": True})
     monkeypatch.setattr(cli_mod, "_existing_target_platforms", lambda *args, **kwargs: [{"platform": "codex", "mode": "symlink"}])
     monkeypatch.setattr(cli_mod, "build_install_plan", lambda *args, **kwargs: fake_plan)
     monkeypatch.setattr(cli_mod, "apply_plan", lambda *args, **kwargs: {"ok": True})
     monkeypatch.setattr(cli_mod, "verify_install", lambda *args, **kwargs: {"ok": True})
 
-    refreshed = cli_mod._run_self_refresh(root, config, home)
+    refreshed = cli_mod._run_self_refresh(root, config, home, platforms_override=["codex"])
     assert refreshed["ok"] is True
     assert refreshed["selected"]["platforms"] == ["codex"]
     assert refreshed["selected"]["attach_mode"] == "symlink"

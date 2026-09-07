@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Localsetup domain shapes",
+  "title": "LocalSetup domain shapes",
   "oneOf": [
     {
       "$ref": "#/$defs/versioned_list"

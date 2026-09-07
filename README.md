@@ -1,7 +1,7 @@
-# Localsetup
+# LocalSetup
 
 <p align="center">
-  <img src="assets/localsetup-readme-hero.png" alt="Localsetup: portable skills and deliberate workflows, with one package library serving selected agent hosts" width="960">
+  <img src="assets/localsetup-readme-hero.png" alt="LocalSetup: portable skills and deliberate workflows, with one package library serving selected agent hosts" width="960">
 </p>
 
 <p align="center">
@@ -10,13 +10,13 @@
   <a href="ls/docs/PLATFORM_REGISTRY.md"><img src="https://img.shields.io/badge/platforms-cursor%20%7C%20claude--code%20%7C%20codex%20%7C%20openclaw%20%7C%20kilo%20%7C%20opencode-1f6feb" alt="Supported platforms"></a>
 </p>
 
-**Version:** 4.4.0<br>
+**Version:** 4.22.6<br>
 
-**Localsetup gives coding agents a repo-local operating layer.**
+**LocalSetup gives coding agents a repo-local operating layer.**
 
 Keep reusable agent skills in one managed library, expose the packages each project needs, and review the instructions alongside your code.
 
-Localsetup provides capability skills, executable workflow packages, explicit adapter selection, install planning, verification, and rollback records. It supports Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode. Custom project skills can live beside managed packages.
+LocalSetup provides capability skills, executable workflow packages, explicit adapter selection, install planning, verification, and rollback records. It supports Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode. Custom project skills can live beside managed packages.
 
 Start with the [quickstart](ls/docs/QUICKSTART.md), browse the [documentation](ls/docs/README.md), or read the [4.4.0 release guide](ls/docs/releases/4.4.0.md).
 
@@ -31,13 +31,13 @@ See the [release guide](ls/docs/releases/4.4.0.md) for compatibility, updating, 
 
 ## The short version
 
-Localsetup packages:
+LocalSetup packages:
 
 - Global framework source under `~/.local/share/localsetup/source` for installed users; source checkouts keep `ls/` for contributors
 - 103 shipped capability skills plus 16 first-class workflow packages for debugging, testing, PR review, infrastructure, docs, git recovery, skill import, security vetting, context indexing, TypeScript code quality, opt-in harness automation, OmniRoute integration, and agent workflow control
 - Cross-platform adapters for Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode
 - Agent Skills-compatible `SKILL.md` packages that can be imported, normalized, vetted, installed, and reused
-- Workflow packages under `ls/workflows/` that stay executable as skills while carrying Localsetup `workflow.yaml` metadata for aliases, gates, dependencies, and generated registries
+- Workflow packages under `ls/workflows/` that stay executable as skills while carrying LocalSetup `workflow.yaml` metadata for aliases, gates, dependencies, and generated registries
 - Documentation alignment tooling that inventories source-owned docs, maps code truth, audits generated facts, and refreshes supported public/generated surfaces
 - Context-index tooling for vector-first SQLite retrieval, freshness checks, agent preflight, MCP configuration support, and machine-readable worklists
 - A Python-first installer with preflight, planning, verification, rollback metadata, and generated docs sync
@@ -48,14 +48,14 @@ That means your agent setup travels with the repo, survives context resets, and 
 ## How it fits together
 
 <p align="center">
-  <img src="assets/localsetup-architecture.png" alt="Framework source flows through the Localsetup CLI into a managed library and selected project adapters; custom project skills stay in place" width="960">
+  <img src="assets/localsetup-architecture.png" alt="Framework source flows through the LocalSetup CLI into a managed library and selected project adapters; custom project skills stay in place" width="960">
 </p>
 
-The registered Localsetup source checkout is the canonical framework source. The installer resolves configuration, creates the managed package library for skills and workflow packages, attaches only explicitly selected target adapter paths, writes target lock/report metadata under `.localsetup/`, and records an install journal under `.localsetup/install-journal/`. Consuming repos do not receive a copied `ls/` by default.
+The registered LocalSetup source checkout is the canonical framework source. The installer resolves configuration, creates the managed package library for skills and workflow packages, attaches only explicitly selected target adapter paths, writes target lock/report metadata under `.localsetup/`, and records an install journal under `.localsetup/install-journal/`. Consuming repos do not receive a copied `ls/` by default.
 
 ## Skills and workflow packages
 
-Localsetup makes one important distinction explicit:
+LocalSetup makes one important distinction explicit:
 
 | Package type | Source root | Runtime shape | Use it for |
 |---|---|---|---|
@@ -71,8 +71,8 @@ Start with the [workflow packages guide](ls/docs/WORKFLOW_PACKAGES.md) for usage
 <!-- facts-block:start -->
 | Fact | Value |
 |---|---|
-| Current version | `4.4.0` |
-| Supported platforms | `codex, claude-code, cursor, kilo, opencode, openclaw` |
+| Current version | `4.22.6` |
+| Supported platforms | `codex, claude-code, cursor, kilo, opencode, openclaw, github-copilot-cli, github-copilot-vscode, cline-cli, cline-vscode, amp-cli, goose-cli, pi-cli, hermes-agent, qwen-code-cli, kimi-cli, factory-droid, antigravity-app, gemini-cli, omp-cli` |
 | Shipped skills | `103` |
 | Workflow packages | `16` |
 | Source | `ls/docs/_generated/facts.json` |
@@ -100,7 +100,7 @@ curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install 
 
 The public command is release-backed even though the small wrapper is downloaded from `main`: managed bootstrap installs resolve the latest non-draft, non-prerelease GitHub release tag before cloning or refreshing `~/.local/share/localsetup/source`, with a stable-tag fallback when release lookup is unavailable. Set `LOCALSETUP_BOOTSTRAP_REF` only when you intentionally want an explicit branch, tag, or commit. Explicit `--directory` checkouts are source-authoritative and are never auto-fetched or replaced.
 
-When raw managed bootstrap finds a clean legacy managed source checkout identified by `_localsetup/tools/localsetup.py`, it recognizes and refreshes that checkout to the release-backed modern layout with `ls/tools/localsetup.py`. Before fetching and replacing the checkout, Localsetup stores a Git rollback bundle and JSON manifest outside the source checkout under `<source-parent>/state/source-migrations` when that location is external, or `~/.local/share/localsetup/state/source-migrations` otherwise. Dirty or untracked source checkouts remain rejected before refresh.
+When raw managed bootstrap finds a clean legacy managed source checkout identified by `_localsetup/tools/localsetup.py`, it recognizes and refreshes that checkout to the release-backed modern layout with `ls/tools/localsetup.py`. Before fetching and replacing the checkout, LocalSetup stores a Git rollback bundle and JSON manifest outside the source checkout under `<source-parent>/state/source-migrations` when that location is external, or `~/.local/share/localsetup/state/source-migrations` otherwise. Dirty or untracked source checkouts remain rejected before refresh.
 
 For release verification, download the GitHub release tarball with its `.sha256` sidecar and run:
 
@@ -108,7 +108,7 @@ For release verification, download the GitHub release tarball with its `.sha256`
 uv run --locked python ls/tools/localsetup.py --source-root . verify-release dist/localsetup-v$(cat VERSION).tar.gz
 ```
 
-Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.agents/skills` to the chosen target. For repo-targeted CLI automation with no platform or package selectors, Localsetup uses auto mode: existing Localsetup state is inferred and refreshed, safe legacy repairs are applied only when unambiguous, and a brand-new repo gets the `normal` global package baseline with no repo adapter paths. Interactive installs first choose the global package-library baseline, defaulting to `normal` or the prior registry setting. Repo setup is a separate choice; when selected, repo-visible packs default from the target lockfile or repo-detected suggestions.
+Selecting tools in the wizard, or passing `--tools` / `--platforms`, attaches adapters such as `.agents/skills` to the chosen target. For repo-targeted CLI automation with no platform or package selectors, LocalSetup uses auto mode: existing LocalSetup state is inferred and refreshed, safe legacy repairs are applied only when unambiguous, and a brand-new repo gets the `normal` global package baseline with no repo adapter paths. Interactive installs first choose the global package-library baseline, defaulting to `normal` or the prior registry setting. Repo setup is a separate choice; when selected, repo-visible packs default from the target lockfile or repo-detected suggestions.
 
 For automation, opt in explicitly:
 
@@ -120,7 +120,7 @@ Automation mode preserves machine-readable output. Without a terminal, the insta
 For a managed release bootstrap, this mode synchronizes the source checkout's locked production environment before running the CLI. If `uv` is absent, pass `--install-uv` to opt in to its bootstrap; explicit checkout installs continue to require `--sync-env` when environment synchronization is wanted.
 
 
-Localsetup CLI commands emit JSON by default unless a command has an explicit human-readable mode such as `context --markdown`. The `--json` config flag remains available when scripts want to make that output contract explicit.
+LocalSetup CLI commands emit JSON by default unless a command has an explicit human-readable mode such as `context --markdown`. The `--json` config flag remains available when scripts want to make that output contract explicit.
 
 From a cloned checkout, open the same wizard:
 
@@ -128,7 +128,7 @@ From a cloned checkout, open the same wizard:
 ./install --directory .
 ```
 
-The local checkout command uses that checkout as the registered source. Like the raw global bootstrap, it installs the managed skill library and creates no repo adapter paths unless you pass `--tools` or `--platforms` or run a repo-targeted auto-mode command. Both paths also create a managed user command at `~/.local/bin/localsetup`. After registration, run Localsetup from any project:
+The local checkout command uses that checkout as the registered source. Like the raw global bootstrap, it installs the managed skill library and creates no repo adapter paths unless you pass `--tools` or `--platforms` or run a repo-targeted auto-mode command. Both paths also create a managed user command at `~/.local/bin/localsetup`. After registration, run LocalSetup from any project:
 
 ```bash
 localsetup plan --target-directory .
@@ -136,7 +136,7 @@ localsetup install --target-directory . --apply
 localsetup update --target-directory .
 ```
 
-When invoked through the managed command, Localsetup uses the registered framework checkout as the source and the nearest Git worktree root from your current directory as the target. Outside Git, it targets the current directory. Use `--target-directory /path/to/project` to override that target.
+When invoked through the managed command, LocalSetup uses the registered framework checkout as the source and the nearest Git worktree root from your current directory as the target. Outside Git, it targets the current directory. Use `--target-directory /path/to/project` to override that target.
 
 `localsetup update` reapplies that registered source; it does not download a newer release. Follow the [update guide](ls/docs/QUICKSTART.md#update) to refresh the source first.
 
@@ -162,7 +162,7 @@ Install every shipped skill and workflow package for Codex, Kilo, and OpenCode, 
 ./install --directory . --tools codex,kilo,opencode --packs bootstrap,core,dev,frontend,architecture,ops,integrations,publishing,harness,skill-lifecycle,growth-content,specialized --sync-env
 ```
 
-In symlink mode, Localsetup writes a scoped marker and managed per-package links inside each selected repo adapter path. The adapter directory itself remains a shared agent surface: custom skills, ordinary files, and repo-local symlinks may live beside Localsetup-managed entries and must be preserved. Same-name selected package collisions and unsafe symlinks still block before mutation. That means a repo sees only the repo-visible Localsetup skills and workflow packages even when the global library contains a larger baseline. Portable mode uses the same scoped marker and package list, but copies selected managed packages instead of linking them. See [ls/docs/ADAPTER_OWNERSHIP.md](ls/docs/ADAPTER_OWNERSHIP.md) for the ownership boundary.
+In symlink mode, LocalSetup writes a scoped marker and managed per-package links inside each selected repo adapter path. The adapter directory itself remains a shared agent surface: custom skills, ordinary files, and repo-local symlinks may live beside LocalSetup-managed entries and must be preserved. Same-name selected package collisions and unsafe symlinks still block before mutation. That means a repo sees only the repo-visible LocalSetup skills and workflow packages even when the global library contains a larger baseline. Portable mode uses the same scoped marker and package list, but copies selected managed packages instead of linking them. See [ls/docs/ADAPTER_OWNERSHIP.md](ls/docs/ADAPTER_OWNERSHIP.md) for the ownership boundary.
 
 Attach a selected adapter to another repo while using this checkout as the source:
 
@@ -170,33 +170,42 @@ Attach a selected adapter to another repo while using this checkout as the sourc
 ./install --directory /path/to/localsetup --target-directory /path/to/project --tools cursor
 ```
 
-To convert a repo that may contain old Localsetup files or adapter paths, start with a dry report and apply only after blockers are clear:
+To convert a repo that may contain old LocalSetup files or adapter paths, start with a dry report and apply only after blockers are clear:
 
 ```bash
 localsetup convert --tools codex --packs core
 localsetup convert --tools codex --packs core --yes
 ```
 
-Conversion writes a timestamped backup and machine-readable report under `.localsetup/backups/conversion-*`, archives known managed or legacy Localsetup artifacts, backs up and removes stale target `ls/` folders, blocks ambiguous unmanaged content, installs selected adapters, and verifies the result.
+Conversion writes a timestamped backup and machine-readable report under `.localsetup/backups/conversion-*`, archives known managed or legacy LocalSetup artifacts, backs up and removes stale target `ls/` folders, blocks ambiguous unmanaged content, installs selected adapters, and verifies the result.
 
 Windows support is WSL2-only in the current framework. Open WSL2, change to the repo path, and run the Bash installer.
 
 Full install docs: [ls/docs/QUICKSTART.md](ls/docs/QUICKSTART.md) and [ls/docs/MULTI_PLATFORM_INSTALL.md](ls/docs/MULTI_PLATFORM_INSTALL.md).
 Copy-paste command reference: [ls/docs/COMMAND_REFERENCE.md](ls/docs/COMMAND_REFERENCE.md).
 
-Opt-in harness automation is documented separately because normal installs never schedule autonomous work. See [ls/docs/HARNESS_AUTOMATION.md](ls/docs/HARNESS_AUTOMATION.md) for `localsetup harness codex-heartbeat plan/init/enable/status/budget/run/disable`.
+Opt-in harness automation is documented separately because normal installs never schedule autonomous work. See [ls/docs/HARNESS_AUTOMATION.md](ls/docs/HARNESS_AUTOMATION.md) for `localsetup harness codex-heartbeat plan/init/enable/status/budget/run/disable` and the [typed LSCli profile and controller accounting](ls/skills/ls-codex-heartbeat/references/config.md#typed-lscli-profile).
 
-## 10 reasons to use Localsetup
+[LSCli](ls/docs/LSCLI.md) is the integrated CLI for LocalSetup (LS), invoked as
+`lscli` or `localsetup agent`. It provides explicit offline setup, protected coding
+runs, session continuation/recovery, branches and compaction;
+`localsetup llm complete` provides tool-free structured completion. Profiles and
+authority are explicit, and coding requires a qualified sandbox/resource backend.
+The [command reference](ls/docs/COMMAND_REFERENCE.md#lscli-and-tool-free-completion)
+links the full contracts. Installed candidate evidence does not qualify every
+provider, host or eventual published artifact.
+
+## 10 reasons to use LocalSetup
 
 1. **Your agent context becomes code.** Instructions, skills, workflows, platform manifests, and docs live in the repo, so changes are visible in git instead of hidden in a local profile or a forgotten prompt.
-2. **One skill library reaches multiple agent hosts.** When selected with `--tools` or `--platforms`, the shipped adapters let Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode attach to the same managed Localsetup skill library.
+2. **One skill library reaches multiple agent hosts.** When selected with `--tools` or `--platforms`, the shipped adapters let Cursor, Claude Code, OpenAI Codex CLI, OpenClaw, Kilo, and OpenCode attach to the same managed LocalSetup skill library.
 3. **It leans into portable skill packaging.** Skills use spec-compatible `SKILL.md` frontmatter, which makes them easier to import, export, normalize, and share across ecosystems that understand the package shape.
 4. **It tackles the trust gap directly.** The framework pushes agents toward repeatable workflows, explicit verification, documented assumptions, and human gates instead of one-off "looks good" responses.
 5. **It treats skill imports as supply-chain events.** External skills are discovered, validated, security-screened, summarized, and normalized before they become part of your library.
 6. **It helps with the work developers actually hand agents.** Debugging, tests, PR review, codebase navigation, docs cleanup, git recovery, MCP building, Linux service triage, patching, and release chores are covered out of the box.
 7. **It has safety rails for real machines.** Server and operations workflows route through tmux, sudo probing, backup/safety guidance, and explicit approval points for risky actions.
 8. **It gives long-running work a shape.** First-class workflow packages, decision trees, PRD queues, Agent Q handoffs, generated registries, and outcome templates make multi-step agent work easier to restart, audit, and delegate.
-9. **It makes installs reversible.** The Localsetup installer plans, applies, verifies, writes lock/registry metadata, supports adapter detach, and can roll back managed paths without treating generated adapter output as source.
+9. **It makes installs reversible.** The LocalSetup installer plans, applies, verifies, writes lock/registry metadata, supports adapter detach, and can roll back managed paths without treating generated adapter output as source.
 10. **It keeps releases tidy.** Version sync, generated facts, strict manifest schemas, checksum/SBOM sidecars, framework audit, and Conventional Commit release tooling reduce the drift that makes public repos feel abandoned.
 
 ## Shipped packages worth starting with
@@ -257,15 +266,15 @@ Use `--trace-json /path/to/events.jsonl` with `install`, `verify`, or `doctor` t
 
 For a complete option table, see the [command reference](ls/docs/COMMAND_REFERENCE.md).
 
-`doctor` reports the uv-managed source checkout environment. `doctor repair` emits a dry-run JSON repair report for legacy or partial target repos, and applies only low-ambiguity Localsetup-owned repairs when rerun with `--yes`. Repair now treats workflow packages as first-class inferred packages, preserves benign adapter content by default, and can emit compact handoff prompts with `--agent-prompt` or `--emit-agent-prompt`. Adapter-shaped directories such as `.codex/skills` and `.agents/skills` are shared surfaces, not Localsetup-exclusive directories; repair must preserve custom skills, ordinary files, and repo-local symlinks in place while mutating only proven Localsetup-managed entries. Clean legacy `ls` framework trees are removed only after backup and, when tracked, `git rm --cached`; protected source checkouts still allow safe adapter and lock refreshes, while custom, dirty, symlinked, unsafe, or content-divergent `ls` trees are preserved for migration planning. If `doctor` sees an old `~/.local/share/localsetup/venv` from earlier releases, it reports that legacy venv as ignored and gives a repair hint instead of trying to execute it.
+`doctor` reports the uv-managed source checkout environment. `doctor repair` emits a dry-run JSON repair report for legacy or partial target repos, and applies only low-ambiguity LocalSetup-owned repairs when rerun with `--yes`. Repair now treats workflow packages as first-class inferred packages, preserves benign adapter content by default, and can emit compact handoff prompts with `--agent-prompt` or `--emit-agent-prompt`. Adapter-shaped directories such as `.codex/skills` and `.agents/skills` are shared surfaces, not LocalSetup-exclusive directories; repair must preserve custom skills, ordinary files, and repo-local symlinks in place while mutating only proven LocalSetup-managed entries. Clean legacy `ls` framework trees are removed only after backup and, when tracked, `git rm --cached`; protected source checkouts still allow safe adapter and lock refreshes, while custom, dirty, symlinked, unsafe, or content-divergent `ls` trees are preserved for migration planning. If `doctor` sees an old `~/.local/share/localsetup/venv` from earlier releases, it reports that legacy venv as ignored and gives a repair hint instead of trying to execute it.
 
 Release note for this repair behavior: `.localsetup/lock.json` is managed repo state and should stay visible to Git. Runtime summaries, journals, backups, health state, and context-index runtime data are local runtime state and are added to `.git/info/exclude`.
 
-## What Localsetup is solving
+## What LocalSetup is solving
 
 Agent tooling moves quickly, but the hard parts stay stubbornly practical. Teams still need context that survives across sessions, standards that work across tools, safety around imported instructions, and workflows that can be resumed by another human or agent without archaeology.
 
-Localsetup's opinion is simple: keep the agent operating model close to the code. Make it installable. Make it reviewable. Make it boring enough to trust.
+LocalSetup's opinion is simple: keep the agent operating model close to the code. Make it installable. Make it reviewable. Make it boring enough to trust.
 
 The design follows a few durable pressures instead of chasing market snapshots:
 
@@ -273,7 +282,7 @@ The design follows a few durable pressures instead of chasing market snapshots:
 - Imported instructions and skills need supply-chain treatment before they are trusted.
 - Tool and data access should be explicit, least-privilege, and reviewable.
 - Long-running work needs checkpoints, validation evidence, and handoff notes.
-- Interoperability work such as [Model Context Protocol](https://modelcontextprotocol.io/docs/getting-started/intro) and [Agent Skills](https://agentskills.io/specification) is useful, but Localsetup keeps those integrations source-owned and replaceable.
+- Interoperability work such as [Model Context Protocol](https://modelcontextprotocol.io/docs/getting-started/intro) and [Agent Skills](https://agentskills.io/specification) is useful, but LocalSetup keeps those integrations source-owned and replaceable.
 
 ## Requirements
 
@@ -289,13 +298,15 @@ Use uv-managed dependency setup instead of system Python changes:
 ./install --directory . --sync-env
 ```
 
-The default dependency mode is report-only. It can warn about corrupt legacy Localsetup environments, but it does not move files. Explicit sync paths such as `--sync-env` may quarantine only Localsetup-owned corrupt environments and then let uv rebuild the source checkout `.venv`; a target project's own `.venv` is never modified.
+The default dependency mode is report-only. It can warn about corrupt legacy LocalSetup environments, but it does not move files. Explicit sync paths such as `--sync-env` may quarantine only LocalSetup-owned corrupt environments and then let uv rebuild the source checkout `.venv`; a target project's own `.venv` is never modified.
 
 ## Read more
 
 - [Framework docs index](ls/docs/README.md)
 - [Framework README](ls/README.md)
 - [Feature catalog](ls/docs/FEATURES.md)
+- [LSCli commands and runtime setup](ls/docs/LSCLI.md)
+- [SDK source, dependency and artifact ownership](ls/docs/SDK_FORK.md)
 - [Platform registry](ls/docs/PLATFORM_REGISTRY.md)
 - [Harness automation](ls/docs/HARNESS_AUTOMATION.md)
 - [Workflow packages](ls/docs/WORKFLOW_PACKAGES.md)
@@ -310,10 +321,10 @@ The default dependency mode is report-only. It can warn about corrupt legacy Loc
 
 ## License
 
-Localsetup is released under the [MIT License](LICENSE).
+LocalSetup is released under the [MIT License](LICENSE).
 
 ## Community and Support
 
-For bugs, use the bug report form and include the Localsetup version, platform ID, command, expected result, actual result, and validation output. For feature requests, use the feature form and name the affected skill, workflow package, platform, or docs area. For version-sync, generated-doc, publish, or package-artifact problems, use the maintenance form.
+For bugs, use the bug report form and include the LocalSetup version, platform ID, command, expected result, actual result, and validation output. For feature requests, use the feature form and name the affected skill, workflow package, platform, or docs area. For version-sync, generated-doc, publish, or package-artifact problems, use the maintenance form.
 
 Use [GitHub Discussions](https://github.com/CruxExperts/localsetup/discussions) for usage questions and early design conversation. Report security-sensitive issues through private vulnerability reporting when available; otherwise open a minimal public issue asking for a secure contact without details.

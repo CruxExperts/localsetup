@@ -1,13 +1,13 @@
 ---
 name: ls-localsetup-doctor
-description: "Use for Localsetup doctor repair workflows: dry-run review, decision handling, conservative apply, backup evidence, and post-repair verification."
+description: "Use for LocalSetup doctor repair workflows: dry-run review, decision handling, conservative apply, backup evidence, and post-repair verification."
 metadata:
   version: "1.0"
 ---
 
-# Localsetup Doctor Repair
+# LocalSetup Doctor Repair
 
-Use this skill when a repo has legacy, partial, or suspicious Localsetup install state and the user wants a conservative repair path.
+Use this skill when a repo has legacy, partial, or suspicious LocalSetup install state and the user wants a conservative repair path.
 
 ## Workflow
 
@@ -42,9 +42,9 @@ localsetup doctor --target-directory <repo>
 
 - Preserve repo-owned content. If an adapter directory contains unknown files, stop and ask the user where that content belongs.
 - Treat regular files at adapter destinations and unsupported filesystem nodes as manual decisions.
-- Do not delete `ls/` unless it looks like copied Localsetup framework source and the active source root is elsewhere.
-- Treat Localsetup maintainer/source checkouts as protected. If the target root contains source-root markers such as `ls/config/pack.yaml`, `ls/core/`, `VERSION`, and `pyproject.toml` or `install`, do not repair it as a consumer repo.
-- Treat the registered Localsetup shell source checkout as protected, regardless of where the user installed it. The default `~/.local/share/localsetup/source` location is only one possible managed source path.
+- Do not delete `ls/` unless it looks like copied LocalSetup framework source and the active source root is elsewhere.
+- Treat LocalSetup maintainer/source checkouts as protected. If the target root contains source-root markers such as `ls/config/pack.yaml`, `ls/core/`, `VERSION`, and `pyproject.toml` or `install`, do not repair it as a consumer repo.
+- Treat the registered LocalSetup shell source checkout as protected, regardless of where the user installed it. The default `~/.local/share/localsetup/source` location is only one possible managed source path.
 - Do not remove, replace, or convert any protected source checkout's `ls/` tree through doctor repair.
 - Prefer current scoped adapters such as `.codex/skills` over historical pre-Codex adapter roots.
 - Preserve portable mode only when the current lock proves a portable deployment; otherwise use scoped symlink adapters.

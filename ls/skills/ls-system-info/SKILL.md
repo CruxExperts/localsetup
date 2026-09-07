@@ -35,9 +35,9 @@ For a single combined snapshot, run in order: `lscpu`, `free -h`, `df -h`, `upti
 
 To get maximum context without sudo or extra dependencies, use the bundled script. It uses only Python stdlib and commands/files readable by unprivileged users, with no network access. By default it writes only to stdout; `--output-basename` enables timestamped file output for unattended runs.
 
-Choose the command for your current working directory. The repository-root examples apply to this document in the Localsetup source checkout. Installed copies rewrite bundled paths; use the skill-directory examples there, from the directory containing this `SKILL.md`.
+Choose the command for your current working directory. The repository-root examples apply to this document in the LocalSetup source checkout. Installed copies rewrite bundled paths; use the skill-directory examples there, from the directory containing this `SKILL.md`.
 
-From the Localsetup source repository root:
+From the LocalSetup source repository root:
 
 ```bash
 python3 ls/skills/ls-system-info/scripts/system_snapshot.py
@@ -51,7 +51,7 @@ python3 scripts/system_snapshot.py
 
 Output is GFM markdown to stdout. It includes: identity and time, OS release, uptime and load, CPU, memory, disk and block devices, network (ip addr/route, resolv.conf), sessions (w/who), loaded kernel modules sample, and runtimes in PATH (e.g. python3, node). Redirect to a file to save a baseline, e.g. `... > baseline.md`.
 
-For cron or unattended runs, set the job's working directory explicitly and write a timestamped markdown file with a relative output basename. From the Localsetup source repository root:
+For cron or unattended runs, set the job's working directory explicitly and write a timestamped markdown file with a relative output basename. From the LocalSetup source repository root:
 
 ```bash
 python3 ls/skills/ls-system-info/scripts/system_snapshot.py --output-basename reports/system-snapshots/daily

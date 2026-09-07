@@ -1,10 +1,10 @@
 ---
 status: ACTIVE
-version: 4.4
+version: 4.22
 owner_skill: ls-git-workflows
 ---
 
-# Git traceability (Localsetup)
+# Git traceability (LocalSetup)
 
 **Purpose:** When referencing a repo artifact (file, PRD, document) in PRDs, specs, outcomes, or handoffs, **attach the git hash** so the reference is immutable and point-in-time.
 

@@ -1,7 +1,7 @@
 ---
 name: ls-architecture
 description: Guide architecture analysis and decision records. Use for ADRs, tradeoff
-  review, boundaries, dependencies, data flow, and Localsetup-compatible design decisions.
+  review, boundaries, dependencies, data flow, and LocalSetup-compatible design decisions.
 metadata:
   version: '1.0'
 extensions:

@@ -1,8 +1,8 @@
 schema_version: 1
 plugin_packs:
   - id: localsetup-bootstrap
-    display_name: Localsetup Bootstrap
-    description: Essential context, safety, git, testing, and review skills for starting work in a Localsetup-aware repository.
+    display_name: LocalSetup Bootstrap
+    description: Essential context, safety, git, testing, and review skills for starting work in a LocalSetup-aware repository.
     category: bootstrap
     source_pack: bootstrap
     platforms:
@@ -12,8 +12,8 @@ plugin_packs:
       - ls/docs/TOOLING_POLICY.md
       - ls/docs/INPUT_HARDENING_STANDARD.md
   - id: localsetup-core
-    display_name: Localsetup Core
-    description: Core Localsetup context, indexing, doctor, safety, testing, and TDD capabilities.
+    display_name: LocalSetup Core
+    description: Core LocalSetup context, indexing, doctor, safety, testing, and TDD capabilities.
     category: core
     source_pack: core
     platforms:
@@ -22,7 +22,7 @@ plugin_packs:
     extra_context_inputs:
       - ls/docs/AGENTIC_DESIGN_INDEX.md
   - id: localsetup-dev
-    display_name: Localsetup Dev
+    display_name: LocalSetup Dev
     description: Development, debugging, documentation, audit, Git, review, UI, TypeScript, architecture, release-readiness, and runtime-pattern skills.
     category: development
     source_pack: dev
@@ -32,7 +32,7 @@ plugin_packs:
     extra_context_inputs:
       - ls/docs/WORKFLOW_REGISTRY.md
   - id: localsetup-frontend
-    display_name: Localsetup Frontend
+    display_name: LocalSetup Frontend
     description: Frontend, UI, design, accessibility, React, Next.js, Tailwind, browser-debugging, and rich web artifact skills.
     category: frontend
     source_pack: frontend
@@ -41,7 +41,7 @@ plugin_packs:
         interface: v1
     extra_context_inputs: []
   - id: localsetup-architecture
-    display_name: Localsetup Architecture
+    display_name: LocalSetup Architecture
     description: Architecture, system design, deployment readiness, incident response, diagrams, and technical-debt planning skills.
     category: architecture
     source_pack: architecture
@@ -51,7 +51,7 @@ plugin_packs:
     extra_context_inputs:
       - ls/docs/WORKFLOW_REGISTRY.md
   - id: localsetup-ops
-    display_name: Localsetup Ops
+    display_name: LocalSetup Ops
     description: Operations skills for servers, cron, patching, triage, system inspection, infrastructure automation, Docker, deploy checks, and incident response.
     category: operations
     source_pack: ops
@@ -60,7 +60,7 @@ plugin_packs:
         interface: v1
     extra_context_inputs: []
   - id: localsetup-integrations
-    display_name: Localsetup Integrations
+    display_name: LocalSetup Integrations
     description: Integration skills for provider APIs, transport, DNS, secrets, mail, MCP, proxy management, OmniRoute, data stores, payments, observability, and web extraction.
     category: integrations
     source_pack: integrations
@@ -69,7 +69,7 @@ plugin_packs:
         interface: v1
     extra_context_inputs: []
   - id: localsetup-publishing
-    display_name: Localsetup Publishing
+    display_name: LocalSetup Publishing
     description: Publishing, release, documentation alignment, PR review, and public repository identity skills.
     category: publishing
     source_pack: publishing
@@ -79,7 +79,7 @@ plugin_packs:
     extra_context_inputs:
       - ls/docs/WORKFLOW_REGISTRY.md
   - id: localsetup-harness
-    display_name: Localsetup Harness
+    display_name: LocalSetup Harness
     description: Automation harness skills for Codex heartbeat, context-index maintenance, cron, and repo finalization.
     category: harness
     source_pack: harness
@@ -88,7 +88,7 @@ plugin_packs:
         interface: v1
     extra_context_inputs: []
   - id: localsetup-skill-lifecycle
-    display_name: Localsetup Skill Lifecycle
+    display_name: LocalSetup Skill Lifecycle
     description: Skill authoring, discovery, import, normalization, vetting, sandbox testing, and upstream bundle inventory wrappers.
     category: skill-lifecycle
     source_pack: skill-lifecycle
@@ -99,7 +99,7 @@ plugin_packs:
       - ls/docs/SKILL_IMPORTING.md
       - ls/docs/SKILL_NORMALIZATION.md
   - id: localsetup-growth-content
-    display_name: Localsetup Growth Content
+    display_name: LocalSetup Growth Content
     description: Marketing, CRO, SEO/GEO, lifecycle email, deliverability, and writing/editing support skills.
     category: growth-content
     source_pack: growth-content
@@ -108,7 +108,7 @@ plugin_packs:
         interface: v1
     extra_context_inputs: []
   - id: localsetup-specialized
-    display_name: Localsetup Specialized
+    display_name: LocalSetup Specialized
     description: Specialized human-review, writing, Kilo orchestration, Kilo output, and umbrella workflow skills.
     category: specialized
     source_pack: specialized

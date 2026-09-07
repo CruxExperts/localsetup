@@ -146,7 +146,7 @@ def test_uv_sync_quarantine_failure_blocks_without_delete(
             return subprocess.CompletedProcess(cmd, 0, stdout="uv 0.11.5\n", stderr="")
         return subprocess.CompletedProcess(cmd, 0, stdout="ok\n", stderr="")
 
-    with pytest.raises(RuntimeError, match="failed to quarantine Localsetup-owned environment"):
+    with pytest.raises(RuntimeError, match="failed to quarantine LocalSetup-owned environment"):
         ensure_dependencies(root, mode="uv-sync", runner=fake_runner)
     assert broken_python.exists()
 

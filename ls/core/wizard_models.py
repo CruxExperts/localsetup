@@ -61,12 +61,7 @@ UNICODE_GLYPHS = {
     "suggested": "[SUGGESTED] ★",
 }
 
-WELCOME_BANNER = r""" _      ___   ____    _    _     ____  _____ _____ _   _ ____
-| |    / _ \ / ___|  / \  | |   / ___|| ____|_   _| | | |  _ \
-| |   | | | | |     / _ \ | |   \___ \|  _|   | | | | | | |_) |
-| |___| |_| | |___ / ___ \| |___ ___) | |___  | | | |_| |  __/
-|_____|\___/ \____/_/   \_\_____|____/|_____| |_|  \___/|_|
-                         Localsetup installer"""
+WELCOME_BANNER = "LocalSetup installer"
 
 @dataclass
 class Choice:

@@ -175,12 +175,18 @@ def _target_directory_value(args: argparse.Namespace) -> str | None:
 
 
 def _inject_global_target(args: argparse.Namespace) -> None:
-    if not _is_global_shim_invocation():
+    from .installed_source import wheel_module
+    shim = _is_global_shim_invocation()
+    if not shim and not wheel_module(Path(__file__)):
         return
     if args.cmd not in {"plan", "install", "update", "verify", "rollback", "adapters", "doctor", "migrate", "context", "convert", "harness", "context-index", "provenance", "health"}:
         return
     if _target_directory_value(args):
         return
+    if not shim and getattr(args, "config", None):
+        configured = load_install_config(Path(args.config).resolve())
+        if configured.target_directory:
+            return
     setattr(args, "target_directory", str(detect_invocation_target()))
     setattr(args, "detected_target_directory", True)
 
@@ -216,6 +222,7 @@ def _resolved_config(args: argparse.Namespace, default_home: Path) -> InstallCon
         repo_skill_tags=_split_csv(getattr(args, "repo_skill_tags", None)) if hasattr(args, "repo_skill_tags") else None,
         repo_exclude_skills=_split_csv(getattr(args, "repo_exclude_skills", None)) if hasattr(args, "repo_exclude_skills") else None,
         repo_workflows=_split_csv(getattr(args, "repo_workflows", None)) if hasattr(args, "repo_workflows") else None,
+        skill_scope=getattr(args, "skill_scope", None),
         attach_mode=getattr(args, "mode", None),
         home=cli_home,
         target_directory=getattr(args, "target_directory", None),
@@ -410,6 +417,8 @@ def _main(argv: list[str] | None = None) -> int:
     if args.cmd is None:
         _print_no_command_help()
         return 2
+    if args.cmd == "agent":
+        parser.error("place agent immediately after localsetup; use agent options for workspace, state and runtime selection")
     _inject_global_target(args)
     root = Path(args.source_root or args.repo or str(_repo_root())).resolve()
     home = Path(args.home or Path.home()).expanduser().resolve()
@@ -425,8 +434,19 @@ def _main(argv: list[str] | None = None) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    if arguments[:1] == ["llm"]:
+        from .agent.completion_cli import main as completion_main
+        return completion_main(arguments[1:])
+    if arguments[:1] == ["agent"]:
+        from .agent.cli import main as agent_main
+        return agent_main(arguments[1:])
     try:
-        return _main(argv)
+        return _main(arguments)
     except Exception as exc:
         print(f"localsetup: {exc}", file=sys.stderr)
         return 2
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

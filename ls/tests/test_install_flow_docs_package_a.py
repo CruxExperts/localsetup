@@ -57,7 +57,7 @@ def test_agent_context_and_markdown_report(tmp_path: Path) -> None:
     assert {"environment", "selected_platforms", "dependencies", "migration", "actions", "blockers", "warnings", "commands", "rollback", "verification"} <= set(context)
     assert context["selected_platforms"] == ["codex"]
     assert context["selected_packs"] == ["core"]
-    assert "# Localsetup Install Context" in markdown
+    assert "# LocalSetup Install Context" in markdown
     assert "localsetup verify --platforms codex" in markdown
     assert "python3 ls/tools/localsetup.py verify" not in markdown
 
@@ -164,14 +164,12 @@ def test_self_refresh_infers_shared_current_adapter_without_flags(tmp_path: Path
     home.mkdir(parents=True, exist_ok=True)
     tool = root / "ls" / "tools" / "localsetup.py"
 
-    existing_global = home / ".local" / "share" / "localsetup" / "packages"
-    existing_global.mkdir(parents=True, exist_ok=True)
-    custom = existing_global / "custom-skill"
+    apply_plan(root, build_install_plan(root, home=home, packs=['core'], platform_ids=['codex']), home=home)
+    existing_global = home / '.local/share/localsetup/packages'
+    custom = existing_global / 'custom-skill'
     custom.mkdir()
-    (custom / "SKILL.md").write_text("# Custom global skill\n", encoding="utf-8")
-    current_adapter = root / ".agents" / "skills"
-    current_adapter.parent.mkdir(parents=True)
-    current_adapter.symlink_to(existing_global, target_is_directory=True)
+    (custom / 'SKILL.md').write_text('# Custom global skill\n', encoding='utf-8')
+    current_adapter = root / '.agents/skills'
 
     completed = subprocess.run(
         [
@@ -193,7 +191,7 @@ def test_self_refresh_infers_shared_current_adapter_without_flags(tmp_path: Path
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload["ok"] is True
-    assert payload["selected"]["platforms"] == ["codex", "cursor", "openclaw"]
+    assert payload["selected"]["platforms"] == ["codex"]
     assert payload["selected"]["attach_mode"] == "symlink"
     assert "integrations" in payload["selected"]["packs"]
     assert (home / ".local/share/localsetup/packages/ls-cloudflare-dns").is_dir()
@@ -208,9 +206,8 @@ def test_self_refresh_infers_shared_current_portable_mode_without_flags(tmp_path
     home.mkdir(parents=True, exist_ok=True)
     tool = root / "ls" / "tools" / "localsetup.py"
 
-    portable_adapter = root / ".agents" / "skills"
-    portable_adapter.mkdir(parents=True, exist_ok=True)
-    (portable_adapter / ".localsetup-portable").write_text("managed_by=localsetup\n", encoding="utf-8")
+    apply_plan(root, build_install_plan(root, home=home, packs=['core'], platform_ids=['codex'], attach_mode='portable'), home=home)
+    portable_adapter = root / '.agents/skills'
     custom = portable_adapter / "custom-skill"
     custom.mkdir()
     (custom / "SKILL.md").write_text("# Custom portable skill\n", encoding="utf-8")
@@ -235,7 +232,7 @@ def test_self_refresh_infers_shared_current_portable_mode_without_flags(tmp_path
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload["ok"] is True
-    assert payload["selected"]["platforms"] == ["codex", "cursor", "openclaw"]
+    assert payload["selected"]["platforms"] == ["codex"]
     assert payload["selected"]["attach_mode"] == "portable"
     assert portable_adapter.is_dir()
     assert not portable_adapter.is_symlink()
@@ -306,6 +303,8 @@ def test_docs_do_not_show_selector_free_portable_install() -> None:
 
 def test_docs_and_package(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
+    license_bytes = (Path(__file__).resolve().parents[2] / "LICENSE").read_bytes()
+    (root / "LICENSE").write_bytes(license_bytes)
     (root / "ls" / "__pycache__").mkdir()
     (root / "ls" / "__pycache__" / "cached.pyc").write_bytes(b"bytecode")
     (root / "ls" / ".cache" / "scrapling" / "jobs").mkdir(parents=True)
@@ -368,6 +367,9 @@ def test_docs_and_package(tmp_path: Path) -> None:
     ):
         assert asset in package["files"]
     assert "assets" in package["manifest"]["public_paths"]
+    assert "LICENSE" in package["files"]
+    with tarfile.open(artifact) as archive:
+        assert archive.extractfile("LICENSE").read() == license_bytes
     assert "REVIEW.md" in package["files"]
     assert "REVIEW.md" in package["manifest"]["public_paths"]
     assert "ls/__pycache__/cached.pyc" not in package["files"]

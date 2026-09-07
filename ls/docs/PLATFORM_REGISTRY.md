@@ -1,31 +1,33 @@
 ---
 status: ACTIVE
-version: 4.4
+version: 4.22
 owner_skill: ls-framework-compliance
 ---
 
-# Platform registry (Localsetup)
+# Platform registry (LocalSetup)
 
-**Purpose:** Human-readable summary of the AI client variants Localsetup supports and the canonical registration sources for skills and workflow packages.
+**Purpose:** Human-readable summary of the AI client variants LocalSetup supports and the canonical registration sources for skills and workflow packages.
 
-**Manifest source:** `ls/config/clients.yaml` is canonical. It records client families and distinct CLI/IDE variants, their researched native surfaces, Localsetup state contracts, and compatibility projection eligibility. `ls/config/platforms.yaml` is generated from the six compatible variants for existing installer consumers; do not edit it directly. The root `--tools` flag remains a compatibility alias for current `--platforms`.
+**Manifest source:** `ls/config/clients.yaml` is canonical. It records client families and distinct CLI/IDE variants, their researched native surfaces, LocalSetup state contracts, and compatibility projection eligibility. `ls/config/platforms.yaml` is generated from eligible compatible variants for installer consumers; do not edit it directly. The root `--tools` flag remains a compatibility alias for current `--platforms`.
 
-## Supported platforms
+## Platform examples
+
+The following six entries are examples. The [generated platform adapter inventory](_generated/platform-adapters.md) lists every current installer selector. [Client integration metadata](CLIENT_INTEGRATION_METADATA.md) owns variant, personal-path, lifecycle, and qualification details. Catalog support does not establish functional host qualification; retained-only variants are not fresh-install selectors.
 
 | ID | Display name | Repo adapter path | Managed package library |
 |----|--------------|-------------------|-----------------------|
 | codex | OpenAI Codex CLI | .agents/skills | ~/.local/share/localsetup/packages |
 | claude-code | Claude Code CLI | .claude/skills | ~/.local/share/localsetup/packages |
-| cursor | Cursor IDE | .agents/skills, .cursor/skills | ~/.local/share/localsetup/packages |
-| kilo | Kilo CLI | .kilo/skills | ~/.local/share/localsetup/packages |
-| opencode | OpenCode CLI | .opencode/skills | ~/.local/share/localsetup/packages |
+| cursor | Cursor IDE | .agents/skills | ~/.local/share/localsetup/packages |
+| kilo | Kilo CLI | .agents/skills | ~/.local/share/localsetup/packages |
+| opencode | OpenCode CLI | .agents/skills | ~/.local/share/localsetup/packages |
 | openclaw | OpenClaw CLI | .agents/skills | ~/.local/share/localsetup/packages |
 
 The canonical registry also tracks researched variants that are not projected into the compatibility manifest. Update `clients.yaml`, its research evidence, and the "Skill registration (new skills)" section when adding one.
 
 ## Shared home library
 
-Localsetup installs selected skills and workflow packages to `~/.local/share/localsetup/packages`. Repo adapter paths attach to that library only when selected with `--tools` or `--platforms`; omitted selectors are global-only and create no adapters. Adapter directories are shared surfaces: Localsetup owns the marker and managed package entries it records, not the whole directory by path shape. `--mode portable` creates managed copies instead of symlinks. Rollback uses `.localsetup/lock.json` and removes only managed paths recorded by that install. See [Adapter ownership](ADAPTER_OWNERSHIP.md).
+LocalSetup installs selected skills and workflow packages to `~/.local/share/localsetup/packages`. Fresh global-only invocation without a selected or recorded target creates no adapters. Explicit `--tools` or `--platforms` selects fresh adapters; selector-free updates of a recorded target retain its validated clients, scope, and paths. See [updates using the default target](ADAPTER_OWNERSHIP.md#updates-using-the-default-target). Adapter directories are shared surfaces: LocalSetup owns the marker and managed package entries it records, not the whole directory by path shape. `--mode portable` creates managed copies instead of symlinks. Rollback uses `.localsetup/lock.json` and removes only managed paths recorded by that install. See [Adapter ownership](ADAPTER_OWNERSHIP.md).
 
 ## Skill registration (new skills)
 
@@ -50,7 +52,7 @@ Use [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) for the model and [WORKFLOW_STA
 
 ## Reference
 
-- Localsetup CLI: target users run `localsetup plan|install|verify|rollback`; source contributors may run `ls/tools/localsetup.py --source-root . ...` from this checkout.
+- LocalSetup CLI: target users run `localsetup plan|install|verify|rollback`; source contributors may run `ls/tools/localsetup.py --source-root . ...` from this checkout.
 - Root wrapper: `./install --directory .` opens the interactive guided-choice wizard for global-only; use `--tools cursor,codex` or `--platforms cursor codex` to select adapters. The wizard shows `Enter number(s) | d details | b back | q quit | ? help` on prompts and explains each platform's adapter path, such as `.agents/skills` for Codex. Visual rendering is controlled with `--color auto|always|never`, `--no-color`, and `--glyphs auto|ascii|unicode`; plain text labels remain present for status meaning. Use `--target-directory /path/to/project` to attach selected adapters outside the source checkout. Automation must use `--non-interactive --yes`.
 - Windows: WSL2-only. Native PowerShell installation surfaces are removed.
 - Skills and rules (paths and model): [SKILLS_AND_RULES.md](SKILLS_AND_RULES.md).

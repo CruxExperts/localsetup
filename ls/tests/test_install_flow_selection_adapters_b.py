@@ -365,10 +365,10 @@ def test_multi_platform_selector_attaches_only_requested_adapters(tmp_path: Path
     verify = verify_install(root, home)
 
     assert result["dry_run"] is False
-    assert {Path(adapter["repo_path"]).parent.name for adapter in verify["adapters"]} == {".agents", ".kilo"}
-    assert {adapter["platform"] for adapter in verify["adapters"]} == {"codex", "kilo"}
+    assert {Path(adapter["repo_path"]).parent.name for adapter in verify["adapters"]} == {".agents"}
+    assert {client for adapter in verify["adapters"] for client in adapter["platforms"]} == {"codex", "kilo"}
     assert_scoped_adapter(root / ".agents" / "skills", "ls-context")
-    assert_scoped_adapter(root / ".kilo" / "skills", "ls-context")
+    assert not (root / ".kilo" / "skills").exists()
     assert not (root / ".cursor" / "skills").exists()
 
 
@@ -385,8 +385,9 @@ def test_external_target_directory_attaches_selected_adapter(tmp_path: Path) -> 
     lock = load_json(target / ".localsetup/lock.json")
 
     assert result["dry_run"] is False
-    assert_scoped_adapter(target / ".cursor" / "skills", "ls-context")
+    assert_scoped_adapter(target / ".agents" / "skills", "ls-context")
     assert not (root / ".cursor" / "skills").exists()
+    assert not (root / ".agents" / "skills").exists()
     assert verify["ok"] is True
     assert {adapter["platform"] for adapter in verify["adapters"]} == {"cursor"}
     assert lock["target_root"] == str(target)

@@ -1,6 +1,6 @@
 # Security
 
-Localsetup manages agent context, skills, install paths, and automation helpers. Please report security-sensitive issues privately so they can be fixed before public disclosure.
+LocalSetup manages agent context, skills, install paths, and automation helpers. Please report security-sensitive issues privately so they can be fixed before public disclosure.
 
 ## Reporting a vulnerability
 
@@ -8,7 +8,7 @@ Localsetup manages agent context, skills, install paths, and automation helpers.
 2. Use GitHub private vulnerability reporting for this repository if it is enabled.
 3. If private reporting is not available, use the security contact request issue form, but do not include vulnerability details, exploit steps, secrets, hostnames, private paths, or sensitive logs.
 
-Include the affected file or command, Localsetup version, platform ID if relevant, reproduction steps, expected impact, and whether the issue affects install behavior, skill import, agent permissions, generated docs, package boundaries, or release artifacts.
+Include the affected file or command, LocalSetup version, platform ID if relevant, reproduction steps, expected impact, and whether the issue affects install behavior, skill import, agent permissions, generated docs, package boundaries, or release artifacts.
 
 ## Scope
 

@@ -3,7 +3,7 @@
 Run markdown reference audit using framework skill tooling.
 
 Purpose:
-- Provide a repo-level entrypoint that uses the Localsetup markdown-reference-validator skill.
+- Provide a repo-level entrypoint that uses the LocalSetup markdown-reference-validator skill.
 - Keep scheduling commands simple for cron/autostart integrations.
 """
 

@@ -23,6 +23,11 @@ llm:
   temperature: 0
   max_tokens: 2000
   timeout_seconds: 30
-  retry_count: 1
+  retry_count: 0  # Compatibility field; completion always makes one attempt.
   api_style: chat_completions
   endpoint_alias: configured-qc-llm
+  runtime_root: ""  # Default managed LSCli runtime location.
+  reasoning_effort: ""
+  reasoning_efforts: ""  # Comma-separated values qualified for this endpoint/model.
+  temperature_supported: false
+  allow_loopback_http: false

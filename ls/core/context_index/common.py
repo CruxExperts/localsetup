@@ -1,4 +1,4 @@
-"""Localsetup context index: SQLite-backed freshness, ingest, and vector search."""
+"""LocalSetup context index: SQLite-backed freshness, ingest, and vector search."""
 
 from __future__ import annotations
 

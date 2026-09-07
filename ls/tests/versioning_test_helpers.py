@@ -8,21 +8,26 @@ from ls.core.versioning import SemVer
 def copy_full_repo(tmp_path: Path) -> Path:
     source = Path(__file__).resolve().parents[2]
     repo = tmp_path / "repo"
-    shutil.copytree(
-        source,
-        repo,
-        ignore=shutil.ignore_patterns(
-            ".git",
-            ".codex",
-            ".venv",
-            ".venv-*",
-            "__pycache__",
-            ".pytest_cache",
-            "localsetup.egg-info",
-            "logs",
-            "scrapling_output",
-        ),
+    patterns = shutil.ignore_patterns(
+        ".git",
+        ".codex",
+        ".venv",
+        ".venv-*",
+        "__pycache__",
+        ".pytest_cache",
+        "localsetup.egg-info",
+        "logs",
+        "scrapling_output",
     )
+
+    def ignore(directory, names):
+        excluded = patterns(directory, names)
+        if Path(directory) == source:
+            excluded.update({".agents", ".localsetup-release.json"} & set(names))
+        if Path(directory) == source / ".localsetup-maint":
+            excluded.update(set(names) - {"boundary.example.yaml"})
+        return excluded
+    shutil.copytree(source, repo, ignore=ignore)
     return repo
 
 

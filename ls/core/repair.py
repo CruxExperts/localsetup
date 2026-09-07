@@ -14,6 +14,7 @@ from .repair_common import _default_backup_root, _latest_version, _read_json
 from .repair_inference import HISTORICAL_ADAPTERS, _infer_attach_mode, _infer_packages, _infer_platforms
 from .repair_safety import _classify_stale_framework, _protected_target_reasons
 from .verify import verify_install
+from .repair_personal_route import personal_repair_route
 
 def run_repair(
     source_root: Path,
@@ -26,6 +27,24 @@ def run_repair(
     apply: bool = False,
     repair_mode: str | None = None,
     allow: list[str] | None = None,
+) -> dict:
+    return _run_repair(source_root, home=home, target_root=target_root, platform_ids=platform_ids,
+                       backup_dir=backup_dir, dependency_mode=dependency_mode, apply=apply,
+                       repair_mode=repair_mode, allow=allow)
+
+
+def _run_repair(
+    source_root: Path,
+    *,
+    home: Path,
+    target_root: Path | None = None,
+    platform_ids: list[str] | None = None,
+    backup_dir: Path | None = None,
+    dependency_mode: str = "prompt-only",
+    apply: bool = False,
+    repair_mode: str | None = None,
+    allow: list[str] | None = None,
+    _lock_held: dict | None = None,
 ) -> dict:
     source = source_root.expanduser().resolve(strict=False)
     target = (target_root or source).expanduser().resolve(strict=False)
@@ -50,9 +69,51 @@ def run_repair(
     legacy_lock_path = target / "localsetup.lock.json"
     modern_lock = _read_json(modern_lock_path, warnings, blockers, "modern lock")
     legacy_lock = _read_json(legacy_lock_path, warnings, blockers, "legacy lock")
+    recorded_scope = (modern_lock if modern_lock_path.exists() else legacy_lock).get("skill_scope", "repo")
+    if recorded_scope in ("personal", "both"):
+        if _lock_held:
+            return {'ok': False, 'applied': False, 'actions': [], 'warnings': warnings,
+                    'repair_mode': repair_mode, 'blockers': ['Recorded skill scope changed while acquiring repair lock; re-run repair']}
+        return personal_repair_route(
+            source, home, target, modern_lock if modern_lock_path.exists() else legacy_lock,
+            clients=platform_ids, apply=apply, mode=repair_mode, allowed=allowed,
+            warnings=warnings, blockers=blockers,
+        )
+    if apply and not _lock_held:
+        from .locking import package_root_lock
+        from .paths import global_layout
+        with package_root_lock(global_layout(home).localsetup_home) as held_lock:
+            return _run_repair(source, home=home, target_root=target, platform_ids=platform_ids,
+                               backup_dir=backup_root, dependency_mode=dependency_mode, apply=apply,
+                               repair_mode=repair_mode, allow=allowed, _lock_held=held_lock)
+    from .retained_update import retained_repository_clients, recorded_preferred_path_clients
+    recorded_lock = modern_lock if modern_lock_path.exists() else legacy_lock
+    if (retained_repository_clients(source, recorded_lock)
+            or recorded_preferred_path_clients(source, recorded_lock, target)):
+        return {"ok": False, "applied": False, "skill_scope": "repo", "actions": [],
+                "warnings": warnings, "decisions": [], "repair_mode": repair_mode,
+                "inferred": {"platforms": recorded_lock.get("platforms", [])},
+                "blockers": [*blockers, "Retained repository adapters require recorded-path manual recovery; automatic repair is not qualified. Preserve the receipt and adapter content; do not infer replacement clients."]}
     protected_reasons = _protected_target_reasons(source, home, target)
     inferred_platforms, platform_reasons = _infer_platforms(source, target, modern_lock, legacy_lock, platform_ids)
-    attach_mode, attach_reason = _infer_attach_mode(modern_lock)
+    from .mutable_ownership import require_owned_copies
+    recorded_paths = [row['path'] for row in recorded_lock.get('adapter_targets', [])
+                      if set(row.get('platforms') or [row.get('platform')]).intersection(inferred_platforms)]
+    planned_paths = [row['repo_path'] for row in adapter_targets(source, home, inferred_platforms, target_root=target)]
+    try:mutable_paths = require_owned_copies(source, home, [*recorded_paths, *planned_paths], target=target)
+    except ValueError as exc:
+        return {'ok': False, 'applied': False, 'skill_scope': 'repo', 'actions': [],
+                'warnings': warnings, 'decisions': [], 'repair_mode': repair_mode,
+                'inferred': {'platforms': inferred_platforms}, 'blockers': [*blockers, str(exc)]}
+    attach_mode, attach_reason = _infer_attach_mode(recorded_lock)
+    if mutable_paths and attach_mode != 'portable':
+        from .adapter_markers import adapter_marker_state
+        modes = {adapter_marker_state(Path(path))['mode'] for path in planned_paths
+                 if Path(path).exists() or Path(path).is_symlink()}
+        if 'attach_mode' in recorded_lock or modes - {'portable'}:
+            return {'ok': False, 'applied': False, 'actions': [], 'warnings': warnings,
+                    'repair_mode': repair_mode, 'blockers': ['Recorded mutable adapters conflict with inferred repair mode; preserve their ownership and copies']}
+        attach_mode, attach_reason = 'portable', 'recorded mutable ownership requires independent portable copies'
     inferred_packages = _infer_packages(source, target, home, inferred_platforms, modern_lock, legacy_lock, decisions)
     packages = list(inferred_packages.get("repo_packages", []))
     repo_skills = list(inferred_packages.get("repo_skills", []))
@@ -207,7 +268,12 @@ def run_repair(
         platform_ids=inferred_platforms,
         target_root=target,
     )
-    install = apply_plan(source, plan, home=home, dry_run=False, target_root=target)
+    if _lock_held:
+        from .apply import _apply_plan_unlocked
+        install = _apply_plan_unlocked(source, plan, home=home, dry_run=False, target_root=target)
+        install["package_root_lock"] = _lock_held
+    else:
+        install = apply_plan(source, plan, home=home, dry_run=False, target_root=target)
     payload["install"] = install
     lock = load_json(target / ".localsetup" / "lock.json")
     migration_backup = lock.get("migration_origin", {}).get("backup") if isinstance(lock, dict) else None

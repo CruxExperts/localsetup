@@ -13,7 +13,7 @@ from .scanner import scan_files
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Check Localsetup Python architecture constraints.")
+    parser = argparse.ArgumentParser(description="Check LocalSetup Python architecture constraints.")
     parser.add_argument("--repo-root", required=True, help="Repository root to scan.")
     parser.add_argument("--baseline", required=True, help="Tracked Python architecture baseline JSON path.")
     parser.add_argument("--format", choices=("json", "markdown"), default="json")

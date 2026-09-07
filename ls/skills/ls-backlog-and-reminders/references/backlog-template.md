@@ -30,8 +30,8 @@ Use this template when creating the canonical backlog file at `.localsetup/backl
 
 ## Path precedence
 
-1. Use `.localsetup/backlog.md` as the canonical Localsetup backlog.
-2. Use root `BACKLOG.md` only when `.localsetup/backlog.md` does not exist or when the skill is running outside a Localsetup repo.
+1. Use `.localsetup/backlog.md` as the canonical LocalSetup backlog.
+2. Use root `BACKLOG.md` only when `.localsetup/backlog.md` does not exist or when the skill is running outside a LocalSetup repo.
 3. If both files exist, update `.localsetup/backlog.md` and tell the user that `BACKLOG.md` is legacy.
 
 ## Timezone rule

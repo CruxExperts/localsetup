@@ -125,7 +125,7 @@ def generate_alias_outputs(repo_root: Path) -> dict:
     platform_lines = [
         "# Platform Adapters",
         "",
-        "Repo adapter paths are attached only when selected with `--tools` or `--platforms`; a selector-free install is global-only.",
+        "Fresh global-only invocation without a selected or recorded target creates no adapters. Explicit `--tools` or `--platforms` selects fresh adapters; selector-free updates of a recorded target retain validated clients, scope, and paths.",
         "",
         "| Platform | Repo Paths | Verify Rules |",
         "|---|---|---|",

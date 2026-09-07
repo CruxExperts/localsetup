@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.4
+version: 4.22
 owner_skill: ls-framework-compliance
 ---
 
@@ -53,3 +53,30 @@ State operations reopen directories and files through non-symlink owner handles 
 - **complete/blocked stop condition** — explicit terminal evidence or the exact unresolved dependency
 
 This surface does not provide legacy migration, a state service, CAS, outbox/replay, databases, runner/session behavior, or goal-loop defaults. It does not invent or normalize native slash commands.
+
+## OpenClaw state ownership correction
+
+New framework artifacts for `openclaw/openclaw-cli` use
+`.localsetup/client-state/openclaw/state` in a repository and
+`~/.local/share/localsetup/client-state/openclaw/state` globally. They no longer use
+`.openclaw/state` or `~/.openclaw/state`. This corrects an ownership collision:
+[OpenClaw stores native state and databases](https://docs.openclaw.ai/concepts/agent-workspace)
+under its own state directory. LocalSetup must not adopt, normalize permissions
+on, or clean up that directory as a framework state root.
+
+This changes the location returned for new allocations. Existing files, native
+sessions and databases remain in place; no automatic move, deletion or fallback
+scan occurs. Old explicit framework artifact references are historical evidence,
+not permission to claim their containing directory. Recovery must identify and
+validate individual framework artifacts before any separately authorized copy;
+never move the directory or copy native database/session files into framework
+state. Existing bound locations must be resolved again against the current
+registry rather than reused across this ownership change.
+
+```bash
+localsetup state path --client openclaw/openclaw-cli --scope repo
+localsetup state path --client openclaw/openclaw-cli --scope global
+```
+
+Both commands are read-only. Adapter skill paths and native OpenClaw state,
+profile and workspace selection retain their separate contracts.

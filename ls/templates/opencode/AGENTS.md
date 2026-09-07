@@ -1,9 +1,9 @@
-# Localsetup - Agent context (OpenCode)
+# LocalSetup - Agent context (OpenCode)
 
 ## Overview
-Localsetup keeps framework source and target repositories separate. `ls/` is the source-checkout layout; selected packages live in the managed user library and explicitly selected adapters expose them to a target repo. Load `ls-context` and use `localsetup path framework-root` or `localsetup path doc <name>` to resolve source files and documentation. Paths beginning with `ls/` below describe source locations, not required target-repo files. Bind PRDs, specs, and outcomes to Git hashes; see [GIT_TRACEABILITY.md](../../docs/GIT_TRACEABILITY.md).
+LocalSetup keeps framework source and target repositories separate. `ls/` is the source-checkout layout; selected packages live in the managed user library and explicitly selected adapters expose them to a target repo. Load `ls-context` and use `localsetup path framework-root` or `localsetup path doc <name>` to resolve source files and documentation. Paths beginning with `ls/` below describe source locations, not required target-repo files. Bind PRDs, specs, and outcomes to Git hashes; see [GIT_TRACEABILITY.md](../../docs/GIT_TRACEABILITY.md).
 
-OpenCode uses `AGENTS.md` as the project initialization file. This context is loaded automatically when OpenCode initializes in this repo.
+This is an optional context template. Explicitly adopt or merge it into the target project's chosen instruction file, preserving existing guidance. Verify the selected OpenCode build and configuration actually load that file through their instruction-resolution behavior; installing LocalSetup adapters does not adopt this template.
 
 ## Invariants
 - **Engine/repo separation:** Keep secrets and personal data out of commits. Resolve framework paths through `localsetup path`; keep target state outside the managed source and package library.
@@ -30,7 +30,7 @@ OpenCode uses `AGENTS.md` as the project initialization file. This context is lo
 - Use `Agent-Coder` for scoped implementation tasks with clear write ownership and tests. Use `Agent-Frontier` for security, release blockers, architecture, high-risk decisions, and final review.
 - Model, credit, and rate guidance is volatile. Re-check official provider docs, current OpenCode config, and the local model-slot map before changing model guidance or making cost-sensitive routing decisions.
 - Generic OpenCode agent-team bootstrap materials live in `ls/docs/bootstrap-packs/opencode-agent-team/`; Codex-specific sibling materials live in `ls/docs/bootstrap-packs/codex-agent-team/`.
-- If `.localsetup/AGENT_STATUS.md` exists, read it before repairs or installs. Otherwise run `localsetup health --json` for the latest Localsetup health status and next repair command.
+- If `.localsetup/AGENT_STATUS.md` exists, read it before repairs or installs. Otherwise run `localsetup health --json` for the latest LocalSetup health status and next repair command.
 
 ## Capability and workflow discovery
 

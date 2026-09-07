@@ -57,7 +57,7 @@ def _load_frontmatter_module():
         import frontmatter  # type: ignore[import-not-found]
     except ImportError as exc:  # pragma: no cover - environment guidance
         raise SystemExit(
-            "Missing dependency: python-frontmatter. Run `uv sync --locked --no-dev` from the Localsetup source checkout."
+            "Missing dependency: python-frontmatter. Run `uv sync --locked --no-dev` from the LocalSetup source checkout."
         ) from exc
 
     return frontmatter

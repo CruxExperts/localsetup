@@ -64,10 +64,8 @@ def run_doctor(
         "repo_root": str(repo_root),
         "target_root": str(attachment_root),
     }
-    if target_root is not None and not platform_ids:
-        warnings.append("target directory was provided but no platforms were selected; install will be global-only with no repo adapters")
     if platform.system().lower().startswith("windows"):
-        blockers.append("native Windows is unsupported; run Localsetup from WSL2")
+        blockers.append("native Windows is unsupported; run LocalSetup from WSL2")
     resolver_issues = paths_manifest_issues(repo_root, home)
     warnings.extend(f"resolver: {issue}" for issue in resolver_issues)
 
@@ -112,13 +110,19 @@ def run_doctor(
     global_root = expand_user_path(pack.global_root, home)
     lock_path = attachment_root / ".localsetup" / "lock.json"
     lock = load_json(lock_path)
+    recorded_adapters = recorded_adapter_status(lock, global_root)
+    recorded_paths = {adapter["repo_path"] for adapter in recorded_adapters}
     adapters = (
         adapter_status(repo_root, home, global_root, platform_ids=platform_ids, target_root=attachment_root)
         if platform_ids is not None
-        else recorded_adapter_status(lock, global_root)
+        else recorded_adapters
     )
+    if target_root is not None and not adapters:
+        warnings.append("target directory was provided but no platforms were selected; install will be global-only with no repo adapters")
     collisions: list[dict] = []
     for adapter in adapters:
+        if adapter["repo_path"] in recorded_paths and not adapter["exists"]:
+            blockers.append(f"recorded adapter is missing: {adapter['repo_path']}; run verify and review a repair plan")
         if adapter["collision_reason"]:
             collision = {
                 "platform": adapter["platform"],

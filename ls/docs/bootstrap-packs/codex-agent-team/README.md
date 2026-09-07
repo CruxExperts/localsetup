@@ -1,6 +1,6 @@
 ---
 status: ACTIVE
-version: 4.4
+version: 4.22
 owner_skill: ls-framework-compliance
 ---
 
@@ -28,11 +28,11 @@ The default is subagent-first and throughput-oriented, not specialist-heavy: the
 
 The shipped `guardian_subagent` is a Codex approvals reviewer role for permission and rules checks. Do not use it as a normal task-delegation role.
 
-## Localsetup Pack
+## LocalSetup Pack
 
 Install or select the pack as `bootstrap`. The source membership lives in [`ls/config/pack.yaml`](../../../config/pack.yaml), and the generated index lives in [`_generated/skill-packs.md`](../../_generated/skill-packs.md).
 
-The pack composes existing Localsetup skills and workflow packages instead of copying their instructions:
+The pack composes existing LocalSetup skills and workflow packages instead of copying their instructions:
 
 - controller context and communication
 - framework compliance and docs routing

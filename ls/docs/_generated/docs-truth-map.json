@@ -1,7 +1,7 @@
 {
   "generated_facts": {
-    "major_minor": "4.4",
-    "platform_count": 6,
+    "major_minor": "4.22",
+    "platform_count": 20,
     "platforms": [
       {
         "context_loader": "AGENTS.override.md, AGENTS.md",
@@ -19,39 +19,123 @@
         "context_loader": ".cursor/rules, AGENTS.md",
         "display_name": "Cursor IDE",
         "id": "cursor",
-        "skills_path": ".agents/skills, .cursor/skills"
+        "skills_path": ".agents/skills"
       },
       {
-        "context_loader": "AGENTS.md",
+        "context_loader": "AGENTS.md, CLAUDE.md, CONTEXT.md",
         "display_name": "Kilo Code CLI",
         "id": "kilo",
-        "skills_path": ".kilo/skills"
+        "skills_path": ".agents/skills"
       },
       {
-        "context_loader": "AGENTS.md",
+        "context_loader": "AGENTS.md, CLAUDE.md, CONTEXT.md",
         "display_name": "OpenCode CLI",
         "id": "opencode",
-        "skills_path": ".opencode/skills"
+        "skills_path": ".agents/skills"
       },
       {
         "context_loader": "AGENTS.md",
         "display_name": "OpenClaw CLI",
         "id": "openclaw",
         "skills_path": ".agents/skills"
+      },
+      {
+        "context_loader": "AGENTS.md",
+        "display_name": "GitHub Copilot CLI",
+        "id": "github-copilot-cli",
+        "skills_path": ".agents/skills"
+      },
+      {
+        "context_loader": "AGENTS.md",
+        "display_name": "GitHub Copilot in VS Code",
+        "id": "github-copilot-vscode",
+        "skills_path": ".agents/skills"
+      },
+      {
+        "context_loader": "AGENTS.md",
+        "display_name": "Cline CLI",
+        "id": "cline-cli",
+        "skills_path": ".cline/skills"
+      },
+      {
+        "context_loader": "AGENTS.md",
+        "display_name": "Cline for VS Code",
+        "id": "cline-vscode",
+        "skills_path": ".cline/skills"
+      },
+      {
+        "context_loader": "AGENTS.md",
+        "display_name": "Amp CLI",
+        "id": "amp-cli",
+        "skills_path": ".agents/skills"
+      },
+      {
+        "context_loader": "AGENTS.md, .goosehints",
+        "display_name": "Goose CLI",
+        "id": "goose-cli",
+        "skills_path": ".agents/skills"
+      },
+      {
+        "context_loader": "AGENTS.md, AGENTS.override.md, CLAUDE.md",
+        "display_name": "Pi coding agent",
+        "id": "pi-cli",
+        "skills_path": ".agents/skills"
+      },
+      {
+        "context_loader": "AGENTS.md, AGENTS.override.md",
+        "display_name": "Hermes Agent",
+        "id": "hermes-agent",
+        "skills_path": ".hermes/skills"
+      },
+      {
+        "context_loader": "QWEN.md, AGENTS.md, .qwen/QWEN.local.md",
+        "display_name": "Qwen Code CLI",
+        "id": "qwen-code-cli",
+        "skills_path": ".agents/skills"
+      },
+      {
+        "context_loader": "AGENTS.md",
+        "display_name": "Kimi CLI",
+        "id": "kimi-cli",
+        "skills_path": ".agents/skills"
+      },
+      {
+        "context_loader": "AGENTS.md",
+        "display_name": "Factory Droid",
+        "id": "factory-droid",
+        "skills_path": ".agents/skills"
+      },
+      {
+        "context_loader": ".agents/rules, .agent/rules",
+        "display_name": "Google Antigravity application",
+        "id": "antigravity-app",
+        "skills_path": ".agents/skills"
+      },
+      {
+        "context_loader": "GEMINI.md",
+        "display_name": "Gemini CLI",
+        "id": "gemini-cli",
+        "skills_path": ".agents/skills"
+      },
+      {
+        "context_loader": "AGENTS.md, .agents/AGENTS.md, .agent/AGENTS.md, .omp/AGENTS.md, .omp/RULES.md",
+        "display_name": "Oh My Pi CLI",
+        "id": "omp-cli",
+        "skills_path": ".agents/skills"
       }
     ],
     "provenance": {
       "artifact_path": "ls/docs/_generated/facts.json",
-      "artifact_sha256": "c0c133fb07d1b0108e737bbf6026bbc4b4c107ebe30b923a38477c6ff860024e",
+      "artifact_sha256": "eb869062cb180b39241b3d4b47607f5a78af85d61a398ea69ca315539797e81b",
       "emitter": "generate-docs",
-      "framework_version": "4.4.0",
+      "framework_version": "4.22.6",
       "schema_version": 1,
-      "source_commit": "e8b7971a5b63885f157a2bdfaed90c276f77b72f",
+      "source_commit": "03cb4866b4b90c9e517ab5516832a4e200315615",
       "source_dirty": true,
-      "source_provenance_hash": "63ed750f9b865fb766e21a67dfe80aa9fce422496d54ce403c730a4081b1f6a4",
-      "source_root_id": "585761070824e4e7ee4dd83364f76ac7b9b23f574393d59315ed9130ece83814",
+      "source_provenance_hash": "a34fd6151d4b366eb2dc0b4b7db7779da03397be17f96da0f939f0c4852c2f89",
+      "source_root_id": "9d92bc95cd720a4f2031e5ac825edaff79c00cee0afaa9855158dec7c36cd5f6",
       "source_tag": null,
-      "source_tree_sha": "d99b69361ebbb62df2ff7d9b927f2a934f3d9a2a"
+      "source_tree_sha": "fe97c95251978dceb875a375eafaee529583c8d6"
     },
     "skill_count": 103,
     "skills": [
@@ -1761,7 +1845,7 @@
         "version": "1.0"
       }
     ],
-    "version": "4.4.0",
+    "version": "4.22.6",
     "workflow_count": 16,
     "workflows": [
       {
@@ -1877,14 +1961,14 @@
       "artifact_path": "ls/docs/_generated/skill-taxonomy.json",
       "artifact_sha256": "3d8fb2fccb6f10b0bb39a26f778eabe88ca7c92eafd23341a9d1f296ced6012d",
       "emitter": "generate-docs",
-      "framework_version": "4.4.0",
+      "framework_version": "4.22.6",
       "schema_version": 1,
-      "source_commit": "e8b7971a5b63885f157a2bdfaed90c276f77b72f",
+      "source_commit": "03cb4866b4b90c9e517ab5516832a4e200315615",
       "source_dirty": true,
-      "source_provenance_hash": "63ed750f9b865fb766e21a67dfe80aa9fce422496d54ce403c730a4081b1f6a4",
-      "source_root_id": "585761070824e4e7ee4dd83364f76ac7b9b23f574393d59315ed9130ece83814",
+      "source_provenance_hash": "a34fd6151d4b366eb2dc0b4b7db7779da03397be17f96da0f939f0c4852c2f89",
+      "source_root_id": "9d92bc95cd720a4f2031e5ac825edaff79c00cee0afaa9855158dec7c36cd5f6",
       "source_tag": null,
-      "source_tree_sha": "d99b69361ebbb62df2ff7d9b927f2a934f3d9a2a"
+      "source_tree_sha": "fe97c95251978dceb875a375eafaee529583c8d6"
     },
     "schema_version": 1,
     "skills": [
@@ -3391,16 +3475,16 @@
   },
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "3f5358bfce2acd8697abac94edfbd4d8b077fd71243cd3e471c11a1cbbd9acdc",
+    "artifact_sha256": "9ee146bb7c14dd6e735bd6015bdb170a8526ae903719092b9cef68794431d73f",
     "emitter": "docs-align",
-    "framework_version": "4.4.0",
+    "framework_version": "4.22.6",
     "schema_version": 1,
-    "source_commit": "e8b7971a5b63885f157a2bdfaed90c276f77b72f",
+    "source_commit": "03cb4866b4b90c9e517ab5516832a4e200315615",
     "source_dirty": true,
-    "source_provenance_hash": "63ed750f9b865fb766e21a67dfe80aa9fce422496d54ce403c730a4081b1f6a4",
-    "source_root_id": "585761070824e4e7ee4dd83364f76ac7b9b23f574393d59315ed9130ece83814",
+    "source_provenance_hash": "a34fd6151d4b366eb2dc0b4b7db7779da03397be17f96da0f939f0c4852c2f89",
+    "source_root_id": "9d92bc95cd720a4f2031e5ac825edaff79c00cee0afaa9855158dec7c36cd5f6",
     "source_tag": null,
-    "source_tree_sha": "d99b69361ebbb62df2ff7d9b927f2a934f3d9a2a"
+    "source_tree_sha": "fe97c95251978dceb875a375eafaee529583c8d6"
   },
   "schema_version": "1.0",
   "truths": {
@@ -3453,6 +3537,16 @@
           "owner_package": "",
           "owner_skill": "ls-skill-creator",
           "path": "ls/docs/AGENT_SKILLS_COMPLIANCE.md"
+        },
+        {
+          "owner_package": "",
+          "owner_skill": "ls-script-and-docs-quality",
+          "path": "ls/docs/BRANDING.md"
+        },
+        {
+          "owner_package": "",
+          "owner_skill": "ls-framework-compliance",
+          "path": "ls/docs/CLIENT_INTEGRATION_METADATA.md"
         },
         {
           "owner_package": "",
@@ -3526,6 +3620,21 @@
         },
         {
           "owner_package": "",
+          "owner_skill": "ls-architecture",
+          "path": "ls/docs/LSCLI.md"
+        },
+        {
+          "owner_package": "",
+          "owner_skill": "ls-architecture",
+          "path": "ls/docs/LSCLI_QUALIFICATION.md"
+        },
+        {
+          "owner_package": "",
+          "owner_skill": "ls-architecture",
+          "path": "ls/docs/LSCLI_RUNTIME.md"
+        },
+        {
+          "owner_package": "",
           "owner_skill": "ls-framework-compliance",
           "path": "ls/docs/MULTI_PLATFORM_INSTALL.md"
         },
@@ -3583,6 +3692,11 @@
           "owner_package": "",
           "owner_skill": "ls-framework-compliance",
           "path": "ls/docs/REPO_MAINTENANCE.md"
+        },
+        {
+          "owner_package": "",
+          "owner_skill": "ls-architecture",
+          "path": "ls/docs/SDK_FORK.md"
         },
         {
           "owner_package": "generate-docs",
@@ -3770,13 +3884,13 @@
       "sources": [
         "VERSION"
       ],
-      "value": "4.4"
+      "value": "4.22"
     },
     "platform_count": {
       "sources": [
         "ls/config/platforms.yaml"
       ],
-      "value": 6
+      "value": 20
     },
     "skill_count": {
       "sources": [
@@ -5306,14 +5420,14 @@
       }
     },
     "version": {
-      "facts_version": "4.4.0",
-      "pyproject_version": "4.4.0",
+      "facts_version": "4.22.6",
+      "pyproject_version": "4.22.6",
       "sources": [
         "VERSION",
         "pyproject.toml",
         "ls/docs/_generated/facts.json"
       ],
-      "value": "4.4.0"
+      "value": "4.22.6"
     },
     "workflow_catalog": {
       "sources": [
@@ -5487,7 +5601,7 @@
               "convert repo",
               "localsetup convert"
             ],
-            "description": "Use when converting an existing repo to the current Localsetup framework with backup, blocker, install, and verification gates.",
+            "description": "Use when converting an existing repo to the current LocalSetup framework with backup, blocker, install, and verification gates.",
             "display_name": "Pipeline Repo Convert",
             "package": "ls-workflow-pipeline-repo-convert",
             "packs": [

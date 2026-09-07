@@ -1,25 +1,25 @@
-# Localsetup Framework Engine
+# LocalSetup Framework Engine
 
-**Version:** 4.4.0<br>
+**Version:** 4.22.6<br>
 
-`ls/` is the engine that makes the public Localsetup promise real. It stores the framework code, shipped skills, workflow packages, platform templates, docs, tests, and install manifests that turn a repository into a portable agent workspace.
+`ls/` is the engine that makes the public LocalSetup promise real. It stores the framework code, shipped skills, workflow packages, platform templates, docs, tests, and install manifests that turn a repository into a portable agent workspace.
 
 For the public product overview, start with the [root README](../README.md). This page is the contributor and maintainer map for the framework internals.
 
 <p align="center">
-  <img src="../assets/localsetup-architecture.png" alt="Localsetup architecture: repo source, config resolver, managed home library, adapters, and rollback metadata" width="960">
+  <img src="../assets/localsetup-architecture.png" alt="LocalSetup architecture: repo source, config resolver, managed home library, adapters, and rollback metadata" width="960">
 </p>
 
 ## What this directory owns
 
 - **Framework source:** Python tooling, shared libraries, templates, config manifests, tests, docs, shipped skills, and workflow packages.
 - **Skill source of truth:** Every shipped capability skill lives under `skills/ls-*` as an Agent Skills-compatible `SKILL.md` package.
-- **Workflow source of truth:** Every first-class workflow package lives under `workflows/ls-workflow-*` with `SKILL.md` plus Localsetup `workflow.yaml` metadata.
-- **Platform adapters:** Templates and manifests define how explicitly selected agent hosts attach to the managed Localsetup package library.
+- **Workflow source of truth:** Every first-class workflow package lives under `workflows/ls-workflow-*` with `SKILL.md` plus LocalSetup `workflow.yaml` metadata.
+- **Platform adapters:** Templates and manifests define how explicitly selected agent hosts attach to the managed LocalSetup package library.
 - **Public docs:** `docs/` explains install behavior, platform support, workflow registries, skill import, Agent Q transport, versioning, and release validation.
-- **Verification:** The Localsetup CLI and framework audit tools validate catalog shape, generated docs, migration state, and release readiness.
+- **Verification:** The LocalSetup CLI and framework audit tools validate catalog shape, generated docs, migration state, and release readiness.
 
-Localsetup-managed entries in consuming repositories are install output. Adapter directories may also contain project-owned skills, files, and symlinks; preserve that content in place. See [adapter ownership](docs/ADAPTER_OWNERSHIP.md).
+LocalSetup-managed entries in consuming repositories are install output. Adapter directories may also contain project-owned skills, files, and symlinks; preserve that content in place. See [adapter ownership](docs/ADAPTER_OWNERSHIP.md).
 
 The [4.4.0 release guide](docs/releases/4.4.0.md) explains the consolidated context, workflow routing, and package-content changes.
 
@@ -62,7 +62,7 @@ Use WSL2 for Windows. Native PowerShell installation is intentionally not suppor
 | `skills/` | Source packages for all shipped `ls-*` skills. |
 | `templates/` | Platform-specific context loaders and adapter templates. |
 | `tests/` | Bash and pytest coverage for framework behavior. |
-| `tools/` | Localsetup CLI, docs generation, validation, release, skill index, and Agent Q tooling. |
+| `tools/` | LocalSetup CLI, docs generation, validation, release, skill index, and Agent Q tooling. |
 | `core/` | Planner, apply, verify, rollback, versioning, and CLI implementation modules. |
 | `workflows/` | Source packages for all shipped `ls-workflow-*` workflow packages. |
 
@@ -81,7 +81,7 @@ Omitting `--tools` or `--platforms` installs the managed library only. Use `--to
 
 ## Skill model
 
-Skills are task-focused instruction packages. Localsetup keeps the canonical source under `ls/skills/` in the source checkout, installs managed copies to `~/.local/share/localsetup/packages`, and attaches selected platform adapter paths to that library by symlink or portable copy.
+Skills are task-focused instruction packages. LocalSetup keeps the canonical source under `ls/skills/` in the source checkout, installs managed copies to `~/.local/share/localsetup/packages`, and attaches selected platform adapter paths to that library by symlink or portable copy.
 
 Useful docs:
 
@@ -93,7 +93,7 @@ Useful docs:
 
 ## Workflow package model
 
-Workflow packages are executable orchestration packages. They live under `ls/workflows/ls-workflow-*`, include a valid Agent Skills `SKILL.md`, and add a Localsetup `workflow.yaml` manifest. The manifest is the source for workflow IDs, aliases, required skills, gates, phases, validation, outputs, and generated registry rows.
+Workflow packages are executable orchestration packages. They live under `ls/workflows/ls-workflow-*`, include a valid Agent Skills `SKILL.md`, and add a LocalSetup `workflow.yaml` manifest. The manifest is the source for workflow IDs, aliases, required skills, gates, phases, validation, outputs, and generated registry rows.
 
 The install planner selects workflows from `ls/config/pack.yaml`, installs them beside skills in the managed home library, and auto-includes required capability skills. Generated workflow docs should come from manifests, not hand-edited tables.
 
@@ -119,7 +119,7 @@ uv run --locked pytest -n "$workers" ls/tests -q
 git diff --check
 ```
 
-For ordinary edits, run focused tests and matching Localsetup validators before this broad release-oriented set. Treat the full Python suite as final consolidation, not the first validation step. Resolve the permitted worker count with `localsetup test-workers`; [COMMAND_REFERENCE.md](docs/COMMAND_REFERENCE.md) owns its formula and aggregate-budget rule.
+For ordinary edits, run focused tests and matching LocalSetup validators before this broad release-oriented set. Treat the full Python suite as final consolidation, not the first validation step. Resolve the permitted worker count with `localsetup test-workers`; [COMMAND_REFERENCE.md](docs/COMMAND_REFERENCE.md) owns its formula and aggregate-budget rule.
 
 For the full version and release flow, see [docs/VERSIONING.md](docs/VERSIONING.md).
 
@@ -130,6 +130,9 @@ Start here:
 - [Docs index](docs/README.md)
 - [Quickstart](docs/QUICKSTART.md)
 - [Command reference](docs/COMMAND_REFERENCE.md)
+- [LSCli setup, coding, sessions and tool-free completion](docs/LSCLI.md)
+- [SDK source and artifact ownership](docs/SDK_FORK.md)
+- [Harness activation, typed LSCli and controller accounting](docs/HARNESS_AUTOMATION.md)
 - [Features](docs/FEATURES.md)
 - [Platform registry](docs/PLATFORM_REGISTRY.md)
 - [Workflow registry](docs/WORKFLOW_REGISTRY.md)

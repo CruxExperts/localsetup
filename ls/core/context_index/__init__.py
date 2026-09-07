@@ -1,1 +1,1 @@
-"""SQLite-backed Localsetup context index package."""
+"""SQLite-backed LocalSetup context index package."""

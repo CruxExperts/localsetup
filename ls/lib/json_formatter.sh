@@ -1,5 +1,5 @@
 #!/bin/bash
-# Localsetup - JSON formatter
+# LocalSetup - JSON formatter
 
 format_json() {
     local json_input="$1"

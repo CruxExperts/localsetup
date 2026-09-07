@@ -8,7 +8,7 @@ compatibility: "Python 3.12+, PyYAML. Config-driven targets and Kilo manifest di
 
 # Markdown reference validator
 
-Validate repository Markdown reference integrity across Localsetup docs, skills, templates, and repository documentation.
+Validate repository Markdown reference integrity across LocalSetup docs, skills, templates, and repository documentation.
 
 ## Purpose
 

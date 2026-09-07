@@ -1,6 +1,6 @@
 # Source Ledger
 
-This ledger defines the default Localsetup truth-map adapter. Other repos can copy the pattern and replace the source rows with their own manifests.
+This ledger defines the default LocalSetup truth-map adapter. Other repos can copy the pattern and replace the source rows with their own manifests.
 
 | Claim | Source files | Notes |
 |---|---|---|

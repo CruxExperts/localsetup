@@ -16,7 +16,7 @@ extensions:
 
 # OmniRoute
 
-Purpose: keep OmniRoute work grounded in a small Localsetup-native skill surface. This is an ambiguous-task/preflight router, not a universal OmniRoute terminal owner. Use it for unclassified first-response triage, environment/API-key/access preflight, and non-mutating client onboarding; then route each classified task to its focused terminal owner.
+Purpose: keep OmniRoute work grounded in a small LocalSetup-native skill surface. This is an ambiguous-task/preflight router, not a universal OmniRoute terminal owner. Use it for unclassified first-response triage, environment/API-key/access preflight, and non-mutating client onboarding; then route each classified task to its focused terminal owner.
 
 ## Start here
 
@@ -24,7 +24,7 @@ Purpose: keep OmniRoute work grounded in a small Localsetup-native skill surface
    - unclassified first-response triage, env/API-key/access preflight, or non-mutating client onboarding: stay in this router;
    - classified read-only discovery: use `ls-omniroute-proxy`;
    - classified mutation: use `ls-omniroute-admin-automation`;
-   - classified upstream source or Localsetup coverage maintenance: use `ls-omniroute-update`.
+   - classified upstream source or LocalSetup coverage maintenance: use `ls-omniroute-update`.
 2. Run a preflight before environment registration or non-mutating onboarding:
 
 ```bash
@@ -54,7 +54,7 @@ The generated commands intentionally use environment variables and placeholders.
 
 ## Preflight CLI
 
-The bundled `omniroute_api.py` tool is the stable Localsetup CLI surface for this router's environment and access preflight. It is intentionally conservative:
+The bundled `omniroute_api.py` tool is the stable LocalSetup CLI surface for this router's environment and access preflight. It is intentionally conservative:
 
 - It reads secrets only from env vars named by `--api-key-env`.
 - It rejects base URLs with embedded credentials.
@@ -82,7 +82,7 @@ Use `ls-omniroute-proxy` for classified read-only discovery and `ls-omniroute-ad
 
 ## v3.8.48 coverage
 
-Localsetup intentionally consolidates OmniRoute v3.8.48 into four native skills. The upstream repository has 44 skill documents at immutable commit `7ee5bbc64dbb03e967521227f2afffeb7c9dad1e`; their coverage is tracked in `references/upstream-skill-coverage.md` rather than exposed as 44 separate Localsetup skills.
+LocalSetup intentionally consolidates OmniRoute v3.8.48 into four native skills. The upstream repository has 44 skill documents at immutable commit `7ee5bbc64dbb03e967521227f2afffeb7c9dad1e`; their coverage is tracked in `references/upstream-skill-coverage.md` rather than exposed as 44 separate LocalSetup skills.
 
 Coverage groups:
 

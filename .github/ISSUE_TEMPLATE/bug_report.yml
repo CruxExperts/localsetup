@@ -15,7 +15,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: Localsetup version
+      label: LocalSetup version
       description: Paste the value from `cat VERSION`, commit, or release tag.
       placeholder: "4.0.2 / release tag / commit SHA"
     validations:
@@ -51,7 +51,7 @@ body:
   - type: textarea
     id: target
     attributes:
-      label: Localsetup target
+      label: LocalSetup target
       description: Include pack/workflow/skill ID, install mode, and repo path shape when relevant.
       placeholder: |
         Pack/workflow:

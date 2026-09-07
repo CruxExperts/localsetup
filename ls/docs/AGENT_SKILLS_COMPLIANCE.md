@@ -1,10 +1,10 @@
 ---
 status: ACTIVE
-version: 4.4
+version: 4.22
 owner_skill: ls-skill-creator
 ---
 
-# Agent Skills compliance (Localsetup)
+# Agent Skills compliance (LocalSetup)
 
 **Purpose:** Confirm framework skills conform to the [Agent Skills](https://agentskills.io/specification) specification and document versioning and validation.
 
@@ -30,7 +30,7 @@ owner_skill: ls-skill-creator
 
 Workflow packages under `ls/workflows/ls-workflow-*` also include valid Agent Skills `SKILL.md` files. That keeps them executable by agent hosts through the same managed library as skills.
 
-The extra `workflow.yaml` file is Localsetup metadata, not part of the Agent Skills specification. It records workflow ID, aliases, required skills, docs, tools, gates, phases, validation, outputs, smoke rows, and migration notes. See [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) and [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md).
+The extra `workflow.yaml` file is LocalSetup metadata, not part of the Agent Skills specification. It records workflow ID, aliases, required skills, docs, tools, gates, phases, validation, outputs, smoke rows, and migration notes. See [WORKFLOW_PACKAGES.md](WORKFLOW_PACKAGES.md) and [WORKFLOW_STANDARD.md](WORKFLOW_STANDARD.md).
 
 ## Skill document versioning
 
@@ -40,14 +40,14 @@ The extra `workflow.yaml` file is Localsetup metadata, not part of the Agent Ski
 ## Validation
 
 - Optionally run `agentskills validate ./ls/skills/ls-<name>` (after installing [skills-ref](https://github.com/agentskills/agentskills/tree/main/skills-ref)) to check frontmatter and naming.
-- Optionally run `agentskills validate ./ls/workflows/ls-workflow-<name>` for workflow packages. The Agent Skills validator checks `SKILL.md`; Localsetup `validate-catalog` checks `workflow.yaml`.
+- Optionally run `agentskills validate ./ls/workflows/ls-workflow-<name>` for workflow packages. The Agent Skills validator checks `SKILL.md`; LocalSetup `validate-catalog` checks `workflow.yaml`.
 - Framework skill names use the `ls-*` prefix and match the directory name; descriptions include trigger terms for discovery.
 - Framework workflow package names use the `ls-workflow-*` prefix and match the `SKILL.md` frontmatter `name`.
 
 ## Interoperability
 
 - **Framework skills are valid Agent Skills.** They use only spec-defined fields and layout; they can be copied into any Agent Skills-compatible host (e.g. [Anthropic's skills](https://github.com/anthropics/skills), Claude Code) and used as-is.
-- **Framework workflow packages are executable Agent Skills packages.** Their `SKILL.md` files are portable; their `workflow.yaml` files are Localsetup-specific and may be ignored by hosts that do not understand Localsetup workflow metadata.
+- **Framework workflow packages are executable Agent Skills packages.** Their `SKILL.md` files are portable; their `workflow.yaml` files are LocalSetup-specific and may be ignored by hosts that do not understand LocalSetup workflow metadata.
 - **External spec-compliant skills can be imported into this framework only through `ls-skill-importer`.** Complete its full vetting, staged normalization, and frozen-byte sandbox-validation gates before canonical copy or registration; deployment remains a separate explicitly authorized action. Format compliance alone does not prove behavioral portability or permit bypassing those gates.
 - Full import/export steps: [SKILL_INTEROPERABILITY.md](SKILL_INTEROPERABILITY.md).
 

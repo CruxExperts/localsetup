@@ -1,0 +1,8 @@
+{
+  "files": {
+    "sdk-build.lock": "47fe38b7bdb55f56a709d325f15e7b4944a64d72b53f3df191225cbc4afdd965",
+    "sdk-runtime.lock": "213b7398622e71d52da47677fc7c9da27c17f90a11576ee6b8dd39854f694814"
+  },
+  "schema_version": 1,
+  "source_sha256": "402c97d3e255fb9043bb6f31521ed853d3e7222d58f7d00318b2b8619d8d958a"
+}

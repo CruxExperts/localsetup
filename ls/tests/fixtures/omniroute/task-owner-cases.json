@@ -70,7 +70,7 @@
         "ls-omniroute-update"
       ],
       "route_class": "source_coverage_maintenance",
-      "task": "Compare Localsetup OmniRoute coverage with the immutable upstream source.",
+      "task": "Compare LocalSetup OmniRoute coverage with the immutable upstream source.",
       "task_state": "classified",
       "terminal_owner": "ls-omniroute-update"
     }

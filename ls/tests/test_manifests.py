@@ -218,15 +218,20 @@ def test_pack_manifest_loads() -> None:
     assert pack.selection_profiles["normal"]["description"]
 
 
-def test_platform_manifest_has_six_platforms() -> None:
+def test_platform_manifest_has_supported_client_projections() -> None:
     root = Path(__file__).resolve().parents[2]
     platforms = load_platforms(root)
     ids = {p.platform_id for p in platforms}
-    assert ids == {"codex", "claude-code", "cursor", "kilo", "opencode", "openclaw"}
+    assert ids == {
+        "codex", "claude-code", "cursor", "kilo", "opencode", "openclaw",
+        "github-copilot-cli", "github-copilot-vscode", "cline-cli", "cline-vscode",
+        "amp-cli", "goose-cli", "pi-cli", "hermes-agent", "qwen-code-cli",
+        "kimi-cli", "factory-droid", "antigravity-app", "gemini-cli", "omp-cli",
+    }
     by_id = {platform.platform_id: platform for platform in platforms}
     assert by_id["codex"].repo_paths == [".agents/skills"]
     assert by_id["codex"].global_paths == ["~/.agents/skills"]
-    assert by_id["opencode"].global_paths == ["~/.config/opencode/skills"]
+    assert by_id["opencode"].global_paths == ["~/.agents/skills"]
 
 
 def test_manifest_schemas_reject_unknown_pack_and_platform_fields(tmp_path: Path) -> None:

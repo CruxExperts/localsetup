@@ -1,5 +1,5 @@
 #!/bin/bash
-# Localsetup - OS detection. Thin wrapper; logic in os_detector.py.
+# LocalSetup - OS detection. Thin wrapper; logic in os_detector.py.
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENGINE_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"

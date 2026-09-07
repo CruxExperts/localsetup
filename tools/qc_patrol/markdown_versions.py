@@ -68,7 +68,7 @@ def markdown_version_packets(repo: Path, inventory: dict[str, Any]) -> dict[str,
                 facts={"found_version": value, "current_version": truth_version, "line": line_no, "doc_class": doc_class},
                 deterministic_evidence=[{"path": path, "line": line_no, "value": value, "current_version": truth_version}],
                 snippets=[{"path": path, "line": line_no, "text": snippet}],
-                question="Is this version reference intentionally historical, or should it track the current Localsetup version?",
+                question="Is this version reference intentionally historical, or should it track the current LocalSetup version?",
                 redaction_applied=snippet != _line_context(lines, line_no),
             )
         )

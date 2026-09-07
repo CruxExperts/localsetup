@@ -383,3 +383,46 @@ def test_harness_budget_cli_dispatch(tmp_path: Path) -> None:
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload["summary"]["task_count"] == 0
+
+
+@pytest.mark.parametrize('minutes,schedule', [
+    (1, '*/1 * * * *'), (15, '*/15 * * * *'), (30, '*/30 * * * *'),
+    (60, '0 */1 * * *'), (120, '0 */2 * * *'), (480, '0 */8 * * *'),
+    (720, '0 */12 * * *'), (1440, '0 0 * * *'),
+])
+def test_faithful_heartbeat_cron_intervals(minutes, schedule):
+    from ls.core.harness import _interval_schedule
+    assert _interval_schedule(minutes) == schedule
+
+
+@pytest.mark.parametrize('minutes', [0, 7, 35, 59, 61, 90, 420, 1500, True, 15.0, '15'])
+def test_invalid_cadence_does_not_enable_or_write_manifest(tmp_path, minutes):
+    from ls.core.harness import HEARTBEAT_CONFIG
+    harness_init(ROOT, tmp_path)
+    path = tmp_path / HEARTBEAT_CONFIG
+    config = yaml.safe_load(path.read_text())
+    config['heartbeat']['interval_minutes'] = minutes
+    path.write_text(yaml.safe_dump(config))
+    before = path.read_bytes()
+    with pytest.raises(ValueError):
+        harness_enable(ROOT, tmp_path)
+    assert path.read_bytes() == before
+    assert not (tmp_path / 'cron/manifest.yaml').exists()
+
+
+def test_disabling_preserves_historical_trigger_even_with_unsupported_interval(tmp_path):
+    from ls.core.harness import HEARTBEAT_CONFIG, HEARTBEAT_TRIGGER_ID
+    harness_init(ROOT, tmp_path)
+    harness_enable(ROOT, tmp_path)
+    manifest_path = tmp_path / 'cron/manifest.yaml'
+    manifest = yaml.safe_load(manifest_path.read_text())
+    manifest['triggers'][HEARTBEAT_TRIGGER_ID] = {'schedule': '7,42 * * * *'}
+    manifest_path.write_text(yaml.safe_dump(manifest))
+    config_path = tmp_path / HEARTBEAT_CONFIG
+    config = yaml.safe_load(config_path.read_text())
+    config['heartbeat']['interval_minutes'] = 35
+    config_path.write_text(yaml.safe_dump(config))
+    harness_disable(ROOT, tmp_path)
+    after = yaml.safe_load(manifest_path.read_text())
+    assert after['triggers'][HEARTBEAT_TRIGGER_ID] == {'schedule': '7,42 * * * *'}
+    assert not yaml.safe_load(config_path.read_text())['heartbeat']['enabled']

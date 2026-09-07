@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""JSON-first Localsetup KeePass secrets helper."""
+"""JSON-first LocalSetup KeePass secrets helper."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ for parent in Path(__file__).resolve().parents:
 try:
     import yaml
 except ImportError as exc:  # pragma: no cover - exercised by environments
-    raise SystemExit("Missing dependency: PyYAML. Run `uv sync --locked --no-dev` from the Localsetup source checkout.") from exc
+    raise SystemExit("Missing dependency: PyYAML. Run `uv sync --locked --no-dev` from the LocalSetup source checkout.") from exc
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:

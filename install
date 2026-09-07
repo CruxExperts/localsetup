@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Localsetup front-end installer.
+# LocalSetup front-end installer.
 # Purpose: keep the stable shell entrypoint while delegating framework work to
 # ls/tools/localsetup.py.
 
@@ -54,7 +54,7 @@ BOOTSTRAP_RELEASE_STATUS="not checked"
 
 usage() {
   cat <<'USAGE_END'
-Localsetup installer
+LocalSetup installer
 
 Usage:
   curl -sSL https://raw.githubusercontent.com/CruxExperts/localsetup/main/install | bash -s --
@@ -67,13 +67,13 @@ Usage:
   ./install --directory . --platforms codex kilo --non-interactive --yes
 
 Options:
-  --directory PATH      Localsetup source checkout containing ls/ (default: . when run
+  --directory PATH      LocalSetup source checkout containing ls/ (default: . when run
                        from a checkout; otherwise creates or refreshes a managed source checkout).
   --target-directory PATH
                        Directory where adapter links and .localsetup/lock.json are written.
                        Defaults to --directory for explicit checkouts and to the caller's current
                        directory for piped bootstrap installs with --tools/--platforms.
-                       Without selector flags, repo-targeted automation uses Localsetup auto mode.
+                       Without selector flags, repo-targeted automation uses LocalSetup auto mode.
   --home PATH           Home directory for the managed shared skill library (default: $HOME)
   --yes                Legacy accepted flag for interactive installs. For automation, combine
                        with --non-interactive.
@@ -121,7 +121,7 @@ Options:
   --help, -h           Show this help.
 
 Windows note:
-  Localsetup supports Windows through WSL2 only. Run this script inside WSL.
+  LocalSetup supports Windows through WSL2 only. Run this script inside WSL.
 USAGE_END
 }
 
@@ -193,7 +193,7 @@ PY
 ensure_uv_min_version() {
   local version
   version="$(uv_version_value)"
-  version_ge "$version" "$MIN_UV_VERSION" || die "uv $version is too old; Localsetup requires uv >= $MIN_UV_VERSION"
+  version_ge "$version" "$MIN_UV_VERSION" || die "uv $version is too old; LocalSetup requires uv >= $MIN_UV_VERSION"
 }
 
 bootstrap_uv() {
@@ -286,7 +286,7 @@ quarantine_localsetup_env() {
     index=$((index + 1))
     dest="$quarantine_root/$(basename "$env_path")-$stamp-$index"
   done
-  mv "$env_path" "$dest" || die "failed to quarantine Localsetup-owned environment: $env_path"
+  mv "$env_path" "$dest" || die "failed to quarantine LocalSetup-owned environment: $env_path"
   record_path="$quarantine_root/$(basename "$dest").json"
   python3 - "$env_path" "$dest" "$owner" "$reason" "$DEPENDENCY_MODE" "$uv_error" "$record_path" <<'PY'
 from __future__ import annotations
@@ -309,7 +309,7 @@ with open(record_path, "w", encoding="utf-8") as handle:
     json.dump(payload, handle, indent=2, sort_keys=True)
     handle.write("\n")
 PY
-  echo "Warning: quarantined Localsetup-owned corrupt environment: $env_path -> $dest" >&2
+  echo "Warning: quarantined LocalSetup-owned corrupt environment: $env_path -> $dest" >&2
 }
 
 pre_sync_repair_localsetup_envs() {
@@ -359,20 +359,20 @@ sync_uv_environment() {
 inspect_managed_bootstrap_source() {
   SOURCE_DIR="$(cd "$SOURCE_DIR" && pwd -P)" || die "failed to resolve managed bootstrap source: $SOURCE_DIR"
   if ! git -C "$SOURCE_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    die "managed bootstrap source exists but is not a Git checkout: $SOURCE_DIR. Move or remove it, or pass --directory PATH to use an explicit Localsetup checkout."
+    die "managed bootstrap source exists but is not a Git checkout: $SOURCE_DIR. Move or remove it, or pass --directory PATH to use an explicit LocalSetup checkout."
   fi
   if [[ ! -d "$SOURCE_DIR/ls" && ! -f "$SOURCE_DIR/_localsetup/tools/localsetup.py" ]]; then
-    die "managed bootstrap source exists but is not a Localsetup checkout: $SOURCE_DIR. Move or remove it, or pass --directory PATH to use an explicit Localsetup checkout."
+    die "managed bootstrap source exists but is not a LocalSetup checkout: $SOURCE_DIR. Move or remove it, or pass --directory PATH to use an explicit LocalSetup checkout."
   fi
   if [[ ! -d "$SOURCE_DIR/ls" ]]; then
     local git_root origin
     git_root="$(git -C "$SOURCE_DIR" rev-parse --show-toplevel)" || die "failed to identify managed bootstrap source root: $SOURCE_DIR"
     if [[ "$git_root" != "$SOURCE_DIR" ]]; then
-      die "managed legacy bootstrap source must be the root of its Git checkout: $SOURCE_DIR. Move or remove it, or pass --directory PATH to use an explicit Localsetup checkout."
+      die "managed legacy bootstrap source must be the root of its Git checkout: $SOURCE_DIR. Move or remove it, or pass --directory PATH to use an explicit LocalSetup checkout."
     fi
     origin="$(git -C "$SOURCE_DIR" remote get-url origin 2>/dev/null || true)"
     if ! git -C "$SOURCE_DIR" ls-files --error-unmatch -- '_localsetup/tools/localsetup.py' >/dev/null 2>&1 || [[ "$origin" != "$BOOTSTRAP_REPO" ]]; then
-      die "managed bootstrap source exists but is not a Localsetup checkout: $SOURCE_DIR. Move or remove it, or pass --directory PATH to use an explicit Localsetup checkout."
+      die "managed bootstrap source exists but is not a LocalSetup checkout: $SOURCE_DIR. Move or remove it, or pass --directory PATH to use an explicit LocalSetup checkout."
     fi
   fi
   local status
@@ -463,16 +463,16 @@ PY
 }
 
 refresh_bootstrap_source() {
-  command -v git >/dev/null 2>&1 || die "git is required to refresh Localsetup from $BOOTSTRAP_REPO"
+  command -v git >/dev/null 2>&1 || die "git is required to refresh LocalSetup from $BOOTSTRAP_REPO"
   inspect_managed_bootstrap_source
   if is_legacy_managed_bootstrap_source; then
     record_legacy_bootstrap_rollback
   fi
   git -C "$SOURCE_DIR" fetch --quiet "$BOOTSTRAP_REPO" "$BOOTSTRAP_REF" || {
-    die "failed to fetch Localsetup bootstrap source from $BOOTSTRAP_REPO at ref $BOOTSTRAP_REF"
+    die "failed to fetch LocalSetup bootstrap source from $BOOTSTRAP_REPO at ref $BOOTSTRAP_REF"
   }
   git -C "$SOURCE_DIR" checkout --quiet --detach FETCH_HEAD || {
-    die "failed to check out refreshed Localsetup bootstrap source from $BOOTSTRAP_REPO at ref $BOOTSTRAP_REF"
+    die "failed to check out refreshed LocalSetup bootstrap source from $BOOTSTRAP_REPO at ref $BOOTSTRAP_REF"
   }
 }
 
@@ -572,15 +572,15 @@ ensure_bootstrap_source() {
   fi
   if "$EXPLICIT_SOURCE_DIR"; then
     [[ -d "$SOURCE_DIR" ]] || die "directory does not exist: $SOURCE_DIR"
-    die "missing Localsetup tool at $SOURCE_DIR/ls/tools/localsetup.py"
+    die "missing LocalSetup tool at $SOURCE_DIR/ls/tools/localsetup.py"
   fi
 
   SOURCE_DIR="$BOOTSTRAP_SOURCE_DIR"
   if ! resolve_bootstrap_ref; then
     if [[ -e "$SOURCE_DIR" ]]; then
-      echo "Warning: failed to discover the latest Localsetup release; using existing managed source at $SOURCE_DIR." >&2
+      echo "Warning: failed to discover the latest LocalSetup release; using existing managed source at $SOURCE_DIR." >&2
     else
-      die "failed to discover the latest Localsetup release and no managed source exists at $SOURCE_DIR. Check network access, set LOCALSETUP_BOOTSTRAP_REF, or pass --directory PATH."
+      die "failed to discover the latest LocalSetup release and no managed source exists at $SOURCE_DIR. Check network access, set LOCALSETUP_BOOTSTRAP_REF, or pass --directory PATH."
     fi
   fi
   if [[ -e "$SOURCE_DIR" ]]; then
@@ -593,12 +593,12 @@ ensure_bootstrap_source() {
     BOOTSTRAPPED_SOURCE=true
     return
   fi
-  command -v git >/dev/null 2>&1 || die "git is required to bootstrap Localsetup from $BOOTSTRAP_REPO"
+  command -v git >/dev/null 2>&1 || die "git is required to bootstrap LocalSetup from $BOOTSTRAP_REPO"
   [[ -n "$BOOTSTRAP_REF" ]] || die "no bootstrap release ref is available; set LOCALSETUP_BOOTSTRAP_REF or pass --directory PATH"
   mkdir -p "$(dirname "$SOURCE_DIR")"
   git clone --branch "$BOOTSTRAP_REF" --single-branch "$BOOTSTRAP_REPO" "$SOURCE_DIR" >/dev/null 2>&1 || {
     rm -rf "$SOURCE_DIR"
-    die "failed to clone Localsetup bootstrap source from $BOOTSTRAP_REPO at ref $BOOTSTRAP_REF"
+    die "failed to clone LocalSetup bootstrap source from $BOOTSTRAP_REPO at ref $BOOTSTRAP_REF"
   }
   [[ -f "$SOURCE_DIR/ls/tools/localsetup.py" ]] || die "bootstrap clone is missing ls/tools/localsetup.py: $SOURCE_DIR"
   BOOTSTRAPPED_SOURCE=true
@@ -787,10 +787,10 @@ while [[ $# -gt 0 ]]; do
       shift 2
       ;;
     --upgrade-policy)
-      die "--upgrade-policy was removed in Localsetup; managed global installs are always metadata-driven"
+      die "--upgrade-policy was removed in LocalSetup; managed global installs are always metadata-driven"
       ;;
     --global)
-      die "--global was removed in Localsetup; the shared package library is always global-first"
+      die "--global was removed in LocalSetup; the shared package library is always global-first"
       ;;
     --help|-h)
       usage
@@ -824,7 +824,7 @@ export LOCALSETUP_BOOTSTRAP_LATEST_REF="$BOOTSTRAP_LATEST_REF"
 export LOCALSETUP_BOOTSTRAP_RELEASE_STATUS="$BOOTSTRAP_RELEASE_STATUS"
 [[ -d "$SOURCE_DIR" ]] || die "directory does not exist: $SOURCE_DIR"
 SOURCE_DIR="$(cd "$SOURCE_DIR" && pwd)"
-[[ -f "$SOURCE_DIR/ls/tools/localsetup.py" ]] || die "missing Localsetup tool at $SOURCE_DIR/ls/tools/localsetup.py"
+[[ -f "$SOURCE_DIR/ls/tools/localsetup.py" ]] || die "missing LocalSetup tool at $SOURCE_DIR/ls/tools/localsetup.py"
 check_python
 
 case "$MODE" in
@@ -1003,7 +1003,7 @@ if [[ ${#platform_args[@]} -gt 0 ]]; then
 fi
 
 if ! "${doctor_cmd[@]}" >/dev/null; then
-  echo "Localsetup doctor found blockers. Re-run for details:" >&2
+  echo "LocalSetup doctor found blockers. Re-run for details:" >&2
   printf ' %q' "${doctor_cmd[@]}" >&2
   echo >&2
   exit 1
@@ -1012,7 +1012,7 @@ fi
 if "$REGISTER_SHELL"; then
   register_cmd=("${cli_base[@]}" --home "$HOME_DIR" --source-root "$SOURCE_DIR" register-shell)
   if ! "${register_cmd[@]}" >/dev/null; then
-    echo "Localsetup shell registration failed. Re-run for details:" >&2
+    echo "LocalSetup shell registration failed. Re-run for details:" >&2
     printf ' %q' "${register_cmd[@]}" >&2
     echo >&2
     exit 1

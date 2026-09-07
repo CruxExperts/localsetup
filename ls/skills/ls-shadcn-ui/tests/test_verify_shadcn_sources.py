@@ -86,7 +86,7 @@ class VerifyShadcnSourcesTests(unittest.TestCase):
         command = "python ls/skills/ls-shadcn-ui/scripts/verify_shadcn_sources.py"
         checklist = (SKILL_ROOT / "tests" / "validation-checklist.md").read_text(encoding="utf-8")
         self.assertIn(command, checklist)
-        self.assertIn("Run this entire checklist from the Localsetup repository root.", checklist)
+        self.assertIn("Run this entire checklist from the LocalSetup repository root.", checklist)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,3772 @@
+{
+  "schema_version": 1,
+  "owner": "LocalSetup",
+  "purpose": "Private LSCli SDK payload; import only inside the isolated SDK worker",
+  "components": [
+    {
+      "name": "pydantic-ai-slim",
+      "version": "2.38.0",
+      "namespace": "pydantic_ai",
+      "license": "MIT",
+      "license_file": "licenses/pydantic-ai-slim.txt",
+      "repository": "https://github.com/pydantic/pydantic-ai",
+      "commit": "7bde4d2a215ebf26b9790aca5985046dcf227a19",
+      "sdist": {
+        "name": "pydantic_ai_slim-2.38.0.tar.gz",
+        "digest": {
+          "sha256": "2e486a8558e9075ca37d545b0e90e241a9d7e2c8b4b5f8255ac9c527dca96a05"
+        }
+      },
+      "source_archive_url": "https://codeload.github.com/pydantic/pydantic-ai/tar.gz/7bde4d2a215ebf26b9790aca5985046dcf227a19",
+      "source_archive_sha256": "dcab5e7492a6fc6a6e1bee12869577da98f3398e984d0de04eaa0a5569ff7bb6",
+      "source_prefix": "pydantic_ai_slim/",
+      "provenance": "PyPI HTTPS publish attestation subject/certificate claims cross-checked against immutable GitHub runtime source bytes; no independent Sigstore chain verification"
+    },
+    {
+      "name": "pydantic-graph",
+      "version": "2.38.0",
+      "namespace": "pydantic_graph",
+      "license": "MIT",
+      "license_file": "licenses/pydantic-graph.txt",
+      "repository": "https://github.com/pydantic/pydantic-ai",
+      "commit": "7bde4d2a215ebf26b9790aca5985046dcf227a19",
+      "sdist": {
+        "name": "pydantic_graph-2.38.0.tar.gz",
+        "digest": {
+          "sha256": "3ecab71ba43b754c016ee0d84eeb472089cfaebbfca9116a77596c4f350f9920"
+        }
+      },
+      "source_archive_url": "https://codeload.github.com/pydantic/pydantic-ai/tar.gz/7bde4d2a215ebf26b9790aca5985046dcf227a19",
+      "source_archive_sha256": "dcab5e7492a6fc6a6e1bee12869577da98f3398e984d0de04eaa0a5569ff7bb6",
+      "source_prefix": "pydantic_graph/",
+      "provenance": "PyPI HTTPS publish attestation subject/certificate claims cross-checked against immutable GitHub runtime source bytes; no independent Sigstore chain verification"
+    },
+    {
+      "name": "pydantic-ai-harness",
+      "version": "0.28.1",
+      "namespace": "pydantic_ai_harness",
+      "license": "MIT",
+      "license_file": "licenses/pydantic-ai-harness.txt",
+      "repository": "https://github.com/pydantic/pydantic-ai-harness",
+      "commit": "4d08f21dde29b02097e7893e12c009b9d62b3c82",
+      "sdist": {
+        "name": "pydantic_ai_harness-0.28.1.tar.gz",
+        "digest": {
+          "sha256": "7eb51244c5bf15d34f2db1b0ea0fcf057b53d5dbd8ad3728b0f2bc986d3c6fa3"
+        }
+      },
+      "source_archive_url": "https://codeload.github.com/pydantic/pydantic-ai-harness/tar.gz/4d08f21dde29b02097e7893e12c009b9d62b3c82",
+      "source_archive_sha256": "3194c0a6fc75db424680e755ba135d5c6b5a2113e9b5c7116fe14f3c7a6e0e7f",
+      "source_prefix": "",
+      "provenance": "PyPI HTTPS publish attestation subject/certificate claims cross-checked against immutable GitHub runtime source bytes; no independent Sigstore chain verification"
+    }
+  ],
+  "files": {
+    "pydantic_ai/AGENTS.md": {
+      "sha256": "2129060101a52c3081bbd12b788b4153ff5fe1ff9052993fea5134375cf22f31",
+      "upstream_sha256": "2129060101a52c3081bbd12b788b4153ff5fe1ff9052993fea5134375cf22f31",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "patches/0001-static-version.patch": {
+      "sha256": "29727c9c631346ff15b53887229a31f0fbc33556b6f3cfe60bd44c9511e0ee49",
+      "role": "patch",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/__init__.py": {
+      "sha256": "909fecaaa1b746cc201d57d594c834842d4f026303392be1fa418df70c32582d",
+      "upstream_sha256": "267c4874943f4633a90f210e16b1b1061a7a6c19827c2f39d2a7659e5d33c9c7",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/__main__.py": {
+      "sha256": "43fcc9535e43500d3562d949da69da2c2a08776626826ade5441111ae413f98d",
+      "upstream_sha256": "43fcc9535e43500d3562d949da69da2c2a08776626826ade5441111ae413f98d",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_agent_graph.py": {
+      "sha256": "92c172c616eab4314ccecf77a3ee78ed5a892db3f87bed7ac5f75748feebbd92",
+      "upstream_sha256": "92c172c616eab4314ccecf77a3ee78ed5a892db3f87bed7ac5f75748feebbd92",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_cancel.py": {
+      "sha256": "2c8638bacbfe40ae87cb3701b2e44b99b7bb7d5b769983b990628033fe2d1af9",
+      "upstream_sha256": "2c8638bacbfe40ae87cb3701b2e44b99b7bb7d5b769983b990628033fe2d1af9",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_deferred.py": {
+      "sha256": "18773cbf85e07e51c0d24273240209cb6a079ece1479f8074a57a601ae1484c3",
+      "upstream_sha256": "18773cbf85e07e51c0d24273240209cb6a079ece1479f8074a57a601ae1484c3",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_deferred_capabilities.py": {
+      "sha256": "e7fe0ac66039bfec492d8f1e5b43289405fb3f673a87ee58a7692a0160b018f0",
+      "upstream_sha256": "e7fe0ac66039bfec492d8f1e5b43289405fb3f673a87ee58a7692a0160b018f0",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_enqueue.py": {
+      "sha256": "7d19d60a4204610b230f5f66729aa38591fa3ce832533dc9c6f96c610bf3220f",
+      "upstream_sha256": "7d19d60a4204610b230f5f66729aa38591fa3ce832533dc9c6f96c610bf3220f",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_event_registry.py": {
+      "sha256": "876626653a5e9a2756c8ebf778aa3bb1d0e6c2f8867f2b014152fce73d3aeddf",
+      "upstream_sha256": "876626653a5e9a2756c8ebf778aa3bb1d0e6c2f8867f2b014152fce73d3aeddf",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_function_schema.py": {
+      "sha256": "15b52bb06f88edd6fa12ed5f45b6edb0733140e480c15f1c10034016f3dca031",
+      "upstream_sha256": "15b52bb06f88edd6fa12ed5f45b6edb0733140e480c15f1c10034016f3dca031",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_genai_prices.py": {
+      "sha256": "c5b568a5938c29d0978b1237b2ca023e752c07271b98bf31ff177bcfe3117d6b",
+      "upstream_sha256": "c5b568a5938c29d0978b1237b2ca023e752c07271b98bf31ff177bcfe3117d6b",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_griffe.py": {
+      "sha256": "4eb1a687286c470490ffd83e8897903bcb57c7213092ce3b25610f68862e216e",
+      "upstream_sha256": "4eb1a687286c470490ffd83e8897903bcb57c7213092ce3b25610f68862e216e",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_history_processor.py": {
+      "sha256": "269060e9da1cd8d026fba1e41930ab897c16a6c2f862481d5f66dd23de9ea294",
+      "upstream_sha256": "269060e9da1cd8d026fba1e41930ab897c16a6c2f862481d5f66dd23de9ea294",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_http.py": {
+      "sha256": "c2af5b01ba5fac9a73a170b3dc258468f89e405f41aa5d5f0a6f19720e271633",
+      "upstream_sha256": "c2af5b01ba5fac9a73a170b3dc258468f89e405f41aa5d5f0a6f19720e271633",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_instructions.py": {
+      "sha256": "748efea727bd1bb24a0493834d70291d8307577021c93326c407145203f8553b",
+      "upstream_sha256": "748efea727bd1bb24a0493834d70291d8307577021c93326c407145203f8553b",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_instrumentation.py": {
+      "sha256": "1bccac56d066ffa1446ebfe9edd296dad2f86dde16bdaca9c7d78b6d7b0e7ae0",
+      "upstream_sha256": "1bccac56d066ffa1446ebfe9edd296dad2f86dde16bdaca9c7d78b6d7b0e7ae0",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_json_schema.py": {
+      "sha256": "bbe8feb48c5d981084cdc02cf6513521945f469409a333a6908bc8f0f8a052c3",
+      "upstream_sha256": "bbe8feb48c5d981084cdc02cf6513521945f469409a333a6908bc8f0f8a052c3",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_mcp.py": {
+      "sha256": "aa55b16ab8ab5230642ff55ce097e1aec4776b1be5b8272da15b678d353d370e",
+      "upstream_sha256": "aa55b16ab8ab5230642ff55ce097e1aec4776b1be5b8272da15b678d353d370e",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_mcp_compat.py": {
+      "sha256": "dc06082999dad2459d22b971f3bc55f66120b1f5723c90303cff7d2fc28eae80",
+      "upstream_sha256": "dc06082999dad2459d22b971f3bc55f66120b1f5723c90303cff7d2fc28eae80",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_otel_messages.py": {
+      "sha256": "c819f1077db57f1191b26ab7042c4b838f6b4b9554943cec9af193763d4179ff",
+      "upstream_sha256": "c819f1077db57f1191b26ab7042c4b838f6b4b9554943cec9af193763d4179ff",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_output.py": {
+      "sha256": "68b4b27ba5b527a3766e2541f4f941ecce2c60375777e66d73658a7cd98acfd3",
+      "upstream_sha256": "68b4b27ba5b527a3766e2541f4f941ecce2c60375777e66d73658a7cd98acfd3",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_parts_manager.py": {
+      "sha256": "52f3254faf02b05d3fc7315fbe25536d8664b309c85705ffc22ea7abe0b3bd51",
+      "upstream_sha256": "52f3254faf02b05d3fc7315fbe25536d8664b309c85705ffc22ea7abe0b3bd51",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_run_context.py": {
+      "sha256": "a15c872b7b78077f09d6d6911ab42fd9a8c85115014a1a3df0fea1ba428997e0",
+      "upstream_sha256": "a15c872b7b78077f09d6d6911ab42fd9a8c85115014a1a3df0fea1ba428997e0",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_spec.py": {
+      "sha256": "1a2ada999ba3c79558fff5b61f0e50d4a8d6af4dde91539e6453a75971441dd6",
+      "upstream_sha256": "1a2ada999ba3c79558fff5b61f0e50d4a8d6af4dde91539e6453a75971441dd6",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_ssrf.py": {
+      "sha256": "0d055ba89b3131b8400b28ea35e50978be86f6c2d585f566c1e5b70e52f41516",
+      "upstream_sha256": "0d055ba89b3131b8400b28ea35e50978be86f6c2d585f566c1e5b70e52f41516",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_sync_stream.py": {
+      "sha256": "5c365751b3883351cfab56a7c2d4c326451efafe9e07b6928cbc1583ee631512",
+      "upstream_sha256": "5c365751b3883351cfab56a7c2d4c326451efafe9e07b6928cbc1583ee631512",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_system_prompt.py": {
+      "sha256": "b0559e59a09b9e6364186b84b4a2b4c9498501d9b92bdacf9140fe762bdfcced",
+      "upstream_sha256": "b0559e59a09b9e6364186b84b4a2b4c9498501d9b92bdacf9140fe762bdfcced",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_template.py": {
+      "sha256": "1f70b21d157545923a94e470c786b405f4174a9b4be6f87ec381857bcbbf2e2a",
+      "upstream_sha256": "1f70b21d157545923a94e470c786b405f4174a9b4be6f87ec381857bcbbf2e2a",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_thinking_part.py": {
+      "sha256": "ff40da8c6c963dae745944cf58dd543df670d310fcfe11dcb92b744f77e046bd",
+      "upstream_sha256": "ff40da8c6c963dae745944cf58dd543df670d310fcfe11dcb92b744f77e046bd",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_tool_execution.py": {
+      "sha256": "b790b94b5dee4607d657b9f715c4ad2a4bb70423af4920adf47a11832569c21c",
+      "upstream_sha256": "b790b94b5dee4607d657b9f715c4ad2a4bb70423af4920adf47a11832569c21c",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_tool_search.py": {
+      "sha256": "2e062a240e5fd12c50ea15811b6665915b9360185ab14aa7d473c10f7a9572ef",
+      "upstream_sha256": "2e062a240e5fd12c50ea15811b6665915b9360185ab14aa7d473c10f7a9572ef",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_utils.py": {
+      "sha256": "d5d6a12d47f08c02eebabc2476a998a52b7f9ead5c21f7954d9e32df43bbdcab",
+      "upstream_sha256": "d5d6a12d47f08c02eebabc2476a998a52b7f9ead5c21f7954d9e32df43bbdcab",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_uuid.py": {
+      "sha256": "daf2a0b44a9136c19a64c5906cfa450ddc80b47a858e3be8fecac02221bd3aac",
+      "upstream_sha256": "daf2a0b44a9136c19a64c5906cfa450ddc80b47a858e3be8fecac02221bd3aac",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_warnings.py": {
+      "sha256": "4d9db2d20c5a7295239e1d4fceb7fca43488b092ea7de5c72f4dea514aa34c74",
+      "upstream_sha256": "4d9db2d20c5a7295239e1d4fceb7fca43488b092ea7de5c72f4dea514aa34c74",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/concurrency.py": {
+      "sha256": "83956b61cbf03711ff54750d002af1a757badd68c6e09ae0808a63f6978116fe",
+      "upstream_sha256": "83956b61cbf03711ff54750d002af1a757badd68c6e09ae0808a63f6978116fe",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/direct.py": {
+      "sha256": "ac537e90631fef1440cb593f2e80b1fdb8cdb2b4a50ce9548a574f48fba5625b",
+      "upstream_sha256": "ac537e90631fef1440cb593f2e80b1fdb8cdb2b4a50ce9548a574f48fba5625b",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/exceptions.py": {
+      "sha256": "4b3f6eed89d78950ad31271a66ffdf7176d7dcd8135da1709271f34f9d73426f",
+      "upstream_sha256": "4b3f6eed89d78950ad31271a66ffdf7176d7dcd8135da1709271f34f9d73426f",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/format_prompt.py": {
+      "sha256": "06f8baaefbf0785967e147749c0fde229eeb6e1cea504cbd8fc8a892244a2fef",
+      "upstream_sha256": "06f8baaefbf0785967e147749c0fde229eeb6e1cea504cbd8fc8a892244a2fef",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/function_signature.py": {
+      "sha256": "81c8305bd7dd6ad1b7b94c021f8705925ef19235f33484e35946f8c933884686",
+      "upstream_sha256": "81c8305bd7dd6ad1b7b94c021f8705925ef19235f33484e35946f8c933884686",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/mcp.py": {
+      "sha256": "86763480a886fa75f571fa73e9c925c6ecb2a229bac9116d608621b8c17a3ea9",
+      "upstream_sha256": "86763480a886fa75f571fa73e9c925c6ecb2a229bac9116d608621b8c17a3ea9",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/messages.py": {
+      "sha256": "5464031605d57ebf7cf2bcb99a3b9897c19ca3d098b4eaca861e42172777c7ae",
+      "upstream_sha256": "5464031605d57ebf7cf2bcb99a3b9897c19ca3d098b4eaca861e42172777c7ae",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/output.py": {
+      "sha256": "49dff90f950e6ec8c44bfe8c3da1bd021599f8c5236c6dddd391308aacfb2458",
+      "upstream_sha256": "49dff90f950e6ec8c44bfe8c3da1bd021599f8c5236c6dddd391308aacfb2458",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/py.typed": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "upstream_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/result.py": {
+      "sha256": "9960a0c44c561c731eee14fc642430f2a1c3e78a291a2d2c9928bcbcdf8172a3",
+      "upstream_sha256": "9960a0c44c561c731eee14fc642430f2a1c3e78a291a2d2c9928bcbcdf8172a3",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/retries.py": {
+      "sha256": "48195ef53e15646638ed579cddd4d20595552f7ff768adec93f4a4ed4535d53b",
+      "upstream_sha256": "48195ef53e15646638ed579cddd4d20595552f7ff768adec93f4a4ed4535d53b",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/run.py": {
+      "sha256": "cb8bd6a0eabfb177f9117fcac478fc746ad5a6873e2ae3be8dcb5d1064fccb6d",
+      "upstream_sha256": "cb8bd6a0eabfb177f9117fcac478fc746ad5a6873e2ae3be8dcb5d1064fccb6d",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/settings.py": {
+      "sha256": "c1f48b8c66be9b2ffc3466e299a4388513e52ab4e693c2eb788f64c44eadc4cc",
+      "upstream_sha256": "c1f48b8c66be9b2ffc3466e299a4388513e52ab4e693c2eb788f64c44eadc4cc",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/template.py": {
+      "sha256": "94a893fb1ba6eb0360598c31a6e32b80ecb88389e8c80d7b8f61150946ce03e6",
+      "upstream_sha256": "94a893fb1ba6eb0360598c31a6e32b80ecb88389e8c80d7b8f61150946ce03e6",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/tool_manager.py": {
+      "sha256": "d802e1726610d235ad7ffcc127aa58a89d3e4ecbde8a724dc76b5b37cce63b4d",
+      "upstream_sha256": "d802e1726610d235ad7ffcc127aa58a89d3e4ecbde8a724dc76b5b37cce63b4d",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/tools.py": {
+      "sha256": "35c7644112ba6c0f629ab98e38e9fd5ce7c87d72e7169db86a8794197886007d",
+      "upstream_sha256": "35c7644112ba6c0f629ab98e38e9fd5ce7c87d72e7169db86a8794197886007d",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/usage.py": {
+      "sha256": "18fed843cd1853a7130f3253990b2e41a74541b4217f58d903ba1771159a5b0e",
+      "upstream_sha256": "18fed843cd1853a7130f3253990b2e41a74541b4217f58d903ba1771159a5b0e",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/.agents/skills/building-pydantic-ai-agents/SKILL.md": {
+      "sha256": "fc373a55e4e7077ce9fc1b01ac121f465128f74d525f8eca3c495df73c1a510e",
+      "upstream_sha256": "fc373a55e4e7077ce9fc1b01ac121f465128f74d525f8eca3c495df73c1a510e",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/AGENTS-CORE.md": {
+      "sha256": "978742cce17d0795a1cbe75fa0db6a921bcaa6b3852e43addacbd9920edf6faa",
+      "upstream_sha256": "978742cce17d0795a1cbe75fa0db6a921bcaa6b3852e43addacbd9920edf6faa",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/ARCHITECTURE.md": {
+      "sha256": "acff72c96a664c824ce128ae1564d46e502d96697e970b2a8d2a8ab18917c00d",
+      "upstream_sha256": "acff72c96a664c824ce128ae1564d46e502d96697e970b2a8d2a8ab18917c00d",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/CAPABILITIES-AND-HOOKS.md": {
+      "sha256": "97e06a3c850cbabfa45e75b69ad1825258de932d800bb890522c156f3062f18f",
+      "upstream_sha256": "97e06a3c850cbabfa45e75b69ad1825258de932d800bb890522c156f3062f18f",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/COMMON-TASKS.md": {
+      "sha256": "ae43c13ddede7149c6c01dd66d4eb6b196faa24db8bac7bc6d07b8f92f3b5e5f",
+      "upstream_sha256": "ae43c13ddede7149c6c01dd66d4eb6b196faa24db8bac7bc6d07b8f92f3b5e5f",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/INPUT-AND-HISTORY.md": {
+      "sha256": "f42cb49c0823a434d8b633993909c3e8e58fc98fa8a561b8edebe8fc1bdf5abd",
+      "upstream_sha256": "f42cb49c0823a434d8b633993909c3e8e58fc98fa8a561b8edebe8fc1bdf5abd",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/NATIVE-TOOLS.md": {
+      "sha256": "bb159103bf3be1f42933d2989edabf10b1d7811dac5b28c5134ccaa03eaa4872",
+      "upstream_sha256": "bb159103bf3be1f42933d2989edabf10b1d7811dac5b28c5134ccaa03eaa4872",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/ON-DEMAND-CAPABILITIES.md": {
+      "sha256": "9b84b9f903337fff6dd32fea40e505a08e2b367f7efe4fafa2331af7f67f9d70",
+      "upstream_sha256": "9b84b9f903337fff6dd32fea40e505a08e2b367f7efe4fafa2331af7f67f9d70",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/ORCHESTRATION-AND-INTEGRATIONS.md": {
+      "sha256": "0a3ac2bda6a0f25e64141339c5580c91e905ffe8ba2175974fe183e53b07d651",
+      "upstream_sha256": "0a3ac2bda6a0f25e64141339c5580c91e905ffe8ba2175974fe183e53b07d651",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/TESTING-AND-DEBUGGING.md": {
+      "sha256": "a3b8bfc6e7b3776d99837840b88197d3a73e3df29cd54d223b76b831ad0391f0",
+      "upstream_sha256": "a3b8bfc6e7b3776d99837840b88197d3a73e3df29cd54d223b76b831ad0391f0",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/TOOLS-ADVANCED.md": {
+      "sha256": "7df183e873d9e0e476d03203721d2fcb986200387abae92b9c3aca9dfcc4316c",
+      "upstream_sha256": "7df183e873d9e0e476d03203721d2fcb986200387abae92b9c3aca9dfcc4316c",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/.agents/skills/building-pydantic-ai-agents/references/TOOLS-CORE.md": {
+      "sha256": "abf849c0457e18b3cd3c0bd3b5292a3a61c665360d653b4c2a30923692a66987",
+      "upstream_sha256": "abf849c0457e18b3cd3c0bd3b5292a3a61c665360d653b4c2a30923692a66987",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/.agents/skills/migrating-langchain-to-pydantic-ai/SKILL.md": {
+      "sha256": "637f8625327281482ca15eb0122b29865d1c0f18adcdf2521a41a6821a74ed8b",
+      "upstream_sha256": "637f8625327281482ca15eb0122b29865d1c0f18adcdf2521a41a6821a74ed8b",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/.agents/skills/migrating-langchain-to-pydantic-ai/agents/openai.yaml": {
+      "sha256": "71d91c4dce87a6c1c28c23238d2c2b66f02f2c3f83ea55ece71b98848e6c7f85",
+      "upstream_sha256": "71d91c4dce87a6c1c28c23238d2c2b66f02f2c3f83ea55ece71b98848e6c7f85",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/.agents/skills/migrating-langchain-to-pydantic-ai/references/CONCEPT-MAPPING.md": {
+      "sha256": "f3806cec8f719989f4c9994b03b69a2978aa7ac7635dceccfbbdb90ff711081c",
+      "upstream_sha256": "f3806cec8f719989f4c9994b03b69a2978aa7ac7635dceccfbbdb90ff711081c",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/.agents/skills/migrating-langchain-to-pydantic-ai/references/LOGFIRE-VERIFICATION.md": {
+      "sha256": "3bcd766b0129343b6a92dee72d9714969d22d8fe1bd589b12503b3d1ade21ba5",
+      "upstream_sha256": "3bcd766b0129343b6a92dee72d9714969d22d8fe1bd589b12503b3d1ade21ba5",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/.agents/skills/migrating-langchain-to-pydantic-ai/references/SEMANTIC-GAPS.md": {
+      "sha256": "d216716e07c585c11a5e351f283c6dba264b60c35017d664cf6e2723ae26b628",
+      "upstream_sha256": "d216716e07c585c11a5e351f283c6dba264b60c35017d664cf6e2723ae26b628",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/.agents/skills/migrating-langchain-to-pydantic-ai/references/VERIFICATION-AND-CUTOVER.md": {
+      "sha256": "fe901c3d5c5c24b23c1f07140058eff026b2b1bbf76d91ca9bfd9c94218db55b",
+      "upstream_sha256": "fe901c3d5c5c24b23c1f07140058eff026b2b1bbf76d91ca9bfd9c94218db55b",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/.agents/skills/migrating-langchain-to-pydantic-ai/references/WORKAROUND-RECIPES.md": {
+      "sha256": "4cbd0d4337a938f7bf358e27a3cbf881e8922e31d478a3bb81465d1ff8e79956",
+      "upstream_sha256": "4cbd0d4337a938f7bf358e27a3cbf881e8922e31d478a3bb81465d1ff8e79956",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_cli/__init__.py": {
+      "sha256": "3e1c350df5adbbc57157179146093bf9be50da9e27f94ea81d22e0ce1bdcaf02",
+      "upstream_sha256": "3e1c350df5adbbc57157179146093bf9be50da9e27f94ea81d22e0ce1bdcaf02",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/_cli/web.py": {
+      "sha256": "d16f931810014539d9d382af2a0b2fcde69fd1c090686119e219d4a1c5e0d864",
+      "upstream_sha256": "d16f931810014539d9d382af2a0b2fcde69fd1c090686119e219d4a1c5e0d864",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/agent/__init__.py": {
+      "sha256": "6ba6f3c0f7b5b89b923b0778b8587068a4f46085f83462ec267559a0f2098fea",
+      "upstream_sha256": "6ba6f3c0f7b5b89b923b0778b8587068a4f46085f83462ec267559a0f2098fea",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/agent/abstract.py": {
+      "sha256": "f2333dd8c7e037b97339519089acd235fac20e92487443174055ac5e9cf14482",
+      "upstream_sha256": "f2333dd8c7e037b97339519089acd235fac20e92487443174055ac5e9cf14482",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/agent/spec.py": {
+      "sha256": "9f2088434acac673d514699589197097a14b0cbbf29db82a7f82efec3688504e",
+      "upstream_sha256": "9f2088434acac673d514699589197097a14b0cbbf29db82a7f82efec3688504e",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/agent/wrapper.py": {
+      "sha256": "79549384fad16d337caa0af23e3d07aee21eccadbeecf4806eb171da55e37a00",
+      "upstream_sha256": "79549384fad16d337caa0af23e3d07aee21eccadbeecf4806eb171da55e37a00",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/AGENTS.md": {
+      "sha256": "2b3ee0dee69c996fead985aacf4671cf0c4ef88819007dc54f2c9170d9453e03",
+      "upstream_sha256": "2b3ee0dee69c996fead985aacf4671cf0c4ef88819007dc54f2c9170d9453e03",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/__init__.py": {
+      "sha256": "4142fcf74f8d38b5ddf169a9b8bf4c8dd11cf4637ae890082d7785d813876ea2",
+      "upstream_sha256": "4142fcf74f8d38b5ddf169a9b8bf4c8dd11cf4637ae890082d7785d813876ea2",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/_deferred_capabilities.py": {
+      "sha256": "de1aa5d7ddbb53127419ad2e24d8cb5bd614daf26270ff011b176e91d82d4ae1",
+      "upstream_sha256": "de1aa5d7ddbb53127419ad2e24d8cb5bd614daf26270ff011b176e91d82d4ae1",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/_deferred_capability_loader.py": {
+      "sha256": "46037f3fabf4512ac55a58865a51c1fb39439e72564c1c5b888d64e9bbf0d7c9",
+      "upstream_sha256": "46037f3fabf4512ac55a58865a51c1fb39439e72564c1c5b888d64e9bbf0d7c9",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/_dynamic.py": {
+      "sha256": "9e869ca05afcaba04a20411f65d09010806c1d86af9b81e4ba31ae2d97922d85",
+      "upstream_sha256": "9e869ca05afcaba04a20411f65d09010806c1d86af9b81e4ba31ae2d97922d85",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/_merge.py": {
+      "sha256": "57589fc48f5f09225b8a67bc874399ebbb66e4db64bd3c93117be66538ea3906",
+      "upstream_sha256": "57589fc48f5f09225b8a67bc874399ebbb66e4db64bd3c93117be66538ea3906",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/_native_resolution.py": {
+      "sha256": "dd7154430d80472472f6520899eebf12e8876266da481b530042bc8d5a2020c8",
+      "upstream_sha256": "dd7154430d80472472f6520899eebf12e8876266da481b530042bc8d5a2020c8",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/_on_event.py": {
+      "sha256": "2b7606b4ff617a35966e94f9dc667531f643c2a604119240aa8d29291a9fcedd",
+      "upstream_sha256": "2b7606b4ff617a35966e94f9dc667531f643c2a604119240aa8d29291a9fcedd",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/_ordering.py": {
+      "sha256": "923cd8d0bf50f87b7543faf29452b9e320fad5e70fb6680b475f5157eb1c8201",
+      "upstream_sha256": "923cd8d0bf50f87b7543faf29452b9e320fad5e70fb6680b475f5157eb1c8201",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/_pending_messages.py": {
+      "sha256": "c66355041610bf90f2cef037944e8d2adfdcfd8b2e79eb0a2c17400ec41ca9f0",
+      "upstream_sha256": "c66355041610bf90f2cef037944e8d2adfdcfd8b2e79eb0a2c17400ec41ca9f0",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/_tool_search.py": {
+      "sha256": "a5d9950d934938a71954772c459993fab9b2a820fc45af6d6dc4bc21de6ad742",
+      "upstream_sha256": "a5d9950d934938a71954772c459993fab9b2a820fc45af6d6dc4bc21de6ad742",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/abstract.py": {
+      "sha256": "13340ef18b63c95f6dd83edce6384f0e56fcfb91c90e825929bf1d0aae6b985c",
+      "upstream_sha256": "13340ef18b63c95f6dd83edce6384f0e56fcfb91c90e825929bf1d0aae6b985c",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/capability.py": {
+      "sha256": "8cd1c74b7ce963d2b50d60d5278e857c4caf30368f0315f180206b522a8e1f30",
+      "upstream_sha256": "8cd1c74b7ce963d2b50d60d5278e857c4caf30368f0315f180206b522a8e1f30",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/combined.py": {
+      "sha256": "f89f5b89a2330243ea21d6d84bb327bb5f423082339c83f5822d10fde3ab5fdd",
+      "upstream_sha256": "f89f5b89a2330243ea21d6d84bb327bb5f423082339c83f5822d10fde3ab5fdd",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/content_filter.py": {
+      "sha256": "7e6ea23a7b6748e42efede7b866fb736e5d6742f93f895c0b39bd6608ac9100b",
+      "upstream_sha256": "7e6ea23a7b6748e42efede7b866fb736e5d6742f93f895c0b39bd6608ac9100b",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/deferred_tool_handler.py": {
+      "sha256": "af36815652ac711594d63162460e3a970695bcfc62418d4e6aee3b2308830428",
+      "upstream_sha256": "af36815652ac711594d63162460e3a970695bcfc62418d4e6aee3b2308830428",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/durable_operation.py": {
+      "sha256": "2bdc1c3e35785878fb0fe7dcbefaa6c8a851f55c90b3e856a2537f98d8fc59d3",
+      "upstream_sha256": "2bdc1c3e35785878fb0fe7dcbefaa6c8a851f55c90b3e856a2537f98d8fc59d3",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/hooks.py": {
+      "sha256": "379f3800a82b160d23a997e46fed7a00af4bfdc167d5ea2147569651b09879fc",
+      "upstream_sha256": "379f3800a82b160d23a997e46fed7a00af4bfdc167d5ea2147569651b09879fc",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/image_generation.py": {
+      "sha256": "075508581723e1d605a9b87db6a97302951ea2b874ae5a4d75734b8d643b536f",
+      "upstream_sha256": "075508581723e1d605a9b87db6a97302951ea2b874ae5a4d75734b8d643b536f",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/include_return_schemas.py": {
+      "sha256": "71cca4d40295195de784622ab4dc7f66c5b48d346f57fa5da964cd635617c111",
+      "upstream_sha256": "71cca4d40295195de784622ab4dc7f66c5b48d346f57fa5da964cd635617c111",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/instrumentation.py": {
+      "sha256": "80566adbe4dac071241a76e20b65c964f1fb65838d30b800134a802552653db5",
+      "upstream_sha256": "80566adbe4dac071241a76e20b65c964f1fb65838d30b800134a802552653db5",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/mcp.py": {
+      "sha256": "4b470b78f5d16791b99ee2533db43701ece66a5ba536c9cfa7f776ad8c1eb0b6",
+      "upstream_sha256": "4b470b78f5d16791b99ee2533db43701ece66a5ba536c9cfa7f776ad8c1eb0b6",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/native_or_local.py": {
+      "sha256": "435e937fb74b8d495e1687b535ae3969b6f54587407cb439b0e7bea6baaab757",
+      "upstream_sha256": "435e937fb74b8d495e1687b535ae3969b6f54587407cb439b0e7bea6baaab757",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/native_tool.py": {
+      "sha256": "cf8e2735e953d8818223ec91885cc6fc617542d7febbc2a3fd2b5df85836a0f1",
+      "upstream_sha256": "cf8e2735e953d8818223ec91885cc6fc617542d7febbc2a3fd2b5df85836a0f1",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/prefix_tools.py": {
+      "sha256": "c3e12c414942c48eacdb7f5ca91d9c91a1099a09b14694d52d362862b4b56938",
+      "upstream_sha256": "c3e12c414942c48eacdb7f5ca91d9c91a1099a09b14694d52d362862b4b56938",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/prepare_tools.py": {
+      "sha256": "2edf2bcdfe9929027fb62c0a5b860f23c953a2833f9ceb5f28089589135cedcd",
+      "upstream_sha256": "2edf2bcdfe9929027fb62c0a5b860f23c953a2833f9ceb5f28089589135cedcd",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/process_event_stream.py": {
+      "sha256": "9a5c51d3c4f6d551d25f0532aab711cb9fb4228e5863e53a5fb6eb32b0707741",
+      "upstream_sha256": "9a5c51d3c4f6d551d25f0532aab711cb9fb4228e5863e53a5fb6eb32b0707741",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/process_history.py": {
+      "sha256": "1c338112e0e4ba28f06a287f1b529f1bdcacec5a8baa26c1dc1c2fcdbdd88187",
+      "upstream_sha256": "1c338112e0e4ba28f06a287f1b529f1bdcacec5a8baa26c1dc1c2fcdbdd88187",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/reinject_system_prompt.py": {
+      "sha256": "39ce53bb9c9466be771ab73a385e71b4eaf98c930093ca07d80e43c542f4cd72",
+      "upstream_sha256": "39ce53bb9c9466be771ab73a385e71b4eaf98c930093ca07d80e43c542f4cd72",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/resolve_model_id.py": {
+      "sha256": "1039a4a6a4f312f0afe99d910b007ed4a48c410bd92ec7aa660aa12acfb81eb3",
+      "upstream_sha256": "1039a4a6a4f312f0afe99d910b007ed4a48c410bd92ec7aa660aa12acfb81eb3",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/select_model.py": {
+      "sha256": "a40c1d97cf4906159b1d452f2bc4cb7e94520da867a6d217021ad8874bd3584c",
+      "upstream_sha256": "a40c1d97cf4906159b1d452f2bc4cb7e94520da867a6d217021ad8874bd3584c",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/set_tool_metadata.py": {
+      "sha256": "210fe381c895e5e5cf0143301fd6397b1416dccc630eb0e80c808198d91afd61",
+      "upstream_sha256": "210fe381c895e5e5cf0143301fd6397b1416dccc630eb0e80c808198d91afd61",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/thinking.py": {
+      "sha256": "741b84aa730f33ab1957d1ff22f7d88fe8c883531c0664b7b4af69777002daf3",
+      "upstream_sha256": "741b84aa730f33ab1957d1ff22f7d88fe8c883531c0664b7b4af69777002daf3",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/thread_executor.py": {
+      "sha256": "6e7b0f14f646f3ea4bc32d3910b6f12cef41bed6127b2272663454c1252ed3a3",
+      "upstream_sha256": "6e7b0f14f646f3ea4bc32d3910b6f12cef41bed6127b2272663454c1252ed3a3",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/toolset.py": {
+      "sha256": "c7ee0d6aa5a234916b003ea3aec8398c079d378c5ebdde1426106a9e2d0f72fa",
+      "upstream_sha256": "c7ee0d6aa5a234916b003ea3aec8398c079d378c5ebdde1426106a9e2d0f72fa",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/web_fetch.py": {
+      "sha256": "522f2d8d13c59499e9c7f56ebdf534d263c4ccaee0ff2469de3f6ba4cb8c6306",
+      "upstream_sha256": "522f2d8d13c59499e9c7f56ebdf534d263c4ccaee0ff2469de3f6ba4cb8c6306",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/web_search.py": {
+      "sha256": "b9814689a1ab9e8827a268ba882d81b0b0c72ac3243bb42243855b63a4713fa6",
+      "upstream_sha256": "b9814689a1ab9e8827a268ba882d81b0b0c72ac3243bb42243855b63a4713fa6",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/wrapper.py": {
+      "sha256": "2c80f2f9f651823a2e0fe0ebab1e7a853d4c28674db79d01698c59dd9b29b532",
+      "upstream_sha256": "2c80f2f9f651823a2e0fe0ebab1e7a853d4c28674db79d01698c59dd9b29b532",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/capabilities/x_search.py": {
+      "sha256": "ad146d750a37a4394e86557447ce7c981d5f869f36511b42152e4f9ddc9334dd",
+      "upstream_sha256": "ad146d750a37a4394e86557447ce7c981d5f869f36511b42152e4f9ddc9334dd",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/common_tools/__init__.py": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "upstream_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/common_tools/duckduckgo.py": {
+      "sha256": "41e16292579806c4cf24779e0915cf73ed5e9d8b2f17abb141c0f9590eb7ec12",
+      "upstream_sha256": "41e16292579806c4cf24779e0915cf73ed5e9d8b2f17abb141c0f9590eb7ec12",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/common_tools/exa.py": {
+      "sha256": "0d23d04e043058146e90a855799b153529ff8a0fe5a562321ff66f3cf6b9ce85",
+      "upstream_sha256": "0d23d04e043058146e90a855799b153529ff8a0fe5a562321ff66f3cf6b9ce85",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/common_tools/image_generation.py": {
+      "sha256": "ae89a7abe384e30fa9659d882a88eaa39b8735c19dcb03327e922ed4f7bd6d37",
+      "upstream_sha256": "ae89a7abe384e30fa9659d882a88eaa39b8735c19dcb03327e922ed4f7bd6d37",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/common_tools/tavily.py": {
+      "sha256": "bb9684558c8a5e9e6857d293946a9da085a8a742210490db715029bdcca08b0f",
+      "upstream_sha256": "bb9684558c8a5e9e6857d293946a9da085a8a742210490db715029bdcca08b0f",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/common_tools/web_fetch.py": {
+      "sha256": "6690005b4ec9bf38a11187fb4cf7b2fe1cd9aec599997ce950d77ac5b72b68d8",
+      "upstream_sha256": "6690005b4ec9bf38a11187fb4cf7b2fe1cd9aec599997ce950d77ac5b72b68d8",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/common_tools/x_search.py": {
+      "sha256": "f56c17c4f2fa91fa1e8e8f62af0fb9253cd68a42f11188563423a69f841d6a93",
+      "upstream_sha256": "f56c17c4f2fa91fa1e8e8f62af0fb9253cd68a42f11188563423a69f841d6a93",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/AGENTS.md": {
+      "sha256": "f901c38bd4754bdf65817cdb1fd6d9b0d712a4316c76404730dcd685170ca611",
+      "upstream_sha256": "f901c38bd4754bdf65817cdb1fd6d9b0d712a4316c76404730dcd685170ca611",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/__init__.py": {
+      "sha256": "a88e003f64d82be7be33830cffd95d8b304efc22bd57df7a610b13c22e2c1354",
+      "upstream_sha256": "a88e003f64d82be7be33830cffd95d8b304efc22bd57df7a610b13c22e2c1354",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/_base.py": {
+      "sha256": "08633a285e6fe57ba9744ac745075ea4d96e41fdc8f3175675942f62c6470310",
+      "upstream_sha256": "08633a285e6fe57ba9744ac745075ea4d96e41fdc8f3175675942f62c6470310",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/_capability_operation.py": {
+      "sha256": "4f2edd033ee3e9ab57491bb4132c9765b48522cbf93791c2b85b7513e679921f",
+      "upstream_sha256": "4f2edd033ee3e9ab57491bb4132c9765b48522cbf93791c2b85b7513e679921f",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/_codec.py": {
+      "sha256": "602f84dde277c3321aaaaf5380f43a7e97f9db7d2c922bf66f9a6260c3ba3f3f",
+      "upstream_sha256": "602f84dde277c3321aaaaf5380f43a7e97f9db7d2c922bf66f9a6260c3ba3f3f",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/_operation.py": {
+      "sha256": "938dbf5c93ad999c3832aa9af1123aafdfd0af7bf55a7b4abcc416c6cf0574c4",
+      "upstream_sha256": "938dbf5c93ad999c3832aa9af1123aafdfd0af7bf55a7b4abcc416c6cf0574c4",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/_operation_backend.py": {
+      "sha256": "de7336a2cbcdff8a5597398f9bcb9cbd5505278771af08385935e62043d8dafe",
+      "upstream_sha256": "de7336a2cbcdff8a5597398f9bcb9cbd5505278771af08385935e62043d8dafe",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/_operation_names.py": {
+      "sha256": "51ec59de5583bed50f9a1a002aac75451668c8eec6a4d5434942002cfea306a6",
+      "upstream_sha256": "51ec59de5583bed50f9a1a002aac75451668c8eec6a4d5434942002cfea306a6",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/_runtime_toolsets.py": {
+      "sha256": "0c2aab2630df66c47e478debd67ec1c7e1a65c441c67d878ffb0661c3aff78a6",
+      "upstream_sha256": "0c2aab2630df66c47e478debd67ec1c7e1a65c441c67d878ffb0661c3aff78a6",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/_spec.py": {
+      "sha256": "d685d0d3d9805a3cf2bd72ba5b98d9209e68c6c73628d9d0249569a96fa1e2e4",
+      "upstream_sha256": "d685d0d3d9805a3cf2bd72ba5b98d9209e68c6c73628d9d0249569a96fa1e2e4",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/_toolset.py": {
+      "sha256": "0d2c7aa5e408ab90ab253f17076aab0461c834653c0f6727e4d8c58a99fda359",
+      "upstream_sha256": "0d2c7aa5e408ab90ab253f17076aab0461c834653c0f6727e4d8c58a99fda359",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/_utils.py": {
+      "sha256": "bd53bb8891583fdd2731693ae47b88a0512ab2526aade6d638306eb1abbf6e86",
+      "upstream_sha256": "bd53bb8891583fdd2731693ae47b88a0512ab2526aade6d638306eb1abbf6e86",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/dbos/__init__.py": {
+      "sha256": "fc6a7d49790baf046aa13bf42660f17f20266a153b8c7849d69094f61c075981",
+      "upstream_sha256": "fc6a7d49790baf046aa13bf42660f17f20266a153b8c7849d69094f61c075981",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/dbos/_agent.py": {
+      "sha256": "ebc95bb7e121fa5e82d4a5c09bcf28a06e5a1c030b1e35c4eb78a7d2c68f2923",
+      "upstream_sha256": "ebc95bb7e121fa5e82d4a5c09bcf28a06e5a1c030b1e35c4eb78a7d2c68f2923",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/dbos/_durability.py": {
+      "sha256": "d41ed7ad412901d875359b3b39d600c25befe155919c873dba2037fdd21ac334",
+      "upstream_sha256": "d41ed7ad412901d875359b3b39d600c25befe155919c873dba2037fdd21ac334",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/dbos/_mcp_toolset.py": {
+      "sha256": "02ba983c9679aef0b9f4e3577fb26a0e1747178a1af14249e8fd43eb9f3b2404",
+      "upstream_sha256": "02ba983c9679aef0b9f4e3577fb26a0e1747178a1af14249e8fd43eb9f3b2404",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/dbos/_model.py": {
+      "sha256": "dbb1d97c79ab31ad5b6c0cf38c82d01764d4d9096a170596503325eade30b22c",
+      "upstream_sha256": "dbb1d97c79ab31ad5b6c0cf38c82d01764d4d9096a170596503325eade30b22c",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/dbos/_operation_backend.py": {
+      "sha256": "a255d4e3e7fff2f77aaf0e45614278652eae2cb623814dedba837b8c36a77359",
+      "upstream_sha256": "a255d4e3e7fff2f77aaf0e45614278652eae2cb623814dedba837b8c36a77359",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/dbos/_operation_names.py": {
+      "sha256": "75c3664b26bebe81b8be8cfb9dc73a685728b32517620acbe7d413de6e57413a",
+      "upstream_sha256": "75c3664b26bebe81b8be8cfb9dc73a685728b32517620acbe7d413de6e57413a",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/dbos/_utils.py": {
+      "sha256": "3b95e68a27292211a36d27fd5383346869e18c217243eb1e62ffc70e62d6ac53",
+      "upstream_sha256": "3b95e68a27292211a36d27fd5383346869e18c217243eb1e62ffc70e62d6ac53",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/prefect/__init__.py": {
+      "sha256": "9b74f24cf50a4c72fa90ab70cc088405a1ad9aeccbf733798572dac235e8eaf1",
+      "upstream_sha256": "9b74f24cf50a4c72fa90ab70cc088405a1ad9aeccbf733798572dac235e8eaf1",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/prefect/_agent.py": {
+      "sha256": "74f43514e1059d9a3c53e4ab949cc9559abe61c51675bce429e9858ce18dbc11",
+      "upstream_sha256": "74f43514e1059d9a3c53e4ab949cc9559abe61c51675bce429e9858ce18dbc11",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/prefect/_cache_policies.py": {
+      "sha256": "7615fc10402ca9e314555a323e0c7fa6dec2a054706658cfd87cb6d11ed31a50",
+      "upstream_sha256": "7615fc10402ca9e314555a323e0c7fa6dec2a054706658cfd87cb6d11ed31a50",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/prefect/_durability.py": {
+      "sha256": "7f74933736ae5a79b64d3cc0e94f52cd5d124b79ac18ae6c73d17ea952a054d2",
+      "upstream_sha256": "7f74933736ae5a79b64d3cc0e94f52cd5d124b79ac18ae6c73d17ea952a054d2",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/prefect/_dynamic_toolset.py": {
+      "sha256": "da70ac66fb0547532125c537d41e7ef6b38f63c25b15794c19b7e7590d7c9377",
+      "upstream_sha256": "da70ac66fb0547532125c537d41e7ef6b38f63c25b15794c19b7e7590d7c9377",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/prefect/_function_toolset.py": {
+      "sha256": "42feab5042100a64d21179ce5b471a5704287ce9b086e5f95269f06deff178b2",
+      "upstream_sha256": "42feab5042100a64d21179ce5b471a5704287ce9b086e5f95269f06deff178b2",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/prefect/_mcp_toolset.py": {
+      "sha256": "f9a626200ef9d1fcced1f1de466dd392b93c31d1946527ab2af6734d7ba02a61",
+      "upstream_sha256": "f9a626200ef9d1fcced1f1de466dd392b93c31d1946527ab2af6734d7ba02a61",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/prefect/_model.py": {
+      "sha256": "d05852e267999c01581cdd21e15ee4e0459fd613f114f832eb66e1eb82d59bed",
+      "upstream_sha256": "d05852e267999c01581cdd21e15ee4e0459fd613f114f832eb66e1eb82d59bed",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/prefect/_operation_backend.py": {
+      "sha256": "a193a4a7446d0487fd5b4a7f70596a72ca2969c84f5f4509f39f4a3f5417e362",
+      "upstream_sha256": "a193a4a7446d0487fd5b4a7f70596a72ca2969c84f5f4509f39f4a3f5417e362",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/prefect/_operation_names.py": {
+      "sha256": "1b6f2e69c133c368204bebacda6ab73c09f12ba38fbefddb31962126c6cd563d",
+      "upstream_sha256": "1b6f2e69c133c368204bebacda6ab73c09f12ba38fbefddb31962126c6cd563d",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/prefect/_toolset.py": {
+      "sha256": "6890283a77df528ce141211c05e9891dfa3159013de9f3273815e5ce6c0bf35e",
+      "upstream_sha256": "6890283a77df528ce141211c05e9891dfa3159013de9f3273815e5ce6c0bf35e",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/prefect/_types.py": {
+      "sha256": "8266a9a1b5864582c9623456b105e8d9d416d541ca08d97ed63a2cddcf18281d",
+      "upstream_sha256": "8266a9a1b5864582c9623456b105e8d9d416d541ca08d97ed63a2cddcf18281d",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/temporal/__init__.py": {
+      "sha256": "0b19e87911fc313185c8da804dc6e1036d6c7c69e56dd8112247d58dc442d2df",
+      "upstream_sha256": "0b19e87911fc313185c8da804dc6e1036d6c7c69e56dd8112247d58dc442d2df",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/temporal/_activity_execution.py": {
+      "sha256": "ca4ee66041f92b4f02295c983135bbd3a2069bfa480c627eff957615e62c907c",
+      "upstream_sha256": "ca4ee66041f92b4f02295c983135bbd3a2069bfa480c627eff957615e62c907c",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/temporal/_agent.py": {
+      "sha256": "935576bd08761c81328cc1fa247a3cf0e5b575e53bcc579aee574f75800bb2f1",
+      "upstream_sha256": "935576bd08761c81328cc1fa247a3cf0e5b575e53bcc579aee574f75800bb2f1",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/temporal/_durability.py": {
+      "sha256": "02db5584aa450163dc69c00bb9282c154ce6b455c689b8771c4d1b69ba4ef4f5",
+      "upstream_sha256": "02db5584aa450163dc69c00bb9282c154ce6b455c689b8771c4d1b69ba4ef4f5",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/temporal/_dynamic_toolset.py": {
+      "sha256": "78ece5e61adb0627fa21c70aa0fb393db48df925e1c98d09581a1e71f14d0fd3",
+      "upstream_sha256": "78ece5e61adb0627fa21c70aa0fb393db48df925e1c98d09581a1e71f14d0fd3",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/temporal/_function_toolset.py": {
+      "sha256": "11cda3f08fd7f701898edd1c456000c3fa62321e2fb661ec2da0800e1330591c",
+      "upstream_sha256": "11cda3f08fd7f701898edd1c456000c3fa62321e2fb661ec2da0800e1330591c",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/temporal/_logfire.py": {
+      "sha256": "6268e73146751ff418c9d623c06340d38e671dda7f61d6c793e3d2be868b31b9",
+      "upstream_sha256": "6268e73146751ff418c9d623c06340d38e671dda7f61d6c793e3d2be868b31b9",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/temporal/_mcp_toolset.py": {
+      "sha256": "a6c61d43196b9627d64df698c49bfa2889b22c851750196302c9ffc7973fde3c",
+      "upstream_sha256": "a6c61d43196b9627d64df698c49bfa2889b22c851750196302c9ffc7973fde3c",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/temporal/_model.py": {
+      "sha256": "74db01b804ad4fbc126fb1b4e4cdec63e8dc31f2a3c1aac5a64597a33d6c0561",
+      "upstream_sha256": "74db01b804ad4fbc126fb1b4e4cdec63e8dc31f2a3c1aac5a64597a33d6c0561",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/temporal/_operation_backend.py": {
+      "sha256": "280a7958ddd9358a6c3a61b349eae3911f14ce55f3a37ea91feffe0039c8ac82",
+      "upstream_sha256": "280a7958ddd9358a6c3a61b349eae3911f14ce55f3a37ea91feffe0039c8ac82",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/temporal/_operation_names.py": {
+      "sha256": "f31f2485bce10ea163ce44148b23bc2941e18692729578c91482983a9447036f",
+      "upstream_sha256": "f31f2485bce10ea163ce44148b23bc2941e18692729578c91482983a9447036f",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/temporal/_payload_converter.py": {
+      "sha256": "df3e54aaa4ae20dd3e18d8e6a61232161e6a3c0e16c3a3fe079dfba39cc65a4e",
+      "upstream_sha256": "df3e54aaa4ae20dd3e18d8e6a61232161e6a3c0e16c3a3fe079dfba39cc65a4e",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/temporal/_run_context.py": {
+      "sha256": "8778742db3dac40c666f8f7cfdac6de3b188dd56556c607b0355e10cf89273e7",
+      "upstream_sha256": "8778742db3dac40c666f8f7cfdac6de3b188dd56556c607b0355e10cf89273e7",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/temporal/_toolset.py": {
+      "sha256": "58ee6086c70cf09dcd5fbfe6a8e557844c7b9706d657e01b07d84233d489bec5",
+      "upstream_sha256": "58ee6086c70cf09dcd5fbfe6a8e557844c7b9706d657e01b07d84233d489bec5",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/temporal/_transports.py": {
+      "sha256": "2fbfa0c0a267b4517ae1d963057d2a2a4a99d291a9945bae6da518e656ed6714",
+      "upstream_sha256": "2fbfa0c0a267b4517ae1d963057d2a2a4a99d291a9945bae6da518e656ed6714",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/durable_exec/temporal/_workflow.py": {
+      "sha256": "9e40cf44469429410a8d41fb11e2e215fe122bf95602382c98ab356bc1218892",
+      "upstream_sha256": "9e40cf44469429410a8d41fb11e2e215fe122bf95602382c98ab356bc1218892",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/embeddings/__init__.py": {
+      "sha256": "01cd144aa47c65721df3b8315d333e15cb1c99c9b9ede1d55097ff1ec15834f6",
+      "upstream_sha256": "01cd144aa47c65721df3b8315d333e15cb1c99c9b9ede1d55097ff1ec15834f6",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/embeddings/base.py": {
+      "sha256": "1f0217e58f8089ca2a7dfa940ef35c646523e0ca81d3c6868208edcec2c2b6ac",
+      "upstream_sha256": "1f0217e58f8089ca2a7dfa940ef35c646523e0ca81d3c6868208edcec2c2b6ac",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/embeddings/bedrock.py": {
+      "sha256": "7e63ddb76565f6e49b4787b3fdf88682ea981391133c093e097dbeaa7a972c50",
+      "upstream_sha256": "7e63ddb76565f6e49b4787b3fdf88682ea981391133c093e097dbeaa7a972c50",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/embeddings/cohere.py": {
+      "sha256": "a2490939b9886f3437f9aca23ccef6c3f8246445ad8203d8c8d1d2e553aa6448",
+      "upstream_sha256": "a2490939b9886f3437f9aca23ccef6c3f8246445ad8203d8c8d1d2e553aa6448",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/embeddings/google.py": {
+      "sha256": "def115448c2c75f393a9374c6ef35c0c70d68a45f592b847f62ca9f872ebb589",
+      "upstream_sha256": "def115448c2c75f393a9374c6ef35c0c70d68a45f592b847f62ca9f872ebb589",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/embeddings/instrumented.py": {
+      "sha256": "12f016701367dfb355f9a740ea9956355e1be194127ac62defe81410cf153c1e",
+      "upstream_sha256": "12f016701367dfb355f9a740ea9956355e1be194127ac62defe81410cf153c1e",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/embeddings/openai.py": {
+      "sha256": "0e952120ff4e04f62fa12b607baa32cc8529e6a270da3217ee4d397fb7727466",
+      "upstream_sha256": "0e952120ff4e04f62fa12b607baa32cc8529e6a270da3217ee4d397fb7727466",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/embeddings/result.py": {
+      "sha256": "50b734fe1668dd2b774b2e6c3060e0c860f57973912969d54d01a23708c474ee",
+      "upstream_sha256": "50b734fe1668dd2b774b2e6c3060e0c860f57973912969d54d01a23708c474ee",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/embeddings/sentence_transformers.py": {
+      "sha256": "bcde71ed8d64daab4310bf255d9325649fbfbe96b056c47fd6ef0040383e8354",
+      "upstream_sha256": "bcde71ed8d64daab4310bf255d9325649fbfbe96b056c47fd6ef0040383e8354",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/embeddings/settings.py": {
+      "sha256": "cd74bf2840cc6c7c160978944f933e5738cec80ea8d8ae7511459d0f1f786714",
+      "upstream_sha256": "cd74bf2840cc6c7c160978944f933e5738cec80ea8d8ae7511459d0f1f786714",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/embeddings/test.py": {
+      "sha256": "edc0abf5a8efce32bc4596c19b869d6731929cca235c8b2c3427ec2984a0d6bf",
+      "upstream_sha256": "edc0abf5a8efce32bc4596c19b869d6731929cca235c8b2c3427ec2984a0d6bf",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/embeddings/voyageai.py": {
+      "sha256": "3c63f90f3ed7f515e593d4a6826bdf91cfcb07d6ba0eddc3a219c6c84e0893fb",
+      "upstream_sha256": "3c63f90f3ed7f515e593d4a6826bdf91cfcb07d6ba0eddc3a219c6c84e0893fb",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/embeddings/wrapper.py": {
+      "sha256": "0b4e031eccb9ef00a73ad239d44b8a2efee3a59207cb8ccaa7ed1e176f0b1b66",
+      "upstream_sha256": "0b4e031eccb9ef00a73ad239d44b8a2efee3a59207cb8ccaa7ed1e176f0b1b66",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ext/__init__.py": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "upstream_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ext/langchain.py": {
+      "sha256": "9266db5770b1d8188d60424264c1d5610aae5100fecc6d8bfdbc036a7832d16c",
+      "upstream_sha256": "9266db5770b1d8188d60424264c1d5610aae5100fecc6d8bfdbc036a7832d16c",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/AGENTS.md": {
+      "sha256": "d12b263700b3f93b2bf883042ecfd3f0d5d98c2eaac1d0bdd19a4c13204b91a0",
+      "upstream_sha256": "d12b263700b3f93b2bf883042ecfd3f0d5d98c2eaac1d0bdd19a4c13204b91a0",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/__init__.py": {
+      "sha256": "1a00704149daab441e4e9315a7328443dec04d75ea8975393aac41fdf3f98a23",
+      "upstream_sha256": "1a00704149daab441e4e9315a7328443dec04d75ea8975393aac41fdf3f98a23",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/_abstract.py": {
+      "sha256": "a4aeb17148912ffd82c08567119667ddca02902cf335dc089557e3297fb06075",
+      "upstream_sha256": "a4aeb17148912ffd82c08567119667ddca02902cf335dc089557e3297fb06075",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/_anthropic_bedrock_count_tokens.py": {
+      "sha256": "70519ff495af4d9581eea47748b49580602b4aba53e75c984e3702af14062a4b",
+      "upstream_sha256": "70519ff495af4d9581eea47748b49580602b4aba53e75c984e3702af14062a4b",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/_anthropic_containers.py": {
+      "sha256": "a6a8c85f1f550a0f3123409cf11bf339ad03bbda92958d868ed37c40f9e703de",
+      "upstream_sha256": "a6a8c85f1f550a0f3123409cf11bf339ad03bbda92958d868ed37c40f9e703de",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/_continuation.py": {
+      "sha256": "7d9cafa4e7a493efbe8832fdd25e0123e42cd8625ab9326d5f9c78947523babc",
+      "upstream_sha256": "7d9cafa4e7a493efbe8832fdd25e0123e42cd8625ab9326d5f9c78947523babc",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/_known_model_names.py": {
+      "sha256": "d108a4b316f757463c8aea159d9af0238f3804d0189a8bc2ea358af2cce7096e",
+      "upstream_sha256": "d108a4b316f757463c8aea159d9af0238f3804d0189a8bc2ea358af2cce7096e",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/_reasoning_details.py": {
+      "sha256": "9896384d4b552083bfbac1348f48663ce818a58799bf88da45bcfbfc4daffe7a",
+      "upstream_sha256": "9896384d4b552083bfbac1348f48663ce818a58799bf88da45bcfbfc4daffe7a",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/_tool_choice.py": {
+      "sha256": "6f661d5b569371e5e26aa3213832fa3202438e5befd9f2a8e4f85458d29250c5",
+      "upstream_sha256": "6f661d5b569371e5e26aa3213832fa3202438e5befd9f2a8e4f85458d29250c5",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/anthropic.py": {
+      "sha256": "d21884abc116fcfad99083f81238985ebb964576bcf868bd8e91afa5643c5788",
+      "upstream_sha256": "d21884abc116fcfad99083f81238985ebb964576bcf868bd8e91afa5643c5788",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/bedrock.py": {
+      "sha256": "66cb23e403a2a4e71677478fd0180a2dd9371e60c131d1db8604c2cf0fd8fd91",
+      "upstream_sha256": "66cb23e403a2a4e71677478fd0180a2dd9371e60c131d1db8604c2cf0fd8fd91",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/bedrock_mantle.py": {
+      "sha256": "dd4bf71ce9723f1fc0582761a3d2976d02e5864004ad548faefb799c5b1bad3a",
+      "upstream_sha256": "dd4bf71ce9723f1fc0582761a3d2976d02e5864004ad548faefb799c5b1bad3a",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/cerebras.py": {
+      "sha256": "157e9ecb1b68fcc92777fcc6266d3ac0268a347c4a8be0470bad5b247074378a",
+      "upstream_sha256": "157e9ecb1b68fcc92777fcc6266d3ac0268a347c4a8be0470bad5b247074378a",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/cohere.py": {
+      "sha256": "c9caa0365a530a4881bf45e2600a928ac2488917bf1e9f416d47a0cd423f4d2a",
+      "upstream_sha256": "c9caa0365a530a4881bf45e2600a928ac2488917bf1e9f416d47a0cd423f4d2a",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/concurrency.py": {
+      "sha256": "4350627695727a0f9aea67f3fa25c0f4acd77987b0ad9a80e743027a9521e40e",
+      "upstream_sha256": "4350627695727a0f9aea67f3fa25c0f4acd77987b0ad9a80e743027a9521e40e",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/crusoe.py": {
+      "sha256": "d549d591ba4106993cffebad37aaf51b302f11757af5c21dde8539c2d9705f76",
+      "upstream_sha256": "d549d591ba4106993cffebad37aaf51b302f11757af5c21dde8539c2d9705f76",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/fallback.py": {
+      "sha256": "73f8045a686ca9ee827c33242fb4b8a4b0b5cc949675357725be700a24614b8a",
+      "upstream_sha256": "73f8045a686ca9ee827c33242fb4b8a4b0b5cc949675357725be700a24614b8a",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/function.py": {
+      "sha256": "22b6b38bb18ee1effcad4ea24ce79856b0fa471ce93781c5b384b3c08448d90f",
+      "upstream_sha256": "22b6b38bb18ee1effcad4ea24ce79856b0fa471ce93781c5b384b3c08448d90f",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/google.py": {
+      "sha256": "231da27f3bb7d1f54ea2ab71805a6d803ae651ccdd796259c775511dc266bf6c",
+      "upstream_sha256": "231da27f3bb7d1f54ea2ab71805a6d803ae651ccdd796259c775511dc266bf6c",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/groq.py": {
+      "sha256": "e6ad110bd1ff252c817e045206c1a9748bf25d5b0a2fc835aa1844a84f2b8b7c",
+      "upstream_sha256": "e6ad110bd1ff252c817e045206c1a9748bf25d5b0a2fc835aa1844a84f2b8b7c",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/huggingface.py": {
+      "sha256": "fec9377d35017872256963f9543f393996716e949375b411842594e824125cd7",
+      "upstream_sha256": "fec9377d35017872256963f9543f393996716e949375b411842594e824125cd7",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/instrumented.py": {
+      "sha256": "148c46040d942f1a7aa44d61a52c86084db2c80ddd343e7f89965ac5649b1b96",
+      "upstream_sha256": "148c46040d942f1a7aa44d61a52c86084db2c80ddd343e7f89965ac5649b1b96",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/mcp_sampling.py": {
+      "sha256": "4594e4e0cfb6c6d5e9758e6e04f18df3ac0e7a9cd71b0a5f0a5c5a7c0054bd69",
+      "upstream_sha256": "4594e4e0cfb6c6d5e9758e6e04f18df3ac0e7a9cd71b0a5f0a5c5a7c0054bd69",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/mistral.py": {
+      "sha256": "ef2f3f6de50bba5489bc9c837b3a83250cede984a35dc3759a239c5c76177db4",
+      "upstream_sha256": "ef2f3f6de50bba5489bc9c837b3a83250cede984a35dc3759a239c5c76177db4",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/ollama.py": {
+      "sha256": "061b4f3f2ec2772ef3b49bf29c7afe0a4b33323b95445be54fc01298d8497f3d",
+      "upstream_sha256": "061b4f3f2ec2772ef3b49bf29c7afe0a4b33323b95445be54fc01298d8497f3d",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/openai.py": {
+      "sha256": "2457f0279247d7365f56492ca4cdb1faaaf7a9d3ba2e5cb6974c468e7ae39397",
+      "upstream_sha256": "2457f0279247d7365f56492ca4cdb1faaaf7a9d3ba2e5cb6974c468e7ae39397",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/openrouter.py": {
+      "sha256": "70035d80d91d8d9f1bbd0e12d2697e04752aa561bc8fad06fe2a8eadba0d469a",
+      "upstream_sha256": "70035d80d91d8d9f1bbd0e12d2697e04752aa561bc8fad06fe2a8eadba0d469a",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/snowflake.py": {
+      "sha256": "449e456ed8f29b3bc8f15e98d3ed2fc5dd6ef0e1b6969426db3838b0e0804cc7",
+      "upstream_sha256": "449e456ed8f29b3bc8f15e98d3ed2fc5dd6ef0e1b6969426db3838b0e0804cc7",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/test.py": {
+      "sha256": "d3221c860c66f0ec88f5c46f22a0dadd9a7da56af8dbd6a5701b2e4c00c8a1e6",
+      "upstream_sha256": "d3221c860c66f0ec88f5c46f22a0dadd9a7da56af8dbd6a5701b2e4c00c8a1e6",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/wrapper.py": {
+      "sha256": "a49e07840e916616e03083c1d9afb685a948f72ac1234e022d4eea16cc64ce64",
+      "upstream_sha256": "a49e07840e916616e03083c1d9afb685a948f72ac1234e022d4eea16cc64ce64",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/xai.py": {
+      "sha256": "93faeead263ed4d4746e5b29285a01858b71e0a96c5b1cb2dbc7719f940ed13e",
+      "upstream_sha256": "93faeead263ed4d4746e5b29285a01858b71e0a96c5b1cb2dbc7719f940ed13e",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/models/zai.py": {
+      "sha256": "2c6047ca1f9dc780ae9fcebf32a427165deaca0c31f90555570b47ab3956563f",
+      "upstream_sha256": "2c6047ca1f9dc780ae9fcebf32a427165deaca0c31f90555570b47ab3956563f",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/native_tools/AGENTS.md": {
+      "sha256": "096d45eacdbd1194fc79a542cf6dd8636556c48b1b76cd075bf112cc02cb9689",
+      "upstream_sha256": "096d45eacdbd1194fc79a542cf6dd8636556c48b1b76cd075bf112cc02cb9689",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/native_tools/__init__.py": {
+      "sha256": "0c0aaa96377e7843941bcc1aec8c4ee99fc40f13d24cd7500f70bf1f7d50a6dd",
+      "upstream_sha256": "0c0aaa96377e7843941bcc1aec8c4ee99fc40f13d24cd7500f70bf1f7d50a6dd",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/native_tools/_tool_search.py": {
+      "sha256": "ea92550a0ea021139e1be59d46c753fda5fc4ef8c0b6b0b1f1d9578ab46f11ba",
+      "upstream_sha256": "ea92550a0ea021139e1be59d46c753fda5fc4ef8c0b6b0b1f1d9578ab46f11ba",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/profiles/AGENTS.md": {
+      "sha256": "a4f9edfd88b0e5bfddab4b245bb70be3b83d76bebeaf9e19422892b0cd1c36a7",
+      "upstream_sha256": "a4f9edfd88b0e5bfddab4b245bb70be3b83d76bebeaf9e19422892b0cd1c36a7",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/profiles/__init__.py": {
+      "sha256": "d7c62fee6e1f3907c13f9be3d0617d769f8d5deb6cb9b2af4d9e93021a890593",
+      "upstream_sha256": "d7c62fee6e1f3907c13f9be3d0617d769f8d5deb6cb9b2af4d9e93021a890593",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/profiles/amazon.py": {
+      "sha256": "20f6b6c3276971b14b2ef8432b7e7ea70c282a8d0f838bcff38f36ddf1f1d337",
+      "upstream_sha256": "20f6b6c3276971b14b2ef8432b7e7ea70c282a8d0f838bcff38f36ddf1f1d337",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/profiles/anthropic.py": {
+      "sha256": "ca81667045fe66fdef6db0437177ae8b2f25699e7ad35d924810ef1179a48f84",
+      "upstream_sha256": "ca81667045fe66fdef6db0437177ae8b2f25699e7ad35d924810ef1179a48f84",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/profiles/cohere.py": {
+      "sha256": "fb7ea6b57bc05fb3e0e58d24b1b1bcb76ed9575558c19051be68756f6396195e",
+      "upstream_sha256": "fb7ea6b57bc05fb3e0e58d24b1b1bcb76ed9575558c19051be68756f6396195e",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/profiles/deepseek.py": {
+      "sha256": "d9939e00606bceac26cdcbae67e8eb1cce6b411ce4a06ae5d9e355b3ae3a1a50",
+      "upstream_sha256": "d9939e00606bceac26cdcbae67e8eb1cce6b411ce4a06ae5d9e355b3ae3a1a50",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/profiles/google.py": {
+      "sha256": "04ce27e7c05967cff736886c9837189aad31b4b177f87e72c20929e89a7794f8",
+      "upstream_sha256": "04ce27e7c05967cff736886c9837189aad31b4b177f87e72c20929e89a7794f8",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/profiles/grok.py": {
+      "sha256": "f1e1e9f694f617e4adb68fcd38a3f70be16c13f7d6322d98f96359cea15e0308",
+      "upstream_sha256": "f1e1e9f694f617e4adb68fcd38a3f70be16c13f7d6322d98f96359cea15e0308",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/profiles/groq.py": {
+      "sha256": "9cd20b89a640fd988720a212f9ef3e9c1982c4f9842871ac31d8090204bde179",
+      "upstream_sha256": "9cd20b89a640fd988720a212f9ef3e9c1982c4f9842871ac31d8090204bde179",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/profiles/harmony.py": {
+      "sha256": "50cf67b874117790d2e023fafc5154a05924882b3a19a8066ee723ef7ef7d08a",
+      "upstream_sha256": "50cf67b874117790d2e023fafc5154a05924882b3a19a8066ee723ef7ef7d08a",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/profiles/meta.py": {
+      "sha256": "25d65ca5d456c7c3d8d6953d6768bf4d8b40d02a5b836df1c85ad5ede5e7a286",
+      "upstream_sha256": "25d65ca5d456c7c3d8d6953d6768bf4d8b40d02a5b836df1c85ad5ede5e7a286",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/profiles/mistral.py": {
+      "sha256": "e665ce52de338637c755e43fcc2e011826c3ff998fc8c9f8696efc4db8e1d44f",
+      "upstream_sha256": "e665ce52de338637c755e43fcc2e011826c3ff998fc8c9f8696efc4db8e1d44f",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/profiles/moonshotai.py": {
+      "sha256": "650113e60d1387b705f5d6674f7ee22f7b46eff9cdecddaf5887cfedcfca594c",
+      "upstream_sha256": "650113e60d1387b705f5d6674f7ee22f7b46eff9cdecddaf5887cfedcfca594c",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/profiles/openai.py": {
+      "sha256": "4a471e3be9d3e174c19da61f395664c71c336be1a70038730b1afb7df2fa20be",
+      "upstream_sha256": "4a471e3be9d3e174c19da61f395664c71c336be1a70038730b1afb7df2fa20be",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/profiles/qwen.py": {
+      "sha256": "8cdff97a42a718360409c61111f5a567c8879b3f037a20092187b68eea8e9f8a",
+      "upstream_sha256": "8cdff97a42a718360409c61111f5a567c8879b3f037a20092187b68eea8e9f8a",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/profiles/zai.py": {
+      "sha256": "665c52a0b3ce4726b3afd5aa602df635592e093ee07d5528f6de0f524bf4dc8d",
+      "upstream_sha256": "665c52a0b3ce4726b3afd5aa602df635592e093ee07d5528f6de0f524bf4dc8d",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/AGENTS.md": {
+      "sha256": "9716b4c8823d0d92e877fce5117b52fe4da3029fda5405f54b8b1abbff9580e4",
+      "upstream_sha256": "9716b4c8823d0d92e877fce5117b52fe4da3029fda5405f54b8b1abbff9580e4",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/__init__.py": {
+      "sha256": "494b2cf90f9206d1cbd17b098b2ee6eca9ae706768c3ecf795079ade951c2415",
+      "upstream_sha256": "494b2cf90f9206d1cbd17b098b2ee6eca9ae706768c3ecf795079ade951c2415",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/_bedrock_model_names.py": {
+      "sha256": "8073d387419e9f3fe5722a925abd9eb192def76946fcce2b5566d2748174eb0c",
+      "upstream_sha256": "8073d387419e9f3fe5722a925abd9eb192def76946fcce2b5566d2748174eb0c",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/_openai_compatible.py": {
+      "sha256": "2a65e3e3e3ccd5352de327d458f40f393805532f0c4117e6b10141d827ae2957",
+      "upstream_sha256": "2a65e3e3e3ccd5352de327d458f40f393805532f0c4117e6b10141d827ae2957",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/alibaba.py": {
+      "sha256": "7830d1dfade0cc3565391f5d54951f9d25c78ba137c44810b459aabaefa9da4e",
+      "upstream_sha256": "7830d1dfade0cc3565391f5d54951f9d25c78ba137c44810b459aabaefa9da4e",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/anthropic.py": {
+      "sha256": "320c516c802bd29609a209e117120b9f4d5c0a4a0801b5430efead38fc874ee1",
+      "upstream_sha256": "320c516c802bd29609a209e117120b9f4d5c0a4a0801b5430efead38fc874ee1",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/azure.py": {
+      "sha256": "5db3444a5cd355137d96229acfe57d470e0a67cf0606bcdf61c7647a0dc5aa87",
+      "upstream_sha256": "5db3444a5cd355137d96229acfe57d470e0a67cf0606bcdf61c7647a0dc5aa87",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/bedrock.py": {
+      "sha256": "d73eb5224fdf6be303150666cea578a3e49140620422656d1d14e08909307bd7",
+      "upstream_sha256": "d73eb5224fdf6be303150666cea578a3e49140620422656d1d14e08909307bd7",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/bedrock_mantle.py": {
+      "sha256": "11de6b974d27b5c871e096d3b949df7a43ec1201a0e98574c2f2a179bcc4640f",
+      "upstream_sha256": "11de6b974d27b5c871e096d3b949df7a43ec1201a0e98574c2f2a179bcc4640f",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/cerebras.py": {
+      "sha256": "6342487de3509dd3b50d4cf61bcdf997accb4da1ade676d776341305168ff903",
+      "upstream_sha256": "6342487de3509dd3b50d4cf61bcdf997accb4da1ade676d776341305168ff903",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/cohere.py": {
+      "sha256": "1600b1fb1f09184c5190198e9deeb88a5c4091a8214ecd13b4a5e3b4e5211939",
+      "upstream_sha256": "1600b1fb1f09184c5190198e9deeb88a5c4091a8214ecd13b4a5e3b4e5211939",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/crusoe.py": {
+      "sha256": "530fd6133ead4cc8e2d8413e9a91520627d0afcec46995ae98690d18a7b7549c",
+      "upstream_sha256": "530fd6133ead4cc8e2d8413e9a91520627d0afcec46995ae98690d18a7b7549c",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/deepseek.py": {
+      "sha256": "30d9141294d2259b69d63c9d1224946e7e0c693e8ae0ec7a080bc878f02e8594",
+      "upstream_sha256": "30d9141294d2259b69d63c9d1224946e7e0c693e8ae0ec7a080bc878f02e8594",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/fireworks.py": {
+      "sha256": "dec37627425acc3dc9aa753c5c952278231e1c835e5a5d715b9067d5ca304e4a",
+      "upstream_sha256": "dec37627425acc3dc9aa753c5c952278231e1c835e5a5d715b9067d5ca304e4a",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/gateway.py": {
+      "sha256": "83c58c3f2404de712314052c0372ad704b7d80b5e52b88dc6135d9b4657b6445",
+      "upstream_sha256": "83c58c3f2404de712314052c0372ad704b7d80b5e52b88dc6135d9b4657b6445",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/github.py": {
+      "sha256": "b3c7eac4fe47a49298fc905bd21a9add32adfff0a171eff5c8b360ec397ae81b",
+      "upstream_sha256": "b3c7eac4fe47a49298fc905bd21a9add32adfff0a171eff5c8b360ec397ae81b",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/google.py": {
+      "sha256": "0f07f65bbb3e308f4f9dd4b8ba2ff16b2c84757889e07ab60c2f0235c22b30cb",
+      "upstream_sha256": "0f07f65bbb3e308f4f9dd4b8ba2ff16b2c84757889e07ab60c2f0235c22b30cb",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/google_cloud.py": {
+      "sha256": "d300843744ac301f8a15555d4d9455ce29b646e51b3f3a28ec6ef32b01ba2cb3",
+      "upstream_sha256": "d300843744ac301f8a15555d4d9455ce29b646e51b3f3a28ec6ef32b01ba2cb3",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/groq.py": {
+      "sha256": "c9969053b60271561ac40aca6e21f9b2b9c99c1014b88def4d6fa2e4152bf606",
+      "upstream_sha256": "c9969053b60271561ac40aca6e21f9b2b9c99c1014b88def4d6fa2e4152bf606",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/heroku.py": {
+      "sha256": "a3836f99347850ca0028a7ae78c426549947723633771c32d90e3fd8a8c388b7",
+      "upstream_sha256": "a3836f99347850ca0028a7ae78c426549947723633771c32d90e3fd8a8c388b7",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/huggingface.py": {
+      "sha256": "c609c10bc1604f4982d08f69c5c8ce448e82199393019b939ee47ceb226eaf29",
+      "upstream_sha256": "c609c10bc1604f4982d08f69c5c8ce448e82199393019b939ee47ceb226eaf29",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/litellm.py": {
+      "sha256": "ec63be0c6088a3d24899eaaa0b0b9182dac61d868f7f6f460c08fb4f5a703cac",
+      "upstream_sha256": "ec63be0c6088a3d24899eaaa0b0b9182dac61d868f7f6f460c08fb4f5a703cac",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/mistral.py": {
+      "sha256": "d912f8ad8c5365cbfb0601f4ce3a4ad1830e5ca9911b95b7738866913b42a5a5",
+      "upstream_sha256": "d912f8ad8c5365cbfb0601f4ce3a4ad1830e5ca9911b95b7738866913b42a5a5",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/moonshotai.py": {
+      "sha256": "ba763640021c3c8dedcf3e5b42fb0378364ae4cc46a74cc22b04aedd4d217e2e",
+      "upstream_sha256": "ba763640021c3c8dedcf3e5b42fb0378364ae4cc46a74cc22b04aedd4d217e2e",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/nebius.py": {
+      "sha256": "65f1d34f5a7898e344870cdaf523c8faf68d25864ae219bf91deea6f8e3d80e3",
+      "upstream_sha256": "65f1d34f5a7898e344870cdaf523c8faf68d25864ae219bf91deea6f8e3d80e3",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/ollama.py": {
+      "sha256": "e1cd88bbfd6f7346f79f59c03cf15162d960bf0f1a0152b305a9a478db00abc4",
+      "upstream_sha256": "e1cd88bbfd6f7346f79f59c03cf15162d960bf0f1a0152b305a9a478db00abc4",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/openai.py": {
+      "sha256": "27f5570b961790b67a4196a02e7235fc1e2e563105e9ef93a5f4e6a051d017ca",
+      "upstream_sha256": "27f5570b961790b67a4196a02e7235fc1e2e563105e9ef93a5f4e6a051d017ca",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/openrouter.py": {
+      "sha256": "8f85269b31ab9c2bfaa7b6b35901b379c27a41752794bd9c148b47e9a0558d4e",
+      "upstream_sha256": "8f85269b31ab9c2bfaa7b6b35901b379c27a41752794bd9c148b47e9a0558d4e",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/ovhcloud.py": {
+      "sha256": "3089ee4a3992e6436f6d345206be2eb603fea7e90e06f0548165a95918f4c96b",
+      "upstream_sha256": "3089ee4a3992e6436f6d345206be2eb603fea7e90e06f0548165a95918f4c96b",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/sambanova.py": {
+      "sha256": "890ba87fcda13c4d7893d444f112703803cce10dc835af39b1f76320af5fa26c",
+      "upstream_sha256": "890ba87fcda13c4d7893d444f112703803cce10dc835af39b1f76320af5fa26c",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/sentence_transformers.py": {
+      "sha256": "733c9c5c4dbd6a756a304d2df9e03fba4073badf756cf1652eb9d0e954545e89",
+      "upstream_sha256": "733c9c5c4dbd6a756a304d2df9e03fba4073badf756cf1652eb9d0e954545e89",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/snowflake.py": {
+      "sha256": "1f25ddef605ce798b32fbe75cb3e8950241b7c2f82088505e7084c3937d88331",
+      "upstream_sha256": "1f25ddef605ce798b32fbe75cb3e8950241b7c2f82088505e7084c3937d88331",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/together.py": {
+      "sha256": "6233bd8e93f059f081f2262e25911abdf4f5c5933219112e51785e1ef0f43bb7",
+      "upstream_sha256": "6233bd8e93f059f081f2262e25911abdf4f5c5933219112e51785e1ef0f43bb7",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/vercel.py": {
+      "sha256": "572320b63c1f0e634cbf4598c83e7227e581f3d1530dc6588627a5930f35df2f",
+      "upstream_sha256": "572320b63c1f0e634cbf4598c83e7227e581f3d1530dc6588627a5930f35df2f",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/vllm.py": {
+      "sha256": "78d9bff61d62989378303381efaf0df91301a4c6024db254a1c1736ee214b712",
+      "upstream_sha256": "78d9bff61d62989378303381efaf0df91301a4c6024db254a1c1736ee214b712",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/voyageai.py": {
+      "sha256": "1094de80700b1cc1c28a629d257e323ecf8fa6f7742a5dcc8f4eb265cc661c80",
+      "upstream_sha256": "1094de80700b1cc1c28a629d257e323ecf8fa6f7742a5dcc8f4eb265cc661c80",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/xai.py": {
+      "sha256": "f2c5ad59512a5bc2ddf5d8361a34312e41829f6539fe0a389857806c774993cf",
+      "upstream_sha256": "f2c5ad59512a5bc2ddf5d8361a34312e41829f6539fe0a389857806c774993cf",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/providers/zai.py": {
+      "sha256": "268d9588ccfa0620d650bf4428262a8abccd38894996a8a33f2ec71337192987",
+      "upstream_sha256": "268d9588ccfa0620d650bf4428262a8abccd38894996a8a33f2ec71337192987",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/realtime/AGENTS.md": {
+      "sha256": "b4da4e8f9eb373e981130deb2b6e62f1fded2a5a1a29f1fc3f0062f20789a4d2",
+      "upstream_sha256": "b4da4e8f9eb373e981130deb2b6e62f1fded2a5a1a29f1fc3f0062f20789a4d2",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/realtime/__init__.py": {
+      "sha256": "8ef7fac3a6850c1f9fb190b9398e6aef0e764f6602c09d0d4839a93d22664302",
+      "upstream_sha256": "8ef7fac3a6850c1f9fb190b9398e6aef0e764f6602c09d0d4839a93d22664302",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/realtime/_instrumentation.py": {
+      "sha256": "e4bd06222e8cfa43b7b85bb91a2e0e2b38347e652dbff62581d2b403c53d23d4",
+      "upstream_sha256": "e4bd06222e8cfa43b7b85bb91a2e0e2b38347e652dbff62581d2b403c53d23d4",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/realtime/_openai_protocol.py": {
+      "sha256": "3d6906e8bdbe5dd8d5c40656aeee9c006a64d217273ddbbeeaa703b3b84cddbc",
+      "upstream_sha256": "3d6906e8bdbe5dd8d5c40656aeee9c006a64d217273ddbbeeaa703b3b84cddbc",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/realtime/_openai_webrtc.py": {
+      "sha256": "3e639c65bd5229ca9aa35880a15c850484d87abf9419ca820a43b8e0755f8447",
+      "upstream_sha256": "3e639c65bd5229ca9aa35880a15c850484d87abf9419ca820a43b8e0755f8447",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/realtime/_session.py": {
+      "sha256": "afd8b0b6ce748b18aca6b521deb71591057dc87e3dca8c2fcf8dec5b6d1ddebe",
+      "upstream_sha256": "afd8b0b6ce748b18aca6b521deb71591057dc87e3dca8c2fcf8dec5b6d1ddebe",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/realtime/_utils.py": {
+      "sha256": "bee53207c762fa2c7ad45d454cc28726f26f74de5acc98220aff7720f04d18b4",
+      "upstream_sha256": "bee53207c762fa2c7ad45d454cc28726f26f74de5acc98220aff7720f04d18b4",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/realtime/azure.py": {
+      "sha256": "529f047d0e13019e49e8801ecbce4e9d15dcc3d30e19807d0371969ddda7c9a1",
+      "upstream_sha256": "529f047d0e13019e49e8801ecbce4e9d15dcc3d30e19807d0371969ddda7c9a1",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/realtime/codec.py": {
+      "sha256": "61fead1181fa5648822e550857da69a036403c92c8f102e0c349961f0429ca24",
+      "upstream_sha256": "61fead1181fa5648822e550857da69a036403c92c8f102e0c349961f0429ca24",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/realtime/google.py": {
+      "sha256": "010cafed2dc11a8fe2b782a3fe4dee3e0a5d411e15aee0d89c099f97d04ca10e",
+      "upstream_sha256": "010cafed2dc11a8fe2b782a3fe4dee3e0a5d411e15aee0d89c099f97d04ca10e",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/realtime/model.py": {
+      "sha256": "41d82ebff32db1de93513a35bad10b42faca186885e2e02944d807b279af1a8a",
+      "upstream_sha256": "41d82ebff32db1de93513a35bad10b42faca186885e2e02944d807b279af1a8a",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/realtime/openai.py": {
+      "sha256": "de358d0f6e5f464480759f6c23e1219520f0131306cdb1560693412f91413ec9",
+      "upstream_sha256": "de358d0f6e5f464480759f6c23e1219520f0131306cdb1560693412f91413ec9",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/realtime/profiles.py": {
+      "sha256": "d03d02ceff57870f4c99668fd627a389cd2ae4550afcbfcd34de0c5de179e264",
+      "upstream_sha256": "d03d02ceff57870f4c99668fd627a389cd2ae4550afcbfcd34de0c5de179e264",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/realtime/settings.py": {
+      "sha256": "428bea9246284ffb8c382069ae835be49d4fd05946e7e7c1fa21e5d7569cddd8",
+      "upstream_sha256": "428bea9246284ffb8c382069ae835be49d4fd05946e7e7c1fa21e5d7569cddd8",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/realtime/xai.py": {
+      "sha256": "2db1be3e79c7e2e21508b227556519d699a22fdf4523ed6c08948cfd68459ad8",
+      "upstream_sha256": "2db1be3e79c7e2e21508b227556519d699a22fdf4523ed6c08948cfd68459ad8",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/toolsets/AGENTS.md": {
+      "sha256": "7c8ca74b327d743679523662e6db24a7c27622ee08b1f8654094fee8b4ef7812",
+      "upstream_sha256": "7c8ca74b327d743679523662e6db24a7c27622ee08b1f8654094fee8b4ef7812",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/toolsets/__init__.py": {
+      "sha256": "fed0d8cb5f81a3164ec2afa067d27b7ecfd5a91af7b0adc56dbe5d8b593e31a1",
+      "upstream_sha256": "fed0d8cb5f81a3164ec2afa067d27b7ecfd5a91af7b0adc56dbe5d8b593e31a1",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/toolsets/_capability_owned.py": {
+      "sha256": "0e25c8c991cea6188f5c23d4043750978acf8c5c05350f2a1ae24197da72037c",
+      "upstream_sha256": "0e25c8c991cea6188f5c23d4043750978acf8c5c05350f2a1ae24197da72037c",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/toolsets/_deferred_capability_loader.py": {
+      "sha256": "bfa29a432a54d91f3e0d4340fecb8d27d72af7314f1a4c3542cfda1e6140c516",
+      "upstream_sha256": "bfa29a432a54d91f3e0d4340fecb8d27d72af7314f1a4c3542cfda1e6140c516",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/toolsets/_dynamic.py": {
+      "sha256": "4a4c7c0de7f73432dc414d7cf56214cd54e6c66f7b40f966c742722a43a4b70f",
+      "upstream_sha256": "4a4c7c0de7f73432dc414d7cf56214cd54e6c66f7b40f966c742722a43a4b70f",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/toolsets/_instruction_collection.py": {
+      "sha256": "82afc92773612078501f86d4825a41d11efbbfd54df6dfe9f9f8909f56cc1d36",
+      "upstream_sha256": "82afc92773612078501f86d4825a41d11efbbfd54df6dfe9f9f8909f56cc1d36",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/toolsets/_tool_search.py": {
+      "sha256": "43ac0b95a140a6802f5dc911cd6d6267f1d472f016b56d2b81bec8c39ddcb2d3",
+      "upstream_sha256": "43ac0b95a140a6802f5dc911cd6d6267f1d472f016b56d2b81bec8c39ddcb2d3",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/toolsets/abstract.py": {
+      "sha256": "e6f4397b036c23732472b985e47cedbdda2cac10f30d8b7c6322a8b1fa06cf27",
+      "upstream_sha256": "e6f4397b036c23732472b985e47cedbdda2cac10f30d8b7c6322a8b1fa06cf27",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/toolsets/approval_required.py": {
+      "sha256": "cf2606131d95aa9acb79dd7a397835416afcd6b9c00740a60334dec9027d038a",
+      "upstream_sha256": "cf2606131d95aa9acb79dd7a397835416afcd6b9c00740a60334dec9027d038a",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/toolsets/combined.py": {
+      "sha256": "2ebd4f1fc783f3c797f32f80b56e3e96ccdf477c67acdcff098693d05a3ee114",
+      "upstream_sha256": "2ebd4f1fc783f3c797f32f80b56e3e96ccdf477c67acdcff098693d05a3ee114",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/toolsets/deferred_loading.py": {
+      "sha256": "6e8924ced57282166fbde7ac099866ab38dd3cfdd0dac169f9fe1683fa1f863a",
+      "upstream_sha256": "6e8924ced57282166fbde7ac099866ab38dd3cfdd0dac169f9fe1683fa1f863a",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/toolsets/external.py": {
+      "sha256": "47770d0c1945391209594e73be231a36002adbdb5feb024f4c7d5a8e1e159a54",
+      "upstream_sha256": "47770d0c1945391209594e73be231a36002adbdb5feb024f4c7d5a8e1e159a54",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/toolsets/filtered.py": {
+      "sha256": "b4ebb885cd5bbdadc39b4dbbf14fc0c09c46a5055d12230b88778594befed515",
+      "upstream_sha256": "b4ebb885cd5bbdadc39b4dbbf14fc0c09c46a5055d12230b88778594befed515",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/toolsets/function.py": {
+      "sha256": "266905bdbdb6a2678a43fd6ea05da9f75a180fa37227d4e6c26974f7e3fcf8f7",
+      "upstream_sha256": "266905bdbdb6a2678a43fd6ea05da9f75a180fa37227d4e6c26974f7e3fcf8f7",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/toolsets/include_return_schemas.py": {
+      "sha256": "aca00a27245796596139615a58916d7814164fad442f8de0fde7a3c837f876da",
+      "upstream_sha256": "aca00a27245796596139615a58916d7814164fad442f8de0fde7a3c837f876da",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/toolsets/prefixed.py": {
+      "sha256": "d0ac1c0e45bc38cdfa654b0e2d53f987e363dad3eaefc2f7fc4d9cfb515b879b",
+      "upstream_sha256": "d0ac1c0e45bc38cdfa654b0e2d53f987e363dad3eaefc2f7fc4d9cfb515b879b",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/toolsets/prepared.py": {
+      "sha256": "2e2fff18b001dfe547b86b0c96cde74369d2f9fd68ca537b3a0c24d983480dd5",
+      "upstream_sha256": "2e2fff18b001dfe547b86b0c96cde74369d2f9fd68ca537b3a0c24d983480dd5",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/toolsets/renamed.py": {
+      "sha256": "c53eb92b161c1f1f419bd88c217c69b1d12199d17beca127543a609e7abc2e7d",
+      "upstream_sha256": "c53eb92b161c1f1f419bd88c217c69b1d12199d17beca127543a609e7abc2e7d",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/toolsets/set_metadata.py": {
+      "sha256": "d28c3d8026ec698e94ff972d3974bd51a281bc2804ad404676bd548406beffa2",
+      "upstream_sha256": "d28c3d8026ec698e94ff972d3974bd51a281bc2804ad404676bd548406beffa2",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/toolsets/wrapper.py": {
+      "sha256": "b3440d16a51099e1379575f5a0e123b68fbe5fd991d59fa62ea0b65ecbc12fdc",
+      "upstream_sha256": "b3440d16a51099e1379575f5a0e123b68fbe5fd991d59fa62ea0b65ecbc12fdc",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/AGENTS.md": {
+      "sha256": "3deb6ef175bc5f5a226d7d14d9c1c2d30e9d4de92f640ed9782abcb085438410",
+      "upstream_sha256": "3deb6ef175bc5f5a226d7d14d9c1c2d30e9d4de92f640ed9782abcb085438410",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/__init__.py": {
+      "sha256": "7334c8430dd399c4e3d0480aece37e738cf17c0f868d501c2e2db8218a4b3a93",
+      "upstream_sha256": "7334c8430dd399c4e3d0480aece37e738cf17c0f868d501c2e2db8218a4b3a93",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/_adapter.py": {
+      "sha256": "42c48930c58c42c2b0287666c3d136d00a209dff360ab86c64ac62406f5edd7f",
+      "upstream_sha256": "42c48930c58c42c2b0287666c3d136d00a209dff360ab86c64ac62406f5edd7f",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/_event_stream.py": {
+      "sha256": "870245781b8ce52b88b3f11296be59adf35a0488a712ab2a6844fafe9ea49ad3",
+      "upstream_sha256": "870245781b8ce52b88b3f11296be59adf35a0488a712ab2a6844fafe9ea49ad3",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/_messages_builder.py": {
+      "sha256": "2c63d3ebf5fee7410ae448441938f031a6ffefae4c22c4d2ab035fb3f63b0181",
+      "upstream_sha256": "2c63d3ebf5fee7410ae448441938f031a6ffefae4c22c4d2ab035fb3f63b0181",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/_web/__init__.py": {
+      "sha256": "d5bb6564dba27010109bc7c830d04ac3f51e2c0e0c9ae2b0f4667384a965015f",
+      "upstream_sha256": "d5bb6564dba27010109bc7c830d04ac3f51e2c0e0c9ae2b0f4667384a965015f",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/_web/_hosts.py": {
+      "sha256": "d4391fb5e54ae52c5d2c768ad602518a869a7791dc3b4a4d3343fc24b6074e09",
+      "upstream_sha256": "d4391fb5e54ae52c5d2c768ad602518a869a7791dc3b4a4d3343fc24b6074e09",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/_web/api.py": {
+      "sha256": "b8a2ed917507227bd22f2a884ffba34aa1537e8f44f050b7804a4474cf829a7f",
+      "upstream_sha256": "b8a2ed917507227bd22f2a884ffba34aa1537e8f44f050b7804a4474cf829a7f",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/_web/app.py": {
+      "sha256": "ae399b34bc0601957732123e7f818875529fcba0ebd2ec1f6732ed147030ef94",
+      "upstream_sha256": "ae399b34bc0601957732123e7f818875529fcba0ebd2ec1f6732ed147030ef94",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/ag_ui/__init__.py": {
+      "sha256": "bf53d519d220901f9a83366c7fcb3525943247f96562e46ed923af123bfd1ca4",
+      "upstream_sha256": "bf53d519d220901f9a83366c7fcb3525943247f96562e46ed923af123bfd1ca4",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/ag_ui/_adapter.py": {
+      "sha256": "95e7b733bde13e22fcfa75ca4649bc297439954785d31e6d39ba77dd79ab0112",
+      "upstream_sha256": "95e7b733bde13e22fcfa75ca4649bc297439954785d31e6d39ba77dd79ab0112",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/ag_ui/_event_stream.py": {
+      "sha256": "d96a79820a858a709a78cb041a74f1d19550155299cc7bf54a94518ba7dd0fbe",
+      "upstream_sha256": "d96a79820a858a709a78cb041a74f1d19550155299cc7bf54a94518ba7dd0fbe",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/ag_ui/_forward_compat.py": {
+      "sha256": "c6a80db32fc5777927bacb98cf7d470990a8bbe83ac77dcad2616994738c8ea0",
+      "upstream_sha256": "c6a80db32fc5777927bacb98cf7d470990a8bbe83ac77dcad2616994738c8ea0",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/ag_ui/_interrupt.py": {
+      "sha256": "38ccd8546ebc7afa65e7a54b76900aa9a04a755455f77338fa2a9107cc34320b",
+      "upstream_sha256": "38ccd8546ebc7afa65e7a54b76900aa9a04a755455f77338fa2a9107cc34320b",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/ag_ui/_multimodal.py": {
+      "sha256": "06cb418b1b185693ebc52d9c4f52ba2c79393972da5f3374b0c7120177bf2356",
+      "upstream_sha256": "06cb418b1b185693ebc52d9c4f52ba2c79393972da5f3374b0c7120177bf2356",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/ag_ui/_thinking_0_10.py": {
+      "sha256": "aa47dcc21817b6ae1e2a26caebbfca2ff8da714b7857cd894d6944f1032afefb",
+      "upstream_sha256": "aa47dcc21817b6ae1e2a26caebbfca2ff8da714b7857cd894d6944f1032afefb",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/ag_ui/_thinking_0_11.py": {
+      "sha256": "632d37f509eab9eee7e43a99a5016ded944212dbe5ceff0f7576b7b513813fe0",
+      "upstream_sha256": "632d37f509eab9eee7e43a99a5016ded944212dbe5ceff0f7576b7b513813fe0",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/ag_ui/_utils.py": {
+      "sha256": "3f42fc278b0d5ee8cfa39da046c7f678bc1e08b2d22a045761ed05314f1feecc",
+      "upstream_sha256": "3f42fc278b0d5ee8cfa39da046c7f678bc1e08b2d22a045761ed05314f1feecc",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/vercel_ai/__init__.py": {
+      "sha256": "446e89fd6ec7afcf573fe1924fcb913cc6f1bde036101e019a8612b94928efdb",
+      "upstream_sha256": "446e89fd6ec7afcf573fe1924fcb913cc6f1bde036101e019a8612b94928efdb",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/vercel_ai/_adapter.py": {
+      "sha256": "90ec891e7d28443f97bd07bdededd53379597ad0353a51a03403cc991f8675e4",
+      "upstream_sha256": "90ec891e7d28443f97bd07bdededd53379597ad0353a51a03403cc991f8675e4",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/vercel_ai/_event_stream.py": {
+      "sha256": "40340ae489a46508dc8d40c6f496ff4c0eead823f2fc93edef5115872d43ed98",
+      "upstream_sha256": "40340ae489a46508dc8d40c6f496ff4c0eead823f2fc93edef5115872d43ed98",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/vercel_ai/_models.py": {
+      "sha256": "395a9a60f5c14a68d44de5645d7e29d5c912bf1b8501bdde59c4ec6141839292",
+      "upstream_sha256": "395a9a60f5c14a68d44de5645d7e29d5c912bf1b8501bdde59c4ec6141839292",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/vercel_ai/_utils.py": {
+      "sha256": "6f95cf10ed9f543ab1273d5409bcae5724d5ea864ecea55f64b8f415c2c5040c",
+      "upstream_sha256": "6f95cf10ed9f543ab1273d5409bcae5724d5ea864ecea55f64b8f415c2c5040c",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/vercel_ai/request_types.py": {
+      "sha256": "10a3ea54efb37a722b08774d5c346e493350a7db8c34a2738b3e66a83ea23455",
+      "upstream_sha256": "10a3ea54efb37a722b08774d5c346e493350a7db8c34a2738b3e66a83ea23455",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_ai/ui/vercel_ai/response_types.py": {
+      "sha256": "29406a9c9d043730de32eb43357a221cb44aa3b848635b19d02f2a6ba512e6d1",
+      "upstream_sha256": "29406a9c9d043730de32eb43357a221cb44aa3b848635b19d02f2a6ba512e6d1",
+      "role": "runtime",
+      "component": "pydantic-ai-slim"
+    },
+    "licenses/pydantic-ai-slim.txt": {
+      "sha256": "bc0e89738f36944c8106e1947c3d69631f9c33b8f1bcb60ec4f89d677d2dfcf4",
+      "role": "license",
+      "component": "pydantic-ai-slim"
+    },
+    "pydantic_graph/__init__.py": {
+      "sha256": "85b9bd7dc0f513dfd629955f0332f6f01df3d287869ae07d9e69bdee9177d09a",
+      "upstream_sha256": "85b9bd7dc0f513dfd629955f0332f6f01df3d287869ae07d9e69bdee9177d09a",
+      "role": "runtime",
+      "component": "pydantic-graph"
+    },
+    "pydantic_graph/_utils.py": {
+      "sha256": "2d1407ba952887118df469b44598196c8a8030bbffb37023d7bf9dde0dc14077",
+      "upstream_sha256": "2d1407ba952887118df469b44598196c8a8030bbffb37023d7bf9dde0dc14077",
+      "role": "runtime",
+      "component": "pydantic-graph"
+    },
+    "pydantic_graph/basenode.py": {
+      "sha256": "35298634b6e83a64eb479cc4a3f2b54495b72284350a99754b44a66a723bf52e",
+      "upstream_sha256": "35298634b6e83a64eb479cc4a3f2b54495b72284350a99754b44a66a723bf52e",
+      "role": "runtime",
+      "component": "pydantic-graph"
+    },
+    "pydantic_graph/decision.py": {
+      "sha256": "c3198e51d18d06769d13523eb5111e17730b9ca1dd4947a5c8d0a2801feb387d",
+      "upstream_sha256": "c3198e51d18d06769d13523eb5111e17730b9ca1dd4947a5c8d0a2801feb387d",
+      "role": "runtime",
+      "component": "pydantic-graph"
+    },
+    "pydantic_graph/exceptions.py": {
+      "sha256": "0455b45c24a6d0e22499a2a40a984ca931362008aceaa5c5869d40beff8dc3ae",
+      "upstream_sha256": "0455b45c24a6d0e22499a2a40a984ca931362008aceaa5c5869d40beff8dc3ae",
+      "role": "runtime",
+      "component": "pydantic-graph"
+    },
+    "pydantic_graph/graph_builder.py": {
+      "sha256": "330454e15f85e4b70e25b576a42bf6bd4383ae12f19651e52eb26b7293934d45",
+      "upstream_sha256": "330454e15f85e4b70e25b576a42bf6bd4383ae12f19651e52eb26b7293934d45",
+      "role": "runtime",
+      "component": "pydantic-graph"
+    },
+    "pydantic_graph/id_types.py": {
+      "sha256": "159deb612b9b17a83f39cbf47da2f7c89b32d6534df4019997d7ff8b3bce4548",
+      "upstream_sha256": "159deb612b9b17a83f39cbf47da2f7c89b32d6534df4019997d7ff8b3bce4548",
+      "role": "runtime",
+      "component": "pydantic-graph"
+    },
+    "pydantic_graph/join.py": {
+      "sha256": "2b6f57ac92c5291c7b002a78976bbf7010732ce51d77d2d8e7290ec1e15adea0",
+      "upstream_sha256": "2b6f57ac92c5291c7b002a78976bbf7010732ce51d77d2d8e7290ec1e15adea0",
+      "role": "runtime",
+      "component": "pydantic-graph"
+    },
+    "pydantic_graph/node.py": {
+      "sha256": "76b8a6f1795f7a544cf010c6ee6a6beca0b637f7e843fe71d1930bbd8a0f93ac",
+      "upstream_sha256": "76b8a6f1795f7a544cf010c6ee6a6beca0b637f7e843fe71d1930bbd8a0f93ac",
+      "role": "runtime",
+      "component": "pydantic-graph"
+    },
+    "pydantic_graph/node_types.py": {
+      "sha256": "bf3024e5680613b5f352a7eb26e6ffb51cbe39ec0c8ac696d91ee3c5e854b27a",
+      "upstream_sha256": "bf3024e5680613b5f352a7eb26e6ffb51cbe39ec0c8ac696d91ee3c5e854b27a",
+      "role": "runtime",
+      "component": "pydantic-graph"
+    },
+    "pydantic_graph/parent_forks.py": {
+      "sha256": "94c093dec9700ee66d88b6489aa5ee5be8b465fb4e342586afb453a4201ef5d6",
+      "upstream_sha256": "94c093dec9700ee66d88b6489aa5ee5be8b465fb4e342586afb453a4201ef5d6",
+      "role": "runtime",
+      "component": "pydantic-graph"
+    },
+    "pydantic_graph/paths.py": {
+      "sha256": "9cafe08ade8edd4e2ddd6e7c96d36585d51cd4b3ab51a533814c0b6042a563f3",
+      "upstream_sha256": "9cafe08ade8edd4e2ddd6e7c96d36585d51cd4b3ab51a533814c0b6042a563f3",
+      "role": "runtime",
+      "component": "pydantic-graph"
+    },
+    "pydantic_graph/py.typed": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "upstream_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "role": "runtime",
+      "component": "pydantic-graph"
+    },
+    "pydantic_graph/step.py": {
+      "sha256": "48652a2720ca8600f1a20d4a205a9d85e155f148c8fa43611f5bb7fdea4f0964",
+      "upstream_sha256": "48652a2720ca8600f1a20d4a205a9d85e155f148c8fa43611f5bb7fdea4f0964",
+      "role": "runtime",
+      "component": "pydantic-graph"
+    },
+    "pydantic_graph/util.py": {
+      "sha256": "17b224482d14fad535c8ec6772c9723ab6791e5ad921d69f049011b0f7ad2074",
+      "upstream_sha256": "17b224482d14fad535c8ec6772c9723ab6791e5ad921d69f049011b0f7ad2074",
+      "role": "runtime",
+      "component": "pydantic-graph"
+    },
+    "licenses/pydantic-graph.txt": {
+      "sha256": "bc0e89738f36944c8106e1947c3d69631f9c33b8f1bcb60ec4f89d677d2dfcf4",
+      "role": "license",
+      "component": "pydantic-graph"
+    },
+    "pydantic_ai_harness/__init__.py": {
+      "sha256": "d0a57c2e7293d98d336f7d1d4c621a9f83fb6cc9b94f8c6fe5a8648412474c90",
+      "upstream_sha256": "d0a57c2e7293d98d336f7d1d4c621a9f83fb6cc9b94f8c6fe5a8648412474c90",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/_monty_exec.py": {
+      "sha256": "f4c78a79ea1116565d08937ebd8752ccab595fea19a5d5a2a246761fb38b9938",
+      "upstream_sha256": "f4c78a79ea1116565d08937ebd8752ccab595fea19a5d5a2a246761fb38b9938",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/_output.py": {
+      "sha256": "f07ebe90cfaffadee36561c126198ff81c183d7aeb5dcdde252381b6f8bedff0",
+      "upstream_sha256": "f07ebe90cfaffadee36561c126198ff81c183d7aeb5dcdde252381b6f8bedff0",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/_usage.py": {
+      "sha256": "b404da1805c5c1a9fc63eb9ced8ae8a6156ccbbbb0af94ab9eacaadb040fb07e",
+      "upstream_sha256": "b404da1805c5c1a9fc63eb9ced8ae8a6156ccbbbb0af94ab9eacaadb040fb07e",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/_warn.py": {
+      "sha256": "04d4329bccab22ebe1e055809c0f9080bedccfa9278657848cb2627c35b624fc",
+      "upstream_sha256": "04d4329bccab22ebe1e055809c0f9080bedccfa9278657848cb2627c35b624fc",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/py.typed": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "upstream_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/.agents/skills/pydantic-ai-harness/SKILL.md": {
+      "sha256": "1492bbc887d264d6e93dd8ad514c3c5ae1f4e5fac41d8e1267287900d8877e61",
+      "upstream_sha256": "1492bbc887d264d6e93dd8ad514c3c5ae1f4e5fac41d8e1267287900d8877e61",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/.agents/skills/pydantic-ai-harness/references/CODE-MODE.md": {
+      "sha256": "561eaf1de58d8f373eb33c019b08f0a8298854c7e92e2af44055127bb8c60a16",
+      "upstream_sha256": "561eaf1de58d8f373eb33c019b08f0a8298854c7e92e2af44055127bb8c60a16",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/advisor/README.md": {
+      "sha256": "0a933ae22b350326fef1ec125848c1bc1e05e517172f404bf3be729ef2e7762d",
+      "upstream_sha256": "0a933ae22b350326fef1ec125848c1bc1e05e517172f404bf3be729ef2e7762d",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/advisor/__init__.py": {
+      "sha256": "10d6f3fde33b43bcbaee4016df18d01cf2db81176051bfb2aba516879f4daa64",
+      "upstream_sha256": "10d6f3fde33b43bcbaee4016df18d01cf2db81176051bfb2aba516879f4daa64",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/advisor/_capability.py": {
+      "sha256": "389d97b1456ea82ffcf82e1c928b388172b6a4ad3215a0dd8e0c0e52faec62eb",
+      "upstream_sha256": "389d97b1456ea82ffcf82e1c928b388172b6a4ad3215a0dd8e0c0e52faec62eb",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/browser_use/README.md": {
+      "sha256": "3f875bcc91a12b463121637e8f1ab834e58749915c792e665cd2e3507efb4657",
+      "upstream_sha256": "3f875bcc91a12b463121637e8f1ab834e58749915c792e665cd2e3507efb4657",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/browser_use/__init__.py": {
+      "sha256": "a05acd06d15b6460360d6211a6360616bcbc6d609d63416428931f8a088502ab",
+      "upstream_sha256": "a05acd06d15b6460360d6211a6360616bcbc6d609d63416428931f8a088502ab",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/browser_use/_capability.py": {
+      "sha256": "7ca90902f69a2376d4c88a5a8d5f0a035e4c28c7e57679300a798f0df17bbb24",
+      "upstream_sha256": "7ca90902f69a2376d4c88a5a8d5f0a035e4c28c7e57679300a798f0df17bbb24",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/browser_use/_model.py": {
+      "sha256": "3f8f0c6e5f5694896def378210fe9d346c412ff0a09bd71007f2d6d24600fb79",
+      "upstream_sha256": "3f8f0c6e5f5694896def378210fe9d346c412ff0a09bd71007f2d6d24600fb79",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/browser_use/_settings.py": {
+      "sha256": "b3754b03e50b227061de384d81ffdc9477f306d6e4893d3c42617da68c378fcd",
+      "upstream_sha256": "b3754b03e50b227061de384d81ffdc9477f306d6e4893d3c42617da68c378fcd",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/browser_use/_toolset.py": {
+      "sha256": "ba2c4f81d80ce61e83601704d047c75481fa5c8d226f8c4bb9b3603f767bea46",
+      "upstream_sha256": "ba2c4f81d80ce61e83601704d047c75481fa5c8d226f8c4bb9b3603f767bea46",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/cache_stability/__init__.py": {
+      "sha256": "b86ac156eed811abc8ebabff9324da822cc994d35856d44e6b2b1a2706e606f7",
+      "upstream_sha256": "b86ac156eed811abc8ebabff9324da822cc994d35856d44e6b2b1a2706e606f7",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/capability_creation/README.md": {
+      "sha256": "f21d5029cc2d20efac653b3edd6d30e123af46a6d0bc6ec07a58b62ad316fb30",
+      "upstream_sha256": "f21d5029cc2d20efac653b3edd6d30e123af46a6d0bc6ec07a58b62ad316fb30",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/capability_creation/__init__.py": {
+      "sha256": "e8542fd050eb49b552aadb997f3567ef3719f0bb79923b9f57d212e70866d7b0",
+      "upstream_sha256": "e8542fd050eb49b552aadb997f3567ef3719f0bb79923b9f57d212e70866d7b0",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/capability_creation/_capability.py": {
+      "sha256": "2b4f18ce1bbdf1d1539774ac4dd77be5b3b66dc76ecf6ec166196920efacab6e",
+      "upstream_sha256": "2b4f18ce1bbdf1d1539774ac4dd77be5b3b66dc76ecf6ec166196920efacab6e",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/capability_creation/_store.py": {
+      "sha256": "cfb14fd2f5fe9eb9311cfd7f09fa0a35711f477436b7a406a9e64906131e13b9",
+      "upstream_sha256": "cfb14fd2f5fe9eb9311cfd7f09fa0a35711f477436b7a406a9e64906131e13b9",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/capability_creation/_toolset.py": {
+      "sha256": "0576879110734d4ce575fb8da4d3f683249a9f554b0e24de88ed0e00a732344a",
+      "upstream_sha256": "0576879110734d4ce575fb8da4d3f683249a9f554b0e24de88ed0e00a732344a",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/capability_creation/_validate.py": {
+      "sha256": "d6627deff020d481b119f5b9943fbcd44e5c4d90ab3e7c729ceecca18ff445d5",
+      "upstream_sha256": "d6627deff020d481b119f5b9943fbcd44e5c4d90ab3e7c729ceecca18ff445d5",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/code_mode/README.md": {
+      "sha256": "6453df369df28fc50b9b2bc38b5f16398917ee7798a40fe1d6f49aaccf39898e",
+      "upstream_sha256": "6453df369df28fc50b9b2bc38b5f16398917ee7798a40fe1d6f49aaccf39898e",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/code_mode/__init__.py": {
+      "sha256": "6cd70f253521d7ab00f16d13b5af8b0468bebc66402f59a87bdfcad027677a71",
+      "upstream_sha256": "6cd70f253521d7ab00f16d13b5af8b0468bebc66402f59a87bdfcad027677a71",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/code_mode/_capability.py": {
+      "sha256": "55a121c6f2bdbe14dce856f05d42342dfbf361fefd8553494a25666077d99954",
+      "upstream_sha256": "55a121c6f2bdbe14dce856f05d42342dfbf361fefd8553494a25666077d99954",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/code_mode/_toolset.py": {
+      "sha256": "4d571da085f95bbd59a6477a835c2426752fac488493cc4cb06503890f747b28",
+      "upstream_sha256": "4d571da085f95bbd59a6477a835c2426752fac488493cc4cb06503890f747b28",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/coder/README.md": {
+      "sha256": "ebdc8d6d49a5a30320200f24e804a1b6d9811261e6578a02ecc4f33f57fdde2c",
+      "upstream_sha256": "ebdc8d6d49a5a30320200f24e804a1b6d9811261e6578a02ecc4f33f57fdde2c",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/coder/__init__.py": {
+      "sha256": "c3856ce51eb0a6d60ffae3399ca8cce486829351573382b8825c4344a9cae04f",
+      "upstream_sha256": "c3856ce51eb0a6d60ffae3399ca8cce486829351573382b8825c4344a9cae04f",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/coder/_agent.py": {
+      "sha256": "5a3275200d3b657fa8d2de196b5399a0c5341b0a3e11a5b9749a7ef3e519ab43",
+      "upstream_sha256": "5a3275200d3b657fa8d2de196b5399a0c5341b0a3e11a5b9749a7ef3e519ab43",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/coder/_capability.py": {
+      "sha256": "bc1251bf806f45079fb8437cbe31fbc10b673ee95f7fc609c4af2a691e20a818",
+      "upstream_sha256": "bc1251bf806f45079fb8437cbe31fbc10b673ee95f7fc609c4af2a691e20a818",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/compaction/README.md": {
+      "sha256": "9f5c0e6e04b5662b0b6986ec26de702059c7b93e8f6e7f39b4065c43e4510a4d",
+      "upstream_sha256": "9f5c0e6e04b5662b0b6986ec26de702059c7b93e8f6e7f39b4065c43e4510a4d",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/compaction/__init__.py": {
+      "sha256": "e5792342f866c7d1be4eb821229aadbb7d475033b244c8a95717325d34cf514e",
+      "upstream_sha256": "e5792342f866c7d1be4eb821229aadbb7d475033b244c8a95717325d34cf514e",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/compaction/_clamp_oversized_messages.py": {
+      "sha256": "295597f29d5d341038fa6a1334d296292c1e3ca84b956f6410b9b954d9b46f36",
+      "upstream_sha256": "295597f29d5d341038fa6a1334d296292c1e3ca84b956f6410b9b954d9b46f36",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/compaction/_clear_tool_results.py": {
+      "sha256": "0bd70a6538df92ff1d4bf169d2533c2652c7b93b637757c8a78efbb86d23a084",
+      "upstream_sha256": "0bd70a6538df92ff1d4bf169d2533c2652c7b93b637757c8a78efbb86d23a084",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/compaction/_context_window.py": {
+      "sha256": "1c3e1f82dd94c5a8360d40070d184b64134680ed37f0a45e04f70abf8d1866f7",
+      "upstream_sha256": "1c3e1f82dd94c5a8360d40070d184b64134680ed37f0a45e04f70abf8d1866f7",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/compaction/_deduplicate_file_reads.py": {
+      "sha256": "2bfdd64e9ce51768f0eded67ad011a2c62e1df31a510fedf60f92bfaa65f15a6",
+      "upstream_sha256": "2bfdd64e9ce51768f0eded67ad011a2c62e1df31a510fedf60f92bfaa65f15a6",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/compaction/_fallback_compaction.py": {
+      "sha256": "4bca4149e6e9f9e52838e645987dda477b59f145c0b2dd5d6cd1357137b32234",
+      "upstream_sha256": "4bca4149e6e9f9e52838e645987dda477b59f145c0b2dd5d6cd1357137b32234",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/compaction/_manual.py": {
+      "sha256": "719ede9a3122eb04a315fba2f777e7d5283b0d693bbfa286df2d3f908d5d877e",
+      "upstream_sha256": "719ede9a3122eb04a315fba2f777e7d5283b0d693bbfa286df2d3f908d5d877e",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/compaction/_pinning.py": {
+      "sha256": "b6b2b381151b4d6b14e8e9614c2e5cac2577a1e5b684b47493c3eb16ad28d1da",
+      "upstream_sha256": "b6b2b381151b4d6b14e8e9614c2e5cac2577a1e5b684b47493c3eb16ad28d1da",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/compaction/_receipts.py": {
+      "sha256": "a9cdca13d66392090e038a4ec6cd5406d55834aa0f4e1c88b1a41a97439bac13",
+      "upstream_sha256": "a9cdca13d66392090e038a4ec6cd5406d55834aa0f4e1c88b1a41a97439bac13",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/compaction/_report_context_usage.py": {
+      "sha256": "4936683e5bddd058edb0fd77ebd0256f2bd4c05776053a03504add84499d10cd",
+      "upstream_sha256": "4936683e5bddd058edb0fd77ebd0256f2bd4c05776053a03504add84499d10cd",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/compaction/_shared.py": {
+      "sha256": "914ba1bac99750c5b80683cd6ee770024cdbee75454de9d1ab2983525d104f49",
+      "upstream_sha256": "914ba1bac99750c5b80683cd6ee770024cdbee75454de9d1ab2983525d104f49",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/compaction/_sliding_window_compaction.py": {
+      "sha256": "e0b541dd74634c05f1516b53ceb9918fa95af2fcf05cb67b548ab7efa9970a50",
+      "upstream_sha256": "e0b541dd74634c05f1516b53ceb9918fa95af2fcf05cb67b548ab7efa9970a50",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/compaction/_summarizing_compaction.py": {
+      "sha256": "bedaf09feb9a1f58c6a2a23e1cf9f75df527368a6a34d4a9e9f0c251f6544a2b",
+      "upstream_sha256": "bedaf09feb9a1f58c6a2a23e1cf9f75df527368a6a34d4a9e9f0c251f6544a2b",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/compaction/_tiered_compaction.py": {
+      "sha256": "e0f975e1c2208324c8b5d2d2aa8b51c53278ff029f007f9bf80a604169cade3b",
+      "upstream_sha256": "e0f975e1c2208324c8b5d2d2aa8b51c53278ff029f007f9bf80a604169cade3b",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/compaction/_warn_near_limits.py": {
+      "sha256": "ef54b68177e045a3db6a87499685ae9ae3ece1febd8dd677b41b1ae805875e66",
+      "upstream_sha256": "ef54b68177e045a3db6a87499685ae9ae3ece1febd8dd677b41b1ae805875e66",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/context/__init__.py": {
+      "sha256": "931632be7c8edc18f16fb009ac7b3309aeb60d6e0a932e11f3bc57d3b420b400",
+      "upstream_sha256": "931632be7c8edc18f16fb009ac7b3309aeb60d6e0a932e11f3bc57d3b420b400",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/conversation_search/README.md": {
+      "sha256": "1630febdc1dd784fcc1560e90e55f9c6c50e56998f4b60d195758622b522f2f1",
+      "upstream_sha256": "1630febdc1dd784fcc1560e90e55f9c6c50e56998f4b60d195758622b522f2f1",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/conversation_search/__init__.py": {
+      "sha256": "b487a1854723325fc9019ac7d85396320d6ed84a09d61eabdf8c4b840b87ebe1",
+      "upstream_sha256": "b487a1854723325fc9019ac7d85396320d6ed84a09d61eabdf8c4b840b87ebe1",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/conversation_search/_capability.py": {
+      "sha256": "c37077c475c4f58cbb3a2669d798daf670e807753a6e10015f5403f5f8d5bf0f",
+      "upstream_sha256": "c37077c475c4f58cbb3a2669d798daf670e807753a6e10015f5403f5f8d5bf0f",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/conversation_search/_source.py": {
+      "sha256": "218a27aa5e84fcddb2fd09de4caab26ac2ae9fa49ca75974ea1741bb27ce92c7",
+      "upstream_sha256": "218a27aa5e84fcddb2fd09de4caab26ac2ae9fa49ca75974ea1741bb27ce92c7",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/conversation_search/_toolset.py": {
+      "sha256": "0b0d451992253c9a43abff60d4696a356e41eed6844bb33ab91f8cd96444b8ae",
+      "upstream_sha256": "0b0d451992253c9a43abff60d4696a356e41eed6844bb33ab91f8cd96444b8ae",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/docs/__init__.py": {
+      "sha256": "a321e0a28420d49d6b507994309c8831f2d2dd63a72037ed6fe5df8ad1945379",
+      "upstream_sha256": "a321e0a28420d49d6b507994309c8831f2d2dd63a72037ed6fe5df8ad1945379",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/dynamic_workflow/README.md": {
+      "sha256": "12f9eb6447053b122755183534a8365705406c49c5bbd33c7db702cc4f31273e",
+      "upstream_sha256": "12f9eb6447053b122755183534a8365705406c49c5bbd33c7db702cc4f31273e",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/dynamic_workflow/__init__.py": {
+      "sha256": "9fd4159d9ae141f0a1f4a09636ecd3ff2589bf9c8e31997c0602e9b95f92dd1e",
+      "upstream_sha256": "9fd4159d9ae141f0a1f4a09636ecd3ff2589bf9c8e31997c0602e9b95f92dd1e",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/dynamic_workflow/_capability.py": {
+      "sha256": "db5e75ed05918ea47a5801cfd2e069d439a114c6521947111ab8b7329c17a77b",
+      "upstream_sha256": "db5e75ed05918ea47a5801cfd2e069d439a114c6521947111ab8b7329c17a77b",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/dynamic_workflow/_toolset.py": {
+      "sha256": "eea13145a5bf546ccf8c7386fa9488c1b62f92f745a5b5726e5fda2f53a5e375",
+      "upstream_sha256": "eea13145a5bf546ccf8c7386fa9488c1b62f92f745a5b5726e5fda2f53a5e375",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/exa/README.md": {
+      "sha256": "17d42691da6ead77705a654c2957d07eda820cc1dcfbaf6f558870322359c3bd",
+      "upstream_sha256": "17d42691da6ead77705a654c2957d07eda820cc1dcfbaf6f558870322359c3bd",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/exa/__init__.py": {
+      "sha256": "ef214c2cee495871434ece0aac7a7f9239eade29af6dc294ebc0e8b902a48ef9",
+      "upstream_sha256": "ef214c2cee495871434ece0aac7a7f9239eade29af6dc294ebc0e8b902a48ef9",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/exa/_agent.py": {
+      "sha256": "b44ea12cc0513eb8c3578bbc468b7b44cb477d3c2c694fa36bfc16be1b992cf1",
+      "upstream_sha256": "b44ea12cc0513eb8c3578bbc468b7b44cb477d3c2c694fa36bfc16be1b992cf1",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/exa/_capability.py": {
+      "sha256": "8af82b88af4c84d58e060232fd70ce957df317b99c3119ed5ad66301de756391",
+      "upstream_sha256": "8af82b88af4c84d58e060232fd70ce957df317b99c3119ed5ad66301de756391",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/exa/_toolset.py": {
+      "sha256": "9bdb4f4d55d45bc12d22986a5b114fd615a645f02ddc5983bb8dde6ac50079a7",
+      "upstream_sha256": "9bdb4f4d55d45bc12d22986a5b114fd615a645f02ddc5983bb8dde6ac50079a7",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/experimental/__init__.py": {
+      "sha256": "01d2bd910081162d2bedfad23b25de9b2b3a3fa73e5a8ae6ffc36e319cb723d0",
+      "upstream_sha256": "01d2bd910081162d2bedfad23b25de9b2b3a3fa73e5a8ae6ffc36e319cb723d0",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/experimental/_warn.py": {
+      "sha256": "6718045c53eca2d2e876a18b5a055182d8e8186369decdca848e27d94e0a1b7e",
+      "upstream_sha256": "6718045c53eca2d2e876a18b5a055182d8e8186369decdca848e27d94e0a1b7e",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/experimental/acp/README.md": {
+      "sha256": "065bf14432d5964800abba94294f341653afb99ed4cd216055da3987c4d8dc0a",
+      "upstream_sha256": "065bf14432d5964800abba94294f341653afb99ed4cd216055da3987c4d8dc0a",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/experimental/acp/__init__.py": {
+      "sha256": "542f568f97dd38073f4e666d696d0443f752210e06fe4533b1b482e7a2b83e74",
+      "upstream_sha256": "542f568f97dd38073f4e666d696d0443f752210e06fe4533b1b482e7a2b83e74",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/experimental/acp/_adapter.py": {
+      "sha256": "954c4316d7f1eddc48e337645ec0d0c7c6f2fe36493badaa0e2105575b092cfc",
+      "upstream_sha256": "954c4316d7f1eddc48e337645ec0d0c7c6f2fe36493badaa0e2105575b092cfc",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/experimental/acp/_client_toolsets.py": {
+      "sha256": "bba2212bdf91fc6d21d2a9d07f2ec2e14ae8a870218f80221f9ea66a91746e1f",
+      "upstream_sha256": "bba2212bdf91fc6d21d2a9d07f2ec2e14ae8a870218f80221f9ea66a91746e1f",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/experimental/acp/_content.py": {
+      "sha256": "aa796727940ebd542f85d89003659f1033dc01fa7412dbf5b73f74ca0ef19eea",
+      "upstream_sha256": "aa796727940ebd542f85d89003659f1033dc01fa7412dbf5b73f74ca0ef19eea",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/experimental/acp/_permission.py": {
+      "sha256": "6387a660bc0995f6d65ebec9fc292d708fed9e263ed7cc922159cff3f445e999",
+      "upstream_sha256": "6387a660bc0995f6d65ebec9fc292d708fed9e263ed7cc922159cff3f445e999",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/experimental/acp/_presentation.py": {
+      "sha256": "bbe77771d2bac57b47313bcacf3974afd56a31d9568e2abacbb8d46ea5f32cd8",
+      "upstream_sha256": "bbe77771d2bac57b47313bcacf3974afd56a31d9568e2abacbb8d46ea5f32cd8",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/experimental/acp/_serialize.py": {
+      "sha256": "6f700270c96b873f1a00c3d50feef2a3e611de67160f36cfcc1d2866ca19dd71",
+      "upstream_sha256": "6f700270c96b873f1a00c3d50feef2a3e611de67160f36cfcc1d2866ca19dd71",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/experimental/acp/_server.py": {
+      "sha256": "0353fd3e4b055c1eebd9a9daefb55e7b79088812c0c356ee6e53d21c8f81d6c2",
+      "upstream_sha256": "0353fd3e4b055c1eebd9a9daefb55e7b79088812c0c356ee6e53d21c8f81d6c2",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/experimental/acp/_session.py": {
+      "sha256": "c88383a2e694db3e5510adc67a1fc9dd7d44c0fbfe908337c0ef06eae88b93bd",
+      "upstream_sha256": "c88383a2e694db3e5510adc67a1fc9dd7d44c0fbfe908337c0ef06eae88b93bd",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/experimental/acp/_store.py": {
+      "sha256": "5a4c5b2c04ac73459d2436ab9515cc271b980377f7ee7c45c1f1b6ea29d3b5a6",
+      "upstream_sha256": "5a4c5b2c04ac73459d2436ab9515cc271b980377f7ee7c45c1f1b6ea29d3b5a6",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/experimental/authoring/__init__.py": {
+      "sha256": "22cbd456130b21a40a5f6d05858fb624d22f283fa3b00370244c96ddd20d4e0e",
+      "upstream_sha256": "22cbd456130b21a40a5f6d05858fb624d22f283fa3b00370244c96ddd20d4e0e",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/experimental/compaction/__init__.py": {
+      "sha256": "01b9114c4f68ed55943c559a7dbfc5f0d94ae92c0ee25ca589df9b2a7878f7bd",
+      "upstream_sha256": "01b9114c4f68ed55943c559a7dbfc5f0d94ae92c0ee25ca589df9b2a7878f7bd",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/experimental/context/__init__.py": {
+      "sha256": "de730a66b0e9d54499485506d1f2c0f1be2c5371b37d62c71fe4dadebe325796",
+      "upstream_sha256": "de730a66b0e9d54499485506d1f2c0f1be2c5371b37d62c71fe4dadebe325796",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/experimental/docs/__init__.py": {
+      "sha256": "c4050633a4eb5b008c66651d65c727447d217772762b07704dc7ce296fe8ab8a",
+      "upstream_sha256": "c4050633a4eb5b008c66651d65c727447d217772762b07704dc7ce296fe8ab8a",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/experimental/dynamic_workflow/__init__.py": {
+      "sha256": "2aec2ad70ca27ba345c7dafbd8bd508e601ce6bfdbc65f88406552a02ad44906",
+      "upstream_sha256": "2aec2ad70ca27ba345c7dafbd8bd508e601ce6bfdbc65f88406552a02ad44906",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/experimental/media/__init__.py": {
+      "sha256": "497f0ed1c742921f3e4d3b1738a30e12f2c085ffc04e8de67b4d982460f06774",
+      "upstream_sha256": "497f0ed1c742921f3e4d3b1738a30e12f2c085ffc04e8de67b4d982460f06774",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/experimental/overflow/__init__.py": {
+      "sha256": "03d94c3d57b16345fb20772ff62d38014a69ae0e3cb6614d4ba2185a31df0d0e",
+      "upstream_sha256": "03d94c3d57b16345fb20772ff62d38014a69ae0e3cb6614d4ba2185a31df0d0e",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/experimental/planning/__init__.py": {
+      "sha256": "e5b2faca537092e312e6f50116f8952ef908289eb337493d9780772ff718d609",
+      "upstream_sha256": "e5b2faca537092e312e6f50116f8952ef908289eb337493d9780772ff718d609",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/experimental/step_persistence/__init__.py": {
+      "sha256": "f7c275fada9997839646d387f402b56b8daecdfcf426ebd0c9039ce9513a6cdb",
+      "upstream_sha256": "f7c275fada9997839646d387f402b56b8daecdfcf426ebd0c9039ce9513a6cdb",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/experimental/subagents/__init__.py": {
+      "sha256": "b0fd3cdeac48973d5a0a286b2689bce77adf892a91a154fa1b0fdb6bd4ce0e48",
+      "upstream_sha256": "b0fd3cdeac48973d5a0a286b2689bce77adf892a91a154fa1b0fdb6bd4ce0e48",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/filesystem/README.md": {
+      "sha256": "77c882be8cfa65f1273a06f685170e14c6e00efeffcb5dfe7ff8902e17468e74",
+      "upstream_sha256": "77c882be8cfa65f1273a06f685170e14c6e00efeffcb5dfe7ff8902e17468e74",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/filesystem/__init__.py": {
+      "sha256": "07dc8589864e834e65d5499990c01453ab6c90d71131589b948e1398108ce97e",
+      "upstream_sha256": "07dc8589864e834e65d5499990c01453ab6c90d71131589b948e1398108ce97e",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/filesystem/_capability.py": {
+      "sha256": "086526118e0e1517933c5681f50e2525ce0b0cbe3372acce488bd85a09c1daf4",
+      "upstream_sha256": "086526118e0e1517933c5681f50e2525ce0b0cbe3372acce488bd85a09c1daf4",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/filesystem/_toolset.py": {
+      "sha256": "ef962dc74ea3142ac086bb7a23f726462534604cf4b7873d35924daddc70e20d",
+      "upstream_sha256": "ef962dc74ea3142ac086bb7a23f726462534604cf4b7873d35924daddc70e20d",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/guardrails/README.md": {
+      "sha256": "6c440eb0afdf22aa3c9da70150ec66b8c55ee31dae7a50458f12bb4867531e9f",
+      "upstream_sha256": "6c440eb0afdf22aa3c9da70150ec66b8c55ee31dae7a50458f12bb4867531e9f",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/guardrails/__init__.py": {
+      "sha256": "7b1b7693b96f58436b97f6757354e0f566633e722c4e39bf366a09c5a7fe8b92",
+      "upstream_sha256": "7b1b7693b96f58436b97f6757354e0f566633e722c4e39bf366a09c5a7fe8b92",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/guardrails/_capability.py": {
+      "sha256": "50ff82112dde53e391e798ce728fbd8d4efb99fe292db4fa6a6ec6720f592957",
+      "upstream_sha256": "50ff82112dde53e391e798ce728fbd8d4efb99fe292db4fa6a6ec6720f592957",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/guardrails/_exceptions.py": {
+      "sha256": "eb5454a679a251a9d4f4e05398e83eda7fb035c50550f058893a0921ce2c503e",
+      "upstream_sha256": "eb5454a679a251a9d4f4e05398e83eda7fb035c50550f058893a0921ce2c503e",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/guardrails/_shared.py": {
+      "sha256": "285b21d8e6965bc1d5d2c554710e346de16f434bfc804be25ff11c6226b3729f",
+      "upstream_sha256": "285b21d8e6965bc1d5d2c554710e346de16f434bfc804be25ff11c6226b3729f",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/guardrails/_tool_guardrail.py": {
+      "sha256": "3b6a59d791b5935fa3be714ab9c255ce1bbb71497058ad1148c430bd08264889",
+      "upstream_sha256": "3b6a59d791b5935fa3be714ab9c255ce1bbb71497058ad1148c430bd08264889",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/guardrails/detectors.py": {
+      "sha256": "9c3ab4b3707e37978a037c124f3b33f1603812dc5f166b5631dc5c4988dfe754",
+      "upstream_sha256": "9c3ab4b3707e37978a037c124f3b33f1603812dc5f166b5631dc5c4988dfe754",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/localstack/README.md": {
+      "sha256": "0c0e206f65897f065b2fb31c64d42004deee327dcd7c2be361c5b80765125268",
+      "upstream_sha256": "0c0e206f65897f065b2fb31c64d42004deee327dcd7c2be361c5b80765125268",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/localstack/__init__.py": {
+      "sha256": "501a220f6ab5290edaf49e74fbb9683d359ee6b738724f83c1cf5696d13eff76",
+      "upstream_sha256": "501a220f6ab5290edaf49e74fbb9683d359ee6b738724f83c1cf5696d13eff76",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/localstack/_capability.py": {
+      "sha256": "25f5ccf894a0adc35140db93ce694fff4a4ed480e28893eb627354ccc7e772d2",
+      "upstream_sha256": "25f5ccf894a0adc35140db93ce694fff4a4ed480e28893eb627354ccc7e772d2",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/localstack/_container.py": {
+      "sha256": "a97a590751741232b99124317ba06343c693adcf0ef91ec88b9b1c4ac32f4d78",
+      "upstream_sha256": "a97a590751741232b99124317ba06343c693adcf0ef91ec88b9b1c4ac32f4d78",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/localstack/_toolset.py": {
+      "sha256": "858c848ba6cb7aefd5afd81403cbcaedcad7fc449d4e5c521fc8edd4b7c5d73e",
+      "upstream_sha256": "858c848ba6cb7aefd5afd81403cbcaedcad7fc449d4e5c521fc8edd4b7c5d73e",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/logfire/README.md": {
+      "sha256": "c84384ebee135aca888fe122f1f0cde6b96f9eba879be0b7135083d35532e98c",
+      "upstream_sha256": "c84384ebee135aca888fe122f1f0cde6b96f9eba879be0b7135083d35532e98c",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/logfire/__init__.py": {
+      "sha256": "463bdcdddb732573a3a30cc0259c488ba1f6713233059ef631148986eb3e8694",
+      "upstream_sha256": "463bdcdddb732573a3a30cc0259c488ba1f6713233059ef631148986eb3e8694",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/logfire/_managed_prompt.py": {
+      "sha256": "a52f6e42ebd00dc41cd04d7a6d9ad55b576b86f0179108550859714556c2842a",
+      "upstream_sha256": "a52f6e42ebd00dc41cd04d7a6d9ad55b576b86f0179108550859714556c2842a",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/macroscope/README.md": {
+      "sha256": "8ffe4af86eaa5e24cbf88aeb68a689968c2c4480625ae58c0c4ba2a4495d6f33",
+      "upstream_sha256": "8ffe4af86eaa5e24cbf88aeb68a689968c2c4480625ae58c0c4ba2a4495d6f33",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/macroscope/__init__.py": {
+      "sha256": "67b3e0bf36490fe9def7be71c88fe2615ccde99078c1eca6bc0bfdac0d2fbf9c",
+      "upstream_sha256": "67b3e0bf36490fe9def7be71c88fe2615ccde99078c1eca6bc0bfdac0d2fbf9c",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/macroscope/_capability.py": {
+      "sha256": "9baca7c1770841f593a7acb3b0c53186274ec8772cb62dffcbde51e2ffd23bba",
+      "upstream_sha256": "9baca7c1770841f593a7acb3b0c53186274ec8772cb62dffcbde51e2ffd23bba",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/macroscope/_toolset.py": {
+      "sha256": "bfd7424374090cf7cb7163f648eb0e8f63392a381d632eb6b6aea395b82869c3",
+      "upstream_sha256": "bfd7424374090cf7cb7163f648eb0e8f63392a381d632eb6b6aea395b82869c3",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/media/README.md": {
+      "sha256": "6034e8467b550ce821ae2b021874aee3d6047f3fed1ebabbd1b7fcbffc8f371e",
+      "upstream_sha256": "6034e8467b550ce821ae2b021874aee3d6047f3fed1ebabbd1b7fcbffc8f371e",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/media/__init__.py": {
+      "sha256": "e0d0cbfdc97de71b38286b10c161923c8ac81bf547428acc793f1a87a820088b",
+      "upstream_sha256": "e0d0cbfdc97de71b38286b10c161923c8ac81bf547428acc793f1a87a820088b",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/media/_mongo.py": {
+      "sha256": "51462d604e993b8b8936af088ec8fe25c7f75c0d5172b77338587346f9218f4b",
+      "upstream_sha256": "51462d604e993b8b8936af088ec8fe25c7f75c0d5172b77338587346f9218f4b",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/media/_s3.py": {
+      "sha256": "3a5c2f76ba89403e7a6174da7f0496cec2d46cf0d6dfdb388d798fed26718bf2",
+      "upstream_sha256": "3a5c2f76ba89403e7a6174da7f0496cec2d46cf0d6dfdb388d798fed26718bf2",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/media/_store.py": {
+      "sha256": "ebbad6a535e6aeed10f304620140ff8647ece75db9aabdb4892b2063215e661f",
+      "upstream_sha256": "ebbad6a535e6aeed10f304620140ff8647ece75db9aabdb4892b2063215e661f",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/media/_walker.py": {
+      "sha256": "276f7d39b82ea16785c7fdaac48e124083e2c48ca8502ec10edf92151740dacb",
+      "upstream_sha256": "276f7d39b82ea16785c7fdaac48e124083e2c48ca8502ec10edf92151740dacb",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/memory/README.md": {
+      "sha256": "7a03625f3c3a343b8683f852b282948db4a4f56be677a4d9e559aa062f45e28d",
+      "upstream_sha256": "7a03625f3c3a343b8683f852b282948db4a4f56be677a4d9e559aa062f45e28d",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/memory/__init__.py": {
+      "sha256": "6aa22b3ef80b018b1547870c3bb722d17ed4af0ffbe1faa970a450f4c0997bc1",
+      "upstream_sha256": "6aa22b3ef80b018b1547870c3bb722d17ed4af0ffbe1faa970a450f4c0997bc1",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/memory/_capability.py": {
+      "sha256": "462866e03f5865ebfc22d5b516b9ae27da04021a6d4d5ca57835a6c492299bd8",
+      "upstream_sha256": "462866e03f5865ebfc22d5b516b9ae27da04021a6d4d5ca57835a6c492299bd8",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/memory/_postgres.py": {
+      "sha256": "0d4ff30ea9470d532b1d90f9124fb081c191e73f2f69a722ca79c0f8cb07e968",
+      "upstream_sha256": "0d4ff30ea9470d532b1d90f9124fb081c191e73f2f69a722ca79c0f8cb07e968",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/memory/_store.py": {
+      "sha256": "667939005e5db21c8f517dc1285db34ee0a35f73968803e32913c688c332b769",
+      "upstream_sha256": "667939005e5db21c8f517dc1285db34ee0a35f73968803e32913c688c332b769",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/memory/_toolset.py": {
+      "sha256": "544e006384d9ec3de35db4b4de968802d41263b817609b90eb080ab49676aaf6",
+      "upstream_sha256": "544e006384d9ec3de35db4b4de968802d41263b817609b90eb080ab49676aaf6",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/modal_sandbox/README.md": {
+      "sha256": "c83e2bb14859e94e951e250e63c9cf2f91c18bc597d9f42d2b282a2dea112879",
+      "upstream_sha256": "c83e2bb14859e94e951e250e63c9cf2f91c18bc597d9f42d2b282a2dea112879",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/modal_sandbox/__init__.py": {
+      "sha256": "e1c1b6f2bb0063b7a267ddb80b4f7b39f5b387bf708ce693938e08b7c7c452e4",
+      "upstream_sha256": "e1c1b6f2bb0063b7a267ddb80b4f7b39f5b387bf708ce693938e08b7c7c452e4",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/modal_sandbox/_capability.py": {
+      "sha256": "7c201e3b1faee605da37f3fdf0e03142e541c94aaad4ec9bcd4fbcfe59529d04",
+      "upstream_sha256": "7c201e3b1faee605da37f3fdf0e03142e541c94aaad4ec9bcd4fbcfe59529d04",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/modal_sandbox/_session.py": {
+      "sha256": "5c11aef90b22d54118d1ab3527111153e4238c603b5dec0c155161dfeda7f442",
+      "upstream_sha256": "5c11aef90b22d54118d1ab3527111153e4238c603b5dec0c155161dfeda7f442",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/modal_sandbox/_tool_output.py": {
+      "sha256": "ff8eb8c8dba06e50889cca20328a3947c40c8c0b4c3b29a265e759671cf3a3db",
+      "upstream_sha256": "ff8eb8c8dba06e50889cca20328a3947c40c8c0b4c3b29a265e759671cf3a3db",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/modal_sandbox/_toolset.py": {
+      "sha256": "0fc082b9095c07c2d85b2adb5416bec2705e9670afb32b323a48c149e445a18d",
+      "upstream_sha256": "0fc082b9095c07c2d85b2adb5416bec2705e9670afb32b323a48c149e445a18d",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/overflowing_tool_output/__init__.py": {
+      "sha256": "c83f909f4b9bed147beb99cbcd9ea8f4971565cb4070489a7d3f7e90674b310a",
+      "upstream_sha256": "c83f909f4b9bed147beb99cbcd9ea8f4971565cb4070489a7d3f7e90674b310a",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/planning/README.md": {
+      "sha256": "a51027c4c3ab64f690dd90e3a1fdf2956bbc4015d30f97eb6e0911599a518037",
+      "upstream_sha256": "a51027c4c3ab64f690dd90e3a1fdf2956bbc4015d30f97eb6e0911599a518037",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/planning/__init__.py": {
+      "sha256": "d27f030da755ef2a7a86f1a6294ce0ef1a12f32604b6d024f187271cd273f311",
+      "upstream_sha256": "d27f030da755ef2a7a86f1a6294ce0ef1a12f32604b6d024f187271cd273f311",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/planning/_capability.py": {
+      "sha256": "7fefbd7ae6d70ab941f483d71ce5fc422434405eb5b2f11ad9d213fda2900c40",
+      "upstream_sha256": "7fefbd7ae6d70ab941f483d71ce5fc422434405eb5b2f11ad9d213fda2900c40",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/planning/_events.py": {
+      "sha256": "670238a500c5cf27c1f4573d3a8443eff9fe194689876871b6886e944d84e92f",
+      "upstream_sha256": "670238a500c5cf27c1f4573d3a8443eff9fe194689876871b6886e944d84e92f",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/planning/_postgres.py": {
+      "sha256": "6c0cb56d91216833029517423d2fa919e3f7d1dc75c737990a82c46c39d0973b",
+      "upstream_sha256": "6c0cb56d91216833029517423d2fa919e3f7d1dc75c737990a82c46c39d0973b",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/planning/_redis.py": {
+      "sha256": "c8d647e25bfd4109b2a021ed688786bfdec20644ca920079443627d2077323da",
+      "upstream_sha256": "c8d647e25bfd4109b2a021ed688786bfdec20644ca920079443627d2077323da",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/planning/_store.py": {
+      "sha256": "bd6b43a810e2394f311dacaccd46e7a35d047584580c3e2fdbd929dc83c3036f",
+      "upstream_sha256": "bd6b43a810e2394f311dacaccd46e7a35d047584580c3e2fdbd929dc83c3036f",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/planning/_toolset.py": {
+      "sha256": "2bb9616d208237a1ed9ced4cf08299826d3aa3663bf6ac1e6216e05fe2085f39",
+      "upstream_sha256": "2bb9616d208237a1ed9ced4cf08299826d3aa3663bf6ac1e6216e05fe2085f39",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/planning/_types.py": {
+      "sha256": "5ad82762beff323cf029551d08a664d9b10b7b8231492d8b91dc3cf9b49176e2",
+      "upstream_sha256": "5ad82762beff323cf029551d08a664d9b10b7b8231492d8b91dc3cf9b49176e2",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/playwright/README.md": {
+      "sha256": "7e595729f569785507f4c84434285cd958a678d883b6ae829b2b01166a4dfd47",
+      "upstream_sha256": "7e595729f569785507f4c84434285cd958a678d883b6ae829b2b01166a4dfd47",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/playwright/__init__.py": {
+      "sha256": "4d01ce0f5ee4c7fa10b59430f2e6cc5947d58b88f9768faef4965914f5b26dd0",
+      "upstream_sha256": "4d01ce0f5ee4c7fa10b59430f2e6cc5947d58b88f9768faef4965914f5b26dd0",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/playwright/_capability.py": {
+      "sha256": "233c82bdf1d629f981f72ba42d1841cfba7a78dd594d0ffe6bcb2945eedb1b74",
+      "upstream_sha256": "233c82bdf1d629f981f72ba42d1841cfba7a78dd594d0ffe6bcb2945eedb1b74",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/playwright/_toolset.py": {
+      "sha256": "0ed0040d4701f6286810e2ea6e4b02245c0a9b6346dc4c43abcc104e15d97924",
+      "upstream_sha256": "0ed0040d4701f6286810e2ea6e4b02245c0a9b6346dc4c43abcc104e15d97924",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/prompt_injection_defender/README.md": {
+      "sha256": "02b284f9a7167373a85e99dfa8059685696a44780a51d5e2654d5dc25e834bb3",
+      "upstream_sha256": "02b284f9a7167373a85e99dfa8059685696a44780a51d5e2654d5dc25e834bb3",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/prompt_injection_defender/__init__.py": {
+      "sha256": "3c34f99338363f20978c32513dd2975c0c9e262f1e9e4f8bceddc12f09a43342",
+      "upstream_sha256": "3c34f99338363f20978c32513dd2975c0c9e262f1e9e4f8bceddc12f09a43342",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/prompt_injection_defender/_capability.py": {
+      "sha256": "51dfd311f0878f11c38c1f0aac68e623a9a75116abee966e2c21ebca54780609",
+      "upstream_sha256": "51dfd311f0878f11c38c1f0aac68e623a9a75116abee966e2c21ebca54780609",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/pydantic_ai_docs/README.md": {
+      "sha256": "3f5f50c68621275239fea07fb8bc91ea3ccdb49cbca5d1d40e45f32823397bb2",
+      "upstream_sha256": "3f5f50c68621275239fea07fb8bc91ea3ccdb49cbca5d1d40e45f32823397bb2",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/pydantic_ai_docs/__init__.py": {
+      "sha256": "8fdcf04dd75901d6dc77f92d8890f46e4224d356e53fc61c157ba83fe1f4884c",
+      "upstream_sha256": "8fdcf04dd75901d6dc77f92d8890f46e4224d356e53fc61c157ba83fe1f4884c",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/pydantic_ai_docs/_capability.py": {
+      "sha256": "b5fcb30d2eb104213df9cad9c3f5eb18dff5ecdcbb35ff22f912edfe335aeb4b",
+      "upstream_sha256": "b5fcb30d2eb104213df9cad9c3f5eb18dff5ecdcbb35ff22f912edfe335aeb4b",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/pydantic_ai_docs/_deprecated.py": {
+      "sha256": "34524962d74a5b74d7a2b28a63ecd84bf596e561b4f186aaea8da6c65eb3ec02",
+      "upstream_sha256": "34524962d74a5b74d7a2b28a63ecd84bf596e561b4f186aaea8da6c65eb3ec02",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/pydantic_ai_docs/_toolset.py": {
+      "sha256": "3f9c70d6bb159142a9b6a6f1869099b2cc9a1fc2e7aa1e114cfda5cfdf3db8d4",
+      "upstream_sha256": "3f9c70d6bb159142a9b6a6f1869099b2cc9a1fc2e7aa1e114cfda5cfdf3db8d4",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/repo_context/README.md": {
+      "sha256": "dae94d3a9f0782b5aaf9b14d8dc0d5305512467e5613fe8629b88fcfa528a03b",
+      "upstream_sha256": "dae94d3a9f0782b5aaf9b14d8dc0d5305512467e5613fe8629b88fcfa528a03b",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/repo_context/__init__.py": {
+      "sha256": "10d0e1baa67330905acacec2b3704af33cee0ead3efeb0af1a520b23833443a7",
+      "upstream_sha256": "10d0e1baa67330905acacec2b3704af33cee0ead3efeb0af1a520b23833443a7",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/repo_context/_capability.py": {
+      "sha256": "100e9022a238ce0f0f53686907d4e54468e8efdd5d2dd65c48ece46967376284",
+      "upstream_sha256": "100e9022a238ce0f0f53686907d4e54468e8efdd5d2dd65c48ece46967376284",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/repo_context/_inventory.py": {
+      "sha256": "da47d3263012f745adc434847504cefda65aa9eee1d5ae8d0acb2c293906f982",
+      "upstream_sha256": "da47d3263012f745adc434847504cefda65aa9eee1d5ae8d0acb2c293906f982",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/repo_context/_loader.py": {
+      "sha256": "409af48d303428c32322a1e5b20fe71dbb37f4f86837957de78a4df79f27bd87",
+      "upstream_sha256": "409af48d303428c32322a1e5b20fe71dbb37f4f86837957de78a4df79f27bd87",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/repo_context/_toolset.py": {
+      "sha256": "282055dcd34e26dd237e30bc2de3b2555b459606f5a7a676d4814e336fbae44c",
+      "upstream_sha256": "282055dcd34e26dd237e30bc2de3b2555b459606f5a7a676d4814e336fbae44c",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/researcher/README.md": {
+      "sha256": "87a2226eb98da14418e1a11d0d11f22b4f304515fad881f2db4f34776927ed6e",
+      "upstream_sha256": "87a2226eb98da14418e1a11d0d11f22b4f304515fad881f2db4f34776927ed6e",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/researcher/__init__.py": {
+      "sha256": "8bc0906ab9a9d86dd4e7cc0de7f279e726a3c0d82b0f8b696e402a3ea122d0fe",
+      "upstream_sha256": "8bc0906ab9a9d86dd4e7cc0de7f279e726a3c0d82b0f8b696e402a3ea122d0fe",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/researcher/_agent.py": {
+      "sha256": "1cef18fcfb265d848401953d97e74049e8474734044b3d6398b6fbf77c7779aa",
+      "upstream_sha256": "1cef18fcfb265d848401953d97e74049e8474734044b3d6398b6fbf77c7779aa",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/researcher/_capability.py": {
+      "sha256": "c93432752d69d43b724d43a956cce0577356f10e977050f26f69237d10527e7f",
+      "upstream_sha256": "c93432752d69d43b724d43a956cce0577356f10e977050f26f69237d10527e7f",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/runtime_authoring/__init__.py": {
+      "sha256": "eb42c2d9bdf09e486a5b2ac90283daf2eb73151d307feda464c1c00c7ffc390a",
+      "upstream_sha256": "eb42c2d9bdf09e486a5b2ac90283daf2eb73151d307feda464c1c00c7ffc390a",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/shell/README.md": {
+      "sha256": "6160d6ba5dd81de6ddf02945324d889c8e10dfe51c1a3ff316ee4a92b835383a",
+      "upstream_sha256": "6160d6ba5dd81de6ddf02945324d889c8e10dfe51c1a3ff316ee4a92b835383a",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/shell/__init__.py": {
+      "sha256": "e5a894717d0aef8dcc766f819f22e70a98ef4c5c95aa9fbd901c224c4e762da3",
+      "upstream_sha256": "e5a894717d0aef8dcc766f819f22e70a98ef4c5c95aa9fbd901c224c4e762da3",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/shell/_capability.py": {
+      "sha256": "c901b9fd9813252ce9464b152653758b1648f96f9b9861699f658c28633fe9ae",
+      "upstream_sha256": "c901b9fd9813252ce9464b152653758b1648f96f9b9861699f658c28633fe9ae",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/shell/_toolset.py": {
+      "sha256": "377714c6f11e7f7341482fbad7276b1a65137737fb92ff2f1ab12e7b46963dee",
+      "upstream_sha256": "377714c6f11e7f7341482fbad7276b1a65137737fb92ff2f1ab12e7b46963dee",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/skills/README.md": {
+      "sha256": "7e1c8a0f4ce40f27d27b56d2a43cd6bb9a43bb60f4da72a53ae7ba3d07650ee5",
+      "upstream_sha256": "7e1c8a0f4ce40f27d27b56d2a43cd6bb9a43bb60f4da72a53ae7ba3d07650ee5",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/skills/__init__.py": {
+      "sha256": "b189452fbddf6a999676e15081d4aeb8e0abea3131faf83f393e612c79b076bf",
+      "upstream_sha256": "b189452fbddf6a999676e15081d4aeb8e0abea3131faf83f393e612c79b076bf",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/skills/_capability.py": {
+      "sha256": "79f11339c1de5d0de7f02df890f84d11b725564087a66af6c19a51d1e226ef19",
+      "upstream_sha256": "79f11339c1de5d0de7f02df890f84d11b725564087a66af6c19a51d1e226ef19",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/skills/_loader.py": {
+      "sha256": "29b7454681c05a4132a5bc974529c72b474632f757493b651a59bf839b4442c2",
+      "upstream_sha256": "29b7454681c05a4132a5bc974529c72b474632f757493b651a59bf839b4442c2",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/spend/README.md": {
+      "sha256": "4bbcb0ae512c18ac3fe813e48052d048d4c56e66a18991766c8d84b8945bcac2",
+      "upstream_sha256": "4bbcb0ae512c18ac3fe813e48052d048d4c56e66a18991766c8d84b8945bcac2",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/spend/__init__.py": {
+      "sha256": "899b3605dfb87479982fa659f5ae64b2d80dde7ff55b951cce36ceba4eaa30d8",
+      "upstream_sha256": "899b3605dfb87479982fa659f5ae64b2d80dde7ff55b951cce36ceba4eaa30d8",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/spend/_budget.py": {
+      "sha256": "17fdd469502b99ac63e4e23b48c2faae57ab01dcd9c0e6ff26e7275bb2340871",
+      "upstream_sha256": "17fdd469502b99ac63e4e23b48c2faae57ab01dcd9c0e6ff26e7275bb2340871",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/spend/_capability.py": {
+      "sha256": "4454237d3a33d69473b1cc985bafd1f9151f2662228fe10f9b08c724bfa74f98",
+      "upstream_sha256": "4454237d3a33d69473b1cc985bafd1f9151f2662228fe10f9b08c724bfa74f98",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/spend/_composition.py": {
+      "sha256": "6b3856452c16d55453cc53348b4878a2acdc944465ce3bccf236057558ad7235",
+      "upstream_sha256": "6b3856452c16d55453cc53348b4878a2acdc944465ce3bccf236057558ad7235",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/spend/_exceptions.py": {
+      "sha256": "5d1a2deac2a3dbcf4086f909886954c0e648bb2ad9ecf0a361e1a13d810617e0",
+      "upstream_sha256": "5d1a2deac2a3dbcf4086f909886954c0e648bb2ad9ecf0a361e1a13d810617e0",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/spend/_redis.py": {
+      "sha256": "e85d8b36942476b073667d7fc9855715a797d6c4e467aeddbedcda9dbb6d2a5e",
+      "upstream_sha256": "e85d8b36942476b073667d7fc9855715a797d6c4e467aeddbedcda9dbb6d2a5e",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/spend/_snapshot.py": {
+      "sha256": "5c06b1505b324f93ca67046950352be53a3e09d480c7098fa4645be346fd601f",
+      "upstream_sha256": "5c06b1505b324f93ca67046950352be53a3e09d480c7098fa4645be346fd601f",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/spend/_store.py": {
+      "sha256": "f7588ece276c411b28d6b5daf987f43d014be8d5eab3b92c7027aa939487fccd",
+      "upstream_sha256": "f7588ece276c411b28d6b5daf987f43d014be8d5eab3b92c7027aa939487fccd",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/spend/_toolset.py": {
+      "sha256": "f54d9478f90baadffe05059c4811cc113a8059fe0d7c51b6d976eb98e436f4d5",
+      "upstream_sha256": "f54d9478f90baadffe05059c4811cc113a8059fe0d7c51b6d976eb98e436f4d5",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/stackone/README.md": {
+      "sha256": "2098998f7362fd1548ce5f74ae05445406455a91809ad85979f214cf03b17d5b",
+      "upstream_sha256": "2098998f7362fd1548ce5f74ae05445406455a91809ad85979f214cf03b17d5b",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/stackone/__init__.py": {
+      "sha256": "241878bfa655cdfc61e0039b93b5b5bb3adf364f5ddcdcc3d380c2bcba2f5f75",
+      "upstream_sha256": "241878bfa655cdfc61e0039b93b5b5bb3adf364f5ddcdcc3d380c2bcba2f5f75",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/stackone/_capability.py": {
+      "sha256": "bf34728618d47e79f693a1660d7ee861c3b22b1e692780b68d3bea3f02c287c8",
+      "upstream_sha256": "bf34728618d47e79f693a1660d7ee861c3b22b1e692780b68d3bea3f02c287c8",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/stackone/_toolset.py": {
+      "sha256": "0e6a5f6c1b976ba84a889910e470efec4d44fa114c21a919f5b828f01162ed9c",
+      "upstream_sha256": "0e6a5f6c1b976ba84a889910e470efec4d44fa114c21a919f5b828f01162ed9c",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/step_persistence/README.md": {
+      "sha256": "66bbd00b33adb7038a00fd040fdee9cced4e3babd029e530096f0a3111978c14",
+      "upstream_sha256": "66bbd00b33adb7038a00fd040fdee9cced4e3babd029e530096f0a3111978c14",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/step_persistence/__init__.py": {
+      "sha256": "33ba9b27d820442710c3ed423ed141d69487967f26b68f82169d6dede070ddc3",
+      "upstream_sha256": "33ba9b27d820442710c3ed423ed141d69487967f26b68f82169d6dede070ddc3",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/step_persistence/_capability.py": {
+      "sha256": "70a64291cd8a902d79c99cdb9634ea30802c759707dcd51bf2c72606e368ce2d",
+      "upstream_sha256": "70a64291cd8a902d79c99cdb9634ea30802c759707dcd51bf2c72606e368ce2d",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/step_persistence/_context.py": {
+      "sha256": "d2b850fa3bf5478ac260be86fbb184631765150582a5ecfdeefb148e9b261fea",
+      "upstream_sha256": "d2b850fa3bf5478ac260be86fbb184631765150582a5ecfdeefb148e9b261fea",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/step_persistence/_helpers.py": {
+      "sha256": "d8efe8cf74598468191f5f02e8e59cd0798b52aac5e7d6b4e52a6104e355dbfe",
+      "upstream_sha256": "d8efe8cf74598468191f5f02e8e59cd0798b52aac5e7d6b4e52a6104e355dbfe",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/step_persistence/_mongo.py": {
+      "sha256": "f6b1724c1d852e852abd0bc31f461a9ea0ca167e0fbf403d56a748d849dd87f6",
+      "upstream_sha256": "f6b1724c1d852e852abd0bc31f461a9ea0ca167e0fbf403d56a748d849dd87f6",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/step_persistence/_store.py": {
+      "sha256": "179a1c936171354dee263215c390c178863ee19b8481b229b3fba44d8b4fb313",
+      "upstream_sha256": "179a1c936171354dee263215c390c178863ee19b8481b229b3fba44d8b4fb313",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/step_persistence/_types.py": {
+      "sha256": "193b0b1eaca84338487ae4fa467dd0ce81a4ecf5eea589e05bf427ff81a98815",
+      "upstream_sha256": "193b0b1eaca84338487ae4fa467dd0ce81a4ecf5eea589e05bf427ff81a98815",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/subagents/README.md": {
+      "sha256": "2be7597df076711fc108490473f7ec9c20e12430212ca005a83e8124e33799ed",
+      "upstream_sha256": "2be7597df076711fc108490473f7ec9c20e12430212ca005a83e8124e33799ed",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/subagents/__init__.py": {
+      "sha256": "253e40599f0dea29310b506abb4efdcf0744cc165941d85fd544a6efd44a7a04",
+      "upstream_sha256": "253e40599f0dea29310b506abb4efdcf0744cc165941d85fd544a6efd44a7a04",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/subagents/_capability.py": {
+      "sha256": "5e45ecab1183fc8b31a522055aff1fc7449040cac210c62f7b2261f4decdb6cd",
+      "upstream_sha256": "5e45ecab1183fc8b31a522055aff1fc7449040cac210c62f7b2261f4decdb6cd",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/subagents/_disk.py": {
+      "sha256": "cc904e41bb8b22409197fa286968b0441c38c07d58a038efee0b34e41a6fdb22",
+      "upstream_sha256": "cc904e41bb8b22409197fa286968b0441c38c07d58a038efee0b34e41a6fdb22",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/subagents/_effort.py": {
+      "sha256": "f444ab4bc99710291eea535a45e3c7c80824151237fcab1e2cb31d0d3f9d6cb7",
+      "upstream_sha256": "f444ab4bc99710291eea535a45e3c7c80824151237fcab1e2cb31d0d3f9d6cb7",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/subagents/_models.py": {
+      "sha256": "bb0a218f85d1f5e1f2374500e8c745a47f1966e3944e3157de45ea8540a62f3b",
+      "upstream_sha256": "bb0a218f85d1f5e1f2374500e8c745a47f1966e3944e3157de45ea8540a62f3b",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/subagents/_toolset.py": {
+      "sha256": "9c742cb34561ec1046b32a29d4d80c9c73db8aa70e8514022cbd19da7264ac5d",
+      "upstream_sha256": "9c742cb34561ec1046b32a29d4d80c9c73db8aa70e8514022cbd19da7264ac5d",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/system_reminders/README.md": {
+      "sha256": "aa17cb8bf702d0b6f3547ddbbe116f5f1c16e4ec83c2d113ada791652ea87890",
+      "upstream_sha256": "aa17cb8bf702d0b6f3547ddbbe116f5f1c16e4ec83c2d113ada791652ea87890",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/system_reminders/__init__.py": {
+      "sha256": "ebe1d452749c4590af22d4d5d2266601f5695728ee1351023702766c246de923",
+      "upstream_sha256": "ebe1d452749c4590af22d4d5d2266601f5695728ee1351023702766c246de923",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/system_reminders/_capability.py": {
+      "sha256": "3b4c9036b2c966ccb1af19d2dcef5969576619fc045579cdc8aa99349ebc8b47",
+      "upstream_sha256": "3b4c9036b2c966ccb1af19d2dcef5969576619fc045579cdc8aa99349ebc8b47",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/tool_output_limits/README.md": {
+      "sha256": "fd6d938c39449ea10143fa7156cb91e2f234c58e4e3c64fa369fd347389d42fb",
+      "upstream_sha256": "fd6d938c39449ea10143fa7156cb91e2f234c58e4e3c64fa369fd347389d42fb",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/tool_output_limits/__init__.py": {
+      "sha256": "1c500c54b4b0daa8bf5b998533cf1607ee50e9b40ee33ba8e8a6f64f7c918be9",
+      "upstream_sha256": "1c500c54b4b0daa8bf5b998533cf1607ee50e9b40ee33ba8e8a6f64f7c918be9",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/tool_output_limits/_bands.py": {
+      "sha256": "05fedda46c3823a1ed40712a313126699ada29dd12ec0414d2a263eb1e887872",
+      "upstream_sha256": "05fedda46c3823a1ed40712a313126699ada29dd12ec0414d2a263eb1e887872",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/tool_output_limits/_capability.py": {
+      "sha256": "58268d06e478dbf7fffae95f0b5161282b917c11c46ddef4a7bf46b9d13e5ddd",
+      "upstream_sha256": "58268d06e478dbf7fffae95f0b5161282b917c11c46ddef4a7bf46b9d13e5ddd",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/tool_output_limits/_payload.py": {
+      "sha256": "d538aaa9269b4e5fb8fcc770fca48f9a903cbcc0a2a138a4d3fe7af30bddeaa3",
+      "upstream_sha256": "d538aaa9269b4e5fb8fcc770fca48f9a903cbcc0a2a138a4d3fe7af30bddeaa3",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/tool_output_limits/_store.py": {
+      "sha256": "8daa4b97e43de52b0f15f8acae6c98fb8d6f7475c130f185f520eb4eb9d6ff31",
+      "upstream_sha256": "8daa4b97e43de52b0f15f8acae6c98fb8d6f7475c130f185f520eb4eb9d6ff31",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/warn_on_cache_busts/README.md": {
+      "sha256": "6b95bc91c915b8498f0915c35179ec0d48b23634ffa274f43e44425e528dd999",
+      "upstream_sha256": "6b95bc91c915b8498f0915c35179ec0d48b23634ffa274f43e44425e528dd999",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/warn_on_cache_busts/__init__.py": {
+      "sha256": "b9587a343575f1d3f5ccc97a68f4a40d928111d56f1121e88091eb7e304b3f2d",
+      "upstream_sha256": "b9587a343575f1d3f5ccc97a68f4a40d928111d56f1121e88091eb7e304b3f2d",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/warn_on_cache_busts/_capability.py": {
+      "sha256": "a94a80ec6dbb06063db0bddc7e3152f02438f07bab8263668f6f0c8ec0ca2f83",
+      "upstream_sha256": "a94a80ec6dbb06063db0bddc7e3152f02438f07bab8263668f6f0c8ec0ca2f83",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/youdotcom/README.md": {
+      "sha256": "390a07424eabde6c17b1977710ab2a2a1668e4c1f81d7b1a574b15a1961974c4",
+      "upstream_sha256": "390a07424eabde6c17b1977710ab2a2a1668e4c1f81d7b1a574b15a1961974c4",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/youdotcom/__init__.py": {
+      "sha256": "dd52d5ff8095f5b9725385366340ccf6c0c47711098a3cd1e0425f0cd981e6a3",
+      "upstream_sha256": "dd52d5ff8095f5b9725385366340ccf6c0c47711098a3cd1e0425f0cd981e6a3",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/youdotcom/_capability.py": {
+      "sha256": "98079f4e091f5d67d4ad72417bb4bd7fb0f0c924011f6eb263c73e57507bd0e5",
+      "upstream_sha256": "98079f4e091f5d67d4ad72417bb4bd7fb0f0c924011f6eb263c73e57507bd0e5",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/youdotcom/_research.py": {
+      "sha256": "b8e61d71562cfb02ea16d8cd5e6475bd72e7d5e6b62e3d8531dd4b1537530f14",
+      "upstream_sha256": "b8e61d71562cfb02ea16d8cd5e6475bd72e7d5e6b62e3d8531dd4b1537530f14",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "pydantic_ai_harness/youdotcom/_toolset.py": {
+      "sha256": "c3a355d2340387456dcccea1ee6cf28dda07e8fbb87f14c70ecf7c194e5f0af9",
+      "upstream_sha256": "c3a355d2340387456dcccea1ee6cf28dda07e8fbb87f14c70ecf7c194e5f0af9",
+      "role": "runtime",
+      "component": "pydantic-ai-harness"
+    },
+    "licenses/pydantic-ai-harness.txt": {
+      "sha256": "e7e07ba4d422bfb793adc03bbd35d7e740381c12db8e87d2301c1b8cf20858ab",
+      "role": "license",
+      "component": "pydantic-ai-harness"
+    }
+  },
+  "patches": [
+    {
+      "id": "static-version",
+      "path": "patches/0001-static-version.patch",
+      "target": "pydantic_ai/__init__.py",
+      "reason": "Resolve fork version without installing the upstream SDK distribution.",
+      "sha256": "29727c9c631346ff15b53887229a31f0fbc33556b6f3cfe60bd44c9511e0ee49"
+    }
+  ],
+  "dependency_audit": {
+    "checked_date": "2026-09-05",
+    "scope": "Selected Slim openai extra, base Graph and Harness, upstream build tools and LocalSetup setuptools; Python 3.12 Linux metadata resolution only",
+    "sources": [
+      "https://api.osv.dev/v1/querybatch",
+      "https://api.github.com/advisories",
+      "https://api.deps.dev/v3/systems/pypi",
+      "https://pypi.org/pypi"
+    ],
+    "result": "No advisories returned for these exact versions; no PyPI yanked versions. This is dated evidence, not a guarantee of safety or an installation qualification.",
+    "resolved": [
+      {
+        "name": "annotated-types",
+        "version": "0.8.0",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "anyio",
+        "version": "4.15.1",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "certifi",
+        "version": "2026.7.22",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "charset-normalizer",
+        "version": "3.5.1",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "dunamai",
+        "version": "1.26.2",
+        "scopes": [
+          "build"
+        ]
+      },
+      {
+        "name": "genai-prices",
+        "version": "0.1.6",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "griffelib",
+        "version": "2.3.0",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "h11",
+        "version": "0.16.0",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "hatchling",
+        "version": "1.32.0",
+        "scopes": [
+          "build"
+        ]
+      },
+      {
+        "name": "httpcore",
+        "version": "1.0.9",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "httpcore2",
+        "version": "2.12.0",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "httpx",
+        "version": "0.28.1",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "httpx2",
+        "version": "2.12.0",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "idna",
+        "version": "3.19",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "jinja2",
+        "version": "3.1.6",
+        "scopes": [
+          "build"
+        ]
+      },
+      {
+        "name": "jiter",
+        "version": "0.16.0",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "logfire-api",
+        "version": "5.0.0",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "markupsafe",
+        "version": "3.0.3",
+        "scopes": [
+          "build"
+        ]
+      },
+      {
+        "name": "openai",
+        "version": "3.8.0",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "opentelemetry-api",
+        "version": "1.44.0",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "packaging",
+        "version": "26.3",
+        "scopes": [
+          "build"
+        ]
+      },
+      {
+        "name": "pathspec",
+        "version": "1.1.1",
+        "scopes": [
+          "build"
+        ]
+      },
+      {
+        "name": "pluggy",
+        "version": "1.6.0",
+        "scopes": [
+          "build"
+        ]
+      },
+      {
+        "name": "pydantic",
+        "version": "2.13.5",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "pydantic-ai-harness",
+        "version": "0.28.1",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "pydantic-ai-slim",
+        "version": "2.38.0",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "pydantic-core",
+        "version": "2.46.5",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "pydantic-graph",
+        "version": "2.38.0",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "regex",
+        "version": "2026.9.3",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "requests",
+        "version": "2.34.2",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "setuptools",
+        "version": "84.0.0",
+        "scopes": [
+          "build"
+        ]
+      },
+      {
+        "name": "sniffio",
+        "version": "1.3.1",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "tiktoken",
+        "version": "0.14.0",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "tomlkit",
+        "version": "0.15.1",
+        "scopes": [
+          "build"
+        ]
+      },
+      {
+        "name": "trove-classifiers",
+        "version": "2026.6.1.19",
+        "scopes": [
+          "build"
+        ]
+      },
+      {
+        "name": "truststore",
+        "version": "0.10.4",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "typing-extensions",
+        "version": "4.16.0",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "typing-inspection",
+        "version": "0.4.4",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "urllib3",
+        "version": "2.7.0",
+        "scopes": [
+          "runtime"
+        ]
+      },
+      {
+        "name": "uv-dynamic-versioning",
+        "version": "0.14.1",
+        "scopes": [
+          "build"
+        ]
+      }
+    ]
+  }
+}

@@ -317,13 +317,13 @@ def test_diff_plan_current_compares_lockfile_to_planned_selection(tmp_path: Path
         packs=None,
         global_packs=["dev"],
         repo_packs=["dev"],
-        platform_ids=["codex", "kilo"],
+        platform_ids=["codex", "claude-code"],
         target_root=None,
         attach_mode="symlink",
     )
 
     assert "ls-nodejs-nextjs" in diff["skills"]["added"]
-    assert any(path.endswith(".kilo/skills") for path in diff["adapters"]["added"])
+    assert any(path.endswith(".claude/skills") for path in diff["adapters"]["added"])
     assert diff["has_lockfile"] is True
 
 
