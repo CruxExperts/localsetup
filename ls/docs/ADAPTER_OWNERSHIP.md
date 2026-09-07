@@ -460,6 +460,37 @@ replayed. This route does not migrate scope. Explicit mode requests follow the r
 
 ## Explicit modes on recorded updates
 
+### Unavailable recorded packages
+
+For a healthy installation using the recorded personal, combined, or retained
+repository update route, packages absent from the selected source stop planning
+before changing the lock, registry, or adapters. Existing repair and ownership
+blockers take precedence over this diagnostic. The diagnostic lists every
+unavailable identifier in sorted order. Known consolidated workflows name their
+owning skill; unknown identifiers explicitly report that no supported replacement
+is recorded. An owning skill absent from that source is also reported as unavailable.
+
+| Retired workflow | Owning skill |
+| --- | --- |
+| `ls-workflow-audit-framework` | `ls-framework-audit` |
+| `ls-workflow-audit-markdown-references` | `ls-markdown-reference-validator` |
+| `ls-workflow-codex-heartbeat` | `ls-codex-heartbeat` |
+| `ls-workflow-context-index-query` | `ls-context-index` |
+| `ls-workflow-context-index-refresh` | `ls-context-index` |
+| `ls-workflow-documentation-alignment` | `ls-documentation-alignment` |
+| `ls-workflow-skills-index-refresh` | `ls-skill-discovery` |
+| `ls-workflow-transport-handoff` | `ls-agentq-transport` |
+
+This is a migration diagnostic, not an automatic rewrite of recorded selections.
+Review the named owning skills for the required capability and preserve custom
+adapter contents. Do not edit the lock or ownership registry by hand to bypass the
+check. A selector-free `localsetup plan --target-directory /path/to/project`
+provides the report without applying changes; repeating `update` with the same
+source and selections remains blocked. Fresh explicit selections use current
+skill identifiers; retired workflow names are not reintroduced as aliases.
+
+### Adapter mode changes
+
 For selector-free recorded `personal` and `both` plans and healthy inferred
 repository updates, an explicit `--mode`
 changes adapter mode while retaining recorded paths, clients, and package

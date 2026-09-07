@@ -5,6 +5,7 @@ import pytest
 
 from ls.core.apply import apply_plan
 from ls.core.personal_update import build_recorded_personal_plan
+from ls.core.personal_update import _RETIRED_WORKFLOWS, _unavailable_packages_message
 from ls.tests.test_install_flow import make_temp_repo
 from ls.core.plan import build_install_plan
 
@@ -41,3 +42,27 @@ def test_recorded_personal_update_refreshes_without_reselection(tmp_path, mode):
     with pytest.raises(RuntimeError, match='stale_recorded_plan'):
         apply_plan(root, stale, home)
     assert receipt.read_bytes() == original
+
+
+def test_unavailable_recorded_packages_report_all_retirements_without_writes(tmp_path):
+    root = make_temp_repo(tmp_path);home = tmp_path / 'home'
+    apply_plan(root, build_install_plan(root, home, skills=['ls-context'],
+        platform_ids=['cursor'], skill_scope='personal'), home)
+    receipt = root / '.localsetup/lock.json'
+    lock = json.loads(receipt.read_text());registry = Path(lock['registry_path'])
+    missing = [*_RETIRED_WORKFLOWS, 'unknown-recorded-package']
+    lock['global_baseline_packages'] = [*lock['global_baseline_packages'], *missing]
+    receipt.write_text(json.dumps(lock))
+    before = receipt.read_bytes(), registry.read_bytes()
+    with pytest.raises(ValueError) as error:
+        build_recorded_personal_plan(root, home, root)
+    message = str(error.value)
+    for retired, owner in _RETIRED_WORKFLOWS.items():
+        assert f'{retired} (retired workflow; supported owning skill: {owner})' in message
+    assert 'unknown-recorded-package (unavailable; no supported replacement is recorded)' in message
+    assert before == (receipt.read_bytes(), registry.read_bytes())
+
+
+def test_retirement_report_does_not_offer_an_absent_owner():
+    message = _unavailable_packages_message({'ls-workflow-context-index-query'}, set())
+    assert 'owning skill ls-context-index is also unavailable in this source' in message

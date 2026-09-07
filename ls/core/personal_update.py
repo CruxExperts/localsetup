@@ -13,6 +13,34 @@ from .plan import build_install_plan
 from .skills import load_skill_catalog
 
 
+_RETIRED_WORKFLOWS = {
+    'ls-workflow-audit-framework': 'ls-framework-audit',
+    'ls-workflow-audit-markdown-references': 'ls-markdown-reference-validator',
+    'ls-workflow-codex-heartbeat': 'ls-codex-heartbeat',
+    'ls-workflow-context-index-query': 'ls-context-index',
+    'ls-workflow-context-index-refresh': 'ls-context-index',
+    'ls-workflow-documentation-alignment': 'ls-documentation-alignment',
+    'ls-workflow-skills-index-refresh': 'ls-skill-discovery',
+    'ls-workflow-transport-handoff': 'ls-agentq-transport',
+}
+
+
+def _unavailable_packages_message(missing: set[str], available: set[str]) -> str:
+    details = []
+    for name in sorted(missing):
+        replacement = _RETIRED_WORKFLOWS.get(name)
+        if replacement in available:
+            status = f'retired workflow; supported owning skill: {replacement}'
+        elif replacement:
+            status = f'retired workflow; owning skill {replacement} is also unavailable in this source'
+        else:
+            status = 'unavailable; no supported replacement is recorded'
+        details.append(f'{name} ({status})')
+    return ('Recorded packages are unavailable in the update source: ' + '; '.join(details)
+            + '. No selections were changed. Review the owning skills and the recorded-update '
+              'guidance in ls/docs/ADAPTER_OWNERSHIP.md before selecting replacements.')
+
+
 def _build_recorded_plan(source: Path, home: Path, target: Path, scope: str):
     lock_path = target / '.localsetup/lock.json'
     if not lock_path.exists():
@@ -53,7 +81,7 @@ def _build_recorded_plan(source: Path, home: Path, target: Path, scope: str):
     skills = {skill.name for skill in load_skill_catalog(source)}
     workflows = {p.name for p in (source / 'ls/workflows').iterdir() if p.is_dir()}
     if packages - skills - workflows:
-        raise ValueError('Recorded packages are unavailable in the update source')
+        raise ValueError(_unavailable_packages_message(packages - skills - workflows, skills | workflows))
     selected_skills = sorted(packages & skills)
     selected_workflows = sorted(packages & workflows)
     plan = build_install_plan(source, home, global_preset='custom', global_skills=selected_skills,
