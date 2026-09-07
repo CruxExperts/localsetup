@@ -10,7 +10,9 @@ owner_skill: ls-framework-compliance
 
 **Manifest source:** `ls/config/clients.yaml` is canonical. It records client families and distinct CLI/IDE variants, their researched native surfaces, LocalSetup state contracts, and compatibility projection eligibility. `ls/config/platforms.yaml` is generated from eligible compatible variants for installer consumers; do not edit it directly. The root `--tools` flag remains a compatibility alias for current `--platforms`.
 
-## Supported platforms
+## Platform examples
+
+The following six entries are examples. The [generated platform adapter inventory](_generated/platform-adapters.md) lists every current installer selector. [Client integration metadata](CLIENT_INTEGRATION_METADATA.md) owns variant, personal-path, lifecycle, and qualification details. Catalog support does not establish functional host qualification; retained-only variants are not fresh-install selectors.
 
 | ID | Display name | Repo adapter path | Managed package library |
 |----|--------------|-------------------|-----------------------|
@@ -25,7 +27,7 @@ The canonical registry also tracks researched variants that are not projected in
 
 ## Shared home library
 
-LocalSetup installs selected skills and workflow packages to `~/.local/share/localsetup/packages`. Repo adapter paths attach to that library only when selected with `--tools` or `--platforms`; omitted selectors are global-only and create no adapters. Adapter directories are shared surfaces: LocalSetup owns the marker and managed package entries it records, not the whole directory by path shape. `--mode portable` creates managed copies instead of symlinks. Rollback uses `.localsetup/lock.json` and removes only managed paths recorded by that install. See [Adapter ownership](ADAPTER_OWNERSHIP.md).
+LocalSetup installs selected skills and workflow packages to `~/.local/share/localsetup/packages`. Fresh global-only invocation without a selected or recorded target creates no adapters. Explicit `--tools` or `--platforms` selects fresh adapters; selector-free updates of a recorded target retain its validated clients, scope, and paths. See [updates using the default target](ADAPTER_OWNERSHIP.md#updates-using-the-default-target). Adapter directories are shared surfaces: LocalSetup owns the marker and managed package entries it records, not the whole directory by path shape. `--mode portable` creates managed copies instead of symlinks. Rollback uses `.localsetup/lock.json` and removes only managed paths recorded by that install. See [Adapter ownership](ADAPTER_OWNERSHIP.md).
 
 ## Skill registration (new skills)
 
