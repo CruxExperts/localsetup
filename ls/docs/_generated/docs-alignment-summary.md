@@ -4,10 +4,10 @@ version: 4.4
 owner_package: docs-align
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: b346d93ed7105892f01fdb0804bf1ee16c15bb87d828b41efd23fc8f9c943283
+  source_provenance_hash: de96df99592efafd554305c5a21c3e3da7044e8dd859befecc3b31292a29b404
   emitter: docs-align
 framework_version: 4.4.1
-source_commit: 4ad6cb1080e50a23362c18ceaae53d1c68571a5d
+source_commit: 98dbd095e61a9f4691eb354c018c344f6723fbbf
 artifact_sha256: 5b4276cd027f23e6902218f926f385b9d35f4d84855595e8ff1d114902be2c78
 ---
 # Documentation Alignment Summary
