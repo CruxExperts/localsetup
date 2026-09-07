@@ -126,13 +126,13 @@
     ],
     "provenance": {
       "artifact_path": "ls/docs/_generated/facts.json",
-      "artifact_sha256": "9872d071f6bf9933dd2a84b8b99d2e138cdfbe47e6bcb9ff521cc62a4c3be1d3",
+      "artifact_sha256": "eb869062cb180b39241b3d4b47607f5a78af85d61a398ea69ca315539797e81b",
       "emitter": "generate-docs",
-      "framework_version": "4.22.5",
+      "framework_version": "4.22.6",
       "schema_version": 1,
       "source_commit": "03cb4866b4b90c9e517ab5516832a4e200315615",
-      "source_dirty": false,
-      "source_provenance_hash": "e6bb92ef4f3c402387d2945477abe5b0f2b5aa2fab7fa88ec7c83c0c6b6f898c",
+      "source_dirty": true,
+      "source_provenance_hash": "a34fd6151d4b366eb2dc0b4b7db7779da03397be17f96da0f939f0c4852c2f89",
       "source_root_id": "9d92bc95cd720a4f2031e5ac825edaff79c00cee0afaa9855158dec7c36cd5f6",
       "source_tag": null,
       "source_tree_sha": "fe97c95251978dceb875a375eafaee529583c8d6"
@@ -1845,7 +1845,7 @@
         "version": "1.0"
       }
     ],
-    "version": "4.22.5",
+    "version": "4.22.6",
     "workflow_count": 16,
     "workflows": [
       {
@@ -1961,11 +1961,11 @@
       "artifact_path": "ls/docs/_generated/skill-taxonomy.json",
       "artifact_sha256": "3d8fb2fccb6f10b0bb39a26f778eabe88ca7c92eafd23341a9d1f296ced6012d",
       "emitter": "generate-docs",
-      "framework_version": "4.22.5",
+      "framework_version": "4.22.6",
       "schema_version": 1,
       "source_commit": "03cb4866b4b90c9e517ab5516832a4e200315615",
-      "source_dirty": false,
-      "source_provenance_hash": "e6bb92ef4f3c402387d2945477abe5b0f2b5aa2fab7fa88ec7c83c0c6b6f898c",
+      "source_dirty": true,
+      "source_provenance_hash": "a34fd6151d4b366eb2dc0b4b7db7779da03397be17f96da0f939f0c4852c2f89",
       "source_root_id": "9d92bc95cd720a4f2031e5ac825edaff79c00cee0afaa9855158dec7c36cd5f6",
       "source_tag": null,
       "source_tree_sha": "fe97c95251978dceb875a375eafaee529583c8d6"
@@ -3475,13 +3475,13 @@
   },
   "provenance": {
     "artifact_path": "ls/docs/_generated/docs-truth-map.json",
-    "artifact_sha256": "a4dea73cd600bf7d5bc5533359d6715442d6c6149c7a78a6d3090f6875d5254b",
+    "artifact_sha256": "9ee146bb7c14dd6e735bd6015bdb170a8526ae903719092b9cef68794431d73f",
     "emitter": "docs-align",
-    "framework_version": "4.22.5",
+    "framework_version": "4.22.6",
     "schema_version": 1,
     "source_commit": "03cb4866b4b90c9e517ab5516832a4e200315615",
-    "source_dirty": false,
-    "source_provenance_hash": "e6bb92ef4f3c402387d2945477abe5b0f2b5aa2fab7fa88ec7c83c0c6b6f898c",
+    "source_dirty": true,
+    "source_provenance_hash": "a34fd6151d4b366eb2dc0b4b7db7779da03397be17f96da0f939f0c4852c2f89",
     "source_root_id": "9d92bc95cd720a4f2031e5ac825edaff79c00cee0afaa9855158dec7c36cd5f6",
     "source_tag": null,
     "source_tree_sha": "fe97c95251978dceb875a375eafaee529583c8d6"
@@ -5420,14 +5420,14 @@
       }
     },
     "version": {
-      "facts_version": "4.22.5",
-      "pyproject_version": "4.22.5",
+      "facts_version": "4.22.6",
+      "pyproject_version": "4.22.6",
       "sources": [
         "VERSION",
         "pyproject.toml",
         "ls/docs/_generated/facts.json"
       ],
-      "value": "4.22.5"
+      "value": "4.22.6"
     },
     "workflow_catalog": {
       "sources": [
