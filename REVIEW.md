@@ -58,6 +58,42 @@ instead of presenting it as a defect.
   volatile-fact record; flag unsupported “latest” or similarly time-sensitive
   assertions.
 
+## LSCli and release boundaries
+
+For changes affecting LSCli, use the contracts in [LSCli](ls/docs/LSCLI.md),
+[runtime boundaries](ls/docs/LSCLI_RUNTIME.md), and
+[adapter ownership](ls/docs/ADAPTER_OWNERSHIP.md) to assess the actual behavior:
+
+- Keep filesystem access and permission to disclose content to a provider
+  separate. Task grants, current profile trust, approvals, leases, deadlines,
+  cancellation and terminal outcomes remain supervisor-owned; saved messages,
+  summaries and checkpoints cannot grant authority.
+- Require a qualified sandbox before tool-enabled provider dispatch. Check
+  process-descendant teardown, bounded output, protected runtime and secret
+  boundaries, and reconciliation of uncertain operations before resume. Do not
+  accept automatic replay of an operation whose mutation outcome is unknown.
+- Check the installed artifact, not only checkout imports: the canonical vendor
+  source, private wheel payload, licenses, resolved dependencies and SBOM must
+  correspond. SDK imports remain isolated and their actual origins verified.
+  Model requests must retain the framework runtime version in their final-send
+  user agent, including compaction and direct completion.
+- Preserve recorded repository/personal/shared ownership, custom neighboring
+  content, profiles and sessions through repair, refresh, upgrades and rollback.
+  Distinguish catalog support, deterministic fixtures and actual host
+  qualification; a pass in one does not establish the others.
+
+When the diff enters publication, apply the governing
+[sequential version policy](AGENTS.md#sequential-release-version-policy) through
+the canonical tooling. Count logical accepted slices in integration ancestry
+order, preserving source/generated-receipt semantics and excluding already
+published work. Check the combined candidate's required tests, documentation
+regeneration, archive/wheel contents, dependency provenance and SBOM evidence.
+Apply the [branding contract](ls/docs/BRANDING.md) to owned text, generators,
+runtime output, wire identity and visually reviewed assets while preserving
+technical identifiers and upstream attribution. Release acceptance must bind
+the published tag and commit to downloaded artifacts and installed behavior;
+a prepared candidate or local test pass alone is insufficient.
+
 ## Scope discipline
 
 - Respect existing architecture and established debt baselines. Do not report
