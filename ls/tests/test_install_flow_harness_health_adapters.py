@@ -229,15 +229,17 @@ def test_adapter_classification_status_codes(tmp_path: Path) -> None:
 def test_full_plan_preflight_blocks_before_adapter_mutation(tmp_path: Path) -> None:
     root = make_temp_repo(tmp_path)
     home = tmp_path / "home"
-    opencode = root / ".opencode" / "skills"
+    # OpenCode fresh installs share the current .agents path; Claude is a distinct target.
+    opencode = root / ".agents" / "skills"
     opencode.mkdir(parents=True)
     (opencode / "ls-context").write_text("user content\n", encoding="utf-8")
 
-    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["codex", "opencode"])
-    with pytest.raises(RuntimeError, match="install preflight failed"):
+    plan = build_install_plan(root, home=home, packs=["core"], platform_ids=["claude-code", "opencode"])
+    with pytest.raises(RuntimeError, match="adapter_custom_package_name_collision"):
         apply_plan(root, plan, home=home, dry_run=False)
 
-    assert not (root / ".agents" / "skills").exists()
+    assert not (root / ".claude" / "skills").exists()
+    assert (opencode / "ls-context").read_bytes() == b"user content\n"
 
 
 def test_mixed_managed_adapter_preserves_custom_skill(tmp_path: Path) -> None:
