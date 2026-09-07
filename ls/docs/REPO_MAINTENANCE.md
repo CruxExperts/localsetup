@@ -49,7 +49,11 @@ Run this after changing shipped skills, workflow packages, platform adapters, or
 uv run --locked python ls/tools/localsetup.py --source-root . self-refresh --dependency-mode prompt-only
 ```
 
-The command installs every configured pack from this checkout into the managed LocalSetup library and refreshes only adapter paths that are already attached in the target repo. It is maintenance tooling for local machine state, not a release or publish step.
+The command installs every configured pack from this checkout into the managed LocalSetup library. Adapter refresh uses validated recorded clients, paths, scopes, modes, and package exposure; new catalog clients sharing a directory do not become owners. A legacy shared path without recorded ownership requires explicit `--platforms` or ownership reconciliation before refresh. Explicit legacy selection uses the normal preservation and native prerequisite checks.
+
+For validated modern receipts, pack and global package overrides change the shared library selection while target exposure remains recorded. Changing recorded clients, target package selectors, scope, or adapter mode requires an explicit install or the owning migration command; self-refresh refuses these combinations before dependency work. It is maintenance tooling for local machine state, not a release or publish step.
+
+Without an explicit platform override, a fresh target with no recorded installation or adapter surface receives a library-only refresh; self-refresh does not select clients for it.
 
 ## Maintainer Codex Adapter Reconciliation
 

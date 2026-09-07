@@ -832,3 +832,22 @@ retain the baseline and independent ownership checks described above. No Hermes
 process, provider, trust change or native configuration write is involved.
 The registered `hermes-agent` planner supplies the mutable-copy designation;
 this preflight does not qualify a running host.
+
+## Self-refresh ownership
+
+`localsetup self-refresh` refreshes the shared library from all configured packs by
+default while retaining validated recorded adapter clients, physical paths, scope,
+modes, and package exposure. Explicit empty ownership remains empty. Catalog
+changes do not redirect an existing exposure or add clients that share its path.
+Recorded repository, personal, and combined ownership use the existing recorded
+update validation and stale-state preflight.
+
+An unrecorded shared directory or generic portable marker cannot identify logical
+clients. Self-refresh requires explicit `--platforms` or ownership reconciliation
+in that case, before dependency work or adapter mutation. Explicit legacy client
+selection retains normal preservation and native prerequisite checks. On validated modern
+receipts, pack/global selectors affect the library; changes to client
+selection, target package selectors, scope, or mode require explicit install or
+the owning migration workflow rather than implicit reselection during refresh.
+
+Without an explicit platform override, a fresh target with no recorded installation or adapter surface receives a library-only refresh; self-refresh does not select clients for it.

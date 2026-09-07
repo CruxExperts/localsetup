@@ -2749,7 +2749,7 @@
       "path": "ls/tests/test_install_flow_docs_package_a.py",
       "line_sha256": "6566b6d56b9be5350a4c9921f3f038432d2d200a5ad71fe21d0e0eb87279b8a1",
       "token": "localsetup",
-      "count": 2,
+      "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Established managed runtime or bundled-reference path component, including exact path assertions in consumers."
     },
@@ -2760,14 +2760,6 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Established managed runtime or bundled-reference path component, including exact path assertions in consumers."
-    },
-    {
-      "path": "ls/tests/test_install_flow_docs_package_a.py",
-      "line_sha256": "073cd017572fd06cd6a8594bb00f0c50e6c0460e111b539cd1889d2a7b25baa9",
-      "token": "localsetup",
-      "count": 1,
-      "kind": "compatibility_identifier",
-      "reason": "Persisted ownership marker or source-kind schema value; the exact spelling is read by installation or inventory consumers."
     },
     {
       "path": "ls/tests/test_install_flow_docs_package_a.py",
@@ -4536,6 +4528,30 @@
       "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Existing typed-profile Markdown fragment in the heartbeat owner link; retain the canonical target anchor."
+    },
+    {
+      "path": "ls/tests/test_install_flow_docs_package_a.py",
+      "line_sha256": "bb8cfe9e60554a6205cd6bace2c6bbff509e565db1cd429ac2ac20e81f638c07",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Established managed library path in a recorded self-refresh fixture; preserves filesystem compatibility."
+    },
+    {
+      "path": "ls/tests/test_self_refresh_ownership.py",
+      "line_sha256": "0f2e58997e489fb42bd2dcb8308a770a93626efc56884983b2aab6dfe7171c7b",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Persisted managed_by ownership marker in the ambiguous-adapter refusal fixture; exact schema value is required."
+    },
+    {
+      "path": "ls/tests/test_self_refresh_ownership.py",
+      "line_sha256": "f643bce6401f732edb778a38b7ea11936a89c9b5144efffecb1d2e4e4c9de8c3",
+      "token": "localsetup",
+      "count": 1,
+      "kind": "compatibility_identifier",
+      "reason": "Established managed library path asserted by the workflow-expansion regression; preserves filesystem compatibility."
     }
   ],
   "visual_reviews": [
