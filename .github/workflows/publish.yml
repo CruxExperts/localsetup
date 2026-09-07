@@ -104,10 +104,11 @@ jobs:
         with:
           subject-path: dist/localsetup-v*.tar.gz
 
-      - name: Publish GitHub release
+      - name: Prepare GitHub release draft
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          set -euo pipefail
           version="$(cat VERSION)"
           tag="v${version}"
           if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
@@ -118,18 +119,22 @@ jobs:
               exit 1
             fi
           fi
-          if gh release view "${tag}" >/dev/null 2>&1; then
-            gh release upload "${tag}" \
-              "dist/localsetup-v${version}.tar.gz" \
-              "dist/localsetup-v${version}.tar.gz.sha256" \
-              "dist/localsetup-v${version}.tar.gz.cdx.json" \
-              --clobber
-          else
-            gh release create "${tag}" \
-              "dist/localsetup-v${version}.tar.gz" \
-              "dist/localsetup-v${version}.tar.gz.sha256" \
-              "dist/localsetup-v${version}.tar.gz.cdx.json" \
-              --target "$GITHUB_SHA" \
-              --title "LocalSetup ${version}" \
-              --notes "Automated release for LocalSetup ${version}."
+          response="$(mktemp)"
+          errors="$(mktemp)"
+          trap 'rm -f "$response" "$errors"' EXIT
+          if gh api --include "repos/${GITHUB_REPOSITORY}/releases/tags/${tag}" >"$response" 2>"$errors"; then
+            echo "Release ${tag} already exists; reconcile its commit and assets before retrying." >&2
+            exit 1
+          elif ! grep -Eq '^HTTP/[0-9.]+ 404([[:space:]]|$)' "$response"; then
+            cat "$errors" >&2
+            echo "Could not establish that release ${tag} is absent; no draft created." >&2
+            exit 1
           fi
+          gh release create "${tag}" \
+            "dist/localsetup-v${version}.tar.gz" \
+            "dist/localsetup-v${version}.tar.gz.sha256" \
+            "dist/localsetup-v${version}.tar.gz.cdx.json" \
+            --draft \
+            --target "$GITHUB_SHA" \
+            --title "LocalSetup ${version}" \
+            --notes "Draft awaiting the complete verified artifact set and release notes."

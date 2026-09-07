@@ -427,25 +427,25 @@
     },
     {
       "path": ".github/workflows/publish.yml",
-      "line_sha256": "2416beb161858dc9dc2b9944f4676a84a65f155fbb95a5259e137de506d346c0",
+      "line_sha256": "f485f655f9a8ce0ac0c0610cb91c3778321b9a62ac5333e4e43da982fb6ff815",
       "token": "localsetup",
-      "count": 2,
+      "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Release artifact filename, glob, or workflow artifact identifier; kept stable for downloads and verification."
     },
     {
       "path": ".github/workflows/publish.yml",
-      "line_sha256": "a93d4a34f6b8abe906d586bb8c5aa6ab5405949126d75f80dcf9e44cd6b4e7ff",
+      "line_sha256": "ebd60c7aa861470f7d03b905e0fc7d23d8bdbd9eab37d45e6577e6c89fb7506e",
       "token": "localsetup",
-      "count": 2,
+      "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Release artifact filename, glob, or workflow artifact identifier; kept stable for downloads and verification."
     },
     {
       "path": ".github/workflows/publish.yml",
-      "line_sha256": "23dbbeb4cbf566c79edd08a6445cb7abfb7f94aea3450e1807bca15ae29ca68b",
+      "line_sha256": "370e8a68f71b0a3cf0ceb0e899b5177807461a866eb58b70af1ffa6c0e2cfa84",
       "token": "localsetup",
-      "count": 2,
+      "count": 1,
       "kind": "compatibility_identifier",
       "reason": "Release artifact filename, glob, or workflow artifact identifier; kept stable for downloads and verification."
     },
