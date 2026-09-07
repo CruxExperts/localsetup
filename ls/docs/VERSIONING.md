@@ -155,7 +155,26 @@ The `version-plan` output includes the selected `policy`, diagnostic `raw_bump` 
 
 ## GitHub release workflow
 
-On pushes to `main`, GitHub Actions verifies the computed version plan, confirms all version references and generated docs are committed, runs the framework validation suite, builds the public package artifact, verifies the tarball checksum and embedded artifact metadata, uploads the tarball plus `.sha256` and CycloneDX SBOM sidecars, attests the tarball when GitHub artifact attestation is available, and publishes tag/release `vX.Y.Z`. Existing tags must already point at the current commit or the workflow fails.
+On pushes to `main`, GitHub Actions verifies the computed version plan, confirms all version references and generated docs are committed, runs the framework validation suite, builds the public package artifact, verifies the tarball checksum and embedded artifact metadata, uploads the tarball plus `.sha256` and CycloneDX SBOM sidecars, attests the tarball when GitHub artifact attestation is available, and prepares draft release `vX.Y.Z` at the validated commit. Existing tags must already point at that commit. Existing releases and uncertain API lookups stop preparation for explicit reconciliation; reruns never overwrite assets.
+
+Complete the draft before publication. Attach the verified wheel/sdist and any
+qualified native bundle, provenance, SBOM and corresponding source assets required
+by the release. Verify the complete asset inventory, checksums, licenses, commit
+identity and accurate release notes, then publish the existing draft:
+
+```bash
+gh release edit "v$(cat VERSION)" --notes-file release-notes.md
+gh release edit "v$(cat VERSION)" --draft=false
+```
+
+These commands require existing publication authority and a reviewed payload.
+`release-notes.md` denotes the prepared notes file; do not commit private release
+preparation. Workflow success proves draft preparation, not completed publication.
+Download the published assets and perform the exact-release acceptance checks.
+With [immutable releases](https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases),
+assets and the associated tag are fixed at publication. If required assets were
+omitted, preserve that release and prepare a corrected patch release; do not
+attempt to replace assets or move its tag.
 
 ## Verification
 
