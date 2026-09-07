@@ -4,10 +4,10 @@ version: 4.22
 owner_package: generate-docs
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: aa225b3bfba81950501b0866317ec8fcd27daa1837de917ff6f4731edf965239
+  source_provenance_hash: 6c7407f7565ca0403e1da3037904e005042b6fdc0ac04655be9fbf7ee3278866
   emitter: generate-docs
 framework_version: 4.22.6
-source_commit: d297ed234baa529c96bad872e51cfc0f31991489
+source_commit: 16a97294b878c6e31ffe82dc48c80e677a7a6736
 artifact_sha256: d463f0a8e4b4376945d747b5f5c35bf6cf6f552fee0f4ff6436a0cdd34549784
 ---
 # Workflow quick reference
