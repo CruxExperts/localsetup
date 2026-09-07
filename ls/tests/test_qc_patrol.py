@@ -295,6 +295,12 @@ def test_new_qc_workflow_static_contracts() -> None:
             trusted = next(step for step in job["steps"] if step.get("name") == "Run trusted-base PR QC review")
             assert trusted["if"] == "steps.qc_route.outputs.route == 'trusted-base'"
             assert "secrets.QC_LLM_API_KEY" in trusted["env"]["QC_LLM_API_KEY"]
+            for key in ("LLM_MODE", "QC_LLM_BASE_URL", "QC_LLM_API_KEY", "QC_LLM_ORGANIZATION", "QC_LLM_PROJECT"):
+                expression = trusted["env"][key]
+                assert "vars.QC_PR_LLM_ENABLED == 'true' &&" in expression
+                assert "github.event_name == 'pull_request' &&" in expression
+                assert "github.event.pull_request.head.repo.full_name == github.repository &&" in expression
+            assert trusted["env"]["LLM_MODE"].endswith("'auto' || 'off' }}")
             assert "python tools/qc_patrol/cli.py pr-review" in trusted["run"]
             assert "qc-subject/tools/qc_patrol/cli.py" not in trusted["run"]
             subject = next(step for step in job["steps"] if step.get("name") == "Run no-secret subject PR QC review")

@@ -168,3 +168,20 @@ uv run --locked python ls/tools/localsetup.py --source-root . release-push
 ```
 
 Do not publish a release from a dirty worktree. If a tag already exists at a different commit, stop and resolve the remote release state before retrying.
+
+## Optional PR model review
+
+PR validation runs deterministic QC without a provider by default. To authorize
+the optional model review, a repository owner sets the GitHub Actions repository
+variable `QC_PR_LLM_ENABLED` to `true` (case-insensitive, following GitHub
+expression semantics) and configures the
+`QC_LLM_BASE_URL` and `QC_LLM_API_KEY` secrets. Existing secrets alone do not
+enable requests. This opt-in can incur provider charges and disclose the review
+input to that provider; apply the repository's disclosure authority first.
+
+Only same-repository pull requests using trusted base tooling receive the
+credentials when enabled. Forks, manual workflow runs and the subject-tooling
+fallback remain provider-free. Removing the variable or setting it to a value
+other than case-insensitive `true` disables model review on subsequent runs;
+it does not cancel an active request.
+Deterministic QC and the other required validation gates remain enabled.

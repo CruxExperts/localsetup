@@ -14,7 +14,7 @@ This directory defines the checked-in contract for repository-local QC patrols. 
 ## Workflow Surface
 
 - `qc-ci.yml` runs deterministic inventory, self-validation, and focused tests on PRs, pushes to `main`, merge queue, and manual dispatch.
-- `qc-pr-review.yml` runs trusted base-branch tooling against a separate subject checkout. Same-repo PRs may use LLM secrets; fork PRs run without LLM secrets.
+- `qc-pr-review.yml` runs trusted base-branch tooling against a separate subject checkout. Same-repo PRs use LLM secrets only when `QC_PR_LLM_ENABLED` is explicitly `true` (case-insensitive); otherwise review is deterministic. Fork PRs run without LLM secrets.
 - `qc-patrol.yml` runs scheduled/manual repository patrols, writes adaptive inventory and drift artifacts, and may create or update duplicate-aware issues through a conservative policy gate.
 - `qc-docs-drift.yml` runs scheduled/manual docs alignment handoff and may create or update duplicate-aware issues.
 - `qc-release.yml` is manual release-readiness validation only. It builds and verifies temporary artifacts without publishing.
@@ -53,6 +53,8 @@ Other existing issue-writing commands keep the legacy duplicate-aware handoff be
 ## Secrets And Vars
 
 Secrets: `QC_LLM_BASE_URL`, `QC_LLM_API_KEY`, optional `QC_LLM_ORGANIZATION`, optional `QC_LLM_PROJECT`.
+
+PR model-review opt-in: `QC_PR_LLM_ENABLED` is unset/off by default. See [repository maintenance](../../ls/docs/REPO_MAINTENANCE.md#optional-pr-model-review) for authorization and disabling behavior.
 
 Variables or checked-in defaults: `QC_LLM_MODEL`, `QC_LLM_TEMPERATURE`, `QC_LLM_MAX_TOKENS`, `QC_LLM_TIMEOUT_SECONDS`, `QC_LLM_RETRY_COUNT`, `QC_LLM_API_STYLE`, `QC_LLM_ENDPOINT_ALIAS`, `QC_PATROL_AI_MODE`.
 
