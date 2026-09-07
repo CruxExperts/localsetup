@@ -125,13 +125,13 @@
   ],
   "provenance": {
     "artifact_path": "ls/docs/_generated/facts.json",
-    "artifact_sha256": "7179b070d09318a6194ec240b2f50aebdf61b869c5a2b46e7080e3fefc30ddb9",
+    "artifact_sha256": "aab766832c2b88a355903ffd4742195cb6f9a822779b3b8071ce804acf5c86ab",
     "emitter": "generate-docs",
-    "framework_version": "4.22.3",
+    "framework_version": "4.22.4",
     "schema_version": 1,
     "source_commit": "85b05ff23d9d1163d9d047e3e57d32e47b3fc7dd",
-    "source_dirty": false,
-    "source_provenance_hash": "749972cbdaa83ae8d1f2a946498c2a6a845b6a02d758aa744ffdf6403d4e57c8",
+    "source_dirty": true,
+    "source_provenance_hash": "cb6712f171c8ed2a3b3c9110e53fdbf895fe5664f118503ae146df6ac8bdf50a",
     "source_root_id": "ceb21e4c0b429ca1a215f27b71f13d1f715fde18816d79646b09e9e8f6109cf8",
     "source_tag": null,
     "source_tree_sha": "81b6a571a7e09c82e9c503cb66339c89145496ee"
@@ -1844,7 +1844,7 @@
       "version": "1.0"
     }
   ],
-  "version": "4.22.3",
+  "version": "4.22.4",
   "workflow_count": 16,
   "workflows": [
     {

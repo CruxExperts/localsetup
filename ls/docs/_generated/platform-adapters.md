@@ -1,9 +1,9 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: 749972cbdaa83ae8d1f2a946498c2a6a845b6a02d758aa744ffdf6403d4e57c8
+  source_provenance_hash: cb6712f171c8ed2a3b3c9110e53fdbf895fe5664f118503ae146df6ac8bdf50a
   emitter: generate-docs
-framework_version: 4.22.3
+framework_version: 4.22.4
 source_commit: 85b05ff23d9d1163d9d047e3e57d32e47b3fc7dd
 artifact_sha256: 5ce4949227d75f75f72c4ce822e3c0e7958e57a16acf1fdc16a050a35da5d212
 ---
