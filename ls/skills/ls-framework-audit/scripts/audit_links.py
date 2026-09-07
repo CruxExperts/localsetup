@@ -44,6 +44,24 @@ def _is_excluded(rel: Path) -> bool:
     )
 
 
+def source_ownership(root: Path) -> tuple[frozenset[str], list[str]]:
+    """Exempt only unchanged upstream documents verified by the SDK owner."""
+    vendor = root / "vendor" / "lscli"
+    if not vendor.exists() and not vendor.is_symlink():
+        return frozenset(), []
+    try:
+        from ls.core.sdk_payload.ownership import upstream_documents
+
+        return frozenset(upstream_documents(root)), []
+    except (ImportError, OSError, ValueError) as exc:
+        return frozenset(), [f"Could not verify upstream document ownership: {exc}"]
+
+
+def is_non_authored_source(rel: Path, upstream: frozenset[str]) -> bool:
+    """Root build outputs and exact verified upstream files are separate owners."""
+    return rel.parts[:1] in (("build",), ("dist",)) or rel.as_posix() in upstream
+
+
 def _is_external_target(raw_target: str) -> bool:
     target = (
         raw_target[1:-1]
@@ -137,10 +155,12 @@ def phase_link_checks(root: Path) -> tuple[list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
     root = root.resolve()
+    upstream, ownership_errors = source_ownership(root)
+    errors.extend(ownership_errors)
     for md in root.rglob("*.md"):
         try:
             rel = md.relative_to(root)
-            if _is_excluded(rel):
+            if _is_excluded(rel) or is_non_authored_source(rel, upstream):
                 continue
             text = md.read_text(encoding="utf-8", errors="replace")
         except (OSError, ValueError) as exc:
