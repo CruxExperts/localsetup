@@ -1,15 +1,15 @@
 ---
 localsetup_provenance:
   schema_version: 1
-  source_provenance_hash: de96df99592efafd554305c5a21c3e3da7044e8dd859befecc3b31292a29b404
+  source_provenance_hash: 5c258b14b3a4b77cfeec78ef0bff5e97028f19e61f7ddd6fb9faa92605deeaf4
   emitter: generate-docs
 framework_version: 4.4.1
-source_commit: 98dbd095e61a9f4691eb354c018c344f6723fbbf
-artifact_sha256: acfe104824c47aaee8fff991950c69cfcd83a49b5a9020889cf3c770aee5a6b0
+source_commit: 5b2d5e24032056746724b54d612ed20b4d05a720
+artifact_sha256: 5ce4949227d75f75f72c4ce822e3c0e7958e57a16acf1fdc16a050a35da5d212
 ---
 # Platform Adapters
 
-Repo adapter paths are attached only when selected with `--tools` or `--platforms`; a selector-free install is global-only.
+Fresh global-only invocation without a selected or recorded target creates no adapters. Explicit `--tools` or `--platforms` selects fresh adapters; selector-free updates of a recorded target retain validated clients, scope, and paths.
 
 | Platform | Repo Paths | Verify Rules |
 |---|---|---|
